@@ -450,12 +450,9 @@ ShelfNavigationWidget::ShelfNavigationWidget(Shelf* shelf,
               NavigationButtonAnimationMetricsReporter::NavigationButtonType::
                   kHomeButton)) {
   DCHECK(shelf_);
-  ShelfConfig::Get()->AddObserver(this);
 }
 
 ShelfNavigationWidget::~ShelfNavigationWidget() {
-  ShelfConfig::Get()->RemoveObserver(this);
-
   // Cancel animations now so the BoundsAnimator doesn't outlive the metrics
   // reporter associated to it.
   bounds_animator_->Cancel();
@@ -561,10 +558,6 @@ void ShelfNavigationWidget::SetDefaultLastFocusableChild(
   delegate_->set_default_last_focusable_child(default_last_focusable_child);
 }
 
-void ShelfNavigationWidget::OnShelfConfigUpdated() {
-  UpdateLayout(/*animate=*/true);
-}
-
 void ShelfNavigationWidget::CalculateTargetBounds() {
   const gfx::Point shelf_origin =
       shelf_->shelf_widget()->GetTargetBounds().origin();
@@ -609,24 +602,33 @@ void ShelfNavigationWidget::UpdateLayout(bool animate) {
   }
 
   // Use the same duration for all parts of the upcoming animation.
-  const auto animation_duration =
+  const base::TimeDelta animation_duration =
       animate ? ShelfConfig::Get()->shelf_animation_duration()
               : base::TimeDelta::FromMilliseconds(0);
-  ui::ScopedLayerAnimationSettings nav_animation_setter(
-      GetNativeView()->layer()->GetAnimator());
-  nav_animation_setter.SetTransitionDuration(animation_duration);
-  nav_animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
-  nav_animation_setter.SetPreemptionStrategy(
-      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
 
-  base::Optional<ui::AnimationThroughputReporter> reporter;
-  if (animate) {
-    reporter.emplace(nav_animation_setter.GetAnimator(),
-                     shelf_->GetNavigationWidgetAnimationReportCallback());
+  const bool update_opacity = !animate || GetLayer()->GetTargetOpacity() !=
+                                              layout_manager->GetOpacity();
+  const bool update_bounds =
+      !animate || GetLayer()->GetTargetBounds() != target_bounds_;
+
+  if (update_opacity || update_bounds) {
+    ui::ScopedLayerAnimationSettings nav_animation_setter(
+        GetNativeView()->layer()->GetAnimator());
+    nav_animation_setter.SetTransitionDuration(animation_duration);
+    nav_animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
+    nav_animation_setter.SetPreemptionStrategy(
+        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+
+    base::Optional<ui::AnimationThroughputReporter> reporter;
+    if (animate) {
+      reporter.emplace(nav_animation_setter.GetAnimator(),
+                       shelf_->GetNavigationWidgetAnimationReportCallback());
+    }
+    if (update_opacity)
+      GetLayer()->SetOpacity(layout_manager->GetOpacity());
+    if (update_bounds)
+      SetBounds(target_bounds_);
   }
-
-  GetLayer()->SetOpacity(layout_manager->GetOpacity());
-  SetBounds(target_bounds_);
 
   views::View* const back_button = delegate_->back_button();
   UpdateButtonVisibility(back_button, back_button_shown, animate,

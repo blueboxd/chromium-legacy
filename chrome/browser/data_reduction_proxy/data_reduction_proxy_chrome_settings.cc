@@ -234,7 +234,7 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
       InitDataReductionProxySettings(profile_prefs, std::move(service));
 
   data_reduction_proxy::DataReductionProxySettings::
-      SetCallbackToRegisterSyntheticFieldTrial(base::Bind(
+      SetCallbackToRegisterSyntheticFieldTrial(base::BindRepeating(
           &ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial));
   // In M35 and earlier, the Data Reduction Proxy enabled/disabled setting was
   // stored in prefs, so this setting needs to be migrated to the new way of

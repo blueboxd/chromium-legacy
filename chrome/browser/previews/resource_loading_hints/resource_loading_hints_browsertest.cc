@@ -15,6 +15,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/previews/previews_test_util.h"
 #include "chrome/browser/previews/resource_loading_hints/resource_loading_hints_web_contents_observer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -60,9 +62,12 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
 
-    g_browser_process->network_quality_tracker()
-        ->ReportEffectiveConnectionTypeForTesting(
-            net::EFFECTIVE_CONNECTION_TYPE_2G);
+    // Override the target decision to |kTrue| to trigger a preview for the new
+    // decision.
+    OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
+        ->OverrideTargetDecisionForTesting(
+            optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
+            optimization_guide::OptimizationGuideDecision::kTrue);
     // Set up https server with resource monitor.
     https_server_.reset(
         new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));

@@ -41,8 +41,16 @@ class FakeVideoDecoder : public VideoDecoder {
   // Enables encrypted config supported. Must be called before Initialize().
   void EnableEncryptedConfigSupport();
 
-  // VideoDecoder implementation.
+  // Sets whether this decoder is a platform decoder. Must be called before
+  // Initialize().
+  void SetIsPlatformDecoder(bool value);
+
+  // Decoder implementation.
+  bool SupportsDecryption() const override;
+  bool IsPlatformDecoder() const override;
   std::string GetDisplayName() const override;
+
+  // VideoDecoder implementation
   void Initialize(const VideoDecoderConfig& config,
                   bool low_delay,
                   CdmContext* cdm_context,
@@ -105,6 +113,7 @@ class FakeVideoDecoder : public VideoDecoder {
   const int max_parallel_decoding_requests_;
   BytesDecodedCB bytes_decoded_cb_;
 
+  bool is_platform_decoder_ = false;
   bool supports_encrypted_config_ = false;
 
   State state_;

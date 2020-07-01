@@ -44,13 +44,17 @@ struct NGCaretPosition {
 // affinity, returns the corresponding NGCaretPosition, or null if not found.
 // Note that in many cases, null result indicates that we have reached an
 // unexpected case that is not properly handled.
-CORE_EXPORT NGCaretPosition ComputeNGCaretPosition(const LayoutBlockFlow&,
-                                                   unsigned,
-                                                   TextAffinity);
+// When |layout_text| isn't |nullptr|, this functions returns position for
+// |layout_text| in multiple candidates.
+CORE_EXPORT NGCaretPosition
+ComputeNGCaretPosition(const LayoutBlockFlow& context,
+                       unsigned offset,
+                       TextAffinity affinity,
+                       const LayoutText* layout_text = nullptr);
 
 // Shorthand of the above when the input is a position instead of a
 // (context, offset) pair.
-NGCaretPosition ComputeNGCaretPosition(const PositionWithAffinity&);
+CORE_EXPORT NGCaretPosition ComputeNGCaretPosition(const PositionWithAffinity&);
 
 }  // namespace blink
 

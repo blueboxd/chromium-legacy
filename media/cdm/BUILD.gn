@@ -96,6 +96,15 @@ source_set("cdm") {
       ]
     }
   }
+
+  if (is_win) {
+    sources += [
+      "win/media_foundation_cdm_session.cc",
+      "win/media_foundation_cdm_session.h",
+    ]
+
+    deps += [ "//media/base/win:media_foundation_util" ]
+  }
 }
 
 static_library("cdm_paths") {
@@ -164,5 +173,9 @@ source_set("unit_tests") {
 
   if (proprietary_codecs) {
     sources += [ "cenc_utils_unittest.cc" ]
+  }
+
+  if (is_win) {
+    sources += [ "win/media_foundation_cdm_session_unittest.cc" ]
   }
 }

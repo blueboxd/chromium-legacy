@@ -220,7 +220,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsUIBrowserTest, ListenerRegistration) {
 
 IN_PROC_BROWSER_TEST_F(ExtensionSettingsUIBrowserTest,
                        ActivityLogInactiveWithoutSwitch) {
-  // Navigate to chrome://extensions which is a whitelisted URL for the
+  // Navigate to chrome://extensions which is a allowlisted URL for the
   // chrome.activityLogPrivate API.
   GURL extensions_url("chrome://extensions");
   ui_test_utils::NavigateToURL(browser(), extensions_url);
@@ -237,7 +237,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsUIBrowserTest,
     )"));
 
   // Activity log will be inactive as the command line switch is not present and
-  // no whitelisted extensions for activityLogPrivate are enabled.
+  // no allowlisted extensions for activityLogPrivate are enabled.
   extensions::ActivityLog* activity_log =
       extensions::ActivityLog::GetInstance(browser()->profile());
   ASSERT_FALSE(activity_log->is_active());

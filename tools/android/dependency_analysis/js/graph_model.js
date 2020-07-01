@@ -169,25 +169,29 @@ class GraphModel {
    * we display edges between all nodes except for the outermost layer, where we
    * only display the edges used to reach it from the second-outermost layer.
    *
-   * @param {!GraphStore} filter The filter to apply to the data set.
+   * @param {!Set<string>} includedNodeSet The nodes included in the filter.
+   * @param {number} inboundDepth The maximum inbound distance.
+   * @param {number} outboundDepth The maximum outbound distance.
    * @return {!D3GraphData} The nodes and edges to visualize.
    */
-  getDataForD3(filter) {
+  getDataForD3(includedNodeSet, inboundDepth, outboundDepth) {
     // These will be updated throughout the function and returned at the end.
     const /** !Set<!Node> */ resultNodeSet = new Set();
     const /** !Set<!Edge> */ resultEdgeSet = new Set();
 
-    // Initialize the inbound and outbound BFS by setting the "seen" collection
-    // to the filter nodes. We maintain both a Set and array for efficiency.
-    const /** !Set<string> */ inboundSeenNodes = new Set(
-        filter.includedNodeSet);
-    const /** !Set<string> */ outboundSeenNodes = new Set(
-        filter.includedNodeSet);
-    const /** !Array<!Node> */ inboundNodeQueue = [];
-    const /** !Array<!Node> */ outboundNodeQueue = [];
     for (const node of this.nodes.values()) {
       node.resetVisualizationState();
-      if (filter.includedNodeSet.has(node.id)) {
+    }
+
+    // Initialize the inbound and outbound BFS by setting the "seen" collection
+    // to the filter nodes. We maintain both a Set and array for efficiency.
+    const /** !Set<string> */ inboundSeenNodes = new Set(includedNodeSet);
+    const /** !Set<string> */ outboundSeenNodes = new Set(includedNodeSet);
+    const /** !Array<!Node> */ inboundNodeQueue = [];
+    const /** !Array<!Node> */ outboundNodeQueue = [];
+    for (const nodeName of includedNodeSet) {
+      const node = this.nodes.get(nodeName);
+      if (node !== undefined) {
         node.visualizationState.selectedByFilter = true;
         inboundNodeQueue.push(node);
         outboundNodeQueue.push(node);
@@ -237,9 +241,6 @@ class GraphModel {
         }
       }
     };
-
-    const inboundDepth = filter.state.inboundDepth;
-    const outboundDepth = filter.state.outboundDepth;
 
     updateResultBFS(/* inboundTraversal */ true, inboundSeenNodes,
         inboundNodeQueue, inboundDepth);

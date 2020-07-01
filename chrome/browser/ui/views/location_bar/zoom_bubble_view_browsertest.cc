@@ -293,7 +293,7 @@ class TestZoomRequestClient : public extensions::ExtensionZoomRequestClient {
 
 }  // namespace
 
-// Extensions may be whitelisted to not show a bubble when they perform a zoom
+// Extensions may be allowlisted to not show a bubble when they perform a zoom
 // change. However, if a zoom bubble is already showing, zoom changes performed
 // by the extension should update the bubble.
 IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest,

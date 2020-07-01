@@ -5961,7 +5961,7 @@ the Bookmarks menu.">
             Update password
           </message>
         </if>
-        <message name="IDS_PASSWORD_MANAGER_BUBBLE_BLACKLIST_BUTTON" desc="Button text for the 'Save Password' bubble's 'Never remember for this site' option">
+        <message name="IDS_PASSWORD_MANAGER_BUBBLE_BLOCKLIST_BUTTON" desc="Button text for the 'Save Password' bubble's 'Never remember for this site' option">
           Never
         </message>
         <message name="IDS_PASSWORD_MANAGER_DESTINATION_DROPDOWN_ACCESSIBLE_NAME" desc="Accessible name of destination dropdown in the password save bubble">

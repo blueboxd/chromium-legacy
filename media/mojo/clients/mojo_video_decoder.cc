@@ -133,6 +133,10 @@ bool MojoVideoDecoder::IsPlatformDecoder() const {
   return true;
 }
 
+bool MojoVideoDecoder::SupportsDecryption() const {
+  return true;
+}
+
 std::string MojoVideoDecoder::GetDisplayName() const {
   return "MojoVideoDecoder";
 }

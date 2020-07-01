@@ -92,7 +92,9 @@ See [Moving large files to Google Storage](https://goto.google.com/checking-in-l
 
 ### Add OWNERS
 
-Your OWNERS file must include 2 Chromium developer accounts. This will ensure
+Your OWNERS file must either list two Chromium developer accounts as the first
+two lines or include a `file:` directive to an OWNERS file within the
+`third_party` directory that itself conforms to this criterion. This will ensure
 accountability for maintenance of the code over time. While there isn't always
 an ideal or obvious set of people that should go in OWNERS, this is critical for
 first-line triage of any issues that crop up in the code.

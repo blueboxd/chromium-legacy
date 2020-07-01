@@ -7,14 +7,17 @@
 #include <memory>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/guid.h"
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/vm_permission_service/vm_permission_service.pb.h"
 #include "components/prefs/pref_service.h"
 #include "dbus/message.h"
@@ -289,13 +292,19 @@ void VmPermissionServiceProvider::UpdatePluginVmPermissions(VmInfo* vm) {
   }
 
   const PrefService* prefs = profile->GetPrefs();
-  if (prefs->GetBoolean(prefs::kVideoCaptureAllowed) &&
-      prefs->GetBoolean(plugin_vm::prefs::kPluginVmCameraAllowed)) {
+  auto* PluginVmManager =
+      plugin_vm::PluginVmManagerFactory::GetForProfile(profile);
+  if (base::FeatureList::IsEnabled(
+          chromeos::features::kPluginVmShowCameraPermissions) &&
+      prefs->GetBoolean(prefs::kVideoCaptureAllowed) &&
+      PluginVmManager->GetPermission(plugin_vm::PermissionType::kCamera)) {
     vm->permissions_.insert(VmInfo::PermissionCamera);
   }
 
-  if (prefs->GetBoolean(prefs::kAudioCaptureAllowed) &&
-      prefs->GetBoolean(plugin_vm::prefs::kPluginVmMicrophoneAllowed)) {
+  if (base::FeatureList::IsEnabled(
+          chromeos::features::kPluginVmShowMicrophonePermissions) &&
+      prefs->GetBoolean(prefs::kAudioCaptureAllowed) &&
+      PluginVmManager->GetPermission(plugin_vm::PermissionType::kMicrophone)) {
     vm->permissions_.insert(VmInfo::PermissionMicrophone);
   }
 }

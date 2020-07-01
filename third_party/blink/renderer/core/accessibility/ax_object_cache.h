@@ -131,8 +131,6 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
   virtual void HandleScrollPositionChanged(LocalFrameView*) = 0;
   virtual void HandleScrollPositionChanged(LayoutObject*) = 0;
 
-  // Called when scroll bars are added / removed (as the view resizes).
-  virtual void HandleLayoutComplete(LayoutObject*) = 0;
   virtual void HandleScrolledToAnchor(const Node* anchor_node) = 0;
 
   // Called when the frame rect changes, which can sometimes happen

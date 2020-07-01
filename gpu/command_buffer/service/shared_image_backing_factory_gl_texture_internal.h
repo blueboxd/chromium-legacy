@@ -77,7 +77,6 @@ class SharedImageBackingGLCommon : public SharedImageBacking {
     GLenum internal_format = 0;
     GLenum format = 0;
     GLenum type = 0;
-    const gles2::Texture::CompatibilitySwizzle* swizzle = nullptr;
     bool is_cleared = false;
     bool is_rgb_emulation = false;
     bool framebuffer_attachment_angle = false;
@@ -157,6 +156,8 @@ class SharedImageBackingGLTexture : public SharedImageBacking {
   void InitializeGLTexture(
       GLuint service_id,
       const SharedImageBackingGLCommon::InitializeGLTextureParams& params);
+  void SetCompatibilitySwizzle(
+      const gles2::Texture::CompatibilitySwizzle* swizzle);
 
   GLenum GetGLTarget() const;
   GLuint GetGLServiceId() const;

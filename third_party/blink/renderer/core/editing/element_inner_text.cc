@@ -152,12 +152,12 @@ bool ElementInnerTextCollector::IsDisplayBlockLevel(const Node& node) {
   const LayoutObject* const layout_object = node.GetLayoutObject();
   if (!layout_object)
     return false;
+  if (layout_object->IsTableSection()) {
+    // Note: |LayoutTableSection::IsInline()| returns false, but it is not
+    // block-level.
+    return false;
+  }
   if (!layout_object->IsLayoutBlock()) {
-    if (layout_object->IsTableSection()) {
-      // Note: |LayoutTableSeleciton::IsInline()| returns false, but it is not
-      // block-level.
-      return false;
-    }
     // Note: Block-level replaced elements, e.g. <img style=display:block>,
     // reach here. Unlike |LayoutBlockFlow::AddChild()|, innerText considers
     // floats and absolutely-positioned elements as block-level node.

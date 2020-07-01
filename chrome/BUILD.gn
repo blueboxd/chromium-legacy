@@ -946,7 +946,7 @@ if (is_win) {
     ]
 
     if (is_component_build) {
-      libs = [ "Carbon.framework" ]
+      frameworks = [ "Carbon.framework" ]
     }
 
     ldflags = [

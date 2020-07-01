@@ -97,19 +97,9 @@ class OptimizationGuideConsumerWebContentsObserver
     OptimizationGuideKeyedService* service =
         OptimizationGuideKeyedServiceFactory::GetForProfile(
             Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
-    last_should_target_navigation_decision_ = service->ShouldTargetNavigation(
-        navigation_handle,
-        optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
     last_can_apply_optimization_decision_ = service->CanApplyOptimization(
         navigation_handle->GetURL(), optimization_guide::proto::NOSCRIPT,
         /*optimization_metadata=*/nullptr);
-  }
-
-  // Returns the last optimization guide decision that was returned by the
-  // OptimizationGuideKeyedService's ShouldTargetNavigation() method.
-  optimization_guide::OptimizationGuideDecision
-  last_should_target_navigation_decision() {
-    return last_should_target_navigation_decision_;
   }
 
   // Returns the last optimization guide decision that was returned by the
@@ -125,9 +115,6 @@ class OptimizationGuideConsumerWebContentsObserver
   }
 
  private:
-  optimization_guide::OptimizationGuideDecision
-      last_should_target_navigation_decision_ =
-          optimization_guide::OptimizationGuideDecision::kUnknown;
   optimization_guide::OptimizationGuideDecision
       last_can_apply_optimization_decision_ =
           optimization_guide::OptimizationGuideDecision::kUnknown;
@@ -258,13 +245,6 @@ class OptimizationGuideKeyedServiceBrowserTest
   // Returns the last decision from the CanApplyOptimization() method seen by
   // the consumer of the OptimizationGuideKeyedService.
   optimization_guide::OptimizationGuideDecision
-  last_should_target_navigation_decision() {
-    return consumer_->last_should_target_navigation_decision();
-  }
-
-  // Returns the last decision from the CanApplyOptimization() method seen by
-  // the consumer of the OptimizationGuideKeyedService.
-  optimization_guide::OptimizationGuideDecision
   last_can_apply_optimization_decision() {
     return consumer_->last_can_apply_optimization_decision();
   }
@@ -311,11 +291,6 @@ class OptimizationGuideKeyedServiceBrowserTest
 
   DISALLOW_COPY_AND_ASSIGN(OptimizationGuideKeyedServiceBrowserTest);
 };
-
-IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
-                       PredictionManagerNotCreatedIfFeatureDisabled) {
-  ASSERT_FALSE(prediction_manager());
-}
 
 IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
                        TopHostProviderNotSetIfNotAllowed) {
@@ -426,9 +401,7 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
   // load a hint that succeeds.
   histogram_tester.ExpectUniqueSample("OptimizationGuide.LoadedHint.Result",
                                       true, 1);
-  // We had a hint and it was loaded and it was painful enough.
-  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
-            last_should_target_navigation_decision());
+  // We had a hint and it was loaded.
   EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
             last_can_apply_optimization_decision());
 
@@ -466,9 +439,7 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
   // load a hint that succeeds.
   histogram_tester.ExpectUniqueSample("OptimizationGuide.LoadedHint.Result",
                                       true, 1);
-  // We had a hint and it was loaded and it was painful enough.
-  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
-            last_should_target_navigation_decision());
+  // We had a hint and it was loaded.
   EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
             last_can_apply_optimization_decision());
 
@@ -509,8 +480,6 @@ IN_PROC_BROWSER_TEST_F(
                                      true, 2);
   // Hint is still applicable so we expect it to be allowed to be applied.
   EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
-            last_should_target_navigation_decision());
-  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
             last_can_apply_optimization_decision());
 }
 
@@ -531,19 +500,12 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
   // attempt to load a hint but still fail.
   histogram_tester.ExpectUniqueSample("OptimizationGuide.LoadedHint.Result",
                                       false, 1);
-  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
-            last_should_target_navigation_decision());
   EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
             last_can_apply_optimization_decision());
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.ApplyDecision.NoScript",
       static_cast<int>(
           optimization_guide::OptimizationTypeDecision::kNoHintAvailable),
-      1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.TargetDecision.PainfulPageLoad",
-      static_cast<int>(
-          optimization_guide::OptimizationTargetDecision::kPageLoadMatches),
       1);
 }
 
@@ -667,84 +629,4 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceCommandLineOverridesTest,
   histogram_tester()->ExpectUniqueSample(
       "OptimizationGuide.RemoteFetchingEnabled", true, 1);
 #endif
-}
-
-class OptimizationGuideKeyedServiceTargetPredictionEnabledBrowserTest
-    : public OptimizationGuideKeyedServiceBrowserTest {
- public:
-  OptimizationGuideKeyedServiceTargetPredictionEnabledBrowserTest() = default;
-  ~OptimizationGuideKeyedServiceTargetPredictionEnabledBrowserTest() override =
-      default;
-
-  void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        {optimization_guide::features::kRemoteOptimizationGuideFetching,
-         optimization_guide::features::kOptimizationTargetPrediction},
-        {});
-
-    OptimizationGuideKeyedServiceBrowserTest::SetUp();
-  }
-
-  void SetUpCommandLine(base::CommandLine* cmd) override {
-    cmd->AppendSwitchASCII(optimization_guide::switches::kFetchHintsOverride,
-                           "whatever.com,somehost.com");
-  }
-
-  void TearDown() override {
-    OptimizationGuideKeyedServiceBrowserTest::TearDown();
-
-    scoped_feature_list_.Reset();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(
-    OptimizationGuideKeyedServiceTargetPredictionEnabledBrowserTest,
-    PredictionManagerIsCreated) {
-  ASSERT_TRUE(prediction_manager());
-}
-
-IN_PROC_BROWSER_TEST_F(
-    OptimizationGuideKeyedServiceTargetPredictionEnabledBrowserTest,
-    PredictionManagerDecisionOverridesHintsManager) {
-  PushHintsComponentAndWaitForCompletion();
-  RegisterWithKeyedService();
-
-  ukm::TestAutoSetUkmRecorder ukm_recorder;
-  base::HistogramTester histogram_tester;
-
-  ui_test_utils::NavigateToURL(browser(), url_with_hints());
-
-  EXPECT_EQ(RetryForHistogramUntilCountReached(
-                histogram_tester, "OptimizationGuide.LoadedHint.Result", 1),
-            1);
-  // There should be a hint that matches this URL.
-  histogram_tester.ExpectUniqueSample("OptimizationGuide.LoadedHint.Result",
-                                      true, 1);
-  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kUnknown,
-            last_should_target_navigation_decision());
-  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
-            last_can_apply_optimization_decision());
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.TargetDecision.PainfulPageLoad",
-      static_cast<int>(optimization_guide::OptimizationTargetDecision::
-                           kModelNotAvailableOnClient),
-      1);
-
-  // Navigate away so UKM get recorded.
-  ui_test_utils::NavigateToURL(browser(), url_with_hints());
-
-  auto entries = ukm_recorder.GetEntriesByName(
-      ukm::builders::OptimizationGuide::kEntryName);
-  EXPECT_EQ(1u, entries.size());
-  auto* entry = entries[0];
-  EXPECT_TRUE(ukm_recorder.EntryHasMetric(
-      entry,
-      ukm::builders::OptimizationGuide::kRegisteredOptimizationTargetsName));
-  // PAINFUL_PAGE_LOAD = 1 so bit mask should be 10 which equals 2.
-  ukm_recorder.ExpectEntryMetric(
-      entry,
-      ukm::builders::OptimizationGuide::kRegisteredOptimizationTargetsName, 2);
 }

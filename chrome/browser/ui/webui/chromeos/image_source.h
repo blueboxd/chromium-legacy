@@ -42,7 +42,7 @@ class ImageSource : public content::URLDataSource {
       bool path_exists);
 
   // Checks whether we have allowed the image to be loaded.
-  bool IsWhitelisted(const std::string& path) const;
+  bool IsAllowlisted(const std::string& path) const;
 
   // The background task runner on which file I/O and image decoding are done.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;

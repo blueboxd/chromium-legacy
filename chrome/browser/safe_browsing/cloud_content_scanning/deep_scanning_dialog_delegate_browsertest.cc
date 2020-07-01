@@ -7,6 +7,7 @@
 
 #include "base/path_service.h"
 #include "base/stl_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise/connectors/common.h"
@@ -32,6 +33,10 @@ using ::testing::Mock;
 namespace safe_browsing {
 
 namespace {
+
+base::string16 text() {
+  return base::UTF8ToUTF16(std::string(100, 'a'));
+}
 
 class FakeBinaryUploadService : public BinaryUploadService {
  public:
@@ -292,7 +297,7 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogDelegateSimpleBrowserTest,
   DeepScanningDialogDelegate::Data data;
   data.do_dlp_scan = true;
   data.do_malware_scan = true;
-  data.text.emplace_back(base::UTF8ToUTF16("foo"));
+  data.text.emplace_back(text());
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.doc"));
   ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(
       browser()->profile(), GURL(kTestUrl), &data,
@@ -502,8 +507,8 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogDelegateSimpleBrowserTest, Texts) {
   }
 
   // The DLP verdict means an event should be reported. The content size is
-  // equal to the length of the concatenated texts ("text1" and "text2") times
-  // 2 since they are wide characters ((5 + 5) * 2 = 20).
+  // equal to the length of the concatenated texts (2 * 100 * 'a') times
+  // 2 since they are wide characters ((100 + 100) * 2 = 400).
   validator.ExpectSensitiveDataEvent(
       /*url*/ "about:blank",
       /*filename*/ "Text data",
@@ -512,7 +517,7 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogDelegateSimpleBrowserTest, Texts) {
       /*trigger*/ SafeBrowsingPrivateEventRouter::kTriggerWebContentUpload,
       /*dlp_verdict*/ dlp_verdict,
       /*mimetype*/ TextMimeTypes(),
-      /*size*/ 20);
+      /*size*/ 400);
 
   bool called = false;
   base::RunLoop run_loop;
@@ -521,8 +526,8 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogDelegateSimpleBrowserTest, Texts) {
   DeepScanningDialogDelegate::Data data;
   data.do_dlp_scan = true;
   data.do_malware_scan = true;
-  data.text.emplace_back(base::UTF8ToUTF16("text1"));
-  data.text.emplace_back(base::UTF8ToUTF16("text2"));
+  data.text.emplace_back(text());
+  data.text.emplace_back(text());
   ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(
       browser()->profile(), GURL(kTestUrl), &data,
       enterprise_connectors::AnalysisConnector::BULK_DATA_ENTRY));

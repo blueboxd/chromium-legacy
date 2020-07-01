@@ -56,6 +56,16 @@ constexpr char kTestPathPatternUrl[] = "*/a/specific/path/";
 constexpr char kTestPortPatternUrl[] = "*:1234";
 constexpr char kTestQueryPatternUrl[] = "*?q=5678";
 
+// Helpers to get text with sizes relative to the minimum required size of 100
+// bytes for scans to trigger.
+std::string large_text() {
+  return std::string(100, 'a');
+}
+
+std::string small_text() {
+  return "random small text";
+}
+
 class ScopedSetDMToken {
  public:
   explicit ScopedSetDMToken(const policy::DMToken& dm_token) {
@@ -982,7 +992,7 @@ TEST_P(DeepScanningDialogDelegateAuditOnlyTest, StringData) {
       profile(), url, &data,
       enterprise_connectors::AnalysisConnector::BULK_DATA_ENTRY));
 
-  data.text.emplace_back(base::UTF8ToUTF16("foo"));
+  data.text.emplace_back(base::UTF8ToUTF16(large_text()));
 
   bool called = false;
   ScanUpload(contents(), std::move(data),
@@ -1008,8 +1018,8 @@ TEST_P(DeepScanningDialogDelegateAuditOnlyTest, StringData2) {
       profile(), url, &data,
       enterprise_connectors::AnalysisConnector::BULK_DATA_ENTRY));
 
-  data.text.emplace_back(base::UTF8ToUTF16("foo"));
-  data.text.emplace_back(base::UTF8ToUTF16("bar"));
+  data.text.emplace_back(base::UTF8ToUTF16(large_text()));
+  data.text.emplace_back(base::UTF8ToUTF16(large_text()));
 
   bool called = false;
   ScanUpload(contents(), std::move(data),
@@ -1029,6 +1039,40 @@ TEST_P(DeepScanningDialogDelegateAuditOnlyTest, StringData2) {
   EXPECT_TRUE(called);
 }
 
+TEST_P(DeepScanningDialogDelegateAuditOnlyTest, StringData3) {
+  GURL url(kTestUrl);
+  DeepScanningDialogDelegate::Data data;
+  ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(
+      profile(), url, &data,
+      enterprise_connectors::AnalysisConnector::BULK_DATA_ENTRY));
+
+  // Because the strings are small, they are exempt from scanning and will be
+  // allowed even when a negative verdict is mocked.
+  data.text.emplace_back(base::UTF8ToUTF16(small_text()));
+  data.text.emplace_back(base::UTF8ToUTF16(small_text()));
+
+  SetDLPResponse(FakeDeepScanningDialogDelegate::DlpResponse(
+                     DlpDeepScanningVerdict::SUCCESS, "rule",
+                     DlpDeepScanningVerdict::TriggeredRule::BLOCK)
+                     .dlp_scan_verdict());
+
+  bool called = false;
+  ScanUpload(contents(), std::move(data),
+             base::BindOnce(
+                 [](bool* called, const DeepScanningDialogDelegate::Data& data,
+                    const DeepScanningDialogDelegate::Result& result) {
+                   EXPECT_EQ(2u, data.text.size());
+                   EXPECT_EQ(0u, data.paths.size());
+                   ASSERT_EQ(2u, result.text_results.size());
+                   EXPECT_EQ(0u, result.paths_results.size());
+                   EXPECT_TRUE(result.text_results[0]);
+                   EXPECT_TRUE(result.text_results[1]);
+                   *called = true;
+                 },
+                 &called));
+  RunUntilDone();
+  EXPECT_TRUE(called);
+}
 TEST_P(DeepScanningDialogDelegateAuditOnlyTest,
        FileDataPositiveMalwareAndDlpVerdicts) {
   GURL url(kTestUrl);
@@ -1330,7 +1374,7 @@ TEST_P(DeepScanningDialogDelegateAuditOnlyTest, StringFileData) {
       profile(), url, &data,
       enterprise_connectors::AnalysisConnector::BULK_DATA_ENTRY));
 
-  data.text.emplace_back(base::UTF8ToUTF16("foo"));
+  data.text.emplace_back(base::UTF8ToUTF16(large_text()));
   CreateFilesForTest(
       {FILE_PATH_LITERAL("foo.doc"), FILE_PATH_LITERAL("bar.doc")}, &data);
 
@@ -1363,8 +1407,8 @@ TEST_P(DeepScanningDialogDelegateAuditOnlyTest, StringFileDataNoDLP) {
       profile(), url, &data,
       enterprise_connectors::AnalysisConnector::BULK_DATA_ENTRY));
 
-  data.text.emplace_back(base::UTF8ToUTF16("foo"));
-  data.text.emplace_back(base::UTF8ToUTF16("bar"));
+  data.text.emplace_back(base::UTF8ToUTF16(large_text()));
+  data.text.emplace_back(base::UTF8ToUTF16(large_text()));
   CreateFilesForTest(
       {FILE_PATH_LITERAL("foo.doc"), FILE_PATH_LITERAL("bar.doc")}, &data);
 
@@ -1396,8 +1440,8 @@ TEST_P(DeepScanningDialogDelegateAuditOnlyTest, StringFileDataFailedDLP) {
       profile(), url, &data,
       enterprise_connectors::AnalysisConnector::BULK_DATA_ENTRY));
 
-  data.text.emplace_back(base::UTF8ToUTF16("good"));
-  data.text.emplace_back(base::UTF8ToUTF16("bad"));
+  data.text.emplace_back(base::UTF8ToUTF16(large_text()));
+  data.text.emplace_back(base::UTF8ToUTF16(large_text()));
 
   SetDLPResponse(FakeDeepScanningDialogDelegate::DlpResponse(
                      DlpDeepScanningVerdict::SUCCESS, "rule",
@@ -1429,7 +1473,7 @@ TEST_P(DeepScanningDialogDelegateAuditOnlyTest, StringFileDataPartialSuccess) {
       profile(), url, &data,
       enterprise_connectors::AnalysisConnector::BULK_DATA_ENTRY));
 
-  data.text.emplace_back(base::UTF8ToUTF16("foo"));
+  data.text.emplace_back(base::UTF8ToUTF16(large_text()));
   CreateFilesForTest({FILE_PATH_LITERAL("foo.doc"),
                       FILE_PATH_LITERAL("foo_fail_malware_1.doc"),
                       FILE_PATH_LITERAL("foo_fail_malware_2.doc"),

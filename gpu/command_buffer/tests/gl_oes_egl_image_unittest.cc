@@ -7,6 +7,7 @@
 #include "build/build_config.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
+#include "gpu/config/gpu_test_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/buffer_format_util.h"
@@ -34,6 +35,14 @@ class GpuOESEGLImageTest : public testing::Test,
                            public gpu::GpuCommandBufferTestEGL {
  protected:
   void SetUp() override {
+    // TODO(jonahr): Test setup fails on Linux with ANGLE/passthrough
+    // (crbug.com/1099766)
+    gpu::GPUTestBotConfig bot_config;
+    if (bot_config.LoadCurrentConfig(nullptr) &&
+        bot_config.Matches("linux passthrough")) {
+      return;
+    }
+
     egl_gles2_initialized_ = InitializeEGLGLES2(kImageWidth, kImageHeight);
   }
 

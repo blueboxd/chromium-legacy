@@ -42,13 +42,14 @@
 namespace base {
 class SingleThreadTaskRunner;
 class TickClock;
-}
+}  // namespace base
 
 namespace media {
 
 class AudioBufferConverter;
 class AudioBus;
 class AudioClock;
+class NullAudioSink;
 class SpeechRecognitionClient;
 
 class MEDIA_EXPORT AudioRendererImpl
@@ -61,7 +62,7 @@ class MEDIA_EXPORT AudioRendererImpl
 
   // Send the audio to the speech recognition service for caption transcription.
   using TranscribeAudioCallback =
-      base::RepeatingCallback<void(scoped_refptr<media::AudioBuffer>)>;
+      base::RepeatingCallback<void(scoped_refptr<AudioBuffer>)>;
 
   using EnableSpeechRecognitionCallback =
       base::OnceCallback<void(TranscribeAudioCallback)>;
@@ -129,13 +130,7 @@ class MEDIA_EXPORT AudioRendererImpl
   //         |                            |
   //         |                            | Flush()
   //         `---------> kPlaying --------'
-  enum State {
-    kUninitialized,
-    kInitializing,
-    kFlushing,
-    kFlushed,
-    kPlaying
-  };
+  enum State { kUninitialized, kInitializing, kFlushing, kFlushed, kPlaying };
 
   // Called after hardware device information is available.
   void OnDeviceInfoReceived(DemuxerStream* stream,
@@ -247,7 +242,17 @@ class MEDIA_EXPORT AudioRendererImpl
   // The sink (destination) for rendered audio. |sink_| must only be accessed
   // on |task_runner_|. |sink_| must never be called under |lock_| or else we
   // may deadlock between |task_runner_| and the audio callback thread.
-  scoped_refptr<media::AudioRendererSink> sink_;
+  //
+  // When a muted playback starts up, |sink_| will be unused until the playback
+  // is unmuted. During this time |null_sink_| will be used.
+  scoped_refptr<AudioRendererSink> sink_;
+
+  // For muted playbacks we don't use a real sink. Unused if the playback is
+  // unmuted.
+  scoped_refptr<NullAudioSink> null_sink_;
+
+  // True if |sink_| has not yet been started.
+  bool real_sink_needs_start_;
 
   std::unique_ptr<AudioDecoderStream> audio_decoder_stream_;
 
@@ -288,6 +293,9 @@ class MEDIA_EXPORT AudioRendererImpl
   // Similar to |last_decoded_channel_layout_|, used to configure the channel
   // mask given to the |algorithm_| for efficient playback rate changes.
   int last_decoded_channels_;
+
+  // Cached volume provided by SetVolume().
+  float volume_;
 
   // After Initialize() has completed, all variables below must be accessed
   // under |lock_|. ------------------------------------------------------------

@@ -181,6 +181,9 @@ class CourierRenderer : public Renderer {
   // Current playback rate.
   double playback_rate_ = 0;
 
+  // Current volume.
+  float volume_ = 1.0f;
+
   // Ignores updates until this time.
   base::TimeTicks ignore_updates_until_time_;
 

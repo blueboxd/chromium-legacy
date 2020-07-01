@@ -616,10 +616,10 @@ void GaiaScreenHandler::DeclareLocalizedValues(
   builder->Add("guestSignin", IDS_BROWSE_WITHOUT_SIGNING_IN_HTML);
   builder->Add("backButton", IDS_ACCNAME_BACK);
   builder->Add("closeButton", IDS_CLOSE);
-  builder->Add("whitelistErrorConsumer", IDS_LOGIN_ERROR_WHITELIST);
+  builder->Add("whitelistErrorConsumer", IDS_LOGIN_ERROR_ALLOWLIST);
   builder->Add("whitelistErrorEnterprise",
-               IDS_ENTERPRISE_LOGIN_ERROR_WHITELIST);
-  builder->Add("tryAgainButton", IDS_WHITELIST_ERROR_TRY_AGAIN_BUTTON);
+               IDS_ENTERPRISE_LOGIN_ERROR_ALLOWLIST);
+  builder->Add("tryAgainButton", IDS_ALLOWLIST_ERROR_TRY_AGAIN_BUTTON);
   builder->Add("learnMoreButton", IDS_LEARN_MORE);
   builder->Add("gaiaLoading", IDS_LOGIN_GAIA_LOADING_MESSAGE);
 
@@ -765,7 +765,7 @@ void GaiaScreenHandler::HandleIdentifierEntered(const std::string& user_email) {
       !LoginDisplayHost::default_host()->IsUserWhitelisted(
           user_manager::known_user::GetAccountId(
               user_email, std::string() /* id */, AccountType::UNKNOWN))) {
-    ShowWhitelistCheckFailedError();
+    ShowAllowlistCheckFailedError();
   }
 }
 
@@ -1474,7 +1474,7 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
   }
 }
 
-void GaiaScreenHandler::ShowWhitelistCheckFailedError() {
+void GaiaScreenHandler::ShowAllowlistCheckFailedError() {
   base::DictionaryValue params;
   params.SetBoolean("enterpriseManaged",
                     g_browser_process->platform_part()

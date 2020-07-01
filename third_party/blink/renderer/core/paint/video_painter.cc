@@ -42,6 +42,10 @@ void VideoPainter::PaintReplaced(const PaintInfo& paint_info,
     return;
 
   GraphicsContext& context = paint_info.context;
+  // Here we're not painting the video but rather preparing the layer for the
+  // compositor to submit video frames. But the compositor will do all the work
+  // related to the video moving forward. Therefore we mark the FCP here.
+  context.GetPaintController().SetImagePainted();
   PhysicalRect content_box_rect = layout_video_.PhysicalContentBoxRect();
   content_box_rect.Move(paint_offset);
 

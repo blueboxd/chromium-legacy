@@ -447,7 +447,7 @@ void TranslateBubbleView::ShowOptionsMenu(views::Button* source) {
                                    original_language));
   }
 
-  if (model_->CanBlacklistSite()) {
+  if (model_->CanBlocklistSite()) {
     options_menu_model_->AddCheckItem(
         OptionsMenuItem::NEVER_TRANSLATE_SITE,
         l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_NEVER_TRANSLATE_SITE));

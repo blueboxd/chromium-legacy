@@ -812,7 +812,8 @@ void av1_fwd_txfm2d_8x8_neon(const int16_t* input,
 #define av1_fwd_txfm2d_8x8 av1_fwd_txfm2d_8x8_neon
 
 void av1_fwht4x4_c(const int16_t* input, tran_low_t* output, int stride);
-#define av1_fwht4x4 av1_fwht4x4_c
+void av1_fwht4x4_neon(const int16_t* input, tran_low_t* output, int stride);
+#define av1_fwht4x4 av1_fwht4x4_neon
 
 uint32_t av1_get_crc32c_value_c(void* crc_calculator,
                                 uint8_t* p,
@@ -825,7 +826,13 @@ void av1_get_horver_correlation_full_c(const int16_t* diff,
                                        int h,
                                        float* hcorr,
                                        float* vcorr);
-#define av1_get_horver_correlation_full av1_get_horver_correlation_full_c
+void av1_get_horver_correlation_full_neon(const int16_t* diff,
+                                          int stride,
+                                          int w,
+                                          int h,
+                                          float* hcorr,
+                                          float* vcorr);
+#define av1_get_horver_correlation_full av1_get_horver_correlation_full_neon
 
 void av1_get_nz_map_contexts_c(const uint8_t* const levels,
                                const int16_t* const scan,
@@ -833,7 +840,13 @@ void av1_get_nz_map_contexts_c(const uint8_t* const levels,
                                const TX_SIZE tx_size,
                                const TX_CLASS tx_class,
                                int8_t* const coeff_contexts);
-#define av1_get_nz_map_contexts av1_get_nz_map_contexts_c
+void av1_get_nz_map_contexts_neon(const uint8_t* const levels,
+                                  const int16_t* const scan,
+                                  const uint16_t eob,
+                                  const TX_SIZE tx_size,
+                                  const TX_CLASS tx_class,
+                                  int8_t* const coeff_contexts);
+#define av1_get_nz_map_contexts av1_get_nz_map_contexts_neon
 
 int64_t av1_highbd_block_error_c(const tran_low_t* coeff,
                                  const tran_low_t* dqcoeff,
@@ -1060,7 +1073,10 @@ void av1_highbd_dr_prediction_z3_c(uint16_t* dst,
 #define av1_highbd_dr_prediction_z3 av1_highbd_dr_prediction_z3_c
 
 void av1_highbd_fwht4x4_c(const int16_t* input, tran_low_t* output, int stride);
-#define av1_highbd_fwht4x4 av1_highbd_fwht4x4_c
+void av1_highbd_fwht4x4_neon(const int16_t* input,
+                             tran_low_t* output,
+                             int stride);
+#define av1_highbd_fwht4x4 av1_highbd_fwht4x4_neon
 
 void av1_highbd_inv_txfm_add_c(const tran_low_t* input,
                                uint8_t* dest,
@@ -1585,7 +1601,11 @@ void av1_nn_predict_c(const float* input_nodes,
                       const NN_CONFIG* const nn_config,
                       int reduce_prec,
                       float* const output);
-#define av1_nn_predict av1_nn_predict_c
+void av1_nn_predict_neon(const float* input_nodes,
+                         const NN_CONFIG* const nn_config,
+                         int reduce_prec,
+                         float* const output);
+#define av1_nn_predict av1_nn_predict_neon
 
 void av1_quantize_b_c(const tran_low_t* coeff_ptr,
                       intptr_t n_coeffs,
@@ -1701,6 +1721,18 @@ void av1_quantize_lp_neon(const int16_t* coeff_ptr,
                           uint16_t* eob_ptr,
                           const int16_t* scan);
 #define av1_quantize_lp av1_quantize_lp_neon
+
+void av1_resize_and_extend_frame_c(const YV12_BUFFER_CONFIG* src,
+                                   YV12_BUFFER_CONFIG* dst,
+                                   const InterpFilter filter,
+                                   const int phase,
+                                   const int num_planes);
+void av1_resize_and_extend_frame_neon(const YV12_BUFFER_CONFIG* src,
+                                      YV12_BUFFER_CONFIG* dst,
+                                      const InterpFilter filter,
+                                      const int phase,
+                                      const int num_planes);
+#define av1_resize_and_extend_frame av1_resize_and_extend_frame_neon
 
 void av1_round_shift_array_c(int32_t* arr, int size, int bit);
 void av1_round_shift_array_neon(int32_t* arr, int size, int bit);

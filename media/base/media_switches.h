@@ -52,8 +52,8 @@ MEDIA_EXPORT extern const char kEnableProtectedVideoBuffers[];
 MEDIA_EXPORT extern const char kForceProtectedVideoOutputBuffers[];
 #endif
 
-#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-MEDIA_EXPORT extern const char kForceDisableNewAcceleratedVideoDecoder[];
+#if defined(OS_CHROMEOS)
+MEDIA_EXPORT extern const char kPlatformDisallowsChromeOSDirectVideoDecoder[];
 #endif
 
 #if defined(USE_CRAS)
@@ -147,7 +147,6 @@ MEDIA_EXPORT extern const base::Feature kMediaLearningFramework;
 MEDIA_EXPORT extern const base::Feature kMediaLearningSmoothnessExperiment;
 MEDIA_EXPORT extern const base::Feature kMediaPowerExperiment;
 MEDIA_EXPORT extern const base::Feature kMemoryPressureBasedSourceBufferGC;
-MEDIA_EXPORT extern const base::Feature kChromeosVideoDecoder;
 MEDIA_EXPORT extern const base::Feature kNewEncodeCpuLoadEstimator;
 MEDIA_EXPORT extern const base::Feature kOverflowIconsForMediaControls;
 MEDIA_EXPORT extern const base::Feature kOverlayFullscreenVideo;
@@ -193,6 +192,12 @@ MEDIA_EXPORT extern const base::Feature kRequestSystemAudioFocus;
 MEDIA_EXPORT extern const base::Feature kUseAudioLatencyFromHAL;
 MEDIA_EXPORT extern const base::Feature kUsePooledSharedImageVideoProvider;
 #endif  // defined(OS_ANDROID)
+
+#if defined(OS_CHROMEOS) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+MEDIA_EXPORT extern const base::Feature kUseChromeOSDirectVideoDecoder;
+
+MEDIA_EXPORT extern const base::Feature kUseAlternateVideoDecoderImplementation;
+#endif  // defined(OS_CHROMEOS) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
 #if defined(OS_WIN)
 MEDIA_EXPORT extern const base::Feature kDelayCopyNV12Textures;

@@ -201,7 +201,7 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
   InstantService* instant_service_;
   NtpBackgroundService* ntp_background_service_;
   search_provider_logos::LogoService* logo_service_;
-  GURL last_blacklisted_;
+  GURL last_blocklisted_;
   GetBackgroundCollectionsCallback background_collections_callback_;
   base::TimeTicks background_collections_request_start_time_;
   std::string images_request_collection_id_;

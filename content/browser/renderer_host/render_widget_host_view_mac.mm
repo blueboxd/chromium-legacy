@@ -80,7 +80,7 @@ SkColor RenderWidgetHostViewMac::BrowserCompositorMacGetGutterColor() const {
   // When making an element on the page fullscreen the element's background
   // may not match the page's, so use black as the gutter color to avoid
   // flashes of brighter colors during the transition.
-  if (host()->delegate() && host()->delegate()->IsFullscreenForCurrentTab()) {
+  if (host()->delegate() && host()->delegate()->IsFullscreen()) {
     return SK_ColorBLACK;
   }
   return last_frame_root_background_color_;

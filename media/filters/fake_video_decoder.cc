@@ -47,8 +47,20 @@ void FakeVideoDecoder::EnableEncryptedConfigSupport() {
   supports_encrypted_config_ = true;
 }
 
+void FakeVideoDecoder::SetIsPlatformDecoder(bool value) {
+  is_platform_decoder_ = value;
+}
+
 base::WeakPtr<FakeVideoDecoder> FakeVideoDecoder::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
+}
+
+bool FakeVideoDecoder::SupportsDecryption() const {
+  return supports_encrypted_config_;
+}
+
+bool FakeVideoDecoder::IsPlatformDecoder() const {
+  return is_platform_decoder_;
 }
 
 std::string FakeVideoDecoder::GetDisplayName() const {

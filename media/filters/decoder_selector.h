@@ -28,6 +28,12 @@ class CdmContext;
 class DecryptingDemuxerStream;
 class MediaLog;
 
+enum class DecoderPriority {
+  kUnspecified,
+  kPreferPlatformDecoders,
+  kPreferSoftwareDecoders,
+};
+
 // DecoderSelector handles construction and initialization of Decoders for a
 // DemuxerStream, and maintains the state required for decoder fallback.
 // The template parameter |StreamType| is the type of stream we will be
@@ -44,6 +50,11 @@ class MEDIA_EXPORT DecoderSelector {
   // instead of creating a list of decoders all at once.
   using CreateDecodersCB =
       base::RepeatingCallback<std::vector<std::unique_ptr<Decoder>>()>;
+
+  // Evaluates what type of decoders should be prioritized for the given config.
+  // If |kUnspecified| is returned, nothing is prioritized.
+  using DecoderPriorityCB =
+      base::RepeatingCallback<DecoderPriority(const DecoderConfig&)>;
 
   // Emits the result of a single call to SelectDecoder(). Parameters are
   //   1: The initialized Decoder. nullptr if selection failed.
@@ -91,16 +102,30 @@ class MEDIA_EXPORT DecoderSelector {
   // Currently only for metric collection.
   void NotifyConfigChanged();
 
+  // Adds an additional decoder candidate to be considered when selecting a
+  // decoder. This decoder is inserted ahead of the decoders returned by
+  // |CreateDecodersCB| to give it priority over the default set, though it
+  // may be by deprioritized if |DecoderPriorityCB| considers another decoder a
+  // better candidate. This decoder should be uninitialized.
+  void PrependDecoder(std::unique_ptr<Decoder> decoder);
+
+  // Overrides the default function for evaluation platform decoder priority.
+  // Useful for writing tests in a platform-agnostic manner.
+  void OverrideDecoderPriorityCBForTesting(DecoderPriorityCB priority_cb);
+
  private:
+  void CreateDecoders();
   void InitializeDecoder();
   void OnDecoderInitializeDone(Status status);
   void ReturnNullDecoder();
   void InitializeDecryptingDemuxerStream();
   void OnDecryptingDemuxerStreamInitializeDone(PipelineStatus status);
   void RunSelectDecoderCB();
+  void FilterAndSortAvailableDecoders();
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   CreateDecodersCB create_decoders_cb_;
+  DecoderPriorityCB decoder_priority_cb_;
   MediaLog* media_log_;
 
   StreamTraits* traits_ = nullptr;
@@ -122,6 +147,8 @@ class MEDIA_EXPORT DecoderSelector {
   // Metrics.
   bool is_platform_decoder_ = false;
   bool is_codec_changing_ = false;
+  bool is_selecting_for_config_change_ = false;
+  base::TimeTicks decoder_selection_start_;
   base::TimeTicks codec_change_start_;
 
   base::WeakPtrFactory<DecoderSelector> weak_this_factory_{this};

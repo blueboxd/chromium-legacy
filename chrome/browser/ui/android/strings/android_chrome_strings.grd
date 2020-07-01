@@ -1127,7 +1127,7 @@ Your Google account may have other forms of browsing history like searches and a
         Ask where to save files
       </message>
       <message name="IDS_DOWNLOAD_LOCATION_DIALOG_TITLE" desc="Title for the dialog that asks where the user wants to save the download file before the download begins.">
-        Download file
+        Choose where to download
       </message>
       <message name="IDS_DOWNLOAD_LOCATION_DIALOG_CHECKBOX" desc="Label for the checkbox that allows the user to indicate if they do not want the download location selection dialog to appear every time they initiate a download.">
         Don‘t show again
@@ -2430,27 +2430,31 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_NTP_TURN_ON_FEED" desc="Content description to turn on the feed from the feed header overflow menu.">
         Turn on
       </message>
-      <message name="IDS_NTP_DISCOVER_ON" desc="Title in the feed header when the feed is turned on. Please use the branded term for Discover, as listed under Product Names in the Google Glossary Manager.">
+      <message name="IDS_NTP_DISCOVER_ON" desc="Title in the feed header when the feed is turned on. Please use the branded term for Discover, as listed under Product Names in the Google Glossary Manager (TC ID 1799975766543019278).">
         Discover
       </message>
-      <message name="IDS_NTP_DISCOVER_ON_BRANDED" desc="Title in the feed header when the feed is turned on and the default search engine is not Google. Please use the branded term for Discover, as listed under Product Names in the Google Glossary Manager.">
+      <message name="IDS_NTP_DISCOVER_ON_BRANDED" desc="Title in the feed header when the feed is turned on and the default search engine is not Google. Please use the branded term for Discover, as listed under Product Names in the Google Glossary Manager (TC ID 1799975766543019278).">
         Discover by Google
       </message>
-      <message name="IDS_NTP_DISCOVER_OFF" desc="Title in the feed header when the feed is turned off. Please use the branded term for Discover, as listed under Product Names in the Google Glossary Manager.">
+      <message name="IDS_NTP_DISCOVER_OFF" desc="Title in the feed header when the feed is turned off. Please use the branded term for Discover, as listed under Product Names in the Google Glossary Manager (TC ID 1799975766543019278).">
         Discover - off
       </message>
-      <message name="IDS_NTP_DISCOVER_OFF_BRANDED" desc="Title in the feed header when the feed is turned off and the default search engine is not Google. Please use the branded term for Discover, as listed under Product Names in the Google Glossary Manager.">
+      <message name="IDS_NTP_DISCOVER_OFF_BRANDED" desc="Title in the feed header when the feed is turned off and the default search engine is not Google. Please use the branded term for Discover, as listed under Product Names in the Google Glossary Manager (TC ID 1799975766543019278).">
         Discover by Google - off
       </message>
       <message name="IDS_NTP_FEED_MENU_IPH" desc="In-product help that points at the menu icon for the news feed on Chrome's new tab page. This string instructs the user to open the menu for settings that let them control the content that appears on the feed.">
         Control your stories and activity here
       </message>
-      <message name="IDS_ACCESSIBILITY_NTP_FEED_MENU_BUTTON" desc="Content description for the feed header menu button. Please use the branded term for Discover, as listed under Product Names in the Google Glossary Manager.">
+      <message name="IDS_ACCESSIBILITY_NTP_FEED_MENU_BUTTON" desc="Content description for the feed header menu button. Please use the branded term for Discover, as listed under Product Names in the Google Glossary Manager (TC ID 1799975766543019278).">
         Options for Discover
       </message>
-      <message name="IDS_ACCESSIBILITY_NTP_FEED_MENU_IPH" desc="In-product help that points at the menu icon for the news feed on Chrome's new tab page. This string instructs the user to open the menu for settings that let them control the content that appears on the feed.">
+      <message name="IDS_ACCESSIBILITY_NTP_FEED_MENU_IPH" desc="In-product help that points at the menu icon for the news feed on Chrome's new tab page. This string instructs the user to open the menu for settings that let them control the content that appears on the feed. Please use the branded term for Discover (TC ID 1799975766543019278).">
         Control your stories from the Options for Discover button
       </message>
+      <message name="IDS_DISCOVER_NO_CARDS" desc="Message title for the article feed on the New Tab Page. Shown when the user is connected to the internet but no new feed content could be fetched. Please translate 'stories' to match TC ID 79230074042443330. Also see TC ID 6114827482740570724.">No stories available</message>
+      <message name="IDS_DISCOVER_NO_CARDS_INSTRUCTIONS" desc="Message body for the article feed on the New Tab Page. Instructs the user to refresh the page or come back later when new feed content is available. Please translate 'stories' to match TC ID 79230074042443330. Also see TC ID 6114827482740570724.">Refresh the page or check back later for new stories</message>
+      <message name="IDS_DISCOVER_CANT_REFRESH" desc="Message title for the article feed on the New Tab Page. Shown when feed content is not available because there is no internet connection. Please use the branded term for Discover, as listed under Product Names in the Google Glossary Manager (TC ID 1799975766543019278). Also see TC ID 7331961212006720987.">Can't refresh Discover</message>
+      <message name="IDS_DISCOVER_CANT_REFRESH_INSTRUCTIONS" desc="Message body for the article feed on the New Tab Page. Instructs the user to wait and try to refresh the feed once the internet connection returns. Please translate 'stories' to match TC ID 79230074042443330. Also see TC ID 7331961212006720987.">Check back later for new stories</message>
 
       <!-- Explore sites strings -->
       <message name="IDS_EXPLORE_SITES_TITLE" desc="Title of a section showing different categories, each with a number of popular websites">

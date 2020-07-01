@@ -475,9 +475,9 @@ TEST_F(PasswordManagerPresenterTest, UIControllerIsCalled) {
   UpdatePasswordLists();
 }
 
-// Check that only stored passwords, not blacklisted entries, are provided for
+// Check that only stored passwords, not blocklisted entries, are provided for
 // exporting.
-TEST_F(PasswordManagerPresenterTest, BlacklistedPasswordsNotExported) {
+TEST_F(PasswordManagerPresenterTest, BlocklistedPasswordsNotExported) {
   AddPasswordEntry(GURL("http://abc1.com"), "test@gmail.com", "test");
   AddPasswordException(GURL("http://abc2.com"));
   EXPECT_CALL(GetUIController(), SetPasswordList(SizeIs(1u)));
@@ -491,9 +491,9 @@ TEST_F(PasswordManagerPresenterTest, BlacklistedPasswordsNotExported) {
 }
 
 // Check that stored passwords are provided for exporting even if there is a
-// blacklist entry for the same origin. This is needed to keep the user in
+// blocklist entry for the same origin. This is needed to keep the user in
 // control of all of their stored passwords.
-TEST_F(PasswordManagerPresenterTest, BlacklistDoesNotPreventExporting) {
+TEST_F(PasswordManagerPresenterTest, BlocklistDoesNotPreventExporting) {
   const GURL kSameOrigin("https://abc.com");
   AddPasswordEntry(kSameOrigin, "test@gmail.com", "test");
   AddPasswordException(kSameOrigin);

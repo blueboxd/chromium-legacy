@@ -58,13 +58,7 @@ const base::Feature kRemoteOptimizationGuideFetchingAnonymousDataConsent{
 
 // Enables the prediction of optimization targets.
 const base::Feature kOptimizationTargetPrediction{
-  "OptimizationTargetPrediction",
-#if defined(OS_ANDROID)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else   // !defined(OS_ANDROID)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif  // defined(OS_ANDROID)
-};
+    "OptimizationTargetPrediction", base::FEATURE_ENABLED_BY_DEFAULT};
 
 size_t MaxHintsFetcherTopHostBlacklistSize() {
   // The blacklist will be limited to the most engaged hosts and will hold twice
@@ -249,10 +243,6 @@ size_t MaxURLKeyedHintCacheSize() {
   DCHECK_GE(max_url_keyed_hint_cache_size,
             MaxUrlsForOptimizationGuideServiceHintsFetch());
   return max_url_keyed_hint_cache_size;
-}
-
-bool IsOptimizationTargetPredictionEnabled() {
-  return base::FeatureList::IsEnabled(kOptimizationTargetPrediction);
 }
 
 bool ShouldOverrideOptimizationTargetDecisionForMetricsPurposes(

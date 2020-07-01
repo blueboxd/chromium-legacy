@@ -96,7 +96,7 @@ source_set("common_source_set") {
     "//ui/resources",
   ]
 
-  libs = [
+  frameworks = [
     "UIKit.framework",
     "AVFoundation.framework",
     "Foundation.framework",
@@ -131,7 +131,7 @@ source_set("app_source_set") {
     ":common_source_set",
     "//base",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 
   # TODO(crbug.com/875022) fix for OpenGLES deprecation.
   defines = [ "GLES_SILENCE_DEPRECATION" ]

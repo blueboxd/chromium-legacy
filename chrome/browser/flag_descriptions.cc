@@ -1181,7 +1181,7 @@ const char kHorizontalTabSwitcherAndroidDescription[] =
     "Changes the layout of the Android tab switcher so tabs scroll "
     "horizontally instead of vertically.";
 
-const char kTabSwitcherOnReturnName[] = "Enable tab switcher on return";
+const char kTabSwitcherOnReturnName[] = "Tab switcher on return";
 const char kTabSwitcherOnReturnDescription[] =
     "Enable tab switcher on return after specified time has elapsed";
 
@@ -1835,9 +1835,9 @@ const char kPrefetchPrivacyChangesDescription[] =
 const char kIntensiveWakeUpThrottlingName[] =
     "Throttle Javascript timers in background.";
 const char kIntensiveWakeUpThrottlingDescription[] =
-    "When enabled, wake ups from throttleable TaskQueues are limited to 1 per "
-    "minute in a page that has been backgrounded for 5 minutes. For additional "
-    "details, see https://www.chromestatus.com/feature/4718288976216064.";
+    "When enabled, wake ups from DOM Timers are limited to 1 per minute in a "
+    "page that has been hidden for 5 minutes. For additional details, see "
+    "https://www.chromestatus.com/feature/4718288976216064.";
 
 const char kPrinterStatusName[] = "Show printer Status";
 const char kPrinterStatusDescription[] =
@@ -2625,7 +2625,7 @@ const char kHomepageSettingsUIConversionDescription[] =
     "homepage URL through a radio button group, and add promo box on NTP "
     "if homepage is not enabled.";
 
-const char kInstantStartName[] = "Enable instant start";
+const char kInstantStartName[] = "Instant start";
 const char kInstantStartDescription[] =
     "Show start surface before native library is loaded.";
 
@@ -3372,10 +3372,16 @@ const char kCameraSystemWebAppName[] = "Camera System Web App";
 const char kCameraSystemWebAppDescription[] =
     "Run the Chrome Camera App as a System Web App.";
 
-const char kChromeosVideoDecoderName[] = "New Chrome OS Video Decoder";
-const char kChromeosVideoDecoderDescription[] =
-    "Enables the new Chrome OS video decoder pipeline for hardware accelerated"
-    "video decoding.";
+#if defined(OS_CHROMEOS) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+const char kChromeOSDirectVideoDecoderName[] = "ChromeOS Direct Video Decoder";
+const char kChromeOSDirectVideoDecoderDescription[] =
+    "Enables the hardware-accelerated ChromeOS direct media::VideoDecoder "
+    "implementation. Note that this might be entirely disallowed by the "
+    "--force-disable-new-accelerated-video-decoder command line switch which "
+    "is added for platforms where said direct VideoDecoder does not work or is "
+    "not well tested (see the disable_cros_video_decoder USE flag in Chrome "
+    "OS)";
+#endif  // defined(OS_CHROMEOS) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
 const char kContextualNudgesName[] =
     "Contextual nudges for user gesture education";

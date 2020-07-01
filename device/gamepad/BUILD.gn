@@ -137,7 +137,7 @@ component("gamepad") {
   }
 
   if (is_mac) {
-    libs = [
+    frameworks = [
       "CoreFoundation.framework",
       "Foundation.framework",
       "ForceFeedback.framework",

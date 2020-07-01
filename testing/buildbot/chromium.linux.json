@@ -4035,6 +4035,33 @@
     "isolated_scripts": [
       {
         "args": [
+          "--num-retries=3",
+          "--device=aemu",
+          "--platform=fuchsia"
+        ],
+        "isolate_name": "blink_web_tests",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "blink_web_tests",
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://:blink_web_tests/"
+      },
+      {
+        "args": [
           "depth_capture",
           "--show-stdout",
           "--browser=web-engine-shell",

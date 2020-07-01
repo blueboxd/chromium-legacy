@@ -23,8 +23,10 @@
 #import "ios/chrome/browser/ui/settings/language/cells/language_item.h"
 #import "ios/chrome/browser/ui/settings/language/language_settings_consumer.h"
 #import "ios/chrome/browser/ui/settings/language/language_settings_mediator.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+#include "ui/base/l10n/l10n_util_collator.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -35,18 +37,19 @@ using language::prefs::kAcceptLanguages;
 using sync_preferences::PrefServiceMockFactory;
 using sync_preferences::PrefServiceSyncable;
 using user_prefs::PrefRegistrySyncable;
+using ::testing::ElementsAreArray;
 
 namespace {
 
 // Constant for timeout while waiting for asynchronous sync operations.
 const NSTimeInterval kSyncOperationTimeout = 10.0;
 
-std::vector<std::string> ExtractDisplayNamesFromLanguageItems(
+std::vector<base::string16> ExtractDisplayNamesFromLanguageItems(
     NSArray<LanguageItem*>* language_items) {
-  __block std::vector<std::string> output;
+  __block std::vector<base::string16> output;
   [language_items enumerateObjectsUsingBlock:^(LanguageItem* item,
                                                NSUInteger index, BOOL* stop) {
-    output.push_back(base::SysNSStringToUTF8(item.text));
+    output.push_back(base::SysNSStringToUTF16(item.text));
   }];
   return output;
 }
@@ -182,9 +185,11 @@ TEST_F(LanguageSettingsMediatorTest, TestPrefsChanged) {
 // and excludes languages already in the accept languages list.
 TEST_F(LanguageSettingsMediatorTest, TestSupportedLanguagesItems) {
   NSArray<LanguageItem*>* language_items = [mediator() supportedLanguagesItems];
-  std::vector<std::string> display_names =
+  std::vector<base::string16> display_names =
       ExtractDisplayNamesFromLanguageItems(language_items);
-  EXPECT_TRUE(std::is_sorted(display_names.begin(), display_names.end()));
+  std::vector<base::string16> sorted(display_names);
+  l10n_util::SortVectorWithStringKey("en-US", &sorted, false);
+  EXPECT_THAT(display_names, ElementsAreArray(sorted));
 
   std::vector<std::string> language_codes =
       ExtractLanguageCodesFromLanguageItems(language_items);

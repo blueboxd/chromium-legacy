@@ -9,8 +9,9 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerP
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.INITIAL_SCROLL_INDEX;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.IS_INCOGNITO;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.IS_VISIBLE;
-import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.SHADOW_TOP_MARGIN;
-import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.TOP_CONTROLS_HEIGHT;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.SHADOW_TOP_OFFSET;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.TOP_MARGIN;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.TRANSLATION_Y;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.VISIBILITY_LISTENER;
 
 import android.graphics.Bitmap;
@@ -303,18 +304,19 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
 
         mBrowserControlsObserver = new BrowserControlsStateProvider.Observer() {
             @Override
-            public void onContentOffsetChanged(int offset) {}
-
-            @Override
             public void onControlsOffsetChanged(int topOffset, int topControlsMinHeightOffset,
-                    int bottomOffset, int bottomControlsMinHeightOffset, boolean needsAnimate) {}
+                    int bottomOffset, int bottomControlsMinHeightOffset, boolean needsAnimate) {
+                if (mMode == TabListCoordinator.TabListMode.CAROUSEL) return;
+
+                updateTopControlsProperties();
+            }
 
             @Override
             public void onTopControlsHeightChanged(
                     int topControlsHeight, int topControlsMinHeight) {
                 if (mMode == TabListCoordinator.TabListMode.CAROUSEL) return;
 
-                updateTopControlsProperties(topControlsHeight);
+                updateTopControlsProperties();
             }
 
             @Override
@@ -355,7 +357,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
 
         // Container view takes care of padding and margin in start surface.
         if (mMode != TabListCoordinator.TabListMode.CAROUSEL) {
-            updateTopControlsProperties(browserControlsStateProvider.getTopControlsHeight());
+            updateTopControlsProperties();
             mContainerViewModel.set(
                     BOTTOM_CONTROLS_HEIGHT, browserControlsStateProvider.getBottomControlsHeight());
         }
@@ -443,13 +445,32 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         mContainerViewModel.set(IS_VISIBLE, isVisible);
     }
 
-    private void updateTopControlsProperties(int topControlsHeight) {
-        // The start surface checks in this block are for top controls height and shadow
-        // margin to be set correctly for displaying the omnibox above the tab switcher.
-        topControlsHeight =
-                StartSurfaceConfiguration.isStartSurfaceEnabled() ? 0 : topControlsHeight;
-        mContainerViewModel.set(TOP_CONTROLS_HEIGHT, topControlsHeight);
-        mContainerViewModel.set(SHADOW_TOP_MARGIN, topControlsHeight);
+    private void updateTopControlsProperties() {
+        // If the Start surface is enabled, it will handle the margins and positioning of the tab
+        // switcher. So, we shouldn't do it here.
+        if (StartSurfaceConfiguration.isStartSurfaceEnabled()) {
+            mContainerViewModel.set(TOP_MARGIN, 0);
+            mContainerViewModel.set(SHADOW_TOP_OFFSET, 0);
+            return;
+        }
+
+        final int controlsHeight = mBrowserControlsStateProvider.getTopControlsHeight();
+        final int contentOffset = mBrowserControlsStateProvider.getContentOffset();
+
+        // If the top controls are at the resting position or their height is decreasing, we want to
+        // update the margin. We don't do this if the controls height is increasing because changing
+        // the margin shrinks the view height to its final value, leaving a gap at the bottom until
+        // the animation finishes.
+        if (contentOffset >= controlsHeight) {
+            mContainerViewModel.set(TOP_MARGIN, controlsHeight);
+        }
+
+        // If the content offset is different from the margin, we use translationY to position the
+        // view in line with the content offset.
+        mContainerViewModel.set(TRANSLATION_Y, contentOffset - mContainerViewModel.get(TOP_MARGIN));
+        // Offsetting the shadow using the content offset will position it right below the top
+        // controls.
+        mContainerViewModel.set(SHADOW_TOP_OFFSET, contentOffset);
     }
 
     /**

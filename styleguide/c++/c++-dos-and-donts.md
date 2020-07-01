@@ -284,8 +284,8 @@ cross-references for that symbol.
   at least provide a starting point for asking about an issue.
 
 ```cpp
-// FooImpl implements the FooBase class.
-// FooFunction() modifies |foo_member_|.
+// `FooImpl` implements the `FooBase` class.
+// `FooFunction()` modifies `foo_member_`.
 // TODO(crbug.com/1): Rename things to something more descriptive than "foo".
 ```
 

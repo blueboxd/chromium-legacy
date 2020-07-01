@@ -258,6 +258,11 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   // changing the pitch of the audio.
   std::unique_ptr<MultiChannelResampler> resampler_;
 
+  // True when the last call to OnResamplerRead() only gave silence to
+  // |resampler_|. Used to determine whether or not we have played out all the
+  // valid audio from |resampler.BufferedFrames()|.
+  bool resampler_only_has_silence_ = false;
+
   // This stores a part of the output that is created but couldn't be rendered.
   // Output is generated frame-by-frame which at some point might exceed the
   // number of requested samples. Furthermore, due to overlap-and-add,

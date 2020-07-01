@@ -29,6 +29,7 @@ struct LanguageVersion {
 static constexpr LanguageRegion kSupportedSpellCheckerLanguages[] = {
     // Several languages are not to be included in the spellchecker list:
     // th-TH, vi-VI.
+    // clang-format off
     {"af", "af-ZA"},
     {"bg", "bg-BG"},
     {"ca", "ca-ES"},
@@ -40,6 +41,7 @@ static constexpr LanguageRegion kSupportedSpellCheckerLanguages[] = {
     {"en-AU", "en-AU"},
     {"en-CA", "en-CA"},
     {"en-GB", "en-GB"},
+    {"en-GB-oxendict", "en-GB-oxendict"},
     {"en-US", "en-US"},
     {"es", "es-ES"},
     {"es-419", "es-ES"},
@@ -79,6 +81,7 @@ static constexpr LanguageRegion kSupportedSpellCheckerLanguages[] = {
     {"tr", "tr-TR"},
     {"uk", "uk-UA"},
     {"vi", "vi-VN"},
+    // clang-format on
 };
 
 bool IsValidRegion(const std::string& region) {
@@ -136,6 +139,9 @@ base::FilePath GetVersionedFileName(base::StringPiece input_language,
 
       // March 2020: Update uk-UA dictionary from upstream.
       {"uk-UA", "-4-0"},
+
+      // June 2020: Add the en-GB-oxendict dictionary.
+      {"en-GB-oxendict", "-9-0"},
   };
 
   // Generate the bdict file name using default version string or special

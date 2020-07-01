@@ -15,5 +15,5 @@ executable("infoplist_strings_tool") {
     "//ui/base:ui_data_pack",
   ]
 
-  libs = [ "Foundation.framework" ]
+  frameworks = [ "Foundation.framework" ]
 }

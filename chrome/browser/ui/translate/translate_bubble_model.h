@@ -121,8 +121,8 @@ class TranslateBubbleModel {
   // and target language.
   virtual bool IsPageTranslatedInCurrentLanguages() const = 0;
 
-  // True if the site of the current page can be blacklisted.
-  virtual bool CanBlacklistSite() = 0;
+  // True if the site of the current page can be blocklisted.
+  virtual bool CanBlocklistSite() = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_TRANSLATE_TRANSLATE_BUBBLE_MODEL_H_

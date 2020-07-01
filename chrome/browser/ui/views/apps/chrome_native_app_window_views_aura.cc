@@ -35,7 +35,7 @@ ChromeNativeAppWindowViewsAura::~ChromeNativeAppWindowViewsAura() {
 ui::WindowShowState
 ChromeNativeAppWindowViewsAura::GetRestorableState(
     const ui::WindowShowState restore_state) const {
-  // Whitelist states to return so that invalid and transient states
+  // Allowlist states to return so that invalid and transient states
   // are not saved and used to restore windows when they are recreated.
   switch (restore_state) {
     case ui::SHOW_STATE_NORMAL:

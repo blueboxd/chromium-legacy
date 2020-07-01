@@ -557,8 +557,9 @@ void OptimizationGuideHintsManager::SetClockForTesting(
 
 void OptimizationGuideHintsManager::MaybeScheduleTopHostsHintsFetch() {
   if (!top_host_provider_ ||
-      !IsUserPermittedToFetchFromRemoteOptimizationGuide(profile_))
+      !IsUserPermittedToFetchFromRemoteOptimizationGuide(profile_)) {
     return;
+  }
 
   if (!optimization_guide::features::ShouldBatchUpdateHintsForTopHosts())
     return;
@@ -956,46 +957,6 @@ bool OptimizationGuideHintsManager::HasLoadedOptimizationBlocklist(
 
   return blocklist_optimization_filters_.find(optimization_type) !=
          blocklist_optimization_filters_.end();
-}
-
-optimization_guide::OptimizationTargetDecision
-OptimizationGuideHintsManager::ShouldTargetNavigation(
-    content::NavigationHandle* navigation_handle,
-    optimization_guide::proto::OptimizationTarget optimization_target) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  if (optimization_target !=
-      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD) {
-    return optimization_guide::OptimizationTargetDecision::
-        kModelNotAvailableOnClient;
-  }
-
-  net::EffectiveConnectionType max_ect_trigger =
-      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_2G;
-
-  const auto& url = navigation_handle->GetURL();
-  if (url.has_host()) {
-    const auto& host = url.host();
-    // Check if we have a hint already loaded for this navigation.
-    const optimization_guide::proto::Hint* loaded_hint =
-        hint_cache_->GetHostKeyedHintIfLoaded(host);
-    const optimization_guide::proto::PageHint* matched_page_hint =
-        loaded_hint ? optimization_guide::FindPageHintForURL(url, loaded_hint)
-                    : nullptr;
-
-    if (matched_page_hint && matched_page_hint->has_max_ect_trigger()) {
-      max_ect_trigger = optimization_guide::ConvertProtoEffectiveConnectionType(
-          matched_page_hint->max_ect_trigger());
-    }
-  }
-
-  if (current_effective_connection_type_ !=
-          net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN &&
-      current_effective_connection_type_ <= max_ect_trigger) {
-    return optimization_guide::OptimizationTargetDecision::kPageLoadMatches;
-  }
-
-  return optimization_guide::OptimizationTargetDecision::kPageLoadDoesNotMatch;
 }
 
 void OptimizationGuideHintsManager::CanApplyOptimizationAsync(

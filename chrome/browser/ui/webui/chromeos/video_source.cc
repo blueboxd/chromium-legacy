@@ -24,19 +24,19 @@
 namespace chromeos {
 namespace {
 
-const char kWhitelistedDirectory[] = "oobe_videos";
+const char kAllowlistedDirectory[] = "oobe_videos";
 
-bool IsWhitelisted(const std::string& path) {
+bool IsAllowlisted(const std::string& path) {
   base::FilePath file_path(path);
   if (file_path.ReferencesParent())
     return false;
 
-  // Check if the path starts with a whitelisted directory.
+  // Check if the path starts with a allowlisted directory.
   std::vector<std::string> components;
   file_path.GetComponents(&components);
   if (components.empty())
     return false;
-  return components[0] == kWhitelistedDirectory;
+  return components[0] == kAllowlistedDirectory;
 }
 
 // Callback for user_manager::UserImageLoader.
@@ -72,7 +72,7 @@ void VideoSource::StartDataRequest(
     const content::WebContents::Getter& wc_getter,
     content::URLDataSource::GotDataCallback got_data_callback) {
   const std::string path = content::URLDataSource::URLToRequestPath(url);
-  if (!IsWhitelisted(path)) {
+  if (!IsAllowlisted(path)) {
     std::move(got_data_callback).Run(nullptr);
     return;
   }

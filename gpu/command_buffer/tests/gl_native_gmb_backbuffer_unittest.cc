@@ -12,6 +12,7 @@
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
 #include "gpu/command_buffer/tests/texture_image_factory.h"
+#include "gpu/config/gpu_test_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image.h"
@@ -86,6 +87,15 @@ TEST_F(GLNativeGMBTest, TestNativeGMBBackbufferWithDifferentConfigurations) {
     LOG(INFO) << "GL_ARB_texture_rectangle not supported. Skipping test...";
     return;
   }
+
+  // TODO(jonahr): Test fails on Linux/Mac with ANGLE/passthrough
+  // (crbug.com/1099768)
+  gpu::GPUTestBotConfig bot_config;
+  if (bot_config.LoadCurrentConfig(nullptr) &&
+      bot_config.Matches("linux mac passthrough")) {
+    return;
+  }
+
 #if defined(OS_MACOSX)
   GpuMemoryBufferFactoryIOSurface image_factory;
 #else

@@ -20,7 +20,7 @@ source_set("audio") {
 
   public_deps = [ "//remoting/proto" ]
 
-  libs = [ "AudioToolbox.framework" ]
+  frameworks = [ "AudioToolbox.framework" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }

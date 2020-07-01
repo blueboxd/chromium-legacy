@@ -598,8 +598,15 @@ sandbox::ResultCode SetJobMemoryLimit(const base::CommandLine& cmd_line,
     int64_t GB = 1024 * 1024 * 1024;
     // Allow the GPU/RENDERER process's sandbox to access more physical memory
     // if it's available on the system.
+    //
+    // Renderer processes are allowed to access 16 GB; the GPU process, up
+    // to 64 GB.
     int64_t physical_memory = base::SysInfo::AmountOfPhysicalMemory();
-    if (physical_memory > 16 * GB) {
+    if (sandbox_type == SandboxType::kGpu && physical_memory > 64 * GB) {
+      memory_limit = 64 * GB;
+    } else if (sandbox_type == SandboxType::kGpu && physical_memory > 32 * GB) {
+      memory_limit = 32 * GB;
+    } else if (physical_memory > 16 * GB) {
       memory_limit = 16 * GB;
     } else if (physical_memory > 8 * GB) {
       memory_limit = 8 * GB;

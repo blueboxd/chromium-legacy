@@ -173,6 +173,8 @@ void AudioRendererAlgorithm::OnResamplerRead(int frame_delay,
     DCHECK(reached_end_of_stream_);
     audio_bus->ZeroFramesPartial(read_frames, requested_frames - read_frames);
   }
+
+  resampler_only_has_silence_ = !read_frames;
 }
 
 void AudioRendererAlgorithm::MarkEndOfStream() {
@@ -190,12 +192,11 @@ int AudioRendererAlgorithm::ResampleAndFill(AudioBus* dest,
                             base::Unretained(this)));
   }
 
-  if (reached_end_of_stream_ && !audio_buffer_.frames()) {
+  if (reached_end_of_stream_ && resampler_only_has_silence_ &&
+      !audio_buffer_.frames()) {
     // Previous calls to ResampleAndFill() and OnResamplerRead() have used all
-    // of the available buffers from |audio_buffer_|. Some valid input buffers
-    // might be stuck in |resampler_.BufferedFrames()|, but the rest is silence.
-    // Forgo the few remaining valid buffers, or else we will keep playing out
-    // silence forever and never trigger any "ended" events.
+    // of the available buffers from |audio_buffer_|. We have also played out
+    // all remaining frames, and |resampler_| only contains silence.
     return 0;
   }
 

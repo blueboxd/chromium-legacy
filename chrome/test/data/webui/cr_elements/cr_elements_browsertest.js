@@ -109,6 +109,29 @@ TEST_F('CrElementsToolbarSearchFieldTest', 'All', function() {
  * @constructor
  * @extends {CrElementsBrowserTest}
  */
+function CrElementsToolbarTest() {}
+
+CrElementsToolbarTest.prototype = {
+  __proto__: CrElementsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html',
+
+  /** @override */
+  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    '../test_util.js',
+    'cr_toolbar_tests.js',
+  ]),
+};
+
+TEST_F('CrElementsToolbarTest', 'All', function() {
+  mocha.run();
+});
+
+/**
+ * @constructor
+ * @extends {CrElementsBrowserTest}
+ */
 function CrElementsDrawerTest() {}
 
 CrElementsDrawerTest.prototype = {

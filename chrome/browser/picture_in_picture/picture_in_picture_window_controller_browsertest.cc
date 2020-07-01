@@ -1267,7 +1267,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
             content::TitleWatcher(active_web_contents, expected_title)
                 .WaitAndGetTitle());
 
-  EXPECT_TRUE(active_web_contents->IsFullscreenForCurrentTab());
+  EXPECT_TRUE(active_web_contents->IsFullscreen());
   EXPECT_FALSE(window_controller()->GetWindowForTesting()->IsVisible());
 }
 
@@ -1296,7 +1296,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
       active_web_contents, "enterPictureInPicture();", &result));
   EXPECT_TRUE(result);
 
-  EXPECT_FALSE(active_web_contents->IsFullscreenForCurrentTab());
+  EXPECT_FALSE(active_web_contents->IsFullscreen());
   EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
 }
 

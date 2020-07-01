@@ -1411,6 +1411,9 @@ IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest,
 // RenderProcessHost. See https://crbug.com/949977.
 IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest,
                        NoLeakFromStartingSiteInstance) {
+  IsolateOriginsForTesting(embedded_test_server(), shell()->web_contents(),
+                           {"b.com"});
+
   GURL url_a = embedded_test_server()->GetURL("a.com", "/title1.html");
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
 
@@ -1441,12 +1444,7 @@ IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest,
             starting_site_instance);
   // Because of the sad tab, this is actually the b.com SiteInstance, which
   // commits immediately after starting the navigation and has a process.
-  if (AreDefaultSiteInstancesEnabled()) {
-    EXPECT_TRUE(static_cast<SiteInstanceImpl*>(starting_site_instance.get())
-                    ->IsDefaultSiteInstance());
-  } else {
-    EXPECT_EQ(GURL("http://b.com"), starting_site_instance->GetSiteURL());
-  }
+  EXPECT_EQ(GURL("http://b.com"), starting_site_instance->GetSiteURL());
   EXPECT_TRUE(starting_site_instance->HasProcess());
 
   // In https://crbug.com/949977, we used the a.com SiteInstance here and didn't

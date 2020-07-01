@@ -28,7 +28,6 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/secondary_account_helper.h"
-#include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "components/metrics/demographic_metrics_provider.h"
@@ -49,6 +48,7 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/browsing_data_remover_test_util.h"
@@ -196,21 +196,6 @@ class MetricsConsentOverride {
 
  private:
   bool state_;
-};
-
-class SyncConnectionOkChecker : public SingleClientStatusChangeChecker {
- public:
-  explicit SyncConnectionOkChecker(syncer::ProfileSyncService* service)
-      : SingleClientStatusChangeChecker(service) {}
-
-  bool IsExitConditionSatisfied(std::ostream* os) override {
-    *os << "Waiting for CONNECTION_OK.";
-    return service()->GetSyncTokenStatusForDebugging().connection_status ==
-           syncer::CONNECTION_OK;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SyncConnectionOkChecker);
 };
 
 // Test fixture that provides access to some UKM internals.
@@ -400,28 +385,6 @@ class UkmConsentParamBrowserTest : public UkmBrowserTestBase,
   DISALLOW_COPY_AND_ASSIGN(UkmConsentParamBrowserTest);
 };
 #endif  // !defined(OS_ANDROID)
-
-class UkmEnabledChecker : public SingleClientStatusChangeChecker {
- public:
-  UkmEnabledChecker(syncer::ProfileSyncService* service,
-                    ukm::UkmTestHelper* ukm_test_helper,
-                    bool want_enabled)
-      : SingleClientStatusChangeChecker(service),
-        ukm_test_helper_(ukm_test_helper),
-        want_enabled_(want_enabled) {}
-
-  // StatusChangeChecker:
-  bool IsExitConditionSatisfied(std::ostream* os) override {
-    *os << "Waiting for IsUkmEnabled=" << (want_enabled_ ? "true" : "false");
-    return ukm_test_helper_->IsRecordingEnabled() == want_enabled_;
-  }
-
- private:
-  ukm::UkmTestHelper* const ukm_test_helper_;
-  const bool want_enabled_;
-
-  DISALLOW_COPY_AND_ASSIGN(UkmEnabledChecker);
-};
 
 // Test the reporting of the synced user's birth year and gender.
 class UkmBrowserTestWithDemographics
@@ -1438,6 +1401,28 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, NotMarkSourcesIfNavigationNotCommitted) {
   // New navigation did not commit, thus the source should still be kept alive.
   ui_test_utils::NavigateToURL(sync_browser, test_url_no_commit);
   EXPECT_FALSE(ukm_test_helper.IsSourceObsolete(source_id));
+}
+#endif  // !defined(OS_ANDROID)
+
+#if !defined(OS_ANDROID)
+IN_PROC_BROWSER_TEST_F(UkmBrowserTest, DebugUiRenders) {
+  MetricsConsentOverride metrics_consent(true);
+
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  std::unique_ptr<ProfileSyncServiceHarness> harness =
+      EnableSyncForProfile(profile);
+  PlatformBrowser browser = CreatePlatformBrowser(profile);
+
+  ukm::UkmService* ukm_service(GetUkmService());
+  EXPECT_TRUE(ukm_service->IsSamplingEnabled());
+
+  // chrome://ukm
+  const GURL debug_url(content::GetWebUIURLString(content::kChromeUIUkmHost));
+
+  content::TestNavigationObserver waiter(debug_url);
+  waiter.WatchExistingWebContents();
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser, debug_url));
+  waiter.WaitForNavigationFinished();
 }
 #endif  // !defined(OS_ANDROID)
 

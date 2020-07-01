@@ -23,6 +23,7 @@ constexpr char kKeyBlockUntilVerdict[] = "block_until_verdict";
 constexpr char kKeyBlockPasswordProtected[] = "block_password_protected";
 constexpr char kKeyBlockLargeFiles[] = "block_large_files";
 constexpr char kKeyBlockUnsupportedFileTypes[] = "block_unsupported_file_types";
+constexpr char kKeyMinimumDataSize[] = "minimum_data_size";
 
 enum class ReportingConnector {
   SECURITY_EVENT,
@@ -50,6 +51,9 @@ struct AnalysisSettings {
   bool block_password_protected_files = false;
   bool block_large_files = false;
   bool block_unsupported_file_types = false;
+
+  // Minimum text size for BulkDataEntry scans. 0 means no minimum.
+  size_t minimum_data_size = 100;
 };
 
 struct ReportingSettings {

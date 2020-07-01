@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <utility>
 
+#include "base/component_export.h"
 #include "base/feature_list.h"
 #include "base/metrics/crc32.h"
 #include "base/metrics/field_trial.h"
@@ -33,10 +34,11 @@
 
 namespace ukm {
 
-namespace {
-
+COMPONENT_EXPORT(UKM_RECORDER)
 const base::Feature kUkmSamplingRateFeature{"UkmSamplingRate",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+namespace {
 
 // Gets the list of whitelisted Entries as string. Format is a comma separated
 // list of Entry names (as strings).

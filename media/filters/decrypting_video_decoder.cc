@@ -90,6 +90,10 @@ void DecryptingVideoDecoder::Initialize(const VideoDecoderConfig& config,
                    &DecryptingVideoDecoder::FinishInitialization, weak_this_)));
 }
 
+bool DecryptingVideoDecoder::SupportsDecryption() const {
+  return true;
+}
+
 void DecryptingVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
                                     DecodeCB decode_cb) {
   DVLOG(3) << "Decode()";

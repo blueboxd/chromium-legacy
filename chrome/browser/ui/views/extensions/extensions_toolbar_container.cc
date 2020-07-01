@@ -471,8 +471,7 @@ void ExtensionsToolbarContainer::CreateActionForId(
   auto icon = std::make_unique<ToolbarActionView>(actions_.back().get(), this);
   // Set visibility before adding to prevent extraneous animation.
   icon->SetVisible(CanShowIconInToolbar() && model_->IsActionPinned(action_id));
-  icon->AddButtonObserver(this);
-  icon->AddObserver(this);
+  ObserveButton(icon.get());
   icons_.insert({action_id, AddChildView(std::move(icon))});
 }
 

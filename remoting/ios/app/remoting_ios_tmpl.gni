@@ -88,7 +88,7 @@ template("ios_remoting_app_tmpl") {
       "VERSION_SHORT=$remoting_version_short",
     ]
 
-    libs = [
+    frameworks = [
       "Accelerate.framework",
       "AudioToolbox.framework",
       "CoreAudio.framework",

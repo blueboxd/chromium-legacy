@@ -20,6 +20,7 @@
 namespace content {
 
 class WebContents;
+class RenderFrameHost;
 
 // Extends WebContentsObserver for providing a public Java API for some of the
 // the calls it receives.
@@ -31,6 +32,7 @@ class WebContentsObserverProxy : public WebContentsObserver {
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
  private:
+  void RenderFrameCreated(RenderFrameHost* render_frame_host) override;
   void RenderViewReady() override;
   void RenderProcessGone(base::TerminationStatus termination_status) override;
   void DidStartLoading() override;

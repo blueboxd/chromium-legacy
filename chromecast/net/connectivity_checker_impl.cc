@@ -194,8 +194,8 @@ void ConnectivityCheckerImpl::CheckInternal() {
   url_loader_->DownloadHeadersOnly(url_loader_factory_.get(),
                                    std::move(callback));
 
-  timeout_.Reset(
-      base::Bind(&ConnectivityCheckerImpl::OnUrlRequestTimeout, weak_this_));
+  timeout_.Reset(base::BindOnce(&ConnectivityCheckerImpl::OnUrlRequestTimeout,
+                                weak_this_));
   // Exponential backoff for timeout in 3, 6 and 12 sec.
   const int timeout = kRequestTimeoutInSeconds
                       << (check_errors_ > 2 ? 2 : check_errors_);

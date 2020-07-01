@@ -28,7 +28,7 @@ mac_app_bundle("alert_notification_xpc_service") {
     "//third_party/crashpad/crashpad/client",
   ]
 
-  libs = [
+  frameworks = [
     "AppKit.framework",
     "Foundation.framework",
   ]

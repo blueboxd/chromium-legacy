@@ -107,7 +107,7 @@ class OobeDisplayChooserTest : public ChromeAshTestBase {
   DISALLOW_COPY_AND_ASSIGN(OobeDisplayChooserTest);
 };
 
-const uint16_t kWhitelistedId = 0x266e;
+const uint16_t kAllowlistedId = 0x266e;
 
 }  // namespace
 
@@ -128,7 +128,7 @@ TEST_F(OobeDisplayChooserTest, PreferTouchAsPrimary) {
   ui::TouchscreenDevice touchscreen =
       ui::TouchscreenDevice(1, ui::InputDeviceType::INPUT_DEVICE_USB,
                             "Touchscreen", gfx::Size(800, 600), 1);
-  touchscreen.vendor_id = kWhitelistedId;
+  touchscreen.vendor_id = kAllowlistedId;
   ui::DeviceDataManagerTestApi().SetTouchscreenDevices({touchscreen});
   base::RunLoop().RunUntilIdle();
 
@@ -171,7 +171,7 @@ TEST_F(OobeDisplayChooserTest, DontSwitchFromTouch) {
   ui::TouchscreenDevice touchscreen =
       ui::TouchscreenDevice(1, ui::InputDeviceType::INPUT_DEVICE_USB,
                             "Touchscreen", gfx::Size(800, 600), 1);
-  touchscreen.vendor_id = kWhitelistedId;
+  touchscreen.vendor_id = kAllowlistedId;
   ui::DeviceDataManagerTestApi().SetTouchscreenDevices({touchscreen});
   base::RunLoop().RunUntilIdle();
 

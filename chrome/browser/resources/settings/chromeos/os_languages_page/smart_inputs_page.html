@@ -42,10 +42,15 @@
           <h2 aria-hidden="true">
             $i18n{emojiSuggestionTitle}
           </h2>
+          <span class="settings-box first" aria-hidden="true"
+              id="emojiSuggestionDescription">
+            $i18n{emojiSuggestionDescription}
+          </span>
           <div class="list-frame vertical-list">
             <settings-toggle-button class="list-item first"
                 pref="{{prefs.assistive_input.emoji_suggestion_enabled}}"
-                label="$i18n{showEmojiSuggestion}">
+                label="$i18n{showEmojiSuggestion}"
+                aria-describedby="emojiSuggestionDescription">
             </settings-toggle-button>
           </div>
         </div>

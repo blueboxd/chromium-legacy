@@ -43,6 +43,7 @@
 #include "base/win/windows_version.h"
 #include "base/win/wrapped_window_proc.h"
 #include "build/branding_buildflags.h"
+#include "chrome/browser/about_flags.h"
 #include "chrome/browser/after_startup_task_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/first_run.h"
@@ -755,16 +756,10 @@ void ChromeBrowserMainPartsWin::RegisterApplicationRestart(
     LOG(WARNING) << "Cannot find RegisterApplicationRestart in kernel32.dll";
     return;
   }
-  // The Windows Restart Manager expects a string of command line flags only,
-  // without the program.
-  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  command_line.AppendArguments(parsed_command_line, false);
-  if (!command_line.HasSwitch(switches::kRestoreLastSession))
-    command_line.AppendSwitch(switches::kRestoreLastSession);
-
   // Restart Chrome if the computer is restarted as the result of an update.
   // This could be extended to handle crashes, hangs, and patches.
-  const auto& command_line_string = command_line.GetCommandLineString();
+  const auto command_line_string =
+      GetRestartCommandLine(parsed_command_line).GetCommandLineString();
   HRESULT hr = register_application_restart(
       command_line_string.c_str(),
       RESTART_NO_CRASH | RESTART_NO_HANG | RESTART_NO_PATCH);
@@ -870,4 +865,24 @@ base::string16 TranslationDelegate::GetLocalizedString(
 void ChromeBrowserMainPartsWin::SetupInstallerUtilStrings() {
   static base::NoDestructor<TranslationDelegate> delegate;
   installer::SetTranslationDelegate(delegate.get());
+}
+
+// static
+base::CommandLine ChromeBrowserMainPartsWin::GetRestartCommandLine(
+    const base::CommandLine& command_line) {
+  base::CommandLine restart_command(base::CommandLine::NO_PROGRAM);
+  base::CommandLine::SwitchMap switches = command_line.GetSwitches();
+
+  // Remove flag switches added by about::flags.
+  about_flags::RemoveFlagsSwitches(&switches);
+  // Add remaining switches, but not non-switch arguments.
+  for (const auto& it : switches)
+    restart_command.AppendSwitchNative(it.first, it.second);
+
+  if (!command_line.HasSwitch(switches::kRestoreLastSession))
+    restart_command.AppendSwitch(switches::kRestoreLastSession);
+
+  // TODO(crbug.com/964541): Remove other unneeded switches, including
+  // duplicates, perhaps harmonize with switches::RemoveSwitchesForAutostart.
+  return restart_command;
 }

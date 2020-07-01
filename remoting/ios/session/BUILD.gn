@@ -25,7 +25,7 @@ source_set("session") {
     "//remoting/protocol",
   ]
 
-  libs = [ "CoreGraphics.framework" ]
+  frameworks = [ "CoreGraphics.framework" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }

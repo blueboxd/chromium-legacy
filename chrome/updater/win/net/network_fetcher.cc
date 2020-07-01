@@ -36,7 +36,7 @@ void NetworkFetcher::PostRequest(
     ResponseStartedCallback response_started_callback,
     ProgressCallback progress_callback,
     PostRequestCompleteCallback post_request_complete_callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   post_request_complete_callback_ = std::move(post_request_complete_callback);
   network_fetcher_->PostRequest(
       url, post_data, content_type, post_additional_headers,
@@ -51,7 +51,7 @@ void NetworkFetcher::DownloadToFile(
     ResponseStartedCallback response_started_callback,
     ProgressCallback progress_callback,
     DownloadToFileCompleteCallback download_to_file_complete_callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   download_to_file_complete_callback_ =
       std::move(download_to_file_complete_callback);
   network_fetcher_->DownloadToFile(
@@ -62,7 +62,7 @@ void NetworkFetcher::DownloadToFile(
 }
 
 void NetworkFetcher::PostRequestComplete() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::move(post_request_complete_callback_)
       .Run(std::make_unique<std::string>(network_fetcher_->GetResponseBody()),
            network_fetcher_->GetNetError(), network_fetcher_->GetHeaderETag(),
@@ -71,7 +71,7 @@ void NetworkFetcher::PostRequestComplete() {
 }
 
 void NetworkFetcher::DownloadToFileComplete() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::move(download_to_file_complete_callback_)
       .Run(network_fetcher_->GetNetError(), network_fetcher_->GetContentSize());
 }
@@ -104,7 +104,7 @@ scoped_hinternet NetworkFetcherFactory::CreateSessionHandle() {
 
 std::unique_ptr<update_client::NetworkFetcher> NetworkFetcherFactory::Create()
     const {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return session_handle_.get()
              ? std::make_unique<NetworkFetcher>(session_handle_.get())
              : nullptr;

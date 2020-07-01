@@ -113,6 +113,8 @@ void AddSmartInputsStrings(content::WebUIDataSource* html_source) {
       {"managePersonalInfo", IDS_SETTINGS_SMART_INPUTS_MANAGE_PERSONAL_INFO},
       {"emojiSuggestionTitle",
        IDS_SETTINGS_SMART_INPUTS_EMOJI_SUGGESTION_TITLE},
+      {"emojiSuggestionDescription",
+       IDS_SETTINGS_SMART_INPUTS_EMOJI_SUGGESTION_DESCRIPTION},
       {"showEmojiSuggestion", IDS_SETTINGS_SMART_INPUTS_SHOW_EMOJI_SUGGESTION},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);

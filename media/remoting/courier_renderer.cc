@@ -237,10 +237,9 @@ void CourierRenderer::SetPlaybackRate(double playback_rate) {
 void CourierRenderer::SetVolume(float volume) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
-  if (state_ != STATE_FLUSHING && state_ != STATE_PLAYING) {
-    DCHECK_EQ(state_, STATE_ERROR);
+  volume_ = volume;
+  if (state_ != STATE_FLUSHING && state_ != STATE_PLAYING)
     return;
-  }
 
   // Issues RPC_R_SETVOLUME RPC message.
   auto rpc = std::make_unique<pb::RpcMessage>();
@@ -475,6 +474,8 @@ void CourierRenderer::InitializeCallback(
   metrics_recorder_.OnRendererInitialized();
 
   state_ = STATE_PLAYING;
+
+  SetVolume(volume_);
   std::move(init_workflow_done_callback_).Run(PIPELINE_OK);
 }
 

@@ -39,7 +39,7 @@ constexpr char kContextInteractionId[] = "interactionId";
 constexpr char kContextConversationId[] = "conversationId";
 constexpr char kGestureConsumedCallbackClassName[] =
     "org/chromium/chromecast/shell/"
-    "CastWebContentsComponent.GestureHandledCallback";
+    "CastWebContentsComponent$GestureHandledCallback";
 
 // Wraps the JNI gesture consumption handled callback for invocation from C++.
 class GestureConsumedCallbackWrapper {
@@ -52,11 +52,14 @@ class GestureConsumedCallbackWrapper {
         base::android::GetClass(env_, kGestureConsumedCallbackClassName));
     callback_method_id_ =
         base::android::MethodID::Get<base::android::MethodID::TYPE_INSTANCE>(
-            env_, class_.obj(), "invoke", "(Z;)V");
+            env_, class_.obj(), "invoke",
+            "(Z"  // boolean handled
+            ")V");
   }
 
   void Invoke(bool handled) {
-    env_->CallObjectMethod(callback_.obj(), callback_method_id_, &handled);
+    jboolean handled_value(handled);
+    env_->CallVoidMethod(callback_.obj(), callback_method_id_, handled_value);
   }
 
  private:

@@ -50,14 +50,16 @@ class TileManager {
   // Delete everything in db. Used for debugging and testing only.
   virtual TileGroupStatus PurgeDb() = 0;
 
-  virtual void SetAcceptLanguagesForTesting(
-      const std::string& accept_languages) = 0;
-
   TileManager();
   virtual ~TileManager() = default;
 
   TileManager(const TileManager& other) = delete;
   TileManager& operator=(const TileManager& other) = delete;
+
+  //-------Debug and Testing-----------------------------------------
+  virtual void GetTileGroupForTesting(TileGroup* group) = 0;
+  virtual void SetAcceptLanguagesForTesting(
+      const std::string& accept_languages) = 0;
 };
 
 }  // namespace query_tiles

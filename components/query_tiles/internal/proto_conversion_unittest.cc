@@ -55,8 +55,8 @@ void TestTileConversion(Tile& expected) {
   TileFromProto(&proto, &actual);
   EXPECT_TRUE(test::AreTilesIdentical(expected, actual))
       << "actual: \n"
-      << test::DebugString(&actual) << "expected: \n"
-      << test::DebugString(&expected);
+      << actual.DebugString() << "expected: \n"
+      << expected.DebugString();
 }
 
 void TestTileGroupConversion(TileGroup& expected) {
@@ -66,8 +66,8 @@ void TestTileGroupConversion(TileGroup& expected) {
   TileGroupFromProto(&proto, &actual);
   EXPECT_TRUE(test::AreTileGroupsIdentical(expected, actual))
       << "actual: \n"
-      << test::DebugString(&actual) << "expected: \n"
-      << test::DebugString(&expected);
+      << actual.DebugString() << "expected: \n"
+      << expected.DebugString();
 }
 
 TEST(TileProtoConversionTest, TileConversions) {
@@ -92,7 +92,7 @@ TEST(TileProtoConversionTest, TileGroupFromResponseConversions) {
   server_response.SerializeToString(&server_response_str);
   EXPECT_EQ(tile_group.locale, "en") << std::endl
                                      << server_response_str << std::endl
-                                     << test::DebugString(&tile_group);
+                                     << tile_group.DebugString();
   TileIterator iter(tile_group, TileIterator::kAllTiles);
   size_t count = 0;
   while (iter.HasNext()) {
@@ -102,7 +102,7 @@ TEST(TileProtoConversionTest, TileGroupFromResponseConversions) {
     VerifySampleTileId(level, pos, next->id);
     count++;
   }
-  EXPECT_EQ(count, 12u) << test::DebugString(&tile_group);
+  EXPECT_EQ(count, 12u) << tile_group.DebugString();
 }
 
 }  // namespace

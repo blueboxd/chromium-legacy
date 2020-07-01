@@ -37,10 +37,7 @@ namespace {
 base::LazyInstance<StackSamplingConfiguration>::Leaky g_configuration =
     LAZY_INSTANCE_INITIALIZER;
 
-// The profiler is currently only implemented for Windows x64 and Mac x64.
-// TODO(https://crbug.com/1004855): enable for Android arm.
-bool IsProfilerSupportedForPlatformAndChannel() {
-#if (defined(OS_WIN) && defined(ARCH_CPU_X86_64)) || defined(OS_MACOSX)
+bool IsProfilerEnabledForChannel() {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Only run on canary and dev.
   const version_info::Channel channel = chrome::GetChannel();
@@ -48,9 +45,6 @@ bool IsProfilerSupportedForPlatformAndChannel() {
          channel == version_info::Channel::DEV;
 #else
   return true;
-#endif
-#else
-  return false;
 #endif
 }
 
@@ -131,7 +125,9 @@ bool StackSamplingConfiguration::GetSyntheticFieldTrial(
     std::string* group_name) const {
   DCHECK(IsBrowserProcess());
 
-  if (!IsProfilerSupportedForPlatformAndChannel())
+  if (!base::StackSamplingProfiler::IsSupported())
+    return false;
+  if (!IsProfilerEnabledForChannel())
     return false;
 
   *trial_name = "SyntheticStackProfilingConfiguration";
@@ -224,16 +220,10 @@ StackSamplingConfiguration::GenerateConfiguration() {
   if (!IsBrowserProcess())
     return PROFILE_FROM_COMMAND_LINE;
 
-  if (!IsProfilerSupportedForPlatformAndChannel())
+  if (!base::StackSamplingProfiler::IsSupported())
     return PROFILE_DISABLED;
-
-#if defined(OS_MACOSX)
-  // TODO(https://crbug.com/1098119): Fix unwinding on OS X 10.16. The OS has
-  // moved all system libraries into the dyld shared cache and this seems to
-  // break the sampling profiler.
-  if (base::mac::IsOSLaterThan10_15_DontCallThis())
+  if (!IsProfilerEnabledForChannel())
     return PROFILE_DISABLED;
-#endif
 
 #if defined(OS_ANDROID)
   // Allow profiling if the Android Java/native unwinder module is available at
@@ -256,13 +246,6 @@ StackSamplingConfiguration::GenerateConfiguration() {
 #endif
     return PROFILE_DISABLED_MODULE_NOT_INSTALLED;
   }
-#endif
-
-#if defined(OS_WIN)
-  // Do not start the profiler when Application Verifier is in use; running them
-  // simultaneously can cause crashes and has no known use case.
-  if (GetModuleHandleA(base::win::kApplicationVerifierDllName))
-    return PROFILE_DISABLED;
 #endif
 
   switch (chrome::GetChannel()) {

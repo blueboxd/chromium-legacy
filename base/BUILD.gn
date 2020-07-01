@@ -2383,7 +2383,7 @@ component("i18n") {
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   if (is_mac) {
-    libs = [ "CoreFoundation.framework" ]
+    frameworks = [ "CoreFoundation.framework" ]
   }
 }
 
@@ -3164,7 +3164,7 @@ test("base_unittests") {
 
   if (is_mac) {
     sources += [ "message_loop/message_pump_kqueue_unittest.cc" ]
-    libs = [
+    frameworks = [
       "CoreFoundation.framework",
       "Foundation.framework",
     ]

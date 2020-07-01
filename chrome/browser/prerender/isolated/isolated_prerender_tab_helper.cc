@@ -190,6 +190,15 @@ const void* IsolatedPrerenderTabHelper::PrefetchingLikelyEventKey() {
   return &kPrefetchingLikelyEventKey;
 }
 
+static content::ServiceWorkerContext* g_service_worker_context_for_test =
+    nullptr;
+
+// static
+void IsolatedPrerenderTabHelper::SetServiceWorkerContextForTest(
+    content::ServiceWorkerContext* context) {
+  g_service_worker_context_for_test = context;
+}
+
 IsolatedPrerenderTabHelper::IsolatedPrerenderTabHelper(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {
@@ -918,6 +927,15 @@ void IsolatedPrerenderTabHelper::OnPredictionUpdated(
 }
 
 // static
+content::ServiceWorkerContext*
+IsolatedPrerenderTabHelper::GetServiceWorkerContext(Profile* profile) {
+  if (g_service_worker_context_for_test)
+    return g_service_worker_context_for_test;
+  return content::BrowserContext::GetDefaultStoragePartition(profile)
+      ->GetServiceWorkerContext();
+}
+
+// static
 void IsolatedPrerenderTabHelper::CheckEligibilityOfURL(
     Profile* profile,
     const GURL& url,
@@ -971,7 +989,7 @@ void IsolatedPrerenderTabHelper::CheckEligibilityOfURL(
   }
 
   content::ServiceWorkerContext* service_worker_context_ =
-      default_storage_partition->GetServiceWorkerContext();
+      GetServiceWorkerContext(profile);
 
   bool site_has_service_worker =
       service_worker_context_->MaybeHasRegistrationForOrigin(

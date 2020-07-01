@@ -45,10 +45,11 @@ class GomaLinkUnix(goma_link.GomaLinkBase):
     # For other targets, we fall back to local ThinLTO. We must use ThinLTO
     # because we build with -fsplit-lto-unit, which requires code generation
     # be done for each object and target.
-    if args.output is None or os.path.basename(
-        args.output) not in self.ALLOWLIST:
-      # Returning None causes the original, non-distributed linker command to be
-      # invoked.
+    # Returning None from this function causes the original, non-distributed
+    # linker command to be invoked.
+    if args.output is None:
+      return None
+    if not (args.allowlist or os.path.basename(args.output) in self.ALLOWLIST):
       return None
     return super(GomaLinkUnix, self).analyze_args(args, *posargs, **kwargs)
 

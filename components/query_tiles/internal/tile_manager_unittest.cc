@@ -337,6 +337,16 @@ TEST_F(TileManagerTest, PurgeDb) {
   GetTiles(std::vector<Tile>() /*expect an empty result*/);
 }
 
+TEST_F(TileManagerTest, GetTileGroup) {
+  TileGroup expected;
+  test::ResetTestGroup(&expected);
+  InitWithData(TileGroupStatus::kSuccess, {expected});
+
+  TileGroup actual;
+  manager()->GetTileGroupForTesting(&actual);
+  EXPECT_TRUE(test::AreTileGroupsIdentical(actual, expected));
+}
+
 }  // namespace
 
 }  // namespace query_tiles

@@ -723,16 +723,8 @@ void ExtensionService::LoadExtensionForReload(
         UnpackedInstaller::Create(this);
     unpacked_installer->set_be_noisy_on_failure(load_error_behavior ==
                                                 LoadErrorBehavior::kNoisy);
-    unpacked_installer->set_completion_callback(base::BindOnce(
-        &ExtensionService::OnUnpackedReloadFailure, base::Unretained(this)));
     unpacked_installer->Load(path);
   }
-}
-
-void ExtensionService::OnUnpackedReloadFailure(const Extension* extension,
-                                               const base::FilePath& file_path,
-                                               const std::string& error) {
-  extension_registrar_.OnUnpackedExtensionReloadFailed(file_path);
 }
 
 void ExtensionService::ReloadExtension(const std::string& extension_id) {

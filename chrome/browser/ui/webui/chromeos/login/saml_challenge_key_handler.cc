@@ -84,7 +84,7 @@ void SamlChallengeKeyHandler::Run(Profile* profile,
     return;
   }
 
-  BuildResponseForWhitelistedUrl(url);
+  BuildResponseForAllowlistedUrl(url);
 }
 
 void SamlChallengeKeyHandler::SetTpmResponseTimeoutForTesting(
@@ -92,10 +92,10 @@ void SamlChallengeKeyHandler::SetTpmResponseTimeoutForTesting(
   tpm_response_timeout_for_testing_ = timeout;
 }
 
-void SamlChallengeKeyHandler::BuildResponseForWhitelistedUrl(const GURL& url) {
+void SamlChallengeKeyHandler::BuildResponseForAllowlistedUrl(const GURL& url) {
   CrosSettings* settings = CrosSettings::Get();
   CrosSettingsProvider::TrustedStatus status = settings->PrepareTrustedValues(
-      base::BindOnce(&SamlChallengeKeyHandler::BuildResponseForWhitelistedUrl,
+      base::BindOnce(&SamlChallengeKeyHandler::BuildResponseForAllowlistedUrl,
                      weak_factory_.GetWeakPtr(), url));
 
   const base::ListValue* patterns = nullptr;

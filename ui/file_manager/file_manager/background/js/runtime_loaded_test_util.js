@@ -802,7 +802,7 @@ test.util.sync.rightClickOffset =
  * @param {string} sourceQuery Query to specify the source element.
  * @param {string} targetQuery Query to specify the target element.
  * @param {boolean} skipDrop Set true to drag over (hover) the target
- *    element only, and not send it drop and dragEnd events.
+ *    only, and not send target drop or source dragend events.
  * @param {function(boolean)} callback Function called with result
  *    true on success, or false on failure.
  */
@@ -842,22 +842,25 @@ test.util.async.fakeDragAndDrop =
             result = source.dispatchEvent(event);
             break;
           case 1:
+            targetOptions.relatedTarget = source;
             event = new DragEvent('dragenter', targetOptions);
             result = target.dispatchEvent(event);
             break;
           case 2:
+            targetOptions.relatedTarget = null;
             event = new DragEvent('dragover', targetOptions);
             result = target.dispatchEvent(event);
             break;
           case 3:
             if (!skipDrop) {
+              targetOptions.relatedTarget = null;
               event = new DragEvent('drop', targetOptions);
               result = target.dispatchEvent(event);
             }
             break;
           case 4:
             if (!skipDrop) {
-              event = new DragEvent('dragEnd', sourceOptions);
+              event = new DragEvent('dragend', sourceOptions);
               result = source.dispatchEvent(event);
             }
             break;
@@ -876,6 +879,75 @@ test.util.async.fakeDragAndDrop =
       }
 
       sendPhasedDragDropEvents();
+    };
+
+/**
+ * Sends a target dragleave or drop event, and source dragend event, to finish
+ * the drag a source over target simulation started by fakeDragAndDrop for the
+ * case where the target was hovered.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {string} sourceQuery Query to specify the source element.
+ * @param {string} targetQuery Query to specify the target element.
+ * @param {boolean} dragLeave Set true to send a dragleave event to
+ *    the target instead of a drop event.
+ * @param {function(boolean)} callback Function called with result
+ *    true on success, or false on failure.
+ */
+test.util.async.fakeDragLeaveOrDrop =
+    (contentWindow, sourceQuery, targetQuery, dragLeave, callback) => {
+      const source = contentWindow.document.querySelector(sourceQuery);
+      const target = contentWindow.document.querySelector(targetQuery);
+
+      if (!source || !target) {
+        setTimeout(() => {
+          callback(false);
+        }, 0);
+        return;
+      }
+
+      const targetOptions = {
+        bubbles: true,
+        composed: true,
+        dataTransfer: new DataTransfer(),
+      };
+
+      // Get the middle of the source element since some of Files app
+      // logic requires clientX and clientY.
+      const sourceRect = source.getBoundingClientRect();
+      const sourceOptions = Object.assign({}, targetOptions);
+      sourceOptions.clientX = sourceRect.left + (sourceRect.width / 2);
+      sourceOptions.clientY = sourceRect.top + (sourceRect.height / 2);
+
+      // Define the target event type.
+      const targetType = dragLeave ? 'dragleave' : 'drop';
+
+      let dragEventPhase = 0;
+      let event = null;
+
+      function sendPhasedDragEndEvents() {
+        let result = false;
+        switch (dragEventPhase) {
+          case 0:
+            event = new DragEvent(targetType, targetOptions);
+            result = target.dispatchEvent(event);
+            break;
+          case 1:
+            event = new DragEvent('dragend', sourceOptions);
+            result = source.dispatchEvent(event);
+            break;
+        }
+
+        if (!result) {
+          callback(false);
+        } else if (++dragEventPhase <= 1) {
+          contentWindow.requestIdleCallback(sendPhasedDragEndEvents);
+        } else {
+          callback(true);
+        }
+      }
+
+      sendPhasedDragEndEvents();
     };
 
 /**

@@ -55,9 +55,10 @@ SupervisedProvider::SupervisedProvider(
   // This means this will get destroyed before the SUSS and will be
   // unsubscribed from it.
   user_settings_subscription_ =
-      supervised_user_settings_service->SubscribeForSettingsChange(base::Bind(
-          &content_settings::SupervisedProvider::OnSupervisedSettingsAvailable,
-          base::Unretained(this)));
+      supervised_user_settings_service->SubscribeForSettingsChange(
+          base::BindRepeating(&content_settings::SupervisedProvider::
+                                  OnSupervisedSettingsAvailable,
+                              base::Unretained(this)));
 }
 
 SupervisedProvider::~SupervisedProvider() {

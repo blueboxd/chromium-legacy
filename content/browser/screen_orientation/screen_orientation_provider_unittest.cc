@@ -170,7 +170,7 @@ TEST_F(ScreenOrientationProviderTest, DelegateRequireFullScreenLockOnce) {
                        std::string());
 
   // Current web contents is not in full screen.
-  ASSERT_FALSE(contents()->IsFullscreenForCurrentTab());
+  ASSERT_FALSE(contents()->IsFullscreen());
   base::Optional<ScreenOrientationLockResult> result_1;
   CallLockAndGetResult(blink::WebScreenOrientationLockType::
                            kWebScreenOrientationLockLandscapeSecondary,
@@ -185,7 +185,7 @@ TEST_F(ScreenOrientationProviderTest, DelegateRequireFullScreenLockOnce) {
   contents()->DidChangeScreenOrientation();
   main_test_rfh()->EnterFullscreen(blink::mojom::FullscreenOptions::New(),
                                    base::DoNothing());
-  ASSERT_TRUE(contents()->IsFullscreenForCurrentTab());
+  ASSERT_TRUE(contents()->IsFullscreen());
 
   base::Optional<ScreenOrientationLockResult> result_2;
   CallLockAndGetResult(blink::WebScreenOrientationLockType::
@@ -289,7 +289,7 @@ TEST_F(ScreenOrientationProviderTest, UnlockWhenExitingFullScreen) {
   contents()->DidChangeScreenOrientation();
   main_test_rfh()->EnterFullscreen(blink::mojom::FullscreenOptions::New(),
                                    base::DoNothing());
-  ASSERT_TRUE(contents()->IsFullscreenForCurrentTab());
+  ASSERT_TRUE(contents()->IsFullscreen());
 
   base::Optional<ScreenOrientationLockResult> result;
   CallLockAndGetResult(blink::WebScreenOrientationLockType::
@@ -303,7 +303,7 @@ TEST_F(ScreenOrientationProviderTest, UnlockWhenExitingFullScreen) {
 
   // Simulates exiting full screen.
   main_test_rfh()->ExitFullscreen();
-  ASSERT_FALSE(contents()->IsFullscreenForCurrentTab());
+  ASSERT_FALSE(contents()->IsFullscreen());
   // The pending lock request is cancelled.
   EXPECT_EQ(ScreenOrientationLockResult::
                 SCREEN_ORIENTATION_LOCK_RESULT_ERROR_CANCELED,

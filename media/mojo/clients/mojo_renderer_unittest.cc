@@ -137,6 +137,7 @@ class MojoRendererTest : public ::testing::Test {
 
   void Initialize() {
     CreateAudioStream();
+    EXPECT_CALL(*mock_renderer_, SetVolume(1));
     EXPECT_CALL(*mock_renderer_, OnInitialize(_, _, _))
         .WillOnce(DoAll(SaveArg<1>(&remote_renderer_client_),
                         RunOnceCallback<2>(PIPELINE_OK)));

@@ -124,7 +124,7 @@ mac_app_bundle("remoting_host_uninstaller") {
     "uninstaller/remoting_uninstaller_app.mm",
   ]
 
-  libs = [
+  frameworks = [
     "Cocoa.framework",
     "CoreFoundation.framework",
     "Security.framework",

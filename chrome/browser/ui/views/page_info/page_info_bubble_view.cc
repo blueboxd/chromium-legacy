@@ -329,11 +329,11 @@ void BubbleHeaderView::AddPasswordReuseButtons(bool is_saved_password) {
     change_password_button->SetID(
         PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_CHANGE_PASSWORD);
   }
-  auto whitelist_password_reuse_button = views::MdTextButton::Create(
+  auto allowlist_password_reuse_button = views::MdTextButton::Create(
       button_listener_,
-      l10n_util::GetStringUTF16(IDS_PAGE_INFO_WHITELIST_PASSWORD_REUSE_BUTTON));
-  whitelist_password_reuse_button->SetID(
-      PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_WHITELIST_PASSWORD_REUSE);
+      l10n_util::GetStringUTF16(IDS_PAGE_INFO_ALLOWLIST_PASSWORD_REUSE_BUTTON));
+  allowlist_password_reuse_button->SetID(
+      PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_ALLOWLIST_PASSWORD_REUSE);
 
   int kSpacingBetweenButtons = 8;
   int change_password_button_size =
@@ -345,7 +345,7 @@ void BubbleHeaderView::AddPasswordReuseButtons(bool is_saved_password) {
   bool can_fit_in_one_line =
       (password_reuse_button_container_->width() - kSpacingBetweenButtons) >=
       (change_password_button_size +
-       whitelist_password_reuse_button->CalculatePreferredSize().width());
+       allowlist_password_reuse_button->CalculatePreferredSize().width());
   auto layout = std::make_unique<views::BoxLayout>(
       can_fit_in_one_line ? views::BoxLayout::Orientation::kHorizontal
                           : views::BoxLayout::Orientation::kVertical,
@@ -361,10 +361,10 @@ void BubbleHeaderView::AddPasswordReuseButtons(bool is_saved_password) {
         std::move(change_password_button));
   }
   password_reuse_button_container_->AddChildView(
-      std::move(whitelist_password_reuse_button));
+      std::move(allowlist_password_reuse_button));
 #else
   password_reuse_button_container_->AddChildView(
-      std::move(whitelist_password_reuse_button));
+      std::move(allowlist_password_reuse_button));
   if (change_password_button) {
     password_reuse_button_container_->AddChildView(
         std::move(change_password_button));
@@ -585,7 +585,7 @@ void PageInfoBubbleView::ButtonPressed(views::Button* button,
     case PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_CHANGE_PASSWORD:
       presenter_->OnChangePasswordButtonPressed(web_contents());
       break;
-    case PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_WHITELIST_PASSWORD_REUSE:
+    case PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_ALLOWLIST_PASSWORD_REUSE:
       GetWidget()->Close();
       presenter_->OnWhitelistPasswordReuseButtonPressed(web_contents());
       break;

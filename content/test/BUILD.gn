@@ -988,6 +988,7 @@ test("content_browsertests") {
     "../browser/loader/cors_file_origin_browsertest.cc",
     "../browser/loader/cors_preflight_cache_browsertest.cc",
     "../browser/loader/cross_site_document_blocking_browsertest.cc",
+    "../browser/loader/derived_origin_in_fetch_browsertest.cc",
     "../browser/loader/file_url_loader_factory_browsertest.cc",
     "../browser/loader/loader_browsertest.cc",
     "../browser/loader/prefetch_browsertest.cc",

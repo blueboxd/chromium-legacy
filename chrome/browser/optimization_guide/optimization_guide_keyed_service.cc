@@ -99,14 +99,10 @@ void OptimizationGuideKeyedService::Initialize(
       pre_initialized_optimization_types_, optimization_guide_service, profile,
       profile_path, profile->GetPrefs(), database_provider,
       top_host_provider_.get(), url_loader_factory);
-  if (optimization_guide::features::IsOptimizationTargetPredictionEnabled() &&
-      optimization_guide::features::IsRemoteFetchingEnabled()) {
-    prediction_manager_ =
-        std::make_unique<optimization_guide::PredictionManager>(
-            pre_initialized_optimization_targets_, profile_path,
-            database_provider, top_host_provider_.get(), url_loader_factory,
-            profile->GetPrefs(), profile);
-  }
+  prediction_manager_ = std::make_unique<optimization_guide::PredictionManager>(
+      pre_initialized_optimization_targets_, profile_path, database_provider,
+      top_host_provider_.get(), url_loader_factory, profile->GetPrefs(),
+      profile);
 }
 
 OptimizationGuideHintsManager*
@@ -172,20 +168,14 @@ OptimizationGuideKeyedService::ShouldTargetNavigation(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(navigation_handle->IsInMainFrame());
 
-  if (!hints_manager_) {
+  if (!prediction_manager_) {
     // We are not initialized yet, just return unknown.
     return optimization_guide::OptimizationGuideDecision::kUnknown;
   }
 
-  optimization_guide::OptimizationTargetDecision optimization_target_decision;
-  if (prediction_manager_) {
-    optimization_target_decision = prediction_manager_->ShouldTargetNavigation(
-        navigation_handle, optimization_target);
-  } else {
-    DCHECK(hints_manager_);
-    optimization_target_decision = hints_manager_->ShouldTargetNavigation(
-        navigation_handle, optimization_target);
-  }
+  optimization_guide::OptimizationTargetDecision optimization_target_decision =
+      prediction_manager_->ShouldTargetNavigation(navigation_handle,
+                                                  optimization_target);
 
   base::UmaHistogramExactLinear(
       "OptimizationGuide.TargetDecision." +
@@ -288,10 +278,6 @@ void OptimizationGuideKeyedService::OverrideTargetDecisionForTesting(
     optimization_guide::OptimizationGuideDecision optimization_guide_decision) {
   if (prediction_manager_) {
     prediction_manager_->OverrideTargetDecisionForTesting(
-        optimization_target, optimization_guide_decision);
-  } else {
-    DCHECK(hints_manager_);
-    hints_manager_->OverrideTargetDecisionForTesting(
         optimization_target, optimization_guide_decision);
   }
 }

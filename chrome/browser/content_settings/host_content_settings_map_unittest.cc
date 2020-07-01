@@ -973,7 +973,6 @@ TEST_F(HostContentSettingsMapTest, IncognitoPartialInheritPref) {
 
   // GetSettingsForOneType should return preference followed by default, both inherited.
   {
-    
     ContentSettingsForOneType otr_settings;
     otr_map->GetSettingsForOneType(ContentSettingsType::MEDIASTREAM_MIC,
                                    std::string(), &otr_settings);
@@ -1001,8 +1000,8 @@ TEST_F(HostContentSettingsMapTest, IncognitoPartialInheritPref) {
       otr_map->GetContentSetting(
           host, host, ContentSettingsType::MEDIASTREAM_MIC, std::string()));
 
-  // The inherited ALLOW gets turned back into ASK in GetSettingsForOneType, mirroring the 
-  // reverting to ASK behavior above.
+  // The inherited ALLOW gets turned back into ASK in GetSettingsForOneType,
+  // mirroring the reverting to ASK behavior above.
   {
     ContentSettingsForOneType otr_settings;
     otr_map->GetSettingsForOneType(ContentSettingsType::MEDIASTREAM_MIC,
@@ -1572,7 +1571,7 @@ TEST_F(HostContentSettingsMapTest, ClearSettingsForOneTypeWithPredicate) {
   // First, test that we clear only COOKIES (not APP_BANNER), and pattern2.
   host_content_settings_map->ClearSettingsForOneTypeWithPredicate(
       ContentSettingsType::COOKIES, base::Time(), base::Time::Max(),
-      base::Bind(&MatchPrimaryPattern, pattern2));
+      base::BindRepeating(&MatchPrimaryPattern, pattern2));
   host_content_settings_map->GetSettingsForOneType(
       ContentSettingsType::COOKIES, std::string(), &host_settings);
   // |host_settings| contains default & block.
@@ -1617,7 +1616,7 @@ TEST_F(HostContentSettingsMapTest, ClearSettingsForOneTypeWithPredicate) {
       ContentSettingsPattern::FromURLNoWildcard(url3_origin_only);
   host_content_settings_map->ClearSettingsForOneTypeWithPredicate(
       ContentSettingsType::SITE_ENGAGEMENT, base::Time(), base::Time::Max(),
-      base::Bind(&MatchPrimaryPattern, http_pattern));
+      base::BindRepeating(&MatchPrimaryPattern, http_pattern));
   // Verify we only have one, and it's url1.
   host_content_settings_map->GetSettingsForOneType(
       ContentSettingsType::SITE_ENGAGEMENT, std::string(), &host_settings);

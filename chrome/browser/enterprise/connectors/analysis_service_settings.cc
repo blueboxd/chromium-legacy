@@ -59,6 +59,8 @@ AnalysisServiceSettings::AnalysisServiceSettings(
       settings_value.FindBoolKey(kKeyBlockLargeFiles).value_or(false);
   block_unsupported_file_types_ =
       settings_value.FindBoolKey(kKeyBlockUnsupportedFileTypes).value_or(false);
+  minimum_data_size_ =
+      settings_value.FindIntKey(kKeyMinimumDataSize).value_or(100);
 }
 
 // static
@@ -105,6 +107,7 @@ base::Optional<AnalysisSettings> AnalysisServiceSettings::GetAnalysisSettings(
   settings.block_unsupported_file_types = block_unsupported_file_types_;
   settings.analysis_url = GURL(service_provider_->analysis_url());
   DCHECK(settings.analysis_url.is_valid());
+  settings.minimum_data_size = minimum_data_size_;
 
   return settings;
 }

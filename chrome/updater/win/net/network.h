@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "chrome/updater/win/net/scoped_hinternet.h"
 #include "components/update_client/network.h"
 
@@ -28,7 +28,7 @@ class NetworkFetcherFactory : public update_client::NetworkFetcherFactory {
  private:
   static scoped_hinternet CreateSessionHandle();
 
-  THREAD_CHECKER(thread_checker_);
+  SEQUENCE_CHECKER(sequence_checker_);
   scoped_hinternet session_handle_;
 };
 

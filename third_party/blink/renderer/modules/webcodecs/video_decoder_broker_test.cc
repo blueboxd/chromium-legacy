@@ -325,7 +325,8 @@ TEST_F(VideoDecoderBrokerTest, Decode_WithMojoDecoder) {
   ConstructDecoder(*execution_context);
   EXPECT_EQ(GetDisplayName(), "EmptyWebCodecsVideoDecoder");
 
-  media::VideoDecoderConfig config = media::TestVideoConfig::Normal();
+  // Use an extra-large video to ensure we don't get a software decoder
+  media::VideoDecoderConfig config = media::TestVideoConfig::ExtraLarge();
   InitializeDecoder(config);
   EXPECT_EQ(GetDisplayName(), "MojoVideoDecoder");
 

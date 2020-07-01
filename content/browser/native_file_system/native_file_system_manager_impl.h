@@ -163,6 +163,27 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
       mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken>
           receiver);
 
+  // Create a transfer token without an underlying FileHandle/DirectoryHandle.
+  // These transfer tokens can only be redeemed by a process with ID matching
+  // |renderer_id|. When redeemed, these tokens will lazily create
+  // FileHandles/DirectoryHandles. These type of TransferTokens are used for
+  // transferring file information between the browser and renderer during drag
+  // and drop operations.
+  void CreateTransferTokenFromPath(
+      const base::FilePath& file_path,
+      bool is_directory,
+      int renderer_id,
+      mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken>
+          receiver);
+
+  // Create a transfer token attached to file/directory at |url|.
+  void CreateTransferTokenForTesting(
+      const storage::FileSystemURL& url,
+      const SharedHandleState& handle_state,
+      bool is_directory,
+      mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken>
+          receiver);
+
   // Given a mojom transfer token, looks up the token in our internal list of
   // valid tokens. Calls the callback with the found token, or nullptr if no
   // valid token was found.

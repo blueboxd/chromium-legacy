@@ -434,9 +434,16 @@ rlim_t GetProcessDataSizeLimit(SandboxType sandbox_type) {
       sandbox_type == SandboxType::kRenderer) {
     // Allow the GPU/RENDERER process's sandbox to access more physical memory
     // if it's available on the system.
+    //
+    // Renderer processes are allowed to access 16 GB; the GPU process, up
+    // to 64 GB.
     constexpr rlim_t GB = 1024 * 1024 * 1024;
     const rlim_t physical_memory = base::SysInfo::AmountOfPhysicalMemory();
-    if (physical_memory > 16 * GB) {
+    if (sandbox_type == SandboxType::kGpu && physical_memory > 64 * GB) {
+      return 64 * GB;
+    } else if (sandbox_type == SandboxType::kGpu && physical_memory > 32 * GB) {
+      return 32 * GB;
+    } else if (physical_memory > 16 * GB) {
       return 16 * GB;
     } else if (physical_memory > 8 * GB) {
       return 8 * GB;

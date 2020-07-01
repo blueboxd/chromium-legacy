@@ -1357,14 +1357,14 @@ void BrowserCommandController::UpdateCommandsForHostedAppAvailability() {
 namespace {
 
 #if DCHECK_IS_ON()
-// Makes sure that all commands that are not whitelisted are disabled. DCHECKs
+// Makes sure that all commands that are not allowlisted are disabled. DCHECKs
 // otherwise. Compiled only in debug mode.
-void NonWhitelistedCommandsAreDisabled(CommandUpdaterImpl* command_updater) {
-  constexpr int kWhitelistedIds[] = {IDC_CUT, IDC_COPY, IDC_PASTE};
+void NonAllowlistedCommandsAreDisabled(CommandUpdaterImpl* command_updater) {
+  constexpr int kAllowlistedIds[] = {IDC_CUT, IDC_COPY, IDC_PASTE};
 
-  // Go through all the command ids, skip the whitelisted ones.
+  // Go through all the command ids, skip the allowlisted ones.
   for (int id : command_updater->GetAllIds()) {
-    if (base::Contains(kWhitelistedIds, id)) {
+    if (base::Contains(kAllowlistedIds, id)) {
       continue;
     }
     DCHECK(!command_updater->IsCommandEnabled(id));
@@ -1385,14 +1385,14 @@ void BrowserCommandController::UpdateCommandsForLockedFullscreenMode() {
 
   if (is_locked_fullscreen_) {
     command_updater_.DisableAllCommands();
-    // Update the state of whitelisted commands:
+    // Update the state of allowlisted commands:
     // IDC_CUT/IDC_COPY/IDC_PASTE,
     UpdateCommandsForContentRestrictionState();
     // TODO(crbug.com/904637): Re-enable Find and Zoom in locked fullscreen.
     // All other commands will be disabled (there is an early return in their
     // corresponding UpdateCommandsFor* functions).
 #if DCHECK_IS_ON()
-    NonWhitelistedCommandsAreDisabled(&command_updater_);
+    NonAllowlistedCommandsAreDisabled(&command_updater_);
 #endif
   } else {
     // Do an init call to re-initialize command state after the

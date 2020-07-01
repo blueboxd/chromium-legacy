@@ -421,7 +421,7 @@ jumbo_source_set("browser_sources") {
 
   if (is_mac) {
     # For LSCopyDisplayNameForURL, path_util.cc.
-    libs = [ "CoreServices.framework" ]
+    frameworks = [ "CoreServices.framework" ]
   }
 
   configs += [

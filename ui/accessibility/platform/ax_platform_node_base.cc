@@ -1156,6 +1156,27 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
     AddAttributeToList("src", src, attributes);
   }
 
+  if (GetData().HasIntAttribute(ax::mojom::IntAttribute::kTextAlign)) {
+    auto text_align = static_cast<ax::mojom::TextAlign>(
+        GetData().GetIntAttribute(ax::mojom::IntAttribute::kTextAlign));
+    switch (text_align) {
+      case ax::mojom::TextAlign::kNone:
+        break;
+      case ax::mojom::TextAlign::kLeft:
+        AddAttributeToList("text-align", "left", attributes);
+        break;
+      case ax::mojom::TextAlign::kRight:
+        AddAttributeToList("text-align", "right", attributes);
+        break;
+      case ax::mojom::TextAlign::kCenter:
+        AddAttributeToList("text-align", "center", attributes);
+        break;
+      case ax::mojom::TextAlign::kJustify:
+        AddAttributeToList("text-align", "justify", attributes);
+        break;
+    }
+  }
+
   // Text fields need to report the attribute "text-model:a1" to instruct
   // screen readers to use IAccessible2 APIs to handle text editing in this
   // object (as opposed to treating it like a native Windows text box).

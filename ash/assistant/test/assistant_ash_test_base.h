@@ -41,6 +41,8 @@ class AssistantAshTestBase : public AshTestBase {
  public:
   using AssistantEntryPoint = chromeos::assistant::AssistantEntryPoint;
   using AssistantExitPoint = chromeos::assistant::AssistantExitPoint;
+  using AssistantOnboardingMode =
+      chromeos::assistant::prefs::AssistantOnboardingMode;
   using ConsentStatus = chromeos::assistant::prefs::ConsentStatus;
 
   AssistantAshTestBase();
@@ -68,7 +70,10 @@ class AssistantAshTestBase : public AshTestBase {
   void SetTabletMode(bool enable);
 
   // Change the user preference controlling the status of user consent.
-  void SetConsentStatus(ConsentStatus);
+  void SetConsentStatus(ConsentStatus consent_status);
+
+  // Changes the user preference controlling the mode of the onboarding UX.
+  void SetOnboardingMode(AssistantOnboardingMode onboarding_mode);
 
   // Change the user setting controlling whether the user prefers voice or
   // keyboard.

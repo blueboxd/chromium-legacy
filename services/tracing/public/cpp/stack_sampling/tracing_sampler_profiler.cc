@@ -35,10 +35,6 @@
 #include "base/android/reached_code_profiler.h"
 #endif
 
-#if defined(OS_MACOSX)
-#include "base/mac/mac_util.h"
-#endif
-
 #if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
     defined(OFFICIAL_BUILD)
 #include <dlfcn.h>
@@ -665,13 +661,8 @@ void TracingSamplerProfiler::StartTracing(
     return;
 #endif
 
-#if defined(OS_MACOSX)
-  // TODO(https://crbug.com/1098119): Fix unwinding on OS X 10.16. The OS has
-  // moved all system libraries into the dyld shared cache and this seems to
-  // break the sampling profiler.
-  if (base::mac::IsOSLaterThan10_15_DontCallThis())
+  if (!base::StackSamplingProfiler::IsSupported())
     return;
-#endif
 
   base::StackSamplingProfiler::SamplingParams params;
   params.samples_per_profile = std::numeric_limits<int>::max();

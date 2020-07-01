@@ -72,21 +72,55 @@ void MockDemuxerStream::set_liveness(DemuxerStream::Liveness liveness) {
   liveness_ = liveness;
 }
 
-MockVideoDecoder::MockVideoDecoder(const std::string& decoder_name)
-    : decoder_name_(decoder_name) {
+MockVideoDecoder::MockVideoDecoder() : MockVideoDecoder("MockVideoDecoder") {}
+
+MockVideoDecoder::MockVideoDecoder(std::string decoder_name)
+    : MockVideoDecoder(false, false, std::move(decoder_name)) {}
+
+MockVideoDecoder::MockVideoDecoder(bool is_platform_decoder,
+                                   bool supports_decryption,
+                                   std::string decoder_name)
+    : is_platform_decoder_(is_platform_decoder),
+      supports_decryption_(supports_decryption),
+      decoder_name_(std::move(decoder_name)) {
   ON_CALL(*this, CanReadWithoutStalling()).WillByDefault(Return(true));
 }
 
 MockVideoDecoder::~MockVideoDecoder() = default;
 
+bool MockVideoDecoder::IsPlatformDecoder() const {
+  return is_platform_decoder_;
+}
+
+bool MockVideoDecoder::SupportsDecryption() const {
+  return supports_decryption_;
+}
+
 std::string MockVideoDecoder::GetDisplayName() const {
   return decoder_name_;
 }
 
-MockAudioDecoder::MockAudioDecoder(const std::string& decoder_name)
-    : decoder_name_(decoder_name) {}
+MockAudioDecoder::MockAudioDecoder() : MockAudioDecoder("MockAudioDecoder") {}
+
+MockAudioDecoder::MockAudioDecoder(std::string decoder_name)
+    : MockAudioDecoder(false, false, std::move(decoder_name)) {}
+
+MockAudioDecoder::MockAudioDecoder(bool is_platform_decoder,
+                                   bool supports_decryption,
+                                   std::string decoder_name)
+    : is_platform_decoder_(is_platform_decoder),
+      supports_decryption_(supports_decryption),
+      decoder_name_(decoder_name) {}
 
 MockAudioDecoder::~MockAudioDecoder() = default;
+
+bool MockAudioDecoder::IsPlatformDecoder() const {
+  return is_platform_decoder_;
+}
+
+bool MockAudioDecoder::SupportsDecryption() const {
+  return supports_decryption_;
+}
 
 std::string MockAudioDecoder::GetDisplayName() const {
   return decoder_name_;

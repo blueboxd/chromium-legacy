@@ -112,7 +112,15 @@ String TextDecoder::decode(const char* start,
                            ExceptionState& exception_state) {
   DCHECK(options);
   if (!do_not_flush_) {
-    codec_ = NewTextCodec(encoding_);
+    if (!codec_) {
+      // In the spec, a new decoder is created unconditionally here, but that
+      // requires an extra allocation. Since the TextCodec would be flushed
+      // here by the previous call if `!do_not_flush` (sorry about the double
+      // negatives), then we don't need a new TextCodec to match the spec
+      // behavior.
+      // https://encoding.spec.whatwg.org/#dom-textdecoder-decode
+      codec_ = NewTextCodec(encoding_);
+    }
     bom_seen_ = false;
   }
 
@@ -125,6 +133,10 @@ String TextDecoder::decode(const char* start,
   String s = codec_->Decode(start, length, flush, fatal_, saw_error);
 
   if (fatal_ && saw_error) {
+    if (!do_not_flush_) {
+      // If flushing, the error should not persist.
+      codec_.reset();
+    }
     exception_state.ThrowTypeError("The encoded data was not valid.");
     return String();
   }

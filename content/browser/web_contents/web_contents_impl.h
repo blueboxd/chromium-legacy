@@ -500,7 +500,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void StopFinding(StopFindAction action) override;
   bool WasEverAudible() override;
   void GetManifest(GetManifestCallback callback) override;
-  bool IsFullscreenForCurrentTab() override;
+  bool IsFullscreen() override;
   bool ShouldShowStaleContentOnEviction() override;
   void ExitFullscreen(bool will_cause_resize) override;
   base::ScopedClosureRunner ForSecurityDropFullscreen() override
@@ -909,7 +909,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void CancelKeyboardLock(RenderWidgetHostImpl* render_widget_host) override;
   RenderWidgetHostImpl* GetKeyboardLockWidget() override;
   // The following function is already listed under WebContents overrides:
-  // bool IsFullscreenForCurrentTab() const override;
+  // bool IsFullscreen() const override;
   blink::mojom::DisplayMode GetDisplayMode() const override;
   void LostCapture(RenderWidgetHostImpl* render_widget_host) override;
   void LostMouseLock(RenderWidgetHostImpl* render_widget_host) override;
@@ -1040,7 +1040,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   int GetCurrentlyPlayingVideoCount() override;
   base::Optional<gfx::Size> GetFullscreenVideoSize() override;
-  bool IsFullscreen() override;
 
   MediaWebContentsObserver* media_web_contents_observer() {
     return media_web_contents_observer_.get();

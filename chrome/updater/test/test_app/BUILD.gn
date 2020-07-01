@@ -74,7 +74,7 @@ source_set("app_sources") {
 
     deps += [ "//chrome/updater/mac:xpc_names" ]
 
-    libs = [ "CoreFoundation.framework" ]
+    frameworks = [ "CoreFoundation.framework" ]
   }
 
   if (is_win) {

@@ -450,7 +450,7 @@ static_library("common") {
   if (is_mac) {
     public_deps += [ "//third_party/google_toolbox_for_mac" ]
 
-    libs = [ "ServiceManagement.framework" ]
+    frameworks = [ "ServiceManagement.framework" ]
   }
 
   if (enable_plugins) {

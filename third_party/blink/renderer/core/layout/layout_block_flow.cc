@@ -893,7 +893,7 @@ void LayoutBlockFlow::InsertForcedBreakBeforeChildIfNeeded(
   EBreakBetween class_a_break_point_value =
       child.ClassABreakPointValue(layout_info.PreviousBreakAfterValue());
 
-  if (page_name_has_changed)
+  if (page_name_has_changed && IsBreakBetweenControllable(EBreakBetween::kPage))
     class_a_break_point_value = EBreakBetween::kPage;
 
   if (IsForcedFragmentainerBreakValue(class_a_break_point_value)) {

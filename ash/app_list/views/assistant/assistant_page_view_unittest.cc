@@ -12,6 +12,7 @@
 #include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -247,21 +248,12 @@ TEST_F(AssistantPageViewTest, ShouldStartInPeekingState) {
   EXPECT_EQ(AppListViewState::kPeeking, app_list_view()->app_list_state());
 }
 
-// Tests the |AssistantPageView| with better onboarding enabled.
-class AssistantPageViewBetterOnboardingTest : public AssistantPageViewTest {
- public:
-  AssistantPageViewBetterOnboardingTest() {
-    feature_list_.InitAndEnableFeature(
-        chromeos::assistant::features::kAssistantBetterOnboarding);
-  }
+TEST_F(AssistantPageViewTest, ShouldStartInHalfState) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      chromeos::assistant::features::kAssistantBetterOnboarding);
+  SetOnboardingMode(AssistantOnboardingMode::kEducation);
 
-  ~AssistantPageViewBetterOnboardingTest() override = default;
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-TEST_F(AssistantPageViewBetterOnboardingTest, ShouldStartInHalfState) {
   ShowAssistantUi();
 
   EXPECT_EQ(AppListViewState::kHalf, app_list_view()->app_list_state());
@@ -403,6 +395,7 @@ TEST_F(AssistantPageViewTest, ShouldShowOnboardingWhenOpening) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       chromeos::assistant::features::kAssistantBetterOnboarding);
+  SetOnboardingMode(AssistantOnboardingMode::kEducation);
 
   ShowAssistantUi();
 
@@ -427,6 +420,7 @@ TEST_F(AssistantPageViewTest, ShouldDismissOnboardingAfterQuery) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       chromeos::assistant::features::kAssistantBetterOnboarding);
+  SetOnboardingMode(AssistantOnboardingMode::kEducation);
 
   ShowAssistantUi();
 
@@ -459,6 +453,7 @@ TEST_F(AssistantPageViewTest, ShouldShowOnboardingAgainAfterReopening) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       chromeos::assistant::features::kAssistantBetterOnboarding);
+  SetOnboardingMode(AssistantOnboardingMode::kEducation);
 
   ShowAssistantUi();
 
@@ -491,6 +486,7 @@ TEST_F(AssistantPageViewTest,
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       chromeos::assistant::features::kAssistantBetterOnboarding);
+  SetOnboardingMode(AssistantOnboardingMode::kEducation);
 
   ShowAssistantUi(AssistantEntryPoint::kLauncherSearchResult);
 
@@ -748,6 +744,7 @@ TEST_F(AssistantPageViewTest,
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       chromeos::assistant::features::kAssistantBetterOnboarding);
+  SetOnboardingMode(AssistantOnboardingMode::kEducation);
 
   ShowAssistantUi();
 

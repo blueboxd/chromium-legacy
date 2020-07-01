@@ -125,8 +125,8 @@ void LoginDisplayWebUI::ShowError(int error_msg_id,
 
   // Only display hints about keyboard layout if the error is authentication-
   // related.
-  if (error_msg_id != IDS_LOGIN_ERROR_WHITELIST &&
-      error_msg_id != IDS_ENTERPRISE_LOGIN_ERROR_WHITELIST &&
+  if (error_msg_id != IDS_LOGIN_ERROR_ALLOWLIST &&
+      error_msg_id != IDS_ENTERPRISE_LOGIN_ERROR_ALLOWLIST &&
       error_msg_id != IDS_LOGIN_ERROR_OWNER_KEY_LOST &&
       error_msg_id != IDS_LOGIN_ERROR_OWNER_REQUIRED &&
       error_msg_id != IDS_LOGIN_ERROR_GOOGLE_ACCOUNT_NOT_ALLOWED &&
@@ -162,7 +162,7 @@ void LoginDisplayWebUI::ShowSigninUI(const std::string& email) {
 
 void LoginDisplayWebUI::ShowWhitelistCheckFailedError() {
   if (webui_handler_)
-    webui_handler_->ShowWhitelistCheckFailedError();
+    webui_handler_->ShowAllowlistCheckFailedError();
 }
 
 // LoginDisplayWebUI, SigninScreenHandlerDelegate implementation: --------------

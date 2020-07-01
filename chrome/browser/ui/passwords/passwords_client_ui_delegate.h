@@ -31,7 +31,7 @@ class Origin;
 class PasswordsClientUIDelegate {
  public:
   // Called when the user submits a form containing login information, so the
-  // later requests to save or blacklist can be handled.
+  // later requests to save or blocklist can be handled.
   // This stores the provided object and triggers the UI to prompt the user
   // about whether they would like to save the password.
   virtual void OnPasswordSubmitted(

@@ -6,6 +6,8 @@
 
 #include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -37,6 +39,7 @@ class MockTileManager : public TileManager {
                void(std::unique_ptr<TileGroup>, TileGroupStatusCallback));
   MOCK_METHOD1(SetAcceptLanguagesForTesting, void(const std::string&));
   MOCK_METHOD0(PurgeDb, TileGroupStatus());
+  MOCK_METHOD1(GetTileGroupForTesting, void(TileGroup*));
 };
 
 class MockTileServiceScheduler : public TileServiceScheduler {

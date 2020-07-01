@@ -63,6 +63,38 @@
     text-align: center;
     width: 5ch;
   }
+
+  paper-progress {
+    --paper-progress-active-color: var(--google-blue-refresh-300);
+    --paper-progress-container-color: transparent;
+    --paper-progress-height: 3px;
+    bottom: 0;
+    position: absolute;
+    width: 100%;
+  }
+
+  paper-progress,
+  #center,
+  #end {
+    transition: opacity 100ms cubic-bezier(0, 0, 0.2, 1);
+  }
+
+  paper-progress,
+  :host([loading_]) #menuButton,
+  :host([loading_]) #center,
+  :host([loading_]) #end {
+    opacity: 0;
+    /* Ensure UI is not interactable while hidden */
+    visibility: hidden;
+  }
+
+  :host([loading_]) paper-progress,
+  #menuButton,
+  #center,
+  #end {
+    opacity: 1;
+    visibility: visible;
+  }
 </style>
 <!-- TODO(dpapad): Add aria-label and title for all buttons -->
 <!-- TODO(dpapad): Replace with the final icons provided by UX -->
@@ -91,3 +123,5 @@
   <cr-icon-button id="actionMenuTrigger"
       iron-icon="cr:more-vert"></cr-icon-button>
 </div>
+<paper-progress id="progress" value="[[loadProgress]]" hidden="[[!loading_]]">
+</paper-progress>

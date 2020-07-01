@@ -1662,6 +1662,8 @@ const char* ToString(ax::mojom::IntAttribute int_attribute) {
       return "checkedState";
     case ax::mojom::IntAttribute::kListStyle:
       return "listStyle";
+    case ax::mojom::IntAttribute::kTextAlign:
+      return "text-align";
     case ax::mojom::IntAttribute::kTextDirection:
       return "textDirection";
     case ax::mojom::IntAttribute::kTextPosition:
@@ -1788,6 +1790,8 @@ ax::mojom::IntAttribute ParseIntAttribute(const char* int_attribute) {
     return ax::mojom::IntAttribute::kCheckedState;
   if (0 == strcmp(int_attribute, "listStyle"))
     return ax::mojom::IntAttribute::kListStyle;
+  if (0 == strcmp(int_attribute, "text-align"))
+    return ax::mojom::IntAttribute::kTextAlign;
   if (0 == strcmp(int_attribute, "textDirection"))
     return ax::mojom::IntAttribute::kTextDirection;
   if (0 == strcmp(int_attribute, "textPosition"))
@@ -2312,6 +2316,37 @@ ax::mojom::TextDecorationStyle ParseTextDecorationStyle(
   if (0 == strcmp(text_decoration_style, "wavy"))
     return ax::mojom::TextDecorationStyle::kWavy;
   return ax::mojom::TextDecorationStyle::kNone;
+}
+
+const char* ToString(ax::mojom::TextAlign text_align) {
+  switch (text_align) {
+    case ax::mojom::TextAlign::kNone:
+      return "none";
+    case ax::mojom::TextAlign::kLeft:
+      return "left";
+    case ax::mojom::TextAlign::kRight:
+      return "right";
+    case ax::mojom::TextAlign::kCenter:
+      return "center";
+    case ax::mojom::TextAlign::kJustify:
+      return "justify";
+  }
+
+  return "";
+}
+
+ax::mojom::TextAlign ParseTextAlign(const char* text_align) {
+  if (0 == strcmp(text_align, "none"))
+    return ax::mojom::TextAlign::kNone;
+  if (0 == strcmp(text_align, "left"))
+    return ax::mojom::TextAlign::kLeft;
+  if (0 == strcmp(text_align, "right"))
+    return ax::mojom::TextAlign::kRight;
+  if (0 == strcmp(text_align, "center"))
+    return ax::mojom::TextAlign::kCenter;
+  if (0 == strcmp(text_align, "justify"))
+    return ax::mojom::TextAlign::kJustify;
+  return ax::mojom::TextAlign::kNone;
 }
 
 const char* ToString(ax::mojom::TextDirection text_direction) {

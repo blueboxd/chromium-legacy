@@ -13,10 +13,10 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/browser_info.h"
-#include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/chrome/devtools_client_impl.h"
 #include "chrome/test/chromedriver/chrome/page_load_strategy.h"
 #include "chrome/test/chromedriver/chrome/status.h"
+#include "chrome/test/chromedriver/chrome/stub_devtools_client.h"
 #include "chrome/test/chromedriver/net/sync_websocket.h"
 #include "chrome/test/chromedriver/net/sync_websocket_factory.h"
 #include "chrome/test/chromedriver/net/timeout.h"
@@ -24,10 +24,10 @@
 
 namespace {
 
-class FakeDevToolsClient : public DevToolsClient {
+class FakeDevToolsClient : public StubDevToolsClient {
  public:
-  FakeDevToolsClient() : id_("fake-id"), status_(kOk) {}
-  ~FakeDevToolsClient() override {}
+  FakeDevToolsClient() : status_(kOk) {}
+  ~FakeDevToolsClient() override = default;
 
   void set_status(const Status& status) {
     status_ = status;
@@ -38,31 +38,6 @@ class FakeDevToolsClient : public DevToolsClient {
   }
 
   // Overridden from DevToolsClient:
-  const std::string& GetId() override { return id_; }
-  bool WasCrashed() override { return false; }
-  Status ConnectIfNecessary() override { return Status(kOk); }
-  Status SetUpDevTools() override { return Status(kOk); }
-  Status SendCommand(
-      const std::string& method,
-      const base::DictionaryValue& params) override {
-    return SendCommandAndGetResult(method, params, nullptr);
-  }
-  Status SendCommandFromWebSocket(const std::string& method,
-                                  const base::DictionaryValue& params,
-                                  const int client_command_id) override {
-    return SendCommandAndGetResult(method, params, nullptr);
-  }
-  Status SendCommandWithTimeout(
-      const std::string& method,
-      const base::DictionaryValue& params,
-      const Timeout* timeout) override {
-    return SendCommandAndGetResult(method, params, nullptr);
-  }
-  Status SendAsyncCommand(
-      const std::string& method,
-      const base::DictionaryValue& params) override {
-    return SendCommandAndGetResult(method, params, nullptr);
-  }
   Status SendCommandAndGetResult(
       const std::string& method,
       const base::DictionaryValue& params,
@@ -72,29 +47,8 @@ class FakeDevToolsClient : public DevToolsClient {
     result->reset(result_.DeepCopy());
     return Status(kOk);
   }
-  Status SendCommandAndGetResultWithTimeout(
-      const std::string& method,
-      const base::DictionaryValue& params,
-      const Timeout* timeout,
-      std::unique_ptr<base::DictionaryValue>* result) override {
-    return SendCommandAndGetResult(method, params, result);
-  }
-  Status SendCommandAndIgnoreResponse(
-      const std::string& method,
-      const base::DictionaryValue& params) override {
-    return SendCommandAndGetResult(method, params, nullptr);
-  }
-  void AddListener(DevToolsEventListener* listener) override {}
-  Status HandleEventsUntil(const ConditionalFunc& conditional_func,
-                           const Timeout& timeout) override {
-    return Status(kOk);
-  }
-  Status HandleReceivedEvents() override { return Status(kOk); }
-  void SetDetached() override {}
-  void SetOwner(WebViewImpl* owner) override {}
 
  private:
-  const std::string id_;
   Status status_;
   base::DictionaryValue result_;
 };

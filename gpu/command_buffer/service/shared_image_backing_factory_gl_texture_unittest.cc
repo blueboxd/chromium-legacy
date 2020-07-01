@@ -28,6 +28,7 @@
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_preferences.h"
+#include "gpu/config/gpu_test_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -203,6 +204,14 @@ class CreateAndValidateSharedImageRepresentations {
 };
 
 TEST_P(SharedImageBackingFactoryGLTextureTest, Basic) {
+  // TODO(jonahr): Test fails on Mac with ANGLE/passthrough
+  // (crbug.com/1100975)
+  gpu::GPUTestBotConfig bot_config;
+  if (bot_config.LoadCurrentConfig(nullptr) &&
+      bot_config.Matches("mac passthrough")) {
+    return;
+  }
+
   auto mailbox = Mailbox::GenerateForSharedImage();
   auto format = get_format();
   gfx::Size size(256, 256);
@@ -328,6 +337,13 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Basic) {
 }
 
 TEST_P(SharedImageBackingFactoryGLTextureTest, Image) {
+  // TODO(jonahr): Test crashes on Mac with ANGLE/passthrough
+  // (crbug.com/1100975)
+  gpu::GPUTestBotConfig bot_config;
+  if (bot_config.LoadCurrentConfig(nullptr) &&
+      bot_config.Matches("mac passthrough")) {
+    return;
+  }
   auto mailbox = Mailbox::GenerateForSharedImage();
   auto format = get_format();
   gfx::Size size(256, 256);
@@ -832,6 +848,13 @@ TEST_P(SharedImageBackingFactoryGLTextureWithGMBTest,
 
 TEST_P(SharedImageBackingFactoryGLTextureWithGMBTest,
        GpuMemoryBufferImportNative) {
+  // TODO(jonahr): Test crashes on Mac with ANGLE/passthrough
+  // (crbug.com/1100975)
+  gpu::GPUTestBotConfig bot_config;
+  if (bot_config.LoadCurrentConfig(nullptr) &&
+      bot_config.Matches("mac passthrough")) {
+    return;
+  }
   auto mailbox = Mailbox::GenerateForSharedImage();
   gfx::Size size(256, 256);
   gfx::BufferFormat format = viz::BufferFormat(get_format());

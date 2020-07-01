@@ -57,15 +57,7 @@ void FakeServiceWorkerContext::CountExternalRequestsForTest(
 }
 bool FakeServiceWorkerContext::MaybeHasRegistrationForOrigin(
     const url::Origin& origin) {
-  NOTREACHED();
-  return false;
-}
-void FakeServiceWorkerContext::WaitForRegistrationsInitializedForTest() {
-  NOTREACHED();
-}
-void FakeServiceWorkerContext::AddRegistrationToRegisteredOriginsForTest(
-    const url::Origin& origin) {
-  NOTREACHED();
+  return registered_origins_.find(origin) != registered_origins_.end();
 }
 void FakeServiceWorkerContext::GetAllOriginsInfo(
     GetUsageInfoCallback callback) {
@@ -150,6 +142,11 @@ void FakeServiceWorkerContext::NotifyObserversOnNoControllees(
     const GURL& scope) {
   for (auto& observer : observers_)
     observer.OnNoControllees(version_id, scope);
+}
+
+void FakeServiceWorkerContext::AddRegistrationToRegisteredOrigins(
+    const url::Origin& origin) {
+  registered_origins_.insert(origin);
 }
 
 }  // namespace content

@@ -6,18 +6,25 @@ import("//build/config/jumbo.gni")
 
 jumbo_static_library("core") {
   sources = [
+    "lookalike_url_ui_util.cc",
+    "lookalike_url_ui_util.h",
     "lookalike_url_util.cc",
     "lookalike_url_util.h",
   ]
   deps = [
     ":features",
     "//base",
+    "//components/security_interstitials/core",
     "//components/security_state/core:features",
+    "//components/strings",
     "//components/url_formatter",
     "//components/url_formatter/spoof_checks/top_domains:common",
     "//components/url_formatter/spoof_checks/top_domains:top500_domains",
     "//components/url_formatter/spoof_checks/top_domains:top500_domains_header",
     "//net",
+    "//services/metrics/public/cpp:metrics_cpp",
+    "//services/metrics/public/cpp:ukm_builders",
+    "//ui/base",
   ]
 }
 

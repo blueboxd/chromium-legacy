@@ -73,7 +73,7 @@ source_set("xpc_names") {
     "//chrome/updater:version_header",
   ]
 
-  libs = [ "Foundation.framework" ]
+  frameworks = [ "Foundation.framework" ]
 }
 
 source_set("updater_setup_sources") {
@@ -95,7 +95,7 @@ source_set("updater_setup_sources") {
 
   allow_circular_includes_from = [ "//chrome/updater:base" ]
 
-  libs = [
+  frameworks = [
     "AppKit.framework",
     "CoreServices.framework",
     "ServiceManagement.framework",

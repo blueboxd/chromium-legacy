@@ -99,6 +99,7 @@ bool CreateOrTruncateFile(const base::FilePath& path) {
 bool IsValidTransferToken(
     NativeFileSystemTransferTokenImpl* token,
     const url::Origin& expected_origin,
+    int process_id,
     NativeFileSystemTransferTokenImpl::HandleType expected_handle_type) {
   if (!token) {
     return false;
@@ -108,9 +109,10 @@ bool IsValidTransferToken(
     return false;
   }
 
-  if (!token->MatchesOrigin(expected_origin)) {
+  if (!token->MatchesOriginAndPID(expected_origin, process_id)) {
     return false;
   }
+
   return true;
 }
 
@@ -522,12 +524,34 @@ NativeFileSystemManagerImpl::CreateFileWriter(
   return result;
 }
 
+void NativeFileSystemManagerImpl::CreateTransferTokenFromPath(
+    const base::FilePath& file_path,
+    bool is_directory,
+    int renderer_id,
+    mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken>
+        receiver) {
+  auto token_impl = NativeFileSystemTransferTokenImpl::CreateFromPath(
+      file_path, is_directory, this, std::move(receiver), renderer_id);
+  auto token = token_impl->token();
+  transfer_tokens_.emplace(token, std::move(token_impl));
+}
+
 void NativeFileSystemManagerImpl::CreateTransferToken(
     const NativeFileSystemFileHandleImpl& file,
     mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken>
         receiver) {
   return CreateTransferTokenImpl(file.url(), file.handle_state(),
                                  /*is_directory=*/false, std::move(receiver));
+}
+
+void NativeFileSystemManagerImpl::CreateTransferTokenForTesting(
+    const storage::FileSystemURL& url,
+    const SharedHandleState& handle_state,
+    bool is_directory,
+    mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken>
+        receiver) {
+  return CreateTransferTokenImpl(url, handle_state, is_directory,
+                                 std::move(receiver));
 }
 
 void NativeFileSystemManagerImpl::CreateTransferToken(
@@ -561,7 +585,7 @@ void NativeFileSystemManagerImpl::DidResolveTransferTokenForFileHandle(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!IsValidTransferToken(
-          resolved_token, binding_context.origin,
+          resolved_token, binding_context.origin, binding_context.process_id(),
           NativeFileSystemTransferTokenImpl::HandleType::kFile)) {
     // Fail silently. In practice, the NativeFileSystemManager should not
     // receive any invalid tokens. Before redeeming a token, the render process
@@ -587,7 +611,7 @@ void NativeFileSystemManagerImpl::DidResolveTransferTokenForDirectoryHandle(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!IsValidTransferToken(
-          resolved_token, binding_context.origin,
+          resolved_token, binding_context.origin, binding_context.process_id(),
           NativeFileSystemTransferTokenImpl::HandleType::kDirectory)) {
     // Fail silently. See comment above in
     // DidResolveTransferTokenForFileHandle() for details.
@@ -783,10 +807,7 @@ void NativeFileSystemManagerImpl::CreateTransferTokenImpl(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   auto token_impl = NativeFileSystemTransferTokenImpl::Create(
-      url, handle_state,
-      is_directory ? NativeFileSystemTransferTokenImpl::HandleType::kDirectory
-                   : NativeFileSystemTransferTokenImpl::HandleType::kFile,
-      this, std::move(receiver));
+      url, handle_state, is_directory, this, std::move(receiver));
   auto token = token_impl->token();
   transfer_tokens_.emplace(token, std::move(token_impl));
 }

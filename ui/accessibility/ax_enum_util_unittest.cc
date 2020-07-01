@@ -164,6 +164,10 @@ TEST(AXEnumUtilTest, Command) {
   TestEnumStringConversion<ax::mojom::Command>(ParseCommand);
 }
 
+TEST(AXEnumUtilTest, TextAlign) {
+  TestEnumStringConversion<ax::mojom::TextAlign>(ParseTextAlign);
+}
+
 TEST(AXEnumUtilTest, TextBoundary) {
   TestEnumStringConversion<ax::mojom::TextBoundary>(ParseTextBoundary);
 }

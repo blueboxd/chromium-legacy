@@ -138,6 +138,7 @@ class PDFViewerElement extends PDFViewerBaseElement {
       },
 
       docLength_: Number,
+      loadProgress_: Number,
       pageNo_: Number,
     };
   }
@@ -212,6 +213,12 @@ class PDFViewerElement extends PDFViewerBaseElement {
      * @private {number}
      */
     this.pageNo_;
+
+    /**
+     * The current loading progress of the PDF document (0 - 100).
+     * @private {number}
+     */
+    this.loadProgress_;
 
     /** @private {boolean} */
     this.pdfViewerUpdateEnabled_;
@@ -557,7 +564,7 @@ class PDFViewerElement extends PDFViewerBaseElement {
   /** @override */
   updateProgress(progress) {
     if (this.toolbarEnabled_) {
-      this.getToolbar_().loadProgress = progress;
+      this.loadProgress_ = progress;
     }
     super.updateProgress(progress);
     if (progress === 100 && !this.pdfViewerUpdateEnabled_) {

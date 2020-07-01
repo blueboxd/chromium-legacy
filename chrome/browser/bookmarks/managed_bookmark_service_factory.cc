@@ -23,8 +23,9 @@ std::unique_ptr<KeyedService> BuildManagedBookmarkService(
   Profile* profile = Profile::FromBrowserContext(context);
   return std::make_unique<bookmarks::ManagedBookmarkService>(
       profile->GetPrefs(),
-      base::Bind(&ManagedBookmarkServiceFactory::GetManagedBookmarksDomain,
-                 base::Unretained(profile)));
+      base::BindRepeating(
+          &ManagedBookmarkServiceFactory::GetManagedBookmarksDomain,
+          base::Unretained(profile)));
 }
 
 }  // namespace

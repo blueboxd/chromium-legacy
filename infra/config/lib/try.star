@@ -338,7 +338,6 @@ def chromium_codesearch_builder(*, name, os=None, **kwargs):
       mastername = 'tryserver.chromium.codesearch',
       goma_backend = builders.goma.backend.RBE_PROD,
       os = os,
-      service_account = "infra-codesearch@chops-service-accounts.iam.gserviceaccont.com",
       **kwargs
   )
 

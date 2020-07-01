@@ -1766,6 +1766,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
                            ComputeSiteForCookiesParentNavigatedAway);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest,
                            CheckIsCurrentBeforeAndAfterUnload);
+  FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest,
+                           HasCommittedAnyNavigation);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest,
                            CreateRenderViewAfterProcessKillAndClosedProxy);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest, DontSelectInvalidFiles);

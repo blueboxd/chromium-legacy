@@ -17,6 +17,7 @@
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_preferences.h"
+#include "gpu/config/gpu_test_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
@@ -129,6 +130,14 @@ class SharedImageBackingFactoryIOSurfaceTest : public testing::Test {
 
 // Basic test to check creation and deletion of IOSurface backed shared image.
 TEST_F(SharedImageBackingFactoryIOSurfaceTest, Basic) {
+  // TODO(jonahr): Test crashes on Mac with ANGLE/passthrough
+  // (crbug.com/1100980)
+  gpu::GPUTestBotConfig bot_config;
+  if (bot_config.LoadCurrentConfig(nullptr) &&
+      bot_config.Matches("mac passthrough")) {
+    return;
+  }
+
   Mailbox mailbox = Mailbox::GenerateForSharedImage();
   viz::ResourceFormat format = viz::ResourceFormat::RGBA_8888;
   gfx::Size size(256, 256);
@@ -222,6 +231,14 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, Basic) {
 // We write to a GL texture using gl representation and then read from skia
 // representation.
 TEST_F(SharedImageBackingFactoryIOSurfaceTest, GL_SkiaGL) {
+  // TODO(jonahr): Test crashes on Mac with ANGLE/passthrough
+  // (crbug.com/1100980)
+  gpu::GPUTestBotConfig bot_config;
+  if (bot_config.LoadCurrentConfig(nullptr) &&
+      bot_config.Matches("mac passthrough")) {
+    return;
+  }
+
   // Create a backing using mailbox.
   auto mailbox = Mailbox::GenerateForSharedImage();
   auto format = viz::ResourceFormat::RGBA_8888;
@@ -420,6 +437,14 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, Dawn_SkiaGL) {
 // 3. Begin render pass in Dawn, but do not do anything
 // 4. Verify through CheckSkiaPixel that GL drawn color not seen
 TEST_F(SharedImageBackingFactoryIOSurfaceTest, GL_Dawn_Skia_UnclearTexture) {
+  // TODO(jonahr): Test crashes on Mac with ANGLE/passthrough
+  // (crbug.com/1100980)
+  gpu::GPUTestBotConfig bot_config;
+  if (bot_config.LoadCurrentConfig(nullptr) &&
+      bot_config.Matches("mac passthrough")) {
+    return;
+  }
+
   // Create a backing using mailbox.
   auto mailbox = Mailbox::GenerateForSharedImage();
   const auto format = viz::ResourceFormat::RGBA_8888;

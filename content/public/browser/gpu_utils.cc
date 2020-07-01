@@ -117,10 +117,10 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
   gpu_preferences.enable_native_gpu_memory_buffers =
       command_line->HasSwitch(switches::kEnableNativeGpuMemoryBuffers);
 
-#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-  gpu_preferences.force_disable_new_accelerated_video_decoder =
+#if defined(OS_CHROMEOS)
+  gpu_preferences.platform_disallows_chromeos_direct_video_decoder =
       command_line->HasSwitch(
-          switches::kForceDisableNewAcceleratedVideoDecoder);
+          switches::kPlatformDisallowsChromeOSDirectVideoDecoder);
 #endif
 
   // Some of these preferences are set or adjusted in

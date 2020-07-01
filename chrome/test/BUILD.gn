@@ -3590,6 +3590,7 @@ test("unit_tests") {
   if (is_win) {
     assert(toolkit_views)
     sources += [
+      "../browser/chrome_browser_main_win_unittest.cc",
       "../browser/notifications/win/fake_notification_image_retainer.cc",
       "../browser/notifications/win/fake_notification_image_retainer.h",
       "../browser/sync/roaming_profile_directory_deleter_win_unittest.cc",

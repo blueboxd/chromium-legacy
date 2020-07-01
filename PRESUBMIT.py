@@ -293,7 +293,6 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^chrome/tools/',
   '^chrome/utility/',
   '^chromecast/media/',
-  '^chromecast/net/',
   '^chromeos/attestation/',
   '^chromeos/components/',
   '^chromeos/network/',

@@ -105,20 +105,12 @@ void MediaToolbarButtonView::Hide() {
 void MediaToolbarButtonView::Enable() {
   SetEnabled(true);
 
-#if defined(OS_MACOSX)
-  UpdateIcon();
-#endif  // defined(OS_MACOSX)
-
   for (auto& observer : observers_)
     observer.OnMediaButtonEnabled();
 }
 
 void MediaToolbarButtonView::Disable() {
   SetEnabled(false);
-
-#if defined(OS_MACOSX)
-  UpdateIcon();
-#endif  // defined(OS_MACOSX)
 
   // Inform observers. Since the promo controller cares about disabling, we need
   // to ensure that it's created.
@@ -134,9 +126,6 @@ SkColor MediaToolbarButtonView::GetInkDropBaseColor() const {
 }
 
 void MediaToolbarButtonView::UpdateIcon() {
-  if (!GetWidget())
-    return;
-
   const bool touch_ui = ui::TouchUiController::Get()->touch_ui();
   const gfx::VectorIcon& icon =
       touch_ui ? kMediaToolbarButtonTouchIcon : kMediaToolbarButtonIcon;

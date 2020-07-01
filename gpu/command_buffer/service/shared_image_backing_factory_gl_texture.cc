@@ -621,10 +621,14 @@ void SharedImageBackingGLTexture::InitializeGLTexture(
                            size().width(), size().height(), 1, 0, params.format,
                            params.type,
                            params.is_cleared ? gfx::Rect(size()) : gfx::Rect());
-    if (params.swizzle)
-      texture_->SetCompatibilitySwizzle(params.swizzle);
     texture_->SetImmutable(true, params.has_immutable_storage);
   }
+}
+
+void SharedImageBackingGLTexture::SetCompatibilitySwizzle(
+    const gles2::Texture::CompatibilitySwizzle* swizzle) {
+  if (!IsPassthrough())
+    texture_->SetCompatibilitySwizzle(swizzle);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -910,8 +914,6 @@ bool SharedImageBackingGLImage::InitializeGLTexture() {
         gl_params_.is_cleared ? gfx::Rect(size()) : gfx::Rect());
     texture_->SetLevelImage(gl_params_.target, 0, image_.get(),
                             gles2::Texture::UNBOUND);
-    if (gl_params_.swizzle)
-      texture_->SetCompatibilitySwizzle(gl_params_.swizzle);
     texture_->SetImmutable(true, false /* has_immutable_storage */);
   }
 
@@ -1445,13 +1447,13 @@ SharedImageBackingFactoryGLTexture::CreateSharedImageInternal(
   params.internal_format = level_info_internal_format;
   params.format = format_info.gl_format;
   params.type = format_info.gl_type;
-  params.swizzle = format_info.swizzle;
   params.is_cleared = pixel_data.empty() ? is_cleared : true;
   params.has_immutable_storage = !image && format_info.supports_storage;
   params.framebuffer_attachment_angle =
       for_framebuffer_attachment && texture_usage_angle_;
 
   if (image) {
+    DCHECK(!format_info.swizzle);
     auto result = std::make_unique<SharedImageBackingGLImage>(
         image, mailbox, format, size, color_space, usage, params, attribs,
         use_passthrough_);
@@ -1496,6 +1498,7 @@ SharedImageBackingFactoryGLTexture::CreateSharedImageInternal(
                           format_info.adjusted_format, format_info.gl_type,
                           pixel_data.data());
     }
+    result->SetCompatibilitySwizzle(format_info.swizzle);
     return std::move(result);
   }
 }

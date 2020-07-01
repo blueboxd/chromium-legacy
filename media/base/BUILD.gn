@@ -127,6 +127,8 @@ jumbo_source_set("base") {
     "data_source.h",
     "decode_status.cc",
     "decode_status.h",
+    "decoder.cc",
+    "decoder.h",
     "decoder_buffer.cc",
     "decoder_buffer.h",
     "decoder_buffer_queue.cc",

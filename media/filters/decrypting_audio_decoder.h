@@ -38,8 +38,11 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
       MediaLog* media_log);
   ~DecryptingAudioDecoder() override;
 
-  // AudioDecoder implementation.
+  // Decoder implementation
+  bool SupportsDecryption() const override;
   std::string GetDisplayName() const override;
+
+  // AudioDecoder implementation.
   void Initialize(const AudioDecoderConfig& config,
                   CdmContext* cdm_context,
                   InitCB init_cb,

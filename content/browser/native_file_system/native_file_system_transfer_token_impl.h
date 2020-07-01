@@ -31,10 +31,19 @@ class CONTENT_EXPORT NativeFileSystemTransferTokenImpl
   static std::unique_ptr<NativeFileSystemTransferTokenImpl> Create(
       const storage::FileSystemURL& url,
       const NativeFileSystemManagerImpl::SharedHandleState& handle_state,
-      HandleType type,
+      bool is_directory,
       NativeFileSystemManagerImpl* manager,
       mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken>
           receiver);
+
+  // Create a token that is not associated with any origin.
+  static std::unique_ptr<NativeFileSystemTransferTokenImpl> CreateFromPath(
+      const base::FilePath file_path,
+      bool is_directory,
+      NativeFileSystemManagerImpl* manager,
+      mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken>
+          receiver,
+      int renderer_process_id);
 
   NativeFileSystemTransferTokenImpl(
       HandleType type,
@@ -46,8 +55,10 @@ class CONTENT_EXPORT NativeFileSystemTransferTokenImpl
   const base::UnguessableToken& token() const { return token_; }
   HandleType type() const { return type_; }
 
-  // Returns true if |origin| is allowed to use this token.
-  virtual bool MatchesOrigin(const url::Origin& origin) const = 0;
+  // Returns true if |origin| is allowed to use this token. Where the transfer
+  // token isn't associated with an origin, |process_id| is checked.
+  virtual bool MatchesOriginAndPID(const url::Origin& origin,
+                                   int process_id) const = 0;
 
   // Can return nullptr if this token isn't represented by a FileSystemURL.
   virtual const storage::FileSystemURL* GetAsFileSystemURL() const = 0;

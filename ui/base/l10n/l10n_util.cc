@@ -52,40 +52,41 @@
 namespace {
 
 static const char* const kAcceptLanguageList[] = {
-    "af",     // Afrikaans
-    "am",     // Amharic
-    "an",     // Aragonese
-    "ar",     // Arabic
-    "ast",    // Asturian
-    "az",     // Azerbaijani
-    "be",     // Belarusian
-    "bg",     // Bulgarian
-    "bh",     // Bihari
-    "bn",     // Bengali
-    "br",     // Breton
-    "bs",     // Bosnian
-    "ca",     // Catalan
-    "ceb",    // Cebuano
-    "ckb",    // Kurdish (Arabci),  Sorani
-    "co",     // Corsican
-    "cs",     // Czech
-    "cy",     // Welsh
-    "da",     // Danish
-    "de",     // German
-    "de-AT",  // German (Austria)
-    "de-CH",  // German (Switzerland)
-    "de-DE",  // German (Germany)
-    "de-LI",  // German (Liechtenstein)
-    "el",     // Greek
-    "en",     // English
-    "en-AU",  // English (Australia)
-    "en-CA",  // English (Canada)
-    "en-GB",  // English (UK)
-    "en-IN",  // English (India)
-    "en-NZ",  // English (New Zealand)
-    "en-US",  // English (US)
-    "en-ZA",  // English (South Africa)
-    "eo",     // Esperanto
+    "af",              // Afrikaans
+    "am",              // Amharic
+    "an",              // Aragonese
+    "ar",              // Arabic
+    "ast",             // Asturian
+    "az",              // Azerbaijani
+    "be",              // Belarusian
+    "bg",              // Bulgarian
+    "bh",              // Bihari
+    "bn",              // Bengali
+    "br",              // Breton
+    "bs",              // Bosnian
+    "ca",              // Catalan
+    "ceb",             // Cebuano
+    "ckb",             // Kurdish (Arabic),  Sorani
+    "co",              // Corsican
+    "cs",              // Czech
+    "cy",              // Welsh
+    "da",              // Danish
+    "de",              // German
+    "de-AT",           // German (Austria)
+    "de-CH",           // German (Switzerland)
+    "de-DE",           // German (Germany)
+    "de-LI",           // German (Liechtenstein)
+    "el",              // Greek
+    "en",              // English
+    "en-AU",           // English (Australia)
+    "en-CA",           // English (Canada)
+    "en-GB",           // English (UK)
+    "en-GB-oxendict",  // English (UK, OED spelling)
+    "en-IN",           // English (India)
+    "en-NZ",           // English (New Zealand)
+    "en-US",           // English (US)
+    "en-ZA",           // English (South Africa)
+    "eo",              // Esperanto
     // TODO(jungshik) : Do we want to list all es-Foo for Latin-American
     // Spanish speaking countries?
     "es",      // Spanish
@@ -383,18 +384,15 @@ bool CheckAndResolveLocale(const std::string& locale,
         tmp_locale.append("-CN");
       }
     } else if (base::LowerCaseEqualsASCII(lang, "en")) {
-      // Map Australian, Canadian, Indian, New Zealand and South African
-      // English to British English for now.
+      // Map Liberian and Filipino English to US English, and everything
+      // else to British English.
       // TODO(jungshik): en-CA may have to change sides once
       // we have OS locale separate from app locale (Chrome's UI language).
-      if (base::LowerCaseEqualsASCII(region, "au") ||
-          base::LowerCaseEqualsASCII(region, "ca") ||
-          base::LowerCaseEqualsASCII(region, "in") ||
-          base::LowerCaseEqualsASCII(region, "nz") ||
-          base::LowerCaseEqualsASCII(region, "za")) {
-        tmp_locale.append("-GB");
-      } else {
+      if (base::LowerCaseEqualsASCII(region, "lr") ||
+          base::LowerCaseEqualsASCII(region, "ph")) {
         tmp_locale.append("-US");
+      } else {
+        tmp_locale.append("-GB");
       }
     }
     if (IsLocaleAvailable(tmp_locale)) {

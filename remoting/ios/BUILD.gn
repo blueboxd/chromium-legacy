@@ -40,7 +40,7 @@ source_set("ios_core") {
     "//remoting/protocol",
   ]
 
-  libs = [
+  frameworks = [
     "CoreGraphics.framework",
     "GLKit.framework",
     "OpenGLES.framework",

@@ -168,9 +168,6 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       const GURL& url,
       CountExternalRequestsCallback callback) override;
   bool MaybeHasRegistrationForOrigin(const url::Origin& origin) override;
-  void WaitForRegistrationsInitializedForTest() override;
-  void AddRegistrationToRegisteredOriginsForTest(
-      const url::Origin& origin) override;
   void GetAllOriginsInfo(GetUsageInfoCallback callback) override;
   void DeleteForOrigin(const GURL& origin, ResultCallback callback) override;
   void PerformStorageCleanup(base::OnceClosure callback) override;
@@ -359,6 +356,12 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   // Can be null before/during init, during/after shutdown, and after
   // DeleteAndStartOver fails.
   ServiceWorkerContextCore* context();
+
+  // This method waits for service worker registrations to be initialized on the
+  // UI thread, and depends on |on_registrations_initialized_| and
+  // |registrations_initialized_| which are called in
+  // InitializeRegisteredOriginsOnUI().
+  void WaitForRegistrationsInitializedForTest();
 
   // This must be called on the core thread, and the |callback| also runs on
   // the core thread which can be called with nullptr on failure.

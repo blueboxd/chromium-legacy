@@ -1087,71 +1087,6 @@ TEST_F(OptimizationGuideHintsManagerTest, CanApplyOptimizationUrlWithNoHost) {
 }
 
 TEST_F(OptimizationGuideHintsManagerTest,
-       ShouldTargetNavigationUrlWithNoHostECTSlowerThanDefault) {
-  hints_manager()->RegisterOptimizationTypes(
-      {optimization_guide::proto::LITE_PAGE_REDIRECT});
-
-  optimization_guide::proto::Configuration config;
-  optimization_guide::BloomFilter blocklist_bloom_filter(
-      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits);
-  PopulateBloomFilterWithDefaultHost(&blocklist_bloom_filter);
-  AddBloomFilterToConfig(
-      optimization_guide::proto::LITE_PAGE_REDIRECT, blocklist_bloom_filter,
-      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits,
-      /*is_allowlist=*/false, &config);
-  ProcessHints(config, "1.0.0.0");
-
-  // Set ECT estimate to be "painful".
-  hints_manager()->OnEffectiveConnectionTypeChanged(
-      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_2G);
-  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
-      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
-          GURL("urlwithnohost"));
-
-  optimization_guide::OptimizationTargetDecision optimization_target_decision =
-      hints_manager()->ShouldTargetNavigation(
-          navigation_handle.get(),
-          optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
-
-  // Make sure decisions are logged correctly.
-  EXPECT_EQ(optimization_guide::OptimizationTargetDecision::kPageLoadMatches,
-            optimization_target_decision);
-}
-
-TEST_F(OptimizationGuideHintsManagerTest,
-       ShouldTargetNavigationUrlWithNoHostECTFasterThanDefault) {
-  hints_manager()->RegisterOptimizationTypes(
-      {optimization_guide::proto::LITE_PAGE_REDIRECT});
-
-  optimization_guide::proto::Configuration config;
-  optimization_guide::BloomFilter blocklist_bloom_filter(
-      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits);
-  PopulateBloomFilterWithDefaultHost(&blocklist_bloom_filter);
-  AddBloomFilterToConfig(
-      optimization_guide::proto::LITE_PAGE_REDIRECT, blocklist_bloom_filter,
-      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits,
-      /*is_allowlist=*/false, &config);
-  ProcessHints(config, "1.0.0.0");
-
-  // Set ECT estimate to be "fast".
-  hints_manager()->OnEffectiveConnectionTypeChanged(
-      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G);
-  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
-      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
-          GURL("urlwithnohost"));
-
-  optimization_guide::OptimizationTargetDecision optimization_target_decision =
-      hints_manager()->ShouldTargetNavigation(
-          navigation_handle.get(),
-          optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
-
-  // Make sure decisions are logged correctly.
-  EXPECT_EQ(
-      optimization_guide::OptimizationTargetDecision::kPageLoadDoesNotMatch,
-      optimization_target_decision);
-}
-
-TEST_F(OptimizationGuideHintsManagerTest,
        CanApplyOptimizationHasFilterForTypeButNotLoadedYet) {
   optimization_guide::proto::Configuration config;
   optimization_guide::BloomFilter blocklist_bloom_filter(
@@ -1288,71 +1223,6 @@ TEST_F(OptimizationGuideHintsManagerTest,
             optimization_type_decision);
 }
 
-TEST_F(OptimizationGuideHintsManagerTest, ShouldTargetNavigationNoECTEstimate) {
-  hints_manager()->RegisterOptimizationTypes(
-      {optimization_guide::proto::LITE_PAGE_REDIRECT});
-
-  optimization_guide::proto::Configuration config;
-  optimization_guide::BloomFilter blocklist_bloom_filter(
-      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits);
-  PopulateBloomFilterWithDefaultHost(&blocklist_bloom_filter);
-  AddBloomFilterToConfig(
-      optimization_guide::proto::LITE_PAGE_REDIRECT, blocklist_bloom_filter,
-      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits,
-      /*is_allowlist=*/false, &config);
-  ProcessHints(config, "1.0.0.0");
-
-  // Explicitly set ECT estimate to be unknown.
-  hints_manager()->OnEffectiveConnectionTypeChanged(
-      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
-  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
-      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
-          GURL("https://whatever.com/123"));
-
-  optimization_guide::OptimizationTargetDecision optimization_target_decision =
-      hints_manager()->ShouldTargetNavigation(
-          navigation_handle.get(),
-          optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
-
-  // Make sure decisions are logged correctly.
-  EXPECT_EQ(
-      optimization_guide::OptimizationTargetDecision::kPageLoadDoesNotMatch,
-      optimization_target_decision);
-}
-
-TEST_F(OptimizationGuideHintsManagerTest,
-       ShouldTargetNavigationNoHintToTriggerHigherThan2G) {
-  hints_manager()->RegisterOptimizationTypes(
-      {optimization_guide::proto::LITE_PAGE_REDIRECT});
-
-  optimization_guide::proto::Configuration config;
-  optimization_guide::BloomFilter blocklist_bloom_filter(
-      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits);
-  PopulateBloomFilterWithDefaultHost(&blocklist_bloom_filter);
-  AddBloomFilterToConfig(
-      optimization_guide::proto::LITE_PAGE_REDIRECT, blocklist_bloom_filter,
-      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits,
-      /*is_allowlist=*/false, &config);
-  ProcessHints(config, "1.0.0.0");
-
-  // Explicitly set ECT estimate to be unknown.
-  hints_manager()->OnEffectiveConnectionTypeChanged(
-      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G);
-  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
-      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
-          GURL("https://whatever.com/123"));
-
-  optimization_guide::OptimizationTargetDecision optimization_target_decision =
-      hints_manager()->ShouldTargetNavigation(
-          navigation_handle.get(),
-          optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
-
-  // Make sure decisions are logged correctly.
-  EXPECT_EQ(
-      optimization_guide::OptimizationTargetDecision::kPageLoadDoesNotMatch,
-      optimization_target_decision);
-}
-
 TEST_F(OptimizationGuideHintsManagerTest,
        CanApplyOptimizationAndPopulatesMetadataWithFirstOptThatMatchesNoExp) {
   InitializeWithDefaultConfig("1.0.0.0");
@@ -1377,55 +1247,6 @@ TEST_F(OptimizationGuideHintsManagerTest,
       optimization_metadata.previews_metadata().value().inflation_percent());
   EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kAllowedByHint,
             optimization_type_decision);
-}
-
-TEST_F(OptimizationGuideHintsManagerTest,
-       ShouldTargetNavigationButNotSlowEnough) {
-  InitializeWithDefaultConfig("1.0.0.0");
-
-  // Set ECT estimate so hint is activated.
-  hints_manager()->OnEffectiveConnectionTypeChanged(
-      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G);
-  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
-      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
-          url_with_hints());
-  base::RunLoop run_loop;
-  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
-                                               run_loop.QuitClosure());
-  run_loop.Run();
-
-  optimization_guide::OptimizationTargetDecision optimization_target_decision =
-      hints_manager()->ShouldTargetNavigation(
-          navigation_handle.get(),
-          optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
-
-  // Make sure decisions are logged correctly.
-  EXPECT_EQ(
-      optimization_guide::OptimizationTargetDecision::kPageLoadDoesNotMatch,
-      optimization_target_decision);
-}
-
-TEST_F(OptimizationGuideHintsManagerTest,
-       ShouldTargetNavigationWithNonPainfulPageLoadTarget) {
-  InitializeWithDefaultConfig("1.0.0.0");
-
-  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
-      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
-          url_with_hints());
-  base::RunLoop run_loop;
-  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
-                                               run_loop.QuitClosure());
-  run_loop.Run();
-
-  optimization_guide::OptimizationTargetDecision optimization_target_decision =
-      hints_manager()->ShouldTargetNavigation(
-          navigation_handle.get(),
-          optimization_guide::proto::OPTIMIZATION_TARGET_UNKNOWN);
-
-  // Make sure decisions are logged correctly.
-  EXPECT_EQ(optimization_guide::OptimizationTargetDecision::
-                kModelNotAvailableOnClient,
-            optimization_target_decision);
 }
 
 TEST_F(OptimizationGuideHintsManagerTest,

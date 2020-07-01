@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_icon_view.h"
 #include "chrome/browser/ui/views/sharing/sharing_dialog_view.h"
 #include "chrome/browser/ui/views/sharing/sharing_icon_view.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_icon_container_view.h"
 #include "chrome/browser/ui/views/translate/translate_icon_view.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -167,9 +168,7 @@ void PageActionIconController::Init(const PageActionIconParams& params,
     if (params.font_list)
       icon->SetFontList(*params.font_list);
     if (params.button_observer)
-      icon->AddButtonObserver(params.button_observer);
-    if (params.view_observer)
-      icon->views::View::AddObserver(params.view_observer);
+      params.button_observer->ObserveButton(icon);
     icon_container_->AddPageActionIcon(icon);
   }
 

@@ -864,7 +864,7 @@ void ArcAppListPrefs::OnArcPlayStoreEnabledChanged(bool enabled) {
 }
 
 void ArcAppListPrefs::SetDefaultAppsFilterLevel() {
-  // There is no a blacklisting mechanism for Android apps. Until there is
+  // There is no a blocklisting mechanism for Android apps. Until there is
   // one, we have no option but to ban all pre-installed apps on Android side.
   // Match this requirement and don't show pre-installed apps for managed users
   // in app list.

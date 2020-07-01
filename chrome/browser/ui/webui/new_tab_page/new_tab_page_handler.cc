@@ -363,7 +363,7 @@ void NewTabPageHandler::DeleteMostVisitedTile(const GURL& url) {
                    base::TimeDelta() /* unused */);
   } else {
     instant_service_->DeleteMostVisitedItem(url);
-    last_blacklisted_ = url;
+    last_blocklisted_ = url;
   }
 }
 
@@ -414,9 +414,9 @@ void NewTabPageHandler::UndoMostVisitedTileAction() {
     instant_service_->UndoCustomLinkAction();
     NTPUserDataLogger::GetOrCreateFromWebContents(web_contents_)
         ->LogEvent(NTP_CUSTOMIZE_SHORTCUT_UNDO, base::TimeDelta() /* unused */);
-  } else if (last_blacklisted_.is_valid()) {
-    instant_service_->UndoMostVisitedDeletion(last_blacklisted_);
-    last_blacklisted_ = GURL();
+  } else if (last_blocklisted_.is_valid()) {
+    instant_service_->UndoMostVisitedDeletion(last_blocklisted_);
+    last_blocklisted_ = GURL();
   }
 }
 

@@ -257,7 +257,6 @@ NGCaretPosition BetterCandidateBetween(const NGCaretPosition& current,
     DCHECK(!IsUpstreamAfterLineBreak(other));
     return other;
   }
-  DCHECK(IsUpstreamAfterLineBreak(other));
   return current;
 }
 
@@ -267,7 +266,8 @@ NGCaretPosition BetterCandidateBetween(const NGCaretPosition& current,
 // of this file for details.
 NGCaretPosition ComputeNGCaretPosition(const LayoutBlockFlow& context,
                                        unsigned offset,
-                                       TextAffinity affinity) {
+                                       TextAffinity affinity,
+                                       const LayoutText* layout_text) {
   NGInlineCursor cursor(context);
 
   NGCaretPosition candidate;
@@ -281,8 +281,13 @@ NGCaretPosition ComputeNGCaretPosition(const LayoutBlockFlow& context,
     // TODO(xiaochengh): Handle caret poisition in empty container (e.g. empty
     // line box).
 
-    if (resolution.type == ResolutionType::kResolved)
-      return AdjustCaretPositionForBidiText(resolution.caret_position);
+    if (resolution.type == ResolutionType::kResolved) {
+      candidate = resolution.caret_position;
+      if (!layout_text ||
+          candidate.cursor.Current().GetLayoutObject() == layout_text)
+        return AdjustCaretPositionForBidiText(resolution.caret_position);
+      continue;
+    }
 
     DCHECK_EQ(ResolutionType::kFoundCandidate, resolution.type);
     candidate = BetterCandidateBetween(candidate, resolution.caret_position,
@@ -292,25 +297,31 @@ NGCaretPosition ComputeNGCaretPosition(const LayoutBlockFlow& context,
   return AdjustCaretPositionForBidiText(candidate);
 }
 
-NGCaretPosition ComputeNGCaretPosition(const PositionWithAffinity& position) {
-  LayoutBlockFlow* context =
-      NGInlineFormattingContextOf(position.GetPosition());
+NGCaretPosition ComputeNGCaretPosition(
+    const PositionWithAffinity& position_with_affinity) {
+  const Position& position = position_with_affinity.GetPosition();
+  LayoutBlockFlow* context = NGInlineFormattingContextOf(position);
   if (!context)
     return NGCaretPosition();
 
   const NGOffsetMapping* mapping = NGInlineNode::GetOffsetMapping(context);
   DCHECK(mapping);
   const base::Optional<unsigned> maybe_offset =
-      mapping->GetTextContentOffset(position.GetPosition());
+      mapping->GetTextContentOffset(position);
   if (!maybe_offset.has_value()) {
     // TODO(xiaochengh): Investigate if we reach here.
     NOTREACHED();
     return NGCaretPosition();
   }
 
+  const LayoutText* const layout_text =
+      position.IsOffsetInAnchor() && IsA<Text>(position.AnchorNode())
+          ? To<Text>(position.AnchorNode())->GetLayoutObject()
+          : nullptr;
+
   const unsigned offset = *maybe_offset;
-  const TextAffinity affinity = position.Affinity();
-  return ComputeNGCaretPosition(*context, offset, affinity);
+  const TextAffinity affinity = position_with_affinity.Affinity();
+  return ComputeNGCaretPosition(*context, offset, affinity, layout_text);
 }
 
 Position NGCaretPosition::ToPositionInDOMTree() const {

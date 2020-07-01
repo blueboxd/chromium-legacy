@@ -281,7 +281,7 @@ IN_PROC_BROWSER_TEST_F(PopupTrackerBrowserTest, ShiftClick_HasTracker) {
       entry, kUkmNumGestureScrollBeginInteractions, 0u);
 }
 
-IN_PROC_BROWSER_TEST_F(PopupTrackerBrowserTest, WhitelistedPopup_HasTracker) {
+IN_PROC_BROWSER_TEST_F(PopupTrackerBrowserTest, AllowlistedPopup_HasTracker) {
   base::HistogramTester tester;
   const GURL url =
       embedded_test_server()->GetURL("/popup_blocker/popup-window-open.html");

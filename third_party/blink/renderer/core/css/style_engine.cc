@@ -2187,7 +2187,7 @@ void StyleEngine::UpdateForcedBackgroundColor() {
 
 Color StyleEngine::ColorAdjustBackgroundColor() const {
   if (use_dark_background_ && forced_colors_ == ForcedColors::kNone)
-    return Color::kBlack;
+    return Color(0x12, 0x12, 0x12);
 
   DCHECK(forced_colors_ != ForcedColors::kNone);
   return ForcedBackgroundColor();

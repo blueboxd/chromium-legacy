@@ -55,7 +55,6 @@ class BASE_EXPORT CommandLine {
   CommandLine(int argc, const CharType* const* argv);
   explicit CommandLine(const StringVector& argv);
 
-  // Override copy and assign to ensure |switches_by_stringpiece_| is valid.
   CommandLine(const CommandLine& other);
   CommandLine& operator=(const CommandLine& other);
 

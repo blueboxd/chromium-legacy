@@ -2167,7 +2167,8 @@ TEST_F(StyleEngineTest, ColorSchemeBaseBackgroundChange) {
       CSSPropertyID::kColorScheme, "dark");
   UpdateAllLifecyclePhases();
 
-  EXPECT_EQ(Color::kBlack, GetDocument().View()->BaseBackgroundColor());
+  EXPECT_EQ(Color(0x12, 0x12, 0x12),
+            GetDocument().View()->BaseBackgroundColor());
 
   color_scheme_helper.SetForcedColors(GetDocument(), ForcedColors::kActive);
   UpdateAllLifecyclePhases();

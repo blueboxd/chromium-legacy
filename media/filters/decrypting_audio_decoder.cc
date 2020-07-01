@@ -39,6 +39,10 @@ DecryptingAudioDecoder::DecryptingAudioDecoder(
     MediaLog* media_log)
     : task_runner_(task_runner), media_log_(media_log) {}
 
+bool DecryptingAudioDecoder::SupportsDecryption() const {
+  return true;
+}
+
 std::string DecryptingAudioDecoder::GetDisplayName() const {
   return "DecryptingAudioDecoder";
 }

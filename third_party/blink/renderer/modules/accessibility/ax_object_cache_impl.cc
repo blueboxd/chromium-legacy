@@ -1433,21 +1433,6 @@ void AXObjectCacheImpl::ImageLoaded(LayoutObject* layout_object) {
   MarkAXObjectDirty(obj, false);
 }
 
-void AXObjectCacheImpl::HandleLayoutComplete(LayoutObject* layout_object) {
-  if (!layout_object)
-    return;
-
-  SCOPED_DISALLOW_LIFECYCLE_TRANSITION(layout_object->GetDocument());
-
-  modification_count_++;
-
-  // Create the AXObject if it didn't yet exist - that's always safe at the
-  // end of a layout, and it allows an AX notification to be sent when a page
-  // has its first layout, rather than when the document first loads.
-  if (AXObject* obj = GetOrCreate(layout_object))
-    PostNotification(obj, ax::mojom::Event::kLayoutComplete);
-}
-
 void AXObjectCacheImpl::HandleClicked(Node* node) {
   if (AXObject* obj = Get(node))
     PostNotification(obj, ax::mojom::Event::kClicked);

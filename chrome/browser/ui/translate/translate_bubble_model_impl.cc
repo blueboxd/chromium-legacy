@@ -112,7 +112,7 @@ void TranslateBubbleModelImpl::SetNeverTranslateSite(bool value) {
   ui_delegate_->SetSiteBlacklist(value);
 }
 
-bool TranslateBubbleModelImpl::CanBlacklistSite() {
+bool TranslateBubbleModelImpl::CanBlocklistSite() {
   return ui_delegate_->CanBlacklistSite();
 }
 

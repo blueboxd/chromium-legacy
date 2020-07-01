@@ -118,6 +118,7 @@ void MediaFoundationRenderer::Initialize(MediaResource* media_resource,
     DLOG(ERROR) << "Failed to create media engine: " << PrintHr(hr);
     std::move(init_cb).Run(PIPELINE_ERROR_INITIALIZATION_FAILED);
   } else {
+    SetVolume(volume_);
     std::move(init_cb).Run(PIPELINE_OK);
   }
 }
@@ -538,6 +539,8 @@ void MediaFoundationRenderer::SetVolume(float volume) {
   volume_ = volume;
   float set_volume = muted_ ? 0 : volume_;
   DVLOG_FUNC(2) << "set_volume=" << set_volume;
+  if (!mf_media_engine_)
+    return;
 
   HRESULT hr = mf_media_engine_->SetVolume(set_volume);
   DVLOG_IF(1, FAILED(hr)) << "Failed to set volume: " << PrintHr(hr);

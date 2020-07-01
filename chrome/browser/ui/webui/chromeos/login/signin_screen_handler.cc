@@ -903,8 +903,8 @@ void SigninScreenHandler::ShowSigninUI(const std::string& email) {
   core_oobe_view_->ShowSignInUI(email);
 }
 
-void SigninScreenHandler::ShowWhitelistCheckFailedError() {
-  gaia_screen_handler_->ShowWhitelistCheckFailedError();
+void SigninScreenHandler::ShowAllowlistCheckFailedError() {
+  gaia_screen_handler_->ShowAllowlistCheckFailedError();
 }
 
 void SigninScreenHandler::Observe(int type,
@@ -1317,7 +1317,7 @@ void SigninScreenHandler::HandleSendFeedback() {
                                     weak_factory_.GetWeakPtr()));
 }
 
-bool SigninScreenHandler::AllWhitelistedUsersPresent() {
+bool SigninScreenHandler::AllAllowlistedUsersPresent() {
   CrosSettings* cros_settings = CrosSettings::Get();
   bool allow_new_user = false;
   cros_settings->GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
@@ -1328,15 +1328,15 @@ bool SigninScreenHandler::AllWhitelistedUsersPresent() {
   if (!delegate_ || users.size() > kMaxUsers) {
     return false;
   }
-  const base::ListValue* whitelist = nullptr;
-  if (!cros_settings->GetList(kAccountsPrefUsers, &whitelist) || !whitelist)
+  const base::ListValue* allowlist = nullptr;
+  if (!cros_settings->GetList(kAccountsPrefUsers, &allowlist) || !allowlist)
     return false;
-  for (size_t i = 0; i < whitelist->GetSize(); ++i) {
-    std::string whitelisted_user;
-    // NB: Wildcards in the whitelist are also detected as not present here.
-    if (!whitelist->GetString(i, &whitelisted_user) ||
+  for (size_t i = 0; i < allowlist->GetSize(); ++i) {
+    std::string allowlisted_user;
+    // NB: Wildcards in the allowlist are also detected as not present here.
+    if (!allowlist->GetString(i, &allowlisted_user) ||
         !user_manager->IsKnownUser(
-            AccountId::FromUserEmail(whitelisted_user))) {
+            AccountId::FromUserEmail(allowlisted_user))) {
       return false;
     }
   }

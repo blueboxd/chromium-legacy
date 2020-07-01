@@ -177,6 +177,11 @@ void AssistantAshTestBase::SetConsentStatus(ConsentStatus consent_status) {
   test_api_->SetConsentStatus(consent_status);
 }
 
+void AssistantAshTestBase::SetOnboardingMode(
+    AssistantOnboardingMode onboarding_mode) {
+  test_api_->SetOnboardingMode(onboarding_mode);
+}
+
 void AssistantAshTestBase::SetPreferVoice(bool prefer_voice) {
   test_api_->SetPreferVoice(prefer_voice);
 }

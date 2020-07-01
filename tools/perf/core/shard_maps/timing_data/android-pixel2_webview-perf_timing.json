@@ -212,86 +212,6 @@
         "name": "blink_perf.bindings/worker-transferable-to-worker.html"
     },
     {
-        "duration": "34.0",
-        "name": "blink_perf.canvas/canvas-to-canvas-draw.html"
-    },
-    {
-        "duration": "7.0",
-        "name": "blink_perf.canvas/canvas-to-canvas-draw_RAF.html?RAF"
-    },
-    {
-        "duration": "12.0",
-        "name": "blink_perf.canvas/createImageBitmapFromImageData.html"
-    },
-    {
-        "duration": "12.0",
-        "name": "blink_perf.canvas/createImageBitmapFromImageData_RAF.html?RAF"
-    },
-    {
-        "duration": "15.0",
-        "name": "blink_perf.canvas/docs-paper.html"
-    },
-    {
-        "duration": "8.0",
-        "name": "blink_perf.canvas/docs-paper_RAF.html?RAF"
-    },
-    {
-        "duration": "20.0",
-        "name": "blink_perf.canvas/docs-resume.html"
-    },
-    {
-        "duration": "8.0",
-        "name": "blink_perf.canvas/docs-resume_RAF.html?RAF"
-    },
-    {
-        "duration": "17.0",
-        "name": "blink_perf.canvas/docs-table.html"
-    },
-    {
-        "duration": "8.0",
-        "name": "blink_perf.canvas/docs-table_RAF.html?RAF"
-    },
-    {
-        "duration": "0.0",
-        "name": "blink_perf.canvas/draw-dynamic-canvas-2d-to-hw-accelerated-canvas-2d.html"
-    },
-    {
-        "duration": "0.0",
-        "name": "blink_perf.canvas/draw-dynamic-canvas-2d-to-hw-accelerated-canvas-2d_RAF.html?RAF"
-    },
-    {
-        "duration": "0.0",
-        "name": "blink_perf.canvas/draw-dynamic-webgl-to-hw-accelerated-canvas-2d.html"
-    },
-    {
-        "duration": "0.0",
-        "name": "blink_perf.canvas/draw-dynamic-webgl-to-hw-accelerated-canvas-2d_RAF.html?RAF"
-    },
-    {
-        "duration": "6.0",
-        "name": "blink_perf.canvas/draw-hw-accelerated-canvas-2d-to-sw-canvas-2d.html"
-    },
-    {
-        "duration": "8.0",
-        "name": "blink_perf.canvas/draw-hw-accelerated-canvas-2d-to-sw-canvas-2d_RAF.html?RAF"
-    },
-    {
-        "duration": "6.0",
-        "name": "blink_perf.canvas/draw-static-canvas-2d-to-hw-accelerated-canvas-2d.html"
-    },
-    {
-        "duration": "0.0",
-        "name": "blink_perf.canvas/draw-static-canvas-2d-to-hw-accelerated-canvas-2d_RAF.html?RAF"
-    },
-    {
-        "duration": "6.0",
-        "name": "blink_perf.canvas/draw-static-webgl-to-hw-accelerated-canvas-2d.html"
-    },
-    {
-        "duration": "0.0",
-        "name": "blink_perf.canvas/draw-static-webgl-to-hw-accelerated-canvas-2d_RAF.html?RAF"
-    },
-    {
         "duration": "0.0",
         "name": "blink_perf.canvas/draw-video-to-hw-accelerated-canvas-2d.html"
     },
@@ -317,19 +237,11 @@
     },
     {
         "duration": "12.0",
-        "name": "blink_perf.canvas/getImageData.html"
-    },
-    {
-        "duration": "12.0",
         "name": "blink_perf.canvas/getImageDataColorManaged.html"
     },
     {
         "duration": "12.0",
         "name": "blink_perf.canvas/getImageDataColorManaged_RAF.html?RAF"
-    },
-    {
-        "duration": "12.0",
-        "name": "blink_perf.canvas/getImageData_RAF.html?RAF"
     },
     {
         "duration": "6.0",
@@ -338,14 +250,6 @@
     {
         "duration": "8.0",
         "name": "blink_perf.canvas/gpu-bound-shader_RAF.html?RAF"
-    },
-    {
-        "duration": "0.0",
-        "name": "blink_perf.canvas/putImageData.html"
-    },
-    {
-        "duration": "0.0",
-        "name": "blink_perf.canvas/putImageData_RAF.html?RAF"
     },
     {
         "duration": "31.0",

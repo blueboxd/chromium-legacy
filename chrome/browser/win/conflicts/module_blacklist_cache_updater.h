@@ -92,8 +92,8 @@ class ModuleBlacklistCacheUpdater : public ModuleDatabaseObserver {
     // Allowed because it is signed by Microsoft. The certificate is not
     // validated.
     kAllowedMicrosoft,
-    // Explicitly whitelisted by the Module List component.
-    kAllowedWhitelisted,
+    // Explicitly allowed by the Module List component.
+    kAllowedAllowlisted,
     // Module analysis was interrupted using DisableModuleAnalysis(). This
     // module will not be added to the cache.
     kNotAnalyzed,
@@ -113,7 +113,7 @@ class ModuleBlacklistCacheUpdater : public ModuleDatabaseObserver {
     // blacklist.
     kDisallowedExplicit,
     // The module will be implicitly blocked because it is not otherwise
-    // whitelisted.
+    // allowed.
     kDisallowedImplicit,
     // New "disallowed" reasons should be added here!
   };

@@ -152,6 +152,14 @@ TEST_P(GLClearFramebufferTest, ClearColorWithScissor) {
     return;
   }
 
+  // TODO(jonahr): Test fails on Linux with ANGLE/passthrough
+  // (crbug.com/1099770)
+  gpu::GPUTestBotConfig bot_config;
+  if (bot_config.LoadCurrentConfig(nullptr) &&
+      bot_config.Matches("linux passthrough")) {
+    return;
+  }
+
   glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT);
 

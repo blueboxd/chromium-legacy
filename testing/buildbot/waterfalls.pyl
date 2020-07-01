@@ -1409,7 +1409,7 @@
           'linux_intel_hd_630_stable',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_dawn_integration_gtests_validating',
+          'gtest_tests': 'gpu_dawn_integration_gtests_passthrough',
           'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
@@ -1420,7 +1420,7 @@
           'linux_nvidia_quadro_p400_stable',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_dawn_integration_gtests_validating',
+          'gtest_tests': 'gpu_dawn_integration_gtests_passthrough',
           'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
@@ -1431,7 +1431,7 @@
           'linux_intel_hd_630_stable',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_dawn_integration_gtests_validating',
+          'gtest_tests': 'gpu_dawn_integration_gtests_passthrough',
           'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
@@ -1442,7 +1442,7 @@
           'linux_nvidia_quadro_p400_stable',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_dawn_integration_gtests_validating',
+          'gtest_tests': 'gpu_dawn_integration_gtests_passthrough',
           'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
@@ -2297,7 +2297,7 @@
         'mixins': [
           'intel_iris_5100',
           'limited_capacity_bot',
-          'mac_10.15_beta',
+          'mac_10.16_beta',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
@@ -3127,7 +3127,7 @@
           'nougat',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
+          'gtest_tests': 'gpu_fyi_android_gtests',
           'isolated_scripts': 'gpu_angle_perf_smoke_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
         },
@@ -3142,7 +3142,7 @@
           'lollipop_generic',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
+          'gtest_tests': 'gpu_fyi_android_gtests',
           'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
         },
       },
@@ -3155,7 +3155,7 @@
           'bullhead',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
+          'gtest_tests': 'gpu_fyi_android_gtests',
           'isolated_scripts': 'gpu_angle_and_mobile_representative_perf_fyi_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_nexus5x_telemetry_tests',
           'android_webview_gpu_telemetry_tests': 'android_webview_gpu_telemetry_tests',
@@ -3171,7 +3171,7 @@
           'shamu',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
+          'gtest_tests': 'gpu_fyi_android_gtests',
           'isolated_scripts': 'gpu_angle_perf_smoke_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
         },
@@ -3186,7 +3186,7 @@
           'marshmallow_generic',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
+          'gtest_tests': 'gpu_fyi_android_gtests',
           'isolated_scripts': 'gpu_angle_perf_smoke_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
         },
@@ -3201,7 +3201,7 @@
           'marshmallow_generic',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
+          'gtest_tests': 'gpu_fyi_android_gtests',
           'isolated_scripts': 'gpu_angle_perf_smoke_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
         },
@@ -4085,8 +4085,7 @@
         },
         'test_suites': {
           'gtest_tests': 'fuchsia_gtests',
-	  # TODO(https://crbug.com/1096611): Re-enable once flakes are resolved.
-          #'isolated_scripts': 'chromium_webkit_isolated_scripts',
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
           'gpu_telemetry_tests': 'fuchsia_gpu_telemetry_tests',
         },
       },

@@ -106,7 +106,7 @@ class ConnectivityCheckerImpl
   // Timeout handler for connectivity checks.
   // Note: Cancelling this timeout can cause the destructor for this class to be
   // called.
-  base::CancelableCallback<void()> timeout_;
+  base::CancelableOnceCallback<void()> timeout_;
 
   base::WeakPtr<ConnectivityCheckerImpl> weak_this_;
   base::WeakPtrFactory<ConnectivityCheckerImpl> weak_factory_;

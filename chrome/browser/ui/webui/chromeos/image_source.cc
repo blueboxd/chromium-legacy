@@ -27,7 +27,7 @@
 namespace chromeos {
 namespace {
 
-const char* const kWhitelistedDirectories[] = {"regulatory_labels"};
+const char* const kAllowlistedDirectories[] = {"regulatory_labels"};
 
 // Callback for user_manager::UserImageLoader.
 void ImageLoaded(content::URLDataSource::GotDataCallback got_data_callback,
@@ -58,7 +58,7 @@ void ImageSource::StartDataRequest(
     const content::WebContents::Getter& wc_getter,
     content::URLDataSource::GotDataCallback got_data_callback) {
   const std::string path = content::URLDataSource::URLToRequestPath(url);
-  if (!IsWhitelisted(path)) {
+  if (!IsAllowlisted(path)) {
     std::move(got_data_callback).Run(nullptr);
     return;
   }
@@ -95,19 +95,19 @@ std::string ImageSource::GetMimeType(const std::string& path) {
   return mime_type;
 }
 
-bool ImageSource::IsWhitelisted(const std::string& path) const {
+bool ImageSource::IsAllowlisted(const std::string& path) const {
   base::FilePath file_path(path);
   if (file_path.ReferencesParent())
     return false;
 
-  // Check if the path starts with a whitelisted directory.
+  // Check if the path starts with a allowlisted directory.
   std::vector<std::string> components;
   file_path.GetComponents(&components);
   if (components.empty())
     return false;
 
-  for (size_t i = 0; i < base::size(kWhitelistedDirectories); i++) {
-    if (components[0] == kWhitelistedDirectories[i])
+  for (size_t i = 0; i < base::size(kAllowlistedDirectories); i++) {
+    if (components[0] == kAllowlistedDirectories[i])
       return true;
   }
   return false;

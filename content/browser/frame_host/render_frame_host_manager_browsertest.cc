@@ -3269,7 +3269,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
       shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
 
   // Open a popup to navigate.
-  Shell* new_shell = OpenPopup(shell(), GURL(url::kAboutBlankURL), "foo");
+  Shell* new_shell = OpenPopup(
+      shell(), embedded_test_server()->GetURL("a.com", "/title2.html"), "foo");
   FrameTreeNode* popup_root =
       static_cast<WebContentsImpl*>(new_shell->web_contents())
           ->GetFrameTree()

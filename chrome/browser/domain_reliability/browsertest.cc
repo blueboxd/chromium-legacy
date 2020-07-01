@@ -103,7 +103,7 @@ static const char kUploadPath[] = "/domainreliability/upload";
 std::unique_ptr<net::test_server::HttpResponse> TestRequestHandler(
     int* request_count_out,
     std::string* last_request_content_out,
-    const base::Closure& quit_closure,
+    const base::RepeatingClosure& quit_closure,
     const net::test_server::HttpRequest& request) {
   if (request.relative_url != kUploadPath)
     return std::unique_ptr<net::test_server::HttpResponse>();
@@ -129,8 +129,8 @@ IN_PROC_BROWSER_TEST_F(DomainReliabilityBrowserTest, Upload) {
   int request_count = 0;
   std::string last_request_content;
   test_server()->RegisterRequestHandler(
-      base::Bind(&TestRequestHandler, &request_count, &last_request_content,
-                 run_loop.QuitClosure()));
+      base::BindRepeating(&TestRequestHandler, &request_count,
+                          &last_request_content, run_loop.QuitClosure()));
 
   ASSERT_TRUE(test_server()->Start());
 

@@ -30,7 +30,7 @@ class SamlChallengeKeyHandler final {
   SamlChallengeKeyHandler& operator=(const SamlChallengeKeyHandler&) = delete;
   ~SamlChallengeKeyHandler();
 
-  // Checks that provided |url| is whitelisted and tries to calculate response
+  // Checks that provided |url| is allowlisted and tries to calculate response
   // for the |challenge|.
   void Run(Profile* profile,
            CallbackType callback,
@@ -41,7 +41,7 @@ class SamlChallengeKeyHandler final {
 
  private:
   // Checks if it is allowed for provided |url| to perform device attestation.
-  void BuildResponseForWhitelistedUrl(const GURL& url);
+  void BuildResponseForAllowlistedUrl(const GURL& url);
   // Starts flow that acutally builds a response.
   void BuildChallengeResponse();
   // Returns current timeout for |tpm_key_challenger_| to response.

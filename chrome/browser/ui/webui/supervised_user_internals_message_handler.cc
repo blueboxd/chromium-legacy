@@ -181,12 +181,12 @@ void SupervisedUserInternalsMessageHandler::HandleTryURL(
     return;
 
   SupervisedUserURLFilter* filter = GetSupervisedUserService()->GetURLFilter();
-  std::map<std::string, base::string16> whitelists =
+  std::map<std::string, base::string16> allowlists =
       filter->GetMatchingWhitelistTitles(url);
   filter->GetFilteringBehaviorForURLWithAsyncChecks(
       url,
       base::BindOnce(&SupervisedUserInternalsMessageHandler::OnTryURLResult,
-                     weak_factory_.GetWeakPtr(), whitelists));
+                     weak_factory_.GetWeakPtr(), allowlists));
 }
 
 void SupervisedUserInternalsMessageHandler::SendBasicInfo() {
@@ -257,23 +257,23 @@ void SupervisedUserInternalsMessageHandler::SendSupervisedUserSettings(
 }
 
 void SupervisedUserInternalsMessageHandler::OnTryURLResult(
-    const std::map<std::string, base::string16>& whitelists,
+    const std::map<std::string, base::string16>& allowlists,
     SupervisedUserURLFilter::FilteringBehavior behavior,
     supervised_user_error_page::FilteringBehaviorReason reason,
     bool uncertain) {
-  std::vector<std::string> whitelists_list;
-  for (const auto& whitelist : whitelists) {
-    whitelists_list.push_back(
-        base::StringPrintf("%s: %s", whitelist.first.c_str(),
-                           base::UTF16ToUTF8(whitelist.second).c_str()));
+  std::vector<std::string> allowlists_list;
+  for (const auto& allowlist : allowlists) {
+    allowlists_list.push_back(
+        base::StringPrintf("%s: %s", allowlist.first.c_str(),
+                           base::UTF16ToUTF8(allowlist.second).c_str()));
   }
-  std::string whitelists_str = base::JoinString(whitelists_list, "; ");
+  std::string allowlists_str = base::JoinString(allowlists_list, "; ");
   base::DictionaryValue result;
   result.SetString("allowResult",
                    FilteringBehaviorToString(behavior, uncertain));
   result.SetBoolean("manual", reason == supervised_user_error_page::MANUAL &&
                                   behavior == SupervisedUserURLFilter::ALLOW);
-  result.SetString("whitelists", whitelists_str);
+  result.SetString("whitelists", allowlists_str);
   web_ui()->CallJavascriptFunctionUnsafe(
       "chrome.supervised_user_internals.receiveTryURLResult", result);
 }

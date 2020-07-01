@@ -14,13 +14,6 @@
 namespace query_tiles {
 namespace test {
 
-// Print data in Tile, also with tree represent by adjacent nodes
-// key-value[parent id: {children id}] pairs.
-std::string DebugString(const Tile* entry);
-
-// Print data in TileGroup.
-std::string DebugString(const TileGroup* group);
-
 // Build and reset the TileGroup for test usage.
 void ResetTestGroup(TileGroup* group);
 

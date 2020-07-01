@@ -1582,6 +1582,25 @@
             ]
         }
     ],
+    "ClickPointerEvent": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ClickPointerEvent"
+                    ]
+                }
+            ]
+        }
+    ],
     "ClientSideDetectionModel": [
         {
             "platforms": [
@@ -3320,7 +3339,8 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
-                        "SSLCommittedInterstitials"
+                        "SSLCommittedInterstitials",
+                        "SafeBrowsingAvailableOnIOS"
                     ]
                 }
             ]
@@ -5901,21 +5921,6 @@
                 },
                 {
                     "name": "Control"
-                }
-            ]
-        }
-    ],
-    "SafeBrowsingAvailableOnIOS": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SafeBrowsingAvailableOnIOS"
-                    ]
                 }
             ]
         }

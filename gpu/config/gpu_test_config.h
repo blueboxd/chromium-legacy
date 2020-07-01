@@ -66,6 +66,12 @@ class GPU_EXPORT GPUTestConfig {
     kAPIGLES = 1 << 3,
   };
 
+  enum CommandDecoder {
+    kCommandDecoderUnknown,
+    kCommandDecoderPassthrough = 1 << 0,
+    kCommandDecoderValidating = 1 << 1,
+  };
+
   GPUTestConfig();
   GPUTestConfig(const GPUTestConfig& other);
   virtual ~GPUTestConfig();
@@ -74,6 +80,7 @@ class GPU_EXPORT GPUTestConfig {
   void set_gpu_device_id(uint32_t id);
   void set_build_type(int32_t build_type);
   void set_api(int32_t api);
+  void set_command_decoder(int32_t command_decoder);
 
   virtual void AddGPUVendor(uint32_t gpu_vendor);
 
@@ -82,6 +89,7 @@ class GPU_EXPORT GPUTestConfig {
   uint32_t gpu_device_id() const { return gpu_device_id_; }
   int32_t build_type() const { return build_type_; }
   int32_t api() const { return api_; }
+  int32_t command_decoder() const { return command_decoder_; }
 
   // Check if the config is valid. For example, if gpu_device_id_ is set, but
   // gpu_vendor_ is unknown, then it's invalid.
@@ -109,6 +117,9 @@ class GPU_EXPORT GPUTestConfig {
 
   // Back-end rendering APIs.
   int32_t api_;
+
+  // GPU process command decoder type
+  int32_t command_decoder_;
 };
 
 class GPU_EXPORT GPUTestBotConfig : public GPUTestConfig {

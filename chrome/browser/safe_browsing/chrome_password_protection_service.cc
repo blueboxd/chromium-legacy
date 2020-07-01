@@ -369,7 +369,7 @@ void ChromePasswordProtectionService::ShowModalWarning(
     return;
 
   // Exit fullscreen if this |web_contents| is showing in fullscreen mode.
-  if (web_contents->IsFullscreenForCurrentTab())
+  if (web_contents->IsFullscreen())
     web_contents->ExitFullscreen(true);
 
 #if defined(OS_ANDROID)
@@ -464,7 +464,7 @@ void ChromePasswordProtectionService::ShowInterstitial(
              ReusedPasswordAccountType::NON_GAIA_ENTERPRISE ||
          password_type.account_type() == ReusedPasswordAccountType::GSUITE);
   // Exit fullscreen if this |web_contents| is showing in fullscreen mode.
-  if (web_contents->IsFullscreenForCurrentTab())
+  if (web_contents->IsFullscreen())
     web_contents->ExitFullscreen(/*will_cause_resize=*/true);
 
   content::OpenURLParams params(

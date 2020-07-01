@@ -56,7 +56,7 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
       RenderWidgetHostImpl* widget_host) override;
   void SendScreenRects() override;
   TextInputManager* GetTextInputManager() override;
-  bool IsFullscreenForCurrentTab() override;
+  bool IsFullscreen() override;
   RenderViewHostDelegateView* GetDelegateView() override;
   FrameTree* GetFrameTree() override;
 

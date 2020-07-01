@@ -49,7 +49,7 @@ constexpr char kAllowedInProcessType[] = "Allowed - Loaded in allowed process";
 constexpr char kAllowedInputMethodEditor[] = "Allowed - Input method editor";
 constexpr char kAllowedMatchingCertificate[] = "Allowed - Matching certificate";
 constexpr char kAllowedMicrosoftModule[] = "Allowed - Microsoft module";
-constexpr char kAllowedWhitelisted[] = "Allowed - Whitelisted";
+constexpr char kAllowedAllowlisted[] = "Allowed - Allowlisted";
 constexpr char kNotAnalyzed[] =
     "Tolerated - Not analyzed (See https://crbug.com/892294)";
 constexpr char kAllowedSameDirectory[] =
@@ -71,12 +71,12 @@ void AppendString(base::StringPiece input, std::string* output) {
 }
 
 // Returns a string describing the current module blocking status: loaded or
-// not, blocked or not, was in blacklist cache or not, bypassed blocking or not.
+// not, blocked or not, was in blocklist cache or not, bypassed blocking or not.
 std::string GetBlockingStatusString(
     const ModuleBlacklistCacheUpdater::ModuleBlockingState& blocking_state) {
   std::string status;
 
-  // Output status regarding the blacklist cache, current blocking, and
+  // Output status regarding the blocklist cache, current blocking, and
   // load status.
   if (blocking_state.was_blocked)
     status = "Blocked";
@@ -85,7 +85,7 @@ std::string GetBlockingStatusString(
   else if (blocking_state.was_in_blacklist_cache)
     AppendString("Bypassed blocking", &status);
   if (blocking_state.was_in_blacklist_cache)
-    AppendString("In blacklist cache", &status);
+    AppendString("In blocklist cache", &status);
 
   return status;
 }
@@ -116,8 +116,8 @@ std::string GetBlockingDecisionString(
       return kAllowedSameDirectory;
     case BlockingDecision::kAllowedMicrosoft:
       return kAllowedMicrosoftModule;
-    case BlockingDecision::kAllowedWhitelisted:
-      return kAllowedWhitelisted;
+    case BlockingDecision::kAllowedAllowlisted:
+      return kAllowedAllowlisted;
     case BlockingDecision::kNotAnalyzed:
       return kNotAnalyzed;
     case BlockingDecision::kTolerated:
@@ -128,9 +128,9 @@ std::string GetBlockingDecisionString(
         break;
       return "Tolerated - Will be blocked in the future";
     case BlockingDecision::kDisallowedExplicit:
-      return "Disallowed - Explicitly blacklisted";
+      return "Disallowed - Explicitly blocklisted";
     case BlockingDecision::kDisallowedImplicit:
-      return "Disallowed - Implicitly blacklisted";
+      return "Disallowed - Implicitly blocklisted";
   }
 
   // Returning an empty string indicates that the warning status should be used.
@@ -164,7 +164,7 @@ std::string GetModuleWarningDecisionString(
     case WarningDecision::kAllowedMicrosoft:
       return kAllowedMicrosoftModule;
     case WarningDecision::kAllowedWhitelisted:
-      return kAllowedWhitelisted;
+      return kAllowedAllowlisted;
     case WarningDecision::kNotAnalyzed:
       return kNotAnalyzed;
     case WarningDecision::kNoTiedApplication:
@@ -183,16 +183,16 @@ std::string GetModuleWarningDecisionString(
 std::string GetModuleStatusString(
     const ModuleInfoKey& module_key,
     IncompatibleApplicationsUpdater* incompatible_applications_updater,
-    ModuleBlacklistCacheUpdater* module_blacklist_cache_updater) {
-  if (!incompatible_applications_updater && !module_blacklist_cache_updater)
+    ModuleBlacklistCacheUpdater* module_blocklist_cache_updater) {
+  if (!incompatible_applications_updater && !module_blocklist_cache_updater)
     return std::string();
 
   std::string status;
 
   // The blocking status is shown over the warning status.
-  if (module_blacklist_cache_updater) {
+  if (module_blocklist_cache_updater) {
     const ModuleBlacklistCacheUpdater::ModuleBlockingState& blocking_state =
-        module_blacklist_cache_updater->GetModuleBlockingState(module_key);
+        module_blocklist_cache_updater->GetModuleBlockingState(module_key);
 
     status = GetBlockingStatusString(blocking_state);
 
@@ -440,7 +440,7 @@ void ConflictsDataFetcher::OnNewModuleFound(const ModuleInfoKey& module_key,
         ModuleDatabase::GetInstance()
             ->third_party_conflicts_manager()
             ->incompatible_applications_updater();
-    auto* module_blacklist_cache_updater =
+    auto* module_blocklist_cache_updater =
         ModuleDatabase::GetInstance()
             ->third_party_conflicts_manager()
             ->module_blacklist_cache_updater();
@@ -448,7 +448,7 @@ void ConflictsDataFetcher::OnNewModuleFound(const ModuleInfoKey& module_key,
     data->SetString(
         "third_party_module_status",
         GetModuleStatusString(module_key, incompatible_applications_updater,
-                              module_blacklist_cache_updater));
+                              module_blocklist_cache_updater));
   }
 #endif  // defined(GOOGLE_CHROME_BUILD)
 

@@ -80,8 +80,8 @@ class TileStoreTest : public testing::Test {
       auto& expected_group = expected->at(it->first);
       EXPECT_TRUE(
           test::AreTileGroupsIdentical(actual_loaded_group, expected_group))
-          << "\n Actual: " << test::DebugString(&actual_loaded_group)
-          << "\n Expected: " << test::DebugString(&expected_group);
+          << "\n Actual: " << actual_loaded_group.DebugString()
+          << "\n Expected: " << expected_group.DebugString();
     }
   }
 

@@ -222,9 +222,6 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_SHOW_ALL_PASSWORDS" desc="Button title in the keyboard accessory bar to open the list of all saved passwords. [Length: 20em] [iOS only]">
         Show All...
       </message>
-      <message name="IDS_IOS_SUGGEST_PASSWORD" desc="Button title in the keyboard accessory bar to show a dialog with a generated password. [Length: 20em] [iOS only]">
-        Suggest  Password...
-      </message>
       <message name="IDS_IOS_SUGGESTED_PASSWORD" desc="Text that shows a suggested generated password at user's request [Length: unlimited] [iOS only]">
         Chrome Suggested Password:
       </message>

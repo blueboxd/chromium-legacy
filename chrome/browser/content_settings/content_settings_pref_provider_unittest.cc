@@ -73,7 +73,7 @@ class DeadlockCheckerObserver {
       const ContentSettingsPref* pref = pair.second.get();
       pref_change_registrar_.Add(
           registry->Get(pair.first)->pref_name(),
-          base::Bind(
+          base::BindRepeating(
               &DeadlockCheckerObserver::OnContentSettingsPatternPairsChanged,
               base::Unretained(this), base::Unretained(pref)));
     }

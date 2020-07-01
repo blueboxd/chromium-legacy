@@ -150,8 +150,6 @@ class MODULES_EXPORT AXObjectCacheImpl
   void HandleScrollPositionChanged(LocalFrameView*) override;
   void HandleScrollPositionChanged(LayoutObject*) override;
 
-  // Called when scroll bars are added / removed (as the view resizes).
-  void HandleLayoutComplete(LayoutObject*) override;
   void HandleScrolledToAnchor(const Node* anchor_node) override;
 
   // Called when the frame rect changes, which can sometimes happen

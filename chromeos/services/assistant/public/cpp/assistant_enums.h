@@ -42,6 +42,9 @@ enum AssistantAllowedState {
   MAX_VALUE = DISALLOWED_BY_KIOSK_MODE,
 };
 
+// The mode of the Assistant onboarding experience.
+enum class AssistantOnboardingMode { kDefault, kEducation };
+
 // Enumeration of possible Assistant query sources. These values are persisted
 // to logs. Entries should not be renumbered and numeric values should never
 // be reused. Append new values to the end.

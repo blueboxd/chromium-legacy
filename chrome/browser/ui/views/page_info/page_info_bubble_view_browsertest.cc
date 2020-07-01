@@ -498,9 +498,9 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
   OpenPageInfoBubble(browser());
   views::View* change_password_button = GetView(
       browser(), PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_CHANGE_PASSWORD);
-  views::View* whitelist_password_reuse_button = GetView(
+  views::View* allowlist_password_reuse_button = GetView(
       browser(),
-      PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_WHITELIST_PASSWORD_REUSE);
+      PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_ALLOWLIST_PASSWORD_REUSE);
 
   SecurityStateTabHelper* helper =
       SecurityStateTabHelper::FromWebContents(contents);
@@ -514,7 +514,7 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
 
   // Verify these two buttons are showing.
   EXPECT_TRUE(change_password_button->GetVisible());
-  EXPECT_TRUE(whitelist_password_reuse_button->GetVisible());
+  EXPECT_TRUE(allowlist_password_reuse_button->GetVisible());
 
   // Verify clicking on button will increment corresponding bucket of
   // PasswordProtection.PageInfoAction.NonGaiaEnterprisePasswordEntry histogram.
@@ -529,7 +529,7 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
               static_cast<int>(safe_browsing::WarningAction::CHANGE_PASSWORD),
               1)));
 
-  PerformMouseClickOnView(whitelist_password_reuse_button);
+  PerformMouseClickOnView(allowlist_password_reuse_button);
   EXPECT_THAT(
       histograms.GetAllSamples(
           safe_browsing::kEnterprisePasswordPageInfoHistogram),
@@ -542,7 +542,7 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
           base::Bucket(static_cast<int>(
                            safe_browsing::WarningAction::MARK_AS_LEGITIMATE),
                        1)));
-  // Security state will change after whitelisting.
+  // Security state will change after allowlisting.
   visible_security_state = helper->GetVisibleSecurityState();
   EXPECT_EQ(security_state::MALICIOUS_CONTENT_STATUS_NONE,
             visible_security_state->malicious_content_status);
@@ -577,9 +577,9 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
   OpenPageInfoBubble(browser());
   views::View* change_password_button = GetView(
       browser(), PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_CHANGE_PASSWORD);
-  views::View* whitelist_password_reuse_button = GetView(
+  views::View* allowlist_password_reuse_button = GetView(
       browser(),
-      PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_WHITELIST_PASSWORD_REUSE);
+      PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_ALLOWLIST_PASSWORD_REUSE);
 
   SecurityStateTabHelper* helper =
       SecurityStateTabHelper::FromWebContents(contents);
@@ -590,7 +590,7 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
 
   // Verify these two buttons are showing.
   EXPECT_TRUE(change_password_button->GetVisible());
-  EXPECT_TRUE(whitelist_password_reuse_button->GetVisible());
+  EXPECT_TRUE(allowlist_password_reuse_button->GetVisible());
 
   // Verify clicking on button will increment corresponding bucket of
   // PasswordProtection.PageInfoAction.NonGaiaEnterprisePasswordEntry histogram.
@@ -604,7 +604,7 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
               static_cast<int>(safe_browsing::WarningAction::CHANGE_PASSWORD),
               1)));
 
-  PerformMouseClickOnView(whitelist_password_reuse_button);
+  PerformMouseClickOnView(allowlist_password_reuse_button);
   EXPECT_THAT(
       histograms.GetAllSamples(safe_browsing::kSavedPasswordPageInfoHistogram),
       testing::ElementsAre(
@@ -616,7 +616,7 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
           base::Bucket(static_cast<int>(
                            safe_browsing::WarningAction::MARK_AS_LEGITIMATE),
                        1)));
-  // Security state will change after whitelisting.
+  // Security state will change after allowlisting.
   visible_security_state = helper->GetVisibleSecurityState();
   EXPECT_EQ(security_state::MALICIOUS_CONTENT_STATUS_NONE,
             visible_security_state->malicious_content_status);

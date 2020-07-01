@@ -384,7 +384,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, PopupMetrics) {
                            kClickedThroughNoGesture),
       1);
 
-  // Whitelist the site and navigate again.
+  // Allowlist the site and navigate again.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
       ->SetContentSettingDefaultScope(url, GURL(), ContentSettingsType::POPUPS,
                                       std::string(), CONTENT_SETTING_ALLOW);
@@ -425,10 +425,10 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
                                       std::string(), CONTENT_SETTING_ALLOW);
 
   // Popup from the iframe should be allowed since the top-level URL is
-  // whitelisted.
+  // allowlisted.
   NavigateAndCheckPopupShown(url, kExpectForegroundTab);
 
-  // Whitelist iframe URL instead.
+  // Allowlist iframe URL instead.
   GURL::Replacements replace_host;
   replace_host.SetHostStr("www.a.com");
   GURL frame_url(embedded_test_server()

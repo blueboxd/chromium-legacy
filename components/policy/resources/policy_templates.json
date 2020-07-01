@@ -1080,6 +1080,7 @@
       'caption': '''Google Assistant''',
       'desc': '''Controls settings for Google Assistant.''',
       'policies': [
+        'AssistantOnboardingMode',
         'VoiceInteractionContextEnabled',
         'VoiceInteractionHotwordEnabled',
         'VoiceInteractionQuickAnswersEnabled',
@@ -18511,6 +18512,44 @@
       'desc': '''This policy is deprecated.''',
     },
     {
+      'name': 'AssistantOnboardingMode',
+      'owners': ['xiaohuic@chromium.org', 'croissant-eng@google.com'],
+      'type': 'string-enum',
+      'schema': {
+        'type': 'string',
+        'enum': [
+          'Default',
+          'Education',
+        ],
+      },
+      'items': [
+        {
+          'name': 'Default',
+          'value': 'Default',
+          'caption': '''Use the default mode of the Assistant onboarding experience''',
+        },
+        {
+          'name': 'Education',
+          'value': 'Education',
+          'caption': '''Use the EDU mode of the Assistant onboarding experience''',
+        },
+      ],
+      'supported_on': ['chrome_os:85-'],
+      'tags': [],
+      'future': True,
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'example_value': 'Default',
+      'id': 729,
+      'caption': '''Mode of the Assistant onboarding experience''',
+      'desc':  '''This policy controls the mode of the Assistant onboarding experience.
+
+      If the policy is unset or is set to <ph name="ASSISTANT_ONBOARDING_MODE_DEFAULT">"Default"</ph>, the default mode of the Assistant onboarding experience is used.
+      If the policy is set to <ph name="ASSISTANT_ONBOARDING_MODE_EDUCATION">"Education"</ph>, the EDU mode of the Assistant onboarding experience is used.''',
+    },
+    {
       'name': 'VoiceInteractionContextEnabled',
       'owners': ['yanxiao@google.com'],
       'type': 'main',
@@ -20174,6 +20213,7 @@
               },
             },
             'block_until_verdict': { 'type': 'integer' },
+            'minimum_data_size': { 'type': 'integer', 'minimum': 0 },
           },
         },
       },
@@ -20196,6 +20236,7 @@
           },
         ],
         'block_until_verdict': 0,
+        'minimum_data_size': 100,
       }],
       'features': {
         'dynamic_refresh': True,
@@ -20213,6 +20254,8 @@
       The <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD">service_provider</ph> field identifies which analysis service provider the settings correspond to.
 
       The <ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD">block_until_verdict</ph> field being set to 1 means Chrome will wait to get a response from the analysis service before giving the page access to the data. Any other integer value means Chrome gives the page access to the data immediately.
+
+      The <ph name="ENTERPRISE_CONNECTOR_MINIMUM_DATA_SIZE">minimum_data_size</ph> field indicates the minimum size (in bytes) data entered in Chrome must equal or surpass to be scanned. The default value is 100 bytes if the field is unset.
 
       This policy can only be set from the Google Admin console.'''
     },
@@ -22592,6 +22635,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 728,
+  'highest_id_currently_used': 729,
   'highest_atomic_group_id_currently_used': 38
 }

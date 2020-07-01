@@ -6,6 +6,7 @@
 
 #include "content/browser/native_file_system/native_file_system_directory_handle_impl.h"
 #include "content/browser/native_file_system/native_file_system_file_handle_impl.h"
+#include "third_party/blink/public/mojom/native_file_system/native_file_system_directory_handle.mojom.h"
 
 namespace content {
 
@@ -36,7 +37,8 @@ class NativeFileSystemTransferTokenImplForHandles
   }
   ~NativeFileSystemTransferTokenImplForHandles() override = default;
 
-  bool MatchesOrigin(const url::Origin& origin) const override {
+  bool MatchesOriginAndPID(const url::Origin& origin,
+                           int process_id) const override {
     return url_.origin() == origin;
   }
 
@@ -73,6 +75,80 @@ class NativeFileSystemTransferTokenImplForHandles
   const NativeFileSystemManagerImpl::SharedHandleState handle_state_;
 };
 
+// Concrete implementation for Transfer Tokens created with
+// a base::FilePath and no associated origin or implementation at the time of.
+// creation. These tokens serve as a wrapper around |file_path| and can be
+// passed between processes. Used for transferring dropped file information
+// between browser and renderer processes during drag and drop operations.
+class NativeFileSystemTransferTokenFromPath
+    : public NativeFileSystemTransferTokenImpl {
+ public:
+  NativeFileSystemTransferTokenFromPath(
+      const base::FilePath& file_path,
+      HandleType type,
+      NativeFileSystemManagerImpl* manager,
+      mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken>
+          receiver,
+      int renderer_process_id)
+      : NativeFileSystemTransferTokenImpl(type, manager, std::move(receiver)),
+        file_path_(file_path),
+        renderer_process_id_(renderer_process_id) {}
+
+  ~NativeFileSystemTransferTokenFromPath() override = default;
+
+  bool MatchesOriginAndPID(const url::Origin& origin,
+                           int process_id) const override {
+    return renderer_process_id_ == process_id;
+  }
+
+  const storage::FileSystemURL* GetAsFileSystemURL() const override {
+    return nullptr;
+  }
+
+  NativeFileSystemPermissionGrant* GetReadGrant() const override {
+    return nullptr;
+  }
+
+  NativeFileSystemPermissionGrant* GetWriteGrant() const override {
+    return nullptr;
+  }
+
+  std::unique_ptr<NativeFileSystemFileHandleImpl> CreateFileHandle(
+      const NativeFileSystemManagerImpl::BindingContext& binding_context)
+      override {
+    DCHECK_EQ(type_, HandleType::kFile);
+    NativeFileSystemManagerImpl::FileSystemURLAndFSHandle url =
+        manager_->CreateFileSystemURLFromPath(binding_context.origin,
+                                              file_path_);
+    NativeFileSystemManagerImpl::SharedHandleState shared_handle_state =
+        manager_->GetSharedHandleStateForPath(
+            file_path_, binding_context.origin, std::move(url.file_system),
+            /*is_directory=*/false,
+            NativeFileSystemPermissionContext::UserAction::kOpen);
+    return std::make_unique<NativeFileSystemFileHandleImpl>(
+        manager_, binding_context, url.url, shared_handle_state);
+  }
+
+  std::unique_ptr<NativeFileSystemDirectoryHandleImpl> CreateDirectoryHandle(
+      const NativeFileSystemManagerImpl::BindingContext& binding_context)
+      override {
+    DCHECK_EQ(type_, HandleType::kDirectory);
+    NativeFileSystemManagerImpl::FileSystemURLAndFSHandle url =
+        manager_->CreateFileSystemURLFromPath(binding_context.origin,
+                                              file_path_);
+    NativeFileSystemManagerImpl::SharedHandleState shared_handle_state =
+        manager_->GetSharedHandleStateForPath(
+            file_path_, binding_context.origin, url.file_system,
+            /*is_directory=*/true,
+            NativeFileSystemPermissionContext::UserAction::kOpen);
+    return std::make_unique<NativeFileSystemDirectoryHandleImpl>(
+        manager_, binding_context, url.url, shared_handle_state);
+  }
+
+ private:
+  const base::FilePath file_path_;
+  const int renderer_process_id_;
+};
 }  // namespace
 
 // static
@@ -80,12 +156,27 @@ std::unique_ptr<NativeFileSystemTransferTokenImpl>
 NativeFileSystemTransferTokenImpl::Create(
     const storage::FileSystemURL& url,
     const NativeFileSystemManagerImpl::SharedHandleState& handle_state,
-    HandleType type,
+    bool is_directory,
     NativeFileSystemManagerImpl* manager,
     mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken>
         receiver) {
   return std::make_unique<NativeFileSystemTransferTokenImplForHandles>(
-      url, handle_state, type, manager, std::move(receiver));
+      url, handle_state,
+      is_directory ? HandleType::kDirectory : HandleType::kFile, manager,
+      std::move(receiver));
+}
+
+// static
+std::unique_ptr<NativeFileSystemTransferTokenImpl>
+NativeFileSystemTransferTokenImpl::CreateFromPath(
+    const base::FilePath file_path,
+    bool is_directory,
+    NativeFileSystemManagerImpl* manager,
+    mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken> receiver,
+    int renderer_process_id) {
+  return std::make_unique<NativeFileSystemTransferTokenFromPath>(
+      file_path, is_directory ? HandleType::kDirectory : HandleType::kFile,
+      manager, std::move(receiver), renderer_process_id);
 }
 
 NativeFileSystemTransferTokenImpl::NativeFileSystemTransferTokenImpl(

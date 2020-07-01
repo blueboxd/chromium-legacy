@@ -799,8 +799,7 @@ VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
   GetScreenInfo(&visual_properties.screen_info);
   // Note: Later in this method, ScreenInfo rects might be overridden!
 
-  visual_properties.is_fullscreen_granted =
-      delegate_->IsFullscreenForCurrentTab();
+  visual_properties.is_fullscreen_granted = delegate_->IsFullscreen();
 
   if (is_frame_widget)
     visual_properties.display_mode = delegate_->GetDisplayMode();

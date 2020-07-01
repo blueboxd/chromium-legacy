@@ -38,6 +38,13 @@ Polymer({
     // Controls whether the search field is shown.
     showSearch: {type: Boolean, value: true},
 
+    // Controls whether the search field is autofocused.
+    autofocus: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true,
+    },
+
     // True when the toolbar is displaying in narrow mode.
     narrow: {
       type: Boolean,

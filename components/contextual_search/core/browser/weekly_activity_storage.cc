@@ -11,7 +11,8 @@
 namespace {
 
 // Used for validation in debug build.  Week numbers are > 2300 as of year 2016.
-const int kReasonableMinWeek = 2000;
+// TODO(donnd): reenable this const.  https://crbug.com/1094008. See below.
+// const int kReasonableMinWeek = 2000;
 
 }  // namespace
 
@@ -60,7 +61,9 @@ int WeeklyActivityStorage::GetWeekRemainder(int which_week) {
 }
 
 void WeeklyActivityStorage::EnsureHasActivity(int which_week) {
-  DCHECK(which_week > kReasonableMinWeek);
+  // TODO(donnd): reenable this DCHECK.  Some bots have bad clocks or time
+  // settings, causing flaky test failures. https://crbug.com/1094008.
+  // DCHECK(which_week > kReasonableMinWeek);
 
   // If still on the newest week we're done!
   int newest_week = ReadNewestWeekWritten();

@@ -221,9 +221,9 @@ class DataSaverWithServerBrowserTest : public InProcessBrowserTest {
  protected:
   void Init() {
     test_server_.reset(new net::EmbeddedTestServer());
-    test_server_->RegisterRequestHandler(
-        base::Bind(&DataSaverWithServerBrowserTest::VerifySaveDataHeader,
-                   base::Unretained(this)));
+    test_server_->RegisterRequestHandler(base::BindRepeating(
+        &DataSaverWithServerBrowserTest::VerifySaveDataHeader,
+        base::Unretained(this)));
     test_server_->ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   }
 

@@ -5672,7 +5672,6 @@ crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-invisible-3d-rotate.htm
 crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-out-of-bounds-translate.html [ Failure ]
 crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-svg.html [ Failure ]
 crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-text-input.html [ Failure ]
-crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-video-frame.html [ Failure Timeout ]
 
 # Sheriff 2019-03-01
 crbug.com/937416 http/tests/devtools/resource-tree/resource-tree-htmlimports.js [ Pass Failure ]

@@ -64,7 +64,7 @@ class FileSystemChooserBrowserTest : public ContentBrowserTest {
 
   bool IsFullscreen() {
     WebContents* web_contents = shell()->web_contents();
-    return web_contents->IsFullscreenForCurrentTab();
+    return web_contents->IsFullscreen();
   }
 
   void EnterFullscreen() {

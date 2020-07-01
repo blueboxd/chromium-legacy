@@ -131,7 +131,7 @@ class NativeFileSystemBrowserTest : public InProcessBrowserTest {
   bool IsFullscreen() {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
-    return web_contents->IsFullscreenForCurrentTab();
+    return web_contents->IsFullscreen();
   }
 
   base::FilePath CreateTestFile(const std::string& contents) {

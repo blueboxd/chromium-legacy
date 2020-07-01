@@ -33,12 +33,16 @@ MojoAudioDecoder::~MojoAudioDecoder() {
   DVLOG(1) << __func__;
 }
 
-std::string MojoAudioDecoder::GetDisplayName() const {
-  return "MojoAudioDecoder";
-}
-
 bool MojoAudioDecoder::IsPlatformDecoder() const {
   return true;
+}
+
+bool MojoAudioDecoder::SupportsDecryption() const {
+  return true;
+}
+
+std::string MojoAudioDecoder::GetDisplayName() const {
+  return "MojoAudioDecoder";
 }
 
 void MojoAudioDecoder::FailInit(InitCB init_cb, Status err) {

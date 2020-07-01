@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.download.dialogs;
 
-import android.app.Activity;
 import android.content.Context;
 import android.view.LayoutInflater;
 
@@ -18,8 +17,6 @@ import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
-import java.util.concurrent.TimeUnit;
-
 /**
  * The coordinator for download date time picker. The user can pick an exact time to start the
  * download later. The dialog has two stage:
@@ -27,8 +24,6 @@ import java.util.concurrent.TimeUnit;
  * 2. A clock to let the user to pick a time.
  */
 public class DownloadDateTimePickerDialogCoordinator implements ModalDialogProperties.Controller {
-    /** The maximum time that the user can select in the dialog.*/
-    public static final long MAX_TIME = TimeUnit.DAYS.toMillis(7); /* 7 days */
     /**
      * The controller that receives events from the date time picker.
      */
@@ -64,24 +59,25 @@ public class DownloadDateTimePickerDialogCoordinator implements ModalDialogPrope
 
     /**
      * Shows the date time picker.
+     * @param context The {@link Context} for the date time picker.
      * @param windowAndroid The window android handle that provides contexts.
      * @param model The model that defines the application data used to update the UI view.
      */
     public void showDialog(
-            Activity activity, ModalDialogManager modalDialogManager, PropertyModel model) {
-        if (activity == null || modalDialogManager == null) {
+            Context context, ModalDialogManager modalDialogManager, PropertyModel model) {
+        if (context == null || modalDialogManager == null) {
             onDismiss(null, DialogDismissalCause.ACTIVITY_DESTROYED);
             return;
         }
 
         mModalDialogManager = modalDialogManager;
         mModel = model;
-        mView = (DownloadDateTimePickerView) LayoutInflater.from(activity).inflate(
+        mView = (DownloadDateTimePickerView) LayoutInflater.from(context).inflate(
                 R.layout.download_later_date_time_picker_dialog, null);
         mProcessor = PropertyModelChangeProcessor.create(mModel, mView,
                 DownloadDateTimePickerView.Binder::bind, true /*performInitialBind*/);
         mModalDialogManager.showDialog(
-                getModalDialogModel(activity), ModalDialogManager.ModalDialogType.APP);
+                getModalDialogModel(context), ModalDialogManager.ModalDialogType.APP);
     }
 
     /**

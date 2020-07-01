@@ -795,6 +795,10 @@ void AXObject::Serialize(ui::AXNodeData* node_data) {
 
   if (AccessibilityIsIgnored())
     node_data->AddState(ax::mojom::blink::State::kIgnored);
+
+  if (GetTextAlign() != ax::mojom::blink::TextAlign::kNone) {
+    node_data->SetTextAlign(GetTextAlign());
+  }
 }
 
 bool AXObject::IsAXNodeObject() const {

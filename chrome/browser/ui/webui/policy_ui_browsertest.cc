@@ -689,7 +689,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionPolicyUITest,
           ->extension_service();
   scoped_refptr<const extensions::Extension> extension = builder.Build();
 
-  // Bypass "signin_screen" feature only enabled for whitelisted extensions.
+  // Bypass "signin_screen" feature only enabled for allowlisted extensions.
   extensions::SimpleFeature::ScopedThreadUnsafeAllowlistForTest allowlist(
       extension->id());
   // Disable extension install verification.

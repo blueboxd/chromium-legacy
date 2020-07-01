@@ -1,4 +1,10 @@
 <style include="print-preview-shared throbber md-select destination-select cr-hidden-style">
+
+:host([is-current-destination-cros-local]) #statusText {
+  color: var(--google-red-600);
+  padding: 0;
+}
+
 </style>
 <print-preview-settings-section>
   <span slot="title">$i18n{destinationLabel}</span>
@@ -51,7 +57,9 @@
     hidden$="[[!statusText_]]">
   <div slot="title"></div>
   <div slot="controls">
-    <div class="destination-status">[[statusText_]]</div>
+    <div id="statusText" class="destination-status" title="[[statusText_]]">
+        [[statusText_]]
+    </div>
   </div>
 </print-preview-settings-section>
 <print-preview-settings-section class="destination-additional-info"

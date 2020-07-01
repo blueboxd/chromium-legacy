@@ -278,7 +278,7 @@ source_set("lib") {
   }
 
   if (is_mac) {
-    libs = [ "Carbon.framework" ]
+    frameworks = [ "Carbon.framework" ]
   }
 }
 

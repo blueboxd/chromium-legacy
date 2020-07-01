@@ -73,10 +73,14 @@ void InProcessGpuThreadHolder::InitializeOnGpuThread(
   mailbox_manager_ = gles2::CreateMailboxManager(gpu_preferences_);
   shared_image_manager_ = std::make_unique<SharedImageManager>();
 
+  bool use_passthrough_cmd_decoder =
+      gpu_preferences_.use_passthrough_cmd_decoder &&
+      gles2::PassthroughCommandDecoderSupported();
+
   share_group_ = new gl::GLShareGroup();
   surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
   gl::GLContextAttribs attribs = gles2::GenerateGLContextAttribs(
-      ContextCreationAttribs(), false /* use_passthrough_decoder */);
+      ContextCreationAttribs(), use_passthrough_cmd_decoder);
   context_ =
       gl::init::CreateGLContext(share_group_.get(), surface_.get(), attribs);
   CHECK(context_->MakeCurrent(surface_.get()));
@@ -87,7 +91,11 @@ void InProcessGpuThreadHolder::InitializeOnGpuThread(
 #if defined(OS_MACOSX)
   // Virtualize GpuPreference:::kLowPower contexts by default on OS X to prevent
   // performance regressions when enabling FCM. https://crbug.com/180463
-  use_virtualized_gl_context = true;
+  // Do not enable virtualized contexts if the passthrough is enabled, because
+  // ANGLE already uses virtualized contexts.
+  if (!use_passthrough_cmd_decoder) {
+    use_virtualized_gl_context = true;
+  }
 #endif
   use_virtualized_gl_context |=
       gpu_driver_bug_workarounds.use_virtualized_gl_contexts;

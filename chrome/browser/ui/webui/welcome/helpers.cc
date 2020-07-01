@@ -46,7 +46,7 @@ const base::Feature kForceEnabled = {"NuxOnboardingForceEnabled",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 // The value of these FeatureParam values should be a comma-delimited list
-// of element names whitelisted in the MODULES_WHITELIST list, defined in
+// of element names allowlisted in the MODULES_WHITELIST list, defined in
 // chrome/browser/resources/welcome/welcome_app.js
 const base::FeatureParam<std::string> kNewUserModules{
     &kFeature, "new-user-modules", kDefaultNewUserModules};

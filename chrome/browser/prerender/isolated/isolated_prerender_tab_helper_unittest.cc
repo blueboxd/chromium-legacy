@@ -30,6 +30,7 @@
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/fake_service_worker_context.h"
 #include "content/public/test/mock_navigation_handle.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/isolation_info.h"
@@ -97,14 +98,10 @@ class IsolatedPrerenderTabHelperTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    content::ServiceWorkerContext* service_worker_context_ =
-        content::BrowserContext::GetDefaultStoragePartition(profile())
-            ->GetServiceWorkerContext();
-    service_worker_context_->WaitForRegistrationsInitializedForTest();
-
     tab_helper_ =
         std::make_unique<TestIsolatedPrerenderTabHelper>(web_contents());
     tab_helper_->SetURLLoaderFactory(test_shared_loader_factory_);
+    tab_helper_->SetServiceWorkerContextForTest(&service_worker_context_);
 
     SetDataSaverEnabled(true);
   }
@@ -324,6 +321,8 @@ class IsolatedPrerenderTabHelperTest : public ChromeRenderViewHostTestHarness {
  protected:
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
+
+  content::FakeServiceWorkerContext service_worker_context_;
 
  private:
   std::unique_ptr<TestIsolatedPrerenderTabHelper> tab_helper_;
@@ -1322,10 +1321,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, ServiceWorkerRegistered) {
   GURL doc_url("https://www.google.com/search?q=cats");
   GURL prediction_url("https://www.cat-food.com/");
 
-  content::ServiceWorkerContext* service_worker_context_ =
-      content::BrowserContext::GetDefaultStoragePartition(profile())
-          ->GetServiceWorkerContext();
-  service_worker_context_->AddRegistrationToRegisteredOriginsForTest(
+  service_worker_context_.AddRegistrationToRegisteredOrigins(
       url::Origin::Create(prediction_url));
 
   MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
@@ -1354,10 +1350,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, ServiceWorkerNotRegistered) {
   GURL prediction_url("https://www.cat-food.com/");
   GURL service_worker_registration("https://www.service-worker.com/");
 
-  content::ServiceWorkerContext* service_worker_context_ =
-      content::BrowserContext::GetDefaultStoragePartition(profile())
-          ->GetServiceWorkerContext();
-  service_worker_context_->AddRegistrationToRegisteredOriginsForTest(
+  service_worker_context_.AddRegistrationToRegisteredOrigins(
       url::Origin::Create(service_worker_registration));
 
   MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
@@ -1538,10 +1531,7 @@ TEST_F(IsolatedPrerenderTabHelperRedirectTest, NoRedirect_ServiceWorker) {
 
   GURL site_with_worker("https://service-worker.com");
 
-  content::ServiceWorkerContext* service_worker_context_ =
-      content::BrowserContext::GetDefaultStoragePartition(profile())
-          ->GetServiceWorkerContext();
-  service_worker_context_->AddRegistrationToRegisteredOriginsForTest(
+  service_worker_context_.AddRegistrationToRegisteredOrigins(
       url::Origin::Create(site_with_worker));
 
   RunNoRedirectTest(site_with_worker);

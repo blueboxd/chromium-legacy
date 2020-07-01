@@ -1319,14 +1319,14 @@ TEST_F(PageSchedulerImplTest, AudioState) {
   // We are audible for a certain period after raw signal disappearing.
   EXPECT_TRUE(page_scheduler_->IsAudioPlaying());
 
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(3));
+  test_task_runner_->FastForwardBy(recent_audio_delay() / 2);
 
   page_scheduler_->AudioStateChanged(false);
   // We are still audible. A new call to AudioStateChanged shouldn't change
   // anything.
   EXPECT_TRUE(page_scheduler_->IsAudioPlaying());
 
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(3));
+  test_task_runner_->FastForwardBy(recent_audio_delay() / 2);
 
   // Audio is finally silent.
   EXPECT_FALSE(page_scheduler_->IsAudioPlaying());

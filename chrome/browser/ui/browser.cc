@@ -2194,7 +2194,7 @@ void Browser::SetWebContentsBlocked(content::WebContents* web_contents,
   // For security, if the WebContents is in fullscreen, have it drop fullscreen.
   // This gives the user the context they need in order to make informed
   // decisions.
-  if (web_contents->IsFullscreenForCurrentTab()) {
+  if (web_contents->IsFullscreen()) {
     // FullscreenWithinTab mode exception: In this case, the browser window is
     // in its normal layout and not fullscreen (tab content rendering is in a
     // "simulated fullscreen" state for the benefit of screen capture). Thus,

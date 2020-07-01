@@ -18,8 +18,8 @@ using password_manager::PasswordAutofillManager;
 using password_manager::PasswordManager;
 
 IOSChromePasswordManagerDriver::IOSChromePasswordManagerDriver(
-    id<PasswordManagerDriverDelegate> delegate)
-    : delegate_(delegate) {}
+    id<PasswordManagerDriverBridge> bridge)
+    : bridge_(bridge) {}
 
 IOSChromePasswordManagerDriver::~IOSChromePasswordManagerDriver() = default;
 
@@ -30,12 +30,12 @@ int IOSChromePasswordManagerDriver::GetId() const {
 
 void IOSChromePasswordManagerDriver::FillPasswordForm(
     const autofill::PasswordFormFillData& form_data) {
-  [delegate_ fillPasswordForm:form_data completionHandler:nil];
+  [bridge_ fillPasswordForm:form_data completionHandler:nil];
 }
 
 void IOSChromePasswordManagerDriver::InformNoSavedCredentials(
     bool should_show_popup_without_passwords) {
-  [delegate_ onNoSavedCredentials];
+  [bridge_ onNoSavedCredentials];
 }
 
 void IOSChromePasswordManagerDriver::FormEligibleForGenerationFound(
@@ -43,7 +43,7 @@ void IOSChromePasswordManagerDriver::FormEligibleForGenerationFound(
   if (GetPasswordGenerationHelper() &&
       GetPasswordGenerationHelper()->IsGenerationEnabled(
           /*log_debug_data*/ true)) {
-    [delegate_ formEligibleForGenerationFound:form];
+    [bridge_ formEligibleForGenerationFound:form];
   }
 }
 
@@ -70,11 +70,11 @@ void IOSChromePasswordManagerDriver::ClearPreviewedForm() {
 
 password_manager::PasswordGenerationFrameHelper*
 IOSChromePasswordManagerDriver::GetPasswordGenerationHelper() {
-  return [delegate_ passwordGenerationHelper];
+  return [bridge_ passwordGenerationHelper];
 }
 
 PasswordManager* IOSChromePasswordManagerDriver::GetPasswordManager() {
-  return [delegate_ passwordManager];
+  return [bridge_ passwordManager];
 }
 
 PasswordAutofillManager*
@@ -99,5 +99,5 @@ bool IOSChromePasswordManagerDriver::CanShowAutofillUi() const {
 }
 
 const GURL& IOSChromePasswordManagerDriver::GetLastCommittedURL() const {
-  return delegate_.lastCommittedURL;
+  return bridge_.lastCommittedURL;
 }

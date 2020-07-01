@@ -33,7 +33,7 @@ class MediaSinkDesktop {
   float playback_rate_;
   base::TimeDelta last_frame_pts_;
   bool received_eos_;
-  base::CancelableClosure eos_task_;
+  base::CancelableOnceClosure eos_task_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSinkDesktop);
 };

@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/sequence_checker.h"
@@ -39,7 +40,7 @@ namespace debug {
 class UkmDebugDataExtractor;
 }
 
-class UkmRecorderImpl : public UkmRecorder {
+class COMPONENT_EXPORT(UKM_RECORDER) UkmRecorderImpl : public UkmRecorder {
   using IsWebstoreExtensionCallback =
       base::RepeatingCallback<bool(base::StringPiece id)>;
 

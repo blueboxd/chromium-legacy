@@ -7,6 +7,10 @@
   /* Override focus CSS for selectable items. */
   .list-item:focus,
   .list-item > :focus {
+    outline: none;
+  }
+
+  .list-item:focus-within {
     background-color: var(--google-blue-50);
     outline: none;
   }
@@ -42,8 +46,6 @@
 <div focus-row-container>
   <!-- TODO(crbug/1073693): Update the a11y based on expert guidance -->
   <div class="list-item flex-center"
-      focus-row-control
-      focus-type="rowWrapper"
       aria-label$="[[jobEntryAriaLabel_]]">
     <iron-icon id="fileIcon" class="flex-center"
         icon="[[getFileIcon_(jobTitle_)]]" alt="">
@@ -63,6 +65,8 @@
     <template is="dom-if" if="[[isCompletedPrintJob_(jobEntry)]]" restamp>
       <div id="completionStatus"
           class="medium-text overflow-ellipsis padded-left"
+          focus-row-control
+          focus-type="completedStatus"
           aria-hidden="true">
         [[completionStatus_]]
       </div>
@@ -82,6 +86,9 @@
         </paper-progress>
         <cr-icon-button id="cancelPrintJobButton"
             iron-icon="print-management:cancel"
+            focus-row-control
+            focus-type="cancelPrintJob"
+            aria-hidden="true"
             on-click="onCancelPrintJobClicked_">
         </cr-icon-button>
       </div>

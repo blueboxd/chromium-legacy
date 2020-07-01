@@ -27,7 +27,7 @@ source_set("file_transfer") {
   ]
 
   if (is_mac) {
-    libs = [ "AppKit.framework" ]
+    frameworks = [ "AppKit.framework" ]
   }
 
   if (!is_mac && !is_win) {

@@ -309,6 +309,9 @@ class MEDIA_EXPORT VideoRendererImpl
   gfx::Size last_frame_natural_size_;
   bool last_frame_opaque_;
 
+  // The last value from |video_decoder_stream_->AverageDuration()|.
+  base::TimeDelta last_decoder_stream_avg_duration_;
+
   // Indicates if we've painted the first valid frame after StartPlayingFrom().
   bool painted_first_frame_;
 

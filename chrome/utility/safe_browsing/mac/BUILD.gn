@@ -22,10 +22,8 @@ source_set("mac") {
 }
 
 config("dmg_public_config") {
-  libs = [
-    "bz2",
-    "CoreFoundation.framework",
-  ]
+  libs = [ "bz2" ]
+  frameworks = [ "CoreFoundation.framework" ]
 }
 
 source_set("dmg_common") {

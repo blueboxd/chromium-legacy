@@ -254,10 +254,12 @@ void PopulateResourceRequest(const ResourceRequestHead& src,
   dest->is_revalidating = src.IsRevalidating();
   if (src.RequestorOrigin()->ToString() == "null") {
     // "file:" origin is treated like an opaque unique origin when
-    // allow-file-access-from-files is not specified. Such origin is not
-    // opaque (i.e., IsOpaque() returns false) but still serializes to
-    // "null".
-    dest->request_initiator = url::Origin();
+    // allow-file-access-from-files is not specified. Such origin is not opaque
+    // (i.e., IsOpaque() returns false) but still serializes to "null". Derive a
+    // new opaque origin so that downstream consumers can make use of the
+    // origin's precursor.
+    dest->request_initiator =
+        src.RequestorOrigin()->DeriveNewOpaqueOrigin()->ToUrlOrigin();
   } else {
     dest->request_initiator = src.RequestorOrigin()->ToUrlOrigin();
   }

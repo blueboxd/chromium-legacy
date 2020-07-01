@@ -41,6 +41,7 @@ constexpr char kNormalSettings[] = R"({
   "block_password_protected": true,
   "block_large_files": true,
   "block_unsupported_file_types": true,
+  "minimum_data_size": 123,
 })";
 
 constexpr char kOnlyEnabledPatternsSettings[] = R"({
@@ -64,6 +65,7 @@ constexpr char kNoProviderSettings[] = R"({
   "block_password_protected": true,
   "block_large_files": true,
   "block_unsupported_file_types": true,
+  "minimum_data_size": 123,
 })";
 
 constexpr char kNoEnabledPatternsSettings[] = R"({
@@ -102,6 +104,7 @@ AnalysisSettings NormalSettingsWithTags(std::set<std::string> tags) {
   settings.block_password_protected_files = true;
   settings.block_large_files = true;
   settings.block_unsupported_file_types = true;
+  settings.minimum_data_size = 123;
   return settings;
 }
 
@@ -169,6 +172,8 @@ TEST_P(AnalysisServiceSettingsTest, Test) {
               expected_settings()->block_unsupported_file_types);
     ASSERT_EQ(analysis_settings.value().analysis_url,
               expected_settings()->analysis_url);
+    ASSERT_EQ(analysis_settings.value().minimum_data_size,
+              expected_settings()->minimum_data_size);
   }
 }
 

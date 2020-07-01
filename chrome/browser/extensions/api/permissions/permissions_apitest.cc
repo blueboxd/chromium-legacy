@@ -85,8 +85,8 @@ IN_PROC_BROWSER_TEST_F(PermissionsApiTest, MAYBE_FaviconPermission) {
 
 // Test functions and APIs that are always allowed (even if you ask for no
 // permissions).
-// Flaky on MacOS (see crbug/1064929).
-#if defined(OS_MACOSX)
+// Flaky on MacOS and Linux (see crbug/1064929, crbug/1101043).
+#if (defined(OS_MACOSX) || defined(OS_CHROMEOS))
 #define MAYBE_AlwaysAllowed DISABLED_AlwaysAllowed
 #else
 #define MAYBE_AlwaysAllowed AlwaysAllowed

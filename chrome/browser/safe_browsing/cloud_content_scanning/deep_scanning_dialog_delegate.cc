@@ -16,6 +16,7 @@
 #include "base/files/platform_file.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -690,7 +691,22 @@ bool DeepScanningDialogDelegate::UploadData() {
     for (const auto& text : data_.text)
       full_text.append(base::UTF16ToUTF8(text));
 
-    text_request_complete_ = full_text.empty();
+    // The request is considered complete if there is no text or if the text is
+    // too small compared to the minimum size. This means a minimum_data_size of
+    // 0 is equivalent to no minimum, as the second part of the "or" will always
+    // be false.
+    text_request_complete_ =
+        full_text.empty() ||
+        full_text.size() < data_.settings.minimum_data_size;
+
+    if (!full_text.empty()) {
+      base::UmaHistogramCustomCounts("Enterprise.OnBulkDataEntry.DataSize",
+                                     full_text.size(),
+                                     /*min=*/1,
+                                     /*max=*/51 * 1024 * 1024,
+                                     /*buckets=*/50);
+    }
+
     if (!text_request_complete_) {
       auto request =
           base::FeatureList::IsEnabled(

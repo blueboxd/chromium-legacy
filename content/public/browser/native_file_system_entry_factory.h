@@ -42,6 +42,7 @@ class CONTENT_EXPORT NativeFileSystemEntryFactory
     GURL url;
     GlobalFrameRoutingId frame_id;
     bool is_worker() const { return !frame_id; }
+    int process_id() const { return frame_id.child_id; }
   };
 
   // Creates a new NativeFileSystemEntryPtr from the path to a file. Assumes the

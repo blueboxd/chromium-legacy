@@ -152,29 +152,22 @@ class ExtensionApiCaptureTest : public ExtensionApiTabTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiCaptureTest,
-                       DISABLED_CaptureVisibleTabJpeg) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiCaptureTest, CaptureVisibleTabJpeg) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/capture_visible_tab",
                                   "test_jpeg.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiCaptureTest, DISABLED_CaptureVisibleTabPng) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiCaptureTest, CaptureVisibleTabPng) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/capture_visible_tab",
                                   "test_png.html")) << message_;
 }
 
-// Times out on non-Windows.
-// See http://crbug.com/80212
-IN_PROC_BROWSER_TEST_F(ExtensionApiCaptureTest,
-                       DISABLED_CaptureVisibleTabRace) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiCaptureTest, CaptureVisibleTabRace) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/capture_visible_tab",
                                   "test_race.html")) << message_;
 }
 
-
-// Disabled for being flaky, see http://crbug/367695.
-IN_PROC_BROWSER_TEST_F(ExtensionApiCaptureTest,
-                       DISABLED_CaptureVisibleFile) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiCaptureTest, CaptureVisibleFile) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/capture_visible_tab",
                                   "test_file.html")) << message_;
 }

@@ -28,6 +28,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
+import org.chromium.base.MathUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -235,12 +236,12 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     @UiThreadTest
-    public void testTopContainerHeightSetsTopMargin() {
+    public void testTopMarginSetsTopMargin() {
         assertThat(mRecyclerView.getLayoutParams(), instanceOf(FrameLayout.LayoutParams.class));
         assertThat(
                 ((FrameLayout.LayoutParams) mRecyclerView.getLayoutParams()).topMargin, equalTo(0));
 
-        mContainerModel.set(TabListContainerProperties.TOP_CONTROLS_HEIGHT, CONTAINER_HEIGHT);
+        mContainerModel.set(TabListContainerProperties.TOP_MARGIN, CONTAINER_HEIGHT);
         assertThat(((FrameLayout.LayoutParams) mRecyclerView.getLayoutParams()).topMargin,
                 equalTo(CONTAINER_HEIGHT));
     }
@@ -270,13 +271,34 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
 
         ImageView shadowImageView = mRecyclerView.getShadowImageViewForTesting();
 
-        assertThat(mRecyclerView.getLayoutParams(), instanceOf(FrameLayout.LayoutParams.class));
-        assertEquals(0, ((FrameLayout.LayoutParams) shadowImageView.getLayoutParams()).topMargin);
+        assertEquals(0, shadowImageView.getTranslationY(), MathUtils.EPSILON);
 
         mContainerModel.set(
-                TabListContainerProperties.SHADOW_TOP_MARGIN, INCREASED_CONTAINER_HEIGHT);
-        assertEquals(INCREASED_CONTAINER_HEIGHT,
-                ((FrameLayout.LayoutParams) shadowImageView.getLayoutParams()).topMargin);
+                TabListContainerProperties.SHADOW_TOP_OFFSET, INCREASED_CONTAINER_HEIGHT);
+        assertEquals(
+                INCREASED_CONTAINER_HEIGHT, shadowImageView.getTranslationY(), MathUtils.EPSILON);
+    }
+
+    @Test
+    @MediumTest
+    @UiThreadTest
+    public void testTranslationYSetsTranslation() {
+        mContainerModel.set(
+                TabListContainerProperties.VISIBILITY_LISTENER, mMockVisibilityListener);
+
+        mContainerModel.set(TabListContainerProperties.ANIMATE_VISIBILITY_CHANGES, false);
+        mContainerModel.set(TabListContainerProperties.IS_VISIBLE, true);
+
+        assertEquals("Wrong initial translationY.", 0, mRecyclerView.getTranslationY(),
+                MathUtils.EPSILON);
+
+        mContainerModel.set(TabListContainerProperties.TRANSLATION_Y, INCREASED_CONTAINER_HEIGHT);
+        assertEquals("translationY is not set to the correct value.", INCREASED_CONTAINER_HEIGHT,
+                mRecyclerView.getTranslationY(), MathUtils.EPSILON);
+
+        mContainerModel.set(TabListContainerProperties.TRANSLATION_Y, 0);
+        assertEquals("translationY is not set to the correct value.", 0,
+                mRecyclerView.getTranslationY(), MathUtils.EPSILON);
     }
 
     @Override

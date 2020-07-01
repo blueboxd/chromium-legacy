@@ -348,7 +348,7 @@ void KeyboardLockBrowserTest::CancelKeyboardLock(
 void KeyboardLockBrowserTest::EnterFullscreen(const base::Location& from_here) {
   web_contents()->EnterFullscreenMode(web_contents()->GetMainFrame(), {});
 
-  ASSERT_TRUE(web_contents()->IsFullscreenForCurrentTab())
+  ASSERT_TRUE(web_contents()->IsFullscreen())
       << "Location: " << from_here.ToString();
 
   VerifyKeyboardLockState(from_here);
@@ -357,7 +357,7 @@ void KeyboardLockBrowserTest::EnterFullscreen(const base::Location& from_here) {
 void KeyboardLockBrowserTest::ExitFullscreen(const base::Location& from_here) {
   web_contents()->ExitFullscreenMode(/*should_resize=*/true);
 
-  ASSERT_FALSE(web_contents()->IsFullscreenForCurrentTab())
+  ASSERT_FALSE(web_contents()->IsFullscreen())
       << "Location: " << from_here.ToString();
 
   VerifyKeyboardLockState(from_here);
@@ -395,7 +395,7 @@ void KeyboardLockBrowserTest::VerifyKeyboardLockState(
 
   bool ux_conditions_satisfied =
       web_contents()->GetRenderWidgetHostView()->HasFocus() &&
-      web_contents()->IsFullscreenForCurrentTab();
+      web_contents()->IsFullscreen();
 
   bool keyboard_lock_active =
       web_contents()->GetRenderWidgetHostView()->IsKeyboardLocked();

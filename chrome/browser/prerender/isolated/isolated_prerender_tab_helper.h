@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service.h"
 #include "chrome/browser/prerender/isolated/prefetched_mainframe_response_container.h"
+#include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -224,6 +225,13 @@ class IsolatedPrerenderTabHelper
     base::Optional<base::TimeDelta> probe_latency_;
   };
 
+  // Checks if a |service_worker_context_for_test_| is available, and if not,
+  // returns the real service worker context from the default storage partition.
+  // This is used for passing the |service_worker_context| to
+  // CheckEligibilityOfURL().
+  static content::ServiceWorkerContext* GetServiceWorkerContext(
+      Profile* profile);
+
   // Used to determine if |url| is eligible for isolated prefetching. Also gives
   // a reason in |status| if one is applicable.
   using OnEligibilityResultCallback = base::OnceCallback<void(
@@ -275,6 +283,12 @@ class IsolatedPrerenderTabHelper
   void RemoveObserverForTesting(Observer* observer);
 
   network::mojom::NetworkContext* GetIsolatedContextForTesting() const;
+
+  // Sets the service_worker_context_for_test_ with a FakeServiceWorkerContext
+  // for the the purpose of testing.
+  // Used in the SetUp() method in isolated_prerender_tab_helper_unittest.cc.
+  static void SetServiceWorkerContextForTest(
+      content::ServiceWorkerContext* context);
 
  protected:
   // Exposed for testing.

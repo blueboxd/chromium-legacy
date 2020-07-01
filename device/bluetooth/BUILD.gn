@@ -239,7 +239,7 @@ component("bluetooth") {
   }
 
   if (is_mac) {
-    libs = [
+    frameworks = [
       "IOBluetooth.framework",
       "Foundation.framework",
     ]

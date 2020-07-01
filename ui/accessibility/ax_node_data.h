@@ -194,6 +194,8 @@ struct AX_BASE_EXPORT AXNodeData {
   void SetRestriction(ax::mojom::Restriction restriction);
   ax::mojom::ListStyle GetListStyle() const;
   void SetListStyle(ax::mojom::ListStyle list_style);
+  ax::mojom::TextAlign GetTextAlign() const;
+  void SetTextAlign(ax::mojom::TextAlign text_align);
   ax::mojom::TextDirection GetTextDirection() const;
   void SetTextDirection(ax::mojom::TextDirection text_direction);
   ax::mojom::ImageAnnotationStatus GetImageAnnotationStatus() const;

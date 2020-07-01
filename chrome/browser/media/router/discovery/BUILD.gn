@@ -81,7 +81,7 @@ static_library("discovery") {
 
   if (is_mac) {
     sources += [ "discovery_network_list_wifi_mac.mm" ]
-    libs = [ "CoreWLAN.framework" ]
+    frameworks = [ "CoreWLAN.framework" ]
   }
 
   if (is_win) {

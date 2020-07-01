@@ -8,7 +8,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.view.ContextThemeWrapper;
 import android.view.View;
-import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
@@ -44,6 +43,7 @@ import org.chromium.components.feed.proto.FeedUiProto.SharedState;
 import org.chromium.components.feed.proto.FeedUiProto.Slice;
 import org.chromium.components.feed.proto.FeedUiProto.StreamUpdate;
 import org.chromium.components.feed.proto.FeedUiProto.StreamUpdate.SliceUpdate;
+import org.chromium.components.feed.proto.FeedUiProto.ZeroStateSlice;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -385,14 +385,13 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
                     sliceId, slice.getXsurfaceSlice().getXsurfaceFrame().toByteArray());
         } else if (slice.hasLoadingSpinnerSlice()) {
             return new FeedListContentManager.NativeViewContent(sliceId, R.layout.feed_spinner);
-        } else if (slice.hasZeroStateSlice()) {
-            // TODO(iwells): Settle on a final layout for zero-state.
-            return new FeedListContentManager.NativeViewContent(sliceId, R.layout.no_content);
-        } else {
-            TextView view = new TextView(mActivity);
-            view.setText(sliceId);
-            return new FeedListContentManager.NativeViewContent(sliceId, view);
         }
+        assert slice.hasZeroStateSlice();
+        if (slice.getZeroStateSlice().getType() == ZeroStateSlice.Type.CANT_REFRESH) {
+            return new FeedListContentManager.NativeViewContent(sliceId, R.layout.no_connection);
+        }
+        assert slice.getZeroStateSlice().getType() == ZeroStateSlice.Type.NO_CARDS_AVAILABLE;
+        return new FeedListContentManager.NativeViewContent(sliceId, R.layout.no_content_v2);
     }
 
     @Override

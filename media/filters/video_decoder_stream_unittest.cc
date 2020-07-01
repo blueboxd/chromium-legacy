@@ -42,6 +42,7 @@ using ::testing::StrictMock;
 
 namespace media {
 
+namespace {
 const int kNumConfigs = 4;
 const int kNumBuffersInOneConfig = 5;
 constexpr base::TimeDelta kPrepareDelay = base::TimeDelta::FromMilliseconds(5);
@@ -49,6 +50,15 @@ constexpr base::TimeDelta kPrepareDelay = base::TimeDelta::FromMilliseconds(5);
 static std::string GetDecoderName(int i) {
   return std::string("VideoDecoder") + base::NumberToString(i);
 }
+
+DecoderPriority MockDecoderPriority(const VideoDecoderConfig& config) {
+  return config.visible_rect().height() >=
+                 TestVideoConfig::LargeCodedSize().height()
+             ? DecoderPriority::kPreferPlatformDecoders
+             : DecoderPriority::kPreferSoftwareDecoders;
+}
+
+}  // namespace
 
 struct VideoDecoderStreamTestParams {
   VideoDecoderStreamTestParams(bool is_encrypted,
@@ -74,10 +84,7 @@ class VideoDecoderStreamTest
       public testing::WithParamInterface<VideoDecoderStreamTestParams> {
  public:
   VideoDecoderStreamTest()
-      : demuxer_stream_(new FakeDemuxerStream(kNumConfigs,
-                                              kNumBuffersInOneConfig,
-                                              GetParam().is_encrypted)),
-        is_initialized_(false),
+      : is_initialized_(false),
         num_decoded_frames_(0),
         pending_initialize_(false),
         pending_read_(false),
@@ -94,6 +101,10 @@ class VideoDecoderStreamTest
     video_decoder_stream_->set_decoder_change_observer_for_testing(
         base::BindRepeating(&VideoDecoderStreamTest::OnDecoderChanged,
                             base::Unretained(this)));
+    video_decoder_stream_
+        ->GetDecoderSelectorForTesting(util::PassKey<VideoDecoderStreamTest>())
+        .OverrideDecoderPriorityCBForTesting(
+            base::BindRepeating(MockDecoderPriority));
     if (GetParam().has_prepare) {
       video_decoder_stream_->SetPrepareCB(base::BindRepeating(
           &VideoDecoderStreamTest::PrepareFrame, base::Unretained(this)));
@@ -137,6 +148,13 @@ class VideoDecoderStreamTest
     DCHECK(!pending_read_);
     DCHECK(!pending_reset_);
     DCHECK(!pending_stop_);
+  }
+
+  void CreateDemuxerStream(gfx::Size start_size, gfx::Vector2dF size_delta) {
+    DCHECK(!demuxer_stream_);
+    demuxer_stream_ = std::make_unique<FakeDemuxerStream>(
+        kNumConfigs, kNumBuffersInOneConfig, GetParam().is_encrypted,
+        start_size, size_delta);
   }
 
   void PrepareFrame(scoped_refptr<VideoFrame> frame,
@@ -198,14 +216,17 @@ class VideoDecoderStreamTest
       decoders.push_back(std::move(decoder));
     }
 
-    for (const auto& i : decoder_indices_to_fail_init_)
+    for (const auto i : decoder_indices_to_fail_init_)
       decoders_[i]->SimulateFailureToInit();
 
-    for (const auto& i : decoder_indices_to_hold_init_)
+    for (const auto i : decoder_indices_to_hold_init_)
       decoders_[i]->HoldNextInit();
 
-    for (const auto& i : decoder_indices_to_hold_decode_)
+    for (const auto i : decoder_indices_to_hold_decode_)
       decoders_[i]->HoldDecode();
+
+    for (const auto i : platform_decoder_indices_)
+      decoders_[i]->SetIsPlatformDecoder(true);
 
     return decoders;
   }
@@ -214,13 +235,14 @@ class VideoDecoderStreamTest
     decoder_indices_to_fail_init_.clear();
     decoder_indices_to_hold_init_.clear();
     decoder_indices_to_hold_decode_.clear();
+    platform_decoder_indices_.clear();
   }
 
   // On next decoder selection, fail initialization on decoders specified by
   // |decoder_indices|.
-  void FailDecoderInitOnSelection(const std::vector<int>& decoder_indices) {
-    decoder_indices_to_fail_init_ = decoder_indices;
-    for (int i : decoder_indices) {
+  void FailDecoderInitOnSelection(std::vector<int> decoder_indices) {
+    decoder_indices_to_fail_init_ = std::move(decoder_indices);
+    for (int i : decoder_indices_to_fail_init_) {
       if (!decoders_.empty() && decoders_[i] && decoders_[i].get() != decoder_)
         decoders_[i]->SimulateFailureToInit();
     }
@@ -228,9 +250,9 @@ class VideoDecoderStreamTest
 
   // On next decoder selection, hold initialization on decoders specified by
   // |decoder_indices|.
-  void HoldDecoderInitOnSelection(const std::vector<int>& decoder_indices) {
-    decoder_indices_to_hold_init_ = decoder_indices;
-    for (int i : decoder_indices) {
+  void HoldDecoderInitOnSelection(std::vector<int> decoder_indices) {
+    decoder_indices_to_hold_init_ = std::move(decoder_indices);
+    for (int i : decoder_indices_to_hold_init_) {
       if (!decoders_.empty() && decoders_[i] && decoders_[i].get() != decoder_)
         decoders_[i]->HoldNextInit();
     }
@@ -239,11 +261,19 @@ class VideoDecoderStreamTest
   // After next decoder selection, hold decode on decoders specified by
   // |decoder_indices|. This is needed because after decoder selection decode
   // may be resumed immediately and it'll be too late to hold decode then.
-  void HoldDecodeAfterSelection(const std::vector<int>& decoder_indices) {
-    decoder_indices_to_hold_decode_ = decoder_indices;
-    for (int i : decoder_indices) {
+  void HoldDecodeAfterSelection(std::vector<int> decoder_indices) {
+    decoder_indices_to_hold_decode_ = std::move(decoder_indices);
+    for (int i : decoder_indices_to_hold_decode_) {
       if (!decoders_.empty() && decoders_[i] && decoders_[i].get() != decoder_)
         decoders_[i]->HoldDecode();
+    }
+  }
+
+  void EnablePlatformDecoders(std::vector<int> decoder_indices) {
+    platform_decoder_indices_ = std::move(decoder_indices);
+    for (int i : platform_decoder_indices_) {
+      if (!decoders_.empty() && decoders_[i] && decoders_[i].get() != decoder_)
+        decoders_[i]->SetIsPlatformDecoder(true);
     }
   }
 
@@ -281,6 +311,11 @@ class VideoDecoderStreamTest
   }
 
   void Initialize() {
+    if (!demuxer_stream_) {
+      demuxer_stream_ = std::make_unique<FakeDemuxerStream>(
+          kNumConfigs, kNumBuffersInOneConfig, GetParam().is_encrypted);
+    }
+
     pending_initialize_ = true;
     video_decoder_stream_->Initialize(
         demuxer_stream_.get(),
@@ -491,9 +526,10 @@ class VideoDecoderStreamTest
   std::vector<int> decoder_indices_to_fail_init_;
   std::vector<int> decoder_indices_to_hold_init_;
   std::vector<int> decoder_indices_to_hold_decode_;
+  std::vector<int> platform_decoder_indices_;
 
   // The current decoder used by |video_decoder_stream_|.
-  FakeVideoDecoder* decoder_;
+  FakeVideoDecoder* decoder_ = nullptr;
 
   bool is_initialized_;
   int num_decoded_frames_;
@@ -578,6 +614,54 @@ TEST_P(VideoDecoderStreamTest, Read_AfterReset) {
   Read();
   Reset();
   Read();
+}
+
+// Tests that the decoder stream will switch from a software decoder to a
+// hardware decoder if the config size increases
+TEST_P(VideoDecoderStreamTest, ConfigChangeSwToHw) {
+  EnablePlatformDecoders({1});
+
+  // Create a demuxer stream with a config that increases in size
+  auto const size_delta =
+      TestVideoConfig::LargeCodedSize() - TestVideoConfig::NormalCodedSize();
+  auto const width_delta = size_delta.width() / (kNumConfigs - 1);
+  auto const height_delta = size_delta.height() / (kNumConfigs - 1);
+  CreateDemuxerStream(TestVideoConfig::NormalCodedSize(),
+                      gfx::Vector2dF(width_delta, height_delta));
+  Initialize();
+
+  // Initially we should be using a software decoder
+  EXPECT_TRUE(decoder_);
+  EXPECT_FALSE(decoder_->IsPlatformDecoder());
+
+  ReadAllFrames();
+
+  // We should end up on a hardware decoder
+  EXPECT_TRUE(decoder_->IsPlatformDecoder());
+}
+
+// Tests that the decoder stream will switch from a hardware decoder to a
+// software decoder if the config size decreases
+TEST_P(VideoDecoderStreamTest, ConfigChangeHwToSw) {
+  EnablePlatformDecoders({1});
+
+  // Create a demuxer stream with a config that progressively decreases in size
+  auto const size_delta =
+      TestVideoConfig::LargeCodedSize() - TestVideoConfig::NormalCodedSize();
+  auto const width_delta = size_delta.width() / kNumConfigs;
+  auto const height_delta = size_delta.height() / kNumConfigs;
+  CreateDemuxerStream(TestVideoConfig::LargeCodedSize(),
+                      gfx::Vector2dF(-width_delta, -height_delta));
+  Initialize();
+
+  // We should initially be using a hardware decoder
+  EXPECT_TRUE(decoder_);
+  EXPECT_TRUE(decoder_->IsPlatformDecoder());
+
+  ReadAllFrames();
+
+  // We should end up on a software decoder
+  EXPECT_FALSE(decoder_->IsPlatformDecoder());
 }
 
 TEST_P(VideoDecoderStreamTest, Read_ProperMetadata) {

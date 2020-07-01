@@ -635,10 +635,10 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostBrowserTest,
     explicit FullscreenWaiter(WebContents* wc) : WebContentsObserver(wc) {}
 
     void Wait(bool enter) {
-      if (web_contents()->IsFullscreenForCurrentTab() != enter) {
+      if (web_contents()->IsFullscreen() != enter) {
         run_loop_.Run();
       }
-      EXPECT_EQ(enter, web_contents()->IsFullscreenForCurrentTab());
+      EXPECT_EQ(enter, web_contents()->IsFullscreen());
     }
 
    private:
@@ -653,7 +653,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostBrowserTest,
   // Sanity-check: Ensure the Shell and WebContents both agree the browser is
   // not currently in fullscreen.
   ASSERT_FALSE(shell()->IsFullscreenForTabOrPending(web_contents()));
-  ASSERT_FALSE(web_contents()->IsFullscreenForCurrentTab());
+  ASSERT_FALSE(web_contents()->IsFullscreen());
 
   // While not fullscreened, expect the screen size to not be overridden.
   ScreenInfo screen_info;

@@ -299,8 +299,8 @@ void SafetyCheckHandler::CheckExtensions() {
     extensions::BlocklistState state =
         extension_prefs_->GetExtensionBlocklistState(extension_id);
     if (state == extensions::BLOCKLISTED_UNKNOWN) {
-      // If any of the extensions are in the unknown blacklist state, that means
-      // there was an error the last time the blacklist was fetched. That means
+      // If any of the extensions are in the unknown blocklist state, that means
+      // there was an error the last time the blocklist was fetched. That means
       // the results cannot be relied upon.
       OnExtensionsCheckResult(ExtensionsStatus::kError, Blocklisted(0),
                               ReenabledUser(0), ReenabledAdmin(0));

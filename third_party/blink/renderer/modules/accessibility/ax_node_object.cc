@@ -32,6 +32,7 @@
 
 #include <algorithm>
 
+#include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_image_bitmap_options.h"
 #include "third_party/blink/renderer/core/aom/accessible_node.h"
@@ -47,6 +48,7 @@
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
 #include "third_party/blink/renderer/core/editing/position.h"
+#include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
@@ -100,9 +102,12 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_svg_root.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_elements_helper.h"
 #include "third_party/blink/renderer/platform/graphics/image_data_buffer.h"
+#include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/events/keycodes/dom/keycode_converter.h"
 
 namespace {
 bool IsNeutralWithinTable(blink::AXObject* obj) {
@@ -114,6 +119,38 @@ bool IsNeutralWithinTable(blink::AXObject* obj) {
          role == ax::mojom::blink::Role::kIgnored ||
          role == ax::mojom::blink::Role::kRowGroup;
 }
+
+enum class AXAction {
+  kActionIncrement = 0,
+  kActionDecrement,
+};
+
+blink::KeyboardEvent* CreateKeyboardEvent(
+    blink::LocalDOMWindow* local_dom_window,
+    blink::WebInputEvent::Type type,
+    AXAction action) {
+  blink::WebKeyboardEvent key(type,
+                              blink::WebInputEvent::Modifiers::kNoModifiers,
+                              base::TimeTicks::Now());
+
+  // TODO(crbug.com/1099069): Fire different arrow events depending on
+  // orientation and dir (RTL/LTR)
+  switch (action) {
+    case AXAction::kActionIncrement:
+      key.dom_key = ui::DomKey::ARROW_UP;
+      key.dom_code = static_cast<int>(ui::DomCode::ARROW_UP);
+      key.native_key_code = key.windows_key_code = blink::VKEY_UP;
+      break;
+    case AXAction::kActionDecrement:
+      key.dom_key = ui::DomKey::ARROW_DOWN;
+      key.dom_code = static_cast<int>(ui::DomCode::ARROW_DOWN);
+      key.native_key_code = key.windows_key_code = blink::VKEY_DOWN;
+      break;
+  }
+
+  return blink::KeyboardEvent::Create(key, local_dom_window, true);
+}
+
 }  // namespace
 
 namespace blink {
@@ -137,6 +174,8 @@ AXNodeObject::~AXNodeObject() {
 }
 
 void AXNodeObject::AlterSliderOrSpinButtonValue(bool increase) {
+  if (!GetNode())
+    return;
   if (!IsSlider() && !IsSpinButton())
     return;
 
@@ -150,15 +189,39 @@ void AXNodeObject::AlterSliderOrSpinButtonValue(bool increase) {
 
   value += increase ? step : -step;
 
-  OnNativeSetValueAction(String::Number(value));
+  // If this is a native element, set the value directly.
+  if (native_role_ == ax::mojom::blink::Role::kSlider ||
+      native_role_ == ax::mojom::blink::Role::kSpinButton) {
+    OnNativeSetValueAction(String::Number(value));
+    // Dispatching an event could result in changes to the document, like
+    // this AXObject becoming detached.
+    if (IsDetached())
+      return;
 
-  // Dispatching an event could result in changes to the document, like
-  // this AXObject becoming detached.
-  if (IsDetached())
+    AXObjectCache().PostNotification(GetNode(),
+                                     ax::mojom::blink::Event::kValueChanged);
+    return;
+  }
+
+  // TODO(crbug.com/1099069): add a separate flag for keyboard event synthesis
+  if (!RuntimeEnabledFeatures::AccessibilityObjectModelEnabled())
     return;
 
-  AXObjectCache().PostNotification(GetNode(),
-                                   ax::mojom::blink::Event::kValueChanged);
+  // Otherwise, fire a keyboard event instead.
+  AXAction action =
+      increase ? AXAction::kActionIncrement : AXAction::kActionDecrement;
+  LocalDOMWindow* local_dom_window = GetDocument()->domWindow();
+
+  KeyboardEvent* keydown = CreateKeyboardEvent(
+      local_dom_window, WebInputEvent::Type::kRawKeyDown, action);
+  GetNode()->DispatchEvent(*keydown);
+
+  // TODO(crbug.com/1099069): add a brief pause between keydown and keyup?
+  // TODO(crbug.com/1099069): fire a "char" event depending on platform?
+
+  KeyboardEvent* keyup = CreateKeyboardEvent(
+      local_dom_window, WebInputEvent::Type::kKeyUp, action);
+  GetNode()->DispatchEvent(*keyup);
 }
 
 AXObject* AXNodeObject::ActiveDescendant() {
@@ -1819,6 +1882,31 @@ String AXNodeObject::GetText() const {
 
   auto* element = DynamicTo<Element>(node);
   return element ? element->innerText() : String();
+}
+
+ax::mojom::blink::TextAlign AXNodeObject::GetTextAlign() const {
+  if (!GetLayoutObject())
+    return ax::mojom::blink::TextAlign::kNone;
+
+  const ComputedStyle* style = GetLayoutObject()->Style();
+  if (!style)
+    return ax::mojom::blink::TextAlign::kNone;
+
+  switch (style->GetTextAlign()) {
+    case ETextAlign::kLeft:
+    case ETextAlign::kWebkitLeft:
+    case ETextAlign::kStart:
+      return ax::mojom::blink::TextAlign::kLeft;
+    case ETextAlign::kRight:
+    case ETextAlign::kWebkitRight:
+    case ETextAlign::kEnd:
+      return ax::mojom::blink::TextAlign::kRight;
+    case ETextAlign::kCenter:
+    case ETextAlign::kWebkitCenter:
+      return ax::mojom::blink::TextAlign::kCenter;
+    case ETextAlign::kJustify:
+      return ax::mojom::blink::TextAlign::kJustify;
+  }
 }
 
 String AXNodeObject::ImageDataUrl(const IntSize& max_size) const {

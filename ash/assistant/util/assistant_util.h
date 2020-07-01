@@ -6,10 +6,14 @@
 #define ASH_ASSISTANT_UTIL_ASSISTANT_UTIL_H_
 
 #include "base/component_export.h"
+#include "base/optional.h"
 
 namespace chromeos {
 namespace assistant {
 enum class AssistantEntryPoint;
+namespace prefs {
+enum class AssistantOnboardingMode;
+}  // namespace prefs
 }  // namespace assistant
 }  // namespace chromeos
 
@@ -44,7 +48,9 @@ bool ShouldAttemptWarmerWelcome(
 
 // Returns true if we should show Assistant onboarding.
 COMPONENT_EXPORT(ASSISTANT_UTIL)
-bool ShouldShowOnboarding();
+bool ShouldShowOnboarding(
+    const base::Optional<chromeos::assistant::prefs::AssistantOnboardingMode>&
+        onboarding_mode);
 
 COMPONENT_EXPORT(ASSISTANT_UTIL)
 bool IsGoogleDevice();

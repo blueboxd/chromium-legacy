@@ -7,12 +7,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_test_expectations_parser.h"
+#include "ui/gl/gl_utils.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -92,7 +94,8 @@ GPUTestConfig::GPUTestConfig()
     : os_(kOsUnknown),
       gpu_device_id_(0),
       build_type_(kBuildTypeUnknown),
-      api_(kAPIUnknown) {}
+      api_(kAPIUnknown),
+      command_decoder_(kCommandDecoderUnknown) {}
 
 GPUTestConfig::GPUTestConfig(const GPUTestConfig& other) = default;
 
@@ -123,6 +126,12 @@ void GPUTestConfig::set_build_type(int32_t build_type) {
 void GPUTestConfig::set_api(int32_t api) {
   DCHECK_EQ(0, api & ~(kAPID3D9 | kAPID3D11 | kAPIGLDesktop | kAPIGLES));
   api_ = api;
+}
+
+void GPUTestConfig::set_command_decoder(int32_t command_decoder) {
+  DCHECK_EQ(0, command_decoder &
+                   ~(kCommandDecoderPassthrough | kCommandDecoderValidating));
+  command_decoder_ = command_decoder;
 }
 
 bool GPUTestConfig::IsValid() const {
@@ -246,6 +255,9 @@ bool GPUTestBotConfig::Matches(const GPUTestConfig& config) const {
     return false;
   if (config.api() != 0 && (api() & config.api()) == 0)
     return false;
+  if (config.command_decoder() != 0 &&
+      command_decoder() != config.command_decoder())
+    return false;
   return true;
 }
 
@@ -286,6 +298,14 @@ bool GPUTestBotConfig::LoadCurrentConfig(const GPUInfo* gpu_info) {
 #else
   set_build_type(kBuildTypeDebug);
 #endif
+  // GLManager::Initialize uses this function to determine which command decoder
+  // to be run under these tests. The test config should do the same.
+  if (gl::UsePassthroughCommandDecoder(
+          base::CommandLine::ForCurrentProcess())) {
+    set_command_decoder(kCommandDecoderPassthrough);
+  } else {
+    set_command_decoder(kCommandDecoderValidating);
+  }
   return rt;
 }
 

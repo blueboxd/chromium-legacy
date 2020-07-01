@@ -215,6 +215,13 @@ const base::Feature kWebRtcHideLocalIpsWithMdns{
 const base::Feature kIntensiveWakeUpThrottling{
     "IntensiveWakeUpThrottling", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Name of the parameter that controls the grace period during which there is no
+// intensive wake up throttling after a page is hidden. Defined here to allow
+// access from about_flags.cc. The FeatureParam is defined in
+// third_party/blink/renderer/platform/scheduler/common/features.cc.
+const char kIntensiveWakeUpThrottling_GracePeriodSeconds_Name[] =
+    "grace_period_seconds";
+
 #if BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
 // Run-time feature for the |rtc_use_h264| encoder/decoder.
 const base::Feature kWebRtcH264WithOpenH264FFmpeg{

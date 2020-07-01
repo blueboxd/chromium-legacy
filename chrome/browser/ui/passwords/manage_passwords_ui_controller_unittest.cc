@@ -243,7 +243,7 @@ class ManagePasswordsUIControllerTest : public ChromeRenderViewHostTestHarness {
   std::unique_ptr<MockPasswordFormManagerForUI>
   CreateFormManagerWithBestMatches(
       const std::vector<const PasswordForm*>* best_matches,
-      bool is_blacklisted = false);
+      bool is_blocklisted = false);
 
   // Tests that the state is not changed when the password is autofilled.
   void TestNotChangingStateOnAutofill(password_manager::ui::State state);
@@ -307,7 +307,7 @@ void ManagePasswordsUIControllerTest::ExpectIconAndControllerStateIs(
 std::unique_ptr<MockPasswordFormManagerForUI>
 ManagePasswordsUIControllerTest::CreateFormManagerWithBestMatches(
     const std::vector<const PasswordForm*>* best_matches,
-    bool is_blacklisted) {
+    bool is_blocklisted) {
   auto form_manager =
       std::make_unique<testing::StrictMock<MockPasswordFormManagerForUI>>();
   EXPECT_CALL(*form_manager, GetBestMatches())
@@ -321,7 +321,7 @@ ManagePasswordsUIControllerTest::CreateFormManagerWithBestMatches(
       .WillOnce(ReturnRef(test_local_form_.url));
   EXPECT_CALL(*form_manager, IsBlacklisted())
       .Times(AtMost(1))
-      .WillOnce(Return(is_blacklisted));
+      .WillOnce(Return(is_blocklisted));
   EXPECT_CALL(*form_manager, GetInteractionsStats())
       .Times(AtMost(1))
       .WillOnce(
@@ -406,10 +406,10 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSubmitted) {
   ExpectIconAndControllerStateIs(password_manager::ui::PENDING_PASSWORD_STATE);
 }
 
-TEST_F(ManagePasswordsUIControllerTest, BlacklistedFormPasswordSubmitted) {
+TEST_F(ManagePasswordsUIControllerTest, BlocklistedFormPasswordSubmitted) {
   std::vector<const PasswordForm*> best_matches;
   auto test_form_manager =
-      CreateFormManagerWithBestMatches(&best_matches, /*is_blacklisted=*/true);
+      CreateFormManagerWithBestMatches(&best_matches, /*is_blocklisted=*/true);
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
   controller()->OnPasswordSubmitted(std::move(test_form_manager));
   EXPECT_FALSE(controller()->opened_automatic_bubble());
@@ -653,7 +653,7 @@ TEST_F(ManagePasswordsUIControllerTest,
   EXPECT_TRUE(controller()->opened_automatic_bubble());
 }
 
-TEST_F(ManagePasswordsUIControllerTest, PasswordBlacklisted) {
+TEST_F(ManagePasswordsUIControllerTest, PasswordBlocklisted) {
   std::vector<const PasswordForm*> best_matches;
   auto test_form_manager = CreateFormManagerWithBestMatches(&best_matches);
 
@@ -667,7 +667,7 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordBlacklisted) {
 }
 
 TEST_F(ManagePasswordsUIControllerTest,
-       PasswordBlacklistedWithExistingCredentials) {
+       PasswordBlocklistedWithExistingCredentials) {
   std::vector<const PasswordForm*> best_matches = {&test_local_form()};
   auto test_form_manager = CreateFormManagerWithBestMatches(&best_matches);
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
@@ -730,7 +730,7 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedToNonWebbyURL) {
   ExpectIconAndControllerStateIs(password_manager::ui::INACTIVE_STATE);
 }
 
-TEST_F(ManagePasswordsUIControllerTest, BlacklistedElsewhere) {
+TEST_F(ManagePasswordsUIControllerTest, BlocklistedElsewhere) {
   base::string16 kTestUsername = ASCIIToUTF16("test_username");
   std::vector<const PasswordForm*> forms;
   forms.push_back(&test_local_form());

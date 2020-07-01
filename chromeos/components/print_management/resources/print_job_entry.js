@@ -23,6 +23,7 @@ import {assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {FocusRowBehavior} from 'chrome://resources/js/cr/ui/focus_row_behavior.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
+import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
 import './strings.js';
 
 (function() {
@@ -214,6 +215,11 @@ Polymer({
   },
 
   /** @override */
+  attached() {
+    IronA11yAnnouncer.requestAvailability();
+  },
+
+  /** @override */
   created() {
     this.mojoInterfaceProvider_ = getMetadataProvider();
   },
@@ -259,6 +265,9 @@ Polymer({
   onPrintJobCanceled_(attemptedCancel) {
     // TODO(crbug/1093527): Handle error case in which attempted cancellation
     // failed. Need to discuss with UX on error states.
+    this.fire('iron-announce', {
+      text: loadTimeData.getStringF('cancelledPrintJob', this.jobTitle_)
+    });
     this.fire('remove-print-job', this.jobEntry.id);
   },
 
@@ -348,9 +357,9 @@ Polymer({
           this.printerName_, this.creationTime_, this.completionStatus_);
     }
     return loadTimeData.getStringF('ongoingPrintJobLabel', this.jobTitle_,
-          this.printerName_, this.creationTime_,
-          this.jobEntry.activePrintJobInfo.printedPages.toString(),
-          this.jobEntry.numberOfPages.toString());
+        this.printerName_, this.creationTime_,
+        this.jobEntry.activePrintJobInfo.printedPages.toString(),
+        this.jobEntry.numberOfPages.toString());
   },
 
   /**

@@ -33,6 +33,7 @@ using chromeos::assistant::AssistantSuggestion;
 using chromeos::assistant::AssistantSuggestionType;
 using chromeos::assistant::features::IsBetterOnboardingEnabled;
 using chromeos::assistant::features::IsConversationStartersV2Enabled;
+using chromeos::assistant::prefs::AssistantOnboardingMode;
 
 // Conversation starters -------------------------------------------------------
 
@@ -73,10 +74,6 @@ AssistantSuggestion ToAssistantSuggestion(
 // AssistantSuggestionsControllerImpl ------------------------------------------
 
 AssistantSuggestionsControllerImpl::AssistantSuggestionsControllerImpl() {
-  // Onboarding suggestions are only applicable if the feature is enabled.
-  if (IsBetterOnboardingEnabled())
-    UpdateOnboardingSuggestions();
-
   // In conversation starters V2, we only update conversation starters when the
   // Assistant UI is becoming visible so as to maximize freshness.
   if (!IsConversationStartersV2Enabled())
@@ -147,6 +144,13 @@ void AssistantSuggestionsControllerImpl::OnAssistantContextEnabled(
     return;
 
   UpdateConversationStarters();
+}
+
+void AssistantSuggestionsControllerImpl::OnAssistantOnboardingModeChanged(
+    AssistantOnboardingMode onboarding_mode) {
+  // Onboarding suggestions are only applicable if the feature is enabled.
+  if (IsBetterOnboardingEnabled())
+    UpdateOnboardingSuggestions();
 }
 
 void AssistantSuggestionsControllerImpl::UpdateConversationStarters() {
@@ -256,6 +260,14 @@ void AssistantSuggestionsControllerImpl::ProvideConversationStarters() {
 // TODO(dmblack): Replace w/ actual suggestions.
 void AssistantSuggestionsControllerImpl::UpdateOnboardingSuggestions() {
   DCHECK(IsBetterOnboardingEnabled());
+
+  // TODO(dmblack): Support non-EDU onboarding.
+  if (AssistantState::Get()->onboarding_mode() !=
+      AssistantOnboardingMode::kEducation) {
+    model_.SetOnboardingSuggestions({});
+    return;
+  }
+
   std::vector<AssistantSuggestion> onboarding_suggestions;
 
   auto AddOnboardingSuggestion =

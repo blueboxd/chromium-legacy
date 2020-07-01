@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/public/cpp/shelf_config.h"
 #include "ash/shelf/shelf_component.h"
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/widget/widget.h"
@@ -32,7 +31,6 @@ class ShelfView;
 // The shelf navigation widget holds the home button and (when in tablet mode)
 // the back button.
 class ASH_EXPORT ShelfNavigationWidget : public ShelfComponent,
-                                         public ShelfConfig::Observer,
                                          public views::Widget {
  public:
   class TestApi {
@@ -79,9 +77,6 @@ class ASH_EXPORT ShelfNavigationWidget : public ShelfComponent,
   // Sets whether the last focusable child (instead of the first) should be
   // focused when activating this widget.
   void SetDefaultLastFocusableChild(bool default_last_focusable_child);
-
-  // ShelfConfig::Observer:
-  void OnShelfConfigUpdated() override;
 
   // ShelfComponent:
   void CalculateTargetBounds() override;

@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "media/base/decode_status.h"
+#include "media/base/decoder.h"
 #include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/status.h"
@@ -24,7 +25,7 @@ class DecoderBuffer;
 class VideoDecoderConfig;
 class VideoFrame;
 
-class MEDIA_EXPORT VideoDecoder {
+class MEDIA_EXPORT VideoDecoder : public Decoder {
  public:
   // Callback for VideoDecoder initialization.
   using InitCB = base::OnceCallback<void(Status status)>;
@@ -39,22 +40,7 @@ class MEDIA_EXPORT VideoDecoder {
   using DecodeCB = base::OnceCallback<void(DecodeStatus)>;
 
   VideoDecoder();
-  virtual ~VideoDecoder();
-
-  // Returns the name of the decoder for logging and decoder selection purposes.
-  // This name should be available immediately after construction (e.g. before
-  // Initialize() is called). It should also be stable in the sense that the
-  // name does not change across multiple constructions.
-  virtual std::string GetDisplayName() const = 0;
-
-  // Returns true if the implementation is expected to be implemented by the
-  // platform. The value should be available immediately after construction and
-  // should not change within the lifetime of a decoder instance. The value is
-  // used for logging and metrics recording.
-  //
-  // TODO(sandersd): Use this to decide when to switch to software decode for
-  // low-resolution videos. https://crbug.com/684792
-  virtual bool IsPlatformDecoder() const;
+  ~VideoDecoder() override;
 
   // Initializes a VideoDecoder with the given |config|, executing the
   // |init_cb| upon completion. |output_cb| is called for each output frame
@@ -135,6 +121,7 @@ class MEDIA_EXPORT VideoDecoder {
   // [|limits::kMinVideoDecodeThreads|, |limits::kMaxVideoDecodeThreads|].
   static int GetRecommendedThreadCount(int desired_threads);
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(VideoDecoder);
 };
 

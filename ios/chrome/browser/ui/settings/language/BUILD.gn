@@ -87,7 +87,9 @@ source_set("unit_tests") {
     "//ios/chrome/browser/translate",
     "//ios/chrome/browser/ui/settings/language",
     "//ios/chrome/browser/ui/settings/language/cells",
+    "//testing/gmock",
     "//testing/gtest",
+    "//ui/base:base",
   ]
 }
 

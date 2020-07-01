@@ -216,12 +216,19 @@ class MockDemuxerStream : public DemuxerStream {
 
 class MockVideoDecoder : public VideoDecoder {
  public:
-  explicit MockVideoDecoder(
-      const std::string& decoder_name = "MockVideoDecoder");
+  MockVideoDecoder();
+  explicit MockVideoDecoder(std::string decoder_name);
+  MockVideoDecoder(bool is_platform_decoder,
+                   bool supports_decryption,
+                   std::string decoder_name);
   ~MockVideoDecoder() override;
 
-  // VideoDecoder implementation.
+  // Decoder implementation
+  bool IsPlatformDecoder() const override;
+  bool SupportsDecryption() const override;
   std::string GetDisplayName() const override;
+
+  // VideoDecoder implementation.
   void Initialize(const VideoDecoderConfig& config,
                   bool low_delay,
                   CdmContext* cdm_context,
@@ -248,18 +255,27 @@ class MockVideoDecoder : public VideoDecoder {
   MOCK_CONST_METHOD0(NeedsBitstreamConversion, bool());
 
  private:
-  std::string decoder_name_;
+  const bool is_platform_decoder_;
+  const bool supports_decryption_;
+  const std::string decoder_name_;
   DISALLOW_COPY_AND_ASSIGN(MockVideoDecoder);
 };
 
 class MockAudioDecoder : public AudioDecoder {
  public:
-  explicit MockAudioDecoder(
-      const std::string& decoder_name = "MockAudioDecoder");
+  MockAudioDecoder();
+  explicit MockAudioDecoder(std::string decoder_name);
+  explicit MockAudioDecoder(bool is_platform_decoder,
+                            bool supports_decryption,
+                            std::string decoder_name);
   ~MockAudioDecoder() override;
 
-  // AudioDecoder implementation.
+  // Decoder implementation
+  bool IsPlatformDecoder() const override;
+  bool SupportsDecryption() const override;
   std::string GetDisplayName() const override;
+
+  // AudioDecoder implementation.
   void Initialize(const AudioDecoderConfig& config,
                   CdmContext* cdm_context,
                   InitCB init_cb,
@@ -278,7 +294,9 @@ class MockAudioDecoder : public AudioDecoder {
   MOCK_METHOD1(Reset_, void(base::OnceClosure&));
 
  private:
-  std::string decoder_name_;
+  const bool is_platform_decoder_;
+  const bool supports_decryption_;
+  const std::string decoder_name_;
   DISALLOW_COPY_AND_ASSIGN(MockAudioDecoder);
 };
 

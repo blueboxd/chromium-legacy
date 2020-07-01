@@ -651,10 +651,10 @@ try_.chromium_mac_ios_builder(
 try_.chromium_mac_ios_builder(
     name = 'ios14-beta-simulator',
     executable = 'recipe:chromium_trybot',
-    caches = [xcode_cache.x11e146],
+    caches = [xcode_cache.x11e503a_xct12b1],
     os = os.MAC_10_15,
     properties = {
-        'xcode_build_version': '11e146'
+        'xcode_build_version': '11e503a_xct12b1'
     }
 )
 

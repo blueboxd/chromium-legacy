@@ -109,6 +109,10 @@ AX_BASE_EXPORT const char* ToString(
 AX_BASE_EXPORT ax::mojom::TextDecorationStyle ParseTextDecorationStyle(
     const char* text_decoration_style);
 
+// ax::mojom::TextAlign
+AX_BASE_EXPORT const char* ToString(ax::mojom::TextAlign text_align);
+AX_BASE_EXPORT ax::mojom::TextAlign ParseTextAlign(const char* text_align);
+
 // ax::mojom::TextDirection
 AX_BASE_EXPORT const char* ToString(ax::mojom::TextDirection text_direction);
 AX_BASE_EXPORT ax::mojom::TextDirection ParseTextDirection(

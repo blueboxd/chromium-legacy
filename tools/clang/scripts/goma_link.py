@@ -187,6 +187,9 @@ def parse_args(args):
   ap.add_argument('--gomacc', help='path to gomacc.')
   ap.add_argument('--jobs', '-j', help='maximum number of concurrent jobs.')
   ap.add_argument('--no-gomacc', action='store_true', help='do not use gomacc.')
+  ap.add_argument('--allowlist',
+                  action='store_true',
+                  help='act as if the target is on the allow list.')
   try:
     splitpos = args.index('--')
   except:
@@ -596,13 +599,15 @@ class GomaLinkBase(object):
       for tup in params.codegen:
         obj, bitcode, index = tup
         stamp = obj + '.stamp'
-        native_link_deps.append(stamp)
+        native_link_deps.append(obj)
         f.write(
             ('\nbuild %s : codegen %s %s\n'
              '  bitcode = %s\n'
              '  index = %s\n'
-             '  native = %s\n') %
-            tuple(map(ninjaenc, (stamp, bitcode, index, bitcode, index, obj))))
+             '  native = %s\n'
+             '\nbuild %s : phony %s\n') % tuple(
+                 map(ninjaenc,
+                     (stamp, bitcode, index, bitcode, index, obj, obj, stamp))))
 
       f.write(('\nbuild %s : native-link %s\n'
                '  rspname = %s\n  params = %s\n') %
@@ -639,7 +644,7 @@ class GomaLinkBase(object):
     # Currently, we don't detect this situation. We could, but it might
     # be better to instead move this logic out of this script and into
     # the build system.
-    use_common_objects = basename not in self.ALLOWLIST
+    use_common_objects = not (args.allowlist or basename in self.ALLOWLIST)
     common_dir = 'common_objs'
     gen_dir = 'lto.' + basename
     params = self.analyze_args(args, gen_dir, common_dir, use_common_objects)

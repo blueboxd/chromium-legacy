@@ -28,6 +28,15 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/base_tracing.h"
+#include "build/build_config.h"
+
+#if defined(OS_WIN)
+#include "base/win/static_constants.h"
+#endif
+
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif
 
 namespace base {
 
@@ -727,6 +736,31 @@ TimeTicks StackSamplingProfiler::TestPeer::GetNextSampleTime(
     TimeTicks now) {
   return GetNextSampleTimeImpl(scheduled_current_sample_time, sampling_interval,
                                now);
+}
+
+// static
+// The profiler is currently only implemented for Windows x64 and MacOSX.
+// TODO(https://crbug.com/1004855): enable for Android arm.
+bool StackSamplingProfiler::IsSupported() {
+#if (defined(OS_WIN) && defined(ARCH_CPU_X86_64)) || \
+    (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_MACOSX)
+  // TODO(https://crbug.com/1098119): Fix unwinding on OS X 10.16. The OS
+  // has moved all system libraries into the dyld shared cache and this
+  // seems to break the sampling profiler.
+  if (base::mac::IsOSLaterThan10_15_DontCallThis())
+    return false;
+#endif
+#if defined(OS_WIN)
+  // Do not start the profiler when Application Verifier is in use; running them
+  // simultaneously can cause crashes and has no known use case.
+  if (GetModuleHandleA(base::win::kApplicationVerifierDllName))
+    return false;
+#endif
+  return true;
+#else
+  return false;
+#endif
 }
 
 StackSamplingProfiler::StackSamplingProfiler(

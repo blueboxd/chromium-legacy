@@ -181,11 +181,14 @@ const char kOverrideEnabledCdmInterfaceVersion[] =
 const char kOverrideHardwareSecureCodecsForTesting[] =
     "override-hardware-secure-codecs-for-testing";
 
-#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-// Force to disable kChromeosVideoDecoder feature, used for unsupported boards.
-const char kForceDisableNewAcceleratedVideoDecoder[] =
+#if defined(OS_CHROMEOS)
+// ChromeOS uses one of two VideoDecoder implementations based on SoC/board
+// specific configurations that are signalled via this command line flag.
+// TODO(b/159825227): remove when the "old" video decoder is fully launched.
+const char kPlatformDisallowsChromeOSDirectVideoDecoder[] =
+    // TODO(mcasas): Rename the flag string when crrev.com/c/2268600 lands.
     "force-disable-new-accelerated-video-decoder";
-#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+#endif
 
 namespace autoplay {
 
@@ -290,11 +293,6 @@ const base::Feature kMemoryPressureBasedSourceBufferGC{
 // for starting attachment to HTMLME.
 const base::Feature kRevokeMediaSourceObjectURLOnAttach{
     "RevokeMediaSourceObjectURLOnAttach", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enable the instance from ChromeosVideoDecoderFactory in
-// MojoVideoDecoderService, replacing VdaVideoDecoder at Chrome OS platform.
-const base::Feature kChromeosVideoDecoder{"ChromeosVideoDecoder",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable saving playback information in a crash trace, to see if some codecs
 // are crashier than others.
@@ -576,6 +574,23 @@ const base::Feature kUsePooledSharedImageVideoProvider{
     "UsePooledSharedImageVideoProvider", base::FEATURE_ENABLED_BY_DEFAULT};
 
 #endif  // defined(OS_ANDROID)
+
+#if defined(OS_CHROMEOS) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+// Enable the hardware-accelerated direct video decoder instead of the one
+// needing the VdaVideoDecoder adapter. This flag is used mainly as a
+// chrome:flag for developers debugging issues. TODO(b/159825227): remove when
+// the direct video decoder is fully launched.
+const base::Feature kUseChromeOSDirectVideoDecoder{
+    "UseChromeOSDirectVideoDecoder", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// ChromeOS has one of two VideoDecoder implementations active based on
+// SoC/board specific configurations that are sent via command line flags. This
+// switch allows using the non default implementation for testing.
+// TODO(b/159825227): remove when the "old" video decoder is fully launched.
+const base::Feature kUseAlternateVideoDecoderImplementation{
+    "UseAlternateVideoDecoderImplementation",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(OS_CHROMEOS) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
 #if defined(OS_WIN)
 // Does NV12->NV12 video copy on the main thread right before the texture's

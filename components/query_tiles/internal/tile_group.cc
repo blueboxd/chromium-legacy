@@ -4,6 +4,7 @@
 
 #include "components/query_tiles/internal/tile_group.h"
 
+#include <sstream>
 #include <utility>
 
 namespace query_tiles {
@@ -49,5 +50,15 @@ TileGroup& TileGroup::operator=(const TileGroup& other) {
 }
 
 TileGroup& TileGroup::operator=(TileGroup&& other) = default;
+
+std::string TileGroup::DebugString() {
+  std::stringstream out;
+  out << "Group detail: \n";
+  out << "id: " << this->id << " | locale: " << this->locale
+      << " | last_updated_ts: " << this->last_updated_ts << " \n";
+  for (const auto& tile : this->tiles)
+    out << tile->DebugString();
+  return out.str();
+}
 
 }  // namespace query_tiles

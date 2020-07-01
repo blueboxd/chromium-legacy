@@ -45,7 +45,7 @@ class SupervisedUserInternalsMessageHandler
   void SendSupervisedUserSettings(const base::DictionaryValue* settings);
 
   void OnTryURLResult(
-      const std::map<std::string, base::string16>& whitelists,
+      const std::map<std::string, base::string16>& allowlists,
       SupervisedUserURLFilter::FilteringBehavior behavior,
       supervised_user_error_page::FilteringBehaviorReason reason,
       bool uncertain);

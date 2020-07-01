@@ -558,7 +558,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   }
 }
 
-#pragma mark - PasswordManagerClientDelegate
+#pragma mark - IOSChromePasswordManagerClientBridge
 
 - (WebState*)webState {
   return _webState;
@@ -645,7 +645,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
                                                            URL:URL];
 }
 
-#pragma mark - PasswordManagerDriverDelegate
+#pragma mark - PasswordManagerDriverBridge
 
 - (void)fillPasswordForm:(const autofill::PasswordFormFillData&)formData
        completionHandler:(void (^)(BOOL))completionHandler {

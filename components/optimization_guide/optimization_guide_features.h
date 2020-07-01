@@ -104,9 +104,6 @@ base::TimeDelta GetHintsFetchRefreshDuration();
 // Service that should be allowed.
 size_t MaxConcurrentPageNavigationFetches();
 
-// Returns true if optimization target prediction is enabled.
-bool IsOptimizationTargetPredictionEnabled();
-
 // The amount of time host model features will be considered fresh enough
 // to be used and remain in the OptimizationGuideStore.
 base::TimeDelta StoredHostModelFeaturesFreshnessDuration();

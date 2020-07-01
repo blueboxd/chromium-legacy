@@ -6360,6 +6360,7 @@ void RenderFrameHostImpl::FailedNavigation(
   // An error page is expected to commit, hence why is_loading_ is set to true.
   is_loading_ = true;
   dom_content_loaded_ = false;
+  has_committed_any_navigation_ = true;
   DCHECK(navigation_request && navigation_request->IsNavigationStarted() &&
          navigation_request->GetNetErrorCode() != net::OK);
 }

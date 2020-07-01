@@ -264,7 +264,6 @@ class PipelineImplTest : public ::testing::Test {
 
     EXPECT_CALL(*renderer_, OnFlush(_)).WillOnce(RunOnceClosure<0>());
     EXPECT_CALL(*renderer_, SetPlaybackRate(_));
-    EXPECT_CALL(*renderer_, SetVolume(_));
     EXPECT_CALL(*renderer_, StartPlayingFrom(seek_time))
         .WillOnce(SetBufferingState(&renderer_client_, BUFFERING_HAVE_ENOUGH,
                                     BUFFERING_CHANGE_REASON_UNKNOWN));
@@ -976,6 +975,7 @@ class PipelineTeardownTest : public PipelineImplTest {
     CreateAudioStream();
     CreateVideoStream();
     SetDemuxerExpectations(base::TimeDelta::FromSeconds(3000));
+    EXPECT_CALL(*renderer_, SetVolume(1.0f));
 
     if (state == kInitRenderer) {
       if (stop_or_error == kStop) {
@@ -1004,7 +1004,6 @@ class PipelineTeardownTest : public PipelineImplTest {
     EXPECT_CALL(callbacks_, OnMetadata(_));
 
     EXPECT_CALL(*renderer_, SetPlaybackRate(0.0));
-    EXPECT_CALL(*renderer_, SetVolume(1.0f));
     EXPECT_CALL(*renderer_, StartPlayingFrom(base::TimeDelta()))
         .WillOnce(SetBufferingState(&renderer_client_, BUFFERING_HAVE_ENOUGH,
                                     BUFFERING_CHANGE_REASON_UNKNOWN));

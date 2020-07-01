@@ -510,10 +510,9 @@
     "expiry_milestone": 89
   },
   {
-    "name": "chromeos-video-decoder",
-    "owners": [ "chromeos-video-eng@google.com" ],
-    // This flag should expire once all VDA-based ChromeOS video decoders have
-    // been removed.
+    "name": "chromeos-direct-video-decoder",
+    "owners": [ "chromeos-gfx-video@google.com" ],
+    // TODO(b/159825227): remove when the "old" video decoder is fully launched.
     "expiry_milestone": 90
   },
   {
@@ -1550,12 +1549,12 @@
   {
     "name": "enable-ephemeral-tab",
     "owners": [ "donnd", "jinsukkim" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 90
   },
   {
     "name": "enable-ephemeral-tab-bottom-sheet",
     "owners": [ "donnd", "jinsukkim" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 90
   },
   {
     "name": "enable-experimental-accessibility-autoclick",

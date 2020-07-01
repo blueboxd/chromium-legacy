@@ -28,13 +28,29 @@ struct LocaleUIFallbackPair {
 // Note that no (Norwegian) is an alias, and should fallback to Norwegian
 // Bokmål (nb)
 const LocaleUIFallbackPair kLocaleUIFallbackTable[] = {
-    {"en", "en-US"},     {"en-AU", "en-GB"},  {"en-CA", "en-GB"},
-    {"en-IN", "en-GB"},  {"en-NZ", "en-GB"},  {"en-ZA", "en-GB"},
-    {"es-AR", "es-419"}, {"es-CL", "es-419"}, {"es-CO", "es-419"},
-    {"es-CR", "es-419"}, {"es-HN", "es-419"}, {"es-MX", "es-419"},
-    {"es-PE", "es-419"}, {"es-US", "es-419"}, {"es-UY", "es-419"},
-    {"es-VE", "es-419"}, {"it-CH", "it"},     {"no", "nb"},
-    {"pt", "pt-PT"}};
+    // clang-format off
+    {"en", "en-US"},
+    {"en-AU", "en-GB"},
+    {"en-CA", "en-GB"},
+    {"en-GB-oxendict", "en-GB"},
+    {"en-IN", "en-GB"},
+    {"en-NZ", "en-GB"},
+    {"en-ZA", "en-GB"},
+    {"es-AR", "es-419"},
+    {"es-CL", "es-419"},
+    {"es-CO", "es-419"},
+    {"es-CR", "es-419"},
+    {"es-HN", "es-419"},
+    {"es-MX", "es-419"},
+    {"es-PE", "es-419"},
+    {"es-US", "es-419"},
+    {"es-UY", "es-419"},
+    {"es-VE", "es-419"},
+    {"it-CH", "it"},
+    {"no", "nb"},
+    {"pt", "pt-PT"}
+    // clang-format on
+};
 
 bool LocaleCompare(const LocaleUIFallbackPair& p1, const std::string& p2) {
   return p1.chosen_locale < p2;

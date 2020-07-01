@@ -196,9 +196,14 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
 
   void RegisterFrameSchedulerImpl(FrameSchedulerImpl* frame_scheduler);
 
-  // We do not throttle anything while audio is played and shortly after that.
+  // A page cannot be throttled or frozen 30 seconds after playing audio.
+  //
+  // This used to be 5 seconds, which was barely enough to cover the time of
+  // silence during which a logo and button are shown after a YouTube ad. Since
+  // most pages don't play audio in background, it was decided that the delay
+  // can be increased to 30 seconds without significantly affecting performance.
   static constexpr base::TimeDelta kRecentAudioDelay =
-      base::TimeDelta::FromSeconds(5);
+      base::TimeDelta::FromSeconds(30);
 
   static const char kHistogramPageLifecycleStateTransition[];
 

@@ -33,6 +33,8 @@ class AssistantTestApiImpl : public AssistantTestApi {
   void SetScreenContextEnabled(bool enabled) override;
   void SetTabletMode(bool enable) override;
   void SetConsentStatus(chromeos::assistant::prefs::ConsentStatus) override;
+  void SetOnboardingMode(
+      chromeos::assistant::prefs::AssistantOnboardingMode) override;
   void SetPreferVoice(bool value) override;
   void StartOverview() override;
   AssistantState* GetAssistantState() override;

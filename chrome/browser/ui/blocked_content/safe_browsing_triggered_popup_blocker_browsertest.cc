@@ -459,7 +459,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingTriggeredPopupBlockerBrowserTest,
             console_observer.GetMessageAt(0u));
 }
 
-// Whitelisted sites should not have console logging.
+// Allowlisted sites should not have console logging.
 IN_PROC_BROWSER_TEST_F(SafeBrowsingTriggeredPopupBlockerBrowserTest,
                        AllowCreatingNewWindows_NoLogToConsole) {
   const char kWindowOpenPath[] = "/subresource_filter/window_open.html";
@@ -590,7 +590,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingTriggeredPopupBlockerBrowserTest,
 }
 
 // If the site activates in warning mode, make sure warning messages are logged
-// even if the user has popups whitelisted via settings.
+// even if the user has popups allowlisted via settings.
 IN_PROC_BROWSER_TEST_F(SafeBrowsingTriggeredPopupBlockerBrowserTest,
                        WarningAllowCreatingNewWindows_LogsToConsole) {
   const char kWindowOpenPath[] = "/subresource_filter/window_open.html";

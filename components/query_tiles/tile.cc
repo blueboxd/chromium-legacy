@@ -4,6 +4,10 @@
 
 #include "components/query_tiles/tile.h"
 
+#include <algorithm>
+#include <deque>
+#include <map>
+#include <sstream>
 #include <utility>
 
 namespace query_tiles {
@@ -24,6 +28,50 @@ void DeepCopyTiles(const Tile& input, Tile* out) {
     DeepCopyTiles(*child.get(), entry.get());
     out->sub_tiles.emplace_back(std::move(entry));
   }
+}
+
+void SerializeEntry(const Tile* entry, std::stringstream& out) {
+  if (!entry)
+    return;
+  out << "entry id: " << entry->id << " query text: " << entry->query_text
+      << "  display text: " << entry->display_text
+      << "  accessibility_text: " << entry->accessibility_text << " \n";
+
+  for (const auto& image : entry->image_metadatas)
+    out << "image url: " << image.url.possibly_invalid_spec() << " \n";
+}
+
+std::string DebugStringInternal(const Tile* root) {
+  if (!root)
+    return std::string();
+  std::stringstream out;
+  out << "Entries detail: \n";
+  std::map<std::string, std::vector<std::string>> cache;
+  std::deque<const Tile*> queue;
+  queue.emplace_back(root);
+  while (!queue.empty()) {
+    size_t size = queue.size();
+    for (size_t i = 0; i < size; i++) {
+      auto* parent = queue.front();
+      SerializeEntry(parent, out);
+      queue.pop_front();
+      for (size_t j = 0; j < parent->sub_tiles.size(); j++) {
+        cache[parent->id].emplace_back(parent->sub_tiles[j]->id);
+        queue.emplace_back(parent->sub_tiles[j].get());
+      }
+    }
+  }
+  out << "Tree table: \n";
+  for (auto& pair : cache) {
+    std::string line;
+    line += pair.first + " : [";
+    std::sort(pair.second.begin(), pair.second.end());
+    for (const auto& child : pair.second)
+      line += " " + child;
+    line += " ]\n";
+    out << line;
+  }
+  return out.str();
 }
 
 }  // namespace
@@ -69,5 +117,9 @@ Tile& Tile::operator=(const Tile& other) {
 }
 
 Tile& Tile::operator=(Tile&& other) noexcept = default;
+
+std::string Tile::DebugString() {
+  return DebugStringInternal(this);
+}
 
 }  // namespace query_tiles

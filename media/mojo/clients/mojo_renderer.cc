@@ -213,9 +213,10 @@ void MojoRenderer::SetPlaybackRate(double playback_rate) {
 void MojoRenderer::SetVolume(float volume) {
   DVLOG(2) << __func__ << "(" << volume << ")";
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(remote_renderer_.is_bound());
 
-  remote_renderer_->SetVolume(volume);
+  volume_ = volume;
+  if (remote_renderer_.is_bound())
+    remote_renderer_->SetVolume(volume);
 }
 
 base::TimeDelta MojoRenderer::GetMediaTime() {
@@ -357,8 +358,13 @@ void MojoRenderer::OnInitialized(media::RendererClient* client, bool success) {
 
   // Only set |client_| after initialization succeeded. No client methods should
   // be called before this.
-  if (success)
+  if (success) {
     client_ = client;
+
+    // It'd be nice to provide this before Initialize(), but that causes some
+    // MojoRenderer implementations to crash.
+    SetVolume(volume_);
+  }
 
   std::move(init_cb_).Run(success ? PIPELINE_OK
                                   : PIPELINE_ERROR_INITIALIZATION_FAILED);

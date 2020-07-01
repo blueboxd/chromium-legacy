@@ -128,7 +128,7 @@ void LoginDisplayHostMojo::ShowPasswordChangedDialog(
 
 void LoginDisplayHostMojo::ShowWhitelistCheckFailedError() {
   DCHECK(GetOobeUI());
-  GetOobeUI()->signin_screen_handler()->ShowWhitelistCheckFailedError();
+  GetOobeUI()->signin_screen_handler()->ShowAllowlistCheckFailedError();
   ShowDialog();
 }
 
@@ -332,7 +332,7 @@ void LoginDisplayHostMojo::ShowResetScreen() {
 void LoginDisplayHostMojo::UpdateAddUserButtonStatus() {
   DCHECK(GetOobeUI());
   ash::LoginScreen::Get()->EnableAddUserButton(
-      !GetOobeUI()->signin_screen_handler()->AllWhitelistedUsersPresent());
+      !GetOobeUI()->signin_screen_handler()->AllAllowlistedUsersPresent());
 }
 
 void LoginDisplayHostMojo::RequestSystemInfoUpdate() {

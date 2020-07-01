@@ -80,7 +80,7 @@ RenderWidgetHostDelegate::GetRenderWidgetHostWithPageFocus() {
   return nullptr;
 }
 
-bool RenderWidgetHostDelegate::IsFullscreenForCurrentTab() {
+bool RenderWidgetHostDelegate::IsFullscreen() {
   return false;
 }
 

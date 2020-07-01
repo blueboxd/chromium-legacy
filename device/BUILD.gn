@@ -257,7 +257,7 @@ test("device_unittests") {
   if (is_mac) {
     deps += [ "//third_party/ocmock" ]
     ldflags = [ "-ObjC" ]
-    libs = [
+    frameworks = [
       "CoreBluetooth.framework",
       "IOBluetooth.framework",
       "IOKit.framework",

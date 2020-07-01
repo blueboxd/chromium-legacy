@@ -66,6 +66,7 @@
 #include "content/shell/common/shell_switches.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/did_commit_navigation_interceptor.h"
+#include "content/test/render_document_feature.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -101,7 +102,15 @@ const char kAddFrameWithSrcScript[] =
 
 }  // namespace
 
-class NavigationControllerBrowserTest : public ContentBrowserTest {
+class NavigationControllerBrowserTest
+    : public ContentBrowserTest,
+      public ::testing::WithParamInterface<std::string> {
+ public:
+  NavigationControllerBrowserTest() {
+    InitAndEnableRenderDocumentFeature(&feature_list_for_render_document_,
+                                       GetParam());
+  }
+
  protected:
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -130,21 +139,35 @@ class NavigationControllerBrowserTest : public ContentBrowserTest {
   WebContentsImpl* contents() const {
     return static_cast<WebContentsImpl*>(shell()->web_contents());
   }
+
+ private:
+  base::test::ScopedFeatureList feature_list_for_render_document_;
 };
 
 // Base class for tests that need to supply modifications to EmbeddedTestServer
 // which are required to be complete before it is started.
-class NavigationControllerBrowserTestNoServer : public ContentBrowserTest {
+class NavigationControllerBrowserTestNoServer
+    : public ContentBrowserTest,
+      public ::testing::WithParamInterface<std::string> {
+ public:
+  NavigationControllerBrowserTestNoServer() {
+    InitAndEnableRenderDocumentFeature(&feature_list_for_render_document_,
+                                       GetParam());
+  }
+
  protected:
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
     content::SetupCrossSiteRedirector(embedded_test_server());
   }
+
+ private:
+  base::test::ScopedFeatureList feature_list_for_render_document_;
 };
 
 // Ensure that tests can navigate subframes cross-site in both default mode and
 // --site-per-process, but that they only go cross-process in the latter.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, LoadCrossSiteSubframe) {
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest, LoadCrossSiteSubframe) {
   // Load a main frame with a subframe.
   GURL main_url(embedded_test_server()->GetURL(
       "/navigation_controller/page_with_iframe.html"));
@@ -170,7 +193,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, LoadCrossSiteSubframe) {
 // Verifies that the base, history, and data URLs for LoadDataWithBaseURL end up
 // in the expected parts of the NavigationEntry in each stage of navigation, and
 // that we don't kill the renderer on reload.  See https://crbug.com/522567.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, LoadDataWithBaseURL) {
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest, LoadDataWithBaseURL) {
   // LoadDataWithBaseURL is never subject to --site-per-process policy today
   // (this API is only used by Android WebView [where OOPIFs have not shipped
   // yet] and GuestView cases [which always hosts guests inside a renderer
@@ -233,7 +256,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, LoadDataWithBaseURL) {
 
 // Verify which page loads when going back to a LoadDataWithBaseURL entry.
 // See https://crbug.com/612196.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        LoadDataWithBaseURLTitleAfterBack) {
   // LoadDataWithBaseURL is never subject to --site-per-process policy today
   // (this API is only used by Android WebView [where OOPIFs have not shipped
@@ -309,7 +332,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
             shell()->web_contents()->GetMainFrame()->GetLastCommittedOrigin());
 }
 
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        CrossDomainResourceRequestLoadDataWithBaseUrl) {
   const GURL base_url("foobar://");
   const GURL history_url("http://historyurl");
@@ -346,7 +369,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 }
 
 #if defined(OS_ANDROID)
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        LoadDataWithInvalidBaseURL) {
   // LoadDataWithBaseURL is never subject to --site-per-process policy today
   // (this API is only used by Android WebView [where OOPIFs have not shipped
@@ -385,7 +408,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 }
 #endif  // defined(OS_ANDROID)
 
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        NavigateFromLoadDataWithBaseURL) {
   // LoadDataWithBaseURL is never subject to --site-per-process policy today
   // (this API is only used by Android WebView [where OOPIFs have not shipped
@@ -439,7 +462,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        FragmentNavigateFromLoadDataWithBaseURL) {
   // LoadDataWithBaseURL is never subject to --site-per-process policy today
   // (this API is only used by Android WebView [where OOPIFs have not shipped
@@ -491,7 +514,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_TRUE(ExecJs(shell(), "console.log('Success');"));
 }
 
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, UniqueIDs) {
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest, UniqueIDs) {
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
 
@@ -513,7 +536,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, UniqueIDs) {
 
 // Ensures that RenderFrameHosts end up with the correct nav_entry_id() after
 // navigations.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, UniqueIDsOnFrames) {
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest, UniqueIDsOnFrames) {
   NavigationController& controller = shell()->web_contents()->GetController();
 
   // Load a main frame with an about:blank subframe.
@@ -564,7 +587,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, UniqueIDsOnFrames) {
 // interfere with navigations. We switched to a different scheme, so now this is
 // just a test to make sure we can still navigate once we prune the history
 // list.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        DontIgnoreBackAfterNavEntryLimit) {
   NavigationController& controller = shell()->web_contents()->GetController();
 
@@ -637,7 +660,7 @@ bool RendererLocationReplace(Shell* shell, const GURL& url) {
 
 // When loading a new page to replace an old page in the history list, make sure
 // that the browser and renderer agree, and that both get it right.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        CorrectLengthWithCurrentItemReplacement) {
   NavigationController& controller = shell()->web_contents()->GetController();
 
@@ -684,7 +707,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // When spawning a new page from a WebUI page, make sure that the browser and
 // renderer agree about the length of the history list, and that both get it
 // right.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        CorrectLengthWithNewTabNavigatingFromWebUI) {
   GURL web_ui_page(std::string(kChromeUIScheme) + "://" +
                    std::string(kChromeUIGpuHost));
@@ -815,7 +838,7 @@ class FrameNavigateParamsCapturer : public WebContentsObserver {
 
 // Test that going back in a subframe on a loadDataWithBaseURL page doesn't
 // crash.  See https://crbug.com/768575.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        NavigateBackInChildOfLoadDataWithBaseURL) {
   // LoadDataWithBaseURL is never subject to --site-per-process policy today
   // (this API is only used by Android WebView [where OOPIFs have not shipped
@@ -955,7 +978,7 @@ class LoadCommittedCapturer : public WebContentsObserver {
 // This test actually hits NAVIGATION_TYPE_NAV_IGNORE four times. Two of them,
 // the initial window.open() and the iframe creation, don't try to create
 // navigation entries, and the third and fourth, the new navigations, try to.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, SubframeOnEmptyPage) {
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest, SubframeOnEmptyPage) {
   // Navigate to a page to force the renderer process to start.
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
@@ -1019,7 +1042,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, SubframeOnEmptyPage) {
 // Test that the renderer is not killed after an auto subframe navigation if the
 // main frame appears to change its origin due to a document.write on an
 // about:blank page.  See https://crbug.com/613732.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        OriginChangeAfterDocumentWrite) {
   GURL url1 = embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html");
@@ -1099,7 +1122,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_TRUE(new_root->current_frame_host()->IsRenderFrameLive());
 }
 
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, ErrorPageReplacement) {
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest, ErrorPageReplacement) {
   NavigationController& controller = shell()->web_contents()->GetController();
   GURL error_url = embedded_test_server()->GetURL("/close-socket");
   GetIOThreadTaskRunner({})->PostTask(
@@ -1179,7 +1202,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, ErrorPageReplacement) {
 
 // Verify that navigations for NAVIGATION_TYPE_NEW_PAGE are correctly
 // classified.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        NavigationTypeClassification_NewPage) {
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
@@ -1275,7 +1298,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 // Verify that navigations for NAVIGATION_TYPE_EXISTING_PAGE are correctly
 // classified.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        NavigationTypeClassification_ExistingPage) {
   GURL url1(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html"));
@@ -1518,7 +1541,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 // Verify that navigations for NAVIGATION_TYPE_SAME_PAGE are correctly
 // classified.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        NavigationTypeClassification_SamePage) {
   GURL url1(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html"));
@@ -1542,7 +1565,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 }
 
 // Verify that reloading a page with url anchor scrolls to correct position.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, ReloadWithUrlAnchor) {
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest, ReloadWithUrlAnchor) {
   GURL url(embedded_test_server()->GetURL(
       "/navigation_controller/reload-with-url-anchor.html#center-element"));
   EXPECT_TRUE(NavigateToURL(shell(), url));
@@ -1580,7 +1603,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, ReloadWithUrlAnchor) {
 
 // Verify that reloading a page with url anchor and scroll scrolls to correct
 // position.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        ReloadWithUrlAnchorAndScroll) {
   GURL url(embedded_test_server()->GetURL(
       "/navigation_controller/reload-with-url-anchor.html#center-element"));
@@ -1623,7 +1646,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 // Verify that empty GURL navigations are not classified as SAME_PAGE.
 // See https://crbug.com/534980.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        NavigationTypeClassification_EmptyGURL) {
   GURL url1(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html"));
@@ -1647,7 +1670,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 // Verify that navigations for NAVIGATION_TYPE_NEW_SUBFRAME and
 // NAVIGATION_TYPE_AUTO_SUBFRAME are properly classified.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        NavigationTypeClassification_NewAndAutoSubframe) {
   GURL main_url(embedded_test_server()->GetURL(
       "/navigation_controller/page_with_iframe.html"));
@@ -1798,7 +1821,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 // Verify that navigations caused by client-side redirects are correctly
 // classified.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        NavigationTypeClassification_ClientSideRedirect) {
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
@@ -1832,7 +1855,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 // Verify that the LoadCommittedDetails::is_same_document value is properly set
 // for non same document navigations.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        LoadCommittedDetails_IsSameDocument) {
   GURL links_url(embedded_test_server()->GetURL(
       "/navigation_controller/page_with_links.html"));
@@ -1910,7 +1933,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 // Verify the tree of FrameNavigationEntries after initial about:blank commits
 // in subframes, which should not count as real committed loads.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        FrameNavigationEntry_BlankAutoSubframe) {
   GURL about_blank_url(url::kAboutBlankURL);
   GURL main_url(embedded_test_server()->GetURL(
@@ -2108,7 +2131,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // Verify the tree of FrameNavigationEntries when a nested iframe commits inside
 // the initial blank page of a loading iframe.  Prevents regression of
 // https://crbug.com/600743.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        FrameNavigationEntry_SlowNestedAutoSubframe) {
   GURL main_url(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html"));
@@ -2147,7 +2170,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // Verify that history.pushState() does not replace the pending entry.
 // https://crbug.com/900036.
 // TODO(crbug.com/926009): Fix and re-enable this test.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        DISABLED_PushStatePreservesPendingEntry) {
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
@@ -2193,7 +2216,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 // Verify that history.replaceState() does not replace the pending entry.
 // https://crbug.com/900036.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        ReplaceStatePreservesPendingEntry) {
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
@@ -2241,7 +2264,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // the initial blank page of an iframe with no committed entry.  Prevents
 // regression of https://crbug.com/600743.
 // Flaky test: See https://crbug.com/610801
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     NavigationControllerBrowserTest,
     DISABLED_FrameNavigationEntry_NoCommitNestedAutoSubframe) {
   GURL main_url(embedded_test_server()->GetURL(
@@ -2285,7 +2308,7 @@ IN_PROC_BROWSER_TEST_F(
 // doing same document back navigation, in which case its parent might not have
 // been in the NavigationEntry.  Prevents regression of
 // https://crbug.com/600743.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        FrameNavigationEntry_BackNestedAutoSubframe) {
   GURL main_url(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html"));
@@ -2343,7 +2366,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // even if GetFrameEntry might not find the corresponding FrameNavigationEntry
 // due to https://crbug.com/608402.  Prevents regression of
 // https://crbug.com/1054209.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        FrameNavigationEntry_BackSameDocumentThenNestedBlank) {
   GURL main_url(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html"));
@@ -2417,7 +2440,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // Verify the tree of FrameNavigationEntries when a nested iframe commits after
 // its parent changes its name, in which case we might not find the parent
 // FrameNavigationEntry.  Prevents regression of https://crbug.com/600743.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        FrameNavigationEntry_RenameNestedAutoSubframe) {
   GURL main_url(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html"));
@@ -2461,7 +2484,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // Verify the tree of FrameNavigationEntries after NAVIGATION_TYPE_AUTO_SUBFRAME
 // commits.
 // TODO(creis): Test updating entries for history auto subframe navigations.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        FrameNavigationEntry_AutoSubframe) {
   GURL main_url(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html"));
@@ -2629,7 +2652,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // Verify the tree of FrameNavigationEntries after NAVIGATION_TYPE_NEW_SUBFRAME
 // commits.
 // Disabled due to flakes; see https://crbug.com/646836.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        FrameNavigationEntry_NewSubframe) {
   GURL main_url(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html"));
@@ -2777,7 +2800,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 // Ensure that we don't crash when navigating subframes after same document
 // navigations.  See https://crbug.com/522193.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        FrameNavigationEntry_SubframeAfterSameDocument) {
   // 1. Start on a page with a subframe.
   GURL main_url(embedded_test_server()->GetURL(
@@ -2835,7 +2858,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 // Verify the tree of FrameNavigationEntries after back/forward navigations in a
 // cross-site subframe.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        FrameNavigationEntry_SubframeBackForward) {
   GURL main_url(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html"));
@@ -2956,7 +2979,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // 3. main_url_a (frame_url_b (data_url))
 // 4. main_url_a (frame_url_b (frame_url_c))
 // 5. main_url_d
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        FrameNavigationEntry_RecreatedSubframeBackForward) {
   // 1. Start on a page with no frames.
   GURL initial_url(embedded_test_server()->GetURL(
@@ -3240,7 +3263,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 // Verify that we navigate to the fallback (original) URL if a subframe's
 // FrameNavigationEntry can't be found during a history navigation.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        FrameNavigationEntry_SubframeHistoryFallback) {
   // 1. Start on a page with a data URL iframe.
   GURL main_url_a(embedded_test_server()->GetURL(
@@ -3347,7 +3370,7 @@ class DataUrlCommitObserver : public WebContentsObserver {
 // Verify that dynamically generated iframes load properly during a history
 // navigation if no history item can be found for them.
 // See https://crbug.com/649345.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        FrameNavigationEntry_DynamicSubframeHistoryFallback) {
   // 1. Start on a page with a script-generated iframe.  The iframe has a
   // dynamic name, starts at about:blank, and gets navigated to a dynamic data
@@ -3424,7 +3447,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 // Verify that we don't clobber any content injected into the initial blank page
 // if we go back to an about:blank subframe.  See https://crbug.com/626416.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        FrameNavigationEntry_RecreatedBlankSubframe) {
   // 1. Start on a page that injects content into an about:blank iframe.
   GURL main_url(embedded_test_server()->GetURL(
@@ -3489,7 +3512,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // Verify that we correctly load nested iframes injected into a page if we go
 // back and recreate them.  Also confirm that form values are not restored for
 // forms injected into about:blank pages.  See https://crbug.com/657896.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        FrameNavigationEntry_RecreatedInjectedBlankSubframe) {
   // 1. Start on a page that injects a nested iframe into an injected
   // about:blank iframe.
@@ -3581,7 +3604,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // This test worked before and after the fix for https://crbug.com/657896, but
 // it failed with a preliminary version of the fix (see also
 // https://crbug.com/657896#c9).
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        FrameNavigationEntry_RecreatedInjectedSrcdocSubframe) {
   // 1. Start on a page that injects a nested iframe srcdoc which contains a
   // nested iframe.
@@ -3675,7 +3698,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // Verify that we can load about:blank in an iframe when going back to a page,
 // if that iframe did not originally have about:blank in it.  See
 // https://crbug.com/657896.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        FrameNavigationEntry_RecreatedSubframeToBlank) {
   // 1. Start on a page with a data iframe.
   GURL main_url(embedded_test_server()->GetURL(
@@ -3735,7 +3758,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 // Ensure we don't crash if an onload handler removes an about:blank frame after
 // recreating it on a back/forward.  See https://crbug.com/638166.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        FrameNavigationEntry_RemoveRecreatedBlankSubframe) {
   // 1. Start on a page that removes its about:blank iframe during onload.
   GURL main_url(embedded_test_server()->GetURL(
@@ -3797,7 +3820,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // - Subframe redirect when going back from a different main frame (step 4).
 // - Subframe redirect without changing the main frame (step 6).
 // - Main frame redirect, clearing the children (step 8).
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        FrameNavigationEntry_BackWithRedirect) {
   // 1. Start on a page with two frames.
   GURL initial_url(
@@ -3971,7 +3994,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 // Similar to FrameNavigationEntry_BackWithRedirect but with same-origin frames.
 // (This wasn't working initially).
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        FrameNavigationEntry_SameOriginBackWithRedirect) {
   // 1. Start on a page with an iframe.
   GURL initial_url(embedded_test_server()->GetURL(
@@ -4088,7 +4111,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 // Verify that subframes can be restored in a new NavigationController using the
 // PageState of an existing NavigationEntry.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        FrameNavigationEntry_RestoreViaPageState) {
   // 1. Start on a page with a data URL iframe.
   GURL main_url_a(embedded_test_server()->GetURL(
@@ -4199,7 +4222,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 // Verify that we can finish loading a page on restore if the PageState is
 // missing subframes.  See https://crbug.com/638088.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        FrameNavigationEntry_RestoreViaPartialPageState) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/navigation_controller/inject_into_blank_iframe.html"));
@@ -4258,7 +4281,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // Verifies that the |frame_unique_name| is set to the correct frame, so that we
 // can match subframe FrameNavigationEntries to newly created frames after
 // back/forward and restore.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        FrameNavigationEntry_FrameUniqueName) {
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
@@ -4352,7 +4375,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 // Verify that navigations caused by client-side redirects populates the entry's
 // replaced data.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        ReplacedNavigationEntryData_ClientSideRedirect) {
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
@@ -4391,7 +4414,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 // Verify that navigations caused by location.replace() populates the entry's
 // replaced data.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        ReplacedNavigationEntryData_LocationReplace) {
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetFrameTree()
@@ -4442,7 +4465,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 // Verify that history.replaceState() populates the navigation entry's replaced
 // entry data.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        ReplacedNavigationEntryData_ReplaceState) {
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetFrameTree()
@@ -4539,7 +4562,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 // Verify that history.pushState() does not populate the navigation entry's
 // replaced entry data.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        ReplacedNavigationEntryData_PushState) {
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetFrameTree()
@@ -4585,7 +4608,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 // Verify that location.reload() does not populate the navigation entry's
 // replaced entry data.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        ReplacedNavigationEntryData_LocationReload) {
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetFrameTree()
@@ -4639,7 +4662,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // (if fetched) causes a server-side redirect. In this scenario, the fact of
 // going back should not influence the replaced data, and hence the first URL
 // prior to history.replaceState() should remain set.
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     NavigationControllerBrowserTest,
     ReplacedNavigationEntryData_BackAfterReplaceStateWithRedirect) {
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
@@ -4707,7 +4730,7 @@ IN_PROC_BROWSER_TEST_F(
 
 // Verify that navigating back in history does not populate the navigation
 // entry's replaced entry data.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        ReplacedNavigationEntryData_Back) {
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetFrameTree()
@@ -4775,7 +4798,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // Ensure we don't crash when cloning a named window.  This happened in
 // https://crbug.com/603245 because neither the FrameTreeNode ID nor the name of
 // the cloned window matched the root FrameNavigationEntry.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, CloneNamedWindow) {
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest, CloneNamedWindow) {
   // Start on an initial page.
   GURL url_1(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html"));
@@ -4805,7 +4828,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, CloneNamedWindow) {
 // Ensure we don't crash when going back in a cloned named window.  This
 // happened in https://crbug.com/603245 because neither the FrameTreeNode ID nor
 // the name of the cloned window matched the root FrameNavigationEntry.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        CloneAndGoBackWithNamedWindow) {
   // Start on an initial page.
   GURL url_1(embedded_test_server()->GetURL(
@@ -4850,7 +4873,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // NavigationEntry works when the renderer process hasn't committed anything
 // yet.  This can happen when using Ctrl+Back or after a crash.  See
 // https://crbug.com/635403.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        BackSameDocumentInNewWindow) {
   // Start on an initial page.
   GURL url_1(embedded_test_server()->GetURL(
@@ -4907,7 +4930,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // from the clone which still has a PageState), and this will cause the renderer
 // to crash in NavigateInternal because the PageState is present but the page_id
 // is -1 (similar to https://crbug.com/568703).  See https://crbug.com/568768.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        FrameNavigationEntry_RepeatCreatedFrame) {
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
@@ -4970,7 +4993,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 // Verifies that item sequence numbers and document sequence numbers update
 // properly for main frames and subframes.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        FrameNavigationEntry_SequenceNumbers) {
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
@@ -5039,7 +5062,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 // Verifies that the FrameNavigationEntry's redirect chain is created for the
 // main frame.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        FrameNavigationEntry_MainFrameRedirectChain) {
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
@@ -5063,7 +5086,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 // Verifies that FrameNavigationEntry's redirect chain is created and stored on
 // the right subframe (AUTO_SUBFRAME navigation).
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        FrameNavigationEntry_AutoSubFrameRedirectChain) {
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
@@ -5094,7 +5117,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 // Verifies that FrameNavigationEntry's redirect chain is created and stored on
 // the right subframe (NEW_SUBFRAME navigation).
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        FrameNavigationEntry_NewSubFrameRedirectChain) {
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
@@ -5131,7 +5154,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 // Verify that restoring a NavigationEntry with cross-site subframes does not
 // create out-of-process iframes unless the current SiteIsolationPolicy says to.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        RestoreWithoutExtraOopifs) {
   // 1. Start on a page with a data URL iframe.
   GURL main_url_a(embedded_test_server()->GetURL(
@@ -5255,7 +5278,7 @@ void DoReplaceStateWhilePending(Shell* shell,
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     NavigationControllerBrowserTest,
     NavigationTypeClassification_On1SameDocumentToXWhile2Pending) {
   GURL url1(embedded_test_server()->GetURL(
@@ -5265,7 +5288,7 @@ IN_PROC_BROWSER_TEST_F(
   DoReplaceStateWhilePending(shell(), url1, url2, "x");
 }
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     NavigationControllerBrowserTest,
     NavigationTypeClassification_On1SameDocumentTo2While2Pending) {
   GURL url1(embedded_test_server()->GetURL(
@@ -5275,7 +5298,7 @@ IN_PROC_BROWSER_TEST_F(
   DoReplaceStateWhilePending(shell(), url1, url2, "simple_page_2.html");
 }
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     NavigationControllerBrowserTest,
     NavigationTypeClassification_On1SameDocumentToXWhile1Pending) {
   GURL url(embedded_test_server()->GetURL(
@@ -5283,7 +5306,7 @@ IN_PROC_BROWSER_TEST_F(
   DoReplaceStateWhilePending(shell(), url, url, "x");
 }
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     NavigationControllerBrowserTest,
     NavigationTypeClassification_On1SameDocumentTo1While1Pending) {
   GURL url(embedded_test_server()->GetURL(
@@ -5294,7 +5317,7 @@ IN_PROC_BROWSER_TEST_F(
 // Ensure that a pending NavigationEntry for a different navigation doesn't
 // cause a commit to be incorrectly treated as a replacement.
 // See https://crbug.com/593153.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        OtherCommitDuringPendingEntryWithReplacement) {
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
@@ -5349,7 +5372,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // This test ensures that if we go back from a page that has a replaceState()
 // call in the window.beforeunload function, we commit to the proper navigation
 // entry. https://crbug.com/597239
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        BackFromPageWithReplaceStateInBeforeUnload) {
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
@@ -5387,7 +5410,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // Ensure the renderer process does not get confused about the current entry
 // due to subframes and replaced entries.  See https://crbug.com/480201.
 // TODO(creis): Re-enable for Site Isolation FYI bots: https://crbug.com/502317.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        PreventSpoofFromSubframeAndReplace) {
   // Start at an initial URL.
   GURL url1(embedded_test_server()->GetURL(
@@ -5489,7 +5512,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // changes when going back in a subframe, since this is currently possible after
 // a replaceState in the main frame (thanks to https://crbug.com/373041).
 // See https:///crbug.com/486916.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        SubframeBackFromReplaceState) {
   // Start at a page with a real iframe.
   GURL url1(embedded_test_server()->GetURL(
@@ -5579,7 +5602,7 @@ class FailureWatcher : public WebContentsObserver {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        StopCausesFailureDespiteJavaScriptURL) {
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
@@ -5637,7 +5660,7 @@ class RenderProcessKilledObserver : public WebContentsObserver {
 // cross-origin navigation, even though it's same document.  (The reload should
 // not modify the underlying last committed entry.)  Not crashing means that
 // the test is successful.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, ReloadOriginalRequest) {
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest, ReloadOriginalRequest) {
   // TODO(lukasza): https://crbug.com/417518: Get tests working with
   // --site-per-process.
   if (SiteIsolationPolicy::UseDedicatedProcessesForAllSites() ||
@@ -5711,7 +5734,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, ReloadOriginalRequest) {
 // when going back after an in-page navigation in the main frame is followed by
 // an auto subframe navigation, due to a bug in HistoryEntry::CloneAndReplace.
 // See https://crbug.com/612713.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        BackToAboutBlankIframe) {
   GURL original_url(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html"));
@@ -5833,7 +5856,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // fragment navigation is used rather than pushState (both create a same
 // document navigation, so we need to test both), and an initial 'src' is given
 // to the iframe to test proper restoration in that case.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        BackToIframeWithContent) {
   GURL links_url(embedded_test_server()->GetURL(
       "/navigation_controller/page_with_links.html"));
@@ -5959,7 +5982,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // TODO(creis): Enable this test when https://crbug.com/618100 is fixed.
 // Disabled for now while we switch to the new navigation path, since this kill
 // is exceptionally rare in practice.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        DISABLED_BackTwiceToIframeWithContent) {
   GURL links_url(embedded_test_server()->GetURL(
       "/navigation_controller/page_with_links.html"));
@@ -6073,7 +6096,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 // Test for same document navigation kills when going back to about:blank after
 // a document.write.  See https://crbug.com/446959.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        BackAfterIframeDocumentWrite) {
   GURL links_url(embedded_test_server()->GetURL(
       "/navigation_controller/page_with_links.html"));
@@ -6144,7 +6167,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // iframe of a data URL, after a document.write.  This differs from
 // BackAfterIframeDocumentWrite because both about:blank and the data URL are
 // considered unique origins.  See https://crbug.com/446959.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        BackAfterIframeDocumentWriteInDataURL) {
   GURL data_url("data:text/html,Top level page");
   EXPECT_TRUE(NavigateToURL(shell(), data_url));
@@ -6230,7 +6253,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // Ensure that we do not corrupt a NavigationEntry's PageState if a subframe
 // forward navigation commits after we've already started another forward
 // navigation in the main frame.  See https://crbug.com/597322.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        ForwardInSubframeWithPendingForward) {
   // Navigate to a page with an iframe.
   GURL url_a(embedded_test_server()->GetURL(
@@ -6320,7 +6343,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // navigation to lose important navigation data like its nav_entry_id, which
 // could cause it to commit in-place instead of in the correct location in the
 // browsing history.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        AbortProvisionalLoadRetainsNavigationParams) {
   EXPECT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
@@ -6344,7 +6367,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 }
 
 // Make sure that a 304 response to a navigation aborts the navigation.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, NavigateTo304) {
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest, NavigateTo304) {
   // URL that just returns a blank page.
   GURL initial_url = embedded_test_server()->GetURL("/set-header");
   // URL that returns a response with a 304 status code.
@@ -6360,7 +6383,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, NavigateTo304) {
 
 // Ensure that we do not corrupt a NavigationEntry's PageState if two forward
 // navigations compete in different frames.  See https://crbug.com/623319.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        PageStateAfterForwardInCompetingFrames) {
   // Navigate to a page with an iframe.
   GURL url_a(embedded_test_server()->GetURL(
@@ -6444,7 +6467,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // Ensure that we do not corrupt a NavigationEntry's PageState if two forward
 // navigations compete in different frames, and the main frame entry contains an
 // iframe of its own.  See https://crbug.com/623319.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        PageStateWithIframeAfterForwardInCompetingFrames) {
   // Navigate to a page with an iframe.
   GURL url_a(embedded_test_server()->GetURL(
@@ -6534,7 +6557,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // a different site than before.  This causes the navigation's item sequence
 // number to change, meaning that we can't use it for determining whether the
 // commit matches the history item.  See https://crbug.com/600238.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        ForwardRedirectWithNoCommittedEntry) {
   NavigationController& controller = shell()->web_contents()->GetController();
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
@@ -6592,7 +6615,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 // Ensure that we can support cross-process navigations in subframes due to
 // redirects.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        SubframeForwardRedirect) {
   NavigationController& controller = shell()->web_contents()->GetController();
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
@@ -6653,7 +6676,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 // Tests that when using FrameNavigationEntries, knowledge of POST navigations
 // is recorded on a subframe level.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, PostInSubframe) {
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest, PostInSubframe) {
   GURL page_with_form_url = embedded_test_server()->GetURL(
       "/navigation_controller/subframe_form.html");
   EXPECT_TRUE(NavigateToURL(shell(), page_with_form_url));
@@ -6704,7 +6727,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, PostInSubframe) {
 // Tests that POST body is not lost when decidePolicyForNavigation tells the
 // renderer to route the request via OpenURL mojo method sent to the browser.
 // See also https://crbug.com/344348.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, PostViaOpenUrlMsg) {
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest, PostViaOpenUrlMsg) {
   GURL main_url(
       embedded_test_server()->GetURL("/form_that_posts_to_echoall.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -6737,7 +6760,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, PostViaOpenUrlMsg) {
 // This test verifies that reloading a POST request that is uncacheable won't
 // incorrectly result in a GET request.  This is a regression test for
 // https://crbug.com/860807.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, UncacheablePost) {
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest, UncacheablePost) {
   GURL main_url(embedded_test_server()->GetURL(
       "initial-page.example.com", "/form_that_posts_to_echoall_nocache.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -6865,7 +6888,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, UncacheablePost) {
 // initially failed (e.g. because the network was offline or the host was
 // unreachable during the initial navigation).  This is a regression test for
 // https://crbug.com/869117.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        ReloadOfInitiallyFailedPost) {
   GURL main_url(embedded_test_server()->GetURL(
       "/form_that_posts_to_echoall_nocache.html"));
@@ -6929,7 +6952,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 #define MAYBE_EnsureFrameNavigationEntriesClearedOnMismatch \
   EnsureFrameNavigationEntriesClearedOnMismatch
 #endif
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        MAYBE_EnsureFrameNavigationEntriesClearedOnMismatch) {
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
@@ -7028,7 +7051,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // This test ensures that the comparison of tree position between a
 // FrameTreeNode and FrameNavigationEntry works correctly for matching
 // first-level frames.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        EnsureFirstLevelFrameNavigationEntriesMatch) {
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
@@ -7068,7 +7091,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // members of FrameNavigationEntry. If not, it is possible to get a mismatch
 // between the origin and URL of a document as seen in
 // https://crbug.com/630103.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        EnsureSamePageNavigationUpdatesFrameNavigationEntry) {
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
@@ -7169,7 +7192,7 @@ class HistoryNavigationBeforeCommitInjector
 // the cross-origin navigation and updates the URL, but not the origin of the
 // document. This results in mismatch between the two and causes the renderer
 // process to be killed. See https://crbug.com/630103.
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     NavigationControllerBrowserTest,
     RaceCrossOriginNavigationAndSameDocumentHistoryNavigation) {
   WebContentsImpl* web_contents =
@@ -7214,7 +7237,7 @@ IN_PROC_BROWSER_TEST_F(
 
 // This test simulates what happens when OnCommitTimeout is triggered after
 // ResetForCrossDocumentRestart. See https://crbug.com/1006677.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        OnCommitTimeoutAfterResetForCrossDocumentRestart) {
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
@@ -7261,7 +7284,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // is committed instead. The RenderFrameHost selected initially for the initial
 // navigation is not suitable for the error page. It needs to be reset when
 // restarting the navigation. See https://crbug.com/936962.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTestNoServer,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTestNoServer,
                        NavigationRestartedAsCrossDocumentFailToLoad) {
   net::test_server::ControllableHttpResponse response_success(
       embedded_test_server(), "/title1.html");
@@ -7337,7 +7360,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTestNoServer,
 // Test that verifies that Referer and Origin http headers are correctly sent
 // to the final destination of a cross-site POST with a few redirects thrown in.
 // This test is somewhat related to https://crbug.com/635400.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        RefererAndOriginHeadersAfterRedirects) {
   // Navigate to the page with form that posts via 307 redirection to
   // |redirect_target_url| (cross-site from |form_url|).  Using 307 (rather than
@@ -7375,7 +7398,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 }
 
 // Check that the favicon is not cleared for same document navigations.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        SameDocumentNavigationDoesNotClearFavicon) {
   // Load a page and fake a favicon for it.
   NavigationController& controller = shell()->web_contents()->GetController();
@@ -7479,7 +7502,7 @@ class NavigationControllerAlertDialogBrowserTest
 }  // namespace
 
 // Check that swapped out frames cannot spawn JavaScript dialogs.
-IN_PROC_BROWSER_TEST_F(NavigationControllerAlertDialogBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerAlertDialogBrowserTest,
                        NoDialogsFromSwappedOutFrames) {
   // Start on a normal page.
   GURL url1 = embedded_test_server()->GetURL(
@@ -7508,7 +7531,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerAlertDialogBrowserTest,
 }
 
 // Check that the referrer is stored inside FrameNavigationEntry for subframes.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        RefererStoredForSubFrame) {
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
@@ -7534,9 +7557,14 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 namespace {
 
-class RequestMonitoringNavigationBrowserTest : public ContentBrowserTest {
+class RequestMonitoringNavigationBrowserTest
+    : public ContentBrowserTest,
+      public ::testing::WithParamInterface<std::string> {
  public:
-  RequestMonitoringNavigationBrowserTest() {}
+  RequestMonitoringNavigationBrowserTest() {
+    InitAndEnableRenderDocumentFeature(&feature_list_for_render_document_,
+                                       GetParam());
+  }
 
   const net::test_server::HttpRequest* FindAccumulatedRequest(
       const GURL& url_to_find) {
@@ -7585,6 +7613,8 @@ class RequestMonitoringNavigationBrowserTest : public ContentBrowserTest {
   }
 
   std::vector<net::test_server::HttpRequest> accumulated_requests_;
+  base::test::ScopedFeatureList feature_list_for_render_document_;
+  // Must be last member.
   base::WeakPtrFactory<RequestMonitoringNavigationBrowserTest> weak_factory_{
       this};
 };
@@ -7619,7 +7649,7 @@ class WebContentsLoadFinishedWaiter : public WebContentsObserver {
 
 // Check that NavigationController::LoadURLParams::extra_headers are not copied
 // to subresource requests.
-IN_PROC_BROWSER_TEST_F(RequestMonitoringNavigationBrowserTest,
+IN_PROC_BROWSER_TEST_P(RequestMonitoringNavigationBrowserTest,
                        ExtraHeadersVsSubresources) {
   GURL page_url = embedded_test_server()->GetURL("/page_with_image.html");
   GURL image_url = embedded_test_server()->GetURL("/blank.jpg");
@@ -7657,7 +7687,7 @@ IN_PROC_BROWSER_TEST_F(RequestMonitoringNavigationBrowserTest,
 
 // Test that a same document navigation does not lead to the deletion of the
 // NavigationHandle for an ongoing different document navigation.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        SameDocumentNavigationDoesntDeleteNavigationHandle) {
   const GURL kURL1 = embedded_test_server()->GetURL("/title1.html");
   const GURL kPushStateURL =
@@ -7719,7 +7749,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 // Tests that a same document browser-initiated navigation is properly reported
 // by the NavigationHandle.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        SameDocumentBrowserInitiated) {
   const GURL kURL = embedded_test_server()->GetURL("/title1.html");
   const GURL kFragmentURL =
@@ -7740,7 +7770,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 // Tests that a 204 response to a browser-initiated navigation does not result
 // in a new NavigationEntry being committed.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, 204Navigation) {
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest, 204Navigation) {
   const GURL kURL = embedded_test_server()->GetURL("/title1.html");
   const GURL kURL204 = embedded_test_server()->GetURL("/page204.html");
 
@@ -7763,7 +7793,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, 204Navigation) {
 }
 
 // Tests that stopping a load clears the pending navigation entry.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, StopDuringLoad) {
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest, StopDuringLoad) {
   // Load an initial page since the behavior differs for the first entry.
   GURL start_url(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html"));
@@ -7780,7 +7810,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, StopDuringLoad) {
 
 // Tests that reloading a page that has no title doesn't inherit the title from
 // the previous version of the page.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, ReloadDoesntKeepTitle) {
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest, ReloadDoesntKeepTitle) {
   NavigationController& controller = shell()->web_contents()->GetController();
   GURL start_url(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html"));
@@ -7842,7 +7872,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, ReloadDoesntKeepTitle) {
 // Verify that session history navigations (back/forward) correctly hit the
 // cache instead of going to the server. The test loads a page with no-cache
 // header, stops the server, and goes back expecting successful navigation.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        HistoryNavigationUsesCache) {
   GURL no_cache_url(embedded_test_server()->GetURL(
       "/navigation_controller/page_with_no_cache_header.html"));
@@ -7866,7 +7896,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // Test to verify that navigating to a blocked URL does not result in a
 // NavigationEntry that allows the navigation to succeed when using a history
 // navigation. See https://crbug.com/723796.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        VerifyBlockedErrorPageURL_SessionHistory) {
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
@@ -7910,7 +7940,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // make a spoof possible. Ideally they would create an error page, but some
 // extensions rely on them being silently blocked. See https://crbug.com/935175
 // and https://cbug.com/941653.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        JavascriptRedirectSilentlyCanceled) {
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
@@ -7934,7 +7964,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 // Verifies that redirecting to a blocked URL and going back does not allow a
 // URL spoof.  See https://crbug.com/777419.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        PreventSpoofFromBlockedRedirect) {
   GURL url1 = embedded_test_server()->GetURL(
       "a.com", "/navigation_controller/simple_page_1.html");
@@ -7997,7 +8027,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // that navigating back from a newly blocked URL in a subframe is not treated as
 // same-document, even if it had been same-document originally.
 // See https://crbug.com/765291.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        BackSameDocumentAfterBlockedSubframe) {
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
@@ -8060,7 +8090,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // We don't want that, because any navigation that changes the toplevel frame
 // should be tracked as a toplevel navigation (this allows us to update the URL
 // bar, etc).
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        GoBackToManualSubFrame) {
   GURL main_url(embedded_test_server()->GetURL(
       "/navigation_controller/page_with_iframe.html"));
@@ -8164,7 +8194,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 }
 
 // Regression test for https://crbug.com/845923.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        GoBackFromCrossSiteSubFrame) {
   // Navigate to a page with a cross-site frame.
   GURL main_url(embedded_test_server()->GetURL(
@@ -8200,7 +8230,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(0, controller.GetCurrentEntryIndex());
 }
 
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        HashNavigationVsBeforeUnloadEvent) {
   GURL main_url(embedded_test_server()->GetURL("/title1.html"));
   GURL hash_url(embedded_test_server()->GetURL("/title1.html#hash"));
@@ -8232,7 +8262,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // Such frames get a fresh, random, unique name every time they are created
 // or recreated and therefore in such case will never match previous history
 // entries.  See also https://crbug.com/784356.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        PruningOfEntriesForDynamicFrames_ChildRemoved) {
   GURL main_url(embedded_test_server()->GetURL("/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -8275,7 +8305,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // Such frames get a fresh, random, unique name every time they are created
 // or recreated and therefore in such case will never match previous history
 // entries.  See also https://crbug.com/784356.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        PruningOfEntriesForDynamicFrames_ParentNavigatedAway) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/navigation_controller/page_with_iframe_simple.html"));
@@ -8316,7 +8346,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // Such frames get a fresh, random, unique name every time they are created
 // or recreated and therefore in such case will never match previous history
 // entries.  See also https://crbug.com/784356.
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     NavigationControllerBrowserTest,
     PruningOfEntriesForDynamicFrames_MainFrameNavigatedAway) {
   GURL main_url(embedded_test_server()->GetURL(
@@ -8355,7 +8385,7 @@ IN_PROC_BROWSER_TEST_F(
 
 // This test supplements SpareRenderProcessHostUnitTest to verify that the spare
 // RenderProcessHost is actually used in cross-process navigations.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        UtilizationOfSpareRenderProcessHost) {
   GURL first_url = embedded_test_server()->GetURL("a.com", "/title1.html");
   GURL second_url = embedded_test_server()->GetURL("b.com", "/title2.html");
@@ -8434,7 +8464,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // Data URLs can have a reference fragment like any other URLs. In this test,
 // there are two navigations with the same data URL, but with a different
 // reference. The second navigation must be classified as "same-document".
-IN_PROC_BROWSER_TEST_F(ContentBrowserTest, DataURLSameDocumentNavigation) {
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
+                       DataURLSameDocumentNavigation) {
   GURL url_first("data:text/html,body#foo");
   GURL url_second("data:text/html,body#bar");
   EXPECT_TRUE(url_first.EqualsIgnoringRef(url_second));
@@ -8454,7 +8485,7 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, DataURLSameDocumentNavigation) {
 // SiteInstance from the original commit is correctly handled - classified
 // as new navigation with replacement, resulting in no new navigation
 // entries.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        SiteInstanceChangeOnHistoryNavigation) {
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetFrameTree()
@@ -8523,7 +8554,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // history.back() called twice in the renderer process should not make the user
 // navigate back twice.
 // Regression test for https://crbug.com/869710
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        HistoryBackTwiceFromRendererWithoutUserGesture) {
   GURL url1(embedded_test_server()->GetURL("a.com", "/title1.html"));
   GURL url2(embedded_test_server()->GetURL("b.com", "/title2.html"));
@@ -8543,7 +8574,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // history.back() called twice in the renderer process should not make the user
 // navigate back twice. Even with a user gesture.
 // Regression test for https://crbug.com/869710
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        HistoryBackTwiceFromRendererWithUserGesture) {
   GURL url1(embedded_test_server()->GetURL("a.com", "/title1.html"));
   GURL url2(embedded_test_server()->GetURL("b.com", "/title2.html"));
@@ -8562,7 +8593,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 // Test to verify that LoadPostCommitErrorPage loads an error page even with a
 // valid URL.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        BrowserInitiatedLoadPostCommitErrorPage) {
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
@@ -8606,7 +8637,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 // Test to verify that LoadPostCommitErrorPage loads an error page in a subframe
 // correctly.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        BrowserInitiatedLoadPostCommitErrorPageForSubframe) {
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
@@ -8641,7 +8672,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // Checks that a browser initiated error page navigation in a frame pending
 // deletion is ignored and does not result in a crash. See
 // https://crbug.com/1019180.
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     NavigationControllerBrowserTest,
     BrowserInitiatedLoadPostCommitErrorPageIgnoredForFramePendingDeletion) {
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
@@ -8685,7 +8716,7 @@ IN_PROC_BROWSER_TEST_F(
 
 // Test to verify that LoadPostCommitErrorPage works correctly when supplied
 // with an about:blank url for the error page.
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     NavigationControllerBrowserTest,
     BrowserInitiatedLoadPostCommitErrorPageWithAboutBlankUrl) {
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
@@ -8738,7 +8769,7 @@ class NavigationControllerDisableHistoryIntervention
 // Test to verify that after loading a post-commit error page, back is treated
 // as navigating to the entry prior to the page that was active when the
 // post-commit error page was triggered.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        BackOnBrowserInitiatedErrorPageNavigation) {
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
@@ -8777,7 +8808,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // Test to verify that after loading a post-commit error page, reload
 // triggers a navigation to the previous page (the page that was active when
 // the navigation to an error was triggered).
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        ReloadOnBrowserInitiatedErrorPageNavigation) {
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
@@ -8816,7 +8847,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 }
 
 // Test clone behavior of post-commit error page navigations.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        CloneOnBrowserInitiatedErrorPageNavigation) {
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
@@ -8870,7 +8901,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // Tests that the navigation entry is marked as skippable on back/forward button
 // if it does a renderer initiated navigation without ever getting a user
 // activation.
-IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerHistoryInterventionBrowserTest,
                        NoUserActivationSetSkipOnBackForward) {
   base::HistogramTester histograms;
 
@@ -8925,7 +8956,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
 // Tests that the navigation entry is marked as skippable on back/forward button
 // if it does a renderer initiated cross-site navigation without ever getting a
 // user activation.
-IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerHistoryInterventionBrowserTest,
                        NoUserActivationSetSkipOnBackForwardCrossSite) {
   base::HistogramTester histograms;
 
@@ -8979,7 +9010,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
 
 // Tests that the navigation entry is marked as skippable on back/forward button
 // but is not skipped if the feature is not enabled.
-IN_PROC_BROWSER_TEST_F(NavigationControllerDisableHistoryIntervention,
+IN_PROC_BROWSER_TEST_P(NavigationControllerDisableHistoryIntervention,
                        NoSkipOnBackFeatureDisabled) {
   base::HistogramTester histograms;
 
@@ -9032,7 +9063,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerDisableHistoryIntervention,
 // Tests that the navigation entry is marked as skippable on back button if it
 // does a renderer initiated navigation without ever getting a user activation.
 // Also tests this for an entry added using history.pushState.
-IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerHistoryInterventionBrowserTest,
                        NoUserActivationSetSkippableMultipleGoBack) {
   base::HistogramTester histograms;
   const std::string histogram_name =
@@ -9089,7 +9120,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
 }
 
 // Same as above but tests the metrics on going forward.
-IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerHistoryInterventionBrowserTest,
                        NoUserActivationSetSkippableMultipleGoForward) {
   base::HistogramTester histograms;
   const std::string histogram_name =
@@ -9148,7 +9179,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
 
 // Tests that if an entry is marked as skippable, it will be reset if there is a
 // navigation to this entry again. This does not need the feature to be enabled.
-IN_PROC_BROWSER_TEST_F(NavigationControllerDisableHistoryIntervention,
+IN_PROC_BROWSER_TEST_P(NavigationControllerDisableHistoryIntervention,
                        ResetSkipOnBackForward) {
   base::HistogramTester histograms;
   GURL main_url(embedded_test_server()->GetURL("/frame_tree/top.html"));
@@ -9200,7 +9231,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerDisableHistoryIntervention,
 // the flag should be reset if there is a user gesture on this document. All of
 // the adjacent entries belonging to the same document will have their skippable
 // bits reset.
-IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerHistoryInterventionBrowserTest,
                        OnUserGestureResetSameDocumentEntriesSkipFlag) {
   GURL skippable_url(embedded_test_server()->GetURL("/frame_tree/top.html"));
   EXPECT_TRUE(NavigateToURL(shell(), skippable_url));
@@ -9320,7 +9351,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
 // Tests that if a navigation entry is marked as skippable due to redirect to a
 // new document then the flag should not be reset if there is a user gesture on
 // the new document.
-IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerHistoryInterventionBrowserTest,
                        OnUserGestureDoNotResetDifferentDocumentEntrySkipFlag) {
   GURL skippable_url(embedded_test_server()->GetURL("/frame_tree/top.html"));
   EXPECT_TRUE(NavigateToURL(shell(), skippable_url));
@@ -9360,7 +9391,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
 // Tests that the navigation entry is not marked as skippable on back/forward
 // button if it does a renderer initiated navigation after getting a user
 // activation.
-IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerHistoryInterventionBrowserTest,
                        UserActivationDoNotSkipOnBackForward) {
   base::HistogramTester histograms;
   const std::string histogram_name =
@@ -9408,7 +9439,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
 // Tests that the navigation entry should not be marked as skippable on
 // back/forward button if it is navigated away using a browser initiated
 // navigation.
-IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerHistoryInterventionBrowserTest,
                        BrowserInitiatedNavigationDoNotSkipOnBackForward) {
   base::HistogramTester histograms;
   const std::string histogram_name =
@@ -9452,7 +9483,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
 
 // Tests that the navigation entry that is marked as skippable on back/forward
 // button does not get skipped for history.back API calls.
-IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerHistoryInterventionBrowserTest,
                        SetSkipOnBackDoNotSkipForHistoryBackAPI) {
   base::HistogramTester histograms;
 
@@ -9502,7 +9533,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
 
 // Tests that the navigation entry that is marked as skippable on back/forward
 // button does not get skipped for history.forward API calls.
-IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerHistoryInterventionBrowserTest,
                        SetSkipOnBackDoNotSkipForHistoryForwardAPI) {
   base::HistogramTester histograms;
 
@@ -9557,7 +9588,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
 
 // Tests that the oldest navigation entry that is marked as skippable is the one
 // that is pruned if max entry count is reached.
-IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerHistoryInterventionBrowserTest,
                        PruneOldestSkippableEntry) {
   base::HistogramTester histograms;
 
@@ -9613,7 +9644,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
 
 // Tests that we fallback to pruning the oldest entry if the last committed
 // entry is the oldest skippable navigation entry.
-IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerHistoryInterventionBrowserTest,
                        PruneOldestWhenLastCommittedIsSkippable) {
   base::HistogramTester histograms;
 
@@ -9662,7 +9693,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
 // Tests that the navigation entry is marked as skippable on back/forward
 // button if a subframe does a push state without ever getting a user
 // activation.
-IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerHistoryInterventionBrowserTest,
                        NoUserActivationSetSkipOnBackForwardSubframe) {
   base::HistogramTester histograms;
 
@@ -9727,7 +9758,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
 // Tests that the navigation entry is not marked as skippable on back/forward
 // button if a subframe does a push state without ever getting a user
 // activation on itself but there was a user gesture on the main frame.
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     NavigationControllerHistoryInterventionBrowserTest,
     UserActivationMainFrameDoNotSetSkipOnBackForwardSubframe) {
   base::HistogramTester histograms;
@@ -9772,7 +9803,7 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 // Tests that all same document entries are marked as skippable together.
-IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerHistoryInterventionBrowserTest,
                        SetSkipOnBackForwardSameDocumentEntries) {
   // Consider the case:
   // 1. [Z, A, (click), A#1, A#2, A#3, A#4, B]
@@ -9903,7 +9934,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
 // do not add any more session history entries and going to previous entry
 // works.
 // It replaces invalidly behaving unit test added for http://crbug.com/40395.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTestNoServer,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTestNoServer,
                        ClientRedirectAfterSameDocumentNavigation) {
   net::test_server::ControllableHttpResponse response(embedded_test_server(),
                                                       "/foo.html");
@@ -10002,7 +10033,7 @@ class SandboxedNavigationControllerBrowserTest
 };
 
 // Tests navigations which occur from a sandboxed frame are prevented.
-IN_PROC_BROWSER_TEST_F(SandboxedNavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(SandboxedNavigationControllerBrowserTest,
                        TopLevelNavigationFromSandboxSource) {
   SetupNavigation();
 
@@ -10112,7 +10143,7 @@ class SandboxedNavigationControllerPopupBrowserTest
 
 // Tests navigations that sandboxed top level frames still
 // can navigate.
-IN_PROC_BROWSER_TEST_F(SandboxedNavigationControllerPopupBrowserTest,
+IN_PROC_BROWSER_TEST_P(SandboxedNavigationControllerPopupBrowserTest,
                        NavigateSelf) {
   SetupNavigation();
 
@@ -10174,7 +10205,7 @@ class NavigationControllerMainDocumentSequenceNumberBrowserTest
   std::vector<int64_t> main_frame_document_sequence_numbers_;
 };
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     NavigationControllerMainDocumentSequenceNumberBrowserTest,
     SubframeNavigation) {
   const GURL url1(
@@ -10214,7 +10245,7 @@ IN_PROC_BROWSER_TEST_F(
               ElementsAre(1, 1, 1, 2, 1, 1));
 }
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     NavigationControllerMainDocumentSequenceNumberBrowserTest,
     SameDocument) {
   const GURL url1(embedded_test_server()->GetURL("/title1.html"));
@@ -10276,7 +10307,7 @@ class DidCommitNavigationCanceller : public DidCommitNavigationInterceptor {
 // When running OpenURL to an invalid URL on a frame proxy it should not spoof
 // the url by canceling a main frame navigation.
 // See https://crbug.com/966914.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        CrossProcessIframeToInvalidURLCancelsRedirectSpoof) {
   // This tests something that can only happened with out of process iframes.
   if (!AreAllSitesIsolatedForTesting())
@@ -10319,7 +10350,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // Tests a renderer aborting the navigation it started, while still waiting on a
 // long cross-process subframe beforeunload handler.
 // Regression test: https://crbug.com/972154
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     NavigationControllerBrowserTest,
     NavigationAbortDuringLongCrossProcessIframeBeforeUnload) {
   // This test relies on the main frame and the iframe to live in different
@@ -10390,7 +10421,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleMethodOnly(
 
 // Tests that the navigation entry's method is updated to GET when following a
 // 301 redirect that encounters an error page. See https://crbug.com/1041597.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTestNoServer,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTestNoServer,
                        UpdateMethodOn301RedirectError) {
   // HandleMethodOnly serves the final endpoint that the test ends up at. It
   // lets the test distinguish a GET from a POST by serving a response only for
@@ -10446,7 +10477,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTestNoServer,
 // a 307 redirect that encounters an error page. This test is similar to the
 // above UpdateMethodOn301RedirectError, but reversed: in this test, the method
 // should be preserved as POST.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTestNoServer,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTestNoServer,
                        UpdateMethodOn307RedirectError) {
   // HandleMethodOnly serves the final endpoint that the test ends up at. It
   // lets the test distinguish a GET from a POST by serving a response only for
@@ -10500,8 +10531,11 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTestNoServer,
 // 2) same-document
 // 3) to a http URL with port 0.
 // This is the scenario behind https://crbug.com/1065532.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        SameDocumentNavigationToHttpPortZero) {
+  // TODO(https://crbug.com/1100745): Remove this when test passes.
+  if (ShouldCreateNewHostForSameSiteSubframe())
+    return;
   GURL page_url(embedded_test_server()->GetURL(
       "foo.com", "/navigation_controller/simple_page_1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), page_url));
@@ -10587,8 +10621,11 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 }
 
 // Navigating a subframe to the same URL should not generate a history entry.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        NoHistoryOnNavigationToSameUrl) {
+  // TODO(http://crbug.com/1068965): Remove this when test passes.
+  if (ShouldCreateNewHostForSameSiteSubframe())
+    return;
   {
     GURL frame_url = embedded_test_server()->GetURL(
         "a.com", "/cross_site_iframe_factory.html?a(a)");
@@ -10620,7 +10657,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 //
 // TODO(alexmos, creis): Consider changing this behavior to auto-traverse
 // history to the first entry which finds a frame to navigate.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        GoBackSameDocumentInRemovedSubframe) {
   GURL main_url = embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b,c)");
@@ -10773,7 +10810,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 //
 // TODO(alexmos, creis): Consider changing this behavior to auto-traverse
 // history to the first entry which finds a frame to navigate.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        GoBackCrossDocumentInRemovedSubframe) {
   GURL main_url = embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)");
@@ -10835,7 +10872,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // This test is similar to the one above, but checks the case where the first
 // attempted navigation after subframe removal is a forward navigation
 // rather than a back navigation.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        GoForwardCrossDocumentInRemovedSubframe) {
   GURL main_url = embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)");
@@ -10945,7 +10982,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // Check that if we ignore a history entry that targets a removed subframe, the
 // entry still stays around and is used properly when the subframe gets
 // recreated.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        RestoreRemovedSubframe) {
   // Start on a page with a same-site iframe.  It's important that this iframe
   // isn't dynamically inserted for history navigations in this test.
@@ -11017,7 +11054,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // frame which is crashed, we not only go back in the subframe but also reload
 // the sad frame.  This restores restore the state covered by the corresponding
 // NavigationEntry more faithfully.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        ReloadSadFrameWithSubframeHistoryNavigation) {
   // Ensure this test runs in full site-per-process mode so that we can get a
   // sad frame on Android.
@@ -11068,7 +11105,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // Regression test for https://crbug.com/1088354, where a different-document
 // load was incorrectly scheduled for a history navigation in a subframe that
 // had no existing and no target FrameNavigationEntry.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        SubframeGoesBackAndSiblingHasNoFrameEntry) {
   // Start on a page with a same-site iframe.
   GURL main_url =
@@ -11115,7 +11152,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // Checks that a browser-initiated same-document navigation on a page which has
 // a valid base URL preserves the base URL.
 // See https://crbug.com/1082141.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        LoadDataWithBaseURLSameDocumentNavigation) {
   // LoadDataWithBaseURL is never subject to --site-per-process policy today
   // (this API is only used by Android WebView [where OOPIFs have not shipped
@@ -11179,5 +11216,32 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(data_url, entry->GetURL());
   EXPECT_EQ(base_url, EvalJs(shell(), "document.URL"));
 }
-
+INSTANTIATE_TEST_SUITE_P(All,
+                         NavigationControllerAlertDialogBrowserTest,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
+INSTANTIATE_TEST_SUITE_P(All,
+                         NavigationControllerBrowserTest,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
+INSTANTIATE_TEST_SUITE_P(All,
+                         NavigationControllerBrowserTestNoServer,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
+INSTANTIATE_TEST_SUITE_P(All,
+                         NavigationControllerDisableHistoryIntervention,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
+INSTANTIATE_TEST_SUITE_P(All,
+                         NavigationControllerHistoryInterventionBrowserTest,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    NavigationControllerMainDocumentSequenceNumberBrowserTest,
+    testing::ValuesIn(RenderDocumentFeatureLevelValues()));
+INSTANTIATE_TEST_SUITE_P(All,
+                         RequestMonitoringNavigationBrowserTest,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
+INSTANTIATE_TEST_SUITE_P(All,
+                         SandboxedNavigationControllerBrowserTest,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
+INSTANTIATE_TEST_SUITE_P(All,
+                         SandboxedNavigationControllerPopupBrowserTest,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
 }  // namespace content

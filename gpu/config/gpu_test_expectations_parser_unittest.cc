@@ -76,6 +76,7 @@ class GPUTestExpectationsParserTest : public testing::Test {
     bot_config_.AddGPUVendor(0x10de);
     bot_config_.set_gpu_device_id(0x0640);
     bot_config_.set_api(GPUTestConfig::kAPID3D11);
+    bot_config_.set_command_decoder(GPUTestConfig::kCommandDecoderPassthrough);
     ASSERT_TRUE(bot_config_.IsValid());
   }
 
@@ -339,6 +340,34 @@ TEST_F(GPUTestExpectationsParserTest, ValidAPI) {
 
 TEST_F(GPUTestExpectationsParserTest, MultipleAPIsConflict) {
   const std::string text = "BUG12345 WIN7 NVIDIA D3D9 D3D9 : MyTest = FAIL";
+
+  GPUTestExpectationsParser parser;
+  EXPECT_FALSE(parser.LoadTestExpectations(text));
+  EXPECT_NE(0u, parser.GetErrorMessages().size());
+}
+
+TEST_F(GPUTestExpectationsParserTest, PassthroughCommandDecoder) {
+  const std::string text = "BUG12345 PASSTHROUGH : MyTest = FAIL";
+
+  GPUTestExpectationsParser parser;
+  EXPECT_TRUE(parser.LoadTestExpectations(text));
+  EXPECT_EQ(0u, parser.GetErrorMessages().size());
+  EXPECT_EQ(GPUTestExpectationsParser::kGpuTestFail,
+            parser.GetTestExpectation("MyTest", bot_config()));
+}
+
+TEST_F(GPUTestExpectationsParserTest, ValidatingCommandDecoder) {
+  const std::string text = "BUG12345 VALIDATING : MyTest = FAIL";
+
+  GPUTestExpectationsParser parser;
+  EXPECT_TRUE(parser.LoadTestExpectations(text));
+  EXPECT_EQ(0u, parser.GetErrorMessages().size());
+  EXPECT_EQ(GPUTestExpectationsParser::kGpuTestPass,
+            parser.GetTestExpectation("MyTest", bot_config()));
+}
+
+TEST_F(GPUTestExpectationsParserTest, MultipleCommandDecodersConflict) {
+  const std::string text = "BUG12345 VALIDATING VALIDATING : MyTest = FAIL";
 
   GPUTestExpectationsParser parser;
   EXPECT_FALSE(parser.LoadTestExpectations(text));

@@ -123,6 +123,7 @@ void ANGLEPlatformImpl_histogramBoolean(PlatformMethods* platform,
   ANGLEPlatformImpl_histogramEnumeration(platform, name, sample ? 1 : 0, 2);
 }
 
+NO_SANITIZE("cfi-icall")
 void ANGLEPlatformImpl_postWorkerTask(PlatformMethods* platform,
                                       PostWorkerTaskCallback callback,
                                       void* user_data) {

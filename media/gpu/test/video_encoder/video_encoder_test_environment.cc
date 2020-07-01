@@ -21,8 +21,11 @@ struct CodecParamToProfile {
   const char* codec;
   const VideoCodecProfile profile;
 } kCodecParamToProfile[] = {
-    {"h264baseline", H264PROFILE_BASELINE}, {"h264", H264PROFILE_MAIN},
-    {"h264main", H264PROFILE_MAIN},         {"vp8", VP8PROFILE_ANY},
+    {"h264baseline", H264PROFILE_BASELINE},
+    {"h264", H264PROFILE_MAIN},
+    {"h264main", H264PROFILE_MAIN},
+    {"h264high", H264PROFILE_HIGH},
+    {"vp8", VP8PROFILE_ANY},
     {"vp9", VP9PROFILE_PROFILE0},
 };
 

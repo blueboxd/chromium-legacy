@@ -579,20 +579,6 @@ bool ServiceWorkerContextWrapper::MaybeHasRegistrationForOrigin(
   return false;
 }
 
-void ServiceWorkerContextWrapper::WaitForRegistrationsInitializedForTest() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (registrations_initialized_)
-    return;
-  base::RunLoop loop;
-  on_registrations_initialized_ = loop.QuitClosure();
-  loop.Run();
-}
-
-void ServiceWorkerContextWrapper::AddRegistrationToRegisteredOriginsForTest(
-    const url::Origin& origin) {
-  registered_origins_.insert(origin);
-}
-
 void ServiceWorkerContextWrapper::GetAllOriginsInfo(
     GetUsageInfoCallback callback) {
   RunOrPostTaskOnCoreThread(
@@ -2087,6 +2073,15 @@ void ServiceWorkerContextWrapper::DidSetUpLoaderFactoryForUpdateCheck(
       network::SharedURLLoaderFactory::Create(
           std::move(loader_factory_bundle_info));
   std::move(callback).Run(std::move(loader_factory));
+}
+
+void ServiceWorkerContextWrapper::WaitForRegistrationsInitializedForTest() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (registrations_initialized_)
+    return;
+  base::RunLoop loop;
+  on_registrations_initialized_ = loop.QuitClosure();
+  loop.Run();
 }
 
 void ServiceWorkerContextWrapper::DidGetRegisteredOrigins(

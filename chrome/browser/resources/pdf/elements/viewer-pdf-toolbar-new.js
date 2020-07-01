@@ -4,6 +4,8 @@
 
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/polymer/v3_0/paper-progress/paper-progress.js';
 
 import './icons.js';
 import './viewer-page-selector.js';
@@ -23,7 +25,29 @@ class ViewerPdfToolbarNewElement extends PolymerElement {
     return {
       docLength: Number,
       pageNo: Number,
+
+      loadProgress: {
+        type: Number,
+        observer: 'loadProgressChanged_',
+      },
+
+      loading_: {
+        type: Boolean,
+        reflectToAttribute: true,
+      },
     };
+  }
+
+  constructor() {
+    super();
+
+    /** @private {boolean} */
+    this.loading_ = true;
+  }
+
+  /** @private */
+  loadProgressChanged_() {
+    this.loading_ = this.loadProgress < 100;
   }
 }
 customElements.define(

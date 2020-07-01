@@ -85,7 +85,7 @@ if (!is_android) {
     }
 
     if (is_mac) {
-      libs = [
+      frameworks = [
         "Foundation.framework",
         "IOKit.framework",
       ]

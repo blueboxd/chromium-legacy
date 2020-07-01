@@ -112,13 +112,6 @@ class OptimizationGuideHintsManager
   bool HasLoadedOptimizationBlocklist(
       optimization_guide::proto::OptimizationType optimization_type);
 
-  // Returns the OptimizationTargetDecision based on the given parameters.
-  // TODO(crbug/1021364): Remove this method once the hints have nothing to do
-  // with predicting navigations.
-  optimization_guide::OptimizationTargetDecision ShouldTargetNavigation(
-      content::NavigationHandle* navigation_handle,
-      optimization_guide::proto::OptimizationTarget optimization_target);
-
   // Returns the OptimizationTypeDecision based on the given parameters.
   // |optimization_metadata| will be populated, if applicable.
   optimization_guide::OptimizationTypeDecision CanApplyOptimization(

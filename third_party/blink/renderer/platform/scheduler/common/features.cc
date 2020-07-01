@@ -92,7 +92,7 @@ base::TimeDelta GetIntensiveWakeUpThrottlingGracePeriod() {
   static const base::FeatureParam<int>
       kIntensiveWakeUpThrottling_GracePeriodSeconds{
           &features::kIntensiveWakeUpThrottling,
-          kIntensiveWakeUpThrottling_GracePeriodSeconds_Name,
+          features::kIntensiveWakeUpThrottling_GracePeriodSeconds_Name,
           kIntensiveWakeUpThrottling_GracePeriodSeconds_Default};
 
   int seconds = kIntensiveWakeUpThrottling_GracePeriodSeconds_Default;

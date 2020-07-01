@@ -36,7 +36,7 @@ source_set("facade") {
     "//ui/base",
   ]
 
-  libs = [ "CoreFoundation.framework" ]
+  frameworks = [ "CoreFoundation.framework" ]
 
   public_deps = [
     "//remoting/base",

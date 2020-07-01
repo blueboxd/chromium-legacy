@@ -206,8 +206,6 @@ constexpr const char*
         "duration_between_wake_ups_seconds";
 
 constexpr int kIntensiveWakeUpThrottling_GracePeriodSeconds_Default = 5 * 60;
-constexpr const char* kIntensiveWakeUpThrottling_GracePeriodSeconds_Name =
-    "grace_period_seconds";
 
 // Exposed so that multiple tests can tinker with the policy override.
 PLATFORM_EXPORT void
@@ -218,8 +216,8 @@ PLATFORM_EXPORT bool IsIntensiveWakeUpThrottlingEnabled();
 // Duration between wake ups for the kIntensiveWakeUpThrottling feature.
 PLATFORM_EXPORT base::TimeDelta
 GetIntensiveWakeUpThrottlingDurationBetweenWakeUps();
-// Grace period after backgrounding a page during which there is no intensive
-// wake up throttling for the kIntensiveWakeUpThrottling feature.
+// Grace period after hiding a page during which there is no intensive wake up
+// throttling for the kIntensiveWakeUpThrottling feature.
 PLATFORM_EXPORT base::TimeDelta GetIntensiveWakeUpThrottlingGracePeriod();
 // The duration for which intensive throttling should be inhibited for
 // same-origin frames when the page title or favicon is updated. 0 seconds means

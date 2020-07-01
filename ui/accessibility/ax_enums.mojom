@@ -633,6 +633,9 @@ enum IntAttribute {
   // The list style type. Only available on list items.
   kListStyle,
 
+  // Specifies the alignment of the text, e.g. left, center, right, justify
+  kTextAlign,
+
   // Specifies the direction of the text, e.g., right-to-left.
   kTextDirection,
 
@@ -892,6 +895,15 @@ enum TextBoundary {
   kWordStart,
   kWordStartOrEnd,
   kNone = kObject
+};
+
+// Types of text alignment according to the IAccessible2 Object Attributes spec.
+enum TextAlign {
+  kNone,
+  kLeft,
+  kRight,
+  kCenter,
+  kJustify,
 };
 
 enum TextDirection {

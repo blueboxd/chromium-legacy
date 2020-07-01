@@ -41,7 +41,8 @@ var OSSettingsUIBrowserTest = class extends PolymerTest {
   }
 };
 
-TEST_F('OSSettingsUIBrowserTest', 'AllJsTests', () => {
+// TODO(https://crbug.com/1100889): Re-enable flaky test.
+TEST_F('OSSettingsUIBrowserTest', 'DISABLED_AllJsTests', () => {
   suite('os-settings-ui', () => {
     let ui;
     let userActionRecorder;

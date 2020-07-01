@@ -85,6 +85,7 @@ jumbo_source_set("filters") {
   ]
 
   deps = [
+    "//base/util/type_safety:type_safety",
     "//cc/base",  # For MathUtil.
     "//media:media_buildflags",
     "//media/base",

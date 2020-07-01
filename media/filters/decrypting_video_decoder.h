@@ -35,6 +35,8 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
       MediaLog* media_log);
   ~DecryptingVideoDecoder() override;
 
+  bool SupportsDecryption() const override;
+
   // VideoDecoder implementation.
   std::string GetDisplayName() const override;
   void Initialize(const VideoDecoderConfig& config,

@@ -138,19 +138,19 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest, LockedFullscreen) {
   // IDC_EXIT is not enabled in locked fullscreen.
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_EXIT));
 
-  constexpr int kWhitelistedIds[] = {IDC_CUT, IDC_COPY, IDC_PASTE};
+  constexpr int kAllowlistedIds[] = {IDC_CUT, IDC_COPY, IDC_PASTE};
 
-  // Go through all the command ids and make sure all non-whitelisted commands
+  // Go through all the command ids and make sure all non-allowlisted commands
   // are disabled.
   for (int id : command_updater->GetAllIds()) {
-    if (base::Contains(kWhitelistedIds, id)) {
+    if (base::Contains(kAllowlistedIds, id)) {
       continue;
     }
     EXPECT_FALSE(command_updater->IsCommandEnabled(id));
   }
 
-  // Verify the set of whitelisted commands.
-  for (int id : kWhitelistedIds) {
+  // Verify the set of allowlisted commands.
+  for (int id : kAllowlistedIds) {
     EXPECT_TRUE(command_updater->IsCommandEnabled(id));
   }
 

@@ -122,15 +122,6 @@ bool ServiceWorkerContextAdapter::MaybeHasRegistrationForOrigin(
   return false;
 }
 
-void ServiceWorkerContextAdapter::WaitForRegistrationsInitializedForTest() {
-  NOTIMPLEMENTED();
-}
-
-void ServiceWorkerContextAdapter::AddRegistrationToRegisteredOriginsForTest(
-    const url::Origin& origin) {
-  NOTIMPLEMENTED();
-}
-
 void ServiceWorkerContextAdapter::GetAllOriginsInfo(
     GetUsageInfoCallback callback) {
   NOTIMPLEMENTED();

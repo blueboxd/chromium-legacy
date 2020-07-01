@@ -46,7 +46,6 @@ ToolbarAccountIconContainerView::ToolbarAccountIconContainerView(
   params.icon_label_bubble_delegate = this;
   params.page_action_icon_delegate = this;
   params.button_observer = this;
-  params.view_observer = this;
   AddMainButton(avatar_);
 
   // Since the insertion point for icons before the avatar button, we don't

@@ -51,7 +51,7 @@ namespace {
 // Group.
 constexpr size_t kGenericMaxResults = 10;
 
-// Some app results may be blacklisted(e.g. continue reading) for rendering
+// Some app results may be blocklisted (e.g. continue reading) for rendering
 // in some UI, so we need to allow returning more results than actual maximum
 // number of results to be displayed in UI.
 constexpr size_t kMaxAppsGroupResults = 7;

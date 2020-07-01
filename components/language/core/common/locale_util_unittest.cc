@@ -78,7 +78,7 @@ TEST_F(LocaleUtilTest, ContainsSameBaseLanguage) {
   EXPECT_EQ(true, language::ContainsSameBaseLanguage(list, "fr-FR"));
 
   // Multiple elements, no match.
-  list = {"en-US", "es-AR", "en-UK"};
+  list = {"en-US", "es-AR", "en-GB"};
   EXPECT_EQ(false, language::ContainsSameBaseLanguage(list, "fr-FR"));
 
   // Multiple elements, with match.
@@ -183,6 +183,11 @@ TEST_F(LocaleUtilTest, ConvertToActualUILocale) {
   EXPECT_EQ("en-GB", locale);
 
   locale = "en-CA";
+  is_ui = language::ConvertToActualUILocale(&locale);
+  EXPECT_TRUE(is_ui);
+  EXPECT_EQ("en-GB", locale);
+
+  locale = "en-GB-oxendict";
   is_ui = language::ConvertToActualUILocale(&locale);
   EXPECT_TRUE(is_ui);
   EXPECT_EQ("en-GB", locale);

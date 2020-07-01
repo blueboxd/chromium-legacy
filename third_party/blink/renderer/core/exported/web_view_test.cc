@@ -583,13 +583,13 @@ TEST_F(WebViewTest, SetBaseBackgroundColorWithColorScheme) {
 
   color_scheme_helper.SetPreferredColorScheme(PreferredColorScheme::kDark);
   UpdateAllLifecyclePhases();
-  EXPECT_EQ(Color::kBlack, frame_view->BaseBackgroundColor());
+  EXPECT_EQ(Color(0x12, 0x12, 0x12), frame_view->BaseBackgroundColor());
 
   // Don't let dark color-scheme override a transparent background.
   web_view->SetBaseBackgroundColor(SK_ColorTRANSPARENT);
   EXPECT_EQ(Color::kTransparent, frame_view->BaseBackgroundColor());
   web_view->SetBaseBackgroundColor(SK_ColorBLUE);
-  EXPECT_EQ(Color::kBlack, frame_view->BaseBackgroundColor());
+  EXPECT_EQ(Color(0x12, 0x12, 0x12), frame_view->BaseBackgroundColor());
 
   color_scheme_helper.SetForcedColors(*(web_view->GetPage()),
                                       ForcedColors::kActive);
@@ -602,7 +602,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColorWithColorScheme) {
   color_scheme_helper.SetForcedColors(*(web_view->GetPage()),
                                       ForcedColors::kNone);
   UpdateAllLifecyclePhases();
-  EXPECT_EQ(Color::kBlack, frame_view->BaseBackgroundColor());
+  EXPECT_EQ(Color(0x12, 0x12, 0x12), frame_view->BaseBackgroundColor());
 
   color_scheme_helper.SetPreferredColorScheme(PreferredColorScheme::kLight);
   UpdateAllLifecyclePhases();

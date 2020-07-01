@@ -293,7 +293,7 @@ void PrintJobWorker::GetSettingsWithUI(int document_page_count,
 
   // Running a dialog causes an exit to webpage-initiated fullscreen.
   // http://crbug.com/728276
-  if (web_contents && web_contents->IsFullscreenForCurrentTab())
+  if (web_contents && web_contents->IsFullscreen())
     web_contents->ExitFullscreen(true);
 
   printing_context_->AskUserForSettings(

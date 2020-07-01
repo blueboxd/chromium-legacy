@@ -173,9 +173,12 @@ class FuchsiaVideoDecoder : public VideoDecoder,
                       bool enable_sw_decoding);
   ~FuchsiaVideoDecoder() override;
 
-  // VideoDecoder implementation.
-  std::string GetDisplayName() const override;
+  // Decoder implementation.
   bool IsPlatformDecoder() const override;
+  bool SupportsDecryption() const override;
+  std::string GetDisplayName() const override;
+
+  // VideoDecoder implementation.
   void Initialize(const VideoDecoderConfig& config,
                   bool low_delay,
                   CdmContext* cdm_context,
@@ -327,12 +330,16 @@ FuchsiaVideoDecoder::~FuchsiaVideoDecoder() {
   ReleaseOutputBuffers();
 }
 
-std::string FuchsiaVideoDecoder::GetDisplayName() const {
-  return "FuchsiaVideoDecoder";
-}
-
 bool FuchsiaVideoDecoder::IsPlatformDecoder() const {
   return true;
+}
+
+bool FuchsiaVideoDecoder::SupportsDecryption() const {
+  return true;
+}
+
+std::string FuchsiaVideoDecoder::GetDisplayName() const {
+  return "FuchsiaVideoDecoder";
 }
 
 void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,

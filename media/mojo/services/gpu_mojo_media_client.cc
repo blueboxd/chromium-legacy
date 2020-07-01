@@ -101,11 +101,24 @@ D3D11VideoDecoder::GetD3D11DeviceCB GetD3D11DeviceCallback() {
 #endif
 
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-// Return true if we switch to use new HW-accelerated video decoder.
-bool IsNewAcceleratedVideoDecoderUsed(
+// Returns true if |gpu_preferences| says that the direct video decoder is
+// supported and the feature flag says so. This only applies to ChromeOS builds,
+// otherwise it returns false.
+bool ShouldUseChromeOSDirectVideoDecoder(
     const gpu::GpuPreferences& gpu_preferences) {
-  return !gpu_preferences.force_disable_new_accelerated_video_decoder &&
-         base::FeatureList::IsEnabled(kChromeosVideoDecoder);
+#if defined(OS_CHROMEOS)
+  const bool should_use_direct_video_decoder =
+      !gpu_preferences.platform_disallows_chromeos_direct_video_decoder &&
+      base::FeatureList::IsEnabled(kUseChromeOSDirectVideoDecoder);
+
+  // For testing purposes, the following flag allows using the "other" video
+  // decoder implementation.
+  if (base::FeatureList::IsEnabled(kUseAlternateVideoDecoderImplementation))
+    return !should_use_direct_video_decoder;
+  return should_use_direct_video_decoder;
+#else
+  return false;
+#endif
 }
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
@@ -169,7 +182,7 @@ GpuMojoMediaClient::GetSupportedVideoDecoderConfigs() {
   }
 
 #elif BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-  if (IsNewAcceleratedVideoDecoderUsed(gpu_preferences_)) {
+  if (ShouldUseChromeOSDirectVideoDecoder(gpu_preferences_)) {
     if (!cros_supported_configs_) {
       cros_supported_configs_ =
           ChromeosVideoDecoderFactory::GetSupportedConfigs();
@@ -256,7 +269,7 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
               std::move(frame_info_helper)));
 
 #elif BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-      if (IsNewAcceleratedVideoDecoderUsed(gpu_preferences_)) {
+      if (ShouldUseChromeOSDirectVideoDecoder(gpu_preferences_)) {
         auto frame_pool = std::make_unique<PlatformVideoFramePool>(
             gpu_memory_buffer_factory_);
         auto frame_converter = MailboxVideoFrameConverter::Create(

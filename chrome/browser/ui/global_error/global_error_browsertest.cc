@@ -150,7 +150,7 @@ void GlobalErrorBubbleTest::ShowUi(const std::string& name) {
         extensions::Blacklist::Get(profile));
     extension_registry->AddBlocklisted(test_extension);
     // Only BLACKLISTED_MALWARE results in a bubble displaying to the user.
-    // Other types are greylisted, not blacklisted.
+    // Other types are greylisted, not blocklisted.
     test_blacklist.SetBlacklistState(test_extension->id(),
                                      extensions::BLOCKLISTED_MALWARE, true);
     // Ensure ExtensionService::ManageBlacklist() runs, which shows the dialog.

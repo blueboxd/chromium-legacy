@@ -1134,7 +1134,7 @@
   <message name="IDS_OFFLINE_LOGIN_CLOSE_BUTTON_TEXT" desc="Text shown on forgot password dialog close button during offline signin flow.">
     Close
   </message>
-  <message name="IDS_WHITELIST_ERROR_TRY_AGAIN_BUTTON" desc="The text of the try again button on the whitelist error UI.">
+  <message name="IDS_ALLOWLIST_ERROR_TRY_AGAIN_BUTTON" desc="The text of the try again button on the allowlist error UI.">
     Try again
   </message>
   <message name="IDS_BROWSE_WITHOUT_SIGNING_IN_HTML" desc="Text shown on side of Google sign-in UI.">
@@ -2459,10 +2459,10 @@
     Aw, Snap! There was an error during renaming.
   </message>
 
-  <message name="IDS_LOGIN_ERROR_WHITELIST" desc="Couldn't sign in because user is not whitelisted by the device owner.">
+  <message name="IDS_LOGIN_ERROR_ALLOWLIST" desc="Couldn't sign in because user is not authorized by the device owner.">
     You are not authorized to use this device. Please contact the device owner for sign-in permission.
   </message>
-  <message name="IDS_ENTERPRISE_LOGIN_ERROR_WHITELIST" desc="Couldn't sign in because user is not whitelisted by the administrator.">
+  <message name="IDS_ENTERPRISE_LOGIN_ERROR_ALLOWLIST" desc="Couldn't sign in because user is not authorized by the administrator.">
     You are not authorized to use this device. Please contact the administrator for sign-in permission.
   </message>
   <message name="IDS_LOGIN_ERROR_GOOGLE_ACCOUNT_NOT_ALLOWED" desc="Couldn't sign into Google account on the Active Directory managed device.">

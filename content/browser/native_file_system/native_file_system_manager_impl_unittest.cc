@@ -584,4 +584,175 @@ TEST_F(NativeFileSystemManagerImplTest,
   EXPECT_EQ(ask_grant2_, token->GetWriteGrant());
 }
 
+// NativeFileSystemManager should successfully resolve an originless
+// NativeFileSystemTransferToken representing a NativeFileSystemFileEntry
+// into a valid Remote<blink::mojom::NativeFileSystemFileHandle>, given
+// that the PID is valid.
+TEST_F(NativeFileSystemManagerImplTest,
+       RedeemTransferTokenWithoutOrigin_File_ValidPID) {
+  base::FilePath file_path = dir_.GetPath().AppendASCII("mr_file");
+  ASSERT_TRUE(base::CreateTemporaryFile(&file_path));
+
+  // A NativeFileSystemTransferToken created without an explicit origin and
+  // attached to an implementation only through
+  // NativeFileSystemManager::GetFileHandleFromToken.
+  mojo::PendingRemote<blink::mojom::NativeFileSystemTransferToken> token_remote;
+  manager_->CreateTransferTokenFromPath(
+      file_path, /*is_directory=*/false, kBindingContext.process_id(),
+      token_remote.InitWithNewPipeAndPassReceiver());
+
+  // Expect permission requests when the token is sent to be redeemed.
+  EXPECT_CALL(permission_context_,
+              GetReadPermissionGrant(
+                  kTestOrigin, file_path, /*is_directory=*/false,
+                  NativeFileSystemPermissionContext::UserAction::kOpen))
+      .WillOnce(testing::Return(allow_grant_));
+
+  EXPECT_CALL(permission_context_,
+              GetWritePermissionGrant(
+                  kTestOrigin, file_path, /*is_directory=*/false,
+                  NativeFileSystemPermissionContext::UserAction::kOpen))
+      .WillOnce(testing::Return(allow_grant_));
+
+  mojo::Remote<blink::mojom::NativeFileSystemFileHandle> file_remote;
+  manager_remote_->GetFileHandleFromToken(
+      std::move(token_remote), file_remote.BindNewPipeAndPassReceiver());
+
+  // A NativeFileSystemTransferToken created with an explicitly defined
+  // NativeFileSystemFileHandle implementation to compare to the redeemed
+  // token above.
+  mojo::PendingRemote<blink::mojom::NativeFileSystemTransferToken>
+      explicit_token_remote;
+  auto test_file_url =
+      manager_->CreateFileSystemURLFromPath(kBindingContext.origin, file_path);
+  manager_->CreateTransferTokenForTesting(
+      test_file_url.url,
+      {allow_grant_, allow_grant_, test_file_url.file_system},
+      /*is_directory=*/false,
+      explicit_token_remote.InitWithNewPipeAndPassReceiver());
+
+  // Expect the explicitly defined file handle to be identical to the one
+  // returned by GetFileHandleFromToken.
+  base::RunLoop file_matches_loop;
+  file_remote->IsSameEntry(
+      std::move(explicit_token_remote),
+      base::BindLambdaForTesting(
+          [&](blink::mojom::NativeFileSystemErrorPtr result, bool same_entry) {
+            file_matches_loop.Quit();
+            ASSERT_EQ(blink::mojom::NativeFileSystemStatus::kOk,
+                      result->status);
+            EXPECT_TRUE(same_entry);
+          }));
+  file_matches_loop.Run();
+}
+
+// NativeFileSystemManager should refuse to resolve a
+// NativeFileSystemTransferToken representing a NativeFileSystemFileEntry if the
+// PID of the redeeming process doesn't match the one assigned at creation.
+TEST_F(NativeFileSystemManagerImplTest,
+       RedeemTransferTokenWithoutOrigin_File_InvalidPID) {
+  base::FilePath file_path = dir_.GetPath().AppendASCII("mr_file");
+  ASSERT_TRUE(base::CreateTemporaryFile(&file_path));
+
+  // Create a transfer token with an PID different than the process attempting
+  // to redeem to the token.
+  mojo::PendingRemote<blink::mojom::NativeFileSystemTransferToken> token_remote;
+  manager_->CreateTransferTokenFromPath(
+      file_path, /*is_directory=*/false,
+      /*renderer_id=*/kBindingContext.process_id() - 1,
+      token_remote.InitWithNewPipeAndPassReceiver());
+
+  mojo::Remote<blink::mojom::NativeFileSystemFileHandle> file_remote;
+  manager_remote_->GetFileHandleFromToken(
+      std::move(token_remote), file_remote.BindNewPipeAndPassReceiver());
+
+  // In order to make sure that |file_remote| doesn't get bound to an
+  // implementation, we wait for all messages to be sent and ensure that
+  // |file_remote| is not connected afterwards.
+  file_remote.FlushForTesting();
+  EXPECT_FALSE(file_remote.is_connected());
+}
+
+// NativeFileSystemManager should successfully resolve an originless
+// NativeFileSystemTransferToken representing a NativeFileSystemDirectoryEntry
+// into a valid Remote<blink::mojom::NativeFileSystemDirectoryHandle>, given
+// that the PID is valid.
+TEST_F(NativeFileSystemManagerImplTest,
+       RedeemTransferTokenWithoutOrigin_Directory_ValidPID) {
+  const base::FilePath kDirPath = dir_.GetPath().AppendASCII("mr_dir");
+  ASSERT_TRUE(base::CreateDirectory(kDirPath));
+
+  // A NativeFileSystemTransferToken created without an explicit origin and
+  // attached to an implementation only through
+  // NativeFileSystemManager::GetFileHandleFromToken.
+  mojo::PendingRemote<blink::mojom::NativeFileSystemTransferToken> token_remote;
+  manager_->CreateTransferTokenFromPath(
+      kDirPath, /*is_directory=*/true, kBindingContext.process_id(),
+      token_remote.InitWithNewPipeAndPassReceiver());
+
+  // Expect permission requests when the token is sent to be redeemed.
+  EXPECT_CALL(permission_context_,
+              GetReadPermissionGrant(
+                  kTestOrigin, kDirPath, /*is_directory=*/true,
+                  NativeFileSystemPermissionContext::UserAction::kOpen))
+      .WillOnce(testing::Return(allow_grant_));
+
+  EXPECT_CALL(permission_context_,
+              GetWritePermissionGrant(
+                  kTestOrigin, kDirPath, /*is_directory=*/true,
+                  NativeFileSystemPermissionContext::UserAction::kOpen))
+      .WillOnce(testing::Return(allow_grant_));
+
+  mojo::Remote<blink::mojom::NativeFileSystemDirectoryHandle> dir_remote;
+  manager_remote_->GetDirectoryHandleFromToken(
+      std::move(token_remote), dir_remote.BindNewPipeAndPassReceiver());
+
+  // Use |dir_remote| to create a child of the directory, and pass the test if
+  // the child was successfully created at the expected path. Block until this
+  // happens or test times out.
+  base::RunLoop await_get_directory;
+  const std::string kChildDirectory = "child_dir";
+  dir_remote->GetDirectory(
+      kChildDirectory, /*create=*/true,
+      base::BindLambdaForTesting(
+          [&](blink::mojom::NativeFileSystemErrorPtr result,
+              mojo::PendingRemote<blink::mojom::NativeFileSystemDirectoryHandle>
+                  directory_handle) {
+            await_get_directory.Quit();
+            ASSERT_EQ(blink::mojom::NativeFileSystemStatus::kOk,
+                      result->status);
+            EXPECT_TRUE(
+                kDirPath.IsParent(kDirPath.AppendASCII(kChildDirectory)));
+          }));
+  await_get_directory.Run();
+}
+
+// NativeFileSystemManager should refuse to resolve a
+// NativeFileSystemTransferToken representing a NativeFileSystemDirectoryEntry
+// if the PID of the redeeming process doesn't match the one assigned at
+// creation.
+TEST_F(NativeFileSystemManagerImplTest,
+       RedeemTransferTokenWithoutOrigin_Directory_InvalidPID) {
+  const base::FilePath kDirPath = dir_.GetPath().AppendASCII("mr_dir");
+  ASSERT_TRUE(base::CreateDirectory(kDirPath));
+
+  // Create a transfer token with a PID different than the process attempting
+  // to redeem to the transfer token.
+  mojo::PendingRemote<blink::mojom::NativeFileSystemTransferToken> token_remote;
+  manager_->CreateTransferTokenFromPath(
+      kDirPath, /*is_directory=*/true,
+      /*renderer_id=*/kBindingContext.process_id() - 1,
+      token_remote.InitWithNewPipeAndPassReceiver());
+
+  mojo::Remote<blink::mojom::NativeFileSystemDirectoryHandle> dir_remote;
+  manager_remote_->GetDirectoryHandleFromToken(
+      std::move(token_remote), dir_remote.BindNewPipeAndPassReceiver());
+
+  // In order to make sure that |dir_remote| doesn't get bound to an
+  // implementation, we wait for all messages to be sent and ensure that
+  // |dir_remote| is not connected afterwards.
+  dir_remote.FlushForTesting();
+  EXPECT_FALSE(dir_remote.is_connected());
+}
+
 }  // namespace content

@@ -35,6 +35,10 @@ class ToolbarIconContainerView : public views::View,
   // Adds the RHS child as well as setting its margins.
   void AddMainButton(views::Button* main_button);
 
+  // Begins observing |button| for changes that should affect the container's
+  // highlight state.
+  void ObserveButton(views::Button* button);
+
   void AddObserver(Observer* obs);
   void RemoveObserver(const Observer* obs);
 

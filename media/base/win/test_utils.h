@@ -46,6 +46,12 @@
 #define COM_ON_CALL(obj, call) ON_CALL(*obj.Get(), call)
 #define COM_EXPECT_CALL(obj, call) EXPECT_CALL(*obj.Get(), call)
 
+// Helpers for EXPECT or ASSERT success or failed HRESULTs.
+#define EXPECT_SUCCESS(expr) EXPECT_TRUE(SUCCEEDED((expr)))
+#define EXPECT_FAILED(expr) EXPECT_TRUE(FAILED((expr)))
+#define ASSERT_SUCCESS(expr) ASSERT_TRUE(SUCCEEDED((expr)))
+#define ASSERT_FAILED(expr) ASSERT_TRUE(FAILED((expr)))
+
 namespace media {
 
 // Use this action when using SetArgPointee with COM pointers.
@@ -70,6 +76,13 @@ ACTION_TEMPLATE(SetComPointeeAndReturnOk,
   p->AddRef();
   *std::get<k>(args) = p;
   return S_OK;
+}
+
+ACTION_TEMPLATE(SaveComPtr,
+                HAS_1_TEMPLATE_PARAMS(int, k),
+                AND_1_VALUE_PARAMS(p)) {
+  *p = std::get<k>(args);
+  (*p)->AddRef();
 }
 
 // Use this function to create a mock so that they are ref-counted correctly.

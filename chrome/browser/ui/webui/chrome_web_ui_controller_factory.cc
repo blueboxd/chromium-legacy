@@ -966,7 +966,7 @@ ChromeWebUIControllerFactory* ChromeWebUIControllerFactory::GetInstance() {
 // static
 bool ChromeWebUIControllerFactory::IsWebUIAllowedToMakeNetworkRequests(
     const url::Origin& origin) {
-  // Whitelist to work around exceptional cases.
+  // Allowlist to work around exceptional cases.
   //
   // If you are adding a new host to this list, please file a corresponding bug
   // to track its removal. See https://crbug.com/829412 for the metabug.

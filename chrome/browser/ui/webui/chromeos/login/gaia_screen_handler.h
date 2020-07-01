@@ -174,8 +174,8 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // we're using the offline login page but the device is online.
   void MonitorOfflineIdle(bool is_online);
 
-  // Show error UI at the end of GAIA flow when user is not whitelisted.
-  void ShowWhitelistCheckFailedError();
+  // Show error UI at the end of GAIA flow when user is not allowlisted.
+  void ShowAllowlistCheckFailedError();
 
   // BaseScreenHandler implementation:
   void DeclareLocalizedValues(

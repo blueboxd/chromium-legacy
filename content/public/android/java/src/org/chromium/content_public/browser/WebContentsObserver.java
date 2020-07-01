@@ -30,6 +30,12 @@ public abstract class WebContentsObserver {
     }
 
     /**
+     * Called when a RenderFrame for renderFrameHost is created in the
+     * renderer process.
+     */
+    public void renderFrameCreated(RenderFrameHost renderFrameHost) {}
+
+    /**
      * Called when the RenderView of the current RenderViewHost is ready, e.g. because we recreated
      * it after a crash.
      */

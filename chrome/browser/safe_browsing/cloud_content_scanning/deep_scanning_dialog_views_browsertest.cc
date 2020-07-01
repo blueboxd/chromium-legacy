@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
@@ -26,6 +27,10 @@ namespace {
 constexpr base::TimeDelta kNoDelay = base::TimeDelta::FromSeconds(0);
 constexpr base::TimeDelta kSmallDelay = base::TimeDelta::FromMilliseconds(300);
 constexpr base::TimeDelta kNormalDelay = base::TimeDelta::FromMilliseconds(500);
+
+base::string16 text() {
+  return base::UTF8ToUTF16(std::string(100, 'a'));
+}
 
 // Tests the behavior of the dialog in the following ways:
 // - It shows the appropriate buttons depending on its state.
@@ -525,8 +530,8 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogViewsWarningBrowserTest, Test) {
 
   DeepScanningDialogDelegate::Data data;
   data.do_dlp_scan = true;
-  data.text.emplace_back(base::UTF8ToUTF16("foo"));
-  data.text.emplace_back(base::UTF8ToUTF16("bar"));
+  data.text.emplace_back(text());
+  data.text.emplace_back(text());
   CreateFilesForTest({"foo.doc", "bar.doc"}, {"file", "content"}, &data);
   ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(
       browser()->profile(), GURL(kTestUrl), &data,
@@ -589,7 +594,7 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogViewsAppearanceBrowserTest, Test) {
   if (file_scan())
     CreateFilesForTest({"foo.doc"}, {"content"}, &data);
   else
-    data.text.emplace_back(base::UTF8ToUTF16("foo"));
+    data.text.emplace_back(text());
   ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(
       browser()->profile(), GURL(kTestUrl), &data,
       enterprise_connectors::AnalysisConnector::FILE_ATTACHED));

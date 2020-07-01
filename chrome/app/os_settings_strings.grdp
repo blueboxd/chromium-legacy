@@ -282,16 +282,19 @@
     Personal information suggestions
   </message>
   <message name="IDS_SETTINGS_SMART_INPUTS_PERSONAL_INFO_DESCRIPTION" desc="The description for personal information suggestion section.">
-    Personal information suggestions help you write faster by suggesting your name, address or phone number when you type some specific words. Only you see your own private, personalized suggestions for your account.
+    Personal information suggestions help you write faster with suggestions such as your name, address or phone number. Only you see your own private, personalized suggestions for your account.
   </message>
   <message name="IDS_SETTINGS_SMART_INPUTS_SHOW_PERSONAL_INFO" desc="The label for the toggle button controlling showing personal information suggestions.">
-    Show input personal information suggestions
+    Show personal information suggestions
   </message>
   <message name="IDS_SETTINGS_SMART_INPUTS_MANAGE_PERSONAL_INFO" desc="The label for opening Chrome's browser settings page for managing personal addresses">
     Manage personal information
   </message>
   <message name="IDS_SETTINGS_SMART_INPUTS_EMOJI_SUGGESTION_TITLE" desc="The label for emoji suggestion (when an user types a word, some emojis might be suggested for the user to insert after) section.">
     Emoji suggestions
+  </message>
+  <message name="IDS_SETTINGS_SMART_INPUTS_EMOJI_SUGGESTION_DESCRIPTION" desc="The description for emoji suggestion (when an user types a word, some emojis might be suggested for the user to insert after) section.">
+    Get emoji suggestions based on what you are typing
   </message>
   <message name="IDS_SETTINGS_SMART_INPUTS_SHOW_EMOJI_SUGGESTION" desc="The label for the toggle button controlling showing emoji suggestions (when an user types a word, some emojis might be suggested for the user to insert after).">
     Show emoji suggestions

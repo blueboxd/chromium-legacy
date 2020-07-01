@@ -143,7 +143,7 @@ class TabListRecyclerView
     private boolean mIsDynamicViewRegistered;
     private long mLastDirtyTime;
     private ImageView mShadowImageView;
-    private int mShadowTopMargin;
+    private int mShadowTopOffset;
     private TabListOnScrollListener mScrollListener;
 
     private final RemoveItemAnimator mRemoveItemAnimator = new RemoveItemAnimator();
@@ -229,8 +229,8 @@ class TabListRecyclerView
                                 res.getDimensionPixelSize(
                                         org.chromium.chrome.R.dimen.toolbar_shadow_height),
                                 Gravity.TOP);
-                params.topMargin = mShadowTopMargin;
                 mShadowImageView.setLayoutParams(params);
+                mShadowImageView.setTranslationY(mShadowTopOffset);
                 FrameLayout parent = (FrameLayout) getParent();
                 parent.addView(mShadowImageView);
             } else if (getParent() instanceof RelativeLayout) {
@@ -255,31 +255,24 @@ class TabListRecyclerView
         }
     }
 
-    void setShadowTopMargin(int shadowTopMargin) {
-        mShadowTopMargin = shadowTopMargin;
+    void setShadowTopOffset(int shadowTopOffset) {
+        mShadowTopOffset = shadowTopOffset;
 
         if (mShadowImageView != null && getParent() instanceof FrameLayout) {
-            final ViewGroup.MarginLayoutParams layoutParams =
-                    ((ViewGroup.MarginLayoutParams) mShadowImageView.getLayoutParams());
-            layoutParams.topMargin = shadowTopMargin;
-            mShadowImageView.setLayoutParams(layoutParams);
+            // Since the shadow has no functionality, other than just existing visually, we can use
+            // translationY to position it using the top offset. This is preferable to setting a
+            // margin because translation doesn't require a relayout.
+            mShadowImageView.setTranslationY(mShadowTopOffset);
 
-            // Wait for a layout and set the shadow visibility using the newly computed scroll
-            // offset in case the new layout requires us to toggle the shadow visibility. E.g. the
-            // height increases and the grid isn't scrolled anymore.
-            mShadowImageView.addOnLayoutChangeListener(new OnLayoutChangeListener() {
-                @Override
-                public void onLayoutChange(View v, int left, int top, int right, int bottom,
-                        int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                    final int scrollOffset = computeVerticalScrollOffset();
-                    if (scrollOffset == 0) {
-                        setShadowVisibility(false);
-                    } else if (scrollOffset > 0) {
-                        setShadowVisibility(true);
-                    }
-                    v.removeOnLayoutChangeListener(this);
-                }
-            });
+            // Set the shadow visibility using the newly computed scroll offset in case the new
+            // layout requires us to toggle the shadow visibility. E.g. the height increases and the
+            // grid isn't scrolled anymore.
+            final int scrollOffset = computeVerticalScrollOffset();
+            if (scrollOffset == 0) {
+                setShadowVisibility(false);
+            } else if (scrollOffset > 0) {
+                setShadowVisibility(true);
+            }
         }
     }
 

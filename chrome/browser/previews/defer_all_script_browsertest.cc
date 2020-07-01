@@ -56,10 +56,6 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest {
         {previews::features::kPreviews,
          previews::features::kDeferAllScriptPreviews,
          optimization_guide::features::kOptimizationHints,
-         // TODO(crbug/1021364): Remove the following two features after the
-         // model rollout
-         optimization_guide::features::kRemoteOptimizationGuideFetching,
-         optimization_guide::features::kOptimizationTargetPrediction,
          features::kBackForwardCache},
         {});
   }

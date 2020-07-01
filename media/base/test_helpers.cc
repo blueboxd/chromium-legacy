@@ -168,6 +168,7 @@ static VideoCodecProfile MinProfile(VideoCodec codec) {
 
 static const gfx::Size kNormalSize(320, 240);
 static const gfx::Size kLargeSize(640, 480);
+static const gfx::Size kExtraLargeSize(15360, 8640);
 
 // static
 VideoDecoderConfig TestVideoConfig::Invalid() {
@@ -231,6 +232,18 @@ VideoDecoderConfig TestVideoConfig::LargeEncrypted(VideoCodec codec) {
 }
 
 // static
+VideoDecoderConfig TestVideoConfig::ExtraLarge(VideoCodec codec) {
+  return GetTestConfig(codec, MinProfile(codec), VideoColorSpace::JPEG(),
+                       VIDEO_ROTATION_0, kExtraLargeSize, false);
+}
+
+// static
+VideoDecoderConfig TestVideoConfig::ExtraLargeEncrypted(VideoCodec codec) {
+  return GetTestConfig(codec, MinProfile(codec), VideoColorSpace::JPEG(),
+                       VIDEO_ROTATION_0, kExtraLargeSize, true);
+}
+
+// static
 gfx::Size TestVideoConfig::NormalCodedSize() {
   return kNormalSize;
 }
@@ -240,16 +253,41 @@ gfx::Size TestVideoConfig::LargeCodedSize() {
   return kLargeSize;
 }
 
+// static
+gfx::Size TestVideoConfig::ExtraLargeCodedSize() {
+  return kExtraLargeSize;
+}
+
 AudioDecoderConfig TestAudioConfig::Normal() {
   return AudioDecoderConfig(kCodecVorbis, kSampleFormatPlanarF32,
-                            CHANNEL_LAYOUT_STEREO, 44100, EmptyExtraData(),
-                            EncryptionScheme::kUnencrypted);
+                            CHANNEL_LAYOUT_STEREO, NormalSampleRateValue(),
+                            EmptyExtraData(), EncryptionScheme::kUnencrypted);
 }
 
 AudioDecoderConfig TestAudioConfig::NormalEncrypted() {
   return AudioDecoderConfig(kCodecVorbis, kSampleFormatPlanarF32,
-                            CHANNEL_LAYOUT_STEREO, 44100, EmptyExtraData(),
-                            EncryptionScheme::kCenc);
+                            CHANNEL_LAYOUT_STEREO, NormalSampleRateValue(),
+                            EmptyExtraData(), EncryptionScheme::kCenc);
+}
+
+AudioDecoderConfig TestAudioConfig::HighSampleRate() {
+  return AudioDecoderConfig(kCodecVorbis, kSampleFormatPlanarF32,
+                            CHANNEL_LAYOUT_STEREO, HighSampleRateValue(),
+                            EmptyExtraData(), EncryptionScheme::kUnencrypted);
+}
+
+AudioDecoderConfig TestAudioConfig::HighSampleRateEncrypted() {
+  return AudioDecoderConfig(kCodecVorbis, kSampleFormatPlanarF32,
+                            CHANNEL_LAYOUT_STEREO, HighSampleRateValue(),
+                            EmptyExtraData(), EncryptionScheme::kCenc);
+}
+
+int TestAudioConfig::NormalSampleRateValue() {
+  return 44100;
+}
+
+int TestAudioConfig::HighSampleRateValue() {
+  return 192000;
 }
 
 // static

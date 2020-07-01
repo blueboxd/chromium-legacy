@@ -308,4 +308,54 @@ TEST_F(NGCaretPositionTest, InlineBlockBeforeContent) {
              base::Optional<unsigned>(text_offset));
 }
 
+TEST_F(NGCaretPositionTest, InlineBoxesLTR) {
+  SetBodyInnerHTML(
+      "<div dir=ltr>"
+      "<bdo id=box1 dir=ltr>ABCD</bdo>"
+      "<bdo id=box2 dir=ltr style='font-size: 150%'>EFG</bdo></div>");
+
+  // text_content:
+  //    [0] U+202D LEFT-TO_RIGHT_OVERRIDE
+  //    [1:4] "ABCD"
+  //    [5] U+202C POP DIRECTIONAL FORMATTING
+  //    [6] U+202D LEFT-TO_RIGHT_OVERRIDE
+  //    [7:8] "EF"
+  //    [9] U+202C POP DIRECTIONAL FORMATTING
+  const Node& box1 = *GetElementById("box1")->firstChild();
+  const Node& box2 = *GetElementById("box1")->firstChild();
+
+  TEST_CARET(
+      blink::ComputeNGCaretPosition(PositionWithAffinity(Position(box1, 4))),
+      FragmentOf(&box1), kAtTextOffset, base::Optional<unsigned>(5));
+
+  TEST_CARET(
+      blink::ComputeNGCaretPosition(PositionWithAffinity(Position(box2, 0))),
+      FragmentOf(&box2), kAtTextOffset, base::Optional<unsigned>(1));
+}
+
+TEST_F(NGCaretPositionTest, InlineBoxesRTL) {
+  SetBodyInnerHTML(
+      "<div dir=rtl>"
+      "<bdo id=box1 dir=rtl>ABCD</bdo>"
+      "<bdo id=box2 dir=rtl style='font-size: 150%'>EFG</bdo></div>");
+
+  // text_content:
+  //    [0] U+202E RIGHT-TO_LEFT _OVERRIDE
+  //    [1:4] "ABCD"
+  //    [5] U+202C POP DIRECTIONAL FORMATTING
+  //    [6] U+202E RIGHT-TO_LEFT _OVERRIDE
+  //    [7:8] "EF"
+  //    [9] U+202C POP DIRECTIONAL FORMATTING
+  const Node& box1 = *GetElementById("box1")->firstChild();
+  const Node& box2 = *GetElementById("box1")->firstChild();
+
+  TEST_CARET(
+      blink::ComputeNGCaretPosition(PositionWithAffinity(Position(box1, 4))),
+      FragmentOf(&box1), kAtTextOffset, base::Optional<unsigned>(5));
+
+  TEST_CARET(
+      blink::ComputeNGCaretPosition(PositionWithAffinity(Position(box2, 0))),
+      FragmentOf(&box2), kAtTextOffset, base::Optional<unsigned>(1));
+}
+
 }  // namespace blink

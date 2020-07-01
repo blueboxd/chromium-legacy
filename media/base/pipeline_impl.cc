@@ -949,7 +949,6 @@ void PipelineImpl::RendererWrapper::CompleteSeek(base::TimeDelta seek_time,
   }
 
   shared_state_.renderer->SetPlaybackRate(playback_rate_);
-  shared_state_.renderer->SetVolume(volume_);
 
   SetState(kPlaying);
   main_task_runner_->PostTask(
@@ -1057,6 +1056,10 @@ void PipelineImpl::RendererWrapper::InitializeRenderer(
     shared_state_.renderer->SetLatencyHint(latency_hint_);
 
   shared_state_.renderer->SetPreservesPitch(preserves_pitch_);
+
+  // Calling SetVolume() before Initialize() allows renderers to optimize for
+  // power by avoiding initialization of audio output until necessary.
+  shared_state_.renderer->SetVolume(volume_);
 
   shared_state_.renderer->Initialize(demuxer_, this, std::move(done_cb));
 }

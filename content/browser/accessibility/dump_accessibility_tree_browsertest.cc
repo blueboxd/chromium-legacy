@@ -2257,6 +2257,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("table-multiple-row-and-column-headers.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityTextAlign) {
+  RunHtmlTest(FILE_PATH_LITERAL("text-align.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilityTextDecorationStyles) {
   RunHtmlTest(FILE_PATH_LITERAL("text-decoration-styles.html"));

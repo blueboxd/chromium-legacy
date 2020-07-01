@@ -20,15 +20,15 @@
             android:id="@+id/title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="3dp"
-            android:textAppearance="@style/TextAppearance.DownloadLaterTitle"
+            android:layout_marginBottom="@dimen/download_dialog_title_margin_bottom"
+            android:textAppearance="@style/TextAppearance.DownloadDialogTitle"
             android:text="@string/download_later_dialog_title" />
 
         <TextView
             android:id="@+id/subtitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp" 
+            android:layout_marginBottom="@dimen/download_dialog_subtitle_margin_bottom"
             android:textAppearance="@style/TextAppearance.TextMedium.Secondary"
             android:text="@string/download_later_dialog_subtitle" />
 

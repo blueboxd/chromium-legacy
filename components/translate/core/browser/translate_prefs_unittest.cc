@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/json/json_reader.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "base/values.h"
@@ -26,6 +27,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/l10n_util_collator.h"
 
 namespace {
 
@@ -138,11 +140,11 @@ class TranslatePrefsTest : public testing::Test {
 
   // Returns a vector of display names from the elements of the given
   // |language_list|.
-  std::vector<std::string> ExtractDisplayNames(
+  std::vector<base::string16> ExtractDisplayNames(
       const std::vector<TranslateLanguageInfo>& language_list) const {
-    std::vector<std::string> output;
+    std::vector<base::string16> output;
     for (const auto& item : language_list) {
-      output.push_back(item.display_name);
+      output.push_back(base::UTF8ToUTF16(item.display_name));
     }
     return output;
   }
@@ -362,10 +364,11 @@ TEST_F(TranslatePrefsTest, GetLanguageInfoListOutput) {
   language_list.clear();
   TranslatePrefs::GetLanguageInfoList("en-US", true /* translate_enabled */,
                                       &language_list);
-  const std::vector<std::string> display_names =
+  const std::vector<base::string16> display_names =
       ExtractDisplayNames(language_list);
-  std::vector<std::string> sorted(display_names);
-  std::sort(sorted.begin(), sorted.end());
+  std::vector<base::string16> sorted(display_names);
+  l10n_util::SortVectorWithStringKey("en-US", &sorted, false);
+
   EXPECT_THAT(display_names, ElementsAreArray(sorted));
 }
 

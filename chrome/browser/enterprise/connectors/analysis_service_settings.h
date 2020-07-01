@@ -94,6 +94,7 @@ class AnalysisServiceSettings {
   bool block_password_protected_files_ = false;
   bool block_large_files_ = false;
   bool block_unsupported_file_types_ = false;
+  size_t minimum_data_size_ = 100;
 };
 
 }  // namespace enterprise_connectors

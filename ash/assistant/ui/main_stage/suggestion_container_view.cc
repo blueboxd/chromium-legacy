@@ -18,6 +18,7 @@
 #include "ash/assistant/ui/main_stage/element_animator.h"
 #include "ash/assistant/util/animation_util.h"
 #include "ash/assistant/util/assistant_util.h"
+#include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/assistant/controller/assistant_suggestions_controller.h"
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "base/bind.h"
@@ -163,7 +164,8 @@ void SuggestionContainerView::OnConversationStartersChanged(
     const std::vector<AssistantSuggestion>& conversation_starters) {
   // We don't show conversation starters when showing onboarding since the
   // onboarding experience already provides the user w/ suggestions.
-  if (assistant::util::ShouldShowOnboarding())
+  const auto& onboarding_mode = AssistantState::Get()->onboarding_mode();
+  if (assistant::util::ShouldShowOnboarding(onboarding_mode))
     return;
 
   // If we've committed a query we should ignore changes to the cache of

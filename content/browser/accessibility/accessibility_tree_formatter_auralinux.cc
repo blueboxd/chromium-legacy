@@ -603,6 +603,7 @@ const char* const ATK_OBJECT_ATTRIBUTES[] = {
     "src",
     "table-cell-index",
     "tag",
+    "text-align",
     "text-input-type",
     "valuemin",
     "valuemax",

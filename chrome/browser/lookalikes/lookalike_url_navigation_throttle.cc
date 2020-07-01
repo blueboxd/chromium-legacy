@@ -28,6 +28,7 @@
 #include "chrome/browser/reputation/safety_tips_config.h"
 #include "chrome/common/chrome_features.h"
 #include "components/lookalikes/core/features.h"
+#include "components/lookalikes/core/lookalike_url_ui_util.h"
 #include "components/lookalikes/core/lookalike_url_util.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/ukm/content/source_url_recorder.h"
@@ -415,7 +416,7 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::PerformChecks(
       return ShowInterstitial(suggested_url, url, source_id, match_type);
     }
     // Interstitial normally records UKM, but still record when it's not shown.
-    LookalikeUrlBlockingPage::RecordUkmEvent(
+    RecordUkmForLookalikeUrlBlockingPage(
         source_id, match_type,
         LookalikeUrlBlockingPageUserAction::kInterstitialNotShown);
     return content::NavigationThrottle::PROCEED;

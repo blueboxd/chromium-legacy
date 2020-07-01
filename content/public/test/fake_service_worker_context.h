@@ -49,9 +49,6 @@ class FakeServiceWorkerContext : public ServiceWorkerContext {
       const GURL& url,
       CountExternalRequestsCallback callback) override;
   bool MaybeHasRegistrationForOrigin(const url::Origin& origin) override;
-  void WaitForRegistrationsInitializedForTest() override;
-  void AddRegistrationToRegisteredOriginsForTest(
-      const url::Origin& origin) override;
   void GetAllOriginsInfo(GetUsageInfoCallback callback) override;
   void DeleteForOrigin(const GURL& origin, ResultCallback callback) override;
   void PerformStorageCleanup(base::OnceClosure callback) override;
@@ -82,6 +79,9 @@ class FakeServiceWorkerContext : public ServiceWorkerContext {
   void NotifyObserversOnVersionActivated(int64_t version_id, const GURL& scope);
   void NotifyObserversOnVersionRedundant(int64_t version_id, const GURL& scope);
   void NotifyObserversOnNoControllees(int64_t version_id, const GURL& scope);
+
+  // Inserts |origin| into |registered_origins_| if it doesn't already exist.
+  void AddRegistrationToRegisteredOrigins(const url::Origin& origin);
 
   bool start_service_worker_for_navigation_hint_called() {
     return start_service_worker_for_navigation_hint_called_;
@@ -115,6 +115,8 @@ class FakeServiceWorkerContext : public ServiceWorkerContext {
   base::ObserverList<ServiceWorkerContextObserver, true>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeServiceWorkerContext);
+
+  std::set<url::Origin> registered_origins_;
 };
 
 }  // namespace content

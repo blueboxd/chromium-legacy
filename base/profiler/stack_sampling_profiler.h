@@ -75,6 +75,10 @@ class BASE_EXPORT StackSamplingProfiler {
     TimeDelta sampling_interval = TimeDelta::FromMilliseconds(100);
   };
 
+  // Returns true if the profiler is supported on the current platform
+  // configuration.
+  static bool IsSupported();
+
   // Creates a profiler for the specified thread. |unwinders| is required on
   // Android since the unwinder is provided outside StackSamplingProfiler, but
   // must be empty on other platforms. When attempting to unwind, the relative

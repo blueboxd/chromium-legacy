@@ -2470,7 +2470,7 @@ KeyboardEventProcessingResult WebContentsImpl::PreHandleKeyboardEvent(
   auto* outermost_contents = GetOutermostWebContents();
   // TODO(wjmaclean): Generalize this to forward all key events to the outermost
   // delegate's handler.
-  if (outermost_contents != this && IsFullscreenForCurrentTab() &&
+  if (outermost_contents != this && IsFullscreen() &&
       event.windows_key_code == ui::VKEY_ESCAPE) {
     // When an inner WebContents has focus and is fullscreen, redirect <esc>
     // key events to the outermost WebContents so it can be handled by that
@@ -2624,7 +2624,7 @@ void WebContentsImpl::EnterFullscreenMode(
   }
 
   for (auto& observer : observers_)
-    observer.DidToggleFullscreenModeForTab(IsFullscreenForCurrentTab(), false);
+    observer.DidToggleFullscreenModeForTab(IsFullscreen(), false);
 
   FullscreenContentsSet(GetBrowserContext())->insert(this);
 }
@@ -2663,8 +2663,7 @@ void WebContentsImpl::ExitFullscreenMode(bool will_cause_resize) {
   current_fullscreen_frame_ = nullptr;
 
   for (auto& observer : observers_) {
-    observer.DidToggleFullscreenModeForTab(IsFullscreenForCurrentTab(),
-                                           will_cause_resize);
+    observer.DidToggleFullscreenModeForTab(IsFullscreen(), will_cause_resize);
   }
 
   if (display_cutout_host_impl_)
@@ -2817,16 +2816,12 @@ void WebContentsImpl::UpdateUserGestureCarryoverInfo() {
 }
 #endif
 
-bool WebContentsImpl::IsFullscreenForCurrentTab() {
+bool WebContentsImpl::IsFullscreen() {
   return delegate_ ? delegate_->IsFullscreenForTabOrPending(this) : false;
 }
 
 bool WebContentsImpl::ShouldShowStaleContentOnEviction() {
   return GetDelegate() && GetDelegate()->ShouldShowStaleContentOnEviction(this);
-}
-
-bool WebContentsImpl::IsFullscreen() {
-  return IsFullscreenForCurrentTab();
 }
 
 blink::mojom::DisplayMode WebContentsImpl::GetDisplayMode() const {
@@ -4341,11 +4336,11 @@ base::ScopedClosureRunner WebContentsImpl::ForSecurityDropFullscreen() {
 
   auto fullscreen_set_copy = *FullscreenContentsSet(GetBrowserContext());
   for (auto* fullscreen_contents : fullscreen_set_copy) {
-    // Checking IsFullscreenForCurrentTab() for tabs in the fullscreen set may
-    // seem redundant, but teeeeechnically fullscreen is run by the delegate,
-    // and it's possible that the delegate's notion of fullscreen may have
-    // changed outside of WebContents's notice.
-    if (fullscreen_contents->IsFullscreenForCurrentTab()) {
+    // Checking IsFullscreen() for tabs in the fullscreen set may seem
+    // redundant, but teeeeechnically fullscreen is run by the delegate, and
+    // it's possible that the delegate's notion of fullscreen may have changed
+    // outside of WebContents's notice.
+    if (fullscreen_contents->IsFullscreen()) {
       auto opener_contentses = GetAllOpeningWebContents(fullscreen_contents);
       if (opener_contentses.count(this))
         fullscreen_contents->ExitFullscreen(true);
@@ -4363,7 +4358,7 @@ base::ScopedClosureRunner WebContentsImpl::ForSecurityDropFullscreen() {
 
   for (auto* opener : GetAllOpeningWebContents(this)) {
     // Drop fullscreen if the WebContents is in it, and...
-    if (opener->IsFullscreenForCurrentTab())
+    if (opener->IsFullscreen())
       opener->ExitFullscreen(true);
 
     // ...block the WebContents from entering fullscreen until further notice.
@@ -4616,9 +4611,9 @@ void WebContentsImpl::DidNavigateMainFramePreCommit(
     // No page change?  Then, the renderer and browser can remain in fullscreen.
     return;
   }
-  if (IsFullscreenForCurrentTab())
+  if (IsFullscreen())
     ExitFullscreen(false);
-  DCHECK(!IsFullscreenForCurrentTab());
+  DCHECK(!IsFullscreen());
 
   // Clean up keyboard lock state when navigating.
   CancelKeyboardLock(keyboard_lock_widget_);
@@ -5979,7 +5974,7 @@ void WebContentsImpl::RenderViewTerminated(RenderViewHost* rvh,
 
   // Ensure fullscreen mode is exited in the |delegate_| since a crashed
   // renderer may not have made a clean exit.
-  if (IsFullscreenForCurrentTab())
+  if (IsFullscreen())
     ExitFullscreenMode(false);
 
   // Ensure any video in Picture-in-Picture is exited in the |delegate_| since

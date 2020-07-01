@@ -189,7 +189,7 @@ grit("print_management_resources") {
 
   deps = [
     "../components/print_management/mojom:mojom_js",
-    "../components/print_management/resources:polymer3_elements",
+    "../components/print_management/resources:web_components",
   ]
 
   outputs = [

@@ -46,10 +46,14 @@ ToolbarIconContainerView::~ToolbarIconContainerView() {
 
 void ToolbarIconContainerView::AddMainButton(views::Button* main_button) {
   DCHECK(!main_button_);
-  main_button->AddObserver(this);
-  main_button->AddButtonObserver(this);
   main_button_ = main_button;
+  ObserveButton(main_button_);
   AddChildView(main_button_);
+}
+
+void ToolbarIconContainerView::ObserveButton(views::Button* button) {
+  button->AddButtonObserver(this);
+  button->AddObserver(this);
 }
 
 void ToolbarIconContainerView::AddObserver(Observer* obs) {
@@ -60,6 +64,22 @@ void ToolbarIconContainerView::RemoveObserver(const Observer* obs) {
   observers_.RemoveObserver(obs);
 }
 
+void ToolbarIconContainerView::OverrideIconColor(SkColor color) {
+  icon_color_ = color;
+  UpdateAllIcons();
+}
+
+SkColor ToolbarIconContainerView::GetIconColor() const {
+  if (icon_color_)
+    return icon_color_.value();
+  return GetThemeProvider()->GetColor(
+      ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
+}
+
+bool ToolbarIconContainerView::IsHighlighted() {
+  return ShouldDisplayHighlight();
+}
+
 void ToolbarIconContainerView::OnHighlightChanged(
     views::Button* observed_button,
     bool highlighted) {
@@ -67,12 +87,10 @@ void ToolbarIconContainerView::OnHighlightChanged(
   if (observed_button == main_button_)
     return;
 
-  if (highlighted) {
-    DCHECK(observed_button);
+  if (highlighted)
     highlighted_buttons_.insert(observed_button);
-  } else {
+  else
     highlighted_buttons_.erase(observed_button);
-  }
 
   UpdateHighlight();
 }
@@ -108,6 +126,15 @@ gfx::Insets ToolbarIconContainerView::GetInsets() const {
 
 const char* ToolbarIconContainerView::GetClassName() const {
   return kToolbarIconContainerViewClassName;
+}
+
+void ToolbarIconContainerView::AnimationProgressed(
+    const gfx::Animation* animation) {
+  SetHighlightBorder();
+}
+
+void ToolbarIconContainerView::AnimationEnded(const gfx::Animation* animation) {
+  SetHighlightBorder();
 }
 
 bool ToolbarIconContainerView::ShouldDisplayHighlight() {
@@ -153,22 +180,6 @@ void ToolbarIconContainerView::UpdateHighlight() {
     observer.OnHighlightChanged();
 }
 
-void ToolbarIconContainerView::OverrideIconColor(SkColor color) {
-  icon_color_ = color;
-  UpdateAllIcons();
-}
-
-SkColor ToolbarIconContainerView::GetIconColor() const {
-  if (icon_color_)
-    return icon_color_.value();
-  return GetThemeProvider()->GetColor(
-      ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
-}
-
-bool ToolbarIconContainerView::IsHighlighted() {
-  return ShouldDisplayHighlight();
-}
-
 void ToolbarIconContainerView::SetHighlightBorder() {
   const float highlight_value = highlight_animation_.GetCurrentValue();
   if (highlight_value > 0.0f) {
@@ -182,13 +193,4 @@ void ToolbarIconContainerView::SetHighlightBorder() {
   } else {
     SetBorder(nullptr);
   }
-}
-
-void ToolbarIconContainerView::AnimationProgressed(
-    const gfx::Animation* animation) {
-  SetHighlightBorder();
-}
-
-void ToolbarIconContainerView::AnimationEnded(const gfx::Animation* animation) {
-  SetHighlightBorder();
 }

@@ -454,7 +454,7 @@ jboolean WebContentsAndroid::FocusLocationBarByDefault(
 bool WebContentsAndroid::IsFullscreenForCurrentTab(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  return web_contents_->IsFullscreenForCurrentTab();
+  return web_contents_->IsFullscreen();
 }
 
 void WebContentsAndroid::ExitFullscreen(JNIEnv* env,

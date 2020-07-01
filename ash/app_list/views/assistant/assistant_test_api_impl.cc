@@ -158,6 +158,19 @@ void AssistantTestApiImpl::SetConsentStatus(
          "a waiter here to wait for the new state to take effect.";
 }
 
+void AssistantTestApiImpl::SetOnboardingMode(
+    chromeos::assistant::prefs::AssistantOnboardingMode onboarding_mode) {
+  Shell::Get()->session_controller()->GetPrimaryUserPrefService()->SetString(
+      chromeos::assistant::prefs::kAssistantOnboardingMode,
+      chromeos::assistant::prefs::ToOnboardingModeString(onboarding_mode));
+
+  // Ensure the value has taken effect.
+  ASSERT_EQ(GetAssistantState()->onboarding_mode(), onboarding_mode)
+      << "Changing this preference did not take effect immediately, which will "
+         "cause timing issues in this test. If this trace is seen we must add "
+         "a waiter here to wait for the new state to take effect.";
+}
+
 void AssistantTestApiImpl::SetPreferVoice(bool value) {
   Shell::Get()->session_controller()->GetPrimaryUserPrefService()->SetBoolean(
       chromeos::assistant::prefs::kAssistantLaunchWithMicOpen, value);

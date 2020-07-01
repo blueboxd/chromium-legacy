@@ -9,8 +9,9 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerP
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.INITIAL_SCROLL_INDEX;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.IS_INCOGNITO;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.IS_VISIBLE;
-import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.SHADOW_TOP_MARGIN;
-import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.TOP_CONTROLS_HEIGHT;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.SHADOW_TOP_OFFSET;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.TOP_MARGIN;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.TRANSLATION_Y;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.VISIBILITY_LISTENER;
 
 import android.widget.FrameLayout;
@@ -48,16 +49,21 @@ class TabListContainerViewBinder {
             // RecyclerView#scrollToPosition(int) behaves incorrectly first time after cold start.
             int index = (Integer) model.get(INITIAL_SCROLL_INDEX);
             ((LinearLayoutManager) view.getLayoutManager()).scrollToPositionWithOffset(index, 0);
-        } else if (TOP_CONTROLS_HEIGHT == propertyKey) {
+        } else if (TOP_MARGIN == propertyKey) {
             FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) view.getLayoutParams();
-            params.topMargin = model.get(TOP_CONTROLS_HEIGHT);
+            final int newTopMargin = model.get(TOP_MARGIN);
+            if (newTopMargin == params.topMargin) return;
+
+            params.topMargin = newTopMargin;
             view.requestLayout();
+        } else if (TRANSLATION_Y == propertyKey) {
+            view.setTranslationY(model.get(TRANSLATION_Y));
         } else if (BOTTOM_CONTROLS_HEIGHT == propertyKey) {
             FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) view.getLayoutParams();
             params.bottomMargin = model.get(BOTTOM_CONTROLS_HEIGHT);
             view.requestLayout();
-        } else if (SHADOW_TOP_MARGIN == propertyKey) {
-            view.setShadowTopMargin(model.get(SHADOW_TOP_MARGIN));
+        } else if (SHADOW_TOP_OFFSET == propertyKey) {
+            view.setShadowTopOffset(model.get(SHADOW_TOP_OFFSET));
         }
     }
 }

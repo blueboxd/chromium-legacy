@@ -93,21 +93,6 @@ chrome.test.getConfig(function(config) {
       }));
     },
 
-    function captureVisibleTabNoPermissions() {
-      var fail_url = fixPort(kURLBaseB + 'text.html');
-      createWindow([fail_url], kWindowRect, pass(function(winId, tabIds) {
-        waitForAllTabs(pass(function() {
-          chrome.tabs.getSelected(winId, pass(function(tab) {
-            assertEq('complete', tab.status);  // waitForAllTabs ensures this.
-            chrome.tabs.captureVisibleTab(winId, {'format': 'png'}, fail(
-              'Cannot access contents of url "' + fail_url +
-              '". Extension manifest must request permission ' +
-              'to access this host.'));
-          }));
-        }));
-      }));
-    },
-
     function captureVisibleTabChromeExtensionScheme() {
       var url = chrome.extension.getURL("/common/white.html");
       createWindow([url], kWindowRect, pass(function(winId, tabIds) {

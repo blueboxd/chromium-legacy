@@ -45,6 +45,9 @@ class AssistantSuggestionsControllerImpl
  private:
   // AssistantStateObserver:
   void OnAssistantContextEnabled(bool enabled) override;
+  void OnAssistantOnboardingModeChanged(
+      chromeos::assistant::prefs::AssistantOnboardingMode onboarding_mode)
+      override;
 
   void UpdateConversationStarters();
   void FetchConversationStarters();

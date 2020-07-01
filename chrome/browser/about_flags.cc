@@ -498,6 +498,15 @@ const FeatureEntry::FeatureVariation
          base::size(kDelayAsyncScriptExecutionFirstPaintOrFinishedParsing),
          nullptr}};
 
+const FeatureEntry::FeatureParam kIntensiveWakeUpThrottlingImmediate[] = {
+    {blink::features::kIntensiveWakeUpThrottling_GracePeriodSeconds_Name, "0"}};
+
+const FeatureEntry::FeatureVariation kIntensiveWakeUpThrottlingVariations[] = {
+    {"immediately when a tab is hidden (facilitates testing)",
+     kIntensiveWakeUpThrottlingImmediate,
+     base::size(kIntensiveWakeUpThrottlingImmediate), nullptr},
+};
+
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kCloseTabSuggestionsStale_Immediate[] = {
     {"baseline_tab_suggestions", "true"},
@@ -3676,7 +3685,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"intensive-wake-up-throttling",
      flag_descriptions::kIntensiveWakeUpThrottlingName,
      flag_descriptions::kIntensiveWakeUpThrottlingDescription, kOsAll,
-     FEATURE_VALUE_TYPE(blink::features::kIntensiveWakeUpThrottling)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(blink::features::kIntensiveWakeUpThrottling,
+                                    kIntensiveWakeUpThrottlingVariations,
+                                    "IntensiveWakeUpThrottling")},
 
 #if defined(OS_ANDROID)
     {"omnibox-spare-renderer", flag_descriptions::kOmniboxSpareRendererName,
@@ -4624,10 +4635,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"d3d11-video-decoder", flag_descriptions::kD3D11VideoDecoderName,
      flag_descriptions::kD3D11VideoDecoderDescription, kOsWin,
      FEATURE_VALUE_TYPE(media::kD3D11VideoDecoder)},
-#elif defined(OS_CHROMEOS)
-    {"chromeos-video-decoder", flag_descriptions::kChromeosVideoDecoderName,
-     flag_descriptions::kChromeosVideoDecoderDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(media::kChromeosVideoDecoder)},
+#endif
+
+#if defined(OS_CHROMEOS) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+    {"chromeos-direct-video-decoder",
+     flag_descriptions::kChromeOSDirectVideoDecoderName,
+     flag_descriptions::kChromeOSDirectVideoDecoderDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(media::kUseChromeOSDirectVideoDecoder)},
 #endif
 
 #if defined(OS_ANDROID)

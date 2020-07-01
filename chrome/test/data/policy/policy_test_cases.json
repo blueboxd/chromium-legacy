@@ -6210,6 +6210,22 @@
     ]
   },
 
+  "AssistantOnboardingMode": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "AssistantOnboardingMode": "Default"
+        },
+        "prefs": {
+          "settings.assistant.onboarding_mode": {
+            "value": "Default"
+          }
+        }
+      }
+    ]
+  },
+
   "VoiceInteractionContextEnabled": {
     "os": ["chromeos"],
     "policy_pref_mapping_test": [

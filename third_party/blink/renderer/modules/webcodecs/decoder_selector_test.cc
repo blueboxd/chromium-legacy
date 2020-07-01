@@ -154,7 +154,9 @@ class WebCodecsDecoderSelectorTest : public ::testing::Test {
 
     for (const auto& info : mock_decoders_to_create_) {
       std::unique_ptr<StrictMock<MockDecoder>> decoder =
-          std::make_unique<StrictMock<MockDecoder>>(info.first);
+          std::make_unique<StrictMock<MockDecoder>>(
+              /*is_platform_decoder=*/false, /*supports_decryption=*/true,
+              info.first);
       TypeParam::ExpectInitialize(decoder.get(), info.second,
                                   last_set_decoder_config_);
       decoders.push_back(std::move(decoder));

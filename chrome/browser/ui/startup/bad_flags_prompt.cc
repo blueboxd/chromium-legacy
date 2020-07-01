@@ -105,7 +105,7 @@ static const char* kBadFlags[] = {
     switches::kDisableBlinkFeatures,
     switches::kEnableBlinkFeatures,
 
-    // This flag allows people to whitelist certain origins as secure, even
+    // This flag allows people to allowlist certain origins as secure, even
     // if they are not.
     network::switches::kUnsafelyTreatInsecureOriginAsSecure,
 

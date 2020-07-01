@@ -96,7 +96,6 @@ void ExtensionRegistrar::AddExtension(
   delegate_->PreAddExtension(extension.get(), old);
 
   if (was_reloading) {
-    failed_to_reload_unpacked_extensions_.erase(extension->path());
     ReplaceReloadedExtension(extension);
   } else {
     if (is_extension_loaded) {
@@ -292,26 +291,12 @@ void ExtensionRegistrar::ReloadExtension(
     LoadErrorBehavior load_error_behavior) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  base::FilePath path;
-
-  const Extension* disabled_extension =
-      registry_->disabled_extensions().GetByID(extension_id);
-
-  if (disabled_extension) {
-    path = disabled_extension->path();
-  }
-
   // If the extension is already reloading, don't reload again.
   if (extension_prefs_->HasDisableReason(extension_id,
                                          disable_reason::DISABLE_RELOAD)) {
-    DCHECK(disabled_extension);
-    // If an unpacked extension previously failed to reload, it will still be
-    // marked as disabled, but we can try to reload it again - the developer
-    // may have fixed the issue.
-    if (failed_to_reload_unpacked_extensions_.count(path) == 0)
-      return;
-    failed_to_reload_unpacked_extensions_.erase(path);
+    return;
   }
+
   // Ignore attempts to reload a blocklisted or blocked extension. Sometimes
   // this can happen in a convoluted reload sequence triggered by the
   // termination of a blocklisted or blocked extension and a naive attempt to
@@ -320,6 +305,8 @@ void ExtensionRegistrar::ReloadExtension(
       registry_->blocked_extensions().Contains(extension_id)) {
     return;
   }
+
+  base::FilePath path;
 
   const Extension* enabled_extension =
       registry_->enabled_extensions().GetByID(extension_id);
@@ -347,7 +334,7 @@ void ExtensionRegistrar::ReloadExtension(
     DisableExtension(extension_id, disable_reason::DISABLE_RELOAD);
     DCHECK(registry_->disabled_extensions().Contains(extension_id));
     reloading_extensions_.insert(extension_id);
-  } else if (!disabled_extension) {
+  } else {
     std::map<ExtensionId, base::FilePath>::const_iterator iter =
         unloaded_extension_paths_.find(extension_id);
     if (iter == unloaded_extension_paths_.end()) {
@@ -357,11 +344,6 @@ void ExtensionRegistrar::ReloadExtension(
   }
 
   delegate_->LoadExtensionForReload(extension_id, path, load_error_behavior);
-}
-
-void ExtensionRegistrar::OnUnpackedExtensionReloadFailed(
-    const base::FilePath& path) {
-  failed_to_reload_unpacked_extensions_.insert(path);
 }
 
 void ExtensionRegistrar::TerminateExtension(const ExtensionId& extension_id) {

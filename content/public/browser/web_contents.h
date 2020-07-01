@@ -953,7 +953,7 @@ class WebContents : public PageNavigator,
   virtual void GetManifest(GetManifestCallback callback) = 0;
 
   // Returns whether the renderer is in fullscreen mode.
-  virtual bool IsFullscreenForCurrentTab() = 0;
+  virtual bool IsFullscreen() = 0;
 
   // Requests the renderer to exit fullscreen.
   // |will_cause_resize| indicates whether the fullscreen change causes a
@@ -989,7 +989,6 @@ class WebContents : public PageNavigator,
   virtual int GetCurrentlyPlayingVideoCount() = 0;
 
   virtual base::Optional<gfx::Size> GetFullscreenVideoSize() = 0;
-  virtual bool IsFullscreen() = 0;
 
   // Tells the renderer to clear the focused element (if any).
   virtual void ClearFocusedElement() = 0;

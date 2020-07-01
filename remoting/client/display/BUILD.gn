@@ -48,11 +48,11 @@ source_set("display") {
   }
 
   if (is_mac) {
-    libs = [ "OpenGL.framework" ]
+    frameworks = [ "OpenGL.framework" ]
   }
 
   if (is_ios) {
-    libs = [
+    frameworks = [
       "GLKit.framework",
       "OpenGLES.framework",
     ]

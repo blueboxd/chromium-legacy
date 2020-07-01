@@ -73,7 +73,7 @@ class LoginDisplayWebUIHandler {
                          const std::string& help_link_text,
                          HelpAppLauncher::HelpTopic help_topic_id) = 0;
   virtual void ShowSigninUI(const std::string& email) = 0;
-  virtual void ShowWhitelistCheckFailedError() = 0;
+  virtual void ShowAllowlistCheckFailedError() = 0;
   virtual void LoadUsers(const user_manager::UserList& users,
                          const base::ListValue& users_list) = 0;
 
@@ -260,7 +260,7 @@ class SigninScreenHandler
                  const std::string& help_link_text,
                  HelpAppLauncher::HelpTopic help_topic_id) override;
   void ShowSigninUI(const std::string& email) override;
-  void ShowWhitelistCheckFailedError() override;
+  void ShowAllowlistCheckFailedError() override;
   void LoadUsers(const user_manager::UserList& users,
                  const base::ListValue& users_list) override;
 
@@ -352,7 +352,7 @@ class SigninScreenHandler
   // Returns true iff
   // (i)   log in is restricted to some user list,
   // (ii)  all users in the restricted list are present.
-  bool AllWhitelistedUsersPresent();
+  bool AllAllowlistedUsersPresent();
 
   // Cancels password changed flow - switches back to login screen.
   // Called as a callback after cookies are cleared.

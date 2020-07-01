@@ -53,7 +53,7 @@ source_set("unit_tests") {
     "//testing/gtest",
   ]
 
-  libs = [ "Security.framework" ]
+  frameworks = [ "Security.framework" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }

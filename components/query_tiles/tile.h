@@ -59,6 +59,9 @@ struct Tile {
 
   // Additional params for search query.
   std::vector<std::string> search_params;
+
+  // Print pretty formatted content in Tile struct.
+  std::string DebugString();
 };
 
 }  // namespace query_tiles

@@ -165,13 +165,6 @@ class CONTENT_EXPORT ServiceWorkerContext {
   // Must be called on the UI thread.
   virtual bool MaybeHasRegistrationForOrigin(const url::Origin& origin) = 0;
 
-  // TODO(nidhijaju): Remove the ForTest() functions here and the tests that
-  // need it (e.g. in IsolatedPrerender) should use FakeServiceWorkerContext
-  // instead.
-  virtual void WaitForRegistrationsInitializedForTest() = 0;
-  virtual void AddRegistrationToRegisteredOriginsForTest(
-      const url::Origin& origin) = 0;
-
   // May be called from any thread, and the callback is called on that thread.
   virtual void GetAllOriginsInfo(GetUsageInfoCallback callback) = 0;
 

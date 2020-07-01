@@ -15,6 +15,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/chrome_content_browser_client.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/previews/previews_test_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -91,6 +93,13 @@ class DeferAllScriptPriorityBrowserTest
 
     https_url_ = https_server_->GetURL("/defer_all_script_priority_test.html");
     ASSERT_TRUE(https_url_.SchemeIs(url::kHttpsScheme));
+
+    // Override the target decision to |kTrue| to trigger a preview for the new
+    // decision.
+    OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
+        ->OverrideTargetDecisionForTesting(
+            optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
+            optimization_guide::OptimizationGuideDecision::kTrue);
 
     InProcessBrowserTest::SetUpOnMainThread();
   }

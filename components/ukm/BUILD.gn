@@ -4,6 +4,35 @@
 
 import("//testing/test.gni")
 
+component("ukm_recorder") {
+  output_name = "ukm_recorder"
+
+  defines = [ "IS_UKM_RECORDER_IMPL" ]
+
+  friend = [
+    ":test_support",
+    ":unit_tests",
+  ]
+
+  sources = [
+    "scheme_constants.cc",
+    "scheme_constants.h",
+    "ukm_entry_filter.h",
+    "ukm_recorder_impl.cc",
+    "ukm_recorder_impl.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/variations",
+    "//services/metrics/public/cpp:metrics_cpp",
+    "//services/metrics/public/cpp:ukm_builders",
+    "//services/metrics/public/mojom",
+    "//third_party/metrics_proto",
+    "//url",
+  ]
+}
+
 # The Url-Keyed Metrics (UKM) service is responsible for gathering and
 # uploading reports that contain fine grained performance metrics including
 # URLs for top-level navigations.
@@ -13,13 +42,8 @@ static_library("ukm") {
     "app_source_url_recorder.h",
     "field_trials_provider_helper.cc",
     "field_trials_provider_helper.h",
-    "scheme_constants.cc",
-    "scheme_constants.h",
-    "ukm_entry_filter.h",
     "ukm_pref_names.cc",
     "ukm_pref_names.h",
-    "ukm_recorder_impl.cc",
-    "ukm_recorder_impl.h",
     "ukm_reporting_service.cc",
     "ukm_reporting_service.h",
     "ukm_rotation_scheduler.cc",
@@ -31,6 +55,7 @@ static_library("ukm") {
   ]
 
   public_deps = [
+    ":ukm_recorder",
     "//services/metrics/public/cpp:metrics_cpp",
     "//services/metrics/public/cpp:ukm_builders",
     "//services/metrics/public/mojom",

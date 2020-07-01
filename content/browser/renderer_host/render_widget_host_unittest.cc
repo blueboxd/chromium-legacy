@@ -402,11 +402,9 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
     ignore_input_events_ = ignore_input_events;
   }
 
-  bool IsFullscreenForCurrentTab() override { return is_fullscreen_for_tab_; }
+  bool IsFullscreen() override { return is_fullscreen_; }
 
-  void set_is_fullscreen_for_current_tab(bool enabled) {
-    is_fullscreen_for_tab_ = enabled;
-  }
+  void set_is_fullscreen(bool enabled) { is_fullscreen_ = enabled; }
 
  protected:
   KeyboardEventProcessingResult PreHandleKeyboardEvent(
@@ -478,7 +476,7 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   viz::VerticalScrollDirection last_vertical_scroll_direction_ =
       viz::VerticalScrollDirection::kNull;
 
-  bool is_fullscreen_for_tab_ = false;
+  bool is_fullscreen_ = false;
 };
 
 class MockRenderWidgetHostOwnerDelegate
@@ -1022,7 +1020,7 @@ TEST_F(RenderWidgetHostTest, OverrideScreenInfoDuringFullscreenMode) {
 
   // Do initial VisualProperties sync while not fullscreened.
   view_->SetBounds(kViewBounds);
-  ASSERT_FALSE(delegate_->IsFullscreenForCurrentTab());
+  ASSERT_FALSE(delegate_->IsFullscreen());
   host_->SynchronizeVisualPropertiesIgnoringPendingAck();
   // WidgetMsg_UpdateVisualProperties sent to the renderer.
   ASSERT_EQ(1u, sink_->message_count());
@@ -1034,7 +1032,7 @@ TEST_F(RenderWidgetHostTest, OverrideScreenInfoDuringFullscreenMode) {
   EXPECT_EQ(kScreenBounds, props.screen_info.available_rect);
 
   // Enter fullscreen and do another VisualProperties sync.
-  delegate_->set_is_fullscreen_for_current_tab(true);
+  delegate_->set_is_fullscreen(true);
   host_->SynchronizeVisualPropertiesIgnoringPendingAck();
   // WidgetMsg_UpdateVisualProperties sent to the renderer.
   ASSERT_EQ(2u, sink_->message_count());
@@ -1045,7 +1043,7 @@ TEST_F(RenderWidgetHostTest, OverrideScreenInfoDuringFullscreenMode) {
   EXPECT_EQ(kViewBounds.size(), props.screen_info.available_rect.size());
 
   // Exit fullscreen and do another VisualProperties sync.
-  delegate_->set_is_fullscreen_for_current_tab(false);
+  delegate_->set_is_fullscreen(false);
   host_->SynchronizeVisualPropertiesIgnoringPendingAck();
   // WidgetMsg_UpdateVisualProperties sent to the renderer.
   ASSERT_EQ(3u, sink_->message_count());

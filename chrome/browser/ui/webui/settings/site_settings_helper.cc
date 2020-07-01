@@ -156,7 +156,7 @@ struct SiteSettingSourceStringMapping {
 };
 
 const SiteSettingSourceStringMapping kSiteSettingSourceStringMapping[] = {
-    {SiteSettingSource::kAdsFilterBlacklist, "ads-filter-blacklist"},
+    {SiteSettingSource::kAdsFilterBlocklist, "ads-filter-blacklist"},
     {SiteSettingSource::kDefault, "default"},
     {SiteSettingSource::kDrmDisabled, "drm-disabled"},
     {SiteSettingSource::kEmbargo, "embargo"},
@@ -234,7 +234,7 @@ SiteSettingSource CalculateSiteSettingSource(
     if (map->GetWebsiteSetting(origin, GURL(), ContentSettingsType::ADS_DATA,
                                /*resource_identifier=*/std::string(),
                                /*setting_info=*/nullptr) != nullptr) {
-      return SiteSettingSource::kAdsFilterBlacklist;  // Source #5.
+      return SiteSettingSource::kAdsFilterBlocklist;  // Source #5.
     }
   }
 

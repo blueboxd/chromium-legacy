@@ -153,6 +153,7 @@ bool IsNodeIdIntAttribute(ax::mojom::IntAttribute attr) {
     case ax::mojom::IntAttribute::kCheckedState:
     case ax::mojom::IntAttribute::kRestriction:
     case ax::mojom::IntAttribute::kListStyle:
+    case ax::mojom::IntAttribute::kTextAlign:
     case ax::mojom::IntAttribute::kTextDirection:
     case ax::mojom::IntAttribute::kTextPosition:
     case ax::mojom::IntAttribute::kTextStyle:
@@ -891,6 +892,18 @@ void AXNodeData::SetListStyle(ax::mojom::ListStyle list_style) {
   }
 }
 
+ax::mojom::TextAlign AXNodeData::GetTextAlign() const {
+  return static_cast<ax::mojom::TextAlign>(
+      GetIntAttribute(ax::mojom::IntAttribute::kTextAlign));
+}
+
+void AXNodeData::SetTextAlign(ax::mojom::TextAlign text_align) {
+  if (HasIntAttribute(ax::mojom::IntAttribute::kTextAlign))
+    RemoveIntAttribute(ax::mojom::IntAttribute::kTextAlign);
+  AddIntAttribute(ax::mojom::IntAttribute::kTextAlign,
+                  static_cast<int32_t>(text_align));
+}
+
 ax::mojom::TextDirection AXNodeData::GetTextDirection() const {
   return static_cast<ax::mojom::TextDirection>(
       GetIntAttribute(ax::mojom::IntAttribute::kTextDirection));
@@ -1234,6 +1247,11 @@ std::string AXNodeData::ToString() const {
           default:
             break;
         }
+        break;
+      case ax::mojom::IntAttribute::kTextAlign:
+        result += " text_align=";
+        result += ui::ToString(
+            static_cast<ax::mojom::TextAlign>(int_attribute.second));
         break;
       case ax::mojom::IntAttribute::kTextDirection:
         switch (static_cast<ax::mojom::TextDirection>(int_attribute.second)) {

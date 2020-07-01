@@ -1814,7 +1814,7 @@ ci.fyi_ios_builder(
     executable = 'recipe:chromium',
     os = os.MAC_10_15,
     properties = {
-        'xcode_build_version': '11e146',
+        'xcode_build_version': '11e503a_xct12b1',
     },
 )
 

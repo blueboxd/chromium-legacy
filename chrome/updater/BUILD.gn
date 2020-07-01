@@ -186,7 +186,7 @@ if (is_win || is_mac) {
     }
 
     if (is_mac) {
-      libs = [ "Foundation.framework" ]
+      frameworks = [ "Foundation.framework" ]
     }
 
     if (is_win) {

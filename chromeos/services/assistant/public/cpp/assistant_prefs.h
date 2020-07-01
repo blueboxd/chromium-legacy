@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_SERVICES_ASSISTANT_PUBLIC_CPP_ASSISTANT_PREFS_H_
 #define CHROMEOS_SERVICES_ASSISTANT_PUBLIC_CPP_ASSISTANT_PREFS_H_
 
+#include <string>
+
 #include "base/component_export.h"
 
 class PrefRegistrySimple;
@@ -30,6 +32,20 @@ enum ConsentStatus {
   kNotFound = 3,
 };
 
+// The mode of the Assistant onboarding experience.
+enum class AssistantOnboardingMode {
+  kDefault,    // Maps to kAssistantOnboardingModeDefault.
+  kEducation,  // Maps to kAssistantOnboardingModeEducation.
+  kMaxValue = kEducation
+};
+
+// Constants.
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
+extern const char kAssistantOnboardingModeDefault[];
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
+extern const char kAssistantOnboardingModeEducation[];
+
+// Preferences.
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const char kAssistantConsentStatus[];
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
@@ -47,11 +63,19 @@ extern const char kAssistantLaunchWithMicOpen[];
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const char kAssistantNotificationEnabled[];
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
+extern const char kAssistantOnboardingMode[];
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const char kAssistantQuickAnswersEnabled[];
 
 // Registers Assistant specific profile preferences for browser prefs.
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
+// Converts between onboarding mode enum and string representations.
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
+AssistantOnboardingMode ToOnboardingMode(const std::string& onboarding_mode);
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
+std::string ToOnboardingModeString(AssistantOnboardingMode onboarding_mode);
 
 }  // namespace prefs
 }  // namespace assistant

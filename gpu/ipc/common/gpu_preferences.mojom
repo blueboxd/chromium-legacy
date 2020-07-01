@@ -92,5 +92,6 @@ struct GpuPreferences {
 
   bool enable_native_gpu_memory_buffers;
 
-  bool force_disable_new_accelerated_video_decoder;
+  [EnableIf=is_chromeos]
+  bool platform_disallows_chromeos_direct_video_decoder;
 };

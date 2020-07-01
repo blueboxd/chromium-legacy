@@ -68,6 +68,13 @@ void WebContentsObserverProxy::WebContentsDestroyed() {
   Java_WebContentsObserverProxy_destroy(env, java_observer_);
 }
 
+void WebContentsObserverProxy::RenderFrameCreated(
+    RenderFrameHost* render_frame_host) {
+  JNIEnv* env = AttachCurrentThread();
+  Java_WebContentsObserverProxy_renderFrameCreated(
+      env, java_observer_, render_frame_host->GetJavaRenderFrameHost());
+}
+
 void WebContentsObserverProxy::RenderViewReady() {
   JNIEnv* env = AttachCurrentThread();
   Java_WebContentsObserverProxy_renderViewReady(env, java_observer_);

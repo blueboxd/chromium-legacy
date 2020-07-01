@@ -126,6 +126,7 @@ Polymer({
     isCurrentDestinationCrosLocal_: {
       type: Boolean,
       computed: 'computeIsCurrentDestinationCrosLocal_(destination)',
+      reflectToAttribute: true,
     },
   },
 

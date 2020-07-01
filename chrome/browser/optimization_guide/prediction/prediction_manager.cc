@@ -822,6 +822,9 @@ bool PredictionManager::ProcessAndStoreHostModelFeatures(
 }
 
 void PredictionManager::MaybeScheduleModelAndHostModelFeaturesFetch() {
+  if (!IsUserPermittedToFetchFromRemoteOptimizationGuide(profile_))
+    return;
+
   if (optimization_guide::switches::
           ShouldOverrideFetchModelsAndFeaturesTimer()) {
     SetLastModelAndFeaturesFetchAttemptTime(clock_->Now());

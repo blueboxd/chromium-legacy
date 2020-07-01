@@ -173,7 +173,7 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewSyncBrowserTest,
       browser(), PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_CHANGE_PASSWORD);
   views::View* safelist_password_reuse_button = GetView(
       browser(),
-      PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_WHITELIST_PASSWORD_REUSE);
+      PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_ALLOWLIST_PASSWORD_REUSE);
 
   SecurityStateTabHelper* helper =
       SecurityStateTabHelper::FromWebContents(contents);
@@ -214,7 +214,7 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewSyncBrowserTest,
           base::Bucket(static_cast<int>(
                            safe_browsing::WarningAction::MARK_AS_LEGITIMATE),
                        1)));
-  // Security state will change after whitelisting.
+  // Security state will change after allowlisting.
   visible_security_state = helper->GetVisibleSecurityState();
   EXPECT_EQ(security_state::MALICIOUS_CONTENT_STATUS_NONE,
             visible_security_state->malicious_content_status);

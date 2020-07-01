@@ -275,6 +275,9 @@ class CourierRendererTest : public testing::Test {
             std::move(flush_cb));
 
       } break;
+      case pb::RpcMessage::RPC_R_SETVOLUME:
+        // No response needed.
+        break;
 
       default:
         NOTREACHED();

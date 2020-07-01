@@ -42,11 +42,6 @@ class LookalikeUrlBlockingPage
   security_interstitials::SecurityInterstitialPage::TypeID GetTypeForTesting()
       override;
 
-  // Allow easier reporting of UKM when no interstitial is shown.
-  static void RecordUkmEvent(ukm::SourceId source_id,
-                             LookalikeUrlMatchType match_type,
-                             LookalikeUrlBlockingPageUserAction user_action);
-
  protected:
   // SecurityInterstitialPage implementation:
   void CommandReceived(const std::string& command) override;
@@ -59,12 +54,6 @@ class LookalikeUrlBlockingPage
 
  private:
   friend class LookalikeUrlNavigationThrottleBrowserTest;
-
-  // Values added to get our shared interstitial HTML to play nice.
-  void PopulateStringsForSharedHTML(base::DictionaryValue* load_time_data);
-
-  // Record UKM iff we haven't already reported for this page.
-  void ReportUkmIfNeeded(LookalikeUrlBlockingPageUserAction action);
 
   // The URL suggested to the user as the safe URL. Can be empty, in which case
   // the default action on the interstitial takes the user to the new tab page.

@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "base/files/file_path_watcher.h"
-#include "base/macros.h"
 #include "chrome/browser/chrome_browser_main.h"
 
 class ModuleWatcher;
@@ -28,7 +27,9 @@ class ChromeBrowserMainPartsWin : public ChromeBrowserMainParts {
  public:
   ChromeBrowserMainPartsWin(const content::MainFunctionParams& parameters,
                             StartupData* startup_data);
-
+  ChromeBrowserMainPartsWin(const ChromeBrowserMainPartsWin&) = delete;
+  ChromeBrowserMainPartsWin& operator=(const ChromeBrowserMainPartsWin&) =
+      delete;
   ~ChromeBrowserMainPartsWin() override;
 
   // BrowserParts overrides.
@@ -71,11 +72,14 @@ class ChromeBrowserMainPartsWin : public ChromeBrowserMainParts {
   // installer_util.
   static void SetupInstallerUtilStrings();
 
+  // Return a |command_line| copy modified to restore the session after Windows
+  // updates. Removes URL args, unnecessary switches, and the program name.
+  static base::CommandLine GetRestartCommandLine(
+      const base::CommandLine& command_line);
+
  private:
   // Watches module load events and forwards them to the ModuleDatabase.
   std::unique_ptr<ModuleWatcher> module_watcher_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsWin);
 };
 
 #endif  // CHROME_BROWSER_CHROME_BROWSER_MAIN_WIN_H_

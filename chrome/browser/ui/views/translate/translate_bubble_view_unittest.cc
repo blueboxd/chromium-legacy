@@ -49,7 +49,7 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
         translation_declined_(false),
         original_language_index_on_translation_(-1),
         target_language_index_on_translation_(-1),
-        can_blacklist_site_(true) {}
+        can_blocklist_site_(true) {}
 
   TranslateBubbleModel::ViewState GetViewState() const override {
     return view_state_transition_.view_state();
@@ -140,9 +140,9 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
            target_language_index_on_translation_ == target_language_index_;
   }
 
-  bool CanBlacklistSite() override { return can_blacklist_site_; }
+  bool CanBlocklistSite() override { return can_blocklist_site_; }
 
-  void SetCanBlacklistSite(bool value) { can_blacklist_site_ = value; }
+  void SetCanBlocklistSite(bool value) { can_blocklist_site_ = value; }
 
   TranslateBubbleViewStateTransition view_state_transition_;
   translate::TranslateErrors::Type error_type_;
@@ -159,7 +159,7 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
   bool translation_declined_;
   int original_language_index_on_translation_;
   int target_language_index_on_translation_;
-  bool can_blacklist_site_;
+  bool can_blocklist_site_;
 };
 
 }  // namespace
@@ -252,8 +252,8 @@ TEST_F(TranslateBubbleViewTest, OptionsMenuNeverTranslateLanguage) {
 }
 
 TEST_F(TranslateBubbleViewTest, OptionsMenuNeverTranslateSite) {
-  // NEVER_TRANSLATE_SITE should only show up for sites that can be blacklisted.
-  mock_model_->SetCanBlacklistSite(true);
+  // NEVER_TRANSLATE_SITE should only show up for sites that can be blocklisted.
+  mock_model_->SetCanBlocklistSite(true);
   CreateAndShowBubble();
 
   EXPECT_FALSE(mock_model_->never_translate_site_);
@@ -406,12 +406,12 @@ TEST_F(TranslateBubbleViewTest, DoneButtonWithoutTranslating) {
             bubble_->GetViewState());
 }
 
-TEST_F(TranslateBubbleViewTest, OptionsMenuRespectsBlacklistSite) {
-  mock_model_->SetCanBlacklistSite(false);
+TEST_F(TranslateBubbleViewTest, OptionsMenuRespectsBlocklistSite) {
+  mock_model_->SetCanBlocklistSite(false);
   CreateAndShowBubble();
 
   TriggerOptionsMenu();
-  // NEVER_TRANSLATE_SITE shouldn't show up for sites that can't be blacklisted.
+  // NEVER_TRANSLATE_SITE shouldn't show up for sites that can't be blocklisted.
   EXPECT_EQ(-1, bubble_->options_menu_model_->GetIndexOfCommandId(
                     TranslateBubbleView::NEVER_TRANSLATE_SITE));
   // Verify that the menu is populated so previous check makes sense.

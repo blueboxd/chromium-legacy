@@ -84,7 +84,7 @@ component("crypto") {
       "mock_apple_keychain.h",
     ]
   } else {
-    libs = [
+    frameworks = [
       "CoreFoundation.framework",
       "Security.framework",
     ]

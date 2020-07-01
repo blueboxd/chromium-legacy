@@ -20,6 +20,7 @@
 using ::base::test::RunCallback;
 using ::base::test::RunOnceCallback;
 using testing::_;
+using testing::AnyNumber;
 using testing::DoAll;
 using testing::Invoke;
 using testing::Return;
@@ -98,8 +99,9 @@ class AudioDecoderStreamTest : public testing::Test {
   std::vector<std::unique_ptr<AudioDecoder>> CreateMockAudioDecoder() {
     auto decoder = std::make_unique<MockAudioDecoder>();
     EXPECT_CALL(*decoder, Initialize_(_, _, _, _, _))
-        .WillOnce(DoAll(SaveArg<3>(&decoder_output_cb_),
-                        RunOnceCallback<2>(OkStatus())));
+        .Times(AnyNumber())
+        .WillRepeatedly(DoAll(SaveArg<3>(&decoder_output_cb_),
+                              RunOnceCallback<2>(OkStatus())));
     decoder_ = decoder.get();
 
     std::vector<std::unique_ptr<AudioDecoder>> result;

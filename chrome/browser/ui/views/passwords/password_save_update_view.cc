@@ -501,7 +501,7 @@ void PasswordSaveUpdateView::UpdateBubbleUIElements() {
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(
           is_update_bubble_ ? IDS_PASSWORD_MANAGER_CANCEL_BUTTON
-                            : IDS_PASSWORD_MANAGER_BUBBLE_BLACKLIST_BUTTON));
+                            : IDS_PASSWORD_MANAGER_BUBBLE_BLOCKLIST_BUTTON));
 
   SetTitle(controller_.GetTitle());
 }

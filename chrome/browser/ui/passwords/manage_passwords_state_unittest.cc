@@ -100,8 +100,8 @@ class ManagePasswordsStateTest : public testing::Test {
   // Pushes both relevant and irrelevant updates to |passwords_data_|.
   void TestAllUpdates();
 
-  // Pushes a blacklisted form and checks that it doesn't affect the state.
-  void TestBlacklistedUpdates();
+  // Pushes a blocklisted form and checks that it doesn't affect the state.
+  void TestBlocklistedUpdates();
 
  private:
   MockPasswordManagerClient mock_client_;
@@ -217,7 +217,7 @@ void ManagePasswordsStateTest::TestAllUpdates() {
   TestNoisyUpdates();
 }
 
-void ManagePasswordsStateTest::TestBlacklistedUpdates() {
+void ManagePasswordsStateTest::TestBlocklistedUpdates() {
   const std::vector<const PasswordForm*> forms =
       GetRawPointers(passwords_data_.GetCurrentForms());
   const password_manager::ui::State state = passwords_data_.state();
@@ -464,7 +464,7 @@ TEST_F(ManagePasswordsStateTest, PendingPasswordAddBlacklisted) {
   EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_STATE,
             passwords_data().state());
 
-  TestBlacklistedUpdates();
+  TestBlocklistedUpdates();
 }
 
 TEST_F(ManagePasswordsStateTest, RequestCredentialsAddBlacklisted) {
@@ -477,7 +477,7 @@ TEST_F(ManagePasswordsStateTest, RequestCredentialsAddBlacklisted) {
   EXPECT_EQ(password_manager::ui::CREDENTIAL_REQUEST_STATE,
             passwords_data().state());
 
-  TestBlacklistedUpdates();
+  TestBlocklistedUpdates();
 }
 
 TEST_F(ManagePasswordsStateTest, AutoSigninAddBlacklisted) {
@@ -487,7 +487,7 @@ TEST_F(ManagePasswordsStateTest, AutoSigninAddBlacklisted) {
                                 url::Origin::Create(saved_match().url));
   EXPECT_EQ(password_manager::ui::AUTO_SIGNIN_STATE, passwords_data().state());
 
-  TestBlacklistedUpdates();
+  TestBlocklistedUpdates();
 }
 
 TEST_F(ManagePasswordsStateTest, AutomaticPasswordSaveAddBlacklisted) {
@@ -497,7 +497,7 @@ TEST_F(ManagePasswordsStateTest, AutomaticPasswordSaveAddBlacklisted) {
   passwords_data().OnAutomaticPasswordSave(std::move(test_form_manager));
   EXPECT_EQ(password_manager::ui::CONFIRMATION_STATE, passwords_data().state());
 
-  TestBlacklistedUpdates();
+  TestBlocklistedUpdates();
 }
 
 TEST_F(ManagePasswordsStateTest, BackgroundAutofilledAddBlacklisted) {
@@ -508,7 +508,7 @@ TEST_F(ManagePasswordsStateTest, BackgroundAutofilledAddBlacklisted) {
       nullptr);
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, passwords_data().state());
 
-  TestBlacklistedUpdates();
+  TestBlocklistedUpdates();
 }
 
 TEST_F(ManagePasswordsStateTest, PasswordUpdateAddBlacklisted) {
@@ -519,7 +519,7 @@ TEST_F(ManagePasswordsStateTest, PasswordUpdateAddBlacklisted) {
   EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE,
             passwords_data().state());
 
-  TestBlacklistedUpdates();
+  TestBlocklistedUpdates();
 }
 
 TEST_F(ManagePasswordsStateTest, PasswordUpdateSubmitted) {

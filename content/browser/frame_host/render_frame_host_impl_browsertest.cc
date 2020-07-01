@@ -3697,6 +3697,22 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   EXPECT_EQ(LifecycleState::kActive, rfh_d->lifecycle_state());
 }
 
+// Verify that a new RFH gets marked as having committed a navigation after
+// both normal navigations and error page navigations.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       HasCommittedAnyNavigation) {
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  EXPECT_TRUE(root_frame_host()->has_committed_any_navigation_);
+
+  GURL error_url(embedded_test_server()->GetURL("b.com", "/empty.html"));
+  std::unique_ptr<URLLoaderInterceptor> url_interceptor =
+      URLLoaderInterceptor::SetupRequestFailForURL(error_url,
+                                                   net::ERR_DNS_TIMED_OUT);
+  EXPECT_FALSE(NavigateToURL(shell(), error_url));
+  EXPECT_TRUE(root_frame_host()->has_committed_any_navigation_);
+}
+
 // Test the LifecycleState when a renderer crashes during navigation.
 // When navigating after a crash, the new RenderFrameHost should
 // become active immediately, prior to the navigation committing. This is

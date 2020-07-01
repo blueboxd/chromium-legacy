@@ -159,6 +159,12 @@ class ChromeWebContentsViewDelegateHandleOnPerformDrop
 
   void SetExpectedRequestsCount(int count) { expected_requests_count_ = count; }
 
+  // Helpers to get text with sizes relative to the minimum required size of 100
+  // bytes for scans to trigger.
+  std::string large_text() const { return std::string(100, 'a'); }
+
+  std::string small_text() const { return "random small text"; }
+
  private:
   void SetScanPolicies(safe_browsing::CheckContentComplianceValues state) {
     if (use_legacy_policies()) {
@@ -201,33 +207,41 @@ TEST_P(ChromeWebContentsViewDelegateHandleOnPerformDrop, NoData) {
 // Make sure DropData::url_title is handled correctly.
 TEST_P(ChromeWebContentsViewDelegateHandleOnPerformDrop, UrlTitle) {
   content::DropData data;
-  data.url_title = base::UTF8ToUTF16("title");
+  data.url_title = base::UTF8ToUTF16(large_text());
 
   SetExpectedRequestsCount(0);
   RunTest(data, /*enable=*/false, /*scan_succeeds=*/true);
 
   SetExpectedRequestsCount(1);
   RunTest(data, /*enable=*/true, /*scan_succeeds=*/false);
+  RunTest(data, /*enable=*/true, /*scan_succeeds=*/true);
+
+  data.url_title = base::UTF8ToUTF16(small_text());
+  SetExpectedRequestsCount(0);
   RunTest(data, /*enable=*/true, /*scan_succeeds=*/true);
 }
 
 // Make sure DropData::text is handled correctly.
 TEST_P(ChromeWebContentsViewDelegateHandleOnPerformDrop, Text) {
   content::DropData data;
-  data.text = base::UTF8ToUTF16("text");
+  data.text = base::UTF8ToUTF16(large_text());
 
   SetExpectedRequestsCount(0);
   RunTest(data, /*enable=*/false, /*scan_succeeds=*/true);
 
   SetExpectedRequestsCount(1);
   RunTest(data, /*enable=*/true, /*scan_succeeds=*/false);
+  RunTest(data, /*enable=*/true, /*scan_succeeds=*/true);
+
+  data.text = base::UTF8ToUTF16(small_text());
+  SetExpectedRequestsCount(0);
   RunTest(data, /*enable=*/true, /*scan_succeeds=*/true);
 }
 
 // Make sure DropData::html is handled correctly.
 TEST_P(ChromeWebContentsViewDelegateHandleOnPerformDrop, Html) {
   content::DropData data;
-  data.html = base::UTF8ToUTF16("<html></html>");
+  data.html = base::UTF8ToUTF16(large_text());
 
   SetExpectedRequestsCount(0);
   RunTest(data, /*enable=*/false, /*scan_succeeds=*/true);
@@ -235,18 +249,26 @@ TEST_P(ChromeWebContentsViewDelegateHandleOnPerformDrop, Html) {
   SetExpectedRequestsCount(1);
   RunTest(data, /*enable=*/true, /*scan_succeeds=*/false);
   RunTest(data, /*enable=*/true, /*scan_succeeds=*/true);
+
+  data.html = base::UTF8ToUTF16(small_text());
+  SetExpectedRequestsCount(0);
+  RunTest(data, /*enable=*/true, /*scan_succeeds=*/true);
 }
 
 // Make sure DropData::file_contents is handled correctly.
 TEST_P(ChromeWebContentsViewDelegateHandleOnPerformDrop, FileContents) {
   content::DropData data;
-  data.file_contents = "file_contents";
+  data.file_contents = large_text();
 
   SetExpectedRequestsCount(0);
   RunTest(data, /*enable=*/false, /*scan_succeeds=*/true);
 
   SetExpectedRequestsCount(1);
   RunTest(data, /*enable=*/true, /*scan_succeeds=*/false);
+  RunTest(data, /*enable=*/true, /*scan_succeeds=*/true);
+
+  data.file_contents = small_text();
+  SetExpectedRequestsCount(0);
   RunTest(data, /*enable=*/true, /*scan_succeeds=*/true);
 }
 

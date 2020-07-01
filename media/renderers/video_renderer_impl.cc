@@ -565,6 +565,7 @@ void VideoRendererImpl::FrameReady(VideoDecoderStream::ReadStatus status,
   }
 
   last_frame_ready_time_ = tick_clock_->NowTicks();
+  last_decoder_stream_avg_duration_ = video_decoder_stream_->AverageDuration();
 
   const bool is_eos = frame->metadata()->end_of_stream;
   const bool is_before_start_time = !is_eos && IsBeforeStartTime(*frame);
@@ -598,10 +599,8 @@ void VideoRendererImpl::FrameReady(VideoDecoderStream::ReadStatus status,
     // RemoveFramesForUnderflowOrBackgroundRendering() below to actually expire
     // this frame if it's too far behind the current media time. Without this,
     // we may resume too soon after a track change in the low delay case.
-    if (!frame->metadata()->frame_duration.has_value()) {
-      frame->metadata()->frame_duration =
-          video_decoder_stream_->AverageDuration();
-    }
+    if (!frame->metadata()->frame_duration.has_value())
+      frame->metadata()->frame_duration = last_decoder_stream_avg_duration_;
 
     AddReadyFrame_Locked(std::move(frame));
   }
@@ -924,14 +923,8 @@ base::TimeTicks VideoRendererImpl::GetCurrentMediaTimeAsWallClockTime() {
 
 bool VideoRendererImpl::IsBeforeStartTime(const VideoFrame& frame) {
   // Prefer the actual frame duration over the average if available.
-  if (frame.metadata()->frame_duration.has_value()) {
-    return frame.timestamp() + *frame.metadata()->frame_duration <
-           start_timestamp_;
-  }
-
-  // TODO(tguilbert): video_decoder_stream_->AverageDuration() can be accessed
-  // from the wrong thread.
-  return frame.timestamp() + video_decoder_stream_->AverageDuration() <
+  return frame.timestamp() + frame.metadata()->frame_duration.value_or(
+                                 last_decoder_stream_avg_duration_) <
          start_timestamp_;
 }
 

@@ -8,7 +8,7 @@ source_set("launchd") {
 
   deps = [ "//base" ]
 
-  libs = [
+  frameworks = [
     "CoreServices.framework",
     "Foundation.framework",
     "ServiceManagement.framework",

@@ -4843,7 +4843,7 @@
       'gpu_angle_end2end_gtests',
       'gpu_angle_unit_gtests',
       'gpu_angle_white_box_gtests',
-      'gpu_common_gtests_validating',
+      'gpu_common_gtests_passthrough',
       'gpu_gles2_conform_gtests',
     ],
 
@@ -4858,6 +4858,7 @@
     'gpu_angle_mac_gtests': [
       'gpu_angle_end2end_gtests',
       'gpu_angle_unit_gtests',
+      'gpu_common_gtests_passthrough',
       'gpu_fyi_and_optional_non_linux_gtests',
       'gpu_gles2_conform_gtests',
     ],
@@ -4956,11 +4957,12 @@
     # These tests are run on Linux and Mac
     'gpu_desktop_gtests': [
       'gpu_angle_unit_gtests',
+      'gpu_common_gtests_passthrough',
       'gpu_common_gtests_validating',
       'gpu_desktop_specific_gtests',
     ],
 
-    'gpu_fyi_android_and_mac_gtests': [
+    'gpu_fyi_android_gtests': [
       'gpu_angle_end2end_gtests',
       'gpu_angle_unit_gtests',
       'gpu_common_gtests_validating',
@@ -5014,6 +5016,7 @@
       'gpu_angle_end2end_gtests',
       'gpu_angle_unit_gtests',
       'gpu_angle_white_box_gtests',
+      'gpu_common_gtests_passthrough',
       'gpu_common_gtests_validating',
       'gpu_gles2_conform_gtests',
       'gpu_swiftshader_gtests',
@@ -5040,6 +5043,7 @@
       'gpu_angle_end2end_gtests',
       'gpu_angle_unit_gtests',
       'gpu_angle_white_box_gtests',
+      'gpu_common_gtests_passthrough',
       'gpu_common_gtests_validating',
       'gpu_desktop_specific_gtests',
       'gpu_gles2_conform_gtests',
@@ -5066,6 +5070,7 @@
     'gpu_fyi_mac_debug_gtests': [
       'gpu_angle_end2end_gtests',
       'gpu_angle_unit_gtests',
+      'gpu_common_gtests_passthrough',
       'gpu_common_gtests_validating',
       'gpu_fyi_and_optional_non_linux_gtests',
       'gpu_fyi_mac_specific_gtests',
@@ -5084,6 +5089,7 @@
     'gpu_fyi_mac_release_gtests': [
       'gpu_angle_end2end_gtests',
       'gpu_angle_unit_gtests',
+      'gpu_common_gtests_passthrough',
       'gpu_common_gtests_validating',
       'gpu_desktop_specific_gtests',
       'gpu_fyi_and_optional_non_linux_gtests',

@@ -110,12 +110,12 @@ GeneratedCookiePrefBase::GeneratedCookiePrefBase(Profile* profile,
   user_prefs_registrar_.Init(profile->GetPrefs());
   user_prefs_registrar_.Add(
       prefs::kBlockThirdPartyCookies,
-      base::Bind(&GeneratedCookiePrefBase::OnCookiePreferencesChanged,
-                 base::Unretained(this)));
+      base::BindRepeating(&GeneratedCookiePrefBase::OnCookiePreferencesChanged,
+                          base::Unretained(this)));
   user_prefs_registrar_.Add(
       prefs::kCookieControlsMode,
-      base::Bind(&GeneratedCookiePrefBase::OnCookiePreferencesChanged,
-                 base::Unretained(this)));
+      base::BindRepeating(&GeneratedCookiePrefBase::OnCookiePreferencesChanged,
+                          base::Unretained(this)));
 }
 
 GeneratedCookiePrefBase::~GeneratedCookiePrefBase() = default;

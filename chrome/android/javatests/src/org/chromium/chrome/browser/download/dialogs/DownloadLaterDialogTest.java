@@ -4,8 +4,13 @@
 
 package org.chromium.chrome.browser.download.dialogs;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import androidx.test.filters.MediumTest;
 
@@ -21,9 +26,11 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.download.DownloadLaterPromptStatus;
 import org.chromium.chrome.browser.download.R;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.components.browser_ui.widget.RadioButtonWithDescription;
+import org.chromium.components.prefs.PrefService;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -37,6 +44,8 @@ import org.chromium.ui.modelutil.PropertyModel;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class DownloadLaterDialogTest {
+    private static final long INVALID_START_TIME = -1;
+
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
@@ -45,6 +54,12 @@ public class DownloadLaterDialogTest {
 
     @Mock
     private DownloadLaterDialogController mController;
+
+    @Mock
+    DownloadDateTimePickerDialogCoordinator mDateTimePicker;
+
+    @Mock
+    PrefService mPrefService;
 
     private ModalDialogManager getModalDialogManager() {
         return mActivityTestRule.getActivity().getModalDialogManager();
@@ -58,8 +73,12 @@ public class DownloadLaterDialogTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        when(mPrefService.getInteger(Pref.DOWNLOAD_LATER_PROMPT_STATUS))
+                .thenReturn(DownloadLaterPromptStatus.SHOW_INITIAL);
         mActivityTestRule.startMainActivityOnBlankPage();
+
         TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mDialogCoordinator = new DownloadLaterDialogCoordinator(mDateTimePicker);
             mModel = new PropertyModel.Builder(DownloadLaterDialogProperties.ALL_KEYS)
                              .with(DownloadLaterDialogProperties.CONTROLLER, mDialogCoordinator)
                              .with(DownloadLaterDialogProperties.DOWNLOAD_TIME_INITIAL_SELECTION,
@@ -67,7 +86,6 @@ public class DownloadLaterDialogTest {
                              .with(DownloadLaterDialogProperties.DONT_SHOW_AGAIN_SELECTION,
                                      DownloadLaterPromptStatus.SHOW_INITIAL)
                              .build();
-            mDialogCoordinator = new DownloadLaterDialogCoordinator();
             Assert.assertNotNull(mController);
             mDialogCoordinator.initialize(mController);
         });
@@ -75,7 +93,7 @@ public class DownloadLaterDialogTest {
 
     private void showDialog() {
         mDialogCoordinator.showDialog(
-                mActivityTestRule.getActivity(), getModalDialogManager(), mModel);
+                mActivityTestRule.getActivity(), getModalDialogManager(), mPrefService, mModel);
     }
 
     private void clickPositiveButton() {
@@ -134,8 +152,25 @@ public class DownloadLaterDialogTest {
             getDownloadLaterDialogView().onCheckedChanged(null, -1);
             clickPositiveButton();
             verify(mController)
-                    .onDownloadLaterDialogComplete(eq(DownloadLaterDialogChoice.DOWNLOAD_NOW),
-                            eq(DownloadLaterPromptStatus.DONT_SHOW));
+                    .onDownloadLaterDialogComplete(
+                            eq(DownloadLaterDialogChoice.DOWNLOAD_NOW), eq(INVALID_START_TIME));
+        });
+    }
+
+    @Test
+    @MediumTest
+    public void testSelectDownloadLater() {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            showDialog();
+
+            RadioButtonWithDescription downloadLaterButton =
+                    getDownloadLaterDialogView().findViewById(R.id.choose_date_time);
+            Assert.assertNotNull(downloadLaterButton);
+            downloadLaterButton.setChecked(true);
+            getDownloadLaterDialogView().onCheckedChanged(null, -1);
+            clickPositiveButton();
+            verify(mController, times(0)).onDownloadLaterDialogComplete(anyInt(), anyLong());
+            verify(mDateTimePicker).showDialog(any(), any(), any());
         });
     }
 }

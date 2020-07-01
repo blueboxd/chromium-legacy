@@ -15915,6 +15915,75 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="21" label="quickOpen.show"/>
   <int value="22" label="settings.show"/>
   <int value="23" label="sources.search"/>
+  <int value="24" label="background-service.toggle-recording"/>
+  <int value="25" label="components.collect-garbage"/>
+  <int value="26" label="console.clear.history"/>
+  <int value="27" label="console.create-pin"/>
+  <int value="28" label="coverage.start-with-reload"/>
+  <int value="29" label="coverage.toggle-recording"/>
+  <int value="30" label="debugger.breakpoint-input-window"/>
+  <int value="31" label="debugger.evaluate-selection"/>
+  <int value="32" label="debugger.next-call-frame"/>
+  <int value="33" label="debugger.previous-call-frame"/>
+  <int value="34" label="debugger.run-snippet"/>
+  <int value="35" label="debugger.toggle-breakpoints-active"/>
+  <int value="36" label="elements.capture-area-screenshot"/>
+  <int value="37" label="emulation.capture-full-height-screenshot"/>
+  <int value="38" label="emulation.capture-node-screenshot"/>
+  <int value="39" label="emulation.capture-screenshot"/>
+  <int value="40" label="emulation.show-sensors"/>
+  <int value="41" label="emulation.toggle-device-mode"/>
+  <int value="42" label="help.release-notes"/>
+  <int value="43" label="help.report-issue"/>
+  <int value="44" label="input.start-replaying"/>
+  <int value="45" label="input.toggle-pause"/>
+  <int value="46" label="input.toggle-recording"/>
+  <int value="47" label="inspector_main.focus-debuggee"/>
+  <int value="48" label="inspector_main.hard-reload"/>
+  <int value="49" label="inspector_main.reload"/>
+  <int value="50" label="live-heap-profile.start-with-reload"/>
+  <int value="51" label="live-heap-profile.toggle-recording"/>
+  <int value="52" label="main.debug-reload"/>
+  <int value="53" label="main.next-tab"/>
+  <int value="54" label="main.previous-tab"/>
+  <int value="55" label="main.search-in-panel.cancel"/>
+  <int value="56" label="main.search-in-panel.find-next"/>
+  <int value="57" label="main.search-in-panel.find-previous"/>
+  <int value="58" label="main.toggle-dock"/>
+  <int value="59" label="main.zoom-in"/>
+  <int value="60" label="main.zoom-out"/>
+  <int value="61" label="main.zoom-reset"/>
+  <int value="62" label="network-conditions.network-low-end-mobile"/>
+  <int value="63" label="network-conditions.network-mid-tier-mobile"/>
+  <int value="64" label="network-conditions.network-offline"/>
+  <int value="65" label="network-conditions.network-online"/>
+  <int value="66" label="profiler.heap-toggle-recording"/>
+  <int value="67" label="profiler.js-toggle-recording"/>
+  <int value="68" label="resources.clear"/>
+  <int value="69" label="settings.documentation"/>
+  <int value="70" label="settings.shortcuts"/>
+  <int value="71" label="sources.add-folder-to-workspace"/>
+  <int value="72" label="sources.add-to-watch"/>
+  <int value="73" label="sources.close-all"/>
+  <int value="74" label="sources.close-editor-tab"/>
+  <int value="75" label="sources.create-snippet"/>
+  <int value="76" label="sources.go-to-line"/>
+  <int value="77" label="sources.go-to-member"/>
+  <int value="78" label="sources.jump-to-next-location"/>
+  <int value="79" label="sources.jump-to-previous-location"/>
+  <int value="80" label="sources.rename"/>
+  <int value="81" label="sources.save"/>
+  <int value="82" label="sources.save-all"/>
+  <int value="83" label="sources.switch-file"/>
+  <int value="84" label="timeline.jump-to-next-frame"/>
+  <int value="85" label="timeline.jump-to-previous-frame"/>
+  <int value="86" label="timeline.load-from-file"/>
+  <int value="87" label="timeline.next-recording"/>
+  <int value="88" label="timeline.previous-recording"/>
+  <int value="89" label="timeline.record-reload"/>
+  <int value="90" label="timeline.save-to-file"/>
+  <int value="91" label="timeline.show-history"/>
+  <int value="92" label="timeline.toggle-recording"/>
 </enum>
 
 <enum name="DevToolsPanel">
@@ -20942,6 +21011,7 @@ Called by update_document_policy_enum.py.-->
   <int value="726" label="SuggestedContentEnabled"/>
   <int value="727" label="ExtensionInstallEventLoggingEnabled"/>
   <int value="728" label="EnterpriseRealTimeUrlCheckMode"/>
+  <int value="729" label="AssistantOnboardingMode"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -40087,6 +40157,7 @@ from previous Chrome versions.
   <int value="-1324634193" label="EnablePalmOnMaxTouchMajor:disabled"/>
   <int value="-1324029365" label="EnableTLS13EarlyData:enabled"/>
   <int value="-1322882747" label="disable-datasaver-prompt"/>
+  <int value="-1320181781" label="ChromeOSDirectVideoDecoder:disabled"/>
   <int value="-1319688939" label="ignore-gpu-blacklist"/>
   <int value="-1318914924" label="OverflowIconsForMediaControls:enabled"/>
   <int value="-1316769004" label="CrossOriginOpenerPolicyReporting:disabled"/>
@@ -42006,7 +42077,6 @@ from previous Chrome versions.
   <int value="798696013" label="ImeInputLogicMozc:enabled"/>
   <int value="799680074" label="ContextualSearchTranslationModel:enabled"/>
   <int value="803282885" label="PreferHtmlOverPlugins:disabled"/>
-  <int value="805661595" label="ChromeosVideoDecoder:enabled"/>
   <int value="805882800" label="SafetyCheckChromeCleanerChild:disabled"/>
   <int value="806035639" label="EnableNeuralPalmDetectionFilter:disabled"/>
   <int value="806334184" label="AndroidSpellChecker:enabled"/>
@@ -42181,6 +42251,7 @@ from previous Chrome versions.
   <int value="1008677979"
       label="AutofillUseImprovedLabelDisambiguation:disabled"/>
   <int value="1012942422" label="HorizontalTabSwitcherAndroid:disabled"/>
+  <int value="1015012662" label="ChromeOSDirectVideoDecoder:enabled"/>
   <int value="1015895665" label="drop-sync-credential:enabled"/>
   <int value="1017364362" label="VrIconInDaydreamHome:enabled"/>
   <int value="1018165268" label="InterestFeedFeedback:enabled"/>
@@ -42554,7 +42625,6 @@ from previous Chrome versions.
   <int value="1393722373" label="SaveEditedPDFForm:disabled"/>
   <int value="1397069250" label="NetworkService:disabled"/>
   <int value="1399950951" label="AutofillTokenPrefixMatching:disabled"/>
-  <int value="1399992739" label="ChromeosVideoDecoder:disabled"/>
   <int value="1403195370" label="ArcCupsApi:enabled"/>
   <int value="1405459667" label="enable-fast-text-autosizing"/>
   <int value="1406046556" label="enable-slimming-paint-v175"/>

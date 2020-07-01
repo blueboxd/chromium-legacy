@@ -26,6 +26,19 @@ class FakeDemuxerStream : public DemuxerStream {
   FakeDemuxerStream(int num_configs,
                     int num_buffers_in_one_config,
                     bool is_encrypted);
+  // Constructs an object that outputs |num_configs| different configs in
+  // sequence with |num_frames_in_one_config| buffers for each config. The
+  // output buffers are encrypted if |is_encrypted| is true.
+  // The starting config |coded_size| is specified by the
+  // |start_coded_size| parameter, and each config change increases/decreases it
+  // by the |coded_size_delta| parameter.
+  // The returned config always has equal |coded_size| and |visible_rect|
+  // properties.
+  FakeDemuxerStream(int num_configs,
+                    int num_buffers_in_one_config,
+                    bool is_encrypted,
+                    gfx::Size start_coded_size,
+                    gfx::Vector2dF coded_size_delta);
   ~FakeDemuxerStream() override;
 
   // DemuxerStream implementation.
@@ -82,6 +95,8 @@ class FakeDemuxerStream : public DemuxerStream {
   const int num_buffers_in_one_config_;
   const bool config_changes_;
   const bool is_encrypted_;
+  const gfx::Size start_coded_size_;
+  const gfx::Vector2dF coded_size_delta_;
 
   int num_configs_left_;
 
@@ -93,7 +108,7 @@ class FakeDemuxerStream : public DemuxerStream {
   base::TimeDelta current_timestamp_;
   base::TimeDelta duration_;
 
-  gfx::Size next_coded_size_;
+  gfx::Size next_size_;
   VideoDecoderConfig video_decoder_config_;
 
   ReadCB read_cb_;

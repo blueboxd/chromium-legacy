@@ -25,7 +25,7 @@
 namespace {
 
 // On ChromeOS, the local state file contains some information about other
-// user accounts which we don't want to expose to other users. Use a whitelist
+// user accounts which we don't want to expose to other users. Use an allowlist
 // to only show variations and UMA related fields which don't contain PII.
 #if defined(OS_CHROMEOS)
 #define ENABLE_FILTERING true
@@ -69,9 +69,9 @@ void LocalStateUIHandler::HandleRequestJson(const base::ListValue* args) {
       g_browser_process->local_state()->GetPreferenceValues(
           PrefService::EXCLUDE_DEFAULTS));
   if (ENABLE_FILTERING) {
-    std::vector<std::string> whitelisted_prefixes = {
+    std::vector<std::string> allowlisted_prefixes = {
         "variations", "user_experience_metrics", "uninstall_metrics"};
-    internal::FilterPrefs(whitelisted_prefixes, local_state_values.get());
+    internal::FilterPrefs(allowlisted_prefixes, local_state_values.get());
   }
   std::string json;
   JSONStringValueSerializer serializer(&json);

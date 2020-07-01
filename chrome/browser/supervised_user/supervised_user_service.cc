@@ -278,7 +278,7 @@ bool SupervisedUserService::IsSupervisedUserIframeFilterEnabled() const {
 }
 
 bool SupervisedUserService::IsChild() const {
-  return profile_->IsSupervised();
+  return profile_->IsChild();
 }
 
 bool SupervisedUserService::IsSupervisedUserExtensionInstallEnabled() const {
@@ -373,6 +373,9 @@ void SupervisedUserService::UpdateApprovedExtensionForTesting(
 
 bool SupervisedUserService::
     GetSupervisedUserExtensionsMayRequestPermissionsPref() const {
+  DCHECK(IsChild())
+      << "Calling GetSupervisedUserExtensionsMayRequestPermissionsPref() only "
+         "makes sense for supervised users";
   return profile_->GetPrefs()->GetBoolean(
       prefs::kSupervisedUserExtensionsMayRequestPermissions);
 }

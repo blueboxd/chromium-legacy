@@ -39,6 +39,9 @@ struct TileGroup {
 
   // Top level tiles.
   std::vector<std::unique_ptr<Tile>> tiles;
+
+  // Print pretty formatted content in TileGroup struct.
+  std::string DebugString();
 };
 
 }  // namespace query_tiles

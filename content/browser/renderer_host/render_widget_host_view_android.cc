@@ -1085,8 +1085,7 @@ void RenderWidgetHostViewAndroid::UpdateWebViewBackgroundColorIfNecessary() {
   // Android WebView had a bug the BG color was always set to black when
   // fullscreen (see https://crbug.com/961223#c5). As applications came to rely
   // on this behavior, preserve it here.
-  if (!using_browser_compositor_ &&
-      host()->delegate()->IsFullscreenForCurrentTab()) {
+  if (!using_browser_compositor_ && host()->delegate()->IsFullscreen()) {
     SetContentBackgroundColor(SK_ColorBLACK);
   }
 }
@@ -2389,7 +2388,7 @@ void RenderWidgetHostViewAndroid::SetNeedsBeginFrameForFlingProgress() {
 bool RenderWidgetHostViewAndroid::UseOldContentForFallback() {
   // When we're in a fullscreen and and doing a resize we show black instead of
   // the incorrectly-sized frame.
-  return !host()->delegate()->IsFullscreenForCurrentTab();
+  return !host()->delegate()->IsFullscreen();
 }
 
 }  // namespace content

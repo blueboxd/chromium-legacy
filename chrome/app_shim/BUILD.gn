@@ -84,7 +84,7 @@ executable("app_mode_loader") {
     "//chrome/common:non_code_constants",
   ]
 
-  libs = [
+  frameworks = [
     "AppKit.framework",
     "CoreFoundation.framework",
     "Foundation.framework",

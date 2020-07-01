@@ -654,8 +654,8 @@ TEST_P(ParameterizedLocalCaretRectTest, TextAndImageMixedHeight) {
                 Position::AfterNode(img), TextAffinity::kDownstream)));
 
   // TODO(xiaochengh): Should return the same result for legacy and LayoutNG.
-  EXPECT_EQ(LayoutNGEnabled() ? LocalCaretRect(img.GetLayoutObject(),
-                                               PhysicalRect(9, -5, 1, 10))
+  EXPECT_EQ(LayoutNGEnabled() ? LocalCaretRect(text2->GetLayoutObject(),
+                                               PhysicalRect(20, 0, 1, 10))
                               : LocalCaretRect(text2->GetLayoutObject(),
                                                PhysicalRect(20, 5, 1, 10)),
             LocalCaretRectOfPosition(PositionWithAffinity(

@@ -34,7 +34,7 @@ source_set("web_state_list") {
     "//ios/web",
     "//ios/web/public/session",
   ]
-  libs = [ "Foundation.framework" ]
+  frameworks = [ "Foundation.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
@@ -53,7 +53,7 @@ source_set("agents") {
     "//ios/chrome/browser/sessions:restoration_observer",
     "//ios/web/public",
   ]
-  libs = [ "Foundation.framework" ]
+  frameworks = [ "Foundation.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 

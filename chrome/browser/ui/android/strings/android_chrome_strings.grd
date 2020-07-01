@@ -908,10 +908,22 @@ Your Google account may have other forms of browsing history like searches and a
         Enhanced Protection is on
       </message>
       <message name="IDS_SAFETY_CHECK_SAFE_BROWSING_DISABLED_BY_ADMIN" desc="Text to display when Safe Browsing is disabled by admin.">
-        <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Your administrator<ph name="END_LINK">&lt;/a&gt;</ph> has turned off Safe Browsing
+        Your administrator has turned off Safe Browsing
       </message>
       <message name="IDS_SAFETY_CHECK_PASSWORDS_NO_PASSWORDS" desc="Text to display when no passwords are saved.">
         No saved passwords. Chrome can check your passwords when you save them.
+      </message>
+      <message name="IDS_SAFETY_CHECK_UPDATES_UPDATED" desc="Text to display when the updates check confirms that the latest version is already installed.">
+        You are running the latest version of Chrome
+      </message>
+      <message name="IDS_SAFETY_CHECK_UPDATES_OUTDATED" desc="Text to display when the updates check detects a new version.">
+        A newer version of Chrome is available. Tap this element to go to the Play Store.
+      </message>
+      <message name="IDS_SAFETY_CHECK_UPDATES_OFFLINE" desc="Text to display when the updates check failed because of no connectivity.">
+        Chrome can't check for updates. Try checking your internet connection.
+      </message>
+      <message name="IDS_SAFETY_CHECK_UPDATES_ERROR" desc="Text to display when the updates check failed for some reason.">
+        Chrome could not check for updates
       </message>
 
       <!-- Accessibility preferences -->

@@ -77,6 +77,7 @@
     case PasswordCheckState::kSignedOut:
     case PasswordCheckState::kOffline:
     case PasswordCheckState::kQuotaLimit:
+    case PasswordCheckState::kCanceled:
     case PasswordCheckState::kOther: {
       if (!_manager->GetCompromisedCredentials().empty()) {
         return PasswordCheckStateUnSafe;

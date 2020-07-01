@@ -158,7 +158,7 @@ source_set("passwords_generation_utils") {
     "password_generation_utils.mm",
   ]
   deps = [ "//base:i18n" ]
-  libs = [ "CoreGraphics.framework" ]
+  frameworks = [ "CoreGraphics.framework" ]
 }
 
 source_set("unit_tests") {
@@ -232,7 +232,7 @@ source_set("eg2_tests") {
     "//ios/web/public/test/http_server",
     "//net:test_support",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("eg_app_support+eg2") {

@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/printing/cups_print_job_manager.h"
 #include "chrome/browser/chromeos/printing/cups_print_job_manager_factory.h"
 #include "chrome/browser/chromeos/printing/cups_print_job_notification_manager.h"
+#include "chrome/browser/chromeos/printing/print_management/print_management_uma.h"
 #include "chrome/browser/chromeos/printing/printer_error_codes.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -129,7 +130,8 @@ void CupsPrintJobNotification::Click(
     const base::Optional<base::string16>& reply) {
   if (!button_index) {
     if (base::FeatureList::IsEnabled(features::kPrintJobManagementApp)) {
-      chrome::ShowPrintManagementApp(profile_);
+      chrome::ShowPrintManagementApp(
+          profile_, PrintManagementAppEntryPoint::kNotification);
     }
     return;
   }

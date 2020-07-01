@@ -98,7 +98,7 @@ public class SafetyCheckModel {
         }
 
         /**
-         * android:key element in XML corresponding to Safe Browsing.
+         * android:key element in XML corresponding to Passwords.
          */
         public static final String KEY = "passwords";
 
@@ -114,9 +114,45 @@ public class SafetyCheckModel {
         }
     }
 
+    /**
+     * Stores the state related to the Updates element.
+     */
+    public enum Updates implements SafetyCheckElement {
+        UNCHECKED(R.string.safety_check_unchecked),
+        CHECKING(R.string.safety_check_checking),
+        UPDATED(R.string.safety_check_updates_updated),
+        OUTDATED(R.string.safety_check_updates_outdated),
+        OFFLINE(R.string.safety_check_updates_offline),
+        ERROR(R.string.safety_check_updates_error);
+
+        private final int mStatusString;
+
+        private Updates() {
+            mStatusString = 0;
+        }
+
+        private Updates(int statusString) {
+            mStatusString = statusString;
+        }
+
+        /**
+         * @return The resource ID for the corresponding status string.
+         */
+        @Override
+        public int getStatusString() {
+            return mStatusString;
+        }
+
+        /**
+         * android:key element in XML corresponding to Updates.
+         */
+        public static final String KEY = "updates";
+    }
+
     private SafetyCheckSettingsFragment mView;
     private SafeBrowsing mSafeBrowsing;
     private Passwords mPasswords;
+    private Updates mUpdates;
 
     /**
      * Creates a new model for Safety check.
@@ -132,8 +168,10 @@ public class SafetyCheckModel {
     public void setCheckingState() {
         mSafeBrowsing = SafeBrowsing.CHECKING;
         mPasswords = Passwords.CHECKING;
+        mUpdates = Updates.CHECKING;
         mView.updateElementStatus(SafeBrowsing.KEY, mSafeBrowsing.getStatusString());
         mView.updateElementStatus(Passwords.KEY, mPasswords.getStatusString());
+        mView.updateElementStatus(Updates.KEY, mUpdates.getStatusString());
     }
 
     /**
@@ -170,5 +208,14 @@ public class SafetyCheckModel {
     public void updatePasswordsStatusOnError(@BulkLeakCheckServiceState int state) {
         mPasswords = Passwords.fromErrorState(state);
         mView.updateElementStatus(Passwords.KEY, mPasswords.getStatusString());
+    }
+
+    /**
+     * Updates the model and the view with the results of an updates check.
+     * @param status Resulting state of the updates check.
+     */
+    public void updateUpdatesStatus(Updates status) {
+        mUpdates = status;
+        mView.updateElementStatus(Updates.KEY, mUpdates.getStatusString());
     }
 }

@@ -78,7 +78,7 @@ source_set("autofill") {
     "//url",
   ]
   public_deps = [ ":constants" ]
-  libs = [ "QuartzCore.framework" ]
+  frameworks = [ "QuartzCore.framework" ]
 }
 
 source_set("autofill_shared") {
@@ -96,7 +96,7 @@ source_set("autofill_shared") {
     "//components/autofill/ios/browser",
     "//ios/chrome/browser/ui/util",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("autofill_internal") {
@@ -124,7 +124,7 @@ source_set("autofill_internal") {
     "//ui/gfx/geometry",
     "//url",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("constants") {
@@ -542,5 +542,5 @@ source_set("eg2_tests") {
     "//ios/web/public/test:element_selector",
     "//ios/web/public/test/http_server",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }

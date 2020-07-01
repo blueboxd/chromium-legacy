@@ -34,13 +34,13 @@ class DeviceOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
                                  public DeviceOAuth2TokenStore::Observer {
  public:
   typedef base::RepeatingCallback<void()> RefreshTokenAvailableCallback;
-  typedef base::Callback<void(bool)> StatusCallback;
+  typedef base::RepeatingCallback<void(bool)> StatusCallback;
 
   // Persist the given refresh token on the device. Overwrites any previous
   // value. Should only be called during initial device setup. Signals
   // completion via the given callback, passing true if the operation succeeded.
   void SetAndSaveRefreshToken(const std::string& refresh_token,
-                              const StatusCallback& callback);
+                              StatusCallback callback);
 
   // Pull the robot account ID from device policy.
   CoreAccountId GetRobotAccountId() const;

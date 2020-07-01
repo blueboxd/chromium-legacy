@@ -134,7 +134,7 @@ source_set("browser") {
     "//ios/chrome/browser/sync/glue",
     "//ios/chrome/browser/browser_state",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("utils") {
@@ -170,7 +170,7 @@ source_set("chrome_url_constants") {
     "//base",
     "//ios/components/webui:url_constants",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("pref_names") {

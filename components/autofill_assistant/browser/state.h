@@ -6,6 +6,7 @@
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_STATE_H_
 
 #include <ostream>
+#include "components/autofill_assistant/browser/service.pb.h"
 
 namespace autofill_assistant {
 

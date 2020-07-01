@@ -12,6 +12,6 @@ source_set("signin") {
     "//ios/chrome/browser/ui/util",
     "//ios/public/provider/chrome/browser/signin",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }

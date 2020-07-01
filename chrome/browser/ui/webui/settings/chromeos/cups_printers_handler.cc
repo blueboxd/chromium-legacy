@@ -27,6 +27,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chrome/browser/chromeos/printing/ppd_provider_factory.h"
+#include "chrome/browser/chromeos/printing/print_management/print_management_uma.h"
 #include "chrome/browser/chromeos/printing/printer_configurer.h"
 #include "chrome/browser/chromeos/printing/printer_event_tracker.h"
 #include "chrome/browser/chromeos/printing/printer_event_tracker_factory.h"
@@ -1329,7 +1330,8 @@ void CupsPrintersHandler::HandleOpenPrintManagementApp(
   DCHECK(args->empty());
   DCHECK(
       base::FeatureList::IsEnabled(chromeos::features::kPrintJobManagementApp));
-  chrome::ShowPrintManagementApp(profile_);
+  chrome::ShowPrintManagementApp(profile_,
+                                 PrintManagementAppEntryPoint::kSettings);
 }
 
 }  // namespace settings

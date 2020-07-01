@@ -17,6 +17,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.components.infobars.InfoBar;
+import org.chromium.components.infobars.InfoBarAnimationListener;
 import org.chromium.components.infobars.InfoBarUiItem;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
@@ -48,26 +49,6 @@ public class InfoBarContainer implements KeyboardVisibilityListener, InfoBar.Con
     private static final AccessibilityUtil.Observer sAccessibilityObserver;
     static {
         sAccessibilityObserver = (enabled) -> setIsAllowedToAutoHide(!enabled);
-    }
-
-    /**
-     * A listener for the InfoBar animations.
-     */
-    public interface InfoBarAnimationListener {
-        public static final int ANIMATION_TYPE_SHOW = 0;
-        public static final int ANIMATION_TYPE_SWAP = 1;
-        public static final int ANIMATION_TYPE_HIDE = 2;
-
-        /**
-         * Notifies the subscriber when an animation is completed.
-         */
-        void notifyAnimationFinished(int animationType);
-
-        /**
-         * Notifies the subscriber when all animations are finished.
-         * @param frontInfoBar The frontmost infobar or {@code null} if none are showing.
-         */
-        void notifyAllAnimationsFinished(InfoBarUiItem frontInfoBar);
     }
 
     /**

@@ -11,6 +11,7 @@
 #include "components/autofill_assistant/browser/actions/click_action.h"
 #include "components/autofill_assistant/browser/actions/collect_user_data_action.h"
 #include "components/autofill_assistant/browser/actions/configure_bottom_sheet_action.h"
+#include "components/autofill_assistant/browser/actions/configure_ui_state_action.h"
 #include "components/autofill_assistant/browser/actions/expect_navigation_action.h"
 #include "components/autofill_assistant/browser/actions/focus_element_action.h"
 #include "components/autofill_assistant/browser/actions/generate_password_for_form_field_action.h"
@@ -333,6 +334,11 @@ bool ProtocolUtils::ParseActions(ActionDelegate* delegate,
       case ActionProto::ActionInfoCase::kSaveGeneratedPassword: {
         client_action =
             std::make_unique<SaveGeneratedPasswordAction>(delegate, action);
+        break;
+      }
+      case ActionProto::ActionInfoCase::kConfigureUiState: {
+        client_action =
+            std::make_unique<ConfigureUiStateAction>(delegate, action);
         break;
       }
       case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET: {

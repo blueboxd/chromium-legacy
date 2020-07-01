@@ -63,11 +63,11 @@ DeviceOAuth2TokenService::~DeviceOAuth2TokenService() {
 
 void DeviceOAuth2TokenService::SetAndSaveRefreshToken(
     const std::string& refresh_token,
-    const StatusCallback& result_callback) {
+    StatusCallback result_callback) {
   ReportServiceError(GoogleServiceAuthError::REQUEST_CANCELED);
 
   state_ = STATE_VALIDATION_PENDING;
-  store_->SetAndSaveRefreshToken(refresh_token, result_callback);
+  store_->SetAndSaveRefreshToken(refresh_token, std::move(result_callback));
 }
 
 CoreAccountId DeviceOAuth2TokenService::GetRobotAccountId() const {

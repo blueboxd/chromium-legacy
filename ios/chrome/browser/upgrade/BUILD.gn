@@ -22,7 +22,7 @@ source_set("upgrade") {
     "//ui/gfx",
     "//url",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("unit_tests") {

@@ -63,6 +63,9 @@ class ScriptExecutorDelegate {
   // Enters the given state. Returns true if the state was changed.
   virtual bool EnterState(AutofillAssistantState state) = 0;
 
+  virtual void SetOverlayBehavior(
+      ConfigureUiStateProto::OverlayBehavior overlay_behavior) = 0;
+
   // Make the area of the screen that correspond to the given elements
   // touchable.
   virtual void SetTouchableElementArea(const ElementAreaProto& element) = 0;

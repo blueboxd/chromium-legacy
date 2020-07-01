@@ -233,6 +233,8 @@ class UiDelegate {
   // The generic user interface to show, if any.
   virtual const GenericUserInterfaceProto* GetGenericUiProto() const = 0;
 
+  virtual bool ShouldShowOverlay() const = 0;
+
  protected:
   UiDelegate() = default;
 };

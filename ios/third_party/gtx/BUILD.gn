@@ -86,7 +86,7 @@ ios_framework_bundle("gtx") {
   ]
   deps = [ "//build/config/ios:xctest" ]
 
-  libs = [
+  frameworks = [
     "CoreGraphics.framework",
     "Foundation.framework",
     "QuartzCore.framework",

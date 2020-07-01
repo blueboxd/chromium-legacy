@@ -1140,14 +1140,13 @@ MinMaxSizes LayoutFlexibleBox::ComputeMinAndMaxSizesForChild(
 
 bool LayoutFlexibleBox::CrossSizeIsDefiniteForPercentageResolution(
     const LayoutBox& child) const {
+  DCHECK(MainAxisIsInlineAxis(child));
   if (FlexLayoutAlgorithm::AlignmentForChild(StyleRef(), child.StyleRef()) !=
       ItemPosition::kStretch)
     return false;
 
   // Here we implement https://drafts.csswg.org/css-flexbox/#algo-stretch
-  if (!MainAxisIsInlineAxis(child) && child.HasOverrideLogicalWidth())
-    return true;
-  if (MainAxisIsInlineAxis(child) && child.HasOverrideLogicalHeight())
+  if (child.HasOverrideLogicalHeight())
     return true;
 
   // We don't currently implement the optimization from
@@ -1161,6 +1160,7 @@ bool LayoutFlexibleBox::CrossSizeIsDefiniteForPercentageResolution(
 
 bool LayoutFlexibleBox::MainSizeIsDefiniteForPercentageResolution(
     const LayoutBox& child) const {
+  DCHECK(!MainAxisIsInlineAxis(child));
   // This function implements section 9.8. Definite and Indefinite Sizes, case
   // 2) of the flexbox spec.
   // We need to check for the flexbox to have a definite main size.
@@ -1168,8 +1168,6 @@ bool LayoutFlexibleBox::MainSizeIsDefiniteForPercentageResolution(
   if (!MainAxisLengthIsDefinite(child, Length::Percent(0), false))
     return false;
 
-  if (MainAxisIsInlineAxis(child))
-    return child.HasOverrideLogicalWidth();
   return child.HasOverrideLogicalHeight();
 }
 

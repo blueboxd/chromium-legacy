@@ -355,6 +355,11 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::GetParent() {
   return nullptr;
 }
 
+bool ViewAXPlatformNodeDelegate::IsChildOfLeaf() const {
+  // Needed to prevent endless loops, see: http://crbug.com/1100047
+  return false;
+}
+
 bool ViewAXPlatformNodeDelegate::IsLeaf() const {
   return ViewAccessibility::IsLeaf() || AXPlatformNodeDelegateBase::IsLeaf();
 }

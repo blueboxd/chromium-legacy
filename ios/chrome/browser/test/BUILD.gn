@@ -40,5 +40,5 @@ source_set("perf_test_support") {
     # be meaningful if ChromeBrowserProviderImpl is used.
     ios_provider_target,
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }

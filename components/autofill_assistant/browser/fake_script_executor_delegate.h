@@ -82,6 +82,8 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
       base::OnceCallback<void(const ClientStatus&)>
           view_inflation_finished_callback) override;
   void ClearGenericUi() override;
+  void SetOverlayBehavior(
+      ConfigureUiStateProto::OverlayBehavior overlay_behavior) override;
 
   ClientSettings* GetMutableSettings() { return &client_settings_; }
 

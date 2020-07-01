@@ -31,6 +31,8 @@ import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
+import org.chromium.chrome.browser.safety_check.SafetyCheckOmahaClient;
+import org.chromium.chrome.browser.safety_check.SafetyCheckSettingsFragment;
 import org.chromium.chrome.browser.site_settings.ChromeSiteSettingsClient;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsPreferenceFragment;
@@ -267,6 +269,9 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
         if (fragment instanceof SiteSettingsPreferenceFragment) {
             ((SiteSettingsPreferenceFragment) fragment)
                     .setSiteSettingsClient(new ChromeSiteSettingsClient(this));
+        } else if (fragment instanceof SafetyCheckSettingsFragment) {
+            ((SafetyCheckSettingsFragment) fragment)
+                    .setUpdatesClient(new SafetyCheckOmahaClient(this));
         }
     }
 

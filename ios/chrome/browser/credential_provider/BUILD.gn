@@ -35,7 +35,7 @@ source_set("credential_provider") {
     "//ios/public/provider/chrome/browser/signin",
     "//url",
   ]
-  libs = [
+  frameworks = [
     "AuthenticationServices.framework",
     "Foundation.framework",
   ]

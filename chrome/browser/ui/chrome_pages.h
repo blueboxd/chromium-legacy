@@ -18,6 +18,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/printing/print_management/print_management_uma.h"
 #include "chrome/browser/ui/webui/settings/chromeos/app_management/app_management_uma.h"
 #endif
 
@@ -143,7 +144,8 @@ void ShowAppManagementPage(Profile* profile,
                            const std::string& app_id,
                            AppManagementEntryPoint entry_point);
 
-void ShowPrintManagementApp(Profile* profile);
+void ShowPrintManagementApp(Profile* profile,
+                            PrintManagementAppEntryPoint entry_point);
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)

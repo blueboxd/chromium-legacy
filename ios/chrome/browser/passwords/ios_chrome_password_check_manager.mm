@@ -56,6 +56,7 @@ PasswordCheckState ConvertBulkCheckState(State state) {
     case State::kQuotaLimit:
       return PasswordCheckState::kQuotaLimit;
     case State::kCanceled:
+      return PasswordCheckState::kCanceled;
     case State::kTokenRequestFailure:
     case State::kHashingFailure:
     case State::kServiceError:
@@ -99,6 +100,11 @@ void IOSChromePasswordCheckManager::StartPasswordCheck() {
   bulk_leak_check_service_adapter_.StartBulkLeakCheck(kPasswordCheckDataKey,
                                                       &data);
   is_check_running_ = true;
+}
+
+void IOSChromePasswordCheckManager::StopPasswordCheck() {
+  bulk_leak_check_service_adapter_.StopBulkLeakCheck();
+  is_check_running_ = false;
 }
 
 PasswordCheckState IOSChromePasswordCheckManager::GetPasswordCheckState()

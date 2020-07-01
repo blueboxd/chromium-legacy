@@ -31,6 +31,11 @@ using chrome_test_util::ManualFallbackProfileTableViewWindowMatcher;
 
 namespace {
 
+// Using |isKeyboadDocked| requires to inject a UITextField in the window and
+// wait for it to be shown. For performance reasons, only try to dock the
+// keyboard in |tearDown| if it was undocked during the test.
+bool gKeyboardUndockAttempted = false;
+
 constexpr char kFormElementName[] = "name";
 constexpr char kFormElementCity[] = "city";
 
@@ -77,10 +82,10 @@ BOOL UndockAndSplitKeyboard() {
   [[EarlGrey
       selectElementWithMatcher:[KeyboardAppInterface keyboardWindowMatcher]]
       performAction:[KeyboardAppInterface keyboardUndockAction]];
+  gKeyboardUndockAttempted = YES;
 
   // If a dummy textfield was created for this, remove it.
   [textField removeFromSuperview];
-
   return ![KeyboardAppInterface isKeyboadDocked];
 }
 
@@ -147,6 +152,11 @@ BOOL WaitForKeyboardToAppear() {
 }
 
 - (void)tearDown {
+  if (gKeyboardUndockAttempted) {
+    gKeyboardUndockAttempted = NO;
+    DockKeyboard();
+  }
+
   [AutofillAppInterface clearProfilesStore];
 
   // Leaving a picker on iPads causes problems with the docking logic. This

@@ -21,7 +21,7 @@ source_set("drag_and_drop") {
     "//net",
     "//url",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("unit_tests") {

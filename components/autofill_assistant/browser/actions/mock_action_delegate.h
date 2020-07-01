@@ -306,6 +306,8 @@ class MockActionDelegate : public ActionDelegate {
                    view_inflation_finished_callback);
   }
   MOCK_METHOD0(ClearGenericUi, void());
+  MOCK_METHOD1(SetOverlayBehavior,
+               void(ConfigureUiStateProto::OverlayBehavior));
 
   const ClientSettings& GetSettings() override { return client_settings_; }
 

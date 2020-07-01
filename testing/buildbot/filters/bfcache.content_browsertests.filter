@@ -2,13 +2,13 @@
 
 # Same-document navigation pointing to a URL that would cause a redirect if it
 # was reloaded. It never happen, because the document is restored directly.
--All/NavigationControllerBrowserTest.SiteInstanceChangeOnHistoryNavigation/*
+-NavigationControllerBrowserTest.SiteInstanceChangeOnHistoryNavigation
 
 # Expect an iframe to load again. It isn't because the page was restored from
 # the BackForwardCache.
 -BackForwardCacheMetricsBrowserTest.Features_SameOriginSubframes_CrossOriginNavigation
--All/NavigationControllerBrowserTest.FrameNavigationEntry_DynamicSubframeHistoryFallback/*
--All/NavigationControllerBrowserTest.FrameNavigationEntry_SubframeHistoryFallback/*
+-NavigationControllerBrowserTest.FrameNavigationEntry_DynamicSubframeHistoryFallback
+-NavigationControllerBrowserTest.FrameNavigationEntry_SubframeHistoryFallback
 
 # Create a URLLoaderInterceptor. It should cause the navigation to fail, but it
 # isn't using an URLLoader anymore.
@@ -23,7 +23,7 @@
 # Wait for the old process to exit. It won't, because it is still used by a
 # bfcached document.
 -DynamicIsolatedOriginTest.LockedProcessNotReusedForNonisolatedSameSiteNavigation
--All/NavigationControllerBrowserTest.UtilizationOfSpareRenderProcessHost/*
+-NavigationControllerBrowserTest.UtilizationOfSpareRenderProcessHost
 -All/RenderFrameHostManagerTest.DontSelectInvalidFiles/*
 -All/RenderFrameHostManagerTest.NavigateWithUnassignedSiteInstance/*
 -All/RenderFrameHostManagerTest.RestoreFileAccessForHistoryNavigation/*
@@ -37,7 +37,7 @@
 -All/RenderFrameHostManagerTest.RenderViewInitAfterNewProxyAndProcessKill/*
 
 # https://crbug.com/1021409
--All/NavigationControllerBrowserTest.BrowserInitiatedLoadPostCommitErrorPageIgnoredForFramePendingDeletion/*
+-NavigationControllerBrowserTest.BrowserInitiatedLoadPostCommitErrorPageIgnoredForFramePendingDeletion
 
 # Not triaged
 -All/SitePerProcessBrowserTest.ActiveSandboxFlagsRetainedAfterUnload/*

@@ -14,6 +14,7 @@
 #include "components/autofill_assistant/browser/details.h"
 #include "components/autofill_assistant/browser/info_box.h"
 #include "components/autofill_assistant/browser/selector.h"
+#include "components/autofill_assistant/browser/state.h"
 #include "components/autofill_assistant/browser/top_padding.h"
 #include "components/autofill_assistant/browser/user_data.h"
 #include "components/autofill_assistant/browser/viewport_mode.h"
@@ -386,6 +387,9 @@ class ActionDelegate {
   // view hierarchy and remove all corresponding interactions. Note that
   // |user_model| will persist and will not be affected by this call.
   virtual void ClearGenericUi() = 0;
+
+  // Sets the OverlayBehavior.
+  virtual void SetOverlayBehavior(ConfigureUiStateProto::OverlayBehavior) = 0;
 
  protected:
   ActionDelegate() = default;

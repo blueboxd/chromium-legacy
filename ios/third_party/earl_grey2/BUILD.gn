@@ -142,7 +142,7 @@ source_set("common_lib") {
 
   public_configs = [ ":config" ]
 
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 
   configs -= [
     "//build/config/gcc:symbol_visibility_hidden",
@@ -211,7 +211,7 @@ source_set("ui_lib") {
 
   public_configs = [ ":config" ]
 
-  libs = [
+  frameworks = [
     "QuartzCore.framework",
     "UIKit.framework",
   ]
@@ -396,7 +396,7 @@ ios_framework_bundle("app_framework") {
 
   public_headers = [ "src/AppFramework/EarlGreyApp/EarlGreyApp.h" ]
 
-  libs = [
+  frameworks = [
     "CoreData.framework",
     "CoreGraphics.framework",
     "Foundation.framework",
@@ -486,7 +486,7 @@ source_set("test_lib") {
     ":test_lib_shared_headers",
   ]
 
-  libs = [
+  frameworks = [
     "CoreData.framework",
     "CoreGraphics.framework",
     "Foundation.framework",

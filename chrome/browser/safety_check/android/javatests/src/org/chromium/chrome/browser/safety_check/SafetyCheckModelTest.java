@@ -14,6 +14,7 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.password_check.BulkLeakCheckServiceState;
+import org.chromium.chrome.browser.safety_check.SafetyCheckModel.Updates;
 
 /** Unit tests for {@link SafetyCheckModel}. */
 @RunWith(BaseRobolectricTestRunner.class)
@@ -29,9 +30,7 @@ public class SafetyCheckModelTest {
         mSafetyCheckModel = new SafetyCheckModel(mView);
     }
 
-    /**
-     * Tests a standard workflow for Safe Browsing.
-     */
+    /** Tests a standard workflow for Safe Browsing. */
     @Test
     public void testSafeBrowsing() {
         mSafetyCheckModel.setCheckingState();
@@ -41,9 +40,7 @@ public class SafetyCheckModelTest {
                 "safe_browsing", R.string.safety_check_safe_browsing_enabled_standard);
     }
 
-    /**
-     * Tests a successful workflow for the passwords check.
-     */
+    /** Tests a successful workflow for the passwords check. */
     @Test
     public void testPasswordsSuccess() {
         mSafetyCheckModel.setCheckingState();
@@ -53,9 +50,7 @@ public class SafetyCheckModelTest {
                 "passwords", R.string.safety_check_passwords_no_passwords);
     }
 
-    /**
-     * Tests a failure workflow for the passwords check.
-     */
+    /** Tests a failure workflow for the passwords check. */
     @Test
     public void testPasswordsError() {
         mSafetyCheckModel.setCheckingState();
@@ -63,5 +58,14 @@ public class SafetyCheckModelTest {
         mSafetyCheckModel.updatePasswordsStatusOnError(
                 BulkLeakCheckServiceState.TOKEN_REQUEST_FAILURE);
         verify(mView).updateElementStatus("passwords", R.string.safety_check_error);
+    }
+
+    /** Tests a workflow for the updates check. */
+    @Test
+    public void testUpdates() {
+        mSafetyCheckModel.setCheckingState();
+        verify(mView).updateElementStatus("updates", R.string.safety_check_checking);
+        mSafetyCheckModel.updateUpdatesStatus(Updates.UPDATED);
+        verify(mView).updateElementStatus("updates", R.string.safety_check_updates_updated);
     }
 }

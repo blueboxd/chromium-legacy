@@ -695,6 +695,14 @@ bool Controller::EnterState(AutofillAssistantState state) {
   return true;
 }
 
+void Controller::SetOverlayBehavior(
+    ConfigureUiStateProto::OverlayBehavior overlay_behavior) {
+  overlay_behavior_ = overlay_behavior;
+  for (ControllerObserver& observer : observers_) {
+    observer.OnShouldShowOverlayChanged(ShouldShowOverlay());
+  }
+}
+
 void Controller::SetWebControllerForTest(
     std::unique_ptr<WebController> web_controller) {
   web_controller_ = std::move(web_controller);
@@ -1111,6 +1119,10 @@ void Controller::ShowFirstMessageAndStart() {
 
 AutofillAssistantState Controller::GetState() {
   return state_;
+}
+
+bool Controller::ShouldShowOverlay() const {
+  return overlay_behavior_ == ConfigureUiStateProto::DEFAULT;
 }
 
 void Controller::OnScriptSelected(const ScriptHandle& handle,

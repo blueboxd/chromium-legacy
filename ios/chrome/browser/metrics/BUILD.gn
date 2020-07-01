@@ -155,7 +155,7 @@ source_set("metrics_browser_agent") {
     "//ui/base",
     "//url",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("metrics_internal") {
@@ -187,7 +187,7 @@ source_set("metrics_internal") {
     "//ui/base",
     "//url",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("tab_usage_recorder_metrics") {
@@ -254,7 +254,7 @@ source_set("eg2_tests") {
     "//ios/web/public/test/http_server",
     "//ui/base:base",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 import("//components/metrics/generate_expired_histograms_array.gni")

@@ -27,7 +27,7 @@ source_set("find_in_page") {
     "//ios/web/public/find_in_page",
     "//services/metrics/public/cpp:ukm_builders",
   ]
-  libs = [ "CoreGraphics.framework" ]
+  frameworks = [ "CoreGraphics.framework" ]
 }
 
 # TODO(crbug.com/487804): use js_compile_checked instead once the errors have

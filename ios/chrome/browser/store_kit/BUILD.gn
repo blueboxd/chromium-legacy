@@ -16,7 +16,7 @@ source_set("store_kit") {
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/web",
   ]
-  libs = [
+  frameworks = [
     "StoreKit.framework",
     "UIKit.framework",
   ]

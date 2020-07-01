@@ -215,7 +215,7 @@ source_set("java_script_console") {
     "//ios/web/public",
     "//ios/web/public/js_messaging",
   ]
-  libs = [ "Foundation.framework" ]
+  frameworks = [ "Foundation.framework" ]
 }
 
 source_set("web_internal") {
@@ -277,7 +277,7 @@ source_set("web_internal") {
     "//url",
   ]
   public_deps = [ ":java_script_console" ]
-  libs = [
+  frameworks = [
     "UIKit.framework",
     "Foundation.framework",
   ]
@@ -433,7 +433,7 @@ source_set("eg2_tests") {
     "//url",
   ]
 
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("perf_tests") {

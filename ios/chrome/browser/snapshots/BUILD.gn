@@ -41,7 +41,7 @@ source_set("snapshots") {
     "//ios/web/public",
     "//ui/gfx",
   ]
-  libs = [
+  frameworks = [
     "QuartzCore.framework",
     "UIKit.framework",
   ]

@@ -23,5 +23,5 @@ source_set("eg2_tests") {
     "//net:test_support",
     "//url",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }

@@ -651,6 +651,11 @@ void ScriptExecutor::ClearGenericUi() {
   delegate_->ClearGenericUi();
 }
 
+void ScriptExecutor::SetOverlayBehavior(
+    ConfigureUiStateProto::OverlayBehavior overlay_behavior) {
+  delegate_->SetOverlayBehavior(overlay_behavior);
+}
+
 void ScriptExecutor::OnGetActions(bool result, const std::string& response) {
   bool success = result && ProcessNextActionResponse(response);
   VLOG(2) << __func__ << " result=" << result;

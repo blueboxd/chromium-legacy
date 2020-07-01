@@ -77,7 +77,7 @@ public class OmahaBase {
     @IntDef({UpdateStatus.UPDATED, UpdateStatus.OUTDATED, UpdateStatus.OFFLINE,
             UpdateStatus.FAILED})
     @Retention(RetentionPolicy.SOURCE)
-    @interface UpdateStatus {
+    public @interface UpdateStatus {
         int UPDATED = 0;
         int OUTDATED = 1;
         int OFFLINE = 2;
@@ -176,6 +176,10 @@ public class OmahaBase {
         // Since this update check is synchronous and blocking on the network
         // connection, it should not be run on the UI thread.
         assert !ThreadUtils.runningOnUiThread();
+        // This is not available on developer builds.
+        if (getRequestGenerator() == null) {
+            return UpdateStatus.FAILED;
+        }
         // Create all the metadata needed for an Omaha request.
         long currentTimestamp = getBackoffScheduler().getCurrentTime();
         String installSource =

@@ -33,7 +33,7 @@ source_set("sessions") {
     "//net",
     "//url",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("restoration_observer") {
@@ -151,7 +151,7 @@ source_set("unit_tests") {
     "//testing/gtest",
     "//third_party/ocmock",
   ]
-  libs = [ "Foundation.framework" ]
+  frameworks = [ "Foundation.framework" ]
 }
 
 bundle_data("resources_unit_tests") {

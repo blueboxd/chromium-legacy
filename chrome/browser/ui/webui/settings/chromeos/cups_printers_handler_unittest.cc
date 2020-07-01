@@ -10,13 +10,17 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/printing/print_management/print_management_uma.h"
 #include "chrome/browser/chromeos/printing/printing_stubs.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_core_service_impl.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "content/public/test/browser_task_environment.h"
@@ -192,6 +196,8 @@ class CupsPrintersHandlerTest : public testing::Test {
   ~CupsPrintersHandlerTest() override = default;
 
   void SetUp() override {
+    scoped_feature_list_.InitWithFeatures(
+        {chromeos::features::kPrintJobManagementApp}, {});
     printers_handler_ = CupsPrintersHandler::CreateForTesting(
         &profile_, base::MakeRefCounted<FakePpdProvider>(),
         std::make_unique<StubPrinterConfigurer>(), &printers_manager_);
@@ -201,11 +207,13 @@ class CupsPrintersHandlerTest : public testing::Test {
 
  protected:
   // Must outlive |profile_|.
+  base::HistogramTester histogram_tester_;
   content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   content::TestWebUI web_ui_;
   std::unique_ptr<CupsPrintersHandler> printers_handler_;
   TestCupsPrintersManager printers_manager_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_F(CupsPrintersHandlerTest, RemoveCorrectPrinter) {
@@ -253,5 +261,24 @@ TEST_F(CupsPrintersHandlerTest, VerifyOnlyPpdFilesAllowed) {
   web_ui_.HandleReceivedMessage("selectPPDFile",
                                 &base::Value::AsListValue(args));
 }
+
+TEST_F(CupsPrintersHandlerTest, VerifyPrintManagementAppEntryPointHistogram) {
+  base::Value args(base::Value::Type::LIST);
+  web_ui_.HandleReceivedMessage("openPrintManagementApp",
+                                &base::Value::AsListValue(args));
+  histogram_tester_.ExpectBucketCount(
+      "Printing.Cups.PrintManagementAppEntryPoint",
+      PrintManagementAppEntryPoint::kSettings, 1);
+  histogram_tester_.ExpectBucketCount(
+      "Printing.Cups.PrintManagementAppEntryPoint",
+      PrintManagementAppEntryPoint::kNotification, 0);
+  histogram_tester_.ExpectBucketCount(
+      "Printing.Cups.PrintManagementAppEntryPoint",
+      PrintManagementAppEntryPoint::kLauncher, 0);
+  histogram_tester_.ExpectBucketCount(
+      "Printing.Cups.PrintManagementAppEntryPoint",
+      PrintManagementAppEntryPoint::kBrowser, 0);
+}
+
 }  // namespace settings.
 }  // namespace chromeos.

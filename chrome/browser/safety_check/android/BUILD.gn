@@ -29,6 +29,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/safety_check/SafetyCheckElement.java",
     "java/src/org/chromium/chrome/browser/safety_check/SafetyCheckModel.java",
     "java/src/org/chromium/chrome/browser/safety_check/SafetyCheckSettingsFragment.java",
+    "java/src/org/chromium/chrome/browser/safety_check/SafetyCheckUpdatesDelegate.java",
   ]
   deps = [
     ":java_resources",
@@ -53,6 +54,7 @@ android_library("junit") {
   testonly = true
   sources = [
     "javatests/src/org/chromium/chrome/browser/safety_check/SafetyCheckBridgeTest.java",
+    "javatests/src/org/chromium/chrome/browser/safety_check/SafetyCheckControllerTest.java",
     "javatests/src/org/chromium/chrome/browser/safety_check/SafetyCheckModelTest.java",
   ]
   deps = [

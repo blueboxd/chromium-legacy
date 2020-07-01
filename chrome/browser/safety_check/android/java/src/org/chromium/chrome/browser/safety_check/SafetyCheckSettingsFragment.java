@@ -18,16 +18,26 @@ import org.chromium.ui.widget.ButtonCompat;
 
 /**
  * Fragment containing Safety check.
+ *
+ * Note: it is required for {@link #setUpdatesClient(SafetyCheckUpdatesDelegate)} to have been
+ * invoked before {@link #onCreatePreferences(Bundle, String)}.
  */
 public class SafetyCheckSettingsFragment extends PreferenceFragmentCompat {
     private SafetyCheckController mController;
     private SafetyCheckModel mModel;
+    private SafetyCheckUpdatesDelegate mUpdatesClient;
 
+    /**
+     * Initializes all the objects related to the preferences page.
+     * Note: {@link #setUpdatesClient(SafetyCheckUpdatesDelegate)} should be invoked before this.
+     */
     @Override
     public void onCreatePreferences(Bundle bundle, String s) {
+        // The updates client should be set before this method is invoked.
+        assert mUpdatesClient != null;
         // Create the model and the controller.
         mModel = new SafetyCheckModel(this);
-        mController = new SafetyCheckController(mModel);
+        mController = new SafetyCheckController(mModel, mUpdatesClient);
         // Add all preferences and set the title.
         SettingsUtils.addPreferencesFromResource(this, R.xml.safety_check_preferences);
         getActivity().setTitle(R.string.prefs_safety_check);
@@ -46,8 +56,13 @@ public class SafetyCheckSettingsFragment extends PreferenceFragmentCompat {
         return view;
     }
 
-    private void onSafetyCheckButtonClicked() {
-        mController.performSafetyCheck();
+    /**
+     * Sets the client for interacting with Omaha for the updates check.
+     * @param client An instance of a class implementing
+     *               {@link SafetyCheckUpdatesDelegate}.
+     */
+    public void setUpdatesClient(SafetyCheckUpdatesDelegate client) {
+        mUpdatesClient = client;
     }
 
     /**
@@ -58,5 +73,12 @@ public class SafetyCheckSettingsFragment extends PreferenceFragmentCompat {
     public void updateElementStatus(String key, int statusString) {
         Preference p = findPreference(key);
         p.setSummary(statusString);
+    }
+
+    /**
+     * Gets triggered when the button for starting Safety check is pressed.
+     */
+    private void onSafetyCheckButtonClicked() {
+        mController.performSafetyCheck();
     }
 }

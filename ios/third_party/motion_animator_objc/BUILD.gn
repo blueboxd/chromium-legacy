@@ -44,7 +44,7 @@ source_set("motion_animator_objc") {
     "src/src/MotionAnimator.h",
   ]
 
-  libs = [
+  frameworks = [
     "CoreGraphics.framework",
     "Foundation.framework",
     "QuartzCore.framework",

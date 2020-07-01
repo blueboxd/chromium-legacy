@@ -47,7 +47,7 @@ source_set("download") {
     "//ui/base",
   ]
 
-  libs = [
+  frameworks = [
     "UIKit.framework",
     "PassKit.framework",
     "QuartzCore.framework",

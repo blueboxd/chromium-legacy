@@ -100,5 +100,5 @@ source_set("eg2_tests") {
     "//url",
   ]
 
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }

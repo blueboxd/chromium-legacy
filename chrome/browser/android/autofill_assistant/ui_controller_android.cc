@@ -821,7 +821,8 @@ bool UiControllerAndroid::OnBackButtonClicked(
 
   // For BROWSE state the back button should react in its default way.
   if (ui_delegate_ != nullptr &&
-      ui_delegate_->GetState() == AutofillAssistantState::BROWSE) {
+      (ui_delegate_->GetState() == AutofillAssistantState::BROWSE ||
+       !ui_delegate_->ShouldShowOverlay())) {
     return false;
   }
 
@@ -890,11 +891,26 @@ void UiControllerAndroid::SetOverlayState(OverlayState state) {
       state = OverlayState::FULL;
     }
   }
+  overlay_state_ = state;
 
+  if (ui_delegate_->ShouldShowOverlay()) {
+    ApplyOverlayState(state);
+  }
+}
+
+void UiControllerAndroid::ApplyOverlayState(OverlayState state) {
   Java_AssistantOverlayModel_setState(AttachCurrentThread(), GetOverlayModel(),
                                       state);
   Java_AssistantModel_setAllowTalkbackOnWebsite(
       AttachCurrentThread(), GetModel(), state != OverlayState::FULL);
+}
+
+void UiControllerAndroid::OnShouldShowOverlayChanged(bool should_show) {
+  if (should_show) {
+    ApplyOverlayState(overlay_state_);
+  } else {
+    ApplyOverlayState(OverlayState::HIDDEN);
+  }
 }
 
 void UiControllerAndroid::OnTouchableAreaChanged(

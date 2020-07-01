@@ -11,10 +11,12 @@
 #include "base/check_op.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
+#include "chrome/browser/chromeos/printing/print_management/print_management_uma.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -36,6 +38,19 @@
 #include "ui/display/types/display_constants.h"
 
 namespace web_app {
+namespace {
+
+void LogPrintManagementEntryPoints(apps::mojom::AppLaunchSource source) {
+  if (source == apps::mojom::AppLaunchSource::kSourceAppLauncher) {
+    base::UmaHistogramEnumeration("Printing.Cups.PrintManagementAppEntryPoint",
+                                  PrintManagementAppEntryPoint::kLauncher);
+  } else if (source == apps::mojom::AppLaunchSource::kSourceIntentUrl) {
+    base::UmaHistogramEnumeration("Printing.Cups.PrintManagementAppEntryPoint",
+                                  PrintManagementAppEntryPoint::kBrowser);
+  }
+}
+
+}  // namespace
 
 base::Optional<SystemAppType> GetSystemWebAppTypeForAppId(Profile* profile,
                                                           AppId app_id) {
@@ -117,6 +132,12 @@ Browser* LaunchSystemWebApp(Profile* profile,
   params->override_url = url;
 
   DCHECK_EQ(params->app_id, *GetAppIdForSystemWebApp(profile, app_type));
+
+  // Log enumerated entry point for Print Management App. Only log here if the
+  // app was launched from the browser (omnibox) or from the system launcher.
+  if (app_type == SystemAppType::PRINT_MANAGEMENT) {
+    LogPrintManagementEntryPoints(params->source);
+  }
 
   // Make sure we have a browser for app.  Always reuse an existing browser for
   // popups, otherwise check app type whether we should use a single window.

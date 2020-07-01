@@ -19,7 +19,7 @@ source_set("safe_mode") {
     ios_packed_resources_target,
   ]
 
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 bundle_data("resources") {
@@ -37,5 +37,5 @@ source_set("unit_tests") {
     "//base",
     "//testing/gtest",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }

@@ -56465,6 +56465,17 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="Filter failed"/>
 </enum>
 
+<enum name="PrintManagementAppEntryPoint">
+<!-- This must be kept current with PrintManagementAppEntryPoint in
+     chrome/browser/chromeos/printing/print_management/print_management_uma.h.
+-->
+
+  <int value="0" label="Settings"/>
+  <int value="1" label="Notification"/>
+  <int value="2" label="Launcher"/>
+  <int value="3" label="Browser"/>
+</enum>
+
 <enum name="PrintPreviewFailureType">
 <!-- This must be kept current with PrintPreviewErrorBuckets in
      components/printing/renderer/print_render_frame_helper.h. -->

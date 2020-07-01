@@ -23,13 +23,14 @@ class IOSChromePasswordCheckManagerProxy;
 // Enum which represents possible states of Password Check on UI.
 // It's created based on BulkLeakCheckService::State.
 enum class PasswordCheckState {
+  kCanceled,
   kIdle,
+  kNoPasswords,
+  kOffline,
+  kOther,
+  kQuotaLimit,
   kRunning,
   kSignedOut,
-  kOffline,
-  kNoPasswords,
-  kQuotaLimit,
-  kOther,
 };
 
 // This class handles the bulk password check feature.
@@ -50,6 +51,9 @@ class IOSChromePasswordCheckManager
 
   // Requests to start a check for compromised passwords.
   void StartPasswordCheck();
+
+  // Stops checking for compromised passwords.
+  void StopPasswordCheck();
 
   // Returns the current state of the password check.
   PasswordCheckState GetPasswordCheckState() const;

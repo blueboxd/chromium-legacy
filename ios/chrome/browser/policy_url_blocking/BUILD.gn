@@ -55,5 +55,5 @@ source_set("eg2_tests") {
     "//ios/web/public/test/http_server",
     "//net:test_support",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }

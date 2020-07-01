@@ -501,9 +501,15 @@ void ShowAppManagementPage(Profile* profile,
                                                                sub_page);
 }
 
-void ShowPrintManagementApp(Profile* profile) {
+void ShowPrintManagementApp(Profile* profile,
+                            PrintManagementAppEntryPoint entry_point) {
   DCHECK(
       base::FeatureList::IsEnabled(chromeos::features::kPrintJobManagementApp));
+  DCHECK(entry_point == PrintManagementAppEntryPoint::kSettings ||
+         entry_point == PrintManagementAppEntryPoint::kNotification);
+
+  base::UmaHistogramEnumeration("Printing.Cups.PrintManagementAppEntryPoint",
+                                entry_point);
   LaunchSystemWebApp(profile, web_app::SystemAppType::PRINT_MANAGEMENT,
                      GURL(chrome::kChromeUIPrintManagementUrl));
 }

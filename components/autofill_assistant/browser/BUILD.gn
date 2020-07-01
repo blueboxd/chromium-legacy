@@ -30,6 +30,8 @@ jumbo_static_library("browser") {
     "actions/collect_user_data_action.h",
     "actions/configure_bottom_sheet_action.cc",
     "actions/configure_bottom_sheet_action.h",
+    "actions/configure_ui_state_action.cc",
+    "actions/configure_ui_state_action.h",
     "actions/expect_navigation_action.cc",
     "actions/expect_navigation_action.h",
     "actions/fallback_handler/required_field.cc",

@@ -9,6 +9,7 @@ import android.os.IBinder;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.annotations.UsedByReflection;
+import org.chromium.components.infobars.InfoBarAnimationListener;
 import org.chromium.components.infobars.InfoBarUiItem;
 import org.chromium.components.location.LocationUtils;
 import org.chromium.components.permissions.PermissionDialogController;
@@ -116,7 +117,7 @@ public final class TestWebLayerImpl extends ITestWebLayer.Stub {
         TabImpl tabImpl = (TabImpl) tab;
 
         InfoBarContainer infoBarContainer = tabImpl.getInfoBarContainerForTesting();
-        infoBarContainer.addAnimationListener(new InfoBarContainer.InfoBarAnimationListener() {
+        infoBarContainer.addAnimationListener(new InfoBarAnimationListener() {
             @Override
             public void notifyAnimationFinished(int animationType) {}
             @Override

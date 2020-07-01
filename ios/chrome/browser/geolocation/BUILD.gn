@@ -31,7 +31,7 @@ source_set("geolocation") {
     "//ui/base",
     "//url",
   ]
-  libs = [ "CoreLocation.framework" ]
+  frameworks = [ "CoreLocation.framework" ]
 }
 
 source_set("test_support") {
@@ -84,7 +84,7 @@ source_set("geolocation_internal") {
     "//ui/base",
     "//url",
   ]
-  libs = [
+  frameworks = [
     "CoreLocation.framework",
     "UIKit.framework",
   ]

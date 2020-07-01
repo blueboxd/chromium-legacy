@@ -465,7 +465,6 @@ void BlinkTestRunner::DidCommitNavigationInMainFrame() {
     return;
 
   waiting_for_reset_navigation_to_about_blank_ = false;
-  web_view_test_proxy_->test_interfaces()->ResetAll();
   GetWebTestControlHostRemote()->ResetRendererAfterWebTestDone();
 }
 
@@ -554,10 +553,8 @@ void BlinkTestRunner::OnResetRendererAfterWebTest() {
   // BlinkTestMsg_Reset should always be sent to the *current* view.
   DCHECK(web_view_test_proxy_->GetMainRenderFrame());
 
-  // Instead of resetting for the next test here, delay until after the
-  // navigation to about:blank (this is in |DidCommitNavigationInMainFrame()|).
-  // This ensures we reset settings that are set between now and the load of
-  // about:blank.
+  TestInterfaces* interfaces = web_view_test_proxy_->test_interfaces();
+  interfaces->ResetAll();
 
   // Navigating to about:blank will make sure that no new loads are initiated
   // by the renderer.

@@ -13,8 +13,8 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/mock_bulk_leak_check_service.h"
-#include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
+#include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/passwords/ios_chrome_bulk_leak_check_service_factory.h"
@@ -42,8 +42,9 @@
 #error "This file requires ARC support."
 #endif
 
-using password_manager::MockPasswordStore;
+using password_manager::TestPasswordStore;
 using password_manager::MockBulkLeakCheckService;
+using ::testing::Return;
 
 // Declaration to conformance to SavePasswordsConsumerDelegate and keep tests in
 // this file working.
@@ -91,7 +92,7 @@ class PasswordsTableViewControllerTest
         chrome_browser_state_.get(),
         base::BindRepeating(
             &password_manager::BuildPasswordStore<web::BrowserState,
-                                                  MockPasswordStore>));
+                                                  TestPasswordStore>));
 
     IOSChromeBulkLeakCheckServiceFactory::GetInstance()
         ->SetTestingFactoryAndUse(
@@ -120,8 +121,8 @@ class PasswordsTableViewControllerTest
 
   int SectionsOffset() { return GetParam().password_check_enabled ? 1 : 0; }
 
-  MockPasswordStore& GetMockStore() {
-    return *static_cast<MockPasswordStore*>(
+  TestPasswordStore& GetTestStore() {
+    return *static_cast<TestPasswordStore*>(
         IOSChromePasswordStoreFactory::GetForBrowserState(
             chrome_browser_state_.get(), ServiceAccessType::EXPLICIT_ACCESS)
             .get());
@@ -148,6 +149,7 @@ class PasswordsTableViewControllerTest
   void AddPasswordForm(std::unique_ptr<autofill::PasswordForm> form) {
     PasswordsTableViewController* passwords_controller =
         static_cast<PasswordsTableViewController*>(controller());
+    GetTestStore().AddLogin(*form);
     std::vector<std::unique_ptr<autofill::PasswordForm>> passwords;
     passwords.push_back(std::move(form));
     [passwords_controller onGetPasswordStoreResults:std::move(passwords)];
@@ -229,6 +231,8 @@ class PasswordsTableViewControllerTest
     return base::test::ios::WaitUntilConditionOrTimeout(
         base::test::ios::kWaitForUIElementTimeout, condition);
   }
+
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
   web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
@@ -468,7 +472,6 @@ TEST_P(PasswordsTableViewControllerTest, PropagateDeletionToStore) {
 
   AddPasswordForm(std::make_unique<autofill::PasswordForm>(form));
 
-  EXPECT_CALL(GetMockStore(), RemoveLogin(form));
   [passwords_controller passwordDetailsTableViewController:nil
                                             deletePassword:form];
 }
@@ -544,6 +547,8 @@ TEST_P(PasswordsTableViewControllerTest, PasswordCheckStateDefault) {
 
   ChangePasswordCheckState(PasswordCheckStateDefault);
 
+  CheckTextCellTextWithId(IDS_IOS_CHECK_PASSWORDS_NOW_BUTTON,
+                          GetSectionIndex(PasswordCheck), 1);
   CheckDetailItemTextWithIds(IDS_IOS_CHECK_PASSWORDS,
                              IDS_IOS_CHECK_PASSWORDS_DESCRIPTION,
                              GetSectionIndex(PasswordCheck), 0);
@@ -561,6 +566,8 @@ TEST_P(PasswordsTableViewControllerTest, PasswordCheckStateRunning) {
 
   ChangePasswordCheckState(PasswordCheckStateRunning);
 
+  CheckTextCellTextWithId(IDS_IOS_CANCEL_PASSWORD_CHECK_BUTTON,
+                          GetSectionIndex(PasswordCheck), 1);
   CheckDetailItemTextWithIds(IDS_IOS_CHECK_PASSWORDS,
                              IDS_IOS_CHECK_PASSWORDS_DESCRIPTION,
                              GetSectionIndex(PasswordCheck), 0);
@@ -571,10 +578,31 @@ TEST_P(PasswordsTableViewControllerTest, PasswordCheckStateRunning) {
   EXPECT_FALSE(checkPassword.image);
 }
 
-// Test verifies clicking start triggers correct function in service.
-TEST_P(PasswordsTableViewControllerTest, PasswordCheckStart) {
+// Test verifies tapping start with no saved passwords has no effect.
+TEST_P(PasswordsTableViewControllerTest, DisabledPasswordCheck) {
   if (!GetParam().password_check_enabled)
     return;
+
+  PasswordsTableViewController* passwords_controller =
+      static_cast<PasswordsTableViewController*>(controller());
+
+  EXPECT_CALL(GetMockPasswordCheckService(), CheckUsernamePasswordPairs)
+      .Times(0);
+  EXPECT_CALL(GetMockPasswordCheckService(), Cancel).Times(0);
+
+  [passwords_controller tableView:passwords_controller.tableView
+          didSelectRowAtIndexPath:[NSIndexPath
+                                      indexPathForItem:1
+                                             inSection:GetSectionIndex(
+                                                           PasswordCheck)]];
+}
+
+// Test verifies tapping start triggers correct function in service.
+TEST_P(PasswordsTableViewControllerTest, StartPasswordCheck) {
+  if (!GetParam().password_check_enabled)
+    return;
+  AddSavedForm1();
+  RunUntilIdle();
 
   PasswordsTableViewController* passwords_controller =
       static_cast<PasswordsTableViewController*>(controller());
@@ -588,10 +616,32 @@ TEST_P(PasswordsTableViewControllerTest, PasswordCheckStart) {
                                                            PasswordCheck)]];
 }
 
+// Test verifies tapping cancel triggers correct function in service.
+TEST_P(PasswordsTableViewControllerTest, StopPasswordCheck) {
+  if (!GetParam().password_check_enabled)
+    return;
+  AddSavedForm1();
+  RunUntilIdle();
+
+  PasswordsTableViewController* passwords_controller =
+      static_cast<PasswordsTableViewController*>(controller());
+
+  ON_CALL(GetMockPasswordCheckService(), GetState())
+      .WillByDefault(Return(
+          password_manager::BulkLeakCheckServiceInterface::State::kRunning));
+  EXPECT_CALL(GetMockPasswordCheckService(), Cancel);
+
+  [passwords_controller tableView:passwords_controller.tableView
+          didSelectRowAtIndexPath:[NSIndexPath
+                                      indexPathForItem:1
+                                             inSection:GetSectionIndex(
+                                                           PasswordCheck)]];
+}
+
 const std::vector<PasswordCheckFeatureStatus> kPasswordCheckFeatureStatusCases{
-    // Passwords export disabled
+    // Password check disabled
     {FALSE},
-    // Passwords export enabled
+    // Password check enabled
     {TRUE}};
 
 INSTANTIATE_TEST_SUITE_P(PasswordCheckDisabledAndEnabled,

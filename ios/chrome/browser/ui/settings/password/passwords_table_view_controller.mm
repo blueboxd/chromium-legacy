@@ -875,9 +875,19 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
       _checkForProblemsItem.textColor = [UIColor colorNamed:kBlueColor];
       _checkForProblemsItem.accessibilityTraits &=
           ~UIAccessibilityTraitNotEnabled;
+      _checkForProblemsItem.text =
+          l10n_util::GetNSString(IDS_IOS_CHECK_PASSWORDS_NOW_BUTTON);
       break;
     case PasswordCheckStateRunning:
+      _checkForProblemsItem.textColor = [UIColor colorNamed:kBlueColor];
+      _checkForProblemsItem.accessibilityTraits &=
+          ~UIAccessibilityTraitNotEnabled;
+      _checkForProblemsItem.text =
+          l10n_util::GetNSString(IDS_IOS_CANCEL_PASSWORD_CHECK_BUTTON);
+      break;
     case PasswordCheckStateDisabled:
+      _checkForProblemsItem.text =
+          l10n_util::GetNSString(IDS_IOS_CHECK_PASSWORDS_NOW_BUTTON);
       _checkForProblemsItem.textColor = UIColor.cr_secondaryLabelColor;
       _checkForProblemsItem.accessibilityTraits |=
           UIAccessibilityTraitNotEnabled;
@@ -1163,7 +1173,13 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
       }
       break;
     case ItemTypeCheckForProblemsButton:
-      _passwordCheck->StartPasswordCheck();
+      if (_passwordCheck->GetPasswordCheckState() ==
+          PasswordCheckState::kRunning) {
+        _passwordCheck->StopPasswordCheck();
+      } else if (_passwordCheck->GetPasswordCheckState() !=
+                 PasswordCheckState::kNoPasswords) {
+        _passwordCheck->StartPasswordCheck();
+      }
       break;
     default:
       NOTREACHED();

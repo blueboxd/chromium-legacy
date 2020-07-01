@@ -154,6 +154,8 @@ class Controller : public ScriptExecutorDelegate,
   void SetBrowseDomainsWhitelist(std::vector<std::string> domains) override;
 
   bool EnterState(AutofillAssistantState state) override;
+  void SetOverlayBehavior(
+      ConfigureUiStateProto::OverlayBehavior overlay_behavior) override;
   void SetCollectUserDataOptions(CollectUserDataOptions* options) override;
   void WriteUserData(
       base::OnceCallback<void(UserData*, UserData::FieldChange*)>) override;
@@ -224,6 +226,7 @@ class Controller : public ScriptExecutorDelegate,
   bool ShouldPromptActionExpandSheet() const override;
   BasicInteractions* GetBasicInteractions() override;
   const GenericUserInterfaceProto* GetGenericUiProto() const override;
+  bool ShouldShowOverlay() const override;
 
  private:
   friend ControllerTest;
@@ -449,6 +452,10 @@ class Controller : public ScriptExecutorDelegate,
   // declared it invalid - and entered stopped state - or have processed its
   // result - and updated the state and set of available actions.
   bool has_run_first_check_ = false;
+
+  // Whether the overlay should be set according to state or always hidden.
+  ConfigureUiStateProto::OverlayBehavior overlay_behavior_ =
+      ConfigureUiStateProto::DEFAULT;
 
   // Callbacks to call when |has_run_first_check_| becomes true.
   std::vector<base::OnceCallback<void()>> on_has_run_first_check_;

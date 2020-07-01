@@ -122,6 +122,7 @@ class UiControllerAndroid : public ControllerObserver {
   void OnClientSettingsChanged(const ClientSettings& settings) override;
   void OnGenericUserInterfaceChanged(
       const GenericUserInterfaceProto* generic_ui) override;
+  void OnShouldShowOverlayChanged(bool should_show) override;
 
   // Called by AssistantOverlayDelegate:
   void OnUnexpectedTaps();
@@ -224,7 +225,13 @@ class UiControllerAndroid : public ControllerObserver {
   base::android::ScopedJavaLocalRef<jobject> GetFormModel();
   base::android::ScopedJavaLocalRef<jobject> GetGenericUiModel();
 
+  // The UiDelegate has the last say on whether we should show the overlay.
+  // This saves the AutofillAssistantState-determined OverlayState and then
+  // applies it the actual UI only if the UiDelegate's ShouldShowOverlay is
+  // true.
   void SetOverlayState(OverlayState state);
+  // Applies the specified OverlayState to the UI.
+  void ApplyOverlayState(OverlayState state);
   void AllowShowingSoftKeyboard(bool enabled);
   void ShowContentAndExpandBottomSheet();
   void SetSpinPoodle(bool enabled);
@@ -273,6 +280,7 @@ class UiControllerAndroid : public ControllerObserver {
   std::unique_ptr<GenericUiControllerAndroid> generic_ui_controller_;
 
   OverlayState desired_overlay_state_ = OverlayState::FULL;
+  OverlayState overlay_state_ = OverlayState::FULL;
   base::WeakPtrFactory<UiControllerAndroid> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UiControllerAndroid);

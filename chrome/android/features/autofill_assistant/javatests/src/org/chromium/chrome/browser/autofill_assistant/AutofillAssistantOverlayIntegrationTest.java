@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
@@ -29,10 +31,13 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.autofill_assistant.proto.ActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ChipProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.ConfigureUiStateProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.ConfigureUiStateProto.OverlayBehavior;
 import org.chromium.chrome.browser.autofill_assistant.proto.ElementAreaProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ElementAreaProto.Rectangle;
 import org.chromium.chrome.browser.autofill_assistant.proto.FocusElementProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.PromptProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.PromptProto.Choice;
 import org.chromium.chrome.browser.autofill_assistant.proto.SelectorProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto.PresentationProto;
@@ -277,6 +282,85 @@ public class AutofillAssistantOverlayIntegrationTest {
         tapElement(mTestRule, "iframe", "touch_area_4");
         assertThat(
                 checkElementExists(mTestRule.getWebContents(), "iframe", "touch_area_4"), is(true));
+    }
+
+    /**
+     * Tests that changing the OverlayBehavior setting affects the overlay as intended.
+     */
+    @Test
+    @MediumTest
+    public void testOverlayBehaviorSetting() throws Exception {
+        SelectorProto element =
+                (SelectorProto) SelectorProto.newBuilder()
+                        .addFilters(
+                                SelectorProto.Filter.newBuilder().setCssSelector("#touch_area_one"))
+                        .build();
+
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setPrompt(
+                                 PromptProto.newBuilder()
+                                         .setMessage("Overlay present")
+                                         .addChoices(Choice.newBuilder().setChip(
+                                                 ChipProto.newBuilder()
+                                                         .setType(org.chromium.chrome.browser
+                                                                          .autofill_assistant.proto
+                                                                          .ChipType.DONE_ACTION)
+                                                         .setText("Hide"))))
+                         .build());
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setConfigureUiState(ConfigureUiStateProto.newBuilder().setOverlayBehavior(
+                                 OverlayBehavior.HIDDEN))
+                         .build());
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setPrompt(
+                                 PromptProto.newBuilder()
+                                         .setMessage("Overlay hidden")
+                                         .addChoices(Choice.newBuilder().setChip(
+                                                 ChipProto.newBuilder()
+                                                         .setType(org.chromium.chrome.browser
+                                                                          .autofill_assistant.proto
+                                                                          .ChipType.DONE_ACTION)
+                                                         .setText("Default"))))
+                         .build());
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setConfigureUiState(ConfigureUiStateProto.newBuilder().setOverlayBehavior(
+                                 OverlayBehavior.DEFAULT))
+                         .build());
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setPrompt(PromptProto.newBuilder()
+                                            .setMessage("Overlay present")
+                                            .addChoices(PromptProto.Choice.newBuilder()))
+                         .build());
+
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("autofill_assistant_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Done")))
+                        .build(),
+                list);
+        runScript(script);
+
+        waitUntil(() -> checkElementOnScreen(mTestRule, "touch_area_one"));
+        waitUntilViewMatchesCondition(withText("Overlay present"), isCompletelyDisplayed());
+
+        // Tapping the element should not do anything  since the overlay should be present.
+        assertThat(checkElementExists(mTestRule.getWebContents(), "touch_area_one"), is(true));
+        tapElement(mTestRule, "touch_area_one");
+
+        // Go to the next action to hide the overlay.
+        onView(withText("Hide")).perform(click());
+        // Tapping the item should now hide it.
+        assertThat(checkElementExists(mTestRule.getWebContents(), "touch_area_one"), is(true));
+        tapElement(mTestRule, "touch_area_one");
+        waitUntil(() -> !checkElementExists(mTestRule.getWebContents(), "touch_area_one"));
+
+        // Go to the next action to set the overlay to full again.
+        onView(withText("Default")).perform(click());
+        // Tapping on the element should be blocked by the overlay.
+        tapElement(mTestRule, "touch_area_four");
+        assertThat(checkElementExists(mTestRule.getWebContents(), "touch_area_four"), is(true));
     }
 
     private void runScript(AutofillAssistantTestScript script) {

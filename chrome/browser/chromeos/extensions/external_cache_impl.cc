@@ -319,7 +319,7 @@ void ExternalCacheImpl::OnPutExtension(const std::string& id,
   if (local_cache_.is_shutdown() || file_ownership_passed) {
     backend_task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(base::IgnoreResult(&base::DeleteFileRecursively),
+        base::BindOnce(base::IgnoreResult(&base::DeletePathRecursively),
                        file_path));
     return;
   }

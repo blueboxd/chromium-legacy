@@ -62,7 +62,7 @@ component("sql") {
 
   # For vfs_wrapper.cc time-machine exclusions.
   if (is_mac) {
-    libs = [
+    frameworks = [
       "CoreFoundation.framework",
       "CoreServices.framework",
     ]

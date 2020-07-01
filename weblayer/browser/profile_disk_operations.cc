@@ -117,14 +117,14 @@ void MarkProfileAsDeleted(const ProfileInfo& info) {
 void TryNukeProfileFromDisk(const ProfileInfo& info) {
   if (info.name.empty()) {
     // Incognito. Just delete session data.
-    base::DeleteFileRecursively(ComputeBrowserPersisterDataBaseDir(info));
+    base::DeletePathRecursively(ComputeBrowserPersisterDataBaseDir(info));
     return;
   }
 
   // This may fail, but that is ok since the marker is not deleted.
-  base::DeleteFileRecursively(info.data_path);
+  base::DeletePathRecursively(info.data_path);
 #if defined(OS_POSIX)
-  base::DeleteFileRecursively(info.cache_path);
+  base::DeletePathRecursively(info.cache_path);
 #endif
 }
 
@@ -155,10 +155,10 @@ void NukeProfilesMarkedForDeletion() {
       bool delete_success = true;
 #if defined(OS_POSIX)
       delete_success |=
-          base::DeleteFileRecursively(GetCachePathFromDirName(dir_name));
+          base::DeletePathRecursively(GetCachePathFromDirName(dir_name));
 #endif  // OS_POSIX
       delete_success |=
-          base::DeleteFileRecursively(GetDataPathFromDirName(dir_name));
+          base::DeletePathRecursively(GetDataPathFromDirName(dir_name));
       // Only delete the marker if deletion is successful.
       if (delete_success) {
         base::DeleteFile(marker_path, /*recursive=*/false);

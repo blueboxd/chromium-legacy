@@ -93,7 +93,7 @@ class PortSelector {
   PortSelector& operator=(PortSelector&) = delete;
   ~PortSelector() {
     lock_file_.Close();
-    base::DeleteFileRecursively(GetLockFilePath());
+    base::DeletePathRecursively(GetLockFilePath());
   }
 
   int port() const { return port_; }

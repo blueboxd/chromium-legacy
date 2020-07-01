@@ -474,7 +474,7 @@ component("headless_non_renderer") {
 
   if (is_mac) {
     deps += [ ":mac_helpers" ]
-    libs = [
+    frameworks = [
       "AppKit.framework",
       "CoreFoundation.framework",
     ]

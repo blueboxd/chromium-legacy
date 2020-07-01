@@ -40,7 +40,7 @@ OnceCallback<void(const FilePath&)> GetDeleteFileCallback() {
 }
 
 OnceCallback<void(const FilePath&)> GetDeletePathRecursivelyCallback() {
-  return BindOnce(IgnoreResult(&DeleteFileRecursively));
+  return BindOnce(IgnoreResult(&DeletePathRecursively));
 }
 
 int64_t ComputeDirectorySize(const FilePath& root_path) {

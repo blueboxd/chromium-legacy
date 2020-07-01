@@ -176,6 +176,11 @@ void NGPhysicalContainerFragment::AddScrollableOverflowForInlineChild(
        descendants;) {
     const NGFragmentItem* item = descendants.CurrentItem();
     DCHECK(item);
+    if (UNLIKELY(item->IsLayoutObjectDestroyedOrMoved())) {
+      NOTREACHED();
+      descendants.MoveToNextSkippingChildren();
+      continue;
+    }
     if (item->IsText()) {
       PhysicalRect child_scroll_overflow = item->RectInContainerBlock();
       if (height_type == TextHeightType::kEmHeight) {

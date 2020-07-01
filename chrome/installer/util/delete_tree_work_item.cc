@@ -53,7 +53,7 @@ const base::FilePath& DeleteTreeWorkItem::GetBackupPath() {
 }
 
 bool DeleteTreeWorkItem::DeleteRoot() {
-  if (base::DeleteFileRecursively(root_path_))
+  if (base::DeletePathRecursively(root_path_))
     return true;
   LOG(ERROR) << "Failed to delete " << root_path_.value();
   return false;

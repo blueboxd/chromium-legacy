@@ -1796,8 +1796,6 @@ jumbo_component("base") {
       "rand_util_win.cc",
       "system/sys_info_win.cc",
       "time/time_win.cc",
-      "time/time_win_features.cc",
-      "time/time_win_features.h",
     ]
 
     sources -= [

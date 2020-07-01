@@ -83,6 +83,12 @@ class MediaPermission;
 class GpuVideoAcceleratorFactories;
 }  // namespace media
 
+namespace network {
+namespace mojom {
+class URLResponseHead;
+}  // namespace mojom
+}  // namespace network
+
 namespace v8 {
 class Context;
 template <class T>
@@ -314,6 +320,13 @@ class BLINK_PLATFORM_EXPORT Platform {
       const blink::WebSecurityOrigin& cache_storage_origin,
       const WebString& cache_storage_cache_name) {}
 
+  // Converts network::mojom::URLResponseHead to WebURLResponse.
+  // TODO(crbug.com/860403): Remove this once it's moved into Blink.
+  virtual void PopulateURLResponse(const WebURL& url,
+                                   const network::mojom::URLResponseHead& head,
+                                   WebURLResponse* response,
+                                   bool report_security_info,
+                                   int request_id) {}
   // Public Suffix List --------------------------------------------------
 
   // May return null on some platforms.

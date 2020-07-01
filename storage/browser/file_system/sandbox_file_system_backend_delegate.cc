@@ -694,7 +694,7 @@ void SandboxFileSystemBackendDelegate::CopyFileSystem(
 
     // Make sure we're not about to delete our own file system.
     CHECK_NE(base_path.value(), dest_path.value());
-    base::DeleteFileRecursively(dest_path);
+    base::DeletePathRecursively(dest_path);
 
     dest_path = destination->GetBaseDirectoryForOriginAndType(origin, type,
                                                               /*create=*/true);

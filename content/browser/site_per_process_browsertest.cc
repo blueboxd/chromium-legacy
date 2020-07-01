@@ -14536,17 +14536,18 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   NavigateFrameToURL(subframe, page_with_raf_counter);
 
   // Initially page is visible - wait some time and then ensure a good number of
-  // rafs have been generated.
-  auto wait_for_half_a_second = []() {
+  // rafs have been generated. On Mac the number of RAFs that occur in 500ms is
+  // quite low, see https://crbug.com/1098715.
+  auto allow_time_for_rafs = []() {
     base::RunLoop run_loop;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, run_loop.QuitClosure(),
-        base::TimeDelta::FromMilliseconds(500));
+        base::TimeDelta::FromMilliseconds(1000));
     run_loop.Run();
   };
 
   ASSERT_TRUE(ExecuteScript(subframe, "reset_count();"));
-  wait_for_half_a_second();
+  allow_time_for_rafs();
   int32_t default_raf_count = EvalJs(subframe, "raf_count").ExtractInt();
   // On a 60 fps we should expect more than 30 counts - however purely for
   // sanity checking and avoiding unnecessary flakes adding a comparison for a
@@ -14554,14 +14555,14 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   EXPECT_GT(default_raf_count, 5);
   web_contents()->WasOccluded();
   ASSERT_TRUE(ExecuteScript(subframe, "reset_count();"));
-  wait_for_half_a_second();
+  allow_time_for_rafs();
   int32_t raf_count = EvalJs(subframe, "raf_count").ExtractInt();
   // If the frame is throttled, we should expect 0 rAFs.
   EXPECT_EQ(raf_count, 0);
   // Sanity-check: unoccluding will reverse the effect.
   web_contents()->WasShown();
   ASSERT_TRUE(ExecuteScript(subframe, "reset_count();"));
-  wait_for_half_a_second();
+  allow_time_for_rafs();
   ASSERT_TRUE(ExecuteScriptAndExtractInt(
       subframe, "window.domAutomationController.send(raf_count)", &raf_count));
   EXPECT_GT(raf_count, 5);

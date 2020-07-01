@@ -69,7 +69,7 @@ void DeleteFiles(std::vector<base::FilePath> paths) {
   // |file_path| can be a directory, created by the old implementation, so
   // delete it recursively.
   for (const auto& file_path : paths)
-    base::DeleteFileRecursively(file_path);
+    base::DeletePathRecursively(file_path);
 }
 
 }  // namespace

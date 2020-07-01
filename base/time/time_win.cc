@@ -42,12 +42,10 @@
 #include "base/bit_cast.h"
 #include "base/check_op.h"
 #include "base/cpu.h"
-#include "base/feature_list.h"
 #include "base/notreached.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time_override.h"
-#include "base/time/time_win_features.h"
 
 namespace base {
 
@@ -88,13 +86,11 @@ void InitializeClock() {
   g_initial_time = CurrentWallclockMicroseconds();
 }
 
-// Interval to use when on DC power.
-UINT g_battery_power_interval_ms = 4;
 // Track the last value passed to timeBeginPeriod so that we can cancel that
 // call by calling timeEndPeriod with the same value. A value of zero means that
 // the timer frequency is not currently raised.
 UINT g_last_interval_requested_ms = 0;
-// Track if MinTimerIntervalHighResMs() or MinTimerIntervalLowResMs() is active.
+// Track if kMinTimerIntervalHighResMs or kMinTimerIntervalLowResMs is active.
 // For most purposes this could also be named g_is_on_ac_power.
 bool g_high_res_timer_enabled = false;
 // How many times the high resolution timer has been called.
@@ -121,16 +117,12 @@ Lock* GetHighResLock() {
 // Used when a faster timer has been requested (g_high_res_timer_count > 0) and
 // the computer is running on AC power (plugged in) so that it's okay to go to
 // the highest frequency.
-UINT MinTimerIntervalHighResMs() {
-  return 1;
-}
+constexpr UINT kMinTimerIntervalHighResMs = 1;
 
 // Used when a faster timer has been requested (g_high_res_timer_count > 0) and
 // the computer is running on DC power (battery) so that we don't want to raise
 // the timer frequency as much.
-UINT MinTimerIntervalLowResMs() {
-  return g_battery_power_interval_ms;
-}
+constexpr UINT kMinTimerIntervalLowResMs = 8;
 
 // Calculate the desired timer interrupt interval. Note that zero means that the
 // system default should be used.
@@ -138,8 +130,8 @@ UINT GetIntervalMs() {
   if (!g_high_res_timer_count)
     return 0;  // Use the default, typically 15.625
   if (g_high_res_timer_enabled)
-    return MinTimerIntervalHighResMs();
-  return MinTimerIntervalLowResMs();
+    return kMinTimerIntervalHighResMs;
+  return kMinTimerIntervalLowResMs;
 }
 
 // Compare the currently requested timer interrupt interval to the last interval
@@ -246,14 +238,6 @@ FILETIME Time::ToFileTime() const {
   return utc_ft;
 }
 
-void Time::ReadMinTimerIntervalLowResMs() {
-  AutoLock lock(*GetHighResLock());
-  // Read the setting for what interval to use on battery power.
-  g_battery_power_interval_ms =
-      base::FeatureList::IsEnabled(base::kSlowDCTimerInterruptsWin) ? 8 : 4;
-  UpdateTimerIntervalLocked();
-}
-
 // static
 // Enable raising of the system-global timer interrupt frequency to 1 kHz (when
 // enable is true, which happens when on AC power) or some lower frequency when
@@ -296,7 +280,7 @@ bool Time::ActivateHighResolutionTimer(bool activating) {
 // See if the timer interrupt interval has been set to the lowest value.
 bool Time::IsHighResolutionTimerInUse() {
   AutoLock lock(*GetHighResLock());
-  return g_last_interval_requested_ms == MinTimerIntervalHighResMs();
+  return g_last_interval_requested_ms == kMinTimerIntervalHighResMs;
 }
 
 // static

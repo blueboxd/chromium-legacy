@@ -85,7 +85,7 @@ class ScopedTempDirectory {
  public:
   ScopedTempDirectory() {}
   ~ScopedTempDirectory() {
-    if (!directory_.empty() && !base::DeleteFileRecursively(directory_)) {
+    if (!directory_.empty() && !base::DeletePathRecursively(directory_)) {
       LOG(DFATAL) << "Failed deleting temporary directory \""
                   << directory_.value() << "\"";
     }

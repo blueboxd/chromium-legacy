@@ -76,7 +76,7 @@ bool ScopedTempDir::Delete() {
   if (path_.empty())
     return false;
 
-  bool ret = DeleteFileRecursively(path_);
+  bool ret = DeletePathRecursively(path_);
   if (ret) {
     // We only clear the path if deleted the directory.
     path_.clear();

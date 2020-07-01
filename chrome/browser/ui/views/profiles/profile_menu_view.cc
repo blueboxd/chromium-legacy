@@ -392,27 +392,32 @@ void ProfileMenuView::BuildIdentity() {
   ProfileAttributesEntry* profile_attributes =
       GetProfileAttributesEntry(profile);
 
+  base::string16 profile_name;
+  base::Optional<EditButtonParams> edit_button;
 // Profile names are not supported on ChromeOS.
 #if !defined(OS_CHROMEOS)
   size_t num_of_profiles =
       g_browser_process->profile_manager()->GetNumberOfProfiles();
   if (num_of_profiles > 1 || !profile_attributes->IsUsingDefaultName()) {
-    SetHeading(profile_attributes->GetLocalProfileName(),
-               l10n_util::GetStringUTF16(IDS_SETTINGS_EDIT_PERSON),
-               base::BindRepeating(&ProfileMenuView::OnEditProfileButtonClicked,
-                                   base::Unretained(this)));
+    profile_name = profile_attributes->GetLocalProfileName();
+    edit_button = EditButtonParams(
+        l10n_util::GetStringUTF16(IDS_SETTINGS_EDIT_PERSON),
+        base::BindRepeating(&ProfileMenuView::OnEditProfileButtonClicked,
+                            base::Unretained(this)));
   }
 #endif
 
   if (account_info.has_value()) {
-    SetIdentityInfo(
+    SetProfileIdentityInfo(
+        profile_name, edit_button,
         account_info.value().account_image.AsImageSkia(),
         base::UTF8ToUTF16(account_info.value().full_name),
         IsSyncPaused(profile)
             ? l10n_util::GetStringUTF16(IDS_PROFILES_LOCAL_PROFILE_STATE)
             : base::UTF8ToUTF16(account_info.value().email));
   } else {
-    SetIdentityInfo(
+    SetProfileIdentityInfo(
+        profile_name, edit_button,
         profile_attributes->GetAvatarIcon().AsImageSkia(),
         /*title=*/base::string16(),
         l10n_util::GetStringUTF16(IDS_PROFILES_LOCAL_PROFILE_STATE));
@@ -420,8 +425,10 @@ void ProfileMenuView::BuildIdentity() {
 }
 
 void ProfileMenuView::BuildGuestIdentity() {
-  SetIdentityInfo(profiles::GetGuestAvatar(),
-                  l10n_util::GetStringUTF16(IDS_GUEST_PROFILE_NAME));
+  SetProfileIdentityInfo(/*profile_name=*/base::string16(),
+                         /*edit_button=*/base::nullopt,
+                         profiles::GetGuestAvatar(),
+                         l10n_util::GetStringUTF16(IDS_GUEST_PROFILE_NAME));
 }
 
 void ProfileMenuView::BuildAutofillButtons() {

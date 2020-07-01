@@ -4169,11 +4169,6 @@
     "expiry_milestone": 85
   },
   {
-    "name": "slow-dc-timer-interrupts-win",
-    "owners": [ "jessemckenna", "brucedawson" ],
-    "expiry_milestone": 85
-  },
-  {
     "name": "smart-dim-model-v3",
     "owners": [ "amoylan", "jiameng" ],
     "expiry_milestone": 85

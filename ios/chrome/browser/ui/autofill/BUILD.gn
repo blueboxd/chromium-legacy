@@ -152,40 +152,6 @@ source_set("autofill_metrics") {
   deps = [ "//base" ]
 }
 
-source_set("eg_tests") {
-  defines = [ "CHROME_EARL_GREY_1" ]
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "save_card_infobar_egtest.mm",
-    "save_profile_egtest.mm",
-  ]
-  deps = [
-    ":autofill_ui",
-    ":test_support",
-    "//components/autofill/core/browser",
-    "//components/autofill/ios/browser:autofill_test_bundle_data",
-    "//components/autofill/ios/browser:test_support",
-    "//components/leveldb_proto",
-    "//components/strings:components_strings_grit",
-    "//ios/chrome/browser/autofill",
-    "//ios/chrome/browser/metrics:test_support",
-    "//ios/chrome/test:eg_test_support",
-    "//ios/chrome/test/app:test_support",
-    "//ios/chrome/test/earl_grey:test_support",
-    "//ios/testing/earl_grey:earl_grey_support",
-    "//ios/web/public/js_messaging",
-    "//ios/web/public/test/http_server",
-    "//net:test_support",
-    "//services/network:test_support",
-    "//testing/gtest:gtest",
-  ]
-  libs = [
-    "UIKit.framework",
-    "XCTest.framework",
-  ]
-}
-
 source_set("eg2_tests") {
   defines = [ "CHROME_EARL_GREY_2" ]
   configs += [
@@ -214,35 +180,6 @@ source_set("eg2_tests") {
     "//testing/gtest",
   ]
   libs = [ "UIKit.framework" ]
-}
-
-source_set("test_support") {
-  defines = [ "CHROME_EARL_GREY_1" ]
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "autofill_app_interface.h",
-    "autofill_app_interface.mm",
-  ]
-  deps = [
-    "//base",
-    "//base/test:test_support",
-    "//components/autofill/core/browser",
-    "//components/autofill/core/browser:test_support",
-    "//components/autofill/ios/browser",
-    "//components/autofill/ios/browser:test_support",
-    "//components/keyed_service/core",
-    "//components/password_manager/core/browser",
-    "//ios/chrome/browser",
-    "//ios/chrome/browser/autofill",
-    "//ios/chrome/browser/passwords",
-    "//ios/chrome/test/app:test_support",
-    "//ios/public/provider/chrome/browser",
-    "//ios/testing/earl_grey:earl_grey_support",
-    "//ios/web/public:public",
-    "//ios/web/public/js_messaging",
-    "//services/network:test_support",
-  ]
 }
 
 source_set("eg_app_support+eg2") {

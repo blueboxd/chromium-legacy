@@ -326,7 +326,7 @@ class LegacyCacheStorage::SimpleCacheLoader
   }
 
   static void CleanUpDeleteCacheDirInPool(const base::FilePath& cache_path) {
-    base::DeleteFileRecursively(cache_path);
+    base::DeletePathRecursively(cache_path);
   }
 
   void WriteIndex(const CacheStorageIndex& index,
@@ -477,7 +477,7 @@ class LegacyCacheStorage::SimpleCacheLoader
     }
 
     for (const base::FilePath& cache_path : dirs_to_delete)
-      base::DeleteFileRecursively(cache_path);
+      base::DeletePathRecursively(cache_path);
   }
 
   // Runs on cache_task_runner_

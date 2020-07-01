@@ -61,7 +61,7 @@ base::Optional<base::FilePath> Unzip(const base::FilePath& zip) {
     return base::nullopt;
   if (!zip::Unzip(zip, dst_path))
     return base::nullopt;
-  base::DeleteFileRecursively(zip);
+  base::DeletePathRecursively(zip);
   return dst_path;
 }
 
@@ -135,7 +135,7 @@ TEST_F(PaintPreviewUtilsRenderViewHostTest, CaptureSingleFrameAndKeep) {
                   EXPECT_EQ(2U, count);
                   EXPECT_TRUE(has_skp);
                   EXPECT_TRUE(has_proto);
-                  base::DeleteFileRecursively(zip_path.DirName());
+                  base::DeletePathRecursively(zip_path.DirName());
                 }
                 std::move(quit).Run();
               },

@@ -164,14 +164,6 @@ class RenderFrameImplTest : public RenderViewTest {
     return frame->render_view()->GetWebView()->AutoplayFlagsForTest();
   }
 
-#if defined(OS_ANDROID)
-  void ReceiveOverlayRoutingToken(const base::UnguessableToken& token) {
-    overlay_routing_token_ = token;
-  }
-
-  base::Optional<base::UnguessableToken> overlay_routing_token_;
-#endif
-
  private:
   TestRenderFrame* frame_;
   FakeCompositorDependencies compositor_deps_;
@@ -403,55 +395,6 @@ TEST_F(RenderFrameImplTest, NoCrashWhenDeletingFrameDuringFind) {
       0, FrameDeleteIntention::kNotMainFrame);
   frame()->OnMessageReceived(delete_message);
 }
-
-#if defined(OS_ANDROID)
-// Verify that RFI defers token requests if the token hasn't arrived yet.
-TEST_F(RenderFrameImplTest, TestOverlayRoutingTokenSendsLater) {
-  ASSERT_FALSE(overlay_routing_token_.has_value());
-
-  frame()->RequestOverlayRoutingToken(
-      base::BindOnce(&RenderFrameImplTest::ReceiveOverlayRoutingToken,
-                     base::Unretained(this)));
-  ASSERT_FALSE(overlay_routing_token_.has_value());
-
-  // The host should receive a request for it sent to the frame.
-  ASSERT_EQ(1u, frame()->RequestOverlayRoutingTokenCalled());
-
-  // Create a token in the browser.
-  base::UnguessableToken token = base::UnguessableToken::Create();
-  frame()->SetOverlayRoutingToken(token);
-
-  frame()->RequestOverlayRoutingToken(
-      base::BindOnce(&RenderFrameImplTest::ReceiveOverlayRoutingToken,
-                     base::Unretained(this)));
-  ASSERT_TRUE(overlay_routing_token_.has_value());
-  ASSERT_EQ(overlay_routing_token_.value(), token);
-}
-
-// Verify that RFI sends tokens if they're already available.
-TEST_F(RenderFrameImplTest, TestOverlayRoutingTokenSendsNow) {
-  ASSERT_FALSE(overlay_routing_token_.has_value());
-  base::UnguessableToken token = base::UnguessableToken::Create();
-  frame()->SetOverlayRoutingToken(token);
-
-  // The frame should receive the token.
-  frame()->RequestOverlayRoutingToken(
-      base::BindOnce(&RenderFrameImplTest::ReceiveOverlayRoutingToken,
-                     base::Unretained(this)));
-  ASSERT_EQ(1u, frame()->RequestOverlayRoutingTokenCalled());
-  ASSERT_TRUE(overlay_routing_token_.has_value());
-  ASSERT_EQ(overlay_routing_token_.value(), token);
-
-  // Since the token already arrived, a new request for it shouldn't be sent.
-  overlay_routing_token_ = base::nullopt;
-  frame()->RequestOverlayRoutingToken(
-      base::BindOnce(&RenderFrameImplTest::ReceiveOverlayRoutingToken,
-                     base::Unretained(this)));
-  ASSERT_TRUE(overlay_routing_token_.has_value());
-  ASSERT_EQ(overlay_routing_token_.value(), token);
-  ASSERT_EQ(1u, frame()->RequestOverlayRoutingTokenCalled());
-}
-#endif
 
 TEST_F(RenderFrameImplTest, AutoplayFlags) {
   // Add autoplay flags to the page.

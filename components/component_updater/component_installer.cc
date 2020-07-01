@@ -117,7 +117,7 @@ Result ComponentInstaller::InstallHelper(
       local_install_path.Append(installer_policy_->GetRelativeInstallDir())
           .AppendASCII(manifest_version.GetString());
   if (base::PathExists(local_install_path)) {
-    if (!base::DeleteFileRecursively(local_install_path))
+    if (!base::DeletePathRecursively(local_install_path))
       return Result(InstallError::CLEAN_INSTALL_DIR_FAILED);
   }
 
@@ -126,7 +126,7 @@ Result ComponentInstaller::InstallHelper(
 
   if (!base::Move(unpack_path, local_install_path)) {
     PLOG(ERROR) << "Move failed.";
-    base::DeleteFileRecursively(local_install_path);
+    base::DeletePathRecursively(local_install_path);
     return Result(InstallError::MOVE_FILES_ERROR);
   }
 
@@ -172,7 +172,7 @@ void ComponentInstaller::Install(
   base::FilePath install_path;
   const Result result =
       InstallHelper(unpack_path, &manifest, &version, &install_path);
-  base::DeleteFileRecursively(unpack_path);
+  base::DeletePathRecursively(unpack_path);
   if (result.error) {
     main_task_runner_->PostTask(FROM_HERE,
                                 base::BindOnce(std::move(callback), result));
@@ -351,7 +351,7 @@ void ComponentInstaller::StartRegistration(
   // Remove older versions of the component. None should be in use during
   // browser startup.
   for (const auto& older_path : older_paths)
-    base::DeleteFileRecursively(older_path);
+    base::DeletePathRecursively(older_path);
 }
 
 void ComponentInstaller::UninstallOnTaskRunner() {
@@ -377,7 +377,7 @@ void ComponentInstaller::UninstallOnTaskRunner() {
     if (!version.IsValid())
       continue;
 
-    if (!base::DeleteFileRecursively(path))
+    if (!base::DeletePathRecursively(path))
       DLOG(ERROR) << "Couldn't delete " << path.value();
   }
 

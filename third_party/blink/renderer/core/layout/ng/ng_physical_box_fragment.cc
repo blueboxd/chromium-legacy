@@ -204,6 +204,10 @@ PhysicalRect NGPhysicalBoxFragment::OverflowClipRect(
 PhysicalRect NGPhysicalBoxFragment::ScrollableOverflow(
     TextHeightType height_type) const {
   DCHECK(GetLayoutObject());
+  if (UNLIKELY(IsLayoutObjectDestroyedOrMoved())) {
+    NOTREACHED();
+    return PhysicalRect();
+  }
   const LayoutObject* layout_object = GetLayoutObject();
   if (layout_object->IsBox()) {
     if (HasOverflowClip())
@@ -217,7 +221,7 @@ PhysicalRect NGPhysicalBoxFragment::ScrollableOverflow(
       overflow = PhysicalRect({}, Size());
     WritingMode container_writing_mode = Style().GetWritingMode();
     TextDirection container_direction = Style().Direction();
-    for (const auto& child_fragment : Children()) {
+    for (const auto& child_fragment : PostLayoutChildren()) {
       PhysicalRect child_overflow =
           child_fragment->ScrollableOverflowForPropagation(*this, height_type);
       if (child_fragment->Style() != Style()) {

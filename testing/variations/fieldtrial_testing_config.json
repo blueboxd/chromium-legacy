@@ -3155,6 +3155,27 @@
             ]
         }
     ],
+    "HeapMojoUseContextObserver": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "android_weblayer",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "HeapMojoUseContextObserver"
+                    ]
+                }
+            ]
+        }
+    ],
     "HeapProfiling": [
         {
             "platforms": [
@@ -6428,21 +6449,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "Show109ObsoleteInfobar"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SlowDCTimerInterruptsWin": [
-        {
-            "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20200424",
-                    "enable_features": [
-                        "SlowDCTimerInterruptsWin"
                     ]
                 }
             ]

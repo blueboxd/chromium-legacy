@@ -25,9 +25,10 @@ enum class NGOutlineType;
 
 class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
  public:
-  // Same as |base::span<const NGLink>|, except that each |NGLink| has the
-  // latest generation of post-layout. See
-  // |NGPhysicalFragment::UpdatedFragment()| for more details.
+  // Same as |base::span<const NGLink>|, except that:
+  // * Each |NGLink| has the latest generation of post-layout. See
+  //   |NGPhysicalFragment::UpdatedFragment()| for more details.
+  // * The iterator skips fragments for destroyed or moved |LayoutObject|.
   class PostLayoutChildLinkList {
    public:
     PostLayoutChildLinkList(wtf_size_t count, const NGLink* buffer)
@@ -44,13 +45,17 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
       using pointer = value_type*;
       using reference = value_type&;
 
-      ConstIterator(const NGLink* current) : current_(current) {}
+      ConstIterator(const NGLink* current, wtf_size_t size)
+          : current_(current), end_(current + size) {
+        SkipDestroyedOrMoved();
+      }
 
       const NGLink& operator*() const { return *PostLayoutOrCurrent(); }
       const NGLink* operator->() const { return PostLayoutOrCurrent(); }
 
       ConstIterator& operator++() {
         ++current_;
+        SkipDestroyedOrMoved();
         return *this;
       }
       bool operator==(const ConstIterator& other) const {
@@ -69,13 +74,20 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
         return &post_layout_;
       }
 
+      void SkipDestroyedOrMoved() {
+        while (current_ != end_ &&
+               current_->fragment->IsLayoutObjectDestroyedOrMoved())
+          ++current_;
+      }
+
       const NGLink* current_;
+      const NGLink* end_;
       mutable NGLink post_layout_;
     };
     using const_iterator = ConstIterator;
 
-    const_iterator begin() const { return const_iterator(buffer_); }
-    const_iterator end() const { return const_iterator(buffer_ + count_); }
+    const_iterator begin() const { return const_iterator(buffer_, count_); }
+    const_iterator end() const { return const_iterator(buffer_ + count_, 0); }
 
     const NGLink operator[](wtf_size_t idx) const {
       CHECK_LT(idx, count_);

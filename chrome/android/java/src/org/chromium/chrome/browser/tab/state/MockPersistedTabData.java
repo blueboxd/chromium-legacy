@@ -71,10 +71,16 @@ public class MockPersistedTabData extends PersistedTabData {
     }
 
     @Override
-    public void deserialize(byte[] data) {
+    public boolean deserialize(byte[] data) {
         mField = ByteBuffer.wrap(data).getInt();
+        return true;
     }
 
     @Override
     public void destroy() {}
+
+    @Override
+    public String getUmaTag() {
+        return "MockCritical";
+    }
 }

@@ -630,7 +630,6 @@ void ChromeMainDelegate::PostFieldTrialInitialization() {
 
 #if defined(OS_WIN)
   SetUpExtendedCrashReporting(is_browser_process);
-  base::Time::ReadMinTimerIntervalLowResMs();
   base::sequence_manager::internal::ThreadControllerPowerMonitor::
       InitializeOnMainThread();
 #endif

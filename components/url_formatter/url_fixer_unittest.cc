@@ -639,7 +639,7 @@ TEST(URLFixerTest, FixupRelativeFile) {
 
   // done with the subdir
   EXPECT_TRUE(base::DeleteFile(full_path, false));
-  EXPECT_TRUE(base::DeleteFileRecursively(new_dir));
+  EXPECT_TRUE(base::DeletePathRecursively(new_dir));
 
   // Test that an obvious HTTP URL isn't accidentally treated as an absolute
   // file path (on account of system-specific craziness).

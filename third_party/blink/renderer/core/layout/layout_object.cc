@@ -833,7 +833,6 @@ LayoutBox* LayoutObject::EnclosingBox() const {
 }
 
 LayoutBlockFlow* LayoutObject::RootInlineFormattingContext() const {
-  DCHECK(IsInline());
   for (LayoutObject* parent = Parent(); parent; parent = parent->Parent()) {
     if (auto* block_flow = DynamicTo<LayoutBlockFlow>(parent)) {
       // Skip |LayoutFlowThread| because it is skipped when finding the first
@@ -847,7 +846,6 @@ LayoutBlockFlow* LayoutObject::RootInlineFormattingContext() const {
 }
 
 LayoutBlockFlow* LayoutObject::FragmentItemsContainer() const {
-  DCHECK(IsInline());
   for (LayoutObject* parent = Parent(); parent; parent = parent->Parent()) {
     if (auto* block_flow = DynamicTo<LayoutBlockFlow>(parent))
       return block_flow;

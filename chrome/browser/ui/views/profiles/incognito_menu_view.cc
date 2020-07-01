@@ -44,7 +44,8 @@ void IncognitoMenuView::BuildMenu() {
       BrowserList::GetOffTheRecordBrowsersActiveForProfile(
           browser()->profile());
 
-  SetIdentityInfo(
+  SetProfileIdentityInfo(
+      /*profile_name=*/base::string16(), /*edit_button=*/base::nullopt,
       gfx::ImageSkia(),
       l10n_util::GetStringUTF16(IDS_INCOGNITO_PROFILE_MENU_TITLE),
       incognito_window_count > 1

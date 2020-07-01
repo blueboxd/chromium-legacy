@@ -643,7 +643,7 @@ HRESULT OSUserManager::RemoveUser(const wchar_t* username,
     LOGFN(ERROR) << "NetUserDel nsts=" << nsts;
 
   // Force delete the user's profile directory.
-  if (*profiledir && !base::DeleteFileRecursively(base::FilePath(profiledir)))
+  if (*profiledir && !base::DeletePathRecursively(base::FilePath(profiledir)))
     LOGFN(ERROR) << "base::DeleteFile";
 
   return S_OK;

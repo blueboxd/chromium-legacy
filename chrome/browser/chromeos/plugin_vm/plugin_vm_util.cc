@@ -185,7 +185,7 @@ void RemoveDriveDownloadDirectoryIfExists() {
 
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&base::DeleteFileRecursively,
+      base::BindOnce(&base::DeletePathRecursively,
                      base::FilePath(kPluginVmDriveDownloadDirectory)),
       base::BindOnce(std::move(log_file_deletion_if_failed)));
 }

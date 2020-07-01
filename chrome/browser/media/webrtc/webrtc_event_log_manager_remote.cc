@@ -606,7 +606,7 @@ void WebRtcRemoteEventLogManager::RemovePendingLogsForNotEnabledBrowserContext(
   DCHECK(!BrowserContextEnabled(browser_context_id));
   const base::FilePath remote_bound_logs_dir =
       GetRemoteBoundWebRtcEventLogsDir(browser_context_dir);
-  if (!base::DeleteFileRecursively(remote_bound_logs_dir)) {
+  if (!base::DeletePathRecursively(remote_bound_logs_dir)) {
     LOG(ERROR) << "Failed to delete  `" << remote_bound_logs_dir << ".";
   }
 }

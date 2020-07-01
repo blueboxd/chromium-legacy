@@ -1149,9 +1149,6 @@ extern const char kSiteIsolationOptOutDescription[];
 extern const char kSiteIsolationOptOutChoiceDefault[];
 extern const char kSiteIsolationOptOutChoiceOptOut[];
 
-extern const char kSlowDCTimerInterruptsWinName[];
-extern const char kSlowDCTimerInterruptsWinDescription[];
-
 extern const char kSmoothScrollingName[];
 extern const char kSmoothScrollingDescription[];
 

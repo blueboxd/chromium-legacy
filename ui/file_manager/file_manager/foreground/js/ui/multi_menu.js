@@ -293,6 +293,16 @@ cr.define('cr.ui', () => {
       switch (e.type) {
         case 'activate':
         case 'mouseover':
+          // Hide any other sub menu being shown.
+          const showing = /** @type {cr.ui.MenuItem} */ (
+              this.querySelector('cr-menu-item[sub-menu-shown]'));
+          if (showing && showing !== item) {
+            showing.removeAttribute('sub-menu-shown');
+            const shownSubMenu = this.getSubMenuFromItem(showing);
+            if (shownSubMenu) {
+              shownSubMenu.hide();
+            }
+          }
           item.setAttribute('sub-menu-shown', 'shown');
           this.positionSubMenu_(item, subMenu);
           subMenu.show();

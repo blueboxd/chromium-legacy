@@ -116,7 +116,7 @@ void DeleteExistingLog(const base::FilePath model_dir) {
       CrOSActionRecorder::kActionHistoryDir)
     return;
 
-  base::DeleteFileRecursively(model_dir);
+  base::DeletePathRecursively(model_dir);
 }
 
 void CopyToDownloadDir(const base::FilePath model_dir,

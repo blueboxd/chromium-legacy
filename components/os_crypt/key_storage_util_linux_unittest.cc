@@ -20,7 +20,7 @@ class KeyStorageUtilLinuxPreferenceTest : public testing::Test {
   }
 
   void TearDown() override {
-    ASSERT_TRUE(base::DeleteFileRecursively(fake_user_data_dir_));
+    ASSERT_TRUE(base::DeletePathRecursively(fake_user_data_dir_));
   }
 
  protected:

@@ -685,11 +685,6 @@ class BASE_EXPORT Time : public time_internal::TimeBase<Time> {
   // Enable or disable Windows high resolution timer.
   static void EnableHighResolutionTimer(bool enable);
 
-  // Read the minimum timer interval from the feature list. This should be
-  // called once after the feature list is initialized. This is needed for
-  // an experiment - see https://crbug.com/927165
-  static void ReadMinTimerIntervalLowResMs();
-
   // Activates or deactivates the high resolution timer based on the |activate|
   // flag.  If the HighResolutionTimer is not Enabled (see
   // EnableHighResolutionTimer), this function will return false.  Otherwise

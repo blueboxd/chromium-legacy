@@ -16,6 +16,7 @@
 #include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/disk_data_allocator_test_utils.h"
+#include "third_party/blink/renderer/platform/disk_data_metadata.h"
 
 using ThreadPoolExecutionMode =
     base::test::TaskEnvironment::ThreadPoolExecutionMode;
@@ -30,11 +31,11 @@ class DiskDataAllocatorTest : public ::testing::Test {
       : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME,
                           thread_pool_execution_mode) {}
 
-  static std::vector<std::unique_ptr<DiskDataAllocator::Metadata>>
+  static std::vector<std::unique_ptr<DiskDataMetadata>>
   Allocate(InMemoryDataAllocator* allocator, size_t size, size_t count) {
     std::string random_data = base::RandBytesAsString(size);
 
-    std::vector<std::unique_ptr<DiskDataAllocator::Metadata>> all_metadata;
+    std::vector<std::unique_ptr<DiskDataMetadata>> all_metadata;
     for (size_t i = 0; i < count; i++) {
       auto metadata = allocator->Write(random_data.c_str(), random_data.size());
       EXPECT_EQ(metadata->start_offset(), static_cast<int64_t>(i * size));
@@ -73,8 +74,7 @@ TEST_F(DiskDataAllocatorTest, ReadWrite) {
 TEST_F(DiskDataAllocatorTest, ReadWriteDiscardMultiple) {
   InMemoryDataAllocator allocator;
 
-  std::vector<
-      std::pair<std::unique_ptr<DiskDataAllocator::Metadata>, std::string>>
+  std::vector<std::pair<std::unique_ptr<DiskDataMetadata>, std::string>>
       data_written;
 
   for (int i = 0; i < 10; i++) {
@@ -123,7 +123,7 @@ TEST_F(DiskDataAllocatorTest, CanReuseFreedChunk) {
   InMemoryDataAllocator allocator;
 
   constexpr size_t kSize = 1 << 10;
-  std::vector<std::unique_ptr<DiskDataAllocator::Metadata>> all_metadata;
+  std::vector<std::unique_ptr<DiskDataMetadata>> all_metadata;
 
   for (int i = 0; i < 10; i++) {
     std::string random_data = base::RandBytesAsString(kSize);
@@ -148,7 +148,7 @@ TEST_F(DiskDataAllocatorTest, ExactThenWorstFit) {
 
   int count = 10;
   size_t size_increment = 1000;
-  std::vector<std::unique_ptr<DiskDataAllocator::Metadata>> all_metadata;
+  std::vector<std::unique_ptr<DiskDataMetadata>> all_metadata;
 
   size_t size = 10000;
   // Allocate a bunch of random-sized

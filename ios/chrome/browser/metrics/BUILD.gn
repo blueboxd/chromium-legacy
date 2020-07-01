@@ -224,62 +224,6 @@ source_set("unit_tests_internal") {
   ]
 }
 
-source_set("eg_tests") {
-  defines = [ "CHROME_EARL_GREY_1" ]
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "demographics_egtest.mm",
-    "tab_usage_recorder_egtest.mm",
-    "ukm_egtest.mm",
-  ]
-  deps = [
-    ":metrics_internal",
-    ":tab_usage_recorder_metrics",
-    ":test_support",
-    "//base",
-    "//base/test:test_support",
-    "//components/browser_sync",
-    "//components/metrics",
-    "//components/metrics:demographic_metrics_provider",
-    "//components/metrics_services_manager",
-    "//components/strings",
-    "//components/sync/base",
-    "//components/ukm",
-    "//components/ukm:test_support",
-    "//components/unified_consent:unified_consent",
-    "//ios/chrome/app/strings:ios_strings_grit",
-    "//ios/chrome/browser",
-    "//ios/chrome/browser/metrics",
-    "//ios/chrome/browser/signin",
-    "//ios/chrome/browser/sync",
-    "//ios/chrome/browser/ui/authentication",
-    "//ios/chrome/browser/ui/authentication:eg_test_support",
-    "//ios/chrome/browser/ui/authentication/cells",
-    "//ios/chrome/browser/ui/popup_menu:constants",
-    "//ios/chrome/browser/ui/settings",
-    "//ios/chrome/browser/ui/settings/google_services",
-    "//ios/chrome/browser/ui/toolbar/buttons",
-    "//ios/chrome/browser/ui/toolbar/public",
-    "//ios/chrome/browser/ui/util",
-    "//ios/chrome/test:eg_test_support",
-    "//ios/chrome/test/app:test_support",
-    "//ios/chrome/test/earl_grey:test_support",
-    "//ios/public/provider/chrome/browser/signin:fake_chrome_identity",
-    "//ios/public/provider/chrome/browser/signin:test_support",
-    "//ios/testing/earl_grey:earl_grey_support",
-    "//ios/web:earl_grey_test_support",
-    "//ios/web/public/test",
-    "//ios/web/public/test:element_selector",
-    "//ios/web/public/test/http_server",
-    "//net:test_support",
-    "//third_party/metrics_proto",
-    "//ui/base",
-    "//url",
-  ]
-  libs = [ "XCTest.framework" ]
-}
-
 source_set("eg2_tests") {
   defines = [ "CHROME_EARL_GREY_2" ]
   configs += [
@@ -311,45 +255,6 @@ source_set("eg2_tests") {
     "//ui/base:base",
   ]
   libs = [ "UIKit.framework" ]
-}
-
-source_set("test_support") {
-  defines = [ "CHROME_EARL_GREY_1" ]
-  testonly = true
-  sources = [
-    "metrics_app_interface.h",
-    "metrics_app_interface.mm",
-  ]
-  deps = [
-    ":metrics",
-    "//base",
-    "//base/test:test_support",
-    "//components/metrics",
-    "//components/metrics:demographics_test_support",
-    "//components/metrics_services_manager",
-    "//components/network_time",
-    "//components/prefs",
-    "//components/ukm",
-    "//components/ukm:ukm_test_helper",
-    "//ios/chrome/app:app_internal",
-    "//ios/chrome/app/strings",
-    "//ios/chrome/browser",
-    "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/metrics:metrics_internal",
-    "//ios/chrome/browser/tabs",
-    "//ios/chrome/browser/ui/main",
-    "//ios/chrome/browser/ui/popup_menu:constants",
-    "//ios/chrome/browser/ui/util",
-    "//ios/chrome/browser/web_state_list",
-    "//ios/chrome/test:eg_test_support",
-    "//ios/chrome/test/app:test_support",
-    "//ios/chrome/test/earl_grey:test_support",
-    "//ios/testing/earl_grey:earl_grey_support",
-    "//net:test_support",
-    "//third_party/metrics_proto",
-    "//ui/base",
-  ]
-  configs += [ "//build/config/compiler:enable_arc" ]
 }
 
 import("//components/metrics/generate_expired_histograms_array.gni")

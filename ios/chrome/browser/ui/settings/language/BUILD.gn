@@ -93,23 +93,6 @@ source_set("unit_tests") {
   ]
 }
 
-source_set("eg_test_support") {
-  defines = [ "CHROME_EARL_GREY_1" ]
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "language_settings_app_interface.h",
-    "language_settings_app_interface.mm",
-  ]
-  deps = [
-    "//components/language/core/browser",
-    "//components/translate/core/browser",
-    "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/translate",
-    "//ios/chrome/test/app:test_support",
-  ]
-}
-
 source_set("eg_app_support+eg2") {
   defines = [ "CHROME_EARL_GREY_2" ]
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -165,21 +148,4 @@ source_set("eg2_tests") {
     "//ui/strings:ui_strings_grit",
   ]
   libs = [ "UIKit.framework" ]
-}
-
-source_set("eg_tests") {
-  defines = [ "CHROME_EARL_GREY_1" ]
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [ "language_settings_egtest.mm" ]
-  deps = [
-    ":eg_test_support",
-    ":language_ui_constants",
-    "//components/translate/core/browser:translate_pref_names",
-    "//ios/chrome/app/strings:ios_strings_grit",
-    "//ios/chrome/test/app:test_support",
-    "//ios/chrome/test/earl_grey:test_support",
-    "//ios/testing/earl_grey:earl_grey_support",
-    "//ui/strings:ui_strings_grit",
-  ]
 }

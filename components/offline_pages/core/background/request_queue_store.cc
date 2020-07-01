@@ -542,7 +542,7 @@ bool ResetSync(sql::Database* db, const base::FilePath& db_file_path) {
     success = db->Raze();
     db->Close();
   }
-  return base::DeleteFileRecursively(db_file_path) && success;
+  return base::DeletePathRecursively(db_file_path) && success;
 }
 
 bool SetAutoFetchNotificationStateSync(

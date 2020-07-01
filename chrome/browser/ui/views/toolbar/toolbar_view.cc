@@ -54,6 +54,7 @@
 #include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/home_button.h"
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
+#include "chrome/browser/ui/views/toolbar/sharesheet_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_account_icon_container_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
@@ -233,6 +234,13 @@ void ToolbarView::Init() {
     media_button = std::make_unique<MediaToolbarButtonView>(browser_);
   }
 
+  std::unique_ptr<SharesheetButton> sharesheet_button;
+#if defined(OS_CHROMEOS)
+  if (base::FeatureList::IsEnabled(features::kSharesheet)) {
+    sharesheet_button = std::make_unique<SharesheetButton>(browser_);
+  }
+#endif
+
   std::unique_ptr<ToolbarAccountIconContainerView>
       toolbar_account_icon_container;
   bool show_avatar_toolbar_button = true;
@@ -269,6 +277,9 @@ void ToolbarView::Init() {
 
   if (media_button)
     media_button_ = AddChildView(std::move(media_button));
+
+  if (sharesheet_button)
+    sharesheet_button_ = AddChildView(std::move(sharesheet_button));
 
   if (toolbar_account_icon_container) {
     toolbar_account_icon_container_ =
@@ -926,6 +937,9 @@ void ToolbarView::LoadImages() {
 
   if (media_button_)
     media_button_->UpdateIcon();
+
+  if (sharesheet_button_)
+    sharesheet_button_->UpdateIcon();
 
   if (avatar_)
     avatar_->UpdateIcon();

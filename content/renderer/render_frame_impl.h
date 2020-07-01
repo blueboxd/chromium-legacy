@@ -1110,8 +1110,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void GetInterface(const std::string& interface_name,
                     mojo::ScopedMessagePipeHandle interface_pipe) override;
 
-  // Send |callback| our AndroidOverlay routing token when it arrives.  We may
-  // call |callback| before returning.
+  // Send |callback| our AndroidOverlay routing token.
   void RequestOverlayRoutingToken(media::RoutingTokenCallback callback);
 
   void ShowDeferredContextMenu(const UntrustworthyContextMenuParams& params);

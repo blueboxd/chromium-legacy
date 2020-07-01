@@ -61,18 +61,6 @@ source_set("main") {
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
-source_set("eg_tests") {
-  defines = [ "CHROME_EARL_GREY_1" ]
-  testonly = true
-  sources = [ "showcase_egtest.mm" ]
-  deps = [
-    "//ios/showcase/test",
-    "//ios/testing/earl_grey:earl_grey_support",
-    "//ios/third_party/earl_grey:earl_grey+link",
-  ]
-  configs += [ "//build/config/compiler:enable_arc" ]
-}
-
 source_set("eg2_tests") {
   defines = [ "CHROME_EARL_GREY_2" ]
   configs += [

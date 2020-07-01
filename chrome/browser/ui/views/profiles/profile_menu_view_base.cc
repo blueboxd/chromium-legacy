@@ -229,11 +229,11 @@ class AvatarImageView : public views::ImageView {
   AvatarImageView(gfx::ImageSkia avatar_image,
                   const ProfileMenuViewBase* root_view,
                   const gfx::VectorIcon& icon,
-                  ui::NativeTheme::ColorId color_id)
+                  ui::NativeTheme::ColorId icon_color_id)
       : avatar_image_(avatar_image),
         root_view_(root_view),
         icon_(icon),
-        color_id_(color_id) {
+        icon_color_id_(icon_color_id) {
     SetBorder(views::CreateEmptyBorder(0, 0, kDefaultVerticalMargin, 0));
   }
 
@@ -244,7 +244,7 @@ class AvatarImageView : public views::ImageView {
     // the account image hasn't been fetched yet, if there is no image (e.g. for
     // incognito), or in tests.
     constexpr int kBadgePadding = 1;
-    const SkColor icon_color = GetNativeTheme()->GetSystemColor(color_id_);
+    const SkColor icon_color = GetNativeTheme()->GetSystemColor(icon_color_id_);
     gfx::ImageSkia sized_avatar_image =
         avatar_image_.isNull()
             ? gfx::CreateVectorIcon(icon_, kIdentityImageSize, icon_color)
@@ -269,7 +269,7 @@ class AvatarImageView : public views::ImageView {
   gfx::ImageSkia avatar_image_;
   const ProfileMenuViewBase* root_view_;
   const gfx::VectorIcon& icon_;
-  ui::NativeTheme::ColorId color_id_;
+  ui::NativeTheme::ColorId icon_color_id_;
 };
 
 class SyncButton : public HoverButton {
@@ -349,6 +349,16 @@ ProfileMenuViewBase* ProfileMenuViewBase::GetBubbleForTesting() {
   return g_profile_bubble_;
 }
 
+ProfileMenuViewBase::EditButtonParams::EditButtonParams(
+    const base::string16& edit_tooltip_text,
+    base::RepeatingClosure edit_action)
+    : edit_tooltip_text(edit_tooltip_text), edit_action(edit_action) {}
+
+ProfileMenuViewBase::EditButtonParams::~EditButtonParams() = default;
+
+ProfileMenuViewBase::EditButtonParams::EditButtonParams(
+    const EditButtonParams&) = default;
+
 ProfileMenuViewBase::ProfileMenuViewBase(views::Button* anchor_button,
                                          Browser* browser)
     : BubbleDialogDelegateView(anchor_button, views::BubbleBorder::TOP_RIGHT),
@@ -379,36 +389,39 @@ gfx::ImageSkia ProfileMenuViewBase::GetSyncIcon() const {
   return gfx::ImageSkia();
 }
 
-void ProfileMenuViewBase::SetHeading(const base::string16& heading,
-                                     const base::string16& tooltip_text,
-                                     base::RepeatingClosure action) {
-  constexpr int kInsidePadding = 8;
-  const SkColor kBackgroundColor = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_HighlightedMenuItemBackgroundColor);
-
-  heading_container_->RemoveAllChildViews(/*delete_children=*/true);
-  heading_container_->SetLayoutManager(std::make_unique<views::FillLayout>());
-  heading_container_->SetBackground(
-      views::CreateSolidBackground(kBackgroundColor));
-
-  views::LabelButton* button = heading_container_->AddChildView(
-      std::make_unique<HoverButton>(this, heading));
-  button->SetEnabledTextColors(views::style::GetColor(
-      *this, views::style::CONTEXT_LABEL, views::style::STYLE_SECONDARY));
-  button->SetTooltipText(tooltip_text);
-  button->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-  button->SetBorder(views::CreateEmptyBorder(gfx::Insets(kInsidePadding)));
-  RegisterClickAction(button, std::move(action));
-}
-
-void ProfileMenuViewBase::SetIdentityInfo(const gfx::ImageSkia& image,
-                                          const base::string16& title,
-                                          const base::string16& subtitle,
-                                          const gfx::VectorIcon& icon,
-                                          ui::NativeTheme::ColorId color_id) {
+void ProfileMenuViewBase::SetProfileIdentityInfo(
+    const base::string16& profile_name,
+    base::Optional<EditButtonParams> edit_button_params,
+    const gfx::ImageSkia& image,
+    const base::string16& title,
+    const base::string16& subtitle,
+    const gfx::VectorIcon& icon,
+    ui::NativeTheme::ColorId icon_color_id) {
   constexpr int kTopMargin = kMenuEdgeMargin;
   constexpr int kBottomMargin = kDefaultVerticalMargin;
   constexpr int kHorizontalMargin = kMenuEdgeMargin;
+
+  if (!profile_name.empty()) {
+    DCHECK(edit_button_params.has_value());
+    constexpr int kHeadingInsidePadding = kDefaultVerticalMargin;
+    const SkColor kBackgroundColor = GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_HighlightedMenuItemBackgroundColor);
+
+    heading_container_->RemoveAllChildViews(/*delete_children=*/true);
+    heading_container_->SetLayoutManager(std::make_unique<views::FillLayout>());
+    heading_container_->SetBackground(
+        views::CreateSolidBackground(kBackgroundColor));
+
+    views::LabelButton* button = heading_container_->AddChildView(
+        std::make_unique<HoverButton>(this, profile_name));
+    button->SetEnabledTextColors(views::style::GetColor(
+        *this, views::style::CONTEXT_LABEL, views::style::STYLE_SECONDARY));
+    button->SetTooltipText(edit_button_params->edit_tooltip_text);
+    button->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+    button->SetBorder(
+        views::CreateEmptyBorder(gfx::Insets(kHeadingInsidePadding)));
+    RegisterClickAction(button, std::move(edit_button_params->edit_action));
+  }
 
   identity_info_container_->RemoveAllChildViews(/*delete_children=*/true);
   identity_info_container_->SetLayoutManager(
@@ -418,7 +431,7 @@ void ProfileMenuViewBase::SetIdentityInfo(const gfx::ImageSkia& image,
                                   kHorizontalMargin)));
 
   identity_info_container_->AddChildView(
-      std::make_unique<AvatarImageView>(image, this, icon, color_id));
+      std::make_unique<AvatarImageView>(image, this, icon, icon_color_id));
 
   if (!title.empty()) {
     identity_info_container_->AddChildView(std::make_unique<views::Label>(

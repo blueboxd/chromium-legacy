@@ -204,7 +204,6 @@ source_set("constants") {
 }
 
 source_set("test_support") {
-  defines = [ "CHROME_EARL_GREY_1" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
@@ -323,104 +322,6 @@ source_set("unit_tests") {
     "//ui/base",
     "//url",
   ]
-}
-
-source_set("eg_test_support") {
-  defines = [ "CHROME_EARL_GREY_1" ]
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "block_popups_app_interface.h",
-    "block_popups_app_interface.mm",
-    "settings_app_interface.h",
-    "settings_app_interface.mm",
-  ]
-  deps = [
-    "//base",
-    "//components/browsing_data/core",
-    "//components/content_settings/core/browser",
-    "//components/content_settings/core/common",
-    "//components/metrics",
-    "//components/prefs",
-    "//components/search_engines",
-    "//ios/chrome/app:app_internal",
-    "//ios/chrome/browser",
-    "//ios/chrome/browser:pref_names",
-    "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/content_settings",
-    "//ios/chrome/browser/content_settings",
-    "//ios/chrome/browser/search_engines",
-    "//ios/chrome/test/app:test_support",
-    "//third_party/breakpad:client",
-  ]
-}
-
-source_set("eg_tests") {
-  defines = [ "CHROME_EARL_GREY_1" ]
-  configs += [
-    "//build/config/compiler:enable_arc",
-    "//build/config/ios:xctest_config",
-  ]
-  testonly = true
-  sources = [
-    "block_popups_egtest.mm",
-    "search_engine_settings_egtest.mm",
-    "settings_accessibility_egtest.mm",
-    "settings_egtest.mm",
-    "signin_settings_egtest.mm",
-  ]
-
-  deps = [
-    ":constants",
-    ":eg_test_support",
-    "//base",
-    "//base/test:test_support",
-    "//build:branding_buildflags",
-    "//components/autofill/core/common",
-    "//components/browser_sync",
-    "//components/browsing_data/core",
-    "//components/content_settings/core/browser",
-    "//components/keyed_service/core",
-    "//components/metrics",
-    "//components/password_manager/core/browser",
-    "//components/password_manager/core/common",
-    "//components/prefs",
-    "//components/search_engines",
-    "//components/strings",
-    "//ios/chrome/app:app_internal",
-    "//ios/chrome/app/strings",
-    "//ios/chrome/app/theme",
-    "//ios/chrome/browser",
-    "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/browsing_data:feature_flags",
-    "//ios/chrome/browser/content_settings",
-    "//ios/chrome/browser/ntp_snippets",
-    "//ios/chrome/browser/passwords:passwords",
-    "//ios/chrome/browser/search_engines",
-    "//ios/chrome/browser/signin",
-    "//ios/chrome/browser/sync",
-    "//ios/chrome/browser/ui:feature_flags",
-    "//ios/chrome/browser/ui/authentication:eg_test_support",
-    "//ios/chrome/browser/ui/authentication/cells",
-    "//ios/chrome/browser/ui/authentication/signin:constants",
-    "//ios/chrome/browser/ui/settings:test_support",
-    "//ios/chrome/browser/ui/table_view/cells",
-    "//ios/chrome/test:eg_test_support",
-    "//ios/chrome/test:test_support",
-    "//ios/chrome/test/app:test_support",
-    "//ios/chrome/test/earl_grey:test_support",
-    "//ios/public/provider/chrome/browser/signin:fake_chrome_identity",
-    "//ios/public/provider/chrome/browser/signin:test_support",
-    "//ios/testing/earl_grey:earl_grey_support",
-    "//ios/third_party/earl_grey:earl_grey+link",
-    "//ios/web:earl_grey_test_support",
-    "//ios/web/public/test/http_server",
-    "//net",
-    "//net:test_support",
-    "//ui/base",
-    "//url",
-  ]
-  libs = [ "UIKit.framework" ]
 }
 
 source_set("eg_app_support+eg2") {

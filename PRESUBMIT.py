@@ -285,9 +285,7 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^base/callback.h',  # Intentional.
   '^chrome/browser/',
   '^chrome/chrome_elf/',
-  '^chrome/common/',
   '^chrome/installer/',
-  '^chrome/renderer/',
   '^chrome/services/',
   '^chrome/test/',
   '^chrome/tools/',

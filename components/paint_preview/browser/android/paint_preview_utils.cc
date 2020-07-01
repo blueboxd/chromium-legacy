@@ -46,7 +46,7 @@ struct CaptureMetrics {
 void CleanupOnFailure(const base::FilePath& root_dir,
                       FinishedCallback finished) {
   VLOG(1) << kPaintPreviewTestTag << "Capture Failed\n";
-  base::DeleteFileRecursively(root_dir);
+  base::DeletePathRecursively(root_dir);
   std::move(finished).Run(base::nullopt);
 }
 
@@ -61,7 +61,7 @@ void CleanupAndLogResult(const base::FilePath& zip_path,
           << " ms";
 
   if (!keep_zip)
-    base::DeleteFileRecursively(zip_path.DirName());
+    base::DeletePathRecursively(zip_path.DirName());
 
   base::UmaHistogramMemoryKB(
       "Browser.PaintPreview.CaptureExperiment.CompressedOnDiskSize",

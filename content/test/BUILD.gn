@@ -2307,7 +2307,7 @@ test("content_unittests") {
       "//ui/accelerated_widget_mac",
       "//ui/base/mojom",
     ]
-    libs = [
+    frameworks = [
       "Carbon.framework",
       "IOSurface.framework",
     ]

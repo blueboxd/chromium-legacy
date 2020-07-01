@@ -2806,8 +2806,12 @@ void LayoutBlockFlow::SetShouldDoFullPaintInvalidationForFirstLine() {
         // Mark all descendants of the first line if first-line style.
         for (NGInlineCursor descendants = first_line.CursorForDescendants();
              descendants; descendants.MoveToNext()) {
-          LayoutObject* layout_object =
-              descendants.Current()->GetMutableLayoutObject();
+          const NGFragmentItem* item = descendants.Current().Item();
+          if (UNLIKELY(item->IsLayoutObjectDestroyedOrMoved())) {
+            descendants.MoveToNextSkippingChildren();
+            continue;
+          }
+          LayoutObject* layout_object = item->GetMutableLayoutObject();
           DCHECK(layout_object);
           layout_object->StyleRef().ClearCachedPseudoElementStyles();
           layout_object->SetShouldDoFullPaintInvalidation();

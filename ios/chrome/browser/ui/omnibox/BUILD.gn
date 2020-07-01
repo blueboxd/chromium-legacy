@@ -187,30 +187,6 @@ source_set("omnibox_internal") {
   ]
 }
 
-source_set("test_support") {
-  defines = [ "CHROME_EARL_GREY_1" ]
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "omnibox_app_interface.h",
-    "omnibox_app_interface.mm",
-  ]
-  deps = [
-    "//base",
-    "//components/google/core/common",
-    "//components/variations:variations",
-    "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/ui/omnibox/popup:popup_ui",
-    "//ios/chrome/test/app:test_support",
-    "//ios/testing/earl_grey:earl_grey_support",
-    "//ios/third_party/earl_grey:earl_grey+link",
-    "//ios/web/public",
-    "//ios/web/public/navigation",
-    "//net:test_support",
-    "//ui/base",
-    "//ui/base:test_support",
-  ]
-}
 source_set("app_support+eg2") {
   defines = [ "CHROME_EARL_GREY_2" ]
   configs += [
@@ -267,37 +243,6 @@ source_set("eg2_tests") {
     "//ui/base",
   ]
   libs = [ "UIKit.framework" ]
-}
-
-source_set("eg_tests") {
-  defines = [ "CHROME_EARL_GREY_1" ]
-  testonly = true
-  sources = [ "omnibox_egtest.mm" ]
-  deps = [
-    ":omnibox",
-    ":omnibox_internal",
-    ":test_support",
-    "//base",
-    "//base/test:test_support",
-    "//components/google/core/common",
-    "//components/omnibox/browser",
-    "//components/variations",
-    "//ios/chrome/app/strings:ios_strings_grit",
-    "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/ui:feature_flags",
-    "//ios/chrome/browser/ui/content_suggestions:content_suggestions_constant",
-    "//ios/chrome/browser/ui/omnibox/popup:popup_ui",
-    "//ios/chrome/test/app:test_support",
-    "//ios/chrome/test/earl_grey:test_support",
-    "//ios/testing:hardware_keyboarr_support",
-    "//ios/testing/earl_grey:earl_grey_support",
-    "//ios/third_party/earl_grey:earl_grey+link",
-    "//net:test_support",
-    "//testing/gmock",
-    "//ui/base",
-  ]
-  libs = [ "XCTest.framework" ]
-  configs += [ "//build/config/compiler:enable_arc" ]
 }
 
 source_set("unit_tests") {

@@ -126,7 +126,7 @@ void UrlFetcherDownloader::OnNetworkFetcherComplete(int net_error,
   if (error && !download_dir_.empty()) {
     base::ThreadPool::PostTask(
         FROM_HERE, kTaskTraits,
-        base::BindOnce(IgnoreResult(&base::DeleteFileRecursively),
+        base::BindOnce(IgnoreResult(&base::DeletePathRecursively),
                        download_dir_));
   }
 

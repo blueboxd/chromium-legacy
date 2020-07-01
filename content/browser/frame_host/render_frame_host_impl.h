@@ -1943,8 +1943,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
                          WindowOpenDisposition disposition,
                          const gfx::Rect& initial_rect,
                          bool user_gesture) override;
-  void RequestOverlayRoutingToken(
-      RequestOverlayRoutingTokenCallback callback) override;
   void UpdateState(const PageState& state) override;
 #if defined(OS_ANDROID)
   void UpdateUserGestureCarryoverInfo() override;

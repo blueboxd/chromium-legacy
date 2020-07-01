@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/editing/commands/delete_selection_command.h"
-#include "third_party/blink/renderer/core/editing/commands/typing_command.h"
 #include "third_party/blink/renderer/core/editing/commands/undo_stack.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
@@ -69,31 +68,6 @@ namespace blink {
 
 namespace {
 
-void DispatchCompositionUpdateEvent(LocalFrame& frame, const String& text) {
-  Element* target = frame.GetDocument()->FocusedElement();
-  if (!target)
-    return;
-
-  auto* event = MakeGarbageCollected<CompositionEvent>(
-      event_type_names::kCompositionupdate, frame.DomWindow(), text);
-  target->DispatchEvent(*event);
-}
-
-void DispatchCompositionEndEvent(LocalFrame& frame, const String& text) {
-  // Verify that the caller is using an EventQueueScope to suppress the input
-  // event from being fired until the proper time (e.g. after applying an IME
-  // selection update, if necessary).
-  DCHECK(ScopedEventQueue::Instance()->ShouldQueueEvents());
-
-  Element* target = frame.GetDocument()->FocusedElement();
-  if (!target)
-    return;
-
-  auto* event = MakeGarbageCollected<CompositionEvent>(
-      event_type_names::kCompositionend, frame.DomWindow(), text);
-  EventDispatcher::DispatchScopedEvent(*target, *event);
-}
-
 bool NeedsIncrementalInsertion(const LocalFrame& frame,
                                const String& new_text) {
   // No need to apply incremental insertion if it doesn't support formated text.
@@ -106,94 +80,6 @@ bool NeedsIncrementalInsertion(const LocalFrame& frame,
     return false;
 
   return true;
-}
-
-void DispatchBeforeInputFromComposition(EventTarget* target,
-                                        InputEvent::InputType input_type,
-                                        const String& data) {
-  if (!target)
-    return;
-  // TODO(editing-dev): Pass appropriate |ranges| after it's defined on spec.
-  // http://w3c.github.io/editing/input-events.html#dom-inputevent-inputtype
-  InputEvent* before_input_event = InputEvent::CreateBeforeInput(
-      input_type, data, InputEvent::kNotCancelable,
-      InputEvent::EventIsComposing::kIsComposing, nullptr);
-  target->DispatchEvent(*before_input_event);
-}
-
-// Used to insert/replace text during composition update and confirm
-// composition.
-// Procedure:
-//   1. Fire 'beforeinput' event for (TODO(editing-dev): deleted composed text)
-//      and inserted text
-//   2. Fire 'compositionupdate' event
-//   3. Fire TextEvent and modify DOM
-//   4. Fire 'input' event; dispatched by Editor::AppliedEditing()
-void InsertTextDuringCompositionWithEvents(
-    LocalFrame& frame,
-    const String& text,
-    TypingCommand::Options options,
-    TypingCommand::TextCompositionType composition_type) {
-  // Verify that the caller is using an EventQueueScope to suppress the input
-  // event from being fired until the proper time (e.g. after applying an IME
-  // selection update, if necessary).
-  DCHECK(ScopedEventQueue::Instance()->ShouldQueueEvents());
-  DCHECK(composition_type ==
-             TypingCommand::TextCompositionType::kTextCompositionUpdate ||
-         composition_type ==
-             TypingCommand::TextCompositionType::kTextCompositionConfirm ||
-         composition_type ==
-             TypingCommand::TextCompositionType::kTextCompositionCancel)
-      << "compositionType should be TextCompositionUpdate or "
-         "TextCompositionConfirm  or TextCompositionCancel, but got "
-      << static_cast<int>(composition_type);
-  if (!frame.GetDocument())
-    return;
-
-  Element* target = frame.GetDocument()->FocusedElement();
-  if (!target)
-    return;
-
-  DispatchBeforeInputFromComposition(
-      target, InputEvent::InputType::kInsertCompositionText, text);
-
-  // 'beforeinput' event handler may destroy document.
-  if (!frame.GetDocument())
-    return;
-
-  DispatchCompositionUpdateEvent(frame, text);
-  // 'compositionupdate' event handler may destroy document.
-  if (!frame.GetDocument())
-    return;
-
-  // TODO(editing-dev): The use of UpdateStyleAndLayout
-  // needs to be audited. see http://crbug.com/590369 for more details.
-  frame.GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kInput);
-
-  const bool is_incremental_insertion = NeedsIncrementalInsertion(frame, text);
-
-  switch (composition_type) {
-    case TypingCommand::TextCompositionType::kTextCompositionUpdate:
-    case TypingCommand::TextCompositionType::kTextCompositionConfirm:
-      // Calling |TypingCommand::insertText()| with empty text will result in an
-      // incorrect ending selection. We need to delete selection first.
-      // https://crbug.com/693481
-      if (text.IsEmpty())
-        TypingCommand::DeleteSelection(*frame.GetDocument(), 0);
-      frame.GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
-      TypingCommand::InsertText(*frame.GetDocument(), text, options,
-                                composition_type, is_incremental_insertion);
-      break;
-    case TypingCommand::TextCompositionType::kTextCompositionCancel:
-      // TODO(editing-dev): Use TypingCommand::insertText after TextEvent was
-      // removed. (Removed from spec since 2012)
-      // See text_event.idl.
-      frame.GetEventHandler().HandleTextInputEvent(text, nullptr,
-                                                   kTextEventInputComposition);
-      break;
-    default:
-      NOTREACHED();
-  }
 }
 
 AtomicString GetInputModeAttribute(Element* element) {
@@ -451,6 +337,122 @@ inline Editor& InputMethodController::GetEditor() const {
 
 LocalFrame& InputMethodController::GetFrame() const {
   return *frame_;
+}
+
+void InputMethodController::DispatchCompositionUpdateEvent(LocalFrame& frame,
+                                                           const String& text) {
+  Element* target = frame.GetDocument()->FocusedElement();
+  if (!target)
+    return;
+
+  auto* event = MakeGarbageCollected<CompositionEvent>(
+      event_type_names::kCompositionupdate, frame.DomWindow(), text);
+  target->DispatchEvent(*event);
+}
+
+void InputMethodController::DispatchCompositionEndEvent(LocalFrame& frame,
+                                                        const String& text) {
+  // Verify that the caller is using an EventQueueScope to suppress the input
+  // event from being fired until the proper time (e.g. after applying an IME
+  // selection update, if necessary).
+  DCHECK(ScopedEventQueue::Instance()->ShouldQueueEvents());
+
+  Element* target = frame.GetDocument()->FocusedElement();
+  if (!target)
+    return;
+
+  auto* event = MakeGarbageCollected<CompositionEvent>(
+      event_type_names::kCompositionend, frame.DomWindow(), text);
+  EventDispatcher::DispatchScopedEvent(*target, *event);
+}
+
+void InputMethodController::DispatchBeforeInputFromComposition(
+    EventTarget* target,
+    InputEvent::InputType input_type,
+    const String& data) {
+  if (!target)
+    return;
+  // TODO(editing-dev): Pass appropriate |ranges| after it's defined on spec.
+  // http://w3c.github.io/editing/input-events.html#dom-inputevent-inputtype
+  InputEvent* before_input_event = InputEvent::CreateBeforeInput(
+      input_type, data, InputEvent::kNotCancelable,
+      InputEvent::EventIsComposing::kIsComposing, nullptr);
+  target->DispatchEvent(*before_input_event);
+}
+
+// Used to insert/replace text during composition update and confirm
+// composition.
+// Procedure:
+//   1. Fire 'beforeinput' event for (TODO(editing-dev): deleted composed text)
+//      and inserted text
+//   2. Fire 'compositionupdate' event
+//   3. Fire TextEvent and modify DOM
+//   4. Fire 'input' event; dispatched by Editor::AppliedEditing()
+void InputMethodController::InsertTextDuringCompositionWithEvents(
+    LocalFrame& frame,
+    const String& text,
+    TypingCommand::Options options,
+    TypingCommand::TextCompositionType composition_type) {
+  // Verify that the caller is using an EventQueueScope to suppress the input
+  // event from being fired until the proper time (e.g. after applying an IME
+  // selection update, if necessary).
+  DCHECK(ScopedEventQueue::Instance()->ShouldQueueEvents());
+  DCHECK(composition_type ==
+             TypingCommand::TextCompositionType::kTextCompositionUpdate ||
+         composition_type ==
+             TypingCommand::TextCompositionType::kTextCompositionConfirm ||
+         composition_type ==
+             TypingCommand::TextCompositionType::kTextCompositionCancel)
+      << "compositionType should be TextCompositionUpdate or "
+         "TextCompositionConfirm  or TextCompositionCancel, but got "
+      << static_cast<int>(composition_type);
+  if (!frame.GetDocument())
+    return;
+
+  Element* target = frame.GetDocument()->FocusedElement();
+  if (!target)
+    return;
+
+  DispatchBeforeInputFromComposition(
+      target, InputEvent::InputType::kInsertCompositionText, text);
+
+  // 'beforeinput' event handler may destroy document.
+  if (!IsAvailable())
+    return;
+
+  DispatchCompositionUpdateEvent(frame, text);
+  // 'compositionupdate' event handler may destroy document.
+  if (!IsAvailable())
+    return;
+
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
+  // needs to be audited. see http://crbug.com/590369 for more details.
+  frame.GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kInput);
+
+  const bool is_incremental_insertion = NeedsIncrementalInsertion(frame, text);
+
+  switch (composition_type) {
+    case TypingCommand::TextCompositionType::kTextCompositionUpdate:
+    case TypingCommand::TextCompositionType::kTextCompositionConfirm:
+      // Calling |TypingCommand::insertText()| with empty text will result in an
+      // incorrect ending selection. We need to delete selection first.
+      // https://crbug.com/693481
+      if (text.IsEmpty())
+        TypingCommand::DeleteSelection(*frame.GetDocument(), 0);
+      frame.GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
+      TypingCommand::InsertText(*frame.GetDocument(), text, options,
+                                composition_type, is_incremental_insertion);
+      break;
+    case TypingCommand::TextCompositionType::kTextCompositionCancel:
+      // TODO(editing-dev): Use TypingCommand::insertText after TextEvent was
+      // removed. (Removed from spec since 2012)
+      // See text_event.idl.
+      frame.GetEventHandler().HandleTextInputEvent(text, nullptr,
+                                                   kTextEventInputComposition);
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 void InputMethodController::Clear() {
@@ -790,6 +792,8 @@ bool InputMethodController::ReplaceCompositionAndMoveCaret(
 bool InputMethodController::InsertText(const String& text) {
   if (DispatchBeforeInputInsertText(GetDocument().FocusedElement(), text) !=
       DispatchEventResult::kNotCanceled)
+    return false;
+  if (!IsAvailable())
     return false;
   GetEditor().InsertText(text, nullptr);
   return true;

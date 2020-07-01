@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.infobar.InfoBarContainer.InfoBarContainerObse
 import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.infobars.InfoBar;
+import org.chromium.components.infobars.InfoBarAnimationListener;
 import org.chromium.components.infobars.InfoBarUiItem;
 
 /**
@@ -22,9 +23,8 @@ import org.chromium.components.infobars.InfoBarUiItem;
  * becomes front-most.  If that infobar is closed or another infobar comes to the front the window
  * will be dismissed.
  */
-public class IPHInfoBarSupport implements OnDismissListener,
-                                          InfoBarContainer.InfoBarAnimationListener,
-                                          InfoBarContainerObserver {
+public class IPHInfoBarSupport
+        implements OnDismissListener, InfoBarAnimationListener, InfoBarContainerObserver {
     /** Helper class to hold all relevant display parameters for an in-product help window. */
     public static class TrackerParameters {
         public TrackerParameters(
@@ -96,7 +96,7 @@ public class IPHInfoBarSupport implements OnDismissListener,
         mDelegate = delegate;
     }
 
-    // InfoBarContainer.InfoBarAnimationListener implementation.
+    // InfoBarAnimationListener implementation.
     @Override
     public void notifyAnimationFinished(int animationType) {}
 
@@ -156,6 +156,4 @@ public class IPHInfoBarSupport implements OnDismissListener,
         mDelegate.onPopupDismissed(mCurrentState);
         mCurrentState = null;
     }
-
-
 }

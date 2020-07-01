@@ -138,9 +138,9 @@ void ComponentUnpacker::EndPatching(UnpackerError error, int extended_error) {
 
 void ComponentUnpacker::EndUnpacking() {
   if (!unpack_diff_path_.empty())
-    base::DeleteFileRecursively(unpack_diff_path_);
+    base::DeletePathRecursively(unpack_diff_path_);
   if (error_ != UnpackerError::kNone && !unpack_path_.empty())
-    base::DeleteFileRecursively(unpack_path_);
+    base::DeletePathRecursively(unpack_path_);
 
   Result result;
   result.error = error_;

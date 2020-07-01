@@ -277,7 +277,7 @@ TEST_F(NativeMediaFileUtilTest, CopySourceFiltering) {
     for (size_t i = 0; i < base::size(kFilteringTestCases); ++i) {
       // Always start with an empty destination directory.
       // Copying to a non-empty destination directory is an invalid operation.
-      ASSERT_TRUE(base::DeleteFileRecursively(dest_path));
+      ASSERT_TRUE(base::DeletePathRecursively(dest_path));
       ASSERT_TRUE(base::CreateDirectory(dest_path));
 
       FileSystemURL root_url = CreateURL(FPL(""));
@@ -310,7 +310,7 @@ TEST_F(NativeMediaFileUtilTest, CopyDestFiltering) {
     if (loop_count == 1) {
       // Reset the test directory between the two loops to remove old
       // directories and create new ones that should pre-exist.
-      ASSERT_TRUE(base::DeleteFileRecursively(root_path()));
+      ASSERT_TRUE(base::DeletePathRecursively(root_path()));
       ASSERT_TRUE(base::CreateDirectory(root_path()));
       PopulateDirectoryWithTestCases(root_path(), kFilteringTestCases,
                                      base::size(kFilteringTestCases));
@@ -379,7 +379,7 @@ TEST_F(NativeMediaFileUtilTest, MoveSourceFiltering) {
     for (size_t i = 0; i < base::size(kFilteringTestCases); ++i) {
       // Always start with an empty destination directory.
       // Moving to a non-empty destination directory is an invalid operation.
-      ASSERT_TRUE(base::DeleteFileRecursively(dest_path));
+      ASSERT_TRUE(base::DeletePathRecursively(dest_path));
       ASSERT_TRUE(base::CreateDirectory(dest_path));
 
       FileSystemURL root_url = CreateURL(FPL(""));
@@ -410,7 +410,7 @@ TEST_F(NativeMediaFileUtilTest, MoveDestFiltering) {
     if (loop_count == 1) {
       // Reset the test directory between the two loops to remove old
       // directories and create new ones that should pre-exist.
-      ASSERT_TRUE(base::DeleteFileRecursively(root_path()));
+      ASSERT_TRUE(base::DeletePathRecursively(root_path()));
       ASSERT_TRUE(base::CreateDirectory(root_path()));
       PopulateDirectoryWithTestCases(root_path(), kFilteringTestCases,
                                      base::size(kFilteringTestCases));

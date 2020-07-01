@@ -29,4 +29,9 @@ public interface PersistedTabDataStorage {
      * @param tabDataId unique identifier representing the type of {@link PersistedTabData}
      */
     void delete(int tabId, String tabDataId);
+
+    /**
+     * @return unique tag appended to the end of metrics for Uma
+     */
+    String getUmaTag();
 }

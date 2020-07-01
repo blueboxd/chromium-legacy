@@ -142,7 +142,7 @@ void DeleteAllRenamedUserDirectories(const base::FilePath& dir,
                                   pattern);
   for (base::FilePath to_delete = enumerator.Next(); !to_delete.empty();
        to_delete = enumerator.Next()) {
-    base::DeleteFileRecursively(to_delete);
+    base::DeletePathRecursively(to_delete);
   }
 }
 

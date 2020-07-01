@@ -371,7 +371,7 @@ bool DeleteFile(const FilePath& path) {
   return DoDeleteFile(path, /*recursive=*/false);
 }
 
-bool DeleteFileRecursively(const FilePath& path) {
+bool DeletePathRecursively(const FilePath& path) {
   return DoDeleteFile(path, /*recursive=*/true);
 }
 
@@ -1205,7 +1205,7 @@ bool MoveUnsafe(const FilePath& from_path, const FilePath& to_path) {
   if (!CopyDirectory(from_path, to_path, true))
     return false;
 
-  DeleteFileRecursively(from_path);
+  DeletePathRecursively(from_path);
   return true;
 }
 

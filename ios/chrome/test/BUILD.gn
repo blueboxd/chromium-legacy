@@ -69,21 +69,6 @@ source_set("test_support") {
   ]
 }
 
-source_set("eg_test_support") {
-  defines = [ "CHROME_EARL_GREY_1" ]
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "scoped_eg_synchronization_disabler.h",
-    "scoped_eg_synchronization_disabler.mm",
-  ]
-  deps = [
-    "//base",
-    "//ios/testing/earl_grey:earl_grey_support",
-    "//ios/third_party/earl_grey:earl_grey+link",
-  ]
-}
-
 source_set("eg_test_support+eg2") {
   defines = [ "CHROME_EARL_GREY_2" ]
   configs += [

@@ -152,11 +152,11 @@ class ContentAutofillDriverBrowserTest : public InProcessBrowserTest,
     run_loop.Run();
   }
 
-  void OnGetElementFormAndFieldData(const base::Closure& done_callback,
+  void OnGetElementFormAndFieldData(base::RepeatingClosure done_callback,
                                     size_t expected_form_size,
                                     const autofill::FormData& form_data,
                                     const autofill::FormFieldData& form_field) {
-    done_callback.Run();
+    std::move(done_callback).Run();
     if (expected_form_size) {
       ASSERT_EQ(form_data.fields.size(), expected_form_size);
       ASSERT_FALSE(form_field.label.empty());

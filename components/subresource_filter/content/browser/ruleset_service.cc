@@ -128,7 +128,7 @@ void IndexedRulesetLocator::DeleteObsoleteRulesets(
   for (base::FilePath format_dir = format_dirs.Next(); !format_dir.empty();
        format_dir = format_dirs.Next()) {
     if (format_dir != current_format_dir)
-      base::DeleteFileRecursively(format_dir);
+      base::DeletePathRecursively(format_dir);
   }
 
   base::FilePath most_recent_version_dir =
@@ -147,7 +147,7 @@ void IndexedRulesetLocator::DeleteObsoleteRulesets(
       continue;
     if (version_dir == most_recent_version_dir)
       continue;
-    base::DeleteFileRecursively(version_dir);
+    base::DeletePathRecursively(version_dir);
   }
 }
 
@@ -373,14 +373,14 @@ RulesetService::IndexAndWriteRulesetResult RulesetService::WriteRuleset(
   // Due to the same-version check in IndexAndStoreAndPublishRulesetIfNeeded, we
   // would not normally find a pre-existing copy at this point unless the
   // previous write was interrupted.
-  if (!base::DeleteFileRecursively(indexed_ruleset_version_dir))
+  if (!base::DeletePathRecursively(indexed_ruleset_version_dir))
     return IndexAndWriteRulesetResult::FAILED_DELETE_PREEXISTING;
 
   base::FilePath scratch_dir_with_new_indexed_ruleset = scratch_dir.Take();
   base::File::Error error;
   if (!(*g_replace_file_func)(scratch_dir_with_new_indexed_ruleset,
                               indexed_ruleset_version_dir, &error)) {
-    base::DeleteFileRecursively(scratch_dir_with_new_indexed_ruleset);
+    base::DeletePathRecursively(scratch_dir_with_new_indexed_ruleset);
     // While enumerators of base::File::Error all have negative values, the
     // histogram records the absolute values.
     UMA_HISTOGRAM_ENUMERATION("SubresourceFilter.WriteRuleset.ReplaceFileError",

@@ -136,44 +136,6 @@ source_set("unit_tests") {
   ]
 }
 
-source_set("eg_test_support") {
-  defines = [ "CHROME_EARL_GREY_1" ]
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "signin_earl_grey_ui.h",
-    "signin_earl_grey_ui.mm",
-    "signin_earlgrey_utils.h",
-    "signin_earlgrey_utils.mm",
-    "signin_earlgrey_utils_app_interface.h",
-    "signin_earlgrey_utils_app_interface.mm",
-  ]
-  deps = [
-    ":authentication",
-    "unified_consent",
-    "//base/test:test_support",
-    "//components/bookmarks/browser",
-    "//components/signin/public/identity_manager",
-    "//ios/chrome/app/strings",
-    "//ios/chrome/browser/bookmarks",
-    "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/signin",
-    "//ios/chrome/browser/ui/authentication/cells",
-    "//ios/chrome/browser/ui/authentication/unified_consent:unified_consent_ui",
-    "//ios/chrome/browser/ui/authentication/unified_consent/identity_chooser:identity_chooser_ui",
-    "//ios/chrome/browser/ui/util",
-    "//ios/chrome/test:eg_test_support",
-    "//ios/chrome/test/app:test_support",
-    "//ios/chrome/test/earl_grey:test_support",
-    "//ios/public/provider/chrome/browser/signin",
-    "//ios/public/provider/chrome/browser/signin:fake_chrome_identity",
-    "//ios/public/provider/chrome/browser/signin:test_support",
-    "//ios/testing/earl_grey:earl_grey_support",
-    "//ios/third_party/earl_grey:earl_grey+link",
-    "//ui/base",
-  ]
-}
-
 source_set("eg_app_support+eg2") {
   defines = [ "CHROME_EARL_GREY_2" ]
   configs += [

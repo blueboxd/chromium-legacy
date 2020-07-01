@@ -18,6 +18,8 @@
 
 namespace blink {
 
+class DiskDataMetadata;
+
 // Stores data onto a single file.
 //
 // The file is provided after construction. As a consequence, the allocator
@@ -32,23 +34,6 @@ namespace blink {
 //   from any thread.
 class PLATFORM_EXPORT DiskDataAllocator : public mojom::blink::DiskAllocator {
  public:
-  class Metadata {
-   public:
-    int64_t start_offset() const { return start_offset_; }
-    size_t size() const { return size_; }
-    Metadata(Metadata&& other) = delete;
-
-   private:
-    Metadata(int64_t start_offset, size_t size)
-        : start_offset_(start_offset), size_(size) {}
-    Metadata(const Metadata& other) = default;
-    Metadata& operator=(const Metadata& other) = default;
-
-    int64_t start_offset_;
-    size_t size_;
-
-    friend class DiskDataAllocator;
-  };
 
   // Must be called on the main thread.
   void ProvideTemporaryFile(::base::File file) override;
@@ -59,7 +44,7 @@ class PLATFORM_EXPORT DiskDataAllocator : public mojom::blink::DiskAllocator {
 
   // Returns |nullptr| in case of error.
   // Note that this performs a blocking disk write.
-  std::unique_ptr<Metadata> Write(const void* data, size_t size);
+  std::unique_ptr<DiskDataMetadata> Write(const void* data, size_t size);
 
   // Reads data. A read failure is fatal.
   // Must be called from the main thread.
@@ -67,10 +52,10 @@ class PLATFORM_EXPORT DiskDataAllocator : public mojom::blink::DiskAllocator {
   //
   // |data| must point to an area large enough to fit a |metadata.size|-ed
   // array. Note that this performs a blocking disk read.
-  void Read(const Metadata& metadata, void* data);
+  void Read(const DiskDataMetadata& metadata, void* data);
 
   // Discards existing data pointed at by |metadata|.
-  void Discard(std::unique_ptr<Metadata> metadata);
+  void Discard(std::unique_ptr<DiskDataMetadata> metadata);
 
   ~DiskDataAllocator() override;
   static DiskDataAllocator& Instance();
@@ -92,8 +77,9 @@ class PLATFORM_EXPORT DiskDataAllocator : public mojom::blink::DiskAllocator {
   void set_may_write_for_testing(bool may_write) LOCKS_EXCLUDED(mutex_);
 
  private:
-  Metadata FindChunk(size_t size) EXCLUSIVE_LOCKS_REQUIRED(mutex_);
-  void ReleaseChunk(const Metadata& metadata) EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+  DiskDataMetadata FindChunk(size_t size) EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+  void ReleaseChunk(const DiskDataMetadata& metadata)
+      EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
   // Virtual for testing.
   virtual int DoWrite(int64_t offset, const char* data, int size)

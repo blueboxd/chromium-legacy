@@ -11,6 +11,7 @@ include_rules = [
     "+third_party/blink/renderer/platform/crypto.h",
     "+third_party/blink/renderer/platform/disk_data_allocator.h",
     "+third_party/blink/renderer/platform/disk_data_allocator_test_utils.h",
+    "+third_party/blink/renderer/platform/disk_data_metadata.h",
     "+third_party/blink/renderer/platform/heap",
     "+third_party/blink/renderer/platform/instrumentation/instance_counters.h",
     "+third_party/blink/renderer/platform/instrumentation",

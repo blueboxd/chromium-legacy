@@ -59,21 +59,3 @@ source_set("eg2_tests") {
   ]
   libs = [ "UIKit.framework" ]
 }
-
-source_set("eg_tests") {
-  testonly = true
-  defines = [ "CHROME_EARL_GREY_1" ]
-  sources = [
-    "sc_infobar_banner_coordinator_egtest.mm",
-    "sc_infobar_banner_no_modal_coordinator_egtest.mm",
-  ]
-  deps = [
-    ":constants",
-    "//ios/chrome/browser/ui/infobars/banners:public",
-    "//ios/chrome/browser/ui/infobars/modals:public",
-    "//ios/showcase/infobars",
-    "//ios/showcase/test",
-    "//ios/testing/earl_grey:earl_grey_support",
-  ]
-  configs += [ "//build/config/compiler:enable_arc" ]
-}

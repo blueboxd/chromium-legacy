@@ -703,6 +703,7 @@ chrome_java_resources = [
   "java/res/drawable/ic_event_round.xml",
   "java/res/drawable/ic_file_download_24dp.xml",
   "java/res/drawable/ic_file_download_36dp.xml",
+  "java/res/drawable/ic_file_download_scheduled_24dp.xml",
   "java/res/drawable/ic_fingerprint_grey500_36dp.xml",
   "java/res/drawable/ic_full_screen_exit_white_24dp.xml",
   "java/res/drawable/ic_full_screen_white_24dp.xml",

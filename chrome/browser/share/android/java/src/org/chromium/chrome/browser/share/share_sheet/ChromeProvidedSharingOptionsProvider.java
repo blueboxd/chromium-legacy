@@ -271,7 +271,7 @@ class ChromeProvidedSharingOptionsProvider {
                             "Sharing.SharingHubAndroid.TimeToShare",
                             System.currentTimeMillis() - mShareStartTime);
                     mBottomSheetController.hideContent(mBottomSheetContent, true);
-                    QrCodeCoordinator qrCodeCoordinator = new QrCodeCoordinator(mActivity);
+                    QrCodeCoordinator qrCodeCoordinator = new QrCodeCoordinator(mActivity, mUrl);
                     qrCodeCoordinator.show();
                 },
                 /*isFirstParty=*/true);

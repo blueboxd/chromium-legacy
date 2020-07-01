@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -25,6 +26,7 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -225,7 +227,37 @@ void WebAppsBase::Launch(const std::string& app_id,
     return;
   }
 
-  // TODO(loyso): Record UMA_HISTOGRAM_ENUMERATION here based on launch_source.
+  switch (launch_source) {
+    case apps::mojom::LaunchSource::kUnknown:
+    case apps::mojom::LaunchSource::kFromParentalControls:
+      break;
+    case apps::mojom::LaunchSource::kFromAppListGrid:
+    case apps::mojom::LaunchSource::kFromAppListGridContextMenu:
+      UMA_HISTOGRAM_ENUMERATION("Extensions.AppLaunch",
+                                extension_misc::APP_LAUNCH_APP_LIST_MAIN,
+                                extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
+
+      break;
+    case apps::mojom::LaunchSource::kFromAppListQuery:
+    case apps::mojom::LaunchSource::kFromAppListQueryContextMenu:
+      UMA_HISTOGRAM_ENUMERATION("Extensions.AppLaunch",
+                                extension_misc::APP_LAUNCH_APP_LIST_SEARCH,
+                                extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
+      break;
+    case apps::mojom::LaunchSource::kFromAppListRecommendation:
+    case apps::mojom::LaunchSource::kFromShelf:
+    case apps::mojom::LaunchSource::kFromFileManager:
+    case apps::mojom::LaunchSource::kFromLink:
+    case apps::mojom::LaunchSource::kFromOmnibox:
+    case apps::mojom::LaunchSource::kFromChromeInternal:
+    case apps::mojom::LaunchSource::kFromKeyboard:
+    case apps::mojom::LaunchSource::kFromOtherApp:
+    case apps::mojom::LaunchSource::kFromMenu:
+    case apps::mojom::LaunchSource::kFromInstalledNotification:
+    case apps::mojom::LaunchSource::kFromTest:
+    case apps::mojom::LaunchSource::kFromArc:
+      break;
+  }
 
   web_app::DisplayMode display_mode =
       GetRegistrar()->GetAppEffectiveDisplayMode(app_id);

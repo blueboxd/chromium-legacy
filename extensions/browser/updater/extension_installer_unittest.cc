@@ -133,7 +133,7 @@ TEST_F(ExtensionInstallerTest, Install_InvalidUnpackedDir) {
   base::ScopedTempDir unpacked_dir;
   ASSERT_TRUE(unpacked_dir.CreateUniqueTempDir());
   ASSERT_TRUE(base::PathExists(unpacked_dir.GetPath()));
-  ASSERT_TRUE(base::DeleteFileRecursively(unpacked_dir.GetPath()));
+  ASSERT_TRUE(base::DeletePathRecursively(unpacked_dir.GetPath()));
   ASSERT_FALSE(base::PathExists(unpacked_dir.GetPath()));
   installer->Install(
       unpacked_dir.GetPath(), kPublicKey, nullptr, base::DoNothing(),

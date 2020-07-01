@@ -54,7 +54,7 @@ bool DeleteObsoletePolicies(const base::FilePath& cache_root,
     if (policy_types_base64.count(file_base_name))
       continue;
 
-    if (!base::DeleteFileRecursively(file))
+    if (!base::DeletePathRecursively(file))
       result = false;
   }
 

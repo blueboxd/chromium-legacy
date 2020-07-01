@@ -70,7 +70,6 @@ class MessageView {
   std::vector<PlatformHandleInTransit> TakeHandles() {
     return std::move(handles_);
   }
-  Channel::MessagePtr TakeMessage() { return std::move(message_); }
 
   void SetHandles(std::vector<PlatformHandleInTransit> handles) {
     handles_ = std::move(handles);

@@ -4669,11 +4669,6 @@ void RenderFrameHostImpl::ShowCreatedWindow(int pending_widget_routing_id,
                                disposition, initial_rect, user_gesture);
 }
 
-void RenderFrameHostImpl::RequestOverlayRoutingToken(
-    RequestOverlayRoutingTokenCallback callback) {
-  std::move(callback).Run(frame_token_);
-}
-
 void RenderFrameHostImpl::UpdateState(const PageState& state) {
   // TODO(creis): Verify the state's ISN matches the last committed FNE.
 

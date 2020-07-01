@@ -56,7 +56,7 @@ void RemoveOldBlobStorageDirectories(FilePath blob_storage_parent,
        name = enumerator.Next()) {
     cleanup_needed = true;
     if (current_run_dir.empty() || name != current_run_dir)
-      success &= base::DeleteFileRecursively(name);
+      success &= base::DeletePathRecursively(name);
   }
   if (cleanup_needed)
     UMA_HISTOGRAM_BOOLEAN("Storage.Blob.CleanupSuccess", success);

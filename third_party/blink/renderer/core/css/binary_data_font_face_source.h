@@ -10,11 +10,12 @@
 
 namespace blink {
 
+class CSSFontFace;
 class FontCustomPlatformData;
 
 class BinaryDataFontFaceSource final : public CSSFontFaceSource {
  public:
-  BinaryDataFontFaceSource(SharedBuffer*, String&);
+  BinaryDataFontFaceSource(CSSFontFace*, SharedBuffer*, String&);
   ~BinaryDataFontFaceSource() override;
   bool IsValid() const override;
 

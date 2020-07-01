@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/thread_annotations.h"
-#include "third_party/blink/renderer/platform/disk_data_allocator.h"
+#include "third_party/blink/renderer/platform/disk_data_metadata.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
@@ -210,7 +210,7 @@ class PLATFORM_EXPORT ParkableStringImpl final
   // |writing_time| is the elapsed background thread time used by disk writing.
   void OnWritingCompleteOnMainThread(
       std::unique_ptr<BackgroundTaskParams> params,
-      std::unique_ptr<DiskDataAllocator::Metadata> metadata,
+      std::unique_ptr<DiskDataMetadata> metadata,
       base::TimeDelta writing_time);
 
   void DiscardUncompressedData();
@@ -232,7 +232,7 @@ class PLATFORM_EXPORT ParkableStringImpl final
     State state_;
     bool background_task_in_progress_;
     std::unique_ptr<Vector<uint8_t>> compressed_;
-    std::unique_ptr<DiskDataAllocator::Metadata> on_disk_metadata_;
+    std::unique_ptr<DiskDataMetadata> on_disk_metadata_;
     const SecureDigest digest_;
 
     // A string can be young, old or very old. It starts young, and ages with

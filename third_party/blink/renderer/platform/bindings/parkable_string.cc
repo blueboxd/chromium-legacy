@@ -747,7 +747,7 @@ void ParkableStringImpl::WriteToDiskInBackground(
       *task_runner, FROM_HERE,
       CrossThreadBindOnce(
           [](std::unique_ptr<BackgroundTaskParams> params,
-             std::unique_ptr<DiskDataAllocator::Metadata> metadata,
+             std::unique_ptr<DiskDataMetadata> metadata,
              base::TimeDelta elapsed) {
             auto* string = params->string.get();
             string->OnWritingCompleteOnMainThread(std::move(params),
@@ -758,7 +758,7 @@ void ParkableStringImpl::WriteToDiskInBackground(
 
 void ParkableStringImpl::OnWritingCompleteOnMainThread(
     std::unique_ptr<BackgroundTaskParams> params,
-    std::unique_ptr<DiskDataAllocator::Metadata> on_disk_metadata,
+    std::unique_ptr<DiskDataMetadata> on_disk_metadata,
     base::TimeDelta writing_time) {
   DCHECK(metadata_->background_task_in_progress_);
   DCHECK(!metadata_->on_disk_metadata_);

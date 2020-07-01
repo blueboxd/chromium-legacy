@@ -436,7 +436,7 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
     ZX_CHECK(status == ZX_OK, status);
 
     // Cleanup the data directory.
-    CHECK(DeleteFileRecursively(nested_data_path));
+    CHECK(DeletePathRecursively(nested_data_path));
 #elif defined(OS_POSIX)
 
 #if BUILDFLAG(CLANG_PROFILING)
@@ -710,7 +710,7 @@ void TestRunner::LaunchNextTask(scoped_refptr<TaskRunner> task_runner,
   DCHECK(thread_checker_.CalledOnValidThread());
   // delete previous temporary directory
   if (!last_task_temp_dir.empty() &&
-      !DeleteFileRecursively(last_task_temp_dir)) {
+      !DeletePathRecursively(last_task_temp_dir)) {
     // This needs to be non-fatal at least for Windows.
     LOG(WARNING) << "Failed to delete " << last_task_temp_dir.AsUTF8Unsafe();
   }

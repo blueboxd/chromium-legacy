@@ -155,7 +155,7 @@ public class CriticalPersistedTabData extends PersistedTabData {
     }
 
     @Override
-    void deserialize(byte[] bytes) {
+    boolean deserialize(byte[] bytes) {
         try {
             CriticalPersistedTabDataProto criticalPersistedTabDataProto =
                     CriticalPersistedTabDataProto.parseFrom(bytes);
@@ -168,13 +168,19 @@ public class CriticalPersistedTabData extends PersistedTabData {
             mThemeColor = criticalPersistedTabDataProto.getThemeColor();
             mTabLaunchTypeAtCreation =
                     getLaunchType(criticalPersistedTabDataProto.getLaunchTypeAtCreation());
+            return true;
         } catch (InvalidProtocolBufferException e) {
-            // TODO(crbug.com/1059635) add in metrics
             Log.e(TAG,
                     String.format(Locale.ENGLISH,
                             "There was a problem deserializing Tab %d. Details: %s", mTab.getId(),
                             e.getMessage()));
         }
+        return false;
+    }
+
+    @Override
+    public String getUmaTag() {
+        return "Critical";
     }
 
     private static @TabLaunchType int getLaunchType(

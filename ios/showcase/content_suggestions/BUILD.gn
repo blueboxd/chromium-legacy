@@ -50,23 +50,3 @@ source_set("eg2_tests") {
   ]
   libs = [ "UIKit.framework" ]
 }
-
-source_set("eg_tests") {
-  defines = [ "CHROME_EARL_GREY_1" ]
-  testonly = true
-  sources = [ "sc_content_suggestions_egtest.mm" ]
-  deps = [
-    ":content_suggestions",
-    "//components/strings",
-    "//ios/chrome/app/strings",
-    "//ios/chrome/browser/ui/content_suggestions:constants",
-    "//ios/chrome/browser/ui/content_suggestions:content_suggestions_ui",
-    "//ios/chrome/browser/ui/content_suggestions/cells:cells_ui",
-    "//ios/chrome/browser/ui/util",
-    "//ios/showcase/test",
-    "//ios/testing/earl_grey:earl_grey_support",
-    "//ios/third_party/earl_grey:earl_grey+link",
-    "//ui/base",
-  ]
-  configs += [ "//build/config/compiler:enable_arc" ]
-}

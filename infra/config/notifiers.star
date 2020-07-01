@@ -70,3 +70,10 @@ luci.notifier(
     notify_emails = ['orodley+gpu-test-tree-closing-notifier@chromium.org'],
     failed_step_regexp = TREE_CLOSING_STEPS,
 )
+
+luci.notifier(
+    name = 'linux-memory',
+    on_occurrence = ['FAILURE'],
+    notify_emails = ['thomasanderson@chromium.org'],
+    failed_step_regexp = TREE_CLOSING_STEPS,
+)

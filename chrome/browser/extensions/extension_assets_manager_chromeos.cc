@@ -482,7 +482,7 @@ void ExtensionAssetsManagerChromeOS::MarkSharedExtensionUnused(
 void ExtensionAssetsManagerChromeOS::DeleteSharedVersion(
     const base::FilePath& shared_version_dir) {
   CHECK(GetSharedInstallDir().IsParent(shared_version_dir));
-  base::DeleteFileRecursively(shared_version_dir);
+  base::DeletePathRecursively(shared_version_dir);
 }
 
 // static

@@ -5641,21 +5641,7 @@ void RenderFrameImpl::OnMixedContentFound(
 
 void RenderFrameImpl::RequestOverlayRoutingToken(
     media::RoutingTokenCallback callback) {
-  if (overlay_routing_token_.has_value()) {
-    std::move(callback).Run(overlay_routing_token_.value());
-    return;
-  }
-
-  // Send a request to the host for the token that caches the result.
-  GetFrameHost()->RequestOverlayRoutingToken(base::BindOnce(
-      [](RenderFrameImpl* rfi, media::RoutingTokenCallback callback,
-         const base::UnguessableToken& token) {
-        rfi->overlay_routing_token_ = token;
-        std::move(callback).Run(token);
-      },
-      // This is a Mojo call where we own the Remote, so the
-      // callback lifetime won't scape the valid scope.
-      base::Unretained(this), std::move(callback)));
+  std::move(callback).Run(GetWebFrame()->GetFrameToken());
 }
 
 void RenderFrameImpl::OpenURL(std::unique_ptr<blink::WebNavigationInfo> info) {

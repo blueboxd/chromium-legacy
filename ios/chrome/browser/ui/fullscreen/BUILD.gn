@@ -163,33 +163,6 @@ source_set("unit_tests") {
   ]
 }
 
-source_set("eg_tests") {
-  defines = [ "CHROME_EARL_GREY_1" ]
-  testonly = true
-  sources = [ "fullscreen_egtest.mm" ]
-
-  configs += [ "//build/config/compiler:enable_arc" ]
-
-  deps = [
-    ":fullscreen",
-    "//base",
-    "//base/test:test_support",
-    "//ios/chrome/browser/ui/fullscreen/test:eg_test_support",
-    "//ios/chrome/browser/ui/side_swipe",
-    "//ios/chrome/browser/ui/util",
-    "//ios/chrome/test:eg_test_support",
-    "//ios/chrome/test/app:test_support",
-    "//ios/chrome/test/earl_grey:test_support",
-    "//ios/testing/earl_grey:earl_grey_support",
-    "//ios/web:earl_grey_test_support",
-    "//ios/web/common",
-    "//ios/web/public",
-    "//ios/web/public/test",
-    "//ios/web/public/test/http_server",
-  ]
-  libs = [ "XCTest.framework" ]
-}
-
 source_set("eg2_tests") {
   defines = [ "CHROME_EARL_GREY_2" ]
   configs += [

@@ -13,6 +13,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
+#include "content/test/render_document_feature.h"
 #include "net/dns/mock_host_resolver.h"
 #include "services/network/public/cpp/cross_origin_opener_policy.h"
 #include "services/network/public/cpp/features.h"
@@ -40,7 +41,9 @@ network::CrossOriginOpenerPolicy CoopUnsafeNone() {
   return coop;
 }
 
-class CrossOriginOpenerPolicyBrowserTest : public ContentBrowserTest {
+class CrossOriginOpenerPolicyBrowserTest
+    : public ContentBrowserTest,
+      public ::testing::WithParamInterface<std::string> {
  public:
   CrossOriginOpenerPolicyBrowserTest()
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
@@ -50,6 +53,8 @@ class CrossOriginOpenerPolicyBrowserTest : public ContentBrowserTest {
          network::features::kCrossOriginOpenerPolicyReporting,
          network::features::kCrossOriginEmbedderPolicy},
         {});
+    InitAndEnableRenderDocumentFeature(&feature_list_for_render_document_,
+                                       GetParam());
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kIgnoreCertificateErrors);
   }
@@ -80,10 +85,11 @@ class CrossOriginOpenerPolicyBrowserTest : public ContentBrowserTest {
   }
 
   base::test::ScopedFeatureList feature_list_;
+  base::test::ScopedFeatureList feature_list_for_render_document_;
   net::EmbeddedTestServer https_server_;
 };
 
-IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
+IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
                        NewPopupCOOP_InheritsSameOrigin) {
   GURL starting_page(
       https_server()->GetURL("a.com", "/cross_site_iframe_factory.html?a(a)"));
@@ -106,7 +112,7 @@ IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
   EXPECT_EQ(popup_frame->cross_origin_opener_policy(), CoopSameOrigin());
 }
 
-IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
+IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
                        NewPopupCOOP_InheritsSameOriginAllowPopups) {
   GURL starting_page(
       https_server()->GetURL("a.com", "/cross_site_iframe_factory.html?a(a)"));
@@ -131,7 +137,7 @@ IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
             CoopSameOriginAllowPopups());
 }
 
-IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
+IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
                        NewPopupCOOP_CrossOriginDoesNotInherit) {
   GURL starting_page(
       https_server()->GetURL("a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -154,7 +160,7 @@ IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
   EXPECT_EQ(popup_frame->cross_origin_opener_policy(), CoopUnsafeNone());
 }
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     CrossOriginOpenerPolicyBrowserTest,
     NewPopupCOOP_SameOriginPolicyAndCrossOriginIframeSetsNoopener) {
   GURL starting_page(
@@ -197,7 +203,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(success) << "window.opener is set";
 }
 
-IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
+IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
                        NetworkErrorOnSandboxedPopups) {
   GURL starting_page(https_server()->GetURL(
       "a.com", "/cross-origin-opener-policy_sandbox_popup.html"));
@@ -219,7 +225,7 @@ IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
       PAGE_TYPE_ERROR);
 }
 
-IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
+IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
                        NoNetworkErrorOnSandboxedDocuments) {
   GURL starting_page(https_server()->GetURL(
       "a.com", "/cross-origin-opener-policy_csp_sandboxed.html"));
@@ -276,7 +282,7 @@ class CrossOriginPolicyHeadersObserver : public WebContentsObserver {
   network::CrossOriginOpenerPolicy expected_coop_;
 };
 
-IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
+IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
                        RedirectsParseCoopAndCoepHeaders) {
   GURL redirect_initial_page(https_server()->GetURL(
       "a.com", "/cross-origin-opener-policy_redirect_initial.html"));
@@ -292,7 +298,7 @@ IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
       NavigateToURL(shell(), redirect_initial_page, redirect_final_page));
 }
 
-IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
+IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
                        CoopIsIgnoredOverHttp) {
   GURL non_coop_page(embedded_test_server()->GetURL("a.com", "/title1.html"));
   GURL coop_page(embedded_test_server()->GetURL(
@@ -308,7 +314,7 @@ IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
             CoopUnsafeNone());
 }
 
-IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
+IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
                        CoopIsIgnoredOnIframes) {
   GURL starting_page(
       https_server()->GetURL("a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -335,7 +341,7 @@ IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
   EXPECT_EQ(iframe_rfh->cross_origin_opener_policy(), CoopUnsafeNone());
 }
 
-IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
+IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
                        NonCoopPageCrashIntoCoop) {
   IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
   GURL non_coop_page(https_server()->GetURL("a.com", "/title1.html"));
@@ -437,8 +443,11 @@ IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
+IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
                        CoopPageCrashIntoNonCoop) {
+  // TODO(http://crbug.com/1066376): Remove this when the test case passes.
+  if (ShouldCreateNewHostForCrashedFrame())
+    return;
   IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
   GURL non_coop_page(https_server()->GetURL("a.com", "/title1.html"));
   GURL coop_page(https_server()->GetURL(
@@ -555,8 +564,11 @@ IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
+IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
                        CoopPageCrashIntoCoop) {
+  // TODO(http://crbug.com/1066376): Remove this when the test case passes.
+  if (ShouldCreateNewHostForCrashedFrame())
+    return;
   IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
   GURL non_coop_page(https_server()->GetURL("a.com", "/title1.html"));
   GURL coop_page(https_server()->GetURL(
@@ -673,7 +685,7 @@ IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
+IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
                        ProxiesAreRemovedWhenCrossingCoopBoundary) {
   GURL non_coop_page(https_server()->GetURL("a.com", "/title1.html"));
   GURL coop_page(https_server()->GetURL(
@@ -706,7 +718,7 @@ IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
   EXPECT_FALSE(popup->opener());
 }
 
-IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
+IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
                        ProxiesAreKeptWhenNavigatingFromCoopToCoop) {
   IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
   GURL coop_page(https_server()->GetURL(
@@ -742,7 +754,7 @@ IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
       1u);
 }
 
-IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
+IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
                        IsolateInNewProcessDespiteLimitReached) {
   // Set a process limit of 1 for testing.
   RenderProcessHostImpl::SetMaxRendererProcessCount(1);
@@ -769,7 +781,7 @@ IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
             popup_webcontents->GetMainFrame()->GetProcess());
 }
 
-IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
+IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
                        NoProcessReuseForCOOPProcesses) {
   // Set a process limit of 1 for testing.
   RenderProcessHostImpl::SetMaxRendererProcessCount(1);
@@ -804,7 +816,7 @@ IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
             popup_webcontents->GetMainFrame()->GetProcess());
 }
 
-IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
+IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
                        SpeculativeRfhsAndCoop) {
   GURL non_coop_page(https_server()->GetURL("/title1.html"));
   GURL coop_page(https_server()->GetURL("/page_with_coop_and_coep.html"));
@@ -926,6 +938,9 @@ IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
   }
 }
 
+INSTANTIATE_TEST_SUITE_P(All,
+                         CrossOriginOpenerPolicyBrowserTest,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
 }  // namespace
 
 }  // namespace content

@@ -1127,10 +1127,13 @@ LogicalSize CalculateChildAvailableSize(
     const NGBlockNode& node,
     const LogicalSize border_box_size,
     const NGBoxStrut& border_scrollbar_padding) {
-  if (space.IsAnonymous() || node.IsAnonymousBlock())
-    return space.AvailableSize();
+  LogicalSize child_available_size =
+      ShrinkLogicalSize(border_box_size, border_scrollbar_padding);
 
-  return ShrinkLogicalSize(border_box_size, border_scrollbar_padding);
+  if (space.IsAnonymous() || node.IsAnonymousBlock())
+    child_available_size.block_size = space.AvailableSize().block_size;
+
+  return child_available_size;
 }
 
 namespace {

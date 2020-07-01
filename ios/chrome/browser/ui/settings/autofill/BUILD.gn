@@ -108,32 +108,6 @@ source_set("unit_tests") {
   ]
 }
 
-source_set("eg_tests") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  defines = [ "CHROME_EARL_GREY_1" ]
-  testonly = true
-  sources = [
-    "autofill_credit_card_settings_egtest.mm",
-    "autofill_profile_settings_egtest.mm",
-  ]
-  deps = [
-    ":autofill",
-    ":constants",
-    ":feature_flags",
-    "//components/autofill/core/browser",
-    "//components/autofill/core/browser:test_support",
-    "//components/strings",
-    "//ios/chrome/app/strings",
-    "//ios/chrome/browser/autofill",
-    "//ios/chrome/browser/ui/autofill:test_support",
-    "//ios/chrome/test/app:test_support",
-    "//ios/chrome/test/earl_grey:test_support",
-    "//ios/testing/earl_grey:earl_grey_support",
-    "//net:test_support",
-    "//ui/base",
-  ]
-}
-
 source_set("eg2_tests") {
   defines = [ "CHROME_EARL_GREY_2" ]
   configs += [

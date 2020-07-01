@@ -11,10 +11,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/android/chrome_jni_headers/NotificationManager_jni.h"
+#include "chrome/android/chrome_jni_headers/SendTabToSelfNotificationReceiver_jni.h"
 #include "components/send_tab_to_self/send_tab_to_self_entry.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
+using base::android::ScopedJavaLocalRef;
 
 namespace send_tab_to_self {
 
@@ -27,12 +29,20 @@ void AndroidNotificationHandler::DisplayNewEntries(
     base::Time expiraton_time =
         entry->GetSharedTime() + base::TimeDelta::FromDays(10);
 
+    ScopedJavaLocalRef<jclass> send_tab_to_self_notification_receiver_class =
+        // base::android::GetClass(env,
+        //                         "org/chromium/chrome/browser/send_tab_to_self/"
+        //                         "SendTabToSelfNotificationReceiver");
+        Java_SendTabToSelfNotificationReceiver_getSendTabToSelfNotificationReciever(
+            env);
+
     Java_NotificationManager_showNotification(
         env, ConvertUTF8ToJavaString(env, entry->GetGUID()),
         ConvertUTF8ToJavaString(env, entry->GetURL().spec()),
         ConvertUTF8ToJavaString(env, entry->GetTitle()),
         ConvertUTF8ToJavaString(env, entry->GetDeviceName()),
-        expiraton_time.ToJavaTime());
+        expiraton_time.ToJavaTime(),
+        send_tab_to_self_notification_receiver_class);
   }
 }
 

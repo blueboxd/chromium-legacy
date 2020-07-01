@@ -189,7 +189,7 @@ class ArcFileSystemScannerTest : public ::testing::Test {
 
     // Set the ctime accordingly.
     ModifyDirectory(path.DirName(), ctime);
-    return base::DeleteFileRecursively(path);
+    return base::DeletePathRecursively(path);
   }
 
   std::unique_ptr<TestingProfileManager> profile_manager_;

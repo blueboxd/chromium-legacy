@@ -1811,6 +1811,7 @@ template("mojom") {
           ":$parser_target_name",
           "//mojo/public/tools/bindings:precompile_templates",
         ]
+
         outputs = ts_outputs
         args = common_generator_args
         response_file_contents = source_filelist
@@ -1835,6 +1836,7 @@ template("mojom") {
       tsconfig = {
       }
       tsconfig.compilerOptions = {
+        composite = true
         target = "es6"
         module = "es6"
         lib = [
@@ -1850,6 +1852,17 @@ template("mojom") {
                 target_gen_dir,
                 root_gen_dir) ]
       }
+      tsconfig.references = []
+
+      # Get tsconfigs for deps.
+      foreach(d, all_deps) {
+        dep_target_gen_dir = rebase_path(get_label_info(d, "target_gen_dir"))
+        dep_name = get_label_info(d, "name")
+        reference = {
+        }
+        reference.path = "$dep_target_gen_dir/$dep_name-${dependency_type.name}-tsconfig.json"
+        tsconfig.references += [ reference ]
+      }
       write_file(tsconfig_filename, tsconfig, "json")
 
       # Compile previously generated Typescript to Javascript.
@@ -1862,6 +1875,12 @@ template("mojom") {
         sources = ts_outputs
         outputs = js_outputs
         public_deps = [ ":$generator_ts_target_name" ]
+        foreach(d, all_deps) {
+          full_name = get_label_info(d, "label_no_toolchain")
+          public_deps +=
+              [ "${full_name}_${dependency_type.name}__js__generator" ]
+        }
+
         absolute_tsconfig_path =
             rebase_path(tsconfig_filename, "", target_gen_dir)
         args = [ "--tsconfig_path=$absolute_tsconfig_path" ]

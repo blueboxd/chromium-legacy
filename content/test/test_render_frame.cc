@@ -112,13 +112,6 @@ class MockFrameHost : public mojom::FrameHost {
 
   bool is_url_opened() const { return is_url_opened_; }
 
-  void RequestOverlayRoutingToken(
-      media::RoutingTokenCallback callback) override {
-    request_overlay_routing_token_called_++;
-    if (overlay_routing_token_.has_value())
-      std::move(callback).Run(overlay_routing_token_.value());
-  }
-
  protected:
   // mojom::FrameHost:
   void CreateNewWindow(mojom::CreateNewWindowParamsPtr,
@@ -400,15 +393,6 @@ void TestRenderFrame::SimulateBeforeUnload(bool is_reload) {
   // process will send separate IPCs to dispatch beforeunload in any
   // out-of-process child frames.
   frame_->DispatchBeforeUnloadEvent(is_reload);
-}
-
-void TestRenderFrame::SetOverlayRoutingToken(
-    const base::UnguessableToken& token) {
-  mock_frame_host_->set_overlay_routing_token(token);
-}
-
-size_t TestRenderFrame::RequestOverlayRoutingTokenCalled() {
-  return mock_frame_host_->request_overlay_routing_token_called();
 }
 
 bool TestRenderFrame::IsPageStateUpdated() const {

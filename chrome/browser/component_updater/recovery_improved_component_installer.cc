@@ -112,7 +112,7 @@ void RecoveryComponentActionHandler::WaitForCommand(base::Process process) {
   const base::TimeDelta kMaxWaitTime = base::TimeDelta::FromSeconds(600);
   const bool succeeded =
       process.WaitForExitWithTimeout(kMaxWaitTime, &exit_code);
-  base::DeleteFileRecursively(unpack_path_);
+  base::DeletePathRecursively(unpack_path_);
   main_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback_), succeeded, exit_code, 0));
 }

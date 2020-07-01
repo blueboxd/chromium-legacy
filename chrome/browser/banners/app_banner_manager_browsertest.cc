@@ -63,11 +63,11 @@ class AppBannerManagerTest : public AppBannerManager {
   State state() { return AppBannerManager::state(); }
 
   // Configures a callback to be invoked when the app banner flow finishes.
-  void PrepareDone(base::Closure on_done) { on_done_ = on_done; }
+  void PrepareDone(base::OnceClosure on_done) { on_done_ = std::move(on_done); }
 
   // Configures a callback to be invoked from OnBannerPromptReply.
-  void PrepareBannerPromptReply(base::Closure on_banner_prompt_reply) {
-    on_banner_prompt_reply_ = on_banner_prompt_reply;
+  void PrepareBannerPromptReply(base::OnceClosure on_banner_prompt_reply) {
+    on_banner_prompt_reply_ = std::move(on_banner_prompt_reply);
   }
 
  protected:
@@ -80,7 +80,8 @@ class AppBannerManagerTest : public AppBannerManager {
     ASSERT_FALSE(banner_shown_.get());
     banner_shown_.reset(new bool(false));
     install_source_.reset(new WebappInstallSource(WebappInstallSource::COUNT));
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, on_done_);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(on_done_));
   }
 
   void ShowBannerUi(WebappInstallSource install_source) override {
@@ -92,7 +93,8 @@ class AppBannerManagerTest : public AppBannerManager {
     ASSERT_FALSE(banner_shown_.get());
     banner_shown_.reset(new bool(true));
     install_source_.reset(new WebappInstallSource(install_source));
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, on_done_);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(on_done_));
   }
 
   void UpdateState(AppBannerManager::State state) override {
@@ -100,7 +102,8 @@ class AppBannerManagerTest : public AppBannerManager {
 
     if (state == AppBannerManager::State::PENDING_ENGAGEMENT ||
         state == AppBannerManager::State::PENDING_PROMPT) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, on_done_);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                    std::move(on_done_));
     }
   }
 
@@ -133,11 +136,11 @@ class AppBannerManagerTest : public AppBannerManager {
   }
 
  private:
-  base::Closure on_done_;
+  base::OnceClosure on_done_;
 
   // If non-null, |on_banner_prompt_reply_| will be invoked from
   // OnBannerPromptReply.
-  base::Closure on_banner_prompt_reply_;
+  base::OnceClosure on_banner_prompt_reply_;
 
   std::unique_ptr<bool> banner_shown_;
   std::unique_ptr<WebappInstallSource> install_source_;
@@ -482,6 +485,7 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, WebAppBannerReprompt) {
 
   // Dismiss the banner.
   base::RunLoop run_loop;
+  manager->PrepareDone(base::DoNothing());
   manager->PrepareBannerPromptReply(run_loop.QuitClosure());
   manager->SendBannerDismissed();
   // Wait for OnBannerPromptReply event.

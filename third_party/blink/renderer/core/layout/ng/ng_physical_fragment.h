@@ -298,7 +298,7 @@ class CORE_EXPORT NGPhysicalFragment
   // |NGPhysicalFragment| may live longer than the corresponding |LayoutObject|.
   // Though |NGPhysicalFragment| is immutable, |layout_object_| is cleared to
   // |nullptr| when it was destroyed to avoid reading destroyed objects.
-  bool IsAlive() const { return layout_object_; }
+  bool IsLayoutObjectDestroyedOrMoved() const { return !layout_object_; }
   void LayoutObjectWillBeDestroyed() const {
     const_cast<NGPhysicalFragment*>(this)->layout_object_ = nullptr;
   }

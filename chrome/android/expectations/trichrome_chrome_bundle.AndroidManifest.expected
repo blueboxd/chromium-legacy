@@ -769,6 +769,9 @@
         android:name="org.chromium.chrome.browser.announcement.AnnouncementNotificationManager$Receiver"/>
     <receiver
         android:exported="false"
+        android:name="org.chromium.chrome.browser.app.send_tab_to_self.SendTabToSelfNotificationReceiver"/>
+    <receiver
+        android:exported="false"
         android:name="org.chromium.chrome.browser.bookmarkswidget.BookmarkWidgetProxy"/>
     <receiver
         android:exported="false"
@@ -809,9 +812,6 @@
     <receiver
         android:exported="false"
         android:name="org.chromium.chrome.browser.omaha.UpdateNotificationController$UpdateNotificationReceiver"/>
-    <receiver
-        android:exported="false"
-        android:name="org.chromium.chrome.browser.send_tab_to_self.NotificationManager$SendTabToSelfNotificationReceiver"/>
     <receiver
         android:exported="false"
         android:name="org.chromium.chrome.browser.sharing.click_to_call.ClickToCallMessageHandler$TapReceiver"/>

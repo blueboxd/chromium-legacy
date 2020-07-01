@@ -43,7 +43,7 @@ namespace content {
 namespace {
 
 bool DeleteDir(const base::FilePath& path) {
-  return base::DeleteFileRecursively(path);
+  return base::DeletePathRecursively(path);
 }
 
 void DeleteOriginDidDeleteDir(storage::QuotaClient::DeletionCallback callback,

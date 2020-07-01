@@ -14,8 +14,8 @@ public class QrCodeCoordinator {
     private final QrCodeDialog mDialog;
     private final FragmentManager mFragmentManager;
 
-    public QrCodeCoordinator(Activity activity) {
-        mDialog = new QrCodeDialog();
+    public QrCodeCoordinator(Activity activity, String url) {
+        mDialog = QrCodeDialog.newInstance(url);
 
         mFragmentManager = activity.getFragmentManager();
     }

@@ -157,22 +157,6 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
-source_set("test_support") {
-  defines = [ "CHROME_EARL_GREY_1" ]
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "adaptive_toolbar_app_interface.h",
-    "adaptive_toolbar_app_interface.mm",
-  ]
-  deps = [
-    "//ios/chrome/browser/infobars",
-    "//ios/chrome/browser/ui/infobars:test_support",
-    "//ios/chrome/test/app:test_support",
-    "//ios/testing:nserror_support",
-  ]
-}
-
 source_set("eg_app_support+eg2") {
   defines = [ "CHROME_EARL_GREY_2" ]
   configs += [
@@ -232,44 +216,4 @@ source_set("eg2_tests") {
     "//ui/base",
   ]
   libs = [ "UIKit.framework" ]
-}
-
-source_set("eg_tests") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  defines = [ "CHROME_EARL_GREY_1" ]
-  testonly = true
-  sources = [
-    "adaptive_toolbar_egtest.mm",
-    "toolbar_egtest.mm",
-  ]
-  deps = [
-    ":test_support",
-    ":toolbar_ui",
-    "//base",
-    "//components/strings",
-    "//ios/chrome/app/strings",
-    "//ios/chrome/browser/infobars",
-    "//ios/chrome/browser/ui/commands",
-    "//ios/chrome/browser/ui/content_suggestions:content_suggestions_constant",
-    "//ios/chrome/browser/ui/infobars:test_support",
-    "//ios/chrome/browser/ui/ntp:ntp_internal",
-    "//ios/chrome/browser/ui/omnibox:omnibox_internal",
-    "//ios/chrome/browser/ui/omnibox/popup",
-    "//ios/chrome/browser/ui/omnibox/popup:popup_internal",
-    "//ios/chrome/browser/ui/omnibox/popup:popup_ui",
-    "//ios/chrome/browser/ui/popup_menu:constants",
-    "//ios/chrome/browser/ui/toolbar/buttons",
-    "//ios/chrome/browser/ui/toolbar/public",
-    "//ios/chrome/browser/ui/util",
-    "//ios/chrome/test/app:test_support",
-    "//ios/chrome/test/earl_grey:test_support",
-    "//ios/testing/earl_grey:earl_grey_support",
-    "//ios/third_party/earl_grey:earl_grey+link",
-    "//ios/web:earl_grey_test_support",
-    "//ios/web/public/test:element_selector",
-    "//ios/web/public/test/http_server",
-    "//net:test_support",
-    "//ui/base",
-  ]
-  libs = [ "XCTest.framework" ]
 }

@@ -770,7 +770,7 @@ void InspectorCSSAgent::FontsUpdated(
     const FontCustomPlatformData* fontCustomPlatformData) {
   FlushPendingProtocolNotifications();
 
-  if (!(font && src && fontCustomPlatformData)) {
+  if (!(font && fontCustomPlatformData)) {
     GetFrontend()->fontsUpdated();
     return;
   }

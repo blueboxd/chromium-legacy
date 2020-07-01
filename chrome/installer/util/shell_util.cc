@@ -1475,7 +1475,7 @@ bool RemoveShortcutFolderIfEmpty(ShellUtil::ShortcutLocation location,
     return false;
   }
   if (base::IsDirectoryEmpty(shortcut_folder) &&
-      !base::DeleteFileRecursively(shortcut_folder)) {
+      !base::DeletePathRecursively(shortcut_folder)) {
     LOG(ERROR) << "Cannot remove folder " << shortcut_folder.value();
     return false;
   }

@@ -114,46 +114,6 @@ source_set("unit_tests") {
   ]
 }
 
-source_set("eg_tests") {
-  defines = [ "CHROME_EARL_GREY_1" ]
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "ar_quick_look_egtest.mm",
-    "download_manager_egtest.mm",
-    "pass_kit_egtest.mm",
-  ]
-
-  deps = [
-    "//base",
-    "//base/test:test_support",
-    "//components/infobars/core:feature_flags",
-    "//ios/chrome/app:app_internal",
-    "//ios/chrome/app/strings",
-    "//ios/chrome/browser:browser",
-    "//ios/chrome/browser/download",
-    "//ios/chrome/browser/download:test_support",
-    "//ios/chrome/browser/ui/browser_view",
-    "//ios/chrome/browser/ui/infobars:feature_flags",
-    "//ios/chrome/browser/ui/infobars/banners:public",
-    "//ios/chrome/browser/ui/util",
-    "//ios/chrome/test:eg_test_support",
-    "//ios/chrome/test:test_support",
-    "//ios/chrome/test/app:test_support",
-    "//ios/chrome/test/earl_grey:test_support",
-    "//ios/testing:embedded_test_server_support",
-    "//ios/testing/earl_grey:earl_grey_support",
-    "//ios/third_party/earl_grey:earl_grey+link",
-    "//ios/web:earl_grey_test_support",
-    "//ios/web/common",
-    "//ios/web/public",
-    "//ios/web/public/test:element_selector",
-    "//net:test_support",
-    "//ui/base",
-  ]
-  libs = [ "XCTest.framework" ]
-}
-
 source_set("eg2_tests") {
   defines = [ "CHROME_EARL_GREY_2" ]
   configs += [

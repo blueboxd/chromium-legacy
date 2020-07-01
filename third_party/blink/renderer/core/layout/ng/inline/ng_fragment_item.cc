@@ -454,6 +454,14 @@ PhysicalRect NGFragmentItem::RecalcInkOverflowForCursor(
   while (*cursor) {
     const NGFragmentItem* item = cursor->CurrentItem();
     DCHECK(item);
+    if (UNLIKELY(item->IsLayoutObjectDestroyedOrMoved())) {
+      // TODO(crbug.com/1099613): This should not happen, as long as it is
+      // layout-clean. It looks like there are cases where the layout is dirty.
+      NOTREACHED();
+      cursor->MoveToNextSkippingChildren();
+      continue;
+    }
+
     PhysicalRect child_rect;
     item->GetMutableForPainting().RecalcInkOverflow(cursor, &child_rect);
     if (item->HasSelfPaintingLayer())

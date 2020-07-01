@@ -11,6 +11,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.UserData;
 import org.chromium.base.UserDataHost;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.tab.Tab;
 
@@ -44,7 +45,7 @@ public abstract class PersistedTabData implements UserData {
     PersistedTabData(Tab tab, byte[] data, PersistedTabDataStorage persistedTabDataStorage,
             String persistedTabDataId) {
         this(tab, persistedTabDataStorage, persistedTabDataId);
-        deserialize(data);
+        deserializeAndLog(data);
     }
 
     /**
@@ -161,7 +162,7 @@ public abstract class PersistedTabData implements UserData {
      */
     @VisibleForTesting
     protected void save() {
-        mPersistedTabDataStorage.save(mTab.getId(), mPersistedTabDataId, serialize());
+        mPersistedTabDataStorage.save(mTab.getId(), mPersistedTabDataId, serializeAndLog());
     }
 
     /**
@@ -169,12 +170,25 @@ public abstract class PersistedTabData implements UserData {
      */
     abstract byte[] serialize();
 
+    private byte[] serializeAndLog() {
+        byte[] res = serialize();
+        RecordHistogram.recordBooleanHistogram(
+                "Tabs.PersistedTabData.Serialize." + getUmaTag(), res != null);
+        return res;
+    }
+
     /**
      * Deserialize serialized {@link PersistedTabData} and
      * assign to fields in {@link PersistedTabData}
      * @param bytes serialized PersistedTabData
      */
-    abstract void deserialize(@Nullable byte[] bytes);
+    abstract boolean deserialize(@Nullable byte[] bytes);
+
+    private void deserializeAndLog(@Nullable byte[] bytes) {
+        boolean success = deserialize(bytes);
+        RecordHistogram.recordBooleanHistogram(
+                "Tabs.PersistedTabData.Deserialize." + getUmaTag(), success);
+    }
 
     /**
      * Delete {@link PersistedTabData} for a tab id
@@ -191,4 +205,9 @@ public abstract class PersistedTabData implements UserData {
      */
     @Override
     public abstract void destroy();
+
+    /**
+     * @return unique tag for logging in Uma
+     */
+    public abstract String getUmaTag();
 }

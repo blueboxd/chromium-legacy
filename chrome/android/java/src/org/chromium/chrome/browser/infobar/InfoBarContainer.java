@@ -25,6 +25,7 @@ import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetObserver;
 import org.chromium.components.browser_ui.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.components.infobars.InfoBar;
+import org.chromium.components.infobars.InfoBarAnimationListener;
 import org.chromium.components.infobars.InfoBarUiItem;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
@@ -49,26 +50,6 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener, I
     static {
         sAccessibilityObserver = (enabled) -> setIsAllowedToAutoHide(!enabled);
         ChromeAccessibilityUtil.get().addObserver(sAccessibilityObserver);
-    }
-
-    /**
-     * A listener for the InfoBar animations.
-     */
-    public interface InfoBarAnimationListener {
-        public static final int ANIMATION_TYPE_SHOW = 0;
-        public static final int ANIMATION_TYPE_SWAP = 1;
-        public static final int ANIMATION_TYPE_HIDE = 2;
-
-        /**
-         * Notifies the subscriber when an animation is completed.
-         */
-        void notifyAnimationFinished(int animationType);
-
-        /**
-         * Notifies the subscriber when all animations are finished.
-         * @param frontInfoBar The frontmost infobar or {@code null} if none are showing.
-         */
-        void notifyAllAnimationsFinished(InfoBarUiItem frontInfoBar);
     }
 
     /**

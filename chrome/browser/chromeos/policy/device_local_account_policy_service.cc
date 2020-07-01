@@ -108,7 +108,7 @@ void DeleteOrphanedCaches(
        path = enumerator.Next()) {
     const std::string subdirectory(path.BaseName().MaybeAsASCII());
     if (!base::Contains(subdirectories_to_keep, subdirectory))
-      base::DeleteFileRecursively(path);
+      base::DeletePathRecursively(path);
   }
 }
 
@@ -122,7 +122,7 @@ void DeleteObsoleteExtensionCache(const std::string& account_id_to_delete) {
   const base::FilePath path = cache_root_dir.Append(
       GetCacheSubdirectoryForAccountID(account_id_to_delete));
   if (base::DirectoryExists(path))
-    base::DeleteFileRecursively(path);
+    base::DeletePathRecursively(path);
 }
 
 }  // namespace

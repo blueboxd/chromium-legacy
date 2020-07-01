@@ -436,6 +436,10 @@ void NGPhysicalFragment::AdjustScrollableOverflowForPropagation(
   DCHECK(!IsLineBox());
   if (!IsCSSBox())
     return;
+  if (UNLIKELY(IsLayoutObjectDestroyedOrMoved())) {
+    NOTREACHED();
+    return;
+  }
 
   const LayoutObject* layout_object = GetLayoutObject();
   DCHECK(layout_object);

@@ -12,6 +12,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.tabpersistence.TabStateDirectory;
@@ -165,9 +166,11 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
                 @Override
                 protected Void doInBackground() {
                     FileOutputStream outputStream = null;
+                    boolean success = false;
                     try {
                         outputStream = new FileOutputStream(mFile);
                         outputStream.write(mData);
+                        success = true;
                     } catch (FileNotFoundException e) {
                         Log.e(TAG,
                                 String.format(Locale.ENGLISH,
@@ -183,6 +186,8 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
                     } finally {
                         StreamUtil.closeQuietly(outputStream);
                     }
+                    RecordHistogram.recordBooleanHistogram(
+                            "Tabs.PersistedTabData.Storage.Save." + getUmaTag(), success);
                     return null;
                 }
 
@@ -223,11 +228,16 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
             return new AsyncTask<Void>() {
                 @Override
                 protected Void doInBackground() {
-                    if (!mFile.exists()) {
+                    boolean exists = mFile.exists();
+                    RecordHistogram.recordBooleanHistogram(
+                            "Tabs.PersistedTabData.Storage.Exists." + getUmaTag(), exists);
+                    if (!exists) {
                         return null;
                     }
-                    boolean res = mFile.delete();
-                    if (!res) {
+                    boolean success = mFile.delete();
+                    RecordHistogram.recordBooleanHistogram(
+                            "Tabs.PersistedTabData.Storage.Delete." + getUmaTag(), success);
+                    if (!success) {
                         Log.e(TAG, String.format(Locale.ENGLISH, "Error deleting file %s", mFile));
                     }
                     return null;
@@ -270,9 +280,12 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
             return new AsyncTask<byte[]>() {
                 @Override
                 protected byte[] doInBackground() {
+                    boolean success = false;
+                    byte[] res = null;
                     try {
                         AtomicFile atomicFile = new AtomicFile(mFile);
-                        return atomicFile.readFully();
+                        res = atomicFile.readFully();
+                        success = true;
                     } catch (FileNotFoundException e) {
                         Log.e(TAG,
                                 String.format(Locale.ENGLISH,
@@ -286,7 +299,9 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
                                                 + "%s. Details: %s",
                                         mFile, e.getMessage()));
                     }
-                    return null;
+                    RecordHistogram.recordBooleanHistogram(
+                            "Tabs.PersistedTabData.Storage.Restore." + getUmaTag(), success);
+                    return res;
                 }
 
                 @Override
@@ -308,5 +323,10 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
     protected void processNextItemOnQueue() {
         if (mQueue.isEmpty()) return;
         mQueue.poll().getAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    @Override
+    public String getUmaTag() {
+        return "File";
     }
 }

@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
@@ -41,6 +42,7 @@ import org.chromium.components.offline_items_collection.UpdateDelta;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -620,8 +622,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
             info.icon = R.drawable.ic_error_outline_googblue_24dp;
         } else if (resultState == ResultState.SCHEDULED) {
             stringRes = R.plurals.multiple_download_scheduled;
-            // TODO(shaktisahu, xingliu): Provide icon.
-            info.icon = R.drawable.ic_phone_googblue_36dp;
+            info.icon = R.drawable.ic_file_download_scheduled_24dp;
         } else {
             assert false : "Unexpected resultState " + resultState + " and infoBarState "
                            + infoBarState;
@@ -738,10 +739,12 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
         if (offlineItem.schedule.onlyOnWifi) {
             return getContext().getString(R.string.download_scheduled_on_wifi);
         } else {
-            // TODO(shaktisahu, xinigliu) : Get exact date and time format.
-            Date scheduledDate = new Date(offlineItem.schedule.startTimeMs);
-            return getContext().getString(
-                    R.string.download_scheduled_on_date, scheduledDate.toString());
+            String dateTimeString =
+                    DateUtils
+                            .formatSameDayTime(offlineItem.schedule.startTimeMs,
+                                    new Date().getTime(), DateFormat.MEDIUM, DateFormat.SHORT)
+                            .toString();
+            return getContext().getString(R.string.download_scheduled_on_date, dateTimeString);
         }
     }
 

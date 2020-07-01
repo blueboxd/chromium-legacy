@@ -129,7 +129,7 @@ void RecordUncleanUninstall() {
 }
 
 void DeleteFileOnTaskRunner(const base::FilePath& path) {
-  if (!base::DeleteFileRecursively(path))
+  if (!base::DeletePathRecursively(path))
     DPLOG(ERROR) << "Couldn't delete " << path.value();
 }
 

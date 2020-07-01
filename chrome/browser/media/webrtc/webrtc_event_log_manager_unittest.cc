@@ -2592,7 +2592,7 @@ TEST_F(WebRtcEventLogManagerTest,
   // Unload the profile, delete its remove logs directory, and remove write
   // permissions from it, thereby preventing it from being created again.
   UnloadMainTestProfile();
-  ASSERT_TRUE(base::DeleteFileRecursively(remote_logs_path));
+  ASSERT_TRUE(base::DeletePathRecursively(remote_logs_path));
   RemoveWritePermissions(browser_context_dir);
 
   // Graceful handling by BrowserContext::EnableForBrowserContext, despite

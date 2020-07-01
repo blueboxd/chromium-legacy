@@ -49,6 +49,7 @@ class ExtensionsToolbarContainer;
 class HomeButton;
 class MediaToolbarButtonView;
 class ReloadButton;
+class SharesheetButton;
 class ToolbarButton;
 class ToolbarAccountIconContainerView;
 
@@ -272,6 +273,7 @@ class ToolbarView : public views::AccessiblePaneView,
   media_router::CastToolbarButton* cast_ = nullptr;
   ToolbarAccountIconContainerView* toolbar_account_icon_container_ = nullptr;
   AvatarToolbarButton* avatar_ = nullptr;
+  SharesheetButton* sharesheet_button_ = nullptr;
   MediaToolbarButtonView* media_button_ = nullptr;
   BrowserAppMenuButton* app_menu_button_ = nullptr;
 

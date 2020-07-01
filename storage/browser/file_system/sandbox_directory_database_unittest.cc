@@ -96,7 +96,7 @@ class SandboxDirectoryDatabaseTest : public testing::Test {
 
   void ClearDatabaseAndDirectory() {
     db_.reset();
-    ASSERT_TRUE(base::DeleteFileRecursively(path()));
+    ASSERT_TRUE(base::DeletePathRecursively(path()));
     ASSERT_TRUE(base::CreateDirectory(path()));
     db_.reset(new SandboxDirectoryDatabase(path(), nullptr));
   }

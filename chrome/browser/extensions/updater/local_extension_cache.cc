@@ -374,7 +374,7 @@ LocalExtensionCache::CacheMap::iterator LocalExtensionCache::InsertCacheEntry(
     it = cache.insert(std::make_pair(id, info));
   } else {
     if (delete_files) {
-      base::DeleteFileRecursively(info.file_path);
+      base::DeletePathRecursively(info.file_path);
       VLOG(1) << "Remove older version " << info.version << " for extension id "
               << id;
     }
@@ -411,7 +411,7 @@ void LocalExtensionCache::BackendCheckCacheContentsInternal(
 
     if (info.IsDirectory() || base::IsLink(info.GetName())) {
       LOG(ERROR) << "Erasing bad file in cache directory: " << basename;
-      base::DeleteFileRecursively(path);
+      base::DeletePathRecursively(path);
       continue;
     }
 
@@ -454,7 +454,7 @@ void LocalExtensionCache::BackendCheckCacheContentsInternal(
 
     if (id.empty() || version.empty()) {
       LOG(ERROR) << "Invalid file in cache, erasing: " << basename;
-      base::DeleteFileRecursively(path);
+      base::DeletePathRecursively(path);
       continue;
     }
 

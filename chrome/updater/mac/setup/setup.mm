@@ -228,7 +228,7 @@ bool RemoveUpdateAdministrationJobFromLaunchd(
 }
 
 bool DeleteInstallFolder(const base::FilePath& installed_path) {
-  if (!base::DeleteFileRecursively(installed_path)) {
+  if (!base::DeletePathRecursively(installed_path)) {
     LOG(ERROR) << "Deleting " << installed_path << " failed";
     return false;
   }

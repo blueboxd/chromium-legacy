@@ -122,8 +122,8 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
     EXPECT_TRUE(base::DeleteFile(preferences_file_));
 
     // TODO(phajdan.jr): Check return values of the functions below, carefully.
-    base::DeleteFileRecursively(user_scripts_dir_);
-    base::DeleteFileRecursively(extensions_dir_);
+    base::DeletePathRecursively(user_scripts_dir_);
+    base::DeletePathRecursively(extensions_dir_);
 
     InProcessBrowserTest::TearDown();
   }

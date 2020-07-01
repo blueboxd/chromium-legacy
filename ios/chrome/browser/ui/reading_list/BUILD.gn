@@ -164,50 +164,6 @@ source_set("unit_tests") {
   ]
 }
 
-source_set("eg_tests") {
-  defines = [ "CHROME_EARL_GREY_1" ]
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [ "reading_list_egtest.mm" ]
-  deps = [
-    ":reading_list",
-    ":reading_list_constants",
-    ":reading_list_ui",
-    ":test_support",
-    "//base",
-    "//base/test:test_support",
-    "//components/reading_list/core",
-    "//ios/chrome/app/strings",
-    "//ios/chrome/app/theme:theme_grit",
-    "//ios/chrome/browser",
-    "//ios/chrome/browser/reading_list",
-    "//ios/chrome/browser/ui/commands",
-    "//ios/chrome/browser/ui/popup_menu:constants",
-    "//ios/chrome/browser/ui/table_view",
-    "//ios/chrome/browser/ui/table_view:constants",
-    "//ios/chrome/browser/ui/table_view:feature_flags",
-    "//ios/chrome/browser/ui/table_view:views",
-    "//ios/chrome/browser/ui/table_view/cells",
-    "//ios/chrome/browser/ui/util",
-    "//ios/chrome/test/app:test_support",
-    "//ios/chrome/test/earl_grey:test_support",
-    "//ios/testing/earl_grey:earl_grey_support",
-    "//ios/third_party/earl_grey:earl_grey+link",
-    "//ios/third_party/material_components_ios",
-    "//ios/web",
-    "//ios/web/common:common",
-    "//ios/web/public",
-    "//ios/web/public/test",
-    "//ios/web/public/test/http_server",
-    "//net",
-    "//net:test_support",
-  ]
-  libs = [
-    "UIKit.framework",
-    "XCTest.framework",
-  ]
-}
-
 source_set("eg2_tests") {
   defines = [ "CHROME_EARL_GREY_2" ]
   configs += [
@@ -233,25 +189,6 @@ source_set("eg2_tests") {
     "//net:test_support",
   ]
   libs = [ "UIKit.framework" ]
-}
-
-source_set("test_support") {
-  defines = [ "CHROME_EARL_GREY_1" ]
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "reading_list_app_interface.h",
-    "reading_list_app_interface.mm",
-  ]
-  deps = [
-    "//base/test:test_support",
-    "//base/test:test_support",
-    "//components/reading_list/core",
-    "//ios/chrome/browser/reading_list",
-    "//ios/chrome/test/app:test_support",
-    "//ios/testing:nserror_support",
-    "//ios/testing/earl_grey:earl_grey_support",
-  ]
 }
 
 source_set("eg_app_support+eg2") {

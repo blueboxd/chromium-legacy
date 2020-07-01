@@ -69,6 +69,17 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
     kNoPrimaryAccount,
   };
 
+  // TODO(crbug.com/1099286): Add the edit icon into this struct.
+  struct EditButtonParams {
+    EditButtonParams(const base::string16& edit_tooltip_text,
+                     base::RepeatingClosure edit_action);
+    EditButtonParams(const EditButtonParams&);
+    ~EditButtonParams();
+
+    base::string16 edit_tooltip_text;
+    base::RepeatingClosure edit_action;
+  };
+
   // Shows the bubble if one is not already showing.  This allows us to easily
   // make a button toggle the bubble on and off when clicked: we unconditionally
   // call this function when the button is clicked and if the bubble isn't
@@ -95,17 +106,21 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   // Override to supply a sync icon for the profile menu.
   virtual gfx::ImageSkia GetSyncIcon() const;
 
-  // API to build the profile menu.
-  void SetHeading(const base::string16& heading,
-                  const base::string16& tooltip_text,
-                  base::RepeatingClosure action);
-  // If |image| is empty |icon| will be used instead.
-  void SetIdentityInfo(const gfx::ImageSkia& image,
-                       const base::string16& title,
-                       const base::string16& subtitle = base::string16(),
-                       const gfx::VectorIcon& icon = kUserAccountAvatarIcon,
-                       ui::NativeTheme::ColorId color_id =
-                           ui::NativeTheme::kColorId_MenuIconColor);
+  // If |profile_name| is empty, no heading will be displayed. If |image| is
+  // empty |icon| will be used instead.
+  // TODO(crbug.com/1100835): Consider simplifying the API by only passing
+  // |image| (and constructing it from |icon| upon calling when needed). This is
+  // especially relevant, if the icon color no longer depends on the theme
+  // through a color id.
+  void SetProfileIdentityInfo(
+      const base::string16& profile_name,
+      base::Optional<EditButtonParams> edit_button_params,
+      const gfx::ImageSkia& image,
+      const base::string16& title,
+      const base::string16& subtitle = base::string16(),
+      const gfx::VectorIcon& icon = kUserAccountAvatarIcon,
+      ui::NativeTheme::ColorId icon_color_id =
+          ui::NativeTheme::kColorId_MenuIconColor);
   void SetSyncInfo(const base::string16& description,
                    const base::string16& clickable_text,
                    SyncInfoContainerBackgroundState background_state,

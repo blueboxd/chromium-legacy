@@ -25,7 +25,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/time/time_win_features.h"
 #include "base/values.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
@@ -5475,13 +5474,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"raw-clipboard", flag_descriptions::kRawClipboardName,
      flag_descriptions::kRawClipboardDescription, kOsMac | kOsWin | kOsLinux,
      FEATURE_VALUE_TYPE(blink::features::kRawClipboard)},
-
-#if defined(OS_WIN)
-    {"slow-dc-timer-interrupts-win",
-     flag_descriptions::kSlowDCTimerInterruptsWinName,
-     flag_descriptions::kSlowDCTimerInterruptsWinDescription, kOsWin,
-     FEATURE_VALUE_TYPE(base::kSlowDCTimerInterruptsWin)},
-#endif  // OS_WIN
 
 #if BUILDFLAG(ENABLE_PAINT_PREVIEW) && defined(OS_ANDROID)
     {"paint-preview-demo", flag_descriptions::kPaintPreviewDemoName,

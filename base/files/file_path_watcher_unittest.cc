@@ -389,7 +389,7 @@ TEST_F(FilePathWatcherTest, DisappearingDirectory) {
   std::unique_ptr<TestDelegate> delegate(new TestDelegate(collector()));
   ASSERT_TRUE(SetupWatch(file, &watcher, delegate.get(), false));
 
-  ASSERT_TRUE(base::DeleteFileRecursively(dir));
+  ASSERT_TRUE(base::DeletePathRecursively(dir));
   ASSERT_TRUE(WaitForEvents());
 }
 

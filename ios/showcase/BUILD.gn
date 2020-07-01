@@ -5,7 +5,6 @@
 import("//build/config/ios/rules.gni")
 import("//ios/build/chrome_build.gni")
 import("//ios/build/config.gni")
-import("//ios/third_party/earl_grey/ios_eg_test.gni")
 import("//ios/third_party/earl_grey2/ios_eg2_test.gni")
 
 ios_app_bundle("showcase") {
@@ -80,24 +79,4 @@ ios_eg2_test("ios_showcase_eg2tests_module") {
   ]
   bundle_deps = [ "//ios/showcase/core/resources" ]
   data_deps = [ ":ios_showcase_eg2tests" ]
-}
-
-ios_eg_test("ios_showcase_egtests") {
-  info_plist = "core/Info.plist"
-  extra_substitutions = [ "IOS_BUNDLE_ID_PREFIX=$ios_app_bundle_id_prefix" ]
-  deps = [
-    ":features",
-    "//ios/showcase/core:main",
-
-    # Add all eg_tests targets below.
-    "//ios/showcase/badges:eg_tests",
-    "//ios/showcase/bubble:eg_tests",
-    "//ios/showcase/content_suggestions:eg_tests",
-    "//ios/showcase/core:eg_tests",
-    "//ios/showcase/infobars:eg_tests",
-    "//ios/showcase/text_badge_view:eg_tests",
-  ]
-
-  bundle_deps = [ "//ios/showcase/core/resources" ]
-  assert_no_deps = ios_assert_no_deps
 }

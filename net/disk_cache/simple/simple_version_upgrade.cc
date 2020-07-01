@@ -249,7 +249,7 @@ bool DeleteIndexFilesIfCacheIsEmpty(const base::FilePath& path) {
     return false;
   }
   bool deleted_fake_index = base::DeleteFile(fake_index);
-  bool deleted_index_dir = base::DeleteFileRecursively(index_dir);
+  bool deleted_index_dir = base::DeletePathRecursively(index_dir);
   bool deleted_legacy_index_file = base::DeleteFile(legacy_index_file);
   return deleted_fake_index || deleted_index_dir || deleted_legacy_index_file;
 }

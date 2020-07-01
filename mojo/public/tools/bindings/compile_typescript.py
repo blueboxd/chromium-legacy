@@ -19,7 +19,7 @@ def main(argv):
   args = parser.parse_args(argv)
 
   result = node.RunNode([node_modules.PathToTypescript()] +
-                        ['--project %s' % args.tsconfig_path])
+                        ['--project', args.tsconfig_path])
   if len(result) != 0:
     raise RuntimeError('Failed to compile Typescript: \n%s' % result)
 

@@ -15,10 +15,9 @@ import android.view.View;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.share.BitmapDownloadRequest;
 import org.chromium.chrome.browser.share.qrcode.QRCodeGenerationRequest;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
@@ -40,20 +39,17 @@ class QrCodeShareMediator {
      * The QrCodeScanMediator constructor.
      * @param context The context to use.
      * @param propertyModel The property modelto use to communicate with views.
+     * @param closeDialog The {@link Runnable} to close the dialog.
+     * @param url The url to create the QRCode.
      */
-    QrCodeShareMediator(Context context, PropertyModel propertyModel, Runnable closeDialog) {
+    QrCodeShareMediator(
+            Context context, PropertyModel propertyModel, Runnable closeDialog, String url) {
         mContext = context;
         mPropertyModel = propertyModel;
         mCloseDialog = closeDialog;
-
-        // TODO(crbug.com/1083351): Get URL from Sharing Hub.
-        if (context instanceof ChromeActivity) {
-            Tab tab = ((ChromeActivity) context).getActivityTabProvider().get();
-            if (tab != null) {
-                mUrl = tab.getUrl().getSpec();
-                refreshQrCode(mUrl);
-            }
-        }
+        mUrl = url;
+        ChromeBrowserInitializer.getInstance().runNowOrAfterFullBrowserStarted(
+                () -> refreshQrCode(mUrl));
     }
 
     /**

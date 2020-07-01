@@ -92,7 +92,7 @@ void DeleteDirectoryContents(const base::FilePath& dir) {
                       base::FileEnumerator::SHOW_SYM_LINKS);
   for (base::FilePath path = content_enumerator.Next(); !path.empty();
        path = content_enumerator.Next()) {
-    base::DeleteFileRecursively(path);
+    base::DeletePathRecursively(path);
   }
 }
 
@@ -728,7 +728,7 @@ void DriveIntegrationService::ClearCacheAndRemountFileSystemAfterUnmount(
     if (path == logs_path) {
       continue;
     }
-    if (!base::DeleteFileRecursively(path)) {
+    if (!base::DeletePathRecursively(path)) {
       success = false;
       break;
     }

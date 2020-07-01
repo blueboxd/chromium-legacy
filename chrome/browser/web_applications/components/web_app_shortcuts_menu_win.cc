@@ -226,7 +226,7 @@ namespace internals {
 void DeleteShortcutsMenuIcons(const base::FilePath& shortcut_data_dir) {
   base::FilePath shortcuts_menu_icons_path =
       GetShortcutsMenuIconsDirectory(shortcut_data_dir);
-  base::DeleteFileRecursively(shortcuts_menu_icons_path);
+  base::DeletePathRecursively(shortcuts_menu_icons_path);
 }
 
 }  // namespace internals

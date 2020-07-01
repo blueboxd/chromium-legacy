@@ -46,7 +46,7 @@ base::FilePath LegacyValueStoreFactory::ModelSettings::GetDBPath(
 
 bool LegacyValueStoreFactory::ModelSettings::DeleteData(
     const ExtensionId& extension_id) {
-  return base::DeleteFileRecursively(GetDBPath(extension_id));
+  return base::DeletePathRecursively(GetDBPath(extension_id));
 }
 
 bool LegacyValueStoreFactory::ModelSettings::DataExists(

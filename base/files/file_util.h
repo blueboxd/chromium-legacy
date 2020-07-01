@@ -79,8 +79,7 @@ BASE_EXPORT bool DeleteFile(const FilePath& path);
 // the symlink. (even if the symlink points to a non-existent file)
 //
 // WARNING: USING THIS EQUIVALENT TO "rm -rf", SO USE WITH CAUTION.
-// TODO(thestig): Rename to DeletePathRecursively().
-BASE_EXPORT bool DeleteFileRecursively(const FilePath& path);
+BASE_EXPORT bool DeletePathRecursively(const FilePath& path);
 
 // DEPRECATED. Please use the functions immediately above.
 // https://crbug.com/1009837
@@ -103,8 +102,8 @@ BASE_EXPORT bool DeleteFile(const FilePath& path, bool recursive);
 // DeleteFile() result.
 BASE_EXPORT OnceCallback<void(const FilePath&)> GetDeleteFileCallback();
 
-// Simplified way to get a callback to do DeleteFileRecursively(path) and ignore
-// the DeleteFileRecursively() result.
+// Simplified way to get a callback to do DeletePathRecursively(path) and ignore
+// the DeletePathRecursively() result.
 BASE_EXPORT OnceCallback<void(const FilePath&)>
 GetDeletePathRecursivelyCallback();
 

@@ -99,7 +99,7 @@ void Installer::DeleteOlderInstallPaths() {
     // Mark for deletion any valid versioned directory except the directory
     // for the currently registered app.
     if (version_dir.IsValid() && version_dir.CompareTo(pv_)) {
-      base::DeleteFileRecursively(path);
+      base::DeletePathRecursively(path);
     }
   }
 }
@@ -136,7 +136,7 @@ Installer::Result Installer::InstallHelper(
   const auto versioned_install_dir =
       app_install_dir.AppendASCII(manifest_version.GetString());
   if (base::PathExists(versioned_install_dir)) {
-    if (!base::DeleteFileRecursively(versioned_install_dir))
+    if (!base::DeletePathRecursively(versioned_install_dir))
       return Result(update_client::InstallError::CLEAN_INSTALL_DIR_FAILED);
   }
 
@@ -148,7 +148,7 @@ Installer::Result Installer::InstallHelper(
   // updates is implemented.
   if (!base::Move(unpack_path, versioned_install_dir)) {
     PLOG(ERROR) << "Move failed.";
-    base::DeleteFileRecursively(versioned_install_dir);
+    base::DeletePathRecursively(versioned_install_dir);
     return Result(update_client::InstallError::MOVE_FILES_ERROR);
   }
 
@@ -191,7 +191,7 @@ void Installer::InstallWithSyncPrimitives(
   DeleteOlderInstallPaths();
   const auto result = InstallHelper(unpack_path, std::move(install_params),
                                     std::move(progress_callback));
-  base::DeleteFileRecursively(unpack_path);
+  base::DeletePathRecursively(unpack_path);
   std::move(callback).Run(result);
 }
 

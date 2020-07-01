@@ -333,6 +333,7 @@ def chromium_chromiumos_builder(*, name, **kwargs):
 def chromium_codesearch_builder(*, name, os=None, **kwargs):
   return try_builder(
       name = name,
+      builderless = True,
       configure_kitchen = False,
       executable = 'recipe:chromium_codesearch',
       mastername = 'tryserver.chromium.codesearch',

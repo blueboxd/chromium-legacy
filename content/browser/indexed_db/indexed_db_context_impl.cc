@@ -220,7 +220,7 @@ void IndexedDBContextImpl::DeleteForOrigin(const Origin& origin,
           idb_directory);
   bool success = s.ok();
   if (success)
-    success = base::DeleteFileRecursively(GetBlobStorePath(origin));
+    success = base::DeletePathRecursively(GetBlobStorePath(origin));
   QueryDiskAndUpdateQuotaUsage(origin);
   if (success) {
     GetOriginSet()->erase(origin);
@@ -829,7 +829,7 @@ void IndexedDBContextImpl::Shutdown() {
                   context->origins_to_purge_on_shutdown_.end())
                 continue;
               factory->ForceClose(*origin, false);
-              base::DeleteFileRecursively(*file_path);
+              base::DeletePathRecursively(*file_path);
             }
           },
           base::WrapRefCounted(this)));

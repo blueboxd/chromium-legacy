@@ -386,7 +386,7 @@ bool DeleteFile(const FilePath& path) {
   return DeleteFileAndRecordMetrics(path, /*recursive=*/false);
 }
 
-bool DeleteFileRecursively(const FilePath& path) {
+bool DeletePathRecursively(const FilePath& path) {
   return DeleteFileAndRecordMetrics(path, /*recursive=*/true);
 }
 
@@ -1068,7 +1068,7 @@ bool CopyAndDeleteDirectory(const FilePath& from_path,
                             const FilePath& to_path) {
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
   if (CopyDirectory(from_path, to_path, true)) {
-    if (DeleteFileRecursively(from_path))
+    if (DeletePathRecursively(from_path))
       return true;
 
     // Like Move, this function is not transactional, so we just

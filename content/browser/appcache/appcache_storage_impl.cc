@@ -278,7 +278,7 @@ void AppCacheStorageImpl::InitTask::Run() {
   if (!db_file_path_.empty() &&
       !base::PathExists(db_file_path_) &&
       base::DirectoryExists(disk_cache_directory_)) {
-    base::DeleteFileRecursively(disk_cache_directory_);
+    base::DeletePathRecursively(disk_cache_directory_);
     if (base::DirectoryExists(disk_cache_directory_)) {
       database_->Disable();  // This triggers OnFatalError handling.
       return;

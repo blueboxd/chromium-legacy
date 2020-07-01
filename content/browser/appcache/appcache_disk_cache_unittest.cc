@@ -78,7 +78,7 @@ TEST_F(AppCacheDiskCacheTest, DisablePriorToInitCompletion) {
   // Ensure the directory can be deleted at this point.
   EXPECT_TRUE(base::DirectoryExists(directory_.GetPath()));
   EXPECT_FALSE(base::IsDirectoryEmpty(directory_.GetPath()));
-  EXPECT_TRUE(base::DeleteFileRecursively(directory_.GetPath()));
+  EXPECT_TRUE(base::DeletePathRecursively(directory_.GetPath()));
   EXPECT_FALSE(base::DirectoryExists(directory_.GetPath()));
 }
 
@@ -99,7 +99,7 @@ TEST_F(AppCacheDiskCacheTest, DisableAfterInitted) {
   // Ensure the directory can be deleted at this point.
   EXPECT_TRUE(base::DirectoryExists(directory_.GetPath()));
   EXPECT_FALSE(base::IsDirectoryEmpty(directory_.GetPath()));
-  EXPECT_TRUE(base::DeleteFileRecursively(directory_.GetPath()));
+  EXPECT_TRUE(base::DeletePathRecursively(directory_.GetPath()));
   EXPECT_FALSE(base::DirectoryExists(directory_.GetPath()));
 
   // Methods should return immediately when disabled and not invoke
@@ -165,7 +165,7 @@ TEST_F(AppCacheDiskCacheTest, DISABLED_DisableWithEntriesOpen) {
   // Ensure the directory can be deleted at this point.
   EXPECT_TRUE(base::DirectoryExists(directory_.GetPath()));
   EXPECT_FALSE(base::IsDirectoryEmpty(directory_.GetPath()));
-  EXPECT_TRUE(base::DeleteFileRecursively(directory_.GetPath()));
+  EXPECT_TRUE(base::DeletePathRecursively(directory_.GetPath()));
   EXPECT_FALSE(base::DirectoryExists(directory_.GetPath()));
 
   disk_cache.reset(nullptr);
@@ -198,7 +198,7 @@ TEST_F(AppCacheDiskCacheTest, CleanupCallback) {
   // Ensure the directory can be deleted at this point.
   EXPECT_TRUE(base::DirectoryExists(directory_.GetPath()));
   EXPECT_FALSE(base::IsDirectoryEmpty(directory_.GetPath()));
-  EXPECT_TRUE(base::DeleteFileRecursively(directory_.GetPath()));
+  EXPECT_TRUE(base::DeletePathRecursively(directory_.GetPath()));
   EXPECT_FALSE(base::DirectoryExists(directory_.GetPath()));
 }
 

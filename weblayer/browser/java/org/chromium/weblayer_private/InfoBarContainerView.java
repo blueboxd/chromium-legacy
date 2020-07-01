@@ -17,6 +17,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.MathUtils;
+import org.chromium.components.browser_ui.banners.SwipableOverlayView;
 import org.chromium.components.infobars.InfoBar;
 import org.chromium.components.infobars.InfoBarUiItem;
 import org.chromium.ui.display.DisplayAndroid;
@@ -185,7 +186,7 @@ public class InfoBarContainerView extends SwipableOverlayView {
      * Adds this class to the parent view {@link #mParentView}.
      */
     void addToParentView() {
-        super.addToParentView(mParentView,
+        super.addToParentViewAtIndex(mParentView,
                 mTab.getBrowser().getViewController().getDesiredInfoBarContainerViewIndex());
     }
 

@@ -33,9 +33,11 @@
 #include "third_party/blink/public/platform/web_text_input_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/editing/commands/typing_command.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/core/editing/ime/ime_text_span.h"
 #include "third_party/blink/renderer/core/editing/plain_text_range.h"
+#include "third_party/blink/renderer/core/events/input_event.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -225,6 +227,17 @@ class CORE_EXPORT InputMethodController final
   //   2) CommitText()
   //   3) SetComposingText() (SetComposition())
   void RemoveSuggestionMarkerInCompositionRange();
+
+  void DispatchCompositionUpdateEvent(LocalFrame& frame, const String& text);
+  void DispatchBeforeInputFromComposition(EventTarget* target,
+                                          InputEvent::InputType input_type,
+                                          const String& data);
+  void InsertTextDuringCompositionWithEvents(
+      LocalFrame& frame,
+      const String& text,
+      TypingCommand::Options options,
+      TypingCommand::TextCompositionType composition_type);
+  void DispatchCompositionEndEvent(LocalFrame& frame, const String& text);
 
   FRIEND_TEST_ALL_PREFIXES(InputMethodControllerTest,
                            InputModeOfFocusedElement);

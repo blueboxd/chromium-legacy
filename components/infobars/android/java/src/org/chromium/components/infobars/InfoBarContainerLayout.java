@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.infobar;
+package org.chromium.components.infobars;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -18,10 +18,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 
-import org.chromium.chrome.R;
-import org.chromium.chrome.browser.infobar.InfoBarContainer.InfoBarAnimationListener;
-import org.chromium.components.infobars.InfoBarUiItem;
-import org.chromium.components.infobars.InfoBarWrapper;
 import org.chromium.ui.widget.OptimizedFrameLayout;
 
 import java.util.ArrayList;
@@ -68,7 +64,7 @@ public class InfoBarContainerLayout extends OptimizedFrameLayout {
     /**
      * Creates an empty InfoBarContainerLayout.
      */
-    InfoBarContainerLayout(Context context, Runnable makeContainerVisibleRunnable,
+    public InfoBarContainerLayout(Context context, Runnable makeContainerVisibleRunnable,
             InfoBarAnimationListener animationListener) {
         super(context, null);
         Resources res = context.getResources();
@@ -82,7 +78,7 @@ public class InfoBarContainerLayout extends OptimizedFrameLayout {
      * Adds an infobar to the container. The infobar appearing animation will happen after the
      * current animation, if any, finishes.
      */
-    void addInfoBar(InfoBarUiItem item) {
+    public void addInfoBar(InfoBarUiItem item) {
         mItems.add(findInsertIndex(item), item);
         processPendingAnimations();
     }
@@ -105,7 +101,7 @@ public class InfoBarContainerLayout extends OptimizedFrameLayout {
      * Removes an infobar from the container. The infobar will be animated off the screen if it's
      * currently visible.
      */
-    void removeInfoBar(InfoBarUiItem item) {
+    public void removeInfoBar(InfoBarUiItem item) {
         mItems.remove(item);
         processPendingAnimations();
     }
@@ -115,14 +111,14 @@ public class InfoBarContainerLayout extends OptimizedFrameLayout {
      * is visible in the front of the stack, the infobar will fade out the old contents, resize,
      * then fade in the new contents.
      */
-    void notifyInfoBarViewChanged() {
+    public void notifyInfoBarViewChanged() {
         processPendingAnimations();
     }
 
     /**
      * Returns true if any animations are pending or in progress.
      */
-    boolean isAnimating() {
+    public boolean isAnimating() {
         return mAnimation != null;
     }
 
@@ -237,8 +233,7 @@ public class InfoBarContainerLayout extends OptimizedFrameLayout {
 
             AnimatorSet animator = new AnimatorSet();
             animator.playSequentially(
-                    createTranslationYAnimator(mFrontWrapper, 0f)
-                            .setDuration(DURATION_SLIDE_UP_MS),
+                    createTranslationYAnimator(mFrontWrapper, 0f).setDuration(DURATION_SLIDE_UP_MS),
                     ObjectAnimator.ofFloat(mFrontContents, View.ALPHA, 1f)
                             .setDuration(DURATION_FADE_MS));
             return animator;
@@ -310,8 +305,8 @@ public class InfoBarContainerLayout extends OptimizedFrameLayout {
             mMakeContainerVisibleRunnable.run();
 
             AnimatorSet animator = new AnimatorSet();
-            animator.play(createTranslationYAnimator(mFrontWrapper,
-                    newFrontEnd).setDuration(DURATION_SLIDE_UP_MS));
+            animator.play(createTranslationYAnimator(mFrontWrapper, newFrontEnd)
+                                  .setDuration(DURATION_SLIDE_UP_MS));
 
             // If the container is shrinking, the back infobars need to animate down (from 0 to the
             // positive delta). Otherwise they have to animate up (from the negative delta to 0).
@@ -319,8 +314,8 @@ public class InfoBarContainerLayout extends OptimizedFrameLayout {
             int backEnd = Math.max(-heightDelta, 0);
             for (int i = 1; i < mInfoBarWrappers.size(); i++) {
                 mInfoBarWrappers.get(i).setTranslationY(backStart);
-                animator.play(createTranslationYAnimator(mInfoBarWrappers.get(i),
-                        backEnd).setDuration(DURATION_SLIDE_UP_MS));
+                animator.play(createTranslationYAnimator(mInfoBarWrappers.get(i), backEnd)
+                                      .setDuration(DURATION_SLIDE_UP_MS));
             }
 
             animator.play(ObjectAnimator.ofFloat(mFrontContents, View.ALPHA, 1f)
@@ -414,21 +409,22 @@ public class InfoBarContainerLayout extends OptimizedFrameLayout {
             // Slide the front infobar down and away.
             AnimatorSet animator = new AnimatorSet();
             mOldFrontWrapper.setTranslationY(startTranslationY);
-            animator.play(createTranslationYAnimator(mOldFrontWrapper,
-                    startTranslationY + mOldFrontWrapper.getHeight())
-                    .setDuration(DURATION_SLIDE_UP_MS));
+            animator.play(createTranslationYAnimator(
+                    mOldFrontWrapper, startTranslationY + mOldFrontWrapper.getHeight())
+                                  .setDuration(DURATION_SLIDE_UP_MS));
 
             // Slide the other infobars to their new positions.
             // Note: animator.play() causes these animations to run simultaneously.
             for (int i = 1; i < mInfoBarWrappers.size(); i++) {
                 mInfoBarWrappers.get(i).setTranslationY(startTranslationY);
-                animator.play(createTranslationYAnimator(mInfoBarWrappers.get(i),
-                        endTranslationY).setDuration(DURATION_SLIDE_UP_MS));
+                animator.play(createTranslationYAnimator(mInfoBarWrappers.get(i), endTranslationY)
+                                      .setDuration(DURATION_SLIDE_UP_MS));
             }
 
             mNewFrontContents.setAlpha(0f);
             animator.play(ObjectAnimator.ofFloat(mNewFrontContents, View.ALPHA, 1f)
-                    .setDuration(DURATION_FADE_MS)).after(DURATION_SLIDE_UP_MS);
+                                    .setDuration(DURATION_FADE_MS))
+                    .after(DURATION_SLIDE_UP_MS);
 
             return animator;
         }
@@ -463,8 +459,8 @@ public class InfoBarContainerLayout extends OptimizedFrameLayout {
 
         @Override
         Animator createAnimator() {
-            return createTranslationYAnimator(mDisappearingWrapper,
-                    mDisappearingWrapper.getHeight())
+            return createTranslationYAnimator(
+                    mDisappearingWrapper, mDisappearingWrapper.getHeight())
                     .setDuration(DURATION_SLIDE_DOWN_MS);
         }
 
@@ -504,11 +500,12 @@ public class InfoBarContainerLayout extends OptimizedFrameLayout {
             mNewContents.setAlpha(0f);
 
             AnimatorSet animator = new AnimatorSet();
-            animator.playSequentially(
-                    ObjectAnimator.ofFloat(mOldContents, View.ALPHA, 0f)
-                            .setDuration(DURATION_FADE_OUT_MS),
-                    ObjectAnimator.ofFloat(InfoBarContainerLayout.this, View.TRANSLATION_Y,
-                            Math.max(0, -deltaHeight)).setDuration(DURATION_SLIDE_UP_MS),
+            animator.playSequentially(ObjectAnimator.ofFloat(mOldContents, View.ALPHA, 0f)
+                                              .setDuration(DURATION_FADE_OUT_MS),
+                    ObjectAnimator
+                            .ofFloat(InfoBarContainerLayout.this, View.TRANSLATION_Y,
+                                    Math.max(0, -deltaHeight))
+                            .setDuration(DURATION_SLIDE_UP_MS),
                     ObjectAnimator.ofFloat(mNewContents, View.ALPHA, 1f)
                             .setDuration(DURATION_FADE_OUT_MS));
             return animator;
@@ -752,8 +749,8 @@ public class InfoBarContainerLayout extends OptimizedFrameLayout {
         if (mInfoBarWrappers.size() < desiredChildCount) {
             InfoBarUiItem itemToShow = mItems.get(mInfoBarWrappers.size());
             runAnimation(mInfoBarWrappers.isEmpty()
-                    ? new FirstInfoBarAppearingAnimation(itemToShow)
-                    : new BackInfoBarAppearingAnimation(itemToShow));
+                            ? new FirstInfoBarAppearingAnimation(itemToShow)
+                            : new BackInfoBarAppearingAnimation(itemToShow));
             return;
         }
 

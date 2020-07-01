@@ -28,41 +28,6 @@ source_set("safe_mode") {
   libs = [ "UIKit.framework" ]
 }
 
-source_set("eg_tests") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  defines = [ "CHROME_EARL_GREY_1" ]
-  testonly = true
-  sources = [ "safe_mode_egtest.mm" ]
-  deps = [
-    ":safe_mode",
-    ":test_support",
-    "//base",
-    "//ios/chrome/app:app_internal",
-    "//ios/chrome/app/strings",
-    "//ios/chrome/browser/ui/main",
-    "//ios/chrome/browser/ui/util",
-    "//ios/chrome/test/app:test_support",
-    "//ios/chrome/test/earl_grey:test_support",
-    "//ios/testing:block_swizzler",
-    "//ios/testing/earl_grey:earl_grey_support",
-    "//ios/third_party/earl_grey:earl_grey+link",
-  ]
-}
-
-source_set("test_support") {
-  defines = [ "CHROME_EARL_GREY_1" ]
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "safe_mode_app_interface.h",
-    "safe_mode_app_interface.mm",
-  ]
-  deps = [
-    ":safe_mode",
-    "//ios/chrome/test/app:test_support",
-  ]
-}
-
 source_set("eg_app_support+eg2") {
   defines = [ "CHROME_EARL_GREY_2" ]
   configs += [

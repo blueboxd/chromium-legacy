@@ -108,43 +108,6 @@ source_set("unit_tests") {
   ]
 }
 
-source_set("eg_tests") {
-  defines = [ "CHROME_EARL_GREY_1" ]
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [ "translate_egtest.mm" ]
-  deps = [
-    ":eg_test_support",
-    ":translate",
-    "//base",
-    "//base/test:test_support",
-    "//components/language/ios/browser",
-    "//components/strings",
-    "//components/translate/core/browser",
-    "//components/translate/core/common",
-    "//components/translate/ios/browser",
-    "//ios/chrome/app/strings:ios_strings_grit",
-    "//ios/chrome/browser:chrome_url_constants",
-    "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/ui/popup_menu:constants",
-    "//ios/chrome/browser/ui/translate:legacy_translate_constants",
-    "//ios/chrome/browser/ui/translate:translate_ui_constants",
-    "//ios/chrome/browser/ui/util:util",
-    "//ios/chrome/test/app:test_support",
-    "//ios/chrome/test/earl_grey:test_support",
-    "//ios/chrome/test/fakes",
-    "//ios/components/webui:url_constants",
-    "//ios/testing/earl_grey:earl_grey_support",
-    "//ios/third_party/earl_grey:earl_grey+link",
-    "//ios/web:earl_grey_test_support",
-    "//ios/web/public/test",
-    "//ios/web/public/test/http_server",
-    "//net",
-    "//ui/base",
-  ]
-  libs = [ "XCTest.framework" ]
-}
-
 source_set("eg2_tests") {
   defines = [ "CHROME_EARL_GREY_2" ]
   configs += [
@@ -196,30 +159,6 @@ source_set("test_support") {
 
 source_set("eg_app_support+eg2") {
   defines = [ "CHROME_EARL_GREY_2" ]
-  configs += [
-    "//build/config/compiler:enable_arc",
-    "//build/config/ios:xctest_config",
-  ]
-  testonly = true
-  sources = [
-    "translate_app_interface.h",
-    "translate_app_interface.mm",
-  ]
-  deps = [
-    "//base:base",
-    "//components/translate/core/browser:browser",
-    "//components/translate/core/common:common",
-    "//components/translate/ios/browser:browser",
-    "//ios/chrome/browser/browser_state:browser_state",
-    "//ios/chrome/browser/translate:translate",
-    "//ios/chrome/test/app:test_support",
-    "//ios/chrome/test/fakes:fakes",
-    "//net:net",
-  ]
-}
-
-source_set("eg_test_support") {
-  defines = [ "CHROME_EARL_GREY_1" ]
   configs += [
     "//build/config/compiler:enable_arc",
     "//build/config/ios:xctest_config",

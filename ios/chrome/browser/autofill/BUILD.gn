@@ -521,31 +521,6 @@ bundle_data("unit_tests_bundle_data") {
               "{{source_root_relative_dir}}/{{source_file_part}}" ]
 }
 
-source_set("eg_tests") {
-  defines = [ "CHROME_EARL_GREY_1" ]
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [ "form_input_egtest.mm" ]
-  deps = [
-    ":autofill",
-    "//base",
-    "//base/test:test_support",
-    "//components/autofill/ios/browser:browser",
-    "//ios/chrome/app/strings",
-    "//ios/chrome/browser/autofill:autofill_shared",
-    "//ios/chrome/browser/ui/util",
-    "//ios/chrome/test:eg_test_support",
-    "//ios/chrome/test/app:test_support",
-    "//ios/chrome/test/earl_grey:test_support",
-    "//ios/testing/earl_grey:earl_grey_support",
-    "//ios/third_party/earl_grey:earl_grey+link",
-    "//ios/web:earl_grey_test_support",
-    "//ios/web/public/deprecated",
-    "//ios/web/public/test:element_selector",
-    "//ios/web/public/test/http_server",
-  ]
-}
-
 source_set("eg2_tests") {
   defines = [ "CHROME_EARL_GREY_2" ]
   configs += [

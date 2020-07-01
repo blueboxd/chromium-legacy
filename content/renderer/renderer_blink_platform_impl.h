@@ -96,6 +96,11 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       size_t,
       const blink::WebSecurityOrigin& cacheStorageOrigin,
       const blink::WebString& cacheStorageCacheName) override;
+  void PopulateURLResponse(const blink::WebURL& url,
+                           const network::mojom::URLResponseHead& head,
+                           blink::WebURLResponse* response,
+                           bool report_security_info,
+                           int request_id) override;
   blink::WebString DefaultLocale() override;
   void SuddenTerminationChanged(bool enabled) override;
   blink::WebString DatabaseCreateOriginIdentifier(

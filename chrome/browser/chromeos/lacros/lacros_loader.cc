@@ -35,7 +35,7 @@ bool CheckInstalledAndMaybeRemoveUserDirectory(
   // shuts down during the directory remove, some partially-removed directory
   // may be kept, and if the user flips the flag in the next time, that
   // partially-removed directory could be used. Fix this.
-  base::DeleteFileRecursively(lacros_util::GetUserDataDir());
+  base::DeletePathRecursively(lacros_util::GetUserDataDir());
   return true;
 }
 

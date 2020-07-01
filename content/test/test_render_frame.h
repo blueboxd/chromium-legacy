@@ -78,10 +78,6 @@ class TestRenderFrame : public RenderFrameImpl {
 
   void SimulateBeforeUnload(bool is_reload);
 
-  void SetOverlayRoutingToken(const base::UnguessableToken& token);
-
-  size_t RequestOverlayRoutingTokenCalled();
-
   bool IsPageStateUpdated() const;
 
   bool IsURLOpened() const;

@@ -99,7 +99,7 @@ struct BLINK_COMMON_EXPORT MediaStreamDevice {
   base::Optional<std::string> group_id;
 
   // Whether the video capture device supports PTZ.
-  bool pan_tilt_zoom_supported;
+  bool pan_tilt_zoom_supported = false;
 
   // The device id of a matched output device if any (otherwise empty).
   // Only applicable to audio devices.

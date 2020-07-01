@@ -349,6 +349,16 @@ void RendererBlinkPlatformImpl::ClearCodeCacheEntry(
   GetCodeCacheHost().ClearCodeCacheEntry(cache_type, url);
 }
 
+void RendererBlinkPlatformImpl::PopulateURLResponse(
+    const WebURL& url,
+    const network::mojom::URLResponseHead& head,
+    blink::WebURLResponse* response,
+    bool report_security_info,
+    int request_id) {
+  WebURLLoaderImpl::PopulateURLResponse(url, head, response,
+                                        report_security_info, request_id);
+}
+
 void RendererBlinkPlatformImpl::CacheMetadataInCacheStorage(
     const blink::WebURL& url,
     base::Time response_time,

@@ -144,7 +144,7 @@ class ChromeUpdaterMacSetupTest : public testing::Test {
   }
 
   void TearDown() override {
-    ASSERT_TRUE(base::DeleteFileRecursively(test_dir_));
+    ASSERT_TRUE(base::DeletePathRecursively(test_dir_));
   }
 
   base::FilePath GetTestDir() { return test_dir_; }

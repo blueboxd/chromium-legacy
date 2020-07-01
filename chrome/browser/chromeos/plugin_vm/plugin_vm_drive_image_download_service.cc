@@ -43,7 +43,7 @@ namespace {
 
 void CreateTemporaryDriveDownloadFile(const base::FilePath& drive_directory,
                                       base::FilePath* file_path) {
-  if (!base::DeleteFileRecursively(drive_directory)) {
+  if (!base::DeletePathRecursively(drive_directory)) {
     LOG(ERROR) << "PluginVM Drive download folder failed to be removed";
   }
 
@@ -196,7 +196,7 @@ void PluginVmDriveImageDownloadService::RemoveTemporaryArchive(
     OnFileDeletedCallback on_file_deleted_callback) {
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
-      base::BindOnce(&base::DeleteFileRecursively, download_directory_),
+      base::BindOnce(&base::DeletePathRecursively, download_directory_),
       std::move(on_file_deleted_callback));
 }
 

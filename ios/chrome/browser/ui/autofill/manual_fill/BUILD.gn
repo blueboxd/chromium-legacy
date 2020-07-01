@@ -208,50 +208,6 @@ source_set("requesters") {
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
-source_set("eg_tests") {
-  defines = [ "CHROME_EARL_GREY_1" ]
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "address_view_controller_egtest.mm",
-    "card_view_controller_egtest.mm",
-    "fallback_coordinator_egtest.mm",
-    "fallback_view_controller_egtest.mm",
-    "keyboard_observer_egtest.mm",
-    "password_view_controller_egtest.mm",
-  ]
-  deps = [
-    ":manual_fill",
-    ":manual_fill_ui",
-    "//base",
-    "//base/test:test_support",
-    "//components/autofill/core/browser",
-    "//components/autofill/core/browser:test_support",
-    "//components/autofill/core/common",
-    "//components/autofill/ios/browser",
-    "//components/keyed_service/core",
-    "//ios/chrome/app/strings:ios_strings_grit",
-    "//ios/chrome/browser",
-    "//ios/chrome/browser/autofill",
-    "//ios/chrome/browser/ui/autofill:test_support",
-    "//ios/chrome/browser/ui/settings",
-    "//ios/chrome/browser/ui/settings/autofill",
-    "//ios/chrome/browser/ui/settings/autofill:feature_flags",
-    "//ios/chrome/browser/ui/settings/password",
-    "//ios/chrome/browser/ui/util",
-    "//ios/chrome/browser/ui/util:test_support",
-    "//ios/chrome/test:eg_test_support",
-    "//ios/chrome/test/app:test_support",
-    "//ios/chrome/test/earl_grey:test_support",
-    "//ios/testing/earl_grey:earl_grey_support",
-    "//ios/third_party/earl_grey:earl_grey+link",
-    "//ios/web:earl_grey_test_support",
-    "//ios/web/public/test:element_selector",
-    "//ios/web/public/test/http_server",
-    "//net:test_support",
-  ]
-}
-
 source_set("eg2_tests") {
   defines = [ "CHROME_EARL_GREY_2" ]
   configs += [

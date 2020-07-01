@@ -62,10 +62,6 @@ void NGFragmentItems::FinalizeAfterLayout(
         continue;
       }
       LayoutObject* const layout_object = item.GetMutableLayoutObject();
-      if (UNLIKELY(layout_object->IsFloating())) {
-        DCHECK_EQ(item.DeltaToNextForSameLayoutObject(), 0u);
-        continue;
-      }
       DCHECK(!layout_object->IsOutOfFlowPositioned());
       DCHECK(layout_object->IsInLayoutNGInlineFormattingContext());
 
@@ -109,7 +105,7 @@ void NGFragmentItems::ClearAssociatedFragments(LayoutObject* container) {
   for (LayoutObject* child = container->SlowFirstChild(); child;
        child = child->NextSibling()) {
     if (UNLIKELY(!child->IsInLayoutNGInlineFormattingContext() ||
-                 child->IsFloatingOrOutOfFlowPositioned()))
+                 child->IsOutOfFlowPositioned()))
       continue;
     child->ClearFirstInlineFragmentItemIndex();
 

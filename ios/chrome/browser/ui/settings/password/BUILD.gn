@@ -115,64 +115,6 @@ source_set("unit_tests") {
   ]
 }
 
-source_set("eg_test_support") {
-  defines = [ "CHROME_EARL_GREY_1" ]
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "passwords_settings_app_interface.h",
-    "passwords_settings_app_interface.mm",
-  ]
-  deps = [
-    ":password",
-    "//base",
-    "//base/test:test_support",
-    "//components/autofill/core/common",
-    "//components/keyed_service/core",
-    "//components/password_manager/core/browser",
-    "//components/password_manager/core/common",
-    "//components/prefs",
-    "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/passwords",
-    "//ios/chrome/common/ui/reauthentication",
-    "//ios/chrome/test/app:test_support",
-    "//ios/third_party/material_components_ios",
-    "//url",
-  ]
-}
-
-source_set("eg_tests") {
-  defines = [ "CHROME_EARL_GREY_1" ]
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [ "passwords_settings_egtest.mm" ]
-  deps = [
-    ":eg_test_support",
-    ":password_constants",
-    "//base",
-    "//base/test:test_support",
-    "//components/strings",
-    "//components/ukm/ios:features",
-    "//ios/chrome/app/strings",
-    "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/passwords",
-    "//ios/chrome/browser/ui/settings:settings_root_constants",
-    "//ios/chrome/browser/ui/table_view/cells",
-    "//ios/chrome/browser/ui/table_view/cells:cells_constants",
-    "//ios/chrome/browser/ui/util",
-    "//ios/chrome/common/ui/reauthentication",
-    "//ios/chrome/test/earl_grey:test_support",
-    "//ios/testing/earl_grey:earl_grey_support",
-    "//ios/third_party/material_components_ios",
-    "//ios/web:earl_grey_test_support",
-    "//ios/web/public/test:element_selector",
-    "//ios/web/public/test:util",
-    "//ios/web/public/test/http_server",
-    "//ui/base",
-    "//url",
-  ]
-}
-
 source_set("eg_app_support+eg2") {
   defines = [ "CHROME_EARL_GREY_2" ]
   configs += [

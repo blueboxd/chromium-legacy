@@ -76,8 +76,11 @@ ChromePluginPlaceholder::ChromePluginPlaceholder(
 
 ChromePluginPlaceholder::~ChromePluginPlaceholder() {
   RenderThread::Get()->RemoveObserver(this);
-  prerender::PrerenderObserverList::RemoveObserverForFrame(render_frame(),
-                                                           this);
+
+  if (render_frame()) {
+    prerender::PrerenderObserverList::RemoveObserverForFrame(render_frame(),
+                                                             this);
+  }
 
   if (context_menu_request_id_ && render_frame())
     render_frame()->CancelContextMenu(context_menu_request_id_);

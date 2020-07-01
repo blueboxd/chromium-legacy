@@ -164,7 +164,7 @@ void ShellExtensionSystem::InstallUpdate(
     bool install_immediately,
     InstallUpdateCallback install_update_callback) {
   NOTREACHED();
-  base::DeleteFileRecursively(temp_dir);
+  base::DeletePathRecursively(temp_dir);
 }
 
 void ShellExtensionSystem::PerformActionBasedOnOmahaAttributes(

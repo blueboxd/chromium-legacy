@@ -23,6 +23,7 @@ class ViewerPdfToolbarNewElement extends PolymerElement {
 
   static get properties() {
     return {
+      docTitle: String,
       docLength: Number,
       pageNo: Number,
 

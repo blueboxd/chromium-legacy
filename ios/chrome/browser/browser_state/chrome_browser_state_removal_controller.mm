@@ -47,8 +47,8 @@ void NukeBrowserStates(const std::vector<base::FilePath>& browser_states_path) {
     // Delete both the browser state directory and its corresponding cache.
     base::FilePath cache_path;
     ios::GetUserCacheDirectory(browser_state_path, &cache_path);
-    base::DeleteFileRecursively(browser_state_path);
-    base::DeleteFileRecursively(cache_path);
+    base::DeletePathRecursively(browser_state_path);
+    base::DeletePathRecursively(cache_path);
   }
 }
 

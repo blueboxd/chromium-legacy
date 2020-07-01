@@ -164,7 +164,7 @@ TEST_F(WebAppShortcutCreatorTest, CreateShortcuts) {
   EXPECT_TRUE(base::PathExists(strings_file));
 
   // Delete it here, just to test that it is not recreated.
-  EXPECT_TRUE(base::DeleteFileRecursively(strings_file));
+  EXPECT_TRUE(base::DeletePathRecursively(strings_file));
 
   // Ensure the strings file wasn't recreated. It's not needed for any other
   // tests.
@@ -218,7 +218,7 @@ TEST_F(WebAppShortcutCreatorTest, FileHandlers) {
         [plist objectForKey:app_mode::kCFBundleDocumentTypesKey];
     EXPECT_EQ(doc_types_array, nil);
   }
-  EXPECT_TRUE(base::DeleteFileRecursively(shim_path_));
+  EXPECT_TRUE(base::DeletePathRecursively(shim_path_));
 
   // Register 2 mime types (and 2 invalid extensions). We should now have
   // kCFBundleTypeMIMETypesKey but not kCFBundleTypeExtensionsKey.
@@ -250,7 +250,7 @@ TEST_F(WebAppShortcutCreatorTest, FileHandlers) {
     EXPECT_NSEQ([mime_types objectAtIndex:0], @"foo/bar");
     EXPECT_NSEQ([mime_types objectAtIndex:1], @"moo/cow");
   }
-  EXPECT_TRUE(base::DeleteFileRecursively(shim_path_));
+  EXPECT_TRUE(base::DeletePathRecursively(shim_path_));
 
   // Register 3 valid extensions (and 2 invalid ones) with the 2 mime types.
   info_->file_handler_extensions.insert(".cow");
@@ -282,7 +282,7 @@ TEST_F(WebAppShortcutCreatorTest, FileHandlers) {
     EXPECT_NSEQ([extensions objectAtIndex:1], @"cow");
     EXPECT_NSEQ([extensions objectAtIndex:2], @"pig");
   }
-  EXPECT_TRUE(base::DeleteFileRecursively(shim_path_));
+  EXPECT_TRUE(base::DeletePathRecursively(shim_path_));
 
   // Register just extensions.
   info_->file_handler_mime_types.clear();
@@ -309,7 +309,7 @@ TEST_F(WebAppShortcutCreatorTest, FileHandlers) {
     EXPECT_NSEQ([extensions objectAtIndex:1], @"cow");
     EXPECT_NSEQ([extensions objectAtIndex:2], @"pig");
   }
-  EXPECT_TRUE(base::DeleteFileRecursively(shim_path_));
+  EXPECT_TRUE(base::DeletePathRecursively(shim_path_));
 }
 
 TEST_F(WebAppShortcutCreatorTest, CreateShortcutsConflict) {
@@ -365,7 +365,7 @@ TEST_F(WebAppShortcutCreatorTest, UpdateShortcuts) {
 
   EXPECT_TRUE(shortcut_creator.BuildShortcut(other_shim_path));
 
-  EXPECT_TRUE(base::DeleteFileRecursively(other_shim_path.Append("Contents")));
+  EXPECT_TRUE(base::DeletePathRecursively(other_shim_path.Append("Contents")));
 
   std::vector<base::FilePath> updated_paths;
   EXPECT_TRUE(shortcut_creator.UpdateShortcuts(false, &updated_paths));
@@ -382,7 +382,7 @@ TEST_F(WebAppShortcutCreatorTest, UpdateShortcuts) {
 
   EXPECT_TRUE(shortcut_creator.BuildShortcut(other_shim_path));
 
-  EXPECT_TRUE(base::DeleteFileRecursively(other_shim_path.Append("Contents")));
+  EXPECT_TRUE(base::DeletePathRecursively(other_shim_path.Append("Contents")));
 
   updated_paths.clear();
   EXPECT_FALSE(shortcut_creator.UpdateShortcuts(false, &updated_paths));
@@ -421,7 +421,7 @@ TEST_F(WebAppShortcutCreatorTest, UpdateBookmarkAppShortcut) {
 
   EXPECT_TRUE(shortcut_creator.BuildShortcut(other_shim_path));
 
-  EXPECT_TRUE(base::DeleteFileRecursively(other_shim_path));
+  EXPECT_TRUE(base::DeletePathRecursively(other_shim_path));
 
   // The original shim should be recreated.
   std::vector<base::FilePath> updated_paths;

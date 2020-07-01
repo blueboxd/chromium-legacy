@@ -422,6 +422,7 @@ def ci_builder(
     cq_mirrors_console_view=args.DEFAULT,
     console_view_entry=None,
     tree_closing=False,
+    notifies=None,
     **kwargs):
   """Define a CI builder.
 
@@ -451,12 +452,12 @@ def ci_builder(
     tree_closing - If true, failed builds from this builder that meet certain
       criteria will close the tree and email the sheriff. See the
       'chromium-tree-closer' config in notifiers.star for the full criteria.
+    notifies - Any extra notifiers to attach to this builder.
   """
   # Define the builder first so that any validation of luci.builder arguments
   # (e.g. bucket) occurs before we try to use it
-  notifies = kwargs.pop('notifies', [])
   if tree_closing:
-    notifies += ['chromium-tree-closer', 'chromium-tree-closer-email']
+    notifies = (notifies or []) + ['chromium-tree-closer', 'chromium-tree-closer-email']
   ret = builders.builder(
       name = name,
       resultdb_bigquery_exports = [resultdb.export_test_results(
@@ -774,10 +775,9 @@ def gpu_fyi_windows_builder(*, name, **kwargs):
   )
 
 
-def gpu_builder(*, name, tree_closing=True, **kwargs):
-  notifies = kwargs.pop('notifies', [])
+def gpu_builder(*, name, tree_closing=True, notifies=None, **kwargs):
   if tree_closing:
-    notifies.append('gpu-tree-closer-email')
+    notifies = (notifies or []) + ['gpu-tree-closer-email']
   return ci.builder(
       name = name,
       goma_backend = builders.goma.backend.RBE_PROD,
@@ -860,12 +860,17 @@ def memory_builder(
     *,
     name,
     goma_jobs=builders.goma.jobs.MANY_JOBS_FOR_CI,
+    notifies=None,
     **kwargs):
+  if name.startswith('Linux'):
+    notifies = (notifies or []) + ['linux-memory']
+
   return ci.builder(
       name = name,
       goma_backend = builders.goma.backend.RBE_PROD,
       goma_jobs = goma_jobs,
       mastername = 'chromium.memory',
+      notifies = notifies,
       **kwargs
   )
 

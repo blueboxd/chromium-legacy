@@ -1617,7 +1617,7 @@ void ServiceWorkerStorage::DidDeleteDatabase(
   // We should probably rename the directory and delete it later.
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-      base::BindOnce(&base::DeleteFileRecursively, GetDiskCachePath()),
+      base::BindOnce(&base::DeletePathRecursively, GetDiskCachePath()),
       base::BindOnce(&ServiceWorkerStorage::DidDeleteDiskCache,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }

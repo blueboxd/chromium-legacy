@@ -48,19 +48,3 @@ source_set("eg2_tests") {
   ]
   libs = [ "UIKit.framework" ]
 }
-
-source_set("eg_tests") {
-  defines = [ "CHROME_EARL_GREY_1" ]
-  testonly = true
-  configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [ "ntp_tiles_egtest.mm" ]
-  deps = [
-    ":ntp_tiles",
-    "//base/test:test_support",
-    "//components/ntp_tiles:ntp_tiles",
-    "//ios/chrome/test/app:test_support",
-    "//ios/chrome/test/earl_grey:test_support",
-    "//ios/testing/earl_grey:earl_grey_support",
-    "//ios/web/public/test/http_server:http_server",
-  ]
-}

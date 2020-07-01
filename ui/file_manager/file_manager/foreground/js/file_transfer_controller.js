@@ -995,12 +995,13 @@ class FileTransferController {
       return;
     }
 
-    // Set classes assuming domElement won't accept this drop.
+    assert(destinationEntry.isDirectory);
+
+    // Assume the destination directory won't accept this drop.
     domElement.classList.remove('accepts');
     domElement.classList.add('denies');
 
-    // Disallow dropping a folder on itself.
-    assert(destinationEntry.isDirectory);
+    // Disallow dropping a directory on itself.
     const entries = this.selectionHandler_.selection.entries;
     for (let i = 0; i < entries.length; i++) {
       if (util.isSameEntry(entries[i], destinationEntry)) {
@@ -1008,21 +1009,33 @@ class FileTransferController {
       }
     }
 
-    // Add accept class if the domElement can accept this drop.
+    this.destinationEntry_ = destinationEntry;
+
+    // Add accept classes if the directory can accept this drop.
     if (this.canPasteOrDrop_(clipboardData, destinationEntry)) {
       domElement.classList.remove('denies');
       domElement.classList.add('accepts');
     }
 
-    this.destinationEntry_ = destinationEntry;
-
-    // Change directory immediately for crostini, otherwise start timer.
+    // Change directory immediately if it's a fake entry for Crostini.
     if (destinationEntry.rootType === VolumeManagerCommon.RootType.CROSTINI) {
       this.changeToDropTargetDirectory_();
-    } else {
-      this.navigateTimer_ =
-          setTimeout(this.changeToDropTargetDirectory_.bind(this), 2000);
+      return;
     }
+
+    // Change to the directory after the drag target hover time out.
+    const navigate = this.changeToDropTargetDirectory_.bind(this);
+    this.navigateTimer_ = setTimeout(navigate, this.dragTargetHoverTime_());
+  }
+
+  /**
+   * Return the drag target hover time in milliseconds.
+   *
+   * @private
+   * @return {number}
+   */
+  dragTargetHoverTime_() {
+    return window.IN_TEST ? 500 : 2000;
   }
 
   /**
@@ -1279,18 +1292,22 @@ class FileTransferController {
     if (!clipboardData) {
       return false;
     }
+
     if (!destinationEntry) {
       return false;
     }
+
     const destinationLocationInfo =
         this.volumeManager_.getLocationInfo(destinationEntry);
     if (!destinationLocationInfo || destinationLocationInfo.isReadOnly) {
       return false;
     }
+
     if (destinationLocationInfo.volumeInfo &&
         destinationLocationInfo.volumeInfo.error) {
       return false;
     }
+
     if (!clipboardData.types || clipboardData.types.indexOf('fs/tag') === -1) {
       return false;  // Unsupported type of content.
     }
@@ -1711,7 +1728,6 @@ FileTransferController.PastePlan = class {
     return [];
   }
 };
-
 
 /**
  * Converts list of urls to list of Entries with granting R/W permissions to

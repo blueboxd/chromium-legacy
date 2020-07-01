@@ -313,7 +313,7 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
   void GenerateDeviceRemovedEvent(const base::FilePath& sensor_dir) {
     {
       base::ScopedAllowBlockingForTesting allow_blocking;
-      EXPECT_TRUE(base::DeleteFileRecursively(sensor_dir));
+      EXPECT_TRUE(base::DeletePathRecursively(sensor_dir));
     }
     bool success = provider_->blocking_task_runner_->PostTask(
         FROM_HERE,

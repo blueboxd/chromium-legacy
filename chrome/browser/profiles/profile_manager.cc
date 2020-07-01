@@ -285,8 +285,8 @@ void NukeProfileFromDisk(const base::FilePath& profile_path) {
   // Delete both the profile directory and its corresponding cache.
   base::FilePath cache_path;
   chrome::GetUserCacheDirectory(profile_path, &cache_path);
-  base::DeleteFileRecursively(profile_path);
-  base::DeleteFileRecursively(cache_path);
+  base::DeletePathRecursively(profile_path);
+  base::DeletePathRecursively(cache_path);
 }
 
 // Called after a deleted profile was checked and cleaned up.

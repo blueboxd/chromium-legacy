@@ -6,7 +6,6 @@ source_set("reading_list") {
   sources = [
     "reading_list_coordinator.h",
     "reading_list_coordinator.mm",
-    "reading_list_list_item.h",
     "reading_list_list_item_custom_action_factory.h",
     "reading_list_list_item_custom_action_factory.mm",
     "reading_list_list_item_factory.h",
@@ -87,6 +86,7 @@ source_set("reading_list_ui") {
     "number_badge_view.mm",
     "reading_list_data_sink.h",
     "reading_list_data_source.h",
+    "reading_list_list_item.h",
     "reading_list_list_item_accessibility_delegate.h",
     "reading_list_list_item_updater.h",
     "reading_list_list_view_controller_audience.h",
@@ -102,6 +102,7 @@ source_set("reading_list_ui") {
   ]
   deps = [
     ":reading_list_constants",
+    "resources:reading_list_empty",
     "resources:reading_list_empty_state",
     "resources:reading_list_empty_state_new",
     "resources:reading_list_tools_icon",
@@ -111,6 +112,7 @@ source_set("reading_list_ui") {
     "//components/url_formatter",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/drag_and_drop",
     "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/keyboard",
@@ -123,6 +125,7 @@ source_set("reading_list_ui") {
     "//ios/chrome/common",
     "//ios/chrome/common/ui/colors",
     "//ios/chrome/common/ui/favicon",
+    "//net",
     "//ui/base",
     "//ui/strings:ui_strings_grit",
     "//url",

@@ -39,8 +39,10 @@
 <translation id="428217921675623177">As tarefas de impressão com mais de 90 dias serão removidas.</translation>
 <translation id="4429881212383817840">A permissão Kerberos expira em breve</translation>
 <translation id="445059817448385655">Palavra-passe antiga</translation>
+<translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> de <ph name="TOTAL_PAGE_NUMBER" />. Prima Enter para cancelar a tarefa de impressão.</translation>
 <translation id="467510802200863975">As palavras-passe não correspondem.</translation>
 <translation id="4731797938093519117">Acesso parental</translation>
+<translation id="4808449224298348341">Foi cancelada a tarefa de impressão de <ph name="DOCUMENT_TITLE" />.</translation>
 <translation id="4890353053343094602">Escolha uma nova de imediato</translation>
 <translation id="4932733599132424254">Data</translation>
 <translation id="5212543919916444558">Não consigo encontrar nada no ecrã com que possa ajudar.

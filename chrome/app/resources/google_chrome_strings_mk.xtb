@@ -17,6 +17,7 @@
 <translation id="137466361146087520">Google Chrome Beta</translation>
 <translation id="1399397803214730675">Овој компјутер веќе има најнова верзија на Google Chrome. Доколку софтверот не работи, деинсталирајте го Google Chrome и обидете се повторно.</translation>
 <translation id="1434626383986940139">Апликации на Chrome Canary</translation>
+<translation id="1514913130539345610">Администраторот му оневозможил на Chrome да проверува дали има штетен софтвер</translation>
 <translation id="1553358976309200471">Ажурирај го Chrome</translation>
 <translation id="1587223624401073077">Google Chrome ја користи вашата камера.</translation>
 <translation id="1587325591171447154">Датотеката <ph name="FILE_NAME" /> е опасна, па затоа Chrome ја блокираше.</translation>
@@ -125,6 +126,7 @@
 <translation id="4458462641685292929">Во тек е друга операција на Google Chrome. Обидете се повторно подоцна.</translation>
 <translation id="4480040274068703980">Chrome OS не може да ги синхронизира вашите податоци поради грешка при пријавувањето.</translation>
 <translation id="4521185804071812304">Незадолжително: помогнете да се подобрат функциите и изведбата на Chrome OS со автоматско испраќање дијагностички податоци и податоци за користењето до Google.</translation>
+<translation id="4552702433620284371">Chrome не може да го провери софтверот на вашиот уред. Проверете ја интернет-врската.</translation>
 <translation id="4561051373932531560">Google Chrome ви овозможува да кликнете на телефонски број на интернет и да го повикате со Skype!</translation>
 <translation id="4567424176335768812">Најавени сте како <ph name="USER_EMAIL_ADDRESS" />. Сега може да пристапувате кон вашите обележувачи, историја и други поставки на сите најавени уреди.</translation>
 <translation id="4571503333518166079">Одете во поставките за известувања на Chrome</translation>
@@ -250,6 +252,7 @@ Google Chrome не може да ги обнови вашите поставки
 <translation id="8641606876632989680">Chrome ќе ве извести кога ќе се најавите со компромитирана лозинка</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">Контролира и која страница се прикажува кога ќе стартувате Chrome.</translation>
+<translation id="8681614230122836773">Chrome најде штетен софтвер на вашиот компјутер</translation>
 <translation id="870251953148363156">&amp;Google Chrome се ажурира</translation>
 <translation id="873133009373065397">Google Chrome не може да го одреди или постави стандардниот прелистувач</translation>
 <translation id="8823341990149967727">Chrome е застарен</translation>

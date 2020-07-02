@@ -1181,6 +1181,10 @@
       origin_trial_os: ["win", "macosx", "linux", "chromeos"],
     },
     {
+      name: "NativeFileSystemDragAndDrop",
+      status: "test"
+    },
+    {
       name: "NativeIO",
       status: "experimental",
     },

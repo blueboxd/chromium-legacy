@@ -529,7 +529,6 @@
 <translation id="1645516838734033527"><ph name="DEVICE_TYPE" /> を安全に保つため、Smart Lock を使用するにはスマートフォンで画面ロックが設定されていることが要件となります。</translation>
 <translation id="1646982517418478057">この証明書の暗号化に使用するパスワードを入力してください</translation>
 <translation id="1648528859488547844">Wi‑Fi またはモバイル ネットワークを使用して現在地を特定する</translation>
-<translation id="1648943974594387137">ログイン情報が古くなっています</translation>
 <translation id="164936512206786300">Bluetooth デバイスのペア設定の解除</translation>
 <translation id="1650371550981945235">入力オプションを表示</translation>
 <translation id="1651008383952180276">同じパスフレーズを 2 回入力する必要があります</translation>
@@ -1333,7 +1332,6 @@
 <translation id="2635276683026132559">署名</translation>
 <translation id="2636625531157955190">Chrome から画像にアクセスできません。</translation>
 <translation id="2637400434494156704">PIN が正しくありません。あと 1 回試行できます。</translation>
-<translation id="2638087589890736295">同期を開始するには、パスフレーズが必要です</translation>
 <translation id="2638662041295312666">サインイン画像</translation>
 <translation id="264083724974021997">電話に接続 - ダイアログ</translation>
 <translation id="2641065435954454414">ダウンロードを準備しています</translation>
@@ -1487,7 +1485,6 @@
 <translation id="2809586584051668049">、他 <ph name="NUMBER_ADDITIONAL_DISABLED" /> 件</translation>
 <translation id="2810390687497823527">拡張機能が認識されないかブラウザが想定どおり動作しない場合は、ここで拡張機能を無効にするかカスタマイズできます。</translation>
 <translation id="2812049959647166806">Thunderbolt はサポートされていません</translation>
-<translation id="2812944337881233323">ログアウトして再度ログインしてみてください</translation>
 <translation id="2812989263793994277">すべての画像を表示しない</translation>
 <translation id="2813094189969465044">保護者による使用制限</translation>
 <translation id="281390819046738856">リクエストに署名できませんでした。</translation>
@@ -3408,7 +3405,6 @@
 <translation id="529175790091471945">このデバイスをフォーマット</translation>
 <translation id="5293170712604732402">設定を元の既定値に戻す</translation>
 <translation id="5294097441441645251">先頭は英小文字かアンダースコアにしてください</translation>
-<translation id="5296471962619441686">同期を再開するにはエラーを解決してください</translation>
 <translation id="5297082477358294722">パスワードが保存されました。保存パスワードの表示と管理は <ph name="SAVED_PASSWORDS_STORE" /> で行えます。</translation>
 <translation id="5298219193514155779">テーマの作成者:</translation>
 <translation id="5299109548848736476">トラッキング拒否</translation>
@@ -5772,7 +5768,6 @@
 <translation id="8256417822772703842"><ph name="PRINTER_NAME" /> のインク残量が少なくなっています</translation>
 <translation id="8257950718085972371">カメラへのアクセスを引き続きブロックする</translation>
 <translation id="8259239505248583312">続行</translation>
-<translation id="8260126382462817229">もう一度ログインしてみてください</translation>
 <translation id="8260864402787962391">マウス</translation>
 <translation id="8261378640211443080">この拡張機能は <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />で提供されていません。知らないうちに追加された可能性があります。</translation>
 <translation id="8261506727792406068">削除</translation>

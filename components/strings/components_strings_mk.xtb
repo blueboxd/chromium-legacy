@@ -20,6 +20,7 @@
 <translation id="10614374240317010">Никогаш не е зачувано</translation>
 <translation id="1062160989074299343">Prc10 (плик)</translation>
 <translation id="106701514854093668">Обележувачи на десктоп</translation>
+<translation id="1068672505746868501">Никогаш не преведувај страници на <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1070901266639972381">Вечер</translation>
 <translation id="1074497978438210769">Не е безбедно</translation>
 <translation id="1080116354587839789">Приспособете на ширината</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">Без наслов</translation>
 <translation id="1236081509407217141">Да се дозволи VR?</translation>
 <translation id="1240347957665416060">Има на уредот</translation>
+<translation id="124116460088058876">Повеќе јазици</translation>
 <translation id="1250759482327835220">За да платите побрзо следниот пат, зачувајте ја картичката, името и адресата за наплата на вашата сметка на Google.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" /> и <ph name="TYPE_2" /> (синхронизирани)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Ако се обидувате да посетите веб-сајт, а тој не се отвора, прво обидете се да ја поправите грешката со овие чекори за отстранување грешки:&lt;/p&gt;
@@ -840,6 +842,7 @@
 <translation id="4424024547088906515">Серверот не можеше да докаже дека е <ph name="DOMAIN" />; Chrome не му верува на неговиот безбедносен сертификат. Тоа може да се должи на погрешна конфигурација или на напаѓач што го пресретнува поврзувањето.</translation>
 <translation id="443121186588148776">Сериска порта</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> не го прифати вашиот сертификат за најавување или можеби таков сертификат не е обезбеден.</translation>
+<translation id="4432792777822557199">Отсега-натаму, страниците на <ph name="SOURCE_LANGUAGE" /> ќе се преведуваат на <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">Скокачки прозорци/пренасочувања</translation>
 <translation id="4435702339979719576">Разгледница)</translation>
 <translation id="443673843213245140">Оневозможена е употребата на прокси, но одредена е опширна конфигурација на прокси.</translation>
@@ -1071,6 +1074,7 @@
 <translation id="5431657950005405462">Датотеката не беше пронајдена</translation>
 <translation id="5439770059721715174">Грешка при потврдување шема на „<ph name="ERROR_PATH" />“: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Обратен редослед со лицето нагоре</translation>
+<translation id="5447765697759493033">Сајтов нема да се преведе</translation>
 <translation id="5452270690849572955">Оваа страница на <ph name="HOST_NAME" /> не може да се најде</translation>
 <translation id="5455374756549232013">Лош временски печат на правилата</translation>
 <translation id="5457113250005438886">Неважечки</translation>
@@ -1617,6 +1621,7 @@
 <translation id="7716375162095500223">Сѐ уште не е прикачен или е игнориран</translation>
 <translation id="7716424297397655342">Сајтот не може да се вчита од кешот</translation>
 <translation id="7723047071702270851">Изменете ја картичката</translation>
+<translation id="773466115871691567">Секогаш преведувај ги страниците на <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7740996059027112821">Стандарден</translation>
 <translation id="774634243536837715">Опасните содржини се блокирани.</translation>
 <translation id="7752995774971033316">Неуправуван</translation>
@@ -1762,6 +1767,7 @@
 <translation id="831997045666694187">Приквечер</translation>
 <translation id="8332188693563227489">Пристапот до <ph name="HOST_NAME" /> беше одбиен</translation>
 <translation id="833262891116910667">Нагласување</translation>
+<translation id="8339163506404995330">Страниците на <ph name="LANGUAGE" /> нема да се преведуваат</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Доколку ги разбирате ризиците по безбедноста, може да ја <ph name="BEGIN_LINK" />посетите локацијата<ph name="END_LINK" /> пред да се отстранат штетните програми.</translation>
 <translation id="8349305172487531364">Лента со обележувачи</translation>

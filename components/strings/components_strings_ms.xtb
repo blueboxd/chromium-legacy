@@ -20,6 +20,7 @@
 <translation id="10614374240317010">Tidak pernah disimpan</translation>
 <translation id="1062160989074299343">Prc10 (Sampul Surat)</translation>
 <translation id="106701514854093668">Penanda Halaman Desktop</translation>
+<translation id="1068672505746868501">Jangan sekali-kali terjemahkan halaman dalam <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1070901266639972381">Malam</translation>
 <translation id="1074497978438210769">Tidak selamat</translation>
 <translation id="1080116354587839789">Muat ikut lebar</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">Tidak Bertajuk</translation>
 <translation id="1236081509407217141">Benarkan VR?</translation>
 <translation id="1240347957665416060">Nama peranti anda</translation>
+<translation id="124116460088058876">Lagi bahasa</translation>
 <translation id="1250759482327835220">Untuk membayar dengan lebih cepat selepas ini, simpan kad, nama dan alamat pengebilan anda ke Akaun Google.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (disegerakkan)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Jika anda cuba melawati tapak web tetapi tapak itu tidak dibuka, cuba selesaikan ralat tersebut dengan langkah penyelesaian masalah berikut terlebih dahulu:&lt;/p&gt;
@@ -841,6 +843,7 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="4424024547088906515">Pelayan ini tidak dapat membuktikan bahawa domainnya ialah <ph name="DOMAIN" />; sijil keselamatannya tidak dipercayai oleh Chrome. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang memintasi sambungan anda.</translation>
 <translation id="443121186588148776">Port siri</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> tidak menerima sijil log masuk anda atau sijil log masuk mungkin tidak diberikan.</translation>
+<translation id="4432792777822557199">Halaman dalam <ph name="SOURCE_LANGUAGE" /> akan diterjemahkan kepada <ph name="TARGET_LANGUAGE" /> bermula dari sekarang</translation>
 <translation id="4434045419905280838">Tetingkap timbul dan ubah hala</translation>
 <translation id="4435702339979719576">Poskad)</translation>
 <translation id="443673843213245140">Penggunaan proksi dilumpuhkan tetapi konfigurasi proksi yang jelas dinyatakan.</translation>
@@ -1072,6 +1075,7 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="5431657950005405462">Fail anda tidak ditemui</translation>
 <translation id="5439770059721715174">Ralat pengesahan skema di "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Susunan terbalik menghadap ke atas</translation>
+<translation id="5447765697759493033">Tapak ini tidak akan diterjemah</translation>
 <translation id="5452270690849572955">Halaman <ph name="HOST_NAME" /> ini tidak ditemui</translation>
 <translation id="5455374756549232013">Cap waktu dasar tidak elok</translation>
 <translation id="5457113250005438886">Tidak sah</translation>
@@ -1618,6 +1622,7 @@ Butiran tambahan:
 <translation id="7716375162095500223">Belum dimuat naik, atau diabaikan</translation>
 <translation id="7716424297397655342">Tapak ini tidak dapat dimuatkan daripada cache</translation>
 <translation id="7723047071702270851">Edit Kad</translation>
+<translation id="773466115871691567">Sentiasa terjemahkan halaman dalam <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7740996059027112821">Standard</translation>
 <translation id="774634243536837715">Kandungan berbahaya disekat.</translation>
 <translation id="7752995774971033316">Tidak Diurus</translation>
@@ -1763,6 +1768,7 @@ Butiran tambahan:
 <translation id="831997045666694187">Petang</translation>
 <translation id="8332188693563227489">Akses ke <ph name="HOST_NAME" /> dinafikan</translation>
 <translation id="833262891116910667">Serlahkan</translation>
+<translation id="8339163506404995330">Halaman dalam <ph name="LANGUAGE" /> tidak akan diterjemahkan</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Jika anda memahami risiko terhadap keselamatan anda, anda boleh <ph name="BEGIN_LINK" />lawati tapak ini<ph name="END_LINK" /> sebelum atur cara berbahaya dialih keluar.</translation>
 <translation id="8349305172487531364">Bar penanda halaman</translation>

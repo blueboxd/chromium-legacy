@@ -20,6 +20,7 @@
 <translation id="10614374240317010">Mai salvate</translation>
 <translation id="1062160989074299343">Prc10 (Envelope)</translation>
 <translation id="106701514854093668">Preferiti desktop</translation>
+<translation id="1068672505746868501">Non tradurre mai le pagine in <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1070901266639972381">Notte</translation>
 <translation id="1074497978438210769">Non sicuro</translation>
 <translation id="1080116354587839789">Adatta in larghezza</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">Senza titolo</translation>
 <translation id="1236081509407217141">Consentire VR?</translation>
 <translation id="1240347957665416060">Il nome del tuo dispositivo</translation>
+<translation id="124116460088058876">Altre lingue</translation>
 <translation id="1250759482327835220">Per pagare più velocemente la prossima volta, salva la carta, il nome e l'indirizzo di fatturazione sul tuo Account Google.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (sincronizzati)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Se il sito web che intendi visitare non si apre, prova innanzitutto a correggere l'errore con questi passaggi per la risoluzione dei problemi:&lt;/p&gt;
@@ -837,6 +839,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="4424024547088906515">Questo server non è riuscito a dimostrare che si tratta di <ph name="DOMAIN" />; il relativo certificato di sicurezza non è considerato attendibile da Chrome. Il problema potrebbe essere dovuto a un'errata configurazione o a un malintenzionato che intercetta la connessione.</translation>
 <translation id="443121186588148776">Porta seriale</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> non ha accettato il certificato di accesso oppure non ne è stato fornito uno.</translation>
+<translation id="4432792777822557199">Le pagine in <ph name="SOURCE_LANGUAGE" /> verranno tradotte in <ph name="TARGET_LANGUAGE" /> d'ora in poi</translation>
 <translation id="4434045419905280838">Popup e reindirizzamenti</translation>
 <translation id="4435702339979719576">Postcard)</translation>
 <translation id="443673843213245140">L'utilizzo di un proxy è stato disattivato ma è stata specificata una configurazione proxy esplicita.</translation>
@@ -1068,6 +1071,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="5431657950005405462">Il file non è stato trovato</translation>
 <translation id="5439770059721715174">Errore di convalida dello schema in "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Ordine inverso a faccia in su</translation>
+<translation id="5447765697759493033">Questo sito non verrà tradotto</translation>
 <translation id="5452270690849572955">Impossibile trovare la pagina <ph name="HOST_NAME" /></translation>
 <translation id="5455374756549232013">Timestamp del criterio errato</translation>
 <translation id="5457113250005438886">Non validi</translation>
@@ -1613,6 +1617,7 @@ Ulteriori dettagli:
 <translation id="7716375162095500223">Non ancora caricato o ignorato</translation>
 <translation id="7716424297397655342">Impossibile caricare il sito dalla cache</translation>
 <translation id="7723047071702270851">Modifica la carta</translation>
+<translation id="773466115871691567">Traduci sempre le pagine in <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7740996059027112821">Standard</translation>
 <translation id="774634243536837715">Contenuti pericolosi bloccati.</translation>
 <translation id="7752995774971033316">Non gestito</translation>
@@ -1758,6 +1763,7 @@ Ulteriori dettagli:
 <translation id="831997045666694187">Sera</translation>
 <translation id="8332188693563227489">Accesso a <ph name="HOST_NAME" /> negato</translation>
 <translation id="833262891116910667">Evidenzia</translation>
+<translation id="8339163506404995330">Le pagine in <ph name="LANGUAGE" /> non verranno tradotte</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Se sei consapevole dei rischi per la tua sicurezza, potresti <ph name="BEGIN_LINK" />visitare questo sito<ph name="END_LINK" /> senza aspettare che vengano rimossi i programmi pericolosi.</translation>
 <translation id="8349305172487531364">Barra dei Preferiti</translation>

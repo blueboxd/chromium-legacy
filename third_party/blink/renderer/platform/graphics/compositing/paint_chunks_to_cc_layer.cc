@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_chunks_to_cc_layer.h"
 
+#include "base/numerics/safe_conversions.h"
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/paint_op_buffer.h"
 #include "cc/paint/render_surface_filters.h"
@@ -547,8 +548,7 @@ void ConversionContext::StartEffect(const EffectPaintPropertyNode& effect) {
   if (!has_filter) {
     // TODO(ajuma): This should really be rounding instead of flooring the
     // alpha value, but that breaks slimming paint reftests.
-    auto alpha =
-        static_cast<uint8_t>(gfx::ToFlooredInt(255 * effect.Opacity()));
+    auto alpha = base::Floor<uint8_t>(255 * effect.Opacity());
     if (has_other_effects) {
       PaintFlags flags;
       flags.setBlendMode(effect.BlendMode());

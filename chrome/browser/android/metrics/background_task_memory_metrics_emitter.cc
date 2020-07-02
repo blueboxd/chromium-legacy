@@ -40,10 +40,10 @@ void BackgroundTaskMemoryMetricsEmitter::FetchAndEmitProcessMemoryMetrics() {
   }
 
   // The callback keeps this object alive until the callback is invoked.
-  auto callback =
-      base::Bind(&BackgroundTaskMemoryMetricsEmitter::ReceivedMemoryDump, this);
+  auto callback = base::BindOnce(
+      &BackgroundTaskMemoryMetricsEmitter::ReceivedMemoryDump, this);
 
-  RequestGlobalDump(callback);
+  RequestGlobalDump(std::move(callback));
 }
 
 base::android::ApplicationState

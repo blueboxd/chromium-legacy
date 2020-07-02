@@ -71,19 +71,6 @@ class COMPONENT_EXPORT(CHROMEOS_ATTESTATION) AttestationFlow {
   static AttestationKeyType GetKeyTypeForProfile(
       AttestationCertificateProfile certificate_profile);
 
-  // Returns the name of the key for a given certificate profile. The
-  // |request_origin| parameter is for PROFILE_CONTENT_PROTECTION_CERTIFICATE
-  // profiles and is ignored for other profiles.
-  //
-  // Parameters
-  //   certificate_profile - Specifies what kind of certificate the key is for.
-  //   request_origin - For content protection profiles, certificate requests
-  //                    are origin-specific.  This string must uniquely identify
-  //                    the origin of the request.
-  static std::string GetKeyNameForProfile(
-      AttestationCertificateProfile certificate_profile,
-      const std::string& request_origin);
-
   AttestationFlow(cryptohome::AsyncMethodCaller* async_caller,
                   CryptohomeClient* cryptohome_client,
                   std::unique_ptr<ServerProxy> server_proxy);

@@ -284,7 +284,7 @@ inline Rect ScaleToEnclosingRect(const Rect& rect,
                                  float y_scale) {
   if (x_scale == 1.f && y_scale == 1.f)
     return rect;
-  // These next functions cast instead of using e.g. ToFlooredInt() because we
+  // These next functions cast instead of using e.g. base::Floor() because we
   // haven't checked to ensure that the clamping behavior of the helper
   // functions doesn't degrade performance, and callers shouldn't be passing
   // values that cause overflow anyway.

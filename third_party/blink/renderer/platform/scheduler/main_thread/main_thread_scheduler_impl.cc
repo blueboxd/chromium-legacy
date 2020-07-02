@@ -58,8 +58,6 @@ const double kShortIdlePeriodDurationPercentile = 50;
 // Amount of idle time left in a frame (as a ratio of the vsync interval) above
 // which main thread compositing can be considered fast.
 const double kFastCompositingIdleTimeThreshold = .2;
-constexpr base::TimeDelta kQueueingTimeWindowDuration =
-    base::TimeDelta::FromSeconds(1);
 const int64_t kSecondsPerMinute = 60;
 
 // Name of the finch study that enables using resource fetch priorities to
@@ -214,10 +212,6 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
                               base::Unretained(this)),
           helper_.ControlMainThreadTaskQueue()->CreateTaskRunner(
               TaskType::kMainThreadTaskQueueControl)),
-      queueing_time_estimator_(this,
-                               kQueueingTimeWindowDuration,
-                               20,
-                               kLaunchingProcessIsBackgrounded),
       main_thread_only_(this,
                         compositor_task_queue_,
                         helper_.GetClock(),
@@ -983,8 +977,6 @@ void MainThreadSchedulerImpl::SetRendererBackgrounded(bool backgrounded) {
   internal::ProcessState::Get()->is_process_backgrounded = backgrounded;
 
   main_thread_only().background_status_changed_at = tick_clock()->NowTicks();
-  queueing_time_estimator_.OnRecordingStateChanged(
-      backgrounded, main_thread_only().background_status_changed_at);
 
   UpdatePolicy();
 
@@ -2216,12 +2208,6 @@ void MainThreadSchedulerImpl::DispatchRequestBeginMainFrameNotExpected(
       success && has_tasks;
 }
 
-std::unique_ptr<base::SingleSampleMetric>
-MainThreadSchedulerImpl::CreateMaxQueueingTimeMetric() {
-  return base::SingleSampleMetricsFactory::Get()->CreateCustomCountsMetric(
-      "RendererScheduler.MaxQueueingTime", 1, 10000, 50);
-}
-
 void MainThreadSchedulerImpl::DidStartProvisionalLoad(bool is_main_frame) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                "MainThreadSchedulerImpl::DidStartProvisionalLoad");
@@ -2237,14 +2223,6 @@ void MainThreadSchedulerImpl::DidCommitProvisionalLoad(
     bool is_main_frame) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                "MainThreadSchedulerImpl::DidCommitProvisionalLoad");
-  // Initialize |max_queueing_time_metric| lazily so that
-  // |SingleSampleMetricsFactory::SetFactory()| is called before
-  // |SingleSampleMetricsFactory::Get()|
-  if (!main_thread_only().max_queueing_time_metric) {
-    main_thread_only().max_queueing_time_metric = CreateMaxQueueingTimeMetric();
-  }
-  main_thread_only().max_queueing_time_metric.reset();
-  main_thread_only().max_queueing_time = base::TimeDelta();
   main_thread_only().has_navigated = true;
 
   // If this either isn't a history inert commit or it's a reload then we must
@@ -2531,7 +2509,6 @@ void MainThreadSchedulerImpl::OnTaskStarted(
     const base::sequence_manager::Task& task,
     const TaskQueue::TaskTiming& task_timing) {
   main_thread_only().running_queues.push(queue);
-  queueing_time_estimator_.OnExecutionStarted(task_timing.start_time());
   agent_interference_recorder_.OnTaskStarted(queue, task.enqueue_order(),
                                              task_timing.start_time());
   if (main_thread_only().nested_runloop)
@@ -2567,7 +2544,6 @@ void MainThreadSchedulerImpl::OnTaskCompleted(
   if (task_timing->has_wall_time() && queue && queue->GetFrameScheduler())
     queue->GetFrameScheduler()->AddTaskTime(task_timing->wall_duration());
   main_thread_only().running_queues.pop();
-  queueing_time_estimator_.OnExecutionStopped(task_timing->end_time());
   agent_interference_recorder_.OnTaskCompleted(queue.get(),
                                                task_timing->end_time());
   if (main_thread_only().nested_runloop)
@@ -2719,7 +2695,6 @@ void MainThreadSchedulerImpl::OnBeginNestedRunLoop() {
   const base::TimeTicks now = real_time_domain()->Now();
   // When a nested loop is entered, simulate completing the current task. It
   // will be resumed when the run loop is exited.
-  queueing_time_estimator_.OnExecutionStopped(now);
   agent_interference_recorder_.OnTaskCompleted(
       main_thread_only().running_queues.top().get(), now);
   main_thread_only().nested_runloop = true;
@@ -2729,7 +2704,6 @@ void MainThreadSchedulerImpl::OnBeginNestedRunLoop() {
 void MainThreadSchedulerImpl::OnExitNestedRunLoop() {
   DCHECK(!main_thread_only().running_queues.empty());
   base::TimeTicks now = real_time_domain()->Now();
-  queueing_time_estimator_.OnExecutionStarted(now);
   // When a nested loop is exited, resume the task that was running when the
   // nested loop was entered.
   agent_interference_recorder_.OnTaskStarted(
@@ -2747,40 +2721,6 @@ void MainThreadSchedulerImpl::AddTaskTimeObserver(
 void MainThreadSchedulerImpl::RemoveTaskTimeObserver(
     TaskTimeObserver* task_time_observer) {
   helper_.RemoveTaskTimeObserver(task_time_observer);
-}
-
-bool MainThreadSchedulerImpl::ContainsLocalMainFrame() {
-  for (auto* page_scheduler : main_thread_only().page_schedulers) {
-    if (page_scheduler->IsMainFrameLocal())
-      return true;
-  }
-  return false;
-}
-
-void MainThreadSchedulerImpl::OnQueueingTimeForWindowEstimated(
-    base::TimeDelta queueing_time,
-    bool is_disjoint_window) {
-  if (main_thread_only().has_navigated) {
-    if (main_thread_only().max_queueing_time < queueing_time) {
-      if (!main_thread_only().max_queueing_time_metric) {
-        main_thread_only().max_queueing_time_metric =
-            CreateMaxQueueingTimeMetric();
-      }
-      main_thread_only().max_queueing_time_metric->SetSample(
-          base::saturated_cast<base::HistogramBase::Sample>(
-              queueing_time.InMilliseconds()));
-      main_thread_only().max_queueing_time = queueing_time;
-    }
-  }
-
-  if (!is_disjoint_window || !ContainsLocalMainFrame())
-    return;
-
-  if (auto* renderer_resource_coordinator =
-          RendererResourceCoordinator::Get()) {
-    renderer_resource_coordinator->SetExpectedTaskQueueingDuration(
-        queueing_time);
-  }
 }
 
 AutoAdvancingVirtualTimeDomain*

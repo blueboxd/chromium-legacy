@@ -10,7 +10,6 @@
 <translation id="1049743911850919806">Ẩn danh</translation>
 <translation id="10614374240317010">Không bao giờ lưu</translation>
 <translation id="1067922213147265141">Các dịch vụ khác của Google</translation>
-<translation id="1068672505746868501">Không bao giờ dịch các trang viết bằng <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="107147699690128016">Nếu bạn thay đổi đuôi tệp, thì tệp có thể mở trong một ứng dụng khác và tiềm ẩn nguy cơ đối với thiết bị.</translation>
 <translation id="1100066534610197918">Mở trong tab mới trong nhóm</translation>
 <translation id="1105960400813249514">Chụp ảnh màn hình</translation>
@@ -35,13 +34,11 @@
 <translation id="1229399675748764149">Đặt trang này làm trang chủ</translation>
 <translation id="1231733316453485619">Bạn muốn bật tính năng đồng bộ hóa?</translation>
 <translation id="123724288017357924">Tải lại trang hiện tại, bỏ qua nội dung được lưu trong bộ nhớ đệm</translation>
-<translation id="124116460088058876">Ngôn ngữ khác</translation>
 <translation id="124678866338384709">Đóng tab hiện tại</translation>
 <translation id="1258753120186372309">Hình tượng trưng của Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Tìm kiếm và khám phá</translation>
 <translation id="1266864766717917324">Không thể chia sẻ <ph name="CONTENT_TYPE" /></translation>
 <translation id="1283039547216852943">Nhấn để mở rộng</translation>
-<translation id="1285320974508926690">Không bao giờ dịch trang web này</translation>
 <translation id="1291207594882862231">Xóa lịch sử, cookie, dữ liệu trang web, bộ nhớ đệm…</translation>
 <translation id="129553762522093515">Các tab đã đóng gần đây</translation>
 <translation id="1303339473099049190">Không tìm thấy mật khẩu đó. Hãy kiểm tra chính tả rồi thử lại.</translation>
@@ -239,7 +236,6 @@ Chạm và giữ từ bất kỳ để tìm kiếm. Để điều chỉnh nội 
 <translation id="2898264748040935573">Chỉnh sửa mật khẩu đã lưu trữ</translation>
 <translation id="2900528713135656174">Tạo sự kiện</translation>
 <translation id="2903493209154104877">Địa chỉ</translation>
-<translation id="290376772003165898">Trang này không được viết bằng <ph name="LANGUAGE" />?</translation>
 <translation id="2904414404539560095">Danh sách các thiết bị mà bạn có thể chia sẻ một tab đã mở trên toàn màn hình.</translation>
 <translation id="2905036901251765993">Để chia sẻ với những người ở gần, hãy cho phép họ quét mã QR này</translation>
 <translation id="2909615210195135082">Nền tảng thông báo của Google</translation>
@@ -415,7 +411,6 @@ Chạm và giữ từ bất kỳ để tìm kiếm. Để điều chỉnh nội 
 <translation id="4405224443901389797">Chuyển tới...</translation>
 <translation id="4411535500181276704">Chế độ thu gọn</translation>
 <translation id="4415276339145661267">Quản lý Tài khoản Google</translation>
-<translation id="4432792777822557199">Kể từ bây giờ trở đi, các trang viết bằng <ph name="SOURCE_LANGUAGE" /> sẽ được dịch sang <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4440958355523780886">Trang phiên bản rút gọn do Google cung cấp. Nhấn để tải trang gốc.</translation>
 <translation id="4452411734226507615">Đóng tab <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">Đã đánh dấu trang vào <ph name="FOLDER_NAME" /></translation>
@@ -550,7 +545,6 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="543509235395288790">Đang tải <ph name="COUNT" /> tệp (<ph name="MEGABYTES" />) xuống.</translation>
 <translation id="5441522332038954058">Chuyển đến thanh địa chỉ</translation>
 <translation id="5447201525962359567">Tất cả bộ nhớ trang web, bao gồm cookie và các dữ liệu được lưu trữ cục bộ khác</translation>
-<translation id="5447765697759493033">Trang web này sẽ không được dịch</translation>
 <translation id="545042621069398927">Đang tăng tốc độ tải xuống.</translation>
 <translation id="5456381639095306749">Tải trang xuống</translation>
 <translation id="548278423535722844">Mở trong ứng dụng bản đồ</translation>
@@ -580,7 +574,6 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="5659593005791499971">Email</translation>
 <translation id="5665379678064389456">Tạo sự kiện trong <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Ghi đè yêu cầu của trang web để chặn phóng to</translation>
-<translation id="5684874026226664614">Rất tiếc. Không thể dịch trang này.</translation>
 <translation id="5686790454216892815">Tên tệp quá dài</translation>
 <translation id="5694049548840660018">Dễ dàng quay lại trang chủ</translation>
 <translation id="569536719314091526">Dịch trang này sang ngôn ngữ bất kỳ từ nút Tùy chọn khác</translation>
@@ -734,7 +727,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6767294960381293877">Danh sách các thiết bị mà bạn có thể chia sẻ một tab đã mở ở nửa dưới của màn hình.</translation>
 <translation id="6811034713472274749">Trang hiện đã sẵn sàng cho bạn xem</translation>
 <translation id="6820686453637990663">CVC</translation>
-<translation id="6831043979455480757">Dịch</translation>
 <translation id="6845325883481699275">Giúp cải thiện khả năng bảo mật của Chrome</translation>
 <translation id="6846298663435243399">Đang tải…</translation>
 <translation id="6850409657436465440">Vẫn đang tải xuống</translation>
@@ -842,7 +834,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7698359219371678927">Tạo email trong <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Tự động hoàn thành cụm từ tìm kiếm và URL</translation>
 <translation id="7725024127233776428">Các trang mà bạn đánh dấu sẽ xuất hiện tại đây</translation>
-<translation id="773466115871691567">Luôn dịch các trang viết bằng <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7746457520633464754">Để phát hiện các ứng dụng và trang web nguy hiểm, Chrome sẽ gửi URL của một số trang mà bạn truy cập, thông tin hệ thống giới hạn và một số nội dung trang cho Google</translation>
 <translation id="7757787379047923882">Văn bản được chia sẻ từ <ph name="DEVICE_NAME" /></translation>
 <translation id="7761849928583394409">Chọn ngày và giờ</translation>
@@ -922,7 +913,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8310344678080805313">Tab chuẩn</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> và các trang web khác</translation>
 <translation id="8327155640814342956">Để có trải nghiệm duyệt web tuyệt vời nhất, hãy mở để cập nhật Chrome</translation>
-<translation id="8339163506404995330">Các trang viết bằng <ph name="LANGUAGE" /> sẽ không được dịch</translation>
 <translation id="8349013245300336738">Sắp xếp theo lượng dữ liệu đã dùng</translation>
 <translation id="8364299278605033898">Xem các trang web phổ biến</translation>
 <translation id="8368027906805972958">Thiết bị không xác định hoặc không được hỗ trợ (<ph name="DEVICE_ID" />)</translation>

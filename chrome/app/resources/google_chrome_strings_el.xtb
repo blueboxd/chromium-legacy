@@ -15,6 +15,7 @@
 <translation id="137466361146087520">Google Chrome Beta</translation>
 <translation id="1399397803214730675">Αυτός ο υπολογιστής διαθέτει ήδη μια πιο πρόσφατη έκδοση του Google Chrome. Αν το λογισμικό δεν λειτουργεί, απεγκαταστήστε το Google Chrome και δοκιμάστε ξανά.</translation>
 <translation id="1434626383986940139">Εφαρμογές Chrome Canary</translation>
+<translation id="1514913130539345610">Ο διαχειριστής έχει απενεργοποιήσει τον έλεγχο του Chrome για επιβλαβές λογισμικό</translation>
 <translation id="1553358976309200471">Ενημερώστε το Chrome</translation>
 <translation id="1587223624401073077">Το Google Chrome χρησιμοποιεί την κάμερά σας.</translation>
 <translation id="1587325591171447154">Το αρχείο <ph name="FILE_NAME" /> είναι επικίνδυνο, επομένως έχει αποκλειστεί από το Chrome.</translation>
@@ -123,6 +124,7 @@
 <translation id="4458462641685292929">Μια άλλη λειτουργία βρίσκεται σε εξέλιξη στο Google Chrome. Δοκιμάστε ξανά αργότερα.</translation>
 <translation id="4480040274068703980">Το Chrome OS δεν μπόρεσε να συγχρονίσει τα δεδομένα σας λόγω σφάλματος κατά τη σύνδεση.</translation>
 <translation id="4521185804071812304">Προαιρετικό: Συμβάλετε στη βελτίωση των λειτουργιών και της απόδοσης του Chrome OS με αυτόματη αποστολή διαγνωστικών και δεδομένων χρήσης στην Google.</translation>
+<translation id="4552702433620284371">Το Chrome δεν μπορεί να ελέγξει το λογισμικό της συσκευής. Δοκιμάστε να ελέγξετε τη σύνδεσή σας στο διαδίκτυο.</translation>
 <translation id="4561051373932531560">Το Google Chrome σάς επιτρέπει να κάνετε κλικ σε έναν τηλεφωνικό αριθμό στον ιστό και να τον καλέσετε με το Skype!</translation>
 <translation id="4567424176335768812">Έχετε συνδεθεί ως <ph name="USER_EMAIL_ADDRESS" />. Τώρα μπορείτε να αποκτήσετε πρόσβαση στους σελιδοδείκτες, το ιστορικό και σε άλλες ρυθμίσεις από όλες τις συσκευές στις οποίες έχετε συνδεθεί.</translation>
 <translation id="4571503333518166079">Μετάβαση στις ρυθμίσεις ειδοποιήσεων του Chrome</translation>
@@ -246,6 +248,7 @@
 <translation id="8641606876632989680">Το Chrome θα σας ειδοποιήσει όταν συνδεθείτε με έναν παραβιασμένο κωδικό πρόσβαση</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">Επίσης, ελέγχει τη σελίδα που εμφανίζεται κατά την εκκίνηση του Chrome.</translation>
+<translation id="8681614230122836773">To Chrome εντόπισε επιβλαβές λογισμικό στον υπολογιστή σας</translation>
 <translation id="870251953148363156">Ενημέρωση &amp;του Google Chrome</translation>
 <translation id="873133009373065397">Το Google Chrome δεν μπορεί να καθορίσει ή να ορίσει το προεπιλεγμένο πρόγραμμα περιήγησης</translation>
 <translation id="8823341990149967727">Το Chrome δεν είναι ενημερωμένο</translation>

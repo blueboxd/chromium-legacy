@@ -12,6 +12,10 @@ source_set("drag_and_drop") {
     "drop_and_navigate_delegate.h",
     "drop_and_navigate_interaction.h",
     "drop_and_navigate_interaction.mm",
+    "table_view_url_drag_drop_handler.h",
+    "table_view_url_drag_drop_handler.mm",
+    "url_drag_drop_handler.h",
+    "url_drag_drop_handler.mm",
   ]
   deps = [
     "//base",

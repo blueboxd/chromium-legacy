@@ -529,7 +529,6 @@
 <translation id="1645516838734033527">A Smart Lock funkció a(z) <ph name="DEVICE_TYPE" /> eszköz biztonságának megőrzése érdekében előírja képernyőzár beállítását a telefonon.</translation>
 <translation id="1646982517418478057">Adjon meg egy jelszót a tanúsítvány titkosításához</translation>
 <translation id="1648528859488547844">Wi‑Fi és mobilhálózatok használata a tartózkodási hely megállapításához</translation>
-<translation id="1648943974594387137">A bejelentkezési adatok elavultak</translation>
 <translation id="164936512206786300">Bluetooth-párosítás megszüntetése</translation>
 <translation id="1650371550981945235">Beviteli lehetőségek megjelenítése</translation>
 <translation id="1651008383952180276">Mindkét alkalommal ugyanazt az összetett jelszót kell megadnia</translation>
@@ -1333,7 +1332,6 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="2635276683026132559">Aláírás</translation>
 <translation id="2636625531157955190">A Chrome nem tudja elérni a képet.</translation>
 <translation id="2637400434494156704">Helytelen PIN-kód. Egy kísérlete maradt.</translation>
-<translation id="2638087589890736295">A szinkronizálás megkezdéséhez összetett jelszó megadása szükséges</translation>
 <translation id="2638662041295312666">Bejelentkezési kép</translation>
 <translation id="264083724974021997">Csatlakozás a telefonhoz – párbeszédpanel</translation>
 <translation id="2641065435954454414">Letöltés előkészítése…</translation>
@@ -1487,7 +1485,6 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="2809586584051668049">és <ph name="NUMBER_ADDITIONAL_DISABLED" /> további</translation>
 <translation id="2810390687497823527">Ha nem ismeri fel valamelyik bővítményt, vagy ha a böngésző nem a vártnak megfelelően működik, itt kikapcsolhatja és személyre szabhatja a bővítményeket.</translation>
 <translation id="2812049959647166806">A Thunderbolt nem támogatott</translation>
-<translation id="2812944337881233323">Próbáljon meg kijelentkezni, majd újra bejelentkezni</translation>
 <translation id="2812989263793994277">Ne mutassa a képeket</translation>
 <translation id="2813094189969465044">Szülői felügyelet</translation>
 <translation id="281390819046738856">A kérést nem lehetett aláírni.</translation>
@@ -3408,7 +3405,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="529175790091471945">Az eszköz formázása</translation>
 <translation id="5293170712604732402">Beállítások visszaállítása alapértelmezettre</translation>
 <translation id="5294097441441645251">Kisbetűvel vagy aláhúzásjellel kell kezdődnie</translation>
-<translation id="5296471962619441686">A szinkronizálás folytatásához javítsa ki a hibát</translation>
 <translation id="5297082477358294722">Jelszó elmentve. A mentett jelszavakat itt láthatja és kezelheti: <ph name="SAVED_PASSWORDS_STORE" /></translation>
 <translation id="5298219193514155779">Téma készítője:</translation>
 <translation id="5299109548848736476">Nincs nyomon követés</translation>
@@ -5773,7 +5769,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8256417822772703842">A(z) <ph name="PRINTER_NAME" /> nyomtatóban kevés a tinta</translation>
 <translation id="8257950718085972371">Kamera-hozzáférés tiltásának fenntartása</translation>
 <translation id="8259239505248583312">Kezdjük</translation>
-<translation id="8260126382462817229">Próbáljon meg újra bejelentkezni</translation>
 <translation id="8260864402787962391">Egér</translation>
 <translation id="8261378640211443080">A bővítmény nem a(z) <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> szolgáltatásból származik, és előfordulhat, hogy az Ön tudta nélkül lett telepítve.</translation>
 <translation id="8261506727792406068">Törlés</translation>

@@ -22,13 +22,20 @@ struct WebTestShellPlatformDelegate::WebTestShellData {
   gfx::Size initial_size;
 };
 
+struct WebTestShellPlatformDelegate::WebTestPlatformData {};
+
 WebTestShellPlatformDelegate::WebTestShellPlatformDelegate() = default;
 WebTestShellPlatformDelegate::~WebTestShellPlatformDelegate() = default;
+
+void WebTestShellPlatformDelegate::Initialize(
+    const gfx::Size& default_window_size) {
+  ShellPlatformDelegate::Initialize(default_window_size);
+}
 
 void WebTestShellPlatformDelegate::CreatePlatformWindow(
     Shell* shell,
     const gfx::Size& initial_size) {
-  if (!shell->headless()) {
+  if (!IsHeadless()) {
     ShellPlatformDelegate::CreatePlatformWindow(shell, initial_size);
     return;
   }
@@ -40,7 +47,7 @@ void WebTestShellPlatformDelegate::CreatePlatformWindow(
 }
 
 gfx::NativeWindow WebTestShellPlatformDelegate::GetNativeWindow(Shell* shell) {
-  if (!shell->headless())
+  if (!IsHeadless())
     return ShellPlatformDelegate::GetNativeWindow(shell);
 
   NOTREACHED();
@@ -48,7 +55,7 @@ gfx::NativeWindow WebTestShellPlatformDelegate::GetNativeWindow(Shell* shell) {
 }
 
 void WebTestShellPlatformDelegate::CleanUp(Shell* shell) {
-  if (!shell->headless()) {
+  if (!IsHeadless()) {
     ShellPlatformDelegate::CleanUp(shell);
     return;
   }
@@ -58,7 +65,7 @@ void WebTestShellPlatformDelegate::CleanUp(Shell* shell) {
 }
 
 void WebTestShellPlatformDelegate::SetContents(Shell* shell) {
-  if (!shell->headless()) {
+  if (!IsHeadless()) {
     ShellPlatformDelegate::SetContents(shell);
     return;
   }
@@ -67,7 +74,7 @@ void WebTestShellPlatformDelegate::SetContents(Shell* shell) {
 void WebTestShellPlatformDelegate::EnableUIControl(Shell* shell,
                                                    UIControl control,
                                                    bool is_enabled) {
-  if (!shell->headless()) {
+  if (!IsHeadless()) {
     ShellPlatformDelegate::EnableUIControl(shell, control, is_enabled);
     return;
   }
@@ -75,7 +82,7 @@ void WebTestShellPlatformDelegate::EnableUIControl(Shell* shell,
 
 void WebTestShellPlatformDelegate::SetAddressBarURL(Shell* shell,
                                                     const GURL& url) {
-  if (!shell->headless()) {
+  if (!IsHeadless()) {
     ShellPlatformDelegate::SetAddressBarURL(shell, url);
     return;
   }
@@ -83,14 +90,14 @@ void WebTestShellPlatformDelegate::SetAddressBarURL(Shell* shell,
 
 void WebTestShellPlatformDelegate::SetTitle(Shell* shell,
                                             const base::string16& title) {
-  if (!shell->headless()) {
+  if (!IsHeadless()) {
     ShellPlatformDelegate::SetTitle(shell, title);
     return;
   }
 }
 
 void WebTestShellPlatformDelegate::RenderViewReady(Shell* shell) {
-  if (!shell->headless()) {
+  if (!IsHeadless()) {
     ShellPlatformDelegate::RenderViewReady(shell);
     return;
   }
@@ -116,7 +123,7 @@ void WebTestShellPlatformDelegate::RenderViewReady(Shell* shell) {
 }
 
 bool WebTestShellPlatformDelegate::DestroyShell(Shell* shell) {
-  if (shell->headless())
+  if (IsHeadless())
     return false;  // Shell destroys itself.
   return ShellPlatformDelegate::DestroyShell(shell);
 }
@@ -124,7 +131,7 @@ bool WebTestShellPlatformDelegate::DestroyShell(Shell* shell) {
 void WebTestShellPlatformDelegate::ResizeWebContent(
     Shell* shell,
     const gfx::Size& content_size) {
-  if (!shell->headless()) {
+  if (!IsHeadless()) {
     ShellPlatformDelegate::ResizeWebContent(shell, content_size);
     return;
   }
@@ -145,7 +152,7 @@ void WebTestShellPlatformDelegate::ResizeWebContent(
 
 void WebTestShellPlatformDelegate::ActivateContents(Shell* shell,
                                                     WebContents* top_contents) {
-  if (!shell->headless()) {
+  if (!IsHeadless()) {
     ShellPlatformDelegate::ActivateContents(shell, top_contents);
     return;
   }
@@ -175,7 +182,7 @@ bool WebTestShellPlatformDelegate::HandleKeyboardEvent(
     Shell* shell,
     WebContents* source,
     const NativeWebKeyboardEvent& event) {
-  if (shell->headless())
+  if (IsHeadless())
     return false;
   return ShellPlatformDelegate::HandleKeyboardEvent(shell, source, event);
 }

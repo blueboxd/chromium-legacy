@@ -26,6 +26,17 @@
 }
 @end
 
+@implementation URLInfo
+- (instancetype)initWithURL:(const GURL&)URL title:(NSString*)title {
+  self = [super init];
+  if (self) {
+    _URL = URL;
+    _title = title;
+  }
+  return self;
+}
+@end
+
 UIDragItem* CreateTabDragItem(web::WebState* web_state) {
   DCHECK(web_state);
   NSURL* url = net::NSURLWithGURL(web_state->GetVisibleURL());
@@ -46,19 +57,18 @@ UIDragItem* CreateTabDragItem(web::WebState* web_state) {
   return drag_item;
 }
 
-UIDragItem* CreateURLDragItem(const GURL& url, WindowActivityOrigin origin) {
-  DCHECK(url.is_valid());
-  NSURL* url_object = net::NSURLWithGURL(url);
+UIDragItem* CreateURLDragItem(URLInfo* url_info, WindowActivityOrigin origin) {
+  DCHECK(url_info.URL.is_valid());
   NSItemProvider* item_provider =
-      [[NSItemProvider alloc] initWithObject:url_object];
+      [[NSItemProvider alloc] initWithObject:net::NSURLWithGURL(url_info.URL)];
   // Visibility "all" is required to allow the OS to recognize this activity for
   // creating a new window.
-  [item_provider registerObject:ActivityToLoadURL(origin, url)
+  [item_provider registerObject:ActivityToLoadURL(origin, url_info.URL)
                      visibility:NSItemProviderRepresentationVisibilityAll];
   UIDragItem* drag_item =
       [[UIDragItem alloc] initWithItemProvider:item_provider];
   // Local objects allow synchronous drops, whereas NSItemProvider only allows
   // asynchronous drops.
-  drag_item.localObject = url_object;
+  drag_item.localObject = url_info;
   return drag_item;
 }

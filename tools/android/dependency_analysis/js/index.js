@@ -6,11 +6,50 @@ import {parseGraphModelFromJson} from './process_graph_json.js';
 import {PageModel} from './page_model.js';
 import {PageController} from './page_controller.js';
 import {GraphView} from './graph_view.js';
+import {shortenPackageName, restorePackageName} from './chrome_hooks.js';
 
 // For ease of development, we currently serve all our JSON and other assets
 // through a simple Python server at localhost:8888. This should be changed
 // as we find other ways to serve the assets (user upload or hosted externally).
 const LOCALHOST = 'http://localhost:8888';
+
+// Keys for identifying URL params.
+const URL_PARAM_KEYS = {
+  FILTER: 'filter',
+};
+
+/**
+ * Converts a URL to the node filter contained within its querystring.
+ * @param {string} url The URL to convert.
+ * @return {!Array<string>} The array of node names in the URL's filter, or an
+ *     empty array if there was no filter in the URL.
+ */
+function generateFilterFromUrl(url) {
+  const pageUrl = new URL(url);
+  const filterNodes = pageUrl.searchParams.get(URL_PARAM_KEYS.FILTER);
+  if (filterNodes !== null) {
+    return filterNodes.split(',');
+  }
+  return [];
+}
+
+/**
+ * Converts a node filter into a URL containing the filter information. The
+ * filter information will be stored in the querystring of the supplied URL.
+ * @param {!Array<string>} filter The node name filter to store in the URL.
+ * @param {string} currentUrl The URL of the current page.
+ * @return {string} The new URL containing the filter information.
+ */
+function generateUrlFromFilter(filter, currentUrl) {
+  const filterNameString = filter.join(',');
+
+  const pageUrl = new URL(currentUrl);
+  const searchParams = new URLSearchParams();
+  if (filter.length > 0) {
+    searchParams.append(URL_PARAM_KEYS.FILTER, filterNameString);
+  }
+  return `${pageUrl.origin}${pageUrl.pathname}?${searchParams.toString()}`;
+}
 
 // TODO(yjlong): Currently we take JSON served by a Python server running on
 // the side. Replace this with a user upload or pull from some other source.
@@ -21,20 +60,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const graphView = new GraphView();
     const pageController = new PageController(pageModel, graphView);
 
-    // TODO(yjlong): This is test data. Remove this when no longer needed.
-    pageController.addIncludedNode('org.chromium.base');
-    pageController.addIncludedNode('org.chromium.chrome.browser.gsa');
-    pageController.addIncludedNode('org.chromium.chrome.browser.omaha');
-    pageController.addIncludedNode('org.chromium.chrome.browser.media');
-    pageController.addIncludedNode('org.chromium.ui.base');
+    const includedNodesInUrl = generateFilterFromUrl(document.URL);
+
     pageController.setOutboundDepth(1);
+    if (includedNodesInUrl.length !== 0) {
+      pageController.addIncludedNodes(includedNodesInUrl);
+    } else {
+      // TODO(yjlong): This is test data. Remove this when no longer needed.
+      pageController.addIncludedNodes([
+        'org.chromium.base',
+        'org.chromium.chrome.browser.gsa',
+        'org.chromium.chrome.browser.omaha',
+        'org.chromium.chrome.browser.media',
+        'org.chromium.ui.base',
+      ]);
+    }
+
 
     new Vue({
       el: '#selected-node-details',
       data: pageModel.selectedNodeDetailsData,
       methods: {
         addSelectedToFilter: function() {
-          pageController.addIncludedNode(this.selectedNode.id);
+          pageController.addIncludedNodes([this.selectedNode.id]);
         },
         removeSelectedFromFilter: function() {
           pageController.removeIncludedNode(this.selectedNode.id);
@@ -49,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
       },
       methods: {
         submitFilter: function() {
-          pageController.addIncludedNode(this.filterInputText);
+          pageController.addIncludedNodes([this.filterInputText]);
         },
       },
     });
@@ -81,6 +129,22 @@ document.addEventListener('DOMContentLoaded', () => {
       methods: {
         submitOutbound: function() {
           pageController.setOutboundDepth(this.outboundDepth);
+        },
+      },
+    });
+
+    new Vue({
+      el: '#url-generator',
+      data: pageModel.nodeFilterData,
+      methods: {
+        /**
+         * Generates an URL for the current page containing the filter in its
+         * querystring, then copies the URL to the input elem and highlights it.
+         */
+        generateUrl: function() {
+          const pageUrl = generateUrlFromFilter(this.nodeList, document.URL);
+          this.$refs.input.value = pageUrl;
+          this.$refs.input.select();
         },
       },
     });

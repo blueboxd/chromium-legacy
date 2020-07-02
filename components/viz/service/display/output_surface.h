@@ -240,6 +240,9 @@ class VIZ_SERVICE_EXPORT OutputSurface {
   virtual void SetNeedsSwapSizeNotifications(
       bool needs_swap_size_notifications);
 
+  // Notifies surface that we want to measure viz-gpu latency for next draw.
+  virtual void SetNeedsMeasureNextDrawLatency() {}
+
   // Updates timing info on the provided LatencyInfo when swap completes.
   static void UpdateLatencyInfoOnSwap(
       const gfx::SwapResponse& response,

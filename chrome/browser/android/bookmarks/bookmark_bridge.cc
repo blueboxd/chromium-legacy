@@ -125,8 +125,8 @@ BookmarkBridge::BookmarkBridge(JNIEnv* env,
   pref_change_registrar_.Init(profile_->GetPrefs());
   pref_change_registrar_.Add(
       bookmarks::prefs::kEditBookmarksEnabled,
-      base::Bind(&BookmarkBridge::EditBookmarksEnabledChanged,
-                 base::Unretained(this)));
+      base::BindRepeating(&BookmarkBridge::EditBookmarksEnabledChanged,
+                          base::Unretained(this)));
 
   NotifyIfDoneLoading();
 

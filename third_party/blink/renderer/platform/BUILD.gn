@@ -2190,7 +2190,6 @@ test("blink_platform_perftests") {
     "//testing/gtest",
     "//testing/perf",
     "//third_party:freetype_harfbuzz",
-    "//third_party/blink/renderer/platform/scheduler:perf_tests",
   ]
 }
 

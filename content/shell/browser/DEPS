@@ -12,7 +12,6 @@ include_rules = [
   # TODO(danakj): This directory shouldn't need to access web test code as
   # the ShellMainDelegate should inject it as appropriate.
   "+content/shell/browser/web_test/web_test_control_host.h",
-  "+content/shell/common/web_test/web_test_switches.h",
 ]
 
 specific_include_rules = {

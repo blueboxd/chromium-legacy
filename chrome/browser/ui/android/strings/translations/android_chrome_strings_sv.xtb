@@ -10,7 +10,6 @@
 <translation id="1049743911850919806">Inkognito</translation>
 <translation id="10614374240317010">Aldrig sparad</translation>
 <translation id="1067922213147265141">Andra Google-tjänster</translation>
-<translation id="1068672505746868501">Översätt aldrig sidor på <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="107147699690128016">Om du ändrar filnamnstillägget kanske filen öppnas i ett annat program vilket kan utgöra en fara för enheten.</translation>
 <translation id="1100066534610197918">Öppna på en ny flik i gruppen</translation>
 <translation id="1105960400813249514">Skärmavbildning</translation>
@@ -35,13 +34,11 @@
 <translation id="1229399675748764149">Gör den här sidan till startsida</translation>
 <translation id="1231733316453485619">Vill du aktivera synkronisering?</translation>
 <translation id="123724288017357924">Läs in den aktuella sidan igen och ignorera cachelagrat innehåll</translation>
-<translation id="124116460088058876">Fler språk</translation>
 <translation id="124678866338384709">Stäng den aktuella fliken</translation>
 <translation id="1258753120186372309">Googles doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Sök och utforska</translation>
 <translation id="1266864766717917324">Det gick inte att dela <ph name="CONTENT_TYPE" /></translation>
 <translation id="1283039547216852943">Tryck och utöka</translation>
-<translation id="1285320974508926690">Översätt aldrig den här webbplatsen</translation>
 <translation id="1291207594882862231">Rensa historiken, cookies, webbplatsdata, cacheminnet …</translation>
 <translation id="129553762522093515">Nyligen stängda</translation>
 <translation id="1303339473099049190">Det gick inte att hitta lösenordet. Kontrollera stavningen och försök igen.</translation>
@@ -239,7 +236,6 @@ Sök genom att trycka länge på ett ord. Du kan förfina sökningen genom att v
 <translation id="2898264748040935573">Redigera sparat lösenord</translation>
 <translation id="2900528713135656174">Skapa händelse</translation>
 <translation id="2903493209154104877">Adresser</translation>
-<translation id="290376772003165898">Är sidan inte på <ph name="LANGUAGE" />?</translation>
 <translation id="2904414404539560095">Listan över enheter som fliken kan delas med öppnades och tar upp hela skärmen.</translation>
 <translation id="2905036901251765993">Be andra att skanna QR-koden om du vill dela med personer i närheten</translation>
 <translation id="2909615210195135082">Googles aviseringsplattform</translation>
@@ -415,7 +411,6 @@ Sök genom att trycka länge på ett ord. Du kan förfina sökningen genom att v
 <translation id="4405224443901389797">Flytta till …</translation>
 <translation id="4411535500181276704">Begränsat läge</translation>
 <translation id="4415276339145661267">Hantera Google-kontot</translation>
-<translation id="4432792777822557199">Sidor på <ph name="SOURCE_LANGUAGE" /> översätts till <ph name="TARGET_LANGUAGE" /> från och med nu</translation>
 <translation id="4440958355523780886">Lite-sida tillhandahållen av Google. Tryck för att läsa in originalet.</translation>
 <translation id="4452411734226507615">Stäng fliken <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">Bokmärkt i <ph name="FOLDER_NAME" /></translation>
@@ -550,7 +545,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="543509235395288790"><ph name="COUNT" /> filer (<ph name="MEGABYTES" />) laddas ned.</translation>
 <translation id="5441522332038954058">Hoppa till adressfältet</translation>
 <translation id="5447201525962359567">All webbplatslagring, inklusive cookies och annan lokalt sparad data</translation>
-<translation id="5447765697759493033">Den här webbplatsen översätts inte</translation>
 <translation id="545042621069398927">Nedladdningen görs snabbare.</translation>
 <translation id="5456381639095306749">Ladda ned sida</translation>
 <translation id="548278423535722844">Öppna i kartapp</translation>
@@ -580,7 +574,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5659593005791499971">E-post</translation>
 <translation id="5665379678064389456">Skapa händelse i <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Åsidosätt en webbplats begäran att hindra inzoomning</translation>
-<translation id="5684874026226664614">Det gick inte att översätta sidan.</translation>
 <translation id="5686790454216892815">Filnamnet är för långt</translation>
 <translation id="5694049548840660018">Kom tillbaka till startsidan snabbt</translation>
 <translation id="569536719314091526">Översätt den här sidan till vilket språk som helst via knappen Fler alternativ</translation>
@@ -734,7 +727,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6767294960381293877">Listan över enheter som fliken kan delas med öppnades och tar upp halva skärmen.</translation>
 <translation id="6811034713472274749">Sidan är klar att öppna</translation>
 <translation id="6820686453637990663">CVC</translation>
-<translation id="6831043979455480757">Översätt</translation>
 <translation id="6845325883481699275">Bidra till att göra Chrome säkrare</translation>
 <translation id="6846298663435243399">Läser in …</translation>
 <translation id="6850409657436465440">Nedladdningen pågår fortfarande</translation>
@@ -842,7 +834,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7698359219371678927">Skapa ett e-postmeddelande i <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Autoslutför sökningar och webbadresser</translation>
 <translation id="7725024127233776428">Sidor som infogats som bokmärke visas här</translation>
-<translation id="773466115871691567">Översätt alltid sidor på <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7746457520633464754">För att kunna upptäcka farliga appar och webbplatser skickar Chrome webbadresser till vissa sidor som du besöker, vissa systemuppgifter och visst sidinnehåll till Google</translation>
 <translation id="7757787379047923882">Texten delades från <ph name="DEVICE_NAME" /></translation>
 <translation id="7761849928583394409">Välj datum och tid</translation>
@@ -922,7 +913,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8310344678080805313">Standardflikar</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> och fler webbplatser</translation>
 <translation id="8327155640814342956">Uppdatera Chrome så att du får bästa möjliga surfupplevelse</translation>
-<translation id="8339163506404995330">Sidor på <ph name="LANGUAGE" /> översätts inte</translation>
 <translation id="8349013245300336738">Sortera efter dataförbrukning</translation>
 <translation id="8364299278605033898">Visa populära webbplatser</translation>
 <translation id="8368027906805972958">Enheten är okänd eller stöds inte (<ph name="DEVICE_ID" />)</translation>

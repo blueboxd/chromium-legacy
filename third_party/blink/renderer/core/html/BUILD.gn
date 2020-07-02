@@ -667,6 +667,7 @@ blink_core_tests("unit_tests") {
     "html_script_element_test.cc",
     "html_slot_element_test.cc",
     "html_table_row_element_test.cc",
+    "html_view_source_document_test.cc",
     "image_document_test.cc",
     "imports/html_import_sheets_test.cc",
     "lazy_load_frame_observer_test.cc",

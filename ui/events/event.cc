@@ -15,6 +15,7 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
@@ -26,7 +27,6 @@
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_conversions.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/transform_util.h"
 
@@ -639,8 +639,8 @@ MouseWheelEvent::MouseWheelEvent(const PlatformEvent& native_event)
 
 MouseWheelEvent::MouseWheelEvent(const ScrollEvent& scroll_event)
     : MouseEvent(scroll_event),
-      offset_(gfx::ToRoundedInt(scroll_event.x_offset()),
-              gfx::ToRoundedInt(scroll_event.y_offset())) {
+      offset_(base::Round(scroll_event.x_offset()),
+              base::Round(scroll_event.y_offset())) {
   SetType(ET_MOUSEWHEEL);
 }
 

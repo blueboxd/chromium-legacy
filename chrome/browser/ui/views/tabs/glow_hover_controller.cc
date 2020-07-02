@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/tabs/glow_hover_controller.h"
 
+#include "base/numerics/safe_conversions.h"
 #include "ui/views/view.h"
 
 // Amount to scale the opacity. The spec is in terms of a Sketch radial gradient
@@ -75,7 +76,7 @@ double GlowHoverController::GetAnimationValue() const {
 
 SkAlpha GlowHoverController::GetAlpha() const {
   return static_cast<SkAlpha>(animation_.CurrentValueBetween(
-      0, gfx::ToRoundedInt(255 * opacity_scale_)));
+      0, base::Round<SkAlpha>(255 * opacity_scale_)));
 }
 
 bool GlowHoverController::ShouldDraw() const {

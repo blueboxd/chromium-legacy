@@ -595,8 +595,8 @@ class GoogleUpdateWinTest : public ::testing::TestWithParam<bool> {
     // Provide an IGoogleUpdate3Web class factory so that this test can provide
     // a mocked-out instance.
     SetGoogleUpdateFactoryForTesting(
-        base::Bind(&GoogleUpdateFactory::Create,
-                   base::Unretained(&mock_google_update_factory_)));
+        base::BindRepeating(&GoogleUpdateFactory::Create,
+                            base::Unretained(&mock_google_update_factory_)));
 
     // Compute a newer version.
     base::Version current_version(CHROME_VERSION_STRING);

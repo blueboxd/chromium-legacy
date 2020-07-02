@@ -7,7 +7,6 @@
 #include <map>
 #include <memory>
 
-#import "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "build/branding_buildflags.h"
@@ -354,10 +353,6 @@ id<GREYMatcher> ClearBrowsingDataCell() {
 // local server to navigate to a page that sets then tests a cookie, and then
 // clears the cookie and tests it is not set.
 - (void)testClearCookies {
-  // TODO(crbug.com/1101099): Test fails on iOS 13 iPhone SE from EG2 roll.
-  if (base::ios::IsRunningOnIOS13OrLater() && ![ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_SKIPPED(@"Test disabled on iOS 13 and upper on iPhones.");
-  }
   // Creates a map of canned responses and set up the test HTML server.
   std::map<GURL, std::pair<std::string, std::string>> response;
 

@@ -211,11 +211,6 @@ Bei verwalteten Geräten sind standardmäßig keine Modi für das schnelle Entsp
       Wenn diese Richtlinie deaktiviert ist, darf Google Assistant nicht auf den Bildschirmkontext zugreifen.
       Wenn die Richtlinie nicht konfiguriert ist, können Nutzer selbst entscheiden, ob Google Assistant auf den Bildschirmkontext zugreifen darf.</translation>
 <translation id="1376119291123231789">Intelligenten Akkulademodus aktivieren</translation>
-<translation id="1376298389964661475">Mit dieser Richtlinie können Sie eine Liste mit URL-Mustern festlegen und so angeben, welche Websites Benachrichtigungen anzeigen dürfen.
-
-          Ist diese Richtlinie nicht konfiguriert, wird für alle Websites der globale Standardwert verwendet, entweder aus der Richtlinie "DefaultNotificationsSetting", sofern diese konfiguriert ist, oder aus der persönlichen Konfiguration des Nutzers.
-
-          Genaue Informationen zu gültigen URL-Mustern finden Sie unter https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="1384459581748403878">Referenz: <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">Update-Status des Betriebssystems melden</translation>
 <translation id="1393485621820363363">Aktivierte, an Geräte gebundene Unternehmensdrucker</translation>
@@ -280,11 +275,6 @@ Wenn Sie diese Richtlinie deaktivieren, wird das Scrollen zu bestimmten Textfrag
           Wird sie auf "false" gesetzt, können Nutzer diese Funktion nicht aktivieren.
 
           Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.</translation>
-<translation id="1497640071678474358">Mit dieser Richtlinie können Sie eine Liste mit URL-Mustern festlegen und so angeben, welche Websites keine Pop-ups öffnen dürfen.
-
-          Ist diese Richtlinie nicht konfiguriert, wird für alle Websites der globale Standardwert verwendet, entweder aus der Richtlinie "DefaultPopupsSetting", sofern diese konfiguriert ist, oder aus der persönlichen Konfiguration des Nutzers.
-
-          Genaue Informationen zu gültigen URL-Mustern finden Sie unter https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="1502843533062797703">Blockieren von Codeeinschleusungen durch Drittanbieter-Software aktivieren</translation>
 <translation id="1507382822467487898">
           Hiermit wird konfiguriert, welche MAC-Adresse (Media Access Control) verwendet wird, wenn das Gerät angedockt wird.
@@ -885,13 +875,6 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
       Wenn Sie "<ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" />" festlegen (Wert: 1), werden nur Variationen für <ph name="PRODUCT_NAME" /> angewendet, die als wichtige Sicherheits- oder Stabilitätskorrekturen gewertet werden.
 
       Wenn Sie "<ph name="VARIATIONS_DISABLED_OPTION_NAME" />" festlegen (Wert: 2), werden keine Variationen auf den Browser angewendet. Dieser Modus kann die <ph name="PRODUCT_NAME" />-Entwickler möglicherweise daran hindern, wichtige Sicherheitskorrekturen zeitnah durchzuführen. Er wird daher nicht empfohlen.</translation>
-<translation id="2406820201690307634">Mit dieser Richtlinie können Sie eine Liste mit URL-Mustern festlegen und so angeben, auf welchen Websites keine Bilder angezeigt werden dürfen.
-
-          Ist diese Richtlinie nicht konfiguriert, wird für alle Websites der globale Standardwert verwendet, entweder aus der Richtlinie "DefaultImagesSetting", sofern diese konfiguriert ist, oder aus der persönlichen Konfiguration des Nutzers.
-
-          Diese Richtlinie war unter Android früher fälschlicherweise aktiviert, wurde dort aber nie vollständig unterstützt.
-
-          Genaue Informationen zu gültigen URL-Mustern finden Sie unter https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="2411629345938804022">Wenn die Richtlinie auf "3" gesetzt ist, können Websites den Zugriff auf Bluetooth-Geräte in der Nähe anfragen. Wenn die Richtlinie auf "2" gesetzt ist, wird der Zugriff auf Bluetooth-Geräte in der Nähe verweigert.
 
       Wird sie nicht konfiguriert, können Websites den Zugriff anfragen, Nutzer können diese Einstellung jedoch ändern.</translation>
@@ -991,11 +974,6 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
       Wenn diese Richtlinie nicht konfiguriert oder auf "Websites mit Inhalten nur für Erwachsene nicht filtern" festgelegt ist, werden Websites nicht gefiltert.
 
       Falls die Richtlinie auf "Websites auf oberster Ebene mit Inhalten nur für Erwachsene filtern" gesetzt ist, werden als pornografisch eingestufte Websites gefiltert.</translation>
-<translation id="2484356232170636726">Mit dieser Richtlinie können Sie eine Liste mit URL-Mustern festlegen und so angeben, welche Websites JavaScript ausführen dürfen.
-
-          Ist diese Richtlinie nicht konfiguriert, wird für alle Websites der globale Standardwert verwendet, entweder aus der Richtlinie "DefaultJavaScriptSetting", sofern diese konfiguriert ist, oder aus der persönlichen Konfiguration des Nutzers.
-
-          Genaue Informationen zu gültigen URL-Mustern finden Sie unter https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="2488010520405124654">Aktivierung der Eingabeaufforderung zur Netzwerkkonfiguration im Offlinemodus
 
       Wenn diese Richtlinie nicht festgelegt oder auf "True" gesetzt ist und ein lokales Gerätekonto für die automatische Anmeldung ohne Verzögerung konfiguriert ist, aber kein Zugang zum Internet besteht, zeigt <ph name="PRODUCT_OS_NAME" /> eine Eingabeaufforderung zur Netzwerkkonfiguration an.
@@ -1609,13 +1587,6 @@ Wird die Richtlinie auf "False" gesetzt , verwendet <ph name="PRODUCT_NAME" /> k
 
       Ist diese Richtlinie nicht konfiguriert, werden alle Plug-ins, die mit den Mustern in DisabledPlugins übereinstimmen, deaktiviert. Sie können dann nicht vom Nutzer aktiviert werden.</translation>
 <translation id="3381968327636295719">Standardmäßig Host-Browser verwenden</translation>
-<translation id="3388153794103186066">Hiermit können Sie eine Liste mit URLs festlegen, deren Websites automatisch auf ein USB-Gerät mit der angegebenen Anbieter- und Produkt-ID zugreifen dürfen. Damit die Richtlinie gültig ist, muss jeder Eintrag in der Liste sowohl Geräte als auch URLs enthalten. Jeder Geräteeintrag kann je ein Feld für eine Anbieter-ID und eine Produkt-ID enthalten. Fehlende IDs werden als Platzhalter betrachtet, wobei als Ausnahme zu berücksichtigen ist, dass eine Produkt-ID nicht ohne zugehörige Anbieter-ID angegeben werden kann. Andernfalls ist die Richtlinie ungültig und wird ignoriert.
-
-        Im USB-Berechtigungsmodell wird die URL der anfragenden Website ("anfragende URL") und die URL der Frame-Website der obersten Ebene ("einbettende URL") verwendet. Dabei wird der anfragenden URL die Berechtigung erteilt, auf das USB-Gerät zuzugreifen. Wird die anfragende Website in einen iFrame geladen, kann die anfragende von der einbettenden URL abweichen. Deshalb darf das Feld "urls" bis zu zwei durch ein Komma voneinander getrennte URL-Strings enthalten: die anfragende URL und die einbettende URL. Falls nur eine einzige URL angegeben ist, wird der Zugriff auf die entsprechenden USB-Geräte gewährt, wenn unabhängig vom Einbettungsstatus die URL der anfragenden Website mit dieser URL übereinstimmt. Die URLs im Feld "urls" müssen gültig sein, da ansonsten die Richtlinie ignoriert wird.
-
-        Ist diese Richtlinie nicht konfiguriert, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultWebUsbGuardSetting", sofern konfiguriert, oder die persönliche Konfiguration des Nutzers zum Einsatz.
-
-        URL-Muster in dieser Richtlinie dürfen nicht im Widerspruch zu den über "WebUsbBlockedForUrls" konfigurierten URLs stehen. Im Falle einer Diskrepanz hat diese Richtlinie Vorrang vor "WebUsbBlockedForUrls" und "WebUsbAskForUrls".</translation>
 <translation id="3414260318408232239">Wenn diese Richtlinie nicht konfiguriert ist, verwendet <ph name="PRODUCT_NAME" /> standardmäßig eine Mindestversion: die Version TLS 1.0.
 
       Ansonsten kann sie auf einen der folgenden Werte festgelegt werden: "tls1", "tls1.1" oder "tls1.2". Wenn die Richtlinie konfiguriert ist, verwendet <ph name="PRODUCT_NAME" /> keine SSL- oder TLS-Versionen, die niedriger als die vorgegebene Version sind. Ein unbekannter Wert wird ignoriert.</translation>
@@ -1807,13 +1778,6 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
 
         Diese Richtlinie wird im Rahmen der Registrierung von Cloud-Richtlinien auf Computern verwendet und kann unter Windows über die Registrierung oder per GPO, auf einem Mac per plist und unter Linux über eine JSON-Richtliniendatei festgelegt werden.</translation>
 <translation id="3660562134618097814">SAML-IdP-Cookies bei der Anmeldung übertragen</translation>
-<translation id="3688225008199664446">Mit dieser Richtlinie können Sie eine Liste mit URL-Mustern festlegen und so angeben, welche Websites keinen Zugriff auf ein USB-Gerät vom Nutzer anfordern dürfen.
-
-          Ist diese Richtlinie nicht konfiguriert, wird für alle Websites der globale Standardwert verwendet, entweder aus der Richtlinie "DefaultWebUsbGuardSetting", sofern diese konfiguriert ist, oder aus der persönlichen Konfiguration des Nutzers.
-
-          URL-Muster in dieser Richtlinie dürfen nicht im Widerspruch zu den über "WebUsbAskForUrls" konfigurierten URLs stehen. Es ist nicht festgelegt, welche der beiden Richtlinien Vorrang hat, falls eine URL mit beiden übereinstimmt.
-
-          Genaue Informationen zu gültigen URL-Mustern finden Sie unter https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="3701121231485832347">Legt die Einstellungen für mit <ph name="MS_AD_NAME" /> verwaltete <ph name="PRODUCT_OS_NAME" />-Geräte fest.</translation>
 <translation id="3702518095257671450">Remote-Attestierung</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> – Das einzeilige Feld ist veraltet und wird in Zukunft entfernt. Bitte nutzen Sie das mehrzeilige Textfeld unten.</translation>
@@ -2593,10 +2557,10 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
           Hinweis: Sofern konfiguriert, überschreibt "<ph name="DEVICE_LOGIN_SCREEN_SPOKEN_FEEDBACK_ENABLED_POLICY_NAME" />" diese Richtlinie.</translation>
 <translation id="494613465159630803">Cast Receiver</translation>
 <translation id="494924690085329212">Nach Nutzerabmeldung neu starten, wenn Android gestartet wurde.</translation>
-<translation id="4950900960525118567">Mit dieser Funktion werden Vorschläge zur Erkundung neuer Inhalte aktiviert. Das kann u. a. Apps und Webseiten einschließen.
-      Wenn diese Richtlinie auf "True" gesetzt ist, werden Vorschläge zur Erkundung neuer Inhalte aktiviert.
-      Ist diese Richtlinie auf "False" gesetzt, werden Vorschläge zur Erkundung neuer Inhalte deaktiviert.
-      Ist diese Richtlinie nicht konfiguriert, werden Vorschläge zur Erkundung neuer Inhalte für verwaltete Nutzer deaktiviert.
+<translation id="4950900960525118567">Mit dieser Funktion werden Vorschläge zur Entdeckung neuer Inhalte aktiviert. Das kann u. a. Apps und Webseiten einschließen.
+      Wenn diese Richtlinie auf "True" gesetzt ist, werden Vorschläge zur Entdeckung neuer Inhalte aktiviert.
+      Ist diese Richtlinie auf "False" gesetzt, werden Vorschläge zur Entdeckung neuer Inhalte deaktiviert.
+      Ist diese Richtlinie nicht konfiguriert, werden Vorschläge zur Entdeckung neuer Inhalte für verwaltete Nutzer deaktiviert.
       </translation>
 <translation id="4962262530309732070">Wurde für diese Richtlinie "true" festgelegt oder nichts konfiguriert, ist in <ph name="PRODUCT_NAME" /> die Verwendung der Funktion "Person hinzufügen" über den Nutzermanager zulässig.
 
@@ -3670,11 +3634,6 @@ Ein Teil der Proxyeinstellungen ist für Android-Apps verfügbar und kann auf fr
           Der Wert für die Richtlinie muss in Millisekunden angegeben werden. Werte müssen kleiner als der Wert für die Inaktivitätsverzögerung sein.</translation>
 <translation id="6515357889978918016"><ph name="PLUGIN_VM_NAME" />-Bild</translation>
 <translation id="6520802717075138474">Suchmaschinen bei erster Ausführung aus Standardbrowser importieren</translation>
-<translation id="6525955212636890608">Wenn Sie diese Einstellung aktivieren, werden alle auf Websites eingebetteten Flash-Inhalte ausgeführt, sofern in den Inhaltseinstellungen der Websites Flash-Inhalte aktiviert wurden, entweder durch den Nutzer oder eine Unternehmensrichtlinie. Dies gilt auch für Inhalte aus anderen Quellen oder kleine Inhalte.
-
-      Um festzulegen, welche Websites Flash-Inhalte ausführen dürfen, verwenden Sie die Richtlinien "DefaultPluginsSetting", "PluginsAllowedForUrls" und "PluginsBlockedForUrls".
-
-      Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, werden Flash-Inhalte aus anderen Quellen oder kleine Inhalte möglicherweise blockiert.</translation>
 <translation id="6532026122543921610">Wenn die automatische Zeitzonenerkennung nicht durch die Richtlinie "<ph name="SYSTEM_TIMEZONE_POLICY_NAME" />" deaktiviert ist, wird durch das Konfigurieren der Richtlinie die Methode zur Zeitzonenerkennung festgelegt. Diese kann von Nutzern nicht geändert werden.
 
       Die Richtlinie kann folgendermaßen konfiguriert werden:
@@ -3826,11 +3785,6 @@ Ein Teil der Proxyeinstellungen ist für Android-Apps verfügbar und kann auf fr
       Ist die Richtlinie auf "true" gesetzt, ist <ph name="PLUGIN_VM_NAME" /> für den Nutzer aktiviert, solange andere Einstellungen dies ebenfalls zulassen. <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> und <ph name="USER_PLUGIN_VM_ALLOWED_POLICY_NAME" /> müssen "true" sein und entweder <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> oder <ph name="PLUGIN_VM_USER_ID_POLICY_NAME" /> müssen für <ph name="PLUGIN_VM_NAME" /> aktiviert sein.</translation>
 <translation id="6757613329154374267">"Sichern und wiederherstellen" aktiviert</translation>
 <translation id="6758659208493449452">Mit dieser Richtlinie wird festgelegt, ob Teilnehmer am erweiterten Sicherheitsprogramm zusätzlich geschützt werden. Bei manchen dieser Funktionen werden unter Umständen Daten mit Google geteilt. Teilnehmer am erweiterten Sicherheitsprogramm können beispielsweise ihre heruntergeladenen Dateien für einen Malware-Scan an Google senden. Wird die Richtlinie auf "true" gesetzt oder nicht konfiguriert, werden entsprechende Nutzer zusätzlich geschützt. Wird die Richtlinie auf "false" gesetzt, stehen ihnen nur die Standardfunktionen für Privatnutzer zur Verfügung.</translation>
-<translation id="6764421313777250384">Mit dieser Richtlinie können Sie eine Liste mit URL-Mustern festlegen und so angeben, welche Websites keine Benachrichtigungen anzeigen dürfen.
-
-          Ist diese Richtlinie nicht konfiguriert, wird für alle Websites der globale Standardwert verwendet, entweder aus der Richtlinie "DefaultNotificationsSetting", sofern diese konfiguriert ist, oder aus der persönlichen Konfiguration des Nutzers.
-
-          Genaue Informationen zu gültigen URL-Mustern finden Sie unter https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="6766216162565713893">Websites dürfen den Nutzer um Zugriff auf ein Bluetooth-Gerät in der Nähe bitten</translation>
 <translation id="6770454900105963262">Informationen zu aktiven Kiosksitzungen senden</translation>
 <translation id="6786747875388722282">Erweiterungen</translation>
@@ -4272,11 +4226,6 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 <translation id="7485730741952775732">Ist diese Richtlinie konfiguriert, verwendet der Host für den Remotezugriff diese URL zur Validierung von Authentifizierungstokens von Clients für den Remotezugriff, um Verbindungen zu akzeptieren. Die Richtlinie muss in Verbindung mit "RemoteAccessHostTokenUrl" verwendet werden.
 
           Diese Funktion ist derzeit serverseitig deaktiviert.</translation>
-<translation id="7490270439948288519">Mit dieser Richtlinie können Sie eine Liste mit URL-Mustern festlegen und so angeben, welche Websites Pop-ups öffnen dürfen.
-
-          Ist diese Richtlinie nicht konfiguriert, wird für alle Websites der globale Standardwert verwendet, entweder aus der Richtlinie "DefaultPopupsSetting", sofern diese konfiguriert ist, oder aus der persönlichen Konfiguration des Nutzers.
-
-          Genaue Informationen zu gültigen URL-Mustern finden Sie unter https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="749556411189861380">Meldet die Betriebssystem- und Firmwareversion von registrierten Geräten
 
       Wird diese Einstellung nicht konfiguriert oder auf "True" gesetzt, melden registrierte Geräte in regelmäßigen Abständen ihre Betriebssystem- und Firmwareversion. Wird für diese Einstellung "False" festgelegt, werden keine Informationen zur Version gemeldet.</translation>
@@ -4286,11 +4235,6 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 
       Wenn diese Richtlinie verwendet wird, werden dem Nutzer alle Drucker mit Ausnahme der in dieser Richtlinie aufgeführten IDs zur Verfügung gestellt. Die IDs müssen den Feldern "id" oder "guid" in der Datei entsprechen, die in <ph name="DEVICE_PRINTERS_POLICY" /> angegeben ist.
       </translation>
-<translation id="7506269062143646163">Hiermit können Sie die Unterstützung für Signed HTTP Exchange (SXG) aktivieren.
-
-          Wenn die Richtlinie nicht konfiguriert oder auf "Enabled" festgelegt ist, werden Webinhalte, die als Signed HTTP Exchanges bereitgestellt werden, von Google Chrome akzeptiert.
-
-          Ist die Richtlinie auf "Disabled" festgelegt, können Signed HTTP Exchanges nicht geladen werden.</translation>
 <translation id="7506758875409719208">Mit dieser Richtlinie werden die erforderlichen Domainnamen der Clients für den Remotezugriff konfiguriert. Außerdem wird verhindert, dass Nutzer diese ändern.
 
           Wenn diese Einstellung aktiviert und für eine oder mehrere Domains konfiguriert ist, können nur Clients aus einer der angegebenen Domains eine Verbindung zum Host herstellen.
@@ -4302,11 +4246,6 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
           Siehe auch "RemoteAccessHostDomainList".</translation>
 <translation id="7511361072385293666">Wenn diese Richtlinie auf "true" eingestellt oder nicht konfiguriert ist, ist die Verwendung des QUIC-Protokolls in <ph name="PRODUCT_NAME" /> zulässig.
       Ist die Richtlinie auf "false" eingestellt, ist die Verwendung des QUIC-Protokolls nicht zulässig.</translation>
-<translation id="7515572751689937649">Mit dieser Richtlinie können Sie eine Liste mit URL-Mustern festlegen und so angeben, auf welchen Websites JavaScript nicht ausgeführt werden darf.
-
-          Ist diese Richtlinie nicht konfiguriert, wird für alle Websites der globale Standardwert verwendet, entweder aus der Richtlinie "DefaultJavaScriptSetting", sofern diese konfiguriert ist, oder aus der persönlichen Konfiguration des Nutzers.
-
-          Genaue Informationen zu gültigen URL-Mustern finden Sie unter https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="7517845714620372896">Gibt die Displayhelligkeit in % an.
 Wird diese Richtlinie festgelegt, wird die ursprüngliche Displayhelligkeit an den Richtlinienwert angepasst. Der Nutzer kann dies später wieder ändern. Funktionen zur automatischen Anpassung der Displayhelligkeit sind deaktiviert.
 Wird diese Richtlinie nicht festgelegt, hat dies keine Auswirkungen auf die Steuerung des Displays durch den Nutzer und auf die Funktionen zur automatischen Anpassung der Displayhelligkeit.
@@ -4920,7 +4859,7 @@ Unter Windows ist es empfehlenswert, Richtlinien über Gruppenrichtlinienobjekte
 <translation id="8424255554404582727">Standarddrehung des Bildschirms festlegen, die bei jedem Neustart erneut angewendet wird</translation>
 <translation id="8426231401662877819">Bildschirm um 90 Grad im Uhrzeigersinn drehen</translation>
 <translation id="8433186206711564395">Netzwerkeinstellungen</translation>
-<translation id="8433769814000220721">Vorgeschlagenen Inhalt aktivieren</translation>
+<translation id="8433769814000220721">Vorschläge zur Entdeckung neuer Inhalte aktivieren</translation>
 <translation id="843609873781525167">Wenn die Richtlinie auf "True" gesetzt ist, prüft <ph name="PRODUCT_NAME" /> beim Start immer, ob es der Standardbrowser ist. Nach Möglichkeit legt sich die Anwendung dann automatisch als Standard fest. Ist die Richtlinie auf "False" gesetzt, prüft <ph name="PRODUCT_NAME" /> nie, ob es der Standardbrowser ist. Außerdem werden alle Nutzersteuerelemente zum Einstellen dieser Option deaktiviert.
 
       Wenn die Richtlinie nicht konfiguriert ist, kann der Nutzer festlegen, ob <ph name="PRODUCT_NAME" /> der Standardbrowser ist und ob (falls nicht) entsprechende Benachrichtigungen angezeigt werden sollen.
@@ -5071,13 +5010,6 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
 
           Wenn Sie diese Richtlinie nicht konfigurieren, versucht <ph name="PRODUCT_NAME" /> zu ermitteln, ob der fragliche Server sich im Intranet befindet, und reagiert nur dann auf IWA-Anfragen. Wenn der Server sich dagegen im Internet befindet, werden dessen IWA-Anfragen von <ph name="PRODUCT_NAME" /> ignoriert.</translation>
 <translation id="8656110680728938054">"Vorlesen" aktivieren</translation>
-<translation id="8659729040032759711">Mit dieser Richtlinie können Sie eine Liste mit URL-Mustern festlegen und so angeben, welche Websites Zugriff auf ein USB-Gerät vom Nutzer anfordern dürfen.
-
-          Ist diese Richtlinie nicht konfiguriert, wird für alle Websites der globale Standardwert verwendet, entweder aus der Richtlinie "DefaultWebUsbGuardSetting", sofern diese konfiguriert ist, oder aus der persönlichen Konfiguration des Nutzers.
-
-          URL-Muster in dieser Richtlinie dürfen nicht im Widerspruch zu den über "WebUsbBlockedForUrls" konfigurierten URLs stehen. Es ist nicht festgelegt, welche der beiden Richtlinien Vorrang hat, falls eine URL mit beiden übereinstimmt.
-
-          Genaue Informationen zu gültigen URL-Mustern finden Sie unter https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="8661297125441579970">Datenmigration und ARC nicht zulassen.</translation>
 <translation id="8665314828727504286">Schutzniveau für Safe Browsing</translation>
 <translation id="8672321184841719703">Automatische Aktualisierung auf Zielversion</translation>
@@ -5193,15 +5125,6 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
 <translation id="8860342862142842017">Erzwingung der Zertifikatstransparenz für eine Liste mit subjectPublicKeyInfo-Hashes deaktivieren</translation>
 <translation id="8864975621965365890">Unterdrückung des Hinweises auf Einstellung des Frames, der beim Rendern einer Website durch <ph name="PRODUCT_FRAME_NAME" /> erscheint</translation>
 <translation id="886645881209114007">Nutzern erlauben, <ph name="PLUGIN_VM_NAME" /> auf <ph name="PRODUCT_OS_NAME" /> zu verwenden</translation>
-<translation id="8867464911288727016">Aktiviert den integrierten Google Übersetzer-Dienst in <ph name="PRODUCT_NAME" />.
-
-      Wenn Sie diese Einstellung aktivieren, wird in <ph name="PRODUCT_NAME" /> ggf. eine integrierte Symbolleiste für Übersetzungen und eine Übersetzungsfunktion im Kontextmenü angezeigt, das mit einem Rechtsklick geöffnet werden kann.
-
-      Sollten Sie diese Einstellung deaktivieren, wird keine der integrierten Übersetzungsfunktionen angezeigt.
-
-      Wird diese Einstellung aktiviert oder deaktiviert, können Nutzer diese Einstellung in <ph name="PRODUCT_NAME" /> nicht ändern oder überschreiben.
-
-      Wenn die Einstellung nicht konfiguriert ist, kann der Nutzer entscheiden, ob er die Funktion in Anspruch nehmen möchte oder nicht.</translation>
 <translation id="8871974300055371298">Inhaltseinstellungen</translation>
 <translation id="8872402969096027761">Hiermit wird die Bedienungshilfe "Automatisch klicken" auf dem Anmeldebildschirm aktiviert.
 
@@ -5398,9 +5321,6 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
 <translation id="9105265795073104888">Android-Apps wird nur ein Teil der Proxykonfigurationsoptionen zur Verfügung gestellt. Der Proxy kann in Android-Apps auf freiwilliger Basis verwendet werden. Es ist nicht möglich, die Verwendung eines Proxys zu erzwingen.</translation>
 <translation id="9106865192244721694">WebUSB auf diesen Websites zulassen</translation>
 <translation id="9112727953998243860">Unternehmensdrucker-Konfigurationsdatei</translation>
-<translation id="9112897538922695510">Damit können Sie eine Liste mit Protokoll-Handlern registrieren, wobei dies lediglich eine empfohlene Richtlinie sein kann. Für die Eigenschaft |protocol| sollte ein Schema wie "mailto" und für die Eigenschaft |url| das URL-Muster der Anwendung festgelegt werden, die das Schema verwaltet. Das Muster kann "%s" enthalten, was später durch die jeweilige URL ersetzt wird.
-
-          Die von der Richtlinie registrierten Protokoll-Handler werden mit den Protokoll-Handlern zusammengeführt, die vom Nutzer registriert wurden, und können gemeinsam verwendet werden. Der Nutzer kann die durch die Richtlinie installierten Protokoll-Handler durch Installieren eines neuen standardmäßigen Handlers überschreiben. Ein von der Richtlinie registrierter Protokoll-Handler kann jedoch nicht entfernt werden.</translation>
 <translation id="9117826695152538214">Wenn Sie die Richtlinie auf "True" setzen, bleibt die Einfingerbedienung aktiviert. Wenn Sie die Richtlinie auf "False" setzen, bleibt die Einfingerbedienung deaktiviert.
 
       Wenn Sie diese Richtlinie konfigurieren, kann sie von Nutzern nicht geändert werden. Wird sie nicht konfiguriert, ist die Einfingerbedienung erst einmal deaktiviert, kann aber jederzeit von Nutzern aktiviert werden.</translation>

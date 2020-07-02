@@ -10,7 +10,6 @@
 <translation id="1049743911850919806">Incógnito</translation>
 <translation id="10614374240317010">Nunca guardado</translation>
 <translation id="1067922213147265141">Otros servicios de Google</translation>
-<translation id="1068672505746868501">No traducir nunca páginas en <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="107147699690128016">Si cambias la extensión de archivo, es posible que el archivo se abra en una app diferente y dañe el dispositivo.</translation>
 <translation id="1100066534610197918">Abrir pestaña nueva en grupo</translation>
 <translation id="1105960400813249514">Captura de pantalla</translation>
@@ -35,13 +34,11 @@
 <translation id="1229399675748764149">Hacer que esta página sea tu página principal</translation>
 <translation id="1231733316453485619">¿Quieres activar la sincronización?</translation>
 <translation id="123724288017357924">Volver a cargar página actual; ignorar contenido en caché</translation>
-<translation id="124116460088058876">Más idiomas</translation>
 <translation id="124678866338384709">Cerrar la pestaña actual</translation>
 <translation id="1258753120186372309">Doodle de Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Buscar y explorar</translation>
 <translation id="1266864766717917324">No se pudo compartir <ph name="CONTENT_TYPE" /></translation>
 <translation id="1283039547216852943">Presiona para expandir</translation>
-<translation id="1285320974508926690">Nunca traducir este sitio</translation>
 <translation id="1291207594882862231">Borra el historial, las cookies, los datos del sitio, la caché…</translation>
 <translation id="129553762522093515">Cerrado recientemente</translation>
 <translation id="1303339473099049190">No se encontró esa contraseña. Revisa la ortografía y vuelve a intentarlo.</translation>
@@ -239,7 +236,6 @@ Para buscar una palabra, mantenla presionada. Si quieres definir mejor la búsqu
 <translation id="2898264748040935573">Edita la contraseña almacenada</translation>
 <translation id="2900528713135656174">Crear evento</translation>
 <translation id="2903493209154104877">Direcciones</translation>
-<translation id="290376772003165898">¿La página no está en <ph name="LANGUAGE" />?</translation>
 <translation id="2904414404539560095">La lista de dispositivos con los que se puede compartir una pestaña está totalmente abierta.</translation>
 <translation id="2905036901251765993">Para permitir el uso compartido con personas cercanas, permíteles que escaneen este código QR</translation>
 <translation id="2909615210195135082">Plataforma de notificaciones de Google</translation>
@@ -415,7 +411,6 @@ Para buscar una palabra, mantenla presionada. Si quieres definir mejor la búsqu
 <translation id="4405224443901389797">Mover a…</translation>
 <translation id="4411535500181276704">Modo lite</translation>
 <translation id="4415276339145661267">Administrar tu Cuenta de Google</translation>
-<translation id="4432792777822557199">De ahora en más, las páginas en <ph name="SOURCE_LANGUAGE" /> se traducirán al <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4440958355523780886">Google proporcionó la página básica. Presiona para cargar la versión original.</translation>
 <translation id="4452411734226507615">Cierra la pestaña <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">Se agregó a favoritos en <ph name="FOLDER_NAME" /></translation>
@@ -550,7 +545,6 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="543509235395288790">Descargando <ph name="COUNT" /> archivos (<ph name="MEGABYTES" />)</translation>
 <translation id="5441522332038954058">Ir a la barra de direcciones</translation>
 <translation id="5447201525962359567">Todo el almacenamiento de sitios, lo que incluye cookies y otros datos almacenados de forma local</translation>
-<translation id="5447765697759493033">Este sitio no se traducirá</translation>
 <translation id="545042621069398927">Acelerando la descarga</translation>
 <translation id="5456381639095306749">Descargar página</translation>
 <translation id="548278423535722844">Abrir en una app de mapas</translation>
@@ -580,7 +574,6 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="5659593005791499971">Correo electrónico</translation>
 <translation id="5665379678064389456">Crear evento en <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Anular la solicitud de inhabilitación del zoom de un sitio web</translation>
-<translation id="5684874026226664614">No se puede traducir esta página.</translation>
 <translation id="5686790454216892815">El nombre del archivo es demasiado largo</translation>
 <translation id="5694049548840660018">Regresar a casa fácilmente</translation>
 <translation id="569536719314091526">Traduce esta página a cualquier idioma desde el botón Más opciones</translation>
@@ -734,7 +727,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6767294960381293877">La lista de dispositivos con los que se puede compartir una pestaña está abierta a media altura.</translation>
 <translation id="6811034713472274749">Ya puedes ver la página</translation>
 <translation id="6820686453637990663">CVC</translation>
-<translation id="6831043979455480757">Traducir</translation>
 <translation id="6845325883481699275">Ayudar a mejorar la seguridad de Chrome</translation>
 <translation id="6846298663435243399">Cargando…</translation>
 <translation id="6850409657436465440">La descarga sigue en curso</translation>
@@ -842,7 +834,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7698359219371678927">Crear correo electrónico en <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Autocompletar búsquedas y URL</translation>
 <translation id="7725024127233776428">Las páginas que agregues a favoritos aparecerán aquí</translation>
-<translation id="773466115871691567">Traducir siempre las páginas en <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7746457520633464754">Para detectar apps y sitios peligrosos, Chrome envía a Google URL de algunas páginas que visitas, información limitada sobre el sistema y contenido de algunas páginas</translation>
 <translation id="7757787379047923882">Texto compartido de <ph name="DEVICE_NAME" /></translation>
 <translation id="7761849928583394409">Elegir fecha y hora</translation>
@@ -922,7 +913,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="8310344678080805313">Pestañas estándar</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> y más sitios</translation>
 <translation id="8327155640814342956">A fin de obtener la mejor experiencia de navegación, abre Chrome para actualizarlo</translation>
-<translation id="8339163506404995330">No se traducirán las páginas en <ph name="LANGUAGE" /></translation>
 <translation id="8349013245300336738">Ordenar por cantidad de datos utilizados</translation>
 <translation id="8364299278605033898">Ver sitios populares</translation>
 <translation id="8368027906805972958">Dispositivo desconocido o no compatible (<ph name="DEVICE_ID" />)</translation>

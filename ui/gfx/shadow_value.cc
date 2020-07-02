@@ -8,10 +8,10 @@
 
 #include <algorithm>
 
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 
 namespace gfx {
@@ -30,7 +30,7 @@ Insets GetInsets(const ShadowValues& shadows, bool include_inner_blur) {
     double blur = shadow.blur();
     if (!include_inner_blur)
       blur /= 2;
-    int blur_length = ToRoundedInt(blur);
+    int blur_length = base::Round(blur);
 
     left = std::max(left, blur_length - shadow.x());
     top = std::max(top, blur_length - shadow.y());
@@ -44,8 +44,7 @@ Insets GetInsets(const ShadowValues& shadows, bool include_inner_blur) {
 }  // namespace
 
 ShadowValue ShadowValue::Scale(float scale) const {
-  gfx::Vector2d scaled_offset =
-      gfx::ToFlooredVector2d(gfx::ScaleVector2d(offset_, scale));
+  Vector2d scaled_offset = ToFlooredVector2d(ScaleVector2d(offset_, scale));
   return ShadowValue(scaled_offset, blur_ * scale, color_);
 }
 
@@ -62,7 +61,7 @@ std::string ShadowValue::ToString() const {
 
 // static
 Insets ShadowValue::GetMargin(const ShadowValues& shadows) {
-  gfx::Insets margins = GetInsets(shadows, false);
+  Insets margins = GetInsets(shadows, false);
   return -margins;
 }
 
@@ -85,15 +84,15 @@ ShadowValues ShadowValue::MakeRefreshShadowValues(int elevation,
 
   switch (elevation) {
     case 3: {
-      ShadowValue key = {gfx::Vector2d(0, 1), 12, SkColorSetA(color, 0x66)};
-      ShadowValue ambient = {gfx::Vector2d(0, 4), 64, SkColorSetA(color, 0x40)};
+      ShadowValue key = {Vector2d(0, 1), 12, SkColorSetA(color, 0x66)};
+      ShadowValue ambient = {Vector2d(0, 4), 64, SkColorSetA(color, 0x40)};
       return {key, ambient};
     }
     case 16: {
-      gfx::ShadowValue key = {gfx::Vector2d(0, 0), kBlurCorrection * 16,
-                              SkColorSetA(color, 0x1a)};
-      gfx::ShadowValue ambient = {gfx::Vector2d(0, 12), kBlurCorrection * 16,
-                                  SkColorSetA(color, 0x3d)};
+      ShadowValue key = {Vector2d(0, 0), kBlurCorrection * 16,
+                         SkColorSetA(color, 0x1a)};
+      ShadowValue ambient = {Vector2d(0, 12), kBlurCorrection * 16,
+                             SkColorSetA(color, 0x3d)};
       return {key, ambient};
     }
     default:
@@ -111,11 +110,11 @@ ShadowValues ShadowValue::MakeMdShadowValues(int elevation, SkColor color) {
   // to double the designer-provided blur values.
   const int kBlurCorrection = 2;
   // "Key shadow": y offset is elevation and blur is twice the elevation.
-  shadow_values.emplace_back(gfx::Vector2d(0, elevation),
+  shadow_values.emplace_back(Vector2d(0, elevation),
                              kBlurCorrection * elevation * 2,
                              SkColorSetA(color, 0x3d));
   // "Ambient shadow": no offset and blur matches the elevation.
-  shadow_values.emplace_back(gfx::Vector2d(), kBlurCorrection * elevation,
+  shadow_values.emplace_back(Vector2d(), kBlurCorrection * elevation,
                              SkColorSetA(color, 0x1f));
   // To see what this looks like for elevation 24, try this CSS:
   //   box-shadow: 0 24px 48px rgba(0, 0, 0, .24),

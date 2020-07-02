@@ -10,7 +10,6 @@
 <translation id="1049743911850919806">גלישה פרטית</translation>
 <translation id="10614374240317010">פריטים שאף פעם לא נשמרו</translation>
 <translation id="1067922213147265141">‏שירותי Google אחרים</translation>
-<translation id="1068672505746868501">אף פעם אל תתרגם דפים ב<ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="107147699690128016">שינוי של סיומת הקובץ עשוי לגרום לכך שהקובץ ייפתח באפליקציה אחרת. מצב זה עלול לסכן את המכשיר.</translation>
 <translation id="1100066534610197918">פתיחה בכרטיסייה חדשה בקבוצה</translation>
 <translation id="1105960400813249514">צילום מסך</translation>
@@ -35,13 +34,11 @@
 <translation id="1229399675748764149">הגדרת הדף הזה כדף הבית</translation>
 <translation id="1231733316453485619">להפעיל סנכרון?</translation>
 <translation id="123724288017357924">טען מחדש את הדף הנוכחי, תוך התעלמות מתוכן שמאוחסן בקובץ השמור</translation>
-<translation id="124116460088058876">שפות נוספות</translation>
 <translation id="124678866338384709">סגור את הכרטיסייה הנוכחית</translation>
 <translation id="1258753120186372309">‏דודל של Google‏: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">חיפוש ודפדוף</translation>
 <translation id="1266864766717917324">לא ניתן היה לשתף את ה<ph name="CONTENT_TYPE" /></translation>
 <translation id="1283039547216852943">הקש כדי להרחיב</translation>
-<translation id="1285320974508926690">איני רוצה לקבל תרגום של אתר זה</translation>
 <translation id="1291207594882862231">‏ניקוי ההיסטוריה, קובצי ה-Cookie, נתוני האתרים, המטמון…</translation>
 <translation id="129553762522093515">נסגרו לאחרונה</translation>
 <translation id="1303339473099049190">לא ניתן למצוא את הסיסמה. יש לבדוק את האיות ולנסות שוב.</translation>
@@ -239,7 +236,6 @@
 <translation id="2898264748040935573">עריכת הסיסמה השמורה</translation>
 <translation id="2900528713135656174">צור אירוע</translation>
 <translation id="2903493209154104877">כתובות</translation>
-<translation id="290376772003165898">הדף לא ב<ph name="LANGUAGE" />?</translation>
 <translation id="2904414404539560095">רשימת המכשירים שאפשר לשתף איתם כרטיסייה נפתחה בגובה המלא של המסך.</translation>
 <translation id="2905036901251765993">‏כדי לשתף עם אנשים בקרבת מקום, יש לתת להם לסרוק את קוד ה-QR הזה</translation>
 <translation id="2909615210195135082">‏פלטפורמת ההתראות של Google</translation>
@@ -415,7 +411,6 @@
 <translation id="4405224443901389797">העברה אל…</translation>
 <translation id="4411535500181276704">מצב טעינה מהירה</translation>
 <translation id="4415276339145661267">‏ניהול חשבון Google שלך</translation>
-<translation id="4432792777822557199">דפים ב<ph name="SOURCE_LANGUAGE" /> יתורגמו ל<ph name="TARGET_LANGUAGE" /> מעכשיו והלאה</translation>
 <translation id="4440958355523780886">‏גרסת Lite של הדף נוצרה על ידי Google. אפשר להקיש כדי לטעון את הגרסה המקורית.</translation>
 <translation id="4452411734226507615">סגירת הכרטיסייה <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">התווסף לסימניות ב-<ph name="FOLDER_NAME" /></translation>
@@ -550,7 +545,6 @@
 <translation id="543509235395288790">מתבצעת הורדה של <ph name="COUNT" /> קבצים (<ph name="MEGABYTES" />).</translation>
 <translation id="5441522332038954058">מעבר לשורת כתובת האתר</translation>
 <translation id="5447201525962359567">‏כל נתוני האתר המאוחסנים, כולל קובצי Cookie ונתונים אחרים המאוחסנים באופן מקומי</translation>
-<translation id="5447765697759493033">האתר הזה לא יתורגם</translation>
 <translation id="545042621069398927">הדפדפן מאיץ את ההורדה.</translation>
 <translation id="5456381639095306749">הורד דף זה</translation>
 <translation id="548278423535722844">פתח יישום מפות</translation>
@@ -580,7 +574,6 @@
 <translation id="5659593005791499971">אימייל</translation>
 <translation id="5665379678064389456">צור אירוע ב-<ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">להתעלם מבקשה של אתר שנועדה למנוע את שינוי הזום</translation>
-<translation id="5684874026226664614">אופס. לא ניתן היה לתרגם את הדף הזה.</translation>
 <translation id="5686790454216892815">שם הקובץ ארוך מדי</translation>
 <translation id="5694049548840660018">חזרה לדף הבית בקלות</translation>
 <translation id="569536719314091526">דרך לחצן האפשרויות הנוספות אפשר לתרגם את הדף הזה לשפה כלשהי</translation>
@@ -734,7 +727,6 @@
 <translation id="6767294960381293877">רשימת המכשירים שאפשר לשתף איתם כרטיסייה נפתחה בחצי גובה המסך.</translation>
 <translation id="6811034713472274749">הדף מוכן להצגה</translation>
 <translation id="6820686453637990663">CVC</translation>
-<translation id="6831043979455480757">תרגום</translation>
 <translation id="6845325883481699275">‏עזרה בשיפור האבטחה של Chrome</translation>
 <translation id="6846298663435243399">הטעינה מתבצעת...</translation>
 <translation id="6850409657436465440">ההורדה עדיין מתבצעת</translation>
@@ -842,7 +834,6 @@
 <translation id="7698359219371678927">צור הודעת אימייל ב-<ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">השלמה אוטומטית של חיפושים וכתובות אתרים</translation>
 <translation id="7725024127233776428">הדפים שהוספת לסימניות מופיעים כאן</translation>
-<translation id="773466115871691567">ברצוני לקבל תרגום תמיד דפים ב<ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7746457520633464754">‏כדי לזהות אפליקציות ואתרים מסוכנים, Chrome שולח אל Google כתובות URL של חלק מהדפים שאליהם נכנסת, מידע מוגבל לגבי המערכת וחלק מתוכן הדפים</translation>
 <translation id="7757787379047923882">הטקסט שותף דרך <ph name="DEVICE_NAME" /></translation>
 <translation id="7761849928583394409">בחירת תאריך ושעה</translation>
@@ -922,7 +913,6 @@
 <translation id="8310344678080805313">כרטיסיות רגילות</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> ועוד אתרים</translation>
 <translation id="8327155640814342956">‏כדי ליהנות מחוויית הגלישה הטובה ביותר, יש לפתוח את Chrome כדי לעדכן אותו</translation>
-<translation id="8339163506404995330">דפים ב<ph name="LANGUAGE" /> לא יתורגמו</translation>
 <translation id="8349013245300336738">מיון לפי כמות הנתונים שבהם נעשה שימוש</translation>
 <translation id="8364299278605033898">הצגת אתרים פופולריים</translation>
 <translation id="8368027906805972958">מכשיר לא ידוע או שאינו נתמך (<ph name="DEVICE_ID" />)</translation>

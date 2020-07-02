@@ -8,8 +8,8 @@
 #include <iosfwd>
 #include <string>
 
+#include "base/numerics/safe_conversions.h"
 #include "ui/gfx/geometry/geometry_export.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/vector2d.h"
 
 namespace gfx {
@@ -106,7 +106,7 @@ inline ScrollOffset operator-(const ScrollOffset& lhs,
 }
 
 inline Vector2d ScrollOffsetToFlooredVector2d(const ScrollOffset& v) {
-  return Vector2d(ToFlooredInt(v.x()), ToFlooredInt(v.y()));
+  return Vector2d(base::Floor(v.x()), base::Floor(v.y()));
 }
 
 inline Vector2dF ScrollOffsetToVector2dF(const ScrollOffset& v) {

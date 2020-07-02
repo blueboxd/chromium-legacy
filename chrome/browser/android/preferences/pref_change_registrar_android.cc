@@ -38,8 +38,9 @@ void PrefChangeRegistrarAndroid::Add(
   std::string preference =
       base::android::ConvertJavaStringToUTF8(env, j_preference);
   pref_change_registrar_.Add(
-      preference, base::Bind(&PrefChangeRegistrarAndroid::OnPreferenceChange,
-                             base::Unretained(this), preference));
+      preference,
+      base::BindRepeating(&PrefChangeRegistrarAndroid::OnPreferenceChange,
+                          base::Unretained(this), preference));
 }
 
 void PrefChangeRegistrarAndroid::Remove(

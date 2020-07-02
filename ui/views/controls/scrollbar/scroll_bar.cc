@@ -14,6 +14,7 @@
 #include "base/containers/flat_map.h"
 #include "base/no_destructor.h"
 #include "base/numerics/ranges.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -23,7 +24,6 @@
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -158,11 +158,11 @@ void ScrollBar::OnGestureEvent(ui::GestureEvent* event) {
     int scroll_amount;
     if (IsHorizontal()) {
       scroll_amount_f = event->details().scroll_x() - roundoff_error_.x();
-      scroll_amount = gfx::ToRoundedInt(scroll_amount_f);
+      scroll_amount = base::Round(scroll_amount_f);
       roundoff_error_.set_x(scroll_amount - scroll_amount_f);
     } else {
       scroll_amount_f = event->details().scroll_y() - roundoff_error_.y();
-      scroll_amount = gfx::ToRoundedInt(scroll_amount_f);
+      scroll_amount = base::Round(scroll_amount_f);
       roundoff_error_.set_y(scroll_amount - scroll_amount_f);
     }
     if (ScrollByContentsOffset(scroll_amount))
@@ -310,7 +310,7 @@ void ScrollBar::Update(int viewport_size,
   // content size multiplied by the height of the thumb track.
   float ratio =
       std::min<float>(1.0, static_cast<float>(viewport_size) / contents_size_);
-  thumb_->SetLength(gfx::ToRoundedInt(ratio * GetTrackSize()));
+  thumb_->SetLength(base::Round(ratio * GetTrackSize()));
 
   int thumb_position = CalculateThumbPosition(contents_scroll_offset);
   thumb_->SetPosition(thumb_position);
@@ -409,7 +409,7 @@ int ScrollBar::CalculateContentsOffset(float thumb_position,
     thumb_position = thumb_position - (thumb_size / 2);
   float result = (thumb_position * (contents_size_ - viewport_size_)) /
                  (track_size - thumb_size);
-  return gfx::ToRoundedInt(result);
+  return base::Round(result);
 }
 
 void ScrollBar::SetContentsScrollOffset(int contents_scroll_offset) {

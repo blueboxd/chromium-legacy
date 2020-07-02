@@ -132,11 +132,16 @@ class SkiaOutputDevice {
 
   bool is_emulated_rgbx() const { return is_emulated_rgbx_; }
 
+  void SetDrawTimings(base::TimeTicks submitted, base::TimeTicks started);
+
  protected:
   // Only valid between StartSwapBuffers and FinishSwapBuffers.
   class SwapInfo {
    public:
-    SwapInfo(uint64_t swap_id, BufferPresentedCallback feedback);
+    SwapInfo(uint64_t swap_id,
+             BufferPresentedCallback feedback,
+             base::TimeTicks viz_scheduled_draw,
+             base::TimeTicks gpu_started_draw);
     SwapInfo(SwapInfo&& other);
     ~SwapInfo();
     const gpu::SwapBuffersCompleteParams& Complete(
@@ -171,6 +176,8 @@ class SkiaOutputDevice {
   DidSwapBufferCompleteCallback did_swap_buffer_complete_callback_;
 
   base::queue<SwapInfo> pending_swaps_;
+  base::TimeTicks viz_scheduled_draw_;
+  base::TimeTicks gpu_started_draw_;
 
   // RGBX format is emulated with RGBA.
   bool is_emulated_rgbx_ = false;

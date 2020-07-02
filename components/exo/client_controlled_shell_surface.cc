@@ -35,6 +35,7 @@
 #include "ash/wm/window_util.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
@@ -1227,7 +1228,7 @@ void ClientControlledShellSurface::UpdateFrameWidth() {
     float device_scale_factor =
         GetWidget()->GetNativeWindow()->layer()->device_scale_factor();
     float dsf_to_default_dsf = device_scale_factor / scale_;
-    width = gfx::ToRoundedInt(shadow_bounds_->width() * dsf_to_default_dsf);
+    width = base::Round(shadow_bounds_->width() * dsf_to_default_dsf);
   }
   static_cast<ash::HeaderView*>(GetFrameView()->GetHeaderView())
       ->SetWidthInPixels(width);

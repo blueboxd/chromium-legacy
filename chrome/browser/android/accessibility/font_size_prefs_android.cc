@@ -23,12 +23,12 @@ FontSizePrefsAndroid::FontSizePrefsAndroid(JNIEnv* env, jobject obj)
   pref_change_registrar_->Init(pref_service_);
   pref_change_registrar_->Add(
       prefs::kWebKitFontScaleFactor,
-      base::Bind(&FontSizePrefsAndroid::OnFontScaleFactorChanged,
-                 base::Unretained(this)));
+      base::BindRepeating(&FontSizePrefsAndroid::OnFontScaleFactorChanged,
+                          base::Unretained(this)));
   pref_change_registrar_->Add(
       prefs::kWebKitForceEnableZoom,
-      base::Bind(&FontSizePrefsAndroid::OnForceEnableZoomChanged,
-                 base::Unretained(this)));
+      base::BindRepeating(&FontSizePrefsAndroid::OnForceEnableZoomChanged,
+                          base::Unretained(this)));
 }
 
 FontSizePrefsAndroid::~FontSizePrefsAndroid() {

@@ -20,6 +20,7 @@
 <translation id="10614374240317010">មិនដែលបានរក្សាទុក</translation>
 <translation id="1062160989074299343">Prc10 (ស្រោម​សំបុត្រ)</translation>
 <translation id="106701514854093668">ចំណាំដេស៍ថប</translation>
+<translation id="1068672505746868501">កុំ​បកប្រែ​ទំព័រ​ជាភាសា <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1070901266639972381">យប់</translation>
 <translation id="1074497978438210769">គ្មានសុវត្ថិភាពទេ</translation>
 <translation id="1080116354587839789">តម្រឹមទទឹង</translation>
@@ -63,6 +64,7 @@
 <translation id="1232569758102978740">គ្មានចំណងជើង</translation>
 <translation id="1236081509407217141">អនុញ្ញាត VR ឬ?</translation>
 <translation id="1240347957665416060">ឈ្មោះឧបករណ៍​របស់អ្នក</translation>
+<translation id="124116460088058876">ភាសា​ច្រើន​ទៀត</translation>
 <translation id="1250759482327835220">ដើម្បី​បង់ប្រាក់​លឿន​ជាងនេះ​នៅពេល​ក្រោយ សូម​រក្សា​ទុកកាត ឈ្មោះ និង​អាសយដ្ឋាន​ចេញ​វិក្កយបត្រ​​ទៅក្នុង​គណនី Google របស់អ្នក។</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (បានធ្វើសមកាលកម្ម)</translation>
 <translation id="1256368399071562588">&lt;p&gt;ប្រសិន​បើ​អ្នក​ព្យាយាមចូល​ទៅកាន់​គេហទំព័រ ហើយ​វា​មិន​បើក។ ជាដំបូង សូមព្យាយាមដោះ​ស្រាយ​បញ្ហាដោយ​​ប្រើ​ជំហាន​នៃការដោះស្រាយបញ្ហា​ទាំងនេះ៖&lt;/p&gt;
@@ -844,6 +846,7 @@
 មិនត្រូវបានជឿ៌ជាក់ដោយ Chrome ទេ។ នេះអាចបណ្តាលមកពីការកំណត់មិនត្រឹមត្រូវ ឬមានការស្ទាក់ការភ្ជាប់របស់អ្នកពីអ្នកវាយប្រហារ។</translation>
 <translation id="443121186588148776">រន្ធស៊េរី</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> មិនទទួលយកវិញ្ញាបនបត្រចូលរបស់អ្នក ឬអ្នកមិនបានផ្តល់ជូនវិញ្ញាបនបត្រនោះទេ។</translation>
+<translation id="4432792777822557199">ទំព័រជាភាសា <ph name="SOURCE_LANGUAGE" /> នឹងត្រូវបានបកប្រែទៅជាភាសា <ph name="TARGET_LANGUAGE" /> ចាប់ពីពេលនេះតទៅ</translation>
 <translation id="4434045419905280838">ផ្ទាំងផុស​ និង​ការ​បញ្ជូន​បន្ត</translation>
 <translation id="4435702339979719576">បណ្ណប្រៃសណីយ៍)</translation>
 <translation id="443673843213245140">ការប្រើប្រូកស៊ីត្រូវបានបិទដំណើរការ ប៉ុន្តែការកំណត់ប្រូកស៊ីដែលច្បាស់លាស់ត្រូវបានបញ្ជាក់។</translation>
@@ -1075,6 +1078,7 @@
 <translation id="5431657950005405462">រកមិនឃើញឯកសាររបស់អ្នកទេ</translation>
 <translation id="5439770059721715174">កំហុសឆ្គងសុពលភាពសញ្ញាតំណាងនៅ "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">ផ្ងារឡើងតាមលំដាប់លំដោយ​បញ្ច្រាស</translation>
+<translation id="5447765697759493033">ទំព័រ​នេះ​នឹង​មិនត្រូវ​បានបកប្រែទេ</translation>
 <translation id="5452270690849572955">រកមិនឃើញទំព័រ <ph name="HOST_NAME" /> នេះទេ</translation>
 <translation id="5455374756549232013">តែមពេលវេលាគោលការណ៍មិនល្អ</translation>
 <translation id="5457113250005438886">គ្មានសុពលភាព</translation>
@@ -1622,6 +1626,7 @@
 <translation id="7716375162095500223">មិនទាន់បង្ហោះ ឬមិនអើពើ</translation>
 <translation id="7716424297397655342">គេហទំព័រនេះមិនអាចដំណើរការពីឃ្លាំងសម្ងាត់បានទេ</translation>
 <translation id="7723047071702270851">កែសម្រួល​បណ្ណ</translation>
+<translation id="773466115871691567">បកប្រែ​ទំព័រ​ជាភាសា <ph name="SOURCE_LANGUAGE" /> ជានិច្ច</translation>
 <translation id="7740996059027112821">បទដ្ឋាន</translation>
 <translation id="774634243536837715">បាន​ទប់ស្កាត់​ខ្លឹមសារ​ដែល​មានគ្រោះថ្នាក់។</translation>
 <translation id="7752995774971033316">មិនបានគ្រប់គ្រង</translation>
@@ -1767,6 +1772,7 @@
 <translation id="831997045666694187">ល្ងាច</translation>
 <translation id="8332188693563227489">បានបដិសេធការចូលប្រើ <ph name="HOST_NAME" /></translation>
 <translation id="833262891116910667">រំលេច</translation>
+<translation id="8339163506404995330">ទំព័រជាភាសា <ph name="LANGUAGE" /> នឹងមិនត្រូវបានបកប្រែទេ</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">ប្រសិនបើអ្នកយល់ពីហានិភ័យសុវត្ថិភាពរបស់អ្នក អ្នកអាច <ph name="BEGIN_LINK" />ទៅកាន់គេហទំព័រនេះ<ph name="END_LINK" /> មុនពេលដែលកម្មវិធីបង្កគ្រោះថ្នាក់ត្រូវបានដកចេញ។</translation>
 <translation id="8349305172487531364">របាចំណាំ</translation>

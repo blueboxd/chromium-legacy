@@ -644,6 +644,8 @@ if (!is_android) {
       "//components/dom_distiller/content/renderer",
       "//components/dom_distiller/core:test_support",
       "//components/embedder_support",
+      "//components/enterprise",
+      "//components/enterprise:test_support",
       "//components/feature_engagement/test:test_support",
       "//components/metrics:demographics_test_support",
       "//components/nacl/common:buildflags",
@@ -2982,6 +2984,14 @@ group("telemetry_perf_webview_tests") {
   deps = [ "//chrome/test:telemetry_perf_tests" ]
 }
 
+group("standalone_angle_unittests") {
+  testonly = true
+
+  # TODO(jmadill): Move into ANGLE. http://anglebug.com/3162
+  data = [ "//testing/scripts/run_gtest_angle_test.py" ]
+  data_deps = [ "//third_party/angle/src/tests:standalone_angle_unittests" ]
+}
+
 group("angle_perftests") {
   testonly = true
   data_deps = [ "//testing:run_perf_test" ]
@@ -3316,7 +3326,6 @@ test("unit_tests") {
     "../browser/plugins/pdf_iframe_navigation_throttle_unittest.cc",
     "../browser/policy/browser_dm_token_storage_linux_unittest.cc",
     "../browser/policy/browser_dm_token_storage_mac_unittest.cc",
-    "../browser/policy/browser_dm_token_storage_unittest.cc",
     "../browser/policy/browser_dm_token_storage_win_unittest.cc",
     "../browser/policy/chrome_browser_policy_connector_unittest.cc",
     "../browser/policy/cloud/cloud_policy_invalidator_unittest.cc",
@@ -4348,6 +4357,7 @@ test("unit_tests") {
       "//chrome/services/sharing/public/cpp:unit_tests",
       "//chrome/services/speech:unit_tests",
       "//components/chrome_cleaner/test:test_name_helper",
+      "//components/enterprise:test_support",
       "//components/feature_engagement/test:test_support",
       "//components/safety_check:test_support",
       "//components/send_tab_to_self:test_support",
@@ -5032,6 +5042,8 @@ test("unit_tests") {
         "../browser/extensions/api/messaging/native_messaging_launch_from_native_unittest.cc",
         "../browser/extensions/api/messaging/native_messaging_policy_handler_unittest.cc",
       ]
+
+      deps += [ "//components/enterprise:test_support" ]
     }
   }
   if (use_aura) {
@@ -5427,6 +5439,8 @@ test("unit_tests") {
       "../browser/upgrade_detector/installed_version_poller_unittest.cc",
       "../browser/upgrade_detector/upgrade_detector_impl_unittest.cc",
     ]
+
+    deps += [ "//components/enterprise:test_support" ]
   }
   if (is_chromeos) {
     sources += [

@@ -47,7 +47,6 @@
 #include "sql/statement.h"
 #include "sql/transaction.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "url/gurl.h"
 
 namespace autofill {
@@ -670,7 +669,7 @@ bool AutofillTable::RemoveFormElementsAddedBetween(
                                          ? date_last_used_time_t
                                          : delete_begin_time_t - 1;
       updated_entry.count =
-          1 + gfx::ToRoundedInt(
+          1 + base::Round(
                   1.0 * (count - 1) *
                   (updated_entry.date_last_used - updated_entry.date_created) /
                   (date_last_used_time_t - date_created_time_t));

@@ -97,11 +97,6 @@ class TabManagerStatsCollector final : public SessionRestoreObserver {
   void RecordSwitchToTab(content::WebContents* old_contents,
                          content::WebContents* new_contents);
 
-  // Record expected task queueing durations of foreground tabs in session
-  // restore.
-  void RecordExpectedTaskQueueingDuration(content::WebContents* contents,
-                                          base::TimeDelta queueing_time);
-
   // Record background tab count for BackgroundTabOpening.
   void RecordBackgroundTabCount();
 
@@ -170,8 +165,6 @@ class TabManagerStatsCollector final : public SessionRestoreObserver {
   FRIEND_TEST_ALL_PREFIXES(TabManagerStatsCollectorTabSwitchTest,
                            HistogramsTabSwitchLoadTime);
   FRIEND_TEST_ALL_PREFIXES(TabManagerStatsCollectorParameterizedTest,
-                           HistogramsExpectedTaskQueueingDuration);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerStatsCollectorParameterizedTest,
                            HistogramsTabCount);
   FRIEND_TEST_ALL_PREFIXES(TabManagerStatsCollectorTest,
                            HistogramsSessionOverlap);
@@ -200,10 +193,6 @@ class TabManagerStatsCollector final : public SessionRestoreObserver {
                                     const DecisionDetails& decision_details,
                                     LifecycleUnitState new_state);
 
-  static const char
-      kHistogramSessionRestoreForegroundTabExpectedTaskQueueingDuration[];
-  static const char
-      kHistogramBackgroundTabOpeningForegroundTabExpectedTaskQueueingDuration[];
   static const char kHistogramSessionRestoreSwitchToTab[];
   static const char kHistogramBackgroundTabOpeningSwitchToTab[];
   static const char kHistogramSessionRestoreTabSwitchLoadTime[];

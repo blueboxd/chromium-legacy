@@ -526,7 +526,6 @@
 <translation id="1645516838734033527">为确保您的 <ph name="DEVICE_TYPE" /> 安全无虞，Smart Lock 要求在您的手机上设置屏幕锁定。</translation>
 <translation id="1646982517418478057">请输入密码，用于加密该证书</translation>
 <translation id="1648528859488547844">根据 Wi-Fi 或移动网络确定位置</translation>
-<translation id="1648943974594387137">登录详细信息已过期</translation>
 <translation id="164936512206786300">取消与蓝牙设备配对</translation>
 <translation id="1650371550981945235">显示输入法选项</translation>
 <translation id="1651008383952180276">您两次输入的密码必须相同</translation>
@@ -1329,7 +1328,6 @@
 <translation id="2635276683026132559">签名</translation>
 <translation id="2636625531157955190">Chrome 无法访问这张图片。</translation>
 <translation id="2637400434494156704">PIN 码不正确。您还剩 1 次尝试机会。</translation>
-<translation id="2638087589890736295">必须输入密码才能开始同步</translation>
 <translation id="2638662041295312666">登录帐号图片</translation>
 <translation id="264083724974021997">连接到您的手机 - 对话框</translation>
 <translation id="2641065435954454414">正在准备下载</translation>
@@ -1483,7 +1481,6 @@
 <translation id="2809586584051668049">及另外<ph name="NUMBER_ADDITIONAL_DISABLED" />个扩展程序</translation>
 <translation id="2810390687497823527">如果您不认识某款扩展程序或者您的浏览器无法按预期运行，您可在此处关闭或自定义扩展程序。</translation>
 <translation id="2812049959647166806">Thunderbolt 不受支持</translation>
-<translation id="2812944337881233323">请尝试退出并重新登录</translation>
 <translation id="2812989263793994277">不显示任何图片</translation>
 <translation id="2813094189969465044">家长控制</translation>
 <translation id="281390819046738856">无法签署该请求。</translation>
@@ -3403,7 +3400,6 @@
 <translation id="529175790091471945">将此设备格式化</translation>
 <translation id="5293170712604732402">将设置还原为原始默认设置</translation>
 <translation id="5294097441441645251">必须以小写字符或下划线开头</translation>
-<translation id="5296471962619441686">请修正该错误以恢复同步</translation>
 <translation id="5297082477358294722">密码已保存。您可以查看和管理 <ph name="SAVED_PASSWORDS_STORE" />中保存的密码。</translation>
 <translation id="5298219193514155779">主题背景创建者：</translation>
 <translation id="5299109548848736476">不跟踪</translation>
@@ -5766,7 +5762,6 @@
 <translation id="8256417822772703842"><ph name="PRINTER_NAME" />的墨水不足</translation>
 <translation id="8257950718085972371">继续禁止使用摄像头</translation>
 <translation id="8259239505248583312">开始使用</translation>
-<translation id="8260126382462817229">请尝试重新登录</translation>
 <translation id="8260864402787962391">鼠标</translation>
 <translation id="8261378640211443080">该扩展程序未列在 <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />中，并可能是在您不知情的情况下添加的。</translation>
 <translation id="8261506727792406068">删除</translation>

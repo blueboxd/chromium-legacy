@@ -10,7 +10,6 @@
 <translation id="1049743911850919806">गुप्त</translation>
 <translation id="10614374240317010">कधीही सेव्ह न केलेले</translation>
 <translation id="1067922213147265141">इतर Google सेवा</translation>
-<translation id="1068672505746868501">पेज <ph name="SOURCE_LANGUAGE" /> मध्ये कधीही भाषांतरित करू नका</translation>
 <translation id="107147699690128016">तुम्ही फाइल एक्स्टेंशन बदलल्यास, फाइल कदाचित दुसऱ्या ॲप्लिकेशनमध्ये उघडू शकते आणि यामुळे तुमच्या डिव्हाइसला संभाव्य धोका असू शकतो.</translation>
 <translation id="1100066534610197918">गटामधील नवीन टॅबमध्ये उघडा</translation>
 <translation id="1105960400813249514">स्‍क्रीन कॅप्‍चर</translation>
@@ -35,13 +34,11 @@
 <translation id="1229399675748764149">या पेजला तुमचे होम पेज बनवा</translation>
 <translation id="1231733316453485619">सिंक सुरू करायचे का?</translation>
 <translation id="123724288017357924">कॅशे केलेला आशय दुर्लक्षित करून, सद्य पेज रीलोड करा</translation>
-<translation id="124116460088058876">आणखी भाषा...</translation>
 <translation id="124678866338384709">वर्तमान टॅब बंद करा</translation>
 <translation id="1258753120186372309">Google डूडल: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">शोधा आणि एक्सप्लोर करा</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> शेअर करू शकलो नाही</translation>
 <translation id="1283039547216852943">विस्तृत करण्यासाठी टॅप करा</translation>
-<translation id="1285320974508926690">या साइटचा कधीही भाषांतर करु नका</translation>
 <translation id="1291207594882862231">इतिहास, कुकी, साइट डेटा, कॅशे  साफ करा…</translation>
 <translation id="129553762522093515">अलीकडे बंद केलेले</translation>
 <translation id="1303339473099049190">तो पासवर्ड सापडत नाही. तुमचे शब्दलेखन तपासा आणि पुन्हा प्रयत्न करा.</translation>
@@ -239,7 +236,6 @@
 <translation id="2898264748040935573">स्टोअर केलेला पासवर्ड संपादित करा</translation>
 <translation id="2900528713135656174">इव्हेंट तयार करा</translation>
 <translation id="2903493209154104877">पत्ते</translation>
-<translation id="290376772003165898">पेज <ph name="LANGUAGE" />मध्ये नाही?</translation>
 <translation id="2904414404539560095">पूर्ण उंचीवर उघडलेल्या टॅबसह शेअर करण्यासाठी डिव्हाइसची सूची.</translation>
 <translation id="2905036901251765993">जवळपासच्या लोकांसोबत शेअर करण्यासाठी, त्यांना हा QR कोड स्कॅन करू द्या</translation>
 <translation id="2909615210195135082">Google सूचना प्लॅटफॉर्म</translation>
@@ -415,7 +411,6 @@
 <translation id="4405224443901389797">यामध्ये हलवा…</translation>
 <translation id="4411535500181276704">लाइट मोड</translation>
 <translation id="4415276339145661267">तुमचे Google खाते व्यवस्थापित करा</translation>
-<translation id="4432792777822557199">आतापासून पेज <ph name="SOURCE_LANGUAGE" />मधून <ph name="TARGET_LANGUAGE" />मध्ये भाषांतरित केली जातील</translation>
 <translation id="4440958355523780886">Google ने पुरवलेले लाइट पेज. मूळ पेज लोड करण्यासाठी टॅप करा.</translation>
 <translation id="4452411734226507615"><ph name="TAB_TITLE" /> टॅब बंद करा</translation>
 <translation id="4452548195519783679"><ph name="FOLDER_NAME" /> ला बुकमार्क केले</translation>
@@ -550,7 +545,6 @@
 <translation id="543509235395288790">(<ph name="MEGABYTES" />) च्या <ph name="COUNT" /> फाइल डाउनलोड करत आहे.</translation>
 <translation id="5441522332038954058">अ‍ॅड्रेस बारवर जा</translation>
 <translation id="5447201525962359567">कुकीज आणि इतर स्थानिकरित्या स्टोरेज डेटासह, सर्व साइट स्टोरेज</translation>
-<translation id="5447765697759493033">या साइटचे भाषांतर होणार नाही</translation>
 <translation id="545042621069398927">तुमच्या डाउनलोडचा वेग वाढवत आहे.</translation>
 <translation id="5456381639095306749">पेज डाउनलोड करा</translation>
 <translation id="548278423535722844">नकाशे ॲपमध्ये उघडा</translation>
@@ -580,7 +574,6 @@
 <translation id="5659593005791499971">ईमेल</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> मध्ये इव्हेंट तयार करा</translation>
 <translation id="5668404140385795438">झूम वाढविणे निर्बंधित करण्याची वेबसाइटची विनंती ओव्हरराइड करा</translation>
-<translation id="5684874026226664614">अरेरे. हे पृष्‍ठ भाषांतरित केले जाऊ शकले नाही.</translation>
 <translation id="5686790454216892815">फाइलचे नाव खूप लांब आहे</translation>
 <translation id="5694049548840660018">होमवर सहजपणे परत जा</translation>
 <translation id="569536719314091526">अधिक पर्याय बटणावरून या पेजचे कोणत्याही भाषेत भाषांतर करा</translation>
@@ -734,7 +727,6 @@
 <translation id="6767294960381293877">अर्ध्या उंचीवर उघडलेल्या टॅबसह शेअर करण्यासाठी डिव्हाइसची सूची.</translation>
 <translation id="6811034713472274749">पेज पाहाण्यासाठी तयार आहे</translation>
 <translation id="6820686453637990663">CVC</translation>
-<translation id="6831043979455480757">भाषांतर करा</translation>
 <translation id="6845325883481699275">Chrome सुरक्षेमध्ये सुधारणा करण्यात मदत करा</translation>
 <translation id="6846298663435243399">लोड करत आहे...</translation>
 <translation id="6850409657436465440">तुमचे डाउनलोड अजून प्रगतीपथावर आहे</translation>
@@ -842,7 +834,6 @@
 <translation id="7698359219371678927"><ph name="APP_NAME" /> मध्ये ईमेल तयार करा</translation>
 <translation id="7704317875155739195">ऑटोकंप्लीट शोध आणि URL</translation>
 <translation id="7725024127233776428">तुम्ही बुकमार्क केलेली पेज येथे दिसतील</translation>
-<translation id="773466115871691567">नेहमी पेज <ph name="SOURCE_LANGUAGE" />मध्ये भाषांतरित करा</translation>
 <translation id="7746457520633464754">धोकादायक ॲप्स आणि साइट शोधण्यासाठी, Chrome तुम्ही भेट दिलेल्या काही पेजचे URL, मर्यादित सिस्टमची माहिती आणि काही पेजचा आशय Google कडे पाठवतो</translation>
 <translation id="7757787379047923882"><ph name="DEVICE_NAME" /> वरून शेअर केलेला मजकूर</translation>
 <translation id="7761849928583394409">तारीख आणि वेळ निवडा</translation>
@@ -922,7 +913,6 @@
 <translation id="8310344678080805313">मानक टॅब</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> आणि आणखी साइट</translation>
 <translation id="8327155640814342956">उत्तम ब्राउझिंग अनुभव मिळवण्याकरीता, Chrome अपडेट करण्यासाठी उघडा</translation>
-<translation id="8339163506404995330"><ph name="LANGUAGE" />मधील पेज भाषांतरीत केले जाणार नाही</translation>
 <translation id="8349013245300336738">वापरलेल्या डेटानुसार क्रमाने लावा</translation>
 <translation id="8364299278605033898">लोकप्रिय वेबसाइट पाहा</translation>
 <translation id="8368027906805972958">अज्ञात किंवा सपोर्ट नसलेले डिव्हाइस (<ph name="DEVICE_ID" />)</translation>

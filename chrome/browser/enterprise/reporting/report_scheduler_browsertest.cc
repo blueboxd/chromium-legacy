@@ -11,12 +11,12 @@
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/policy/chrome_browser_cloud_management_controller.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
-#include "chrome/browser/policy/fake_browser_dm_token_storage.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/enterprise/browser/controller/browser_dm_token_storage.h"
+#include "components/enterprise/browser/controller/fake_browser_dm_token_storage.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_test.h"
 

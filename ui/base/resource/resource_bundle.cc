@@ -18,6 +18,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/notreached.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -42,7 +43,6 @@
 #include "ui/display/screen.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/codec/png_codec.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_source.h"
@@ -207,10 +207,9 @@ class ResourceBundle::ResourceBundleImageSource : public gfx::ImageSkiaSource {
     if (fell_back_to_1x) {
       // GRIT fell back to the 100% image, so rescale it to the correct size.
       image = skia::ImageOperations::Resize(
-          image,
-          skia::ImageOperations::RESIZE_LANCZOS3,
-          gfx::ToCeiledInt(image.width() * scale),
-          gfx::ToCeiledInt(image.height() * scale));
+          image, skia::ImageOperations::RESIZE_LANCZOS3,
+          base::Ceil(image.width() * scale),
+          base::Ceil(image.height() * scale));
     } else {
       scale = GetScaleForScaleFactor(scale_factor);
     }

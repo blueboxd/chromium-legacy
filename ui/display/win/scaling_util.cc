@@ -8,8 +8,8 @@
 
 #include "base/check.h"
 #include "base/notreached.h"
+#include "base/numerics/safe_conversions.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/range/range.h"
@@ -77,7 +77,7 @@ int ScaleOffset(int unscaled_length, float scale_factor, int unscaled_offset) {
   float scaled_length = static_cast<float>(unscaled_length) / scale_factor;
   float percent =
       static_cast<float>(unscaled_offset) / static_cast<float>(unscaled_length);
-  return gfx::ToFlooredInt(scaled_length * percent);
+  return base::Floor(scaled_length * percent);
 }
 
 }  // namespace

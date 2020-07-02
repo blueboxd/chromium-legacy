@@ -562,7 +562,6 @@ fast/forms/url/url-sanitize-user-input.html
 fast/forms/week-multiple-fields/week-multiple-fields-no-shadow-event.html
 fast/forms/week/ValidityState-rangeOverflow-week.html
 fast/forms/week/week-setrangetext.html
-fast/frames/viewsource/viewsource-5.html
 fast/gradients/crash-on-tr.html
 fast/harness/check-layout-error-no-attributes.html
 fast/harness/override-preferences-2.html

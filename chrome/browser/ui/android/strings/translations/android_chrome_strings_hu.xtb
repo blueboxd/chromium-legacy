@@ -10,7 +10,6 @@
 <translation id="1049743911850919806">Inkognitómód</translation>
 <translation id="10614374240317010">Az alábbi oldalakról soha ne mentsen jelszavakat</translation>
 <translation id="1067922213147265141">Egyéb Google-szolgáltatások</translation>
-<translation id="1068672505746868501">Soha ne fordítsa le a(z) <ph name="SOURCE_LANGUAGE" /> nyelvű oldalakat</translation>
 <translation id="107147699690128016">Ha módosítja a fájl kiterjesztését, előfordulhat, hogy a fájlt másik alkalmazás nyitja meg, ami veszélyt jelenthet az eszközre.</translation>
 <translation id="1100066534610197918">Megnyitás új lapon, csoportban</translation>
 <translation id="1105960400813249514">Képernyőrögzítés</translation>
@@ -35,13 +34,11 @@
 <translation id="1229399675748764149">Legyen ez az oldal a kezdőlap?</translation>
 <translation id="1231733316453485619">Bekapcsolja a szinkronizálást?</translation>
 <translation id="123724288017357924">Oldal újratöltése a gyorsítótárat figyelmen kívül hagyva</translation>
-<translation id="124116460088058876">További nyelvek…</translation>
 <translation id="124678866338384709">Az aktuális lap bezárása</translation>
 <translation id="1258753120186372309">Google ünnepi embléma: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Keresés és felfedezés</translation>
 <translation id="1266864766717917324">Nem sikerült a(z) <ph name="CONTENT_TYPE" /> megosztása</translation>
 <translation id="1283039547216852943">Koppintson a kibontáshoz</translation>
-<translation id="1285320974508926690">Ezt a webhelyet soha ne fordítsa le</translation>
 <translation id="1291207594882862231">Előzmények, cookie-k, webhelyadatok és a gyorsítótár törlése…</translation>
 <translation id="129553762522093515">Mostanában bezárt</translation>
 <translation id="1303339473099049190">Ez a jelszó nem található. Ellenőrizze, hogy jól írta-e be.</translation>
@@ -239,7 +236,6 @@ A kereséshez tartsa nyomva a kívánt szót. A keresés finomításához válas
 <translation id="2898264748040935573">Tárolt jelszó módosítása</translation>
 <translation id="2900528713135656174">Esemény létrehozása</translation>
 <translation id="2903493209154104877">Címek</translation>
-<translation id="290376772003165898">Az oldal nem <ph name="LANGUAGE" /> nyelvű?</translation>
 <translation id="2904414404539560095">Lap megosztására szolgáló eszközök listája teljes magasságban megnyitva.</translation>
 <translation id="2905036901251765993">Ha szeretné engedélyezni a megosztást a közelben lévő személyekkel, olvastassa be velük ezt a QR-kódot</translation>
 <translation id="2909615210195135082">Google Notifications Platform</translation>
@@ -415,7 +411,6 @@ A kereséshez tartsa nyomva a kívánt szót. A keresés finomításához válas
 <translation id="4405224443901389797">Áthelyezés…</translation>
 <translation id="4411535500181276704">Egyszerűsített mód</translation>
 <translation id="4415276339145661267">Google-fiók kezelése</translation>
-<translation id="4432792777822557199">A(z) <ph name="SOURCE_LANGUAGE" /> nyelvű oldalak mostantól le lesznek fordítva <ph name="TARGET_LANGUAGE" /> nyelvre</translation>
 <translation id="4440958355523780886">Egyszerű oldal a Google-tól. Koppintással betöltheti az eredetit.</translation>
 <translation id="4452411734226507615"><ph name="TAB_TITLE" /> lap bezárása</translation>
 <translation id="4452548195519783679">Könyvjelzők közé téve itt: <ph name="FOLDER_NAME" /></translation>
@@ -550,7 +545,6 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="543509235395288790"><ph name="COUNT" /> fájl letöltése folyamatban (<ph name="MEGABYTES" />).</translation>
 <translation id="5441522332038954058">Ugrás a címsávba</translation>
 <translation id="5447201525962359567">Összes webhelytárhely, beleértve a cookie-kat és más helyben tárolt adatokat</translation>
-<translation id="5447765697759493033">Nem fordítjuk le ezt a webhelyet</translation>
 <translation id="545042621069398927">Letöltés felgyorsítása…</translation>
 <translation id="5456381639095306749">Oldal letöltése</translation>
 <translation id="548278423535722844">Megnyitás térképalkalmazásban</translation>
@@ -580,7 +574,6 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5665379678064389456">Esemény létrehozása a(z) <ph name="APP_NAME" /> alkalmazásban</translation>
 <translation id="5668404140385795438">Felülbírálja a webhely kérelmét, mely megakadályozná a nagyítást</translation>
-<translation id="5684874026226664614">Hoppá! Az oldalt nem sikerült lefordítani.</translation>
 <translation id="5686790454216892815">A fájl neve túl hosszú</translation>
 <translation id="5694049548840660018">Egyszerűen megnyithatja a kezdőlapot</translation>
 <translation id="569536719314091526">Bármely nyelvre lefordíthatja ezt az oldalt a További lehetőségek gomb segítségével</translation>
@@ -734,7 +727,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="6767294960381293877">Lap megosztására szolgáló eszközök listája félmagasságban megnyitva.</translation>
 <translation id="6811034713472274749">Az oldal megtekinthető</translation>
 <translation id="6820686453637990663">CVC</translation>
-<translation id="6831043979455480757">Fordítás</translation>
 <translation id="6845325883481699275">Segítség a Chrome biztonságának továbberősítésében</translation>
 <translation id="6846298663435243399">Betöltés…</translation>
 <translation id="6850409657436465440">A letöltés még mindig folyamatban van</translation>
@@ -842,7 +834,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7698359219371678927">E-mail létrehozása a(z) <ph name="APP_NAME" /> alkalmazásban</translation>
 <translation id="7704317875155739195">Keresések és URL-címek automatikus kiegészítése</translation>
 <translation id="7725024127233776428">Itt jelennek meg a könyvjelzőként mentett oldalak</translation>
-<translation id="773466115871691567">Mindig fordítsa le a(z) <ph name="SOURCE_LANGUAGE" /> nyelvű oldalakat</translation>
 <translation id="7746457520633464754">A veszélyes alkalmazások és webhelyek észlelésének érdekében a Chrome az egyes felkeresett oldalak URL-jét, valamint korlátozott rendszer-információkat és bizonyos oldaltartalmakat továbbít a Google-nak.</translation>
 <translation id="7757787379047923882">Szöveg megosztva a következő eszközről: <ph name="DEVICE_NAME" /></translation>
 <translation id="7761849928583394409">Dátum és időpont kiválasztása</translation>
@@ -922,7 +913,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="8310344678080805313">Szabványos lapok</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> és további webhelyek</translation>
 <translation id="8327155640814342956">Nyissa meg a Chrome-ot, és frissítsen a legjobb böngészési élmény érdekében</translation>
-<translation id="8339163506404995330">A(z) <ph name="LANGUAGE" /> nyelvű oldalak nem lesznek lefordítva</translation>
 <translation id="8349013245300336738">Rendezés a felhasznált adatmennyiség szerint</translation>
 <translation id="8364299278605033898">Tekintse meg a népszerű webhelyeket</translation>
 <translation id="8368027906805972958">Ismeretlen vagy nem támogatott eszköz (<ph name="DEVICE_ID" />)</translation>

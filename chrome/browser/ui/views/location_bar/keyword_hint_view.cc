@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -163,7 +164,7 @@ gfx::Insets KeywordHintView::GetInsets() const {
       << "LOCATION_BAR_HEIGHT must be tall enough to contain the chip.";
   const float subsumed_width =
       std::sqrt(hypotenuse * hypotenuse - extent * extent);
-  const int horizontal_margin = gfx::ToCeiledInt(radius - subsumed_width);
+  const int horizontal_margin = base::Ceil(radius - subsumed_width);
   // This ensures the end of the KeywordHintView doesn't touch the edge of the
   // omnibox, but the padding should be symmetrical, so use it on both sides,
   // collapsing into the horizontal padding used by the previous View.

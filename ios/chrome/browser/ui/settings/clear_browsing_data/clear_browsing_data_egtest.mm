@@ -39,10 +39,6 @@ using chrome_test_util::SettingsMenuPrivacyButton;
 
 // Test that opening the clear browsing data dialog does not crash.
 - (void)testOpenClearBrowsingDataDialogUI {
-  // TODO(crbug.com/1101099): Test fails on iOS 13 iPhone SE from EG2 roll.
-  if (base::ios::IsRunningOnIOS13OrLater() && ![ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_SKIPPED(@"Test disabled on iOS 13 and upper on iPhones.");
-  }
   [self openClearBrowsingDataDialog];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -52,10 +48,6 @@ using chrome_test_util::SettingsMenuPrivacyButton;
 - (void)testClearBrowsingDataSwipeDown {
   if (!base::ios::IsRunningOnOrLater(13, 0, 0)) {
     EARL_GREY_TEST_SKIPPED(@"Test disabled on iOS 12 and lower.");
-  }
-  // TODO(crbug.com/1101099): Test fails on iOS 13 iPhone SE from EG2 roll.
-  if (base::ios::IsRunningOnIOS13OrLater() && ![ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_SKIPPED(@"Test disabled on iOS 13 and upper on iPhones.");
   }
   [self openClearBrowsingDataDialog];
 

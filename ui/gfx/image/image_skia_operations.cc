@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/numerics/safe_conversions.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkClipOp.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
@@ -413,7 +414,7 @@ class HorizontalShadowSource : public CanvasImageSource {
   static int GetHeightForShadows(const std::vector<ShadowValue>& shadows) {
     int height = 0;
     for (const auto& shadow : shadows) {
-      height = std::max(height, shadow.y() + ToCeiledInt(shadow.blur() / 2));
+      height = std::max(height, shadow.y() + base::Ceil(shadow.blur() / 2));
     }
     return height;
   }

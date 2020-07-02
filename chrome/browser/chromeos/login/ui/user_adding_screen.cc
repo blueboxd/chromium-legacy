@@ -10,9 +10,11 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/helper.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host_mojo.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen_input_methods_controller.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/gfx/geometry/rect.h"
@@ -54,6 +56,7 @@ class UserAddingScreenImpl : public UserAddingScreen {
     }
 
    private:
+    // OobeUI::Observer:
     void OnCurrentScreenChanged(OobeScreenId current_screen,
                                 OobeScreenId new_screen) override {
       if (new_screen != OobeScreen::SCREEN_ACCOUNT_PICKER)
@@ -86,14 +89,22 @@ class UserAddingScreenImpl : public UserAddingScreen {
 
 void UserAddingScreenImpl::Start() {
   CHECK(!IsRunning());
-  reporter_ = std::make_unique<LoadTimeReporter>();
-  display_host_ = new chromeos::LoginDisplayHostWebUI();
-  display_host_->StartUserAdding(base::BindOnce(
-      &UserAddingScreenImpl::OnDisplayHostCompletion, base::Unretained(this)));
-  reporter_->Observe(display_host_->GetOobeUI());
-
+  bool viewBasedEnabled =
+      chromeos::features::IsViewBasedMultiprofileLoginEnabled();
+  if (viewBasedEnabled) {
+    display_host_ = new chromeos::LoginDisplayHostMojo(
+        LoginDisplayHostMojo::DisplayedScreen::USER_ADDING_SCREEN);
+  } else {
+    display_host_ = new chromeos::LoginDisplayHostWebUI();
+    reporter_ = std::make_unique<LoadTimeReporter>();
+  }
   session_manager::SessionManager::Get()->SetSessionState(
       session_manager::SessionState::LOGIN_SECONDARY);
+  display_host_->StartUserAdding(base::BindOnce(
+      &UserAddingScreenImpl::OnDisplayHostCompletion, base::Unretained(this)));
+  if (!viewBasedEnabled)
+    reporter_->Observe(display_host_->GetOobeUI());
+
   for (auto& observer : observers_)
     observer.OnUserAddingStarted();
 }

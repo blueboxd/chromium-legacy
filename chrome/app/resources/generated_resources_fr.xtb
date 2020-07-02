@@ -529,7 +529,6 @@
 <translation id="1645516838734033527">Afin de protéger votre <ph name="DEVICE_TYPE" />, Smart Lock nécessite l'activation d'un verrouillage d'écran sur votre téléphone.</translation>
 <translation id="1646982517418478057">Veuillez saisir un mot de passe pour chiffrer ce certificat.</translation>
 <translation id="1648528859488547844">Utiliser le Wi‑Fi ou les réseaux mobiles pour déterminer la position</translation>
-<translation id="1648943974594387137">Les informations de connexion sont obsolètes</translation>
 <translation id="164936512206786300">Dissocier l'appareil Bluetooth</translation>
 <translation id="1650371550981945235">Afficher les options de saisie</translation>
 <translation id="1651008383952180276">Vous devez saisir deux fois la même phrase secrète</translation>
@@ -1333,7 +1332,6 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2635276683026132559">Signature</translation>
 <translation id="2636625531157955190">Impossible d'accéder à l'image avec Google Chrome.</translation>
 <translation id="2637400434494156704">Code incorrect. Il vous reste une tentative.</translation>
-<translation id="2638087589890736295">Veuillez saisir la phrase secrète pour lancer la synchronisation</translation>
 <translation id="2638662041295312666">Image de connexion</translation>
 <translation id="264083724974021997">Connexion à votre téléphone – Boîte de dialogue</translation>
 <translation id="2641065435954454414">Préparation du téléchargement en cours</translation>
@@ -1487,7 +1485,6 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2809586584051668049">ainsi que <ph name="NUMBER_ADDITIONAL_DISABLED" /> autre(s) extension(s)</translation>
 <translation id="2810390687497823527">Si vous ne reconnaissez pas une extension ou si votre navigateur ne fonctionne pas comme prévu, vous pouvez désactiver ou personnaliser les extensions ici.</translation>
 <translation id="2812049959647166806">Le format Thunderbolt n'est pas compatible</translation>
-<translation id="2812944337881233323">Essayez de vous déconnecter, puis de vous reconnecter</translation>
 <translation id="2812989263793994277">Ne pas afficher les images</translation>
 <translation id="2813094189969465044">Contrôle parental</translation>
 <translation id="281390819046738856">Impossible de signer la demande.</translation>
@@ -3408,7 +3405,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="529175790091471945">Formater cet appareil</translation>
 <translation id="5293170712604732402">Restaurer les paramètres par défaut</translation>
 <translation id="5294097441441645251">Doit commencer par un caractère minuscule ou un trait de soulignement</translation>
-<translation id="5296471962619441686">Corrigez l'erreur pour reprendre la synchronisation</translation>
 <translation id="5297082477358294722">Mot de passe enregistré. Affichez et gérez les mots de passe enregistrés dans votre <ph name="SAVED_PASSWORDS_STORE" />.</translation>
 <translation id="5298219193514155779">Thème créé par</translation>
 <translation id="5299109548848736476">Interdire le suivi</translation>
@@ -5773,7 +5769,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8256417822772703842"><ph name="PRINTER_NAME" /> : niveau d'encre faible</translation>
 <translation id="8257950718085972371">Continuer à bloquer l'accès à la caméra</translation>
 <translation id="8259239505248583312">Continuer</translation>
-<translation id="8260126382462817229">Essayez de vous connecter de nouveau à votre compte.</translation>
 <translation id="8260864402787962391">Souris</translation>
 <translation id="8261378640211443080">Cette extension n'est pas répertoriée sur le <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> et a pu être ajoutée à votre insu.</translation>
 <translation id="8261506727792406068">Supprimer</translation>

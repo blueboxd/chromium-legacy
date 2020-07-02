@@ -20,6 +20,7 @@
 <translation id="10614374240317010">कहिले पनि बचत नगर्नुहोस्</translation>
 <translation id="1062160989074299343">Prc10 (Envelope)</translation>
 <translation id="106701514854093668">डेस्कटप पृष्ठमञ्जूषाहरू</translation>
+<translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" /> मा भएका पृष्ठहरूलाई कहिल्यै अनुवाद नगर्नुहोस्‌</translation>
 <translation id="1070901266639972381">राति</translation>
 <translation id="1074497978438210769">सुरक्षित छैन</translation>
 <translation id="1080116354587839789">चौडाइमा फिट गर्नुहोस्</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">शीर्षक नभएको</translation>
 <translation id="1236081509407217141">VR लाई अनुमति दिने हो?</translation>
 <translation id="1240347957665416060">तपाईंको यन्त्रको नाम</translation>
+<translation id="124116460088058876">थप भाषाहरू</translation>
 <translation id="1250759482327835220">अर्को पटक अझ छिटो भुक्तानी गर्न आफ्नो Google खातामा आफ्नो कार्ड, नाम र बिलिङ ठेगाना सुरक्षित गर्नुहोस्।</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (सिंक गरिएका)</translation>
 <translation id="1256368399071562588">&lt;p&gt;तपाईं कुनै वेबसाइटमा जान खोज्दा उक्त साइट नखुलेको खण्डमा सर्वप्रथम समस्या निवारणका यी चरणहरूको प्रयोग गरी त्रुटिको समाधान गर्ने प्रयास गर्नुहोस्:&lt;/p&gt;
@@ -836,6 +838,7 @@
 <translation id="4424024547088906515">यो सर्भरले यो <ph name="DOMAIN" /> को भनि प्रमाणित गर्न सकेन; यसको सुरक्षा प्रमाणपत्रलाई Chrome ले विश्वास गर्दैन। यो कुनै एउटा मिसकन्फिगरेसन वा कुनै आक्रमणकारीले तपाईंको जडानमा गरेको हस्तक्षेपको कारणले गर्दा भएको हुन सक्छ।</translation>
 <translation id="443121186588148776">क्रमिक पोर्ट</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> ले तपाईँको लग इन सम्बन्धी प्रमाणपत्र स्वीकार गरेन वा कुनै प्रमाणपत्र प्रदान गरिएकै थिएन।</translation>
+<translation id="4432792777822557199"><ph name="SOURCE_LANGUAGE" /> मा रहेका पृष्ठहरूलाई अब उप्रान्त <ph name="TARGET_LANGUAGE" /> मा अनुवाद गरिनेछ</translation>
 <translation id="4434045419905280838">पपअप तथा रिडिरेक्टहरू</translation>
 <translation id="4435702339979719576">Postcard)</translation>
 <translation id="443673843213245140">प्रोक्सीको प्रयोग असक्षम गरिएको छ तर एक सुस्पष्ट प्रोक्सी विन्यास तोकिएको छ।</translation>
@@ -1067,6 +1070,7 @@
 <translation id="5431657950005405462">तपाईंको फाइल फेला परेन</translation>
 <translation id="5439770059721715174">"<ph name="ERROR_PATH" />":<ph name="ERROR" /> मा स्किमा रुजू त्रुटि</translation>
 <translation id="5443468954631487277">विपरीत क्रम तर माथितिर फर्काएर</translation>
+<translation id="5447765697759493033">यो साइटलाई अनुवाद गरिने छैन</translation>
 <translation id="5452270690849572955">यो <ph name="HOST_NAME" /> को पृष्ठ फेला पार्न सक्दैन</translation>
 <translation id="5455374756549232013">खराब नीति टाइमस्ट्याम्प</translation>
 <translation id="5457113250005438886">अवैध</translation>
@@ -1613,6 +1617,7 @@
 <translation id="7716375162095500223">हालसम्म पनि अपलोड गरिएको छैन वा बेवास्ता गरिएको छ</translation>
 <translation id="7716424297397655342">यो साइट क्यासबाट लोड गर्न सकिँदैन</translation>
 <translation id="7723047071702270851">कार्ड सम्पादन गर्नुहोस्</translation>
+<translation id="773466115871691567"><ph name="SOURCE_LANGUAGE" /> मा रहेका पृष्ठहरूलाई सधैँ अनुवाद गर्नुहोस्‌</translation>
 <translation id="7740996059027112821">मानक</translation>
 <translation id="774634243536837715">खतरनाक सामग्रीमाथि रोक लगाइयो।</translation>
 <translation id="7752995774971033316">अव्यवस्थित</translation>
@@ -1758,6 +1763,7 @@
 <translation id="831997045666694187">साँझ</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" /> मा पहुँच गर्न अस्वीकृत भयो</translation>
 <translation id="833262891116910667">हाइलाइट गर्नुहोस्</translation>
+<translation id="8339163506404995330"><ph name="LANGUAGE" /> मा रहेका पृष्ठहरूलाई अनुवाद गरिने छैन</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">यदि तपाईं आफ्नो सुरक्षामा रहेका जोखिमहरू बुझ्नुहुन्छ भने, हानिकारक कार्यक्रमहरू हटाउनु अघि तपाईं <ph name="BEGIN_LINK" />यो साइट<ph name="END_LINK" /> को भ्रमण गर्न सक्नुहुन्छ।</translation>
 <translation id="8349305172487531364">बुकमार्क पट्टी</translation>

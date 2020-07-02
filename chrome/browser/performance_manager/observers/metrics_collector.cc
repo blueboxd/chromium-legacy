@@ -44,9 +44,7 @@ const char kTabFromBackgroundedToFirstNonPersistentNotificationCreatedUMA[] =
 
 const int kDefaultFrequencyUkmEQTReported = 5u;
 
-MetricsCollector::MetricsCollector() {
-  UpdateWithFieldTrialParams();
-}
+MetricsCollector::MetricsCollector() = default;
 
 MetricsCollector::~MetricsCollector() = default;
 
@@ -107,22 +105,6 @@ void MetricsCollector::OnTitleUpdated(const PageNode* page_node) {
       graph_->GetUkmRecorder());
 }
 
-void MetricsCollector::OnExpectedTaskQueueingDurationSample(
-    const ProcessNode* process_node) {
-  // Report this measurement to all pages that are hosting a main frame in
-  // the process that was sampled.
-  const base::TimeDelta& sample =
-      process_node->GetExpectedTaskQueueingDuration();
-  for (const auto* frame_node : process_node->GetFrameNodes()) {
-    if (!frame_node->IsMainFrame())
-      continue;
-    auto* page_node = frame_node->GetPageNode();
-    if (!IsCollectingExpectedQueueingTimeForUkm(page_node))
-      continue;
-    RecordExpectedQueueingTimeForUkm(page_node, sample);
-  }
-}
-
 // static
 MetricsCollector::MetricsReportRecord* MetricsCollector::GetMetricsReportRecord(
     const PageNode* page_node) {
@@ -153,36 +135,10 @@ bool MetricsCollector::ShouldReportMetrics(const PageNode* page_node) {
   return page_node->GetTimeSinceLastNavigation() > kMetricsReportDelayTimeout;
 }
 
-bool MetricsCollector::IsCollectingExpectedQueueingTimeForUkm(
-    const PageNode* page_node) {
-  auto* state = GetUkmCollectionState(page_node);
-  return state->ukm_source_id != ukm::kInvalidSourceId &&
-         ++state->num_unreported_eqt_measurements >=
-             frequency_ukm_eqt_reported_;
-}
-
-void MetricsCollector::RecordExpectedQueueingTimeForUkm(
-    const PageNode* page_node,
-    const base::TimeDelta& expected_queueing_time) {
-  auto* state = GetUkmCollectionState(page_node);
-  state->num_unreported_eqt_measurements = 0u;
-  ukm::builders::ResponsivenessMeasurement(state->ukm_source_id)
-      .SetExpectedTaskQueueingDuration(expected_queueing_time.InMilliseconds())
-      .Record(graph_->GetUkmRecorder());
-}
-
 void MetricsCollector::UpdateUkmSourceIdForPage(const PageNode* page_node,
                                                 ukm::SourceId ukm_source_id) {
   auto* state = GetUkmCollectionState(page_node);
   state->ukm_source_id = ukm_source_id;
-  // Updating the |ukm_source_id| restarts usage collection.
-  state->num_unreported_eqt_measurements = 0u;
-}
-
-void MetricsCollector::UpdateWithFieldTrialParams() {
-  frequency_ukm_eqt_reported_ = base::GetFieldTrialParamByFeatureAsInt(
-      ukm::kUkmFeature, "FrequencyUKMExpectedQueueingTime",
-      kDefaultFrequencyUkmEQTReported);
 }
 
 void MetricsCollector::ResetMetricsReportRecord(const PageNode* page_node) {

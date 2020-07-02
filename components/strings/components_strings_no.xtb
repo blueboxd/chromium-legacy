@@ -20,6 +20,7 @@
 <translation id="10614374240317010">Aldri lagret</translation>
 <translation id="1062160989074299343">Prc10 (konvolutt)</translation>
 <translation id="106701514854093668">Bokmerker på datamaskinen</translation>
+<translation id="1068672505746868501">Oversett aldri sider på <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1070901266639972381">Natt</translation>
 <translation id="1074497978438210769">Ikke sikker</translation>
 <translation id="1080116354587839789">Tilpass til vindusbredden</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">Uten tittel</translation>
 <translation id="1236081509407217141">Vil du tillate VR?</translation>
 <translation id="1240347957665416060">Navnet på enheten din</translation>
+<translation id="124116460088058876">Flere språk</translation>
 <translation id="1250759482327835220">For å betale raskere neste gang, lagre kortet og faktureringsadressen i Google-kontoen din.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" /> og <ph name="TYPE_2" /> (synkronisert)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Hvis du prøver å gå til et nettsted og det ikke åpnes, bør du først prøve å løse feilen med disse feilsøkingstrinnene:&lt;/p&gt;
@@ -840,6 +842,7 @@ brukere av denne nettleseren.</translation>
 <translation id="4424024547088906515">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Sikkerhetssertifikatet til tjeneren er ikke klarert av Chrome. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="443121186588148776">Seriell port</translation>
 <translation id="4432688616882109544">Enten godtok ikke <ph name="HOST_NAME" /> påloggingssertifikatet ditt, eller så ble det ikke oppgitt.</translation>
+<translation id="4432792777822557199">Fra nå av oversettes sider på <ph name="SOURCE_LANGUAGE" /> til <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">Forgrunnsvinduer/viderekoblinger</translation>
 <translation id="4435702339979719576">postkort)</translation>
 <translation id="443673843213245140">Bruk av proxy-tjener er deaktivert, men det er angitt en uttrykkelig proxy-tjenerkonfigurasjon.</translation>
@@ -1071,6 +1074,7 @@ brukere av denne nettleseren.</translation>
 <translation id="5431657950005405462">Filen ble ikke funnet</translation>
 <translation id="5439770059721715174">Skjemavalideringsfeil i «<ph name="ERROR_PATH" />»: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Motsatt rekkefølge – forsiden opp</translation>
+<translation id="5447765697759493033">Dette nettstedet oversettes ikke</translation>
 <translation id="5452270690849572955">Denne siden på <ph name="HOST_NAME" /> ble ikke funnet</translation>
 <translation id="5455374756549232013">Feil tidsstempel for enhetsinnstillinger</translation>
 <translation id="5457113250005438886">Ugyldig</translation>
@@ -1616,6 +1620,7 @@ brukere av denne nettleseren.</translation>
 <translation id="7716375162095500223">Ignorert eller ikke lastet opp ennå</translation>
 <translation id="7716424297397655342">Dette nettstedet kan ikke lastes inn fra bufferen</translation>
 <translation id="7723047071702270851">Endre kortet</translation>
+<translation id="773466115871691567">Oversett alltid sider på <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7740996059027112821">Standard</translation>
 <translation id="774634243536837715">Farlig innhold er blokkert.</translation>
 <translation id="7752995774971033316">Administreres ikke</translation>
@@ -1761,6 +1766,7 @@ brukere av denne nettleseren.</translation>
 <translation id="831997045666694187">Kveld</translation>
 <translation id="8332188693563227489">Forsøket på å koble til <ph name="HOST_NAME" /> ble avvist</translation>
 <translation id="833262891116910667">Fremhev</translation>
+<translation id="8339163506404995330">Sider på <ph name="LANGUAGE" /> oversettes ikke</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Hvis du forstår sikkerhetsrisikoen, kan du <ph name="BEGIN_LINK" />gå til det usikre nettstedet<ph name="END_LINK" /> før de farlige programmene er fjernet.</translation>
 <translation id="8349305172487531364">Bokmerkerad</translation>

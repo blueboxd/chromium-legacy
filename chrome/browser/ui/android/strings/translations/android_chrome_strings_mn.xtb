@@ -10,7 +10,6 @@
 <translation id="1049743911850919806">Нууцлал</translation>
 <translation id="10614374240317010">Огт хадгалагдаагүй байна</translation>
 <translation id="1067922213147265141">Google-н бусад үйлчилгээ</translation>
-<translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" /> хэл дээрх хуудсыг хэзээ ч орчуулахгүй</translation>
 <translation id="107147699690128016">Хэрэв та файлын өргөтгөлийг өөрчилбөл файлыг өөр хэрэглээний программ дээр нээж болох бөгөөд таны төхөөрөмжид аюултай байж болзошгүй.</translation>
 <translation id="1100066534610197918">Бүлэгт шинэ табад нээнэ үү</translation>
 <translation id="1105960400813249514">Дэлгэцийн зураг авах</translation>
@@ -35,13 +34,11 @@
 <translation id="1229399675748764149">Энэ хуудсыг нүүр хуудсаа болгох</translation>
 <translation id="1231733316453485619">Синк асаах уу?</translation>
 <translation id="123724288017357924">Нөөцөлсөн агуулгыг алгасч одоогийн хуудсыг дахин ачаалах</translation>
-<translation id="124116460088058876">Бусад хэл</translation>
 <translation id="124678866338384709">Үндсэн чихтэй хуудсыг хаах</translation>
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Хайх, судлах</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" />-г хуваалцаж чадсангүй</translation>
 <translation id="1283039547216852943">Дэлгэхийн тулд товших</translation>
-<translation id="1285320974508926690">Энэ сайтыг хэзээ ч бүү хөрвүүл</translation>
 <translation id="1291207594882862231">Түүх, күүки, сайтын өгөгдөл, нөөцийг устгах...</translation>
 <translation id="129553762522093515">Саяхан хаагдсан</translation>
 <translation id="1303339473099049190">Тийм нууц үг олж чадсангүй. Үсгийн алдаагаа шалгаад дахин оролдоно уу.</translation>
@@ -239,7 +236,6 @@
 <translation id="2898264748040935573">Хадгалсан нууц үгийг засах</translation>
 <translation id="2900528713135656174">Арга хэмжээ үүсгэх</translation>
 <translation id="2903493209154104877">Хаягууд</translation>
-<translation id="290376772003165898">Хуудас <ph name="LANGUAGE" /> хэл дээр биш байна уу?</translation>
 <translation id="2904414404539560095">Таб хуваалцах төхөөрөмжийн жагсаалтыг бүрэн өндрөөр нээлээ.</translation>
 <translation id="2905036901251765993">Ойролцоо байгаа хүмүүстэй хуваалцахын тулд тэдэнд энэ QR кодыг скан хийхийг зөвшөөрнө үү</translation>
 <translation id="2909615210195135082">Google мэдэгдлийн платформ</translation>
@@ -415,7 +411,6 @@
 <translation id="4405224443901389797">руу зөөх…</translation>
 <translation id="4411535500181276704">Lite горим</translation>
 <translation id="4415276339145661267">Google Бүртгэлээ удирдах</translation>
-<translation id="4432792777822557199">Одооноос <ph name="SOURCE_LANGUAGE" /> хэл дээрх хуудсыг <ph name="TARGET_LANGUAGE" /> хэл рүү орчуулна</translation>
 <translation id="4440958355523780886">Google-с хүргэж буй Энгийн хуудас. Эх хуудсыг ачаалахын тулд товшино уу.</translation>
 <translation id="4452411734226507615"><ph name="TAB_TITLE" /> чихтэй хуудсыг хаах</translation>
 <translation id="4452548195519783679"><ph name="FOLDER_NAME" />-д хавчуулсан</translation>
@@ -549,7 +544,6 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="543509235395288790"><ph name="COUNT" /> файлыг татаж байна (<ph name="MEGABYTES" />).</translation>
 <translation id="5441522332038954058">Хаяг оруулах хэсэгт очих</translation>
 <translation id="5447201525962359567">Күүки болон бусад дотоодод хадгалсан өгөгдлийг оруулсан бүх сайтын сан</translation>
-<translation id="5447765697759493033">Энэ сайтыг орчуулахгүй</translation>
 <translation id="545042621069398927">Таны таталтыг хурдасгаж байна.</translation>
 <translation id="5456381639095306749">Хуудсыг татах</translation>
 <translation id="548278423535722844">Газрын зургийн апп-д нээх</translation>
@@ -579,7 +573,6 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="5659593005791499971">И-мэйл хаяг</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" />-д арга хэмжээ үүсгэнэ үү</translation>
 <translation id="5668404140385795438">Томруулах үйлдлээс урьдчилан сэргийлэхийн тулд вэбсайтны хүсэлтийг хүчингүй болгох</translation>
-<translation id="5684874026226664614">Өө. Энэ хуудсыг хөрвүүлж чадсангүй.</translation>
 <translation id="5686790454216892815">Файлын нэр хэт урт байна</translation>
 <translation id="5694049548840660018">Нүүр хуудас руугаа амархан буцаарай</translation>
 <translation id="569536719314091526">Энэ хуудсыг Бусад сонголт гэсэн товчлуураас дурын хэл рүү орчуулна уу</translation>
@@ -733,7 +726,6 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="6767294960381293877">Таб хуваалцах төхөөрөмжийн жагсаалтыг хагас өндрөөр нээлээ.</translation>
 <translation id="6811034713472274749">Хуудсыг харахад бэлэн байна</translation>
 <translation id="6820686453637990663">CVC</translation>
-<translation id="6831043979455480757">Хөрвүүлэх</translation>
 <translation id="6845325883481699275">Chrome-н аюулгүй байдлыг сайжруулахад туслах</translation>
 <translation id="6846298663435243399">Ачаалж байна...</translation>
 <translation id="6850409657436465440">Таны таталт үргэлжилж байна</translation>
@@ -841,7 +833,6 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="7698359219371678927"><ph name="APP_NAME" />-д имэйл үүсгэнэ үү</translation>
 <translation id="7704317875155739195">Хайлт болон URL-г автоматаар гүйцээх</translation>
 <translation id="7725024127233776428">Таны хавчуурга хийсэн хуудас энд харагдана</translation>
-<translation id="773466115871691567"><ph name="SOURCE_LANGUAGE" /> хэл дээрх хуудсыг байнга орчуулна</translation>
 <translation id="7746457520633464754">Chrome аюултай апп болон сайт илрүүлэхийн тулд таны зочилдог зарим хуудасны URL, хязгаарлагдмал системийн мэдээлэл болон зарим хуудасны контентыг Google-д илгээдэг</translation>
 <translation id="7757787379047923882"><ph name="DEVICE_NAME" />-с текстийг хуваалцсан</translation>
 <translation id="7761849928583394409">Огноо болон цаг сонгох</translation>
@@ -921,7 +912,6 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="8310344678080805313">Стандарт цонхууд</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> болон бусад сайт</translation>
 <translation id="8327155640814342956">Хамгийн сайн хайлт хийхийн тулд Chrome-г шинэчлэхээр нээнэ үү</translation>
-<translation id="8339163506404995330"><ph name="LANGUAGE" /> хэл дээрх хуудсыг орчуулахгүй</translation>
 <translation id="8349013245300336738">Ашигласан өгөгдлийг хэмжээгээр нь эрэмбэлэх</translation>
 <translation id="8364299278605033898">Түгээмэл хэрэглэгддэг вэб сайтыг харах</translation>
 <translation id="8368027906805972958">Үл мэдэгдэх эсвэл дэмжигдээгүй төхөөрөмж (<ph name="DEVICE_ID" />)</translation>

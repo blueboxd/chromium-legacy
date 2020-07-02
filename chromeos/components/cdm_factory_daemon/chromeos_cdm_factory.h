@@ -1,0 +1,77 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROMEOS_COMPONENTS_CDM_FACTORY_DAEMON_CHROMEOS_CDM_FACTORY_H_
+#define CHROMEOS_COMPONENTS_CDM_FACTORY_DAEMON_CHROMEOS_CDM_FACTORY_H_
+
+#include "base/component_export.h"
+#include "base/memory/weak_ptr.h"
+#include "chromeos/components/cdm_factory_daemon/mojom/cdm_factory_daemon.mojom.h"
+#include "media/base/cdm_config.h"
+#include "media/base/cdm_factory.h"
+#include "media/mojo/mojom/frame_interface_factory.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
+
+namespace chromeos {
+
+// Provides an implementation of the media::CdmFactory interface which utilizes
+// the chromeos::CdmFactoryDaemonProxy to establish a mojo connection to the
+// CDM factory daemon in Chrome OS which it then uses to create a CDM
+// implementation. The implementation will be used in the GPU process.
+class COMPONENT_EXPORT(CDM_FACTORY_DAEMON) ChromeOsCdmFactory
+    : public media::CdmFactory {
+ public:
+  explicit ChromeOsCdmFactory(
+      media::mojom::FrameInterfaceFactory* frame_interfaces);
+
+  ChromeOsCdmFactory(const ChromeOsCdmFactory&) = delete;
+  ChromeOsCdmFactory& operator=(const ChromeOsCdmFactory&) = delete;
+
+  ~ChromeOsCdmFactory() override;
+
+  // Invoked on GPU initialization to set the receiver to pass to the browser
+  // process.
+  static mojo::PendingReceiver<cdm::mojom::CdmFactoryDaemon>
+  GetCdmFactoryDaemonReceiver();
+
+  // media::CdmFactory implementation.
+  void Create(
+      const std::string& key_system,
+      const media::CdmConfig& cdm_config,
+      const media::SessionMessageCB& session_message_cb,
+      const media::SessionClosedCB& session_closed_cb,
+      const media::SessionKeysChangeCB& session_keys_change_cb,
+      const media::SessionExpirationUpdateCB& session_expiration_update_cb,
+      media::CdmCreatedCB cdm_created_cb) override;
+
+ private:
+  void OnCreateFactory(
+      const media::CdmConfig& cdm_config,
+      const media::SessionMessageCB& session_message_cb,
+      const media::SessionClosedCB& session_closed_cb,
+      const media::SessionKeysChangeCB& session_keys_change_cb,
+      const media::SessionExpirationUpdateCB& session_expiration_update_cb,
+      media::CdmCreatedCB cdm_created_cb,
+      mojo::PendingRemote<cdm::mojom::CdmFactory> remote_factory);
+  void CreateCdm(
+      const media::CdmConfig& cdm_config,
+      const media::SessionMessageCB& session_message_cb,
+      const media::SessionClosedCB& session_closed_cb,
+      const media::SessionKeysChangeCB& session_keys_change_cb,
+      const media::SessionExpirationUpdateCB& session_expiration_update_cb,
+      media::CdmCreatedCB cdm_created_cb);
+  void OnMojoConnectionError();
+
+  media::mojom::FrameInterfaceFactory* frame_interfaces_;
+  mojo::Remote<cdm::mojom::CdmFactory> remote_factory_;
+
+  // WeakPtrFactory to use for callbacks.
+  base::WeakPtrFactory<ChromeOsCdmFactory> weak_factory_{this};
+};
+
+}  // namespace chromeos
+
+#endif  // CHROMEOS_COMPONENTS_CDM_FACTORY_DAEMON_CHROMEOS_CDM_FACTORY_H_

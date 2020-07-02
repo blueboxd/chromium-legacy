@@ -104,11 +104,6 @@ void TestInterfaces::ConfigureForTestWithURL(const blink::WebURL& test_url,
   }
   test_runner_->SetV8CacheDisabled(is_devtools_test);
 
-  if (spec.find("/viewsource/") != std::string::npos) {
-    test_runner_->SetShouldEnableViewSource(true);
-    test_runner_->SetShouldGeneratePixelResults(false);
-    test_runner_->SetShouldDumpAsMarkup(true);
-  }
   if (spec.find("/external/wpt/") != std::string::npos ||
       spec.find("/external/csswg-test/") != std::string::npos ||
       spec.find("://web-platform.test") != std::string::npos ||

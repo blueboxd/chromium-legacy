@@ -35,9 +35,7 @@ using ::showcase_utils::Close;
 }
 
 // Tests that the InfobarBanner is correctly displaying its Labels.
-// TODO(crbug.com/1099425): Test fails on iOS 13 iPhones when rolling EG2
-// version.
-- (void)DISABLED_testInfobarBannerConfiguration {
+- (void)testInfobarBannerConfiguration {
   // Check Banner was presented.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           kInfobarBannerViewIdentifier)]
@@ -59,9 +57,7 @@ using ::showcase_utils::Close;
 
 // Tests that the InfobarBanner is dismissed correctly when its accept button is
 // tapped.
-// TODO(crbug.com/1099425): Test fails on iOS 13 iPhones when rolling EG2
-// version.
-- (void)DISABLED_testInfobarBannerDismissButton {
+- (void)testInfobarBannerDismissButton {
   // Check Banner was presented.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           kInfobarBannerViewIdentifier)]
@@ -76,9 +72,7 @@ using ::showcase_utils::Close;
       assertWithMatcher:grey_nil()];
 }
 
-// TODO(crbug.com/1099425): Test fails on iOS 13 iPhones when rolling EG2
-// version.
-- (void)DISABLED_testInfobarBannerDismissSwipe {
+- (void)testInfobarBannerDismissSwipe {
   // Check Banner was presented.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           kInfobarBannerViewIdentifier)]
@@ -93,9 +87,7 @@ using ::showcase_utils::Close;
       assertWithMatcher:grey_nil()];
 }
 
-// TODO(crbug.com/1099425): Test fails on iOS 13 iPhones when rolling EG2
-// version.
-- (void)DISABLED_testInfobarBannerCantSwipeDown {
+- (void)testInfobarBannerCantSwipeDown {
   // Check Banner was presented.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           kInfobarBannerViewIdentifier)]
@@ -118,9 +110,7 @@ using ::showcase_utils::Close;
       assertWithMatcher:grey_nil()];
 }
 
-// TODO(crbug.com/1099425): Test fails on iOS 13 iPhones when rolling EG2
-// version.
-- (void)DISABLED_testInfobarBannerTapped {
+- (void)testInfobarBannerTapped {
   // Check Banner was presented.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           kInfobarBannerViewIdentifier)]
@@ -143,9 +133,7 @@ using ::showcase_utils::Close;
       assertWithMatcher:grey_nil()];
 }
 
-// TODO(crbug.com/1099425): Test fails on iOS 13 iPhones when rolling EG2
-// version.
-- (void)DISABLED_testInfobarBannerGearTapped {
+- (void)testInfobarBannerGearTapped {
   // Check Banner was presented.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           kInfobarBannerViewIdentifier)]

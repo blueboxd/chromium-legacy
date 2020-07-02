@@ -526,7 +526,6 @@
 <translation id="1645516838734033527">ඔබේ <ph name="DEVICE_TYPE" /> සුරක්ෂිතව තැබීමට, Smart Lock හට ඔබේ දුරකථනයේ තිර අගුලක් අවශ්‍යයි.</translation>
 <translation id="1646982517418478057">කරුණාකර මෙම සහතිකය සංකේතනය කිරීමට මුරපදයක් ඇතුළු කරන්න</translation>
 <translation id="1648528859488547844">ස්ථානය නිර්ණය කිරීමට Wi-Fi හෝ ජංගම ජාල භාවිත කරන්න</translation>
-<translation id="1648943974594387137">පිරීම් විස්තර කල් පැන ඇත</translation>
 <translation id="164936512206786300">බ්ලූටූත් උපාංගය යුගලන නොකරන්න</translation>
 <translation id="1650371550981945235">ආදාන විකල්ප පෙන්වන්න</translation>
 <translation id="1651008383952180276">ඔබ එකම මුරවැකිකඩ දෙවරක් ඇතුළු කළ යුතුය</translation>
@@ -1330,7 +1329,6 @@
 <translation id="2635276683026132559">අත්සන් කෙරෙමින්</translation>
 <translation id="2636625531157955190">Chrome හට රූපය වෙත පිවිසිය නොහැක.</translation>
 <translation id="2637400434494156704">වැරදි රහස් අංකය. ඔබට එක ප්‍රයත්නයක් ඉතිරිව ඇත.</translation>
-<translation id="2638087589890736295">සමමුහුර්ත කිරීම ආරම්භ කිරීමට අවශ්‍ය මුරවැකිකඩ</translation>
 <translation id="2638662041295312666">පුරන රූපය</translation>
 <translation id="264083724974021997">ඔබේ දුරකථනය සම්බන්ධ කරන්න - සංවාදය</translation>
 <translation id="2641065435954454414">බාගැනීමට සූදානම් කෙරේ</translation>
@@ -1484,7 +1482,6 @@
 <translation id="2809586584051668049">සහ <ph name="NUMBER_ADDITIONAL_DISABLED" /> තවත්</translation>
 <translation id="2810390687497823527">ඔබ දිගුවක් හඳුනා නොගන්නේ නම්, හෝ ඔබේ බ්‍රවුසරය අපේක්‍ෂිත පරිදි ක්‍රියා නොකරන්නේ නම්, ඔබට මෙහි දිගු අක්‍රිය කිරීමට හෝ අභිරුචි කිරීමට හැකිය.</translation>
 <translation id="2812049959647166806">තණ්ඩර්බෝල්ට් හට සහය නොදැක්වේ</translation>
-<translation id="2812944337881233323">වරා නැවත පැමිණීම උත්සාහ කරන්න</translation>
 <translation id="2812989263793994277">කිසිඳු පින්තූරයක් නොපෙන්වන්න</translation>
 <translation id="2813094189969465044">මාපිය පාලන</translation>
 <translation id="281390819046738856">ඉල්ලීමට අත්සන් කළ නොහැකි විය.</translation>
@@ -3406,7 +3403,6 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="529175790091471945">මෙම උපාංගය හැඩසවි ගන්වන්න</translation>
 <translation id="5293170712604732402">සැකසීම් ඒවායේ මුල් පෙරනිමිවලට ප්‍රතිසාධනය කරන්න</translation>
 <translation id="5294097441441645251">ඉංග්‍රීසි සිම්පල් අකුරකින් හෝ යටි ඉරකින් ආරම්භ විය යුතුමයි</translation>
-<translation id="5296471962619441686">සමමුහූර්තය යළි ඇරඹීමට දෝෂය නිරාකරණ කරන්න</translation>
 <translation id="5297082477358294722">මුරපදය සුරකින ලදි. ඔබගේ <ph name="SAVED_PASSWORDS_STORE" /> හි සුරකින ලද මුරපද බලන්න සහ කළමනාකරණය කරන්න.</translation>
 <translation id="5298219193514155779">මෙමගින් සාදන ල තේමාව</translation>
 <translation id="5299109548848736476">හඹා නොයන්න</translation>
@@ -5767,7 +5763,6 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="8256417822772703842"><ph name="PRINTER_NAME" /> හි තීන්ත අඩුයි</translation>
 <translation id="8257950718085972371">කැමරා පිවිසුම දිගටම අවහිර කරන්න</translation>
 <translation id="8259239505248583312">අරඹමු</translation>
-<translation id="8260126382462817229">නැවත පිරීම උත්සාහ කරන්න</translation>
 <translation id="8260864402787962391">මවුසය</translation>
 <translation id="8261378640211443080">දිගුව <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> තුළ ලියාපදිංචි කර නැති අතර එය ඔබට නොදැනී එක් කර තිබේ.</translation>
 <translation id="8261506727792406068">මකන්න</translation>

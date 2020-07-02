@@ -89,6 +89,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
       override;
   gfx::Rect GetCurrentFramebufferDamage() const override;
   void SetFrameRate(float frame_rate) override;
+  void SetNeedsMeasureNextDrawLatency() override;
 
   // SkiaOutputSurface implementation:
   SkCanvas* BeginPaintCurrentFrame() override;
@@ -264,6 +265,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
 
   bool has_set_draw_rectangle_for_frame_ = false;
   base::Optional<gfx::Rect> draw_rectangle_;
+
+  bool should_measure_next_post_task_ = false;
 
   // We defer the draw to the framebuffer until SwapBuffers or CopyOutput
   // to avoid the expense of posting a task and calling MakeCurrent.

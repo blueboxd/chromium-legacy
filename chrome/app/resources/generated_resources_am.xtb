@@ -527,7 +527,6 @@
 <translation id="1645516838734033527">የእርስዎን <ph name="DEVICE_TYPE" /> ደህንነቱ እንደተጠበቀ ለማቆየት Smart Lock በእርስዎ ስልክ ላይ የማያ ገጽ መቆለፊያ ያስፈልገዋል።</translation>
 <translation id="1646982517418478057">ይህን የዕውቅና ማረጋገጫ ፋይል ለማመስጠር እባክዎ የይለፍ ቃል ያስገቡ</translation>
 <translation id="1648528859488547844">አካባቢን ለመወሰን Wi‑Fi፣ ብሉቱዝ ወይም የተንቀሳቃሽ ስልክ አውታረ መረቦችን ተጠቀም</translation>
-<translation id="1648943974594387137">የመለያ መግቢያ ዝርዝሮች ጊዜ ያለፈባቸው ናቸው</translation>
 <translation id="164936512206786300">የብሉቱዝ መሣሪያን ነጥል</translation>
 <translation id="1650371550981945235">የግቤት አማራጮችን አሳይ</translation>
 <translation id="1651008383952180276">ተመሳሳዩ የይለፍ ሐረጉን ሁለት ጊዜ ማስገባት አለብዎት</translation>
@@ -1323,7 +1322,6 @@
 <translation id="2635276683026132559">መፈረም</translation>
 <translation id="2636625531157955190">Chrome ምስሉን ሊደርስበት አልቻለም።</translation>
 <translation id="2637400434494156704">ትክክል ያልሆነ ፒን። አንድ ቀሪ ሙከራ አልዎት።</translation>
-<translation id="2638087589890736295">ስምረትን ለመጀመር የይለፍ ሐረግ ያስፈልጋል</translation>
 <translation id="2638662041295312666">መግቢያ ምስል</translation>
 <translation id="264083724974021997">ወደ የእርስዎ ስልክ ያገናኙ - ንግግር</translation>
 <translation id="2641065435954454414">ውርድን በማዘጋጀት ላይ</translation>
@@ -1477,7 +1475,6 @@
 <translation id="2809586584051668049">እና <ph name="NUMBER_ADDITIONAL_DISABLED" /> ተጨማሪ</translation>
 <translation id="2810390687497823527">ቅጥያን የማያውቁት ከሆነ ወይም የእርስዎ አሳሽ እንደሚጠበቀው እየሠራ ካልሆነ፣ ቅጥያዎችን እዚህ ላይ ማጥፋት ወይም ብጁ ማድረግ ይችላሉ።</translation>
 <translation id="2812049959647166806">Thunderbolt አይደገፍም</translation>
-<translation id="2812944337881233323">ዘግተው ወጥተው እና ተመልሰው ለመግባት ይሞክሩ</translation>
 <translation id="2812989263793994277">ምንም አይነት ምስል አታሳይ</translation>
 <translation id="2813094189969465044">የወላጅ መቆጣጠሪያዎች</translation>
 <translation id="281390819046738856">ጥያቄ ሊፈረም አልተቻለም።</translation>
@@ -3387,7 +3384,6 @@
 <translation id="529175790091471945">ይህን መሣሪያ ቅርጸት ይስሩለት</translation>
 <translation id="5293170712604732402">ቅንብሮች ወደ የመጀመሪያቸው ነባሪዎች መልሳቸው</translation>
 <translation id="5294097441441645251">በንዑስ ሆሄ ቁምፊ ወይም የስር መስመር መጀመር አለበት</translation>
-<translation id="5296471962619441686">ስምረትን ካቆመበት ለመቀጠል ስሕተቱን ያስተካክሉ</translation>
 <translation id="5297082477358294722">የይለፍ ቃል ተቀምጧል። የተቀመጡ የይለፍ ቃላትን በእርስዎ <ph name="SAVED_PASSWORDS_STORE" /> ይመልከቱ እና ያስተዳድሩ።</translation>
 <translation id="5298219193514155779">ገጽታ የተፈጠረው በ</translation>
 <translation id="5299109548848736476">አትከታተል</translation>
@@ -5742,7 +5738,6 @@ nil</translation>
 <translation id="8256417822772703842"><ph name="PRINTER_NAME" /> ቀለሙ ዝቅተኛ ነው</translation>
 <translation id="8257950718085972371">የካሜራ መዳረሻ ማገዱን ቀጥል</translation>
 <translation id="8259239505248583312">እንሂድ</translation>
-<translation id="8260126382462817229">እንደገና ለመግባት ይሞክሩ</translation>
 <translation id="8260864402787962391">መዳፊት</translation>
 <translation id="8261378640211443080">ይህ ቅጥያ በ<ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ውስጥ ያልተጠቀሰ ሲሆን እርስዎ ሳያውቁት የታከለ ሊሆን ይችላል።</translation>
 <translation id="8261506727792406068">ሰርዝ</translation>

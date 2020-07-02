@@ -24,6 +24,11 @@
   min-width: 400px;
 }
 
+#url-generator {
+  display: flex;
+  flex-direction: row;
+}
+
 .user-input-group {
   display: flex;
   flex-direction: column;

@@ -56,7 +56,6 @@ class RasterContextProvider;
 }
 
 namespace content {
-class ChildURLLoaderFactoryBundle;
 
 class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
  public:
@@ -204,15 +203,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       scoped_refptr<network::SharedURLLoaderFactory> factory) override;
 
   media::GpuVideoAcceleratorFactories* GetGpuFactories() override;
-
-  // Returns non-null.
-  // It is invalid to call this in an incomplete env where
-  // RenderThreadImpl::current() returns nullptr (e.g. in some tests).
-  scoped_refptr<ChildURLLoaderFactoryBundle>
-  CreateDefaultURLLoaderFactoryBundle();
-
-  mojo::PendingRemote<network::mojom::URLLoaderFactory>
-  CreateNetworkURLLoaderFactory();
 
   // Tells this platform that the renderer is locked to a site (i.e., a scheme
   // plus eTLD+1, such as https://google.com), or to a more specific origin.

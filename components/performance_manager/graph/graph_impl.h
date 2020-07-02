@@ -23,6 +23,7 @@
 #include "components/performance_manager/public/graph/graph.h"
 #include "components/performance_manager/public/graph/graph_registered.h"
 #include "components/performance_manager/public/graph/node_attached_data.h"
+#include "components/performance_manager/public/graph/process_node.h"
 #include "components/performance_manager/registered_objects.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
@@ -103,7 +104,7 @@ class GraphImpl : public Graph {
   ProcessNodeImpl* GetProcessNodeByPid(base::ProcessId pid) const;
 
   // Retrieves the frame node with the routing ids of the process and the frame.
-  FrameNodeImpl* GetFrameNodeById(int render_process_id,
+  FrameNodeImpl* GetFrameNodeById(RenderProcessHostId render_process_id,
                                   int render_frame_id) const;
 
   // Returns true if |node| is in this graph.
@@ -136,9 +137,15 @@ class GraphImpl : public Graph {
 
  private:
   struct ProcessAndFrameId {
-    ProcessAndFrameId(int render_process_id, int render_frame_id);
+    ProcessAndFrameId(RenderProcessHostId render_process_id,
+                      int render_frame_id);
+    ~ProcessAndFrameId();
+
+    ProcessAndFrameId(const ProcessAndFrameId& other);
+    ProcessAndFrameId& operator=(const ProcessAndFrameId& other);
+
     bool operator<(const ProcessAndFrameId& other) const;
-    int render_process_id;
+    RenderProcessHostId render_process_id;
     int render_frame_id;
   };
 
@@ -159,10 +166,10 @@ class GraphImpl : public Graph {
 
   // Frame id map for use by FrameNodeImpl.
   friend class FrameNodeImpl;
-  void RegisterFrameNodeForId(int render_process_id,
+  void RegisterFrameNodeForId(RenderProcessHostId render_process_id,
                               int render_frame_id,
                               FrameNodeImpl* frame_node);
-  void UnregisterFrameNodeForId(int render_process_id,
+  void UnregisterFrameNodeForId(RenderProcessHostId render_process_id,
                                 int render_frame_id,
                                 FrameNodeImpl* frame_node);
 

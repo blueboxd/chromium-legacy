@@ -11,12 +11,19 @@
 
 module chromeos.cdm.mojom;
 
+import "chromeos/components/cdm_factory_daemon/mojom/cdm_storage.mojom";
+import "chromeos/components/cdm_factory_daemon/mojom/content_decryption_module.mojom";
 import "components/arc/mojom/oemcrypto.mojom";
 import "components/arc/mojom/protected_buffer_manager.mojom";
 
 // Next Method ID: 1
 interface CdmFactory {
-  // TODO(jkardatzke): Implement this interface.
+  // Creates a new ContentDecryptionModule instance with the corresponding
+  // client and remote storage implementation. Use an associated interface to
+  // ensure ordering and that all become invalidated at the same time.
+  CreateCdm@0(pending_associated_remote<ContentDecryptionModuleClient> client,
+              pending_associated_remote<CdmStorage> storage,
+              pending_associated_receiver<ContentDecryptionModule> cdm);
 };
 
 // Next Method ID: 2
@@ -33,7 +40,7 @@ interface CdmFactoryDaemon {
   // Used to establish a connection to the OEMCrypto implementation to provide
   // that service to ARC.
   ConnectOemCrypto@1(
-      arc.mojom.OemCryptoService& oemcryptor,
+      pending_receiver<arc.mojom.OemCryptoService> oemcryptor,
       pending_remote<arc.mojom.ProtectedBufferManager>
           protected_buffer_manager);
 };

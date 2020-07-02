@@ -10,7 +10,6 @@
 <translation id="1049743911850919806">Samaran</translation>
 <translation id="10614374240317010">Jangan pernah disimpan</translation>
 <translation id="1067922213147265141">Layanan Google lainnya</translation>
-<translation id="1068672505746868501">Jangan pernah menerjemahkan halaman dalam <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="107147699690128016">Jika ekstensi file diubah, file dapat terbuka di aplikasi lain dan berpotensi membahayakan perangkat Anda.</translation>
 <translation id="1100066534610197918">Buka pada tab baru di grup</translation>
 <translation id="1105960400813249514">Screenshot</translation>
@@ -35,13 +34,11 @@
 <translation id="1229399675748764149">Jadikan ini halaman beranda Anda</translation>
 <translation id="1231733316453485619">Aktifkan sinkronisasi?</translation>
 <translation id="123724288017357924">Memuat ulang halaman, mengabaikan konten dalam cache</translation>
-<translation id="124116460088058876">Bahasa lainnya</translation>
 <translation id="124678866338384709">Menutup tab aktif</translation>
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Telusuri &amp; jelajahi</translation>
 <translation id="1266864766717917324">Tidak dapat membagikan <ph name="CONTENT_TYPE" /></translation>
 <translation id="1283039547216852943">Ketuk untuk meluaskan</translation>
-<translation id="1285320974508926690">Jangan pernah terjemahkan situs ini</translation>
 <translation id="1291207594882862231">Menghapus histori, cookie, data situs, cache...</translation>
 <translation id="129553762522093515">Baru saja ditutup</translation>
 <translation id="1303339473099049190">Tidak dapat menemukan sandi tersebut. Periksa ejaan sandi dan coba lagi.</translation>
@@ -239,7 +236,6 @@ Sentuh lama kata apa pun untuk menelusurinya. Untuk menyaring penelusuran, pilih
 <translation id="2898264748040935573">Edit sandi yang disimpan</translation>
 <translation id="2900528713135656174">Buat acara</translation>
 <translation id="2903493209154104877">Alamat</translation>
-<translation id="290376772003165898">Halaman tidak dalam bahasa <ph name="LANGUAGE" />?</translation>
 <translation id="2904414404539560095">Daftar perangkat yang dapat digunakan untuk berbagi tab terbuka dalam layar penuh.</translation>
 <translation id="2905036901251765993">Untuk berbagi dengan orang-orang di sekitar, izinkan mereka memindai kode QR ini</translation>
 <translation id="2909615210195135082">Platform Notifikasi Google</translation>
@@ -415,7 +411,6 @@ Sentuh lama kata apa pun untuk menelusurinya. Untuk menyaring penelusuran, pilih
 <translation id="4405224443901389797">Pindahkan ke…</translation>
 <translation id="4411535500181276704">Mode Ringan</translation>
 <translation id="4415276339145661267">Kelola Akun Google Anda</translation>
-<translation id="4432792777822557199">Mulai sekarang, halaman dalam bahasa <ph name="SOURCE_LANGUAGE" /> akan diterjemahkan ke <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4440958355523780886">Halaman ringan yang ditampilkan oleh Google. Ketuk untuk memuat halaman asli.</translation>
 <translation id="4452411734226507615">Tutup tab <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">Dibookmark ke <ph name="FOLDER_NAME" /></translation>
@@ -550,7 +545,6 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="543509235395288790">Mendownload <ph name="COUNT" /> file (<ph name="MEGABYTES" />).</translation>
 <translation id="5441522332038954058">Beralih ke bilah alamat</translation>
 <translation id="5447201525962359567">Semua penyimpanan situs, termasuk cookie dan data lain yang tersimpan secara lokal</translation>
-<translation id="5447765697759493033">Situs ini tidak diterjemahkan</translation>
 <translation id="545042621069398927">Mempercepat download.</translation>
 <translation id="5456381639095306749">Download halaman</translation>
 <translation id="548278423535722844">Buka di aplikasi peta</translation>
@@ -580,7 +574,6 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="5659593005791499971">Email</translation>
 <translation id="5665379678064389456">Buat acara di <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Abaikan permintaan situs web untuk mencegah zoom</translation>
-<translation id="5684874026226664614">Ups. Halaman ini tidak dapat diterjemahkan.</translation>
 <translation id="5686790454216892815">Nama file terlalu panjang</translation>
 <translation id="5694049548840660018">Kembali ke beranda dengan mudah</translation>
 <translation id="569536719314091526">Terjemahkan halaman ini ke bahasa apa pun dari tombol Opsi lainnya</translation>
@@ -734,7 +727,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6767294960381293877">Daftar perangkat yang dapat digunakan untuk berbagi tab terbuka dalam setengah layar.</translation>
 <translation id="6811034713472274749">Halaman siap ditampilkan</translation>
 <translation id="6820686453637990663">CVC</translation>
-<translation id="6831043979455480757">Terjemahkan</translation>
 <translation id="6845325883481699275">Bantu meningkatkan keamanan Chrome</translation>
 <translation id="6846298663435243399">Memuat...</translation>
 <translation id="6850409657436465440">Download sedang berlangsung</translation>
@@ -842,7 +834,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="7698359219371678927">Buat email di <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Lengkapi otomatis penelusuran dan URL</translation>
 <translation id="7725024127233776428">Halaman yang Anda bookmark muncul di sini</translation>
-<translation id="773466115871691567">Selalu terjemahkan halaman dalam bahasa <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7746457520633464754">Untuk mendeteksi aplikasi dan situs berbahaya, Chrome mengirimkan URL beberapa halaman yang Anda kunjungi, informasi sistem terbatas, dan beberapa konten halaman ke Google</translation>
 <translation id="7757787379047923882">Teks dibagikan dari <ph name="DEVICE_NAME" /></translation>
 <translation id="7761849928583394409">Pilih tanggal &amp; waktu</translation>
@@ -922,7 +913,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="8310344678080805313">Tab standar</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> dan situs lainnya</translation>
 <translation id="8327155640814342956">Untuk mendapatkan pengalaman penjelajahan terbaik, buka untuk mengupdate Chrome</translation>
-<translation id="8339163506404995330">Halaman dalam bahasa <ph name="LANGUAGE" /> tidak akan diterjemahkan</translation>
 <translation id="8349013245300336738">Urutkan menurut jumlah kuota yang digunakan</translation>
 <translation id="8364299278605033898">Lihat situs yang populer</translation>
 <translation id="8368027906805972958">Perangkat tidak dikenal atau tidak didukung (<ph name="DEVICE_ID" />)</translation>

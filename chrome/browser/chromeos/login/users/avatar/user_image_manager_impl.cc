@@ -59,30 +59,6 @@ const int kProfileDataDownloadRetryIntervalSec = 300;
 // Delay betweeen subsequent profile refresh attempts (24 hrs).
 const int kProfileRefreshIntervalSec = 24 * 3600;
 
-// Enum for reporting histograms about profile picture download.
-enum ProfileDownloadResult {
-  kDownloadSuccessChanged,
-  kDownloadSuccess,
-  kDownloadFailure,
-  kDownloadDefault,
-  kDownloadCached,
-
-  // Must be the last, convenient count.
-  kDownloadResultsCount
-};
-
-// Time histogram prefix for a cached profile image download.
-const char kProfileDownloadCachedTime[] =
-    "UserImage.ProfileDownloadTime.Cached";
-// Time histogram prefix for the default profile image download.
-const char kProfileDownloadDefaultTime[] =
-    "UserImage.ProfileDownloadTime.Default";
-// Time histogram prefix for a failed profile image download.
-const char kProfileDownloadFailureTime[] =
-    "UserImage.ProfileDownloadTime.Failure";
-// Time histogram prefix for a successful profile image download.
-const char kProfileDownloadSuccessTime[] =
-    "UserImage.ProfileDownloadTime.Success";
 // Time histogram suffix for a profile image download after login.
 const char kProfileDownloadReasonLoggedIn[] = "LoggedIn";
 // Time histogram suffix for a profile image download when the user chooses the
@@ -94,45 +70,6 @@ const char kProfileDownloadReasonScheduled[] = "Scheduled";
 const char kProfileDownloadReasonRetry[] = "Retry";
 
 static bool g_ignore_profile_data_download_delay_ = false;
-
-// Add a histogram showing the time it takes to download profile image.
-// Separate histograms are reported for each download |reason| and |result|.
-void AddProfileImageTimeHistogram(ProfileDownloadResult result,
-                                  const std::string& download_reason,
-                                  const base::TimeDelta& time_delta) {
-  std::string histogram_name;
-  switch (result) {
-    case kDownloadFailure:
-      histogram_name = kProfileDownloadFailureTime;
-      break;
-    case kDownloadDefault:
-      histogram_name = kProfileDownloadDefaultTime;
-      break;
-    case kDownloadSuccess:
-      histogram_name = kProfileDownloadSuccessTime;
-      break;
-    case kDownloadCached:
-      histogram_name = kProfileDownloadCachedTime;
-      break;
-    default:
-      NOTREACHED();
-  }
-  if (!download_reason.empty()) {
-    histogram_name += ".";
-    histogram_name += download_reason;
-  }
-
-  static const base::TimeDelta min_time = base::TimeDelta::FromMilliseconds(1);
-  static const base::TimeDelta max_time = base::TimeDelta::FromSeconds(50);
-  const size_t bucket_count(50);
-
-  base::HistogramBase* counter = base::Histogram::FactoryTimeGet(
-      histogram_name, min_time, max_time, bucket_count,
-      base::HistogramBase::kUmaTargetedHistogramFlag);
-  counter->AddTime(time_delta);
-
-  DVLOG(1) << "Profile image download time: " << time_delta.InSecondsF();
-}
 
 // Converts |image_index| to UMA histogram value.
 int ImageIndexToHistogramIndex(int image_index) {
@@ -813,42 +750,22 @@ void UserImageManagerImpl::OnProfileDownloadSuccess(
   if (!downloading_profile_image_)
     return;
 
-  ProfileDownloadResult result = kDownloadFailure;
-  switch (downloader->GetProfilePictureStatus()) {
-    case ProfileDownloader::PICTURE_SUCCESS:
-      result = kDownloadSuccess;
-      break;
-    case ProfileDownloader::PICTURE_CACHED:
-      result = kDownloadCached;
-      break;
-    case ProfileDownloader::PICTURE_DEFAULT:
-      result = kDownloadDefault;
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  UMA_HISTOGRAM_ENUMERATION("UserImage.ProfileDownloadResult", result,
-                            kDownloadResultsCount);
-  DCHECK(!profile_image_load_start_time_.is_null());
-  AddProfileImageTimeHistogram(
-      result, profile_image_download_reason_,
-      base::TimeTicks::Now() - profile_image_load_start_time_);
-
   // Ignore the image if it is no longer needed.
   if (!NeedProfileImage())
     return;
 
   const user_manager::User* const user = GetUser();
 
-  if (result == kDownloadDefault) {
+  if (downloader->GetProfilePictureStatus() ==
+      ProfileDownloader::PICTURE_DEFAULT) {
     user_manager_->NotifyUserProfileImageUpdateFailed(*user);
   } else {
     profile_image_requested_ = false;
   }
 
   // Nothing to do if the picture is cached or is the default avatar.
-  if (result != kDownloadSuccess)
+  if (downloader->GetProfilePictureStatus() !=
+      ProfileDownloader::PICTURE_SUCCESS)
     return;
 
   downloaded_profile_image_ =
@@ -857,8 +774,6 @@ void UserImageManagerImpl::OnProfileDownloadSuccess(
 
   if (user->image_index() == user_manager::User::USER_IMAGE_PROFILE) {
     VLOG(1) << "Updating profile image for logged-in user.";
-    UMA_HISTOGRAM_ENUMERATION("UserImage.ProfileDownloadResult",
-                              kDownloadSuccessChanged, kDownloadResultsCount);
     // This will persist |downloaded_profile_image_| to disk.
     SaveUserImageFromProfileImage();
   }
@@ -872,15 +787,6 @@ void UserImageManagerImpl::OnProfileDownloadFailure(
     ProfileDownloaderDelegate::FailureReason reason) {
   DCHECK_EQ(downloader, profile_downloader_.get());
   profile_downloader_.reset();
-
-  if (downloading_profile_image_) {
-    UMA_HISTOGRAM_ENUMERATION("UserImage.ProfileDownloadResult",
-                              kDownloadFailure, kDownloadResultsCount);
-    DCHECK(!profile_image_load_start_time_.is_null());
-    AddProfileImageTimeHistogram(
-        kDownloadFailure, profile_image_download_reason_,
-        base::TimeTicks::Now() - profile_image_load_start_time_);
-  }
 
   if (reason == ProfileDownloaderDelegate::NETWORK_ERROR) {
     // Retry download after a delay if a network error occurred.
@@ -937,8 +843,6 @@ void UserImageManagerImpl::DownloadProfileData(const std::string& reason) {
   }
 
   downloading_profile_image_ = NeedProfileImage();
-  profile_image_download_reason_ = reason;
-  profile_image_load_start_time_ = base::TimeTicks::Now();
   profile_downloader_.reset(new ProfileDownloader(this));
   profile_downloader_->Start();
 }

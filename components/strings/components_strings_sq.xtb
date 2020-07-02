@@ -20,6 +20,7 @@
 <translation id="10614374240317010">Nuk u ruaj asnjëherë</translation>
 <translation id="1062160989074299343">Prc10 (Zarf)</translation>
 <translation id="106701514854093668">Faqeshënuesit e desktopit</translation>
+<translation id="1068672505746868501">Mos përkthe asnjëherë faqet që janë në <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1070901266639972381">Natë</translation>
 <translation id="1074497978438210769">Jo i sigurt</translation>
 <translation id="1080116354587839789">Përshtate sipas gjerësisë</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">Pa titull</translation>
 <translation id="1236081509407217141">Të lejohet VR?</translation>
 <translation id="1240347957665416060">Emri i pajisjes sate</translation>
+<translation id="124116460088058876">Gjuhë të tjera</translation>
 <translation id="1250759482327835220">Për të paguar më shpejt herën tjetër, ruaje kartën, emrin dhe adresën tënde të faturimit në "Llogarinë tënde të Google".</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (sinkronizuar)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Nëse përpiqesh të vizitosh një sajt uebi dhe ai nuk hapet, provo në fillim të rregullosh gabimin me këto hapa për zgjidhjen e problemeve:&lt;/p&gt;
@@ -835,6 +837,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="4424024547088906515">Ky server nuk mundi të dëshmonte se ky është <ph name="DOMAIN" />; certifikata e tij e sigurisë nuk është e besueshme nga Chrome. Kjo mund të shkaktohet nga keqkonfigurimi ose ndonjë sulmues që po ndërhyn në lidhjen tënde.</translation>
 <translation id="443121186588148776">Porta seriale</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> nuk e pranoi certifikatën tënde të identifikimit ose ajo mund të mos jetë dhënë.</translation>
+<translation id="4432792777822557199">Faqet në <ph name="SOURCE_LANGUAGE" /> do të përkthehen në <ph name="TARGET_LANGUAGE" /> nga tani e në vazhdim</translation>
 <translation id="4434045419905280838">Dritaret kërcyese dhe ridrejtimet</translation>
 <translation id="4435702339979719576">Postcard)</translation>
 <translation id="443673843213245140">Përdorimi i një përfaqësuesi është i çaktivizuar, por është specifikuar një konfigurim i qartë përfaqësuesi.</translation>
@@ -1066,6 +1069,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="5431657950005405462">Skedari yt nuk u gjet</translation>
 <translation id="5439770059721715174">Gabim i miratimit të skemës në "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Renditja e kundërt e kthyer lart</translation>
+<translation id="5447765697759493033">Ky sajt nuk do të përkthehet</translation>
 <translation id="5452270690849572955">Kjo faqe e <ph name="HOST_NAME" /> nuk mund të gjendet</translation>
 <translation id="5455374756549232013">Vulë kohore politike e gabuar</translation>
 <translation id="5457113250005438886">E pavlefshme</translation>
@@ -1611,6 +1615,7 @@ Detaje shtesë:
 <translation id="7716375162095500223">Pa ngarkuar ende ose shpërfillur</translation>
 <translation id="7716424297397655342">Ky sajt nuk mund të ngarkohet nga memoria specifike</translation>
 <translation id="7723047071702270851">Redakto kartën</translation>
+<translation id="773466115871691567">Përkthe gjithmonë faqet që janë në <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7740996059027112821">Standard</translation>
 <translation id="774634243536837715">U bllokua një përmbajtje e rrezikshme</translation>
 <translation id="7752995774971033316">I pamenaxhuar</translation>
@@ -1756,6 +1761,7 @@ Detaje shtesë:
 <translation id="831997045666694187">Mbrëmje</translation>
 <translation id="8332188693563227489">Qasja te <ph name="HOST_NAME" /> u refuzua</translation>
 <translation id="833262891116910667">Thekso</translation>
+<translation id="8339163506404995330">Faqet në <ph name="LANGUAGE" /> nuk do të përkthehen</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Nëse i kupton rreziqet për sigurinë tënde, mund <ph name="BEGIN_LINK" />ta vizitosh këtë sajt<ph name="END_LINK" /> para se të jenë hequr programet e dëmshme.</translation>
 <translation id="8349305172487531364">Shiriti i faqeshënuesve</translation>

@@ -54,7 +54,7 @@ void CdmFactoryDaemonProxy::CreateFactory(const std::string& key_system,
 }
 
 void CdmFactoryDaemonProxy::ConnectOemCrypto(
-    arc::mojom::OemCryptoServiceRequest oemcryptor,
+    mojo::PendingReceiver<arc::mojom::OemCryptoService> oemcryptor,
     mojo::PendingRemote<arc::mojom::ProtectedBufferManager>
         protected_buffer_manager) {
   // This gets invoked from ArcBridge which uses a different thread.
@@ -153,7 +153,7 @@ void CdmFactoryDaemonProxy::GetFactoryInterface(
 }
 
 void CdmFactoryDaemonProxy::CompleteOemCryptoConnection(
-    arc::mojom::OemCryptoServiceRequest oemcryptor,
+    mojo::PendingReceiver<arc::mojom::OemCryptoService> oemcryptor,
     mojo::PendingRemote<arc::mojom::ProtectedBufferManager>
         protected_buffer_manager) {
   if (!daemon_remote_ || !daemon_remote_.is_bound()) {

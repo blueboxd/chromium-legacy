@@ -20,6 +20,7 @@
 <translation id="10614374240317010">一律不儲存</translation>
 <translation id="1062160989074299343">Prc10 (信封)</translation>
 <translation id="106701514854093668">電腦版書籤</translation>
+<translation id="1068672505746868501">一律不翻譯<ph name="SOURCE_LANGUAGE" />網頁</translation>
 <translation id="1070901266639972381">晚上</translation>
 <translation id="1074497978438210769">不安全</translation>
 <translation id="1080116354587839789">符合視窗寬度</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">未命名</translation>
 <translation id="1236081509407217141">要允許 VR 嗎？</translation>
 <translation id="1240347957665416060">你的裝置名稱</translation>
+<translation id="124116460088058876">更多語言</translation>
 <translation id="1250759482327835220">只要將你的卡片資訊、姓名與帳單地址儲存到你的 Google 帳戶中，下次即可更快完成付款程序。</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />、<ph name="TYPE_2" /> (已同步)</translation>
 <translation id="1256368399071562588">&lt;p&gt;如果您無法順利開啟網站，請先嘗試按照以下疑難排解步驟修正相關錯誤：&lt;/p&gt;
@@ -829,6 +831,7 @@
 <translation id="4424024547088906515">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證未取得 Chrome 的信任。這可能是因為設定錯誤，或有攻擊者攔截你的連線所致。</translation>
 <translation id="443121186588148776">序列埠</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> 不接受你的登入憑證，或是你可能未提供登入憑證。</translation>
+<translation id="4432792777822557199">從現在起，系統會將<ph name="SOURCE_LANGUAGE" />網頁內容翻譯成<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">彈出式視窗與重新導向</translation>
 <translation id="4435702339979719576">明信片)</translation>
 <translation id="443673843213245140">雖然已停用 Proxy，不過已指定明確 Proxy 設定。</translation>
@@ -1060,6 +1063,7 @@
 <translation id="5431657950005405462">找不到您的檔案</translation>
 <translation id="5439770059721715174">「<ph name="ERROR_PATH" />」發生架構驗證錯誤：<ph name="ERROR" /></translation>
 <translation id="5443468954631487277">相反順序 (正面朝上)</translation>
+<translation id="5447765697759493033">系統不會翻譯這個網站</translation>
 <translation id="5452270690849572955">找不到 <ph name="HOST_NAME" /> 網頁</translation>
 <translation id="5455374756549232013">政策時間戳記有誤</translation>
 <translation id="5457113250005438886">無效</translation>
@@ -1606,6 +1610,7 @@
 <translation id="7716375162095500223">尚未上傳或已略過</translation>
 <translation id="7716424297397655342">無法從快取載入這個網站</translation>
 <translation id="7723047071702270851">編輯卡片資訊</translation>
+<translation id="773466115871691567">一律翻譯<ph name="SOURCE_LANGUAGE" />網頁</translation>
 <translation id="7740996059027112821">標準</translation>
 <translation id="774634243536837715">已封鎖危險內容。</translation>
 <translation id="7752995774971033316">未管理</translation>
@@ -1751,6 +1756,7 @@
 <translation id="831997045666694187">傍晚</translation>
 <translation id="8332188693563227489">存取 <ph name="HOST_NAME" /> 的要求遭到拒絕</translation>
 <translation id="833262891116910667">醒目顯示</translation>
+<translation id="8339163506404995330">系統將不會翻譯<ph name="LANGUAGE" />網頁</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">如果你瞭解安全性風險，也可以選擇在有害程式尚未遭到移除的狀態下<ph name="BEGIN_LINK" />造訪這個網站<ph name="END_LINK" />。</translation>
 <translation id="8349305172487531364">書籤列</translation>

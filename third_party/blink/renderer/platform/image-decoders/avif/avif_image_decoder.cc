@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/platform/image-decoders/avif/avif_image_decoder.h"
 
+#include <stdint.h>
+
 #include <cstring>
 #include <memory>
 
@@ -12,7 +14,6 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
 #include "base/timer/elapsed_timer.h"
@@ -30,7 +31,6 @@
 #include "third_party/skia/include/core/SkYUVAIndex.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/color_transform.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/half_float.h"
 #include "ui/gfx/icc_profile.h"
 
@@ -182,13 +182,10 @@ inline void WritePixel(float max_channel,
                        float alpha,
                        bool premultiply_alpha,
                        uint32_t* rgba_dest) {
-  unsigned r =
-      gfx::ToRoundedInt(base::ClampToRange(pixel.x(), 0.0f, 1.0f) * 255.0f);
-  unsigned g =
-      gfx::ToRoundedInt(base::ClampToRange(pixel.y(), 0.0f, 1.0f) * 255.0f);
-  unsigned b =
-      gfx::ToRoundedInt(base::ClampToRange(pixel.z(), 0.0f, 1.0f) * 255.0f);
-  unsigned a = gfx::ToRoundedInt(alpha * 255.0f);
+  uint8_t r = base::Round<uint8_t>(pixel.x() * 255.0f);
+  uint8_t g = base::Round<uint8_t>(pixel.y() * 255.0f);
+  uint8_t b = base::Round<uint8_t>(pixel.z() * 255.0f);
+  uint8_t a = base::Round<uint8_t>(alpha * 255.0f);
   if (premultiply_alpha)
     blink::ImageFrame::SetRGBAPremultiply(rgba_dest, r, g, b, a);
   else

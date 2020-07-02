@@ -20,6 +20,7 @@
 <translation id="10614374240317010">არასოდეს შენახული</translation>
 <translation id="1062160989074299343">Prc10 (კონვერტი)</translation>
 <translation id="106701514854093668">სამუშაო დაფის სანიშნები</translation>
+<translation id="1068672505746868501">არასოდეს ითარგმნოს <ph name="SOURCE_LANGUAGE" /> გვერდები</translation>
 <translation id="1070901266639972381">ღამე</translation>
 <translation id="1074497978438210769">დაუცველი</translation>
 <translation id="1080116354587839789">სიგანეზე მორგება</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">უსათაურო</translation>
 <translation id="1236081509407217141">გსურთ VR-ის დაშვება?</translation>
 <translation id="1240347957665416060">თქვენი მოწყობილობის სახელი</translation>
+<translation id="124116460088058876">სხვა ენები</translation>
 <translation id="1250759482327835220">შემდგომი გადახდების დასაჩქარებლად შეგიძლიათ შეინახოთ თქვენი ბარათის მონაცემები, სახელი და ბილინგის მისამართი თქვენს Google ანგარიშში.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (სინქრონიზებული)</translation>
 <translation id="1256368399071562588">&lt;p&gt;თუ ვებსაიტი, რომლის მონახულებასაც ცდილობთ, არ იხსნება, პირველ რიგში, ცადეთ შემდეგი:&lt;/p&gt;
@@ -829,6 +831,7 @@
 <translation id="4424024547088906515">ეს სერვერი ვერ ამტკიცებს, რომ ის არის <ph name="DOMAIN" />; მისი უსაფრთხოების სერთიფიკატი არ ენდობა Chrome. ეს შეიძლება იყოს გამოწვეული არასწორი კონფიგურაციით ან თავდამსხმელის მიერ თქვენი კავშირის გადაჭრით.</translation>
 <translation id="443121186588148776">თანმიმდევრული პორტი</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" />-მა არ მიიღო თქვენი სისტემაში შესვლის სერტიფიკატი, ან ის შეიძლებოდა არ ყოფილიყო წარმოდგენილი.</translation>
+<translation id="4432792777822557199"><ph name="SOURCE_LANGUAGE" /> გვერდები ამიერიდან ითარგმნება შემდეგ ენაზე: <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">ამომხ. ფანჯრები/გადამისამართება</translation>
 <translation id="4435702339979719576">ღია ბარათი)</translation>
 <translation id="443673843213245140">პროქსის გამოყენება გამორთულია, მაგრამ მითითებულია პროქსის დეტალური კონფიგურაცია.</translation>
@@ -1060,6 +1063,7 @@
 <translation id="5431657950005405462">თქვენი ფაილი ვერ მოიძებნა</translation>
 <translation id="5439770059721715174">ქსემის გადამოწმევის შეცდომა „<ph name="ERROR_PATH" />“: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">უკუმიმდევრობა ნაბეჭდი მხარით აღმა</translation>
+<translation id="5447765697759493033">ეს გვერდი არ ითარგმნება</translation>
 <translation id="5452270690849572955"><ph name="HOST_NAME" />-ზე ეს გვერდი ვერ მოიძებნა</translation>
 <translation id="5455374756549232013">ცუდი წესის დროის აღნიშვნა</translation>
 <translation id="5457113250005438886">არასწორი</translation>
@@ -1606,6 +1610,7 @@
 <translation id="7716375162095500223">ჯერ აუტვირთავი ან იგნორირებულია</translation>
 <translation id="7716424297397655342">ამ საიტის ქეშიდან ჩატვირთვა ვერ ხერხდება</translation>
 <translation id="7723047071702270851">ბარათის რედაქტირება</translation>
+<translation id="773466115871691567">ყოველთვის ითარგმნოს <ph name="SOURCE_LANGUAGE" /> გვერდები</translation>
 <translation id="7740996059027112821">სტანდარტული</translation>
 <translation id="774634243536837715">სახიფათო კონტენტი დაიბლოკა.</translation>
 <translation id="7752995774971033316">არამართვადი</translation>
@@ -1751,6 +1756,7 @@
 <translation id="831997045666694187">საღამო</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" />-ზე წვდომა აკრძალულია</translation>
 <translation id="833262891116910667">გამოყოფა</translation>
+<translation id="8339163506404995330"><ph name="LANGUAGE" /> გვერდები არ ითარგმნება</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">თუ გესმით უსაფრთხოების რისკები, შეგიძლიათ <ph name="BEGIN_LINK" />გადახვიდეთ ამ საიტზე<ph name="END_LINK" /> მავნე პროგრამების წაშლამდე.</translation>
 <translation id="8349305172487531364">სანიშნეების ზოლი</translation>

@@ -202,6 +202,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   void SetGpuVSyncEnabled(bool enabled);
 
   void SetGpuVSyncEnabledOnThread(bool enabled);
+  void SetNeedsMeasureNextDrawLatency();
 
   gpu::ServiceTransferCache* GetTransferCacheForTest() const;
   int GetRasterDecoderIdForTest() const;
@@ -279,7 +280,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   // Flush up to put_offset. If execution is deferred either by yielding, or due
   // to a sync token wait, HasUnprocessedCommandsOnGpuThread() returns true.
   void FlushOnGpuThread(int32_t put_offset,
-                        const std::vector<SyncToken>& sync_token_fences);
+                        const std::vector<SyncToken>& sync_token_fences,
+                        base::TimeTicks flush_timestamp);
   bool HasUnprocessedCommandsOnGpuThread();
   void UpdateLastStateOnGpuThread();
 
@@ -415,9 +417,14 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   struct SwapBufferParams {
     uint64_t swap_id;
     uint32_t flags;
+    base::TimeTicks viz_scheduled_draw;
+    base::TimeTicks gpu_started_draw;
   };
   base::circular_deque<SwapBufferParams> pending_presented_params_;
   base::circular_deque<SwapBufferParams> pending_swap_completed_params_;
+  bool should_measure_next_flush_ = false;
+  base::TimeTicks viz_scheduled_draw_;
+  base::TimeTicks gpu_started_draw_;
 
   scoped_refptr<SharedContextState> context_state_;
 

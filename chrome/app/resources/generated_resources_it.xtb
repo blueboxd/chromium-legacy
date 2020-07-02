@@ -529,7 +529,6 @@
 <translation id="1645516838734033527">Per proteggere il tuo dispositivo <ph name="DEVICE_TYPE" />, la funzione Smart Lock richiede l'impostazione di un blocco schermo sul telefono.</translation>
 <translation id="1646982517418478057">Inserisci una password per criptare il certificato</translation>
 <translation id="1648528859488547844">Usa reti mobili o Wi-Fi per stabilire la posizione</translation>
-<translation id="1648943974594387137">I dati di accesso sono obsoleti</translation>
 <translation id="164936512206786300">Disaccoppiare dispositivo Bluetooth</translation>
 <translation id="1650371550981945235">Mostra opzioni di immissione</translation>
 <translation id="1651008383952180276">Devi inserire la stessa passphrase due volte</translation>
@@ -1332,7 +1331,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="2635276683026132559">Firma</translation>
 <translation id="2636625531157955190">Chrome non riesce ad accedere all'immagine.</translation>
 <translation id="2637400434494156704">PIN errato. Hai ancora a disposizione un tentativo.</translation>
-<translation id="2638087589890736295">Passphrase obbligatoria per avviare la sincronizzazione</translation>
 <translation id="2638662041295312666">Immagine accesso</translation>
 <translation id="264083724974021997">Collegati al telefono - Finestra di dialogo</translation>
 <translation id="2641065435954454414">Preparazione del download</translation>
@@ -1486,7 +1484,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="2809586584051668049">e altre <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
 <translation id="2810390687497823527">Se non riconosci un'estensione o se il browser non funziona come previsto, puoi disattivare o personalizzare le estensioni qui.</translation>
 <translation id="2812049959647166806">Thunderbolt non è supportato</translation>
-<translation id="2812944337881233323">Prova a uscire e ad accedere di nuovo</translation>
 <translation id="2812989263793994277">Non mostrare le immagini</translation>
 <translation id="2813094189969465044">Controllo genitori</translation>
 <translation id="281390819046738856">Impossibile firmare la richiesta.</translation>
@@ -3407,7 +3404,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="529175790091471945">Formatta questo dispositivo</translation>
 <translation id="5293170712604732402">Ripristina le impostazioni predefinite originali</translation>
 <translation id="5294097441441645251">Deve iniziare con un carattere minuscolo o un trattino basso</translation>
-<translation id="5296471962619441686">Correggi l'errore per riprendere la sincronizzazione</translation>
 <translation id="5297082477358294722">Password salvata. Visualizza e gestisci le password salvate in <ph name="SAVED_PASSWORDS_STORE" />.</translation>
 <translation id="5298219193514155779">Tema creato da</translation>
 <translation id="5299109548848736476">Non tenere traccia</translation>
@@ -5770,7 +5766,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8256417822772703842"><ph name="PRINTER_NAME" /> sta per esaurire l'inchiostro</translation>
 <translation id="8257950718085972371">Continua a impedire l'accesso alla webcam</translation>
 <translation id="8259239505248583312">Iniziamo</translation>
-<translation id="8260126382462817229">Prova ad accedere nuovamente</translation>
 <translation id="8260864402787962391">Mouse</translation>
 <translation id="8261378640211443080">Questa estensione non è elencata nel <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> e potrebbe essere stata aggiunta a tua insaputa.</translation>
 <translation id="8261506727792406068">Elimina</translation>

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/vr/elements/text.h"
 
+#include "base/numerics/safe_conversions.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "chrome/browser/vr/elements/render_text_wrapper.h"
 #include "chrome/browser/vr/elements/ui_texture.h"
@@ -11,7 +12,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/shadow_value.h"
@@ -438,8 +438,8 @@ gfx::Size TextTexture::LayOutText() {
 
   // Note, there is no padding here whatsoever.
   if (parameters.shadows_enabled) {
-    texture_offset_ = gfx::Vector2d(gfx::ToFlooredInt(parameters.shadow_size),
-                                    gfx::ToFlooredInt(parameters.shadow_size));
+    const int offset = base::Floor(parameters.shadow_size);
+    texture_offset_ = gfx::Vector2d(offset, offset);
   }
 
   set_measured();

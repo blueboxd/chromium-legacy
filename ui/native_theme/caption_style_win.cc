@@ -11,12 +11,12 @@
 
 #include "base/check_op.h"
 #include "base/notreached.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/win/core_winrt_util.h"
 #include "base/win/windows_version.h"
 #include "skia/ext/skia_utils_win.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 
 namespace CC = ABI::Windows::Media::ClosedCaptioning;
 
@@ -122,9 +122,9 @@ SkAlpha GetCaptionOpacity(CC::ClosedCaptionOpacity caption_opacity) {
     case CC::ClosedCaptionOpacity_ZeroPercent:
       return SK_AlphaTRANSPARENT;
     case CC::ClosedCaptionOpacity_TwentyFivePercent:
-      return gfx::ToRoundedInt(SK_AlphaOPAQUE * 0.25);
+      return base::Round<SkAlpha>(SK_AlphaOPAQUE * 0.25);
     case CC::ClosedCaptionOpacity_SeventyFivePercent:
-      return gfx::ToRoundedInt(SK_AlphaOPAQUE * 0.75);
+      return base::Round<SkAlpha>(SK_AlphaOPAQUE * 0.75);
     case CC::ClosedCaptionOpacity_OneHundredPercent:
     case CC::ClosedCaptionOpacity_Default:
     default:

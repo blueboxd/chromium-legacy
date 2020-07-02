@@ -10,10 +10,10 @@
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/numerics/safe_conversions.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 
 namespace ash {
 
@@ -89,12 +89,12 @@ void WallpaperBaseView::OnPaint(gfx::Canvas* canvas) {
       gfx::Size cropped_size;
       if (vertical_ratio > horizontal_ratio) {
         cropped_size = gfx::Size(
-            gfx::ToFlooredInt(static_cast<double>(width()) / vertical_ratio),
+            base::Floor(static_cast<double>(width()) / vertical_ratio),
             wallpaper.height());
       } else {
         cropped_size = gfx::Size(
-            wallpaper.width(), gfx::ToFlooredInt(static_cast<double>(height()) /
-                                                 horizontal_ratio));
+            wallpaper.width(),
+            base::Floor(static_cast<double>(height()) / horizontal_ratio));
       }
 
       gfx::Rect wallpaper_cropped_rect(wallpaper.size());

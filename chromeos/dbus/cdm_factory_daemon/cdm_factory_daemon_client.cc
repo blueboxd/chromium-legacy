@@ -33,8 +33,8 @@ class CdmFactoryDaemonClientImpl : public CdmFactoryDaemonClient {
       base::ScopedFD fd,
       base::OnceCallback<void(bool success)> callback) override {
     dbus::MethodCall method_call(
-        arc_oemcrypto::kCdmFactoryDaemonServiceInterface,
-        arc_oemcrypto::kBootstrapCdmFactoryDaemonMojoConnection);
+        cdm_oemcrypto::kCdmFactoryDaemonServiceInterface,
+        cdm_oemcrypto::kBootstrapCdmFactoryDaemonMojoConnection);
     dbus::MessageWriter writer(&method_call);
     writer.AppendFileDescriptor(fd.get());
     proxy_->CallMethod(
@@ -45,8 +45,8 @@ class CdmFactoryDaemonClientImpl : public CdmFactoryDaemonClient {
 
   void Init(dbus::Bus* bus) {
     proxy_ = bus->GetObjectProxy(
-        arc_oemcrypto::kCdmFactoryDaemonServiceName,
-        dbus::ObjectPath(arc_oemcrypto::kCdmFactoryDaemonServicePath));
+        cdm_oemcrypto::kCdmFactoryDaemonServiceName,
+        dbus::ObjectPath(cdm_oemcrypto::kCdmFactoryDaemonServicePath));
   }
 
  private:

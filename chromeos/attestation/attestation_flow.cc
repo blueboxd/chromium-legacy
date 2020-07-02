@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
+#include "chromeos/attestation/attestation_flow_utils.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/attestation/attestation_client.h"
@@ -75,23 +76,6 @@ AttestationKeyType AttestationFlow::GetKeyTypeForProfile(
   }
   NOTREACHED();
   return KEY_USER;
-}
-
-std::string AttestationFlow::GetKeyNameForProfile(
-    AttestationCertificateProfile certificate_profile,
-    const std::string& request_origin) {
-  switch (certificate_profile) {
-    case PROFILE_ENTERPRISE_MACHINE_CERTIFICATE:
-      return kEnterpriseMachineKey;
-    case PROFILE_ENTERPRISE_ENROLLMENT_CERTIFICATE:
-      return kEnterpriseEnrollmentKey;
-    case PROFILE_ENTERPRISE_USER_CERTIFICATE:
-      return kEnterpriseUserKey;
-    case PROFILE_CONTENT_PROTECTION_CERTIFICATE:
-      return std::string(kContentProtectionKeyPrefix) + request_origin;
-  }
-  NOTREACHED();
-  return "";
 }
 
 AttestationFlow::AttestationFlow(cryptohome::AsyncMethodCaller* async_caller,

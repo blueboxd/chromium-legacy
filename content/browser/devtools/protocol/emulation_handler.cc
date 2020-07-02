@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
@@ -261,10 +262,10 @@ Response EmulationHandler::SetDeviceMetricsOverride(
     params.viewport_scale = viewport.fromJust()->GetScale() * dpfactor;
 
     // Resize the RenderWidgetHostView to the size of the overridden viewport.
-    width = gfx::ToRoundedInt(viewport.fromJust()->GetWidth() *
-                              params.viewport_scale);
-    height = gfx::ToRoundedInt(viewport.fromJust()->GetHeight() *
-                               params.viewport_scale);
+    width =
+        base::Round(viewport.fromJust()->GetWidth() * params.viewport_scale);
+    height =
+        base::Round(viewport.fromJust()->GetHeight() * params.viewport_scale);
   }
 
   bool size_changed = false;

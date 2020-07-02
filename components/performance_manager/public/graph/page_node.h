@@ -265,10 +265,10 @@ class PageNode::ObserverDefaultImpl : public PageNodeObserver {
   DISALLOW_COPY_AND_ASSIGN(ObserverDefaultImpl);
 };
 
-}  // namespace performance_manager
-
 // std::ostream support for PageNode::OpenedType.
 std::ostream& operator<<(std::ostream& os,
                          performance_manager::PageNode::OpenedType opened_type);
+
+}  // namespace performance_manager
 
 #endif  // COMPONENTS_PERFORMANCE_MANAGER_PUBLIC_GRAPH_PAGE_NODE_H_

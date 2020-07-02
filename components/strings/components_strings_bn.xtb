@@ -20,6 +20,7 @@
 <translation id="10614374240317010">কখনও সংরক্ষিত হয়নি</translation>
 <translation id="1062160989074299343">Prc10 (Envelope)</translation>
 <translation id="106701514854093668">ডেস্কটপ বুকমার্ক</translation>
+<translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" /> ভাষার পৃষ্ঠার অনুবাদ কখনও দেখতে চাই না</translation>
 <translation id="1070901266639972381">রাত</translation>
 <translation id="1074497978438210769">সুরক্ষিত নয়</translation>
 <translation id="1080116354587839789">প্রস্থের মধ্যে আঁটান</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">শিরোনামহীন</translation>
 <translation id="1236081509407217141">ভিআর (VR) ব্যবহার করার অনুমতি দেবেন?</translation>
 <translation id="1240347957665416060">আপনার ডিভাইসের নাম</translation>
+<translation id="124116460088058876">আরও ভাষা</translation>
 <translation id="1250759482327835220">পরেরবার আরও দ্রুত পেমেন্ট করা জন্য আপনার কার্ড, নাম এবং বিলিং ঠিকানাটি Google অ্যাকাউন্টে সেভ করে রাখুন।</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (সিঙ্ক হয়েছে)</translation>
 <translation id="1256368399071562588">&lt;p&gt;আপনি যে ওয়েবসাইটে যেতে চান সেটি যদি না খোলে তাহলে প্রথমে এই ধাপগুলি অনুসরণ করে সমস্যাটির সমাধান করার চেষ্টা করুন:&lt;/p&gt;
@@ -841,6 +843,7 @@
 <translation id="4424024547088906515">এই সার্ভার প্রমাণ করতে পারেনি যে এটি <ph name="DOMAIN" />; এর নিরাপত্তা সার্টিফিকেট Chrome এর নিকট বিশ্বাসযোগ্য নয়। কোনো ভুল কনফিগারেশনের কারণে অথবা কোনো আক্রমণকারী আপনার সংযোগ মাঝপথে আটকে দিচ্ছে বলে এমনটা হতে পারে।</translation>
 <translation id="443121186588148776">সিরিয়াল পোর্ট</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> আপনার লগ-ইন সার্টিফিকেটটি স্বীকার করেনি, অথবা কোনো সার্টিফিকেট দেওয়া হয়নি।</translation>
+<translation id="4432792777822557199">এখন থেকে <ph name="SOURCE_LANGUAGE" /> ভাষার পৃষ্ঠাগুলিকে <ph name="TARGET_LANGUAGE" /> ভাষায় অনুবাদ করা হবে</translation>
 <translation id="4434045419905280838">পপ-আপ এবং রিডাইরেক্ট</translation>
 <translation id="4435702339979719576">Postcard)</translation>
 <translation id="443673843213245140">প্রক্সির ব্যবহার অক্ষম করা হয়েছে কিন্তু কোনো স্পষ্ট প্রক্সি কনফিগারেশান নির্দিষ্ট করা হয়েছে৷</translation>
@@ -1072,6 +1075,7 @@
 <translation id="5431657950005405462">আপনার ফাইলটি পাওয়া যায়নি</translation>
 <translation id="5439770059721715174">"<ph name="ERROR_PATH" />" এ স্কিমা বৈধতার ত্রুটি হয়েছে: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">রিভার্স অর্ডার, সামনের দিক উপরে</translation>
+<translation id="5447765697759493033">এই সাইটটি অনুবাদ করা হবে না</translation>
 <translation id="5452270690849572955">এই <ph name="HOST_NAME" /> পৃষ্ঠাটি পাওয়া যাচ্ছে না</translation>
 <translation id="5455374756549232013">ত্রুটিপূর্ণ নীতি টাইমস্ট্যাম্প</translation>
 <translation id="5457113250005438886">ভুল</translation>
@@ -1617,6 +1621,7 @@
 <translation id="7716375162095500223">এখনও আপলোড করা হয়নি অথবা এর দিকে এখনও নজর দেওয়া হয়নি</translation>
 <translation id="7716424297397655342">এই সাইটটি ক্যাশে থেকে লোড করা যাবে না</translation>
 <translation id="7723047071702270851">কার্ড সম্পাদনা করুন</translation>
+<translation id="773466115871691567">সব সময় <ph name="SOURCE_LANGUAGE" /> ভাষার পৃষ্ঠার অনুবাদ দেখতে চাই</translation>
 <translation id="7740996059027112821">মানক</translation>
 <translation id="774634243536837715">বিপজ্জনক কন্টেন্ট ব্লক করা হয়েছে।</translation>
 <translation id="7752995774971033316">অপরিচালিত</translation>
@@ -1762,6 +1767,7 @@
 <translation id="831997045666694187">সন্ধ্যা</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" /> এ অ্যাক্সেস অস্বীকার করা হয়েছে</translation>
 <translation id="833262891116910667">হাইলাইট</translation>
+<translation id="8339163506404995330"><ph name="LANGUAGE" /> ভাষার পৃষ্ঠার অনুবাদ করা হবে না</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">আপনি যদি আপনার নিরাপত্তার ঝুঁকিগুলি বুঝতে পারেন, তাহলে ক্ষতিকারক প্রোগ্রাম সরানোর আগে আপনি <ph name="BEGIN_LINK" />এই সাইটে যেতে পারেন<ph name="END_LINK" />৷</translation>
 <translation id="8349305172487531364">বুকমার্কস বার</translation>

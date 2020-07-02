@@ -133,13 +133,13 @@ base::Optional<UpdateState> GetLastUpdateState();
 
 // A type of callback supplied by tests to provide a custom IGoogleUpdate3Web
 // implementation (see src/google_update/google_update_idl.idl).
-typedef base::Callback<HRESULT(Microsoft::WRL::ComPtr<IGoogleUpdate3Web>*)>
-    GoogleUpdate3ClassFactory;
+using GoogleUpdate3ClassFactory = base::RepeatingCallback<HRESULT(
+    Microsoft::WRL::ComPtr<IGoogleUpdate3Web>*)>;
 
 // For use by tests that wish to provide a custom IGoogleUpdate3Web
 // implementation independent of Google Update's.
 void SetGoogleUpdateFactoryForTesting(
-    const GoogleUpdate3ClassFactory& google_update_factory);
+    GoogleUpdate3ClassFactory google_update_factory);
 
 void SetUpdateDriverTaskRunnerForTesting(
     base::SingleThreadTaskRunner* task_runner);

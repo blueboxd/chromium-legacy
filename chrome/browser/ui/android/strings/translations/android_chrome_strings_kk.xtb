@@ -10,7 +10,6 @@
 <translation id="1049743911850919806">Инкогнито</translation>
 <translation id="10614374240317010">Ешқашан сақталмайды</translation>
 <translation id="1067922213147265141">Басқа Google қызметтері</translation>
-<translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" /> тіліндегі беттер ешқашан аударылмасын</translation>
 <translation id="107147699690128016">Файл кеңейтімін өзгертсеңіз, файл басқа қолданбада ашылып, құрылғыны зақымдауы мүмкін.</translation>
 <translation id="1100066534610197918">Топтағы жаңа қойындыдан ашу</translation>
 <translation id="1105960400813249514">Экранды жазып алу</translation>
@@ -35,13 +34,11 @@
 <translation id="1229399675748764149">Бұл бетті негізгі етіңіз</translation>
 <translation id="1231733316453485619">Синхрондау қосылсын ба?</translation>
 <translation id="123724288017357924">Кэштелген мазмұнды елемей, ағымдағы бетті жаңарту</translation>
-<translation id="124116460088058876">Қосымша тілдер</translation>
 <translation id="124678866338384709">Ағымдағы қойындыны жабу</translation>
 <translation id="1258753120186372309">Google Doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Іздеу және зерттеу</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> бөлісу мүмкін болмады.</translation>
 <translation id="1283039547216852943">Жаю үшін түртіңіз</translation>
-<translation id="1285320974508926690">Бұл сайтты ешқашан аудармау</translation>
 <translation id="1291207594882862231">Тарихты, cookie файлдарын, сайт деректерін, кэшті жою…</translation>
 <translation id="129553762522093515">Жақында жабылған</translation>
 <translation id="1303339473099049190">Ондай құпия сөзді табу мүмкін емес. Дұрыс жазылғанын тексеріп, қайта іздеп көріңіз.</translation>
@@ -239,7 +236,6 @@
 <translation id="2898264748040935573">Сақталған құпия сөзді өзгерту</translation>
 <translation id="2900528713135656174">Оқиға жасау</translation>
 <translation id="2903493209154104877">Мекенжайлар</translation>
-<translation id="290376772003165898">Бет <ph name="LANGUAGE" /> тілінде емес пе?</translation>
 <translation id="2904414404539560095">Қойынды жіберілетін құрылғылар тізімі толық экранға ашылған.</translation>
 <translation id="2905036901251765993">Жаныңыздағы адамдармен бөлісу үшін олар осы QR кодын сканерлеуі қажет.</translation>
 <translation id="2909615210195135082">Google Notifications Platform</translation>
@@ -415,7 +411,6 @@
 <translation id="4405224443901389797">Мына қалтаға жылжыту…</translation>
 <translation id="4411535500181276704">Lite режимі</translation>
 <translation id="4415276339145661267">Google есептік жазбасын басқару</translation>
-<translation id="4432792777822557199">Осыдан кейін <ph name="SOURCE_LANGUAGE" /> тіліндегі бет <ph name="TARGET_LANGUAGE" /> тіліне аударылады</translation>
 <translation id="4440958355523780886">Google бетті Lite нұсқасында ұсынды. Бастапқы нұсқасын жүктеу үшін түртіңіз.</translation>
 <translation id="4452411734226507615"><ph name="TAB_TITLE" /> қойындысын жабу</translation>
 <translation id="4452548195519783679"><ph name="FOLDER_NAME" /> бетбелгісі жасалды</translation>
@@ -550,7 +545,6 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="543509235395288790"><ph name="COUNT" /> файл (<ph name="MEGABYTES" />) жүктеп алынуда.</translation>
 <translation id="5441522332038954058">Мекенжай жолағына өту</translation>
 <translation id="5447201525962359567">Барлық сақталған сайт деректері, соның ішінде cookie файлдары және басқа жергілікті сақталған деректер</translation>
-<translation id="5447765697759493033">Бұл сайт аударылмайды</translation>
 <translation id="545042621069398927">Жылдамырақ жүктеп алынуда.</translation>
 <translation id="5456381639095306749">Жүктеп алу беті</translation>
 <translation id="548278423535722844">Maps қолданбасында ашу</translation>
@@ -580,7 +574,6 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="5659593005791499971">Электрондық пошта</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> қолданбасында оқиға жасау</translation>
 <translation id="5668404140385795438">Веб-сайттардың үлкейтуге тыйым салу туралы сұрауларын елемеу</translation>
-<translation id="5684874026226664614">Бұл бетті аудару мүмкін емес.</translation>
 <translation id="5686790454216892815">Файлдың аты тым ұзын</translation>
 <translation id="5694049548840660018">Негізгі экранға оңай өту</translation>
 <translation id="569536719314091526">"Қосымша опциялар" түймесі арқылы осы бетті кез келген тілге аударыңыз</translation>
@@ -734,7 +727,6 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="6767294960381293877">Қойынды жіберілетін құрылғылар тізімі жарты экранға ашылған.</translation>
 <translation id="6811034713472274749">Бетті көре беруге болады.</translation>
 <translation id="6820686453637990663">CVC коды</translation>
-<translation id="6831043979455480757">Аудару</translation>
 <translation id="6845325883481699275">Chrome қауіпсіздігін жетілдіруге көмектесу</translation>
 <translation id="6846298663435243399">Жүктелуде…</translation>
 <translation id="6850409657436465440">Жүктеп алу әлі аяқталған жоқ</translation>
@@ -842,7 +834,6 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="7698359219371678927"><ph name="APP_NAME" /> қолданбасында электрондық пошта жасау</translation>
 <translation id="7704317875155739195">Іздеулер мен URL мекенжайларын автотолтыру</translation>
 <translation id="7725024127233776428">Бетбелгі қойылған беттер осы жерде көрсетіледі</translation>
-<translation id="773466115871691567"><ph name="SOURCE_LANGUAGE" /> тіліндегі беттер әрқашан аударылсын</translation>
 <translation id="7746457520633464754">Қауіпті қолданбалар мен сайттарды анықтау үшін Chrome браузері сіз кірген кейбір беттердің URL сілтемелерін, жүйе туралы шектеулі ақпаратты және беттің кейбір мазмұнын Google-ға жібереді.</translation>
 <translation id="7757787379047923882"><ph name="DEVICE_NAME" /> бөліскен мәтін</translation>
 <translation id="7761849928583394409">Күні мен уақытын таңдау</translation>
@@ -922,7 +913,6 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="8310344678080805313">Стандартты қойындылар</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> және басқа сайттар</translation>
 <translation id="8327155640814342956">Барынша жақсы жұмыс істеуі үшін, Chrome браузерін жаңартыңыз.</translation>
-<translation id="8339163506404995330"><ph name="LANGUAGE" /> тіліндегі беттер аударылмайды</translation>
 <translation id="8349013245300336738">Пайдаланылған деректер көлемі бойынша сұрыптау</translation>
 <translation id="8364299278605033898">Танымал веб-сайттарды көріңіз.</translation>
 <translation id="8368027906805972958">Белгісіз немесе жарамсыз құрылғы (<ph name="DEVICE_ID" />)</translation>

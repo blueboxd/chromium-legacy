@@ -44,9 +44,10 @@ class COMPONENT_EXPORT(CDM_FACTORY_DAEMON) CdmFactoryDaemonProxy
   // chromeos::cdm::mojom::CdmFactoryDaemon:
   void CreateFactory(const std::string& key_system,
                      CreateFactoryCallback callback) override;
-  void ConnectOemCrypto(arc::mojom::OemCryptoServiceRequest oemcryptor,
-                        mojo::PendingRemote<arc::mojom::ProtectedBufferManager>
-                            protected_buffer_manager) override;
+  void ConnectOemCrypto(
+      mojo::PendingReceiver<arc::mojom::OemCryptoService> oemcryptor,
+      mojo::PendingRemote<arc::mojom::ProtectedBufferManager>
+          protected_buffer_manager) override;
 
  private:
   void SendDBusRequest(base::ScopedFD fd, base::OnceClosure callback);
@@ -55,7 +56,7 @@ class COMPONENT_EXPORT(CDM_FACTORY_DAEMON) CdmFactoryDaemonProxy
   void GetFactoryInterface(const std::string& key_system,
                            CreateFactoryCallback callback);
   void CompleteOemCryptoConnection(
-      arc::mojom::OemCryptoServiceRequest oemcryptor,
+      mojo::PendingReceiver<arc::mojom::OemCryptoService> oemcryptor,
       mojo::PendingRemote<arc::mojom::ProtectedBufferManager>
           protected_buffer_manager);
   void OnGpuMojoConnectionError();

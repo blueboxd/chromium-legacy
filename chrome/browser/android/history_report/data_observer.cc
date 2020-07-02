@@ -18,9 +18,9 @@ using bookmarks::BookmarkNode;
 namespace history_report {
 
 DataObserver::DataObserver(
-    base::Callback<void(void)> data_changed_callback,
-    base::Callback<void(void)> data_cleared_callback,
-    base::Callback<void(void)> stop_reporting_callback,
+    base::RepeatingCallback<void(void)> data_changed_callback,
+    base::RepeatingCallback<void(void)> data_cleared_callback,
+    base::RepeatingCallback<void(void)> stop_reporting_callback,
     DeltaFileService* delta_file_service,
     UsageReportsBufferService* usage_reports_buffer_service,
     BookmarkModel* bookmark_model,

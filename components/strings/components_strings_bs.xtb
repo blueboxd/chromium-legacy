@@ -20,6 +20,7 @@
 <translation id="10614374240317010">Nikada nije sačuvano</translation>
 <translation id="1062160989074299343">Prc10 (Koverta)</translation>
 <translation id="106701514854093668">Oznake radne površine</translation>
+<translation id="1068672505746868501">Nemoj nikada prevoditi stranice na <ph name="SOURCE_LANGUAGE" /> jezik</translation>
 <translation id="1070901266639972381">Noć</translation>
 <translation id="1074497978438210769">Nije sigurno</translation>
 <translation id="1080116354587839789">Uklopi po širini</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">Bez naslova</translation>
 <translation id="1236081509407217141">Dozvoliti VR?</translation>
 <translation id="1240347957665416060">Naziv vašeg uređaja</translation>
+<translation id="124116460088058876">Više jezika</translation>
 <translation id="1250759482327835220">Da biste sljedeći put platili brže, spremite karticu, ime i adresu za naplatu na svoj Google račun.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (sinhronizirano)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Ako pokušate posjetiti web lokaciju i ona se ne otvori, najprije pokušajte riješiti grešku ovim koracima za rješavanje problema:&lt;/p&gt;
@@ -840,6 +842,7 @@ To će u suprotnom biti blokirano prema vašim postavkama privatnosti. To će om
 <translation id="4424024547088906515">Ovaj server nije uspio dokazati da predstavlja domenu <ph name="DOMAIN" />. Chrome ne smatra njenu potvrdu sigurnosti pouzdanom. Uzrok tome može biti pogrešna konfiguracija ili napadač koji je prekinuo vašu vezu.</translation>
 <translation id="443121186588148776">Serijski priključak</translation>
 <translation id="4432688616882109544">Host računar <ph name="HOST_NAME" /> nije prihvatio vašu potvrdu za prijavu, ili potvrda nije poslana.</translation>
+<translation id="4432792777822557199">Stranice na <ph name="SOURCE_LANGUAGE" /> jeziku će se od sada prevoditi na <ph name="TARGET_LANGUAGE" /> jezik</translation>
 <translation id="4434045419905280838">Skočni proz. i preusmjeravanja</translation>
 <translation id="4435702339979719576">Razglednica)</translation>
 <translation id="443673843213245140">Korištenje proksi servera je onemogućeno ali je određena eksplicitna konfiguracija proksi servera.</translation>
@@ -1071,6 +1074,7 @@ To će u suprotnom biti blokirano prema vašim postavkama privatnosti. To će om
 <translation id="5431657950005405462">Datoteka nije pronađena</translation>
 <translation id="5439770059721715174">Greška potvrđivanja šeme na "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Obrnuti redoslijed s odštampanom stranom prema gore</translation>
+<translation id="5447765697759493033">Ova web lokacija se neće prevoditi</translation>
 <translation id="5452270690849572955">Tu stranicu na <ph name="HOST_NAME" /> nije moguće pronaći</translation>
 <translation id="5455374756549232013">Neispravna vremenska oznaka pravila</translation>
 <translation id="5457113250005438886">Nevažeće</translation>
@@ -1617,6 +1621,7 @@ Dodatni detalji:
 <translation id="7716375162095500223">Još uvijek nije otpremljeno ili je zanemareno</translation>
 <translation id="7716424297397655342">Ova web lokacija se ne može učitati iz keš memorije</translation>
 <translation id="7723047071702270851">Uredite karticu</translation>
+<translation id="773466115871691567">Uvijek prevedi stranice na <ph name="SOURCE_LANGUAGE" /> jezik</translation>
 <translation id="7740996059027112821">Standardno</translation>
 <translation id="774634243536837715">Opasan sadržaj je blokiran.</translation>
 <translation id="7752995774971033316">Nema upravitelja</translation>
@@ -1757,11 +1762,12 @@ Dodatni detalji:
 <translation id="8298115750975731693">WiFi koji koristite (<ph name="WIFI_NAME" />) može tražiti da posjetite <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="830498451218851433">Presavijanje napola</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
-<translation id="8307888238279532626">Pregled instaliranih aplikacija i koliko često se koriste</translation>
+<translation id="8307888238279532626">Instalirane aplikacije i koliko često se koriste</translation>
 <translation id="831207732689920588">Ova stranica je sumnjiva (označio Chrome).</translation>
 <translation id="831997045666694187">Večer</translation>
 <translation id="8332188693563227489">Pristup host računaru <ph name="HOST_NAME" /> je zabranjen</translation>
 <translation id="833262891116910667">Istaknuto</translation>
+<translation id="8339163506404995330">Stranice čiji je jezik <ph name="LANGUAGE" /> neće se prevoditi</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Ako razumijete rizike po vašu sigurnost, možete <ph name="BEGIN_LINK" />posjetiti ovu web lokaciju<ph name="END_LINK" /> prije uklanjanja štetnih programa.</translation>
 <translation id="8349305172487531364">Traka oznaka</translation>

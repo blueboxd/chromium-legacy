@@ -131,8 +131,8 @@ SigninManagerAndroid::SigninManagerAndroid(
 
   signin_allowed_.Init(
       prefs::kSigninAllowed, profile_->GetPrefs(),
-      base::Bind(&SigninManagerAndroid::OnSigninAllowedPrefChanged,
-                 base::Unretained(this)));
+      base::BindRepeating(&SigninManagerAndroid::OnSigninAllowedPrefChanged,
+                          base::Unretained(this)));
 
   force_browser_signin_.Init(prefs::kForceBrowserSignin,
                              g_browser_process->local_state());

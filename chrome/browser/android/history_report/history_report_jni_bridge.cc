@@ -51,25 +51,22 @@ HistoryReportJniBridge::HistoryReportJniBridge(JNIEnv* env, jobject obj)
       new UsageReportsBufferService(profile->GetPath()));
   usage_reports_buffer_service_->Init();
   bookmark_model_.reset(BookmarkModelFactory::GetForBrowserContext(profile));
-  base::Callback<void(void)> on_change = base::Bind(
+  base::RepeatingCallback<void(void)> on_change = base::BindRepeating(
       &history_report::HistoryReportJniBridge::NotifyDataChanged,
       base::Unretained(this));
-  base::Callback<void(void)> on_clear = base::Bind(
+  base::RepeatingCallback<void(void)> on_clear = base::BindRepeating(
       &history_report::HistoryReportJniBridge::NotifyDataCleared,
       base::Unretained(this));
-  base::Callback<void(void)> stop_reporting = base::Bind(
+  base::RepeatingCallback<void(void)> stop_reporting = base::BindRepeating(
       &history_report::HistoryReportJniBridge::StopReporting,
       base::Unretained(this));
   history::HistoryService* history_service =
       HistoryServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::EXPLICIT_ACCESS);
-  data_observer_.reset(new DataObserver(on_change,
-                                        on_clear,
-                                        stop_reporting,
-                                        delta_file_service_.get(),
-                                        usage_reports_buffer_service_.get(),
-                                        bookmark_model_.get(),
-                                        history_service));
+  data_observer_.reset(new DataObserver(
+      std::move(on_change), std::move(on_clear), std::move(stop_reporting),
+      delta_file_service_.get(), usage_reports_buffer_service_.get(),
+      bookmark_model_.get(), history_service));
   data_provider_.reset(new DataProvider(profile,
                                         delta_file_service_.get(),
                                         bookmark_model_.get()));

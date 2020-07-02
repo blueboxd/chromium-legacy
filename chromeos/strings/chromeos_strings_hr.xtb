@@ -39,8 +39,10 @@
 <translation id="428217921675623177">Uklonit će se zadaci ispisa stariji od 90 dana</translation>
 <translation id="4429881212383817840">Kerberosov tiket uskoro istječe</translation>
 <translation id="445059817448385655">Stara zaporka</translation>
+<translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> od <ph name="TOTAL_PAGE_NUMBER" />. Pritisnite tipku Enter da biste otkazali zadatak ispisa.</translation>
 <translation id="467510802200863975">Zaporke se ne podudaraju</translation>
 <translation id="4731797938093519117">Roditeljski pristup</translation>
+<translation id="4808449224298348341">Otkazan zadatak ispisa dokumenta <ph name="DOCUMENT_TITLE" /></translation>
 <translation id="4890353053343094602">Odmah odaberite novu</translation>
 <translation id="4932733599132424254">Datum</translation>
 <translation id="5212543919916444558">Na zaslonu ne mogu pronaći ništa u vezi s čime mogu pružiti pomoć.

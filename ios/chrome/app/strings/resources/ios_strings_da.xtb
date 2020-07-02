@@ -6,7 +6,7 @@
 <translation id="1044891598689252897">Websites fungerer som normalt</translation>
 <translation id="1047726139967079566">Tilføj denne side som bogmærke...</translation>
 <translation id="1049743911850919806">Inkognito</translation>
-<translation id="105093091697134113">Følgende konti anvender adgangskoder, der er blevet offentliggjort i et brud på datasikkerheden fra en tredjepart, eller som er blevet angivet på et vildledende website. Skift disse adgangskoder med det samme for at beskytte din konto.</translation>
+<translation id="105093091697134113">Følgende konti anvender adgangskoder, der er blevet offentliggjort i et brud på datasikkerheden hos en tredjepart, eller som er blevet angivet på et vildledende website. Skift disse adgangskoder med det samme for at beskytte dine konti.</translation>
 <translation id="1063454504051558093">Brug en anden adgangskode...</translation>
 <translation id="1066060668811609597">Administrer synkronisering</translation>
 <translation id="1076421457278169141">Koden er scannet</translation>
@@ -470,6 +470,7 @@ Websites kan ikke bruge cookies til at se din browseraktivitet på forskellige w
 <translation id="6561262006871132942">Zoom ind</translation>
 <translation id="6585618849026997638">Du kan vende tilbage til en side, der er vigtig for dig, ved at tilføje et bogmærke</translation>
 <translation id="6610002944194042868">Valgmuligheder for oversættelse</translation>
+<translation id="6620279676667515405">Annuller</translation>
 <translation id="6624219055418309072">Bloker i Inkognito</translation>
 <translation id="6628106477656132239">Udløbsdatoen er ugyldig</translation>
 <translation id="6638511529934826365">Zoom ind/ud på tekst…</translation>

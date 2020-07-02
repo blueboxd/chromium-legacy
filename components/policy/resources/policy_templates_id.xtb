@@ -201,11 +201,6 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
       Jika kebijakan ini dinonaktifkan, Asisten Google tidak akan diizinkan untuk mengakses konteks layar.
       Jika tidak disetel, pengguna dapat memutuskan apakah akan mengizinkan Asisten Google untuk mengakses konteks layar atau tidak</translation>
 <translation id="1376119291123231789">Mengaktifkan mode pengisian daya baterai lanjutan</translation>
-<translation id="1376298389964661475">Memungkinkan Anda menetapkan daftar pola URL yang menentukan situs yang diizinkan untuk menampilkan notifikasi.
-
-          Jika kebijakan ini tidak ditetapkan, nilai default global akan digunakan untuk semua situs, yaitu dari kebijakan 'DefaultNotificationsSetting' jika ditetapkan, atau dari konfigurasi pribadi pengguna jika tidak ditetapkan.
-
-          Untuk informasi mendetail tentang pola URL yang valid, lihat https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="1384459581748403878">Referensi: <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">Melaporkan status update OS</translation>
 <translation id="1393485621820363363">Mengaktifkan printer perangkat perusahaan</translation>
@@ -280,11 +275,6 @@ Jika Anda menonaktifkan kebijakan ini, scroll halaman web ke fragmen teks terten
           fitur tersebut.
 
           Jika kebijakan ini ditetapkan, pengguna tidak dapat mengubah atau menggantinya.</translation>
-<translation id="1497640071678474358">Memungkinkan Anda menetapkan daftar pola URL yang menentukan situs yang tidak diizinkan untuk membuka pop-up.
-
-          Jika kebijakan ini tidak ditetapkan, nilai default global akan digunakan untuk semua situs, yaitu dari kebijakan 'DefaultPopupsSetting' jika ditetapkan, atau dari konfigurasi pribadi pengguna jika tidak ditetapkan.
-
-          Untuk informasi mendetail tentang pola URL yang valid, lihat https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="1502843533062797703">Aktifkan pemblokiran injeksi software pihak ketiga</translation>
 <translation id="1507382822467487898">
           Mengonfigurasi alamat MAC (kontrol akses media) mana yang akan digunakan saat dok terhubung ke perangkat.
@@ -897,13 +887,6 @@ Jika Anda menonaktifkan kebijakan ini, scroll halaman web ke fragmen teks terten
       Jika <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (nilai 1) disetel, hanya variasi yang dianggap sebagai perbaikan keamanan atau stabilitas penting yang akan diterapkan ke <ph name="PRODUCT_NAME" />.
 
       Jika <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (nilai 2) disetel, semua variasi tidak akan dapat diterapkan ke browser. Perlu diketahui, mode ini tidak direkomendasikan karena berpotensi menyebabkan developer <ph name="PRODUCT_NAME" /> tidak dapat menyediakan perbaikan keamanan penting secara tepat waktu.</translation>
-<translation id="2406820201690307634">Memungkinkan Anda menetapkan daftar pola URL yang menentukan situs yang tidak diizinkan untuk menampilkan gambar.
-
-          Jika kebijakan ini tidak ditetapkan, nilai default global akan digunakan untuk semua situs, yaitu dari kebijakan 'DefaultImagesSetting' jika ditetapkan, atau dari konfigurasi pribadi pengguna jika tidak ditetapkan.
-
-          Perlu diketahui bahwa sebelumnya kebijakan ini diaktifkan secara keliru di Android, tetapi fungsi ini belum pernah sepenuhnya didukung di Android.
-
-          Untuk informasi mendetail tentang pola URL yang valid, lihat https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="2411629345938804022">Jika kebijakan disetel ke 3, situs akan meminta akses ke perangkat Bluetooth di sekitar. Jika kebijakan disetel ke 2, akses ke perangkat Bluetooth di sekitar akan ditolak.
 
       Jika kebijakan tidak disetel, situs akan meminta akses, tetapi pengguna dapat mengubah setelan ini.</translation>
@@ -1003,11 +986,6 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
       Jika kebijakan ini tidak dikonfigurasi atau disetel ke "Jangan filter konten khusus dewasa dari situs", situs tidak akan difilter.
 
       Jika kebijakan ini disetel ke "Filter konten khusus dewasa dari situs level teratas", situs yang diklasifikasikan sebagai pornografi akan difilter.</translation>
-<translation id="2484356232170636726">Memungkinkan Anda menetapkan daftar pola URL yang menentukan situs yang diizinkan untuk menjalankan JavaScript.
-
-          Jika kebijakan ini tidak ditetapkan, nilai default global akan digunakan untuk semua situs, yaitu dari kebijakan 'DefaultJavaScriptSetting' jika ditetapkan, atau dari konfigurasi pribadi pengguna jika tidak ditetapkan.
-
-          Untuk informasi mendetail tentang pola URL yang valid, lihat https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="2488010520405124654">Aktifkan permintaan konfigurasi jaringan saat offline.
 
       Jika kebijakan ini tidak disetel atau disetel ke True dan akun lokal perangkat dikonfigurasikan untuk masuk otomatis tanpa penundaan dan perangkat tidak memiliki akses ke internet, <ph name="PRODUCT_OS_NAME" /> akan memunculkan permintaan konfigurasi jaringan.
@@ -1623,13 +1601,6 @@ Jika ditetapkan ke False, <ph name="PRODUCT_NAME" /> tidak akan menggunakan noti
 
       Jika kebijakan ini tidak ditetapkan, semua plugin yang cocok dengan pola pada 'DisabledPlugins' akan dikunci sebagai nonaktif dan pengguna tidak akan dapat mengaktifkannya.</translation>
 <translation id="3381968327636295719">Gunakan browser host jika tidak diubah</translation>
-<translation id="3388153794103186066">Memungkinkan Anda menyetel daftar URL yang menentukan situs mana yang akan diberi izin secara otomatis untuk mengakses perangkat USB dengan ID produk dan vendor tertentu. Setiap item di daftar harus berisi URL dan perangkat agar kebijakan menjadi valid. Setiap item di perangkat dapat berisi kolom ID produk dan ID vendor. ID yang dihapus diperlakukan sebagai karakter pengganti dengan satu pengecualian, yaitu ID produk tidak dapat ditentukan jika ID vendor juga tidak ditentukan. Jika tidak, kebijakan akan menjadi tidak valid dan akan diabaikan.
-
-        Model izin USB menggunakan URL situs yang meminta ("URL yang meminta") dan URL situs bingkai level teratas ("URL sematan") untuk memberikan izin ke URL yang meminta untuk mengakses perangkat USB. URL yang meminta mungkin berbeda dengan URL sematan saat situs yang meminta dimuat dalam iframe. Oleh karena itu, kolom "url" dapat berisi hingga dua string URL yang dipisahkan dengan koma, untuk menentukan masing-masing URL yang meminta dan URL sematan. Jika hanya ada satu URL yang ditentukan, akses ke perangkat USB yang sesuai akan diberikan saat URL situs yang meminta cocok dengan URL ini, terlepas dari status sematannya. URL dalam "url" harus berupa URL yang valid. Jika tidak, kebijakan akan diabaikan.
-
-        Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk seluruh situs, yaitu dari kebijakan 'DefaultWebUsbGuardSetting' jika disetel, atau dari konfigurasi pribadi pengguna.
-
-        Pola URL di kebijakan ini tidak boleh bertentangan dengan pola URL yang dikonfigurasi melalui WebUsbBlockedForUrls. Jika bertentangan, kebijakan ini akan lebih diutamakan daripada WebUsbBlockedForUrls dan WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">Jika kebijakan ini tidak dikonfigurasi, <ph name="PRODUCT_NAME" /> akan menggunakan versi minimum default yaitu TLS 1.0.
 
       Jika kebijakan dikonfigurasi, kebijakan dapat disetel ke salah satu nilai berikut: "tls1", "tls1.1", atau "tls1.2". Jika disetel, <ph name="PRODUCT_NAME" /> tidak akan menggunakan versi SSL/TLS yang lebih rendah daripada versi yang ditentukan. Nilai yang tidak dikenal akan diabaikan.</translation>
@@ -1822,13 +1793,6 @@ Jika ditetapkan ke False, <ph name="PRODUCT_NAME" /> tidak akan menggunakan noti
 
         Kebijakan ini digunakan oleh pendaftaran kebijakan machine scope cloud di desktop dan dapat disetel oleh Registry atau GPO di Windows, plist di Mac, dan file kebijakan JSON di Linux.</translation>
 <translation id="3660562134618097814">Transfer cookie SAML IdP saat proses masuk.</translation>
-<translation id="3688225008199664446">Memungkinkan Anda menetapkan daftar pola URL yang menentukan situs yang tidak diizinkan untuk meminta pengguna memberikan akses ke perangkat USB.
-
-          Jika kebijakan ini tidak ditetapkan, nilai default global akan digunakan untuk semua situs, yaitu dari kebijakan 'DefaultWebUsbGuardSetting' jika ditetapkan, atau dari konfigurasi pribadi pengguna jika tidak ditetapkan.
-
-          Pola URL dalam kebijakan ini tidak boleh bertentangan dengan pola URL yang dikonfigurasi melalui WebUsbAskForUrls. Di antara dua kebijakan tersebut, tidak ditentukan kebijakan mana yang akan diprioritaskan jika URL cocok dengan keduanya.
-
-          Untuk informasi mendetail tentang pola URL yang valid, lihat https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="3701121231485832347">Mengontrol setelan khusus perangkat <ph name="PRODUCT_OS_NAME" />.yang dikelola <ph name="MS_AD_NAME" />.</translation>
 <translation id="3702518095257671450">Pengesahan jarak jauh</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Kolom 1 baris sudah tidak digunakan lagi dan akan dihapus di masa mendatang. Mulai gunakan kotak teks multibaris di bawah.)</translation>
@@ -3687,11 +3651,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
           Nilai kebijakan harus ditentukan dalam milidetik. Nilai dikunci agar kurang dari penundaan waktu tidak ada aktivitas.</translation>
 <translation id="6515357889978918016">Gambar <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6520802717075138474">Impor mesin telusur dari browser default saat pertama kali dijalankan</translation>
-<translation id="6525955212636890608">Jika Anda mengaktifkan setelan ini, semua konten Flash yang disematkan di situs yang telah ditetapkan untuk mengizinkan Flash di setelan konten -- oleh kebijakan pengguna atau kebijakan perusahaan -- akan dijalankan, termasuk konten dari asal lain atau konten kecil.
-
-      Untuk mengontrol situs yang diizinkan untuk menjalankan Flash, lihat kebijakan "DefaultPluginsSetting", "PluginsAllowedForUrls", dan "PluginsBlockedForUrls".
-
-      Jika setelan ini dinonaktifkan atau tidak disetel, konten Flash dari asal lainnya atau konten kecil dapat diblokir.</translation>
 <translation id="6532026122543921610">Kecuali kebijakan <ph name="SYSTEM_TIMEZONE_POLICY_NAME" /> menonaktifkan deteksi zona waktu otomatis, menetapkan kebijakan akan menguraikan metode deteksi zona waktu otomatis, yang tidak dapat diubah pengguna.
 
       Jika kebijakan ditetapkan ke:
@@ -3844,11 +3803,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Jika ditetapkan ke benar (true), <ph name="PLUGIN_VM_NAME" /> akan diaktifkan untuk pengguna tersebut selama setelan lain mengizinkannya. <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> dan <ph name="USER_PLUGIN_VM_ALLOWED_POLICY_NAME" /> harus ditetapkan ke benar (true), dan <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> atau <ph name="PLUGIN_VM_USER_ID_POLICY_NAME" /> harus ditetapkan agar <ph name="PLUGIN_VM_NAME" /> dapat berjalan.</translation>
 <translation id="6757613329154374267">Pencadangan dan pemulihan diaktifkan</translation>
 <translation id="6758659208493449452">Kebijakan ini mengontrol apakah pengguna yang terdaftar dalam Program Perlindungan Lanjutan menerima perlindungan tambahan. Beberapa fitur ini dapat mencakup pembagian data kepada Google (misalnya, pengguna Perlindungan Lanjutan akan dapat mengirimkan hasil downloadnya ke Google untuk pemindaian malware). Jika ditetapkan ke Benar atau tidak ditetapkan, pengguna terdaftar akan menerima perlindungan tambahan. Jika ditetapkan ke Salah, pengguna Perlindungan Lanjutan hanya akan menerima fitur konsumen standar.</translation>
-<translation id="6764421313777250384">Memungkinkan Anda menetapkan daftar pola URL yang menentukan situs yang tidak diizinkan untuk menampilkan notifikasi.
-
-          Jika kebijakan ini tidak ditetapkan, nilai default global akan digunakan untuk semua situs, yaitu dari kebijakan 'DefaultNotificationsSetting' jika ditetapkan, atau dari konfigurasi pribadi pengguna jika tidak ditetapkan.
-
-          Untuk informasi mendetail tentang pola URL yang valid, lihat https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="6766216162565713893">Izinkan situs meminta pengguna memberikan akses ke perangkat Bluetooth di sekitar</translation>
 <translation id="6770454900105963262">Melaporkan informasi tentang sesi kios aktif</translation>
 <translation id="6786747875388722282">Ekstensi</translation>
@@ -4290,11 +4244,6 @@ Jika kebijakan ini tidak disetel atau kosong, pengguna dapat menyetel akun Googl
 <translation id="7485730741952775732">Jika kebijakan ini ditetapkan, host akses jarak jauh akan menggunakan URL ini untuk memvalidasi token autentikasi dari klien akses jarak jauh, agar dapat menerima sambungan. Harus digunakan bersama RemoteAccessHostTokenUrl.
 
           Fitur ini saat ini dinonaktifkan pada sistem server.</translation>
-<translation id="7490270439948288519">Memungkinkan Anda menetapkan daftar pola URL yang menentukan situs yang diizinkan untuk membuka pop-up.
-
-          Jika kebijakan ini tidak ditetapkan, nilai default global akan digunakan untuk semua situs, yaitu dari kebijakan 'DefaultPopupsSetting' jika ditetapkan, atau dari konfigurasi pribadi pengguna jika tidak ditetapkan.
-
-          Untuk informasi mendetail tentang pola URL yang valid, lihat https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="749556411189861380">Laporkan versi firmware dan OS perangkat yang terdaftar.
 
       Jika setelan ini tidak disetel atau disetel ke True, perangkat terdaftar akan melaporkan versi firmware dan OS secara berkala. Jika setelan ini disetel ke False, info versi tidak akan dilaporkan.</translation>
@@ -4304,11 +4253,6 @@ Jika kebijakan ini tidak disetel atau kosong, pengguna dapat menyetel akun Googl
 
       Jika kebijakan ini digunakan, semua printer yang akan tersedia bagi pengguna, kecuali id yang dicantumkan di kebijakan ini. Id harus sesuai dengan kolom "id" atau "guid" dalam file yang ditentukan di <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
-<translation id="7506269062143646163">Aktifkan dukungan untuk Signed HTTP Exchange (SXG).
-
-          Jika kebijakan ini tidak ditetapkan atau ditetapkan ke Aktif, Google Chrome akan menerima konten web yang ditayangkan sebagai Signed HTTP Exchange.
-
-          Jika kebijakan ini ditetapkan ke Nonaktif, Signed HTTP Exchange tidak dapat dimuat.</translation>
 <translation id="7506758875409719208">Mengonfigurasi nama domain klien yang diperlukan, yang akan diterapkan pada klien akses jarak jauh dan mencegah pengguna mengubahnya.
 
           Jika setelan ini diaktifkan dan ditetapkan ke satu atau beberapa domain, hanya klien dari salah satu domain yang telah ditentukan yang dapat tersambung ke host.
@@ -4320,11 +4264,6 @@ Jika kebijakan ini tidak disetel atau kosong, pengguna dapat menyetel akun Googl
           Lihat juga RemoteAccessHostDomainList.</translation>
 <translation id="7511361072385293666">Jika kebijakan ini disetel ke True atau tidak disetel, penggunaan protokol QUIC di <ph name="PRODUCT_NAME" /> akan diizinkan.
       Jika kebijakan ini disetel ke False, penggunaan protokol QUIC tidak diizinkan.</translation>
-<translation id="7515572751689937649">Memungkinkan Anda menetapkan daftar pola URL yang menentukan situs yang tidak diizinkan untuk menjalankan JavaScript.
-
-          Jika kebijakan ini tidak ditetapkan, nilai default global akan digunakan untuk semua situs, yaitu dari kebijakan 'DefaultJavaScriptSetting' jika ditetapkan, atau dari konfigurasi pribadi pengguna jika tidak ditetapkan.
-
-          Untuk informasi mendetail tentang pola URL yang valid, lihat https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="7517845714620372896">Menentukan persentase kecerahan layar.
 Jika kebijakan ini disetel, kecerahan layar awal akan disesuaikan berdasarkan nilai kebijakan, namun pengguna dapat mengubahnya nanti. Fitur kecerahan otomatis dinonaktifkan.
 Jika kebijakan ini tidak disetel, kontrol layar pengguna dan fitur kecerahan otomatis tidak terpengaruh.
@@ -5098,13 +5037,6 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
 
           Jika Anda membiarkan kebijakan ini tidak disetel, <ph name="PRODUCT_NAME" /> akan mencoba mendeteksi apakah server ada di internet dan akan menanggapi permintaan IWA setelahnya.  Jika server terdeteksi sebagai internet, permintaan IWA darinya akan diabaikan oleh <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8656110680728938054">Aktifkan fitur klik untuk diucapkan</translation>
-<translation id="8659729040032759711">Memungkinkan Anda menetapkan daftar pola URL yang menentukan situs yang diizinkan untuk meminta pengguna memberikan izin akses ke perangkat USB.
-
-          Jika kebijakan ini tidak ditetapkan, nilai default global akan digunakan untuk semua situs, yaitu dari kebijakan 'DefaultWebUsbGuardSetting' jika ditetapkan, atau dari konfigurasi pribadi pengguna jika tidak ditetapkan.
-
-          Pola URL di kebijakan ini tidak boleh bertentangan dengan pola URL yang dikonfigurasi melalui WebUsbBlockedForUrls. Di antara dua kebijakan tersebut, tidak ditentukan kebijakan mana yang akan diprioritaskan jika URL cocok dengan keduanya.
-
-          Untuk informasi mendetail tentang pola URL yang valid, lihat https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="8661297125441579970">Jangan izinkan migrasi data dan ARC.</translation>
 <translation id="8665314828727504286">Tingkat Perlindungan Safe Browsing</translation>
 <translation id="8672321184841719703">Versi Update Otomatis Target</translation>
@@ -5220,15 +5152,6 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
 <translation id="8860342862142842017">Nonaktifkan penerapan Transparansi Sertifikat untuk daftar hash subjectPublicKeyInfo</translation>
 <translation id="8864975621965365890">Menimpa permintaan penghentian yang muncul saat situs dirender oleh <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="886645881209114007">Mengizinkan pengguna menggunakan <ph name="PLUGIN_VM_NAME" /> di <ph name="PRODUCT_OS_NAME" /></translation>
-<translation id="8867464911288727016">Mengaktifkan layanan Google Terjemahan terpadu di <ph name="PRODUCT_NAME" />.
-
-      Jika Anda mengaktifkan setelan ini, <ph name="PRODUCT_NAME" /> akan menawarkan fungsi terjemahan kepada pengguna dengan menunjukkan toolbar terjemahan terpadu (jika sesuai) dan opsi terjemahan di menu konteks klik kanan.
-
-      Jika Anda menonaktifkan setelan ini, semua fitur terjemahan bawaan akan dinonaktifkan.
-
-      Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau mengganti setelan ini di <ph name="PRODUCT_NAME" />.
-
-      Jika setelan ini dibiarkan tidak disetel, pengguna dapat memutuskan untuk menggunakan fungsi ini atau tidak.</translation>
 <translation id="8871974300055371298">Setelan konten</translation>
 <translation id="8872402969096027761">Mengaktifkan fitur aksesibilitas klik otomatis di layar login.
 
@@ -5413,9 +5336,6 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
 <translation id="9105265795073104888">Hanya bagian dari opsi konfigurasi proxy yang disediakan untuk aplikasi Android. Aplikasi Android dapat memilih untuk menggunakan proxy secara sukarela. Anda tidak dapat memaksakan aplikasi Android agar menggunakan proxy.</translation>
 <translation id="9106865192244721694">Izinkan WebUSB di situs ini</translation>
 <translation id="9112727953998243860">File konfigurasi untuk printer perusahaan</translation>
-<translation id="9112897538922695510">Memungkinkan Anda mendaftarkan daftar penangan protokol. Ini hanya dapat menjadi kebijakan yang disarankan. Properti |protokol| sebaiknya disetel ke skema seperti 'mailto' dan properti |url| sebaiknya disetel ke pola URL aplikasi yang menangani skema. Pola tersebut dapat berisi '%s', yang apabila disajikan akan menggantikan URL yang ditangani.
-
-          Penangan protokol yang didaftarkan oleh kebijakan digabung dengan penangan protokol yang didaftarkan oleh pengguna dan keduanya tersedia untuk digunakan. Pengguna dapat mengganti penangan protokol yang dipasang oleh kebijakan dengan memasang penangan default baru, namun pengguna tidak dapat membuang penangan protokol yang didaftarkan oleh kebijakan.</translation>
 <translation id="9117826695152538214">Jika kebijakan ditetapkan ke Benar (True), tombol lekat akan tetap diaktifkan. Jika kebijakan ditetapkan ke Salah (False), tombol lekat akan tetap dinonaktifkan.
 
       Jika kebijakan ditetapkan, pengguna tidak dapat mengubahnya. Jika tidak ditetapkan, tombol lekat mula-mula akan dinonaktifkan, tetapi pengguna dapat mengaktifkannya kapan saja.</translation>

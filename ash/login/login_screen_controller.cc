@@ -399,11 +399,12 @@ void LoginScreenController::ShowLockScreen() {
 
 void LoginScreenController::ShowLoginScreen() {
   // Login screen can only be used during login.
-  CHECK_EQ(session_manager::SessionState::LOGIN_PRIMARY,
-           Shell::Get()->session_controller()->GetSessionState())
+  session_manager::SessionState session_state =
+      Shell::Get()->session_controller()->GetSessionState();
+  CHECK(session_state == session_manager::SessionState::LOGIN_PRIMARY ||
+        session_state == session_manager::SessionState::LOGIN_SECONDARY)
       << "Not showing login screen since session state is "
-      << static_cast<int>(
-             Shell::Get()->session_controller()->GetSessionState());
+      << static_cast<int>(session_state);
 
   OnShow();
   // TODO(jdufault): rename LockScreen to LoginScreen.

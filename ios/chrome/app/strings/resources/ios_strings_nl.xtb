@@ -6,7 +6,7 @@
 <translation id="1044891598689252897">Sites werken naar behoren</translation>
 <translation id="1047726139967079566">Bookmark instellen voor deze pagina...</translation>
 <translation id="1049743911850919806">Incognito</translation>
-<translation id="105093091697134113">De volgende accounts gebruiken wachtwoorden die zijn gelekt bij een gegevenslek van derden of zijn ingevoerd op een misleidende website. Wijzig deze wachtwoorden onmiddellijk om je accounts veilig te houden.</translation>
+<translation id="105093091697134113">De volgende accounts gebruiken wachtwoorden die zijn blootgesteld aan een gegevenslek bij derden of zijn ingevoerd op een misleidende website. Wijzig deze wachtwoorden onmiddellijk om je accounts beveiligd te houden.</translation>
 <translation id="1063454504051558093">Ander wachtwoord gebruiken...</translation>
 <translation id="1066060668811609597">Synchronisatie beheren</translation>
 <translation id="1076421457278169141">Code gescand</translation>
@@ -344,7 +344,7 @@ Je gegevens zijn versleuteld met je wachtwoordzin voor synchronisatie. Geef deze
 <translation id="5181140330217080051">Downloaden</translation>
 <translation id="5186185447130319458">Privé</translation>
 <translation id="5188482106078495165">Je cookie-instellingen zijn van toepassing op alle tabbladen. Als je een nieuwe instelling wilt toepassen op een geopend tabblad, laad je het tabblad opnieuw.</translation>
-<translation id="5190835502935405962">Bladwijzerbalk</translation>
+<translation id="5190835502935405962">Bookmarkbalk</translation>
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Synchronisatie inschakelen</translation>
 <translation id="5234764350956374838">Sluiten</translation>

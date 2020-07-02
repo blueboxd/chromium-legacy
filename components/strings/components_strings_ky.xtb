@@ -20,6 +20,7 @@
 <translation id="10614374240317010">Эч качан сакталбайт</translation>
 <translation id="1062160989074299343">Prc10 (Конверт)</translation>
 <translation id="106701514854093668">Иштактадагы кыстармалар</translation>
+<translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" /> тилиндеги барактар эч качан которулбасын</translation>
 <translation id="1070901266639972381">Түн</translation>
 <translation id="1074497978438210769">Коопсуз эмес</translation>
 <translation id="1080116354587839789">Терезенин туурасына чактоо</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">Аты жок</translation>
 <translation id="1236081509407217141">VR'га уруксат берилсинби?</translation>
 <translation id="1240347957665416060">Түзмөгүңүздүн аталышы</translation>
+<translation id="124116460088058876">Дагы тилдер</translation>
 <translation id="1250759482327835220">Кийинки жолу тезирээк төлөө үчүн картаңызды, аты-жөнүңүздү жана эсептешүү дарегин Google аккаунтуңузга сактап коюңуз.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (шайкештирилген)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Эгер вебсайтты ачууга аракет кылганда ал ачылбай жатса, каталарды оңдоо боюнча төмөнкүдөй аракеттерди аткарып көрүңүз:&lt;/p&gt;
@@ -210,7 +212,7 @@
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Windows аркылуу Тармак мүчүлүштүгүн аныктоону иштетип көрүңүз<ph name="END_LINK" />.</translation>
 <translation id="1772163372082567643">Сиз өтүүгө аракет кылып жаткан <ph name="ORIGIN" /> сервери
     ушул сыяктуу бардык өтүнүчтөр үчүн баштапкы саясат колдонулсун деген аталышты койду. Бирок
-    аталыш бузук болгондуктан серепчи <ph name="SITE" /> сайты үчүн коюлган өтүнүчтү
+    аталыш бузук болгондуктан, серепчи <ph name="SITE" /> сайты үчүн коюлган өтүнүчтү
     аткара албайт. Баштапкы саясаттар
     сайттын операторлору тарабынан сайттын коопсуздугун жана башка касиеттерин конфигурациялоо үчүн колдонулат.</translation>
 <translation id="1778646502362731194">JIS B0 (1030mm x 1456mm)</translation>
@@ -839,6 +841,7 @@
 <translation id="4424024547088906515">Бул сервер <ph name="DOMAIN" /> экендигин далилдей алган жок; себеби Chrome анын коопсуздук тастыктамасына ишенбейт. Мындай көйгөй туура эмес конфигурация менен шартталышы мүмкүн же туташууңузга чабуулчу кийлигишип жатат.</translation>
 <translation id="443121186588148776">Сериялык порт</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> сайты кирүү тастыктамаңызды кабыл алган жок же тастыктама көрсөтүлгөн эмес окшойт.</translation>
+<translation id="4432792777822557199">Мындан кийин <ph name="SOURCE_LANGUAGE" /> тилиндеги барактар <ph name="TARGET_LANGUAGE" /> тилине которулат</translation>
 <translation id="4434045419905280838">Калкыма терезелер жана багыттоолор</translation>
 <translation id="4435702339979719576">Ачык кат)</translation>
 <translation id="443673843213245140">Прокси пайдалануу мүмкүнчүлүгү өчүрүлгөнү менен, ачык-айкын прокси конфигурациясы белгиленген.</translation>
@@ -1070,6 +1073,7 @@
 <translation id="5431657950005405462">Файлыңыз табылган жок</translation>
 <translation id="5439770059721715174">"<ph name="ERROR_PATH" />": <ph name="ERROR" /> схемалык текшерүү катасы</translation>
 <translation id="5443468954631487277">Тескери иретте алдыңкы бетин өйдө каратып</translation>
+<translation id="5447765697759493033">Бул сайт которулбайт</translation>
 <translation id="5452270690849572955">Бул <ph name="HOST_NAME" /> барагын табуу мүмкүн эмес</translation>
 <translation id="5455374756549232013">Начар саясаттын убакыт белгиси</translation>
 <translation id="5457113250005438886">Жараксыз</translation>
@@ -1616,6 +1620,7 @@
 <translation id="7716375162095500223">Жүктөлүп бериле элек же этибарга алынган жок</translation>
 <translation id="7716424297397655342">Бул сайтты кештен жүктөө мүмкүн эмес</translation>
 <translation id="7723047071702270851">Карточканы түзөтүү</translation>
+<translation id="773466115871691567"><ph name="SOURCE_LANGUAGE" /> тилиндеги барактар дайыма которулсун</translation>
 <translation id="7740996059027112821">Стандарт</translation>
 <translation id="774634243536837715">Кооптуу мазмун бөгөттөлдү.</translation>
 <translation id="7752995774971033316">Башкарылбайт</translation>
@@ -1761,6 +1766,7 @@
 <translation id="831997045666694187">Кече</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" /> сайтына кирүү мүмкүнчүлүгү четке кагылды</translation>
 <translation id="833262891116910667">Бөлүп көрсөтүү</translation>
+<translation id="8339163506404995330"><ph name="LANGUAGE" /> тилиндеги барактар которулбайт</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Эгер коопсуздугуңузга кандай коркунуч келтирилип жаткандыгын жакшы түшүнсөңүз, зыянкеч программалар алынып салынаардан мурун, <ph name="BEGIN_LINK" />бул сайтка кирип көрсөңүз<ph name="END_LINK" /> болот.</translation>
 <translation id="8349305172487531364">Кыстармалар тилкеси</translation>

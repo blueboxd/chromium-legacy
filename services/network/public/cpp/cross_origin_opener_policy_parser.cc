@@ -52,9 +52,11 @@ ParseHeader(base::StringPiece header_value) {
 CrossOriginOpenerPolicy ParseCrossOriginOpenerPolicy(
     const net::HttpResponseHeaders& headers) {
   CrossOriginOpenerPolicy coop;
+
+  // This is the single line of code disabling COOP globally.
   if (!base::FeatureList::IsEnabled(features::kCrossOriginOpenerPolicy))
     return coop;
-  
+
   std::string header_value;
   if (headers.GetNormalizedHeader(kCrossOriginOpenerPolicyHeader,
                                   &header_value)) {

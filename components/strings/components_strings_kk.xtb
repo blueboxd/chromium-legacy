@@ -20,6 +20,7 @@
 <translation id="10614374240317010">Ешқашан сақталмайды</translation>
 <translation id="1062160989074299343">Prc10 (Envelope)</translation>
 <translation id="106701514854093668">Жұмыс үстелі бетбелгілері</translation>
+<translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" /> тіліндегі беттер ешқашан аударылмасын</translation>
 <translation id="1070901266639972381">Түн</translation>
 <translation id="1074497978438210769">Қауіпсіз емес</translation>
 <translation id="1080116354587839789">Еніне сәйкестендіру</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">Атаусыз</translation>
 <translation id="1236081509407217141">VR режиміне рұқсат етілсін бе?</translation>
 <translation id="1240347957665416060">Құрылғыңыздың атауы</translation>
+<translation id="124116460088058876">Қосымша тілдер</translation>
 <translation id="1250759482327835220">Келесіде жылдамырақ төлеу үшін картаңызды, аты-жөніңізді және төлем мекенжайын Google есептік жазбаңызға сақтап қойыңыз.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (синхрондалған)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Егер веб-сайт ашылмаса, қатені түзету үшін алдымен мына ақауларды жою қадамдарын жасаңыз:&lt;/p&gt;
@@ -839,6 +841,7 @@
 <translation id="4424024547088906515">Бұл сервер өзінің <ph name="DOMAIN" /> екенін дәлелдей алмады; оның қауіпсіздік сертификатына Chrome сенім білдірмеген. Бұған қате конфигурация немесе қаскүнемнің байланысты үзуі себеп болуы мүмкін.</translation>
 <translation id="443121186588148776">Сериялық порт</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> кіру сертификатын қабылдамады немесе оны алмады.</translation>
+<translation id="4432792777822557199">Осыдан кейін <ph name="SOURCE_LANGUAGE" /> тіліндегі бет <ph name="TARGET_LANGUAGE" /> тіліне аударылады</translation>
 <translation id="4434045419905280838">Қалқымалы терезе және бағыттау</translation>
 <translation id="4435702339979719576">Postcard)</translation>
 <translation id="443673843213245140">Проксиді пайдалану өшірілген, бірақ айқын прокси конфигурациясы көрсетілген.</translation>
@@ -1070,6 +1073,7 @@
 <translation id="5431657950005405462">Файл табылмады</translation>
 <translation id="5439770059721715174">"<ph name="ERROR_PATH" />" жолындағы схеманы растау қатесі: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Кері ретпен беткі жағында</translation>
+<translation id="5447765697759493033">Бұл сайт аударылмайды</translation>
 <translation id="5452270690849572955">Бұл <ph name="HOST_NAME" /> бетін табу мүмкін емес</translation>
 <translation id="5455374756549232013">Саясат уақыт белгісі жарамсыз</translation>
 <translation id="5457113250005438886">Жарамсыз</translation>
@@ -1616,6 +1620,7 @@
 <translation id="7716375162095500223">Әлі жүктеп салынбады немесе еленбеді</translation>
 <translation id="7716424297397655342">Бұл сайтты кэштен жүктеп алу мүмкін емес</translation>
 <translation id="7723047071702270851">Карта мәліметін өңдеу</translation>
+<translation id="773466115871691567"><ph name="SOURCE_LANGUAGE" /> тіліндегі беттер әрқашан аударылсын</translation>
 <translation id="7740996059027112821">Стандартты</translation>
 <translation id="774634243536837715">Қауіпті мазмұн бөгелді.</translation>
 <translation id="7752995774971033316">Басқарылмайды</translation>
@@ -1761,6 +1766,7 @@
 <translation id="831997045666694187">Кеш</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" /> сайтына кіруге тыйым салынған</translation>
 <translation id="833262891116910667">Бөлектеу</translation>
+<translation id="8339163506404995330"><ph name="LANGUAGE" /> тіліндегі беттер аударылмайды</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Қауіп-қатерлерді түсінсеңіз, зиянды бағдарламалар жойылмай жатып, <ph name="BEGIN_LINK" />осы сайтқа кіруіңізге<ph name="END_LINK" /> болады.</translation>
 <translation id="8349305172487531364">Бетбелгілер жолағы</translation>

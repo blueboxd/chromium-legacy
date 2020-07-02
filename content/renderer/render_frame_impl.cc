@@ -137,9 +137,11 @@
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/data_url.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -1053,6 +1055,95 @@ void FillNavigationParamsOriginPolicy(
           .emplace_back(WebString::FromUTF8(csp_report_only));
     }
   }
+}
+
+// TODO(lukasza): https://crbug.com/1098938: Remove this ad-hoc URLLoaderFactory
+// after the CHECKs below played their role in establishing that
+// CreateDefaultURLLoaderFactoryBundle is only used with opaque initiators.
+class FactoryWrapperToOnlyAllowOpaqueInitiators
+    : public network::mojom::URLLoaderFactory {
+ public:
+  explicit FactoryWrapperToOnlyAllowOpaqueInitiators(
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>
+          pending_factory_to_wrap)
+      : wrapped_factory_(std::move(pending_factory_to_wrap)) {}
+
+  ~FactoryWrapperToOnlyAllowOpaqueInitiators() override = default;
+
+ private:
+  void CreateLoaderAndStart(
+      mojo::PendingReceiver<network::mojom::URLLoader> loader,
+      int32_t routing_id,
+      int32_t request_id,
+      uint32_t options,
+      const network::ResourceRequest& request,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
+      override {
+    CHECK(request.request_initiator.has_value());
+    CHECK(request.request_initiator.value().opaque());
+
+    if (!wrapped_factory_)
+      return;
+    wrapped_factory_->CreateLoaderAndStart(
+        std::move(loader), routing_id, request_id, options, request,
+        std::move(client), traffic_annotation);
+  }
+
+  void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
+      override {
+    if (!wrapped_factory_)
+      return;
+
+    mojo::PendingRemote<network::mojom::URLLoaderFactory>
+        cloned_wrapped_factory;
+    wrapped_factory_->Clone(
+        cloned_wrapped_factory.InitWithNewPipeAndPassReceiver());
+
+    mojo::StrongBinding<network::mojom::URLLoaderFactory>::Create(
+        std::make_unique<FactoryWrapperToOnlyAllowOpaqueInitiators>(
+            std::move(cloned_wrapped_factory)),
+        std::move(receiver));
+  }
+
+  mojo::Remote<network::mojom::URLLoaderFactory> wrapped_factory_;
+};
+
+// Asks RenderProcessHostImpl::CreateURLLoaderFactoryForRendererProcess in the
+// browser process for a URLLoaderFactory.
+//
+// AVOID: see the comment on CreateDefaultURLLoaderFactoryBundle below.
+mojo::PendingRemote<network::mojom::URLLoaderFactory>
+CreateDefaultURLLoaderFactory() {
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  DCHECK(render_thread);
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_factory;
+  ChildThread::Get()->BindHostReceiver(
+      pending_factory.InitWithNewPipeAndPassReceiver());
+
+  mojo::PendingRemote<network::mojom::URLLoaderFactory>
+      pending_asserting_factory;
+  mojo::StrongBinding<network::mojom::URLLoaderFactory>::Create(
+      std::make_unique<FactoryWrapperToOnlyAllowOpaqueInitiators>(
+          std::move(pending_factory)),
+      pending_asserting_factory.InitWithNewPipeAndPassReceiver());
+
+  return pending_asserting_factory;
+}
+
+// Returns a non-null pointer to a URLLoaderFactory bundle that is not
+// associated with any specific origin, frame or worker.
+//
+// AVOID: prefer to use an origin/frame/worker-specific factory (e.g. via
+// content::RenderFrameImpl::FrameURLLoaderFactory::CreateURLLoader).  See
+// also https://crbug.com/1098938.
+//
+// It is invalid to call this in an incomplete env where
+// RenderThreadImpl::current() returns nullptr (e.g. in some tests).
+scoped_refptr<ChildURLLoaderFactoryBundle>
+CreateDefaultURLLoaderFactoryBundle() {
+  return base::MakeRefCounted<ChildURLLoaderFactoryBundle>(
+      base::BindOnce(&CreateDefaultURLLoaderFactory));
 }
 
 }  // namespace
@@ -5739,16 +5830,15 @@ RenderFrameImpl::CreateLoaderFactoryBundle(
       base::MakeRefCounted<HostChildURLLoaderFactoryBundle>(
           GetTaskRunner(blink::TaskType::kInternalLoading));
 
-  // In some tests |render_thread| could be null.
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  if (render_thread && !info) {
+  // CreateDefaultURLLoaderFactoryBundle can't be called if (as in some tests)
+  // RenderThreadImpl::current is null.
+  if (RenderThreadImpl::current() && !info) {
     // This should only happen for a placeholder document or an initial empty
     // document cases.
     DCHECK(GetLoadingUrl().is_empty() ||
            GetLoadingUrl().spec() == url::kAboutBlankURL);
-    loader_factories->Update(render_thread->blink_platform_impl()
-                                 ->CreateDefaultURLLoaderFactoryBundle()
-                                 ->PassInterface());
+    loader_factories->Update(
+        CreateDefaultURLLoaderFactoryBundle()->PassInterface());
   }
 
   if (info) {

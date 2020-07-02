@@ -230,23 +230,6 @@ RendererBlinkPlatformImpl::WrapSharedURLLoaderFactory(
       std::move(factory));
 }
 
-scoped_refptr<ChildURLLoaderFactoryBundle>
-RendererBlinkPlatformImpl::CreateDefaultURLLoaderFactoryBundle() {
-  return base::MakeRefCounted<ChildURLLoaderFactoryBundle>(
-      base::BindOnce(&RendererBlinkPlatformImpl::CreateNetworkURLLoaderFactory,
-                     base::Unretained(this)));
-}
-
-mojo::PendingRemote<network::mojom::URLLoaderFactory>
-RendererBlinkPlatformImpl::CreateNetworkURLLoaderFactory() {
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  DCHECK(render_thread);
-  mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_remote;
-  ChildThread::Get()->BindHostReceiver(
-      factory_remote.InitWithNewPipeAndPassReceiver());
-  return factory_remote;
-}
-
 void RendererBlinkPlatformImpl::SetDisplayThreadPriority(
     base::PlatformThreadId thread_id) {
 #if defined(OS_LINUX)

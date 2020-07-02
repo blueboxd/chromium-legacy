@@ -10,7 +10,6 @@
 <translation id="1049743911850919806">Інкогніта</translation>
 <translation id="10614374240317010">Ніколі не захоўваліся</translation>
 <translation id="1067922213147265141">Іншыя сэрвісы Google</translation>
-<translation id="1068672505746868501">Ніколі не перакладаць старонкі на наступнай мове: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="107147699690128016">Калі вы зменіце пашырэнне файла, ён можа адкрыцца ў іншай праграме, што можа быць небяспечным для вашай прылады.</translation>
 <translation id="1100066534610197918">У новай укладцы ў групе</translation>
 <translation id="1105960400813249514">Здымак экрана</translation>
@@ -35,13 +34,11 @@
 <translation id="1229399675748764149">Зрабіце гэту старонку галоўнай</translation>
 <translation id="1231733316453485619">Уключыць сінхранізацыю?</translation>
 <translation id="123724288017357924">Перазагрузіць бягучую старонку, ігнаруючы змесціва кэша</translation>
-<translation id="124116460088058876">Іншыя мовы</translation>
 <translation id="124678866338384709">Закрыць бягучую ўкладку</translation>
 <translation id="1258753120186372309">Дудл Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Агляд прапанаванага змесціва і пошук</translation>
 <translation id="1266864766717917324">Не ўдалося абагуліць змесціва наступнага тыпу: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1283039547216852943">Дакраніцеся, каб разгарнуць</translation>
-<translation id="1285320974508926690">Ніколі не перакладаць гэты сайт</translation>
 <translation id="1291207594882862231">Ачысціць гісторыю, файлы cookie, даныя сайта, кэш…</translation>
 <translation id="129553762522093515">Нядаўна закрытыя</translation>
 <translation id="1303339473099049190">Не ўдалося знайсці гэты пароль. Праверце правільнасць напісання і паўтарыце спробу.</translation>
@@ -239,7 +236,6 @@
 <translation id="2898264748040935573">Рэдагаваць захаваны пароль</translation>
 <translation id="2900528713135656174">Стварыце падзею</translation>
 <translation id="2903493209154104877">Адрасы</translation>
-<translation id="290376772003165898">Мова старонкі – не <ph name="LANGUAGE" />?</translation>
 <translation id="2904414404539560095">Спіс прылад, з якімі можна абагуліць укладку, разгорнуты на ўвесь экран.</translation>
 <translation id="2905036901251765993">Каб абагуліць гэта змесціва з карыстальнікамі паблізу, дайце ім прасканіраваць гэты QR-код</translation>
 <translation id="2909615210195135082">Платформа апавяшчэнняў Google</translation>
@@ -415,7 +411,6 @@
 <translation id="4405224443901389797">Перамясціць у…</translation>
 <translation id="4411535500181276704">Спрошчаны рэжым</translation>
 <translation id="4415276339145661267">Кіраванне Уліковым запісам Google</translation>
-<translation id="4432792777822557199">Цяпер старонкі на мове <ph name="SOURCE_LANGUAGE" /> будуць перакладацца на мову <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4440958355523780886">Старонка, спрошчаная алгарытмамі Google. Каб загрузіць арыгінал, націсніце тут.</translation>
 <translation id="4452411734226507615">Закрыць укладку "<ph name="TAB_TITLE" />"</translation>
 <translation id="4452548195519783679">Закладка дададзена ў папку "<ph name="FOLDER_NAME" />"</translation>
@@ -550,7 +545,6 @@
 <translation id="543509235395288790">Спампоўваюцца файлы ў колькасці <ph name="COUNT" /> (<ph name="MEGABYTES" />).</translation>
 <translation id="5441522332038954058">Перайсці да адраснага радка</translation>
 <translation id="5447201525962359567">Усё сховішча сайта, у тым ліку файлы cookie і іншыя лакальна захаваныя даныя</translation>
-<translation id="5447765697759493033">Гэты сайт не будзе перакладацца</translation>
 <translation id="545042621069398927">Спампоўка паскараецца.</translation>
 <translation id="5456381639095306749">Спампаваць старонку</translation>
 <translation id="548278423535722844">Адкрыць у праграме карт</translation>
@@ -580,7 +574,6 @@
 <translation id="5659593005791499971">Адрас электроннай пошты</translation>
 <translation id="5665379678064389456">Стварыце падзею ў праграме <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Перавызначаць запыт вэб-сайта на прадухіленне павелічэння маштабу</translation>
-<translation id="5684874026226664614">Памылка. Не ўдалося перакласці гэту старонку.</translation>
 <translation id="5686790454216892815">Назва файла занадта доўгая</translation>
 <translation id="5694049548840660018">Вяртацца на галоўную старонку проста</translation>
 <translation id="569536719314091526">Перакладзіце гэту старонку на любую мову з дапамогай кнопкі "Дадатковыя параметры"</translation>
@@ -734,7 +727,6 @@
 <translation id="6767294960381293877">Спіс прылад, з якімі можна абагуліць укладку, разгорнуты на палову экрана.</translation>
 <translation id="6811034713472274749">Старонка гатовая да прагляду</translation>
 <translation id="6820686453637990663">CVC</translation>
-<translation id="6831043979455480757">Перакласці</translation>
 <translation id="6845325883481699275">Дапамагаць павысіць бяспеку Chrome</translation>
 <translation id="6846298663435243399">Ідзе загрузка…</translation>
 <translation id="6850409657436465440">Спампоўка ўсё яшчэ працягваецца</translation>
@@ -842,7 +834,6 @@
 <translation id="7698359219371678927">Напісаць электронны ліст у праграме "<ph name="APP_NAME" />"</translation>
 <translation id="7704317875155739195">Аўтаматычна дапісваць пошукавыя запыты і URL-адрасы</translation>
 <translation id="7725024127233776428">Тут будуць паказвацца старонкі, якія вы дадалі ў закладкі</translation>
-<translation id="773466115871691567">Заўсёды перакладаць старонкі на наступнай мове: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7746457520633464754">Каб выявіць небяспечныя праграмы і сайты, Chrome адпраўляе URL-адрасы некаторых наведаных вамі старонак, пэўную сістэмную інфармацыю і змесціва старонак у Google</translation>
 <translation id="7757787379047923882">Тэкст абагулены з прылады "<ph name="DEVICE_NAME" />"</translation>
 <translation id="7761849928583394409">Выберыце дату і час</translation>
@@ -922,7 +913,6 @@
 <translation id="8310344678080805313">Стандартныя ўкладкі</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> і іншыя сайты</translation>
 <translation id="8327155640814342956">Каб карыстацца найлепшымі функцыямі, адкрыйце і абнавіце Chrome</translation>
-<translation id="8339163506404995330">Старонкі на мове <ph name="LANGUAGE" /> не будуць перакладацца</translation>
 <translation id="8349013245300336738">Сартаваць па аб'ёме выкарыстанага трафіка</translation>
 <translation id="8364299278605033898">Праглядайце папулярныя вэб-сайты</translation>
 <translation id="8368027906805972958">Прылада невядомая або не падтрымліваецца (<ph name="DEVICE_ID" />)</translation>

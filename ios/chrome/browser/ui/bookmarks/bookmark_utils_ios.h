@@ -51,11 +51,24 @@ BOOL bookmarkMenuIsInSlideInPanel();
 // |folder| is the intended parent of |node|.
 // Returns a snackbar with an undo action, returns nil if operation wasn't
 // successful or there's nothing to undo.
+// TODO(crbug.com/1099901): Refactor to include position and replace two
+// functions below.
 MDCSnackbarMessage* CreateOrUpdateBookmarkWithUndoToast(
     const bookmarks::BookmarkNode* node,
     NSString* title,
     const GURL& url,
     const bookmarks::BookmarkNode* folder,
+    bookmarks::BookmarkModel* bookmark_model,
+    ChromeBrowserState* browser_state);
+
+// Creates a new bookmark with |title|, |url|, at |position| under parent
+// |folder|. Returns a snackbar with an undo action. Returns nil if operation
+// failed or there's nothing to undo.
+MDCSnackbarMessage* CreateBookmarkAtPositionWithUndoToast(
+    NSString* title,
+    const GURL& url,
+    const bookmarks::BookmarkNode* folder,
+    int position,
     bookmarks::BookmarkModel* bookmark_model,
     ChromeBrowserState* browser_state);
 

@@ -526,7 +526,6 @@
 <translation id="1645516838734033527">আপোনাৰ <ph name="DEVICE_TYPE" /> সুৰক্ষিত কৰিবলৈ স্মার্ট লকৰ বাবে আপোনাৰ ফ’নত স্ক্ৰীণ লকৰ আৱশ্যক।</translation>
 <translation id="1646982517418478057">এই প্ৰমাণপত্ৰ এনক্ৰিপ্ট কৰিবলৈ কোনো পাছৱর্ড দিয়ক</translation>
 <translation id="1648528859488547844">অৱস্থান নির্ধাৰণ কৰিবলৈ ৱাই-ফাই বা ম’বাইল নেটৱর্কসমূহ ব্যৱহাৰ কৰক</translation>
-<translation id="1648943974594387137">ছাইন ইন সবিশেষৰ ম্যাদ উকলিল</translation>
 <translation id="164936512206786300">ব্লুটুথ ডিভাইচ আনপেয়াৰ কৰক</translation>
 <translation id="1650371550981945235">ইনপুটৰ বিকল্প দেখুৱাওক</translation>
 <translation id="1651008383952180276">আপুনি একেটা পাছফ্ৰেজ দুবাৰ দিবই লাগিব</translation>
@@ -1330,7 +1329,6 @@
 <translation id="2635276683026132559">চহী কৰা</translation>
 <translation id="2636625531157955190">Chromeএ এই প্ৰতিচ্ছবিত এক্সেছ কৰিব নোৱাৰে।</translation>
 <translation id="2637400434494156704">ভুল পিন। আপোনাৰ এটা প্ৰচেষ্টা বাকী আছে।</translation>
-<translation id="2638087589890736295">ছিংক আৰম্ভ কৰিবলৈ পাছফ্রেজৰ আৱশ্যক</translation>
 <translation id="2638662041295312666">ছাইন-ইন প্ৰতিচ্ছবি</translation>
 <translation id="264083724974021997">আপোনাৰ ফ’নৰ সৈতে সংযোগ কৰক - ডায়ল’গ</translation>
 <translation id="2641065435954454414">ডাউনল'ড কৰিবলৈ সাজু কৰি থকা হৈছে</translation>
@@ -1484,7 +1482,6 @@
 <translation id="2809586584051668049">আৰু <ph name="NUMBER_ADDITIONAL_DISABLED" />টা</translation>
 <translation id="2810390687497823527">আপুনি যদি কোনো এক্সটেনশ্বন চিনাক্ত কৰিব পৰা নাই অথবা আপোনাৰ ব্ৰাউজাৰটোৱে আশা কৰা ধৰণে কাম কৰা নাই, আপুনি ইয়াত এক্সটেনশ্বনসমূহ অফ অথবা কাষ্টমাইজ কৰিব পাৰে।</translation>
 <translation id="2812049959647166806">থাণ্ডাৰব’ল্টটো সমৰ্থিত নহয়</translation>
-<translation id="2812944337881233323">ছাইন আউট কৰি পুনৰ ছাইন ইন কৰি চাওক</translation>
 <translation id="2812989263793994277">কোনো প্ৰতিচ্ছবি নেদেখুৱাব</translation>
 <translation id="2813094189969465044">অভিভাৱকীয় নিয়ন্ত্ৰণবোৰ</translation>
 <translation id="281390819046738856">অনুৰোধ ছাইন কৰিব পৰা নগ’ল।</translation>
@@ -3401,7 +3398,6 @@
 <translation id="529175790091471945">এই ডিভাইচটো ফর্মেট কৰক</translation>
 <translation id="5293170712604732402">ছেটিংসমূহক নিজৰ প্ৰকৃত ডিফ’ল্টলৈ পুনৰুদ্ধাৰ কৰক</translation>
 <translation id="5294097441441645251">এটা সৰুফলাৰ বৰ্ণ অথবা আণ্ডাৰস্ক’ৰেৰে আৰম্ভ হ’বই লাগিব</translation>
-<translation id="5296471962619441686">ছিংক পুনৰ আৰম্ভ কৰিবলৈ সমস্যাটো সমাধান কৰক</translation>
 <translation id="5297082477358294722">পাছৱৰ্ড ছেভ কৰা হ'ল। আপোনাৰ <ph name="SAVED_PASSWORDS_STORE" />ত ছেভ হৈ থকা পাছৱৰ্ড চাওক আৰু পৰিচালনা কৰক।</translation>
 <translation id="5298219193514155779">থীম সৃষ্টি কৰোঁতা</translation>
 <translation id="5299109548848736476">ট্ৰেক নকৰিব</translation>
@@ -5756,7 +5752,6 @@
 <translation id="8256417822772703842"><ph name="PRINTER_NAME" />ত চিয়াহী কম আছে</translation>
 <translation id="8257950718085972371">কেমেৰাৰ এক্সেছ অৱৰোধ কৰা কার্য অব্যাহত ৰাখক</translation>
 <translation id="8259239505248583312">আৰম্ভ কৰক</translation>
-<translation id="8260126382462817229">আকৌ ছাইন ইন কৰিবলৈ চেষ্টা কৰক</translation>
 <translation id="8260864402787962391">মাউছ</translation>
 <translation id="8261378640211443080">এই এক্সটেনশ্বনটো <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />ত সূচীবদ্ধ কৰা হোৱা নাই আৰু আপুনি নজনাকৈয়ে ইয়াক যোগ কৰা হ’ব পাৰে।</translation>
 <translation id="8261506727792406068">মচক</translation>

@@ -125,7 +125,7 @@ bool NGGridTrackCollectionBase::RangeRepeatIterator::SetRangeIndex(
 NGGridTrackRepeater::NGGridTrackRepeater(wtf_size_t track_index,
                                          wtf_size_t repeat_size,
                                          wtf_size_t repeat_count,
-                                         RepeatType repeat_type)
+                                         AutoRepeatType repeat_type)
     : track_index(track_index),
       repeat_size(repeat_size),
       repeat_count(repeat_count),
@@ -139,14 +139,14 @@ String NGGridTrackRepeater::ToString() const {
   builder.AppendNumber<wtf_size_t>(repeat_size);
   builder.Append("], [RepeatCount: ");
   switch (repeat_type) {
-    case RepeatType::kCount:
+    case AutoRepeatType::kNoAutoRepeat:
       builder.AppendNumber<wtf_size_t>(repeat_count);
       builder.Append("]");
       break;
-    case RepeatType::kAutoFill:
+    case AutoRepeatType::kAutoFill:
       builder.Append("auto-fill]");
       break;
-    case RepeatType::kAutoFit:
+    case AutoRepeatType::kAutoFit:
       builder.Append("auto-fit]");
       break;
   }
@@ -171,8 +171,7 @@ wtf_size_t NGGridTrackList::RepeatSize(wtf_size_t index) const {
   return repeaters_[index].repeat_size;
 }
 
-NGGridTrackRepeater::RepeatType NGGridTrackList::RepeatType(
-    wtf_size_t index) const {
+AutoRepeatType NGGridTrackList::RepeatType(wtf_size_t index) const {
   DCHECK_LT(index, RepeaterCount());
   return repeaters_[index].repeat_type;
 }
@@ -189,20 +188,19 @@ bool NGGridTrackList::AddRepeater(wtf_size_t track_index,
                                   wtf_size_t track_count,
                                   wtf_size_t repeat_count) {
   return AddRepeater(track_index, track_count, repeat_count,
-                     NGGridTrackRepeater::RepeatType::kCount);
+                     AutoRepeatType::kNoAutoRepeat);
 }
 
-bool NGGridTrackList::AddAutoRepeater(
-    wtf_size_t track_index,
-    wtf_size_t track_count,
-    NGGridTrackRepeater::RepeatType repeat_type) {
+bool NGGridTrackList::AddAutoRepeater(wtf_size_t track_index,
+                                      wtf_size_t track_count,
+                                      AutoRepeatType repeat_type) {
   return AddRepeater(track_index, track_count, 1u, repeat_type);
 }
 
 bool NGGridTrackList::AddRepeater(wtf_size_t track_index,
                                   wtf_size_t track_count,
                                   wtf_size_t repeat_count,
-                                  NGGridTrackRepeater::RepeatType repeat_type) {
+                                  AutoRepeatType repeat_type) {
   // Ensure valid track index.
   DCHECK_NE(NGGridTrackCollectionBase::kInvalidRangeIndex, track_index);
 
@@ -212,19 +210,18 @@ bool NGGridTrackList::AddRepeater(wtf_size_t track_index,
 #endif
 
   // If the repeater is auto, the repeat_count should be 1.
-  DCHECK(repeat_type == NGGridTrackRepeater::RepeatType::kCount ||
-         repeat_count == 1u);
+  DCHECK(repeat_type == AutoRepeatType::kNoAutoRepeat || repeat_count == 1u);
 
   // Ensure adding tracks will not overflow the total in this track list and
   // that there is only one auto repeater per track list.
   switch (repeat_type) {
-    case NGGridTrackRepeater::RepeatType::kCount:
+    case AutoRepeatType::kNoAutoRepeat:
       if (track_count > AvailableTrackCount() / repeat_count)
         return false;
       total_track_count_ += track_count * repeat_count;
       break;
-    case NGGridTrackRepeater::RepeatType::kAutoFill:
-    case NGGridTrackRepeater::RepeatType::kAutoFit:  // Intentional Fallthrough.
+    case AutoRepeatType::kAutoFill:
+    case AutoRepeatType::kAutoFit:  // Intentional Fallthrough.
       if (HasAutoRepeater() || track_count > AvailableTrackCount())
         return false;
       total_track_count_ += track_count;
@@ -273,6 +270,7 @@ void NGGridBlockTrackCollection::SetSpecifiedTracks(
     const NGGridTrackList& implicit_tracks) {
   // The implicit track list should have only one repeater, if any.
   DCHECK_LE(implicit_tracks.RepeaterCount(), 1u);
+  DCHECK_NE(NGGridTrackCollectionBase::kInvalidRangeIndex, auto_repeat_count);
   specified_tracks_ = specified_tracks;
   implicit_tracks_ = implicit_tracks;
   auto_repeat_count_ = auto_repeat_count;
@@ -368,7 +366,7 @@ void NGGridBlockTrackCollection::FinalizeRanges() {
       }
 
       is_in_auto_fit_range = specified_tracks_.RepeatType(repeater_index) ==
-                             NGGridTrackRepeater::RepeatType::kAutoFit;
+                             AutoRepeatType::kAutoFit;
       current_repeater_track_count =
           specified_tracks_.RepeatCount(repeater_index, auto_repeat_count_) *
           specified_tracks_.RepeatSize(repeater_index);

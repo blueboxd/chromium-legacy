@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "ash/public/cpp/login_screen.h"
+#include "ash/public/cpp/shell_window_ids.h"
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
@@ -39,6 +41,7 @@
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "ui/aura/window.h"
 
 namespace chromeos {
 
@@ -63,28 +66,33 @@ LoginDisplayHostMojo::AuthState::AuthState(
 
 LoginDisplayHostMojo::AuthState::~AuthState() = default;
 
-LoginDisplayHostMojo::LoginDisplayHostMojo()
+LoginDisplayHostMojo::LoginDisplayHostMojo(DisplayedScreen displayed_screen)
     : login_display_(std::make_unique<LoginDisplayMojo>(this)),
       user_board_view_mojo_(std::make_unique<UserBoardViewMojo>()),
       user_selection_screen_(
           std::make_unique<ChromeUserSelectionScreen>(kLoginDisplay)),
-      system_info_updater_(std::make_unique<MojoSystemInfoDispatcher>()) {
+      system_info_updater_(std::make_unique<MojoSystemInfoDispatcher>()),
+      displayed_screen_(displayed_screen) {
   user_selection_screen_->SetView(user_board_view_mojo_.get());
 
-  // Preload webui-based OOBE for add user, kiosk apps, etc.
-  LoadOobeDialog();
+  if (displayed_screen == DisplayedScreen::SIGN_IN_SCREEN) {
+    // Preload webui-based OOBE for add user, kiosk apps, etc.
+    LoadOobeDialog();
 
-  // Should be created after OobeUI loaded with the dialog.
-  wizard_controller_ = std::make_unique<WizardController>();
+    // Should be created after OobeUI loaded with the dialog.
+    wizard_controller_ = std::make_unique<WizardController>();
 
-  GetLoginScreenCertProviderService()->pin_dialog_manager()->AddPinDialogHost(
-      &security_token_pin_dialog_host_ash_impl_);
+    GetLoginScreenCertProviderService()->pin_dialog_manager()->AddPinDialogHost(
+        &security_token_pin_dialog_host_ash_impl_);
+  }
 }
 
 LoginDisplayHostMojo::~LoginDisplayHostMojo() {
-  GetLoginScreenCertProviderService()
-      ->pin_dialog_manager()
-      ->RemovePinDialogHost(&security_token_pin_dialog_host_ash_impl_);
+  if (displayed_screen_ == DisplayedScreen::SIGN_IN_SCREEN) {
+    GetLoginScreenCertProviderService()
+        ->pin_dialog_manager()
+        ->RemovePinDialogHost(&security_token_pin_dialog_host_ash_impl_);
+  }
   LoginScreenClient::Get()->SetDelegate(nullptr);
   if (dialog_) {
     dialog_->GetOobeUI()->signin_screen_handler()->SetDelegate(nullptr);
@@ -213,11 +221,23 @@ WizardController* LoginDisplayHostMojo::GetWizardController() {
 }
 
 void LoginDisplayHostMojo::OnStartUserAdding() {
-  NOTIMPLEMENTED();
+  VLOG(1) << "Login Mojo >> user adding";
+
+  // Lock container can be transparent after lock screen animation.
+  aura::Window* lock_container = ash::Shell::GetContainer(
+      ash::Shell::GetPrimaryRootWindow(),
+      ash::kShellWindowId_LockScreenContainersContainer);
+  lock_container->layer()->SetOpacity(1.0);
+
+  CreateExistingUserController();
+
+  SetStatusAreaVisible(true);
+  existing_user_controller_->Init(
+      user_manager::UserManager::Get()->GetUsersAllowedForMultiProfile());
 }
 
 void LoginDisplayHostMojo::CancelUserAdding() {
-  NOTIMPLEMENTED();
+  Finalize(base::OnceClosure());
 }
 
 void LoginDisplayHostMojo::OnStartSignInScreen() {
@@ -242,11 +262,7 @@ void LoginDisplayHostMojo::OnStartSignInScreen() {
 
   signin_screen_started_ = true;
 
-  existing_user_controller_ = std::make_unique<ExistingUserController>();
-  login_display_->set_delegate(existing_user_controller_.get());
-
-  // We need auth attempt results to notify views-based lock screen.
-  existing_user_controller_->set_login_status_consumer(this);
+  CreateExistingUserController();
 
   // Load the UI.
   existing_user_controller_->Init(user_manager::UserManager::Get()->GetUsers());
@@ -557,6 +573,14 @@ void LoginDisplayHostMojo::StopObservingOobeUI() {
   OobeUI* oobe_ui = GetOobeUI();
   if (oobe_ui)
     oobe_ui->RemoveObserver(this);
+}
+
+void LoginDisplayHostMojo::CreateExistingUserController() {
+  existing_user_controller_ = std::make_unique<ExistingUserController>();
+  login_display_->set_delegate(existing_user_controller_.get());
+
+  // We need auth attempt results to notify views-based login screen.
+  existing_user_controller_->set_login_status_consumer(this);
 }
 
 }  // namespace chromeos

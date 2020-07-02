@@ -10,7 +10,6 @@
 <translation id="1049743911850919806">అజ్ఞాత మోడ్</translation>
 <translation id="10614374240317010">ఎప్పటికి సేవ్ చెయ్యబడవు</translation>
 <translation id="1067922213147265141">ఇతర Google సేవలు</translation>
-<translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" />లో ఉన్న పేజీలను ఎప్పుడూ అనువదించవద్దు</translation>
 <translation id="107147699690128016">మీరు ఫైల్ ఎక్స్‌టెన్షన్‌ను మార్చితే, ఫైల్ వేరే అప్లికేషన్‌లో తెరవబడవచ్చు. అది మీ పరికరానికి హానికరంగా పరిణమించే అవకాశం ఉంటుంది.</translation>
 <translation id="1100066534610197918">సమూహంలో కొత్త ట్యాబ్‌లో తెరువు</translation>
 <translation id="1105960400813249514">స్క్రీన్ క్యాప్చర్</translation>
@@ -35,13 +34,11 @@
 <translation id="1229399675748764149">ఈ పేజీను మీ హోమ్‌పేజీగా చేసుకోండి</translation>
 <translation id="1231733316453485619">సమకాలీకరణను ఆన్ చేయాలా?</translation>
 <translation id="123724288017357924">కాష్ కంటెంట్ విస్మరించి ప్రస్తుత పేజీ మళ్లీ లోడ్ చేయండి</translation>
-<translation id="124116460088058876">మరిన్ని భాషలు</translation>
 <translation id="124678866338384709">ప్రస్తుత ట్యాబ్‌ను మూసివేయండి</translation>
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">శోధన &amp; విశ్లేషణ</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" />ను షేర్ చేయడం సాధ్యపడలేదు</translation>
 <translation id="1283039547216852943">విస్త‌రించ‌డానికి నొక్కండి</translation>
-<translation id="1285320974508926690">ఈ సైట్‌ను ఎప్పటికీ అనువదించవద్దు</translation>
 <translation id="1291207594882862231">చరిత్ర, కుక్కీలు, సైట్ డేటా, కాష్‌ను తీసివేస్తుంది…</translation>
 <translation id="129553762522093515">ఇటీవల మూసివెయ్యబడినవి</translation>
 <translation id="1303339473099049190">ఆ పాస్‌వర్డ్‌ను కనుగొనడం సాధ్యపడలేదు. మీ స్పెల్లింగ్ సరిచూసుకుని, ఆపై మళ్లీ ట్రై చేయండి.</translation>
@@ -239,7 +236,6 @@
 <translation id="2898264748040935573">నిల్వ చేసిన పాస్‌వర్డ్‌ను సవరించండి</translation>
 <translation id="2900528713135656174">ఈవెంట్‌ను సృష్టించండి</translation>
 <translation id="2903493209154104877">చిరునామాలు</translation>
-<translation id="290376772003165898">పేజీ <ph name="LANGUAGE" />లో లేదా?</translation>
 <translation id="2904414404539560095">ట్యాబ్‌ను షేర్ చేయాల్సిన పరికరాల జాబితా పూర్తి ఎత్తులో తెరవబడింది.</translation>
 <translation id="2905036901251765993">సమీపంలోని వ్యక్తులతో షేర్ చేయడానికి, ఈ QR కోడ్‌ను స్కాన్ చేయాల్సిందిగా వాళ్లను అడగండి</translation>
 <translation id="2909615210195135082">Google నోటిఫికేషన్‌ల ప్లాట్‌ఫామ్</translation>
@@ -415,7 +411,6 @@
 <translation id="4405224443901389797">ఇక్కడికి తరలించండి…</translation>
 <translation id="4411535500181276704">లైట్ మోడ్</translation>
 <translation id="4415276339145661267">మీ Google ఖాతాను నిర్వహించండి</translation>
-<translation id="4432792777822557199">ఇప్పటి నుండి <ph name="SOURCE_LANGUAGE" />లో ఉన్న పేజీలు <ph name="TARGET_LANGUAGE" />కు అనువదించబడతాయి</translation>
 <translation id="4440958355523780886">Google నుండి లైట్ పేజీ అందించబడింది. అసలు పేజీని లోడ్ చేయడానికి నొక్కండి.</translation>
 <translation id="4452411734226507615"><ph name="TAB_TITLE" /> ట్యాబ్‌ను మూసివేయండి</translation>
 <translation id="4452548195519783679"><ph name="FOLDER_NAME" />కి బుక్‌మార్క్ చేసారు</translation>
@@ -550,7 +545,6 @@
 <translation id="543509235395288790"><ph name="COUNT" /> ఫైల్‌లను డౌన్‌లోడ్ చేస్తోంది (<ph name="MEGABYTES" />).</translation>
 <translation id="5441522332038954058">చిరునామా పట్టీకి వెళ్లండి</translation>
 <translation id="5447201525962359567">కుక్కీలు, స్థానికంగా నిల్వ చేసిన ఇతర డేటాతో సహా మొత్తం సైట్ నిల్వ</translation>
-<translation id="5447765697759493033">ఈ సైట్ అనువదించబడదు</translation>
 <translation id="545042621069398927">మీ డౌన్‌లోడ్‌‌ను వేగవంతం చేస్తోంది.</translation>
 <translation id="5456381639095306749">పేజీని డౌన్‌లోడ్ చేయండి</translation>
 <translation id="548278423535722844">మ్యాప్స్ యాప్‌లో తెరువు</translation>
@@ -580,7 +574,6 @@
 <translation id="5659593005791499971">ఇమెయిల్</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" />లో ఈవెంట్‌ను సృష్టించండి</translation>
 <translation id="5668404140385795438">దగ్గరకు జూమ్ చేయడాన్ని నిరోధించడానికి ప్రయత్నించే వెబ్‌సైట్ అభ్యర్థనను పట్టించుకోదు</translation>
-<translation id="5684874026226664614">అయ్యో. ఈ పేజీని అనువదించడం సాధ్యపడలేదు.</translation>
 <translation id="5686790454216892815">ఫైల్ పేరు చాలా పొడవుగా ఉంది</translation>
 <translation id="5694049548840660018">ఇంటికి సులభంగా తిరిగి రండి</translation>
 <translation id="569536719314091526">మరిన్ని ఎంపికలు బటన్‌ని ఉపయోగించి ఈ పేజీని ఏ భాషలోకైనా అనువదించుకోవచ్చు</translation>
@@ -734,7 +727,6 @@
 <translation id="6767294960381293877">ట్యాబ్‌ను షేర్ చేయాల్సిన పరికరాల జాబితా సగం ఎత్తులో తెరవబడింది.</translation>
 <translation id="6811034713472274749">పేజీ వీక్షించడానికి సిద్ధంగా ఉంది</translation>
 <translation id="6820686453637990663">CVC</translation>
-<translation id="6831043979455480757">అనువదించు</translation>
 <translation id="6845325883481699275">Chrome భద్రతను మెరుగుపరచడంలో సహాయం చేయండి</translation>
 <translation id="6846298663435243399">లోడ్ చేస్తున్నాము…</translation>
 <translation id="6850409657436465440">మీ డౌన్‌లోడ్‌‌ ఇప్పటికీ జరుగుతోంది</translation>
@@ -842,7 +834,6 @@
 <translation id="7698359219371678927"><ph name="APP_NAME" />లో ఇమెయిల్‌ను సృష్టించండి</translation>
 <translation id="7704317875155739195">స్వయంపూర్తి శోధనలు మరియు URLలు</translation>
 <translation id="7725024127233776428">మీరు బుక్‌మార్క్ చేసే పేజీలు ఇక్కడ కనిపిస్తాయి</translation>
-<translation id="773466115871691567"><ph name="SOURCE_LANGUAGE" />లో ఉన్న పేజీలను ఎల్లప్పుడూ అనువదించు</translation>
 <translation id="7746457520633464754">Chrome ప్రమాదకరమైన యాప్‌లు, సైట్‌లను గుర్తించడానికి, మీరు సందర్శించే కొన్ని పేజీల URLలు, పరిమిత సిస్టమ్ సమాచారం, కొంత పేజీ కంటెంట్‌ను Googleకు పంపుతుంది</translation>
 <translation id="7757787379047923882"><ph name="DEVICE_NAME" /> నుండి షేర్ చేయబడిన వచనం</translation>
 <translation id="7761849928583394409">తేదీ, సమయం ఎంచుకోండి</translation>
@@ -922,7 +913,6 @@
 <translation id="8310344678080805313">ప్రామాణిక ట్యాబ్‌లు</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> మరియు మరిన్ని సైట్‌లు</translation>
 <translation id="8327155640814342956">ఉత్తమ బ్రౌజింగ్ అనుభవం కోసం, Chromeను అప్‌డేట్ చేయడానికి అనుమతించండి</translation>
-<translation id="8339163506404995330"><ph name="LANGUAGE" />లో ఉన్న పేజీలు అనువదించబడవు</translation>
 <translation id="8349013245300336738">వినియోగించిన డేటా పరిమాణం ద్వారా క్రమీకరించు</translation>
 <translation id="8364299278605033898">ప్రసిద్ధ వెబ్‌సైట్‌లను చూడండి</translation>
 <translation id="8368027906805972958">తెలియని లేదా మద్దతు లేని పరికరం (<ph name="DEVICE_ID" />)</translation>

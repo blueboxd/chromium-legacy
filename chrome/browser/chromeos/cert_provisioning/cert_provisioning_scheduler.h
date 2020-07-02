@@ -42,9 +42,17 @@ using WorkerMap =
 
 using CertProfileSet = base::flat_set<CertProfile, CertProfileComparator>;
 
+// Holds information about a worker which failed that is still useful (e.g. for
+// UI) after the worker has been destroyed.
 struct FailedWorkerInfo {
-  CertProvisioningWorkerState state = CertProvisioningWorkerState::kInitState;
+  // The state the worker had prior to switching to the failed state
+  // (CertProvisioningWorkerState::kFailed).
+  CertProvisioningWorkerState state_before_failure =
+      CertProvisioningWorkerState::kInitState;
+  // The DER-encoded X.509 SPKI.
   std::string public_key;
+  // The time the worker was last updated, i.e. when it transferred to the
+  // failed state.
   base::Time last_update_time;
 };
 

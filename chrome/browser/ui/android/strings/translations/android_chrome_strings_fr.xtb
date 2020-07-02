@@ -10,7 +10,6 @@
 <translation id="1049743911850919806">Navigation privée</translation>
 <translation id="10614374240317010">Jamais enregistrés</translation>
 <translation id="1067922213147265141">Autres services Google</translation>
-<translation id="1068672505746868501">Ne jamais traduire les pages en <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="107147699690128016">Si vous modifiez l'extension du fichier, celui-ci pourrait s'ouvrir dans une application différente et potentiellement endommager votre appareil.</translation>
 <translation id="1100066534610197918">Dans nouvel onglet dans groupe</translation>
 <translation id="1105960400813249514">Capture d'écran</translation>
@@ -35,13 +34,11 @@
 <translation id="1229399675748764149">Définir cette page comme page d'accueil</translation>
 <translation id="1231733316453485619">Activer la synchronisation ?</translation>
 <translation id="123724288017357924">Actualiser page active et ignorer contenu en cache</translation>
-<translation id="124116460088058876">Plus de langues</translation>
 <translation id="124678866338384709">Fermer l'onglet actuel</translation>
 <translation id="1258753120186372309">Doodle : <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Rechercher et explorer</translation>
 <translation id="1266864766717917324">Impossible de partager le contenu suivant : <ph name="CONTENT_TYPE" /></translation>
 <translation id="1283039547216852943">Appuyer pour développer</translation>
-<translation id="1285320974508926690">Ne jamais traduire ce site</translation>
 <translation id="1291207594882862231">Efface l'historique, vider le cache, supprimer les cookies et les données de site…</translation>
 <translation id="129553762522093515">Récemment fermés</translation>
 <translation id="1303339473099049190">Ce mot de passe est introuvable. Vérifiez l'orthographe, puis réessayez.</translation>
@@ -239,7 +236,6 @@ Appuyez sur n'importe quel mot pour effectuer une recherche. Pour affiner la rec
 <translation id="2898264748040935573">Modifier le mot de passe enregistré</translation>
 <translation id="2900528713135656174">Créer un événement</translation>
 <translation id="2903493209154104877">Adresses</translation>
-<translation id="290376772003165898">La page n'est pas en <ph name="LANGUAGE" /> ?</translation>
 <translation id="2904414404539560095">La liste des appareils avec lesquels vous pouvez partager un onglet est ouverte à hauteur maximale.</translation>
 <translation id="2905036901251765993">Pour partager avec des personnes à proximité, laissez-les scanner ce code QR</translation>
 <translation id="2909615210195135082">Plate-forme de notifications Google</translation>
@@ -415,7 +411,6 @@ Appuyez sur n'importe quel mot pour effectuer une recherche. Pour affiner la rec
 <translation id="4405224443901389797">Déplacer vers…</translation>
 <translation id="4411535500181276704">Mode simplifié</translation>
 <translation id="4415276339145661267">Gérer votre compte Google</translation>
-<translation id="4432792777822557199">Les pages en <ph name="SOURCE_LANGUAGE" /> seront désormais traduites en <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4440958355523780886">Page simplifiée fournie par Google. Appuyez pour charger la page d'origine.</translation>
 <translation id="4452411734226507615">Fermer l'onglet <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">Ajouté aux favoris dans "<ph name="FOLDER_NAME" />"</translation>
@@ -550,7 +545,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="543509235395288790">Téléchargement de <ph name="COUNT" /> fichiers (<ph name="MEGABYTES" />)…</translation>
 <translation id="5441522332038954058">Accéder à la barre d'adresse</translation>
 <translation id="5447201525962359567">Toutes les données de site stockées, y compris les cookies et d'autres données stockées en local</translation>
-<translation id="5447765697759493033">Ce site ne sera pas traduit</translation>
 <translation id="545042621069398927">Accélération du téléchargement…</translation>
 <translation id="5456381639095306749">Télécharger la page</translation>
 <translation id="548278423535722844">Ouvrir dans une application de plans</translation>
@@ -580,7 +574,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5665379678064389456">Créer un événement dans <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Ignore la demande d'un site d'empêcher les zooms avant</translation>
-<translation id="5684874026226664614">Petit problème… Impossible de traduire cette page.</translation>
 <translation id="5686790454216892815">Nom de fichier trop long</translation>
 <translation id="5694049548840660018">Revenir facilement à l'accueil</translation>
 <translation id="569536719314091526">Traduire cette page dans n'importe quelle langue à partir du bouton "Plus d'options"</translation>
@@ -734,7 +727,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6767294960381293877">La liste des appareils avec lesquels vous pouvez partager un onglet est ouverte à mi-hauteur.</translation>
 <translation id="6811034713472274749">La page est prête à être affichée</translation>
 <translation id="6820686453637990663">Code CVC :</translation>
-<translation id="6831043979455480757">Traduire</translation>
 <translation id="6845325883481699275">Contribuer à améliorer la sécurité de Chrome</translation>
 <translation id="6846298663435243399">Chargement…</translation>
 <translation id="6850409657436465440">Téléchargement toujours en cours</translation>
@@ -842,7 +834,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7698359219371678927">Créer un e-mail dans <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Saisir semi-automatiquement les recherches et les URL</translation>
 <translation id="7725024127233776428">Les pages que vous ajoutez aux favoris sont répertoriées ici</translation>
-<translation id="773466115871691567">Toujours traduire les pages en <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7746457520633464754">Pour détecter les applications et sites dangereux, Chrome envoie à Google l'URL de certaines pages que vous consultez, ainsi que des informations système limitées et une partie du contenu de certaines pages.</translation>
 <translation id="7757787379047923882">Texte partagé par <ph name="DEVICE_NAME" /></translation>
 <translation id="7761849928583394409">Sélectionner une date et une heure</translation>
@@ -922,7 +913,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8310344678080805313">Onglets standards</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> et autres sites</translation>
 <translation id="8327155640814342956">Pour une expérience de navigation optimale, ouvrez pour mettre à jour Chrome</translation>
-<translation id="8339163506404995330">Les pages en <ph name="LANGUAGE" /> ne seront pas traduites</translation>
 <translation id="8349013245300336738">Trier en fonction de la quantité de données utilisées</translation>
 <translation id="8364299278605033898">Affichez les sites Web populaires</translation>
 <translation id="8368027906805972958">Appareil inconnu ou non compatible (<ph name="DEVICE_ID" />)</translation>

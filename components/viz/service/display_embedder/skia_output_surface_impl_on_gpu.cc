@@ -1008,11 +1008,15 @@ void SkiaOutputSurfaceImplOnGpu::ScheduleOutputSurfaceAsOverlay(
 }
 
 void SkiaOutputSurfaceImplOnGpu::SwapBuffers(
+    base::TimeTicks post_task_timestamp,
     OutputSurfaceFrame frame,
     base::OnceCallback<bool()> deferred_framebuffer_draw_closure) {
   TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::SwapBuffers");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
+  if (!post_task_timestamp.is_null()) {
+    output_device_->SetDrawTimings(post_task_timestamp, base::TimeTicks::Now());
+  }
   if (deferred_framebuffer_draw_closure) {
     // Returns false if context not set to current, i.e lost
     if (!std::move(deferred_framebuffer_draw_closure).Run())
@@ -1085,6 +1089,7 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffersSkipped(
 }
 
 void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
+    base::TimeTicks post_task_timestamp,
     RenderPassId id,
     sk_sp<SkDeferredDisplayList> ddl,
     std::vector<ImageContextImpl*> image_contexts,
@@ -1093,6 +1098,10 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
   TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(ddl);
+
+  if (!post_task_timestamp.is_null()) {
+    output_device_->SetDrawTimings(post_task_timestamp, base::TimeTicks::Now());
+  }
 
   if (!MakeCurrent(false /* need_fbo0 */))
     return;

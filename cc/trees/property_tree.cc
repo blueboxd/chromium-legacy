@@ -10,6 +10,7 @@
 #include "base/check_op.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/checked_math.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/trees/clip_node.h"
 #include "cc/trees/effect_node.h"
@@ -949,8 +950,8 @@ void EffectTree::TakeCopyRequestsAndTransformToSurface(
                  .AssignIfValid(&scale_to_y)) {
           continue;
         }
-        int scale_from_x = gfx::ToRoundedInt(scale_from_x_f);
-        int scale_from_y = gfx::ToRoundedInt(scale_from_y_f);
+        int scale_from_x = base::Round(scale_from_x_f);
+        int scale_from_y = base::Round(scale_from_y_f);
         if (scale_from_x <= 0 || scale_from_y <= 0 || scale_to_x <= 0 ||
             scale_to_y <= 0) {
           // Transformed scaling ratio became illegal. Drop the request to

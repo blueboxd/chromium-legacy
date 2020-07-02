@@ -57,13 +57,6 @@ RendererResourceCoordinator::RendererResourceCoordinator() = default;
 
 RendererResourceCoordinator::~RendererResourceCoordinator() = default;
 
-void RendererResourceCoordinator::SetExpectedTaskQueueingDuration(
-    base::TimeDelta duration) {
-  if (!service_)
-    return;
-  service_->SetExpectedTaskQueueingDuration(duration);
-}
-
 void RendererResourceCoordinator::SetMainThreadTaskLoadIsLow(
     bool main_thread_task_load_is_low) {
   if (!service_)

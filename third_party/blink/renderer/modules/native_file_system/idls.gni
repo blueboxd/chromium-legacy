@@ -31,4 +31,5 @@ modules_dictionary_idl_files = [
 modules_dependency_idl_files = [
   "window_native_file_system.idl",
   "worker_global_scope_native_file_system.idl",
+  "data_transfer_item_native_file_system.idl",
 ]

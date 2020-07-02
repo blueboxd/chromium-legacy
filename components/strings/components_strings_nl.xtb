@@ -20,6 +20,7 @@
 <translation id="10614374240317010">Nooit opgeslagen</translation>
 <translation id="1062160989074299343">Prc10 (envelop)</translation>
 <translation id="106701514854093668">Desktopbladwijzers</translation>
+<translation id="1068672505746868501">Pagina's in het <ph name="SOURCE_LANGUAGE" /> nooit vertalen</translation>
 <translation id="1070901266639972381">Nacht</translation>
 <translation id="1074497978438210769">Niet beveiligd</translation>
 <translation id="1080116354587839789">Aanpassen aan breedte</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">Naamloos</translation>
 <translation id="1236081509407217141">VR toestaan?</translation>
 <translation id="1240347957665416060">De naam van je apparaat</translation>
+<translation id="124116460088058876">Meer talen</translation>
 <translation id="1250759482327835220">Sla je pas, naam en factuuradres op in je Google-account zodat je de volgende keer sneller kunt betalen.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (gesynchroniseerd)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Als je een website wilt bezoeken en deze niet wordt geopend, kun je eerst zelf proberen het probleem op te lossen aan de hand van de volgende stappen:&lt;/p&gt;
@@ -830,6 +832,7 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="4424024547088906515">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server wordt niet vertrouwd door Chrome. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="443121186588148776">Seriële poort</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> heeft je inlogcertificaat niet geaccepteerd of er is geen inlogcertificaat geleverd.</translation>
+<translation id="4432792777822557199">Pagina's in het <ph name="SOURCE_LANGUAGE" /> worden vanaf nu vertaald naar het <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">Pop-ups en omleidingen</translation>
 <translation id="4435702339979719576">Briefkaart</translation>
 <translation id="443673843213245140">Het gebruik van een proxy is uitgeschakeld, maar er is wel een expliciete proxyconfiguratie opgegeven.</translation>
@@ -999,7 +1002,7 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">Computer</translation>
 <translation id="5179510805599951267">Niet in het <ph name="ORIGINAL_LANGUAGE" />? Deze fout melden</translation>
-<translation id="5190835502935405962">Bladwijzerbalk</translation>
+<translation id="5190835502935405962">Bookmarkbalk</translation>
 <translation id="519422657042045905">Annotatie niet beschikbaar</translation>
 <translation id="5201306358585911203">Een ingesloten pagina op deze pagina meldt het volgende</translation>
 <translation id="5205222826937269299">Naam vereist</translation>
@@ -1061,6 +1064,7 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="5431657950005405462">Je bestand is niet gevonden</translation>
 <translation id="5439770059721715174">Schemavalidatiefout op '<ph name="ERROR_PATH" />': <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Omgekeerde volgorde met de bedrukte zijde omhoog</translation>
+<translation id="5447765697759493033">Deze site wordt niet vertaald</translation>
 <translation id="5452270690849572955">Deze pagina op <ph name="HOST_NAME" /> kan niet worden gevonden</translation>
 <translation id="5455374756549232013">Onjuist tijdstempel van beleid</translation>
 <translation id="5457113250005438886">Ongeldig</translation>
@@ -1606,6 +1610,7 @@ Aanvullende informatie:
 <translation id="7716375162095500223">Nog niet geüpload, of genegeerd</translation>
 <translation id="7716424297397655342">Deze site kan niet worden geladen vanuit het cachegeheugen</translation>
 <translation id="7723047071702270851">Pas bewerken</translation>
+<translation id="773466115871691567">Pagina's in het <ph name="SOURCE_LANGUAGE" /> altijd vertalen</translation>
 <translation id="7740996059027112821">Standaard</translation>
 <translation id="774634243536837715">Gevaarlijke content geblokkeerd.</translation>
 <translation id="7752995774971033316">Niet-beheerd</translation>
@@ -1751,9 +1756,10 @@ Aanvullende informatie:
 <translation id="831997045666694187">Avond</translation>
 <translation id="8332188693563227489">Toegang tot <ph name="HOST_NAME" /> is geweigerd</translation>
 <translation id="833262891116910667">Markeren</translation>
+<translation id="8339163506404995330">Pagina's in het <ph name="LANGUAGE" /> worden niet vertaald</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Als je de beveiligingsrisico's begrijpt, kun je <ph name="BEGIN_LINK" />deze site bezoeken<ph name="END_LINK" /> voordat de schadelijke programma's zijn verwijderd.</translation>
-<translation id="8349305172487531364">Bladwijzerbalk</translation>
+<translation id="8349305172487531364">Bookmarkbalk</translation>
 <translation id="8355270400102541638">Lokale crashcontext:</translation>
 <translation id="8363502534493474904">Zet de vliegtuigmodus uit</translation>
 <translation id="8364627913115013041">Niet ingesteld.</translation>

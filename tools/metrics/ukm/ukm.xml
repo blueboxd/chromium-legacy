@@ -10289,6 +10289,9 @@ be describing additional metrics about the same event.
     Responsiveness metrics recorded once every 5 seconds.
   </summary>
   <metric name="ExpectedTaskQueueingDuration">
+    <obsolete>
+      Removed June 2020.
+    </obsolete>
     <summary>
       Duration in MS for expected task queueing duration. The metric reflects
       the responsiveness of a tab. A lower value means the tab will respond to
@@ -11117,6 +11120,9 @@ be describing additional metrics about the same event.
 
 <event
     name="TabManager.BackgroundTabOpening.ForegroundTab.ExpectedTaskQueueingDurationInfo">
+  <obsolete>
+    Removed June 2020.
+  </obsolete>
   <owner>chrisha@chromium.org</owner>
   <summary>
     Collects the expected queueing duration of tasks and metadata for the

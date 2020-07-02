@@ -32,7 +32,7 @@
 <translation id="2125211348069077981"><ph name="ALT" /><ph name="SEPARATOR" /><ph name="E" /> of <ph name="F" /></translation>
 <translation id="2145908266289632567">Tekst bewerken</translation>
 <translation id="215292019801409139"><ph name="SEARCH" /><ph name="SEPARATOR" /> 1 tot en met =</translation>
-<translation id="2181097965834437145">De bladwijzerbalk weergeven of verbergen</translation>
+<translation id="2181097965834437145">De bookmarkbalk weergeven of verbergen</translation>
 <translation id="2185166372312820725">Naar het vorige tabblad gaan</translation>
 <translation id="2194790690264064655">Druk op <ph name="CTRL" /> en klik op een link</translation>
 <translation id="2246352309084894470">De Launcher op volledig scherm openen/sluiten</translation>
@@ -84,7 +84,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 tot en met 8</translation>
 <translation id="3837047332182291558">Toetsenbord helderder maken (alleen voor toetsenborden met achtergrondverlichting)</translation>
 <translation id="3949671998904569433">komma</translation>
-<translation id="3976863468609830880">Klikken op het laatste pictogram op de plank</translation>
+<translation id="3976863468609830880">Klikken op het laatste icoon op de plank</translation>
 <translation id="3994783594793697310">Zoomniveau scherm resetten</translation>
 <translation id="4026843240379844265">Actief venster verplaatsen tussen schermen</translation>
 <translation id="4035482366624727273">Alles op de pagina selecteren</translation>
@@ -97,7 +97,7 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> of <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Overzichtsmodus</translation>
 <translation id="4382340674111381977">Ga terug naar de vorige pagina</translation>
-<translation id="4458670250301149821">Een app-pictogram verplaatsen naar/uit een map in het app-raster</translation>
+<translation id="4458670250301149821">Een app-icoon verplaatsen naar/uit een map in het app-raster</translation>
 <translation id="4472417192667361414">Systeem- en weergave-instellingen</translation>
 <translation id="449214506787633354"><ph name="CTRL" />, daarna <ph name="LEFT" /> of <ph name="RIGHT" /> of <ph name="UP" /> of <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">Hulp voor sneltoetsen openen</translation>
@@ -142,7 +142,7 @@
 <translation id="6340769215862220182">Inzoomen scherm</translation>
 <translation id="6359811074279051077"><ph name="MODIFIER" /><ph name="SEPARATOR" /><ph name="KEY" /></translation>
 <translation id="6395172954772765143">Tekst tot het einde van de regel selecteren</translation>
-<translation id="6425378783626925378">Klikken op pictogram 1-8 op de plank</translation>
+<translation id="6425378783626925378">Klikken op icoon 1-8 op de plank</translation>
 <translation id="6435207348963613811">Het vorige item op de plank markeren</translation>
 <translation id="6445033640292336367">Het tabblad terugzetten op zijn oorspronkelijke positie</translation>
 <translation id="6474744297082284761">Uitzoomen (indien gedockt OF wanneer 'Volledig scherm vergroten' is ingeschakeld)</translation>
@@ -163,7 +163,7 @@
 <translation id="7020813747703216897">Geen overeenkomende resultaten gevonden</translation>
 <translation id="7025325401470358758">Volgend deelvenster</translation>
 <translation id="7076878155205969899">Geluid dempen</translation>
-<translation id="7077383985738259936">De focus op de bladwijzerbalk plaatsen of de bladwijzerbalk markeren (indien weergegeven)</translation>
+<translation id="7077383985738259936">De focus op de bookmarkbalk plaatsen of de bookmarkbalk markeren (indien weergegeven)</translation>
 <translation id="7237562915163138771">Typ een webadres in de adresbalk en druk vervolgens op <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7254764037241667478">Apparaat in de slaapstand zetten (onderbreken)</translation>
 <translation id="7422707470576323858">Overschakelen naar de volgende beschikbare invoermethode</translation>
@@ -171,7 +171,7 @@
 <translation id="7439718573248533901">De volgende letter verwijderen (vooruit verwijderen)</translation>
 <translation id="7500368597227394048">koppelteken</translation>
 <translation id="7611271430932669992">De focus naar pop-ups en dialoogvensters verplaatsen</translation>
-<translation id="7635348532214572995">Een app-pictogram verplaatsen in het app-raster</translation>
+<translation id="7635348532214572995">Een app-icoon verplaatsen in het app-raster</translation>
 <translation id="766326951329901120">Content vanaf het klembord plakken als platte tekst</translation>
 <translation id="7703010453515335249">rechte haak links</translation>
 <translation id="7724603315864178912">Knip</translation>
@@ -181,7 +181,7 @@
 <translation id="8026334261755873520">Browsegegevens wissen</translation>
 <translation id="8130528849632411619">Naar het begin van het document gaan</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> of <ph name="E" /></translation>
-<translation id="8232835244134740473">Focus schakelen tussen: statusgedeelte (waar je accountafbeelding wordt weergegeven), Launcher, adresbalk, bladwijzerbalk (indien zichtbaar), de geopende webpagina en de downloadbalk (indien zichtbaar).</translation>
+<translation id="8232835244134740473">Focus schakelen tussen: statusgedeelte (waar je accountafbeelding wordt weergegeven), Launcher, adresbalk, bookmarkbalk (indien zichtbaar), de geopende webpagina en de downloadbalk (indien zichtbaar).</translation>
 <translation id="8234414138295101081">Scherm 90 graden draaien</translation>
 <translation id="8241665785394195545">rechte haak rechts</translation>
 <translation id="8264941229485248811">De Developer Tools-inspector weergeven of verbergen</translation>
@@ -199,7 +199,7 @@
 <translation id="8881584919399569791">Actief venster verplaatsen naar het bureaublad aan de linkerkant</translation>
 <translation id="88986195241502842">Page Down</translation>
 <translation id="8924883688469390268">Overschakelen naar de vorige gebruiker</translation>
-<translation id="8977648847395357314">De inhoud in de adresbalk selecteren</translation>
+<translation id="8977648847395357314">De content in de adresbalk selecteren</translation>
 <translation id="8982190978301344584">Het menu weergeven met een lijst met beschikbare IME's</translation>
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 tot en met 8</translation>
 <translation id="9005984960510803406">Crosh-venster openen</translation>
@@ -212,7 +212,7 @@
 <translation id="9162942292291287644">Geen zoekresultaat voor <ph name="QUERY" /></translation>
 <translation id="9179672198516322668">Populaire sneltoetsen</translation>
 <translation id="93603345341560814">Druk op <ph name="SHIFT" /> en klik op een link</translation>
-<translation id="945383118875625837">Link slepen naar bladwijzerbalk</translation>
+<translation id="945383118875625837">Link naar bookmarkbalk slepen</translation>
 <translation id="969054500339500113">De focus op de menubalk plaatsen</translation>
 <translation id="98120814841227350">Naar het einde van het document gaan</translation>
 </translationbundle>

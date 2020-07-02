@@ -161,6 +161,36 @@ class RTCVideoEncoderTest
     return codec;
   }
 
+  webrtc::VideoCodec GetDefaultTemporalLayerCodec() {
+    const webrtc::VideoCodecType codec_type = webrtc::kVideoCodecVP9;
+    webrtc::VideoCodec codec{};
+    codec.codecType = codec_type;
+    codec.width = kInputFrameWidth;
+    codec.height = kInputFrameHeight;
+    codec.startBitrate = kStartBitrate;
+    codec.maxBitrate = codec.startBitrate * 2;
+    codec.minBitrate = codec.startBitrate / 2;
+    codec.maxFramerate = 24;
+    codec.active = true;
+    codec.qpMax = 30;
+    codec.numberOfSimulcastStreams = 1;
+    codec.mode = webrtc::VideoCodecMode::kRealtimeVideo;
+    webrtc::VideoCodecVP9& vp9 = *codec.VP9();
+    vp9.numberOfTemporalLayers = 3;
+    vp9.numberOfSpatialLayers = 1;
+    webrtc::SpatialLayer& sl = codec.spatialLayers[0];
+    sl.width = kInputFrameWidth;
+    sl.height = kInputFrameHeight;
+    sl.maxFramerate = 24;
+    sl.numberOfTemporalLayers = vp9.numberOfTemporalLayers;
+    sl.targetBitrate = kStartBitrate;
+    sl.maxBitrate = sl.targetBitrate;
+    sl.minBitrate = sl.targetBitrate;
+    sl.qpMax = 30;
+    sl.active = true;
+    return codec;
+  }
+
   void FillFrameBuffer(rtc::scoped_refptr<webrtc::I420Buffer> frame) {
     CHECK(libyuv::I420Rect(frame->MutableDataY(), frame->StrideY(),
                            frame->MutableDataU(), frame->StrideU(),
@@ -187,6 +217,45 @@ class RTCVideoEncoderTest
     client_->BitstreamBufferReady(
         0,
         media::BitstreamBufferMetadata(0, force_keyframe, frame->timestamp()));
+  }
+
+  void ReturnTemporalLayerFrameWithVp9Metadata(
+      scoped_refptr<media::VideoFrame> frame,
+      bool force_keyframe) {
+    int32_t bitstream_buffer_id = frame->timestamp().InMicroseconds();
+    CHECK(0 <= bitstream_buffer_id && bitstream_buffer_id <= 4);
+    media::BitstreamBufferMetadata metadata(100u /* payload_size_bytes */,
+                                            force_keyframe, frame->timestamp());
+    // Assume the number of TLs is three. TL structure is below.
+    // TL2:      [#1]     /-[#3]
+    // TL1:     /_____[#2]   /
+    // TL0: [#0]-----------------[#4]
+    media::Vp9Metadata vp9;
+    vp9.has_reference = bitstream_buffer_id != 0 && !force_keyframe;
+    vp9.temporal_up_switch = bitstream_buffer_id != 3;
+    switch (bitstream_buffer_id) {
+      case 0:
+        vp9.temporal_idx = 0;
+        break;
+      case 1:
+        vp9.temporal_idx = 2;
+        vp9.p_diffs = {1};
+        break;
+      case 2:
+        vp9.temporal_idx = 1;
+        vp9.p_diffs = {2};
+        break;
+      case 3:
+        vp9.temporal_idx = 2;
+        vp9.p_diffs = {1, 3};
+        break;
+      case 4:
+        vp9.temporal_idx = 0;
+        vp9.p_diffs = {4};
+        break;
+    }
+    metadata.vp9 = vp9;
+    client_->BitstreamBufferReady(bitstream_buffer_id, metadata);
   }
 
   void VerifyTimestamp(uint32_t rtp_timestamp,
@@ -236,34 +305,10 @@ INSTANTIATE_TEST_SUITE_P(CodecProfiles,
                                 webrtc::kVideoCodecH264));
 
 TEST_F(RTCVideoEncoderTest, CreateAndInitSucceedsForTemporalLayer) {
-  const webrtc::VideoCodecType codec_type = webrtc::kVideoCodecVP9;
-  CreateEncoder(codec_type);
-  webrtc::VideoCodec codec{};
-  codec.codecType = codec_type;
-  codec.width = kInputFrameWidth;
-  codec.height = kInputFrameHeight;
-  codec.startBitrate = kStartBitrate;
-  codec.maxBitrate = codec.startBitrate * 2;
-  codec.minBitrate = codec.startBitrate / 2;
-  codec.maxFramerate = 24;
-  codec.active = true;
-  codec.qpMax = 30;
-  codec.numberOfSimulcastStreams = 1;
-  codec.mode = webrtc::VideoCodecMode::kRealtimeVideo;
-  webrtc::VideoCodecVP9& vp9 = *codec.VP9();
-  vp9.numberOfTemporalLayers = 3;
-  vp9.numberOfSpatialLayers = 1;
-  webrtc::SpatialLayer& sl = codec.spatialLayers[0];
-  sl.width = kInputFrameWidth;
-  sl.height = kInputFrameHeight;
-  sl.maxFramerate = 24;
-  sl.numberOfTemporalLayers = vp9.numberOfTemporalLayers;
-  sl.targetBitrate = kStartBitrate;
-  sl.maxBitrate = sl.targetBitrate;
-  sl.minBitrate = sl.targetBitrate;
-  sl.qpMax = 30;
-  sl.active = true;
-  EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK, rtc_encoder_->InitEncode(&codec, 1, 12345));
+  webrtc::VideoCodec tl_codec = GetDefaultTemporalLayerCodec();
+  CreateEncoder(tl_codec.codecType);
+  EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK,
+            rtc_encoder_->InitEncode(&tl_codec, 1, 12345));
 }
 
 // Checks that WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE is returned when there is
@@ -379,4 +424,30 @@ TEST_F(RTCVideoEncoderTest, PreserveTimestamps) {
             rtc_encoder_->Encode(rtc_frame, &frame_types));
 }
 
+TEST_F(RTCVideoEncoderTest, EncodeTemporalLayer) {
+  webrtc::VideoCodec tl_codec = GetDefaultTemporalLayerCodec();
+  CreateEncoder(tl_codec.codecType);
+  EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK,
+            rtc_encoder_->InitEncode(&tl_codec, 1, 12345));
+  size_t kNumEncodeFrames = 5u;
+  EXPECT_CALL(*mock_vea_, Encode(_, _))
+      .Times(kNumEncodeFrames)
+      .WillRepeatedly(Invoke(
+          this, &RTCVideoEncoderTest::ReturnTemporalLayerFrameWithVp9Metadata));
+
+  for (size_t i = 0; i < kNumEncodeFrames; i++) {
+    const rtc::scoped_refptr<webrtc::I420Buffer> buffer =
+        webrtc::I420Buffer::Create(kInputFrameWidth, kInputFrameHeight);
+    FillFrameBuffer(buffer);
+    std::vector<webrtc::VideoFrameType> frame_types;
+    EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK,
+              rtc_encoder_->Encode(webrtc::VideoFrame::Builder()
+                                       .set_video_frame_buffer(buffer)
+                                       .set_timestamp_rtp(0)
+                                       .set_timestamp_us(i)
+                                       .set_rotation(webrtc::kVideoRotation_0)
+                                       .build(),
+                                   &frame_types));
+  }
+}
 }  // namespace blink

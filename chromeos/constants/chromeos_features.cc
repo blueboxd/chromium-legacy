@@ -246,6 +246,10 @@ const base::Feature kImeInputLogicFst{"ImeInputLogicFst",
 const base::Feature kImeInputLogicMozc{"ImeInputLogicMozc",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables view-based version of multiprofile login, as opposed to Web UI one.
+const base::Feature kViewBasedMultiprofileLogin{
+    "ViewBasedMultiprofileLogin", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable or disable using the floating virtual keyboard as the default option
 // on Chrome OS.
 const base::Feature kVirtualKeyboardFloatingDefault{
@@ -542,6 +546,10 @@ bool IsQuickAnswersTranslationEnabled() {
 
 bool IsSplitSettingsSyncEnabled() {
   return base::FeatureList::IsEnabled(kSplitSettingsSync);
+}
+
+bool IsViewBasedMultiprofileLoginEnabled() {
+  return base::FeatureList::IsEnabled(kViewBasedMultiprofileLogin);
 }
 
 bool ShouldShowPlayStoreInDemoMode() {

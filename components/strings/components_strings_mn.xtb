@@ -20,6 +20,7 @@
 <translation id="10614374240317010">Огт хадгалагдаагүй байна</translation>
 <translation id="1062160989074299343">Prc10 (Дугтуй)</translation>
 <translation id="106701514854093668">Дэлгэцийн хавчуурга</translation>
+<translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" /> хэл дээрх хуудсыг хэзээ ч орчуулахгүй</translation>
 <translation id="1070901266639972381">Шөнө</translation>
 <translation id="1074497978438210769">Аюултай</translation>
 <translation id="1080116354587839789">Өргөний хэмжээнд тааруулах</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">Гарчиггүй</translation>
 <translation id="1236081509407217141">Виртуал Орчин (VR)-ыг зөвшөөрөх үү?</translation>
 <translation id="1240347957665416060">Таны төхөөрөмжийн нэр</translation>
+<translation id="124116460088058876">Бусад хэл</translation>
 <translation id="1250759482327835220">Дараагийн удаа төлбөрөө хурдан төлөхийн тулд Google Бүртгэлдээ карт, нэр болон тооцооны хаягаа хадгална уу.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (синк хийсэн)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Хэрэв та вэбсайтад зочлохоор оролдох үед нээгдэхгүй байвал эдгээр асуудал шийдэх алхмыг дагаж алдааг засахаар оролдоно уу:&lt;/p&gt;
@@ -841,6 +843,7 @@
 <translation id="4424024547088906515">Энэ сервер нь <ph name="DOMAIN" />-аа баталж чадсангүй; учир нь энэхүү сертификатыг Chrome хүлээн зөвшөөрдөггүй. Энэ нь тохиргоо буруу хийгдсэнээс эсвэл халдагч таны холболтонд саад учруулж байгаагаас шалтгаалж болох юм.</translation>
 <translation id="443121186588148776">Цуваа порт</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> таны нэвтрэх сертификатыг зөвшөөрөөгүй, эсвэл та сертификат олгоогүй байна.</translation>
+<translation id="4432792777822557199">Одооноос <ph name="SOURCE_LANGUAGE" /> хэл дээрх хуудсыг <ph name="TARGET_LANGUAGE" /> хэл рүү орчуулна</translation>
 <translation id="4434045419905280838">Попап болон дахин чиглүүлэлт</translation>
 <translation id="4435702339979719576">Ил захидал)</translation>
 <translation id="443673843213245140">Орлон ашиглах эрхийг хаасан байгаа боловч тодорхой түвшинд орлон ашиглах тохиргоог тусгасан байна.</translation>
@@ -1072,6 +1075,7 @@
 <translation id="5431657950005405462">Таны файл олдсонгүй</translation>
 <translation id="5439770059721715174">"<ph name="ERROR_PATH" />":<ph name="ERROR" /> дэх схемийн баталгаажуулахад гарсан алдаа</translation>
 <translation id="5443468954631487277">Нүүрээр нь дээш харуулж, хуудасны урвуу дарааллаар</translation>
+<translation id="5447765697759493033">Энэ сайтыг орчуулахгүй</translation>
 <translation id="5452270690849572955">Энэ <ph name="HOST_NAME" /> хуудас олдсонгүй</translation>
 <translation id="5455374756549232013">Журмын кодлол сул байна</translation>
 <translation id="5457113250005438886">Хүчингүй</translation>
@@ -1617,6 +1621,7 @@
 <translation id="7716375162095500223">Хараахан байршуулаагүй эсвэл үл хэрэгсээгүй</translation>
 <translation id="7716424297397655342">Энэ сайтыг нөөцөөс ачаалах боломжгүй</translation>
 <translation id="7723047071702270851">Картыг засах</translation>
+<translation id="773466115871691567"><ph name="SOURCE_LANGUAGE" /> хэл дээрх хуудсыг байнга орчуулна</translation>
 <translation id="7740996059027112821">Стандарт</translation>
 <translation id="774634243536837715">Аюултай агуулгыг блоклосон.</translation>
 <translation id="7752995774971033316">Ажиллаж дуусаагүй</translation>
@@ -1762,6 +1767,7 @@
 <translation id="831997045666694187">Үдэш</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" />-н хандах хүсэлтийг зөвшөөрсөнгүй</translation>
 <translation id="833262891116910667">Тодруулах</translation>
+<translation id="8339163506404995330"><ph name="LANGUAGE" /> хэл дээрх хуудсыг орчуулахгүй</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Гэмтэл учруулж болох програмуудыг устгахаас өмнө та энэ сайтад зочилсноор гарч болох эрсдлийг ойлгож байгаа бол <ph name="BEGIN_LINK" />энэ сайтад зочилно уу<ph name="END_LINK" />.</translation>
 <translation id="8349305172487531364">Хайлтын жагсаалтын цонх</translation>

@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DOM_WINDOW_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DOM_WINDOW_H_
 
+#include "services/network/public/mojom/cross_origin_opener_policy.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/transferables.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
@@ -12,6 +13,7 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -130,6 +132,14 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData {
                              LocalDOMWindow* source,
                              ExceptionState&);
 
+  // Cross-Origin-Opener-Policy (COOP):
+  // Check accesses from |accessing_frame| and his same-origin iframes toward
+  // this window. If this happens, a report will be sent to |reporter|.
+  void InstallCoopAccessMonitor(
+      LocalFrame* accessing_frame,
+      mojo::PendingRemote<
+          network::mojom::blink::CrossOriginOpenerPolicyReporter> reporter);
+
  protected:
   explicit DOMWindow(Frame&);
 
@@ -160,6 +170,16 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData {
   // operation has been performed, exposes (confusing)
   // implementation details to scripts.
   bool window_is_closing_;
+
+  // Cross-Origin-Opener-Policy (COOP):
+  // Check accesses made toward this window from |accessing_main_frame|. If this
+  // happens a report will sent to |reporter|.
+  struct CoopAccessMonitor {
+    base::UnguessableToken accessing_main_frame;
+    mojo::Remote<network::mojom::blink::CrossOriginOpenerPolicyReporter>
+        reporter;
+  };
+  WTF::Vector<CoopAccessMonitor> coop_access_monitor_;
 };
 
 }  // namespace blink

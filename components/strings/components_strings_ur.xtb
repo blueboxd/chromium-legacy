@@ -20,6 +20,7 @@
 <translation id="10614374240317010">کبھی بھی محفوظ نہیں کیا ہوا</translation>
 <translation id="1062160989074299343">Prc10 ‎(Envelope‎)‎</translation>
 <translation id="106701514854093668">ڈیسک ٹاپ بُک مارکس</translation>
+<translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" /> کے صفحات کا کبھی ترجمہ نہ کریں</translation>
 <translation id="1070901266639972381">رات</translation>
 <translation id="1074497978438210769">محفوظ نہیں</translation>
 <translation id="1080116354587839789">چوڑائی میں فٹ کریں</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">بلا عنوان</translation>
 <translation id="1236081509407217141">‏VR کی اجازت دیں؟</translation>
 <translation id="1240347957665416060">آپ کے آلے کا نام</translation>
+<translation id="124116460088058876">مزید زبانیں</translation>
 <translation id="1250759482327835220">‏اگلی بار زیادہ تیزی سے ادائیگی کرنے کیلئے، اپنے کارڈ، نام اور بلنگ پتہ کو اپنے Google اکاؤنٹ میں محفوظ کریں۔</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />، <ph name="TYPE_2" /> (مطابقت پذیر کردہ)</translation>
 <translation id="1256368399071562588">‏&lt;p&gt;اگر آپ کوئی ویب سائٹ ملاحظہ کرنے کی کوشش کرتے ہیں اور وہ نہیں کھلتی ہے، تو پہلے ٹربل شوٹنگ کے ان مراحل کی مدد سے خرابی کو ٹھیک کرنے کی کوشش کریں:&lt;/p&gt;
@@ -843,6 +845,7 @@
 <translation id="4424024547088906515">‏یہ سرور یہ بات ثابت نہیں کر سکا کہ یہ <ph name="DOMAIN" /> ہے؛ اس کے سیکیورٹی سرٹیفکیٹ پر Chrome کو بھروسہ نہیں ہے۔ یہ غلط کنفیگرییشن یا آپ کے کنکشن کو قطع کرنے والے کسی حملہ آور کی وجہ سے ہو سکتا ہے۔</translation>
 <translation id="443121186588148776">سیریل پورٹ</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> نے آپ کا لاگ ان سرٹیفکیٹ قبول نہیں کیا یا ممکن ہے کوئی فراہم نہ کیا گیا ہو۔</translation>
+<translation id="4432792777822557199">آئندہ سے <ph name="SOURCE_LANGUAGE" /> کے صفحات کا <ph name="TARGET_LANGUAGE" /> میں ترجمہ کیا جائے گا</translation>
 <translation id="4434045419905280838">پوپ اپس اور ری ڈائریکٹس</translation>
 <translation id="4435702339979719576">Postcard)‎</translation>
 <translation id="443673843213245140">پراکسی کا استعمال غیر فعال کر دیا گیا ہے لیکن ایک واضح پراکسی کنفیگریشن متعین کی گئی ہے۔</translation>
@@ -1074,6 +1077,7 @@
 <translation id="5431657950005405462">آپ کی فائل نہیں ملی</translation>
 <translation id="5439770059721715174">"<ph name="ERROR_PATH" />" پر سکیما کی توثیق میں خرابی: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">اُلٹ ترتیب میں، صفحات کا رُخ اوپر کی جانب</translation>
+<translation id="5447765697759493033">اس سائٹ کا ترجمہ نہیں ہوگا</translation>
 <translation id="5452270690849572955">یہ <ph name="HOST_NAME" /> صفحہ تلاش نہیں کیا جا سکتا ہے</translation>
 <translation id="5455374756549232013">غلط پالیسی ٹائم اسٹامپ</translation>
 <translation id="5457113250005438886">غلط</translation>
@@ -1621,6 +1625,7 @@
 <translation id="7716375162095500223">ابھی اپلوڈ نہیں ہوا، یا نظرانداز کیا گیا</translation>
 <translation id="7716424297397655342">اس سائٹ کو کیش سے لوڈ نہیں کیا جا سکتا ہے</translation>
 <translation id="7723047071702270851">کارڈ میں ترمیم کریں</translation>
+<translation id="773466115871691567">ہمیشہ <ph name="SOURCE_LANGUAGE" /> کے صفحات کا ترجمہ کریں</translation>
 <translation id="7740996059027112821">معیاری</translation>
 <translation id="774634243536837715">خطرناک مواد مسدود ہے۔</translation>
 <translation id="7752995774971033316">غیر نظم کردہ</translation>
@@ -1766,6 +1771,7 @@
 <translation id="831997045666694187">شام</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" /> تک رسائی مسترد کر دی گئی</translation>
 <translation id="833262891116910667">ہائی لائٹ کریں</translation>
+<translation id="8339163506404995330"><ph name="LANGUAGE" /> کے صفحات کا ترجمہ نہیں کیا جائے گا</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">اگر آپ اپنی سیکیورٹی کے خطروں کو سمجھتے ہیں تو آپ خطرناک پروگراموں کو ہٹائے جانے سے پہلے <ph name="BEGIN_LINK" />یہ سائٹ ملاحظہ<ph name="END_LINK" /> کر سکتے ہیں۔</translation>
 <translation id="8349305172487531364">بُک مارکس بار</translation>

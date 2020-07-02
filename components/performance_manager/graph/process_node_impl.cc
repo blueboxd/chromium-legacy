@@ -36,11 +36,6 @@ void ProcessNodeImpl::Bind(
   receiver_.Bind(std::move(receiver));
 }
 
-void ProcessNodeImpl::SetExpectedTaskQueueingDuration(
-    base::TimeDelta duration) {
-  expected_task_queueing_duration_.SetAndNotify(this, duration);
-}
-
 void ProcessNodeImpl::SetMainThreadTaskLoadIsLow(
     bool main_thread_task_load_is_low) {
   main_thread_task_load_is_low_.SetAndMaybeNotify(this,
@@ -89,9 +84,10 @@ PageNodeImpl* ProcessNodeImpl::GetPageNodeIfExclusive() const {
   return page_node;
 }
 
-int ProcessNodeImpl::GetRenderProcessId() const {
+RenderProcessHostId ProcessNodeImpl::GetRenderProcessId() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return render_process_host_proxy_.render_process_host_id();
+  return RenderProcessHostId(
+      render_process_host_proxy_.render_process_host_id());
 }
 
 void ProcessNodeImpl::AddFrame(FrameNodeImpl* frame_node) {
@@ -190,11 +186,6 @@ base::flat_set<const FrameNode*> ProcessNodeImpl::GetFrameNodes() const {
   return frames;
 }
 
-base::TimeDelta ProcessNodeImpl::GetExpectedTaskQueueingDuration() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return expected_task_queueing_duration();
-}
-
 bool ProcessNodeImpl::GetMainThreadTaskLoadIsLow() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return main_thread_task_load_is_low();
@@ -208,6 +199,11 @@ uint64_t ProcessNodeImpl::GetPrivateFootprintKb() const {
 uint64_t ProcessNodeImpl::GetResidentSetKb() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return resident_set_kb();
+}
+
+RenderProcessHostId ProcessNodeImpl::GetRenderProcessHostId() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return GetRenderProcessId();
 }
 
 const RenderProcessHostProxy& ProcessNodeImpl::GetRenderProcessHostProxy()

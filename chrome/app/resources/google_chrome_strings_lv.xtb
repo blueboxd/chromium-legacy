@@ -15,6 +15,7 @@
 <translation id="137466361146087520">Google Chrome Beta</translation>
 <translation id="1399397803214730675">Šim datoram jau ir instalēta jaunākā Google Chrome versija. Ja programmatūra nedarbojas, atinstalējiet Google Chrome un mēģiniet vēlreiz.</translation>
 <translation id="1434626383986940139">Chrome Canary lietotnes</translation>
+<translation id="1514913130539345610">Administrators ir atspējojis Chrome pārbaudi kaitīgas programmatūras noteikšanai</translation>
 <translation id="1553358976309200471">Atjaunināt Chrome</translation>
 <translation id="1587223624401073077">Pārlūkā Google Chrome tiek izmantota kamera.</translation>
 <translation id="1587325591171447154">Fails <ph name="FILE_NAME" /> ir bīstams, tādēļ Chrome to bloķēja.</translation>
@@ -123,6 +124,7 @@
 <translation id="4458462641685292929">Tiek veikta cita darbība pārlūkā Google Chrome. Lūdzu, vēlāk mēģiniet vēlreiz.</translation>
 <translation id="4480040274068703980">Chrome OS nevarēja sinhronizēt jūsu datus pierakstīšanās kļūdas dēļ.</translation>
 <translation id="4521185804071812304">Neobligāti: palīdziet uzlabot Chrome OS funkcijas un veiktspēju, automātiski nosūtot Google serveriem diagnostikas un lietojuma datus.</translation>
+<translation id="4552702433620284371">Pārlūkā Chrome nevar pārbaudīt jūsu ierīces programmatūru. Pārbaudiet interneta savienojumu.</translation>
 <translation id="4561051373932531560">Google Chrome ļauj jums noklikšķināt uz tālruņa numura un zvanīt ar to pakalpojumā Skype!</translation>
 <translation id="4567424176335768812">Jūs esat pierakstījies kā <ph name="USER_EMAIL_ADDRESS" />. Tagad varat piekļūt savām grāmatzīmēm, vēsturei un citiem iestatījumiem visās ierīcēs, kurās esat pierakstījies.</translation>
 <translation id="4571503333518166079">Pāriet uz Chrome paziņojumu iestatījumiem</translation>
@@ -246,6 +248,7 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai li
 <translation id="8641606876632989680">Ja pierakstīsieties ar uzlauztu paroli, pārlūkā Chrome tiks parādīts paziņojums.</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">Tas nosaka arī to, kāda lapa tiks rādīta, kad atvērsiet pārlūku Chrome.</translation>
+<translation id="8681614230122836773">Chrome atrada jūsu datorā kaitīgu programmatūru</translation>
 <translation id="870251953148363156">Atjaunināt &amp;Google Chrome</translation>
 <translation id="873133009373065397">Google Chrome nevar noteikt vai iestatīt noklusējuma pārlūku.</translation>
 <translation id="8823341990149967727">Chrome versija ir novecojusi</translation>

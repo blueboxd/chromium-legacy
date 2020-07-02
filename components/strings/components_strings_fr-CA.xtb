@@ -20,6 +20,7 @@
 <translation id="10614374240317010">Jamais enregistré</translation>
 <translation id="1062160989074299343">Enveloppe Prc10</translation>
 <translation id="106701514854093668">Favoris d'ordinateur de bureau</translation>
+<translation id="1068672505746868501">Ne jamais traduire les pages en <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1070901266639972381">Nuit</translation>
 <translation id="1074497978438210769">Pas sécuritaire</translation>
 <translation id="1080116354587839789">Adapter à la largeur</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">Sans titre</translation>
 <translation id="1236081509407217141">Autoriser la RV?</translation>
 <translation id="1240347957665416060">Le nom de votre appareil</translation>
+<translation id="124116460088058876">Plus de langues</translation>
 <translation id="1250759482327835220">Pour accélérer le paiement la prochaine fois, enregistrez votre carte, votre nom et votre adresse de facturation dans votre compte Google.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (synchronisés)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Si vous essayez de consulter un site Web et si celui-ci ne s'ouvre pas, essayez de corriger l'erreur à l'aide des étapes de dépannage suivantes :&lt;/p&gt;
@@ -829,6 +831,7 @@ Souhaitez-vous autoriser <ph name="EMBEDDED_URL" /> à utiliser les témoins et 
 <translation id="4424024547088906515">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité n'est pas considéré comme fiable par Chrome. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="443121186588148776">Port série</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> n'a pas accepté votre certificat de connexion, ou il se peut qu'aucun certificat de connexion n'ait été fourni.</translation>
+<translation id="4432792777822557199">Les pages en <ph name="SOURCE_LANGUAGE" /> seront désormais traduites en <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">Fenêt. context. et redirections</translation>
 <translation id="4435702339979719576">Carte postale</translation>
 <translation id="443673843213245140">L'utilisation d'un mandataire est désactivée, mais une configuration de mandataire explicite est spécifiée.</translation>
@@ -1060,6 +1063,7 @@ Souhaitez-vous autoriser <ph name="EMBEDDED_URL" /> à utiliser les témoins et 
 <translation id="5431657950005405462">Votre fichier est introuvable</translation>
 <translation id="5439770059721715174">Erreur de validation du schéma à « <ph name="ERROR_PATH" /> » : <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Ordre inversé, face vers le haut</translation>
+<translation id="5447765697759493033">Ce site ne sera pas traduit</translation>
 <translation id="5452270690849572955">Cette page <ph name="HOST_NAME" /> est introuvable</translation>
 <translation id="5455374756549232013">Horodatage de la règle incorrect.</translation>
 <translation id="5457113250005438886">Non valide</translation>
@@ -1606,6 +1610,7 @@ Détails supplémentaires :
 <translation id="7716375162095500223">Pas encore téléversé, ou ignoré</translation>
 <translation id="7716424297397655342">Ce site ne peut pas être chargé à partir du cache</translation>
 <translation id="7723047071702270851">Modifier la carte</translation>
+<translation id="773466115871691567">Toujours traduire les pages en <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7740996059027112821">Standard</translation>
 <translation id="774634243536837715">Contenu dangereux bloqué.</translation>
 <translation id="7752995774971033316">Non géré</translation>
@@ -1751,6 +1756,7 @@ Détails supplémentaires :
 <translation id="831997045666694187">Soirée</translation>
 <translation id="8332188693563227489">Accès à l'adresse <ph name="HOST_NAME" /> refusé</translation>
 <translation id="833262891116910667">Surligner</translation>
+<translation id="8339163506404995330">Les pages en <ph name="LANGUAGE" /> ne seront pas traduites</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Si vous comprenez les risques pour votre sécurité, vous pouvez <ph name="BEGIN_LINK" />vous rendre sur ce site<ph name="END_LINK" /> avant que les programmes malveillants aient été supprimés.</translation>
 <translation id="8349305172487531364">Barre de favoris</translation>

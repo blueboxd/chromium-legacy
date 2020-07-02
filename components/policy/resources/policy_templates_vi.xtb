@@ -213,11 +213,6 @@
       Nếu bạn tắt chính sách này, thì Trợ lý Google sẽ không được phép truy cập vào ngữ cảnh màn hình.
       Nếu bạn không đặt chính sách này, thì người dùng có thể quyết định liệu có cho phép Trợ lý Google truy cập vào ngữ cảnh màn hình hay không</translation>
 <translation id="1376119291123231789">Bật chế độ sạc pin nâng cao</translation>
-<translation id="1376298389964661475">Cho phép bạn thiết lập danh sách mẫu URL để chỉ định các trang web được phép hiển thị thông báo.
-
-          Nếu bạn không đặt chính sách này, thì giá trị mặc định chung của chính sách "DefaultNotificationsSetting" (nếu bạn đã đặt chính sách này) hoặc trong cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.
-
-          Để biết thông tin chi tiết về mẫu URL hợp lệ, vui lòng xem tại https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="1384459581748403878">Tham khảo: <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">Báo cáo trạng thái cập nhật hệ điều hành</translation>
 <translation id="1393485621820363363">Đã bật máy in kết nối với thiết bị dành cho doanh nghiệp</translation>
@@ -292,11 +287,6 @@ Nếu bạn tắt chính sách này, thì việc cuộn trang web đến các ph
           tính năng này.
 
           Nếu bạn đặt chính sách này, thì người dùng không thể thay đổi hay ghi đè chính sách.</translation>
-<translation id="1497640071678474358">Cho phép bạn thiết lập danh sách mẫu URL để chỉ định các trang web không được phép mở cửa sổ bật lên.
-
-          Nếu bạn không đặt chính sách này, thì giá trị mặc định chung của chính sách "DefaultPopupsSetting" (nếu bạn đã đặt chính sách này) hoặc trong cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.
-
-          Để biết thông tin chi tiết về mẫu URL hợp lệ, vui lòng xem tại https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="1502843533062797703">Cho phép chặn phần mềm bên thứ ba thêm mã thực thi</translation>
 <translation id="1507382822467487898">
           Định cấu hình địa chỉ MAC (điều khiển truy cập phương tiện) sẽ được sử dụng khi kết nối đế sạc với thiết bị.
@@ -912,13 +902,6 @@ Nếu bạn tắt chính sách này, thì việc cuộn trang web đến các ph
       Việc đặt <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (giá trị 1) sẽ chỉ cho phép áp dụng những biến thể được xem là bản sửa lỗi quan trọng về độ bảo mật hoặc độ ổn định cho <ph name="PRODUCT_NAME" />.
 
       Việc đặt <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (giá trị 2) sẽ không cho phép áp dụng tất cả biến thể cho trình duyệt. Xin lưu ý rằng chế độ này có thể khiến nhà phát triển <ph name="PRODUCT_NAME" /> không thể cung cấp kịp thời các bản sửa lỗi bảo mật quan trọng nên không được khuyên dùng.</translation>
-<translation id="2406820201690307634">Cho phép bạn thiết lập danh sách mẫu URL để chỉ định các trang web không được phép hiển thị hình ảnh.
-
-          Nếu bạn không đặt chính sách này, thì giá trị mặc định chung của chính sách "DefaultImagesSetting" (nếu bạn đã đặt chính sách này) hoặc trong cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.
-
-          Lưu ý rằng trước đó bạn đã bật nhầm chính sách này trên Android, nhưng hệ điều hành Android chưa hỗ trợ đầy đủ tính năng này.
-
-          Để biết thông tin chi tiết về mẫu URL hợp lệ, vui lòng xem tại https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="2411629345938804022">Nếu bạn đặt chính sách này thành 3, thì trang web sẽ yêu cầu quyền truy cập vào thiết bị Bluetooth ở gần. Nếu bạn đặt chính sách này thành 2, thì các trang web sẽ không được phép truy cập vào thiết bị Bluetooth ở gần.
 
       Nếu bạn không đặt chính sách này, thì các trang sẽ yêu cầu quyền truy cập nhưng người dùng có thể thay đổi tùy chọn cài đặt này.</translation>
@@ -1017,11 +1000,6 @@ Nếu bạn không đặt chính sách này, thì màn hình bảo vệ quyền 
       Khi chưa định cấu hình hoặc đặt chính sách này thành "Không lọc trang web có nội dung người lớn", chúng tôi sẽ không lọc các trang web này.
 
       Khi đặt chính sách này thành "Lọc các trang web cấp cao nhất có nội dung người lớn", chúng tôi sẽ lọc các trang web được phân loại là có chứa nội dung khiêu dâm.</translation>
-<translation id="2484356232170636726">Cho phép bạn thiết lập danh sách mẫu URL để chỉ định trang web được phép chạy JavaScript.
-
-          Nếu bạn không đặt chính sách này, thì giá trị mặc định chung của chính sách "DefaultJavaScriptSetting" (nếu bạn đã đặt chính sách này) hoặc trong cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.
-
-          Để biết thông tin chi tiết về mẫu URL hợp lệ, vui lòng xem tại https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="2488010520405124654">Bật lời nhắc về cấu hình mạng khi ngoại tuyến.
 
       Nếu chính sách này chưa được đặt hoặc được đặt thành Đúng đồng thời tài khoản trên thiết bị được định cấu hình để tự động đăng nhập mà không có độ trễ và thiết bị không có quyền truy cập Internet, <ph name="PRODUCT_OS_NAME" /> sẽ hiển thị lời nhắc về cấu hình mạng.
@@ -1646,13 +1624,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 
       Nếu bạn không đặt chính sách này, bất kỳ plugin nào khớp với mẫu trong 'DisabledPlugins' đều bị khóa ở trạng thái tắt và người dùng sẽ không thể bật được.</translation>
 <translation id="3381968327636295719">Sử dụng trình duyệt chính theo mặc định</translation>
-<translation id="3388153794103186066">Cho phép bạn đặt danh sách các url chỉ định những trang web sẽ tự động được cấp quyền truy cập vào thiết bị USB bằng mã sản phẩm và mã nhà cung cấp cụ thể. Mỗi mục trong danh sách phải chứa cả thiết bị và url để chính sách có hiệu lực. Mỗi mục trong các thiết bị có thể chứa trường mã sản phẩm và mã nhà cung cấp. Bất kỳ mã nào bị bỏ qua đều được coi là ký tự đại diện với một ngoại lệ là không thể chỉ định mã sản phẩm nếu không chỉ định mã nhà cung cấp. Nếu không, chính sách sẽ không có hiệu lực và bị bỏ qua.
-
-        Mô hình cấp phép của USB sử dụng URL của trang web yêu cầu ("URL yêu cầu") và URL của trang web khung cấp cao nhất ("URL nhúng") để cấp quyền cho URL yêu cầu truy cập vào thiết bị USB. URL yêu cầu có thể khác với URL nhúng khi bạn tải trang web yêu cầu trong khung nội tuyến. Do đó, trường "urls" có thể chứa tối đa hai chuỗi URL phân tách bằng dấu phẩy để chỉ định URL yêu cầu và URL nhúng tương ứng. Nếu chỉ có một URL được chỉ định, thì quyền truy cập vào các thiết bị USB tương ứng sẽ được cấp khi URL của trang web yêu cầu khớp với URL này bất kể trạng thái nhúng. Các URL trong "urls" phải là các URL hợp lệ, nếu không, chính sách này sẽ bị bỏ qua.
-
-        Nếu bạn không đặt chính sách này, thì giá trị mặc định chung sẽ được dùng cho tất cả các trang web của chính sách 'DefaultWebUsbGuardSetting' nếu chính sách này được đặt, hoặc của cấu hình cá nhân của người dùng.
-
-        Các mẫu URL trong chính sách này không được xung đột với các mẫu URL đã định cấu hình thông qua WebUsbBlockedForUrls. Nếu có xung đột, thì chính sách này sẽ được ưu tiên so với WebUsbBlockedForUrls và WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">Nếu bạn chưa định cấu hình chính sách này, thì <ph name="PRODUCT_NAME" /> sẽ sử dụng phiên bản tối thiểu mặc định là TLS 1.0.
 
       Nếu không, bạn có thể đặt chính sách này thành một trong các giá trị sau: "tls1", "tls1.1" hoặc "tls1.2". Khi được đặt, <ph name="PRODUCT_NAME" /> sẽ không sử dụng các phiên bản SSL/TLS thấp hơn phiên bản đã chỉ định. Giá trị không xác định sẽ bị bỏ qua.</translation>
@@ -1847,13 +1818,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 
         Tính năng đăng ký chính sách đám mây trong phạm vi máy sử dụng chính sách này trên máy tính để bàn. Sổ đăng ký hoặc GPO trên Windows, plist trên máy Mac và tệp chính sách JSON trên Linux có thể đặt chính sách này.</translation>
 <translation id="3660562134618097814">Chuyển cookie SAML IdP trong khi đăng nhập</translation>
-<translation id="3688225008199664446">Cho phép bạn thiết lập danh sách mẫu URL để chỉ định các trang web không được phép yêu cầu người dùng cấp quyền truy cập vào thiết bị USB.
-
-          Nếu bạn không đặt chính sách này, thì giá trị mặc định chung của chính sách "DefaultWebUsbGuardSetting" (nếu bạn đã đặt chính sách này) hoặc trong cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.
-
-          Các mẫu URL trong chính sách này không được xung đột với các URL đã định cấu hình thông qua WebUsbAskForUrls. Nếu một URL phù hợp với cả hai chính sách, thì không xác định được sẽ ưu tiên sử dụng chính sách nào.
-
-          Để biết thông tin chi tiết về mẫu URL hợp lệ, vui lòng xem tại https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="3701121231485832347">Kiểm soát các tùy chọn cài đặt dành riêng cho các thiết bị <ph name="PRODUCT_OS_NAME" /> do <ph name="MS_AD_NAME" /> quản lý.</translation>
 <translation id="3702518095257671450">Chứng thực từ xa</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Trường một dòng không dùng nữa và sẽ bị xóa trong tương lai. Hãy bắt đầu sử dụng hộp văn bản nhiều dòng bên dưới.)</translation>
@@ -3763,11 +3727,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
           Bạn phải chỉ định giá trị của chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn thời gian chờ khi ở chế độ tạm vắng.</translation>
 <translation id="6515357889978918016">Hình ảnh <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6520802717075138474">Nhập công cụ tìm kiếm từ trình duyệt mặc định trong lần chạy đầu tiên</translation>
-<translation id="6525955212636890608">Nếu bạn bật cài đặt này, thì tất cả nội dung Flash được nhúng trên các trang web -- do người dùng hoặc chính sách doanh nghiệp -- đặt để cho phép Flash trong cài đặt nội dung -- sẽ được chạy, bao gồm cả nội dung từ các nguồn khác hoặc nội dung nhỏ.
-
-      Để kiểm soát những trang web nào được phép chạy Flash, hãy xem chính sách "DefaultPluginsSetting", "PluginsAllowedForUrls" và "PluginsBlockedForUrls".
-
-      Nếu bạn tắt hoặc không đặt cài đặt này, nội dung Flash từ các nguồn khác hoặc nội dung nhỏ có thể bị chặn.</translation>
 <translation id="6532026122543921610">Nếu chính sách <ph name="SYSTEM_TIMEZONE_POLICY_NAME" /> tắt tính năng tự động phát hiện múi giờ, thì việc đặt chính sách sẽ chỉ định phương thức tự động phát hiện múi giờ và người dùng không thể thay đổi phương thức này.
 
       Nếu bạn đặt chính sách này thành:
@@ -3919,11 +3878,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
       Nếu bạn đặt chính sách này thành true, thì <ph name="PLUGIN_VM_NAME" /> sẽ được bật cho người dùng miễn là các tùy chọn cài đặt khác cũng cho phép điều này. Bạn cần phải đặt <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> và <ph name="USER_PLUGIN_VM_ALLOWED_POLICY_NAME" /> thành true, cũng như phải đặt <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> hoặc <ph name="PLUGIN_VM_USER_ID_POLICY_NAME" /> để cho phép chạy <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="6757613329154374267">Đã bật dịch vụ sao lưu và khôi phục</translation>
 <translation id="6758659208493449452">Chính sách này kiểm soát việc người dùng đăng ký chương trình Bảo vệ nâng cao có nhận được các tính năng tăng cường bảo vệ hay không. Một số tính năng trong số này có thể chia sẻ dữ liệu với Google (ví dụ: người dùng chương trình Bảo vệ nâng cao có thể gửi các tệp đã tải xuống cho Google để quét tìm phần mềm độc hại). Nếu bạn không đặt hoặc đặt chính sách này thành True, thì người dùng đã đăng ký sẽ nhận được các tính năng tăng cường bảo vệ. Nếu bạn đặt chính sách này thành False, thì người dùng chương trình Bảo vệ nâng cao sẽ chỉ nhận được các tính năng dành cho người dùng thông thường.</translation>
-<translation id="6764421313777250384">Cho phép bạn thiết lập danh sách mẫu URL để chỉ định các trang web không được phép hiển thị thông báo.
-
-          Nếu bạn không đặt chính sách này, thì giá trị mặc định chung của chính sách "DefaultNotificationsSetting" (nếu bạn đã đặt chính sách này) hoặc trong cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.
-
-          Để biết thông tin chi tiết về mẫu URL hợp lệ, vui lòng xem tại https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="6766216162565713893">Cho phép trang web yêu cầu người dùng cấp quyền truy cập vào thiết bị Bluetooth lân cận</translation>
 <translation id="6770454900105963262">Báo cáo thông tin về các phiên kiosk hiện hoạt</translation>
 <translation id="6786747875388722282">Tiện ích</translation>
@@ -4379,11 +4333,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 <translation id="7485730741952775732">Nếu bạn đặt chính sách này, máy chủ truy cập từ xa sẽ dùng URL này để xác thực mã xác thực từ các ứng dụng truy cập từ xa để chấp nhận kết nối. Phải sử dụng chính sách này cùng với RemoteAccessHostTokenUrl.
 
           Tính năng này hiện bị tắt phía máy chủ.</translation>
-<translation id="7490270439948288519">Cho phép bạn thiết lập danh sách mẫu URL để chỉ định các trang web được phép mở cửa sổ bật lên.
-
-          Nếu bạn không đặt chính sách này, thì giá trị mặc định chung của chính sách "DefaultPopupsSetting" (nếu bạn đã đặt chính sách này) hoặc trong cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.
-
-          Để biết thông tin chi tiết về mẫu URL hợp lệ, vui lòng xem tại https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="749556411189861380">Báo cáo phiên bản hệ điều hành và chương trình cơ sở của thiết bị đã đăng ký.
 
       Nếu cài đặt này không được đặt hoặc được đặt thành Đúng, các thiết bị đã đăng ký sẽ báo cáo định kỳ phiên bản hệ điều hành và chương trình cơ sở. Nếu cài đặt này được đặt thành Sai, thông tin phiên bản sẽ không được báo cáo.</translation>
@@ -4393,11 +4342,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 
       Nếu bạn sử dụng chính sách này thì tất cả các máy in sẽ được cung cấp cho người dùng ngoại trừ những id được liệt kê trong chính sách này. Các id này phải tương ứng với các trường "id" hoặc "guid" trong tệp đã chỉ định trong <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
-<translation id="7506269062143646163">Bật tính năng hỗ trợ cho Signed HTTP Exchange (SXG).
-
-          Nếu bạn không đặt hoặc đặt chính sách này thành Enabled (Bật), Google Chrome sẽ chấp nhận các nội dung web được phân phối dưới dạng Signed HTTP Exchanges.
-
-          Nếu bạn đặt chính sách này thành Disabled (Tắt), thì Signed HTTP Exchanges sẽ không thể tải được.</translation>
 <translation id="7506758875409719208">Định cấu hình tên miền của ứng dụng bắt buộc sẽ được áp dụng trên các ứng dụng truy cập từ xa và ngăn người dùng thay đổi tên miền này.
 
           Nếu bạn bật và đặt tùy chọn cài đặt này cho một hoặc nhiều miền, thì chỉ những ứng dụng từ một trong số miền đã chỉ định này mới có thể kết nối với máy chủ.
@@ -4409,11 +4353,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
           Xem thêm chính sách RemoteAccessHostDomainList.</translation>
 <translation id="7511361072385293666">Nếu chính sách này được đặt thành true hoặc không được đặt thì được phép sử dụng giao thức QUIC trong <ph name="PRODUCT_NAME" />.
       Nếu chính sách này được đặt thành false thì không được phép sử dụng giao thức QUIC.</translation>
-<translation id="7515572751689937649">Cho phép bạn thiết lập danh sách mẫu URL để chỉ định các trang web không được phép chạy JavaScript.
-
-          Nếu bạn không đặt chính sách này, thì giá trị mặc định chung của chính sách "DefaultJavaScriptSetting" (nếu bạn đã đặt chính sách này) hoặc trong cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.
-
-          Để biết thông tin chi tiết về mẫu URL hợp lệ, vui lòng xem tại https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="7517845714620372896">Nêu rõ phần trăm độ sáng màn hình.
           Khi bạn đặt chính sách này, độ sáng ban đầu của màn hình sẽ được điều chỉnh theo giá trị của chính sách nhưng người dùng có thể thay đổi giá trị này sau đó. Các tính năng tự động điều chỉnh độ sáng sẽ bị tắt.
           Khi bạn không đặt chính sách này, các tùy chọn kiểm soát màn hình của người dùng và tính năng tự động điều chỉnh độ sáng sẽ không bị ảnh hưởng.
@@ -5207,13 +5146,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 
          Nếu bạn không đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ cố gắng phát hiện xem máy chủ có ở trên mạng nội bộ hay không, sau đó mới phản hồi yêu cầu IWA.  Nếu máy chủ được phát hiện là ở trên mạng Internet thì yêu cầu IWA từ máy chủ sẽ bị <ph name="PRODUCT_NAME" /> bỏ qua.</translation>
 <translation id="8656110680728938054">Bật tính năng chọn để nói</translation>
-<translation id="8659729040032759711">Cho phép bạn thiết lập danh sách mẫu URL để chỉ định những trang web được phép yêu cầu người dùng cấp quyền truy cập vào thiết bị USB.
-
-          Nếu bạn không đặt chính sách này, thì giá trị mặc định chung của chính sách "DefaultWebUsbGuardSetting" (nếu bạn đã đặt chính sách này) hoặc trong cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.
-
-          Các mẫu URL trong chính sách này không được xung đột với các URL đã định cấu hình thông qua WebUsbBlockedForUrls. Nếu một URL phù hợp với cả hai chính sách, thì không xác định được sẽ ưu tiên sử dụng chính sách nào.
-
-          Để biết thông tin chi tiết về mẫu URL hợp lệ, vui lòng xem tại https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="8661297125441579970">Không cho phép di chuyển dữ liệu và App Runtime for Chrome (ARC).</translation>
 <translation id="8665314828727504286">Mức độ bảo vệ của tính năng Duyệt web an toàn</translation>
 <translation id="8672321184841719703">Phiên bản cập nhật tự động đích</translation>
@@ -5337,15 +5269,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="8860342862142842017">Tắt mục cài đặt buộc thực thi Tính minh bạch của chứng chỉ cho một danh sách hàm băm subjectPublicKeyInfo</translation>
 <translation id="8864975621965365890">Loại bỏ lời nhắc từ chối xuất hiện khi một trang web được hiển thị bởi <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="886645881209114007">Cho phép người dùng sử dụng <ph name="PLUGIN_VM_NAME" /> trên <ph name="PRODUCT_OS_NAME" /></translation>
-<translation id="8867464911288727016">Cho phép dịch vụ Google Dịch tích hợp trên <ph name="PRODUCT_NAME" />.
-
-      Nếu bạn bật cài đặt này, <ph name="PRODUCT_NAME" /> sẽ cung cấp chức năng dịch cho người dùng bằng cách hiển thị thanh công cụ dịch tích hợp (nếu thích hợp) và tùy chọn dịch trên menu ngữ cảnh nhấp chuột phải.
-
-      Nếu bạn tắt cài đặt này, tất cả các tính năng dịch tích hợp sẽ bị tắt.
-
-      Nếu bạn bật hoặc tắt cài đặt này, người dùng không thể thay đổi hoặc ghi đè cài đặt này trong <ph name="PRODUCT_NAME" />.
-
-      Nếu bạn không thiết lập cài đặt này, người dùng có thể quyết định có sử dụng chức năng này hay không.</translation>
 <translation id="8871974300055371298">Cài đặt nội dung</translation>
 <translation id="8872402969096027761">Bật tính năng hỗ trợ tiếp cận về tự động nhấp trên màn hình đăng nhập.
 
@@ -5545,9 +5468,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="9105265795073104888">Chỉ một tập hợp con các tùy chọn cấu hình proxy được cung cấp cho các ứng dụng Android. Các ứng dụng Android có thể chọn sử dụng proxy một cách tự nguyện. Bạn không thể buộc các ứng dụng này sử dụng proxy.</translation>
 <translation id="9106865192244721694">Cho phép WebUSB trên các trang web này</translation>
 <translation id="9112727953998243860">Tệp cấu hình máy in dành cho doanh nghiệp</translation>
-<translation id="9112897538922695510">Cho phép bạn đăng ký danh sách trình xử lý giao thức. Đây có thể chỉ là một chính sách được đề xuất. Thuộc tính |protocol| của sản phẩm nên được đặt thành lược đồ chẳng hạn như 'mailto' và thuộc tính |url| nên được đặt thành mẫu URL của ứng dụng xử lý lược đồ. Mẫu có thể bao gồm '%s' mà nếu có mặt sẽ được thay thế bằng URL đã xử lý.
-
-          Trình xử lý giao thức do chính sách đăng ký được hợp nhất với trình xử lý do người dùng đăng ký và cả hai đều khả dụng. Người dùng có thể ghi đè trình xử lý giao thức do chính sách cài đặt bằng cách cài đặt trình xử lý mặc định mới nhưng không thể xóa trình xử lý giao thức do chính sách đăng ký.</translation>
 <translation id="9117826695152538214">Khi bạn đặt chính sách này thành True, phím cố định sẽ luôn bật. Khi bạn đặt chính sách này thành False, phím cố định sẽ luôn tắt.
 
       Nếu bạn đặt chính sách này, thì người dùng sẽ không thể thay đổi được. Nếu bạn không đặt chính sách này, thì ban đầu, phím cố định sẽ tắt, nhưng người dùng có thể bật bất cứ lúc nào.</translation>

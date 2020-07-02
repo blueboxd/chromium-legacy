@@ -163,15 +163,6 @@ class UserImageManagerImpl : public UserImageManager,
   // download is currently in progress.
   bool downloading_profile_image_;
 
-  // Download reason given to DownloadProfileImage(), used for UMA histograms.
-  // Only valid when a download is currently in progress and
-  // |downloading_profile_image_| is true.
-  std::string profile_image_download_reason_;
-
-  // Time when the profile image download started. Only valid when a download is
-  // currently in progress and |downloading_profile_image_| is true.
-  base::TimeTicks profile_image_load_start_time_;
-
   // Downloader for the user's profile data. NULL when no download is
   // currently in progress.
   std::unique_ptr<ProfileDownloader> profile_downloader_;

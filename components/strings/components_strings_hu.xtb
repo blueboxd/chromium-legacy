@@ -20,6 +20,7 @@
 <translation id="10614374240317010">Az alábbi oldalakról soha ne mentsen jelszavakat</translation>
 <translation id="1062160989074299343">Prc10 (boríték)</translation>
 <translation id="106701514854093668">Asztali könyvjelzők</translation>
+<translation id="1068672505746868501">Soha ne fordítsa le a(z) <ph name="SOURCE_LANGUAGE" /> nyelvű oldalakat</translation>
 <translation id="1070901266639972381">Éjszaka</translation>
 <translation id="1074497978438210769">Nem biztonságos</translation>
 <translation id="1080116354587839789">Szélességhez igazítás</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">Névtelen</translation>
 <translation id="1236081509407217141">Engedélyezi a VR-t?</translation>
 <translation id="1240347957665416060">Az eszköze neve</translation>
+<translation id="124116460088058876">További nyelvek…</translation>
 <translation id="1250759482327835220">A következő alkalommal gyorsabban fizethet, ha elmenti kártyáját, nevét és számlázási címét a Google-fiókjába.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (szinkronizálva)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Ha nem nyílik meg a felkeresni kívánt webhely, először próbálja meg kijavítani a hibát a következő problémamegoldó lépések végrehajtásával:&lt;/p&gt;
@@ -836,6 +838,7 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="4424024547088906515">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa a Chrome szerint nem megbízható. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását.</translation>
 <translation id="443121186588148776">Soros port</translation>
 <translation id="4432688616882109544">A(z) <ph name="HOST_NAME" /> nem fogadta el az Ön bejelentkezési tanúsítványát, vagy nem talált ilyet.</translation>
+<translation id="4432792777822557199">A(z) <ph name="SOURCE_LANGUAGE" /> nyelvű oldalak mostantól le lesznek fordítva <ph name="TARGET_LANGUAGE" /> nyelvre</translation>
 <translation id="4434045419905280838">Előugró ablakok és átirányítások</translation>
 <translation id="4435702339979719576">képeslap)</translation>
 <translation id="443673843213245140">A proxy használata le van tiltva, de kifejezett proxykonfiguráció van megadva.</translation>
@@ -1067,6 +1070,7 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="5431657950005405462">A fájl nem található</translation>
 <translation id="5439770059721715174">Sémaérvényesítési hiba a következőnél: „<ph name="ERROR_PATH" />”: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Fordított sorrend, felfelé fordítva</translation>
+<translation id="5447765697759493033">Nem fordítjuk le ezt a webhelyet</translation>
 <translation id="5452270690849572955">Ez a(z) <ph name="HOST_NAME" /> oldal nem található</translation>
 <translation id="5455374756549232013">Hibás az irányelv időbélyege</translation>
 <translation id="5457113250005438886">Érvénytelen</translation>
@@ -1613,6 +1617,7 @@ További részletek:
 <translation id="7716375162095500223">Még nincs feltöltve, vagy ki lett hagyva</translation>
 <translation id="7716424297397655342">A webhely nem tölthető be a gyorsítótárból</translation>
 <translation id="7723047071702270851">Kártya szerkesztése</translation>
+<translation id="773466115871691567">Mindig fordítsa le a(z) <ph name="SOURCE_LANGUAGE" /> nyelvű oldalakat</translation>
 <translation id="7740996059027112821">Szokásos</translation>
 <translation id="774634243536837715">Veszélyes tartalom letiltva.</translation>
 <translation id="7752995774971033316">Nem kezelt</translation>
@@ -1758,6 +1763,7 @@ További részletek:
 <translation id="831997045666694187">Este</translation>
 <translation id="8332188693563227489">A hozzáférés megtagadva a következőhöz: <ph name="HOST_NAME" /></translation>
 <translation id="833262891116910667">Kiemelés</translation>
+<translation id="8339163506404995330">A(z) <ph name="LANGUAGE" /> nyelvű oldalak nem lesznek lefordítva</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Ha tisztában van a biztonságát fenyegető kockázatokkal, a veszélyes programok eltávolítása előtt is <ph name="BEGIN_LINK" />felkeresheti ezt a webhelyet<ph name="END_LINK" />.</translation>
 <translation id="8349305172487531364">Könyvjelzősáv</translation>

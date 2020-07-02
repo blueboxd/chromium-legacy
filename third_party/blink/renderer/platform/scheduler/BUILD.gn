@@ -103,8 +103,6 @@ blink_platform_sources("scheduler") {
     "main_thread/page_visibility_state.h",
     "main_thread/pending_user_input.cc",
     "main_thread/pending_user_input.h",
-    "main_thread/queueing_time_estimator.cc",
-    "main_thread/queueing_time_estimator.h",
     "main_thread/render_widget_signals.cc",
     "main_thread/render_widget_signals.h",
     "main_thread/resource_loading_task_runner_handle_impl.cc",
@@ -191,8 +189,6 @@ jumbo_source_set("test_support") {
     "test/recording_task_time_observer.cc",
     "test/recording_task_time_observer.h",
     "test/renderer_scheduler_test_support.cc",
-    "test/test_queueing_time_estimator_client.cc",
-    "test/test_queueing_time_estimator_client.h",
     "test/web_fake_thread_scheduler.cc",
     "test/web_fake_widget_scheduler.cc",
     "test/web_fake_widget_scheduler.h",
@@ -238,7 +234,6 @@ jumbo_source_set("unit_tests") {
     "main_thread/memory_purge_manager_unittest.cc",
     "main_thread/page_scheduler_impl_unittest.cc",
     "main_thread/pending_user_input_unittest.cc",
-    "main_thread/queueing_time_estimator_unittest.cc",
     "main_thread/render_widget_signals_unittest.cc",
     "main_thread/user_model_unittest.cc",
     "worker/worker_scheduler_proxy_unittest.cc",
@@ -252,23 +247,6 @@ jumbo_source_set("unit_tests") {
     "//base/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/blink/public:test_support",
-  ]
-
-  configs += [ "//third_party/blink/renderer/platform:blink_platform_config" ]
-}
-
-source_set("perf_tests") {
-  testonly = true
-
-  sources = [ "test/queueing_time_estimator_perf_test.cc" ]
-
-  deps = [
-    "//base",
-    "//base/test:test_support",
-    "//testing/gmock",
-    "//testing/gtest",
-    "//testing/perf",
     "//third_party/blink/public:test_support",
   ]
 

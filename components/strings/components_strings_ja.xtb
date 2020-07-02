@@ -20,6 +20,7 @@
 <translation id="10614374240317010">常に保存しない</translation>
 <translation id="1062160989074299343">Prc10（封筒）</translation>
 <translation id="106701514854093668">パソコンのブックマーク</translation>
+<translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" />のページを翻訳しない</translation>
 <translation id="1070901266639972381">夜間</translation>
 <translation id="1074497978438210769">保護されていない通信</translation>
 <translation id="1080116354587839789">ウィンドウ幅に合わせる</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">無題</translation>
 <translation id="1236081509407217141">VR を許可しますか？</translation>
 <translation id="1240347957665416060">デバイス名</translation>
+<translation id="124116460088058876">その他の言語</translation>
 <translation id="1250759482327835220">カード、お名前、請求先住所を Google アカウントに保存すると、次回のお支払いが簡単になります。</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />、<ph name="TYPE_2" />（同期済み）</translation>
 <translation id="1256368399071562588">&lt;p&gt;ウェブサイトにアクセスしようとしてもサイトが開かない場合は、まず次の解決方法を行って、エラーが解消されるかご確認ください。&lt;/p&gt;
@@ -829,6 +831,7 @@
 <translation id="4424024547088906515">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は Chrome によって信頼されているものではありません。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
 <translation id="443121186588148776">シリアルポート</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> でログイン証明書が承認されなかったか、ログイン証明書が提示されていない可能性があります。</translation>
+<translation id="4432792777822557199">今後、<ph name="SOURCE_LANGUAGE" />のページは<ph name="TARGET_LANGUAGE" />に翻訳されます</translation>
 <translation id="4434045419905280838">ポップアップとリダイレクト</translation>
 <translation id="4435702339979719576">ポストカード</translation>
 <translation id="443673843213245140">プロキシの使用は無効ですが、プロキシの設定が明示的に指定されています。</translation>
@@ -1060,6 +1063,7 @@
 <translation id="5431657950005405462">ファイルが見つかりませんでした</translation>
 <translation id="5439770059721715174">「<ph name="ERROR_PATH" />」でスキーマ確認エラー: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">逆の順序（上向き）</translation>
+<translation id="5447765697759493033">このサイトは翻訳されません</translation>
 <translation id="5452270690849572955">この <ph name="HOST_NAME" /> ページが見つかりません</translation>
 <translation id="5455374756549232013">ポリシーのタイムスタンプが不適切です</translation>
 <translation id="5457113250005438886">無効</translation>
@@ -1606,6 +1610,7 @@
 <translation id="7716375162095500223">まだアップロードされていないか、無視されました</translation>
 <translation id="7716424297397655342">このサイトをキャッシュから読み込むことができません</translation>
 <translation id="7723047071702270851">カードの編集</translation>
+<translation id="773466115871691567"><ph name="SOURCE_LANGUAGE" />のページを常に翻訳する</translation>
 <translation id="7740996059027112821">標準</translation>
 <translation id="774634243536837715">危険なコンテンツがブロックされました。</translation>
 <translation id="7752995774971033316">管理されていません</translation>
@@ -1751,6 +1756,7 @@
 <translation id="831997045666694187">夕方</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" /> へのアクセスが拒否されました</translation>
 <translation id="833262891116910667">ハイライト表示</translation>
+<translation id="8339163506404995330"><ph name="LANGUAGE" />のページは翻訳されません</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" /> / <ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">有害なプログラムが削除されるより前に<ph name="BEGIN_LINK" />このサイトにアクセスする<ph name="END_LINK" />場合は、セキュリティ上のリスクについてご承知おきください。</translation>
 <translation id="8349305172487531364">ブックマーク バー</translation>

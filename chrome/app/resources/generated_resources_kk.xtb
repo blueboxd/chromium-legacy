@@ -526,7 +526,6 @@
 <translation id="1645516838734033527"><ph name="DEVICE_TYPE" /> құрылғысын қауіпсіз сақтау үшін Smart Lock функциясы телефонда экран құлпын қажет етеді.</translation>
 <translation id="1646982517418478057">Бұл сертификатты шифрлау үшін құпия сөзді енгізіңіз</translation>
 <translation id="1648528859488547844">Орынды анықтау үшін Wi‑Fi немесе мобильдік желілерді пайдалану</translation>
-<translation id="1648943974594387137">Жүйеге кіру мәліметтері ескірген</translation>
 <translation id="164936512206786300">Bluetooth құрылғысын ажырату</translation>
 <translation id="1650371550981945235">Енгізу опцияларын көрсету</translation>
 <translation id="1651008383952180276">Бір құпия фразаны екі рет енгізу керек</translation>
@@ -1052,7 +1051,7 @@
 <translation id="2295864384543949385"><ph name="NUM_RESULTS" /> нәтиже</translation>
 <translation id="2297705863329999812">Принтерлерді іздеу</translation>
 <translation id="2299734369537008228">Сырғытқы: <ph name="MIN_LABEL" /> – <ph name="MAX_LABEL" /></translation>
-<translation id="2299941608784654630">debugd арқылы жиналған журнал файлдарын бөлек мұрағат ретінде қамту.</translation>
+<translation id="2299941608784654630">debugd арқылы жиналған барлық журнал файлдарын бөлек мұрағат ретінде қамту.</translation>
 <translation id="2300383962156589922"><ph name="APP_NAME" /> қолданбасын реттеу және басқару</translation>
 <translation id="2301382460326681002">Кеңейтімнің түбір каталогы жарамсыз.</translation>
 <translation id="23030561267973084">"<ph name="EXTENSION_NAME" />" қосымша рұқсат сұрады.</translation>
@@ -1330,7 +1329,6 @@
 <translation id="2635276683026132559">Қолтаңба</translation>
 <translation id="2636625531157955190">Chrome кескінді пайдалана алмайды.</translation>
 <translation id="2637400434494156704">PIN коды дұрыс емес. Сізде бір мүмкіндік қалды.</translation>
-<translation id="2638087589890736295">Синхрондауды бастау үшін құпия фраза қажет</translation>
 <translation id="2638662041295312666">Кіру суреті</translation>
 <translation id="264083724974021997">Телефонға қосылу – диалогтік терезе</translation>
 <translation id="2641065435954454414">Жүктеп алу үшін әзірленуде</translation>
@@ -1484,7 +1482,6 @@
 <translation id="2809586584051668049">және тағы <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
 <translation id="2810390687497823527">Егер кеңейтімді анықтай алмасаңыз немесе браузер дұрыс жұмыс істемей тұрса, кеңейтімдерді осы жерден өшіруіңізге немесе реттеуіңізге болады.</translation>
 <translation id="2812049959647166806">Thunderbolt қолданылмайды</translation>
-<translation id="2812944337881233323">Жүйеден шығып, қайта кіріп көріңіз</translation>
 <translation id="2812989263793994277">Ешбір кескінді көрсетпеу</translation>
 <translation id="2813094189969465044">Ата-ана бақылауы</translation>
 <translation id="281390819046738856">Сұрауға қол қойылмады.</translation>
@@ -3405,7 +3402,6 @@
 <translation id="529175790091471945">Бұл құрылғыны пішімдеу</translation>
 <translation id="5293170712604732402">Параметрлерді бастапқы әдепкі мәндеріне қайтару</translation>
 <translation id="5294097441441645251">Кіші әріптен немесе астыңғы сызықтан басталуы тиіс.</translation>
-<translation id="5296471962619441686">Синхрондауды жалғастыру үшін қатені түзетіңіз.</translation>
 <translation id="5297082477358294722">Құпия сөз сақталды. Сақталған құпия сөздерді <ph name="SAVED_PASSWORDS_STORE" /> бетінен көріңіз және басқарыңыз.</translation>
 <translation id="5298219193514155779">Тақырыпты жасаған</translation>
 <translation id="5299109548848736476">Бақыламау</translation>
@@ -5768,7 +5764,6 @@
 <translation id="8256417822772703842"><ph name="PRINTER_NAME" /> принтерінде сия таусылайын деп жатыр.</translation>
 <translation id="8257950718085972371">Камераны пайдалануға салынған тыйымды сақтау</translation>
 <translation id="8259239505248583312">Кеттік!</translation>
-<translation id="8260126382462817229">Қайта кіріп көріңіз</translation>
 <translation id="8260864402787962391">Тінтуір</translation>
 <translation id="8261378640211443080">Бұл кеңейтім <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ішінде көрсетілмеген және сізге білдірмей қосылған болуы мүмкін.</translation>
 <translation id="8261506727792406068">Жою</translation>

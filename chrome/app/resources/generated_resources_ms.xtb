@@ -529,7 +529,6 @@
 <translation id="1645516838734033527">Untuk memastikan <ph name="DEVICE_TYPE" /> anda selamat, Smart Lock memerlukan kunci skrin pada telefon anda.</translation>
 <translation id="1646982517418478057">Sila masukkan kata laluan untuk menyulitkan sijil ini</translation>
 <translation id="1648528859488547844">Gunakan Wi-Fi atau rangkaian mudah alih untuk menentukan lokasi</translation>
-<translation id="1648943974594387137">Butiran log masuk sudah lapuk</translation>
 <translation id="164936512206786300">Nyahgandingkan peranti Bluetooth</translation>
 <translation id="1650371550981945235">Tunjukkan pilihan input</translation>
 <translation id="1651008383952180276">Anda mesti memasukkan ungkapan laluan yang sama dua kali</translation>
@@ -1333,7 +1332,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="2635276683026132559">Melog</translation>
 <translation id="2636625531157955190">Chrome tidak dapat mengakses imej.</translation>
 <translation id="2637400434494156704">PIN salah. Anda mempunyai satu percubaan lagi.</translation>
-<translation id="2638087589890736295">Ungkapan laluan diperlukan untuk memulakan penyegerakan</translation>
 <translation id="2638662041295312666">Imej log masuk</translation>
 <translation id="264083724974021997">Sambungkan kepada telefon anda - Dialog</translation>
 <translation id="2641065435954454414">Menyediakan muat turun</translation>
@@ -1487,7 +1485,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="2809586584051668049">dan <ph name="NUMBER_ADDITIONAL_DISABLED" /> lagi</translation>
 <translation id="2810390687497823527">Jika anda tidak mengecam sambungan itu atau jika penyemak imbas anda tidak berfungsi seperti yang dijangkakan, anda boleh mematikan atau menyesuaikan sambungan di sini.</translation>
 <translation id="2812049959647166806">Thunderbolt tidak disokong</translation>
-<translation id="2812944337881233323">Cuba log keluar dan log masuk semula</translation>
 <translation id="2812989263793994277">Jangan paparkan sebarang imej</translation>
 <translation id="2813094189969465044">Kawalan ibu bapa</translation>
 <translation id="281390819046738856">Permintaan tidak dapat ditandatangani.</translation>
@@ -3408,7 +3405,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="529175790091471945">Formatkan peranti ini</translation>
 <translation id="5293170712604732402">Pulihkan tetapan kepada lalai asal.</translation>
 <translation id="5294097441441645251">Mesti bermula dengan aksara huruf kecil atau garis bawah</translation>
-<translation id="5296471962619441686">Baiki ralat untuk menyambung semula penyegerakan</translation>
 <translation id="5297082477358294722">Kata laluan disimpan. Lihat dan urus kata laluan yang disimpan dalam <ph name="SAVED_PASSWORDS_STORE" /> anda.</translation>
 <translation id="5298219193514155779">Tema dicipta oleh</translation>
 <translation id="5299109548848736476">Jangan Kesan</translation>
@@ -5772,7 +5768,6 @@ Simpan fail kunci anda di tempat selamat. Anda akan memerlukannya untuk mencipta
 <translation id="8256417822772703842"><ph name="PRINTER_NAME" /> hampir kehabisan dakwat</translation>
 <translation id="8257950718085972371">Teruskan menyekat akses kamera</translation>
 <translation id="8259239505248583312">Mari mulakan</translation>
-<translation id="8260126382462817229">Cuba log masuk semula</translation>
 <translation id="8260864402787962391">Tetikus</translation>
 <translation id="8261378640211443080">Sambungan ini tidak disenaraikan dalam <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> dan mungkin telah ditambahkan tanpa pengetahuan anda.</translation>
 <translation id="8261506727792406068">Padam</translation>

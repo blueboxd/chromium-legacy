@@ -20,6 +20,7 @@
 <translation id="10614374240317010">Ніколи не зберігалося</translation>
 <translation id="1062160989074299343">Prc10 (конверт)</translation>
 <translation id="106701514854093668">Закладки на комп’ютері</translation>
+<translation id="1068672505746868501">Ніколи не перекладати сторінки такою мовою: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1070901266639972381">Ніч</translation>
 <translation id="1074497978438210769">Не конфіденційний</translation>
 <translation id="1080116354587839789">За шириною сторінки</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">Без імені</translation>
 <translation id="1236081509407217141">Дозволити віртуальну реальність?</translation>
 <translation id="1240347957665416060">Назва пристрою</translation>
+<translation id="124116460088058876">Інші мови</translation>
 <translation id="1250759482327835220">Щоб наступного разу платити швидше, збережіть дані картки, ім’я та платіжну адресу в обліковому записі Google.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (синхронізовано)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Якщо веб-сайт не відкривається:&lt;/p&gt;
@@ -838,6 +840,7 @@
 <translation id="4424024547088906515">Цей сервер не зміг довести, що він – домен <ph name="DOMAIN" />. Chrome не вважає його сертифікат безпеки надійним. Імовірні причини: неправильна конфігурація або хтось намагається перехопити ваше з’єднання.</translation>
 <translation id="443121186588148776">Послідовний порт</translation>
 <translation id="4432688616882109544">Хост <ph name="HOST_NAME" /> не прийняв ваш сертифікат входу або ви не надали цей сертифікат.</translation>
+<translation id="4432792777822557199">Надалі сторінки цією мовою (<ph name="SOURCE_LANGUAGE" />) перекладатимуться такою мовою: <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">Спливаючі вікна й переадресація</translation>
 <translation id="4435702339979719576">Листівка)</translation>
 <translation id="443673843213245140">Використання проксі-сервера вимкнено, але чітко вказано налаштування проксі-сервера.</translation>
@@ -1069,6 +1072,7 @@
 <translation id="5431657950005405462">Файл не знайдено</translation>
 <translation id="5439770059721715174">Помилка перевірки схеми за адресою "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Зворотний порядок лицевою стороною вгору</translation>
+<translation id="5447765697759493033">Цей сайт не буде перекладено</translation>
 <translation id="5452270690849572955">Сторінку хосту <ph name="HOST_NAME" /> не знайдено</translation>
 <translation id="5455374756549232013">Недійсна мітка часу правила</translation>
 <translation id="5457113250005438886">Недійсні дані</translation>
@@ -1615,6 +1619,7 @@
 <translation id="7716375162095500223">Ще не завантажено або проігноровано</translation>
 <translation id="7716424297397655342">Не вдається завантажити цей сайт із кешу</translation>
 <translation id="7723047071702270851">Відредагуйте картку</translation>
+<translation id="773466115871691567">Завжди перекладати сторінки такою мовою: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7740996059027112821">Стандартно</translation>
 <translation id="774634243536837715">Заблоковано небезпечний вміст.</translation>
 <translation id="7752995774971033316">Некерований клієнт</translation>
@@ -1760,6 +1765,7 @@
 <translation id="831997045666694187">Увечері</translation>
 <translation id="8332188693563227489">Відмовлено в доступі до хосту <ph name="HOST_NAME" /></translation>
 <translation id="833262891116910667">Виділити</translation>
+<translation id="8339163506404995330">Сторінки цією мовою (<ph name="LANGUAGE" />) не перекладатимуться</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Якщо ви розумієте ризики, пов’язані з безпекою, можете <ph name="BEGIN_LINK" />перейти на цей сайт<ph name="END_LINK" /> до того, як небезпечні програми буде видалено.</translation>
 <translation id="8349305172487531364">Панель закладок</translation>

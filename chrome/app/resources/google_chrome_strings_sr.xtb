@@ -17,6 +17,7 @@
 <translation id="137466361146087520">Google Chrome бета</translation>
 <translation id="1399397803214730675">Овај рачунар већ има новију верзију Google Chrome прегледача. Ако софтвер не функционише, деинсталирајте Google Chrome и покушајте поново.</translation>
 <translation id="1434626383986940139">Chrome Canary апликације</translation>
+<translation id="1514913130539345610">Администратор је онемогућио тражење штетног софтвера помоћу Chrome-а</translation>
 <translation id="1553358976309200471">Ажурирај Chrome</translation>
 <translation id="1587223624401073077">Google Chrome користи камеру.</translation>
 <translation id="1587325591171447154">Датотека <ph name="FILE_NAME" /> је опасна, па ју је Chrome блокирао.</translation>
@@ -125,6 +126,7 @@
 <translation id="4458462641685292929">Друга радња у Google Chrome-у је у току. Пробајте поново касније.</translation>
 <translation id="4480040274068703980">Chrome ОС не може да синхронизује податке због грешке при пријављивању.</translation>
 <translation id="4521185804071812304">Опционално: Аутоматски шаљите Google-у дијагностику и податке о коришћењу да бисте нам помогли да побољшамо функције и учинак Chrome ОС-а.</translation>
+<translation id="4552702433620284371">Chrome не може да проверава софтвер уређаја. Проверите интернет везу.</translation>
 <translation id="4561051373932531560">Google Chrome вам омогућава да кликнете на број телефона на вебу и да га позовете помоћу Skype-а!</translation>
 <translation id="4567424176335768812">Пријављени сте као <ph name="USER_EMAIL_ADDRESS" />. Сада можете да приступате обележивачима, историји и другим подешавањима на свим уређајима на којима сте пријављени.</translation>
 <translation id="4571503333518166079">Иди на подешавања обавештења за Chrome</translation>
@@ -250,6 +252,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="8641606876632989680">Chrome ће вас обавестити када се пријавите помоћу угрожене лозинке</translation>
 <translation id="8669527147644353129">Google Chrome помоћник</translation>
 <translation id="8679801911857917785">Контролише и страницу која се приказује када покренете Chrome.</translation>
+<translation id="8681614230122836773">Chrome је пронашао штетан софтвер на рачунару</translation>
 <translation id="870251953148363156">Ажурирај &amp;Google Chrome</translation>
 <translation id="873133009373065397">Google Chrome не може да одреди ни да подеси подразумевани прегледач</translation>
 <translation id="8823341990149967727">Chrome је застарео</translation>

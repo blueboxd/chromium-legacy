@@ -20,6 +20,7 @@
 <translation id="10614374240317010">المواقع التي لن تحفظ كلمات المرور أبدًا</translation>
 <translation id="1062160989074299343">‏Prc10 (مغلف)</translation>
 <translation id="106701514854093668">الإشارات المرجعية على سطح المكتب</translation>
+<translation id="1068672505746868501">عدم ترجمة الصفحات باللغة <ph name="SOURCE_LANGUAGE" /> مُطلقًا</translation>
 <translation id="1070901266639972381">مساءً</translation>
 <translation id="1074497978438210769">غير آمن</translation>
 <translation id="1080116354587839789">ملاءمة مع العرض</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">بلا عنوان</translation>
 <translation id="1236081509407217141">هل تريد السماح باستخدام "الواقع الافتراضي"؟</translation>
 <translation id="1240347957665416060">اسم الجهاز</translation>
+<translation id="124116460088058876">مزيد من اللغات</translation>
 <translation id="1250759482327835220">‏للدفع بشكلٍ أسرع في المرة القادمة، يمكنك حفظ البطاقة والاسم وعنوان إرسال الفواتير في حسابك على Google.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />، <ph name="TYPE_2" /> (تمت المزامنة)</translation>
 <translation id="1256368399071562588">‏&lt;p&gt;إذا تعذّر فتح أحد المواقع الإلكترونية التي تحاول زيارتها، يمكنك تحرّي الخطأ وإصلاحه باتّباع الخطوات التالية:&lt;/p&gt;
@@ -840,6 +842,7 @@
 <translation id="4424024547088906515">‏هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان غير موثوقة من قبل Chrome. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض الاتصال.</translation>
 <translation id="443121186588148776">منفذ تسلسلي</translation>
 <translation id="4432688616882109544">لم يقبل <ph name="HOST_NAME" /> شهادة تسجيل الدخول أو من المحتمل ألا يكون قد تم تقديم واحدة.</translation>
+<translation id="4432792777822557199">ستتم ترجمة الصفحات باللغة <ph name="SOURCE_LANGUAGE" /> إلى اللغة <ph name="TARGET_LANGUAGE" /> من الآن فصاعدًا</translation>
 <translation id="4434045419905280838">النوافذ المنبثقة وإعادة التوجيه</translation>
 <translation id="4435702339979719576">بطاقة بريدية)</translation>
 <translation id="443673843213245140">تم إيقاف استخدام الخادم الوكيل ولكن تم تحديد تهيئة صريحة للخادم الوكيل.</translation>
@@ -1071,6 +1074,7 @@
 <translation id="5431657950005405462">لم يتم العثور على ملفك</translation>
 <translation id="5439770059721715174">حدث خطأ في مصادقة المخطط على "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">ترتيب عكسي والوجه للأعلى</translation>
+<translation id="5447765697759493033">لن تتم ترجمة هذا الموقع</translation>
 <translation id="5452270690849572955">لا يمكن العثور على صفحة <ph name="HOST_NAME" /> هذه.</translation>
 <translation id="5455374756549232013">الطابع الزمني للسياسة سيئ</translation>
 <translation id="5457113250005438886">غير صالحة</translation>
@@ -1617,6 +1621,7 @@
 <translation id="7716375162095500223">لم يتم التحميل أو التجاهل بعد.</translation>
 <translation id="7716424297397655342">لا يمكن تحميل الموقع الإلكتروني هذا من ذاكرة التخزين المؤقت</translation>
 <translation id="7723047071702270851">تعديل البطاقة</translation>
+<translation id="773466115871691567">ترجمة الصفحات باللغة <ph name="SOURCE_LANGUAGE" /> دائمًا</translation>
 <translation id="7740996059027112821">عادي</translation>
 <translation id="774634243536837715">تم حظر المحتوى الخطير.</translation>
 <translation id="7752995774971033316">غير مُدار</translation>
@@ -1762,6 +1767,7 @@
 <translation id="831997045666694187">مساءً</translation>
 <translation id="8332188693563227489">تم رفض الدخول إلى <ph name="HOST_NAME" />.</translation>
 <translation id="833262891116910667">تمييز</translation>
+<translation id="8339163506404995330">لن تتم ترجمة الصفحات باللغة <ph name="LANGUAGE" /></translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">إذا كنت على دراية بالمخاطر التي تهدد أمانك، يمكنك <ph name="BEGIN_LINK" />زيارة هذا الموقع<ph name="END_LINK" /> قبل أن تتم إزالة البرامج الضارة.</translation>
 <translation id="8349305172487531364">شريط الإشارات</translation>

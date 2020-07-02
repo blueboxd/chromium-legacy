@@ -4,9 +4,9 @@
 
 #include "content/renderer/render_widget_screen_metrics_emulator.h"
 
+#include "base/numerics/safe_conversions.h"
 #include "content/public/common/untrustworthy_context_menu_params.h"
 #include "content/renderer/render_widget_screen_metrics_emulator_delegate.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 
 namespace content {
 
@@ -64,13 +64,13 @@ void RenderWidgetScreenMetricsEmulator::Apply() {
     widget_size.set_width(emulation_params_.view_size.width);
   } else {
     widget_size.set_width(
-        gfx::ToRoundedInt(widget_size.width() / emulation_params_.scale));
+        base::Round(widget_size.width() / emulation_params_.scale));
   }
   if (emulation_params_.view_size.height) {
     widget_size.set_height(emulation_params_.view_size.height);
   } else {
     widget_size.set_height(
-        gfx::ToRoundedInt(widget_size.height() / emulation_params_.scale));
+        base::Round(widget_size.height() / emulation_params_.scale));
   }
 
   // For mobile emulation, the window size is changed to match the widget size,

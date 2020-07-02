@@ -84,8 +84,10 @@ class CONTENT_EXPORT CrossOriginOpenerPolicyReporter final
       const network::CrossOriginOpenerPolicy& coop,
       const network::CrossOriginEmbedderPolicy& coep);
 
-  // Install the CoopAccessMonitors in between the two windows |A| and |B|.
-  void MonitorAccessesInBetweenWindows(FrameTreeNode* A, FrameTreeNode* B);
+  // Install the CoopAccessMonitors monitoring accesses from |accessing_node|
+  // toward |accessed_node|.
+  void MonitorAccesses(FrameTreeNode* accessing_node,
+                       FrameTreeNode* accessed_node);
 
   // See the class comment.
   StoragePartition* const storage_partition_;

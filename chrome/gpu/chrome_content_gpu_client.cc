@@ -19,6 +19,8 @@
 #include "media/media_buildflags.h"
 
 #if defined(OS_CHROMEOS)
+#include "chromeos/components/cdm_factory_daemon/chromeos_cdm_factory.h"
+#include "chromeos/components/cdm_factory_daemon/mojom/cdm_factory_daemon.mojom.h"
 #include "components/arc/video_accelerator/protected_buffer_manager.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
@@ -40,6 +42,9 @@ void ChromeContentGpuClient::GpuServiceInitialized() {
       ->SetGetProtectedNativePixmapDelegate(base::BindRepeating(
           &arc::ProtectedBufferManager::GetProtectedNativePixmapFor,
           base::Unretained(protected_buffer_manager_.get())));
+
+  content::ChildThread::Get()->BindHostReceiver(
+      chromeos::ChromeOsCdmFactory::GetCdmFactoryDaemonReceiver());
 #endif
 
   // This doesn't work in single-process mode.

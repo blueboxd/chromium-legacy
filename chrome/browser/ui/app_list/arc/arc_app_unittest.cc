@@ -18,6 +18,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
@@ -90,7 +91,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/events/event_constants.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_unittest_util.h"
 
@@ -523,9 +523,9 @@ class ArcAppModelBuilderTest
       EXPECT_TRUE(image.HasRepresentation(scale));
       const gfx::ImageSkiaRep& representation = image.GetRepresentation(scale);
       EXPECT_FALSE(representation.is_null());
-      EXPECT_EQ(gfx::ToCeiledInt(icon_dimension * scale),
+      EXPECT_EQ(base::Ceil(icon_dimension * scale),
                 representation.pixel_width());
-      EXPECT_EQ(gfx::ToCeiledInt(icon_dimension * scale),
+      EXPECT_EQ(base::Ceil(icon_dimension * scale),
                 representation.pixel_height());
     }
   }

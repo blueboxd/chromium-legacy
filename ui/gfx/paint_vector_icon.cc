@@ -11,6 +11,7 @@
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/trace_event/trace_event.h"
@@ -561,14 +562,14 @@ void PaintVectorIcon(Canvas* canvas,
   DCHECK(!icon.is_empty());
   for (size_t i = 0; i < icon.reps_size; ++i)
     DCHECK(icon.reps[i].path_size > 0);
-  const int px_size = gfx::ToCeiledInt(canvas->image_scale() * dip_size);
+  const int px_size = base::Ceil(canvas->image_scale() * dip_size);
   const VectorIconRep* rep = GetRepForPxSize(icon, px_size);
   PaintPath(canvas, rep->path, rep->path_size, dip_size, color);
 }
 
 ImageSkia CreateVectorIcon(const IconDescription& params) {
   if (params.icon.is_empty())
-    return gfx::ImageSkia();
+    return ImageSkia();
 
   return g_icon_cache.Get().GetOrCreateIcon(params);
 }

@@ -196,6 +196,33 @@ MDCSnackbarMessage* CreateOrUpdateBookmarkWithUndoToast(
   return CreateUndoToastWithWrapper(wrapper, text);
 }
 
+MDCSnackbarMessage* CreateBookmarkAtPositionWithUndoToast(
+    NSString* title,
+    const GURL& url,
+    const bookmarks::BookmarkNode* folder,
+    int position,
+    bookmarks::BookmarkModel* bookmark_model,
+    ChromeBrowserState* browser_state) {
+  base::string16 titleString = base::SysNSStringToUTF16(title);
+
+  UndoManagerWrapper* wrapper =
+      [[UndoManagerWrapper alloc] initWithBrowserState:browser_state];
+  [wrapper startGroupingActions];
+
+  bookmark_model->client()->RecordAction(
+      base::UserMetricsAction("BookmarkAdded"));
+  const bookmarks::BookmarkNode* node = bookmark_model->AddURL(
+      folder, folder->children().size(), titleString, url);
+  bookmark_model->Move(node, folder, position);
+
+  [wrapper stopGroupingActions];
+  [wrapper resetUndoManagerChanged];
+
+  NSString* text =
+      l10n_util::GetNSString(IDS_IOS_BOOKMARK_NEW_BOOKMARK_CREATED);
+  return CreateUndoToastWithWrapper(wrapper, text);
+}
+
 MDCSnackbarMessage* UpdateBookmarkPositionWithUndoToast(
     const bookmarks::BookmarkNode* node,
     const bookmarks::BookmarkNode* folder,

@@ -529,7 +529,6 @@
 <translation id="1645516838734033527">Каб прылада <ph name="DEVICE_TYPE" /> была ў бяспецы, Smart Lock патрабуе, каб функцыя блакіроўкі экрана на вашым тэлефоне была ўключана.</translation>
 <translation id="1646982517418478057">Каб зашыфраваць гэты сертыфікат, увядзіце пароль</translation>
 <translation id="1648528859488547844">Выкарыстоўваць Wi‑Fi або мабільныя сеткі для вызначэння месцазнаходжання</translation>
-<translation id="1648943974594387137">Даныя ўліковага запісу для ўваходу састарэлі</translation>
 <translation id="164936512206786300">Разлучыць прыладу Bluetooth</translation>
 <translation id="1650371550981945235">Паказаць параметры ўводу</translation>
 <translation id="1651008383952180276">Вам трэба двойчы ўвесці аднолькавую фразу-пароль</translation>
@@ -1333,7 +1332,6 @@
 <translation id="2635276683026132559">Падпісванне</translation>
 <translation id="2636625531157955190">Браўзеру Chrome не ўдалося атрымаць доступ да відарыса.</translation>
 <translation id="2637400434494156704">Няправільны PIN-код. У вас засталася адна спроба.</translation>
-<translation id="2638087589890736295">Для запуску сінхранізацыі патрабуецца фраза-пароль</translation>
 <translation id="2638662041295312666">Відарыс уліковага запісу</translation>
 <translation id="264083724974021997">Дыялогавае акно "Падключэнне да тэлефона"</translation>
 <translation id="2641065435954454414">Падрыхтоўваецца спампоўванне</translation>
@@ -1487,7 +1485,6 @@
 <translation id="2809586584051668049">і яшчэ <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
 <translation id="2810390687497823527">Тут вы можаце наладжваць пашырэнні або выключаць іх – у тым выпадку, калі вы не пазнаяце нейкае пашырэнне або калі браўзер перастае працаваць належным чынам.</translation>
 <translation id="2812049959647166806">Thunderbolt не падтрымліваецца</translation>
-<translation id="2812944337881233323">Паспрабуйце выйсці і ўвайсці зноў</translation>
 <translation id="2812989263793994277">Не паказваць відарысы</translation>
 <translation id="2813094189969465044">Бацькоўскі кантроль</translation>
 <translation id="281390819046738856">Не ўдалося падпісаць запыт.</translation>
@@ -3408,7 +3405,6 @@
 <translation id="529175790091471945">Фармаціраваць прыладу</translation>
 <translation id="5293170712604732402">Аднавіць налады да стандартных значэнняў</translation>
 <translation id="5294097441441645251">У пачатку павінны быць малая літара або сімвал падкрэслівання</translation>
-<translation id="5296471962619441686">Выправіце памылку, каб узнавіць сінхранізацыю</translation>
 <translation id="5297082477358294722">Пароль захаваны. Праглядзець захаваныя паролі і кіраваць імі можна ў раздзеле <ph name="SAVED_PASSWORDS_STORE" />.</translation>
 <translation id="5298219193514155779">Аўтар тэмы</translation>
 <translation id="5299109548848736476">Запыт "Не адсочваць"</translation>
@@ -5771,7 +5767,6 @@
 <translation id="8256417822772703842">У прынтары "<ph name="PRINTER_NAME" />" мала чарніла</translation>
 <translation id="8257950718085972371">Працягваць блакіраваць доступ да камеры</translation>
 <translation id="8259239505248583312">Пачаць</translation>
-<translation id="8260126382462817229">Увайдзіце яшчэ раз</translation>
 <translation id="8260864402787962391">Мыш</translation>
 <translation id="8261378640211443080">Гэта пашырэнне не значыцца ў спісе <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />, яно магло быць дададзена без вашага ведама.</translation>
 <translation id="8261506727792406068">Выдаліць</translation>

@@ -10,7 +10,6 @@
 <translation id="1049743911850919806">ছদ্মবেশী</translation>
 <translation id="10614374240317010">কখনও সংরক্ষিত হয়নি</translation>
 <translation id="1067922213147265141">Google-এর অন্যান্য পরিষেবা</translation>
-<translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" /> ভাষার পৃষ্ঠার অনুবাদ কখনও দেখতে চাই না</translation>
 <translation id="107147699690128016">আপনি ফাইলের এক্সটেনশন পরিবর্তন করলে, সেটি অন্য অ্যাপ্লিকেশনে খুলতে পারে এবং আপনার ডিভাইসে সমস্যার সৃষ্টি করতে পারে।</translation>
 <translation id="1100066534610197918">গ্রুপে একটি নতুন ট্যাব খুলুন</translation>
 <translation id="1105960400813249514">স্ক্রিন ক্যাপচার</translation>
@@ -35,13 +34,11 @@
 <translation id="1229399675748764149">এই পৃষ্ঠাকে আপনার হোমপেজ হিসেবে সেট করুন</translation>
 <translation id="1231733316453485619">সিঙ্ক চালু করবেন?</translation>
 <translation id="123724288017357924">ক্যাশে করা কন্টেন্ট এড়িয়ে বর্তমান পৃষ্ঠা আবার লোড করুন</translation>
-<translation id="124116460088058876">আরও ভাষা</translation>
 <translation id="124678866338384709">বর্তমান ট্যাব বন্ধ করুন</translation>
 <translation id="1258753120186372309">Google ডুডল: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">সার্চ করুন, ঘুরে দেখুন</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> শেয়ার করা যায়নি</translation>
 <translation id="1283039547216852943">প্রসারিত করতে আলতো চাপুন</translation>
-<translation id="1285320974508926690">কখনই এই সাইটটিকে অনুবাদ করবেন না</translation>
 <translation id="1291207594882862231">ইতিহাস, কুকিজ, সাইট ডেটা, ক্যাশে সাফ করে...</translation>
 <translation id="129553762522093515">সম্প্রতি বন্ধ হয়েছে</translation>
 <translation id="1303339473099049190">ওই পাসওয়ার্ডটি খুঁজে পাওয়া যায়নি। বানান পরীক্ষা করে আবার চেষ্টা করে দেখুন।</translation>
@@ -239,7 +236,6 @@
 <translation id="2898264748040935573">স্টোর করা পাসওয়ার্ড এডিট করুন</translation>
 <translation id="2900528713135656174">ইভেন্ট তৈরি করুন</translation>
 <translation id="2903493209154104877">ঠিকানা</translation>
-<translation id="290376772003165898">পৃষ্ঠাটি <ph name="LANGUAGE" /> ভাষায় নয়?</translation>
 <translation id="2904414404539560095">ট্যাব শেয়ার করা যাবে এমন ডিভাইসের সূচি সম্পূর্ণ স্ক্রিন জুড়ে খোলা হয়েছে।</translation>
 <translation id="2905036901251765993">কাছাকাছি আছেন এমন ব্যক্তির সাথে শেয়ার করতে তাকে এই QR কোড স্ক্যান করতে দিন</translation>
 <translation id="2909615210195135082">Google বিজ্ঞপ্তি প্ল্যাটফর্ম</translation>
@@ -417,7 +413,6 @@
 <translation id="4405224443901389797">এই ফোল্ডারে সরান…</translation>
 <translation id="4411535500181276704">লাইট মোড</translation>
 <translation id="4415276339145661267">আপনার Google অ্যাকাউন্ট ম্যানেজ করুন</translation>
-<translation id="4432792777822557199">এখন থেকে <ph name="SOURCE_LANGUAGE" /> ভাষার পৃষ্ঠাগুলিকে <ph name="TARGET_LANGUAGE" /> ভাষায় অনুবাদ করা হবে</translation>
 <translation id="4440958355523780886">Google লাইট পৃষ্ঠা পাঠিয়েছে। আসল পৃষ্ঠাটি লোড করতে ট্যাপ করুন।</translation>
 <translation id="4452411734226507615"><ph name="TAB_TITLE" /> ট্যাবটি বন্ধ করুন</translation>
 <translation id="4452548195519783679"><ph name="FOLDER_NAME" /> এ বুকমার্ক করা হয়েছে</translation>
@@ -552,7 +547,6 @@
 <translation id="543509235395288790"><ph name="COUNT" />টি ফাইল ডাউনলোড হচ্ছে (<ph name="MEGABYTES" />)।</translation>
 <translation id="5441522332038954058">অ্যাড্রেস বারে চলে যান</translation>
 <translation id="5447201525962359567">কুকিজ ও অন্যান্য স্থানীয়ভাবে সংরক্ষণ করা তথ্য সহ সাইটের সকল সঞ্চয়স্থান</translation>
-<translation id="5447765697759493033">এই সাইটটি অনুবাদ করা হবে না</translation>
 <translation id="545042621069398927">আপনার ডাউনলোডের স্পিড বাড়ানো হচ্ছে।</translation>
 <translation id="5456381639095306749">পৃষ্ঠা ডাউনলোড করুন</translation>
 <translation id="548278423535722844">ম্যাপ অ্যাপ্লিকেশানে খুলুন</translation>
@@ -582,7 +576,6 @@
 <translation id="5659593005791499971">ইমেল আইডি</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> এ ইভেন্ট তৈরি করুন</translation>
 <translation id="5668404140385795438">কোনো ওয়েবসাইটের জুম ইন প্রতিরোধ করার অনুরোধ উপেক্ষা করুন</translation>
-<translation id="5684874026226664614">ওহো৷ এই পৃষ্ঠাটির অনুবাদ করা যাবে না৷</translation>
 <translation id="5686790454216892815">ফাইলের নামটি খুব বড়</translation>
 <translation id="5694049548840660018">হোমে সহজেই ফিরে যান</translation>
 <translation id="569536719314091526">আরও বিকল্প বোতাম থেকে এই পৃষ্ঠাটিকে যেকোনও ভাষায় অনুবাদ করুন</translation>
@@ -736,7 +729,6 @@
 <translation id="6767294960381293877">ট্যাব শেয়ার করা যাবে এমন ডিভাইসের সূচি অর্ধেক স্ক্রিন জুড়ে খোলা হয়েছে।</translation>
 <translation id="6811034713472274749">পৃষ্ঠাটি এখন দেখতে পাবেন</translation>
 <translation id="6820686453637990663">CVC</translation>
-<translation id="6831043979455480757">অনুবাদ</translation>
 <translation id="6845325883481699275">Chrome-এর নিরাপত্তা উন্নত করতে সাহায্য করুন</translation>
 <translation id="6846298663435243399">লোড হচ্ছে...</translation>
 <translation id="6850409657436465440">ডাউনলোডটি এখনও চলছে</translation>
@@ -844,7 +836,6 @@
 <translation id="7698359219371678927"><ph name="APP_NAME" />-এ ইমেল আইডি তৈরি করুন</translation>
 <translation id="7704317875155739195">সার্চ এবং ইউআরএলগুলি নিজে থেকে সম্পূর্ণ হতে দিন</translation>
 <translation id="7725024127233776428">আপনার বুকমার্ক করা পৃষ্ঠা এখানে দেখানো হয়</translation>
-<translation id="773466115871691567">সব সময় <ph name="SOURCE_LANGUAGE" /> ভাষার পৃষ্ঠার অনুবাদ দেখতে চাই</translation>
 <translation id="7746457520633464754">বিপজ্জনক অ্যাপ ও সাইট শনাক্ত করতে Chrome আপনার দেখা পৃষ্ঠাগুলির ইউআরএল, সিস্টেমের কিছু তথ্য ও কিছু পৃষ্ঠার কন্টেন্ট Google-কে পাঠায়</translation>
 <translation id="7757787379047923882"><ph name="DEVICE_NAME" /> থেকে টেক্সট শেয়ার করা হয়েছে</translation>
 <translation id="7761849928583394409">তারিখ ও সময় বেছে নিন</translation>
@@ -924,7 +915,6 @@
 <translation id="8310344678080805313">স্ট্যান্ডার্ড ট্যাব</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> এবং আরও অনেক সাইট</translation>
 <translation id="8327155640814342956">সবচেয়ে ভাল ব্রাউজিং অভিজ্ঞতা পেতে, Chrome আপডেট করুন</translation>
-<translation id="8339163506404995330"><ph name="LANGUAGE" /> ভাষার পৃষ্ঠার অনুবাদ করা হবে না</translation>
 <translation id="8349013245300336738">ব্যবহার করা ডেটার পরিমাণ অনুযায়ী সাজান</translation>
 <translation id="8364299278605033898">জনপ্রিয় ওয়েবসাইট দেখুন</translation>
 <translation id="8368027906805972958">অপরিচিত বা কাজ করে না এমন ডিভাইস (<ph name="DEVICE_ID" />)</translation>

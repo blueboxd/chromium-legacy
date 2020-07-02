@@ -1,6 +1,8 @@
 include_rules = [
   "+components/policy",
+  "+components/prefs",
   "+components/safe_browsing/core/proto",
   "+components/strings/grit",
   "+net",
+  "+services/network/public",
 ]

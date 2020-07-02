@@ -39,8 +39,10 @@
 <translation id="428217921675623177">Zadania drukowania starsze niż 90 dni zostaną usunięte</translation>
 <translation id="4429881212383817840">Bilet Kerberos wkrótce straci ważność</translation>
 <translation id="445059817448385655">Stare hasło</translation>
+<translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> z <ph name="TOTAL_PAGE_NUMBER" />. Naciśnij Enter, by anulować zadanie drukowania.</translation>
 <translation id="467510802200863975">Hasła nie są zgodne</translation>
 <translation id="4731797938093519117">Dostęp rodzica</translation>
+<translation id="4808449224298348341">Zadanie drukowania <ph name="DOCUMENT_TITLE" /> zostało anulowane</translation>
 <translation id="4890353053343094602">Jak najszybciej wybierz nowe.</translation>
 <translation id="4932733599132424254">Data</translation>
 <translation id="5212543919916444558">Na Twoim ekranie nie ma nic, w czym mogę pomóc.

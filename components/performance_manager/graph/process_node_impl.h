@@ -53,7 +53,6 @@ class ProcessNodeImpl
   void Bind(mojo::PendingReceiver<mojom::ProcessCoordinationUnit> receiver);
 
   // mojom::ProcessCoordinationUnit implementation:
-  void SetExpectedTaskQueueingDuration(base::TimeDelta duration) override;
   void SetMainThreadTaskLoadIsLow(bool main_thread_task_load_is_low) override;
 
   void SetProcessExitStatus(int32_t exit_status);
@@ -73,7 +72,7 @@ class ProcessNodeImpl
 
   // Returns the render process id (equivalent to RenderProcessHost::GetID()),
   // or ChildProcessHost::kInvalidUniqueID if this is not a renderer.
-  int GetRenderProcessId() const;
+  RenderProcessHostId GetRenderProcessId() const;
 
   // If this process is associated with only one page, returns that page.
   // Otherwise, returns nullptr.
@@ -87,10 +86,6 @@ class ProcessNodeImpl
   const base::Process& process() const { return process_.value(); }
   base::Time launch_time() const { return launch_time_; }
   base::Optional<int32_t> exit_status() const { return exit_status_; }
-
-  base::TimeDelta expected_task_queueing_duration() const {
-    return expected_task_queueing_duration_.value();
-  }
 
   bool main_thread_task_load_is_low() const {
     return main_thread_task_load_is_low_.value();
@@ -137,10 +132,10 @@ class ProcessNodeImpl
   base::Optional<int32_t> GetExitStatus() const override;
   bool VisitFrameNodes(const FrameNodeVisitor& visitor) const override;
   base::flat_set<const FrameNode*> GetFrameNodes() const override;
-  base::TimeDelta GetExpectedTaskQueueingDuration() const override;
   bool GetMainThreadTaskLoadIsLow() const override;
   uint64_t GetPrivateFootprintKb() const override;
   uint64_t GetResidentSetKb() const override;
+  RenderProcessHostId GetRenderProcessHostId() const override;
   const RenderProcessHostProxy& GetRenderProcessHostProxy() const override;
   base::TaskPriority GetPriority() const override;
 
@@ -166,10 +161,6 @@ class ProcessNodeImpl
   const content::ProcessType process_type_;
   const RenderProcessHostProxy render_process_host_proxy_;
 
-  ObservedProperty::NotifiesAlways<
-      base::TimeDelta,
-      &ProcessNodeObserver::OnExpectedTaskQueueingDurationSample>
-      expected_task_queueing_duration_;
   ObservedProperty::NotifiesOnlyOnChanges<
       bool,
       &ProcessNodeObserver::OnMainThreadTaskLoadIsLow>

@@ -144,11 +144,11 @@ class WebApkInstallerRunner {
                    bool relax_updates,
                    const std::string& webapk_package) {
     result_ = result;
-    on_completed_callback_.Run();
+    std::move(on_completed_callback_).Run();
   }
 
   // Called after the installation process has succeeded or failed.
-  base::Closure on_completed_callback_;
+  base::OnceClosure on_completed_callback_;
 
   // The result of the installation process.
   WebApkInstallResult result_;
@@ -175,9 +175,9 @@ class UpdateRequestStorer {
   }
 
  private:
-  void OnComplete(bool success) { quit_closure_.Run(); }
+  void OnComplete(bool success) { std::move(quit_closure_).Run(); }
 
-  base::Closure quit_closure_;
+  base::OnceClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateRequestStorer);
 };
@@ -246,14 +246,14 @@ class BuildProtoRunner {
   void OnBuiltWebApkProto(std::unique_ptr<std::string> serialized_proto) {
     webapk_request_ = std::make_unique<webapk::WebApk>();
     webapk_request_->ParseFromString(*serialized_proto);
-    on_completed_callback_.Run();
+    std::move(on_completed_callback_).Run();
   }
 
   // The populated webapk::WebApk.
   std::unique_ptr<webapk::WebApk> webapk_request_;
 
   // Called after the |webapk_request_| is built.
-  base::Closure on_completed_callback_;
+  base::OnceClosure on_completed_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(BuildProtoRunner);
 };

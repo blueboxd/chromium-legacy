@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/task/post_task.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -63,7 +64,14 @@ class AutoplayMetricsBrowserTest : public InProcessBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(AutoplayMetricsBrowserTest, RecordAutoplayAttemptUkm) {
+// Flaky on Windows. https://crbug.com/1101841
+#if defined(OS_WIN)
+#define MAYBE_RecordAutoplayAttemptUkm DISABLED_RecordAutoplayAttemptUkm
+#else
+#define MAYBE_RecordAutoplayAttemptUkm RecordAutoplayAttemptUkm
+#endif
+IN_PROC_BROWSER_TEST_F(AutoplayMetricsBrowserTest,
+                       MAYBE_RecordAutoplayAttemptUkm) {
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
   GURL main_url(embedded_test_server()->GetURL("example.com",
                                                "/media/autoplay_iframe.html"));

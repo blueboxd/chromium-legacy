@@ -281,6 +281,7 @@
 <translation id="1340527397989195812">Sikkerhedskopiér medier fra enheden ved hjælp af appen Filer.</translation>
 <translation id="1341988552785875222">Den nuværende baggrund er konfigureret af "<ph name="APP_NAME" />". Det kan være nødvendigt at afinstallere "<ph name="APP_NAME" />", inden du vælger en anden baggrund.</translation>
 <translation id="1343865611738742294">Giv Linux-apps adgang til USB-enheder. Linux husker ikke en USB-enhed, når den er fjernet.</translation>
+<translation id="1344143111673240412">Ændringen af kameraindstillingen kræver, at Parallels Desktop genstartes</translation>
 <translation id="1347256498747320987">Installer opdateringer og apps. Hvis du fortsætter, accepterer du, at denne enhed også kan downloade og installere opdateringer og apps automatisk fra Google, dit mobilselskab og producenten af din enhed. Dette kan ske ved hjælp af mobildata. Nogle af disse apps tilbyder muligvis køb i appen. <ph name="BEGIN_LINK1" />Få flere oplysninger<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">Opdateringen starter, når batteriniveauet er på <ph name="BATTERY_LEVEL" /> %.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -529,7 +530,6 @@
 <translation id="1645516838734033527">For at beskytte din <ph name="DEVICE_TYPE" /> kræver Smart Lock en skærmlås på din telefon.</translation>
 <translation id="1646982517418478057">Angiv en adgangskode til kryptering af dette certifikat</translation>
 <translation id="1648528859488547844">Brug Wi-Fi eller mobilnetværk til at fastslå placeringen</translation>
-<translation id="1648943974594387137">Loginoplysningerne er forældede</translation>
 <translation id="164936512206786300">Fjern parring af Bluetooth-enhed</translation>
 <translation id="1650371550981945235">Vis inputmuligheder</translation>
 <translation id="1651008383952180276">Du skal angive den samme adgangssætning to gange</translation>
@@ -937,6 +937,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2151576029659734873">Det angivne faneindeks er ugyldigt.</translation>
 <translation id="2152281589789213846">Føj printere til din profil</translation>
 <translation id="2154484045852737596">Rediger kort</translation>
+<translation id="2154697841132053118">Registrerer tale...</translation>
 <translation id="2154710561487035718">Kopier webadresse</translation>
 <translation id="2155772377859296191">Ligner <ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="2156294658807918600">Scripttjeneste: <ph name="SCRIPT_URL" /></translation>
@@ -1333,7 +1334,6 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2635276683026132559">Signering</translation>
 <translation id="2636625531157955190">Chrome kan ikke få adgang til billedet.</translation>
 <translation id="2637400434494156704">Pinkoden er forkert. Du har ét forsøg tilbage.</translation>
-<translation id="2638087589890736295">Angiv adgangssætningen for at påbegynde synkroniseringen.</translation>
 <translation id="2638662041295312666">Loginbillede</translation>
 <translation id="264083724974021997">Opret forbindelse til din telefon – dialogboks</translation>
 <translation id="2641065435954454414">Forbereder download</translation>
@@ -1374,6 +1374,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2682498795777673382">Opdatering fra din forælder</translation>
 <translation id="2683638487103917598">Mappen er sorteret</translation>
 <translation id="2684004000387153598">Hvis du vil fortsætte, skal du klikke på OK og derefter klikke på Tilføj person for at oprette en ny profil til din mailadresse.</translation>
+<translation id="2686222346846590368">Dette er den sidste automatiske software- og sikkerhedsopdatering til denne <ph name="DEVICE_TYPE" />. Opgrader til en nyere model for at få opdateringer fremover. &lt;a target="_blank" href="<ph name="URL" />"&gt;Få flere oplysninger<ph name="LINK_END" /></translation>
 <translation id="2687403674020088961">Bloker alle cookies (anbefales ikke)</translation>
 <translation id="2687407218262674387">Googles servicevilkår</translation>
 <translation id="2688196195245426394">Fejl ved registrering af enheden med serveren: <ph name="CLIENT_ERROR" />.</translation>
@@ -1396,6 +1397,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2712173769900027643">Spørg om tilladelse</translation>
 <translation id="2713444072780614174">Hvid</translation>
 <translation id="2714393097308983682">Google Play Butik</translation>
+<translation id="2714997332747470971">Forslag til personlige oplysninger hjælper dig med at skrive hurtigere med forslag til f.eks. dit navn, din adresse eller dit telefonnummer. Det er kun dig, der kan se dine egne private, tilpassede forslag til din konto.</translation>
 <translation id="2715751256863167692">Denne opgradering nulstiller din Chromebook og fjerner aktuelle brugerdata.</translation>
 <translation id="2716986496990888774">Denne indstilling administreres af en forælder.</translation>
 <translation id="2718395828230677721">Nattelys</translation>
@@ -1487,7 +1489,6 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2809586584051668049">og <ph name="NUMBER_ADDITIONAL_DISABLED" /> mere</translation>
 <translation id="2810390687497823527">Hvis du ikke kan genkende en udvidelse, eller hvis din browser ikke fungerer som forventet, kan du deaktivere eller tilpasse udvidelser her.</translation>
 <translation id="2812049959647166806">Thunderbolt understøttes ikke</translation>
-<translation id="2812944337881233323">Prøv at logge ud og ind igen.</translation>
 <translation id="2812989263793994277">Vis ikke billeder</translation>
 <translation id="2813094189969465044">Børnesikring</translation>
 <translation id="281390819046738856">Anmodningen kunne ikke signeres.</translation>
@@ -2318,6 +2319,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="3839516600093027468">Bloker altid <ph name="HOST" /> fra at se udklipsholderen</translation>
 <translation id="3841964634449506551">Adgangskoden er ugyldig</translation>
 <translation id="3842552989725514455">Serif-skrifttype</translation>
+<translation id="3843058644024807390">Ændringen af mikrofonindstillingen kræver, at Parallels Desktop genstartes</translation>
 <translation id="3846116211488856547">Få værktøjer til at udvikle websites, Android-apps og meget mere. Når du installerer Linux, downloades <ph name="DOWNLOAD_SIZE" /> data.</translation>
 <translation id="3847319713229060696">Vær med til at forbedre sikkerheden på nettet for alle</translation>
 <translation id="385051799172605136">Tilbage</translation>
@@ -2449,6 +2451,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="3983769721878416534">Forsinkelse forud for klik</translation>
 <translation id="3984159763196946143">Demotilstand kunne ikke startes</translation>
 <translation id="3984431586879874039">Vil du tillade, at dette website ser din sikkerhedsnøgle?</translation>
+<translation id="3986705137476756801">Deaktiver Livetekstning indtil videre</translation>
 <translation id="3987938432087324095">Det forstod jeg ikke.</translation>
 <translation id="3988996860813292272">Vælg tidszone</translation>
 <translation id="399179161741278232">Importeret</translation>
@@ -2893,6 +2896,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4608520674724523647">Illustration af fuldført tilmelding</translation>
 <translation id="4608703838363792434"><ph name="FILE_NAME" /> har følsomt indhold</translation>
 <translation id="4610162781778310380">Der opstod en fejl i <ph name="PLUGIN_NAME" /></translation>
+<translation id="4610178114344604329">Vis forslag til personlige oplysninger</translation>
 <translation id="4610637590575890427">Ville du gå til <ph name="SITE" />?</translation>
 <translation id="4611114513649582138">Tilgængelig dataforbindelse</translation>
 <translation id="4613144866899789710">Annullerer Linux-installation...</translation>
@@ -3049,7 +3053,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4837926214103741331">Du har ikke tilladelse til at bruge denne enhed. Kontakt enhedsejeren for at få tilladelse til at logge ind.</translation>
 <translation id="4837952862063191349">Angiv din gamle <ph name="DEVICE_TYPE" /> adgangskode for at låse op for og gendanne dine lokale data.</translation>
 <translation id="4838836835474292213">Der blev givet læseadgang til udklipsholderen</translation>
-<translation id="4838907349371614303">Adgangskoden blev opdateret</translation>
+<translation id="4838907349371614303">Adgangskoden er opdateret</translation>
 <translation id="4839303808932127586">&amp;Gem video som ...</translation>
 <translation id="4842976633412754305">Denne side forsøger at indlæse scripts fra kilder, som ikke er godkendte.</translation>
 <translation id="4844333629810439236">Andre tastaturer</translation>
@@ -3170,6 +3174,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4977942889532008999">Bekræft adgang</translation>
 <translation id="4980805016576257426">Denne udvidelse indeholder malware.</translation>
 <translation id="4981449534399733132"><ph name="BEGIN_LINK" />Log ind<ph name="END_LINK" /> for at rydde browserdata fra alle dine synkroniserede enheder og din Google-konto.</translation>
+<translation id="4982236238228587209">Enhedens software</translation>
 <translation id="4986728572522335985">Denne handling sletter alle data på sikkerhedsnøglen, bl.a. pinkoden</translation>
 <translation id="4988526792673242964">Sider</translation>
 <translation id="49896407730300355">Roter m&amp;od uret</translation>
@@ -3408,7 +3413,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="529175790091471945">Formatér denne enhed</translation>
 <translation id="5293170712604732402">Gendan indstillinger til deres oprindelige standardkonfiguration</translation>
 <translation id="5294097441441645251">Skal starte med et lille bogstav eller en understregning</translation>
-<translation id="5296471962619441686">Ret fejlen for at fortsætte med at synkronisere</translation>
 <translation id="5297082477358294722">Adgangskoden blev gemt. Se og administrer gemte adgangskoder på din <ph name="SAVED_PASSWORDS_STORE" />.</translation>
 <translation id="5298219193514155779">Tema oprettet af</translation>
 <translation id="5299109548848736476">Do Not Track</translation>
@@ -4692,6 +4696,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6938381444925658529"><ph name="DOMAIN" /> kræver, at du downloader en opdatering før deadlinen. Opdateringen downloades automatisk, når du opretter forbindelse til internettet.</translation>
 <translation id="6938386202199793006">Du har 1 gemt printer.</translation>
 <translation id="6938789263968032501">Personer</translation>
+<translation id="6939815295902433669">Gennemse enhedens software</translation>
 <translation id="6941937518557314510">Log ind på <ph name="TOKEN_NAME" /> for at give <ph name="HOST_NAME" /> autorisation med dit certifikat.</translation>
 <translation id="6943060957016121200">Aktivér Automatisk netdeling</translation>
 <translation id="6943176775188458830">Annuller udskrivning</translation>
@@ -5163,6 +5168,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7522255036471229694">Sig "Ok Google".</translation>
 <translation id="7525067979554623046">Opret</translation>
 <translation id="7526658513669652747">{NUM_DOWNLOADS,plural, =1{1 anden}one{{NUM_DOWNLOADS} anden}other{{NUM_DOWNLOADS} andre}}</translation>
+<translation id="7526989658317409655">Pladsholder</translation>
 <translation id="7529411698175791732">Tjek din internetforbindelse. Hvis problemet fortsætter, kan du prøve at logge ud og logge ind igen.</translation>
 <translation id="7530016656428373557">Afladningshastighed i Watt</translation>
 <translation id="7531779363494549572">Gå til Indstillinger &gt; Apps og notifikationer &gt; Notifikationer.</translation>
@@ -5772,7 +5778,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8256417822772703842"><ph name="PRINTER_NAME" /> løber snart tør for blæk</translation>
 <translation id="8257950718085972371">Fortsæt blokering af kameraadgang</translation>
 <translation id="8259239505248583312">Start</translation>
-<translation id="8260126382462817229">Prøv at logge ind igen</translation>
 <translation id="8260864402787962391">Mus</translation>
 <translation id="8261378640211443080">Denne udvidelse er ikke anført i <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> og er muligvis blevet tilføjet, uden at du vidste det.</translation>
 <translation id="8261506727792406068">Slet</translation>
@@ -6205,6 +6210,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8798441408945964110">Navn på udbyder</translation>
 <translation id="8800004011501252845">Viser destinationer for</translation>
 <translation id="8800034312320686233">Fungerer websitet ikke?</translation>
+<translation id="880069872639153240">Få forslag til emojis baseret på, hvad du skriver</translation>
 <translation id="8803953437405899238">Åbn en ny fane med et enkelt klik</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Flyt fanen til et andet vindue}one{Flyt fanen til et andet vindue}other{Flyt fanerne til et andet vindue}}</translation>
 <translation id="8805140816472474147">Bekræft synkroniseringsindstillingerne for at starte synkronisering.</translation>

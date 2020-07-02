@@ -25,6 +25,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/no_destructor.h"
 #include "base/numerics/ranges.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/elapsed_timer.h"
@@ -562,7 +563,7 @@ class TabStrip::TabDragContextImpl : public TabDragContext {
 
     double ratio = double{tab_strip_->GetInactiveTabWidth()} /
                    TabStyle::GetStandardWidth();
-    return gfx::ToRoundedInt(ratio * kHorizontalMoveThreshold);
+    return base::Round(ratio * kHorizontalMoveThreshold);
   }
 
   int GetInsertionIndexForDraggedBounds(

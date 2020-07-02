@@ -529,7 +529,6 @@
 <translation id="1645516838734033527">Smart Lock จำเป็นต้องใช้การล็อกหน้าจอในโทรศัพท์เพื่อรักษา <ph name="DEVICE_TYPE" /> ของคุณให้ปลอดภัย</translation>
 <translation id="1646982517418478057">โปรดป้อนรหัสผ่านเพื่อเข้ารหัสใบรับรองนี้</translation>
 <translation id="1648528859488547844">ใช้ Wi‑Fi หรือเครือข่ายมือถือเพื่อระบุตำแหน่ง</translation>
-<translation id="1648943974594387137">รายละเอียดการลงชื่อเข้าใช้ล้าสมัยแล้ว</translation>
 <translation id="164936512206786300">เลิกจับคู่อุปกรณ์บลูทูธ</translation>
 <translation id="1650371550981945235">แสดงตัวเลือกการป้อนข้อมูล</translation>
 <translation id="1651008383952180276">คุณต้องป้อนรหัสผ่านเดียวกัน 2 ครั้ง</translation>
@@ -1333,7 +1332,6 @@
 <translation id="2635276683026132559">การเซ็นชื่อ</translation>
 <translation id="2636625531157955190">Chrome ไม่สามารถเข้าถึงภาพ</translation>
 <translation id="2637400434494156704">PIN ไม่ถูกต้อง คุณป้อน PIN ได้อีก 1 ครั้ง</translation>
-<translation id="2638087589890736295">ต้องระบุรหัสผ่านเพื่อเริ่มการซิงค์</translation>
 <translation id="2638662041295312666">รูปภาพการลงชื่อเข้าใช้</translation>
 <translation id="264083724974021997">เชื่อมต่อโทรศัพท์ของคุณ - กล่องโต้ตอบ</translation>
 <translation id="2641065435954454414">กำลังเตรียมการดาวน์โหลด</translation>
@@ -1487,7 +1485,6 @@
 <translation id="2809586584051668049">และอีก <ph name="NUMBER_ADDITIONAL_DISABLED" /> รายการ</translation>
 <translation id="2810390687497823527">หากคุณจำส่วนขยายไม่ได้ หรือหากเบราว์เซอร์ไม่ทำงานตามที่คิด คุณปิดหรือกำหนดค่าการทำงานของส่วนขยายด้วยตนเองได้ที่นี่</translation>
 <translation id="2812049959647166806">ไม่รองรับ Thunderbolt</translation>
-<translation id="2812944337881233323">ลองออกจากระบบและลงชื่อเข้าใช้อีกครั้ง</translation>
 <translation id="2812989263793994277">ไม่ต้องแสดงภาพใดๆ</translation>
 <translation id="2813094189969465044">การควบคุมโดยผู้ปกครอง</translation>
 <translation id="281390819046738856">ลงนามคำขอไม่ได้</translation>
@@ -3408,7 +3405,6 @@
 <translation id="529175790091471945">ฟอร์แมตอุปกรณ์นี้</translation>
 <translation id="5293170712604732402">คืนค่าการตั้งค่าเป็นค่าเริ่มต้นเดิม</translation>
 <translation id="5294097441441645251">ต้องขึ้นต้นด้วยอักขระตัวพิมพ์เล็กหรือขีดล่าง</translation>
-<translation id="5296471962619441686">แก้ไขข้อผิดพลาดเพื่อซิงค์ต่อ</translation>
 <translation id="5297082477358294722">บันทึกรหัสผ่านแล้ว ดูและจัดการรหัสผ่านที่บันทึกไว้ได้ใน<ph name="SAVED_PASSWORDS_STORE" /></translation>
 <translation id="5298219193514155779">ธีมที่สร้างโดย</translation>
 <translation id="5299109548848736476">ไม่ติดตาม</translation>
@@ -4408,7 +4404,7 @@
 <translation id="6557290421156335491">ทางลัดของฉัน</translation>
 <translation id="6561560012278703671">ใช้การส่งข้อความแบบไม่ส่งเสียง (บล็อกข้อความแจ้งเตือนไม่ให้รบกวนคุณ)</translation>
 <translation id="6561726789132298588">ป้อน</translation>
-<translation id="6562117348069327379">จัดเก็บบันทึกระบบไปยังไดเรกทอรีการดาวน์โหลด</translation>
+<translation id="6562117348069327379">จัดเก็บบันทึกระบบไปยังไดเรกทอรี "การดาวน์โหลด"</translation>
 <translation id="656293578423618167">เส้นทางหรือชื่อของไฟล์ยาวเกินไป โปรดบันทึกด้วยชื่อที่สั้นกว่านี้หรือบันทึกลงในตำแหน่งอื่น</translation>
 <translation id="6563469144985748109">ผู้จัดการยังไม่ได้อนุมัติเว็บไซต์นี้</translation>
 <translation id="6569934958368283244">บุคคลอื่น</translation>
@@ -5772,7 +5768,6 @@
 <translation id="8256417822772703842"><ph name="PRINTER_NAME" /> มีหมึกเหลือน้อย</translation>
 <translation id="8257950718085972371">บล็อกการเข้าถึงกล้องต่อไป</translation>
 <translation id="8259239505248583312">เริ่มเลย</translation>
-<translation id="8260126382462817229">ลองลงชื่อเข้าใช้อีกครั้ง</translation>
 <translation id="8260864402787962391">เมาส์</translation>
 <translation id="8261378640211443080">ส่วนขยายนี้ไม่ได้ระบุไว้ใน <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> และอาจถูกเพิ่มเข้ามาโดยที่คุณไม่รู้ตัว</translation>
 <translation id="8261506727792406068">ลบ</translation>

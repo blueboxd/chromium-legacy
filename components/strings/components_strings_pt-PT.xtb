@@ -20,6 +20,7 @@
 <translation id="10614374240317010">Nunca guardadas</translation>
 <translation id="1062160989074299343">Prc10 (Envelope)</translation>
 <translation id="106701514854093668">Marcadores do Ambiente de Trabalho</translation>
+<translation id="1068672505746868501">Nunca traduzir páginas em <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1070901266639972381">Noite</translation>
 <translation id="1074497978438210769">Inseguro</translation>
 <translation id="1080116354587839789">Ajustar à largura</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">Sem nome</translation>
 <translation id="1236081509407217141">Pretende permitir a RV?</translation>
 <translation id="1240347957665416060">O nome do dispositivo</translation>
+<translation id="124116460088058876">Mais idiomas</translation>
 <translation id="1250759482327835220">Para pagar mais rapidamente da próxima vez, guarde o cartão, o nome e o endereço de faturação na sua Conta Google.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (sincronizados)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Se tentar aceder a um Website e este não abrir, primeiro, tente corrigir o erro com estes passos de resolução de problemas:&lt;/p&gt;
@@ -840,6 +842,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="4424024547088906515">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN" />; o Chrome não confia no respetivo certificado de segurança. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
 <translation id="443121186588148776">Porta de série</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> não aceitou o seu certificado de início de sessão ou este pode não ter sido fornecido.</translation>
+<translation id="4432792777822557199">As páginas em <ph name="SOURCE_LANGUAGE" /> serão traduzidas para <ph name="TARGET_LANGUAGE" /> a partir de agora</translation>
 <translation id="4434045419905280838">Pop-ups e redirecionamentos</translation>
 <translation id="4435702339979719576">Postcard)</translation>
 <translation id="443673843213245140">A utilização de um proxy está desativada, mas existe uma configuração de proxy explícita especificada.</translation>
@@ -1071,6 +1074,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="5431657950005405462">O ficheiro não foi encontrado</translation>
 <translation id="5439770059721715174">Erro de validação de esquema em "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Ordem inversa, com orientação para cima</translation>
+<translation id="5447765697759493033">Este site não será traduzido.</translation>
 <translation id="5452270690849572955">Não é possível encontrar esta página de <ph name="HOST_NAME" /></translation>
 <translation id="5455374756549232013">Carimbo de data/hora da política incorreto</translation>
 <translation id="5457113250005438886">Inválido</translation>
@@ -1616,6 +1620,7 @@ Detalhes adicionais:
 <translation id="7716375162095500223">Ainda não carregado ou ignorado</translation>
 <translation id="7716424297397655342">Não é possível carregar este site a partir da cache</translation>
 <translation id="7723047071702270851">Editar cartão</translation>
+<translation id="773466115871691567">Traduza sempre páginas em <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7740996059027112821">Padrão</translation>
 <translation id="774634243536837715">Conteúdo perigoso bloqueado.</translation>
 <translation id="7752995774971033316">Não gerido</translation>
@@ -1761,6 +1766,7 @@ Detalhes adicionais:
 <translation id="831997045666694187">Noite</translation>
 <translation id="8332188693563227489">O acesso a <ph name="HOST_NAME" /> foi recusado</translation>
 <translation id="833262891116910667">Realçar</translation>
+<translation id="8339163506404995330">As páginas em <ph name="LANGUAGE" /> não serão traduzidas</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Se compreende os riscos para a sua segurança, pode <ph name="BEGIN_LINK" />visitar este site<ph name="END_LINK" /> antes de os programas prejudiciais terem sido removidos.</translation>
 <translation id="8349305172487531364">Barra de marcadores</translation>

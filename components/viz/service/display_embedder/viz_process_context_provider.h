@@ -93,6 +93,8 @@ class VIZ_SERVICE_EXPORT VizProcessContextProvider
 
   scoped_refptr<gpu::GpuTaskSchedulerHelper> GetGpuTaskSchedulerHelper();
 
+  void SetNeedsMeasureNextDrawLatency();
+
  protected:
   friend class base::RefCountedThreadSafe<VizProcessContextProvider>;
   VizProcessContextProvider();  // For testing only.

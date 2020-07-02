@@ -40,6 +40,31 @@ enum class VersionComparison {
   kMaxValue = kMajorVersionChange,
 };
 
+// Values of the UMA Stability.iOS.UTE.MobileSessionOOMShutdownHint histogram.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class MobileSessionOomShutdownHint {
+  // There is no additional information for this UTE/XTE.
+  NoInformation = 0,
+  // Session restoration was in progress before this UTE.
+  SessionRestorationUte = 1,
+  // Session restoration was in progress before this XTE.
+  SessionRestorationXte = 2,
+  kMaxValue = SessionRestorationXte
+};
+
+// Returns value to log for Stability.iOS.UTE.MobileSessionOOMShutdownHint
+// histogram.
+MobileSessionOomShutdownHint GetMobileSessionOomShutdownHint(
+    bool has_possible_explanation) {
+  if ([PreviousSessionInfo sharedInstance].terminatedDuringSessionRestoration) {
+    return has_possible_explanation
+               ? MobileSessionOomShutdownHint::SessionRestorationXte
+               : MobileSessionOomShutdownHint::SessionRestorationUte;
+  }
+  return MobileSessionOomShutdownHint::NoInformation;
+}
+
 // Logs |type| in the shutdown type histogram.
 void LogShutdownType(MobileSessionShutdownType type) {
   UMA_STABILITY_HISTOGRAM_ENUMERATION("Stability.MobileSessionShutdownType",
@@ -155,43 +180,48 @@ void MobileSessionShutdownMetricsProvider::ProvidePreviousSessionData(
   // Log metrics to improve categorization of crashes.
   LogApplicationBackgroundedTime(session_info.sessionEndTime);
 
-  if (shutdown_type != SHUTDOWN_IN_FOREGROUND_NO_CRASH_LOG_NO_MEMORY_WARNING &&
-      shutdown_type !=
+  if (shutdown_type == SHUTDOWN_IN_FOREGROUND_NO_CRASH_LOG_NO_MEMORY_WARNING ||
+      shutdown_type ==
           SHUTDOWN_IN_FOREGROUND_NO_CRASH_LOG_WITH_MEMORY_WARNING) {
     // Log UTE metrics only if the crash was classified as a UTE.
-    return;
-  }
 
-  if (session_info.deviceBatteryState == DeviceBatteryState::kUnplugged) {
-    LogBatteryCharge(session_info.deviceBatteryLevel);
-  }
-  if (session_info.availableDeviceStorage >= 0) {
-    LogAvailableStorage(session_info.availableDeviceStorage);
-  }
-  if (session_info.OSVersion) {
-    LogOSVersionChange(base::SysNSStringToUTF8(session_info.OSVersion));
-  }
-  LogLowPowerMode(session_info.deviceWasInLowPowerMode);
-  LogDeviceThermalState(session_info.deviceThermalState);
+    if (session_info.deviceBatteryState == DeviceBatteryState::kUnplugged) {
+      LogBatteryCharge(session_info.deviceBatteryLevel);
+    }
+    if (session_info.availableDeviceStorage >= 0) {
+      LogAvailableStorage(session_info.availableDeviceStorage);
+    }
+    if (session_info.OSVersion) {
+      LogOSVersionChange(base::SysNSStringToUTF8(session_info.OSVersion));
+    }
+    LogLowPowerMode(session_info.deviceWasInLowPowerMode);
+    LogDeviceThermalState(session_info.deviceThermalState);
 
-  UMA_STABILITY_HISTOGRAM_BOOLEAN(
-      "Stability.iOS.UTE.OSRestartedAfterPreviousSession",
-      session_info.OSRestartedAfterPreviousSession);
+    UMA_STABILITY_HISTOGRAM_BOOLEAN(
+        "Stability.iOS.UTE.OSRestartedAfterPreviousSession",
+        session_info.OSRestartedAfterPreviousSession);
 
-  bool possible_explanation =
-      // Log any of the following cases as a possible explanation for the
-      // crash:
-      // - device restarted when Chrome was in the foreground (OS was updated,
-      // battery died, or iPhone X or newer was powered off)
-      (session_info.OSRestartedAfterPreviousSession) ||
-      // - storage was critically low
-      (session_info.availableDeviceStorage >= 0 &&
-       session_info.availableDeviceStorage <= kCriticallyLowDeviceStorage) ||
-      // - device in abnormal thermal state
-      session_info.deviceThermalState == DeviceThermalState::kCritical ||
-      session_info.deviceThermalState == DeviceThermalState::kSerious;
-  UMA_STABILITY_HISTOGRAM_BOOLEAN("Stability.iOS.UTE.HasPossibleExplanation",
-                                  possible_explanation);
+    bool possible_explanation =
+        // Log any of the following cases as a possible explanation for the
+        // crash:
+        // - device restarted when Chrome was in the foreground (OS was updated,
+        // battery died, or iPhone X or newer was powered off)
+        (session_info.OSRestartedAfterPreviousSession) ||
+        // - storage was critically low
+        (session_info.availableDeviceStorage >= 0 &&
+         session_info.availableDeviceStorage <= kCriticallyLowDeviceStorage) ||
+        // - device in abnormal thermal state
+        session_info.deviceThermalState == DeviceThermalState::kCritical ||
+        session_info.deviceThermalState == DeviceThermalState::kSerious;
+    UMA_STABILITY_HISTOGRAM_BOOLEAN("Stability.iOS.UTE.HasPossibleExplanation",
+                                    possible_explanation);
+
+    UMA_STABILITY_HISTOGRAM_ENUMERATION(
+        "Stability.iOS.UTE.MobileSessionOOMShutdownHint",
+        GetMobileSessionOomShutdownHint(possible_explanation),
+        MobileSessionOomShutdownHint::kMaxValue);
+  }
+  [session_info resetSessionRestorationFlag];
 }
 
 MobileSessionShutdownType

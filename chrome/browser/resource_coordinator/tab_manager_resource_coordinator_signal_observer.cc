@@ -45,24 +45,6 @@ void TabManager::ResourceCoordinatorSignalObserver::OnIsLoadingChanged(
   }
 }
 
-void TabManager::ResourceCoordinatorSignalObserver::
-    OnExpectedTaskQueueingDurationSample(const ProcessNode* process_node) {
-  // Report this measurement to all pages that are hosting a main frame in
-  // the process that was sampled.
-  const base::TimeDelta& duration =
-      process_node->GetExpectedTaskQueueingDuration();
-  auto associated_page_nodes =
-      performance_manager::GraphOperations::GetAssociatedPageNodes(
-          process_node);
-  for (auto* page_node : associated_page_nodes) {
-    // Forward the notification over to the UI thread.
-    content::GetUIThreadTaskRunner({})->PostTask(
-        FROM_HERE, base::BindOnce(&OnExpectedTaskQueueingDurationSampleOnUi,
-                                  tab_manager_, page_node->GetContentsProxy(),
-                                  page_node->GetNavigationID(), duration));
-  }
-}
-
 void TabManager::ResourceCoordinatorSignalObserver::OnPassedToGraph(
     Graph* graph) {
   graph->AddPageNodeObserver(this);
@@ -96,23 +78,6 @@ void TabManager::ResourceCoordinatorSignalObserver::OnPageStoppedLoadingOnUi(
   if (auto* contents = contents_proxy.Get()) {
     TabManagerResourceCoordinatorSignalObserverHelper::OnPageStoppedLoading(
         contents);
-  }
-}
-
-// static
-void TabManager::ResourceCoordinatorSignalObserver::
-    OnExpectedTaskQueueingDurationSampleOnUi(
-        const base::WeakPtr<TabManager>& tab_manager,
-        const WebContentsProxy& contents_proxy,
-        int64_t navigation_id,
-        base::TimeDelta duration) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (auto* contents =
-          GetContentsForDispatch(tab_manager, contents_proxy, navigation_id)) {
-    // This object is create on demand, so always exists.
-    g_browser_process->GetTabManager()
-        ->stats_collector()
-        ->RecordExpectedTaskQueueingDuration(contents, duration);
   }
 }
 

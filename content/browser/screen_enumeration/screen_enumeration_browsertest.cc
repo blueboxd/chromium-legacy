@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"
@@ -13,7 +14,6 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "ui/display/screen_base.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 
 namespace content {
 
@@ -67,7 +67,7 @@ base::ListValue GetExpectedScreens() {
     s.SetIntKey("pixelDepth", d.color_depth());
     s.SetBoolKey("primary", d.id() == screen->GetPrimaryDisplay().id());
     // Handle JS's pattern for specifying integer and floating point numbers.
-    int int_scale_factor = gfx::ToCeiledInt(d.device_scale_factor());
+    int int_scale_factor = base::Ceil(d.device_scale_factor());
     if (int_scale_factor == d.device_scale_factor())
       s.SetIntKey("scaleFactor", int_scale_factor);
     else

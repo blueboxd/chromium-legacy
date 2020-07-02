@@ -75,6 +75,7 @@ source_set("bookmarks") {
     "//ios/chrome/browser/bookmarks",
     "//ios/chrome/browser/bookmarks:bookmarks_utils",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/drag_and_drop",
     "//ios/chrome/browser/favicon",
     "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/metrics:metrics_internal",

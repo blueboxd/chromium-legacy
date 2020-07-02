@@ -12,6 +12,9 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/stl_util.h"
 #include "components/strings/grit/components_strings.h"
+#include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
+#import "ios/chrome/browser/drag_and_drop/drag_item_util.h"
+#import "ios/chrome/browser/drag_and_drop/table_view_url_drag_drop_handler.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/list_model/list_item+Controller.h"
@@ -19,6 +22,7 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_constants.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_data_sink.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_data_source.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_list_item.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_list_item_updater.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_list_view_controller_audience.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_list_view_controller_delegate.h"
@@ -27,6 +31,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "net/base/mac/url_conversions.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -61,8 +66,9 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
 }
 }  // namespace
 
-@interface ReadingListTableViewController ()<ReadingListDataSink,
-                                             ReadingListToolbarButtonCommands>
+@interface ReadingListTableViewController () <ReadingListDataSink,
+                                              ReadingListToolbarButtonCommands,
+                                              TableViewURLDragDataSource>
 
 // Redefine the model to return ReadingListListItems
 @property(nonatomic, readonly)
@@ -86,7 +92,8 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
 @property(nonatomic, readonly, getter=isEditingWithSwipe) BOOL editingWithSwipe;
 // Whether to remove empty sections after editing is reset to NO.
 @property(nonatomic, assign) BOOL needsSectionCleanupAfterEditing;
-
+// Handler for URL drag interactions.
+@property(nonatomic, strong) TableViewURLDragDropHandler* dragDropHandler;
 @end
 
 @implementation ReadingListTableViewController
@@ -216,6 +223,14 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
           initWithTarget:self
                   action:@selector(handleLongPress:)];
   [self.tableView addGestureRecognizer:longPressRecognizer];
+
+  if (DragAndDropIsEnabled()) {
+    self.dragDropHandler = [[TableViewURLDragDropHandler alloc] init];
+    self.dragDropHandler.origin = WindowActivityReadingListOrigin;
+    self.dragDropHandler.dragDataSource = self;
+    self.tableView.dragDelegate = self.dragDropHandler;
+    self.tableView.dragInteractionEnabled = YES;
+  }
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size
@@ -288,6 +303,17 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
 - (BOOL)tableView:(UITableView*)tableView
     canEditRowAtIndexPath:(NSIndexPath*)indexPath {
   return [self.tableViewModel itemAtIndexPath:indexPath].type == ItemTypeItem;
+}
+
+#pragma mark - TableViewURLDragDataSource
+
+- (URLInfo*)tableView:(UITableView*)tableView
+    URLInfoAtIndexPath:(NSIndexPath*)indexPath {
+  if (self.tableView.editing)
+    return nil;
+  id<ReadingListListItem> item =
+      [self.tableViewModel itemAtIndexPath:indexPath];
+  return [[URLInfo alloc] initWithURL:item.entryURL title:item.title];
 }
 
 #pragma mark - UIAdaptivePresentationControllerDelegate

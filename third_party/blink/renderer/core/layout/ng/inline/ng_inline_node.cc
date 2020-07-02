@@ -989,7 +989,7 @@ void NGInlineNode::SegmentBidiRuns(NGInlineNodeData* data) const {
 void NGInlineNode::ShapeText(NGInlineItemsData* data,
                              const String* previous_text,
                              const Vector<NGInlineItem>* previous_items) const {
-  TRACE_EVENT0("blink", "NGInlineNode::ShapeText");
+  TRACE_EVENT0("fonts", "NGInlineNode::ShapeText");
   const String& text_content = data->text_content;
   Vector<NGInlineItem>* items = &data->items;
 

@@ -15,6 +15,8 @@
 #error "This file requires ARC support."
 #endif
 
+using previous_session_info_constants::kPreviousSessionInfoRestoringSession;
+
 namespace {
 
 // Key in the UserDefaults for a boolean value keeping track of memory warnings.
@@ -276,6 +278,145 @@ TEST_F(PreviousSessionInfoTest, MemoryWarningFlagMethodsAfterRecordingBegins) {
 
   EXPECT_FALSE(
       [defaults boolForKey:kDidSeeMemoryWarningShortlyBeforeTerminating]);
+}
+
+// Tests restoringSession is in sync with User Defaults.
+TEST_F(PreviousSessionInfoTest, NoSessionRestorationInProgress) {
+  [PreviousSessionInfo resetSharedInstanceForTesting];
+
+  [NSUserDefaults.standardUserDefaults
+      removeObjectForKey:kPreviousSessionInfoRestoringSession];
+  [[PreviousSessionInfo sharedInstance] beginRecordingCurrentSession];
+
+  EXPECT_FALSE([[PreviousSessionInfo sharedInstance]
+      terminatedDuringSessionRestoration]);
+}
+
+// Tests restoringSession is in sync with User Defaults.
+TEST_F(PreviousSessionInfoTest, SessionRestorationInProgress) {
+  [PreviousSessionInfo resetSharedInstanceForTesting];
+
+  [NSUserDefaults.standardUserDefaults
+      setBool:YES
+       forKey:kPreviousSessionInfoRestoringSession];
+  [[PreviousSessionInfo sharedInstance] beginRecordingCurrentSession];
+
+  EXPECT_TRUE([[PreviousSessionInfo sharedInstance]
+      terminatedDuringSessionRestoration]);
+}
+
+// Tests that resetSessionRestorationFlag resets User Defaults.
+TEST_F(PreviousSessionInfoTest, ResetSessionRestorationFlag) {
+  [PreviousSessionInfo resetSharedInstanceForTesting];
+  [NSUserDefaults.standardUserDefaults
+      setBool:YES
+       forKey:kPreviousSessionInfoRestoringSession];
+  [[PreviousSessionInfo sharedInstance] beginRecordingCurrentSession];
+
+  ASSERT_TRUE([NSUserDefaults.standardUserDefaults
+      boolForKey:kPreviousSessionInfoRestoringSession]);
+  EXPECT_TRUE([[PreviousSessionInfo sharedInstance]
+      terminatedDuringSessionRestoration]);
+
+  [[PreviousSessionInfo sharedInstance] resetSessionRestorationFlag];
+
+  EXPECT_FALSE([NSUserDefaults.standardUserDefaults
+      boolForKey:kPreviousSessionInfoRestoringSession]);
+  EXPECT_FALSE([[PreviousSessionInfo sharedInstance]
+      terminatedDuringSessionRestoration]);
+}
+
+// Tests that scoped object returned from startSessionRestoration correctly
+// resets User Defaults.
+TEST_F(PreviousSessionInfoTest, ParallelSessionRestorations) {
+  [PreviousSessionInfo resetSharedInstanceForTesting];
+
+  [NSUserDefaults.standardUserDefaults
+      removeObjectForKey:kPreviousSessionInfoRestoringSession];
+  [[PreviousSessionInfo sharedInstance] beginRecordingCurrentSession];
+  ASSERT_FALSE([[PreviousSessionInfo sharedInstance]
+      terminatedDuringSessionRestoration]);
+
+  {
+    base::ScopedClosureRunner scoped_restoration =
+        [[PreviousSessionInfo sharedInstance] startSessionRestoration];
+    EXPECT_TRUE([NSUserDefaults.standardUserDefaults
+        boolForKey:kPreviousSessionInfoRestoringSession]);
+    // This should reset to NO after beginRecordingCurrentSession or
+    // resetSessionRestorationFlag
+    EXPECT_FALSE([[PreviousSessionInfo sharedInstance]
+        terminatedDuringSessionRestoration]);
+    {
+      base::ScopedClosureRunner scoped_restoration2 =
+          [[PreviousSessionInfo sharedInstance] startSessionRestoration];
+      EXPECT_TRUE([NSUserDefaults.standardUserDefaults
+          boolForKey:kPreviousSessionInfoRestoringSession]);
+      // This should reset to NO after beginRecordingCurrentSession or
+      // resetSessionRestorationFlag
+      EXPECT_FALSE([[PreviousSessionInfo sharedInstance]
+          terminatedDuringSessionRestoration]);
+    }
+    EXPECT_TRUE([NSUserDefaults.standardUserDefaults
+        boolForKey:kPreviousSessionInfoRestoringSession]);
+    // This should reset to NO after beginRecordingCurrentSession or
+    // resetSessionRestorationFlag
+    EXPECT_FALSE([[PreviousSessionInfo sharedInstance]
+        terminatedDuringSessionRestoration]);
+  }
+  EXPECT_FALSE([NSUserDefaults.standardUserDefaults
+      boolForKey:kPreviousSessionInfoRestoringSession]);
+  EXPECT_FALSE([[PreviousSessionInfo sharedInstance]
+      terminatedDuringSessionRestoration]);
+}
+
+// Tests that resetSessionRestorationFlag resets the flag during session
+// restoration and that flag is kept reset after restoration is finished.
+TEST_F(PreviousSessionInfoTest,
+       ResetSessionRestorationFlagDuringParallelSessionRestorations) {
+  [PreviousSessionInfo resetSharedInstanceForTesting];
+
+  [NSUserDefaults.standardUserDefaults
+      removeObjectForKey:kPreviousSessionInfoRestoringSession];
+  [[PreviousSessionInfo sharedInstance] beginRecordingCurrentSession];
+  ASSERT_FALSE([[PreviousSessionInfo sharedInstance]
+      terminatedDuringSessionRestoration]);
+
+  {
+    base::ScopedClosureRunner scoped_restoration =
+        [[PreviousSessionInfo sharedInstance] startSessionRestoration];
+    EXPECT_TRUE([NSUserDefaults.standardUserDefaults
+        boolForKey:kPreviousSessionInfoRestoringSession]);
+    // This should reset to NO after beginRecordingCurrentSession or
+    // resetSessionRestorationFlag
+    EXPECT_FALSE([[PreviousSessionInfo sharedInstance]
+        terminatedDuringSessionRestoration]);
+    {
+      base::ScopedClosureRunner scoped_restoration2 =
+          [[PreviousSessionInfo sharedInstance] startSessionRestoration];
+      EXPECT_TRUE([NSUserDefaults.standardUserDefaults
+          boolForKey:kPreviousSessionInfoRestoringSession]);
+      // This should reset to NO after beginRecordingCurrentSession or
+      // resetSessionRestorationFlag
+      EXPECT_FALSE([[PreviousSessionInfo sharedInstance]
+          terminatedDuringSessionRestoration]);
+
+      [[PreviousSessionInfo sharedInstance] resetSessionRestorationFlag];
+      EXPECT_FALSE([[PreviousSessionInfo sharedInstance]
+          terminatedDuringSessionRestoration]);
+      EXPECT_FALSE([NSUserDefaults.standardUserDefaults
+          boolForKey:kPreviousSessionInfoRestoringSession]);
+    }
+    // scoped_restoration2 should not set |restoringSession| to previous state
+    // (YES), but rather leave the reset state.
+    EXPECT_FALSE([NSUserDefaults.standardUserDefaults
+        boolForKey:kPreviousSessionInfoRestoringSession]);
+    EXPECT_FALSE([[PreviousSessionInfo sharedInstance]
+        terminatedDuringSessionRestoration]);
+  }
+  EXPECT_FALSE([NSUserDefaults.standardUserDefaults
+      boolForKey:kPreviousSessionInfoRestoringSession]);
+  EXPECT_FALSE([[PreviousSessionInfo sharedInstance]
+      terminatedDuringSessionRestoration]);
 }
 
 }  // namespace

@@ -10,7 +10,6 @@
 <translation id="1049743911850919806">Gizli Rejim</translation>
 <translation id="10614374240317010">Heç vaxt saxlanılmır</translation>
 <translation id="1067922213147265141">Digər Google xidmətləri</translation>
-<translation id="1068672505746868501">Heç vaxt <ph name="SOURCE_LANGUAGE" /> dilində olan səhifələri tərcümə etməyin</translation>
 <translation id="107147699690128016">Fayl artırmasını dəyişsəniz, fayl başqa tətbiqdə açıla bilər və cihaz üçün potensial zərərli ola bilər.</translation>
 <translation id="1100066534610197918">Qrupda yeni tabda açın</translation>
 <translation id="1105960400813249514">Ekranın Ani Çəkimi</translation>
@@ -35,13 +34,11 @@
 <translation id="1229399675748764149">Bu səhifəni əsas səhifəyə çevirin</translation>
 <translation id="1231733316453485619">Sinxronizasiya ktiv edilsin?</translation>
 <translation id="123724288017357924">Keş məzmununu iqnor edərək cari səhifəni yenidən yükləyin</translation>
-<translation id="124116460088058876">Digər dillər</translation>
 <translation id="124678866338384709">Cari paneli bağlayın</translation>
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Axtarın və kəşf edin</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> paylaşmaq mümkün olmnadı</translation>
 <translation id="1283039547216852943">Genişləndirmək üçün klikləyin</translation>
-<translation id="1285320974508926690">Bu saytı heç vaxt tərcümə etməyin</translation>
 <translation id="1291207594882862231">Tarixçə, kuki, sayt datası və keşi təmizləyin…</translation>
 <translation id="129553762522093515">Son qapadılan</translation>
 <translation id="1303339473099049190">Həmin parolu tapmaq olmur. Yazılışı yoxlayıb, yenidən cəhd edin.</translation>
@@ -239,7 +236,6 @@ Axtarmaq üçün istənilən sözə toxunub saxlayın. Axtarışınızı dəqiql
 <translation id="2898264748040935573">Saxlanılan parola düzəliş edin</translation>
 <translation id="2900528713135656174">Tədbir yaradın</translation>
 <translation id="2903493209154104877">Ünvanlar</translation>
-<translation id="290376772003165898">Səhifə <ph name="LANGUAGE" /> dilində deyil?</translation>
 <translation id="2904414404539560095">Tam hündürlükdə açılan tabı paylaşa biləcəyiniz cihazların siyahısı.</translation>
 <translation id="2905036901251765993">Yaxınlıqdakı insanlarla paylaşmaq üçün onlara bu QR kodu skanlamaq icazəsi verin</translation>
 <translation id="2909615210195135082">Google Bildiriş Platforması</translation>
@@ -415,7 +411,6 @@ Axtarmaq üçün istənilən sözə toxunub saxlayın. Axtarışınızı dəqiql
 <translation id="4405224443901389797">Bura köçürün:</translation>
 <translation id="4411535500181276704">Layt rejimi</translation>
 <translation id="4415276339145661267">Google Hesabını idarə edin</translation>
-<translation id="4432792777822557199">Bundan sonra <ph name="SOURCE_LANGUAGE" /> dilində olan səhifələr <ph name="TARGET_LANGUAGE" /> dilinə tərcümə ediləcək</translation>
 <translation id="4440958355523780886">Google tərəfindən dəstəklənən lite səhifəsi. Orijinalı yükləmək üçün klikləyin.</translation>
 <translation id="4452411734226507615"><ph name="TAB_TITLE" /> tabını bağlayın</translation>
 <translation id="4452548195519783679"><ph name="FOLDER_NAME" /> qovluğuna əlfəcinləndi</translation>
@@ -550,7 +545,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="543509235395288790"><ph name="COUNT" /> fayl (<ph name="MEGABYTES" />) endirilir.</translation>
 <translation id="5441522332038954058">Ünvan barına keçin</translation>
 <translation id="5447201525962359567">Kukilər və digər yerli yadda saxlanmış data daxil olmaqla bütün sayt yaddaşı</translation>
-<translation id="5447765697759493033">Bu sayt tərcümə edilməyəcək</translation>
 <translation id="545042621069398927">Endirmənizi sürətləndirin.</translation>
 <translation id="5456381639095306749">Endirmə səhifəsi</translation>
 <translation id="548278423535722844">Xəritə tətbiqində açın</translation>
@@ -580,7 +574,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="5659593005791499971">E-poçt</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> tətbiqində tədbir yaradın</translation>
 <translation id="5668404140385795438">Böyüdülmənin qarşısını almaq üçün saytın sorğusunu kənarlaşdırın</translation>
-<translation id="5684874026226664614">Bu səhifə tərcümə edilə bilmir. Niyəsini bilmirik.</translation>
 <translation id="5686790454216892815">Fayl adı çox uzundur</translation>
 <translation id="5694049548840660018">Əsas səhifəyə asanlıqla qayıdın</translation>
 <translation id="569536719314091526">Əlavə seçimlər düyməsində bu səhifəni istədiyiniz dilə tərcümə edin</translation>
@@ -732,7 +725,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="6767294960381293877">Yarı hündürlükdə açılan tabı paylaşa biləcəyiniz cihazların siyahısı.</translation>
 <translation id="6811034713472274749">Səhifəyə baxa bilərsiniz</translation>
 <translation id="6820686453637990663">CVC</translation>
-<translation id="6831043979455480757">Tərcümə et</translation>
 <translation id="6845325883481699275">Chrome təhlükəsizliyini təkmilləşdirin</translation>
 <translation id="6846298663435243399">Yüklənir...</translation>
 <translation id="6850409657436465440">Endirmə hələ də gözlənilir</translation>
@@ -840,7 +832,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="7698359219371678927"><ph name="APP_NAME" /> tətbiqində e-poçt yaradın</translation>
 <translation id="7704317875155739195">Axtarış və linkləri avtomatik tamamlayın</translation>
 <translation id="7725024127233776428">Seçdiyiniz səhifələr burada görünəcək</translation>
-<translation id="773466115871691567">Səhifələri həmişə <ph name="SOURCE_LANGUAGE" /> dilinə tərcümə edin</translation>
 <translation id="7746457520633464754">Təhlükəli tətbiq və saytları aşkarlamaq üçün Chrome daxil olduğunuz səhifələrin linkləri, məhdud sistem məlumatı və bəzi səhifə kontentini Google'a göndərir</translation>
 <translation id="7757787379047923882"><ph name="DEVICE_NAME" /> cihazından paylaşılan mətn</translation>
 <translation id="7761849928583394409">Tarix və vaxt seçin</translation>
@@ -920,7 +911,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="8310344678080805313">Standart panellər</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> və daha çox sayt</translation>
 <translation id="8327155640814342956">Ən yaxşı axtarış təcrübəsindən faydalanmaq üçün Chrome'u güncəlləyin</translation>
-<translation id="8339163506404995330"><ph name="LANGUAGE" /> dilində olan səhifələr tərcümə edilməyəcək</translation>
 <translation id="8349013245300336738">İstifadə edilmiş data həcminə görə çeşidləyin</translation>
 <translation id="8364299278605033898">Populyar veb saytlara baxın</translation>
 <translation id="8368027906805972958">Naməlum və ya dəstəklənməyən cihaz (<ph name="DEVICE_ID" />)</translation>

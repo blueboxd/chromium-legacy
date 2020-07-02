@@ -384,6 +384,33 @@
       },
       {
         "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--no-xvfb"
+        ],
+        "isolate_name": "standalone_angle_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "standalone_angle_unittests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912-19.0.2",
+              "os": "Ubuntu-19.04",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://chrome/test:standalone_angle_unittests/"
+      },
+      {
+        "args": [
           "trace_test",
           "--show-stdout",
           "--browser=release",
@@ -771,6 +798,33 @@
       },
       {
         "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--no-xvfb"
+        ],
+        "isolate_name": "standalone_angle_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "standalone_angle_unittests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://chrome/test:standalone_angle_unittests/"
+      },
+      {
+        "args": [
           "trace_test",
           "--show-stdout",
           "--browser=release",
@@ -1114,6 +1168,31 @@
       },
       {
         "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0"
+        ],
+        "isolate_name": "standalone_angle_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "standalone_angle_unittests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.14.6"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://chrome/test:standalone_angle_unittests/"
+      },
+      {
+        "args": [
           "webgl_conformance",
           "--show-stdout",
           "--browser=release",
@@ -1431,6 +1510,33 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/info_collection_tests/"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0"
+        ],
+        "isolate_name": "standalone_angle_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "standalone_angle_unittests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "1002:6821",
+              "hidpi": "1",
+              "os": "Mac-10.14.6",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://chrome/test:standalone_angle_unittests/"
       },
       {
         "args": [
@@ -1876,6 +1982,32 @@
       },
       {
         "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0"
+        ],
+        "isolate_name": "standalone_angle_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "standalone_angle_unittests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://chrome/test:standalone_angle_unittests/"
+      },
+      {
+        "args": [
           "webgl_conformance",
           "--show-stdout",
           "--browser=release_x64",
@@ -2285,20 +2417,15 @@
       },
       {
         "args": [
-          "--gtest-benchmark-name=passthrough_command_buffer_perftests",
-          "-v",
-          "--use-cmd-decoder=passthrough",
-          "--use-angle=gl-null",
-          "--fast-run"
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0"
         ],
-        "isolate_name": "command_buffer_perftests",
+        "isolate_name": "standalone_angle_unittests",
         "merge": {
-          "args": [
-            "--smoke-test-mode"
-          ],
-          "script": "//tools/perf/process_perf_results.py"
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "passthrough_command_buffer_perftests",
+        "name": "standalone_angle_unittests",
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2312,7 +2439,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://gpu:command_buffer_perftests/"
+        "test_id_prefix": "ninja://chrome/test:standalone_angle_unittests/"
       },
       {
         "args": [
@@ -31794,6 +31921,33 @@
       }
     ],
     "isolated_scripts": [
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0"
+        ],
+        "isolate_name": "standalone_angle_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "standalone_angle_unittests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "1002:6613",
+              "os": "Windows-2008ServerR2-SP1",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "expiration": 21600,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://chrome/test:standalone_angle_unittests/"
+      },
       {
         "args": [
           "webgl_conformance",

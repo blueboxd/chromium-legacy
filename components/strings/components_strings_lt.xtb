@@ -20,6 +20,7 @@
 <translation id="10614374240317010">Niekada neišsaugota</translation>
 <translation id="1062160989074299343">„Prc10“ (vokas)</translation>
 <translation id="106701514854093668">Žymės staliniame kompiuteryje</translation>
+<translation id="1068672505746868501">Niekada neversti puslapių, parašytų <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1070901266639972381">Naktis</translation>
 <translation id="1074497978438210769">Nesaugi</translation>
 <translation id="1080116354587839789">Pritaikyti pagal plotį</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">Be pavadinimo</translation>
 <translation id="1236081509407217141">Leisti VR?</translation>
 <translation id="1240347957665416060">Įrenginio pavadinimas</translation>
+<translation id="124116460088058876">Daugiau kalbų</translation>
 <translation id="1250759482327835220">Kad kitą kartą galėtumėte greičiau atlikti mokėjimą, išsaugokite kortelę, vardą bei pavardę ir atsiskaitymo adresą „Google“ paskyroje.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (sinchronizuota)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Jei bandote apsilankyti svetainėje, bet nepavyksta jos atidaryti, pirma pabandykite ištaisyti klaidą atlikdami toliau nurodytus trikčių šalinimo veiksmus.&lt;/p&gt;
@@ -841,6 +843,7 @@ Kitu atveju tai bus užblokuota pagal jūsų privatumo nustatymus. Taip turinys,
 <translation id="4424024547088906515">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikatas nėra patikimas „Chrome“. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užgrobėjo.</translation>
 <translation id="443121186588148776">Nuoseklusis prievadas</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> nepriėmė jūsų prisijungimo sertifikato arba prisijungimo sertifikatas nebuvo pateiktas.</translation>
+<translation id="4432792777822557199">Puslapiai, parašyti <ph name="SOURCE_LANGUAGE" />, nuo dabar bus verčiami į <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">Iššok. langai ir peradresavimai</translation>
 <translation id="4435702339979719576">Atvirukas</translation>
 <translation id="443673843213245140">Įgaliotojo serverio naudojimas neleidžiamas, bet nurodyta aiški įgaliotojo serverio konfigūracija.</translation>
@@ -1072,6 +1075,7 @@ Kitu atveju tai bus užblokuota pagal jūsų privatumo nustatymus. Taip turinys,
 <translation id="5431657950005405462">Failas nerastas</translation>
 <translation id="5439770059721715174">Schemos patvirtinimo klaida „<ph name="ERROR_PATH" />“: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Atvirkštine tvarka, gerąja puse į viršų</translation>
+<translation id="5447765697759493033">Ši svetainė nebus verčiama</translation>
 <translation id="5452270690849572955">Nepavyksta rasti šio <ph name="HOST_NAME" /> puslapio</translation>
 <translation id="5455374756549232013">Bloga politikos laiko žymė</translation>
 <translation id="5457113250005438886">Netinkama</translation>
@@ -1618,6 +1622,7 @@ Papildoma išsami informacija:
 <translation id="7716375162095500223">Dar neįkelta arba nepaisoma</translation>
 <translation id="7716424297397655342">Nepavyksta įkelti šios svetainės iš talpyklos</translation>
 <translation id="7723047071702270851">Kortelės redagavimas</translation>
+<translation id="773466115871691567">Visada versti puslapius, parašytus <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7740996059027112821">Standartinis</translation>
 <translation id="774634243536837715">Pavojingas turinys užblokuotas.</translation>
 <translation id="7752995774971033316">Netvarkoma</translation>
@@ -1763,6 +1768,7 @@ Papildoma išsami informacija:
 <translation id="831997045666694187">Vakaras</translation>
 <translation id="8332188693563227489">Prieiga prie <ph name="HOST_NAME" /> atmesta</translation>
 <translation id="833262891116910667">Paryškinti</translation>
+<translation id="8339163506404995330">Puslapiai, parašyti <ph name="LANGUAGE" />, verčiami nebus</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_YEAR" />/<ph name="EXPIRATION_MONTH" /></translation>
 <translation id="834457929814110454">Jei suprantate, kokia rizika gali kilti jūsų saugai, galite <ph name="BEGIN_LINK" />apsilankyti šioje svetainėje<ph name="END_LINK" />, kol iš jos dar nepašalintos kenkėjiškos programos.</translation>
 <translation id="8349305172487531364">Žymių juosta</translation>

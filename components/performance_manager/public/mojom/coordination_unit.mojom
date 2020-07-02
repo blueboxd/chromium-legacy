@@ -65,6 +65,5 @@ interface DocumentCoordinationUnit {
 
 interface ProcessCoordinationUnit {
   // Property signals.
-  SetExpectedTaskQueueingDuration(mojo_base.mojom.TimeDelta duration);
   SetMainThreadTaskLoadIsLow(bool main_thread_task_load_is_low);
 };

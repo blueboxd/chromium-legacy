@@ -529,7 +529,6 @@
 <translation id="1645516838734033527">ដើម្បីរក្សាសុវត្ថិភាព <ph name="DEVICE_TYPE" /> របស់អ្នក Smart Lock តម្រូវឲ្យ​ប្រើ​ការចាក់សោអេក្រង់នៅលើ​ទូរសព្ទរបស់អ្នក។</translation>
 <translation id="1646982517418478057">សូមបញ្ចូលពាក្យសម្ងាត់ដើម្បីអ៊ិនគ្រីបវិញ្ញាបនបត្រនេះ</translation>
 <translation id="1648528859488547844">ប្រើ Wi‑Fi ឬ​បណ្តាញ​ទូរសព្ទចល័ត​ដើម្បីកំណត់​ទីតាំង</translation>
-<translation id="1648943974594387137">ព័ត៌មានលម្អិតសម្រាប់ចូលគណនីហួសសម័យហើយ</translation>
 <translation id="164936512206786300">ឈប់ផ្គូផ្គង​ឧបករណ៍​ប៊្លូធូស</translation>
 <translation id="1650371550981945235">បង្ហាញជម្រើសបញ្ចូល</translation>
 <translation id="1651008383952180276">អ្នក​ត្រូវតែ​បញ្ចូល​ឃ្លាសម្ងាត់​ដូចគ្នា​ពីរដង</translation>
@@ -1333,7 +1332,6 @@
 <translation id="2635276683026132559">ការចុះហត្ថលេខា</translation>
 <translation id="2636625531157955190">Chrome មិនអាចចូលប្រើរូបភាពទេ។</translation>
 <translation id="2637400434494156704">កូដ PIN មិនត្រឹមត្រូវទេ។ អ្នកអាច​បញ្ចូលបានតែម្ដង​ទៀតប៉ុណ្ណោះ។</translation>
-<translation id="2638087589890736295">តម្រូវឲ្យមានឃ្លាសម្ងាត់ដើម្បីចាប់ផ្តើមធ្វើសមកាលកម្ម</translation>
 <translation id="2638662041295312666">រូបភាពចូលគណនី</translation>
 <translation id="264083724974021997">ភ្ជាប់ជាមួយ​ទូរសព្ទរបស់អ្នក៖ ប្រអប់បញ្ចូល</translation>
 <translation id="2641065435954454414">កំពុង​រៀបចំទាញ​យក</translation>
@@ -1487,7 +1485,6 @@
 <translation id="2809586584051668049">និង <ph name="NUMBER_ADDITIONAL_DISABLED" /> ទៀត</translation>
 <translation id="2810390687497823527">ប្រសិនបើ​អ្នក​មិន​ស្គាល់​កម្មវិធី​បន្ថែម ឬ​ប្រសិនបើ​កម្មវិធី​រុករក​តាមអ៊ីនធឺណិត​របស់អ្នក​មិន​ដំណើរការ​ដូច​ការរំពឹងទុក​ទេ អ្នក​អាច​បិទ ឬ​ប្ដូរ​កម្មវិធី​បន្ថែម​តាមបំណង​នៅទីនេះ​។</translation>
 <translation id="2812049959647166806">មិនអាចប្រើ Thunderbolt បានទេ</translation>
-<translation id="2812944337881233323">សាកល្បងចាកចេញពីគណនី ហើយចូលមកវិញម្តងទៀត</translation>
 <translation id="2812989263793994277">កុំបង្ហាញរូបភាពណាមួយ</translation>
 <translation id="2813094189969465044">ការគ្រប់គ្រងដោយមាតាបិតា</translation>
 <translation id="281390819046738856">មិនអាចចុះហត្ថលេខាលើសំណើបានទេ។</translation>
@@ -3408,7 +3405,6 @@
 <translation id="529175790091471945">សម្អាតឧបករណ៍នេះ</translation>
 <translation id="5293170712604732402">ស្តារ​ការកំណត់​ទៅ​លំនាំដើម​ដំបូង​របស់​ពួកវា</translation>
 <translation id="5294097441441645251">ត្រូវតែ​ចាប់ផ្ដើមដោយ​តួអក្សរតូច ឬសញ្ញា (_)</translation>
-<translation id="5296471962619441686">ដោះស្រាយ​បញ្ហា ដើម្បីបន្ត​សមកាលកម្ម</translation>
 <translation id="5297082477358294722">បាន​រក្សាទុក​ពាក្យសម្ងាត់។ សូមមើល និងគ្រប់គ្រង​ពាក្យសម្ងាត់​ដែលបាន​រក្សាទុក​នៅក្នុង <ph name="SAVED_PASSWORDS_STORE" /> របស់អ្នក។</translation>
 <translation id="5298219193514155779">ធីមបានបង្កើតដោយ</translation>
 <translation id="5299109548848736476">កុំតាមដាន</translation>
@@ -5772,7 +5768,6 @@
 <translation id="8256417822772703842"><ph name="PRINTER_NAME" /> ជិតអស់ទឹកថ្នាំហើយ</translation>
 <translation id="8257950718085972371">បន្តរារាំងការចូលប្រើកាមេរ៉ា</translation>
 <translation id="8259239505248583312">ចាប់ផ្ដើម</translation>
-<translation id="8260126382462817229">សាកល្បងចូលគណនីម្តងទៀត</translation>
 <translation id="8260864402787962391">កណ្តុរ</translation>
 <translation id="8261378640211443080">កម្មវិធីបន្ថែមនេះមិនត្រូវបានរាយនៅក្នុង <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ទេ ហើយអាចត្រូវបន្ថែមដោយគ្មានការជូនដំណឹងដល់អ្នក។</translation>
 <translation id="8261506727792406068">លុប</translation>

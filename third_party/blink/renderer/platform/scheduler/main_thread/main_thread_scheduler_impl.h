@@ -43,7 +43,6 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/non_waking_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/pending_user_input.h"
-#include "third_party/blink/renderer/platform/scheduler/main_thread/queueing_time_estimator.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/render_widget_signals.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/use_case.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/user_model.h"
@@ -85,7 +84,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
       public IdleHelper::Delegate,
       public MainThreadSchedulerHelper::Observer,
       public RenderWidgetSignals::Observer,
-      public QueueingTimeEstimator::Client,
       public base::trace_event::TraceLog::AsyncEnabledStateObserver {
  public:
   // Don't use except for tracing.
@@ -146,13 +144,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   static const char* RAILModeToString(RAILMode rail_mode);
   static const char* VirtualTimePolicyToString(
       PageScheduler::VirtualTimePolicy);
-  // The lowest bucket for fine-grained Expected Queueing Time reporting.
-  static const int kMinExpectedQueueingTimeBucket = 1;
-  // The highest bucket for fine-grained Expected Queueing Time reporting, in
-  // microseconds.
-  static const int kMaxExpectedQueueingTimeBucket = 30 * 1000 * 1000;
-  // The number of buckets for fine-grained Expected Queueing Time reporting.
-  static const int kNumberExpectedQueueingTimeBuckets = 50;
 
   // If |initial_virtual_time| is specified then the scheduler will be created
   // with virtual time enabled and paused with base::Time will be overridden to
@@ -257,10 +248,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   // SchedulerHelper::Observer implementation:
   void OnBeginNestedRunLoop() override;
   void OnExitNestedRunLoop() override;
-
-  // QueueingTimeEstimator::Client implementation:
-  void OnQueueingTimeForWindowEstimated(base::TimeDelta queueing_time,
-                                        bool is_disjoint_window) override;
 
   // ThreadSchedulerImpl implementation:
   scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
@@ -486,8 +473,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   static const char* TimeDomainTypeToString(TimeDomainType domain_type);
 
   void AddPageScheduler(PageSchedulerImpl*);
-
-  bool ContainsLocalMainFrame();
 
   bool IsAnyMainFrameWaitingForFirstContentfulPaint() const;
   bool IsAnyMainFrameWaitingForFirstMeaningfulPaint() const;
@@ -729,8 +714,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
       base::TimeTicks now,
       base::TimeDelta* expected_use_case_duration) const;
 
-  std::unique_ptr<base::SingleSampleMetric> CreateMaxQueueingTimeMetric();
-
   // An input event of some sort happened, the policy may need updating.
   void UpdateForInputEventOnCompositorThread(const WebInputEvent& event,
                                              InputEventState input_event_state);
@@ -876,7 +859,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   base::RepeatingCallback<void(base::WeakPtr<const FrameSchedulerImpl>)>
       agent_strategy_delay_callback_;
 
-  QueueingTimeEstimator queueing_time_estimator_;
   AgentInterferenceRecorder agent_interference_recorder_;
 
   std::unique_ptr<AgentSchedulingStrategy> agent_scheduling_strategy_ =
@@ -926,8 +908,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
         compositor_will_send_main_frame_not_expected;
     TraceableState<bool, TracingCategoryName::kDebug> has_navigated;
     TraceableState<bool, TracingCategoryName::kDebug> pause_timers_for_webview;
-    std::unique_ptr<base::SingleSampleMetric> max_queueing_time_metric;
-    base::TimeDelta max_queueing_time;
     base::TimeTicks background_status_changed_at;
     HashSet<PageSchedulerImpl*> page_schedulers;  // Not owned.
     base::ObserverList<RAILModeObserver>::Unchecked

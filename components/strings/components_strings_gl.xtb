@@ -20,6 +20,7 @@
 <translation id="10614374240317010">Contrasinais que non se gardan nunca</translation>
 <translation id="1062160989074299343">Prc10 (sobre)</translation>
 <translation id="106701514854093668">Marcadores do escritorio</translation>
+<translation id="1068672505746868501">Non traducir nunca páxinas en <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1070901266639972381">Noite</translation>
 <translation id="1074497978438210769">Non seguro</translation>
 <translation id="1080116354587839789">Axustar ao ancho</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">Sen título</translation>
 <translation id="1236081509407217141">Queres permitir RV?</translation>
 <translation id="1240347957665416060">O nome do teu dispositivo</translation>
+<translation id="124116460088058876">Máis idiomas</translation>
 <translation id="1250759482327835220">Para pagar máis rápido a próxima vez, garda a túa tarxeta, o nome e o enderezo de facturación na túa Conta de Google.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" /> e <ph name="TYPE_2" /> (sincronizado)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Se tentas visitar un sitio web e non abre, proba estes pasos para solucionar problemas:&lt;/p&gt;
@@ -837,6 +839,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="4424024547088906515">Este servidor non puido demostrar que é <ph name="DOMAIN" /> porque Chrome non confía no seu certificado de seguranza. É posible que isto se deba a un erro de configuración ou a que un atacante interceptase a túa conexión.</translation>
 <translation id="443121186588148776">Porto en serie</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> non aceptou o teu certificado de inicio de sesión ou ben este non se proporcionou.</translation>
+<translation id="4432792777822557199">As páxinas en <ph name="SOURCE_LANGUAGE" /> traduciranse ao <ph name="TARGET_LANGUAGE" /> a partir de agora</translation>
 <translation id="4434045419905280838">Ventás emerxentes e redireccións</translation>
 <translation id="4435702339979719576">Postal)</translation>
 <translation id="443673843213245140">O uso dun proxy está desactivado, pero especifícase unha configuración de proxy explícita.</translation>
@@ -1068,6 +1071,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="5431657950005405462">Non se atopou o teu ficheiro</translation>
 <translation id="5439770059721715174">Erro de validación de esquema en "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Orde inversa cara arriba</translation>
+<translation id="5447765697759493033">Non se traducirá este sitio</translation>
 <translation id="5452270690849572955">Non se pode atopar esta páxina de <ph name="HOST_NAME" /></translation>
 <translation id="5455374756549232013">Marca de tempo da política incorrecta</translation>
 <translation id="5457113250005438886">Non válidos</translation>
@@ -1614,6 +1618,7 @@ Detalles adicionais:
 <translation id="7716375162095500223">Ignorouse ou aínda non se cargou</translation>
 <translation id="7716424297397655342">Este sitio non se pode cargar desde a memoria caché</translation>
 <translation id="7723047071702270851">Edita a tarxeta</translation>
+<translation id="773466115871691567">Traducir sempre páxinas en <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7740996059027112821">Estándar</translation>
 <translation id="774634243536837715">Bloqueouse contido perigoso.</translation>
 <translation id="7752995774971033316">Sen xestionar</translation>
@@ -1759,6 +1764,7 @@ Detalles adicionais:
 <translation id="831997045666694187">Serán</translation>
 <translation id="8332188693563227489">Denegouse o acceso a <ph name="HOST_NAME" /></translation>
 <translation id="833262891116910667">Destacar</translation>
+<translation id="8339163506404995330">Non se traducirán as páxinas en <ph name="LANGUAGE" /></translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Se aceptas os riscos para a túa seguranza, podes <ph name="BEGIN_LINK" />acceder a este sitio<ph name="END_LINK" /> antes de que se eliminen os programas prexudiciais.</translation>
 <translation id="8349305172487531364">Barra de marcadores</translation>

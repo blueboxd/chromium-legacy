@@ -153,9 +153,6 @@ class DiscardsGraphDumpImpl : public discards::mojom::GraphDump,
       const performance_manager::ProcessNode* process_node) override;
   void OnBeforeProcessNodeRemoved(
       const performance_manager::ProcessNode* process_node) override;
-  void OnExpectedTaskQueueingDurationSample(
-      const performance_manager::ProcessNode* process_node) override {
-  }  // Ignored.
   // Ignored.
   void OnMainThreadTaskLoadIsLow(
       const performance_manager::ProcessNode* process_node) override {}

@@ -294,6 +294,7 @@ void DirectRenderer::DrawFrame(
   current_frame()->device_viewport_size = device_viewport_size;
   current_frame()->display_color_spaces = display_color_spaces;
 
+  output_surface_->SetNeedsMeasureNextDrawLatency();
   BeginDrawingFrame();
 
   // RenderPass owns filters, backdrop_filters, etc., and will outlive this

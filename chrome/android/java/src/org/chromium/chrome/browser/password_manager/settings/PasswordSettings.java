@@ -29,8 +29,8 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
-import org.chromium.chrome.browser.password_check.PasswordCheckComponent;
-import org.chromium.chrome.browser.password_check.PasswordCheckComponentFactory;
+import org.chromium.chrome.browser.password_check.PasswordCheck;
+import org.chromium.chrome.browser.password_check.PasswordCheckFactory;
 import org.chromium.chrome.browser.password_manager.PasswordManagerLauncher;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -481,9 +481,8 @@ public class PasswordSettings
         mCheckPasswords.setSummary(R.string.passwords_check_description);
         // Add a listener which launches a settings page for the leak password check
         mCheckPasswords.setOnPreferenceClickListener(preference -> {
-            PasswordCheckComponent passwordCheckComponent =
-                    PasswordCheckComponentFactory.createComponent();
-            passwordCheckComponent.initialize(getStyledContext());
+            PasswordCheck passwordCheck = PasswordCheckFactory.create();
+            passwordCheck.showUi(getStyledContext());
             // Return true to notify the click was handled
             return true;
         });

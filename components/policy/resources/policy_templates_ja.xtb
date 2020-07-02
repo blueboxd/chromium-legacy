@@ -210,11 +210,6 @@
       このポリシーを無効に設定した場合、Google アシスタントは画面のコンテキストにアクセスできません。
       このポリシーが未設定の場合は、Google アシスタントに画面のコンテキストへのアクセスを許可するかどうかをユーザーが指定できます。</translation>
 <translation id="1376119291123231789">詳細なバッテリー充電モードを有効にする</translation>
-<translation id="1376298389964661475">通知表示を許可するサイトを指定する URL パターンのリストを設定できます。
-
-          このポリシーが未設定のままの場合は、すべてのサイトでグローバルなデフォルト値（「DefaultNotificationsSetting」ポリシーで値が設定されている場合はその値、設定されていない場合はユーザーの個人設定の値）が使用されます。
-
-          有効な URL パターンについて詳しくは、https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns をご覧ください。</translation>
 <translation id="1384459581748403878">参考: <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">OS の更新ステータスをレポートします</translation>
 <translation id="1393485621820363363">有効な企業デバイス プリンタ</translation>
@@ -289,11 +284,6 @@
           有効にすることはできません。
 
           このポリシーを設定した場合、ユーザーが設定を変更したりオーバーライドしたりすることはできません。</translation>
-<translation id="1497640071678474358">ポップアップ表示を許可しないサイトを指定する URL パターンのリストを設定できます。
-
-          このポリシーが未設定のままの場合は、すべてのサイトでグローバルなデフォルト値（「DefaultPopupsSetting」ポリシーで値が設定されている場合はその値、設定されていない場合はユーザーの個人設定の値）が使用されます。
-
-          有効な URL パターンについて詳しくは、https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns をご覧ください。</translation>
 <translation id="1502843533062797703">第三者ソフトウェアからのコードの挿入をブロックする</translation>
 <translation id="1507382822467487898">
           ホルダーがデバイスに装着されているときに使用される MAC（メディア アクセス制御）アドレスを設定します。
@@ -882,13 +872,6 @@
       <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" />（値 1）に設定した場合は、セキュリティまたは安定性に関する重要な修正とみなされるバリエーションのみ <ph name="PRODUCT_NAME" /> に適用できます。
 
       <ph name="VARIATIONS_DISABLED_OPTION_NAME" />（値 2）に設定した場合は、どのバリエーションもブラウザに適用できません。このモードは、<ph name="PRODUCT_NAME" /> のデベロッパーがセキュリティに関する重要な修正を適切なタイミングで適用できない場合があるため推奨されません。</translation>
-<translation id="2406820201690307634">画像表示を許可しないサイトを指定する URL パターンのリストを設定できます。
-
-          このポリシーが未設定のままの場合は、すべてのサイトでグローバルなデフォルト値（「DefaultImagesSetting」ポリシーで値が設定されている場合はその値、設定されていない場合はユーザーの個人設定の値）が使用されます。
-
-          このポリシーは以前、Android で誤って有効になっていましたが、Android でこの機能がフルサポートされていたことはありません。
-
-          有効な URL パターンについて詳しくは、https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns をご覧ください。</translation>
 <translation id="2411629345938804022">このポリシーを 3 に設定した場合、ウェブサイトに対して周辺の Bluetooth デバイスへのアクセスの要求が許可されます。このポリシーを 2 に設定した場合、周辺の Bluetooth デバイスへのアクセスは拒否されます。
 
       このポリシーを未設定のままにした場合、サイトに対してアクセスの要求は許可されますが、ユーザーはこの設定を変更できます。</translation>
@@ -987,11 +970,6 @@
       このポリシーが未設定であるか [アダルト コンテンツに基づくサイトの除外を行わない] に設定されている場合、サイトの除外は行われません。
 
       このポリシーが [アダルト コンテンツに基づいて最上位サイトを除外する] に設定されている場合、ポルノに分類されたサイトは除外されます。</translation>
-<translation id="2484356232170636726">JavaScript の実行を許可するサイトを指定する URL パターンのリストを設定できます。
-
-          このポリシーが未設定のままの場合は、すべてのサイトでグローバルなデフォルト値（「DefaultJavaScriptSetting」ポリシーで値が設定されている場合はその値、設定されていない場合はユーザーの個人設定の値）が使用されます。
-
-          有効な URL パターンについて詳しくは、https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns をご覧ください。</translation>
 <translation id="2488010520405124654">オフライン時のネットワーク設定メッセージの表示を有効にします。
 
       このポリシーが未設定の場合、または True に設定されていて、デバイスのローカル アカウントが遅延なしの自動ログインを行うように設定されており、かつデバイスからインターネットにアクセスできない場合、<ph name="PRODUCT_OS_NAME" /> ではネットワーク設定メッセージが表示されます。
@@ -1603,13 +1581,6 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 
       このポリシーを設定しない場合、「DisabledPlugins」のパターンに一致するプラグインは常に無効となり、ユーザーが有効にすることはできません。</translation>
 <translation id="3381968327636295719">ホスト ブラウザをデフォルトで使用する</translation>
-<translation id="3388153794103186066">指定したベンダー ID と製品 ID の USB デバイスへのアクセスを自動的に許可するサイトを、URL のリストで設定します。このポリシーが有効になるためには、リストの各項目でデバイスと URL の両方を指定する必要があります。デバイスの各項目にはベンダー ID と製品 ID を指定できます。指定されていない ID はワイルドカードとして扱われますが、例外として、製品 ID を指定するのであればベンダー ID も指定する必要があります。ベンダー ID の指定なしで製品 ID のみを指定した場合、このポリシーは無効となり、無視されます。
-
-        USB のアクセス許可モデルでは、リクエスト元のサイトの URL（以下「リクエスト元 URL」）と最上位フレームサイトの URL（以下「埋め込み元 URL」）を使用して、リクエスト元 URL に USB デバイスへのアクセスを許可します。リクエスト元のサイトが iframe 内で読み込まれている場合、リクエスト元 URL と埋め込み元 URL は異なる可能性があります。このため、「urls」フィールドには、リクエスト元 URL と埋め込み元 URL をカンマで区切って、最大 2 つの URL 文字列を指定することができます。URL を 1 つだけ指定した場合、対応する USB デバイスへのアクセスは、リクエスト元のサイトの URL がこの URL と一致した場合に、埋め込みの状態にかかわらず許可されます。「urls」フィールドの URL には必ず有効な URL を指定してください。無効な URL を指定した場合、このポリシーは無視されます。
-
-        このポリシーが未設定の場合は、すべてのサイトでグローバルなデフォルト値（「DefaultWebUsbGuardSetting」ポリシーで値が設定されている場合はその値、設定されていない場合はユーザーの個人設定の値）が使用されます。
-
-        このポリシーで指定する URL パターンは、WebUsbBlockedForUrls ポリシーで指定する URL パターンと競合しないようにする必要があります。競合する場合は、WebUsbBlockedForUrls や WebUsbAskForUrls よりもこのポリシーが優先されます。</translation>
 <translation id="3414260318408232239">このポリシーが未設定の場合、<ph name="PRODUCT_NAME" /> ではデフォルトの最小バージョン（TLS 1.0）が使用されます。
 
       このポリシーを設定する場合、「tls1」、「tls1.1」、「tls1.2」のいずれかの値を指定できます。<ph name="PRODUCT_NAME" /> では、指定されたバージョンより小さい SSL / TLS バージョンは使用されません。認識されない値は無視されます。</translation>
@@ -1801,13 +1772,6 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 
         このポリシーは、デスクトップ上のマシンスコープのクラウド ポリシー登録で使用され、Windows のレジストリまたは GPO、Mac の plist、Linux の JSON ポリシー ファイルで設定できます。</translation>
 <translation id="3660562134618097814">ログイン時に SAML IdP Cookie を転送する</translation>
-<translation id="3688225008199664446">ユーザーに対する USB デバイスへのアクセス リクエストを許可しないサイトの URL パターンのリストを設定できます。
-
-          このポリシーが未設定のままの場合は、すべてのサイトでグローバルなデフォルト値（「DefaultWebUsbGuardSetting」ポリシーで値が設定されている場合はその値、設定されていない場合はユーザーの個人設定の値）が使用されます。
-
-          このポリシーで指定する URL パターンは、WebUsbAskForUrls ポリシーで指定する URL パターンと競合しないようにする必要があります。URL が両方のポリシーのパターンに一致する場合、どちらのポリシーが優先されるかは決まっていません。
-
-          有効な URL パターンについて詳しくは、https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns をご覧ください。</translation>
 <translation id="3701121231485832347"><ph name="MS_AD_NAME" /> による管理対象の <ph name="PRODUCT_OS_NAME" /> デバイスに固有の設定を制御します。</translation>
 <translation id="3702518095257671450">リモート認証</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" />（1 行入力欄はサポートを終了し、今後削除する予定です。下の複数行入力欄を使用するようにしてください）。</translation>
@@ -3656,11 +3620,6 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
           このポリシーの値はミリ秒単位とし、アイドル待ちの時間より短い時間を指定できます。</translation>
 <translation id="6515357889978918016"><ph name="PLUGIN_VM_NAME" /> の画像</translation>
 <translation id="6520802717075138474">初回実行時にデフォルトのブラウザから検索エンジンをインポートする</translation>
-<translation id="6525955212636890608">この設定を有効にした場合、ユーザーまたは会社ポリシーの指定によりコンテンツ設定で Flash が許可されているウェブサイトでは、埋め込まれているすべての Flash コンテンツ（他のソースからのコンテンツ、小さなコンテンツを含む）が実行されます。
-
-      Flash の実行を許可するウェブサイトを指定する方法については、「DefaultPluginsSetting」、「PluginsAllowedForUrls」、「PluginsBlockedForUrls」の各ポリシーをご覧ください。
-
-      この設定が無効に設定されているか未設定の場合、他のソースからの Flash コンテンツや小さなコンテンツはブロックされる可能性があります。</translation>
 <translation id="6532026122543921610"><ph name="SYSTEM_TIMEZONE_POLICY_NAME" /> ポリシーによってタイムゾーンの自動検出がオフになっている場合を除き、このポリシーを設定するとタイムゾーンの自動検出方法を指定できます。ユーザーはこの設定を変更することはできません。
 
       次のいずれかを設定します。
@@ -3805,11 +3764,6 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
       このポリシーが true に設定されている場合、<ph name="PLUGIN_VM_NAME" /> はユーザーに対して有効になります（ただし他の設定でも許可されている必要があります）。<ph name="PLUGIN_VM_NAME" /> を実行するには、<ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> と <ph name="USER_PLUGIN_VM_ALLOWED_POLICY_NAME" /> を true に設定し、<ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> または <ph name="PLUGIN_VM_USER_ID_POLICY_NAME" /> のいずれかを設定する必要があります。</translation>
 <translation id="6757613329154374267">バックアップと復元が有効</translation>
 <translation id="6758659208493449452">このポリシーは、高度な保護機能プログラムに登録しているユーザーが追加の保護機能を使用できるようにするかどうかを制御します。追加の機能では、Google とデータが共有されることがあります。たとえば、高度な保護機能のユーザーは、不正なソフトウェアをスキャンする目的で、ダウンロードしたファイルを Google に送信できます。True に設定するか未設定のままにした場合、登録ユーザーは追加の保護機能を使用できます。False に設定した場合、高度な保護機能のユーザーは標準的な消費者向けの機能のみを使用できます。</translation>
-<translation id="6764421313777250384">通知表示を許可しないサイトを指定する URL パターンのリストを設定できます。
-
-          このポリシーが未設定のままの場合は、すべてのサイトでグローバルなデフォルト値（「DefaultNotificationsSetting」ポリシーで値が設定されている場合はその値、設定されていない場合はユーザーの個人設定の値）が使用されます。
-
-          有効な URL パターンについて詳しくは、https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns をご覧ください。</translation>
 <translation id="6766216162565713893">サイトによる近くの Bluetooth デバイスへのアクセスをユーザーに確認する</translation>
 <translation id="6770454900105963262">有効なキオスク セッションの情報を報告する</translation>
 <translation id="6786747875388722282">拡張機能</translation>
@@ -4249,11 +4203,6 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 <translation id="7485730741952775732">このポリシーが設定されている場合、リモート アクセス ホストでは、この URL を使用してリモート アクセス クライアントからの認証トークンを検証し、接続を受け入れるかどうかを判断します。このポリシーは RemoteAccessHostTokenUrl と一緒に使用してください。
 
           現在、この機能はサーバー側で無効になっています。</translation>
-<translation id="7490270439948288519">ポップアップ表示を許可するサイトを指定する URL パターンのリストを設定できます。
-
-          このポリシーが未設定のままの場合は、すべてのサイトでグローバルなデフォルト値（「DefaultPopupsSetting」ポリシーで値が設定されている場合はその値、設定されていない場合はユーザーの個人設定の値）が使用されます。
-
-          有効な URL パターンについて詳しくは、https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns をご覧ください。</translation>
 <translation id="749556411189861380">登録デバイスの OS とファームウェアのバージョンを報告します。
 
       この設定が未設定か、True に設定されている場合、登録デバイスでは定期的に OS とファームウェアのバージョンが報告されます。この設定が False に設定されている場合、バージョン情報は報告されません。</translation>
@@ -4263,11 +4212,6 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 
       このポリシーが使用される場合、ユーザーはこのポリシーで指定されている ID 以外のすべてのプリンタを使用できます。この ID は、<ph name="DEVICE_PRINTERS_POLICY" /> で指定されたファイル内の「id」または「guid」フィールドに対応している必要があります。
       </translation>
-<translation id="7506269062143646163">Signed HTTP Exchange（SXG）のサポートを有効にします。
-
-          このポリシーを設定しないか、有効に設定した場合、Google Chrome では Signed HTTP Exchange として配信されるウェブ コンテンツが許可されます。
-
-          このポリシーを無効に設定した場合、Signed HTTP Exchange の読み込みは許可されません。</translation>
 <translation id="7506758875409719208">リモート アクセス クライアントに適用する必須のクライアント ドメイン名を設定します。ユーザーはこの設定を変更できません。
 
           この設定を有効にして、ドメインを 1 つ以上指定した場合、ホストに接続できるのは、指定されたいずれかのドメインのクライアントのみとなります。
@@ -4279,11 +4223,6 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
           RemoteAccessHostDomainList もご覧ください。</translation>
 <translation id="7511361072385293666">このポリシーを true に設定した場合や未設定の場合、<ph name="PRODUCT_NAME" /> での QUIC プロトコルの使用が許可されます。
       このポリシーを false に設定した場合、QUIC プロトコルの使用は許可されません。</translation>
-<translation id="7515572751689937649">JavaScript の実行を許可しないサイトを指定する URL パターンのリストを設定できます。
-
-          このポリシーが未設定のままの場合は、すべてのサイトでグローバルなデフォルト値（「DefaultJavaScriptSetting」ポリシーで値が設定されている場合はその値、設定されていない場合はユーザーの個人設定の値）が使用されます。
-
-          有効な URL パターンについて詳しくは、https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns をご覧ください。</translation>
 <translation id="7517845714620372896">画面の明るさの割合（%）を指定します。
           このポリシーが設定されている場合、初期画面の明るさはポリシーの値に調整されます。ただし、ユーザーが後から変更することは可能で、明るさの自動調整機能は無効になります。
           このポリシーが未設定の場合、ユーザーによる画面制御と明るさの自動調整機能への影響はありません。
@@ -5052,13 +4991,6 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 
           このポリシーを設定しない場合、<ph name="PRODUCT_NAME" /> はサーバーがイントラネット上にあるかどうか検出を試み、その上で IWA リクエストに応答します。サーバーがインターネット上で検出された場合、そのサーバーからの IWA リクエストは <ph name="PRODUCT_NAME" /> では無視されます。</translation>
 <translation id="8656110680728938054">「選択して読み上げ」を有効にする</translation>
-<translation id="8659729040032759711">ユーザーに対する USB デバイスへのアクセス リクエストを許可するサイトの URL パターンのリストを設定できます。
-
-          このポリシーが未設定のままの場合は、すべてのサイトでグローバルなデフォルト値（「DefaultWebUsbGuardSetting」ポリシーで値が設定されている場合はその値、設定されていない場合はユーザーの個人設定の値）が使用されます。
-
-          このポリシーで指定する URL パターンは、WebUsbBlockedForUrls ポリシーで指定する URL パターンとの競合を避ける必要があります。URL が両方のポリシーのパターンに一致する場合、どちらのポリシーが優先されるかは決まっていません。
-
-          有効な URL パターンについて詳しくは、https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns をご覧ください。</translation>
 <translation id="8661297125441579970">データ移行と ARC を許可しない。</translation>
 <translation id="8665314828727504286">セーフ ブラウジングの保護レベル</translation>
 <translation id="8672321184841719703">自動更新の対象バージョンを指定</translation>
@@ -5172,15 +5104,6 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 <translation id="8860342862142842017">リストで指定された subjectPublicKeyInfo ハッシュに対して Certificate Transparency（証明書の透明性）の適用を無効にする</translation>
 <translation id="8864975621965365890">サイトが <ph name="PRODUCT_FRAME_NAME" /> によってレンダリングされるときに表示されるサポート終了メッセージを抑制します。</translation>
 <translation id="886645881209114007">ユーザーが <ph name="PRODUCT_OS_NAME" /> で <ph name="PLUGIN_VM_NAME" /> を使用できるようにする</translation>
-<translation id="8867464911288727016"><ph name="PRODUCT_NAME" /> で、組み込みの Google 翻訳サービスを有効にします。
-
-      この設定を有効にした場合、<ph name="PRODUCT_NAME" /> ではユーザーが必要なときに翻訳機能を利用できるように、適切なタイミングで組み込みの翻訳ツールバーが表示されます。また、右クリックのコンテキスト メニューにも翻訳のオプションが表示されます。
-
-      この設定を無効にした場合、組み込みの翻訳機能はすべて無効になります。
-
-      有効、無効にかかわらずこの設定を指定した場合、ユーザーが <ph name="PRODUCT_NAME" /> でこの設定を変更したりオーバーライドしたりすることはできません。
-
-      この設定を指定しない場合、ユーザーはこの機能を使用するかどうかを自分で指定できます。</translation>
 <translation id="8871974300055371298">コンテンツの設定</translation>
 <translation id="8872402969096027761">ログイン画面で「自動クリック」ユーザー補助機能を有効にします。
 
@@ -5379,9 +5302,6 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 <translation id="9105265795073104888">Android アプリではプロキシ設定オプションの一部のみを使用できます。プロキシを使用するかどうかは Android アプリ側の選択となります。Android アプリにプロキシの使用を強制することはできません。</translation>
 <translation id="9106865192244721694">WebUSB を許可するサイト</translation>
 <translation id="9112727953998243860">企業プリンタの設定ファイル</translation>
-<translation id="9112897538922695510">プロトコル ハンドラのリストを登録できます。これはあくまでも推奨のポリシーです。プロパティ |protocol| には「mailto」などのスキームを設定し、プロパティ |url| にはこのスキームを処理するアプリケーションの URL パターンを設定します。このパターンに「%s」を含めて、処理された URL に置き換えることもできます。
-
-          ポリシーで登録されたプロトコル ハンドラは、ユーザーが登録したプロトコル ハンドラと統合され、両方とも使用可能になります。ユーザーは、新しいデフォルトのハンドラをインストールすることにより、ポリシーでインストールされたプロトコル ハンドラをオーバーライドできます。ただし、ポリシーで登録されたプロトコル ハンドラを削除することはできません。</translation>
 <translation id="9117826695152538214">このポリシーを True に設定した場合、固定キーが有効になります。このポリシーを False に設定した場合、固定キーが無効になります。
 
       このポリシーを設定した場合、ユーザーは設定を変更できません。設定しない場合、固定キーは最初は無効ですが、ユーザーはいつでも有効にできます。</translation>

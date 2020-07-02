@@ -28,6 +28,7 @@
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/attestation/attestation_flow.h"
+#include "chromeos/attestation/attestation_flow_utils.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
@@ -387,9 +388,7 @@ void DeviceCloudPolicyInitializer::TpmEnrollmentKeySigningService::SignData(
       chromeos::attestation::AttestationFlow::GetKeyTypeForProfile(
           cert_profile),
       identification,
-      chromeos::attestation::AttestationFlow::GetKeyNameForProfile(cert_profile,
-                                                                   ""),
-      data,
+      chromeos::attestation::GetKeyNameForProfile(cert_profile, ""), data,
       base::BindOnce(&DeviceCloudPolicyInitializer::
                          TpmEnrollmentKeySigningService::OnDataSigned,
                      weak_ptr_factory_.GetWeakPtr(), data,

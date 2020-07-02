@@ -120,7 +120,6 @@ class LenientMockObserver : public ProcessNodeImpl::Observer {
   MOCK_METHOD1(OnProcessNodeAdded, void(const ProcessNode*));
   MOCK_METHOD1(OnProcessLifetimeChange, void(const ProcessNode*));
   MOCK_METHOD1(OnBeforeProcessNodeRemoved, void(const ProcessNode*));
-  MOCK_METHOD1(OnExpectedTaskQueueingDurationSample, void(const ProcessNode*));
   MOCK_METHOD1(OnMainThreadTaskLoadIsLow, void(const ProcessNode*));
   MOCK_METHOD2(OnPriorityChanged, void(const ProcessNode*, base::TaskPriority));
   MOCK_METHOD1(OnAllFramesInProcessFrozen, void(const ProcessNode*));
@@ -162,12 +161,6 @@ TEST_F(ProcessNodeImplTest, ObserverWorks) {
   process_node->SetProcess(base::Process::Current(), base::Time::Now());
   EXPECT_CALL(obs, OnProcessLifetimeChange(_));
   process_node->SetProcessExitStatus(10);
-
-  EXPECT_CALL(obs, OnExpectedTaskQueueingDurationSample(_))
-      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedProcessNode));
-  process_node->SetExpectedTaskQueueingDuration(
-      base::TimeDelta::FromSeconds(1));
-  EXPECT_EQ(raw_process_node, obs.TakeNotifiedProcessNode());
 
   EXPECT_CALL(obs, OnMainThreadTaskLoadIsLow(_))
       .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedProcessNode));
@@ -254,11 +247,6 @@ TEST_F(ProcessNodeImplTest, PublicInterface) {
         return true;
       }));
   EXPECT_EQ(public_frame_nodes, visited_frame_nodes);
-
-  process_node->SetExpectedTaskQueueingDuration(
-      base::TimeDelta::FromSeconds(1));
-  EXPECT_EQ(process_node->expected_task_queueing_duration(),
-            public_process_node->GetExpectedTaskQueueingDuration());
 
   process_node->SetMainThreadTaskLoadIsLow(true);
   EXPECT_EQ(process_node->main_thread_task_load_is_low(),

@@ -20,6 +20,7 @@
 <translation id="10614374240317010">저장하지 않음</translation>
 <translation id="1062160989074299343">Prc10(봉투)</translation>
 <translation id="106701514854093668">데스크톱 북마크</translation>
+<translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" />로 된 페이지는 번역하지 않음</translation>
 <translation id="1070901266639972381">밤</translation>
 <translation id="1074497978438210769">주의 요함</translation>
 <translation id="1080116354587839789">너비에 맞춤</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">제목 없음</translation>
 <translation id="1236081509407217141">VR을 허용하시겠습니까?</translation>
 <translation id="1240347957665416060">기기 이름</translation>
+<translation id="124116460088058876">다른 언어</translation>
 <translation id="1250759482327835220">다음번에 더 빠르게 결제할 수 있도록 Google 계정에 카드, 이름, 청구서 수신 주소를 저장하세요.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" />(동기화됨)</translation>
 <translation id="1256368399071562588">&lt;p&gt;웹사이트를 방문하려고 하는데 열리지 않으면 우선 이 문제해결 단계에 따라 오류를 해결해 보세요.&lt;/p&gt;
@@ -829,6 +831,7 @@
 <translation id="4424024547088906515">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 Chrome에서 신뢰하는 보안 인증서가 아닙니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="443121186588148776">직렬 포트</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" />에서 로그인 인증서를 승인하지 않았거나 로그인 인증서가 제공되지 않았을 수 있습니다.</translation>
+<translation id="4432792777822557199">지금부터 <ph name="SOURCE_LANGUAGE" />로 된 페이지가 <ph name="TARGET_LANGUAGE" />로 번역됩니다.</translation>
 <translation id="4434045419905280838">팝업 및 리디렉션</translation>
 <translation id="4435702339979719576">엽서)</translation>
 <translation id="443673843213245140">프록시 사용은 중지되었지만 명시적 프록시 설정이 지정되어 있습니다.</translation>
@@ -1060,6 +1063,7 @@
 <translation id="5431657950005405462">파일을 찾을 수 없음</translation>
 <translation id="5439770059721715174">'<ph name="ERROR_PATH" />'에서 스키마 유효성 검사 오류: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">역순으로 인쇄면이 위를 향하게</translation>
+<translation id="5447765697759493033">이 사이트는 번역되지 않습니다.</translation>
 <translation id="5452270690849572955"><ph name="HOST_NAME" /> 페이지를 찾을 수 없음</translation>
 <translation id="5455374756549232013">잘못된 정책 타임스탬프</translation>
 <translation id="5457113250005438886">잘못된 데이터</translation>
@@ -1605,6 +1609,7 @@
 <translation id="7716375162095500223">아직 업로드 또는 무시되지 않음</translation>
 <translation id="7716424297397655342">이 사이트를 캐시에서 로드할 수 없음</translation>
 <translation id="7723047071702270851">카드 수정</translation>
+<translation id="773466115871691567"><ph name="SOURCE_LANGUAGE" />로 된 페이지를 항상 번역</translation>
 <translation id="7740996059027112821">표준</translation>
 <translation id="774634243536837715">위험한 콘텐츠 차단됨</translation>
 <translation id="7752995774971033316">관리되지 않음</translation>
@@ -1750,6 +1755,7 @@
 <translation id="831997045666694187">저녁</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" />에 대한 액세스가 거부됨</translation>
 <translation id="833262891116910667">강조표시</translation>
+<translation id="8339163506404995330"><ph name="LANGUAGE" />로 된 페이지를 번역하지 않습니다.</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_YEAR" />/<ph name="EXPIRATION_MONTH" /></translation>
 <translation id="834457929814110454">보안 관련 위험을 이해한다면 악성 프로그램이 삭제되기 전에 <ph name="BEGIN_LINK" />이 사이트를 방문<ph name="END_LINK" />해도 됩니다.</translation>
 <translation id="8349305172487531364">북마크바</translation>

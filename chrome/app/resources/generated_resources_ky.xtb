@@ -529,7 +529,6 @@
 <translation id="1645516838734033527"><ph name="DEVICE_TYPE" /> түзмөгүңүздүн коопсуздугун коргоо максатында, Smart Lock телефонуңузга экрандын кулпусун коюуну талап кылат.</translation>
 <translation id="1646982517418478057">Бул тастыктаманы шифрлөө үчүн сырсөз киргизиңиз</translation>
 <translation id="1648528859488547844">Жайгашкан жерди аныктоо үчүн Wi‑Fi же мобилдик тармактар колдонулсун</translation>
-<translation id="1648943974594387137">Аккаунтка кирүү үчүн колдонулган дайындар эскирип калды</translation>
 <translation id="164936512206786300">Bluetooth түзмөгүн ажыратуу</translation>
 <translation id="1650371550981945235">Киргизүү опцияларын көрсөтүү</translation>
 <translation id="1651008383952180276">Бир купуя сөз айкашын эки жолу киргизишиңиз керек</translation>
@@ -1333,7 +1332,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="2635276683026132559">Кол коюу</translation>
 <translation id="2636625531157955190">Chrome сүрөттү колдоно албай жатат.</translation>
 <translation id="2637400434494156704">PIN код туура эмес. Дагы бир жолу аракет кыла аласыз.</translation>
-<translation id="2638087589890736295">Шайкештирип баштоо үчүн жашыруун сөз айкашы талап кылынат</translation>
 <translation id="2638662041295312666">Аккаунтка кирүү сүрөтү</translation>
 <translation id="264083724974021997">Телефонуңузга туташтырыңыз – Диалог</translation>
 <translation id="2641065435954454414">Сүрөттү жүктөп алуу даярдалууда</translation>
@@ -1487,7 +1485,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="2809586584051668049">жана дагы <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
 <translation id="2810390687497823527">Эгер кеңейтүү тааныш көрүнбөсө же серепчиңиз ойдогудай иштебей жатса, кеңейтүүлөрдү бул жерден өчүрүп же ыңгайлаштырып алсаңыз болот.</translation>
 <translation id="2812049959647166806">Thunderbolt колдоого алынбайт</translation>
-<translation id="2812944337881233323">Чыгып, кайра кирип көрүңүз</translation>
 <translation id="2812989263793994277">Бир да сүрөт көрүнбөсүн</translation>
 <translation id="2813094189969465044">Ата-эненин көзөмөлү</translation>
 <translation id="281390819046738856">Сурамга кол коюлбай калды.</translation>
@@ -3408,7 +3405,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="529175790091471945">Бул түзмөктү форматтоо</translation>
 <translation id="5293170712604732402">Жөндөөлөрдү эң биринчи коюлган демейки маанилерине кайтаруу</translation>
 <translation id="5294097441441645251">Кичинекей тамгалар же ылдыйкы сызык менен башталышы керек</translation>
-<translation id="5296471962619441686">Шайкештирүүнү улантуу үчүн катаны оңдоңуз</translation>
 <translation id="5297082477358294722">Сырсөз сакталды. Сакталган сырсөздөрдү <ph name="SAVED_PASSWORDS_STORE" /> дарегинен көрүп, башкарыңыз.</translation>
 <translation id="5298219193514155779">Төмөнкү түзгөн тема</translation>
 <translation id="5299109548848736476">Байкоо салынбасын</translation>
@@ -5771,7 +5767,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="8256417822772703842"><ph name="PRINTER_NAME" /> түзмөгүндө сыя аз калды</translation>
 <translation id="8257950718085972371">Камераны колдонуу мүмкүнчүлүгү бөгөттөлө берсин</translation>
 <translation id="8259239505248583312">Кеттик!</translation>
-<translation id="8260126382462817229">Кайра кирип көрүңүз.</translation>
 <translation id="8260864402787962391">Чычкан</translation>
 <translation id="8261378640211443080">Бул кеңейтүү <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ичиндеги тизмеде камтылган эмес жана сизге эскертилбестен кошулуп калган окшойт.</translation>
 <translation id="8261506727792406068">Жок кылуу</translation>

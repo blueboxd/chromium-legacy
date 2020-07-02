@@ -10,7 +10,6 @@
 <translation id="1049743911850919806">無痕模式</translation>
 <translation id="10614374240317010">永不儲存</translation>
 <translation id="1067922213147265141">其他 Google 服務</translation>
-<translation id="1068672505746868501">永不翻譯來源語言為<ph name="SOURCE_LANGUAGE" />的網頁</translation>
 <translation id="107147699690128016">如果變更副檔名，此檔案可能會在其他應用程式中開啟，並可能對裝置造成損害。</translation>
 <translation id="1100066534610197918">在群組的新分頁中開啟</translation>
 <translation id="1105960400813249514">擷取螢幕畫面</translation>
@@ -35,13 +34,11 @@
 <translation id="1229399675748764149">將此頁面設為首頁</translation>
 <translation id="1231733316453485619">要開啟同步處理功能嗎？</translation>
 <translation id="123724288017357924">重新載入目前的網頁，忽略之前快取的內容</translation>
-<translation id="124116460088058876">更多語言</translation>
 <translation id="124678866338384709">關閉目前分頁</translation>
 <translation id="1258753120186372309">Google Doodle：<ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">搜尋與探索</translation>
 <translation id="1266864766717917324">無法分享<ph name="CONTENT_TYPE" /></translation>
 <translation id="1283039547216852943">輕按即可展開</translation>
-<translation id="1285320974508926690">永不翻譯此網站</translation>
 <translation id="1291207594882862231">清除記錄、Cookie、網站資料、快取…</translation>
 <translation id="129553762522093515">最近關閉的分頁</translation>
 <translation id="1303339473099049190">找不到該密碼。請檢查您輸入的內容，然後再試一次。</translation>
@@ -239,7 +236,6 @@
 <translation id="2898264748040935573">編輯已儲存的密碼</translation>
 <translation id="2900528713135656174">建立活動</translation>
 <translation id="2903493209154104877">地址</translation>
-<translation id="290376772003165898">網頁的來源語言不是<ph name="LANGUAGE" />嗎？</translation>
 <translation id="2904414404539560095">要共用分頁嘅裝置清單宜家顯示喺成個畫面。</translation>
 <translation id="2905036901251765993">如要與附近的使用者分享，請讓對方掃瞄此二維條碼</translation>
 <translation id="2909615210195135082">Google 通知平台</translation>
@@ -415,7 +411,6 @@
 <translation id="4405224443901389797">移至…</translation>
 <translation id="4411535500181276704">精簡模式</translation>
 <translation id="4415276339145661267">管理您的 Google 帳戶</translation>
-<translation id="4432792777822557199">從現在開始，來源語言為<ph name="SOURCE_LANGUAGE" />的網頁一律會翻譯成<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4440958355523780886">此簡易版網頁由 Google 提供。輕按即可載入原始版本網頁。</translation>
 <translation id="4452411734226507615">關閉 <ph name="TAB_TITLE" /> 分頁</translation>
 <translation id="4452548195519783679">已將書籤加入到「<ph name="FOLDER_NAME" />」</translation>
@@ -550,7 +545,6 @@
 <translation id="543509235395288790">正在下載 <ph name="COUNT" /> 個檔案 (<ph name="MEGABYTES" />)。</translation>
 <translation id="5441522332038954058">跳至網址列</translation>
 <translation id="5447201525962359567">所有網站儲存空間的資料，包括 Cookie 和其他儲存在本機上的資料</translation>
-<translation id="5447765697759493033">系統不會翻譯此網站</translation>
 <translation id="545042621069398927">正在加快下載速度。</translation>
 <translation id="5456381639095306749">下載網頁</translation>
 <translation id="548278423535722844">在地圖應用程式中開啟</translation>
@@ -580,7 +574,6 @@
 <translation id="5659593005791499971">電郵</translation>
 <translation id="5665379678064389456">在「<ph name="APP_NAME" />」中建立活動</translation>
 <translation id="5668404140385795438">覆寫網站禁止放大的要求</translation>
-<translation id="5684874026226664614">糟糕！系統無法翻譯這個網頁的內容。</translation>
 <translation id="5686790454216892815">檔案名稱過長</translation>
 <translation id="5694049548840660018">鬆輕返回首頁</translation>
 <translation id="569536719314091526">透過「更多選項」掣，將呢個網頁翻譯成任何語言</translation>
@@ -734,7 +727,6 @@
 <translation id="6767294960381293877">要共用分頁嘅裝置清單宜家顯示喺畫面下半部。</translation>
 <translation id="6811034713472274749">網頁已準備就緒，可供查看</translation>
 <translation id="6820686453637990663">CVC</translation>
-<translation id="6831043979455480757">翻譯</translation>
 <translation id="6845325883481699275">協助提高 Chrome 安全性</translation>
 <translation id="6846298663435243399">載入中…</translation>
 <translation id="6850409657436465440">仍在下載</translation>
@@ -842,7 +834,6 @@
 <translation id="7698359219371678927">在 <ph name="APP_NAME" /> 中建立電郵</translation>
 <translation id="7704317875155739195">自動完成搜尋和網址</translation>
 <translation id="7725024127233776428">加入書籤的網頁會在這裡顯示</translation>
-<translation id="773466115871691567">一律翻譯來源語言為<ph name="SOURCE_LANGUAGE" />的網頁</translation>
 <translation id="7746457520633464754">為了偵測危險的應用程式和網站，Chrome 會將您瀏覽的部分網頁網址、有限的系統資料以及部分網頁內容傳送給 Google</translation>
 <translation id="7757787379047923882">透過 <ph name="DEVICE_NAME" /> 分享的文字</translation>
 <translation id="7761849928583394409">選擇日期和時間</translation>
@@ -922,7 +913,6 @@
 <translation id="8310344678080805313">標準分頁</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> 和其他網站</translation>
 <translation id="8327155640814342956">為獲得最佳瀏覽體驗，請開啟 Chrome 進行更新</translation>
-<translation id="8339163506404995330">系統將不會自動翻譯來源語言為<ph name="LANGUAGE" />的網頁</translation>
 <translation id="8349013245300336738">依使用數據量排序</translation>
 <translation id="8364299278605033898">查看熱門網站</translation>
 <translation id="8368027906805972958">不明或不支援的裝置 (<ph name="DEVICE_ID" />)</translation>

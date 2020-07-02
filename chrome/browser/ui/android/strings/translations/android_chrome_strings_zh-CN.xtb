@@ -10,7 +10,6 @@
 <translation id="1049743911850919806">无痕</translation>
 <translation id="10614374240317010">一律不保存</translation>
 <translation id="1067922213147265141">其他 Google 服务</translation>
-<translation id="1068672505746868501">一律不翻译<ph name="SOURCE_LANGUAGE" />网页</translation>
 <translation id="107147699690128016">如果您更改文件扩展名，此文件可能会在另一应用中打开并对您的设备造成危害。</translation>
 <translation id="1100066534610197918">在群组内的新标签页中打开</translation>
 <translation id="1105960400813249514">屏幕截图</translation>
@@ -35,13 +34,11 @@
 <translation id="1229399675748764149">将此页面设为您的主页</translation>
 <translation id="1231733316453485619">开启同步功能？</translation>
 <translation id="123724288017357924">重新加载当前网页（忽略缓存的内容）</translation>
-<translation id="124116460088058876">更多语言</translation>
 <translation id="124678866338384709">关闭当前标签页</translation>
 <translation id="1258753120186372309">Google 涂鸦：<ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">搜索内容与浏览相关建议</translation>
 <translation id="1266864766717917324">无法分享<ph name="CONTENT_TYPE" /></translation>
 <translation id="1283039547216852943">点按即可展开</translation>
-<translation id="1285320974508926690">一律不翻译此网站</translation>
 <translation id="1291207594882862231">清除历史记录、Cookie、网站数据、缓存内容…</translation>
 <translation id="129553762522093515">最近关闭的标签页</translation>
 <translation id="1303339473099049190">找不到该密码。请检查拼写，然后重试。</translation>
@@ -239,7 +236,6 @@
 <translation id="2898264748040935573">修改存储的密码</translation>
 <translation id="2900528713135656174">创建活动</translation>
 <translation id="2903493209154104877">地址</translation>
-<translation id="290376772003165898">网页的源语言不是<ph name="LANGUAGE" />？</translation>
 <translation id="2904414404539560095">要与之分享标签页的设备的列表已全屏打开。</translation>
 <translation id="2905036901251765993">要与附近的人分享，请让他们扫描此二维码</translation>
 <translation id="2909615210195135082">Google 通知平台</translation>
@@ -415,7 +411,6 @@
 <translation id="4405224443901389797">移动到…</translation>
 <translation id="4411535500181276704">精简模式</translation>
 <translation id="4415276339145661267">管理您的 Google 帐号</translation>
-<translation id="4432792777822557199">从现在开始，源语言为<ph name="SOURCE_LANGUAGE" />的网页一律会被翻译成<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4440958355523780886">由 Google 提供的精简版网页。点按即可加载原始网页。</translation>
 <translation id="4452411734226507615">关闭“<ph name="TAB_TITLE" />”标签页</translation>
 <translation id="4452548195519783679">已将书签添加到“<ph name="FOLDER_NAME" />”</translation>
@@ -550,7 +545,6 @@
 <translation id="543509235395288790">正在下载 <ph name="COUNT" /> 个文件（共 <ph name="MEGABYTES" />）。</translation>
 <translation id="5441522332038954058">跳转到地址栏</translation>
 <translation id="5447201525962359567">所有网站存储数据，包括 Cookie 及其他本地存储的数据</translation>
-<translation id="5447765697759493033">系统不会翻译此网站</translation>
 <translation id="545042621069398927">正在加快您的下载速度。</translation>
 <translation id="5456381639095306749">下载网页</translation>
 <translation id="548278423535722844">在地图应用中打开</translation>
@@ -580,7 +574,6 @@
 <translation id="5659593005791499971">电子邮件</translation>
 <translation id="5665379678064389456">在<ph name="APP_NAME" />中创建活动</translation>
 <translation id="5668404140385795438">覆盖网站的请求，以防止放大</translation>
-<translation id="5684874026226664614">糟糕，此网页内容无法翻译。</translation>
 <translation id="5686790454216892815">文件名过长</translation>
 <translation id="5694049548840660018">轻松访问主页</translation>
 <translation id="569536719314091526">通过“更多选项”按钮将此页面翻译成任何语言</translation>
@@ -734,7 +727,6 @@
 <translation id="6767294960381293877">要与之分享标签页的设备的列表已半屏打开。</translation>
 <translation id="6811034713472274749">页面已可供查看</translation>
 <translation id="6820686453637990663">CVC</translation>
-<translation id="6831043979455480757">翻译</translation>
 <translation id="6845325883481699275">帮助我们改善 Chrome 安全性</translation>
 <translation id="6846298663435243399">正在加载…</translation>
 <translation id="6850409657436465440">您的下载仍在进行中</translation>
@@ -842,7 +834,6 @@
 <translation id="7698359219371678927">在 <ph name="APP_NAME" /> 中创建电子邮件</translation>
 <translation id="7704317875155739195">自动填充搜索字词和网址</translation>
 <translation id="7725024127233776428">您添加书签的网页会显示在此处</translation>
-<translation id="773466115871691567">一律翻译<ph name="SOURCE_LANGUAGE" />网页</translation>
 <translation id="7746457520633464754">为了检测危险应用和网站，Chrome 会将您所访问的部分网页的网址、有限的系统信息以及部分网页内容发送给 Google</translation>
 <translation id="7757787379047923882">分享自“<ph name="DEVICE_NAME" />”的文字</translation>
 <translation id="7761849928583394409">选择日期和时间</translation>
@@ -922,7 +913,6 @@
 <translation id="8310344678080805313">标准标签页</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> 及更多网站</translation>
 <translation id="8327155640814342956">要获得最好的浏览体验，请打开 Chrome 以进行更新</translation>
-<translation id="8339163506404995330">系统不会自动翻译源语言为<ph name="LANGUAGE" />的网页</translation>
 <translation id="8349013245300336738">按已使用的数据流量排序</translation>
 <translation id="8364299278605033898">查看热门网站</translation>
 <translation id="8368027906805972958">未知或不支持的设备 (<ph name="DEVICE_ID" />)</translation>

@@ -305,10 +305,6 @@
     "type": "windowed_test_launcher",
     "executable": "browser_tests",
   },
-  "cacheinvalidation_unittests": {
-    "label": "//third_party/cacheinvalidation:cacheinvalidation_unittests",
-    "type": "console_test_launcher",
-  },
   "captured_sites_interactive_tests": {
     "label": "//chrome/test:captured_sites_interactive_tests",
     "type": "windowed_test_launcher",
@@ -1537,6 +1533,14 @@
   "sql_unittests": {
     "label": "//sql:sql_unittests",
     "type": "console_test_launcher",
+  },
+  "standalone_angle_unittests": {
+    "args": [
+      "standalone_angle_unittests",
+    ],
+    "label": "//chrome/test:standalone_angle_unittests",
+    "type": "script",
+    "script": "//testing/scripts/run_gtest_angle_test.py",
   },
   "storage_unittests": {
     "label": "//storage:storage_unittests",

@@ -52,11 +52,14 @@ std::string GetRandomCardNumber() {
   return value;
 }
 
-// Returns numbers which are distinct from each other within the scope of one
-// test.
 FormRendererId MakeFormRendererId() {
   static uint32_t counter = 10;
   return FormRendererId(counter++);
+}
+
+FieldRendererId MakeFieldRendererId() {
+  static uint32_t counter = 10;
+  return FieldRendererId(counter++);
 }
 
 }  // namespace
@@ -83,6 +86,7 @@ void CreateTestFormField(const char* label,
                          const char* value,
                          const char* type,
                          FormFieldData* field) {
+  field->unique_renderer_id = MakeFieldRendererId();
   field->label = ASCIIToUTF16(label);
   field->name = ASCIIToUTF16(name);
   field->value = ASCIIToUTF16(value);

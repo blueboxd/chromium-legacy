@@ -10,7 +10,6 @@
 <translation id="1049743911850919806">Incognito</translation>
 <translation id="10614374240317010">Nooit opgeslagen</translation>
 <translation id="1067922213147265141">Andere Google-services</translation>
-<translation id="1068672505746868501">Pagina's in het <ph name="SOURCE_LANGUAGE" /> nooit vertalen</translation>
 <translation id="107147699690128016">Als je de bestandsextensie wijzigt, wordt het bestand mogelijk in een andere app geopend. Daardoor kan het een gevaar vormen voor je apparaat.</translation>
 <translation id="1100066534610197918">Open in nieuw tabblad in groep</translation>
 <translation id="1105960400813249514">Schermopname</translation>
@@ -35,13 +34,11 @@
 <translation id="1229399675748764149">Deze pagina instellen als je homepage</translation>
 <translation id="1231733316453485619">Synchronisatie inschakelen?</translation>
 <translation id="123724288017357924">De pagina opnieuw laden, gecachte content negeren</translation>
-<translation id="124116460088058876">Meer talen</translation>
 <translation id="124678866338384709">Huidig tabblad sluiten</translation>
 <translation id="1258753120186372309">Google-doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Zoeken en verkennen</translation>
 <translation id="1266864766717917324">Kan <ph name="CONTENT_TYPE" /> niet delen</translation>
 <translation id="1283039547216852943">Tik om uit te vouwen</translation>
-<translation id="1285320974508926690">Deze site nooit vertalen</translation>
 <translation id="1291207594882862231">Geschiedenis, cookies, sitegegevens, cachegeheugen wissen</translation>
 <translation id="129553762522093515">Recent gesloten</translation>
 <translation id="1303339473099049190">Kan dat wachtwoord niet vinden. Check de spelling en probeer het opnieuw.</translation>
@@ -239,7 +236,6 @@ Tik op een woord en houd dit vast om te zoeken. Selecteer meer of minder woorden
 <translation id="2898264748040935573">Opgeslagen wachtwoord bewerken</translation>
 <translation id="2900528713135656174">Afspraak maken</translation>
 <translation id="2903493209154104877">Adressen</translation>
-<translation id="290376772003165898">Is deze pagina niet in het <ph name="LANGUAGE" />?</translation>
 <translation id="2904414404539560095">De lijst met apparaten om een tabblad mee te delen, is op volledige hoogte geopend.</translation>
 <translation id="2905036901251765993">Als je wilt delen met mensen in de buurt, laat je ze deze QR-code scannen</translation>
 <translation id="2909615210195135082">Platform voor Google-meldingen</translation>
@@ -415,7 +411,6 @@ Tik op een woord en houd dit vast om te zoeken. Selecteer meer of minder woorden
 <translation id="4405224443901389797">Verplaatsen naar…</translation>
 <translation id="4411535500181276704">Lite-versie</translation>
 <translation id="4415276339145661267">Je Google-account beheren</translation>
-<translation id="4432792777822557199">Pagina's in het <ph name="SOURCE_LANGUAGE" /> worden vanaf nu vertaald naar het <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4440958355523780886">Lite-pagina weergegeven door Google. Tik om het origineel te laden.</translation>
 <translation id="4452411734226507615">Tabblad <ph name="TAB_TITLE" /> sluiten</translation>
 <translation id="4452548195519783679">Bookmark gemaakt in <ph name="FOLDER_NAME" /></translation>
@@ -550,7 +545,6 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="543509235395288790"><ph name="COUNT" /> bestanden downloaden (<ph name="MEGABYTES" />).</translation>
 <translation id="5441522332038954058">Naar de adresbalk gaan</translation>
 <translation id="5447201525962359567">Alle site-opslag, inclusief cookies en andere lokaal opgeslagen gegevens</translation>
-<translation id="5447765697759493033">Deze site wordt niet vertaald</translation>
 <translation id="545042621069398927">Je download wordt versneld.</translation>
 <translation id="5456381639095306749">Pagina downloaden</translation>
 <translation id="548278423535722844">Openen in app voor passen</translation>
@@ -580,7 +574,6 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="5659593005791499971">E-mailadres</translation>
 <translation id="5665379678064389456">Afspraak maken in <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Negeer verzoek van website om inzoomen te voorkomen</translation>
-<translation id="5684874026226664614">Deze pagina kan niet worden vertaald.</translation>
 <translation id="5686790454216892815">Bestandsnaam te lang</translation>
 <translation id="5694049548840660018">Makkelijk naar je homepage gaan</translation>
 <translation id="569536719314091526">Vertaal deze pagina in een andere taal via de knop 'Meer opties'</translation>
@@ -734,7 +727,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6767294960381293877">De lijst met apparaten om een tabblad mee te delen, is op halve hoogte geopend.</translation>
 <translation id="6811034713472274749">Pagina kan nu worden bekeken</translation>
 <translation id="6820686453637990663">CVC</translation>
-<translation id="6831043979455480757">Vertalen</translation>
 <translation id="6845325883481699275">Help de beveiliging van Chrome te verbeteren</translation>
 <translation id="6846298663435243399">Laden…</translation>
 <translation id="6850409657436465440">Je download wordt nog uitgevoerd</translation>
@@ -842,7 +834,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7698359219371678927">E-mail in <ph name="APP_NAME" /> maken</translation>
 <translation id="7704317875155739195">Zoekopdrachten en URL's automatisch aanvullen</translation>
 <translation id="7725024127233776428">Pagina's waaraan je een bookmark toevoegt, worden hier weergegeven</translation>
-<translation id="773466115871691567">Pagina's in het <ph name="SOURCE_LANGUAGE" /> altijd vertalen</translation>
 <translation id="7746457520633464754">Chrome verzendt de URL's van sommige pagina's die je bezoekt, beperkte systeemgegevens en bepaalde paginacontent naar Google om gevaarlijke apps en sites te detecteren</translation>
 <translation id="7757787379047923882">Tekst gedeeld vanaf <ph name="DEVICE_NAME" /></translation>
 <translation id="7761849928583394409">Datum en tijd kiezen</translation>
@@ -922,7 +913,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="8310344678080805313">Standaardtabbladen</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> en meer sites</translation>
 <translation id="8327155640814342956">Update Chrome om optimaal te kunnen browsen op internet</translation>
-<translation id="8339163506404995330">Pagina's in het <ph name="LANGUAGE" /> worden niet vertaald</translation>
 <translation id="8349013245300336738">Sorteren op hoeveelheid gebruikte data</translation>
 <translation id="8364299278605033898">Bekijk populaire websites</translation>
 <translation id="8368027906805972958">Onbekend of niet-ondersteund apparaat (<ph name="DEVICE_ID" />)</translation>

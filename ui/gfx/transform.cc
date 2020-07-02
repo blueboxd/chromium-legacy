@@ -538,8 +538,6 @@ bool Transform::Blend(const Transform& from, double progress) {
 }
 
 void Transform::RoundTranslationComponents() {
-  // TODO(pkasting): Use SkScalarRound() when
-  // https://bugs.chromium.org/p/skia/issues/detail?id=6852 is fixed.
   matrix_.set(0, 3, std::round(matrix_.get(0, 3)));
   matrix_.set(1, 3, std::round(matrix_.get(1, 3)));
 }

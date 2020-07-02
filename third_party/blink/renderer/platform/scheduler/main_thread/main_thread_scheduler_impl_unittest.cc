@@ -356,13 +356,6 @@ class MainThreadSchedulerImplForTest : public MainThreadSchedulerImpl {
     }
   }
 
-  void OnQueueingTimeForWindowEstimated(base::TimeDelta queueing_time,
-                                        bool is_disjoint_window) override {
-    MainThreadSchedulerImpl::OnQueueingTimeForWindowEstimated(
-        queueing_time, is_disjoint_window);
-    expected_queueing_times_.push_back(queueing_time);
-  }
-
   void EnsureUrgentPolicyUpdatePostedOnMainThread() {
     base::AutoLock lock(any_thread_lock_);
     MainThreadSchedulerImpl::EnsureUrgentPolicyUpdatePostedOnMainThread(
@@ -382,10 +375,6 @@ class MainThreadSchedulerImplForTest : public MainThreadSchedulerImpl {
     return main_thread_only().virtual_time_policy;
   }
 
-  const Vector<base::TimeDelta>& expected_queueing_times() const {
-    return expected_queueing_times_;
-  }
-
   void PerformMicrotaskCheckpoint() override {
     if (on_microtask_checkpoint_)
       std::move(on_microtask_checkpoint_).Run();
@@ -393,7 +382,6 @@ class MainThreadSchedulerImplForTest : public MainThreadSchedulerImpl {
 
   int update_policy_count_;
   Vector<String> use_cases_;
-  Vector<base::TimeDelta> expected_queueing_times_;
   base::OnceClosure on_microtask_checkpoint_;
 };
 
@@ -930,10 +918,6 @@ class MainThreadSchedulerImplTest : public testing::Test {
       FrameSchedulerImpl* scheduler,
       TaskType task_type) {
     return scheduler->GetTaskQueue(task_type);
-  }
-
-  QueueingTimeEstimator* queueing_time_estimator() {
-    return &scheduler_->queueing_time_estimator_;
   }
 
   base::test::ScopedFeatureList feature_list_;
@@ -3334,52 +3318,6 @@ void RecordingTimeTestTask(
   run_times->push_back(task_runner->GetMockTickClock()->NowTicks());
 }
 
-//                  Nav Start     Nav Start            assert
-//                     |             |                   |
-//                     v             v                   v
-//    ------------------------------------------------------------>
-//     |---long task---|---1s task---|-----long task ----|
-//
-//                     (---MaxEQT1---)
-//                                   (---MaxEQT2---)
-//
-// --- EQT untracked---|             |---EQT unflushed-----
-//
-// MaxEQT1 = 500ms is recorded and observed in histogram.
-// MaxEQT2 is recorded but not yet in histogram for not being flushed.
-TEST_F(MainThreadSchedulerImplTest,
-       MaxQueueingTimeMetricRecordedOnlyDuringNavigation) {
-  base::HistogramTester tester;
-  // Start with a long task whose queueing time will be ignored.
-  AdvanceTimeWithTask(10);
-  // Navigation start.
-  scheduler_->DidCommitProvisionalLoad(false, false, false);
-  // The max queueing time of the following task will be recorded.
-  AdvanceTimeWithTask(1);
-  // The smaller queuing time will be ignored.
-  AdvanceTimeWithTask(0.5);
-  scheduler_->DidCommitProvisionalLoad(false, false, false);
-  // Add another long task after navigation start but without navigation end.
-  // This value won't be recorded as there is not navigation.
-  AdvanceTimeWithTask(10);
-  // The expected queueing time of 1s task in 1s window is 500ms.
-  tester.ExpectUniqueSample("RendererScheduler.MaxQueueingTime", 500, 1);
-}
-
-// Only the max of all the queueing times is recorded.
-TEST_F(MainThreadSchedulerImplTest, MaxQueueingTimeMetricRecordTheMax) {
-  base::HistogramTester tester;
-  scheduler_->DidCommitProvisionalLoad(false, false, false);
-  // The smaller queuing time will be ignored.
-  AdvanceTimeWithTask(0.5);
-  // The max queueing time of the following task will be recorded.
-  AdvanceTimeWithTask(1);
-  // The smaller queuing time will be ignored.
-  AdvanceTimeWithTask(0.5);
-  scheduler_->DidCommitProvisionalLoad(false, false, false);
-  tester.ExpectUniqueSample("RendererScheduler.MaxQueueingTime", 500, 1);
-}
-
 TEST_F(MainThreadSchedulerImplTest, LoadingControlTasks) {
   // Expect control loading tasks (M) to jump ahead of any regular loading
   // tasks (L).
@@ -3483,45 +3421,6 @@ TEST_F(MainThreadSchedulerImplTest, CompositingAfterInput) {
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order, testing::ElementsAre("T3", "C4", "C5"));
   run_order.clear();
-}
-
-TEST_F(MainThreadSchedulerImplTest, EQTWithNestedLoop) {
-  AdvanceMockTickClockBy(base::TimeDelta::FromMilliseconds(100));
-
-  RunTask(base::BindLambdaForTesting([&] {
-    // After running a task for 10ms, start running a nested loop.
-    // This contributes to the first step EQT by 1ms ((10ms)^2 / 2 / 50ms), and
-    // the window EQT by 50us (1ms / 20).
-    AdvanceMockTickClockBy(base::TimeDelta::FromMilliseconds(10));
-    scheduler_->OnBeginNestedRunLoop();
-
-    // Leave the loop idle for 20ms.
-    AdvanceMockTickClockBy(base::TimeDelta::FromMilliseconds(20));
-
-    RunTask(base::BindLambdaForTesting([&] {
-      // Run a 30ms task in the nested loop.
-      // This contributes to the first step EQT by 8ms ((30ms + 10ms) * 20ms / 2
-      // / 50ms), and the window EQT by 400us (8ms / 20). Also, contributes to
-      // the second step EQT by 1ms ((10ms)^2 / 2 / 50ms), and the window EQT by
-      // 50us (1ms / 20).
-      AdvanceMockTickClockBy(base::TimeDelta::FromMilliseconds(30));
-    }));
-
-    // After 40ms idle duration, exit the nested loop.
-    AdvanceMockTickClockBy(base::TimeDelta::FromMilliseconds(40));
-    scheduler_->OnExitNestedRunLoop();
-
-    // The outer task ends after extra 50ms work.
-    // This contributes to the third step EQT by 25ms ((50ms)^2 / 2 / 50ms), and
-    // the window EQT by 1250us (25ms / 20).
-    AdvanceMockTickClockBy(base::TimeDelta::FromMilliseconds(50));
-  }));
-
-  EXPECT_THAT(scheduler_->expected_queueing_times(),
-              testing::ElementsAre(
-                  base::TimeDelta::FromMicroseconds(400 + 50),
-                  base::TimeDelta::FromMicroseconds(400 + 50 + 50),
-                  base::TimeDelta::FromMicroseconds(400 + 50 + 50 + 1250)));
 }
 
 TEST_F(MainThreadSchedulerImplTest, TaskQueueReferenceClearedOnShutdown) {

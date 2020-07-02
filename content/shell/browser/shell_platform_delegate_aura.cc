@@ -25,6 +25,10 @@ struct ShellPlatformDelegate::PlatformData {
 ShellPlatformDelegate::ShellPlatformDelegate() = default;
 ShellPlatformDelegate::~ShellPlatformDelegate() = default;
 
+ShellPlatformDataAura* ShellPlatformDelegate::GetShellPlatformDataAura() {
+  return platform_->aura.get();
+}
+
 void ShellPlatformDelegate::Initialize(const gfx::Size& default_window_size) {
   platform_ = std::make_unique<PlatformData>();
   platform_->aura =
@@ -37,8 +41,6 @@ void ShellPlatformDelegate::CreatePlatformWindow(
   DCHECK(!base::Contains(shell_data_map_, shell));
   ShellData& shell_data = shell_data_map_[shell];
 
-  if (!shell->headless())
-    platform_->aura->ShowWindow();
   platform_->aura->ResizeWindow(initial_size);
 
   shell_data.window = platform_->aura->host()->window();

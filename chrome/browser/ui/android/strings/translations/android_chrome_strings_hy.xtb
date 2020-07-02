@@ -10,7 +10,6 @@
 <translation id="1049743911850919806">Ինկոգնիտո</translation>
 <translation id="10614374240317010">Կայքեր, որոնց համար գաղտնաբառերը երբեք չեն պահվում</translation>
 <translation id="1067922213147265141">Google-ի այլ ծառայություններ</translation>
-<translation id="1068672505746868501">Երբեք չթարգմանել <ph name="SOURCE_LANGUAGE" /> էջերը</translation>
 <translation id="107147699690128016">Եթե փոխեք ընդլայնումը, ֆայլը կարող է բացվել այլ հավելվածով և վնասել ձեր սարքը:</translation>
 <translation id="1100066534610197918">Բացել նոր խմբի նոր ներդիրում</translation>
 <translation id="1105960400813249514">Էկրանի լուսանկարում</translation>
@@ -35,13 +34,11 @@
 <translation id="1229399675748764149">Դարձրեք այս էջը գլխավոր</translation>
 <translation id="1231733316453485619">Միացնե՞լ համաժամացումը</translation>
 <translation id="123724288017357924">Վերաբեռնել ընթացիկ էջը` անտեսելով հիշապահեստի բովանդակությունը</translation>
-<translation id="124116460088058876">Այլ լեզուներ</translation>
 <translation id="124678866338384709">Փակել ընթացիկ ներդիրը</translation>
 <translation id="1258753120186372309">Google doodle՝ <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Որոնում և առաջարկներ</translation>
 <translation id="1266864766717917324">Չհաջողվեց ուղարկել բովանդակությունը (<ph name="CONTENT_TYPE" />)</translation>
 <translation id="1283039547216852943">Հպեք՝ ընդարձակելու համար</translation>
-<translation id="1285320974508926690">Երբեք չթարգմանել այս կայքը</translation>
 <translation id="1291207594882862231">Մաքրել պատմությունը, քուքիները, կայքի տվյալները, քեշը…</translation>
 <translation id="129553762522093515">Վերջերս փակված</translation>
 <translation id="1303339473099049190">Չհաջողվեց գտնել այդ գաղտնաբառը։ Ստուգեք ուղղագրությունը և նորից փորձեք։</translation>
@@ -239,7 +236,6 @@
 <translation id="2898264748040935573">Փոփոխել պահված գաղտնաբառը</translation>
 <translation id="2900528713135656174">Ստեղծել միջոցառում</translation>
 <translation id="2903493209154104877">Հասցեներ</translation>
-<translation id="290376772003165898">Էջը <ph name="LANGUAGE" /> չէ՞</translation>
 <translation id="2904414404539560095">Սարքերը, որոնց հետ կիսվելու եք ներդիրով, ցուցադրված են ամբողջ էկրանով:</translation>
 <translation id="2905036901251765993">Մոտակայքում գտնվող մարդկանց հետ կիսվելու համար սկանավորեք այս QR կոդը</translation>
 <translation id="2909615210195135082">Google ծանուցումների հարթակ</translation>
@@ -415,7 +411,6 @@
 <translation id="4405224443901389797">Տեղափոխել…</translation>
 <translation id="4411535500181276704">Lite ռեժիմ</translation>
 <translation id="4415276339145661267">Կառավարել Google հաշիվը</translation>
-<translation id="4432792777822557199">Այսուհետ <ph name="SOURCE_LANGUAGE" /> էջերը կթարգմանվեն <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4440958355523780886">Էջի Lite տարբերակը տրամադրվել է Google-ի կողմից։ Հպեք՝ բնօրինակը բեռնելու համար։</translation>
 <translation id="4452411734226507615">Փակել <ph name="TAB_TITLE" /> ներդիրը</translation>
 <translation id="4452548195519783679">Էջանիշը պահվել է <ph name="FOLDER_NAME" />-ում</translation>
@@ -550,7 +545,6 @@
 <translation id="543509235395288790">Ներբեռնվում է <ph name="COUNT" /> ֆայլ (<ph name="MEGABYTES" />)։</translation>
 <translation id="5441522332038954058">Անցնել հասցեագոտի</translation>
 <translation id="5447201525962359567">Կայքերի բոլոր տվյալները, ներառյալ` քուքիները և սարքում պահված մյուս տվյալները</translation>
-<translation id="5447765697759493033">Այս կայքը չի թարգմանվի</translation>
 <translation id="545042621069398927">Ներբեռնումն արագացվում է։</translation>
 <translation id="5456381639095306749">Ներբեռնել էջը</translation>
 <translation id="548278423535722844">Բացեք Քարտեզներ հավելվածում</translation>
@@ -580,7 +574,6 @@
 <translation id="5659593005791499971">Էլփոստ</translation>
 <translation id="5665379678064389456">Ստեղծեք միջոցառում <ph name="APP_NAME" /> հավելվածում</translation>
 <translation id="5668404140385795438">Անտեսել կայքերի՝ խոշորացումը կանխելու հարցումները</translation>
-<translation id="5684874026226664614">Չհաջողվեց թարգմանել այս էջը:</translation>
 <translation id="5686790454216892815">Ֆայլի անունը չափազանց երկար է</translation>
 <translation id="5694049548840660018">Արագ անցում գլխավոր էջ</translation>
 <translation id="569536719314091526">Թարգմանեք այս կայքը «Այլ ընտրանքներ» կոճակի միջոցով</translation>
@@ -734,7 +727,6 @@
 <translation id="6767294960381293877">Սարքերը, որոնց հետ կիսվելու եք ներդիրով, ցուցադրված են էկրանի կեսով:</translation>
 <translation id="6811034713472274749">Էջը պատրաստ է</translation>
 <translation id="6820686453637990663">CVC</translation>
-<translation id="6831043979455480757">Թարգմանել</translation>
 <translation id="6845325883481699275">Օգնել ավելի անվտանգ դարձնել Chrome-ը</translation>
 <translation id="6846298663435243399">Բեռնում…</translation>
 <translation id="6850409657436465440">Ներբեռնումն ընթացքում է</translation>
@@ -842,7 +834,6 @@
 <translation id="7698359219371678927">Ստեղծեք նամակ <ph name="APP_NAME" /> հավելվածում</translation>
 <translation id="7704317875155739195">Ավտոմատ լրացնել որոնման հարցումները և URL-ները</translation>
 <translation id="7725024127233776428">Ձեր էջանշած էջերը կցուցադրվեն այստեղ</translation>
-<translation id="773466115871691567">Միշտ թարգմանել <ph name="SOURCE_LANGUAGE" /> էջերը</translation>
 <translation id="7746457520633464754">Վտանգավոր կայքերն ու հավելվածները հայտնաբերելու համար Chrome-ը Google-ին է ուղարկում ձեր այցելած որոշ էջերի URL-ներն ու դրանց բովանդակությունը և որոշակի տեղեկություններ համակարգի մասին։</translation>
 <translation id="7757787379047923882"><ph name="DEVICE_NAME" /> սարքից ուղարկված հաղորդագրություն</translation>
 <translation id="7761849928583394409">Ընտրեք ամսաթիվը և ժամը</translation>
@@ -922,7 +913,6 @@
 <translation id="8310344678080805313">Ստանդարտ ներդիրներ</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> և այլ կայքեր</translation>
 <translation id="8327155640814342956">Համացանցում աշխատանքը լավացնելու համար բացեք Chrome-ը և թարմացրեք այն</translation>
-<translation id="8339163506404995330"><ph name="LANGUAGE" /> էջերը չեն թարգմանվի</translation>
 <translation id="8349013245300336738">Տեսակավորել ըստ օգտագործված տվյալների ծավալի</translation>
 <translation id="8364299278605033898">Դիտեք թոփ կայքերը</translation>
 <translation id="8368027906805972958">Անհայտ կամ չաջակցվող սարք (<ph name="DEVICE_ID" />)</translation>

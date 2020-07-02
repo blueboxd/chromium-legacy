@@ -10,7 +10,6 @@
 <translation id="1049743911850919806">Modo de incógnito</translation>
 <translation id="10614374240317010">Contrasinais que non se gardan nunca</translation>
 <translation id="1067922213147265141">Outros servizos de Google</translation>
-<translation id="1068672505746868501">Non traducir nunca páxinas en <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="107147699690128016">Se cambias a extensión do ficheiro, é posible que este se abra nunha aplicación diferente e supoña un perigo para o teu dispositivo.</translation>
 <translation id="1100066534610197918">Abrir pestana nova nun grupo</translation>
 <translation id="1105960400813249514">Screen Capture</translation>
@@ -35,13 +34,11 @@
 <translation id="1229399675748764149">Fai que esta sexa a túa páxina de inicio</translation>
 <translation id="1231733316453485619">Queres activar a sincronización?</translation>
 <translation id="123724288017357924">Cargar a páxina, ignorando o contido da caché</translation>
-<translation id="124116460088058876">Máis idiomas</translation>
 <translation id="124678866338384709">Pechar a pestana actual</translation>
 <translation id="1258753120186372309">Doodle de Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Buscar e explorar</translation>
 <translation id="1266864766717917324">Non se puido compartir este contido: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1283039547216852943">Toca para despregar</translation>
-<translation id="1285320974508926690">Non traducir nunca este sitio</translation>
 <translation id="1291207594882862231">Borrar o historial, as cookies, os datos dos sitios, a memoria caché…</translation>
 <translation id="129553762522093515">Pechado recentemente</translation>
 <translation id="1303339473099049190">Non se puido atopar o contrasinal. Comproba a ortografía e téntao de novo.</translation>
@@ -239,7 +236,6 @@ Mantén premida calquera palabra para buscala. Se queres refinar a busca, selecc
 <translation id="2898264748040935573">Edita o contrasinal almacenado</translation>
 <translation id="2900528713135656174">Crear evento</translation>
 <translation id="2903493209154104877">Enderezos</translation>
-<translation id="290376772003165898">A páxina non está en <ph name="LANGUAGE" />?</translation>
 <translation id="2904414404539560095">A lista de dispositivos cos que compartir unha pestana está aberta a pantalla completa.</translation>
 <translation id="2905036901251765993">Para compartir contido coas persoas que estean preto, deixa que escaneen este código QR</translation>
 <translation id="2909615210195135082">Plataforma de notificacións de Google</translation>
@@ -415,7 +411,6 @@ Mantén premida calquera palabra para buscala. Se queres refinar a busca, selecc
 <translation id="4405224443901389797">Mover a…</translation>
 <translation id="4411535500181276704">Modo básico</translation>
 <translation id="4415276339145661267">Xestionar a túa Conta de Google</translation>
-<translation id="4432792777822557199">As páxinas en <ph name="SOURCE_LANGUAGE" /> traduciranse ao <ph name="TARGET_LANGUAGE" /> a partir de agora</translation>
 <translation id="4440958355523780886">Páxina en modo básico ofrecida por Google. Toca para cargar a orixinal.</translation>
 <translation id="4452411734226507615">Pecha a pestana <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">Marcador engadido a <ph name="FOLDER_NAME" /></translation>
@@ -550,7 +545,6 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="543509235395288790">Descargando <ph name="COUNT" /> ficheiros (<ph name="MEGABYTES" />).</translation>
 <translation id="5441522332038954058">Saltar á barra de enderezos</translation>
 <translation id="5447201525962359567">Todos os datos dos sitios, incluídas as cookies e outros datos almacenados localmente</translation>
-<translation id="5447765697759493033">Non se traducirá este sitio</translation>
 <translation id="545042621069398927">Estase acelerando a descarga.</translation>
 <translation id="5456381639095306749">Descargar páxina</translation>
 <translation id="548278423535722844">Abrir na aplicación de mapas</translation>
@@ -580,7 +574,6 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="5659593005791499971">Correo electrónico</translation>
 <translation id="5665379678064389456">Crea un evento en <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Anular a solicitude dun sitio web para evitar ampliar a imaxe</translation>
-<translation id="5684874026226664614">Non se puido traducir esta páxina.</translation>
 <translation id="5686790454216892815">O nome do ficheiro é demasiado longo</translation>
 <translation id="5694049548840660018">Volver ao inicio facilmente</translation>
 <translation id="569536719314091526">Traduce esta páxina a calquera idioma desde o botón Máis opcións</translation>
@@ -734,7 +727,6 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="6767294960381293877">A lista de dispositivos cos que compartir unha pestana está aberta a media pantalla.</translation>
 <translation id="6811034713472274749">A páxina está lista para vela</translation>
 <translation id="6820686453637990663">CVC</translation>
-<translation id="6831043979455480757">Traducir</translation>
 <translation id="6845325883481699275">Axudar a mellorar a seguranza de Chrome</translation>
 <translation id="6846298663435243399">Cargando…</translation>
 <translation id="6850409657436465440">A descarga aínda está en curso</translation>
@@ -842,7 +834,6 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="7698359219371678927">Crea un correo electrónico en <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Completar buscas e URL automaticamente</translation>
 <translation id="7725024127233776428">As páxinas que engadas aos marcadores aparecerán aquí</translation>
-<translation id="773466115871691567">Traducir sempre páxinas en <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7746457520633464754">Para detectar aplicacións e sitios perigosos, Chrome envíalle a Google os URL dalgunhas das páxinas que visitas, parte da información do sistema e parte do contido das páxinas</translation>
 <translation id="7757787379047923882">O texto compartiuse desde <ph name="DEVICE_NAME" /></translation>
 <translation id="7761849928583394409">Seleccionar data e hora</translation>
@@ -922,7 +913,6 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="8310344678080805313">Pestanas estándar</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> e máis sitios</translation>
 <translation id="8327155640814342956">Para desfrutar da mellor experiencia de navegación, actualiza Chrome</translation>
-<translation id="8339163506404995330">Non se traducirán as páxinas en <ph name="LANGUAGE" /></translation>
 <translation id="8349013245300336738">Ordenar por cantidade de datos usados</translation>
 <translation id="8364299278605033898">Descubre sitios web populares</translation>
 <translation id="8368027906805972958">Dispositivo descoñecido ou non compatible (<ph name="DEVICE_ID" />)</translation>

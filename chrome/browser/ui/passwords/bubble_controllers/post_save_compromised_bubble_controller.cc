@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/passwords/bubble_controllers/post_save_compromised_bubble_controller.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -29,6 +30,7 @@ PostSaveCompromisedBubbleController::PostSaveCompromisedBubbleController(
     default:
       NOTREACHED();
   }
+  base::UmaHistogramEnumeration("PasswordBubble.CompromisedBubbleType", type_);
 }
 
 PostSaveCompromisedBubbleController::~PostSaveCompromisedBubbleController() {
@@ -81,6 +83,7 @@ int PostSaveCompromisedBubbleController::GetImageID(bool dark) const {
 }
 
 void PostSaveCompromisedBubbleController::OnAccepted() {
+  checked_clicked_ = true;
   if (delegate_)
     delegate_->NavigateToPasswordCheckup();
 }
@@ -98,4 +101,7 @@ base::string16 PostSaveCompromisedBubbleController::GetTitle() const {
   }
 }
 
-void PostSaveCompromisedBubbleController::ReportInteractions() {}
+void PostSaveCompromisedBubbleController::ReportInteractions() {
+  base::UmaHistogramBoolean("PasswordBubble.CompromisedBubbleCheckClicked",
+                            checked_clicked_);
+}

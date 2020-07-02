@@ -218,7 +218,7 @@
 <translation id="1263490604593716556"><ph name="FIRST_PARENT_EMAIL" /> र <ph name="SECOND_PARENT_EMAIL" /> ले व्यवस्थापन गरेको खाता। यो यन्त्रमा साइन इन गरिएको प्राथमिक खाताबाट साइन आउट गर्न आफ्नो स्क्रिनमा देखिने समयमा क्लिक गर्नुहोस्। त्यसपछि देखिने मेनुमा "साइन आउट गर्नुहोस्" नामक बटनमा क्लिक गर्नुहोस्।</translation>
 <translation id="1263733306853729545">उम्मेदवारहरूको सूचीलाई पृष्ठमा ल्याउन <ph name="MINUS" /> र <ph name="EQUAL" /> कुञ्जीहरू प्रयोग गर्नुहोस्</translation>
 <translation id="126387934568812801">यो स्क्रिनसट तथा खुला रहेका ट्याबका शीर्षकहरू समावेश गर्नुहोस्</translation>
-<translation id="1264337193001759725">नेटवर्क UI लगहरू हेर्न यहाँ जानुहोस्: <ph name="DEVICE_LOG_LINK" /></translation>
+<translation id="1264337193001759725">नेटवर्कका UI लगहरू हेर्न यहाँ जानुहोस्: <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="126710816202626562">अनुवाद भाषा:</translation>
 <translation id="126768002343224824">१६ गुणा</translation>
 <translation id="1272079795634619415">रोक्नुहोस्</translation>
@@ -525,7 +525,6 @@
 <translation id="1645516838734033527">तपाईंको <ph name="DEVICE_TYPE" /> सुरक्षित राख्न Smart Lock का लागि तपाईंको फोनमा एक स्क्रिन लक अनिवार्य छ।</translation>
 <translation id="1646982517418478057">कृपया यस प्रमाणपत्रलाई इन्क्रिप्ट गर्न कुनै पासवर्ड प्रविष्टि गर्नुहोस्</translation>
 <translation id="1648528859488547844">स्थान निर्धारण गर्न Wi-Fi वा मोबाइल नेटवर्कहरूको प्रयोग गर्नुहोस्</translation>
-<translation id="1648943974594387137">साइन-इन सम्बन्धी विवरणहरूको म्याद सकिएको छ</translation>
 <translation id="164936512206786300">ब्लुटुथ यन्त्रको जोडा हटाउनुहोस्</translation>
 <translation id="1650371550981945235">इनपुटका विकल्पहरू देखाउनुहोस्</translation>
 <translation id="1651008383952180276">तपाईंले अनिवार्य रूपले उही पासफ्रेज दुई पटक प्रविष्ट गर्नुपर्छ</translation>
@@ -1329,7 +1328,6 @@
 <translation id="2635276683026132559">साइन गर्दै</translation>
 <translation id="2636625531157955190">Chrome ले छवि पहुँच गर्न सक्दैन।</translation>
 <translation id="2637400434494156704">PIN मिलेन। तपाईं अब एक पटक मात्र प्रयास गर्न सक्नुहुन्छ।</translation>
-<translation id="2638087589890736295">सिंक सुरु गर्न पासफ्रेजको आवश्यकता पर्छ</translation>
 <translation id="2638662041295312666">प्रोफाइल फोटो</translation>
 <translation id="264083724974021997">आफ्नो फोनमा जोडिनुहोस् - संवाद</translation>
 <translation id="2641065435954454414">डाउनलोड गर्ने तयारी गर्दै</translation>
@@ -1483,7 +1481,6 @@
 <translation id="2809586584051668049">र <ph name="NUMBER_ADDITIONAL_DISABLED" /> थप</translation>
 <translation id="2810390687497823527">तपाईंले कुनै एक्स्टेन्सन चिन्न सक्नुभएन भने वा तपाईंको ब्राउजरले अपेक्षा गरिएअनुसार काम गर्दै छैन भने तपाईं यहाँबाट एक्स्टेन्सनहरू निष्क्रिय पार्न वा तिनलाई आफूले रोजेअनुसार पार्न सक्नुहुन्छ।</translation>
 <translation id="2812049959647166806">थन्डरबोल्ट प्रयोग गर्न मिल्दैन</translation>
-<translation id="2812944337881233323">साइन आउट गरेर फेरि साइन इन गरी हेर्नुहोस्</translation>
 <translation id="2812989263793994277">कुनैपनि छविहरू नदेखाउनुहोस्</translation>
 <translation id="2813094189969465044">अभिभावकीय नियन्त्रणहरू</translation>
 <translation id="281390819046738856">अनुरोधमा हस्ताक्षर गर्न सकिएन।</translation>
@@ -3404,7 +3401,6 @@
 <translation id="529175790091471945">यस यन्त्रलाई फर्म्याट गर्नुहोस्</translation>
 <translation id="5293170712604732402">सेटिङहरूलाई तिनीहरूकै पूर्वनिर्धारित मूल सेटिङमा पुनर्स्थापना गर्नुहोस्</translation>
 <translation id="5294097441441645251">अनिवार्य रूपमा लोअरकेस वर्ण वा underscore बाट सुरु हुनु पर्छ</translation>
-<translation id="5296471962619441686">सिंक गर्ने कार्य सुचारु गर्न त्रुटिको समाधान गर्नुहोस्</translation>
 <translation id="5297082477358294722">पासवर्ड सुरक्षित गरियो। सुरक्षित गरिएका पासवर्डहरू हेर्न र व्यवस्थापन गर्न आफ्नो <ph name="SAVED_PASSWORDS_STORE" />.मा जानुहोस्।</translation>
 <translation id="5298219193514155779">द्वार प्रकरण सिर्जना गरिएको</translation>
 <translation id="5299109548848736476">ट्रयाक नगर्नुहोस्</translation>
@@ -5766,7 +5762,6 @@
 <translation id="8256417822772703842"><ph name="PRINTER_NAME" /> को मसी सकिनै लागेको छ</translation>
 <translation id="8257950718085972371">क्यामेरा पहुँच ब्लक गर्ने कार्य जारी राख्नुहोस्</translation>
 <translation id="8259239505248583312">जाऔँ</translation>
-<translation id="8260126382462817229">फेरि साइन इन गरी हेर्नुहोस्</translation>
 <translation id="8260864402787962391">माउस</translation>
 <translation id="8261378640211443080">तपाइँको विस्तार <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> मा सूची गरिएको छैन र तपाइँलाई जानकार नगरीकन त्यो थपिएको हुन सक्छ।</translation>
 <translation id="8261506727792406068">मेट्नुहोस्</translation>

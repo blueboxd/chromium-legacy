@@ -213,6 +213,8 @@ class AutofillControllerTest : public ChromeWebTest {
                                      size_t expected_number_of_forms)
       WARN_UNUSED_RESULT;
 
+  void LoadHtmlAndInitRendererIds(NSString* html);
+
   // Fails if the specified metric was not registered the given number of times.
   void ExpectMetric(const std::string& histogram_name, int sum);
 
@@ -318,13 +320,18 @@ bool AutofillControllerTest::WaitForFormFetched(
 bool AutofillControllerTest::LoadHtmlAndWaitForFormFetched(
     NSString* html,
     size_t expected_number_of_forms) {
-  LoadHtml(html);
+  LoadHtmlAndInitRendererIds(html);
   web::WebFrame* main_frame =
       web_state()->GetWebFramesManager()->GetMainWebFrame();
   AutofillManager* autofill_manager =
       AutofillDriverIOS::FromWebStateAndWebFrame(web_state(), main_frame)
           ->autofill_manager();
   return WaitForFormFetched(autofill_manager, expected_number_of_forms);
+}
+
+void AutofillControllerTest::LoadHtmlAndInitRendererIds(NSString* html) {
+  ChromeWebTest::LoadHtml(html);
+  ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");
 }
 
 void AutofillControllerTest::ExpectMetric(const std::string& histogram_name,

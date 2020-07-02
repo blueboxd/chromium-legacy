@@ -528,7 +528,6 @@
 <translation id="1645516838734033527">तुमचा <ph name="DEVICE_TYPE" /> सुरक्षित ठेवण्यासाठी Smart Lockला तुमच्या फोनवर स्क्रीन लॉकची आवश्यकता आहे.</translation>
 <translation id="1646982517418478057">कृपया हे सर्टिफिकेट एंक्रिप्शन करण्यासाठी एक पासवर्ड एंटर करा</translation>
 <translation id="1648528859488547844">स्थान निर्धारित करण्‍यासाठी वाय‑फाय, ब्लूटूथ किंवा मोबाइल नेटवर्क वापरा</translation>
-<translation id="1648943974594387137">साइन-इन तपशील कालबाह्य झाले</translation>
 <translation id="164936512206786300">ब्लूटूथ डिव्हाइसचे पेअरिंग काढा</translation>
 <translation id="1650371550981945235">इनपुट पर्याय दर्शवा</translation>
 <translation id="1651008383952180276">समान सांकेतिक पासफ्रेझ दोनदा एंटर करणे आवश्यक आहे</translation>
@@ -1332,7 +1331,6 @@
 <translation id="2635276683026132559">साइन करत आहे</translation>
 <translation id="2636625531157955190">Chrome इमेजला ॲक्सेस करू शकत नाही.</translation>
 <translation id="2637400434494156704">चुकीचा पिन. तुमच्याकडे एक प्रयत्न शिल्लक आहे.</translation>
-<translation id="2638087589890736295">सिंक सुरू करण्यासाठी सांकेतिक पासफ्रेझ आवश्यक आहे</translation>
 <translation id="2638662041295312666">साइन इन इमेज</translation>
 <translation id="264083724974021997">तुमच्या फोनशी कनेक्ट करा - डायलॉग</translation>
 <translation id="2641065435954454414">डाउनलोड तयार करत आहे</translation>
@@ -1486,7 +1484,6 @@
 <translation id="2809586584051668049">आणि <ph name="NUMBER_ADDITIONAL_DISABLED" /> अधिक</translation>
 <translation id="2810390687497823527">तुम्हाला एखादे एक्स्टेंशन ओळखता येत नसल्यास किंवा तुमचा ब्राउझर अपेक्षेनुसार काम करत नसल्यास, तुम्ही येथे एक्स्टेंशन बंद किंवा कस्टमाइझ करू शकता.</translation>
 <translation id="2812049959647166806">थंडरबोल्टला सपोर्ट करत नाही</translation>
-<translation id="2812944337881233323">साइन आउट केल्यानंतर पुन्हा साइन इन करून पहा.</translation>
 <translation id="2812989263793994277">कोणत्याही इमेज दर्शवू नका</translation>
 <translation id="2813094189969465044">पालक नियंत्रणे</translation>
 <translation id="281390819046738856">विनंतीवर साइन करता आले नाही.</translation>
@@ -3405,7 +3402,6 @@
 <translation id="529175790091471945">हे डिव्हाइस स्वरूपित करा</translation>
 <translation id="5293170712604732402">सेटिंग्ज त्यांच्या मूळ डीफॉल्टवर रिस्टोअर करा</translation>
 <translation id="5294097441441645251">लोअरकेस वर्ण किंवा अंडरस्कोअरने सुरू होणे आवश्यक आहे</translation>
-<translation id="5296471962619441686">सिंक पुन्हा सुरू करण्यासाठी एररचे निराकरण करा</translation>
 <translation id="5297082477358294722">पासवर्ड सेव्ह केलेले आहेत. तुमच्या <ph name="SAVED_PASSWORDS_STORE" /> मध्ये सेव्ह केलेले पासवर्ड पाहा आणि व्यवस्थापित करा.</translation>
 <translation id="5298219193514155779">द्वारा निर्मित थीम</translation>
 <translation id="5299109548848736476">Do Not Track</translation>
@@ -5768,7 +5764,6 @@ https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featu
 <translation id="8256417822772703842"><ph name="PRINTER_NAME" /> मध्ये शाई कमी आहे</translation>
 <translation id="8257950718085972371">कॅमेरा ॲक्सेस ब्लॉक करणे सुरू ठेवा</translation>
 <translation id="8259239505248583312">चला जाऊ या</translation>
-<translation id="8260126382462817229">पुन्हा साइन इन करण्याचा प्रयत्न करा</translation>
 <translation id="8260864402787962391">माउस</translation>
 <translation id="8261378640211443080"><ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> मध्ये हे एक्स्टेंशन सूचीबद्ध केले नाही आणि कदाचित तुमच्या माहिती शिवाय जोडले गेले आहे.</translation>
 <translation id="8261506727792406068">हटवा</translation>

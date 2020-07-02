@@ -1674,6 +1674,20 @@ TEST_P(PaintArtifactCompositorTest, MergeNestedWithAlias) {
   }
 }
 
+TEST_P(PaintArtifactCompositorTest, CanNotMergeAcrossPaintArtifacts) {
+  TestPaintArtifact test_artifact_a;
+  test_artifact_a.Chunk().RectDrawing(IntRect(0, 0, 100, 100), Color::kWhite);
+  auto artifact_a = test_artifact_a.Build();
+  PendingLayer layer_a(artifact_a, artifact_a->PaintChunks()[0], 0, false);
+
+  TestPaintArtifact test_artifact_b;
+  test_artifact_b.Chunk().RectDrawing(IntRect(0, 0, 100, 100), Color::kGray);
+  auto artifact_b = test_artifact_b.Build();
+  PendingLayer layer_b(artifact_b, artifact_b->PaintChunks()[0], 0, false);
+
+  EXPECT_FALSE(layer_a.CanMerge(layer_b, layer_b.property_tree_state));
+}
+
 TEST_P(PaintArtifactCompositorTest, ClipPushedUp) {
   // Tests merging of an element which has a clipapplied to it,
   // but has an ancestor transform of them. This can happen for fixed-
@@ -1918,13 +1932,13 @@ TEST_P(PaintArtifactCompositorTest, OverlapTransform) {
 TEST_P(PaintArtifactCompositorTest, MightOverlap) {
   PaintChunk paint_chunk = DefaultChunk();
   paint_chunk.bounds = IntRect(0, 0, 100, 100);
-  PendingLayer pending_layer(paint_chunk, 0, false);
+  PendingLayer pending_layer(nullptr, paint_chunk, 0, false);
 
   PaintChunk paint_chunk2 = DefaultChunk();
   paint_chunk2.bounds = IntRect(0, 0, 100, 100);
 
   {
-    PendingLayer pending_layer2(paint_chunk2, 1, false);
+    PendingLayer pending_layer2(nullptr, paint_chunk2, 1, false);
     EXPECT_TRUE(MightOverlap(pending_layer, pending_layer2));
   }
 
@@ -1932,7 +1946,7 @@ TEST_P(PaintArtifactCompositorTest, MightOverlap) {
       t0(), TransformationMatrix().Translate(99, 0), FloatPoint3D(100, 100, 0));
   {
     SetTransform(paint_chunk2, *transform);
-    PendingLayer pending_layer2(paint_chunk2, 1, false);
+    PendingLayer pending_layer2(nullptr, paint_chunk2, 1, false);
     EXPECT_TRUE(MightOverlap(pending_layer, pending_layer2));
   }
 
@@ -1941,7 +1955,7 @@ TEST_P(PaintArtifactCompositorTest, MightOverlap) {
                       FloatPoint3D(100, 100, 0));
   {
     SetTransform(paint_chunk2, *transform2);
-    PendingLayer pending_layer2(paint_chunk2, 1, false);
+    PendingLayer pending_layer2(nullptr, paint_chunk2, 1, false);
     EXPECT_FALSE(MightOverlap(pending_layer, pending_layer2));
   }
 
@@ -1950,7 +1964,7 @@ TEST_P(PaintArtifactCompositorTest, MightOverlap) {
                                FloatPoint3D(100, 100, 0));
   {
     SetTransform(paint_chunk2, *transform3);
-    PendingLayer pending_layer2(paint_chunk2, 1, false);
+    PendingLayer pending_layer2(nullptr, paint_chunk2, 1, false);
     EXPECT_TRUE(MightOverlap(pending_layer, pending_layer2));
   }
 }
@@ -2005,7 +2019,7 @@ TEST_P(PaintArtifactCompositorTest, PendingLayer) {
   chunk1.known_to_be_opaque = true;
   chunk1.bounds = IntRect(0, 0, 30, 40);
 
-  PendingLayer pending_layer(chunk1, 0, false);
+  PendingLayer pending_layer(nullptr, chunk1, 0, false);
 
   EXPECT_EQ(FloatRect(0, 0, 30, 40), pending_layer.bounds);
   EXPECT_EQ((Vector<wtf_size_t>{0}), pending_layer.paint_chunk_indices);
@@ -2015,7 +2029,7 @@ TEST_P(PaintArtifactCompositorTest, PendingLayer) {
   chunk2.properties = chunk1.properties;
   chunk2.known_to_be_opaque = true;
   chunk2.bounds = IntRect(10, 20, 30, 40);
-  ASSERT_TRUE(pending_layer.Merge(PendingLayer(chunk2, 1, false)));
+  ASSERT_TRUE(pending_layer.Merge(PendingLayer(nullptr, chunk2, 1, false)));
 
   // Bounds not equal to one PaintChunk.
   EXPECT_EQ(FloatRect(0, 0, 40, 60), pending_layer.bounds);
@@ -2026,7 +2040,7 @@ TEST_P(PaintArtifactCompositorTest, PendingLayer) {
   chunk3.properties = chunk1.properties;
   chunk3.known_to_be_opaque = true;
   chunk3.bounds = IntRect(-5, -25, 20, 20);
-  ASSERT_TRUE(pending_layer.Merge(PendingLayer(chunk3, 2, false)));
+  ASSERT_TRUE(pending_layer.Merge(PendingLayer(nullptr, chunk3, 2, false)));
 
   EXPECT_EQ(FloatRect(-5, -25, 45, 85), pending_layer.bounds);
   EXPECT_EQ((Vector<wtf_size_t>{0, 1, 2}), pending_layer.paint_chunk_indices);
@@ -2045,8 +2059,8 @@ TEST_P(PaintArtifactCompositorTest, PendingLayerMergeWithGuestTransform) {
   SetTransform(chunk2, *transform);
   chunk2.bounds = IntRect(0, 0, 50, 60);
 
-  PendingLayer pending_layer(chunk1, 0, false);
-  ASSERT_TRUE(pending_layer.Merge(PendingLayer(chunk2, 1, false)));
+  PendingLayer pending_layer(nullptr, chunk1, 0, false);
+  ASSERT_TRUE(pending_layer.Merge(PendingLayer(nullptr, chunk2, 1, false)));
   EXPECT_EQ(FloatRect(0, 0, 70, 85), pending_layer.bounds);
   EXPECT_EQ(PropertyTreeState::Root(), pending_layer.property_tree_state);
 }
@@ -2063,8 +2077,8 @@ TEST_P(PaintArtifactCompositorTest, PendingLayerMergeWithHomeTransform) {
   chunk2.properties = PropertyTreeState::Root();
   chunk2.bounds = IntRect(0, 0, 50, 60);
 
-  PendingLayer pending_layer(chunk1, 0, false);
-  ASSERT_TRUE(pending_layer.Merge(PendingLayer(chunk2, 1, false)));
+  PendingLayer pending_layer(nullptr, chunk1, 0, false);
+  ASSERT_TRUE(pending_layer.Merge(PendingLayer(nullptr, chunk2, 1, false)));
   EXPECT_EQ(FloatRect(0, 0, 50, 65), pending_layer.bounds);
   EXPECT_EQ(PropertyTreeState::Root(), pending_layer.property_tree_state);
 }
@@ -2083,8 +2097,8 @@ TEST_P(PaintArtifactCompositorTest, PendingLayerMergeWithBothTransforms) {
   SetTransform(chunk2, *t2);
   chunk2.bounds = IntRect(0, 0, 50, 60);
 
-  PendingLayer pending_layer(chunk1, 0, false);
-  ASSERT_TRUE(pending_layer.Merge(PendingLayer(chunk2, 1, false)));
+  PendingLayer pending_layer(nullptr, chunk1, 0, false);
+  ASSERT_TRUE(pending_layer.Merge(PendingLayer(nullptr, chunk2, 1, false)));
   EXPECT_EQ(FloatRect(-20, -25, 70, 90), pending_layer.bounds);
   EXPECT_EQ(PropertyTreeState::Root(), pending_layer.property_tree_state);
 }
@@ -2100,8 +2114,8 @@ TEST_P(PaintArtifactCompositorTest, PendingLayerDontMergeSparse) {
   chunk2.known_to_be_opaque = true;
   chunk2.bounds = IntRect(200, 200, 30, 40);
 
-  PendingLayer pending_layer(chunk1, 0, false);
-  ASSERT_FALSE(pending_layer.Merge(PendingLayer(chunk2, 1, false)));
+  PendingLayer pending_layer(nullptr, chunk1, 0, false);
+  ASSERT_FALSE(pending_layer.Merge(PendingLayer(nullptr, chunk2, 1, false)));
   EXPECT_EQ(FloatRect(0, 0, 30, 40), pending_layer.bounds);
   EXPECT_EQ(chunk1.properties, pending_layer.property_tree_state);
   EXPECT_EQ(Vector<wtf_size_t>{0}, pending_layer.paint_chunk_indices);
@@ -2121,8 +2135,8 @@ TEST_P(PaintArtifactCompositorTest, PendingLayerDontMergeSparseWithTransforms) {
   SetTransform(chunk2, *t2);
   chunk2.bounds = IntRect(0, 0, 50, 60);
 
-  PendingLayer pending_layer(chunk1, 0, false);
-  ASSERT_FALSE(pending_layer.Merge(PendingLayer(chunk2, 1, false)));
+  PendingLayer pending_layer(nullptr, chunk1, 0, false);
+  ASSERT_FALSE(pending_layer.Merge(PendingLayer(nullptr, chunk2, 1, false)));
   EXPECT_EQ(FloatRect(0, 0, 30, 40), pending_layer.bounds);
   EXPECT_EQ(chunk1.properties, pending_layer.property_tree_state);
   EXPECT_EQ(Vector<wtf_size_t>{0}, pending_layer.paint_chunk_indices);
@@ -2143,8 +2157,8 @@ TEST_P(PaintArtifactCompositorTest,
   chunk2.properties = PropertyTreeState(*t2, c0(), *e1);
   chunk2.bounds = IntRect(0, 0, 50, 60);
 
-  PendingLayer pending_layer(chunk1, 0, false);
-  ASSERT_FALSE(pending_layer.Merge(PendingLayer(chunk2, 1, false)));
+  PendingLayer pending_layer(nullptr, chunk1, 0, false);
+  ASSERT_FALSE(pending_layer.Merge(PendingLayer(nullptr, chunk2, 1, false)));
   EXPECT_EQ(FloatRect(0, 0, 30, 40), pending_layer.bounds);
   EXPECT_EQ(chunk1.properties, pending_layer.property_tree_state);
   EXPECT_EQ(Vector<wtf_size_t>{0}, pending_layer.paint_chunk_indices);
@@ -2164,8 +2178,8 @@ TEST_P(PaintArtifactCompositorTest,
   chunk2.properties = PropertyTreeState(*t2, c0(), *e1);
   chunk2.bounds = IntRect(0, 0, 50, 60);
 
-  PendingLayer pending_layer(chunk1, 0, false);
-  ASSERT_TRUE(pending_layer.Merge(PendingLayer(chunk2, 1, false)));
+  PendingLayer pending_layer(nullptr, chunk1, 0, false);
+  ASSERT_TRUE(pending_layer.Merge(PendingLayer(nullptr, chunk2, 1, false)));
   EXPECT_EQ(FloatRect(20, 25, 1030, 1035), pending_layer.bounds);
   EXPECT_EQ(PropertyTreeState(t0(), c0(), *e1),
             pending_layer.property_tree_state);
@@ -2177,7 +2191,7 @@ TEST_P(PaintArtifactCompositorTest, PendingLayerKnownOpaque) {
   chunk1.properties = PropertyTreeState::Root();
   chunk1.bounds = IntRect(0, 0, 30, 40);
   chunk1.known_to_be_opaque = false;
-  PendingLayer pending_layer(chunk1, 0, false);
+  PendingLayer pending_layer(nullptr, chunk1, 0, false);
 
   EXPECT_TRUE(pending_layer.rect_known_to_be_opaque.IsEmpty());
 
@@ -2185,7 +2199,7 @@ TEST_P(PaintArtifactCompositorTest, PendingLayerKnownOpaque) {
   chunk2.properties = chunk1.properties;
   chunk2.bounds = IntRect(0, 0, 25, 35);
   chunk2.known_to_be_opaque = true;
-  ASSERT_TRUE(pending_layer.Merge(PendingLayer(chunk2, 1, false)));
+  ASSERT_TRUE(pending_layer.Merge(PendingLayer(nullptr, chunk2, 1, false)));
 
   // Chunk 2 doesn't cover the entire layer, so not opaque.
   EXPECT_EQ(FloatRect(chunk2.bounds), pending_layer.rect_known_to_be_opaque);
@@ -2195,7 +2209,7 @@ TEST_P(PaintArtifactCompositorTest, PendingLayerKnownOpaque) {
   chunk3.properties = chunk1.properties;
   chunk3.bounds = IntRect(0, 0, 50, 60);
   chunk3.known_to_be_opaque = true;
-  ASSERT_TRUE(pending_layer.Merge(PendingLayer(chunk3, 2, false)));
+  ASSERT_TRUE(pending_layer.Merge(PendingLayer(nullptr, chunk3, 2, false)));
 
   // Chunk 3 covers the entire layer, so now it's opaque.
   EXPECT_EQ(FloatRect(chunk3.bounds), pending_layer.bounds);

@@ -13,6 +13,7 @@ import "services/data_decoder/public/mojom/resource_snapshot_for_web_bundle.mojo
 import "services/network/public/mojom/content_security_policy.mojom";
 import "services/network/public/mojom/fetch_api.mojom";
 import "services/network/public/mojom/web_sandbox_flags.mojom";
+import "services/network/public/mojom/cross_origin_opener_policy.mojom";
 import "skia/public/mojom/skcolor.mojom";
 import "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom";
 import "third_party/blink/public/mojom/blob/blob.mojom";
@@ -826,6 +827,13 @@ interface LocalMainFrame {
   // Sent to the main-frame to request performing a zoom-to-find-in-page
   // based on the rect provided.
   ZoomToFindInPageRect(gfx.mojom.Rect rect_in_root_frame);
+
+  // Cross-Origin-Opener-Policy(COOP):
+  // Check accesses made from this window to |accessed_window|. If this happens,
+  // a report will be sent to |reporter|.
+  InstallCoopAccessMonitor(
+      mojo_base.mojom.UnguessableToken accessed_window,
+      pending_remote<network.mojom.CrossOriginOpenerPolicyReporter> reporter);
 };
 
 // Implemented in Browser, this interface defines local-main-frame-specific

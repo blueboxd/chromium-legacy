@@ -6,8 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_GRID_NG_GRID_TRACK_COLLECTION_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-
 namespace blink {
 
 // NGGridTrackCollectionBase provides an implementation for some shared
@@ -67,11 +67,10 @@ class CORE_EXPORT NGGridTrackCollectionBase {
 
 // Stores tracks related data by compressing repeated tracks into a single node.
 struct NGGridTrackRepeater {
-  enum class RepeatType { kCount, kAutoFill, kAutoFit };
   NGGridTrackRepeater(wtf_size_t track_index,
                       wtf_size_t repeat_size,
                       wtf_size_t repeat_count,
-                      RepeatType repeat_type);
+                      AutoRepeatType repeat_type);
   String ToString() const;
   bool operator==(const NGGridTrackRepeater& rhs) const;
   // Index of the first track being repeated.
@@ -81,7 +80,7 @@ struct NGGridTrackRepeater {
   // Amount of times the group of tracks are repeated.
   wtf_size_t repeat_count;
   // Type of repetition.
-  RepeatType repeat_type;
+  AutoRepeatType repeat_type;
 };
 
 class CORE_EXPORT NGGridTrackList {
@@ -93,7 +92,7 @@ class CORE_EXPORT NGGridTrackList {
   // Returns the number of tracks in the repeater at |index|.
   wtf_size_t RepeatSize(wtf_size_t index) const;
   // Returns the repeat type of the repeater at |index|.
-  NGGridTrackRepeater::RepeatType RepeatType(wtf_size_t index) const;
+  AutoRepeatType RepeatType(wtf_size_t index) const;
   // Returns the count of repeaters.
   wtf_size_t RepeaterCount() const;
   // Returns the total count of all the tracks in this list.
@@ -106,7 +105,7 @@ class CORE_EXPORT NGGridTrackList {
   // Adds an auto repeater.
   bool AddAutoRepeater(wtf_size_t track_index,
                        wtf_size_t track_count,
-                       NGGridTrackRepeater::RepeatType repeat_type);
+                       AutoRepeatType repeat_type);
   // Returns true if this list contains an auto repeater.
   bool HasAutoRepeater();
 
@@ -119,7 +118,7 @@ class CORE_EXPORT NGGridTrackList {
   bool AddRepeater(wtf_size_t track_index,
                    wtf_size_t track_count,
                    wtf_size_t repeat_count,
-                   NGGridTrackRepeater::RepeatType repeat_type);
+                   AutoRepeatType repeat_type);
   // Returns the amount of tracks available before overflow.
   wtf_size_t AvailableTrackCount() const;
 

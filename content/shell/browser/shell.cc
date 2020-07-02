@@ -44,7 +44,6 @@
 
 #if !defined(OS_ANDROID)
 #include "content/shell/browser/web_test/web_test_control_host.h"  // nogncheck
-#include "content/shell/common/web_test/web_test_switches.h"       // nogncheck
 #endif
 
 namespace content {
@@ -85,14 +84,7 @@ Shell::Shell(std::unique_ptr<WebContents> web_contents,
   if (should_set_delegate)
     web_contents_->SetDelegate(this);
 
-#if !defined(OS_ANDROID)
-  // TODO(danakj): Move headless stuff into WebTestShellPlatformDelegate.
-  if (switches::IsRunWebTestsSwitchPresent()) {
-    headless_ = !base::CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kDisableHeadlessMode);
-  } else
-#endif
-  {
+  if (!switches::IsRunWebTestsSwitchPresent()) {
     UpdateFontRendererPreferencesFromSystemSettings(
         web_contents_->GetMutableRendererPrefs());
   }
@@ -618,6 +610,7 @@ void Shell::RendererUnresponsive(
 
 void Shell::ActivateContents(WebContents* contents) {
 #if !defined(OS_MACOSX)
+  // TODO(danakj): Move this to ShellPlatformDelegate.
   contents->Focus();
 #else
   // Mac headless mode is quite different than other platforms. Normally

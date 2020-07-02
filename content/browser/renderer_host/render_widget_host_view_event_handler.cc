@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
 #include "components/viz/common/features.h"
 #include "content/browser/renderer_host/hit_test_debug_key_event_observer.h"
@@ -832,10 +833,10 @@ void RenderWidgetHostViewEventHandler::ModifyEventMovementAndCoords(
     // to keep the movement calculation as "floor(cur_pos) - floor(last_pos)".
     // Remove the floor here when movement_x/y is changed to double.
     if (!(ui_mouse_event.flags() & ui::EF_UNADJUSTED_MOUSE)) {
-      event->movement_x = gfx::ToFlooredInt(event->PositionInScreen().x()) -
-                          gfx::ToFlooredInt(global_mouse_position_.x());
-      event->movement_y = gfx::ToFlooredInt(event->PositionInScreen().y()) -
-                          gfx::ToFlooredInt(global_mouse_position_.y());
+      event->movement_x = base::Floor(event->PositionInScreen().x()) -
+                          base::Floor(global_mouse_position_.x());
+      event->movement_y = base::Floor(event->PositionInScreen().y()) -
+                          base::Floor(global_mouse_position_.y());
     }
 
     global_mouse_position_ = event->PositionInScreen();

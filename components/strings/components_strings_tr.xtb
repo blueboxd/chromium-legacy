@@ -20,6 +20,7 @@
 <translation id="10614374240317010">Hiç kaydedilmeyecekler</translation>
 <translation id="1062160989074299343">Prc10 (Zarf)</translation>
 <translation id="106701514854093668">Masaüstü Yer İşaretleri</translation>
+<translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" /> dilindeki sayfaları asla çevirme</translation>
 <translation id="1070901266639972381">Gece</translation>
 <translation id="1074497978438210769">Güvenli değil</translation>
 <translation id="1080116354587839789">Genişliğe sığdır</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">Adsız</translation>
 <translation id="1236081509407217141">VR'ye izin verilsin mi?</translation>
 <translation id="1240347957665416060">Cihazınızın adı</translation>
+<translation id="124116460088058876">Diğer diller</translation>
 <translation id="1250759482327835220">Bir dahaki sefere daha hızlı ödeme yapmak için kartınızı ve fatura adresinizi Google Hesabınıza kaydedin.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (senkronize edildi)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Bir web sitesini ziyaret etmeye çalıştığınızda site açılmıyorsa sorunu düzeltmek için ilk olarak aşağıdaki sorun giderme adımlarını deneyin:&lt;/p&gt;
@@ -831,6 +833,7 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="4424024547088906515">Bu sunucu <ph name="DOMAIN" /> olduğunu kanıtlayamadı. Chrome, sunucunun güvenlik sertifikasına güvenmiyor. Bu durum, bir yanlış yapılandırmadan veya bağlantıya müdahale eden bir saldırgandan kaynaklanıyor olabilir.</translation>
 <translation id="443121186588148776">Seri bağlantı noktası</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> giriş sertifikanızı kabul etmedi veya giriş sertifikası sağlanmamış olabilir.</translation>
+<translation id="4432792777822557199"><ph name="SOURCE_LANGUAGE" /> dilindeki sayfalar artık <ph name="TARGET_LANGUAGE" /> diline çevrilecek</translation>
 <translation id="4434045419905280838">Pop-up'lar ve yönlendirmeler</translation>
 <translation id="4435702339979719576">Kartpostal)</translation>
 <translation id="443673843213245140">Proxy kullanımı devre dışı, ancak açık bir proxy yapılandırması belirtildi.</translation>
@@ -1062,6 +1065,7 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="5431657950005405462">Dosyanız bulunamadı</translation>
 <translation id="5439770059721715174">"<ph name="ERROR_PATH" />" üzerinde şema doğrulama hatası: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Ters sırada ön yüz yukarı bakacak şekilde</translation>
+<translation id="5447765697759493033">Bu site çevrilmeyecek</translation>
 <translation id="5452270690849572955">Bu <ph name="HOST_NAME" /> sayfası bulunamıyor</translation>
 <translation id="5455374756549232013">Politika zaman damgası yanlış</translation>
 <translation id="5457113250005438886">Geçersiz</translation>
@@ -1608,6 +1612,7 @@ Ek ayrıntılar:
 <translation id="7716375162095500223">Henüz yüklenmedi veya yok sayıldı</translation>
 <translation id="7716424297397655342">Bu site önbellekten yüklenemiyor</translation>
 <translation id="7723047071702270851">Kartı Düzenleyin</translation>
+<translation id="773466115871691567"><ph name="SOURCE_LANGUAGE" /> dilindeki sayfaları her zaman çevir</translation>
 <translation id="7740996059027112821">Standart</translation>
 <translation id="774634243536837715">Tehlikeli içerik engellendi.</translation>
 <translation id="7752995774971033316">Yönetimden kaldırıldı</translation>
@@ -1748,11 +1753,12 @@ Ek ayrıntılar:
 <translation id="8298115750975731693">Kullandığınız kablosuz bağlantı ağı (<ph name="WIFI_NAME" />) <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> adresini ziyaret etmenizi gerektiriyor olabilir.</translation>
 <translation id="830498451218851433">Ortadan katlama</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
-<translation id="8307888238279532626">Yüklenen uygulamalar ve nasıl kullanıldıkları</translation>
+<translation id="8307888238279532626">Yüklü uygulamalar ve ne sıklıkla kullanıldıkları</translation>
 <translation id="831207732689920588">Bu sayfa şüpheli (Chrome tarafından işaretlendi).</translation>
 <translation id="831997045666694187">Akşam</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" /> ana makinesine erişim reddedildi</translation>
 <translation id="833262891116910667">Vurgula</translation>
+<translation id="8339163506404995330"><ph name="LANGUAGE" /> dilindeki sayfalar çevrilmeyecek</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Güvenliğinize ilişkin riskleri anladıysanız <ph name="BEGIN_LINK" />bu siteyi<ph name="END_LINK" /> zararlı programlar kaldırılmadan önce ziyaret edebilirsiniz.</translation>
 <translation id="8349305172487531364">Yer işaretleri çubuğu</translation>

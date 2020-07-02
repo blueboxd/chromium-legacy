@@ -20,6 +20,7 @@
 <translation id="10614374240317010">ଆଦୌ ସେଭ୍‍ କରାଯାଇନାହିଁ</translation>
 <translation id="1062160989074299343">Prc10 (ଏନଭଲପ୍)</translation>
 <translation id="106701514854093668">ଡେସ୍କଟପ୍ ବୁକ୍‍ମାର୍କଗୁଡିକ</translation>
+<translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" />ରେ ପୃଷ୍ଠାଗୁଡ଼ିକୁ ଅନୁବାଦ କରନ୍ତୁ ନାହିଁ</translation>
 <translation id="1070901266639972381">ରାତି</translation>
 <translation id="1074497978438210769">ସୁରକ୍ଷିତ ନୁହେଁ</translation>
 <translation id="1080116354587839789">ପ୍ରସ୍ଥ ସହିତ ଫିଟ୍ କରନ୍ତୁ</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">ବେନାମୀ</translation>
 <translation id="1236081509407217141">VRକୁ ଅନୁମତି ଦେବେ?</translation>
 <translation id="1240347957665416060">ଆପଣଙ୍କ ଡିଭାଇସ୍‌ର ନାମ</translation>
+<translation id="124116460088058876">ଅନେକ ଭାଷା</translation>
 <translation id="1250759482327835220">ପରବର୍ତ୍ତୀ ସମୟରେ, ପୈଠ କରିବାର ପ୍ରକ୍ରିୟାକୁ ଦ୍ରୁତତର କରିବା ପାଇଁ ଆପଣଙ୍କର Google ଆକାଉଣ୍ଟରେ ଆପଣଙ୍କ କାର୍ଡ ଓ ବିଲିଂ ଠିକଣା ସେଭ୍ କରନ୍ତୁ।</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (ସିଙ୍କ୍ କରାଯାଇଛି)</translation>
 <translation id="1256368399071562588">&lt;p&gt;ଯଦି ଆପଣ କୌଣସି ୱେବ୍‌ସାଇଟ୍‌କୁ ଖୋଲିବାକୁ ଚାହୁଁଛନ୍ତି ଏବଂ ଏହା ଖୋଲୁନାହିଁ, ତେବେ ପ୍ରଥମେ ନିମ୍ନରେ ଦିଆଯାଇଥିବା ସମସ୍ୟା ନିବାରଣ ସୋପାନ ସାହାଯ୍ୟରେ ତ୍ରୁଟିର ସମାଧାନ କରନ୍ତୁ:&lt;/p&gt;
@@ -826,6 +828,7 @@
 <translation id="4424024547088906515">ଏହି ସର୍ଭର୍ ଏହା ପ୍ରମାଣ କରିପାରିଲା ନାହିଁ ଯେ, ଏହା ଏକ <ph name="DOMAIN" /> ଅଟେ; ଏହାର ସୁରକ୍ଷା ସାର୍ଟିଫିକେଟ୍ Chrome ଦ୍ୱାରା ବିଶ୍ୱସନୀୟ ନୁହେଁ। ଏହା ଏକ ଭୁଲ୍ କନଫିଗ୍‍‍ରେସନ୍ ଅଟେ କିମ୍ବା ଜଣେ ଆକ୍ରମଣକାରୀ ଆପଣଙ୍କର ସଂଯୋଗକୁ ପ୍ରତିରୋଧ କରୁଥିବା କାରଣରୁ ହୋଇପାରେ।</translation>
 <translation id="443121186588148776">କ୍ରମିକ ପୋର୍ଟ</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" />, ଆପଣଙ୍କର ଲଗ୍-ଇନ୍ ସାର୍ଟିଫିକେଟ୍ ସ୍ୱୀକାର କରିନାହିଁ କିମ୍ୱା କୌଣସି ସାର୍ଟିଫିକେଟ୍ ପ୍ରଦାନ କରାଯାଇନାହିଁ।</translation>
+<translation id="4432792777822557199">ବର୍ତ୍ତମାନ ଠାରୁ <ph name="SOURCE_LANGUAGE" />ର ପୃଷ୍ଠାଗୁଡ଼ିକୁ <ph name="TARGET_LANGUAGE" />ରେ ଅନୁବାଦ କରାଯିବ</translation>
 <translation id="4434045419905280838">ପପ୍-ଅପ୍ ଏବଂ ରିଡାଇରେକ୍‌ଟ</translation>
 <translation id="4435702339979719576">ପୋଷ୍ଟକାର୍ଡ)</translation>
 <translation id="443673843213245140">ଏକ ପ୍ରୋକ୍ସିର ବ୍ୟବହାର ଅକ୍ଷମ କରାଯାଇଛି କିନ୍ତୁ ଏକ ସୁନିର୍ଦ୍ଦିଷ୍ଟ ପ୍ରକ୍ସି କନ୍‌ଫିଗ୍‌ରେସନ୍ ନିର୍ଦ୍ଦିଷ୍ଟ କରାଯାଇଛି।</translation>
@@ -1057,6 +1060,7 @@
 <translation id="5431657950005405462">ଆପଣଙ୍କ ଫାଇଲ୍ ମିଳିଲା ନାହିଁ</translation>
 <translation id="5439770059721715174">"<ph name="ERROR_PATH" />"ରେ ସ୍କିମା ବୈଧିକରଣ ତ୍ରୁଟି: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">ଓଲଟା ଅର୍ଡରରେ ଫେସ୍ ଅପ୍</translation>
+<translation id="5447765697759493033">ଏହି ସାଇଟ୍‌ ଅନୁବାଦ କରାଯିବ ନାହିଁ</translation>
 <translation id="5452270690849572955">ଏହି <ph name="HOST_NAME" /> ପୃଷ୍ଠା ମିଳିଲା ନାହିଁ</translation>
 <translation id="5455374756549232013">ଖରାପ 'ନୀତି ଟାଇମ୍‌ଷ୍ଟାମ୍ପ୍'</translation>
 <translation id="5457113250005438886">ଅବୈଧ</translation>
@@ -1602,6 +1606,7 @@
 <translation id="7716375162095500223">ଏପର୍ଯ୍ୟନ୍ତ ଅପଲୋଡ୍ ହୋଇନାହିଁ ବା ଅଣଦେଖା କରାଯାଇଛି</translation>
 <translation id="7716424297397655342">କେଚ୍‌ରୁ ଏହି ସାଇଟ୍‌ ଲୋଡ୍‌ କରାଯାଇପାରିବ ନାହିଁ</translation>
 <translation id="7723047071702270851">କାର୍ଡକୁ ଏଡିଟ୍ କରନ୍ତୁ</translation>
+<translation id="773466115871691567">ସର୍ବଦା <ph name="SOURCE_LANGUAGE" />ରେ ପୃଷ୍ଠାଗୁଡ଼ିକୁ ଅନୁବାଦ କରନ୍ତୁ</translation>
 <translation id="7740996059027112821">ମାନାଙ୍କ</translation>
 <translation id="774634243536837715">ବିପଜ୍ଜନକ ବିଷୟବସ୍ତୁ ବ୍ଲକ୍ କରାଯାଇଛି।</translation>
 <translation id="7752995774971033316">ଅପରିଚାଳିତ</translation>
@@ -1747,6 +1752,7 @@
 <translation id="831997045666694187">ସନ୍ଧ୍ୟା</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" />କୁ ଆକ୍ସେସ୍‌ ପ୍ରତ୍ୟାଖ୍ୟାନ କରାଯାଇଥିଲା</translation>
 <translation id="833262891116910667">ହାଇଲାଇଟ୍</translation>
+<translation id="8339163506404995330"><ph name="LANGUAGE" /> ରେ ପୃଷ୍ଠାଗୁଡ଼ିକ ଅନୁବାଦ କରାଯିବନାହିଁ</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">ଆପଣଙ୍କ ସୁରକ୍ଷା ପ୍ରତି ଥିବା ବିପଦକୁ ଯଦି ଆପଣ ବୁଝିପାରନ୍ତି ତେବେ, କ୍ଷତିକାରକ ପ୍ରୋଗ୍ରାମ୍‍ଗୁଡ଼ିକୁ କଢ଼ାଯିବା ପୂର୍ବରୁ ଆପଣ ଏହି <ph name="BEGIN_LINK" />ସାଇଟ୍‍କୁ ଯାଇପାରନ୍ତି<ph name="END_LINK" />।</translation>
 <translation id="8349305172487531364">ବୁକମାର୍କସ୍ ଦଣ୍ଡିକା</translation>

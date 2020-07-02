@@ -4,9 +4,16 @@
 
 #include "content/shell/browser/web_test/web_test_shell_platform_delegate.h"
 
+#include "base/command_line.h"
+#include "content/shell/common/web_test/web_test_switches.h"
+
 namespace content {
 
-WebTestShellPlatformDelegate::WebTestShellPlatformDelegate() = default;
-WebTestShellPlatformDelegate::~WebTestShellPlatformDelegate() = default;
+// static
+bool WebTestShellPlatformDelegate::IsHeadless() {
+  // Headless by default in web tests, unless overridden on the command line.
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableHeadlessMode);
+}
 
 }  // namespace content

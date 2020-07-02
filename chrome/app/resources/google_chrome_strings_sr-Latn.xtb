@@ -17,6 +17,7 @@ Neke funkcije su možda nedostupne i promene podešavanja neće biti sačuvane.
 <translation id="137466361146087520">Google Chrome beta</translation>
 <translation id="1399397803214730675">Ovaj računar već ima noviju verziju Google Chrome pregledača. Ako softver ne funkcioniše, deinstalirajte Google Chrome i pokušajte ponovo.</translation>
 <translation id="1434626383986940139">Chrome Canary aplikacije</translation>
+<translation id="1514913130539345610">Administrator je onemogućio traženje štetnog softvera pomoću Chrome-a</translation>
 <translation id="1553358976309200471">Ažuriraj Chrome</translation>
 <translation id="1587223624401073077">Google Chrome koristi kameru.</translation>
 <translation id="1587325591171447154">Datoteka <ph name="FILE_NAME" /> je opasna, pa ju je Chrome blokirao.</translation>
@@ -125,6 +126,7 @@ Neke funkcije su možda nedostupne i promene podešavanja neće biti sačuvane.
 <translation id="4458462641685292929">Druga radnja u Google Chrome-u je u toku. Probajte ponovo kasnije.</translation>
 <translation id="4480040274068703980">Chrome OS ne može da sinhronizuje podatke zbog greške pri prijavljivanju.</translation>
 <translation id="4521185804071812304">Opcionalno: Automatski šaljite Google-u dijagnostiku i podatke o korišćenju da biste nam pomogli da poboljšamo funkcije i učinak Chrome OS-a.</translation>
+<translation id="4552702433620284371">Chrome ne može da proverava softver uređaja. Proverite internet vezu.</translation>
 <translation id="4561051373932531560">Google Chrome vam omogućava da kliknete na broj telefona na vebu i da ga pozovete pomoću Skype-a!</translation>
 <translation id="4567424176335768812">Prijavljeni ste kao <ph name="USER_EMAIL_ADDRESS" />. Sada možete da pristupate obeleživačima, istoriji i drugim podešavanjima na svim uređajima na kojima ste prijavljeni.</translation>
 <translation id="4571503333518166079">Idi na podešavanja obaveštenja za Chrome</translation>
@@ -250,6 +252,7 @@ Google Chrome ne može da vrati podešavanja.</translation>
 <translation id="8641606876632989680">Chrome će vas obavestiti kada se prijavite pomoću ugrožene lozinke</translation>
 <translation id="8669527147644353129">Google Chrome pomoćnik</translation>
 <translation id="8679801911857917785">Kontroliše i stranicu koja se prikazuje kada pokrenete Chrome.</translation>
+<translation id="8681614230122836773">Chrome je pronašao štetan softver na računaru</translation>
 <translation id="870251953148363156">Ažuriraj &amp;Google Chrome</translation>
 <translation id="873133009373065397">Google Chrome ne može da odredi ni da podesi podrazumevani pregledač</translation>
 <translation id="8823341990149967727">Chrome je zastareo</translation>

@@ -359,73 +359,6 @@ TEST_P(TabManagerStatsCollectorTabSwitchTest, HistogramsTabSwitchLoadTime) {
                                                                            : 0);
 }
 
-TEST_P(TabManagerStatsCollectorParameterizedTest,
-       HistogramsExpectedTaskQueueingDuration) {
-  auto* stats_collector = tab_manager_stats_collector();
-
-  const base::TimeDelta kEQT = base::TimeDelta::FromMilliseconds(1);
-  web_contents()->WasShown();
-
-  // No metrics recorded because there is no session restore or background tab
-  // opening.
-  stats_collector->RecordExpectedTaskQueueingDuration(web_contents(), kEQT);
-  histogram_tester_.ExpectTotalCount(
-      TabManagerStatsCollector::
-          kHistogramSessionRestoreForegroundTabExpectedTaskQueueingDuration,
-      0);
-  histogram_tester_.ExpectTotalCount(
-      TabManagerStatsCollector::
-          kHistogramBackgroundTabOpeningForegroundTabExpectedTaskQueueingDuration,
-      0);
-
-  if (should_test_session_restore_)
-    StartSessionRestore();
-  if (should_test_background_tab_opening_)
-    StartBackgroundTabOpeningSession();
-
-  // No metrics recorded because the tab is background.
-  web_contents()->WasHidden();
-  stats_collector->RecordExpectedTaskQueueingDuration(web_contents(), kEQT);
-  histogram_tester_.ExpectTotalCount(
-      TabManagerStatsCollector::
-          kHistogramSessionRestoreForegroundTabExpectedTaskQueueingDuration,
-      0);
-  histogram_tester_.ExpectTotalCount(
-      TabManagerStatsCollector::
-          kHistogramBackgroundTabOpeningForegroundTabExpectedTaskQueueingDuration,
-      0);
-
-  web_contents()->WasShown();
-  stats_collector->RecordExpectedTaskQueueingDuration(web_contents(), kEQT);
-  histogram_tester_.ExpectTotalCount(
-      TabManagerStatsCollector::
-          kHistogramSessionRestoreForegroundTabExpectedTaskQueueingDuration,
-      should_test_session_restore_ && !IsTestingOverlappedSession() ? 1 : 0);
-  histogram_tester_.ExpectTotalCount(
-      TabManagerStatsCollector::
-          kHistogramBackgroundTabOpeningForegroundTabExpectedTaskQueueingDuration,
-      should_test_background_tab_opening_ && !IsTestingOverlappedSession() ? 1
-                                                                           : 0);
-
-  if (should_test_session_restore_)
-    FinishSessionRestore();
-  if (should_test_background_tab_opening_)
-    FinishBackgroundTabOpeningSession();
-
-  // No metrics recorded because there is no session restore or background tab
-  // opening.
-  stats_collector->RecordExpectedTaskQueueingDuration(web_contents(), kEQT);
-  histogram_tester_.ExpectTotalCount(
-      TabManagerStatsCollector::
-          kHistogramSessionRestoreForegroundTabExpectedTaskQueueingDuration,
-      should_test_session_restore_ && !IsTestingOverlappedSession() ? 1 : 0);
-  histogram_tester_.ExpectTotalCount(
-      TabManagerStatsCollector::
-          kHistogramBackgroundTabOpeningForegroundTabExpectedTaskQueueingDuration,
-      should_test_background_tab_opening_ && !IsTestingOverlappedSession() ? 1
-                                                                           : 0);
-}
-
 TEST_P(TabManagerStatsCollectorParameterizedTest, HistogramsTabCount) {
   auto* stats_collector = tab_manager_stats_collector();
 
@@ -577,47 +510,6 @@ TEST_F(TabManagerStatsCollectorTest, HistogramsSessionOverlap) {
                   TabManagerStatsCollector::
                       kHistogramSessionOverlapBackgroundTabOpening),
               ElementsAre(Bucket(false, 1), Bucket(true, 6)));
-}
-
-TEST_F(TabManagerStatsCollectorTest,
-       CollectExpectedTaskQueueingDurationUkmForSessionRestore) {
-  using UkmEntry = ukm::builders::
-      TabManager_SessionRestore_ForegroundTab_ExpectedTaskQueueingDurationInfo;
-  std::unique_ptr<WebContents> tab1(CreateWebContentsForUKM(1));
-  std::unique_ptr<WebContents> tab2(CreateWebContentsForUKM(2));
-  std::unique_ptr<WebContents> tab3(CreateWebContentsForUKM(3));
-
-  EXPECT_EQ(0ul, test_ukm_recorder_.entries_count());
-  StartSessionRestore();
-  tab1->WasShown();
-  tab2->WasHidden();
-  RestoreTab(tab1.get());
-  RestoreTab(tab2.get());
-  tab_manager_stats_collector()->RecordExpectedTaskQueueingDuration(
-      tab1.get(), base::TimeDelta::FromMilliseconds(10));
-  EXPECT_EQ(1ul, test_ukm_recorder_.entries_count());
-  const ukm::mojom::UkmEntry* entry =
-      test_ukm_recorder_.GetEntriesByName(UkmEntry::kEntryName)[0];
-  ukm::TestUkmRecorder::ExpectEntryMetric(
-      entry, UkmEntry::kSessionRestoreTabCountName, 2);
-  ukm::TestUkmRecorder::ExpectEntryMetric(
-      entry, UkmEntry::kExpectedTaskQueueingDurationName, 10);
-  FinishSessionRestore();
-
-  test_ukm_recorder_.Purge();
-  EXPECT_EQ(0ul, test_ukm_recorder_.entries_count());
-
-  StartSessionRestore();
-  tab3->WasShown();
-  RestoreTab(tab3.get());
-  // Do not record EQT UKM for session restore if there is only 1 tab restored.
-  tab_manager_stats_collector()->RecordExpectedTaskQueueingDuration(
-      tab3.get(), base::TimeDelta::FromMilliseconds(10));
-  EXPECT_EQ(0ul, test_ukm_recorder_.entries_count());
-  FinishSessionRestore();
-
-  test_ukm_recorder_.Purge();
-  EXPECT_EQ(0ul, test_ukm_recorder_.entries_count());
 }
 
 }  // namespace resource_coordinator

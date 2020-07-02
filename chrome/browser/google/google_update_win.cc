@@ -19,6 +19,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/sequenced_task_runner_helpers.h"
@@ -46,7 +47,6 @@
 #include "chrome/installer/util/install_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/win/atl_module.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 
 namespace {
 
@@ -771,9 +771,9 @@ bool UpdateCheckDriver::IsIntermediateState(
           SUCCEEDED(current_state->get_totalBytesToDownload(&total_bytes)) &&
           total_bytes) {
         // 0-50 is downloading.
-        *progress = gfx::ToFlooredInt((static_cast<double>(bytes_downloaded) /
-                                       static_cast<double>(total_bytes)) *
-                                      50.0);
+        *progress = base::Floor((static_cast<double>(bytes_downloaded) /
+                                 static_cast<double>(total_bytes)) *
+                                50.0);
       }
       break;
     }
@@ -935,14 +935,14 @@ base::Optional<UpdateState> GetLastUpdateState() {
 // Private API exposed for testing. --------------------------------------------
 
 void SetGoogleUpdateFactoryForTesting(
-    const GoogleUpdate3ClassFactory& google_update_factory) {
+    GoogleUpdate3ClassFactory google_update_factory) {
   if (g_google_update_factory) {
     delete g_google_update_factory;
     g_google_update_factory = nullptr;
   }
   if (!google_update_factory.is_null()) {
     g_google_update_factory =
-        new GoogleUpdate3ClassFactory(google_update_factory);
+        new GoogleUpdate3ClassFactory(std::move(google_update_factory));
   }
 }
 

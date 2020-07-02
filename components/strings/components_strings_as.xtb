@@ -20,6 +20,7 @@
 <translation id="10614374240317010">কেতিয়াও ছেভ কৰা নহয়</translation>
 <translation id="1062160989074299343">Prc10 (লেফাফা)</translation>
 <translation id="106701514854093668">ডেস্কটপ বুকমার্ক</translation>
+<translation id="1068672505746868501">পৃষ্ঠা <ph name="SOURCE_LANGUAGE" />লৈ কেতিয়াও অনুবাদ নকৰিব</translation>
 <translation id="1070901266639972381">নিশা</translation>
 <translation id="1074497978438210769">সুৰক্ষিত নহয়</translation>
 <translation id="1080116354587839789">প্ৰস্থৰ সৈতে খাপ খুৱাওক</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">শিৰোনামবিহীন</translation>
 <translation id="1236081509407217141">VRৰ অনুমতি দিবনে?</translation>
 <translation id="1240347957665416060">আপোনাৰ ডিভাইচৰ নাম</translation>
+<translation id="124116460088058876">অধিক ভাষা</translation>
 <translation id="1250759482327835220">পৰৱৰ্তী সময়ত দ্ৰুতভাৱে পৰিশোধ কৰিবলৈ আপোনাৰ Google একাউণ্টত নিজৰ কাৰ্ড, নাম আৰু বিলিঙৰ ঠিকনা ছেভ কৰক।</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (ছিংক কৰা আছে)</translation>
 <translation id="1256368399071562588">&lt;p&gt;আপুনি চাব খোজা কোনো ৱেবছাইট নুখুলিলে, প্ৰথমে আসোঁৱাহটো এই সমস্যা সমাধানৰ পদক্ষেপসমূহৰ জৰিয়তে সমাধান কৰিবলৈ চাওক:&lt;/p&gt;
@@ -835,6 +837,7 @@
 <translation id="4424024547088906515">এই ছার্ভাৰটোৱে নিজকে <ph name="DOMAIN" />; বুলি প্ৰমাণ কৰিব নোৱাৰিলে আৰু Chromeএ ইয়াৰ সুৰক্ষাৰ প্ৰমাণপত্ৰ বিশ্বাস নকৰে। এয়া কোনো ভুল কনফিগাৰেশ্বনৰ বাবে বা কোনো আক্ৰমণকাৰীয়ে আপোনাৰ সংযোগ অৱৰোধ কৰাৰ বাবে হ’ব পাৰে।</translation>
 <translation id="443121186588148776">ছিৰিয়েল প'ৰ্ট</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" />এ আপোনাৰ লগ ইনৰ প্ৰমাণপত্ৰ গ্ৰহণ কৰা নাই বা কোনো প্ৰমাণপত্ৰ দিয়া হোৱা নাই।</translation>
+<translation id="4432792777822557199">এতিয়াৰে পৰা <ph name="SOURCE_LANGUAGE" /> ভাষাৰ পৃষ্ঠাসমূহ <ph name="TARGET_LANGUAGE" /> ভাষালৈ অনুবাদ কৰা হ’ব।</translation>
 <translation id="4434045419905280838">পপ-আপ আৰু পুনৰ নির্দেশ</translation>
 <translation id="4435702339979719576">প’ষ্টকার্ড)</translation>
 <translation id="443673843213245140">এটা প্ৰক্সিৰ ব্যৱহাৰ অক্ষম কৰা হৈছে কিন্তু এটা মুখ্য প্ৰক্সিৰ কনফিগাৰেশ্বন নিৰ্দিষ্ট কৰা হৈছে।</translation>
@@ -1066,6 +1069,7 @@
 <translation id="5431657950005405462">আপোনাৰ ফাইল বিচাৰি পোৱা নাই</translation>
 <translation id="5439770059721715174">"<ph name="ERROR_PATH" />"ৰ স্কীমা সত্যাপনৰ আসোঁৱাহ : <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">ওপৰমুখীয়াকৈ বিপৰীত ক্ৰম</translation>
+<translation id="5447765697759493033">এই ছাইটটো অনুবাদ কৰা নহ’ব</translation>
 <translation id="5452270690849572955">এই <ph name="HOST_NAME" />ৰ পৃষ্ঠাটো বিচাৰিব নোৱাৰি</translation>
 <translation id="5455374756549232013">নীতিৰ timestamp বেয়া</translation>
 <translation id="5457113250005438886">অমান্য</translation>
@@ -1607,6 +1611,7 @@
 <translation id="7716375162095500223">এতিয়ালৈকে আপল'ড কৰা অথবা উপেক্ষা কৰা নাই</translation>
 <translation id="7716424297397655342">এই ছাইটটো কেশ্বৰ পৰা ল'ড কৰিব নোৱাৰি</translation>
 <translation id="7723047071702270851">কাৰ্ড সম্পাদনা কৰক</translation>
+<translation id="773466115871691567">সদায় পৃষ্ঠাসমূহ <ph name="SOURCE_LANGUAGE" />লৈ অনুবাদ কৰক</translation>
 <translation id="7740996059027112821">মান্য</translation>
 <translation id="774634243536837715">বিপজ্জনক সমল অৱৰোধ কৰা হৈছে।</translation>
 <translation id="7752995774971033316">পৰিচালনা নকৰা</translation>
@@ -1752,6 +1757,7 @@
 <translation id="831997045666694187">সন্ধিয়া</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" />লৈ এক্সেছ অগ্ৰাহ্য কৰা হৈছিল</translation>
 <translation id="833262891116910667">হাইলাইট</translation>
+<translation id="8339163506404995330"><ph name="LANGUAGE" /> ভাষাৰ পৃষ্ঠাসমূহ অনুবাদ কৰা নহয়</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">যদি আপুনি আপোনাৰ সুৰক্ষাৰ প্ৰতি সৃষ্টি হ‘ব পৰা ভাবুকিৰ কথা বুজি পাইছে তেন্তে বিপজ্জনক প্ৰ‘গ্ৰামসমূহ আঁতৰোৱাৰ আগেয়ে আপুনি <ph name="BEGIN_LINK" />এই ছাইটটো<ph name="END_LINK" /> খুলি চাব পাৰে।</translation>
 <translation id="8349305172487531364">বুকমাৰ্কৰ বাৰ</translation>

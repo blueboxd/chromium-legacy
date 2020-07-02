@@ -20,6 +20,7 @@
 <translation id="10614374240317010">Haijahifadhiwa kamwe</translation>
 <translation id="1062160989074299343">Prc10 (Bahasha)</translation>
 <translation id="106701514854093668">Alamisho za Eneokazi</translation>
+<translation id="1068672505746868501">Usiwahi kutafsiri kurasa katika lugha ya <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1070901266639972381">Usiku</translation>
 <translation id="1074497978438210769">Si salama</translation>
 <translation id="1080116354587839789">Fanya itoshe kwenye upana</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">Hakina Jina</translation>
 <translation id="1236081509407217141">Ungependa kuruhusu VR?</translation>
 <translation id="1240347957665416060">Jina la kifaa chako</translation>
+<translation id="124116460088058876">Lugha zaidi</translation>
 <translation id="1250759482327835220">Ili ulipe kwa haraka wakati ujao, hifadhi anwani ya kutuma bili, jina na maelezo ya kadi yako kwenye Akaunti yako ya Google.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (zimesawazishwa)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Ukijaribu kutembelea tovuti na haifunguki, jaribu kwanza kurekebisha hitilafu kwa kutumia hatua hizi za utatuzi:&lt;/p&gt;
@@ -839,6 +841,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="4424024547088906515">Seva hii haikuweza kuthibitisha kuwa ni <ph name="DOMAIN" />; cheti chake cha usalama hakiaminiwi na Chrome. Hii inaweza kusababishwa na usanidi usiofaa au mvamizi kuingilia muunganisho wako.</translation>
 <translation id="443121186588148776">Mlango wa nambari ya ufuatiliaji</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> haikukubali cheti chako cha kuingia katika akaunti, au huenda hukutoa cheti.</translation>
+<translation id="4432792777822557199">Kurasa za <ph name="SOURCE_LANGUAGE" /> zitatafsiriwa katika <ph name="TARGET_LANGUAGE" /> kuanzia sasa</translation>
 <translation id="4434045419905280838">Madirisha ibukizi/kuelekeza kwingine</translation>
 <translation id="4435702339979719576">Kad ya Posta)</translation>
 <translation id="443673843213245140">Matumizi ya proksi yamelemazwa lakini usanidi wa proksi wazi umebainishwa.</translation>
@@ -1070,6 +1073,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="5431657950005405462">Faili yako haikupatikana</translation>
 <translation id="5439770059721715174">Hitilafu katika uhalalishaji wa Skima " <ph name="ERROR_PATH" /> ": <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Kinyume cha mpangilio wa kuangalia juu</translation>
+<translation id="5447765697759493033">Tovuti hii haitatafsiriwa</translation>
 <translation id="5452270690849572955">Ukurasa wa <ph name="HOST_NAME" /> hii haukupatikana</translation>
 <translation id="5455374756549232013">Muhuri wa muda wa sera mbaya</translation>
 <translation id="5457113250005438886">Haiwezi kutumika</translation>
@@ -1614,6 +1618,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="7716375162095500223">Bado haijapakiwa au imepuuzwa</translation>
 <translation id="7716424297397655342">Faili hii haiwezi kupakiwa kutoka akiba</translation>
 <translation id="7723047071702270851">Badilisha Kadi</translation>
+<translation id="773466115871691567">Zitafsiri kurasa katika <ph name="SOURCE_LANGUAGE" /> wakati wote</translation>
 <translation id="7740996059027112821">Wastani</translation>
 <translation id="774634243536837715">Maudhui hatari yamezuiwa.</translation>
 <translation id="7752995774971033316">Haidhibitiwi</translation>
@@ -1759,6 +1764,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="831997045666694187">Jioni</translation>
 <translation id="8332188693563227489">Ufikiaji wa <ph name="HOST_NAME" /> umekataliwa</translation>
 <translation id="833262891116910667">Angazia</translation>
+<translation id="8339163506404995330">Kurasa za <ph name="LANGUAGE" /> hazitatafsiriwa</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Ikiwa unaelewa hatari kwa usalama wako, unaweza <ph name="BEGIN_LINK" />kutembelea tovuti hii<ph name="END_LINK" /> kabla programu hatari hazijaondolewa.</translation>
 <translation id="8349305172487531364">Sehemu ya Alamisho</translation>

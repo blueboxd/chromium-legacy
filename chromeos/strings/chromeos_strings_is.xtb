@@ -39,8 +39,10 @@
 <translation id="428217921675623177">Prentverk sem eru eldri en 90 dagar verða fjarlægð</translation>
 <translation id="4429881212383817840">Kerberos-miði rennur út fljótlega</translation>
 <translation id="445059817448385655">Eldra aðgangsorð</translation>
+<translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> af <ph name="TOTAL_PAGE_NUMBER" />. Ýttu á færslulykilinn til að hætta við prentverkið.</translation>
 <translation id="467510802200863975">Aðgangsorð stemma ekki</translation>
 <translation id="4731797938093519117">Foreldraaðgangur</translation>
+<translation id="4808449224298348341">Hætt við prentverkið <ph name="DOCUMENT_TITLE" /></translation>
 <translation id="4890353053343094602">Veldu nýtt án tafar</translation>
 <translation id="4932733599132424254">Dagsetning</translation>
 <translation id="5212543919916444558">Ég finn ekkert á skjánum sem ég get aðstoðað þig með.

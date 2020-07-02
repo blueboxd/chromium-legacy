@@ -20,6 +20,7 @@
 <translation id="10614374240317010">Never saved</translation>
 <translation id="1062160989074299343">Prc10 (Envelope)</translation>
 <translation id="106701514854093668">Desktop Bookmarks</translation>
+<translation id="1068672505746868501">Never translate pages in <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1070901266639972381">Night</translation>
 <translation id="1074497978438210769">Not secure</translation>
 <translation id="1080116354587839789">Fit to width</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">Untitled</translation>
 <translation id="1236081509407217141">Allow VR?</translation>
 <translation id="1240347957665416060">Your device name</translation>
+<translation id="124116460088058876">More languages</translation>
 <translation id="1250759482327835220">To pay faster next time, save your card, name and billing address to your Google Account.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (synced)</translation>
 <translation id="1256368399071562588">&lt;p&gt;If you try to visit a website and it doesn’t open, first try to fix the error with these troubleshooting steps:&lt;/p&gt;
@@ -839,6 +841,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="4424024547088906515">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not trusted by Chrome. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
 <translation id="443121186588148776">Serial port</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> didn’t accept your login certificate, or one may not have been provided.</translation>
+<translation id="4432792777822557199">Pages in <ph name="SOURCE_LANGUAGE" /> will be translated to <ph name="TARGET_LANGUAGE" /> from now on</translation>
 <translation id="4434045419905280838">Pop-ups and redirects</translation>
 <translation id="4435702339979719576">Postcard)</translation>
 <translation id="443673843213245140">Use of a proxy is disabled but an explicit proxy configuration is specified.</translation>
@@ -1070,6 +1073,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="5431657950005405462">Your file was not found</translation>
 <translation id="5439770059721715174">Schema validation error at "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Reverse order face up</translation>
+<translation id="5447765697759493033">This site will not be translated</translation>
 <translation id="5452270690849572955">This <ph name="HOST_NAME" /> page can’t be found</translation>
 <translation id="5455374756549232013">Bad policy timestamp</translation>
 <translation id="5457113250005438886">Invalid</translation>
@@ -1616,6 +1620,7 @@ Additional details:
 <translation id="7716375162095500223">Not yet uploaded, or ignored</translation>
 <translation id="7716424297397655342">This site can’t be loaded from the cache</translation>
 <translation id="7723047071702270851">Edit Card</translation>
+<translation id="773466115871691567">Always translate pages in <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7740996059027112821">Standard</translation>
 <translation id="774634243536837715">Dangerous content blocked.</translation>
 <translation id="7752995774971033316">Unmanaged</translation>
@@ -1761,6 +1766,7 @@ Additional details:
 <translation id="831997045666694187">Evening</translation>
 <translation id="8332188693563227489">Access to <ph name="HOST_NAME" /> was denied</translation>
 <translation id="833262891116910667">Highlight</translation>
+<translation id="8339163506404995330">Pages in <ph name="LANGUAGE" /> will not be translated</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">If you understand the risks to your security, you may <ph name="BEGIN_LINK" />visit this site<ph name="END_LINK" /> before the harmful programs have been removed.</translation>
 <translation id="8349305172487531364">Bookmarks bar</translation>

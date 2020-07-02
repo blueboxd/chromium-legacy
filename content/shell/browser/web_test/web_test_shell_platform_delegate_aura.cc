@@ -4,16 +4,27 @@
 
 #include "content/shell/browser/web_test/web_test_shell_platform_delegate.h"
 
+#include "content/shell/browser/shell_platform_data_aura.h"
+
 namespace content {
 
 struct WebTestShellPlatformDelegate::WebTestShellData {};
+struct WebTestShellPlatformDelegate::WebTestPlatformData {};
 
 WebTestShellPlatformDelegate::WebTestShellPlatformDelegate() = default;
 WebTestShellPlatformDelegate::~WebTestShellPlatformDelegate() = default;
 
+void WebTestShellPlatformDelegate::Initialize(
+    const gfx::Size& default_window_size) {
+  ShellPlatformDelegate::Initialize(default_window_size);
+}
+
 void WebTestShellPlatformDelegate::CreatePlatformWindow(
     Shell* shell,
     const gfx::Size& initial_size) {
+  if (!IsHeadless())
+    GetShellPlatformDataAura()->ShowWindow();
+  // Shared implementation with headless mode, except for the ShowWindow().
   ShellPlatformDelegate::CreatePlatformWindow(shell, initial_size);
 }
 

@@ -1,12 +1,5 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
-<translation id="1068672505746868501">ไม่ต้องแปลหน้าเว็บภาษา<ph name="SOURCE_LANGUAGE" /></translation>
-<translation id="124116460088058876">ภาษาเพิ่มเติม</translation>
-<translation id="1285320974508926690">ไม่ต้องแปลเว็บไซต์นี้</translation>
-<translation id="290376772003165898">หน้านี้ไม่ใช่ภาษา<ph name="LANGUAGE" />ใช่ไหม</translation>
-<translation id="5684874026226664614">อ๊ะ หน้านี้ไม่สามารถแปลได้</translation>
-<translation id="6831043979455480757">แปลภาษา</translation>
-<translation id="773466115871691567">แปลหน้าเว็บภาษา<ph name="SOURCE_LANGUAGE" />ทุกครั้ง</translation>
 <translation id="8298278839890148234">กิจกรรมของเว็บเบราว์เซอร์</translation>
 </translationbundle>

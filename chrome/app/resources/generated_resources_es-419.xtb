@@ -526,7 +526,6 @@
 <translation id="1645516838734033527">Para mantener tu dispositivo <ph name="DEVICE_TYPE" /> protegido, Smart Lock requiere que agregues un bloqueo de pantalla en tu teléfono.</translation>
 <translation id="1646982517418478057">Ingresa una contraseña para encriptar este certificado</translation>
 <translation id="1648528859488547844">Usar Wi-Fi o redes móviles para determinar la ubicación</translation>
-<translation id="1648943974594387137">Los datos de acceso están desactualizados</translation>
 <translation id="164936512206786300">Desvincular el dispositivo Bluetooth</translation>
 <translation id="1650371550981945235">Mostrar opciones de entrada</translation>
 <translation id="1651008383952180276">Debes ingresar la misma frase de contraseña dos veces</translation>
@@ -1330,7 +1329,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2635276683026132559">Firmando</translation>
 <translation id="2636625531157955190">Chrome no puede acceder a la imagen.</translation>
 <translation id="2637400434494156704">El PIN es incorrecto. Te queda un intento.</translation>
-<translation id="2638087589890736295">Se requiere la frase de contraseña para iniciar la sincronización</translation>
 <translation id="2638662041295312666">Imagen de acceso</translation>
 <translation id="264083724974021997">Conéctate a tu teléfono: diálogo</translation>
 <translation id="2641065435954454414">Preparando la descarga</translation>
@@ -1484,7 +1482,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2809586584051668049">y <ph name="NUMBER_ADDITIONAL_DISABLED" /> más</translation>
 <translation id="2810390687497823527">Si no reconoces una extensión o si navegador no funciona correctamente, puedes desactivar o personalizar extensiones aquí.</translation>
 <translation id="2812049959647166806">No se admite Thunderbolt</translation>
-<translation id="2812944337881233323">Intenta salir y volver a acceder</translation>
 <translation id="2812989263793994277">No mostrar imágenes</translation>
 <translation id="2813094189969465044">Controles parentales</translation>
 <translation id="281390819046738856">La solicitud no se pudo firmar.</translation>
@@ -3405,7 +3402,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="529175790091471945">Formatear este dispositivo</translation>
 <translation id="5293170712604732402">Restaurar la configuración a los valores predeterminados originales</translation>
 <translation id="5294097441441645251">Debe comenzar con una letra minúscula o un guion bajo</translation>
-<translation id="5296471962619441686">Corrige el error para reanudar la sincronización</translation>
 <translation id="5297082477358294722">Se guardó la contraseña. Puedes ver y administrar las contraseñas guardadas en tu <ph name="SAVED_PASSWORDS_STORE" />.</translation>
 <translation id="5298219193514155779">Tema creado por</translation>
 <translation id="5299109548848736476">No realizar seguimiento</translation>
@@ -5769,7 +5765,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8256417822772703842"><ph name="PRINTER_NAME" /> tiene poca tinta</translation>
 <translation id="8257950718085972371">Seguir bloqueando el acceso a la cámara</translation>
 <translation id="8259239505248583312">Comenzar</translation>
-<translation id="8260126382462817229">Intenta volver a acceder</translation>
 <translation id="8260864402787962391">Mouse</translation>
 <translation id="8261378640211443080">Esta extensión no figura en <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> y es posible que se haya agregado sin tu conocimiento.</translation>
 <translation id="8261506727792406068">Borrar</translation>

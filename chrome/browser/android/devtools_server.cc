@@ -145,9 +145,9 @@ void DevToolsServer::Start(bool allow_debug_permission) {
     return;
 
   net::UnixDomainServerSocket::AuthCallback auth_callback =
-      allow_debug_permission ?
-          base::Bind(&AuthorizeSocketAccessWithDebugPermission) :
-          base::Bind(&content::CanUserConnectToDevTools);
+      allow_debug_permission
+          ? base::BindRepeating(&AuthorizeSocketAccessWithDebugPermission)
+          : base::BindRepeating(&content::CanUserConnectToDevTools);
   std::unique_ptr<content::DevToolsSocketFactory> factory(
       new UnixDomainServerSocketFactory(socket_name_, auth_callback));
   DevToolsAgentHost::StartRemoteDebuggingServer(

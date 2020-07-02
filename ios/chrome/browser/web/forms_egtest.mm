@@ -529,10 +529,6 @@ id<GREYMatcher> ResendPostButtonMatcher() {
 // keyboard navigates to the correct URL and the back button works as expected
 // afterwards.
 - (void)testPostFormEntryWithKeyboard {
-  // TODO(crbug.com/1099436): Test fails on iOS 13 when rolling EG2 version.
-  if ([ChromeEarlGrey isIPadIdiom] && base::ios::IsRunningOnOrLater(13, 0, 0)) {
-    EARL_GREY_TEST_DISABLED(@"Fails in iOS 13 on iPads.");
-  }
   [self setUpFormTestSimpleHttpServer];
   const GURL destinationURL = GetDestinationUrl();
 

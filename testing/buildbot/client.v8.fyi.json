@@ -1617,7 +1617,6 @@
       "accessibility_unittests",
       "aura_unittests",
       "browser_tests",
-      "cacheinvalidation_unittests",
       "capture_unittests",
       "cast_unittests",
       "cc_unittests",

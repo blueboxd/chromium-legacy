@@ -6,6 +6,7 @@
 
 #include "components/performance_manager/graph/frame_node_impl.h"
 #include "components/performance_manager/performance_manager_impl.h"
+#include "components/performance_manager/public/graph/process_node.h"
 
 namespace performance_manager {
 
@@ -15,8 +16,8 @@ void OnChangeNodeUsing(content::GlobalFrameRoutingId id,
                        blink::mojom::ObservedFeatureType feature_type,
                        bool is_using,
                        GraphImpl* graph) {
-  FrameNodeImpl* frame_node =
-      graph->GetFrameNodeById(id.child_id, id.frame_routing_id);
+  FrameNodeImpl* frame_node = graph->GetFrameNodeById(
+      RenderProcessHostId(id.child_id), id.frame_routing_id);
   if (!frame_node)
     return;
 

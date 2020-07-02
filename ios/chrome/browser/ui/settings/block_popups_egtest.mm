@@ -5,7 +5,6 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
-#import "base/ios/ios_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/settings/block_popups_app_interface.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -90,10 +89,6 @@ class ScopedBlockPopupsException {
 // Opens the block popups settings page and verifies that accessibility is set
 // up properly.
 - (void)testAccessibilityOfBlockPopupSettings {
-  // TODO(crbug.com/1101099): Test fails on iOS 13 iPhone SE from EG2 roll.
-  if (base::ios::IsRunningOnIOS13OrLater() && ![ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_SKIPPED(@"Test disabled on iOS 13 and upper on iPhones.");
-  }
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:ContentSettingsButton()];
   [[EarlGrey selectElementWithMatcher:BlockPopupsSettingsButton()]
@@ -182,10 +177,6 @@ class ScopedBlockPopupsException {
 // Tests that the "exceptions" section on the settings page is hidden and
 // revealed properly when the preference switch is toggled.
 - (void)testSettingsPageWithExceptions {
-  // TODO(crbug.com/1101099): Test fails on iOS 13 iPhone SE from EG2 roll.
-  if (base::ios::IsRunningOnIOS13OrLater() && ![ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_SKIPPED(@"Test disabled on iOS 13 and upper on iPhones.");
-  }
   std::string allowedPattern = "[*.]example.com";
   ScopedBlockPopupsPref prefSetter(CONTENT_SETTING_BLOCK);
   ScopedBlockPopupsException exceptionSetter(allowedPattern);

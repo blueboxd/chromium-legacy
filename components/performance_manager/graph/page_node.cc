@@ -32,11 +32,11 @@ PageNodeObserver::~PageNodeObserver() = default;
 PageNode::ObserverDefaultImpl::ObserverDefaultImpl() = default;
 PageNode::ObserverDefaultImpl::~ObserverDefaultImpl() = default;
 
-}  // namespace performance_manager
-
 std::ostream& operator<<(
     std::ostream& os,
     performance_manager::PageNode::OpenedType opened_type) {
   os << performance_manager::PageNode::ToString(opened_type);
   return os;
 }
+
+}  // namespace performance_manager

@@ -10,6 +10,7 @@
 #include "ash/wm/window_util.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/time/time.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -325,7 +326,7 @@ gfx::Point WindowResizer::GetOriginForDrag(int delta_x,
                        float{details().initial_bounds_in_parent.x()}) /
                       details().initial_bounds_in_parent.width();
   int new_origin_x =
-      gfx::ToRoundedInt(event_location.x() - ratio * restore_bounds.width());
+      base::Round(event_location.x() - ratio * restore_bounds.width());
   origin.set_x(new_origin_x);
 
   // Windows may not have a widget in tests.

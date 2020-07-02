@@ -15,4 +15,7 @@ specific_include_rules = {
     "+ash/accessibility/focus_ring_controller.h",
     "+ash/shell.h",
   ],
+  "login_display_host_mojo\.cc": [
+    "+ash/shell.h",
+  ],
 }

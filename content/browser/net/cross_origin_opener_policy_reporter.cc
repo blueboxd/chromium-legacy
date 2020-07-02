@@ -69,6 +69,20 @@ RenderFrameHostImpl* GetSourceRfhForCoopReporting(
   return current_rfh;
 }
 
+base::UnguessableToken GetFrameToken(FrameTreeNode* frame,
+                                     SiteInstance* site_instance) {
+  RenderFrameHostImpl* rfh = frame->current_frame_host();
+  if (rfh->GetSiteInstance() == site_instance)
+    return rfh->GetFrameToken();
+
+  RenderFrameProxyHost* proxy =
+      frame->render_manager()->GetRenderFrameProxyHost(site_instance);
+  if (proxy)
+    return proxy->GetFrameToken();
+
+  return base::UnguessableToken::Null();
+}
+
 // Find all the related windows that might try to access the new document in
 // |frame|, but are in a different virtual browsing context group.
 std::vector<FrameTreeNode*> CollectOtherWindowForCoopAccess(
@@ -250,22 +264,27 @@ void CrossOriginOpenerPolicyReporter::InstallAccessMonitorsIfNeeded(
 
     // If the current frame has a reporter, install the access monitors to
     // monitor the accesses between this frame and the other frame.
-    if (reporter_frame)
-      reporter_frame->MonitorAccessesInBetweenWindows(frame, other);
+    if (reporter_frame) {
+      reporter_frame->MonitorAccesses(frame, other);
+      reporter_frame->MonitorAccesses(other, frame);
+    }
 
     // If the other frame has a reporter, install the access monitors to monitor
     // the accesses between this frame and the other frame.
-    if (reporter_other)
-      reporter_other->MonitorAccessesInBetweenWindows(frame, other);
+    if (reporter_other) {
+      reporter_other->MonitorAccesses(frame, other);
+      reporter_other->MonitorAccesses(other, frame);
+    }
   }
 }
 
-void CrossOriginOpenerPolicyReporter::MonitorAccessesInBetweenWindows(
-    FrameTreeNode* A,
-    FrameTreeNode* B) {
-  DCHECK_NE(A, B);
-  DCHECK(A->current_frame_host()->coop_reporter() == this ||
-         B->current_frame_host()->coop_reporter() == this);
+void CrossOriginOpenerPolicyReporter::MonitorAccesses(
+    FrameTreeNode* accessing_node,
+    FrameTreeNode* accessed_node) {
+  DCHECK_NE(accessing_node, accessed_node);
+  DCHECK(accessing_node->current_frame_host()->coop_reporter() == this ||
+         accessed_node->current_frame_host()->coop_reporter() == this);
+
   // TODO(arthursonzogni): DCHECK same browsing context group.
   // TODO(arthursonzogni): DCHECK different virtual browsing context group.
 
@@ -275,8 +294,20 @@ void CrossOriginOpenerPolicyReporter::MonitorAccessesInBetweenWindows(
   // It means all the accessed from the first window are made from documents
   // inside the same SiteInstance. Only one SiteInstance has to be updated.
 
-  // TODO(arthursonzogni): Continue the implementation. Send an IPC toward the
-  // accessed window.
+  RenderFrameHostImpl* accessing_rfh = accessing_node->current_frame_host();
+  SiteInstance* site_instance = accessing_rfh->GetSiteInstance();
+
+  base::UnguessableToken accessed_window_token =
+      GetFrameToken(accessed_node, site_instance);
+  if (!accessed_window_token)
+    return;
+
+  mojo::PendingRemote<network::mojom::CrossOriginOpenerPolicyReporter>
+      remote_reporter;
+  Clone(remote_reporter.InitWithNewPipeAndPassReceiver());
+
+  accessing_rfh->GetAssociatedLocalMainFrame()->InstallCoopAccessMonitor(
+      accessed_window_token, std::move(remote_reporter));
 }
 
 }  // namespace content

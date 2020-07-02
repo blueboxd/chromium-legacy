@@ -260,10 +260,6 @@ void WebFrameTestProxy::Reset() {
   // the main frame on each navigation, including to about:blank and then to the
   // next test. So resetting the frame or RenderWidget won't be meaningful then.
 
-  TestInterfaces* interfaces = web_view_test_proxy_->test_interfaces();
-  TestRunner* test_runner = interfaces->GetTestRunner();
-  test_runner->ResetWebFrame(this);
-
   if (IsMainFrame()) {
     GetWebFrame()->SetName(blink::WebString());
     GetWebFrame()->ClearOpener();
@@ -478,6 +474,13 @@ void WebFrameTestProxy::WillSendRequest(blink::WebURLRequest& request) {
 
 void WebFrameTestProxy::BeginNavigation(
     std::unique_ptr<blink::WebNavigationInfo> info) {
+  // This check for whether the test is running ensures we do not intercept
+  // the about:blank navigation between tests.
+  if (!test_runner()->TestIsRunning()) {
+    RenderFrameImpl::BeginNavigation(std::move(info));
+    return;
+  }
+
   if (test_runner()->ShouldDumpNavigationPolicy()) {
     blink_test_runner()->PrintMessage(
         "Default policy for navigation to '" +

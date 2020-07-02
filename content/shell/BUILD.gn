@@ -481,6 +481,7 @@ static_library("content_shell_lib") {
       "browser/web_test/web_test_permission_manager.h",
       "browser/web_test/web_test_push_messaging_service.cc",
       "browser/web_test/web_test_push_messaging_service.h",
+      "browser/web_test/web_test_shell_platform_delegate.cc",
       "browser/web_test/web_test_shell_platform_delegate.h",
       "browser/web_test/web_test_tts_platform.cc",
       "browser/web_test/web_test_tts_platform.h",

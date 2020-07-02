@@ -16,6 +16,7 @@
 <translation id="1774152462503052664">Permitir que o Chromium seja executado em segundo plano</translation>
 <translation id="1779356040007214683">Para tornar o Chromium mais seguro, desativamos algumas extensões que não estão listadas na <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> e podem ser sido adicionadas sem seu conhecimento.</translation>
 <translation id="1808667845054772817">Reinstalar o Chromium</translation>
+<translation id="1865035435995743337">O Chromium não conseguiu verificar o software do seu dispositivo. Verifique sua conexão de Internet.</translation>
 <translation id="1881322772814446296">Você está fazendo login com uma conta gerenciada e concedendo ao administrador da conta o controle sobre seu perfil do Chromium. Seus dados do Chromium, como aplicativos, favoritos, histórico, senhas e outras configurações serão permanentemente vinculados a <ph name="USER_NAME" />. Você pode excluir esses dados pelo painel das Contas do Google, mas não pode associá-los a outra conta. Você tem a opção de criar um novo perfil para manter seus dados existentes do Chromium separados. <ph name="LEARN_MORE" /></translation>
 <translation id="1911763535808217981">Desative essa opção para fazer login em sites do Google, como o Gmail, sem fazer login no Chromium</translation>
 <translation id="1929939181775079593">O Chromium não está respondendo. Reiniciar agora?</translation>
@@ -112,6 +113,7 @@
 <translation id="5480860683791598150">O Chromium precisa acessar seu local para compartilhá-lo com este site</translation>
 <translation id="549669000822060376">Aguarde enquanto o Chromium instala as últimas atualizações do sistema.</translation>
 <translation id="5496810170689441661">O Chromium está tentando editar senhas. Digite a senha do Windows para permitir essa ação.</translation>
+<translation id="5556694182460963866">Seu administrador desativou a verificação de softwares nocivos do Chromium</translation>
 <translation id="5623402015214259806">{0,plural, =0{Uma atualização do Chromium está disponível}=1{Uma atualização do Chromium está disponível}one{Uma atualização do Chromium está disponível há # dia}other{Uma atualização do Chromium está disponível há # dias}}</translation>
 <translation id="5631814766731275228">Nome e foto do Chromium</translation>
 <translation id="5634636535844844681">O Chromium requer o Windows 7 ou versão superior.</translation>
@@ -187,6 +189,7 @@
 <translation id="7585853947355360626">Se uma configuração não for exibida nesta página, verifique as <ph name="LINK_BEGIN" />configurações do Chromium OS<ph name="LINK_END" /></translation>
 <translation id="761356813943268536">O Chromium está usando sua câmera e seu microfone.</translation>
 <translation id="7617377681829253106">O Chromium ficou ainda melhor</translation>
+<translation id="7628001322379820951">O Chromium encontrou um software nocivo no seu computador</translation>
 <translation id="7686590090926151193">O Chromium não é seu navegador padrão</translation>
 <translation id="7689606757190482937">Sincronize e personalize o Chromium em todos os seus dispositivos</translation>
 <translation id="7729447699958282447">O Chromium não pôde sincronizar seus dados porque a sincronização não está disponível para seu domínio.</translation>

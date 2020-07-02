@@ -529,7 +529,6 @@
 <translation id="1645516838734033527">‏للحفاظ على جهاز <ph name="DEVICE_TYPE" /> آمنًا، يتطلب Smart Lock قفل الشاشة على هاتفك.</translation>
 <translation id="1646982517418478057">يُرجى إدخال كلمة مرور لتشفير هذه الشهادة</translation>
 <translation id="1648528859488547844">‏استخدام شبكة Wi‑Fi أو شبكات الجوَّال لتحديد الموقع الجغرافي</translation>
-<translation id="1648943974594387137">تفاصيل تسجيل الدخول قديمة</translation>
 <translation id="164936512206786300">إلغاء الإقران بجهاز عبر بلوتوث</translation>
 <translation id="1650371550981945235">عرض خيارات الإدخال</translation>
 <translation id="1651008383952180276">يجب إدخال عبارة المرور نفسها مرتين</translation>
@@ -1333,7 +1332,6 @@
 <translation id="2635276683026132559">التوقيع</translation>
 <translation id="2636625531157955190">‏لا يستطيع Chrome الدخول إلى الصورة.</translation>
 <translation id="2637400434494156704">رقم التعريف الشخصي غير صحيح. يتبقى لديك محاولة واحدة.</translation>
-<translation id="2638087589890736295">عبارة المرور مطلوبة لبدء المزامنة</translation>
 <translation id="2638662041295312666">صورة الملف الشخصي</translation>
 <translation id="264083724974021997">الاتصال بهاتفك - مربع حوار</translation>
 <translation id="2641065435954454414">جارٍ التحضير للتنزيل</translation>
@@ -1487,7 +1485,6 @@
 <translation id="2809586584051668049">و<ph name="NUMBER_ADDITIONAL_DISABLED" /> من الإضافات الأخرى</translation>
 <translation id="2810390687497823527">في حال عدم التعرُّف على إحدى الإضافات أو في حال كان متصفّحك لا يعمل كما هو متوقع، يمكنك إيقاف الإضافات أو تخصيصها هنا.</translation>
 <translation id="2812049959647166806">‏Thunderbolt غير متوافق.</translation>
-<translation id="2812944337881233323">تجربة الخروج وتسجيل الدخول مرة أخرى</translation>
 <translation id="2812989263793994277">عدم عرض أي صور</translation>
 <translation id="2813094189969465044">أدوات الرقابة الأبوية</translation>
 <translation id="281390819046738856">تعذَّر توقيع الطلب.</translation>
@@ -1781,7 +1778,7 @@
 <translation id="3190558889382726167">تم حفظ كلمة المرور</translation>
 <translation id="3192947282887913208">ملفات صوتية</translation>
 <translation id="3199127022143353223">الخوادم</translation>
-<translation id="3200310363903241381">{COUNT,plural, =1{‏ينصح متصفِّح Chrome بالتحقُّق من كلمة المرور الآن.}zero{‏ينصح متصفّح Chrome بالتحقُّق من كلمات المرور الآن.}two{‏ينصح متصفّح Chrome بالتحقُّق من كلمتَي المرور الآن.}few{‏ينصح متصفّح Chrome بالتحقُّق من كلمات المرور الآن.}many{‏ينصح متصفّح Chrome بالتحقُّق من كلمات المرور الآن.}other{‏ينصح متصفّح Chrome بالتحقُّق من كلمات المرور الآن.}}</translation>
+<translation id="3200310363903241381">{COUNT,plural, =1{‏ينصح متصفِّح Chrome بالتحقُّق من كلمة المرور هذه الآن.}zero{‏ينصح متصفِّح Chrome بالتحقُّق من كلمة المرور هذه الآن.}two{‏ينصح متصفّح Chrome بالتحقُّق من كلمتَي المرور هاتين الآن.}few{‏ينصح متصفّح Chrome بالتحقُّق من كلمات المرور هذه الآن.}many{‏ينصح متصفّح Chrome بالتحقُّق من كلمات المرور هذه الآن.}other{‏ينصح متصفّح Chrome بالتحقُّق من كلمات المرور هذه الآن.}}</translation>
 <translation id="3200941271596533635">تبديل وضع القارئ</translation>
 <translation id="3201422919974259695">‏ستظهر أجهزة USB المتاحة هنا.</translation>
 <translation id="3202131003361292969">المسار</translation>
@@ -2491,7 +2488,7 @@
 <translation id="4058720513957747556">‏AppSocket (بروتوكول TCP/IP)</translation>
 <translation id="4058793769387728514">فحص المستند الآن</translation>
 <translation id="406070391919917862">تطبيقات الخلفية</translation>
-<translation id="4061374428807229313">‏للمشاركة، انقر بزر الماوس الأيمن على مجلد في تطبيق "الملفات"، ثم اختَر "المشاركة باستخدام Parallels Desktop".</translation>
+<translation id="4061374428807229313">‏للمشاركة، انقر بزر الماوس الأيمن على مجلد في تطبيق "الملفات"، ثم اختَر "المشاركة مع نظام Parallels Desktop".</translation>
 <translation id="4065876735068446555">قد تتطلب الشبكة التي تستخدمها <ph name="NETWORK_ID" /> زيارة صفحة تسجيل الدخول التابعة لها.</translation>
 <translation id="4066207411788646768">يُرجى التحقق من الاتصال بالإنترنت لمعرفة الطابعات المتاحة في شبكتك.</translation>
 <translation id="4068506536726151626">تحتوي هذه الصفحة على عناصر من المواقع التالية والتي تتتبع موقعك:</translation>
@@ -3405,7 +3402,6 @@
 <translation id="529175790091471945">لتهيئة هذا الجهاز</translation>
 <translation id="5293170712604732402">استعادة الإعدادات إلى الوضع التلقائي الأصلي</translation>
 <translation id="5294097441441645251">يجب البدء بحرف صغير أو شرطة سفلية.</translation>
-<translation id="5296471962619441686">إصلاح الخطأ لاستئناف المزامنة</translation>
 <translation id="5297082477358294722">تم حفظ كلمة المرور. يمكنك عرض كلمات المرور المحفوظة وإدارتها في <ph name="SAVED_PASSWORDS_STORE" />.</translation>
 <translation id="5298219193514155779">مظهر أنشأه</translation>
 <translation id="5299109548848736476">عدم التعقب</translation>
@@ -5771,7 +5767,6 @@
 <translation id="8256417822772703842">هناك نقص في الحبر في طابعة <ph name="PRINTER_NAME" /></translation>
 <translation id="8257950718085972371">متابعة حظر الدخول إلى الكاميرا</translation>
 <translation id="8259239505248583312">بدء الاستخدام</translation>
-<translation id="8260126382462817229">محاولة تسجيل الدخول مرة أخرى</translation>
 <translation id="8260864402787962391">الماوس</translation>
 <translation id="8261378640211443080">هذه الإضافة غير مدرجة في <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> وربما تمت إضافتها بدون علمك.</translation>
 <translation id="8261506727792406068">حذف</translation>

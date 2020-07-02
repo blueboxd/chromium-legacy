@@ -21,6 +21,7 @@ class GURL;
 
 namespace content {
 class Shell;
+class ShellPlatformDataAura;
 class WebContents;
 
 class ShellPlatformDelegate {
@@ -99,12 +100,20 @@ class ShellPlatformDelegate {
   void LoadProgressChanged(Shell* shell, double progress);
 #endif
 
+ protected:
+#if defined(USE_AURA) && !defined(TOOLKIT_VIEWS)
+  // Helper to avoid duplicating aura's ShellPlatformDelegate in web tests. If
+  // this hack gets expanded to become more expansive then we should just
+  // duplicate the aura ShellPlatformDelegate code to the web test code impl in
+  // WebTestShellPlatformDelegate.
+  ShellPlatformDataAura* GetShellPlatformDataAura();
+#endif
+
  private:
   // Data held for each Shell instance, since there is one ShellPlatformDelegate
   // for the whole browser process (shared across Shells). This is defined for
   // each platform implementation.
   struct ShellData;
-
   // Holds an instance of ShellData for each Shell.
   base::flat_map<Shell*, ShellData> shell_data_map_;
 

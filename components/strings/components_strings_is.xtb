@@ -20,6 +20,7 @@
 <translation id="10614374240317010">Aldrei vistað</translation>
 <translation id="1062160989074299343">Prc10 (umslag)</translation>
 <translation id="106701514854093668">Skjáborðsbókamerki</translation>
+<translation id="1068672505746868501">Þýða aldrei síður á þessu tungumáli: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1070901266639972381">Nótt</translation>
 <translation id="1074497978438210769">Ekki öruggt</translation>
 <translation id="1080116354587839789">Laga að breidd</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">Ónefnt</translation>
 <translation id="1236081509407217141">Viltu leyfa VR?</translation>
 <translation id="1240347957665416060">Heiti tækisins þíns</translation>
+<translation id="124116460088058876">Fleiri tungumál</translation>
 <translation id="1250759482327835220">Til að greiða hraðar næst geturðu vistað kortið og nafn og heimilisfang greiðanda á Google reikningnum.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (samstillt)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Ef þú reynir að fara á vefsíðu og hún opnast ekki skaltu byrja á því að reyna að leysa vandann á eftirfarandi máta:&lt;/p&gt;
@@ -841,6 +843,7 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="4424024547088906515">Þessi þjónn gat ekki sannað að hann væri <ph name="DOMAIN" />; Chrome treystir ekki öryggisvottorðinu hans. Þetta kann að orsakast af vanstillingu eða tölvuþrjóti sem komist hefur inn í tenginguna.</translation>
 <translation id="443121186588148776">Raðtengi</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> samþykkti ekki innskráningarvottorðið þitt eða það var ekki gefið upp.</translation>
+<translation id="4432792777822557199">Síður á málinu „<ph name="SOURCE_LANGUAGE" />“ verða héðan í frá þýddar yfir á eftirfarandi tungumál: <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">Sprettigluggar og framsendingar</translation>
 <translation id="4435702339979719576">póstkort)</translation>
 <translation id="443673843213245140">Slökkt er á notkun proxy-þjóns en sérstök proxy-stilling er tilgreind.</translation>
@@ -1072,6 +1075,7 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="5431657950005405462">Skráin fannst ekki</translation>
 <translation id="5439770059721715174">Villa við staðfestingu skema á „<ph name="ERROR_PATH" />“: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Öfug röð, snýr upp</translation>
+<translation id="5447765697759493033">Þetta vefsvæði verður ekki þýtt</translation>
 <translation id="5452270690849572955">Þessi <ph name="HOST_NAME" /> síða finnst ekki</translation>
 <translation id="5455374756549232013">Rangur tímastimpill reglu</translation>
 <translation id="5457113250005438886">Ógilt</translation>
@@ -1618,6 +1622,7 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="7716375162095500223">Ekki send enn eða var hunsuð</translation>
 <translation id="7716424297397655342">Ekki er hægt að hlaða þetta vefsvæði úr skyndiminni</translation>
 <translation id="7723047071702270851">Breyta korti</translation>
+<translation id="773466115871691567">Þýða alltaf síður á þessu tungumáli: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7740996059027112821">Venjulegt</translation>
 <translation id="774634243536837715">Lokað á hættulegt efni.</translation>
 <translation id="7752995774971033316">Ekki stjórnað</translation>
@@ -1763,6 +1768,7 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="831997045666694187">Kvöld</translation>
 <translation id="8332188693563227489">Ekki fæst aðgangur að <ph name="HOST_NAME" /></translation>
 <translation id="833262891116910667">Auðkenna</translation>
+<translation id="8339163506404995330">Síður á þessu tungumáli verða ekki þýddar: <ph name="LANGUAGE" /></translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Ef þú skilur öryggisáhættuna sem það hefur í för með sér geturðu <ph name="BEGIN_LINK" />heimsótt þetta vefsvæði<ph name="END_LINK" /> áður en skaðlegu forritin hafa verið fjarlægð.</translation>
 <translation id="8349305172487531364">Bókamerkjastika</translation>

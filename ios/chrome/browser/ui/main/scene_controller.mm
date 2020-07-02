@@ -22,6 +22,7 @@
 #import "ios/chrome/app/chrome_overlay_window.h"
 #import "ios/chrome/app/deferred_initialization_runner.h"
 #import "ios/chrome/app/main_controller_guts.h"
+#import "ios/chrome/app/scoped_ui_blocker.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remover.h"
@@ -1823,14 +1824,15 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 // Starts the sign-in coordinator with a default cleanup completion.
 - (void)startSigninCoordinatorWithCompletion:
     (signin_ui::CompletionCallback)completion {
-  self.mainController.appState.sceneShowingBlockingUI = self.sceneState;
+  __block std::unique_ptr<ScopedUIBlocker> uiBlocker =
+      std::make_unique<ScopedUIBlocker>(self.sceneState);
   DCHECK(self.signinCoordinator);
   __weak SceneController* weakSelf = self;
   self.signinCoordinator.signinCompletion =
       ^(SigninCoordinatorResult result, SigninCompletionInfo*) {
         [weakSelf.signinCoordinator stop];
         weakSelf.signinCoordinator = nil;
-        weakSelf.mainController.appState.sceneShowingBlockingUI = nil;
+        uiBlocker.reset();
 
         if (completion) {
           completion(result == SigninCoordinatorResultSuccess);

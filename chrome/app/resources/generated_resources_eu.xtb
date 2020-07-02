@@ -529,7 +529,6 @@
 <translation id="1645516838734033527"><ph name="DEVICE_TYPE" /> gailua seguru mantentzeko, telefonoan pantailaren blokeoa erabiltzea eskatzen du Smart Lock zerbitzuak.</translation>
 <translation id="1646982517418478057">Ziurtagiri hau enkriptatzeko, idatzi pasahitz bat</translation>
 <translation id="1648528859488547844">Erabili Wi‑Fi edo sare mugikorrak kokapena zehazteko</translation>
-<translation id="1648943974594387137">Zaharkituta daude saioa hasteko xehetasunak</translation>
 <translation id="164936512206786300">Desparekatu Bluetooth bidezko gailua</translation>
 <translation id="1650371550981945235">Erakutsi idazketa-aukerak</translation>
 <translation id="1651008383952180276">Pasaesaldi bera idatzi behar duzu bietan</translation>
@@ -1333,7 +1332,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="2635276683026132559">Sinatzen</translation>
 <translation id="2636625531157955190">Chrome-k ezin du irudia atzitu.</translation>
 <translation id="2637400434494156704">Okerreko PIN kodea. Saiakera bakarra geratzen zaizu.</translation>
-<translation id="2638087589890736295">Pasaesaldia behar da sinkronizatzen hasteko</translation>
 <translation id="2638662041295312666">Saioa hasteko irudia</translation>
 <translation id="264083724974021997">Konektatu telefonora - Leihoa</translation>
 <translation id="2641065435954454414">Deskarga prestatzen</translation>
@@ -1487,7 +1485,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="2809586584051668049">eta beste <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
 <translation id="2810390687497823527">Luzapenen bat ezagutzen ez baduzu edo arakatzaileak ez badu funtzionatzen behar bezala, desaktibatu edo pertsonalizatu luzapenak hemen.</translation>
 <translation id="2812049959647166806">Thunderbolt konektorea ez da bateragarria</translation>
-<translation id="2812944337881233323">Amaitu eta hasi berriro saioa.</translation>
 <translation id="2812989263793994277">Ez erakutsi irudirik</translation>
 <translation id="2813094189969465044">Gurasoen murriztapenak</translation>
 <translation id="281390819046738856">Ezin izan da sinatu eskaera.</translation>
@@ -3408,7 +3405,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="529175790091471945">Formateatu gailua</translation>
 <translation id="5293170712604732402">Berrezarri jatorrizko ezarpen lehenetsiak</translation>
 <translation id="5294097441441645251">Minuskula edo azpimarra batekin hasi behar da</translation>
-<translation id="5296471962619441686">Sinkronizazioari berrekiteko, konpondu errorea</translation>
 <translation id="5297082477358294722">Gorde da pasahitza. Ikusi eta kudeatu gordetako pasahitzak hemen: <ph name="SAVED_PASSWORDS_STORE" />.</translation>
 <translation id="5298219193514155779">Gaiaren sortzailea:</translation>
 <translation id="5299109548848736476">Ez egin jarraipenik</translation>
@@ -5771,7 +5767,6 @@ Gorde gakoen fitxategia leku seguru batean. Zure luzapenaren bertsio berriak sor
 <translation id="8256417822772703842">Tinta gutxi gelditzen zaio <ph name="PRINTER_NAME" /> inprimagailuari</translation>
 <translation id="8257950718085972371">Jarraitu kamerarako sarbidea blokeatzen</translation>
 <translation id="8259239505248583312">Has gaitezen</translation>
-<translation id="8260126382462817229">Hasi saioa berriro</translation>
 <translation id="8260864402787962391">Sagua</translation>
 <translation id="8261378640211443080">Luzapen hau ez dago <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> dendan, eta agian zuk jakin gabe gehitu da.</translation>
 <translation id="8261506727792406068">Ezabatu</translation>

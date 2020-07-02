@@ -17,6 +17,7 @@ Neke funkcije možda neće biti dostupne i promjene postavki se neće sačuvati.
 <translation id="137466361146087520">Google Chrome Beta</translation>
 <translation id="1399397803214730675">Na ovom računaru je već instalirana novija verzija Google Chromea. Ako softver ne bude funkcionirao, deinstalirajte Google Chrome i pokušajte ponovo.</translation>
 <translation id="1434626383986940139">Aplikacije Chrome Canary</translation>
+<translation id="1514913130539345610">Vaš administrator je onemogućio Chromeovu provjeru prisutnosti štetnog softvera</translation>
 <translation id="1553358976309200471">Ažuriraj Chrome</translation>
 <translation id="1587223624401073077">Google Chrome koristi vašu kameru.</translation>
 <translation id="1587325591171447154">Fajl <ph name="FILE_NAME" /> je opasan, pa ga je Chrome blokirao.</translation>
@@ -125,6 +126,7 @@ Neke funkcije možda neće biti dostupne i promjene postavki se neće sačuvati.
 <translation id="4458462641685292929">U toku je druga radnja na Google Chromeu. Pokušajte ponovo kasnije.</translation>
 <translation id="4480040274068703980">OS Chrome nije mogao sinkronizirati vaše podatke zbog pogreške prilikom prijave.</translation>
 <translation id="4521185804071812304">Nije obavezno: Pomozite nam da poboljšamo funkcije i performanse Chrome OS-a automatskim slanjem podataka o dijagnostici i korištenju Googleu.</translation>
+<translation id="4552702433620284371">Chrome ne može provjeriti softver vašeg uređaja. Predlažemo da provjerite internetsku vezu.</translation>
 <translation id="4561051373932531560">Google Chrome vam omogućava da klikom na broj telefona na internetu uspostavite Skype poziv!</translation>
 <translation id="4567424176335768812">Prijavljeni ste kao <ph name="USER_EMAIL_ADDRESS" />. Sada možete pristupiti svojim oznakama, povijesti i drugim postavkama na svim uređajima na kojima se prijavljujete.</translation>
 <translation id="4571503333518166079">Otvori postavke obavijesti za Chrome</translation>
@@ -248,6 +250,7 @@ Moguće je da neke funkcije neće biti dostupne. Odredite drugi direktorij profi
 <translation id="8641606876632989680">Chrome će vas obavijestiti kada se prijavite s ugroženom lozinkom</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">Također kontrolira koja stranica se prikazuje kada pokrenete Chrome.</translation>
+<translation id="8681614230122836773">Chrome je pronašao štetni softver na vašem računaru</translation>
 <translation id="870251953148363156">Ažuriraj &amp;Google Chrome</translation>
 <translation id="873133009373065397">Google Chrome ne može odrediti ili postaviti zadani preglednik</translation>
 <translation id="8823341990149967727">Chrome je zastario</translation>

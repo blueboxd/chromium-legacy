@@ -177,9 +177,9 @@ void SharingMessageBridgeImpl::OnCommitAttemptFailed(
           sync_pb::SharingMessageCommitError::SYNC_NETWORK_ERROR;
       break;
     case syncer::SyncCommitError::kAuthError:
-      sharing_message_error_code =
-          sync_pb::SharingMessageCommitError::SYNC_AUTH_ERROR;
-      break;
+      // Ignore the auth error because it may be a temporary error and the
+      // message will be sent on the second attempt.
+      return;
     case syncer::SyncCommitError::kServerError:
     case syncer::SyncCommitError::kBadServerResponse:
       sharing_message_error_code =

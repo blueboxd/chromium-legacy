@@ -222,6 +222,29 @@ String DataObjectItem::FileSystemId() const {
   return file_system_id_;
 }
 
+bool DataObjectItem::HasNativeFileSystemEntry() const {
+  return native_file_system_entry_.has_value();
+}
+
+String DataObjectItem::NativeFileSystemFileName() const {
+  DCHECK(HasNativeFileSystemEntry());
+  return native_file_system_entry_->name;
+}
+
+bool DataObjectItem::NativeFileSystemEntryIsDirectory() const {
+  DCHECK(HasNativeFileSystemEntry());
+  return native_file_system_entry_->is_directory;
+}
+
+mojo::PendingRemote<mojom::blink::NativeFileSystemTransferToken>
+DataObjectItem::CloneNativeFileSystemEntryToken() const {
+  DCHECK(HasNativeFileSystemEntry());
+  mojo::PendingRemote<mojom::blink::NativeFileSystemTransferToken> token_clone;
+  native_file_system_entry_->token_remote->Clone(
+      token_clone.InitWithNewPipeAndPassReceiver());
+  return token_clone;
+}
+
 void DataObjectItem::Trace(Visitor* visitor) const {
   visitor->Trace(file_);
   visitor->Trace(system_clipboard_);

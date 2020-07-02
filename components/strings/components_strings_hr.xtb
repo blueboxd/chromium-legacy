@@ -20,6 +20,7 @@
 <translation id="10614374240317010">Zaporke se nikad ne spremaju</translation>
 <translation id="1062160989074299343">Prc10 (omotnica)</translation>
 <translation id="106701514854093668">Oznake radne površine</translation>
+<translation id="1068672505746868501">Nikad ne prevodi <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1070901266639972381">Noć</translation>
 <translation id="1074497978438210769">Nije sigurno</translation>
 <translation id="1080116354587839789">Prilagođavanje širini</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">Neimenovano</translation>
 <translation id="1236081509407217141">Dopustiti virtualnu stvarnost?</translation>
 <translation id="1240347957665416060">Naziv vašeg uređaja</translation>
+<translation id="124116460088058876">Više jezika</translation>
 <translation id="1250759482327835220">Da biste sljedeći put platili brže, spremite karticu, ime i adresu za naplatu na svoj Google račun.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (sinkronizirano)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Ako pokušate otvoriti web-lokaciju i ona se ne otvara, najprije pokušajte riješiti poteškoću prema ovim uputama:&lt;/p&gt;
@@ -840,6 +842,7 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="4424024547088906515">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; Chrome smatra da njegov sigurnosni certifikat nije pouzdan. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
 <translation id="443121186588148776">Serijski priključak</translation>
 <translation id="4432688616882109544">Host <ph name="HOST_NAME" /> nije prihvatio vaš certifikat za prijavu ili certifikat nije poslan.</translation>
+<translation id="4432792777822557199">Odsada će se <ph name="SOURCE_LANGUAGE" /> prevoditi na <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">Skočni prozori i preusmjeravanja</translation>
 <translation id="4435702339979719576">Dopisnica)</translation>
 <translation id="443673843213245140">Upotreba proxy poslužitelja onemogućena je, ali određena je izričita konfiguracija proxy poslužitelja.</translation>
@@ -1071,6 +1074,7 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="5431657950005405462">Datoteka nije pronađena</translation>
 <translation id="5439770059721715174">Pogreška provjere sheme na lokaciji "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Suprotnim redoslijedom prema gore</translation>
+<translation id="5447765697759493033">Ova web-stranica neće biti prevedena</translation>
 <translation id="5452270690849572955">Tu stranicu na <ph name="HOST_NAME" /> nije moguće pronaći</translation>
 <translation id="5455374756549232013">Vremenska oznaka pravila koje nije valjano</translation>
 <translation id="5457113250005438886">Nije važeće</translation>
@@ -1617,6 +1621,7 @@ Dodatne pojedinosti:
 <translation id="7716375162095500223">Još nije preneseno ili je zanemareno</translation>
 <translation id="7716424297397655342">Web-lokacija se ne može učitati iz predmemorije</translation>
 <translation id="7723047071702270851">Uredite karticu</translation>
+<translation id="773466115871691567">Uvijek prevodi <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7740996059027112821">Standardno</translation>
 <translation id="774634243536837715">Blokiran je opasan sadržaj.</translation>
 <translation id="7752995774971033316">Nema upravitelja</translation>
@@ -1762,6 +1767,7 @@ Dodatne pojedinosti:
 <translation id="831997045666694187">Navečer</translation>
 <translation id="8332188693563227489">Pristup hostu <ph name="HOST_NAME" /> je odbijen</translation>
 <translation id="833262891116910667">Istakni</translation>
+<translation id="8339163506404995330">Neće se prevoditi <ph name="LANGUAGE" /></translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Ako ste svjesni sigurnosnih rizika, možete <ph name="BEGIN_LINK" />posjetiti ovu web-lokaciju<ph name="END_LINK" /> prije uklanjanja štetnih programa.</translation>
 <translation id="8349305172487531364">Traka oznaka</translation>

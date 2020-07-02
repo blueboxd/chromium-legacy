@@ -620,7 +620,7 @@ void CertProvisioningScheduler::UpdateFailedCertProfiles(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   FailedWorkerInfo info;
-  info.state = worker.GetPreviousState();
+  info.state_before_failure = worker.GetPreviousState();
   info.public_key = worker.GetPublicKey();
   info.last_update_time = worker.GetLastUpdateTime();
 

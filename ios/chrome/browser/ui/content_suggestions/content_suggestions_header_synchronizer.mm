@@ -37,6 +37,8 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.25;
 
 // Tap gesture recognizer when the omnibox is focused.
 @property(nonatomic, strong) UITapGestureRecognizer* tapGestureRecognizer;
+// Animator for the shiftTilesUp animation.
+@property(nonatomic, strong) UIViewPropertyAnimator* animator;
 @end
 
 @implementation ContentSuggestionsHeaderSynchronizer
@@ -81,6 +83,12 @@ initWithCollectionController:
 
   self.shouldAnimateHeader = YES;
 
+  if (self.animator.running) {
+    [self.animator stopAnimation:NO];
+    [self.animator finishAnimationAtPosition:UIViewAnimatingPositionStart];
+    self.animator = nil;
+  }
+
   if (self.collectionShiftingOffset == 0 || self.collectionView.dragging) {
     self.collectionShiftingOffset = 0;
     [self updateFakeOmniboxOnCollectionScroll];
@@ -103,7 +111,8 @@ initWithCollectionController:
 }
 
 - (void)shiftTilesUpWithAnimations:(ProceduralBlock)animations
-                        completion:(ProceduralBlock)completion {
+                        completion:
+                            (void (^)(UIViewAnimatingPosition))completion {
   // Add gesture recognizer to collection view when the omnibox is focused.
   [self.collectionView addGestureRecognizer:self.tapGestureRecognizer];
 
@@ -117,7 +126,7 @@ initWithCollectionController:
   if (self.collectionController.scrolledToTop) {
     self.shouldAnimateHeader = NO;
     if (completion)
-      completion();
+      completion(UIViewAnimatingPositionEnd);
     return;
   }
 
@@ -131,29 +140,43 @@ initWithCollectionController:
   self.collectionController.scrolledToTop = YES;
   self.shouldAnimateHeader = YES;
 
-  [UIView animateWithDuration:kShiftTilesUpAnimationDuration
-      animations:^{
-        if (self.collectionView.contentOffset.y < pinnedOffsetY) {
-          if (animations)
-            animations();
-          // Changing the contentOffset of the collection results in a scroll
-          // and a change in the constraints of the header.
-          self.collectionView.contentOffset = CGPointMake(0, pinnedOffsetY);
-          // Layout the header for the constraints to be animated.
-          [self.headerController layoutHeader];
-          [self.collectionView.collectionViewLayout invalidateLayout];
-        }
-      }
-      completion:^(BOOL finished) {
-        // Check to see if the collection are still scrolled to the top -- it's
-        // possible (and difficult) to unfocus the omnibox and initiate a
-        // -shiftTilesDown before the animation here completes.
-        if (self.collectionController.scrolledToTop) {
-          self.shouldAnimateHeader = NO;
-          if (completion)
-            completion();
-        }
-      }];
+  __weak __typeof(self) weakSelf = self;
+
+  self.animator = [[UIViewPropertyAnimator alloc]
+      initWithDuration:kShiftTilesUpAnimationDuration
+                 curve:UIViewAnimationCurveEaseInOut
+            animations:^{
+              if (!weakSelf)
+                return;
+
+              __typeof(weakSelf) strongSelf = weakSelf;
+              if (strongSelf.collectionView.contentOffset.y < pinnedOffsetY) {
+                if (animations)
+                  animations();
+                // Changing the contentOffset of the collection results in a
+                // scroll and a change in the constraints of the header.
+                strongSelf.collectionView.contentOffset =
+                    CGPointMake(0, pinnedOffsetY);
+                // Layout the header for the constraints to be animated.
+                [strongSelf.headerController layoutHeader];
+                [strongSelf.collectionView
+                        .collectionViewLayout invalidateLayout];
+              }
+            }];
+
+  [self.animator addCompletion:^(UIViewAnimatingPosition finalPosition) {
+    if (!weakSelf)
+      return;
+
+    if (finalPosition == UIViewAnimatingPositionEnd)
+      weakSelf.shouldAnimateHeader = NO;
+
+    if (completion)
+      completion(finalPosition);
+  }];
+
+  self.animator.interruptible = YES;
+  [self.animator startAnimation];
 }
 
 - (void)invalidateLayout {

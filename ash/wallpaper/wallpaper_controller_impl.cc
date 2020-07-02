@@ -38,6 +38,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -189,13 +190,12 @@ bool ResizeAndEncodeImage(const gfx::ImageSkia& image,
     double horizontal_ratio = static_cast<double>(preferred_width) / width;
     double vertical_ratio = static_cast<double>(preferred_height) / height;
     if (vertical_ratio > horizontal_ratio) {
-      resized_width =
-          gfx::ToRoundedInt(static_cast<double>(width) * vertical_ratio);
+      resized_width = base::Round(static_cast<double>(width) * vertical_ratio);
       resized_height = preferred_height;
     } else {
       resized_width = preferred_width;
       resized_height =
-          gfx::ToRoundedInt(static_cast<double>(height) * horizontal_ratio);
+          base::Round(static_cast<double>(height) * horizontal_ratio);
     }
   } else if (layout == WALLPAPER_LAYOUT_STRETCH) {
     resized_width = preferred_width;

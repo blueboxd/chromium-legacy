@@ -15,6 +15,7 @@
 <translation id="137466361146087520">Google Chrome Beta</translation>
 <translation id="1399397803214730675">Aquest equip ja disposa d'una versió més recent de Google Chrome. Si el programari no funciona, desinstal·leu Google Chrome i torneu-ho a provar.</translation>
 <translation id="1434626383986940139">Aplicacions de Chrome Canary</translation>
+<translation id="1514913130539345610">L'administrador ha desactivat la comprovació de programari maliciós de Chrome</translation>
 <translation id="1553358976309200471">Actualitza Chrome</translation>
 <translation id="1587223624401073077">Google Chrome està utilitzant la càmera.</translation>
 <translation id="1587325591171447154">Chrome ha bloquejat <ph name="FILE_NAME" /> perquè és perillós.</translation>
@@ -121,6 +122,7 @@
 <translation id="4458462641685292929">Hi ha una altra operació en curs a Google Chrome. Torna-ho a provar més tard.</translation>
 <translation id="4480040274068703980">Chrome OS no ha pogut sincronitzar les vostres dades a causa d'un error en iniciar la sessió.</translation>
 <translation id="4521185804071812304">Opcional: ajuda a millorar les funcions i el rendiment de Chrome OS enviant automàticament dades de diagnòstic i d'ús a Google.</translation>
+<translation id="4552702433620284371">Chrome no pot comprovar el programari del dispositiu. Comprova la connexió a Internet.</translation>
 <translation id="4561051373932531560">Google Chrome us permet fer clic en un número de telèfon al web i trucar-hi amb Skype!</translation>
 <translation id="4567424176335768812">Heu iniciat la sessió com a <ph name="USER_EMAIL_ADDRESS" />. Ja podeu accedir a les vostres adreces d'interès, al vostre historial i a altres paràmetres en tots els dispositius en què teniu la sessió iniciada.</translation>
 <translation id="4571503333518166079">Ves a la configuració de notificacions de Chrome</translation>
@@ -241,6 +243,7 @@
 <translation id="8641606876632989680">Chrome t'enviarà una notificació quan iniciïs la sessió amb una contrasenya en perill</translation>
 <translation id="8669527147644353129">Aplicació d'ajuda de Google Chrome</translation>
 <translation id="8679801911857917785">També controla la pàgina que es mostra quan inicieu Chrome.</translation>
+<translation id="8681614230122836773">Chrome ha trobat programari maliciós a l'ordinador</translation>
 <translation id="870251953148363156">Actualitza &amp;Google Chrome</translation>
 <translation id="873133009373065397">Google Chrome no pot determinar ni definir el navegador predeterminat</translation>
 <translation id="8823341990149967727">Chrome no està actualitzat</translation>

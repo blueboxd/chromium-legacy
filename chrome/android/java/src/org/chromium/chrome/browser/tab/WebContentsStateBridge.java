@@ -81,10 +81,6 @@ public class WebContentsStateBridge {
                 contentsState.buffer(), contentsState.version());
     }
 
-    public static void createHistoricalTabFromContents(WebContents webContents) {
-        WebContentsStateBridgeJni.get().createHistoricalTabFromContents(webContents);
-    }
-
     @NativeMethods
     @VisibleForTesting
     public interface Natives {
@@ -96,6 +92,5 @@ public class WebContentsStateBridge {
                 int referrerPolicy, Origin initiatorOrigin, boolean isIncognito);
         String getDisplayTitleFromByteBuffer(ByteBuffer state, int savedStateVersion);
         String getVirtualUrlFromByteBuffer(ByteBuffer state, int savedStateVersion);
-        void createHistoricalTabFromContents(WebContents webContents);
     }
 }

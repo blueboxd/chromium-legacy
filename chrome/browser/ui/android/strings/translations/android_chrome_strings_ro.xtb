@@ -10,7 +10,6 @@
 <translation id="1049743911850919806">Incognito</translation>
 <translation id="10614374240317010">Nu se salvează niciodată</translation>
 <translation id="1067922213147265141">Alte servicii Google</translation>
-<translation id="1068672505746868501">Nu traduce niciodată paginile în <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="107147699690128016">Dacă modifici extensia de fișier, fișierul poate să se deschidă în altă aplicație și să dăuneze dispozitivului.</translation>
 <translation id="1100066534610197918">Deschide în filă nouă în grup</translation>
 <translation id="1105960400813249514">Captură de ecran</translation>
@@ -35,13 +34,11 @@
 <translation id="1229399675748764149">Setează pagina ca pagină de pornire</translation>
 <translation id="1231733316453485619">Activezi sincronizarea?</translation>
 <translation id="123724288017357924">Reîncarcă pagina, ignorând conținutul din cache</translation>
-<translation id="124116460088058876">Mai multe limbi</translation>
 <translation id="124678866338384709">Închide fila actuală</translation>
 <translation id="1258753120186372309">Doodle Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Caută și explorează</translation>
 <translation id="1266864766717917324">Nu s-a trimis <ph name="CONTENT_TYPE" /></translation>
 <translation id="1283039547216852943">Atinge pentru a extinde</translation>
-<translation id="1285320974508926690">Nu traduce niciodată acest site</translation>
 <translation id="1291207594882862231">Șterge istoricul, cookie-urile, datele privind site-urile și memoria cache…</translation>
 <translation id="129553762522093515">Închise recent</translation>
 <translation id="1303339473099049190">Parola nu a fost găsită. Verifică dacă ai scris-o corect și încearcă din nou.</translation>
@@ -239,7 +236,6 @@ Atinge lung orice cuvânt pentru a-l căuta. Pentru a rafina căutarea, selectea
 <translation id="2898264748040935573">Editează parola stocată</translation>
 <translation id="2900528713135656174">Creează un eveniment</translation>
 <translation id="2903493209154104877">Adrese</translation>
-<translation id="290376772003165898">Pagina nu este în <ph name="LANGUAGE" />?</translation>
 <translation id="2904414404539560095">Lista de dispozitive pe care să trimiți o filă este deschisă la înălțimea completă.</translation>
 <translation id="2905036901251765993">Ca să le permiți accesul persoanelor din apropiere, solicită-le să scaneze acest cod QR</translation>
 <translation id="2909615210195135082">Platforma de notificări Google</translation>
@@ -415,7 +411,6 @@ Atinge lung orice cuvânt pentru a-l căuta. Pentru a rafina căutarea, selectea
 <translation id="4405224443901389797">Mută în…</translation>
 <translation id="4411535500181276704">Modul Lite</translation>
 <translation id="4415276339145661267">Gestionează-ți Contul Google</translation>
-<translation id="4432792777822557199">Paginile în <ph name="SOURCE_LANGUAGE" /> vor fi traduse în <ph name="TARGET_LANGUAGE" /> de acum înainte</translation>
 <translation id="4440958355523780886">Pagină Lite oferită de Google. Atinge pentru a încărca versiunea originală.</translation>
 <translation id="4452411734226507615">Închide fila <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">Marcaj adăugat în <ph name="FOLDER_NAME" /></translation>
@@ -550,7 +545,6 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="543509235395288790">Se descarcă <ph name="COUNT" /> fișiere (<ph name="MEGABYTES" />).</translation>
 <translation id="5441522332038954058">Accesează bara de adrese</translation>
 <translation id="5447201525962359567">Toată stocarea site-urilor, inclusiv cookie-urile și alte date stocate local</translation>
-<translation id="5447765697759493033">Acest site nu va fi tradus</translation>
 <translation id="545042621069398927">Se accelerează descărcarea.</translation>
 <translation id="5456381639095306749">Descarcă pagina</translation>
 <translation id="548278423535722844">Deschide în aplicația Maps</translation>
@@ -580,7 +574,6 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="5659593005791499971">Adresă de e-mail</translation>
 <translation id="5665379678064389456">Creează un eveniment în <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Ignoră solicitarea unui site de a împiedica mărirea</translation>
-<translation id="5684874026226664614">Hopa. Această pagină nu a putut fi tradusă.</translation>
 <translation id="5686790454216892815">Numele fișierului este prea lung</translation>
 <translation id="5694049548840660018">Întoarce-te acasă cu ușurință</translation>
 <translation id="569536719314091526">Tradu această pagină în orice limbă folosind butonul Mai multe opțiuni</translation>
@@ -734,7 +727,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6767294960381293877">Lista de dispozitive pe care să trimiți o filă este deschisă la jumătate din înălțime.</translation>
 <translation id="6811034713472274749">Pagina este gata de vizualizare</translation>
 <translation id="6820686453637990663">CVC</translation>
-<translation id="6831043979455480757">Tradu</translation>
 <translation id="6845325883481699275">Contribuie la îmbunătățirea securității pentru Chrome</translation>
 <translation id="6846298663435243399">Se încarcă…</translation>
 <translation id="6850409657436465440">Descărcarea este încă în desfășurare</translation>
@@ -842,7 +834,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7698359219371678927">Creează un e-mail în <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Completează automat căutările și adresele URL</translation>
 <translation id="7725024127233776428">Paginile pe care le marchezi apar aici</translation>
-<translation id="773466115871691567">Tradu întotdeauna paginile în <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7746457520633464754">Pentru a detecta aplicațiile și site-urile periculoase, Chrome trimite la Google adresele URL ale unor pagini pe care le accesezi, informații de sistem limitate și o parte din conținutul paginii</translation>
 <translation id="7757787379047923882">Text trimis de pe <ph name="DEVICE_NAME" /></translation>
 <translation id="7761849928583394409">Alege data și ora</translation>
@@ -922,7 +913,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="8310344678080805313">File standard</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> și alte site-uri</translation>
 <translation id="8327155640814342956">Pentru o experiență de navigare mai bună, deschide pentru a actualiza Chrome</translation>
-<translation id="8339163506404995330">Paginile în <ph name="LANGUAGE" /> nu vor fi traduse</translation>
 <translation id="8349013245300336738">Sortează după volumul de date folosite</translation>
 <translation id="8364299278605033898">Vezi site-urile populare</translation>
 <translation id="8368027906805972958">Dispozitiv necunoscut sau neacceptat (<ph name="DEVICE_ID" />)</translation>

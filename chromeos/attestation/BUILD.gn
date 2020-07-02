@@ -22,6 +22,7 @@ component("attestation") {
   sources = [
     "attestation_flow.cc",
     "attestation_flow.h",
+    "attestation_flow_utils.cc",
   ]
 }
 
@@ -52,5 +53,8 @@ source_set("unit_tests") {
     "//testing/gmock",
     "//testing/gtest",
   ]
-  sources = [ "attestation_flow_unittest.cc" ]
+  sources = [
+    "attestation_flow_unittest.cc",
+    "attestation_flow_utils_unittest.cc",
+  ]
 }

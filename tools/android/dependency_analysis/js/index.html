@@ -46,6 +46,10 @@
           <div v-else>Click a node for more details.</div>
         </div>
       </div>
+      <div id="url-generator">
+        <button @click="generateUrl">Generate Current URL</button>
+        <input type="text" readonly ref="input">
+      </div>
     </div>
     <script type="module" src="./index.js"></script>
   </body>

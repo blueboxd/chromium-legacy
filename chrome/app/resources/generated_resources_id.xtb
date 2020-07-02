@@ -529,7 +529,6 @@
 <translation id="1645516838734033527">Agar <ph name="DEVICE_TYPE" /> tetap aman, Smart Lock memerlukan kunci layar pada ponsel Anda.</translation>
 <translation id="1646982517418478057">Masukkan sandi untuk mengenkripsi sertifikat ini</translation>
 <translation id="1648528859488547844">Gunakan Wi-Fi atau jaringan seluler untuk menentukan lokasi</translation>
-<translation id="1648943974594387137">Detail info masuk sudah usang</translation>
 <translation id="164936512206786300">Lepaskan sambungan perangkat Bluetooth</translation>
 <translation id="1650371550981945235">Tampilkan opsi masukan</translation>
 <translation id="1651008383952180276">Anda harus memasukkan frasa sandi yang sama dua kali</translation>
@@ -1333,7 +1332,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="2635276683026132559">Penandatanganan</translation>
 <translation id="2636625531157955190">Chrome tidak dapat mengakses gambar.</translation>
 <translation id="2637400434494156704">PIN salah. Anda memiliki satu kesempatan lagi.</translation>
-<translation id="2638087589890736295">Perlu frasa sandi untuk memulai sinkronisasi</translation>
 <translation id="2638662041295312666">Gambar login</translation>
 <translation id="264083724974021997">Hubungkan ke ponsel Anda - Dialog</translation>
 <translation id="2641065435954454414">Menyiapkan download</translation>
@@ -1487,7 +1485,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="2809586584051668049">dan <ph name="NUMBER_ADDITIONAL_DISABLED" /> lainnya</translation>
 <translation id="2810390687497823527">Jika Anda tidak mengenali ekstensi, atau jika browser tidak berfungsi sesuai harapan, Anda dapat menonaktifkan atau menyesuaikan ekstensi di sini.</translation>
 <translation id="2812049959647166806">Thunderbolt tidak didukung</translation>
-<translation id="2812944337881233323">Coba keluar dan masuk lagi</translation>
 <translation id="2812989263793994277">Jangan tampilkan gambar apa pun</translation>
 <translation id="2813094189969465044">Kontrol orang tua</translation>
 <translation id="281390819046738856">Permintaan tidak dapat ditandatangani.</translation>
@@ -3408,7 +3405,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="529175790091471945">Format perangkat ini</translation>
 <translation id="5293170712604732402">Memulihkan setelan ke default aslinya</translation>
 <translation id="5294097441441645251">Harus diawali dengan karakter huruf kecil atau garis bawah</translation>
-<translation id="5296471962619441686">Perbaiki error untuk melanjutkan sinkronisasi</translation>
 <translation id="5297082477358294722">Sandi disimpan. Lihat dan kelola sandi tersimpan di <ph name="SAVED_PASSWORDS_STORE" />.</translation>
 <translation id="5298219193514155779">Tema dibuat oleh</translation>
 <translation id="5299109548848736476">Jangan Lacak</translation>
@@ -5772,7 +5768,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8256417822772703842">Tinta <ph name="PRINTER_NAME" /> hampir habis</translation>
 <translation id="8257950718085972371">Terus blokir akses kamera</translation>
 <translation id="8259239505248583312">Ayo mulai!</translation>
-<translation id="8260126382462817229">Coba masuk lagi</translation>
 <translation id="8260864402787962391">Mouse</translation>
 <translation id="8261378640211443080">Ekstensi ini tidak tercantum dalam <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> dan mungkin telah ditambahkan tanpa sepengetahuan Anda.</translation>
 <translation id="8261506727792406068">Hapus</translation>

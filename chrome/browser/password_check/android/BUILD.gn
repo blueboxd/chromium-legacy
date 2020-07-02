@@ -25,14 +25,21 @@ source_set("unit_tests") {
 android_library("public_java") {
   deps = [
     ":java_resources",
+    ":public_ui_java",
+    "internal:public_ui_factory_java",
     "//base:base_java",
     "//third_party/android_deps:androidx_fragment_fragment_java",
     "//third_party/android_deps:androidx_preference_preference_java",
   ]
   sources = [
-    "java/src/org/chromium/chrome/browser/password_check/PasswordCheckComponent.java",
-    "java/src/org/chromium/chrome/browser/password_check/PasswordCheckSettingsView.java",
+    "java/src/org/chromium/chrome/browser/password_check/PasswordCheck.java",
+    "java/src/org/chromium/chrome/browser/password_check/PasswordCheckFragmentView.java",
   ]
+}
+
+android_library("public_ui_java") {
+  deps = []
+  sources = [ "java/src/org/chromium/chrome/browser/password_check/PasswordCheckComponentUi.java" ]
 }
 
 android_resources("java_resources") {

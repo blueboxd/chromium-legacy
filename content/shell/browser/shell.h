@@ -180,10 +180,6 @@ class Shell : public WebContentsDelegate,
     delay_popup_contents_delegate_for_testing_ = delay;
   }
 
-  // TODO(danakj): Move this to WebTestShellPlatformDelegate (a test-only
-  // subclass of ShellPlatformDelegate that does not exist yet).
-  bool headless() const { return headless_; }
-
  private:
   class DevToolsWebContentsObserver;
 
@@ -228,7 +224,6 @@ class Shell : public WebContentsDelegate,
 
   gfx::Size content_size_;
 
-  bool headless_ = false;
   bool delay_popup_contents_delegate_for_testing_ = false;
 
   // A container of all the open windows. We use a vector so we can keep track

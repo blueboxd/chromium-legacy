@@ -5,9 +5,11 @@
 #include "components/autofill/core/browser/autofill_handler.h"
 
 #include "base/containers/adapters.h"
+#include "base/feature_list.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/common/autofill_data_validation.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_internals/log_message.h"
 #include "components/autofill/core/common/autofill_internals/logging_scope.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
@@ -80,22 +82,34 @@ void AutofillHandler::OnFormsSeen(const std::vector<FormData>& forms,
   if (forms.empty())
     return;
 
-  // Parse each of the forms. Because parsing a given FormData may invalidate
-  // and replace a form parsed before it (invalidating any pointers we might
-  // hold) we track the newly created form signatures instead of remembering
-  // the pointer values.
   std::set<FormRendererId> new_form_renderer_ids;
   for (const FormData& form : forms) {
     const auto parse_form_start_time = AutofillTickClock::NowTicks();
-    // Try to find the FormStructure that corresponds to |form| if the form
-    // contains credit card fields only.
-    // |cached_form_structure| may still be nullptr after this call.
     FormStructure* cached_form_structure =
         FindCachedFormByRendererId(form.unique_renderer_id);
+    // Autofill used to ignore cache hits for non-credit-card forms. The
+    // motivation behind this is probably to have credit-card forms preserve
+    // their original signature, whereas non-credit-card forms would use the
+    // most recent form signature. Ignoring cache hits however appears to be
+    // part of breaking profile imports and voting for dynamic forms. See
+    // crbug/1091401#c15 for details.
+    //
+    // Therefore, if the kAutofillKeepInitialFormValuesInCache experiment is
+    // enabled, we do not ignore cache hits, but in those cases where the old
+    // code would have ignored the cache hit we update the FormStructure's
+    // FormSignature.
+    // Otherwise, if the experiment disabled, we just ignore the cache hit.
+    //
+    // TODO(crbug.com/1100231) Clean up when experiment is complete.
+    const bool kOldBehavior = !base::FeatureList::IsEnabled(
+        features::kAutofillKeepInitialFormValuesInCache);
+    bool update_form_signature = false;
     if (cached_form_structure) {
       for (const FormType& form_type : cached_form_structure->GetFormTypes()) {
         if (form_type != CREDIT_CARD_FORM) {
-          cached_form_structure = nullptr;
+          update_form_signature = true;
+          if (kOldBehavior)
+            cached_form_structure = nullptr;
           break;
         }
       }
@@ -105,6 +119,10 @@ void AutofillHandler::OnFormsSeen(const std::vector<FormData>& forms,
     if (!form_structure)
       continue;
     DCHECK(form_structure);
+
+    if (update_form_signature && !kOldBehavior)
+      form_structure->set_form_signature(CalculateFormSignature(form));
+
     new_form_renderer_ids.insert(form_structure->unique_renderer_id());
     AutofillMetrics::LogParseFormTiming(AutofillTickClock::NowTicks() -
                                         parse_form_start_time);

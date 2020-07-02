@@ -28,6 +28,7 @@
 #import "ios/chrome/app/blocking_scene_commands.h"
 #import "ios/chrome/app/deferred_initialization_runner.h"
 #import "ios/chrome/app/memory_monitor.h"
+#import "ios/chrome/app/scoped_ui_blocker.h"
 #import "ios/chrome/app/spotlight/spotlight_manager.h"
 #include "ios/chrome/app/startup/chrome_main_starter.h"
 #include "ios/chrome/app/startup/client_registration.h"
@@ -260,6 +261,9 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
   // Hander for the startup tasks, deferred or not.
   StartupTasks* _startupTasks;
+
+  // UI blocker used during first run in multiwindow.
+  std::unique_ptr<ScopedUIBlocker> _firstRunUIBlocker;
 }
 
 // The ChromeBrowserState associated with the main (non-OTR) browsing mode.
@@ -594,7 +598,10 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
               object:nil];
 
   [self markEulaAsAccepted];
-  self.appState.sceneShowingBlockingUI = nil;
+
+  if (IsMultiwindowSupported()) {
+    _firstRunUIBlocker.reset();
+  }
 }
 
 - (void)handleFirstRunUIDidFinish {
@@ -1077,8 +1084,10 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
              name:kChromeFirstRunUIDidFinishNotification
            object:nil];
 
-  // Update the AppState.
-  self.appState.sceneShowingBlockingUI = presentingScene;
+  if (IsMultiwindowSupported()) {
+    // Update the AppState.
+    _firstRunUIBlocker = std::make_unique<ScopedUIBlocker>(presentingScene);
+  }
 }
 
 - (void)crashIfRequested {

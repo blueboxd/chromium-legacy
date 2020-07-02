@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "cc/paint/paint_record.h"
@@ -26,7 +27,6 @@
 // Note that headers in third_party/skia/src are fragile.  This is
 // an experimental, fragile, and diagnostic-only document type.
 #include "third_party/skia/src/utils/SkMultiPictureDocument.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/skia_util.h"
 
 #if defined(OS_MACOSX)
@@ -266,8 +266,7 @@ bool MetafileSkia::GetData(void* dst_buffer, uint32_t dst_buffer_size) const {
 gfx::Rect MetafileSkia::GetPageBounds(unsigned int page_number) const {
   if (page_number < data_->pages.size()) {
     SkSize size = data_->pages[page_number].size;
-    return gfx::Rect(gfx::ToRoundedInt(size.width()),
-                     gfx::ToRoundedInt(size.height()));
+    return gfx::Rect(base::Round(size.width()), base::Round(size.height()));
   }
   return gfx::Rect();
 }

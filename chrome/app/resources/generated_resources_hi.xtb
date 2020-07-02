@@ -220,7 +220,7 @@
 <translation id="1263490604593716556"><ph name="FIRST_PARENT_EMAIL" /> और <ph name="SECOND_PARENT_EMAIL" /> खाता प्रबंधित करते हैं. इस डिवाइस के मुख्य खाते से साइन आउट करने के लिए, अपनी स्क्रीन पर दिख रहे समय पर क्लिक करें. दिखने वाले मेन्यू में, "साइन आउट करें" पर क्लिक करें.</translation>
 <translation id="1263733306853729545">उम्मीदवारों की सूची को पेज पर लाने के लिए, <ph name="MINUS" /> और <ph name="EQUAL" /> बटन दबाएं</translation>
 <translation id="126387934568812801">इसमें यह स्क्रीनशॉट और खुले हुए टैब के शीर्षक शामिल हैं</translation>
-<translation id="1264337193001759725">नेटवर्क यूज़र इंटरफ़ेस (यूआई) लॉग देखने के लिए, <ph name="DEVICE_LOG_LINK" /> पर जाएं</translation>
+<translation id="1264337193001759725">नेटवर्क यूआई लॉग देखने के लिए, <ph name="DEVICE_LOG_LINK" /> पर जाएं</translation>
 <translation id="126710816202626562">अनुवाद की भाषा:</translation>
 <translation id="126768002343224824">16x</translation>
 <translation id="1272079795634619415">रोकें</translation>
@@ -281,6 +281,7 @@
 <translation id="1340527397989195812">फ़ाइल ऐप्लिकेशन का उपयोग करके डिवाइस से मीडिया का बैक अप लें.</translation>
 <translation id="1341988552785875222">वर्तमान वॉलपेपर '<ph name="APP_NAME" />' द्वारा सेट किया गया है. भिन्न वॉलपेपर चुनने से पहले आपको '<ph name="APP_NAME" />' को अनइंस्टॉल करने की आवश्यकता हो सकती है.</translation>
 <translation id="1343865611738742294">Linux के ऐप्लिकेशन को यूएसबी डिवाइस ऐक्सेस करने की अनुमति दें. यूएसबी डिवाइस को हटाने के बाद Linux उसे याद नहीं रखेगा.</translation>
+<translation id="1344143111673240412">कैमरे की सेटिंग में बदलाव के लिए, Parallels Desktop का फिर से लॉन्च होना ज़रूरी है</translation>
 <translation id="1347256498747320987">अपडेट और ऐप्लिकेशन इंस्टॉल करें. जारी रखकर, आप सहमति देते हैं कि यह डिवाइस Google, आपको मोबाइल और इंटरनेट सेवा देने वाली कंपनी और आपके डिवाइस के निर्माता से अपडेट और ऐप्लिकेशन अपने आप डाउनलोड और इंस्टॉल भी कर सकता है. इसके लिए मोबाइल डेटा का इस्तेमाल किया जा सकता है. इनमें से कुछ ऐप्लिकेशन इन-ऐप्लिकेशन खरीदारियों की सुविधा दे सकते हैं. <ph name="BEGIN_LINK1" />ज़्यादा जानें<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">बैटरी <ph name="BATTERY_LEVEL" />% बचते ही अपडेट शुरू हो जाएगा.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -529,7 +530,6 @@
 <translation id="1645516838734033527">आपके <ph name="DEVICE_TYPE" /> को सुरक्षित बनाए रखने के लिए, Smart Lock को आपके फ़ोन पर स्क्रीन लॉक की ज़रूरत होती है.</translation>
 <translation id="1646982517418478057">कृपया इस प्रमाणपत्र को सुरक्षित करने के लिए पासवर्ड डालें</translation>
 <translation id="1648528859488547844">स्थान तय करने के लिए वाई-फ़ाई या मोबाइल नेटवर्क का इस्तेमाल करें</translation>
-<translation id="1648943974594387137">साइन इन संबंधी जानकारी पुरानी हैं</translation>
 <translation id="164936512206786300">ब्लूटूथ डिवाइस से जुड़ा हुआ डिवाइस हटाएं</translation>
 <translation id="1650371550981945235">इनपुट विकल्प दिखाएं</translation>
 <translation id="1651008383952180276">आपको एक ही 'पासफ़्रेज़' दो बार डालना होगा</translation>
@@ -937,6 +937,7 @@
 <translation id="2151576029659734873">गलत टैब इंडेक्स डाला गया.</translation>
 <translation id="2152281589789213846">अपने प्रोफ़ाइल में प्रिंटर जोड़ें</translation>
 <translation id="2154484045852737596">कार्ड में बदलाव करें</translation>
+<translation id="2154697841132053118">बोली का पता लगाया जा रहा है...</translation>
 <translation id="2154710561487035718">URL की कॉपी बनाएं</translation>
 <translation id="2155772377859296191"><ph name="WIDTH" /> x <ph name="HEIGHT" /> जैसा लगता है</translation>
 <translation id="2156294658807918600">सर्विस वर्कर: <ph name="SCRIPT_URL" /></translation>
@@ -1333,7 +1334,6 @@
 <translation id="2635276683026132559">हस्ताक्षर</translation>
 <translation id="2636625531157955190">Chrome, इमेज को एक्सेस नहीं कर पा रहा.</translation>
 <translation id="2637400434494156704">गलत पिन. आप एक बार और कोशिश कर सकते हैं.</translation>
-<translation id="2638087589890736295">सिंक शुरू करने के लिए पासफ़्रेज़ ज़रूरी है</translation>
 <translation id="2638662041295312666">साइन इन इमेज</translation>
 <translation id="264083724974021997">अपने फ़ोन से जोड़ें - डायलॉग</translation>
 <translation id="2641065435954454414">डाउनलोड होने वाली है</translation>
@@ -1374,6 +1374,7 @@
 <translation id="2682498795777673382">आपके अभिभावक की तरफ़ से अपडेट</translation>
 <translation id="2683638487103917598">फ़ोल्डर क्रमबद्ध किया गया</translation>
 <translation id="2684004000387153598">जारी रखने के लिए, ठीक पर क्लिक करें, फिर व्‍यक्ति जोड़ें पर क्लिक करें, ताकि आप अपने ईमेल पते के लिए नई प्रोफ़ाइल बना सकें.</translation>
+<translation id="2686222346846590368">इस <ph name="DEVICE_TYPE" /> के लिए, अपने-आप होने वाला यह आखिरी साॅफ़्टवेयर और सुरक्षा अपडेट है. आने वाले समय में अपडेट पाने के लिए, नए माॅडल पर अपग्रेड करें. &lt;a target="_blank" href="<ph name="URL" />"&gt;ज़्यादा जानें<ph name="LINK_END" /></translation>
 <translation id="2687403674020088961">सभी कुकी ब्लॉक करें (हम ऐसा करने का सुझाव नहीं देते)</translation>
 <translation id="2687407218262674387">Google सेवा की शर्तें</translation>
 <translation id="2688196195245426394">डिवाइस को सर्वर के साथ पंजीकृत करते समय गड़बड़ी: <ph name="CLIENT_ERROR" />.</translation>
@@ -1396,6 +1397,7 @@
 <translation id="2712173769900027643">अनुमति मांगें</translation>
 <translation id="2713444072780614174">सफ़ेद</translation>
 <translation id="2714393097308983682">Google Play स्टोर</translation>
+<translation id="2714997332747470971">निजी जानकारी के सुझावों की मदद से आप ज़्यादा तेज़ी से लिख सकते हैं. जैसे कि आपके नाम, पता या फ़ोन नंबर के लिए दिए गए सुझाव. आपके खाते पर दिए जाने वाले, निजी और आपके हिसाब से दिए गए सुझाव सिर्फ़ आपको दिखते हैं.</translation>
 <translation id="2715751256863167692">यह अपग्रेड (बेहतर बनाना) आपका Chromebook रीसेट कर देता है और मौजूदा 'उपयोगकर्ता डेटा' हटा देता है.</translation>
 <translation id="2716986496990888774">अभिभावक इस सेटिंग को प्रबंधित करते हैं.</translation>
 <translation id="2718395828230677721">नाइट लाइट</translation>
@@ -1487,7 +1489,6 @@
 <translation id="2809586584051668049">और <ph name="NUMBER_ADDITIONAL_DISABLED" /> और</translation>
 <translation id="2810390687497823527">अगर आप किसी एक्सटेंशन को नहीं पहचानते हैं या आपका ब्राउज़र उम्मीद के मुताबिक काम नहीं कर रहा है, तो आप यहां एक्सटेंशन को बंद कर सकते हैं या उन्हें पसंद के मुताबिक बना सकते हैं.</translation>
 <translation id="2812049959647166806">Thunderbolt काम नहीं करता</translation>
-<translation id="2812944337881233323">प्रस्थान करके और वापस प्रवेश करके देखें</translation>
 <translation id="2812989263793994277">कोई भी चित्र न दिखाएं</translation>
 <translation id="2813094189969465044">माता-पिता के नियंत्रण में</translation>
 <translation id="281390819046738856">अनुरोध पर हस्ताक्षर नहीं किए जा सके.</translation>
@@ -2318,6 +2319,7 @@
 <translation id="3839516600093027468"><ph name="HOST" /> को क्लिपबोर्ड देखने से हमेशा ब्लॉक करें</translation>
 <translation id="3841964634449506551">पासवर्ड अमान्य है</translation>
 <translation id="3842552989725514455">Serif फ़ॉन्ट</translation>
+<translation id="3843058644024807390">माइक्रोफ़ोन की सेटिंग में बदलाव के लिए, Parallels Desktop का फिर से लॉन्च होना ज़रूरी है</translation>
 <translation id="3846116211488856547">वेबसाइटें, Android ऐप्लिकेशन वगैरह बनाने के टूल पाएं. Linux इंस्टॉल करने पर <ph name="DOWNLOAD_SIZE" /> डेटा डाउनलोड होगा.</translation>
 <translation id="3847319713229060696">वेब को सभी के लिए ज़्यादा सुरक्षित बनाने में मदद करें</translation>
 <translation id="385051799172605136">वापस</translation>
@@ -2448,6 +2450,7 @@
 <translation id="3983769721878416534">क्‍लिक से पहले देरी</translation>
 <translation id="3984159763196946143">डेमो मोड शुरू नहीं किया जा सका</translation>
 <translation id="3984431586879874039">इस साइट को अपनी सुरक्षा कुंजी देखने देना चाहते हैं?</translation>
+<translation id="3986705137476756801">अभी के लिए लाइव कैप्शन की सुविधा बंद करें</translation>
 <translation id="3987938432087324095">माफ़ करें, यह समझ में नहीं आया.</translation>
 <translation id="3988996860813292272">समय क्षेत्र चुनें</translation>
 <translation id="399179161741278232">आयातित</translation>
@@ -2892,6 +2895,7 @@
 <translation id="4608520674724523647">सफल नामांकन का चित्र</translation>
 <translation id="4608703838363792434"><ph name="FILE_NAME" /> में संवेदनशील सामग्री है</translation>
 <translation id="4610162781778310380"><ph name="PLUGIN_NAME" /> में कोई गड़बड़ी आई</translation>
+<translation id="4610178114344604329">निजी जानकारी के सुझाव दिखाएं</translation>
 <translation id="4610637590575890427">क्या आपका मतलब <ph name="SITE" /> पर जाने से है ?</translation>
 <translation id="4611114513649582138">डेटा कनेक्शन उपलब्ध है</translation>
 <translation id="4613144866899789710">Linux को इंस्टॉल करना रद्द किया जा रहा है...</translation>
@@ -3169,6 +3173,7 @@
 <translation id="4977942889532008999">एक्सेस के लिए दोबारा पूछें</translation>
 <translation id="4980805016576257426">इस एक्सटेंशन में मैलवेयर है.</translation>
 <translation id="4981449534399733132">अपने सभी सिंक किए हुए डिवाइस और अपने 'Google खाते' से ब्राउज़िंग डेटा साफ़ करने के लिए, <ph name="BEGIN_LINK" />साइन इन करें<ph name="END_LINK" />.</translation>
+<translation id="4982236238228587209">डिवाइस का सॉफ़्टवेयर</translation>
 <translation id="4986728572522335985">ऐसा करने से सुरक्षा कुंजी का पिन और उस पर मौजूद पूरा डेटा मिट जाएगा</translation>
 <translation id="4988526792673242964">पेज</translation>
 <translation id="49896407730300355">घड़ी की &amp;विपरीत दिशा में घुमाएं</translation>
@@ -3407,7 +3412,6 @@
 <translation id="529175790091471945">यह डिवाइस फ़ॉर्मेट करें</translation>
 <translation id="5293170712604732402">सेटिंग को उनके मूल डिफ़ॉल्ट पर बहाल करें</translation>
 <translation id="5294097441441645251">छोटे अक्षर या अंडरस्कोर से शुरू होना चाहिए</translation>
-<translation id="5296471962619441686">सिंक फिर से शुरू करने के लिए गड़बड़ी ठीक करें</translation>
 <translation id="5297082477358294722">पासवर्ड सेव किया गया. अपने <ph name="SAVED_PASSWORDS_STORE" /> में सेव किए गए पासवर्ड देखें और उन्हें प्रबंधित करें.</translation>
 <translation id="5298219193514155779">थीम निर्माता</translation>
 <translation id="5299109548848736476">नज़र न रखें</translation>
@@ -4690,6 +4694,7 @@
 <translation id="6938381444925658529"><ph name="DOMAIN" /> ने कहा है कि आप तय समय से पहले इस डिवाइस को अपडेट करें. जब आप इंटरनेट से कनेक्ट होंगे, तब अपडेट अपने-आप इंस्टॉल हो जाएगा.</translation>
 <translation id="6938386202199793006">आपके पास सेव किया गया एक प्रिंटर है.</translation>
 <translation id="6938789263968032501">लोग</translation>
+<translation id="6939815295902433669">डिवाइस के सॉफ़्टवेयर की समीक्षा करें</translation>
 <translation id="6941937518557314510"><ph name="HOST_NAME" /> को अपने प्रमाणपत्र के साथ अधिकृत करने के लिए, कृपया <ph name="TOKEN_NAME" /> में साइन इन करें.</translation>
 <translation id="6943060957016121200">इंस्टैंट टेदरिंग चालू करें</translation>
 <translation id="6943176775188458830">प्रिंट करना रोकें</translation>
@@ -5161,6 +5166,7 @@
 <translation id="7522255036471229694">"Ok Google" बोलें</translation>
 <translation id="7525067979554623046">बनाएं</translation>
 <translation id="7526658513669652747">{NUM_DOWNLOADS,plural, =1{1 और}one{{NUM_DOWNLOADS} और}other{{NUM_DOWNLOADS} और}}</translation>
+<translation id="7526989658317409655">प्लेसहोल्डर</translation>
 <translation id="7529411698175791732">अपना इंटरनेट कनेक्शन जाँचें. अगर समस्या बनी रहती है, तो साइन आउट करें और दोबारा साइन इन करके देखें.</translation>
 <translation id="7530016656428373557">डिस्चार्ज दर वॉट में</translation>
 <translation id="7531779363494549572">सेटिंग &gt; ऐप्लिकेशन और सूचनाएं &gt; सूचनाएं पर जाएं.</translation>
@@ -5645,7 +5651,7 @@
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> एक एक्सटेंशन की प्रॉक्सी सेटिंग इस्तेमाल कर रहा है</translation>
 <translation id="8097959162767603171">आपके एडमिन को सबसे पहले, Admin console की Chrome डिवाइस सूची में जाकर, सेवा की शर्तों को स्वीकार करना होगा.</translation>
 <translation id="8101987792947961127">अगली बार रीबूट करने पर पावरवॉश ज़रूरी है</translation>
-<translation id="8102139037507939978">system_logs.txt से, व्यक्तिगत पहचान को ज़ाहिर करने वाली जानकारी को बंद करें.</translation>
+<translation id="8102139037507939978">system_logs.txt से, व्यक्तिगत पहचान ज़ाहिर करने वाली जानकारी को हटाएं.</translation>
 <translation id="8102159139658438129">अपने जुड़े हुए फ़ोन के विकल्प देखने के लिए <ph name="LINK_BEGIN" />सेटिंग<ph name="LINK_END" /> पर जाएं</translation>
 <translation id="8104696615244072556">अपने <ph name="IDS_SHORT_PRODUCT_NAME" /> डिवाइस को पावरवॉश करें और पिछले वर्ज़न पर वापस लौटें.</translation>
 <translation id="8107015733319732394">आपके <ph name="DEVICE_TYPE" /> पर Google Play स्टोर इंस्टॉल हो रहा है. इसमें कुछ मिनट लग सकते हैं.</translation>
@@ -5770,7 +5776,6 @@
 <translation id="8256417822772703842"><ph name="PRINTER_NAME" /> में स्याही कम है</translation>
 <translation id="8257950718085972371">कैमरे की एक्सेस ब्लॉक करना जारी रखें</translation>
 <translation id="8259239505248583312">आइए शुरू करें</translation>
-<translation id="8260126382462817229">फिर से प्रवेश करके देखें</translation>
 <translation id="8260864402787962391">माउस</translation>
 <translation id="8261378640211443080">यह एक्सटेंशन <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> में सूचीबद्ध नहीं है और यह आपकी जानकारी के बिना जोड़ा गया हो सकता है.</translation>
 <translation id="8261506727792406068">मिटाएं</translation>
@@ -6202,6 +6207,7 @@
 <translation id="8798441408945964110">कंपनी का नाम</translation>
 <translation id="8800004011501252845">इसके लिए गंतव्य दिखा रहा है:</translation>
 <translation id="8800034312320686233">साइट काम नहीं कर रही है?</translation>
+<translation id="880069872639153240">आप जो भी लिख रहे हैं, उसके आधार पर इमोजी के सुझाव पाएं</translation>
 <translation id="8803953437405899238">एक क्लिक में नया टैब खोलें</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{टैब को किसी और विंडो पर ले जाएं}one{टैब को किसी और विंडो पर ले जाएं}other{टैब को किसी और विंडो पर ले जाएं}}</translation>
 <translation id="8805140816472474147">सिंक शुरू करने के लिए सिंक सेटिंग की पुष्टि करें.</translation>

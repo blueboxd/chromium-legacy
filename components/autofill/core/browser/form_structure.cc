@@ -1061,39 +1061,55 @@ void FormStructure::RetrieveFromCache(
     const FormStructure& cached_form,
     const bool should_keep_cached_value,
     const bool only_server_and_autofill_state) {
-  // Map from field signatures to cached fields.
-  std::map<base::string16, const AutofillField*> cached_fields;
+  // TODO(crbug/1101631) Clean up once the experiment is over.
+  const bool kUseRendererIds = base::FeatureList::IsEnabled(
+      features::kAutofillRetrieveFromCacheWithRendererIds);
+  std::map<base::string16, const AutofillField*> cached_fields_by_name;
+  std::map<FieldRendererId, const AutofillField*> cached_fields_by_id;
   for (size_t i = 0; i < cached_form.field_count(); ++i) {
     auto* const field = cached_form.field(i);
-    cached_fields[field->unique_name()] = field;
+    if (kUseRendererIds)
+      cached_fields_by_id[field->unique_renderer_id] = field;
+    else
+      cached_fields_by_name[field->unique_name()] = field;
   }
   for (auto& field : *this) {
-    const auto& cached_field = cached_fields.find(field->unique_name());
-    if (cached_field != cached_fields.end()) {
+    const AutofillField* cached_field = nullptr;
+    if (kUseRendererIds) {
+      const auto& it = cached_fields_by_id.find(field->unique_renderer_id);
+      if (it != cached_fields_by_id.end())
+        cached_field = it->second;
+    } else {
+      const auto& it = cached_fields_by_name.find(field->unique_name());
+      if (it != cached_fields_by_name.end())
+        cached_field = it->second;
+    }
+
+    if (cached_field) {
       if (!only_server_and_autofill_state) {
         // Transfer attributes of the cached AutofillField to the newly created
         // AutofillField.
-        field->set_heuristic_type(cached_field->second->heuristic_type());
-        field->SetHtmlType(cached_field->second->html_type(),
-                           cached_field->second->html_mode());
-        field->section = cached_field->second->section;
+        field->set_heuristic_type(cached_field->heuristic_type());
+        field->SetHtmlType(cached_field->html_type(),
+                           cached_field->html_mode());
+        field->section = cached_field->section;
         field->set_only_fill_when_focused(
-            cached_field->second->only_fill_when_focused());
+            cached_field->only_fill_when_focused());
       }
       if (should_keep_cached_value) {
-        field->is_autofilled = cached_field->second->is_autofilled;
+        field->is_autofilled = cached_field->is_autofilled;
       }
       if (field->form_control_type != "select-one") {
         bool is_credit_card_field =
-            AutofillType(cached_field->second->Type().GetStorableType())
-                .group() == CREDIT_CARD;
+            AutofillType(cached_field->Type().GetStorableType()).group() ==
+            CREDIT_CARD;
         if (should_keep_cached_value &&
             (is_credit_card_field ||
              base::FeatureList::IsEnabled(
                  features::kAutofillKeepInitialFormValuesInCache))) {
-          field->value = cached_field->second->value;
+          field->value = cached_field->value;
           value_from_dynamic_change_form_ = true;
-        } else if (field->value == cached_field->second->value &&
+        } else if (field->value == cached_field->value &&
                    (!base::FeatureList::IsEnabled(
                         features::
                             kAutofillImportPrefilledCountryAndStateValues) ||
@@ -1105,9 +1121,8 @@ void FormStructure::RetrieveFromCache(
           field->value = base::string16();
         }
       }
-      field->set_server_type(cached_field->second->server_type());
-      field->set_previously_autofilled(
-          cached_field->second->previously_autofilled());
+      field->set_server_type(cached_field->server_type());
+      field->set_previously_autofilled(cached_field->previously_autofilled());
     }
   }
 

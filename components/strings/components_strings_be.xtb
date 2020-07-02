@@ -20,6 +20,7 @@
 <translation id="10614374240317010">Ніколі не захоўваліся</translation>
 <translation id="1062160989074299343">Prc10 (канверт)</translation>
 <translation id="106701514854093668">Закладкі на працоўным стале</translation>
+<translation id="1068672505746868501">Ніколі не перакладаць старонкі на наступнай мове: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1070901266639972381">Ноч</translation>
 <translation id="1074497978438210769">Не абаронена</translation>
 <translation id="1080116354587839789">Дапасаваць да шырыні старонкі</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">Без назвы</translation>
 <translation id="1236081509407217141">Дазволіць VR?</translation>
 <translation id="1240347957665416060">Назва вашай прылады</translation>
+<translation id="124116460088058876">Іншыя мовы</translation>
 <translation id="1250759482327835220">Каб наступны раз плаціць хутчэй, захавайце картку, імя і адрас для выстаўлення рахункаў ва Уліковым запісе Google.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (сінхранізаваныя)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Калі патрэбны вэб-сайт не адкрываецца, паспрабуйце знайсці і вырашыць праблему наступным чынам:&lt;/p&gt;
@@ -839,6 +841,7 @@
 <translation id="4424024547088906515">Серверу не ўдалося даказаць, што гэта <ph name="DOMAIN" />; Chrome не давярае яго сертыфікату бяспекі. Прычынай могуць быць няправільныя налады або зламыснік, які спрабуе перахапіць падключэнне.</translation>
 <translation id="443121186588148776">Паслядоўны порт</translation>
 <translation id="4432688616882109544">Хост <ph name="HOST_NAME" /> не прыняў або не атрымаў ваш сертыфікат уваходу.</translation>
+<translation id="4432792777822557199">Цяпер старонкі на мове <ph name="SOURCE_LANGUAGE" /> будуць перакладацца на мову <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">Усплыв. вокны і перанакіраванні</translation>
 <translation id="4435702339979719576">паштоўка)</translation>
 <translation id="443673843213245140">Выкарыстанне проксі-сервера выключана, але яўная канфігурацыя проксі вызначана.</translation>
@@ -1070,6 +1073,7 @@
 <translation id="5431657950005405462">Файл не знойдзены</translation>
 <translation id="5439770059721715174">Пры праверцы схемы выяўлена памылка (<ph name="ERROR_PATH" />: <ph name="ERROR" />)</translation>
 <translation id="5443468954631487277">У адваротным парадку, рабочым бокам уверх</translation>
+<translation id="5447765697759493033">Гэты сайт не будзе перакладацца</translation>
 <translation id="5452270690849572955">Гэта старонка хоста <ph name="HOST_NAME" /> не знойдзена</translation>
 <translation id="5455374756549232013">Недапушчальная метка часу палітыкі</translation>
 <translation id="5457113250005438886">Несапраўдная</translation>
@@ -1617,6 +1621,7 @@
 <translation id="7716375162095500223">Яшчэ не запампавана або праігнаравана</translation>
 <translation id="7716424297397655342">Не ўдалося загрузіць сайт з кэша</translation>
 <translation id="7723047071702270851">Рэдагаваць картку</translation>
+<translation id="773466115871691567">Заўсёды перакладаць старонкі на наступнай мове: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7740996059027112821">Стандартны</translation>
 <translation id="774634243536837715">Небяспечнае змесціва заблакіравана.</translation>
 <translation id="7752995774971033316">Не пад кіраваннем</translation>
@@ -1762,6 +1767,7 @@
 <translation id="831997045666694187">Вечар</translation>
 <translation id="8332188693563227489">Доступ да хоста <ph name="HOST_NAME" /> забаронены</translation>
 <translation id="833262891116910667">Вылучэнне</translation>
+<translation id="8339163506404995330">Старонкі на мове <ph name="LANGUAGE" /> не будуць перакладацца</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Калі вы разумееце рызыкі бяспекі, можаце <ph name="BEGIN_LINK" />наведаць гэты сайт<ph name="END_LINK" /> да таго, як шкодныя праграмы будуць выдалены.</translation>
 <translation id="8349305172487531364">Панэль закладак</translation>

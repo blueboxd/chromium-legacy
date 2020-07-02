@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_GRID_NG_GRID_LAYOUT_ALGORITHM_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_GRID_NG_GRID_LAYOUT_ALGORITHM_H_
 
+#include "third_party/blink/renderer/core/layout/ng/grid/ng_grid_track_collection.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
@@ -24,12 +25,39 @@ class CORE_EXPORT NGGridLayoutAlgorithm
 
   MinMaxSizesResult ComputeMinMaxSizes(const MinMaxSizesInput&) const override;
 
+  const NGGridBlockTrackCollection& ColumnTrackCollection() const;
+  const NGGridBlockTrackCollection& RowTrackCollection() const;
+
  private:
   friend class NGGridLayoutAlgorithmTest;
 
   void ConstructAndAppendGridItems();
   void ConstructAndAppendGridItem(const NGBlockNode& node);
   NGConstraintSpace BuildSpaceForMeasure(const NGBlockNode& grid_item);
+
+  // Sets the specified tracks for row and column track lists.
+  void BuildTrackLists();
+  // Ensures a range boundary will exist on the start and end of the grid item.
+  void EnsureTrackCoverageForGridItem(const NGBlockNode& grid_item);
+  // Helper for EnsureTrackCoverageForGridItem.
+  static void EnsureTrackCoverageForGridPositions(
+      const GridPosition& start_position,
+      const GridPosition& end_position,
+      NGGridBlockTrackCollection& track_list);
+
+  // Allows a test to set the value for automatic track repetition.
+  void SetAutomaticTrackRepetitionsForTesting(wtf_size_t auto_column,
+                                              wtf_size_t auto_row);
+
+  // TODO(janewman): Track lists should live on the computed style, mirroring
+  // the legacy layout's template_tracks and auto tracks vectors. For now, this
+  // method builds a NGGridTrackList from the legacy types that are already
+  // computed in style.
+  static void AddRepeaters(const Vector<GridTrackSize>& template_tracks,
+                           const Vector<GridTrackSize>& auto_tracks,
+                           wtf_size_t auto_insertion_point,
+                           AutoRepeatType repeat_type,
+                           NGGridTrackList& track_list);
 
   enum class GridLayoutAlgorithmState {
     kMeasuringItems,
@@ -39,6 +67,16 @@ class CORE_EXPORT NGGridLayoutAlgorithm
   struct GridItem {
     NGConstraintSpace constraint_space;
   };
+
+  NGGridTrackList column_track_list_;
+  NGGridTrackList row_track_list_;
+  NGGridBlockTrackCollection column_track_collection_;
+  NGGridBlockTrackCollection row_track_collection_;
+  wtf_size_t automatic_column_repetitions_for_testing =
+      NGGridBlockTrackCollection::kInvalidRangeIndex;
+  wtf_size_t automatic_row_repetitions_for_testing =
+      NGGridBlockTrackCollection::kInvalidRangeIndex;
+
   Vector<GridItem> items_;
 
   LogicalSize child_percentage_size_;

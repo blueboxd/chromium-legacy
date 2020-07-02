@@ -20,6 +20,7 @@
 <translation id="10614374240317010">Никада се не чува</translation>
 <translation id="1062160989074299343">Prc10 (коверат)</translation>
 <translation id="106701514854093668">Обележивачи на рачунару</translation>
+<translation id="1068672505746868501">Никад не преводи странице на језику <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1070901266639972381">Ноћ</translation>
 <translation id="1074497978438210769">Није безбедно</translation>
 <translation id="1080116354587839789">Уклопите по ширини</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">Без наслова</translation>
 <translation id="1236081509407217141">Дозволићете ВР?</translation>
 <translation id="1240347957665416060">Назив уређаја</translation>
+<translation id="124116460088058876">Још језика</translation>
 <translation id="1250759482327835220">Да бисте следећи пут платили брже, сачувајте картицу, име и адресу за обрачун на Google налогу.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (синхронизовано)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Ако посетите веб-сајт и он се не отвори, прво пробајте да отклоните грешку помоћу ових корака за решавање проблема:&lt;/p&gt;
@@ -840,6 +842,7 @@
 <translation id="4424024547088906515">Овај сервер не може да докаже да је <ph name="DOMAIN" />; Chrome нема поверења у његов безбедносни сертификат. Узрок томе је можда погрешна конфигурација или нападач који је прекинуо везу.</translation>
 <translation id="443121186588148776">Серијски порт</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> није прихватио сертификат за пријављивање или сертификат за пријављивање није приложен.</translation>
+<translation id="4432792777822557199">Странице на језику <ph name="SOURCE_LANGUAGE" /> ће се од сада преводити на <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">Искачући прозори и преусмеравања</translation>
 <translation id="4435702339979719576">разгледница)</translation>
 <translation id="443673843213245140">Коришћење проксија је онемогућено, али је наведена експлицитна конфигурација проксија.</translation>
@@ -1071,6 +1074,7 @@
 <translation id="5431657950005405462">Датотека није пронађена</translation>
 <translation id="5439770059721715174">Грешка у валидацији шеме на „<ph name="ERROR_PATH" />“: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Обрнутим редоследом са одштампаном страном нагоре</translation>
+<translation id="5447765697759493033">Овај сајт се неће преводити</translation>
 <translation id="5452270690849572955">Није могуће пронаћи ову страницу хоста <ph name="HOST_NAME" /></translation>
 <translation id="5455374756549232013">Неисправна временска ознака смерница</translation>
 <translation id="5457113250005438886">Неважеће</translation>
@@ -1616,6 +1620,7 @@
 <translation id="7716375162095500223">Још није отпремљено или је игнорисано</translation>
 <translation id="7716424297397655342">Није могуће учитати овај сајт из кеша</translation>
 <translation id="7723047071702270851">Измените картицу</translation>
+<translation id="773466115871691567">Увек предводи странице на језику <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7740996059027112821">Стандардно</translation>
 <translation id="774634243536837715">Опасан садржај је блокиран.</translation>
 <translation id="7752995774971033316">Не управља</translation>
@@ -1761,6 +1766,7 @@
 <translation id="831997045666694187">Увече</translation>
 <translation id="8332188693563227489">Приступ хосту <ph name="HOST_NAME" /> је одбијен</translation>
 <translation id="833262891116910667">Истицање</translation>
+<translation id="8339163506404995330">Странице на језику <ph name="LANGUAGE" /> се неће преводити</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Ако разумете безбедносне ризике, можете да <ph name="BEGIN_LINK" />посетите овај сајт<ph name="END_LINK" /> пре него што уклонимо штетне програме.</translation>
 <translation id="8349305172487531364">Трака са обележивачима</translation>

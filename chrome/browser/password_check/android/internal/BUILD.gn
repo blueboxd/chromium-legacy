@@ -5,7 +5,7 @@
 import("//build/config/android/rules.gni")
 import("//chrome/android/features/android_library_factory_tmpl.gni")
 
-_factory_sources = [ "java/src/org/chromium/chrome/browser/password_check/PasswordCheckComponentFactory.java" ]
+_factory_sources = [ "java/src/org/chromium/chrome/browser/password_check/PasswordCheckFactory.java" ]
 _public_target = "//chrome/browser/password_check/android:public_java"
 
 android_library_factory("public_factory_java") {
@@ -22,11 +22,40 @@ android_library("internal_factory_java") {
   sources = _factory_sources
 }
 
-android_library("internal_java") {
+_ui_factory_sources = [ "java/src/org/chromium/chrome/browser/password_check/PasswordCheckComponentUiFactory.java" ]
+_public_ui_target = "//chrome/browser/password_check/android:public_ui_java"
+
+android_library_factory("public_ui_factory_java") {
   deps = [
-    "//chrome/android:chrome_java",
-    "//chrome/browser/settings:java",
+    "//third_party/android_deps:androidx_fragment_fragment_java",
+    "//third_party/android_deps:androidx_preference_preference_java",
+    _public_ui_target,
+  ]
+  sources = _ui_factory_sources
+}
+
+android_library("internal_ui_factory_java") {
+  deps = [
+    ":internal_java",
     _public_target,
   ]
-  sources = [ "java/src/org/chromium/chrome/browser/password_check/PasswordCheckCoordinator.java" ]
+  sources = _ui_factory_sources
+}
+
+android_library("internal_java") {
+  deps = [
+    "//chrome/android:chrome_app_java_resources",
+    "//chrome/android:chrome_java",
+    "//chrome/browser/password_check/android:public_ui_java",
+    "//chrome/browser/profiles/android:java",
+    "//chrome/browser/settings:java",
+    "//chrome/browser/ui/android/strings:ui_strings_grd",
+    "//third_party/android_deps:androidx_fragment_fragment_java",
+    "//third_party/android_deps:androidx_preference_preference_java",
+    _public_target,
+  ]
+  sources = [
+    "java/src/org/chromium/chrome/browser/password_check/PasswordCheckCoordinator.java",
+    "java/src/org/chromium/chrome/browser/password_check/PasswordCheckImpl.java",
+  ]
 }

@@ -529,7 +529,6 @@
 <translation id="1645516838734033527">Kad būtų galima apsaugoti „<ph name="DEVICE_TYPE" />“, „Smart Lock“ reikia užrakinti telefono ekraną.</translation>
 <translation id="1646982517418478057">Kad užšifruotumėte šį sertifikatą, įveskite slaptažodį</translation>
 <translation id="1648528859488547844">Naudoti „Wi‑Fi“ arba mobiliojo ryšio tinklus vietovei nustatyti</translation>
-<translation id="1648943974594387137">Išsami prisijungimo informacija pasenusi</translation>
 <translation id="164936512206786300">„Bluetooth“ įrenginio atsiejimas</translation>
 <translation id="1650371550981945235">Rodyti įvesties parinktis</translation>
 <translation id="1651008383952180276">Reikia dukart įvesti tą pačią slaptafrazę</translation>
@@ -1333,7 +1332,6 @@ Jei nenorite, dabar atsijunkite, kad šios paskyros pakeitimai būtų matomi ši
 <translation id="2635276683026132559">Pasirašymas</translation>
 <translation id="2636625531157955190">„Chrome“ negali pasiekti vaizdo.</translation>
 <translation id="2637400434494156704">Neteisingas PIN kodas. Jums liko vienas bandymas.</translation>
-<translation id="2638087589890736295">Norint pradėti sinchronizuoti reikalinga slaptafrazė</translation>
 <translation id="2638662041295312666">Prisijungimo vaizdas</translation>
 <translation id="264083724974021997">Susiejimas su telefonu – dialogo langas</translation>
 <translation id="2641065435954454414">Ruošiamasi atsisiųsti</translation>
@@ -1487,7 +1485,6 @@ Jei nenorite, dabar atsijunkite, kad šios paskyros pakeitimai būtų matomi ši
 <translation id="2809586584051668049">ir dar <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
 <translation id="2810390687497823527">Jei neatpažįstate plėtinio arba jei jūsų naršyklė neveikia, kaip numatyta, galite išjungti arba tinkinti plėtinius čia.</translation>
 <translation id="2812049959647166806">„Thunderbolt“ nepalaikoma</translation>
-<translation id="2812944337881233323">Bandykite atsijungti ir vėl prisijungti</translation>
 <translation id="2812989263793994277">Nerodyti jokių vaizdų</translation>
 <translation id="2813094189969465044">Tėvų kontrolė</translation>
 <translation id="281390819046738856">Nepavyko pasirašyti užklausos.</translation>
@@ -3408,7 +3405,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="529175790091471945">Formatuoti šį įrenginį</translation>
 <translation id="5293170712604732402">Atkurti pradinius numatytuosius nustatymus</translation>
 <translation id="5294097441441645251">Turi prasidėti mažąja raide arba apatiniu brūkšniu</translation>
-<translation id="5296471962619441686">Pašalinkite klaidą, kad atnaujintumėte sinchronizavimą</translation>
 <translation id="5297082477358294722">Slaptažodis išsaugotas. Peržiūrėkite ir tvarkykite išsaugotus slaptažodžius <ph name="SAVED_PASSWORDS_STORE" />.</translation>
 <translation id="5298219193514155779">Temą sukūrė</translation>
 <translation id="5299109548848736476">Nestebėti</translation>
@@ -5773,7 +5769,6 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="8256417822772703842">Spausdintuve „<ph name="PRINTER_NAME" />“ mažai rašalo</translation>
 <translation id="8257950718085972371">Ir toliau blokuoti prieigą prie fotoaparato</translation>
 <translation id="8259239505248583312">Pradėti</translation>
-<translation id="8260126382462817229">Bandykite prisijungti dar kartą</translation>
 <translation id="8260864402787962391">Pelė</translation>
 <translation id="8261378640211443080">Šio plėtinio nėra „<ph name="IDS_EXTENSION_WEB_STORE_TITLE" />“ sąraše. Jis galėjo būti pridėtas be jūsų žinios.</translation>
 <translation id="8261506727792406068">Ištrinti</translation>

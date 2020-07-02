@@ -10,7 +10,6 @@
 <translation id="1049743911850919806">છૂપી</translation>
 <translation id="10614374240317010">ક્યારેય ન સચવાયેલું</translation>
 <translation id="1067922213147265141">અન્ય Google સેવાઓ</translation>
-<translation id="1068672505746868501">પેજનો ક્યારેય પણ <ph name="SOURCE_LANGUAGE" />માં અનુવાદ કરશો નહીં</translation>
 <translation id="107147699690128016">જો તમે ફાઇલનું એક્સ્ટેંશન બદલશો, તો તે કોઈ અલગ ઍપ્લિકેશનમાં ખુલી શકે છે અને તમારા ડિવાઇસ માટે નુકસાનકારક હોવાનું સંભવિત હોય શકે.</translation>
 <translation id="1100066534610197918">ગ્રૂપમાં નવા ટૅબમાં ખોલો</translation>
 <translation id="1105960400813249514">સ્ક્રીન કૅપ્ચર</translation>
@@ -35,13 +34,11 @@
 <translation id="1229399675748764149">આ પેજને તમારું હોમપેજ બનાવો</translation>
 <translation id="1231733316453485619">સિંક કરવાનું ચાલુ કરીએ?</translation>
 <translation id="123724288017357924">કૅશ કરેલ કન્ટેન્ટને અવગણીને વર્તમાન પેજ ફરીથી લોડ કરો</translation>
-<translation id="124116460088058876">વધુ ભાષાઓ</translation>
 <translation id="124678866338384709">વર્તમાન ટૅબ બંધ કરો</translation>
 <translation id="1258753120186372309">Google ડૂડલ: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">શોધો તેમજ શોધખોળ કરો</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> શેર કરી શકાયો નથી</translation>
 <translation id="1283039547216852943">વિસ્તૃત કરવા માટે ટૅપ કરો</translation>
-<translation id="1285320974508926690">આ સાઇટનું ક્યારેય ભાષાંતર કરશો નહીં</translation>
 <translation id="1291207594882862231">ઇતિહાસ, કુકી, સાઇટ ડેટા, કૅશ સાફ કરો…</translation>
 <translation id="129553762522093515">તાજેતરમાં બંધ કરેલા</translation>
 <translation id="1303339473099049190">તે પાસવર્ડ શોધી શકતા નથી. તમારી જોડણી ચેક કરો અને ફરીથી પ્રયાસ કરો.</translation>
@@ -239,7 +236,6 @@
 <translation id="2898264748040935573">સાચવેલા પાસવર્ડમાં ફેરફાર કરો</translation>
 <translation id="2900528713135656174">ઇવેન્ટ બનાવો</translation>
 <translation id="2903493209154104877">સરનામાંઓ</translation>
-<translation id="290376772003165898">પેજ <ph name="LANGUAGE" />માં નથી?</translation>
 <translation id="2904414404539560095">કોઈ ટૅબ સાથે શેર કરવાના ડિવાઇસની સૂચિ સંપૂર્ણ ઊંચાઈએ ખૂલે છે.</translation>
 <translation id="2905036901251765993">નજીકના લોકો સાથે શેર કરવા માટે, તેમને આ QR કોડ તપાસવા દો</translation>
 <translation id="2909615210195135082">Google નોટિફિકેશન પ્લૅટફૉર્મ</translation>
@@ -415,7 +411,6 @@
 <translation id="4405224443901389797">આમાં ખસેડો…</translation>
 <translation id="4411535500181276704">લાઇટ મોડ</translation>
 <translation id="4415276339145661267">તમારું Google એકાઉન્ટ મેનેજ કરો</translation>
-<translation id="4432792777822557199">હવેથી <ph name="SOURCE_LANGUAGE" />માં છે તે પેજનો અનુવાદ <ph name="TARGET_LANGUAGE" />માં થશે</translation>
 <translation id="4440958355523780886">Google દ્વારા પ્રદાન કરવામાં આવેલું લાઇટ પેજ. ઑરિજિનલ લોડ કરવા માટે ટૅપ કરો.</translation>
 <translation id="4452411734226507615"><ph name="TAB_TITLE" /> ટૅબ બંધ કરો</translation>
 <translation id="4452548195519783679"><ph name="FOLDER_NAME" /> પર બુકમાર્ક કર્યું</translation>
@@ -550,7 +545,6 @@
 <translation id="543509235395288790"><ph name="COUNT" /> ફાઇલ (<ph name="MEGABYTES" />) ડાઉનલોડ કરી રહ્યાં છીએ.</translation>
 <translation id="5441522332038954058">સરનામાં બાર પર જાઓ</translation>
 <translation id="5447201525962359567">કુકીઝ અને અન્ય સ્થાનિક રીતે સંગ્રહિત કરેલ ડેટા સહિત, બધું સાઇટ સ્ટોરેજ</translation>
-<translation id="5447765697759493033">આ સાઇટનો અનુવાદ થશે નહીં</translation>
 <translation id="545042621069398927">તમારા ડાઉનલોડની ગતિ વધારી રહ્યાં છીએ.</translation>
 <translation id="5456381639095306749">પૃષ્ઠ ડાઉનલોડ કરો</translation>
 <translation id="548278423535722844">નકશા અ‍ૅપ્લિકેશનમાં ખોલો</translation>
@@ -580,7 +574,6 @@
 <translation id="5659593005791499971">ઇમેઇલ</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> માં ઇવેન્ટ બનાવો</translation>
 <translation id="5668404140385795438">ઝૂમ વધારવાનું અટકાવવા માટે વેબસાઇટની વિનંતી ઑવરરાઇડ કરો</translation>
-<translation id="5684874026226664614">અરેરે. આ પૃષ્ઠનો અનુવાદ કરી શકાયો નથી.</translation>
 <translation id="5686790454216892815">ફાઇલનું નામ ખૂબ લાંબું છે</translation>
 <translation id="5694049548840660018">પાછા સરળતાથી હોમ પર જાઓ</translation>
 <translation id="569536719314091526">વધુ વિકલ્પો બટનમાંથી આ પેજનો અનુવાદ કોઈપણ ભાષામાં કરો</translation>
@@ -734,7 +727,6 @@
 <translation id="6767294960381293877">કોઈ ટૅબ સાથે શેર કરવાના ડિવાઇસની સૂચિ અડધી ઊંચાઈએ ખૂલે છે.</translation>
 <translation id="6811034713472274749">પેજ જોવા માટે તૈયાર છે</translation>
 <translation id="6820686453637990663">CVC</translation>
-<translation id="6831043979455480757">અનુવાદ કરો</translation>
 <translation id="6845325883481699275">Chrome સુરક્ષાને વધુ સારી બનાવવામાં સહાય કરો</translation>
 <translation id="6846298663435243399">લોડ કરી રહ્યાં છે…</translation>
 <translation id="6850409657436465440">તમારું ડાઉનલોડ હજી પણ પ્રક્રિયામાં છે</translation>
@@ -842,7 +834,6 @@
 <translation id="7698359219371678927"><ph name="APP_NAME" /> માં ઇમેઇલ બનાવો</translation>
 <translation id="7704317875155739195">શોધ અને URLsને આપમેળે પૂર્ણ કરો</translation>
 <translation id="7725024127233776428">બુકમાર્ક કરેલા પેજ અહીં દેખાય છે</translation>
-<translation id="773466115871691567">હંમેશાં પેજનો <ph name="SOURCE_LANGUAGE" />માં અનુવાદ કરો</translation>
 <translation id="7746457520633464754">જોખમી ઍપ અને સાઇટ શોધી કાઢવા માટે, Chrome તમે મુલાકાત લો તે કેટલાક પેજના URLs, સિસ્ટમ વિશેની સીમિત માહિતી અને પેજનું કેટલુંક કન્ટેન્ટ Googleને મોકલે છે</translation>
 <translation id="7757787379047923882"><ph name="DEVICE_NAME" />માંથી ટેક્સ્ટ શેર કરી</translation>
 <translation id="7761849928583394409">તારીખ અને સમય પસંદ કરો</translation>
@@ -922,7 +913,6 @@
 <translation id="8310344678080805313">માનક ટેબ્સ</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> અને વધુ સાઇટ</translation>
 <translation id="8327155640814342956">બ્રાઉઝિંગનો શ્રેષ્ઠ અનુભવ મેળવવા અપડેટ કરવા માટે Chrome ખોલો</translation>
-<translation id="8339163506404995330"><ph name="LANGUAGE" />માં છે તે પેજનો અનુવાદ થશે નહીં</translation>
 <translation id="8349013245300336738">વપરાયેલ ડેટાના પ્રમાણ અનુસાર સૉર્ટ કરો</translation>
 <translation id="8364299278605033898">લોકપ્રિય વેબસાઇટ જુઓ</translation>
 <translation id="8368027906805972958">અજાણ્યું અથવા અસમર્થિત ડિવાઇસ (<ph name="DEVICE_ID" />)</translation>

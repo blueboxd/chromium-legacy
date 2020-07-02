@@ -131,7 +131,6 @@ class ExistingUserController : public LoginDisplay::Delegate,
                const content::NotificationDetails& details) override;
 
   // Set a delegate that we will pass AuthStatusConsumer events to.
-  // Used for testing.
   void set_login_status_consumer(AuthStatusConsumer* consumer) {
     auth_status_consumer_ = consumer;
   }

@@ -137,8 +137,10 @@ void LoginDisplayMojo::OnPreferencesChanged() {
 }
 
 void LoginDisplayMojo::SetUIEnabled(bool is_enabled) {
-  if (is_enabled)
+  // OOBE UI is null iff we display the user adding screen.
+  if (is_enabled && host_->GetOobeUI() != nullptr) {
     host_->GetOobeUI()->ShowOobeUI(false);
+  }
 }
 
 void LoginDisplayMojo::ShowError(int error_msg_id,

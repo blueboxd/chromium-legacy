@@ -18,6 +18,7 @@ Sommige kenmerke kan dalk nie beskikbaar wees nie en veranderings aan voorkeure 
 <translation id="1774152462503052664">Laat Chromium in die agtergrond loop</translation>
 <translation id="1779356040007214683">Om Chromium veiliger te maak, het ons sekere uitbreidings wat nie in die <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> gelys is nie, gedeaktiveer en kon dit sonder jou medewete bygevoeg gewees het.</translation>
 <translation id="1808667845054772817">Herinstalleer Chromium</translation>
+<translation id="1865035435995743337">Chromium kan nie jou toestelsagteware nagaan nie. Probeer jou internetverbinding nagaan.</translation>
 <translation id="1881322772814446296">Jy meld tans met 'n bestuurde rekening aan en gee sy administrateur beheer oor jou Chromium-profiel. Jou Chromium-data, soos jou programme, boekmerke, geskiedenis, wagwoorde en ander instellings sal permanent aan <ph name="USER_NAME" /> gekoppel word. Jy sal hierdie data via die Google-rekening se kontroleskerm kan uitvee, maar jy sal nie hierdie data met 'n ander rekening kan assosieer nie. Jy het die opsie om 'n nuwe profiel te skep om jou bestaande Chromium-data apart te hou. <ph name="LEARN_MORE" /></translation>
 <translation id="1911763535808217981">Deur dit af te skakel, kan jy by Google-werwe soos Gmail aanmeld sonder om by Chromium aan te meld</translation>
 <translation id="1929939181775079593">Chromium reageer nie. Herbegin nou?</translation>
@@ -116,6 +117,7 @@ Sommige kenmerke kan dalk nie beskikbaar wees nie en veranderings aan voorkeure 
 <translation id="5480860683791598150">Chromium het toegang tot jou ligging nodig om jou ligging met hierdie werf te deel</translation>
 <translation id="549669000822060376">Wag terwyl Chromium die jongste stelselopdaterings installeer.</translation>
 <translation id="5496810170689441661">Chromium probeer tans om wagwoorde te wysig. Tik jou Windows-wagwoord in om dit toe te laat.</translation>
+<translation id="5556694182460963866">Jou administrateur het Chromium se kontrolering vir skadelike sagteware gedeaktiveer</translation>
 <translation id="5623402015214259806">{0,plural, =0{'n Chromium-opdatering is beskikbaar}=1{'n Chromium-opdatering is beskikbaar}other{'n Chromium-opdatering is al # dae lank beskikbaar}}</translation>
 <translation id="5631814766731275228">Chromium-naam en -prent</translation>
 <translation id="5634636535844844681">Chromium vereis Windows 7 of nuwer.</translation>
@@ -196,6 +198,7 @@ Chromium kan nie jou instellings herwin nie.</translation>
       Chromium-bedryfstelselinstellings<ph name="LINK_END" /> kyk</translation>
 <translation id="761356813943268536">Chromium gebruik tans jou kamera en mikrofoon.</translation>
 <translation id="7617377681829253106">Chromium het pas beter geword</translation>
+<translation id="7628001322379820951">Chromium het skadelike sagteware op jou rekenaar gekry</translation>
 <translation id="7686590090926151193">Chromium is nie jou verstekblaaier nie</translation>
 <translation id="7689606757190482937">Sinkroniseer en personaliseer Chromium op al jou toestelle</translation>
 <translation id="7729447699958282447">Chromium kon nie jou data sinkroniseer nie, omdat Sinkronisering nie vir jou domein beskikbaar is nie.</translation>

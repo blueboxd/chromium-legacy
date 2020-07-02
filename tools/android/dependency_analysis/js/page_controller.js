@@ -24,10 +24,14 @@ class PageController {
   }
 
   /**
-   * @param {string} nodeName The node to add.
+   * Adds all supplied nodes to the node filter, then calls `updateGraphData`
+   * once at the very end, even if `nodeNames` is empty.
+   * @param {!Array<string>} nodeNames The nodes to add.
    */
-  addIncludedNode(nodeName) {
-    this.pageModel_.nodeFilterData.addNode(nodeName);
+  addIncludedNodes(nodeNames) {
+    for (const nodeName of nodeNames) {
+      this.pageModel_.nodeFilterData.addNode(nodeName);
+    }
     this.graphView_.updateGraphData(this.pageModel_.getDataForD3());
   }
 

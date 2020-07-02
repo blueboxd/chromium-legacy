@@ -414,12 +414,19 @@ void SkiaOutputSurfaceImpl::SwapBuffers(OutputSurfaceFrame frame) {
       current_buffer_ = 0u;
   }
   current_buffer_modified_ = false;
+
+  base::TimeTicks post_task_timestamp;
+  if (should_measure_next_post_task_) {
+    should_measure_next_post_task_ = false;
+    post_task_timestamp = base::TimeTicks::Now();
+  }
+
   // impl_on_gpu_ is released on the GPU thread by a posted task from
   // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
-  auto callback =
-      base::BindOnce(&SkiaOutputSurfaceImplOnGpu::SwapBuffers,
-                     base::Unretained(impl_on_gpu_.get()), std::move(frame),
-                     std::move(deferred_framebuffer_draw_closure_));
+  auto callback = base::BindOnce(&SkiaOutputSurfaceImplOnGpu::SwapBuffers,
+                                 base::Unretained(impl_on_gpu_.get()),
+                                 post_task_timestamp, std::move(frame),
+                                 std::move(deferred_framebuffer_draw_closure_));
   ScheduleGpuTask(std::move(callback), std::move(resource_sync_tokens_));
 
   // Recreate |root_recorder_| after SwapBuffers has been scheduled on GPU
@@ -497,11 +504,19 @@ gpu::SyncToken SkiaOutputSurfaceImpl::SubmitPaint(
       it->second->clear_image();
     }
     DCHECK(!on_finished);
-    auto closure = base::BindOnce(
-        &SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass,
-        base::Unretained(impl_on_gpu_.get()), current_paint_->render_pass_id(),
-        std::move(ddl), std::move(images_in_current_paint_),
-        resource_sync_tokens_, sync_fence_release_);
+
+    base::TimeTicks post_task_timestamp;
+    if (should_measure_next_post_task_) {
+      should_measure_next_post_task_ = false;
+      post_task_timestamp = base::TimeTicks::Now();
+    }
+
+    auto closure =
+        base::BindOnce(&SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass,
+                       base::Unretained(impl_on_gpu_.get()),
+                       post_task_timestamp, current_paint_->render_pass_id(),
+                       std::move(ddl), std::move(images_in_current_paint_),
+                       resource_sync_tokens_, sync_fence_release_);
     ScheduleGpuTask(std::move(closure), std::move(resource_sync_tokens_));
   } else {
     // Draw on the root render pass.
@@ -1018,4 +1033,7 @@ gfx::Rect SkiaOutputSurfaceImpl::GetCurrentFramebufferDamage() const {
   return damage_of_buffers_[current_buffer_];
 }
 
+void SkiaOutputSurfaceImpl::SetNeedsMeasureNextDrawLatency() {
+  should_measure_next_post_task_ = true;
+}
 }  // namespace viz

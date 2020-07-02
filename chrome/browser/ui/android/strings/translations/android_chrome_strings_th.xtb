@@ -10,7 +10,6 @@
 <translation id="1049743911850919806">โหมดไม่ระบุตัวตน</translation>
 <translation id="10614374240317010">ไม่เคยบันทึก</translation>
 <translation id="1067922213147265141">บริการอื่นๆ ของ Google</translation>
-<translation id="1068672505746868501">ไม่ต้องแปลหน้าเว็บภาษา<ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="107147699690128016">หากคุณเปลี่ยนนามสกุลไฟล์ ไฟล์นั้นอาจเปิดในแอปพลิเคชันอื่นและเป็นอันตรายต่ออุปกรณ์ของคุณ</translation>
 <translation id="1100066534610197918">เปิดในแท็บใหม่ในกลุ่ม</translation>
 <translation id="1105960400813249514">จับภาพหน้าจอ</translation>
@@ -35,13 +34,11 @@
 <translation id="1229399675748764149">ทำให้หน้านี้เป็นหน้าแรก</translation>
 <translation id="1231733316453485619">เปิดการซิงค์ไหม</translation>
 <translation id="123724288017357924">โหลดหน้าปัจจุบันซ้ำ โดยไม่คำนึงถึงเนื้อหาที่แคชไว้</translation>
-<translation id="124116460088058876">ภาษาเพิ่มเติม</translation>
 <translation id="124678866338384709">ปิดแท็บปัจจุบัน</translation>
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">ค้นหาและสำรวจ</translation>
 <translation id="1266864766717917324">แชร์<ph name="CONTENT_TYPE" />ไม่ได้</translation>
 <translation id="1283039547216852943">แตะเพื่อขยาย</translation>
-<translation id="1285320974508926690">ไม่ต้องแปลเว็บไซต์นี้</translation>
 <translation id="1291207594882862231">ล้างประวัติการเข้าชม คุกกี้ ข้อมูลเว็บไซต์ แคช…</translation>
 <translation id="129553762522093515">เพิ่งปิด</translation>
 <translation id="1303339473099049190">ไม่พบรหัสผ่านดังกล่าว โปรดตรวจสอบการสะกดแล้วลองอีกครั้ง</translation>
@@ -239,7 +236,6 @@
 <translation id="2898264748040935573">แก้ไขรหัสผ่านที่เก็บไว้</translation>
 <translation id="2900528713135656174">สร้างกิจกรรม</translation>
 <translation id="2903493209154104877">ที่อยู่</translation>
-<translation id="290376772003165898">หน้านี้ไม่ใช่ภาษา<ph name="LANGUAGE" />ใช่ไหม</translation>
 <translation id="2904414404539560095">รายการอุปกรณ์ที่จะแชร์แท็บด้วยเปิดอยู่ที่ระดับความสูงเต็มหน้าจอ</translation>
 <translation id="2905036901251765993">หากต้องการแชร์กับผู้คนที่อยู่ใกล้ๆ ให้สแกนคิวอาร์โค้ดนี้</translation>
 <translation id="2909615210195135082">แพลตฟอร์มการแจ้งเตือนของ Google</translation>
@@ -415,7 +411,6 @@
 <translation id="4405224443901389797">ย้ายไปที่…</translation>
 <translation id="4411535500181276704">โหมด Lite</translation>
 <translation id="4415276339145661267">จัดการบัญชี Google</translation>
-<translation id="4432792777822557199">จากนี้ไประบบจะแปลหน้าภาษา<ph name="SOURCE_LANGUAGE" />เป็นภาษา<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4440958355523780886">หน้าเวอร์ชัน Lite จัดเตรียมโดย Google แตะเพื่อโหลดต้นฉบับ</translation>
 <translation id="4452411734226507615">ปิดแท็บ <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">เพิ่มบุ๊กมาร์กไปยัง <ph name="FOLDER_NAME" /> แล้ว</translation>
@@ -550,7 +545,6 @@
 <translation id="543509235395288790">กำลังดาวน์โหลด <ph name="COUNT" /> ไฟล์ (<ph name="MEGABYTES" />)</translation>
 <translation id="5441522332038954058">ข้ามไปยังแถบที่อยู่เว็บ</translation>
 <translation id="5447201525962359567">พื้นที่เก็บข้อมูลเว็บไซต์ทั้งหมด รวมถึงคุกกี้และข้อมูลอื่นๆ ที่เก็บไว้ในเครื่อง</translation>
-<translation id="5447765697759493033">ระบบจะไม่แปลไซต์นี้</translation>
 <translation id="545042621069398927">กำลังเพิ่มความเร็วในการดาวน์โหลด</translation>
 <translation id="5456381639095306749">ดาวน์โหลดหน้า</translation>
 <translation id="548278423535722844">เปิดในแอปแผนที่</translation>
@@ -580,7 +574,6 @@
 <translation id="5659593005791499971">อีเมล</translation>
 <translation id="5665379678064389456">สร้างกิจกรรมใน <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">ลบล้างคำขอของเว็บไซต์เพื่อป้องกันการซูมเข้า</translation>
-<translation id="5684874026226664614">อ๊ะ หน้านี้ไม่สามารถแปลได้</translation>
 <translation id="5686790454216892815">ชื่อไฟล์ยาวเกินไป</translation>
 <translation id="5694049548840660018">กลับสู่หน้าแรกได้ง่ายๆ</translation>
 <translation id="569536719314091526">แปลหน้านี้เป็นภาษาใดก็ได้จากปุ่มตัวเลือกเพิ่มเติม</translation>
@@ -734,7 +727,6 @@
 <translation id="6767294960381293877">รายการอุปกรณ์ที่จะแชร์แท็บด้วยเปิดอยู่ที่ระดับความสูงครึ่งหนึ่งของหน้าจอ</translation>
 <translation id="6811034713472274749">พร้อมดูหน้าเว็บแล้ว</translation>
 <translation id="6820686453637990663">CVC</translation>
-<translation id="6831043979455480757">แปลภาษา</translation>
 <translation id="6845325883481699275">ช่วยปรับปรุงความปลอดภัยของ Chrome</translation>
 <translation id="6846298663435243399">กำลังโหลด…</translation>
 <translation id="6850409657436465440">ระบบยังดาวน์โหลดอยู่</translation>
@@ -842,7 +834,6 @@
 <translation id="7698359219371678927">สร้างอีเมลใน <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">เติมข้อความค้นหาและ URL อัตโนมัติ</translation>
 <translation id="7725024127233776428">หน้าที่คุณบุ๊กมาร์กไว้จะปรากฏที่นี่</translation>
-<translation id="773466115871691567">แปลหน้าเว็บภาษา<ph name="SOURCE_LANGUAGE" />ทุกครั้ง</translation>
 <translation id="7746457520633464754">ในการตรวจหาแอปและเว็บไซต์ที่เป็นอันตราย Chrome จะส่ง URL ของหน้าบางหน้าที่คุณเข้าชม ข้อมูลระบบที่จำกัด และเนื้อหาบางส่วนของหน้าไปให้ Google</translation>
 <translation id="7757787379047923882">ข้อความที่แชร์จาก <ph name="DEVICE_NAME" /></translation>
 <translation id="7761849928583394409">เลือกวันที่และเวลา</translation>
@@ -922,7 +913,6 @@
 <translation id="8310344678080805313">แท็บมาตรฐาน</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> และเว็บไซต์อื่นๆ</translation>
 <translation id="8327155640814342956">โปรดเปิดเพื่ออัปเดต Chrome เพื่อให้ได้รับประสบการณ์การท่องเว็บที่ดีที่สุด</translation>
-<translation id="8339163506404995330">ระบบจะไม่แปลหน้าเว็บภาษา<ph name="LANGUAGE" /></translation>
 <translation id="8349013245300336738">จัดเรียงตามปริมาณเน็ตมือถือที่ใช้</translation>
 <translation id="8364299278605033898">ดูเว็บไซต์ยอดนิยม</translation>
 <translation id="8368027906805972958">อุปกรณ์ที่ไม่รู้จักหรือไม่รองรับ (<ph name="DEVICE_ID" />)</translation>

@@ -10,7 +10,6 @@
 <translation id="1049743911850919806">Inkognito</translation>
 <translation id="10614374240317010">Nie speichern für…</translation>
 <translation id="1067922213147265141">Weitere Google-Dienste</translation>
-<translation id="1068672505746868501">Seiten auf <ph name="SOURCE_LANGUAGE" /> nie übersetzen</translation>
 <translation id="107147699690128016">Eine Änderung der Dateiendung kann zum Öffnen der Datei in einer anderen Anwendung führen und Schäden an Ihrem Gerät verursachen.</translation>
 <translation id="1100066534610197918">In neuem Tab in Gruppe öffnen</translation>
 <translation id="1105960400813249514">Bildschirmaufnahme</translation>
@@ -35,13 +34,11 @@
 <translation id="1229399675748764149">Diese Seite als Startseite festlegen</translation>
 <translation id="1231733316453485619">Synchronisierung aktivieren?</translation>
 <translation id="123724288017357924">Aktuelle Seite neu laden, Cache-Inhalte ignorieren</translation>
-<translation id="124116460088058876">Weitere Sprachen</translation>
 <translation id="124678866338384709">Aktuellen Tab schließen</translation>
 <translation id="1258753120186372309">Google-Doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Suchen und entdecken</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> konnte nicht geteilt werden</translation>
 <translation id="1283039547216852943">Zum Maximieren tippen</translation>
-<translation id="1285320974508926690">Diese Website nie übersetzen</translation>
 <translation id="1291207594882862231">Verlauf, Cookies, Websitedaten, Cache leeren…</translation>
 <translation id="129553762522093515">Kürzlich geschlossen</translation>
 <translation id="1303339473099049190">Dieses Passwort wurde nicht gefunden. Überprüfen Sie die Schreibweise und versuchen Sie es noch einmal.</translation>
@@ -239,7 +236,6 @@ Berühren und halten Sie ein Wort, um eine Suche damit zu starten. Sie können I
 <translation id="2898264748040935573">Gespeichertes Passwort bearbeiten</translation>
 <translation id="2900528713135656174">Termin erstellen</translation>
 <translation id="2903493209154104877">Adressen</translation>
-<translation id="290376772003165898">Diese Seite ist nicht auf <ph name="LANGUAGE" />?</translation>
 <translation id="2904414404539560095">Die Liste von Geräten, mit denen ein Tab geteilt werden kann, ist ganz geöffnet.</translation>
 <translation id="2905036901251765993">Bitten Sie Leute in der Nähe, diesen QR-Code zu scannen, um Inhalte mit Ihnen zu teilen</translation>
 <translation id="2909615210195135082">Google-Benachrichtigungsplattform</translation>
@@ -415,7 +411,6 @@ Berühren und halten Sie ein Wort, um eine Suche damit zu starten. Sie können I
 <translation id="4405224443901389797">Verschieben nach…</translation>
 <translation id="4411535500181276704">Lite-Modus</translation>
 <translation id="4415276339145661267">Google-Konto verwalten</translation>
-<translation id="4432792777822557199">Seiten auf <ph name="SOURCE_LANGUAGE" /> werden ab jetzt auf <ph name="TARGET_LANGUAGE" /> übersetzt</translation>
 <translation id="4440958355523780886">Lite-Modus-Seite von Google bereitgestellt. Zum Laden der Originalseite tippen.</translation>
 <translation id="4452411734226507615">Tab "<ph name="TAB_TITLE" />" schließen</translation>
 <translation id="4452548195519783679">Als Lesezeichen in "<ph name="FOLDER_NAME" />" gespeichert</translation>
@@ -550,7 +545,6 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="543509235395288790"><ph name="COUNT" /> Dateien (<ph name="MEGABYTES" /> MB) werden heruntergeladen.</translation>
 <translation id="5441522332038954058">Zur Adressleiste wechseln</translation>
 <translation id="5447201525962359567">Gesamter Websitespeicher einschließlich Cookies und anderer lokal gespeicherter Daten</translation>
-<translation id="5447765697759493033">Diese Website wird nicht übersetzt</translation>
 <translation id="545042621069398927">Download wird beschleunigt.</translation>
 <translation id="5456381639095306749">Seite herunterladen</translation>
 <translation id="548278423535722844">In einer Karten-App öffnen</translation>
@@ -580,7 +574,6 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5659593005791499971">E-Mail-Adresse</translation>
 <translation id="5665379678064389456">Termin in <ph name="APP_NAME" /> erstellen</translation>
 <translation id="5668404140385795438">Website-Anfrage zum Verhindern des Vergrößerns übergehen</translation>
-<translation id="5684874026226664614">Hoppla! Diese Seite konnte nicht übersetzt werden.</translation>
 <translation id="5686790454216892815">Dateiname zu lang</translation>
 <translation id="5694049548840660018">Ganz einfach zur Startseite zurückkehren</translation>
 <translation id="569536719314091526">Über die Schaltfläche "Weitere Optionen" können Sie sich diese Seite in eine beliebige Sprache übersetzen lassen</translation>
@@ -734,7 +727,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6767294960381293877">Die Liste von Geräten, mit denen ein Tab geteilt werden kann, ist halb geöffnet.</translation>
 <translation id="6811034713472274749">Seitenansicht bereit</translation>
 <translation id="6820686453637990663">CVC</translation>
-<translation id="6831043979455480757">Übersetzen</translation>
 <translation id="6845325883481699275">Zur Verbesserung der Sicherheit von Chrome beitragen</translation>
 <translation id="6846298663435243399">Wird geladen…</translation>
 <translation id="6850409657436465440">Download noch in Bearbeitung</translation>
@@ -842,7 +834,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7698359219371678927">E-Mail in <ph name="APP_NAME" /> erstellen</translation>
 <translation id="7704317875155739195">Suchanfragen und URLs automatisch vervollständigen</translation>
 <translation id="7725024127233776428">Seiten, die Sie als Lesezeichen speichern, werden hier angezeigt</translation>
-<translation id="773466115871691567">Seiten auf <ph name="SOURCE_LANGUAGE" /> immer übersetzen</translation>
 <translation id="7746457520633464754">Chrome sendet die URLs einiger von Ihnen besuchter Seiten, bestimmte Systeminformationen und einige Seiteninhalte an Google, um gefährliche Apps und Websites zu erkennen</translation>
 <translation id="7757787379047923882">Text geteilt von <ph name="DEVICE_NAME" /></translation>
 <translation id="7761849928583394409">Datum &amp; Zeit auswählen</translation>
@@ -922,7 +913,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="8310344678080805313">Standard-Tabs</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> und weitere Websites</translation>
 <translation id="8327155640814342956">Noch besser und komfortabler surfen – jetzt Chrome öffnen und aktualisieren</translation>
-<translation id="8339163506404995330">Seiten auf <ph name="LANGUAGE" /> werden nicht übersetzt</translation>
 <translation id="8349013245300336738">Nach Menge der verwendeten Daten sortieren</translation>
 <translation id="8364299278605033898">Beliebte Websites ansehen</translation>
 <translation id="8368027906805972958">Unbekanntes oder nicht unterstütztes Gerät (<ph name="DEVICE_ID" />)</translation>

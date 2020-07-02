@@ -17,7 +17,6 @@
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/color_palette.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -133,8 +132,7 @@ SkColor HSLToSkColor(const HSL& hsl, SkAlpha alpha) {
   // If there's no color, we don't care about hue and can do everything based on
   // brightness.
   if (!saturation) {
-    const uint8_t light =
-        base::saturated_cast<uint8_t>(gfx::ToRoundedInt(lightness * 255));
+    const uint8_t light = base::Round<uint8_t>(lightness * 255);
     return SkColorSetARGB(alpha, light, light, light);
   }
 
@@ -290,8 +288,8 @@ SkColor AlphaBlend(SkColor foreground, SkColor background, float alpha) {
   float b =
       SkColorGetB(foreground) * f_weight + SkColorGetB(background) * b_weight;
 
-  return SkColorSetARGB(gfx::ToRoundedInt(normalizer), gfx::ToRoundedInt(r),
-                        gfx::ToRoundedInt(g), gfx::ToRoundedInt(b));
+  return SkColorSetARGB(base::Round<U8CPU>(normalizer), base::Round<U8CPU>(r),
+                        base::Round<U8CPU>(g), base::Round<U8CPU>(b));
 }
 
 SkColor GetResultingPaintColor(SkColor foreground, SkColor background) {

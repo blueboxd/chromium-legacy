@@ -10,7 +10,6 @@
 <translation id="1049743911850919806">Инкогнито</translation>
 <translation id="10614374240317010">Никогаш не е зачувано</translation>
 <translation id="1067922213147265141">Други услуги на Google</translation>
-<translation id="1068672505746868501">Никогаш не преведувај страници на <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="107147699690128016">Ако ја промените наставката на датотеката, таа може да се отвори во друга апликација и да стане потенцијална опасност за вашиот уред.</translation>
 <translation id="1100066534610197918">Отвори во нова картичка во група</translation>
 <translation id="1105960400813249514">Screen Capture</translation>
@@ -35,13 +34,11 @@
 <translation id="1229399675748764149">Направете ја страницава ваша почетна страница</translation>
 <translation id="1231733316453485619">Да се вклучи синхронизација?</translation>
 <translation id="123724288017357924">Вчитај тековна страница, без кеширана содржина</translation>
-<translation id="124116460088058876">Повеќе јазици</translation>
 <translation id="124678866338384709">Затвори ја тековната картичка</translation>
 <translation id="1258753120186372309">Google Doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Пребарувајте и истражувајте</translation>
 <translation id="1266864766717917324">Не можеше да се сподели <ph name="CONTENT_TYPE" /></translation>
 <translation id="1283039547216852943">Допрете за да се прошири</translation>
-<translation id="1285320974508926690">Никогаш не преведувај ја оваа локација</translation>
 <translation id="1291207594882862231">Исчистете ги историјата, колачињата, податоците на сајтот, кешот…</translation>
 <translation id="129553762522093515">Неодамна затворено</translation>
 <translation id="1303339473099049190">Лозинката не може да се најде. Проверете дали ја внесувате правилно и обидете се повторно.</translation>
@@ -171,6 +168,7 @@
 <translation id="2353636109065292463">Се проверува вашата интернет-врска</translation>
 <translation id="2359808026110333948">Продолжи</translation>
 <translation id="2369533728426058518">отворени картички</translation>
+<translation id="2377295302146152376">Chrome не можеше да провери дали има ажурирања</translation>
 <translation id="2387895666653383613">Скалирање текст</translation>
 <translation id="2394602618534698961">Датотеките што ќе ги преземете ќе се појават тука</translation>
 <translation id="2407481962792080328">Функцијава е вклучена кога ќе се најавите на сметката на Google</translation>
@@ -239,7 +237,6 @@
 <translation id="2898264748040935573">Изменете ги зачуваните лозинки</translation>
 <translation id="2900528713135656174">Создаjте настан</translation>
 <translation id="2903493209154104877">Адреси</translation>
-<translation id="290376772003165898">Страницата не е на <ph name="LANGUAGE" />?</translation>
 <translation id="2904414404539560095">Списокот со уреди за споделување картичка е отворен на цел екран.</translation>
 <translation id="2905036901251765993">За да споделувате со луѓе во близина, дозволете им да го скенираат QR-кодов</translation>
 <translation id="2909615210195135082">Платформа за известувања на Google</translation>
@@ -415,7 +412,6 @@
 <translation id="4405224443901389797">Премести во…</translation>
 <translation id="4411535500181276704">Лесен режим</translation>
 <translation id="4415276339145661267">Управувајте со сметката на Google</translation>
-<translation id="4432792777822557199">Отсега-натаму, страниците на <ph name="SOURCE_LANGUAGE" /> ќе се преведуваат на <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4440958355523780886">Lite-страница овозможена од Google. Допрете за да се вчита оригиналот.</translation>
 <translation id="4452411734226507615">Затвори ја картичката <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">Додаден е обележувач во <ph name="FOLDER_NAME" /></translation>
@@ -550,8 +546,8 @@
 <translation id="543509235395288790">Се преземаат <ph name="COUNT" /> датотеки (<ph name="MEGABYTES" />).</translation>
 <translation id="5441522332038954058">Скокнете на лентата за адреса</translation>
 <translation id="5447201525962359567">Целиот простор на сајтот, вклучувајќи ги колачињата и другите локално зачувани податоци</translation>
-<translation id="5447765697759493033">Сајтов нема да се преведе</translation>
 <translation id="545042621069398927">Го забрзуваме вашето преземање.</translation>
+<translation id="5454513945794364671">Администраторот го исклучил „Безбедното прелистување“</translation>
 <translation id="5456381639095306749">Преземете ја страницата</translation>
 <translation id="548278423535722844">Отвори во апликацијата „Карти“</translation>
 <translation id="5487521232677179737">Избриши податоци</translation>
@@ -580,7 +576,6 @@
 <translation id="5659593005791499971">Е-пошта</translation>
 <translation id="5665379678064389456">Создаjте настан во <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Отфрли го барањето на веб-локацијата да спречи зумирање</translation>
-<translation id="5684874026226664614">Оваа страница не може да се преведе.</translation>
 <translation id="5686790454216892815">Името на датотеката е предолго</translation>
 <translation id="5694049548840660018">Вратете се дома лесно</translation>
 <translation id="569536719314091526">Преведете ја страницава на кој било јазик со копчето „Повеќе опции“</translation>
@@ -592,6 +587,7 @@
 <translation id="5732819098735351888">Преземањето ќе започне преку Wi-Fi.</translation>
 <translation id="5748802427693696783">Префрлено на стандардни картички</translation>
 <translation id="5749068826913805084">На Chrome му треба пристап до меморијата за да презема датотеки.</translation>
+<translation id="5754350196967618083">Не може да се освежи Discover</translation>
 <translation id="5763382633136178763">Инкогнито картички</translation>
 <translation id="5763514718066511291">Допрете за да ја копирате URL-адресата за апликацијава</translation>
 <translation id="5765780083710877561">Опис:</translation>
@@ -719,6 +715,7 @@
 <translation id="6656545060687952787">На Chrome му треба пристап до локацијата за да скенира уреди. <ph name="BEGIN_LINK" />Ажурирајте ги дозволите<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Лозинка</translation>
 <translation id="6659594942844771486">Картичка</translation>
+<translation id="666573598175432848">Достапна е понова верзија на Chrome. Допрете го елементов за да одите во Play Store.</translation>
 <translation id="666731172850799929">Отвори во <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Известување за приватност на Chrome</translation>
 <translation id="6671495933530132209">Копирај слика</translation>
@@ -734,7 +731,6 @@
 <translation id="6767294960381293877">Списокот со уреди за споделување картичка е отворен на половина екран.</translation>
 <translation id="6811034713472274749">Страницата е спремна за прикажување</translation>
 <translation id="6820686453637990663">CVC</translation>
-<translation id="6831043979455480757">Преведи</translation>
 <translation id="6845325883481699275">Помогнете да се подобри безбедноста на Chrome</translation>
 <translation id="6846298663435243399">Се вчитува…</translation>
 <translation id="6850409657436465440">Вашето преземање е сѐ уште е во тек</translation>
@@ -842,7 +838,6 @@
 <translation id="7698359219371678927">Создајте е-пошта во <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Автоматски довршувај ги пребарувањата и URL-адресите</translation>
 <translation id="7725024127233776428">Страниците што ќе ги обележите се појавуваат тука</translation>
-<translation id="773466115871691567">Секогаш преведувај ги страниците на <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7746457520633464754">За да открие опасни апликации и сајтови, Chrome испраќа URL-адреси од некои страници што ги посетувате, ограничени информации за системот и некои содржини од страниците до Google</translation>
 <translation id="7757787379047923882">Текстот е споделен од <ph name="DEVICE_NAME" /></translation>
 <translation id="7761849928583394409">Изберете датум и време</translation>
@@ -851,6 +846,7 @@
 <translation id="7772032839648071052">Потврди лозинка</translation>
 <translation id="7772375229873196092">Затвори <ph name="APP_NAME" /></translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />… и уште <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" />… и уште <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />… и уште <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
+<translation id="7778840695157240389">Проверете подоцна дали има нови стории</translation>
 <translation id="7791543448312431591">Додај</translation>
 <translation id="780301667611848630">Не, фала</translation>
 <translation id="7810647596859435254">Отвори со…</translation>
@@ -922,7 +918,6 @@
 <translation id="8310344678080805313">Стандардни картички</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> и други сајтови</translation>
 <translation id="8327155640814342956">За најдобро искуство при прелистувањето, отворете го за да го ажурирате Chrome</translation>
-<translation id="8339163506404995330">Страниците на <ph name="LANGUAGE" /> нема да се преведуваат</translation>
 <translation id="8349013245300336738">Подреди по количина на искористен сообраќај</translation>
 <translation id="8364299278605033898">Разгледајте ги популарните веб-сајтови</translation>
 <translation id="8368027906805972958">Непознат или неподдржан уред (<ph name="DEVICE_ID" />)</translation>
@@ -933,6 +928,7 @@
 <translation id="8427875596167638501">Картичката за преглед е отворена на половина екран</translation>
 <translation id="8428213095426709021">Поставки</translation>
 <translation id="8438566539970814960">Подобрете ги пребарувањата и прелистувањето</translation>
+<translation id="8442258441309440798">Нема достапни стории</translation>
 <translation id="8443209985646068659">Chrome не може да се аж.</translation>
 <translation id="8445448999790540984">Не може да се извезат лозинките</translation>
 <translation id="8461694314515752532">Шифрирајте ги синхронизираните податоци со сопствената лозинка за синхронизација</translation>
@@ -984,6 +980,7 @@
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, картичка</translation>
 <translation id="8854223127042600341">Погледнете ги вашите офлајн датотеки</translation>
 <translation id="889338405075704026">Одете во „Поставки за Chrome“</translation>
+<translation id="8893398027601469503">Ја користите најновата верзија на Chrome</translation>
 <translation id="8909135823018751308">Сподели…</translation>
 <translation id="8912362522468806198">Сметка на Google</translation>
 <translation id="8920114477895755567">Се чекаат детали за родителите.</translation>

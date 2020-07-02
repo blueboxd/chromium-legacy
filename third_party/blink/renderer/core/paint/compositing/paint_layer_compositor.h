@@ -82,6 +82,8 @@ class CORE_EXPORT PaintLayerCompositor {
   void CleanUp();
 
   void UpdateIfNeededRecursive(DocumentLifecycle::LifecycleState target_state);
+  void UpdateCompositingInputsIfNeededRecursive(
+      DocumentLifecycle::LifecycleState target_state);
 
   // Return true if this LayoutView is in "compositing mode" (i.e. has one or
   // more composited Layers)
@@ -162,12 +164,13 @@ class CORE_EXPORT PaintLayerCompositor {
   void UpdateIfNeededRecursiveInternal(
       DocumentLifecycle::LifecycleState target_state,
       CompositingReasonsStats&);
+  void UpdateCompositingInputsIfNeededRecursiveInternal(
+      DocumentLifecycle::LifecycleState target_state);
 
-  void UpdateWithoutAcceleratedCompositing(CompositingUpdateType);
   void UpdateIfNeeded(DocumentLifecycle::LifecycleState target_state,
                       CompositingReasonsStats&);
 
-  void SetOwnerNeedsCompositingUpdate();
+  void SetOwnerNeedsCompositingInputsUpdate();
 
   Page* GetPage() const;
 

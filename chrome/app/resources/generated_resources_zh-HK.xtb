@@ -529,7 +529,6 @@
 <translation id="1645516838734033527">為確保您的 <ph name="DEVICE_TYPE" /> 安全，Smart Lock 要求您的手機必須啟用螢幕鎖定功能。</translation>
 <translation id="1646982517418478057">請輸入密碼以加密此憑證</translation>
 <translation id="1648528859488547844">使用 Wi‑Fi 或流動網絡確定位置</translation>
-<translation id="1648943974594387137">登入詳細資料已過時</translation>
 <translation id="164936512206786300">取消配對藍牙裝置</translation>
 <translation id="1650371550981945235">顯示輸入選項</translation>
 <translation id="1651008383952180276">您必須輸入兩次相同的密碼短語</translation>
@@ -1332,7 +1331,6 @@
 <translation id="2635276683026132559">登入</translation>
 <translation id="2636625531157955190">Chrome 無法存取這張圖片。</translation>
 <translation id="2637400434494156704">PIN 不正確。您還可再試 1 次。</translation>
-<translation id="2638087589890736295">必須輸入密碼短語，才能開始同步資料</translation>
 <translation id="2638662041295312666">登入圖片</translation>
 <translation id="264083724974021997">連接去你部手機 - 對話框</translation>
 <translation id="2641065435954454414">正在準備下載</translation>
@@ -1486,7 +1484,6 @@
 <translation id="2809586584051668049">和另外 <ph name="NUMBER_ADDITIONAL_DISABLED" /> 個</translation>
 <translation id="2810390687497823527">如果您無法識別任何擴充程式，或瀏覽器無法如期運作，您可以在這裡關閉或自訂擴充程式。</translation>
 <translation id="2812049959647166806">系統不支援 Thunderbolt</translation>
-<translation id="2812944337881233323">請嘗試登出並重新登入</translation>
 <translation id="2812989263793994277">不顯示任何圖片</translation>
 <translation id="2813094189969465044">家長監控設定</translation>
 <translation id="281390819046738856">無法簽署要求。</translation>
@@ -3407,7 +3404,6 @@
 <translation id="529175790091471945">將此裝置格式化</translation>
 <translation id="5293170712604732402">將設定還原至原始預設值</translation>
 <translation id="5294097441441645251">開頭必須為小寫字元或底線</translation>
-<translation id="5296471962619441686">請先修正錯誤再繼續同步處理</translation>
 <translation id="5297082477358294722">密碼已儲存。查看和管理儲存在「<ph name="SAVED_PASSWORDS_STORE" />」的密碼。</translation>
 <translation id="5298219193514155779">主題製作者</translation>
 <translation id="5299109548848736476">不要追蹤</translation>
@@ -5770,7 +5766,6 @@
 <translation id="8256417822772703842">「<ph name="PRINTER_NAME" />」的墨水即將用完</translation>
 <translation id="8257950718085972371">繼續封鎖存取相機</translation>
 <translation id="8259239505248583312">開始使用</translation>
-<translation id="8260126382462817229">請嘗試再次登入</translation>
 <translation id="8260864402787962391">滑鼠</translation>
 <translation id="8261378640211443080">這個擴充功能未列在 <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> 中，可能是在您不知情的情況下加入瀏覽器。</translation>
 <translation id="8261506727792406068">刪除</translation>

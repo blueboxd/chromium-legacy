@@ -20,6 +20,7 @@
 <translation id="10614374240317010">Nikoli shranjeno</translation>
 <translation id="1062160989074299343">Prc10 (Envelope)</translation>
 <translation id="106701514854093668">Zaznamki namizja</translation>
+<translation id="1068672505746868501">Nikoli ne prevedi strani v jeziku <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1070901266639972381">Noč</translation>
 <translation id="1074497978438210769">Ni varno</translation>
 <translation id="1080116354587839789">Prilagoditev prikaza širini</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">Brez naslova</translation>
 <translation id="1236081509407217141">Želite omogočiti VR?</translation>
 <translation id="1240347957665416060">Ime vaše naprave</translation>
+<translation id="124116460088058876">Več jezikov</translation>
 <translation id="1250759482327835220">Če želite naslednjič hitreje plačati, shranite kartico, ime in naslov za izstavitev računa v Google Računu.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (sinhronizirano)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Če poskušate obiskati spletno mesto in se ne odpre, napako najprej poskusite odpraviti s tem postopkom za odpravljanje težav:&lt;/p&gt;
@@ -840,6 +842,7 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="4424024547088906515">Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; Chrome ne zaupa njegovemu varnostnemu potrdilu. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.</translation>
 <translation id="443121186588148776">Serijska vrata</translation>
 <translation id="4432688616882109544">Spletno mesto <ph name="HOST_NAME" /> ni sprejelo potrdila za prijavo ali pa to ni bilo posredovano.</translation>
+<translation id="4432792777822557199">Strani v jeziku <ph name="SOURCE_LANGUAGE" /> bodo od zdaj naprej prevedene v jezik <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">Pojavna okna in preusmeritve</translation>
 <translation id="4435702339979719576">Postcard)</translation>
 <translation id="443673843213245140">Uporaba strežnika proxy je onemogočena, vendar je njegova konfiguracija izrecno določena.</translation>
@@ -1071,6 +1074,7 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="5431657950005405462">Datoteke ni bilo mogoče najti</translation>
 <translation id="5439770059721715174">Napaka preverjanja sheme pri »<ph name="ERROR_PATH" />«: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">V obratnem vrstnem redu s tiskom na zgornji strani</translation>
+<translation id="5447765697759493033">To spletno mesto ne bo prevedeno</translation>
 <translation id="5452270690849572955">Te strani spletnega mesta <ph name="HOST_NAME" /> ni mogoče najti</translation>
 <translation id="5455374756549232013">Napačen časovni žig pravilnika</translation>
 <translation id="5457113250005438886">Neveljavno</translation>
@@ -1617,6 +1621,7 @@ Dodatne podrobnosti:
 <translation id="7716375162095500223">Ni še naloženo ali je prezrto</translation>
 <translation id="7716424297397655342">Tega spletnega mesta ni mogoče naložiti iz predpomnilnika</translation>
 <translation id="7723047071702270851">Urejanje kartice</translation>
+<translation id="773466115871691567">Vedno prevedi strani v jeziku <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7740996059027112821">Standardno</translation>
 <translation id="774634243536837715">Nevarna vsebina blokirana.</translation>
 <translation id="7752995774971033316">Odstranjen iz uporabe</translation>
@@ -1762,6 +1767,7 @@ Dodatne podrobnosti:
 <translation id="831997045666694187">Večer</translation>
 <translation id="8332188693563227489">Dostop do spletnega mesta <ph name="HOST_NAME" /> je bil zavrnjen</translation>
 <translation id="833262891116910667">Označevanje</translation>
+<translation id="8339163506404995330">Strani v jeziku <ph name="LANGUAGE" /> ne bodo prevedene</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Če se zavedate varnostnega tveganja, lahko <ph name="BEGIN_LINK" />obiščete to spletno mesto<ph name="END_LINK" />, preden bodo škodljivi programi odstranjeni.</translation>
 <translation id="8349305172487531364">Vrstica z zaznamki</translation>

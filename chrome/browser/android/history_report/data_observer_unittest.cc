@@ -69,9 +69,10 @@ class DataObserverTest : public testing::Test {
     bookmark_model_ = TestBookmarkClient::CreateModel();
     history_service_ = std::make_unique<HistoryService>();
     data_observer_ = std::make_unique<DataObserver>(
-        base::Bind(&MockRun), base::Bind(&MockRun), base::Bind(&MockRun),
-        delta_file_service_.get(), usage_report_service_.get(),
-        bookmark_model_.get(), history_service_.get());
+        base::BindRepeating(&MockRun), base::BindRepeating(&MockRun),
+        base::BindRepeating(&MockRun), delta_file_service_.get(),
+        usage_report_service_.get(), bookmark_model_.get(),
+        history_service_.get());
   }
 
   void TearDown() override {

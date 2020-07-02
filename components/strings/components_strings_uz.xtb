@@ -20,6 +20,7 @@
 <translation id="10614374240317010">Parollar saqlanmaydigan saytlar</translation>
 <translation id="1062160989074299343">Prc10 (Envelope)</translation>
 <translation id="106701514854093668">Kompyuterdagi xatcho‘plar</translation>
+<translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" /> tilidagi sahifalar hech qachon tarjima qilinmasin</translation>
 <translation id="1070901266639972381">Tun</translation>
 <translation id="1074497978438210769">Xavfsiz emas</translation>
 <translation id="1080116354587839789">Oynani eniga tekislash</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">Nomlanmagan</translation>
 <translation id="1236081509407217141">VR ishlatishga ruxsat berilsinmi?</translation>
 <translation id="1240347957665416060">Qurilma nomi</translation>
+<translation id="124116460088058876">Boshqa tillar</translation>
 <translation id="1250759482327835220">Keyingi safar tezroq to‘lash uchun kartangizni Google hisobingizga saqlang.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (sinxronlandi)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Sayt ochilmasa, quyidagi usullar orqali muammoni hal qilishga urining:&lt;/p&gt;
@@ -835,6 +837,7 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="4424024547088906515">Bu <ph name="DOMAIN" /> serveri ekanligini tasdiqlab bo‘lmadi. Uning havfsizlik sertifikati Chrome‘ga ishonchli tuyulmayapti. Balki, server noto‘g‘ri sozlangan yoki kimdir ma’lumotlaringizni o‘g‘rilashga urinayotgan bo‘lishi mumkin.</translation>
 <translation id="443121186588148776">Ketma-ket port</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> tizimga kirish sertifikatingizni qabul qilmadi. Sertifikat taqdim etilmagan bo‘lishi ham mumkin.</translation>
+<translation id="4432792777822557199"><ph name="SOURCE_LANGUAGE" /> tilidagi sahifalar hozirdan <ph name="TARGET_LANGUAGE" /> tiliga tarjima qilinadi</translation>
 <translation id="4434045419905280838">Qalquvchi oyna va yo‘naltirishlar</translation>
 <translation id="4435702339979719576">Postcard)</translation>
 <translation id="443673843213245140">Proksi-server o‘chiq, lekin uning sozlamalari aniq belgilangan.</translation>
@@ -1066,6 +1069,7 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="5431657950005405462">So‘ralgan fayl topilmadi</translation>
 <translation id="5439770059721715174">Atributlar tekshiruvida xatolik, <ph name="ERROR_PATH" />: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Teskari tartibda old tomonida</translation>
+<translation id="5447765697759493033">Bu sayt tarjima qilinmaydi</translation>
 <translation id="5452270690849572955"><ph name="HOST_NAME" /> sahifasi topilmadi</translation>
 <translation id="5455374756549232013">Siyosat vaqti belgisi buzilgan</translation>
 <translation id="5457113250005438886">Yaroqsiz</translation>
@@ -1611,6 +1615,7 @@ Batafsil axborot:
 <translation id="7716375162095500223">Hali yuklanmagan yoki rad qilingan</translation>
 <translation id="7716424297397655342">Bu saytni keshdan yuklab bo‘lmadi</translation>
 <translation id="7723047071702270851">Kartani tahrirlang</translation>
+<translation id="773466115871691567"><ph name="SOURCE_LANGUAGE" /> tilidagi sahifalar doim tarjima qilinsin</translation>
 <translation id="7740996059027112821">Standart</translation>
 <translation id="774634243536837715">Xavfli kontent bloklandi</translation>
 <translation id="7752995774971033316">Boshqarilmaydi</translation>
@@ -1756,6 +1761,7 @@ Batafsil axborot:
 <translation id="831997045666694187">Kechqurun</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" /> saytiga kirish taqiqlangan</translation>
 <translation id="833262891116910667">Ajratib belgilash</translation>
+<translation id="8339163506404995330"><ph name="LANGUAGE" /> tilidagi sahifalar tarjima qilinmaydi</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Shaxsiy ma’lumotlaringizga havfli bo‘lishiga qaramay va zararli dasturlar hali olib tashlanmagan bo‘lsa ham bu saytga baribir o‘tishni xohlasangiz, <ph name="BEGIN_LINK" />bu yerni bosing<ph name="END_LINK" />.</translation>
 <translation id="8349305172487531364">Xatcho‘plar paneli</translation>

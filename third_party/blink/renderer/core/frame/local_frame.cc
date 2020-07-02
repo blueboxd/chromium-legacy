@@ -2253,6 +2253,19 @@ void LocalFrame::GetFirstRectForRange(const gfx::Range& range) {
 }
 #endif
 
+void LocalFrame::InstallCoopAccessMonitor(
+    const base::UnguessableToken& accessed_window,
+    mojo::PendingRemote<network::mojom::blink::CrossOriginOpenerPolicyReporter>
+        reporter) {
+  blink::Frame* accessed_frame = Frame::ResolveFrame(accessed_window);
+  // The Frame might have been deleted during the cross-process communication.
+  if (!accessed_frame)
+    return;
+
+  accessed_frame->DomWindow()->InstallCoopAccessMonitor(this,
+                                                        std::move(reporter));
+}
+
 HitTestResult LocalFrame::HitTestResultForVisualViewportPos(
     const IntPoint& pos_in_viewport) {
   IntPoint root_frame_point(

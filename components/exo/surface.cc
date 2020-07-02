@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "components/exo/buffer.h"
@@ -42,7 +43,6 @@
 #include "ui/events/event.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/geometry/dip_util.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -1142,8 +1142,9 @@ void Surface::UpdateContentSize() {
   if (!state_.viewport.IsEmpty()) {
     content_size = state_.viewport;
   } else if (!state_.crop.IsEmpty()) {
-    DLOG_IF(WARNING, !gfx::IsExpressibleAsInt(state_.crop.width()) ||
-                         !gfx::IsExpressibleAsInt(state_.crop.height()))
+    DLOG_IF(WARNING,
+            !base::IsValueInRangeForNumericType<int>(state_.crop.width()) ||
+                !base::IsValueInRangeForNumericType<int>(state_.crop.height()))
         << "Crop rectangle size (" << state_.crop.size().ToString()
         << ") most be expressible using integers when viewport is not set";
     content_size = gfx::ToCeiledSize(state_.crop.size());

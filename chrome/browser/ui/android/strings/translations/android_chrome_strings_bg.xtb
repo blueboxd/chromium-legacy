@@ -10,7 +10,6 @@
 <translation id="1049743911850919806">„Инкогнито“</translation>
 <translation id="10614374240317010">Незапазвани никога</translation>
 <translation id="1067922213147265141">Други услуги на Google</translation>
-<translation id="1068672505746868501">Страниците на <ph name="SOURCE_LANGUAGE" /> да не се превеждат</translation>
 <translation id="107147699690128016">Ако промените файловото разширение, файлът може да се отвори в друго приложение и потенциално да навреди на устройството ви.</translation>
 <translation id="1100066534610197918">Отваряне в нов раздел в група</translation>
 <translation id="1105960400813249514">Заснемане на екрана</translation>
@@ -35,13 +34,11 @@
 <translation id="1229399675748764149">Задайте тази страница като начална</translation>
 <translation id="1231733316453485619">Да се включи ли синхронизирането?</translation>
 <translation id="123724288017357924">Презареждане на страницата (кешът се пренебрегва)</translation>
-<translation id="124116460088058876">Още езици</translation>
 <translation id="124678866338384709">Затваряне на текущия раздел</translation>
 <translation id="1258753120186372309">Драскулка на Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Търсене и разглеждане</translation>
 <translation id="1266864766717917324">Споделянето на <ph name="CONTENT_TYPE" /> не бе възможно</translation>
 <translation id="1283039547216852943">Докоснете за разгъване</translation>
-<translation id="1285320974508926690">Този сайт да не се превежда никога</translation>
 <translation id="1291207594882862231">Изчистване на историята, „бисквитките“, данните за сайтове и кеша…</translation>
 <translation id="129553762522093515">Наскоро затворени</translation>
 <translation id="1303339473099049190">Тази парола не бе намерена. Проверете дали е написана правилно и опитайте отново.</translation>
@@ -239,7 +236,6 @@
 <translation id="2898264748040935573">Редактиране на съхранената парола</translation>
 <translation id="2900528713135656174">Създайте събитие</translation>
 <translation id="2903493209154104877">Адреси</translation>
-<translation id="290376772003165898">Страницата не е на <ph name="LANGUAGE" />?</translation>
 <translation id="2904414404539560095">Списъкът с устройства, с които да се сподели даден раздел, е отворен на пълната височина.</translation>
 <translation id="2905036901251765993">За да споделите с хората в близост, те трябва да сканират този код за бърза реакция</translation>
 <translation id="2909615210195135082">Google Notifications Platform</translation>
@@ -415,7 +411,6 @@
 <translation id="4405224443901389797">Преместване във…</translation>
 <translation id="4411535500181276704">Олекотен режим</translation>
 <translation id="4415276339145661267">Управление на профила ви в Google</translation>
-<translation id="4432792777822557199">От сега нататък страниците на <ph name="SOURCE_LANGUAGE" /> ще се превеждат на <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4440958355523780886">Олекотена страница, предоставена от Google. Докоснете за зареждане на оригиналната.</translation>
 <translation id="4452411734226507615">Затваряне на раздела „<ph name="TAB_TITLE" />“</translation>
 <translation id="4452548195519783679">Отметката бе запазена в/ъв „<ph name="FOLDER_NAME" />“</translation>
@@ -550,7 +545,6 @@
 <translation id="543509235395288790">Изтеглят се <ph name="COUNT" /> файла (<ph name="MEGABYTES" />).</translation>
 <translation id="5441522332038954058">Преминаване към адресната лента</translation>
 <translation id="5447201525962359567">Всички данни от сайтове, включително „бисквитки“ и друга локално съхранявана информация</translation>
-<translation id="5447765697759493033">Този сайт няма да се превежда</translation>
 <translation id="545042621069398927">Изтеглянето се ускорява.</translation>
 <translation id="5456381639095306749">Изтегляне на страницата</translation>
 <translation id="548278423535722844">Отваряне в приложение за карти</translation>
@@ -580,7 +574,6 @@
 <translation id="5659593005791499971">Имейл</translation>
 <translation id="5665379678064389456">Създайте събитие в <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Отмяна на искането на уебсайта да не се допуска увеличаване на мащаба</translation>
-<translation id="5684874026226664614">Ами сега! Тази страница не можа да се преведе.</translation>
 <translation id="5686790454216892815">Името на файла е твърде дълго</translation>
 <translation id="5694049548840660018">Връщайте се лесно към началната си страница</translation>
 <translation id="569536719314091526">Страницата може да бъде преведена на който и да е език чрез бутона за още опции</translation>
@@ -734,7 +727,6 @@
 <translation id="6767294960381293877">Списъкът с устройства, с които да се сподели даден раздел, е отворен на половин височина.</translation>
 <translation id="6811034713472274749">Страницата е готова за преглед</translation>
 <translation id="6820686453637990663">Код за сигурност</translation>
-<translation id="6831043979455480757">Превод</translation>
 <translation id="6845325883481699275">Помощ за подобряването на сигурността на Chrome</translation>
 <translation id="6846298663435243399">Зарежда се…</translation>
 <translation id="6850409657436465440">Изтеглянето продължава</translation>
@@ -842,7 +834,6 @@
 <translation id="7698359219371678927">Създайте имейл в <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Автоматично довършване на заявки за търсене и URL адреси</translation>
 <translation id="7725024127233776428">Запазените от вас отметки към страници се показват тук</translation>
-<translation id="773466115871691567">Страниците на <ph name="SOURCE_LANGUAGE" /> да се превеждат винаги</translation>
 <translation id="7746457520633464754">За да открива опасни приложения и сайтове, Chrome изпраща до Google URL адресите на някои от страниците, които посещавате, ограничена системна информация и част от съдържанието на страниците</translation>
 <translation id="7757787379047923882">Текст, споделен от <ph name="DEVICE_NAME" /></translation>
 <translation id="7761849928583394409">Избиране на дата и час</translation>
@@ -922,7 +913,6 @@
 <translation id="8310344678080805313">Стандартни раздели</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> и още сайтове</translation>
 <translation id="8327155640814342956">За оптимално сърфиране отворете, за да актуализирате Chrome</translation>
-<translation id="8339163506404995330">Страниците на <ph name="LANGUAGE" /> няма да се превеждат</translation>
 <translation id="8349013245300336738">Сортиране по количеството използвани данни</translation>
 <translation id="8364299278605033898">Вижте популярните уебсайтове</translation>
 <translation id="8368027906805972958">Неизвестно или неподдържано устройство (<ph name="DEVICE_ID" />)</translation>

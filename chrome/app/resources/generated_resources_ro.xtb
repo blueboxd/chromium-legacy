@@ -529,7 +529,6 @@
 <translation id="1645516838734033527">Pentru a proteja dispozitivul <ph name="DEVICE_TYPE" />, Smart Lock necesită o blocare a ecranului pe telefon.</translation>
 <translation id="1646982517418478057">Introdu o parolă pentru a cripta acest certificat</translation>
 <translation id="1648528859488547844">Folosește Wi-Fi sau rețelele mobile pentru detectarea locației</translation>
-<translation id="1648943974594387137">Detaliile de conectare au expirat</translation>
 <translation id="164936512206786300">Anulează asocierea dispozitivului Bluetooth</translation>
 <translation id="1650371550981945235">Afișează opțiunile de introducere a textului</translation>
 <translation id="1651008383952180276">Trebuie să introduci aceeași expresie de acces de două ori</translation>
@@ -1333,7 +1332,6 @@ Poți gestiona setările contului dacă instalezi aplicația Family Link pe disp
 <translation id="2635276683026132559">Semnare</translation>
 <translation id="2636625531157955190">Chrome nu poate accesa imaginea.</translation>
 <translation id="2637400434494156704">Codul PIN este incorect. Mai ai o încercare.</translation>
-<translation id="2638087589890736295">Pentru a începe sincronizarea este necesară expresia de acces</translation>
 <translation id="2638662041295312666">Imagine de autentificare</translation>
 <translation id="264083724974021997">Conectează-te la telefon – dialog</translation>
 <translation id="2641065435954454414">Se pregătește descărcarea</translation>
@@ -1487,7 +1485,6 @@ Poți gestiona setările contului dacă instalezi aplicația Family Link pe disp
 <translation id="2809586584051668049">și încă <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
 <translation id="2810390687497823527">Dacă nu recunoști o extensie sau dacă browserul nu funcționează așa cum te așteptai, poți să dezactivezi sau să personalizezi extensiile aici.</translation>
 <translation id="2812049959647166806">Thunderbolt nu este acceptat</translation>
-<translation id="2812944337881233323">Deconectează-te și conectează-te din nou</translation>
 <translation id="2812989263793994277">Nu afișa nicio imagine</translation>
 <translation id="2813094189969465044">Control parental</translation>
 <translation id="281390819046738856">Solicitarea nu a putut fi semnată.</translation>
@@ -3408,7 +3405,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="529175790091471945">Formatează acest dispozitiv</translation>
 <translation id="5293170712604732402">Restabilește setările la valorile inițiale</translation>
 <translation id="5294097441441645251">Trebuie să înceapă cu literă mică sau cu un caracter de subliniere</translation>
-<translation id="5296471962619441686">Remediază eroarea și reia sincronizarea</translation>
 <translation id="5297082477358294722">Parola a fost salvată. Vezi și gestionează parolele salvate în <ph name="SAVED_PASSWORDS_STORE" />.</translation>
 <translation id="5298219193514155779">Temă creată de</translation>
 <translation id="5299109548848736476">Nu urmăriți</translation>
@@ -5772,7 +5768,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8256417822772703842">Cerneala din <ph name="PRINTER_NAME" /> este aproape epuizată</translation>
 <translation id="8257950718085972371">Blocați în continuare accesul la cameră</translation>
 <translation id="8259239505248583312">Să începem</translation>
-<translation id="8260126382462817229">Încearcă să te conectezi din nou</translation>
 <translation id="8260864402787962391">Mouse</translation>
 <translation id="8261378640211443080">Această extensie nu este inclusă în <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> și este posibil să fi fost adăugată fără știrea dvs.</translation>
 <translation id="8261506727792406068">Șterge</translation>

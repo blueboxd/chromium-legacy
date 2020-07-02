@@ -42,30 +42,6 @@ using LoadingState = TabLoadTracker::LoadingState;
 const char* const kSessionTypeName[] = {"SessionRestore",
                                         "BackgroundTabOpening"};
 
-constexpr int kSamplingOdds = 10;
-
-// Only report a subset of this metric as the volume is too high.
-bool ShouldReportExpectedTaskQueueingDurationToUKM(
-    size_t background_tab_loading_count,
-    size_t background_tab_pending_count) {
-  size_t tab_count =
-      background_tab_loading_count + background_tab_pending_count;
-  DCHECK_GE(tab_count, 1u);
-
-  // We always collect this metric when we have 2 or more backgrounded loading
-  // or pending tabs (|tab_count|). And we sample the rest, i.e. when there is
-  // one tab loading in the background and no tabs pending, which is the less
-  // interesting majority. In this way, we cap the volume while keeping all
-  // interesting data.
-  if (tab_count > 1)
-    return true;
-
-  if (base::RandUint64() % kSamplingOdds == 0)
-    return true;
-
-  return false;
-}
-
 ukm::SourceId GetUkmSourceId(content::WebContents* contents) {
   resource_coordinator::ResourceCoordinatorTabHelper* observer =
       resource_coordinator::ResourceCoordinatorTabHelper::FromWebContents(
@@ -168,68 +144,6 @@ void TabManagerStatsCollector::RecordSwitchToTab(
   if (new_data->tab_loading_state() != LoadingState::LOADED) {
     foreground_contents_switched_to_times_.insert(
         std::make_pair(new_contents, NowTicks()));
-  }
-}
-
-void TabManagerStatsCollector::RecordExpectedTaskQueueingDuration(
-    content::WebContents* contents,
-    base::TimeDelta queueing_time) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  // TODO(fdoray): Consider not recording this for occluded tabs.
-  if (contents->GetVisibility() == content::Visibility::HIDDEN)
-    return;
-
-  if (IsInOverlappedSession())
-    return;
-
-  ukm::SourceId ukm_source_id = GetUkmSourceId(contents);
-
-  if (is_session_restore_loading_tabs_) {
-    UMA_HISTOGRAM_TIMES(
-        kHistogramSessionRestoreForegroundTabExpectedTaskQueueingDuration,
-        queueing_time);
-
-    size_t restored_tab_count =
-        g_browser_process->GetTabManager()->restored_tab_count();
-    if (ukm_source_id != ukm::kInvalidSourceId && restored_tab_count > 1) {
-      ukm::builders::
-          TabManager_SessionRestore_ForegroundTab_ExpectedTaskQueueingDurationInfo(
-              ukm_source_id)
-              .SetExpectedTaskQueueingDuration(queueing_time.InMilliseconds())
-              .SetSequenceId(sequence_++)
-              .SetSessionRestoreSessionId(session_id_)
-              .SetSessionRestoreTabCount(restored_tab_count)
-              .SetSystemTabCount(
-                  g_browser_process->GetTabManager()->GetTabCount())
-              .Record(ukm::UkmRecorder::Get());
-    }
-  }
-
-  if (is_in_background_tab_opening_session_) {
-    UMA_HISTOGRAM_TIMES(
-        kHistogramBackgroundTabOpeningForegroundTabExpectedTaskQueueingDuration,
-        queueing_time);
-
-    size_t background_tab_loading_count =
-        g_browser_process->GetTabManager()->GetBackgroundTabLoadingCount();
-    size_t background_tab_pending_count =
-        g_browser_process->GetTabManager()->GetBackgroundTabPendingCount();
-    if (ukm_source_id != ukm::kInvalidSourceId &&
-        ShouldReportExpectedTaskQueueingDurationToUKM(
-            background_tab_loading_count, background_tab_pending_count)) {
-      ukm::builders::
-          TabManager_BackgroundTabOpening_ForegroundTab_ExpectedTaskQueueingDurationInfo(
-              ukm_source_id)
-              .SetBackgroundTabLoadingCount(background_tab_loading_count)
-              .SetBackgroundTabOpeningSessionId(session_id_)
-              .SetBackgroundTabPendingCount(background_tab_pending_count)
-              .SetExpectedTaskQueueingDuration(queueing_time.InMilliseconds())
-              .SetSequenceId(sequence_++)
-              .SetSystemTabCount(
-                  g_browser_process->GetTabManager()->GetTabCount())
-              .Record(ukm::UkmRecorder::Get());
-    }
   }
 }
 
@@ -483,17 +397,6 @@ void TabManagerStatsCollector::RecordDecisionDetails(
 
   builder.Record(ukm::UkmRecorder::Get());
 }
-
-// static
-const char TabManagerStatsCollector::
-    kHistogramSessionRestoreForegroundTabExpectedTaskQueueingDuration[] =
-        "TabManager.SessionRestore.ForegroundTab.ExpectedTaskQueueingDuration";
-
-// static
-const char TabManagerStatsCollector::
-    kHistogramBackgroundTabOpeningForegroundTabExpectedTaskQueueingDuration[] =
-        "TabManager.BackgroundTabOpening.ForegroundTab."
-        "ExpectedTaskQueueingDuration";
 
 // static
 const char TabManagerStatsCollector::kHistogramSessionRestoreSwitchToTab[] =

@@ -8,6 +8,9 @@
 
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/post_message_helper.h"
+#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_window.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_window_post_message_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy_manager.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -420,6 +423,22 @@ void DOMWindow::PostMessageForTesting(
   WindowPostMessageOptions* options = WindowPostMessageOptions::Create();
   options->setTargetOrigin(target_origin);
   DoPostMessage(std::move(message), ports, options, source, exception_state);
+}
+
+void DOMWindow::InstallCoopAccessMonitor(
+    LocalFrame* accessing_frame,
+    mojo::PendingRemote<network::mojom::blink::CrossOriginOpenerPolicyReporter>
+        pending_reporter) {
+  CoopAccessMonitor monitor;
+
+  DCHECK(accessing_frame->IsMainFrame());
+  monitor.accessing_main_frame = accessing_frame->GetFrameToken();
+
+  // TODO(arthursonzogni): Clean coop_access_monitor_ when a reporter is gone.
+  // Use mojo::Remote::set_disconnect_handler.
+  monitor.reporter.Bind(std::move(pending_reporter));
+
+  coop_access_monitor_.push_back(std::move(monitor));
 }
 
 void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,

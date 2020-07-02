@@ -10,7 +10,6 @@
 <translation id="1049743911850919806">Анонімний перегляд</translation>
 <translation id="10614374240317010">Ніколи не зберігалося</translation>
 <translation id="1067922213147265141">Інші сервіси Google</translation>
-<translation id="1068672505746868501">Ніколи не перекладати сторінки такою мовою: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="107147699690128016">Якщо ви зміните розширення файлу, він може відкритися в іншому додатку або зашкодити пристрою.</translation>
 <translation id="1100066534610197918">Відкрити нову вкладку в групі</translation>
 <translation id="1105960400813249514">Знімок екрана</translation>
@@ -35,13 +34,11 @@
 <translation id="1229399675748764149">Зробіть цю сторінку головною</translation>
 <translation id="1231733316453485619">Увімкнути синхронізацію?</translation>
 <translation id="123724288017357924">Оновити цю сторінку, ігноруючи кешований вміст</translation>
-<translation id="124116460088058876">Інші мови</translation>
 <translation id="124678866338384709">Закрити поточну вкладку</translation>
 <translation id="1258753120186372309">Дудл Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Пошук і огляд</translation>
 <translation id="1266864766717917324">Не вдалося надіслати: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1283039547216852943">Торкніться, щоб розгорнути</translation>
-<translation id="1285320974508926690">Ніколи не перекладати цей сайт</translation>
 <translation id="1291207594882862231">Очистити історію, файли cookie, дані сайтів, кеш…</translation>
 <translation id="129553762522093515">Нещодавно закриті</translation>
 <translation id="1303339473099049190">Не вдалося знайти такий пароль. Перевірте правильність написання та повторіть спробу.</translation>
@@ -239,7 +236,6 @@
 <translation id="2898264748040935573">Змінити збережений пароль</translation>
 <translation id="2900528713135656174">Створити подію</translation>
 <translation id="2903493209154104877">Адреси</translation>
-<translation id="290376772003165898">Ця сторінка відображається не такою мовою: <ph name="LANGUAGE" />?</translation>
 <translation id="2904414404539560095">Список пристроїв, на які можна надіслати вкладку, відкрито на всю висоту екрана.</translation>
 <translation id="2905036901251765993">Щоб ділитися даними з людьми поблизу, дозвольте їм зісканувати цей QR-код</translation>
 <translation id="2909615210195135082">Google Notifications Platform</translation>
@@ -415,7 +411,6 @@
 <translation id="4405224443901389797">Перемістити в папку…</translation>
 <translation id="4411535500181276704">Спрощений режим</translation>
 <translation id="4415276339145661267">Керуйте обліковим записом Google</translation>
-<translation id="4432792777822557199">Надалі сторінки цією мовою (<ph name="SOURCE_LANGUAGE" />) перекладатимуться такою мовою: <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4440958355523780886">Спрощену сторінку надає Google. Натисніть, щоб завантажити оригінал.</translation>
 <translation id="4452411734226507615">Закрити вкладку <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">Закладку збережено в папці "<ph name="FOLDER_NAME" />"</translation>
@@ -550,7 +545,6 @@
 <translation id="543509235395288790">Завантажується файлів: <ph name="COUNT" /> (<ph name="MEGABYTES" />).</translation>
 <translation id="5441522332038954058">Перейти до адресного рядка</translation>
 <translation id="5447201525962359567">Усі дані сайтів, зокрема файли cookie й інші локально збережені дані</translation>
-<translation id="5447765697759493033">Цей сайт не буде перекладено</translation>
 <translation id="545042621069398927">Прискорюється завантаження.</translation>
 <translation id="5456381639095306749">Завантажити сторінку</translation>
 <translation id="548278423535722844">Відкрити в додатку Карти</translation>
@@ -580,7 +574,6 @@
 <translation id="5659593005791499971">Електронна пошта</translation>
 <translation id="5665379678064389456">Створити подію в додатку <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Відхиляти запит веб-сайту, щоб забороняти масштабування</translation>
-<translation id="5684874026226664614">На жаль, цю сторінку неможливо перекласти.</translation>
 <translation id="5686790454216892815">Назва файлу задовга</translation>
 <translation id="5694049548840660018">Легко повертайтеся на головну сторінку</translation>
 <translation id="569536719314091526">Перекладіть цю сторінку будь-якою мовою, натиснувши кнопку "Більше опцій"</translation>
@@ -734,7 +727,6 @@
 <translation id="6767294960381293877">Список пристроїв, з якими можна ділитися вкладкою, відкрито на половину висоти.</translation>
 <translation id="6811034713472274749">Сторінка готова для перегляду</translation>
 <translation id="6820686453637990663">CVC</translation>
-<translation id="6831043979455480757">Перекласти</translation>
 <translation id="6845325883481699275">Допоможіть покращити безпеку Chrome</translation>
 <translation id="6846298663435243399">Завантаження…</translation>
 <translation id="6850409657436465440">Завантаження ще триває</translation>
@@ -842,7 +834,6 @@
 <translation id="7698359219371678927">Створити електронну адресу в додатку <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Автоматично завершувати пошукові запити та URL-адреси</translation>
 <translation id="7725024127233776428">Сторінки, для яких ви робите закладки, з'являються тут</translation>
-<translation id="773466115871691567">Завжди перекладати сторінки такою мовою: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7746457520633464754">Щоб виявляти небезпечні додатки й сайти, Chrome надсилає URL-адреси певних відвіданих сторінок, обмежену системну інформацію та вміст деяких сторінок у Google</translation>
 <translation id="7757787379047923882">Текст, надісланий із пристрою <ph name="DEVICE_NAME" /></translation>
 <translation id="7761849928583394409">Вибрати дату й час</translation>
@@ -922,7 +913,6 @@
 <translation id="8310344678080805313">Стандартні вкладки</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> та інші сайти</translation>
 <translation id="8327155640814342956">Оновіть Chrome для зручнішого перегляду веб-сторінок</translation>
-<translation id="8339163506404995330">Сторінки цією мовою (<ph name="LANGUAGE" />) не перекладатимуться</translation>
 <translation id="8349013245300336738">Сортувати за кількістю використаного трафіку</translation>
 <translation id="8364299278605033898">Перегляньте популярні сайти</translation>
 <translation id="8368027906805972958">Невідомий чи непідтримуваний пристрій (<ph name="DEVICE_ID" />)</translation>

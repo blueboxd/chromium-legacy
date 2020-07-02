@@ -22,6 +22,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -41,7 +42,6 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_fallback.h"
 #include "ui/gfx/font_render_params.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/harfbuzz_font_skia.h"
 #include "ui/gfx/platform_font.h"
 #include "ui/gfx/range/range_f.h"
@@ -787,7 +787,7 @@ void ApplyForcedDirection(UBiDiLevel* level) {
 }
 
 internal::TextRunHarfBuzz::FontParams CreateFontParams(
-    const gfx::Font& primary_font,
+    const Font& primary_font,
     UBiDiLevel bidi_level,
     UScriptCode script,
     const internal::StyleIterator& style) {
@@ -860,14 +860,14 @@ void TextRunHarfBuzz::FontParams::
     // Calculate a slightly smaller font. The ratio here is somewhat arbitrary.
     // Proportions from 5/9 to 5/7 all look pretty good.
     const float ratio = 5.0f / 9.0f;
-    font_size = ToRoundedInt(font.GetFontSize() * ratio);
+    font_size = base::Round(font.GetFontSize() * ratio);
     switch (baseline_type) {
       case SUPERSCRIPT:
         baseline_offset = font.GetCapHeight() - font.GetHeight();
         break;
       case SUPERIOR:
         baseline_offset =
-            ToRoundedInt(font.GetCapHeight() * ratio) - font.GetCapHeight();
+            base::Round(font.GetCapHeight() * ratio) - font.GetCapHeight();
         break;
       case SUBSCRIPT:
         baseline_offset = font.GetHeight() - font.GetBaseline();

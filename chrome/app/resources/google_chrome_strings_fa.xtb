@@ -15,6 +15,7 @@
 <translation id="137466361146087520">‏Google Chrome نسخه بتا</translation>
 <translation id="1399397803214730675">‏این رایانه از قبل دارای نسخه جدیدتر Google Chrome است. اگر نرم‌افزار کار نمی‌کند، لطفاً Google Chrome را حذف نصب کرده و دوباره امتحان کنید.</translation>
 <translation id="1434626383986940139">‏برنامه‌های Chrome Canary</translation>
+<translation id="1514913130539345610">‏سرپرستتان بررسی نرم‌افزارهای مضر توسط Chrome را غیرفعال کرده است</translation>
 <translation id="1553358976309200471">‏به‌روزرسانی Chrome</translation>
 <translation id="1587223624401073077">‏Google Chrome درحال استفاده از دوربین شما است.</translation>
 <translation id="1587325591171447154">‏<ph name="FILE_NAME" /> خطرناک است، بنابراین Chrome آن را مسدود کرده ست.</translation>
@@ -121,6 +122,7 @@
 <translation id="4458462641685292929">‏عملکرد دیگری در Google Chrome درحال انجام است. لطفاً بعداً دوباره امتحان کنید.</translation>
 <translation id="4480040274068703980">‏به دلیل وجود یک خطای ورود به سیستم، سیستم‌عامل Chrome قادر به همگام‌سازی داده‌هایتان نبود.</translation>
 <translation id="4521185804071812304">‏اختیاری: با ارسال خودکار داده‌های استفاده و عیب‌یابی به Google، به بهبود ویژگی‌ها و عملکرد سیستم‌عامل Chrome کمک کنید.</translation>
+<translation id="4552702433620284371">‏Chrome نمی‌تواند نرم‌افزار دستگاهتان را بررسی کند. اتصال اینترنت را بررسی کنید.</translation>
 <translation id="4561051373932531560">‏Google Chrome به شما اجازه می‌دهد بر روی شماره تلفن روی وب کلیک کرده و از طریق Skype تماس بگیرید!</translation>
 <translation id="4567424176335768812">با حساب <ph name="USER_EMAIL_ADDRESS" /> وارد سیستم شده‌اید. اکنون در همه دستگاه‌هایی که با آنها به سیستم وارد شده‌اید می‌توانید به نشانک‌ها، سابقه و دیگر تنظیماتتان دسترسی داشته باشید.</translation>
 <translation id="4571503333518166079">‏رفتن به تنظیمات اعلان Chrome</translation>
@@ -242,6 +244,7 @@
 <translation id="8641606876632989680">‏وقتی با گذرواژه‌ای لورفته به سیستم وارد شوید، Chrome به شما اطلاع می‌دهد</translation>
 <translation id="8669527147644353129">‏راهنمای Google Chrome</translation>
 <translation id="8679801911857917785">‏این برنامه همچنین صفحه‌ای را که هنگام راه‌اندازی Chrome نشان داده می‌شود، کنترل می‌کند.</translation>
+<translation id="8681614230122836773">‏Chrome نرم‌افزار مضری در رایانه‌تان پیدا کرده است</translation>
 <translation id="870251953148363156">‏به‌روزرسانی Goo&amp;gle Chrome</translation>
 <translation id="873133009373065397">‏Google Chrome نمی‌تواند مرورگر پیش‌فرض را تعیین یا تنظیم کند</translation>
 <translation id="8823341990149967727">‏نسخه Chrome قدیمی است</translation>

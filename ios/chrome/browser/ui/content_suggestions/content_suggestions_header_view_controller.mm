@@ -547,17 +547,24 @@ using base::UserMetricsAction;
     };
   }
 
-  void (^completionBlock)() = ^{
-    self.headerView.omnibox.hidden = YES;
-    self.headerView.cancelButton.hidden = YES;
-    self.headerView.searchHintLabel.alpha = 1;
-    self.headerView.voiceSearchButton.alpha = 1;
-    self.disableScrollAnimation = NO;
-    [self.dispatcher fakeboxFocused];
-    if (IsSplitToolbarMode()) {
-      [self.dispatcher onFakeboxAnimationComplete];
-    }
-  };
+  void (^completionBlock)(UIViewAnimatingPosition) =
+      ^(UIViewAnimatingPosition finalPosition) {
+        self.headerView.omnibox.hidden = YES;
+        self.headerView.cancelButton.hidden = YES;
+        self.headerView.searchHintLabel.alpha = 1;
+        self.headerView.voiceSearchButton.alpha = 1;
+        self.disableScrollAnimation = NO;
+        if (finalPosition == UIViewAnimatingPositionEnd &&
+            [self.delegate isScrolledToTop]) {
+          // Check to see if the collection are still scrolled to the top --
+          // it's possible (and difficult) to unfocus the omnibox and initiate a
+          // -shiftTilesDown before the animation here completes.
+          [self.dispatcher fakeboxFocused];
+          if (IsSplitToolbarMode()) {
+            [self.dispatcher onFakeboxAnimationComplete];
+          }
+        }
+      };
 
   [self.collectionSynchronizer shiftTilesUpWithAnimations:animations
                                                completion:completionBlock];

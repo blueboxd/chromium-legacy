@@ -20,6 +20,7 @@
 <translation id="10614374240317010">Sekula gorde gabeak</translation>
 <translation id="1062160989074299343">Prc10 (gutun-azala)</translation>
 <translation id="106701514854093668">Mahaigaineko laster-markak</translation>
+<translation id="1068672505746868501">Ez itzuli inoiz <ph name="SOURCE_LANGUAGE" /> darabilten orriak</translation>
 <translation id="1070901266639972381">Gaua</translation>
 <translation id="1074497978438210769">Ez da segurua</translation>
 <translation id="1080116354587839789">Doitu zabalerara</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">Izengabea</translation>
 <translation id="1236081509407217141">Errealitate birtuala erabiltzeko baimena eman nahi duzu?</translation>
 <translation id="1240347957665416060">Gailuaren izena</translation>
+<translation id="124116460088058876">Hizkuntza gehiago</translation>
 <translation id="1250759482327835220">Hurrengoan bizkorrago ordaintzeko, gorde txartela, izena eta fakturazio-helbidea Google-ko kontuan.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (sinkronizatuta)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Webgune batean sartzen bazara eta hura irekitzen ez bada, lehenik eta behin saiatu arazoak konpontzeko urrats hauek egiten:&lt;/p&gt;
@@ -825,6 +827,7 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="4424024547088906515">Zerbitzari honek ezin izan du egiaztatu <ph name="DOMAIN" /> domeinua denik. Chrome ez da bere segurtasun-ziurtagiriaz fidatzen. Baliteke gaizki konfiguratuta dagoelako izatea edo erasotzaile batek zure konexioa atzeman duelako izatea.</translation>
 <translation id="443121186588148776">Serie-ataka</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> webguneak ez du onartu edo jaso saioa hasteko ziurtagiria.</translation>
+<translation id="4432792777822557199"><ph name="SOURCE_LANGUAGE" /> darabilten orriak <ph name="TARGET_LANGUAGE" /> hizkuntzara itzuliko dira</translation>
 <translation id="4434045419905280838">Leiho gainerak. / Birbideratzeak</translation>
 <translation id="4435702339979719576">Postcard)</translation>
 <translation id="443673843213245140">Proxya erabiltzeko aukera desgaitu da, baina proxy-konfigurazio esplizitua zehaztu da.</translation>
@@ -1056,6 +1059,7 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="5431657950005405462">Ez da aurkitu fitxategia</translation>
 <translation id="5439770059721715174">Eskemaren balidazio-errorea gertatu da ("<ph name="ERROR_PATH" />"): <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Alderantzizko ordenan, ahoz gora</translation>
+<translation id="5447765697759493033">Webgune hau ez da itzuliko</translation>
 <translation id="5452270690849572955">Ezin da aurkitu <ph name="HOST_NAME" /> webguneko orria</translation>
 <translation id="5455374756549232013">Gidalerroaren denbora-zigiluak ez du balio</translation>
 <translation id="5457113250005438886">Ez du balio</translation>
@@ -1601,6 +1605,7 @@ Xehetasun gehiago:
 <translation id="7716375162095500223">Oraindik ez da kargatu, edo ez ikusi egin zaio</translation>
 <translation id="7716424297397655342">Webgunea ezin da kargatu cachetik</translation>
 <translation id="7723047071702270851">Editatu txartela</translation>
+<translation id="773466115871691567">Itzuli beti <ph name="SOURCE_LANGUAGE" /> darabilten orriak</translation>
 <translation id="7740996059027112821">Estandarra</translation>
 <translation id="774634243536837715">Eduki arriskutsua blokeatu da.</translation>
 <translation id="7752995774971033316">Kudeatu gabe</translation>
@@ -1746,6 +1751,7 @@ Xehetasun gehiago:
 <translation id="831997045666694187">Arratsaldea</translation>
 <translation id="8332188693563227489">Ukatu egin da <ph name="HOST_NAME" /> webgunerako sarbidea</translation>
 <translation id="833262891116910667">Nabarmenduta</translation>
+<translation id="8339163506404995330">Ez dira itzuliko <ph name="LANGUAGE" /> darabilten orriak</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_YEAR" />/<ph name="EXPIRATION_MONTH" /></translation>
 <translation id="834457929814110454">Segurtasunari eragiten dizkion arriskuak ulertzen badituzu, <ph name="BEGIN_LINK" />webgune hau ikusi beharko zenuke<ph name="END_LINK" /> programa kaltegarriak kendu aurretik.</translation>
 <translation id="8349305172487531364">Laster-marken barra</translation>

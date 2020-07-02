@@ -10,7 +10,6 @@
 <translation id="1049743911850919806">Inkognito</translation>
 <translation id="10614374240317010">Parollar saqlanmaydigan saytlar</translation>
 <translation id="1067922213147265141">Boshqa Google xizmatlari</translation>
-<translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" /> tilidagi sahifalar hech qachon tarjima qilinmasin</translation>
 <translation id="107147699690128016">Agar fayl kengaytmasi oʻzgartirilsa, fayl boshqa ilovada ochilishi va qurilmaga zarar yetkazishi mumkin.</translation>
 <translation id="1100066534610197918">Guruhda yangi varaqda ochish</translation>
 <translation id="1105960400813249514">Ekranni suratga olish</translation>
@@ -35,13 +34,11 @@
 <translation id="1229399675748764149">Bu sahifani asosiy qilib belgilang</translation>
 <translation id="1231733316453485619">Sinxronizatsiya yoqilsinmi?</translation>
 <translation id="123724288017357924">Keshga yuklangan ma’lumotlarsiz sahifani qayta yuklang.</translation>
-<translation id="124116460088058876">Boshqa tillar</translation>
 <translation id="124678866338384709">Joriy varaqni yopish</translation>
 <translation id="1258753120186372309">Google-dudl: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Qidiruv va tanishuv</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> yuborilmadi</translation>
 <translation id="1283039547216852943">Bosib yoyish</translation>
-<translation id="1285320974508926690">Bu sayt hech qachon tarjima qilinmasin</translation>
 <translation id="1291207594882862231">Brauzer tarixi, cookie-fayllar, kesh va boshqa sayt ma’lumotlarini tozalash...</translation>
 <translation id="129553762522093515">Yaqinda yopilganlar</translation>
 <translation id="1303339473099049190">Bu parol topilmadi. Xatosiz kiritilganini tekshiring va qayta urining.</translation>
@@ -239,7 +236,6 @@ Qidiruvni boshlash uchun istalgan soʻzni bosib turing. Qidruvni aniqlashtirish 
 <translation id="2898264748040935573">Saqlangan parolni tahrirlash</translation>
 <translation id="2900528713135656174">Tadbir yaratish</translation>
 <translation id="2903493209154104877">Manzillar</translation>
-<translation id="290376772003165898">Sahifa <ph name="LANGUAGE" /> tilida emasmi?</translation>
 <translation id="2904414404539560095">Butun hajmda ochilgan varaq uzatiladigan qurilmalar roʻyxati.</translation>
 <translation id="2905036901251765993">Yaqin-atrofdagilarga ulashish uchun ular shu QR kodni skanerlashi kerak.</translation>
 <translation id="2909615210195135082">Google bildirishnomalar platformasi</translation>
@@ -415,7 +411,6 @@ Qidiruvni boshlash uchun istalgan soʻzni bosib turing. Qidruvni aniqlashtirish 
 <translation id="4405224443901389797">Boshqa joyga olish…</translation>
 <translation id="4411535500181276704">Lite rejimi</translation>
 <translation id="4415276339145661267">Google hisobingizni boshqaring</translation>
-<translation id="4432792777822557199"><ph name="SOURCE_LANGUAGE" /> tilidagi sahifalar hozirdan <ph name="TARGET_LANGUAGE" /> tiliga tarjima qilinadi</translation>
 <translation id="4440958355523780886">Sahifaning Lite-versiyasi Google tomonidan taqdim etildi. Asl versiyani yuklash uchun tegining.</translation>
 <translation id="4452411734226507615"><ph name="TAB_TITLE" /> nomli varaqni yopish</translation>
 <translation id="4452548195519783679">Xatcho‘p “<ph name="FOLDER_NAME" />” jildiga saqlandi</translation>
@@ -550,7 +545,6 @@ Bu sozlamani almashtirish uchun <ph name="BEGIN_LINK" />sinxronizatsiyani tiklan
 <translation id="543509235395288790"><ph name="COUNT" /> ta fayl yuklab olinmoqda (<ph name="MEGABYTES" />).</translation>
 <translation id="5441522332038954058">Manzil qatoriga o‘tish</translation>
 <translation id="5447201525962359567">Barcha sayt ma’lumotlari saqlanadigan xotira, shuningdek, cookie-fayllar va boshqa kompyuterga saqlangan ma’lumotlar</translation>
-<translation id="5447765697759493033">Bu sayt tarjima qilinmaydi</translation>
 <translation id="545042621069398927">Yuklab olish tezlashtirilmoqda.</translation>
 <translation id="5456381639095306749">Sahifani yuklab olish</translation>
 <translation id="548278423535722844">Xaritalar ilovasida ochish</translation>
@@ -580,7 +574,6 @@ Bu sozlamani almashtirish uchun <ph name="BEGIN_LINK" />sinxronizatsiyani tiklan
 <translation id="5659593005791499971">Email</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> ilovasida tadbir yaratish</translation>
 <translation id="5668404140385795438">Saytlarda masshtab taqiqlarini chetlab matn hajmini o‘zgartirish</translation>
-<translation id="5684874026226664614">Bu sahifani tarjima qilib bo‘lmadi.</translation>
 <translation id="5686790454216892815">Fayl nomi juda uzun</translation>
 <translation id="5694049548840660018">Bosh sahifaga tezkor yorliq</translation>
 <translation id="569536719314091526">“Yana” tugmasidan bu sahifani boshqa tilga tarjima qilishingiz mumkin</translation>
@@ -734,7 +727,6 @@ Masalan, qaysi sahifalarga kirganligingizdan qat’i nazar, ba’zi saytlarda re
 <translation id="6767294960381293877">Yarim hajmda ochilgan varaq uzatiladigan qurilmalar roʻyxati.</translation>
 <translation id="6811034713472274749">Sahifani koʻrish mumkin</translation>
 <translation id="6820686453637990663">CVC kod</translation>
-<translation id="6831043979455480757">Tarjima</translation>
 <translation id="6845325883481699275">Chrome xavfsizligini yaxshilashga yordam bering</translation>
 <translation id="6846298663435243399">Yuklanmoqda…</translation>
 <translation id="6850409657436465440">Fayl hali ham yuklab olinmoqda</translation>
@@ -842,7 +834,6 @@ Masalan, qaysi sahifalarga kirganligingizdan qat’i nazar, ba’zi saytlarda re
 <translation id="7698359219371678927"><ph name="APP_NAME" /> orqali e-pochta yaratish</translation>
 <translation id="7704317875155739195">Qidiruv va URL manzillarning avtomatik kiritilishi</translation>
 <translation id="7725024127233776428">Xatchoʻplarga saqlanadigan sahifalar shu yerda chiqadi</translation>
-<translation id="773466115871691567"><ph name="SOURCE_LANGUAGE" /> tilidagi sahifalar doim tarjima qilinsin</translation>
 <translation id="7746457520633464754">Xavfli ilova saytlarni aniqlashda Chrome siz tashrif buyuradigan saytlarning URL manzillari, tizim axboroti va ayrim sahifalardagi kontentlarni Google serverlariga yuboradi</translation>
 <translation id="7757787379047923882"><ph name="DEVICE_NAME" /> qurilmasidan ulashilgan matn</translation>
 <translation id="7761849928583394409">Sana va vaqtni tanlang</translation>
@@ -922,7 +913,6 @@ Masalan, qaysi sahifalarga kirganligingizdan qat’i nazar, ba’zi saytlarda re
 <translation id="8310344678080805313">Standart tablar</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> va boshqa saytlar</translation>
 <translation id="8327155640814342956">Internetni tezroq kezish uchun Chrome eng oxirgi versiyasiga yangilanishi kerak</translation>
-<translation id="8339163506404995330"><ph name="LANGUAGE" /> tilidagi sahifalar tarjima qilinmaydi</translation>
 <translation id="8349013245300336738">Sarflangan trafik asosida saralash</translation>
 <translation id="8364299278605033898">Mahalliy ommabop saytlar</translation>
 <translation id="8368027906805972958">Notanish yoki qoʻllab-quvvatlanmaydigan qurilma (<ph name="DEVICE_ID" />)</translation>

@@ -48,7 +48,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "url/gurl.h"
 
 namespace extensions {
@@ -200,8 +199,7 @@ std::string ConvertTimeToExtensionVersion(const base::Time& create_time) {
       (create_time_exploded.minute * base::Time::kMicrosecondsPerMinute) +
       (create_time_exploded.hour * base::Time::kMicrosecondsPerHour));
   double day_fraction = micros / base::Time::kMicrosecondsPerDay;
-  int stamp =
-      gfx::ToRoundedInt(day_fraction * std::numeric_limits<uint16_t>::max());
+  int stamp = base::Round(day_fraction * std::numeric_limits<uint16_t>::max());
 
   return base::StringPrintf("%i.%i.%i.%i", create_time_exploded.year,
                             create_time_exploded.month,

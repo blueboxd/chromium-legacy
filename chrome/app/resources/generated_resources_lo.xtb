@@ -527,7 +527,6 @@
 <translation id="1645516838734033527">ເພື່ອຮັກສາໃຫ້ <ph name="DEVICE_TYPE" /> ຂອງທ່ານໃຫ້ປອດໄພ, Smart Lock ຈຳເປັນຕ້ອງມີການລັອກໜ້າຈໍໃນໂທລະສັບຂອງທ່ານ.</translation>
 <translation id="1646982517418478057">ກະລຸນາປ້ອນລະຫັດຜ່ານ ເພື່ອເຂົ້າລະຫັດໃບຢັ້ງຢືນນີ້</translation>
 <translation id="1648528859488547844">ໃຊ້ Wi‑Fi, Bluetooth ຫຼື ເຄືອຂ່າຍມືຖືເພື່ອກຳນົດສະຖານທີ່</translation>
-<translation id="1648943974594387137">ລາຍລະອຽດການເຂົ້າສູ່ລະບົບເກົ່າແລ້ວ</translation>
 <translation id="164936512206786300">ຍົກເລີກການຈັບຄູ່ອຸປະກອນ Bluetooth</translation>
 <translation id="1650371550981945235">ສະແດງຕົວເລືອກການປ້ອນຂໍ້ມູນ</translation>
 <translation id="1651008383952180276">ທ່ານຕ້ອງປ້ອນວະລີຜ່ານອັນດຽວກັນສອງເທື່ອ</translation>
@@ -1331,7 +1330,6 @@
 <translation id="2635276683026132559">ການເຊັນ</translation>
 <translation id="2636625531157955190">Chrome ບໍ່​ສາ​ມາດ​ເຂົ້າ​ຫາຮູບໄດ້.</translation>
 <translation id="2637400434494156704">PIN ບໍ່ຖືກຕ້ອງ. ທ່ານຍັງເຫຼືອຄວາມພະຍາຍາມອີກໜຶ່ງຄັ້ງ.</translation>
-<translation id="2638087589890736295">ຈຳເປັນຕ້ອງມີວະລີຜ່ານເພື່ອເລີ່ມການຊິ້ງຂໍ້ມູນ</translation>
 <translation id="2638662041295312666">ຮູບການເຂົ້າສູ່ລະບົບ</translation>
 <translation id="264083724974021997">ເຊື່ອມຕໍ່ກັບໂທລະສັບຂອງທ່ານ - ກ່ອງໂຕ້ຕອບ</translation>
 <translation id="2641065435954454414">ກຳລັງກະກຽມການດາວໂຫລດ</translation>
@@ -1485,7 +1483,6 @@
 <translation id="2809586584051668049">ແລະ <ph name="NUMBER_ADDITIONAL_DISABLED" /> ເພີ່ມອີກ</translation>
 <translation id="2810390687497823527">ຖ້າທ່ານບໍ່ຮູ້ຈັກສ່ວນຂະຫຍາຍໃດໜຶ່ງ ຫຼື ຖ້າໂປຣແກຣມທ່ອງເວັບຂອງທ່ານບໍ່ເຮັດວຽກຕາມທີ່ຄາດໄວ້, ທ່ານສາມາດປິດ ຫຼື ປັບແຕ່ງສ່ວນຂະຫຍາຍໄດ້ຢູ່ບ່ອນນີ້.</translation>
 <translation id="2812049959647166806">ບໍ່ຮອງຮັບ Thunderbolt</translation>
-<translation id="2812944337881233323">ລອງອອກຈາກລະບົບ ແລ້ວກັບເຂົ້າສູ່ລະບົບອີກຄັ້ງ</translation>
 <translation id="2812989263793994277">ຢ່າສະແດງຮູບໃດອີກ</translation>
 <translation id="2813094189969465044">ການຄວບຄຸມສຳລັບພໍ່ແມ່</translation>
 <translation id="281390819046738856">ບໍ່ສາມາດເຊັນຄຳຂໍໄດ້.</translation>
@@ -3406,7 +3403,6 @@
 <translation id="529175790091471945">ຟໍແມັດອຸ​ປະ​ກອນ​ນີ້</translation>
 <translation id="5293170712604732402">ກູ້ຄືນການຕັ້ງຄ່າເປັນຄ່າເລີ່ມຕົ້ນເດີມຂອງພວກມັນ</translation>
 <translation id="5294097441441645251">ຕ້ອງເລີ່ມດ້ວຍຕົວອັກສອນຕົວພິມນ້ອຍ ຫຼື ຂີດກ້ອງ</translation>
-<translation id="5296471962619441686">ແກ້ໄຂຂໍ້ຜິດພາດເພື່ອສືບຕໍ່ການຊິ້ງຂໍ້ມູນ</translation>
 <translation id="5297082477358294722">ບັນທຶກລະຫັດຜ່ານໄວ້ແລ້ວ. ເບິ່ງ ແລະ ຈັດການລະຫັດຜ່ານທີ່ບັນທຶກໄວ້ໃນ <ph name="SAVED_PASSWORDS_STORE" /> ຂອງທ່ານ.</translation>
 <translation id="5298219193514155779">ສ້າງເທມຂຶ້ນໂດຍ</translation>
 <translation id="5299109548848736476">ຢ່າຕິດຕາມ</translation>
@@ -5768,7 +5764,6 @@
 <translation id="8256417822772703842"><ph name="PRINTER_NAME" /> ມີນໍ້າມຶກເຫຼືອໜ້ອຍ</translation>
 <translation id="8257950718085972371">ສືບ​ຕໍ່ບລັອກການເຂົ້າຫາກ້ອງຖ່າຍຮູບ</translation>
 <translation id="8259239505248583312">ເລີ່ມກັນເລີຍ</translation>
-<translation id="8260126382462817229">ລອງເຂົ້າສູ່ລະບົບອີກຄັ້ງ</translation>
 <translation id="8260864402787962391">ເມົາສ໌</translation>
 <translation id="8261378640211443080">ສ່ວນຂະຫຍາຍນີ້ບໍ່ມີລາຍຊື່ຢູ່ໃນ <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ແລະອາດຈະຖືກເພີ່ມເຂົ້າໂດຍທີ່ທ່ານບໍ່ຮູ້ຈັກ.</translation>
 <translation id="8261506727792406068">ລຶບ</translation>

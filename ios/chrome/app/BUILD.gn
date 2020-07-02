@@ -143,6 +143,7 @@ source_set("app_internal") {
     ":app",
     ":blocking_scene_commands",
     ":mode",
+    ":scoped_ui_blocker",
     ":tests_hook",
     "//base",
     "//build:branding_buildflags",
@@ -277,6 +278,25 @@ source_set("blocking_scene_commands") {
   sources = [ "blocking_scene_commands.h" ]
 
   deps = [ "//base" ]
+}
+
+source_set("scoped_ui_blocker") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "scoped_ui_blocker.h",
+    "scoped_ui_blocker.mm",
+  ]
+
+  deps = [
+    "//base",
+    "//ios/chrome/app/application_delegate:application_delegate_internal",
+    "//ios/chrome/browser/ui/main:scene",
+  ]
+
+  allow_circular_includes_from = [
+    "//ios/chrome/app/application_delegate:application_delegate_internal",
+    "//ios/chrome/browser/ui/main:scene",
+  ]
 }
 
 source_set("mode") {

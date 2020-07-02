@@ -10,7 +10,6 @@
 <translation id="1049743911850919806">Anonymní režim</translation>
 <translation id="10614374240317010">Nikdy se neukládají</translation>
 <translation id="1067922213147265141">Další služby Google</translation>
-<translation id="1068672505746868501">Stránky v jazyce <ph name="SOURCE_LANGUAGE" /> nikdy nepřekládat</translation>
 <translation id="107147699690128016">Pokud změníte příponu souboru, může se soubor otevřít v jiné aplikaci a potenciálně může být rizikem pro vaše zařízení.</translation>
 <translation id="1100066534610197918">Otevřít na nové kartě ve skup.</translation>
 <translation id="1105960400813249514">Snímky obrazovky</translation>
@@ -35,13 +34,11 @@
 <translation id="1229399675748764149">Nastavte si tuto stránku jako domovskou</translation>
 <translation id="1231733316453485619">Zapnout synchronizaci?</translation>
 <translation id="123724288017357924">Obnovit stránku a ignorovat obsah v mezipaměti</translation>
-<translation id="124116460088058876">Další jazyky</translation>
 <translation id="124678866338384709">Zavřít aktuální kartu</translation>
 <translation id="1258753120186372309">Sváteční logo Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Vyhledávání a prozkoumávání</translation>
 <translation id="1266864766717917324">Sdílení obsahu typu <ph name="CONTENT_TYPE" /> se nezdařilo</translation>
 <translation id="1283039547216852943">Klepnutím rozbalíte</translation>
-<translation id="1285320974508926690">Tento web nikdy nepřekládat</translation>
 <translation id="1291207594882862231">Vymazat historii, soubory cookie, data webů, mezipaměť…</translation>
 <translation id="129553762522093515">Nedávno zavřené</translation>
 <translation id="1303339473099049190">Dané heslo nebylo nalezeno. Zkontrolujte ho a zkuste to znovu.</translation>
@@ -239,7 +236,6 @@ Vyhledávání spustíte podržením libovolného slova. Vyhledávání můžete
 <translation id="2898264748040935573">Upravit uložené heslo</translation>
 <translation id="2900528713135656174">Vytvořit událost</translation>
 <translation id="2903493209154104877">Adresy</translation>
-<translation id="290376772003165898">Stránka není v jazyce <ph name="LANGUAGE" />?</translation>
 <translation id="2904414404539560095">Seznam zařízení, se kterými se má karta sdílet, otevřený na plnou výšku.</translation>
 <translation id="2905036901251765993">Chcete-li obsah sdílet s lidmi z okolí, nechte je naskenovat tento QR kód</translation>
 <translation id="2909615210195135082">Google Notifications Platform</translation>
@@ -415,7 +411,6 @@ Vyhledávání spustíte podržením libovolného slova. Vyhledávání můžete
 <translation id="4405224443901389797">Přesunout do…</translation>
 <translation id="4411535500181276704">Zjednodušený režim</translation>
 <translation id="4415276339145661267">Spravovat účet Google</translation>
-<translation id="4432792777822557199">Stránky v jazyce <ph name="SOURCE_LANGUAGE" /> od teď budou překládány do jazyka <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4440958355523780886">Zjednodušenou stránku poskytuje Google. Klepnutím načtete originál.</translation>
 <translation id="4452411734226507615">Zavřít kartu <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">Záložka přidána do složky <ph name="FOLDER_NAME" /></translation>
@@ -550,7 +545,6 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="543509235395288790">Stahování <ph name="COUNT" /> souborů (<ph name="MEGABYTES" />).</translation>
 <translation id="5441522332038954058">Přejít na adresní řádek</translation>
 <translation id="5447201525962359567">Veškerá data webů, včetně souborů cookie a dalších místně uložených dat</translation>
-<translation id="5447765697759493033">Tento web nebude přeložen</translation>
 <translation id="545042621069398927">Zrychlování stahování.</translation>
 <translation id="5456381639095306749">Stáhnout stránku</translation>
 <translation id="548278423535722844">Otevřít v mapové aplikaci</translation>
@@ -580,7 +574,6 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5665379678064389456">Vytvořit událost v aplikaci <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Přepsat požadavek webu na zákaz přiblížení</translation>
-<translation id="5684874026226664614">Jejda. Tuto stránku se nepodařilo přeložit.</translation>
 <translation id="5686790454216892815">Název souboru je příliš dlouhý</translation>
 <translation id="5694049548840660018">Snadno se vraťte na domovskou stránku</translation>
 <translation id="569536719314091526">Pomocí tlačítka Další možnosti můžete tuto stránku přeložit do libovolného jazyka.</translation>
@@ -734,7 +727,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6767294960381293877">Seznam zařízení, se kterými se má karta sdílet, otevřený na poloviční výšku.</translation>
 <translation id="6811034713472274749">Stránka je připravená k zobrazení</translation>
 <translation id="6820686453637990663">Bezpečnostní kód platební karty (CVC)</translation>
-<translation id="6831043979455480757">Přeložit</translation>
 <translation id="6845325883481699275">Pomoci zlepšovat zabezpečení Chromu</translation>
 <translation id="6846298663435243399">Načítání…</translation>
 <translation id="6850409657436465440">Stahování stále probíhá</translation>
@@ -842,7 +834,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7698359219371678927">Vytvořit e-mail v aplikaci <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Automaticky doplňovat vyhledávací dotazy a adresy URL</translation>
 <translation id="7725024127233776428">Zde se zobrazují stránky přidané do záložek</translation>
-<translation id="773466115871691567">Stránky v jazyce <ph name="SOURCE_LANGUAGE" /> vždy překládat</translation>
 <translation id="7746457520633464754">Kvůli detekci nebezpečných aplikací a webů odesílá Chrome do Googlu adresy URL některých navštívených stránek, omezené informace o systému a část obsahu stránek</translation>
 <translation id="7757787379047923882">Text sdílený ze zařízení <ph name="DEVICE_NAME" /></translation>
 <translation id="7761849928583394409">Vybrat datum a čas</translation>
@@ -922,7 +913,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="8310344678080805313">Standardní karty</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> a další weby</translation>
 <translation id="8327155640814342956">Chcete-li mít při procházení nejlepší prostředí a funkce, aktualizujte Chrome</translation>
-<translation id="8339163506404995330">Stránky v jazyce <ph name="LANGUAGE" /> nebudou překládány</translation>
 <translation id="8349013245300336738">Seřadit podle množství využitých dat</translation>
 <translation id="8364299278605033898">Zobrazit populární weby</translation>
 <translation id="8368027906805972958">Neznámé nebo nepodporované zařízení (<ph name="DEVICE_ID" />)</translation>

@@ -16,6 +16,7 @@
 <translation id="1774152462503052664">‏اجازه به Chromium برای اجرا در پس‌زمینه</translation>
 <translation id="1779356040007214683">‏برای ایمن‌تر کردن Chromium، برخی از افزونه‌هایی را که در <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> فهرست شده‌اند و ممکن است بدون اطلاع شما اضافه شده باشند، غیرفعال کردیم.</translation>
 <translation id="1808667845054772817">‏نصب مجدد Chromium</translation>
+<translation id="1865035435995743337">‏Chromium نمی‌تواند نرم‌افزار دستگاهتان را بررسی کند. اتصال اینترنت را بررسی کنید.</translation>
 <translation id="1881322772814446296">‏شما با حساب مدیریت‌شده وارد سیستم می‌شوید و به سرپرست آن اجازه کنترل بر نمایه Chromium خود را می‌دهید. داده‌های Chromium شما شامل برنامه‌ها، نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیمات برای همیشه به <ph name="USER_NAME" /> مرتبط خواهد شد. می‌توانید این داده‌ها را از طریق داشبورد حساب‌های Google حذف کنید اما نمی‌توانید این داده‌ها را به حساب دیگری مرتبط سازید. در صورت تمایل برای ذخیره داده‌های Chromium موجود به صورت جداگانه می‌توانید نمایه جدیدی ایجاد کنید. <ph name="LEARN_MORE" /></translation>
 <translation id="1911763535808217981">‏با خاموش کردن این گزینه، می‌توانید بدون ورود به سیستم Chromium به سیستم سایت‌های Google مانند Gmail وارد شوید</translation>
 <translation id="1929939181775079593">‏Chromium پاسخ نمی‌دهد. مجدداً راه‌اندازی شود؟</translation>
@@ -113,6 +114,7 @@
 <translation id="5480860683791598150">‏Chromium برای هم‌رسانی مکانتان با این سایت باید به مکان شما دسترسی داشته باشد</translation>
 <translation id="549669000822060376">‏وقتی Chromium جدیدترین به‌روزرسانی‌های سیستم را نصب می‌کند، لطفاً صبر کنید.</translation>
 <translation id="5496810170689441661">‏Chromium می‌خواهد گذرواژه‌ها را ویرایش کند. برای اینکه اجازه دهید این کار انجام شود، گذرواژه Windows خود را تایپ کنید.</translation>
+<translation id="5556694182460963866">‏سرپرستتان بررسی نرم‌افزارهای مضر توسط Chromium را غیرفعال کرده است</translation>
 <translation id="5623402015214259806">{0,plural, =0{‏به‌روزرسانی Chromium دردسترس است}=1{‏به‌روزرسانی Chromium دردسترس است}one{‏به‌روزرسانی Chromium از # روز پیش دردسترس است}other{‏به‌روزرسانی Chromium از # روز پیش دردسترس است}}</translation>
 <translation id="5631814766731275228">‏نام و تصویر Chromium</translation>
 <translation id="5634636535844844681">‏Chromium به Windows 7 یا بالاتر نیاز دارد.</translation>
@@ -192,6 +194,7 @@ Chromium قادر به بازیابی تنظیمات شما نیست.</translati
       تنظیمات مرورگر Chromium<ph name="LINK_END" /> آن را کنید</translation>
 <translation id="761356813943268536">‏Chromium درحال استفاده از دوربین و میکروفون شما است.</translation>
 <translation id="7617377681829253106">‏Chromium اکنون بهتر شده است</translation>
+<translation id="7628001322379820951">‏Chromium نرم‌افزار مضری در رایانه‌تان پیدا کرده است</translation>
 <translation id="7686590090926151193">‏Chromium مرورگر پیش‌فرض شما نیست</translation>
 <translation id="7689606757190482937">‏Chromium را در همه دستگاه‌هایتان همگام‌سازی و شخصی‌سازی کنید</translation>
 <translation id="7729447699958282447">‏Chromium قادر به همگام‌سازی داده‌های شما نبود زیرا همگام‌سازی برای دامنه شما قابل دسترسی نیست.</translation>

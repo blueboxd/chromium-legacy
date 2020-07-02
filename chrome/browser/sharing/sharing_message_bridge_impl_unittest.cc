@@ -256,6 +256,15 @@ TEST_F(SharingMessageBridgeTest, ShouldInvokeCallbackOnTimeout) {
                                       1);
 }
 
+TEST_F(SharingMessageBridgeTest, ShouldIgnoreSyncAuthError) {
+  base::MockCallback<SharingMessageBridge::CommitFinishedCallback> callback;
+  EXPECT_CALL(callback, Run(_)).Times(0);
+  bridge()->SendSharingMessage(CreateSpecifics("test_payload"), callback.Get());
+  bridge()->OnCommitAttemptFailed(syncer::SyncCommitError::kAuthError);
+
+  EXPECT_EQ(1u, bridge()->GetCallbacksCountForTesting());
+}
+
 TEST_P(SharingMessageBridgeErrorsTest,
        ShouldInvokeCallbackOnSyncCommitFailure) {
   base::HistogramTester histogram_tester;

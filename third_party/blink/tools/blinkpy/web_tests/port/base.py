@@ -164,9 +164,9 @@ class Port(object):
     # forwarded back to the host.
     # 8000, 8080 and 8443 are for http/https tests;
     # 8880 is for websocket tests (see apache_http.py and pywebsocket.py).
-    # 8001, 8081 and 8444 are for http/https WPT;
+    # 8001, 8081, 8444, and 8445 are for http/https WPT;
     # 9001 and 9444 are for websocket WPT (see wptserve.py).
-    SERVER_PORTS = [8000, 8001, 8080, 8081, 8443, 8444, 8880, 9001, 9444]
+    SERVER_PORTS = [8000, 8001, 8080, 8081, 8443, 8444, 8445, 8880, 9001, 9444]
 
     FALLBACK_PATHS = {}
 

@@ -529,7 +529,6 @@
 <translation id="1645516838734033527">Щоб захистити ваш пристрій <ph name="DEVICE_TYPE" /> за допомогою Smart Lock, потрібно налаштувати блокування екрана на телефоні.</translation>
 <translation id="1646982517418478057">Введіть пароль, щоб зашифрувати цей сертифікат</translation>
 <translation id="1648528859488547844">Визначати місцезнаходження за допомогою Wi-Fi або мобільних мереж</translation>
-<translation id="1648943974594387137">Дані для входу в обліковий запис застаріли</translation>
 <translation id="164936512206786300">Відключити пристрій Bluetooth</translation>
 <translation id="1650371550981945235">Показати опції введення</translation>
 <translation id="1651008383952180276">Потрібно двічі ввести однакову парольну фразу</translation>
@@ -1333,7 +1332,6 @@
 <translation id="2635276683026132559">Підписування</translation>
 <translation id="2636625531157955190">Chrome не може отримати доступ до зображення.</translation>
 <translation id="2637400434494156704">Неправильний PIN-код. У вас залишилася одна спроба.</translation>
-<translation id="2638087589890736295">Введіть парольну фразу, щоб почати синхронізацію</translation>
 <translation id="2638662041295312666">Зображення облікового запису</translation>
 <translation id="264083724974021997">Підключіться до телефона – діалогове вікно</translation>
 <translation id="2641065435954454414">Підготовка завантаження</translation>
@@ -1487,7 +1485,6 @@
 <translation id="2809586584051668049">і ще <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
 <translation id="2810390687497823527">Якщо ви не впізнаєте розширення або веб-переглядач працює неналежним чином, вимкніть чи налаштуйте розширення тут.</translation>
 <translation id="2812049959647166806">Thunderbolt не підтримується</translation>
-<translation id="2812944337881233323">Вийдіть зі свого облікового запису та ввійдіть у нього знову</translation>
 <translation id="2812989263793994277">Не показувати жодних зображень</translation>
 <translation id="2813094189969465044">Батьківський контроль</translation>
 <translation id="281390819046738856">Не вдалося підписати запит.</translation>
@@ -3408,7 +3405,6 @@
 <translation id="529175790091471945">Форматувати цей пристрій</translation>
 <translation id="5293170712604732402">Відновити початкові налаштування за умовчанням</translation>
 <translation id="5294097441441645251">Має починатися з малої літери або символу підкреслення</translation>
-<translation id="5296471962619441686">Виправте помилки, щоб відновити синхронізацію</translation>
 <translation id="5297082477358294722">Пароль збережено. Переглядайте збережені паролі й керуйте ними на сторінці <ph name="SAVED_PASSWORDS_STORE" /></translation>
 <translation id="5298219193514155779">Автор теми:</translation>
 <translation id="5299109548848736476">Не відстежувати</translation>
@@ -5772,7 +5768,6 @@
 <translation id="8256417822772703842">У принтері "<ph name="PRINTER_NAME" />" закінчується чорнило</translation>
 <translation id="8257950718085972371">Продовжити блокувати доступ до камери</translation>
 <translation id="8259239505248583312">Почати</translation>
-<translation id="8260126382462817229">Спробуйте ввійти ще раз</translation>
 <translation id="8260864402787962391">Миша</translation>
 <translation id="8261378640211443080">Це розширення встановлено не із сайту <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />. Можливо, його було додано без вашого відома.</translation>
 <translation id="8261506727792406068">Видалити</translation>

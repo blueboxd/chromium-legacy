@@ -526,7 +526,6 @@
 <translation id="1645516838734033527">Damit Smart Lock Ihr <ph name="DEVICE_TYPE" /> schützen kann, muss auf Ihrem Smartphone die Displaysperre eingerichtet sein.</translation>
 <translation id="1646982517418478057">Bitte geben Sie ein Passwort zur Verschlüsselung dieses Zertifikats ein</translation>
 <translation id="1648528859488547844">Standort über WLAN oder Mobilfunknetz bestimmen</translation>
-<translation id="1648943974594387137">Die Anmeldeinformationen sind veraltet</translation>
 <translation id="164936512206786300">Bluetooth-Gerät entkoppeln</translation>
 <translation id="1650371550981945235">Eingabeoptionen anzeigen</translation>
 <translation id="1651008383952180276">Sie müssen zweimal dieselbe Passphrase eingeben</translation>
@@ -1329,7 +1328,6 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="2635276683026132559">Signatur</translation>
 <translation id="2636625531157955190">Chrome kann nicht auf das Bild zugreifen.</translation>
 <translation id="2637400434494156704">Falsche PIN. Sie haben noch einen Eingabeversuch.</translation>
-<translation id="2638087589890736295">Geben Sie Ihre Passphrase ein, um die Synchronisierung zu starten</translation>
 <translation id="2638662041295312666">Log-in-Bild</translation>
 <translation id="264083724974021997">Mit dem Smartphone verbinden – Dialogfenster</translation>
 <translation id="2641065435954454414">Download wird vorbereitet</translation>
@@ -1483,7 +1481,6 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="2809586584051668049">und <ph name="NUMBER_ADDITIONAL_DISABLED" /> weitere</translation>
 <translation id="2810390687497823527">Wenn Sie eine Erweiterung nicht wiedererkennen oder Ihr Browser nicht wie erwartet funktioniert, können Sie die Erweiterungen hier deaktivieren oder anpassen.</translation>
 <translation id="2812049959647166806">Thunderbolt wird nicht unterstützt</translation>
-<translation id="2812944337881233323">Melden Sie sich ab und dann wieder an</translation>
 <translation id="2812989263793994277">Keine Bilder anzeigen</translation>
 <translation id="2813094189969465044">Jugendschutzeinstellungen</translation>
 <translation id="281390819046738856">Die Anfrage konnte nicht signiert werden.</translation>
@@ -3035,7 +3032,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4824958205181053313">Synchronisierung abbrechen?</translation>
 <translation id="4827675678516992122">Verbindung nicht möglich</translation>
 <translation id="4829768588131278040">PIN erstellen</translation>
-<translation id="4830121310592638841">Nachfragen, wenn eine Website Fenster auf Ihren Bildschirmen öffnen und platzieren möchte</translation>
+<translation id="4830121310592638841">Nachfragen, wenn eine Website Fenster auf meinen Bildschirmen öffnen und platzieren möchte</translation>
 <translation id="4830502475412647084">Betriebssystem-Update wird installiert</translation>
 <translation id="4830573902900904548">Ihr Gerät (<ph name="DEVICE_TYPE" />) kann über <ph name="NETWORK_NAME" /> keine Internetverbindung herstellen. Bitte wählen Sie ein anderes Netzwerk aus. <ph name="LEARN_MORE_LINK_START" />Weitere Informationen<ph name="LEARN_MORE_LINK_END" /></translation>
 <translation id="4833236810053292670">Neuigkeiten auf dem Chromebook ansehen</translation>
@@ -3404,7 +3401,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="529175790091471945">Gerät formatieren</translation>
 <translation id="5293170712604732402">Einstellungen auf ursprüngliche Standardwerte zurücksetzen</translation>
 <translation id="5294097441441645251">Muss mit einem Kleinbuchstaben oder Unterstrich beginnen</translation>
-<translation id="5296471962619441686">Beheben Sie den Fehler, um das Synchronisieren fortzusetzen</translation>
 <translation id="5297082477358294722">Passwort gespeichert. Gespeicherte Passwörter können Sie in Ihrem <ph name="SAVED_PASSWORDS_STORE" /> aufrufen und verwalten</translation>
 <translation id="5298219193514155779">Design von</translation>
 <translation id="5299109548848736476">Do Not Track</translation>
@@ -5767,7 +5763,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8256417822772703842">Die Tinte für <ph name="PRINTER_NAME" /> ist fast leer</translation>
 <translation id="8257950718085972371">Zugriff auf die Kamera weiter blockieren</translation>
 <translation id="8259239505248583312">Los gehts!</translation>
-<translation id="8260126382462817229">Melden Sie sich noch einmal an</translation>
 <translation id="8260864402787962391">Maus</translation>
 <translation id="8261378640211443080">Diese Erweiterung ist nicht im <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> aufgeführt und wurde möglicherweise ohne Ihr Wissen hinzugefügt.</translation>
 <translation id="8261506727792406068">Löschen</translation>

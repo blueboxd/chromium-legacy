@@ -2724,6 +2724,19 @@
       },
     },
 
+    'gpu_standalone_angle_unittests_isolated_scripts': {
+      'standalone_angle_unittests': {
+        'desktop_args': [
+          '--use-gpu-in-tests',
+          # ANGLE test retries deliberately disabled to prevent flakiness.
+          # http://crbug.com/669196
+          '--test-launcher-retry-limit=0'
+        ],
+        'linux_args': ['--no-xvfb'],
+        'should_retry_with_patch': False,
+      },
+    },
+
     'gpu_swiftshader_gtests': {
       'swiftshader_unittests': {
       },
@@ -4837,6 +4850,11 @@
     'gpu_angle_gtests': [
       'gpu_angle_end2end_gtests',
       'gpu_angle_unit_gtests',
+    ],
+
+    'gpu_angle_isolated_scripts': [
+      'gpu_angle_perf_smoke_isolated_scripts',
+      'gpu_standalone_angle_unittests_isolated_scripts',
     ],
 
     'gpu_angle_linux_gtests': [

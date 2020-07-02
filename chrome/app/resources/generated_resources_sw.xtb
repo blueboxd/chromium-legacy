@@ -526,7 +526,6 @@
 <translation id="1645516838734033527">Ili kuweka kifaa chako cha <ph name="DEVICE_TYPE" /> salama, weka mipangilio ya kufunga skrini kwenye simu yako ili uweze kutumia Smart Lock.</translation>
 <translation id="1646982517418478057">Tafadhali weka nenosiri ili usimbe cheti hii kwa njia fiche</translation>
 <translation id="1648528859488547844">Tumia Wi-Fi au mitandao ya simu ili kutambua mahali</translation>
-<translation id="1648943974594387137">Muda wa matumizi wa maelezo ya kuingia katika akaunti umekwisha</translation>
 <translation id="164936512206786300">Ondoa kifaa cha Bluetooth</translation>
 <translation id="1650371550981945235">Onyesha chaguo za kuingiza data</translation>
 <translation id="1651008383952180276">Lazima uweke kauli ya siri sawa mara mbili</translation>
@@ -1330,7 +1329,6 @@ Unaweza kudhibiti mipangilio ya akaunti hii kwa kusakinisha programu ya Family L
 <translation id="2635276683026132559">Sahihi</translation>
 <translation id="2636625531157955190">Chrome haiwezi kufikia picha hii.</translation>
 <translation id="2637400434494156704">PIN si Sahihi. Umebakisha mara moja ya kujaribu.</translation>
-<translation id="2638087589890736295">Kauli ya siri inahitajika ili uanze kusawazisha</translation>
 <translation id="2638662041295312666">Picha ya akaunti kwenye kifaa</translation>
 <translation id="264083724974021997">Unganisha kwenye simu yako - Kidirisha</translation>
 <translation id="2641065435954454414">Inatayarisha kupakua</translation>
@@ -1484,7 +1482,6 @@ Unaweza kudhibiti mipangilio ya akaunti hii kwa kusakinisha programu ya Family L
 <translation id="2809586584051668049">na <ph name="NUMBER_ADDITIONAL_DISABLED" /> zaidi</translation>
 <translation id="2810390687497823527">Ikiwa hutambui kiendelezi au ikiwa kivinjari chako hakifanyi kazi kama inavyotarajiwa, unaweza kuzima au kuweka mapendeleo ya viendelezi hapa.</translation>
 <translation id="2812049959647166806">Thunderbolt haiwezi kutumika</translation>
-<translation id="2812944337881233323">Jaribu kuondoka na uingie tena katika akaunti</translation>
 <translation id="2812989263793994277">Usionyeshe picha zozote</translation>
 <translation id="2813094189969465044">Vidhibiti vya wazazi</translation>
 <translation id="281390819046738856">Imeshindwa kutia sahihi ombi.</translation>
@@ -3403,7 +3400,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="529175790091471945">Futa kifaa hiki</translation>
 <translation id="5293170712604732402">Rejesha mipangilio kwenye chaguomsingi halisi</translation>
 <translation id="5294097441441645251">Ni lazima lianze kwa herufi ndogo au mstari wa chini</translation>
-<translation id="5296471962619441686">Rekebisha hitilafu ili uendelee kusawazisha</translation>
 <translation id="5297082477358294722">Imehifadhi nenosiri. Angalia na udhibiti manenosiri yaliyohifadhiwa kwenye <ph name="SAVED_PASSWORDS_STORE" /> yako.</translation>
 <translation id="5298219193514155779">Mandhari imeunda na</translation>
 <translation id="5299109548848736476">Usifuatilie</translation>
@@ -5769,7 +5765,6 @@ Sidhani tovuti hii inapaswa kuzuiwa!</translation>
 <translation id="8256417822772703842">Wino wa <ph name="PRINTER_NAME" /> unakaribia kuisha</translation>
 <translation id="8257950718085972371">Endelea kuzuia ufikiaji wa kamera</translation>
 <translation id="8259239505248583312">Anza kutumia</translation>
-<translation id="8260126382462817229">Jaribu kuingia katika akaunti tena</translation>
 <translation id="8260864402787962391">Kipanya</translation>
 <translation id="8261378640211443080">Kiendelezi hiki hakijaorodheshwa katika <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> na huenda kiliongezwa pasipo ridhaa yako.</translation>
 <translation id="8261506727792406068">Futa</translation>

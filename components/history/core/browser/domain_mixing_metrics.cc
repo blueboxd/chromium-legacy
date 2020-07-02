@@ -8,7 +8,7 @@
 #include "base/containers/flat_map.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
+#include "base/numerics/safe_conversions.h"
 
 namespace history {
 namespace {
@@ -86,7 +86,7 @@ double ComputeDomainMixingRatio(const DomainVisits& domain_visits) {
 
 void EmitDomainMixingMetric(const DomainVisits& domain_visits, int num_days) {
   double domain_mixing_ratio = ComputeDomainMixingRatio(domain_visits);
-  int percentage = gfx::ToRoundedInt(100 * domain_mixing_ratio);
+  int percentage = base::Round(100 * domain_mixing_ratio);
   switch (num_days) {
     case kOneDay:
       UMA_HISTOGRAM_PERCENTAGE("DomainMixing.OneDay", percentage);

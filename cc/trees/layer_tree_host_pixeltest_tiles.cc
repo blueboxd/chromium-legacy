@@ -195,12 +195,19 @@ INSTANTIATE_TEST_SUITE_P(All,
                          LayerTreeHostTilesTestPartialInvalidation,
                          ::testing::ValuesIn(kTestCases));
 
-TEST_P(LayerTreeHostTilesTestPartialInvalidation, PartialRaster) {
+#if defined(OS_WIN) && defined(ADDRESS_SANITIZER)
+// Flaky on Windows ASAN https://crbug.com/1045521
+#define MAYBE_PartialRaster DISABLED_PartialRaster
+#else
+#define MAYBE_PartialRaster PartialRaster
+#endif
+TEST_P(LayerTreeHostTilesTestPartialInvalidation, MAYBE_PartialRaster) {
   use_partial_raster_ = true;
   RunSingleThreadedPixelTest(
       picture_layer_,
       base::FilePath(FILE_PATH_LITERAL("blue_yellow_partial_flipped.png")));
 }
+#undef MAYBE_PartialRaster
 
 TEST_P(LayerTreeHostTilesTestPartialInvalidation, FullRaster) {
   RunSingleThreadedPixelTest(
@@ -239,6 +246,7 @@ TEST_P(LayerTreeHostTilesTestPartialInvalidationMultiThread,
       picture_layer_,
       base::FilePath(FILE_PATH_LITERAL("blue_yellow_partial_flipped.png")));
 }
+#undef MAYBE_PartialRaster
 
 TEST_P(LayerTreeHostTilesTestPartialInvalidationMultiThread, FullRaster) {
   RunPixelTest(picture_layer_,

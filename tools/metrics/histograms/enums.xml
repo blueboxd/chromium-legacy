@@ -28255,6 +28255,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3343" label="V8Window_GetOriginPrivateDirectory_Method"/>
   <int value="3344" label="RTCConstraintEnableRtpDataChannelsTrue"/>
   <int value="3345" label="RTCConstraintEnableRtpDataChannelsFalse"/>
+  <int value="3346" label="NativeFileSystemDragAndDrop"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -51364,6 +51365,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Accepted"/>
 </enum>
 
+<enum name="OOMShutdownHint">
+  <int value="0" label="There is no additional information for this UTE/XTE"/>
+  <int value="1" label="Session restoration was in progress before this UTE"/>
+  <int value="2" label="Session restoration was in progress before this XTE"/>
+</enum>
+
 <enum name="OopRasterGlyphCacheMissType">
   <int value="0"
       label="Missing font metrics, indicating an incorrect SkDescriptor"/>
@@ -52923,6 +52930,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="11"
       label="Opened automatically / Offering to move profile password to
              account store"/>
+</enum>
+
+<enum name="PasswordBubbleFollowupType">
+  <int value="0" label="Safe state"/>
+  <int value="1" label="More passwords to fix"/>
+  <int value="2" label="Unsafe state"/>
 </enum>
 
 <enum name="PasswordBubbleSignInPromoDismissalReason">

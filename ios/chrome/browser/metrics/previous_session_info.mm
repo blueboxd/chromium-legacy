@@ -93,12 +93,18 @@ namespace previous_session_info_constants {
 NSString* const kDidSeeMemoryWarningShortlyBeforeTerminating =
     @"DidSeeMemoryWarning";
 NSString* const kOSStartTime = @"OSStartTime";
+NSString* const kPreviousSessionInfoRestoringSession =
+    @"PreviousSessionInfoRestoringSession";
 }  // namespace previous_session_info_constants
 
 @interface PreviousSessionInfo ()
 
 // Whether beginRecordingCurrentSession was called.
 @property(nonatomic, assign) BOOL didBeginRecordingCurrentSession;
+
+// Used for setting and resetting kPreviousSessionInfoRestoringSession flag.
+// Can be greater than one if multiple sessions are being restored in parallel.
+@property(atomic, assign) int numberOfSessionsBeingRestored;
 
 // Redefined to be read-write.
 @property(nonatomic, assign) NSInteger availableDeviceStorage;
@@ -112,6 +118,7 @@ NSString* const kOSStartTime = @"OSStartTime";
 @property(nonatomic, assign) BOOL OSRestartedAfterPreviousSession;
 @property(nonatomic, strong) NSString* OSVersion;
 @property(nonatomic, strong) NSDate* sessionEndTime;
+@property(nonatomic, assign) BOOL terminatedDuringSessionRestoration;
 
 @end
 
@@ -169,6 +176,10 @@ static PreviousSessionInfo* gSharedInstance = nil;
     NSString* currentLanguage = [[NSLocale preferredLanguages] objectAtIndex:0];
     gSharedInstance.isFirstSessionAfterLanguageChange =
         ![lastRanLanguage isEqualToString:currentLanguage];
+
+    gSharedInstance.terminatedDuringSessionRestoration =
+        [defaults boolForKey:previous_session_info_constants::
+                                 kPreviousSessionInfoRestoringSession];
   }
   return gSharedInstance;
 }
@@ -328,6 +339,34 @@ static PreviousSessionInfo* gSharedInstance = nil;
                              kDidSeeMemoryWarningShortlyBeforeTerminating];
   // Save critical state information for crash detection.
   [defaults synchronize];
+}
+
+- (base::ScopedClosureRunner)startSessionRestoration {
+  if (self.numberOfSessionsBeingRestored == 0) {
+    [NSUserDefaults.standardUserDefaults
+        setBool:YES
+         forKey:previous_session_info_constants::
+                    kPreviousSessionInfoRestoringSession];
+    // Save critical state information for crash detection.
+    [NSUserDefaults.standardUserDefaults synchronize];
+  }
+  ++self.numberOfSessionsBeingRestored;
+
+  return base::ScopedClosureRunner(base::BindOnce(^{
+    --self.numberOfSessionsBeingRestored;
+    if (self.numberOfSessionsBeingRestored == 0) {
+      [self resetSessionRestorationFlag];
+    }
+  }));
+}
+
+- (void)resetSessionRestorationFlag {
+  gSharedInstance.terminatedDuringSessionRestoration = NO;
+  [NSUserDefaults.standardUserDefaults
+      removeObjectForKey:previous_session_info_constants::
+                             kPreviousSessionInfoRestoringSession];
+  // Save critical state information for crash detection.
+  [NSUserDefaults.standardUserDefaults synchronize];
 }
 
 @end

@@ -525,7 +525,6 @@
 <translation id="1645516838734033527"><ph name="DEVICE_TYPE" />-г аюулгүй байлгахын тулд Smart Lock таны утсанд дэлгэцийн түгжээг шаардаж байна.</translation>
 <translation id="1646982517418478057">Энэ сертификатыг шифрлэхийн тулд нууц үг оруулна уу</translation>
 <translation id="1648528859488547844">Байршлыг тогтоохын тулд Wi-Fi эсвэл мобайл сүлжээ ашиглах</translation>
-<translation id="1648943974594387137">Нэвтрэх дэлгэрэнгүй мэдээлэл хуучирсан байна</translation>
 <translation id="164936512206786300">Bluetooth төхөөрөмжийг үл хослуулах</translation>
 <translation id="1650371550981945235">Оролтын сонголтыг харуулах</translation>
 <translation id="1651008383952180276">Та нэвтрэх үгээ хоёр удаа зөв оруулах шаардлагатай</translation>
@@ -1328,7 +1327,6 @@
 <translation id="2635276683026132559">Нэвтэрч байна</translation>
 <translation id="2636625531157955190">Chrome нь зураг руу нэвтэрч чадахгүй байна.</translation>
 <translation id="2637400434494156704">ПИН буруу байна. Танд нэг оролдлого үлдлээ.</translation>
-<translation id="2638087589890736295">Синкийг эхлүүлэхийн тулд нэвтрэх үг оруулах шаардлагатай</translation>
 <translation id="2638662041295312666">Нэвтрэх зураг</translation>
 <translation id="264083724974021997">Утсандаа холбогдох - харилцах цонх</translation>
 <translation id="2641065435954454414">Татахад бэлтгэж байна</translation>
@@ -1482,7 +1480,6 @@
 <translation id="2809586584051668049">ба <ph name="NUMBER_ADDITIONAL_DISABLED" /> дэлгэрэнгүй</translation>
 <translation id="2810390687497823527">Хэрэв та өргөтгөлийг танихгүй эсвэл таны хөтөч сайн ажиллахгүй байвал та өргөтгөлийг эндээс унтраах эсвэл өөрчлөх боломжтой.</translation>
 <translation id="2812049959647166806">Thunderbolt-г дэмждэггүй</translation>
-<translation id="2812944337881233323">Гараад, буцаж нэвтэрнэ үү</translation>
 <translation id="2812989263793994277">Зургийг бүү үзүүл</translation>
 <translation id="2813094189969465044">Эцэг эхийн хяналт</translation>
 <translation id="281390819046738856">Хүсэлтийг гүйцэтгэх боломжгүй байна.</translation>
@@ -3402,7 +3399,6 @@
 <translation id="529175790091471945">Төхөөрөмжийг форматлах</translation>
 <translation id="5293170712604732402">Тохиргоог анхны өгөгдмөлөөр сэргээх</translation>
 <translation id="5294097441441645251">Жижиг тэмдэгт эсвэл доогуур зураасаар эхлэх ёстой</translation>
-<translation id="5296471962619441686">Синк хийхийг үргэлжлүүлэхийн тулд алдааг засна уу</translation>
 <translation id="5297082477358294722">Нууц үгийг хадгалсан. <ph name="SAVED_PASSWORDS_STORE" />-д хадгалсан нууц үгнүүдээ харж удирдана уу.</translation>
 <translation id="5298219193514155779">Сэдвийг үүсгэсэн</translation>
 <translation id="5299109548848736476">Байршлыг бүү тогтоо</translation>
@@ -5762,7 +5758,6 @@
 <translation id="8256417822772703842"><ph name="PRINTER_NAME" />-н хор бага байна</translation>
 <translation id="8257950718085972371">Камерын хандалтыг хаах</translation>
 <translation id="8259239505248583312">Эхэлцгээе</translation>
-<translation id="8260126382462817229">Дахин нэвтрэхээр оролдоно уу.</translation>
 <translation id="8260864402787962391">Хулгана</translation>
 <translation id="8261378640211443080">Энэ өргөтгөл нь <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />-ийн нь жагсаалтад ороогүй байгаа бөгөөд танд мэдэгдэхгүйгээр нэмэгдсэн байж болно.</translation>
 <translation id="8261506727792406068">Устгах</translation>

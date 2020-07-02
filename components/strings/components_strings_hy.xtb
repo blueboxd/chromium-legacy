@@ -20,6 +20,7 @@
 <translation id="10614374240317010">Կայքեր, որոնց համար գաղտնաբառերը երբեք չեն պահվում</translation>
 <translation id="1062160989074299343">Prc10 (ծրար)</translation>
 <translation id="106701514854093668">Աշխատասեղանի էջանիշներ</translation>
+<translation id="1068672505746868501">Երբեք չթարգմանել <ph name="SOURCE_LANGUAGE" /> էջերը</translation>
 <translation id="1070901266639972381">Գիշեր</translation>
 <translation id="1074497978438210769">Անվտանգ չէ</translation>
 <translation id="1080116354587839789">Հարմարեցնել լայնությանը</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">Անանուն</translation>
 <translation id="1236081509407217141">Թույլատրե՞լ VR պարամետրը</translation>
 <translation id="1240347957665416060">Ձեր սարքի անունը</translation>
+<translation id="124116460088058876">Այլ լեզուներ</translation>
 <translation id="1250759482327835220">Հաջորդ անգամ ավելի արագ վճարելու համար պահեք ձեր քարտը, անունն ու վճարային հասցեն Google հաշվում:</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (համաժամացված)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Երբ դուք փորձում եք որևէ կայք բացել, իսկ այն չի բացվում, նախ փորձեք վերացնել անսարքությունները հետևյալ քայլերի միջոցով.&lt;/p&gt;
@@ -840,6 +842,7 @@
 <translation id="4424024547088906515">Այս սերվերը չի կարող ապացուցել, որ <ph name="DOMAIN" /> է: Chrome-ը չի վստահում դրա անվտանգության վկայականին: Պատճառը կարող է լինել սխալ կազմաձևումը կամ կապակցման խափանումը հարձակվողի կողմից:</translation>
 <translation id="443121186588148776">Սերիական միացք</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> տիրույթը չի ընդունել ձեր մուտքի վկայագիրը, կամ դուք չեք տրամադրել այն:</translation>
+<translation id="4432792777822557199">Այսուհետ <ph name="SOURCE_LANGUAGE" /> էջերը կթարգմանվեն <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">Ելնող պատուհաններ և վերահղում</translation>
 <translation id="4435702339979719576">Postcard)</translation>
 <translation id="443673843213245140">Պրոքսի-սերվերի օգտագործումն անջատված է, բայց հատկորոշված է ուղղակի կազմաձևում:</translation>
@@ -1071,6 +1074,7 @@
 <translation id="5431657950005405462">Ձեր ֆայլը չի գտնվել</translation>
 <translation id="5439770059721715174">Սխեմայի ստուգման սխալ «<ph name="ERROR_PATH" />»-ում` <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Հակառակ հերթականությամբ՝ երեսի կողմով վերև</translation>
+<translation id="5447765697759493033">Այս կայքը չի թարգմանվի</translation>
 <translation id="5452270690849572955">Այս <ph name="HOST_NAME" /> էջը չհաջողվեց գտնել</translation>
 <translation id="5455374756549232013">Կանոնի սխալ ժամադրոշմ</translation>
 <translation id="5457113250005438886">Անվավեր</translation>
@@ -1617,6 +1621,7 @@
 <translation id="7716375162095500223">Անտեսվել է կամ դեռ չի վերբեռնվել</translation>
 <translation id="7716424297397655342">Այս կայքը չի կարող բեռնվել հիշապահեստից</translation>
 <translation id="7723047071702270851">Փոփոխեք քարտի տվյալները</translation>
+<translation id="773466115871691567">Միշտ թարգմանել <ph name="SOURCE_LANGUAGE" /> էջերը</translation>
 <translation id="7740996059027112821">Ստանդարտ</translation>
 <translation id="774634243536837715">Վտանգավոր բովանդակությունն արգելափակված է</translation>
 <translation id="7752995774971033316">Չի կառավարվում</translation>
@@ -1762,6 +1767,7 @@
 <translation id="831997045666694187">Մինչև երեկո</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" /> մուտքը մերժվել է</translation>
 <translation id="833262891116910667">Նշել</translation>
+<translation id="8339163506404995330"><ph name="LANGUAGE" /> էջերը չեն թարգմանվի</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Եթե դուք գիտակցում եք անվտանգության հետ կապված ռիսկերը, ապա կարող եք <ph name="BEGIN_LINK" />այցելել այս կայքը<ph name="END_LINK" /> նախքան վնասաբեր ծրագրերը հեռացնելը:</translation>
 <translation id="8349305172487531364">Էջանիշների գոտի</translation>

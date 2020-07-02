@@ -200,11 +200,6 @@
       Bu politika devre dışı bırakılırsa, Google Asistan'ın ekran içeriğine erişmesine izin verilmez.
       Bu politika ayarlanmazsa, Google Asistan'ın ekran içeriğine erişmesine izin verilip verilmeyeceğine kullanıcılar karar verebilir.</translation>
 <translation id="1376119291123231789">Gelişmiş pil şarj modunu etkinleştir</translation>
-<translation id="1376298389964661475">Bildirim görüntülemesine izin verilen siteleri belirten URL kalıpları listesi ayarlamanıza olanak sağlar.
-
-          Bu politika ayarlanmadan bırakılırsa genel varsayılan değer, tüm siteler için, ayarlanması halinde "DefaultNotificationsSetting" politikasından veya kullanıcının kişisel yapılandırmasından kullanılır.
-
-          Geçerli URL kalıpları hakkında ayrıntılı bilgi için https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns adresine bakabilirsiniz.</translation>
 <translation id="1384459581748403878">Referans: <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">OS güncelleme durumunu bildirir</translation>
 <translation id="1393485621820363363">Etkinleştirilmiş kurumsal cihaz yazıcıları</translation>
@@ -269,11 +264,6 @@ Bu politikayı devre dışı bırakırsanız web sayfasını URL yoluyla belirli
           Bu politika false (yanlış) değerine ayarlanırsa kullanıcıların özelliği etkinleştirme seçeneği olmaz.
 
           Bu politikayı ayarlarsanız kullanıcılar değiştiremez veya geçersiz kılamaz.</translation>
-<translation id="1497640071678474358">Pop-up'lar açmasına izin verilmeyen siteleri belirten bir url kalıpları listesi ayarlamanıza olanak sağlar.
-
-          Bu politika ayarlanmadan bırakılırsa genel varsayılan değer, tüm siteler için, ayarlanması halinde "DefaultPopupsSetting" politikasından veya kullanıcının kişisel yapılandırmasından kullanılır.
-
-          Geçerli URL kalıpları hakkında ayrıntılı bilgi için https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns adresine bakabilirsiniz.</translation>
 <translation id="1502843533062797703">Üçüncü taraf yazılımı yerleştirme engellemesini etkinleştirin</translation>
 <translation id="1507382822467487898">
           Cihaza bir yerleştirme yuvası bağlandığında hangi MAC (medya erişim denetimi) adresinin kullanılacağını yapılandırır.
@@ -884,13 +874,6 @@ Bu politikayı devre dışı bırakırsanız web sayfasını URL yoluyla belirli
       <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (1 değeri) ayarlanırsa <ph name="PRODUCT_NAME" /> ürününe sadece önemli güvenlik veya sağlamlık düzeltmelerinin uygulanması sağlanır.
 
       <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (2 değeri) ayarlanırsa tarayıcıya hiçbir varyasyonun uygulanmasına izin verilmez. Bu modun, <ph name="PRODUCT_NAME" /> geliştiricilerinin kritik güvenlik düzeltmelerini zamanında sağlamalarını engelleyebileceğini ve dolayısıyla önerilmediğini lütfen unutmayın.</translation>
-<translation id="2406820201690307634">Resimleri görüntülemesine izin verilmeyen siteleri belirten url kalıpları listesini ayarlamanıza olanak sağlar.
-
-          Bu politika ayarlanmadan bırakılırsa genel varsayılan değer, tüm siteler için, ayarlanması halinde "DefaultImagesSetting" politikasından, aksi halde kullanıcının kişisel yapılandırmasından kullanılır.
-
-          Bu politikanın önceden Android'de hatalı bir şekilde etkinleştirildiğini, ancak bu işlevin Android'de hiçbir zaman tam olarak desteklenmediğini unutmayın.
-
-          Geçerli URL kalıpları hakkında ayrıntılı bilgi için https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns adresine bakabilirsiniz.</translation>
 <translation id="2411629345938804022">Politikayı 3 değerine ayarlamak web sitelerinin yakınlardaki Bluetooth cihazlarına erişim istemesini sağlar. Politikayı 2 değerine ayarlamak yakınlardaki Bluetooth cihazlarına erişimi kısıtlar.
 
       Ayarlanmazsa politika açık kalır fakat kullanıcılar bu ayarı değiştirebilir.</translation>
@@ -990,11 +973,6 @@ Bu politika ayarlanmadan bırakılırsa gizlilik ekranı başta devre dışı b�
       Bu politika yapılandırılmadığında veya "Yetişkinlere uygun içerik için siteleri filtreleme" seçeneğine ayarlandığında siteler filtrelenmez.
 
       Bu politika "Üst düzey siteleri yetişkinlere uygun içerik için filtrele" seçeneğine ayarlandığında, pornografik olarak sınıflandırılan siteler filtrelenir.</translation>
-<translation id="2484356232170636726">JavaScript çalıştırmasına izin verilen siteleri belirten bir url kalıpları listesi ayarlamanıza olanak sağlar.
-
-          Bu politika ayarlanmadan bırakılırsa genel varsayılan değer, tüm siteler için, ayarlanması halinde "DefaultJavaScriptSetting" politikasından veya kullanıcının kişisel yapılandırmasından kullanılır.
-
-          Geçerli URL kalıpları hakkında ayrıntılı bilgi için https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns adresine bakabilirsiniz.</translation>
 <translation id="2488010520405124654">Çevrimdışı iken ağ yapılandırma istemini etkinleştir.
 
       Bu politika ayarlanmazsa veya Doğru seçeneğine ayarlanırsa ve sıfır gecikmeli otomatik oturum açma için bir cihaz yerel hesabı yapılandırılırsa, cihazın İnternet erişimi olmaması durumunda <ph name="PRODUCT_OS_NAME" /> bir ağ yapılandırması istemi görüntüler.
@@ -1620,13 +1598,6 @@ Bu politika False (Yanlış) değerine ayarlanırsa <ph name="PRODUCT_NAME" /> y
 
       Bu politika ayarlanmadan bırakılırsa "DisabledPlugins"teki kalıplarla eşleşen eklentiler kilitlenip devre dışı bırakılır ve kullanıcı bunları etkinleştiremez.</translation>
 <translation id="3381968327636295719">Varsayılan olarak ana makine tarayıcısını kullan</translation>
-<translation id="3388153794103186066">Sağlanan tedarikçi ve ürün kimliklerine sahip USB cihazlarına erişmesine otomatik olarak izin verilecek siteleri belirten URL listesi ayarlamanıza olanak tanır. Politikanın geçerli olabilmesi için listedeki her öğenin hem cihazları hem de URL'leri içermesi gerekir. Cihazlardaki her öğe tedarikçi kimliği ve ürün kimliği alanı içerebilir. Dahil edilmeyen her kimlik bir istisnayla joker olarak değerlendirilir. Bu istisnaya göre tedarikçi kimliği belirtilmeden ürün kimliği de belirtilemez. Aksi halde politika geçerli olmaz ve yoksayılır.
-
-        USB izin modeli, istekte bulunan sitenin URL'sini ("istekte bulunan URL") ve üst düzey çerçeve sitesinin URL'sini ("yerleştirme URL'si") kullanarak istekte bulunan URL'ye USB cihazına erişmesi için izin verir. İstekte bulunan site bir iFrame içinde yüklendiğinde, istekte bulunan URL yerleştirme URL'sinden farklı olabilir. Bu nedenle, "URL'ler" alanı, sırasıyla istekte bulunan URL'yi ve yerleştirme URL'sini belirtmek için virgülle sınırlandırılmış en fazla iki URL dizesi içerebilir. Yalnızca bir URL belirtilirse yerleştirme durumundan bağımsız olarak bu URL ile eşleşen istekte bulunan sitenin URL'sine karşılık gelen USB cihazlarına erişim izni verilir. "URL'ler" alanındaki URL'lerin geçerli URL'ler olmaları gerekir; aksi halde, politika yoksayılır.
-
-        Bu politika ayarlanmadan bırakılırsa genel varsayılan değer, tüm siteler için, ayarlanması halinde "DefaultWebUsbGuardSetting" politikasından veya kullanıcının kişisel yapılandırmasından kullanılır.
-
-        Bu politikadaki URL kalıpları, WebUsbBlockedForUrls politikasıyla yapılandırılan kalıplarla çakışmamalıdır. Çakışma olması halinde bu politikanın WebUsbBlockedForUrls ve WebUsbAskForUrls politikaları üzerinde önceliği olur.</translation>
 <translation id="3414260318408232239">Bu politika yapılandırılmazsa, <ph name="PRODUCT_NAME" /> varsayılan minimum sürüm olarak TLS 1.0'ı kullanır.
 
       Aksi halde, şu değerlerin birine ayarlanabilir: "tls1", "tls1.1" veya "tls1.2". Ayarlandığında, <ph name="PRODUCT_NAME" />, belirtilen sürümden düşük olan SSL/TLS sürümlerini kullanmaz. Tanınmayan bir değer yoksayılır.</translation>
@@ -1819,13 +1790,6 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
 
         Bu politika, masaüstünde makine kapsamı bulut politika kaydı tarafından kullanılır ve Windows'da Registry ya da GPO, Mac'te plist, Linux'ta ise JSON politika dosyası tarafından ayarlanabilir.</translation>
 <translation id="3660562134618097814">Giriş sırasında SAML IdP çerezlerini aktar</translation>
-<translation id="3688225008199664446">USB cihazlarına erişmek için kullanıcıdan izin istemesi engellenen sitelerin belirtildiği URL kalıpları listesini ayarlamanıza olanak sağlar.
-
-          Bu politika ayarlanmadan bırakılırsa genel varsayılan değer, tüm siteler için, ayarlanması halinde "DefaultWebUsbGuardSetting" politikasından veya kullanıcının kişisel yapılandırmasından kullanılır.
-
-          Bu politikadaki URL kalıpları, WebUsbAskForUrls aracılığıyla yapılandırılan URL kalıplarıyla çakışmamalıdır. Bir URL her ikisiyle de eşleşirse bu iki politikadan hangisinin öncelikli olacağı belirsizdir.
-
-          Geçerli URL kalıpları hakkında ayrıntılı bilgi için https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns adresine bakabilirsiniz.</translation>
 <translation id="3701121231485832347"><ph name="MS_AD_NAME" /> tarafından yönetilen <ph name="PRODUCT_OS_NAME" /> cihazlara özgü ayarları kontrol eder.</translation>
 <translation id="3702518095257671450">Uzaktan onay</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Tek satırlı alanlar artık kullanılmamaktadır ve yakında kaldırılacaktır. Lütfen aşağıdaki çok satırlı metin kutusunu kullanın.)</translation>
@@ -3212,7 +3176,7 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 <translation id="5646234199535103501">OnBulkDataEntry Chrome Enterprise Bağlayıcı için yapılandırma politikası</translation>
 <translation id="5656177735561364047">Paylaşılan Pano Özelliğini Etkinleştir</translation>
 <translation id="5666457529647159548">Kullanıcıların yüklü sertifikaları yönetmelerine izin ver.</translation>
-<translation id="567377007899266033">Politika True (Doğru) değerine ayarlandığında politika tarafından tetiklenen eklenti yükleme etkinliklerinin raporlarını Google'a gönderir. Politikanın False (Yanlış) değerine ayarlanması, hiçbir etkinliğin yakalanmayacağı anlamına gelir. Bu politika ayarlanmadan bırakıldığında varsayılan değer True (Doğru) değerine ayarlanır.</translation>
+<translation id="567377007899266033">Politika True (Doğru) değerine ayarlandığında politika tarafından tetiklenen, önemli eklenti yükleme etkinliklerinin raporları Google'a gönderilir. Politikanın False (Yanlış) değerine ayarlanması, hiçbir etkinliğin yakalanmayacağı anlamına gelir. Bu politika ayarlanmadan bırakıldığında varsayılan değer True (Doğru) değerine ayarlanır.</translation>
 <translation id="5676740747107495269">Erişilebilirlik seçeneklerini giriş ekranında sistem tepsisi menüsünde gösterme</translation>
 <translation id="5679540979548648200">Bu cihaz kullanıcılarının ADB başka cihazdan yükleme işlevini kullanmalarını engelleyin ve başka cihazdan yükleme daha önce etkinleştirildiyse cihazda Powerwash işlemi uygulayın</translation>
 <translation id="5689430183304951538">Varsayılan yazdırma sayfası boyutu</translation>
@@ -3707,11 +3671,6 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
           Politika değeri milisaniye olarak belirtilmelidir. Değerler boşta kalma gecikmesinden küçük olacak şekilde bir aralığa sıkıştırılır.</translation>
 <translation id="6515357889978918016"><ph name="PLUGIN_VM_NAME" /> resmi</translation>
 <translation id="6520802717075138474">İlk çalıştırmada arama motorlarını varsayılan tarayıcıdan içe aktar</translation>
-<translation id="6525955212636890608">Bu ayarı etkinleştirirseniz, içerik ayarlarında Flash'a izin vermek üzere ayarlanmış (kullanıcı ya da şirket politikası tarafından) web sitelerine yerleştirilmiş tüm Flash içeriği çalıştırılır. Bu Flash içeriğine diğer kaynaklardan gelen içerikler veya küçük içerikler de dahildir.
-
-      Hangi web sitelerinin Flash'ı çalıştırmasına izin verildiğini kontrol etmek için, "DefaultPluginsSetting", "PluginsAllowedForUrls" ve "PluginsBlockedForUrls" politikalarına bakın.
-
-      Bu ayar devre dışı bırakılırsa veya hiç ayarlanmazsa, diğer kaynaklardan gelen Flash içeriği veya küçük içerik engellenebilir.</translation>
 <translation id="6532026122543921610"><ph name="SYSTEM_TIMEZONE_POLICY_NAME" /> politikası otomatik saat dilimi algılama ayarını kapatmadıkça, politikayı ayarlamak kullanıcıların değiştiremeyeceği otomatik saat dilimi algılama yöntemini belirtir.
 
       Politika ayarları:
@@ -3864,11 +3823,6 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
       True (doğru) olarak ayarlanırsa diğer ayarlar izin verdiği sürece <ph name="PLUGIN_VM_NAME" /> kullanıcı için etkinleştirilir. <ph name="PLUGIN_VM_NAME" /> adlı sanal makinenin çalışmasına izin verilebilmesi için <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> ile <ph name="USER_PLUGIN_VM_ALLOWED_POLICY_NAME" /> politikasının true (doğru) değerine ayarlanması ve <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> veya <ph name="PLUGIN_VM_USER_ID_POLICY_NAME" /> politikasının ayarlanması gerekir.</translation>
 <translation id="6757613329154374267">Yedekleme ve geri yükleme özelliği etkinleştirildi</translation>
 <translation id="6758659208493449452">Bu politika, Gelişmiş Koruma programına kayıtlı kullanıcılara ekstra özellikler sunulup sunulmayacağını kontrol eder. Bu özelliklerin bazıları kapsamında Google ile veri paylaşılabilir (örneğin, Gelişmiş Koruma kullanıcıları indirdikleri dosyaları Google'a göndererek kötü amaçlı yazılıma karşı taranmasını sağlayabilir). Bu politika True (Doğru) değerine ayarlanır veya ayarlanmadan bırakılırsa kayıtlı kullanıcılara ekstra özellikler sunulur. Bu politika False (Yanlış) değerine ayarlanırsa Gelişmiş Koruma kullanıcılarına yalnızca standart tüketici özellikleri sunulur.</translation>
-<translation id="6764421313777250384">Bildirimleri görüntülemesine izin verilmeyen siteleri belirten URL kalıpları listesini ayarlamanıza olanak sağlar.
-
-          Bu politika ayarlanmadan bırakılırsa genel varsayılan değer, tüm siteler için, ayarlanması halinde "DefaultNotificationsSetting" politikasından veya kullanıcının kişisel yapılandırmasından kullanılır.
-
-          Geçerli URL kalıpları hakkında ayrıntılı bilgi için https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns adresine bakabilirsiniz.</translation>
 <translation id="6766216162565713893">Sitelerin, yakınlardaki bir Bluetooth cihazına erişmek için kullanıcıdan izin istemesine izin ver</translation>
 <translation id="6770454900105963262">Aktif kiosk oturumlarıyla ilgili bilgileri raporla</translation>
 <translation id="6786747875388722282">Uzantılar</translation>
@@ -4324,11 +4278,6 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
 <translation id="7485730741952775732">Bu politika ayarlanırsa uzaktan erişim ana makinesi, bağlantıları kabul etmek için uzaktan erişim istemcilerinin kimlik doğrulama jetonlarını doğrulamak üzere bu URL'yi kullanır. RemoteAccessHostTokenUrl ile birlikte kullanılmalıdır.
 
           Bu özellik şu anda sunucu tarafında devre dışıdır.</translation>
-<translation id="7490270439948288519">Pop-up açmasına izin verilen siteleri belirten bir url kalıpları listesi ayarlamanıza olanak sağlar.
-
-          Bu politika ayarlanmadan bırakılırsa genel varsayılan değer, tüm siteler için, ayarlanması halinde "DefaultPopupsSetting" politikasından veya kullanıcının kişisel yapılandırmasından kullanılır.
-
-          Geçerli URL kalıpları hakkında ayrıntılı bilgi için https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns adresine bakabilirsiniz.</translation>
 <translation id="749556411189861380">Kayıtlı cihazların OS ve ürün yazılımı sürümünü bildirin.
 
       Bu ayar ayarlanmaz veya Doğru (True) değerine ayarlanırsa kayıtlı cihazlar OS ve ürün yazılımı sürümünü belirli aralıklarla bildirir. Bu ayar Yanlış (False) değerine ayarlanırsa sürüm bilgileri bildirilmez.</translation>
@@ -4338,11 +4287,6 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
 
       Bu politika kullanılırsa, bu politikada listelenen kimlikler dışında tüm yazıcılar kullanıcıya sağlanır. Kimliklerin, <ph name="DEVICE_PRINTERS_POLICY" /> politikasında belirtilen dosyadaki "id" veya "guid" alanlarına karşılık gelmesi gerekir.
       </translation>
-<translation id="7506269062143646163">İmzalı HTTP Değişimi (SXG) için desteği etkinleştirin.
-
-          Bu politika ayarlanmazsa veya Enabled (Etkin) değerine ayarlanırsa Google Chrome, İmzalı HTTP Değişimi olarak yayınlanan web içeriklerini kabul eder.
-
-          Bu politika Disabled (Devre Dışı) değerine ayarlanırsa İmzalı HTTP Değişimleri yüklenemez.</translation>
 <translation id="7506758875409719208">Uzaktan erişim istemcilerine uygulanacak gerekli istemci alan adlarını yapılandırır ve kullanıcıların bunu değiştirmesini önler.
 
           Bu ayar etkinleştirilir ve bir veya daha fazla etki alanına ayarlanırsa yalnızca belirtilen alan adlarından birinden gelen istemciler ana makineye bağlanabilir.
@@ -4354,11 +4298,6 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
           Ayrıca RemoteAccessHostDomainList politikasına bakın.</translation>
 <translation id="7511361072385293666">Bu politika doğru seçeneğine ayarlanırsa veya ayarlanmadan bırakılırsa <ph name="PRODUCT_NAME" /> ürününde QUIC protokolünün kullanımına izin verilir.
       Bu politika yanlış seçeneğine ayarlanırsa QUIC protokolünün kullanımına izin verilmez.</translation>
-<translation id="7515572751689937649">JavaScript çalıştırmasına izin verilmeyen siteleri belirten url kalıpları listesini ayarlamanıza olanak sağlar.
-
-          Bu politika ayarlanmadan bırakılırsa genel varsayılan değer, tüm siteler için, ayarlanması halinde "DefaultJavaScriptSetting" politikasından veya kullanıcının kişisel yapılandırmasından kullanılır.
-
-          Geçerli URL kalıpları hakkında ayrıntılı bilgi için https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns adresine bakabilirsiniz.</translation>
 <translation id="7517845714620372896">Ekran parlaklığı yüzdesini belirler.
           Bu politika ayarlandığında başlangıçtaki ekran parlaklığı, politika değerine ayarlanır, ancak kullanıcı daha sonra bunu değiştirebilir. Otomatik parlaklık özellikleri devre dışı bırakılır.
           Bu politika ayarlanmadığında kullanıcı ekran kontrolleri ve otomatik parlaklık özellikleri etkilenmez.
@@ -5139,13 +5078,6 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
 
           Bu politikayı ayarlanmamış olarak bırakırsanız, <ph name="PRODUCT_NAME" /> sunucunun İntranet'te olup olmadığını saptamaya çalışır ve buna göre IWA taleplerini yanıtlar. Sunucunun İnternet'te olduğu saptanırsa, sunucudan gelen IWA talepleri <ph name="PRODUCT_NAME" /> tarafından yoksayılır.</translation>
 <translation id="8656110680728938054">Seç ve Dinle'yi etkinleştir</translation>
-<translation id="8659729040032759711">USB cihazlarına erişmek için kullanıcıya sormasına izin verilen sitelerin belirtildiği URL kalıpları listesini ayarlamanıza olanak tanır.
-
-          Bu politika ayarlanmadan bırakılırsa genel varsayılan değer, tüm siteler için, ayarlanması halinde "DefaultWebUsbGuardSetting" politikasından veya kullanıcının kişisel yapılandırmasından kullanılır.
-
-          Bu politikadaki URL kalıpları, WebUsbBlockedForUrls politikasıyla yapılandırılan kalıplarla çakışmamalıdır. Bir URL her ikisiyle de eşleşirse bu iki politikadan hangisinin öncelikli olacağı belirsizdir.
-
-          Geçerli URL kalıpları hakkında ayrıntılı bilgi için https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns adresine bakabilirsiniz.</translation>
 <translation id="8661297125441579970">Veri taşıma ve ARC'ye izin verme.</translation>
 <translation id="8665314828727504286">Güvenli Tarama Koruma Seviyesi</translation>
 <translation id="8672321184841719703">Hedef Otomatik Güncelleme Sürümü</translation>
@@ -5269,15 +5201,6 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
 <translation id="8860342862142842017">subjectPublicKeyInfo karma listesi için Sertifika Şeffaflığı uygulamasını devre dışı bırak</translation>
 <translation id="8864975621965365890">Bir site <ph name="PRODUCT_FRAME_NAME" /> tarafından oluşturulduğunda görülen reddetme sorusunu engeller.</translation>
 <translation id="886645881209114007">Kullanıcıların <ph name="PRODUCT_OS_NAME" /> üzerinde bir <ph name="PLUGIN_VM_NAME" /> kullanmasına izin verir</translation>
-<translation id="8867464911288727016"><ph name="PRODUCT_NAME" /> üzerindeki entegre Google Çeviri hizmetini etkinleştirir.
-
-      Bu ayarı etkinleştirirseniz <ph name="PRODUCT_NAME" />, uygun olduğunda kullanıcıya entegre bir çeviri araç çubuğu ve sağ tıklanan bağlam menüsünde çeviri seçeneği göstererek çeviri işlevi sunar.
-
-      Bu ayarı devre dışı bırakırsanız, tüm yerleşik çeviri özellikleri devre dışı kalır.
-
-      Bu ayarı etkinleştirirseniz veya devre dışı bırakırsanız, kullanıcılar <ph name="PRODUCT_NAME" /> ürününde bu ayarı değiştiremez veya geçersiz kılamazlar.
-
-      Bu ayar ayarlanmadan bırakılırsa kullanıcı bu işlevi kullanıp kullanmamaya karar verebilir.</translation>
 <translation id="8871974300055371298">İçerik ayarları</translation>
 <translation id="8872402969096027761">Giriş ekranında otomatik tıklama erişilebilirlik özelliğini etkinleştirir.
 
@@ -5457,9 +5380,6 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
 <translation id="9105265795073104888">Sadece proxy yapılandırma seçeneklerinin bir alt kümesi Android uygulamalarında kullanılabilir. Android uygulamaları proxy kullamayı kendi tercihleriyle seçebilir. Uygulamaları proxy kullanmaya zorlayamazsınız.</translation>
 <translation id="9106865192244721694">Bu sitelerde WebUSB'ye izin ver</translation>
 <translation id="9112727953998243860">Kurumsal yazıcı yapılandırma dosyası</translation>
-<translation id="9112897538922695510">Bir protokol işleyicileri listesini kaydetmenize olanak tanır. Bu, yalnızca önerilen bir politika olabilir. |protocol| özelliğinin "mailto" gibi şemaya ayarlanması ve |url| özelliğinin de şemayı işleyen uygulamanın URL kalıbına ayarlanması gerekir. Kalıp bir "%s" makrosu içerebilir; bu durumda, makro işlenen URL tarafından değiştirilir.
-
-          Politika tarafından kaydedilen protokol işleyicileri, kullanıcı tarafından kaydedilenlerle birleştirilir ve her ikisi de kullanılabilir. Kullanıcı, yeni bir varsayılan işleyici yükleyerek politika tarafından yüklenen politika işleyicilerini geçersiz kılabilir, ancak politika tarafından kaydedilen bir protokol işleyicisini kaldıramaz.</translation>
 <translation id="9117826695152538214">Politikayı True (Doğru) değerine ayarlamak, yapışkan tuşları açık tutar. Politikayı False (Yanlış) değerine ayarlamak, yapışkan tuşları kapalı tutar.
 
       Bu politikayı ayarlarsanız kullanıcılar değiştiremez. Ayarlanmazsa yapışkan tuşlar ilk başta kapalıdır, ancak kullanıcılar istedikleri zaman açabilir.</translation>

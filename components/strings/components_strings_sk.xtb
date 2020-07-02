@@ -20,6 +20,7 @@
 <translation id="10614374240317010">Nikdy neukladať</translation>
 <translation id="1062160989074299343">Prc10 (obálka)</translation>
 <translation id="106701514854093668">Záložky v počítači</translation>
+<translation id="1068672505746868501">Nikdy neprekladať stránky v jazyku <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1070901266639972381">Noc</translation>
 <translation id="1074497978438210769">Nezabezpečené</translation>
 <translation id="1080116354587839789">Prispôsobiť šírke</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">Bez názvu</translation>
 <translation id="1236081509407217141">Chcete povoliť VR?</translation>
 <translation id="1240347957665416060">Názov vášho zariadenia</translation>
+<translation id="124116460088058876">Ďalšie jazyky</translation>
 <translation id="1250759482327835220">Ak chcete nabudúce zaplatiť rýchlejšie, uložte si kartu, meno a fakturačnú adresu do účtu Google.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (synchronizované)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Ak chcete navštíviť určitý web, ale neotvorí sa, najprv skúste opraviť chybu pomocou týchto krokov na riešenie problémov:&lt;/p&gt;
@@ -825,6 +827,7 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="4424024547088906515">Server nedokáže overiť, či ide o doménu <ph name="DOMAIN" />, Chrome nedôveruje jej bezpečnostnému certifikátu. Môže to byť spôsobené nesprávnou konfiguráciou alebo tým, že vaše pripojenie zachytil útočník.</translation>
 <translation id="443121186588148776">Sériový port</translation>
 <translation id="4432688616882109544">Web <ph name="HOST_NAME" /> neakceptoval váš prihlasovací certifikát alebo nebol žiadny poskytnutý.</translation>
+<translation id="4432792777822557199">Stránky v jazyku <ph name="SOURCE_LANGUAGE" /> budú odteraz prekladané do jazyka <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">Vyskakovacie okná a presmerovania</translation>
 <translation id="4435702339979719576">pohľadnica)</translation>
 <translation id="443673843213245140">Použitie servera proxy je zakázané, ale je určená explicitná konfigurácia servera proxy.</translation>
@@ -1056,6 +1059,7 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="5431657950005405462">Súbor sa nenašiel</translation>
 <translation id="5439770059721715174">Pri overení schémy sa vyskytla chyba na mieste <ph name="ERROR_PATH" />: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">V opačnom poradí lícom nahor</translation>
+<translation id="5447765697759493033">Tento web nebude preložený</translation>
 <translation id="5452270690849572955">Táto stránka webu <ph name="HOST_NAME" /> sa nenašla</translation>
 <translation id="5455374756549232013">Chybná časová pečiatka pravidla</translation>
 <translation id="5457113250005438886">Neplatné</translation>
@@ -1601,6 +1605,7 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="7716375162095500223">Ešte nenahrané alebo ignorované</translation>
 <translation id="7716424297397655342">Tento web nie je možné načítať z vyrovnávacej pamäte</translation>
 <translation id="7723047071702270851">Úprava karty</translation>
+<translation id="773466115871691567">Vždy prekladať stránky v jazyku <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7740996059027112821">Štandardne</translation>
 <translation id="774634243536837715">Nebezpečný obsah bol zablokovaný.</translation>
 <translation id="7752995774971033316">Nespravované</translation>
@@ -1746,6 +1751,7 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="831997045666694187">Večer</translation>
 <translation id="8332188693563227489">Prístup k webu <ph name="HOST_NAME" /> bol zamietnutý</translation>
 <translation id="833262891116910667">Zvýrazniť</translation>
+<translation id="8339163506404995330">Stránky v jazyku <ph name="LANGUAGE" /> nebudú prekladané</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Ak si uvedomujete bezpečnostné riziko, môžete <ph name="BEGIN_LINK" />tieto stránky navštíviť<ph name="END_LINK" /> ešte skôr, ako budú škodlivé programy odstránené.</translation>
 <translation id="8349305172487531364">Panel so záložkami</translation>

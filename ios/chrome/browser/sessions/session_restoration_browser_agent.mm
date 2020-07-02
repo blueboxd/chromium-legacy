@@ -10,6 +10,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/metrics/previous_session_info.h"
 #import "ios/chrome/browser/sessions/session_ios.h"
 #import "ios/chrome/browser/sessions/session_ios_factory.h"
 #import "ios/chrome/browser/sessions/session_restoration_observer.h"
@@ -172,6 +173,8 @@ bool SessionRestorationBrowserAgent::RestoreSessionWindow(
 bool SessionRestorationBrowserAgent::RestoreSession() {
   NSString* path =
       base::SysUTF8ToNSString(GetSessionStoragePath().AsUTF8Unsafe());
+  PreviousSessionInfo* session_info = [PreviousSessionInfo sharedInstance];
+  auto scoped_restore = [session_info startSessionRestoration];
   SessionIOS* session = [session_service_ loadSessionFromDirectory:path];
   SessionWindowIOS* session_window = nil;
 

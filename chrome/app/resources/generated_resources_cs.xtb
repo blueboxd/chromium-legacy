@@ -529,7 +529,6 @@
 <translation id="1645516838734033527">Smart Lock z důvodu zajištění bezpečnosti zařízení <ph name="DEVICE_TYPE" /> vyžaduje, aby byl v telefonu nastaven zámek obrazovky.</translation>
 <translation id="1646982517418478057">Zadejte heslo k zašifrování tohoto certifikátu</translation>
 <translation id="1648528859488547844">K určování polohy používat Wi-Fi nebo mobilní sítě</translation>
-<translation id="1648943974594387137">Přihlašovací údaje jsou zastaralé</translation>
 <translation id="164936512206786300">Zrušit spárování se zařízením Bluetooth</translation>
 <translation id="1650371550981945235">Zobrazit možnosti vstupu</translation>
 <translation id="1651008383952180276">Musíte zadat dvakrát stejnou heslovou frázi</translation>
@@ -1332,7 +1331,6 @@ Chcete-li spravovat nastavení tohoto účtu, nainstalujte si do zařízení apl
 <translation id="2635276683026132559">Podepisování</translation>
 <translation id="2636625531157955190">Chrome nemůže přistupovat k obrázku.</translation>
 <translation id="2637400434494156704">Nesprávný PIN. Zbývá ještě jeden pokus.</translation>
-<translation id="2638087589890736295">K zahájení synchronizace je potřeba heslová fráze.</translation>
 <translation id="2638662041295312666">Přihlašovací obrázek</translation>
 <translation id="264083724974021997">Připojení k telefonu – dialogové okno</translation>
 <translation id="2641065435954454414">Příprava stahování</translation>
@@ -1486,7 +1484,6 @@ Chcete-li spravovat nastavení tohoto účtu, nainstalujte si do zařízení apl
 <translation id="2809586584051668049">a další (<ph name="NUMBER_ADDITIONAL_DISABLED" />)</translation>
 <translation id="2810390687497823527">Pokud nějaké rozšíření nepoznáváte nebo prohlížeč nefunguje podle očekávání, můžete zde rozšíření vypnout nebo si je přizpůsobit.</translation>
 <translation id="2812049959647166806">Rozhraní Thunderbolt není podporováno</translation>
-<translation id="2812944337881233323">Zkuste se odhlásit a opět přihlásit.</translation>
 <translation id="2812989263793994277">Nezobrazovat žádné obrázky</translation>
 <translation id="2813094189969465044">Rodičovská kontrola</translation>
 <translation id="281390819046738856">Požadavek nebylo možné podepsat.</translation>
@@ -3406,7 +3403,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="529175790091471945">Naformátovat toto zařízení</translation>
 <translation id="5293170712604732402">Obnovit nastavení na původní výchozí hodnoty</translation>
 <translation id="5294097441441645251">Musí začínat malým písmenem nebo podtržítkem</translation>
-<translation id="5296471962619441686">Chcete-li obnovit synchronizaci, opravte chybu</translation>
 <translation id="5297082477358294722">Heslo bylo uloženo. K zobrazení a správě uložených hesel můžete použít svůj <ph name="SAVED_PASSWORDS_STORE" />.</translation>
 <translation id="5298219193514155779">Autor motivu</translation>
 <translation id="5299109548848736476">Do Not Track</translation>
@@ -5769,7 +5765,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8256417822772703842">V tiskárně <ph name="PRINTER_NAME" /> dochází inkoust</translation>
 <translation id="8257950718085972371">Blokovat přístup ke kameře i nadále</translation>
 <translation id="8259239505248583312">Jdeme na to</translation>
-<translation id="8260126382462817229">Zkuste se přihlásit znovu.</translation>
 <translation id="8260864402787962391">Myš</translation>
 <translation id="8261378640211443080">Toto rozšíření není uvedeno na webu <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> a mohlo být přidáno bez vašeho vědomí.</translation>
 <translation id="8261506727792406068">Smazat</translation>

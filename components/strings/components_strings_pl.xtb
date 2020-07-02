@@ -20,6 +20,7 @@
 <translation id="10614374240317010">Nigdy nie zapisane</translation>
 <translation id="1062160989074299343">Prc10 (koperta)</translation>
 <translation id="106701514854093668">Zakładki na komputerze</translation>
+<translation id="1068672505746868501">Nigdy nie tłumacz stron, których językiem jest <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1070901266639972381">Noc</translation>
 <translation id="1074497978438210769">Niezabezpieczona</translation>
 <translation id="1080116354587839789">Dopasuj do szerokości</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">Bez tytułu</translation>
 <translation id="1236081509407217141">Zezwalać na VR?</translation>
 <translation id="1240347957665416060">Nazwa urządzenia</translation>
+<translation id="124116460088058876">Więcej języków</translation>
 <translation id="1250759482327835220">Aby następnym razem zapłacić szybciej, zapisz kartę oraz imię, nazwisko i adres rozliczeniowy na swoim koncie Google.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (zsynchronizowane)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Jeśli nie udaje się otworzyć strony, spróbuj wykonać najpierw te czynności, aby rozwiązać problem:&lt;/p&gt;
@@ -831,6 +833,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="4424024547088906515">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa nie jest zaufany w Chrome. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="443121186588148776">Port szeregowy</translation>
 <translation id="4432688616882109544">Serwer <ph name="HOST_NAME" /> nie zaakceptował lub nie otrzymał Twojego certyfikatu logowania.</translation>
+<translation id="4432792777822557199">Od teraz strony, których językiem jest <ph name="SOURCE_LANGUAGE" />, będą tłumaczone na <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">Pop-upy i przekierowania</translation>
 <translation id="4435702339979719576">pocztówka)</translation>
 <translation id="443673843213245140">Korzystanie z serwera proxy jest wyłączone, ale podano konfigurację proxy.</translation>
@@ -1062,6 +1065,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="5431657950005405462">Nie znaleziono pliku</translation>
 <translation id="5439770059721715174">Błąd podczas sprawdzania poprawności schematu – „<ph name="ERROR_PATH" />”: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Kolejność odwrotna, strona do drukowania skierowana w górę</translation>
+<translation id="5447765697759493033">Ta strona nie zostanie przetłumaczona</translation>
 <translation id="5452270690849572955">Nie można znaleźć tej strony na <ph name="HOST_NAME" /></translation>
 <translation id="5455374756549232013">Nieprawidłowy czas zasady</translation>
 <translation id="5457113250005438886">Nieprawidłowe</translation>
@@ -1608,6 +1612,7 @@ Dodatkowe informacje:
 <translation id="7716375162095500223">Jeszcze nie przesłany lub zignorowany</translation>
 <translation id="7716424297397655342">Nie można załadować tej strony z pamięci podręcznej</translation>
 <translation id="7723047071702270851">Edytuj kartę</translation>
+<translation id="773466115871691567">Zawsze tłumacz strony, których językiem jest <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7740996059027112821">Standardowa</translation>
 <translation id="774634243536837715">Zablokowano niebezpieczne treści.</translation>
 <translation id="7752995774971033316">Niezarządzany</translation>
@@ -1753,6 +1758,7 @@ Dodatkowe informacje:
 <translation id="831997045666694187">Wieczorem</translation>
 <translation id="8332188693563227489">Odmowa dostępu do <ph name="HOST_NAME" /></translation>
 <translation id="833262891116910667">Podświetlenie</translation>
+<translation id="8339163506404995330">Strony, których językiem jest <ph name="LANGUAGE" />, nie będą tłumaczone</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Jeśli rozumiesz zagrożenie, możesz <ph name="BEGIN_LINK" />wejść na tę stronę<ph name="END_LINK" />, zanim szkodliwe programy zostaną usunięte.</translation>
 <translation id="8349305172487531364">Pasek zakładek</translation>

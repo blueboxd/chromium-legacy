@@ -323,9 +323,6 @@ void ChangePictureHandler::HandleSelectImage(const base::ListValue* args) {
     }
     user_image_manager->SaveUserImage(std::move(user_image));
 
-    UMA_HISTOGRAM_EXACT_LINEAR("UserImage.ChangeChoice",
-                               default_user_image::kHistogramImageOld,
-                               default_user_image::kHistogramImagesCount);
     VLOG(1) << "Selected old user image";
   } else if (image_type == "default") {
     int image_index = user_manager::User::USER_IMAGE_INVALID;
@@ -333,10 +330,6 @@ void ChangePictureHandler::HandleSelectImage(const base::ListValue* args) {
       // One of the default user images.
       user_image_manager->SaveUserDefaultImageIndex(image_index);
 
-      UMA_HISTOGRAM_EXACT_LINEAR(
-          "UserImage.ChangeChoice",
-          default_user_image::GetDefaultImageHistogramValue(image_index),
-          default_user_image::kHistogramImagesCount);
       VLOG(1) << "Selected default user image: " << image_index;
     } else {
       LOG(WARNING) << "Invalid image_url for default image type: " << image_url;
@@ -352,18 +345,6 @@ void ChangePictureHandler::HandleSelectImage(const base::ListValue* args) {
   } else if (image_type == "profile") {
     // Profile image selected. Could be previous (old) user image.
     user_image_manager->SaveUserImageFromProfileImage();
-
-    if (previous_image_index_ == user_manager::User::USER_IMAGE_PROFILE) {
-      UMA_HISTOGRAM_EXACT_LINEAR("UserImage.ChangeChoice",
-                                 default_user_image::kHistogramImageOld,
-                                 default_user_image::kHistogramImagesCount);
-      VLOG(1) << "Selected old (profile) user image";
-    } else {
-      UMA_HISTOGRAM_EXACT_LINEAR("UserImage.ChangeChoice",
-                                 default_user_image::kHistogramImageFromProfile,
-                                 default_user_image::kHistogramImagesCount);
-      VLOG(1) << "Selected profile image";
-    }
   } else {
     NOTREACHED() << "Unexpected image type: " << image_type;
   }
@@ -384,9 +365,6 @@ void ChangePictureHandler::FileSelected(const base::FilePath& path,
   ChromeUserManager::Get()
       ->GetUserImageManager(GetUser()->GetAccountId())
       ->SaveUserImageFromFile(path);
-  UMA_HISTOGRAM_EXACT_LINEAR("UserImage.ChangeChoice",
-                             default_user_image::kHistogramImageFromFile,
-                             default_user_image::kHistogramImagesCount);
   VLOG(1) << "Selected image from file";
 }
 
@@ -400,9 +378,6 @@ void ChangePictureHandler::SetImageFromCamera(
   ChromeUserManager::Get()
       ->GetUserImageManager(GetUser()->GetAccountId())
       ->SaveUserImage(std::move(user_image));
-  UMA_HISTOGRAM_EXACT_LINEAR("UserImage.ChangeChoice",
-                             default_user_image::kHistogramImageFromCamera,
-                             default_user_image::kHistogramImagesCount);
   VLOG(1) << "Selected camera photo";
 }
 

@@ -20,6 +20,7 @@
 <translation id="10614374240317010">هرگز ذخیره نمی‌شود</translation>
 <translation id="1062160989074299343">Prc10 (Envelope)</translation>
 <translation id="106701514854093668">نشانک‌های دسک‌تاپ</translation>
+<translation id="1068672505746868501">هرگز صفحه‌های <ph name="SOURCE_LANGUAGE" /> ترجمه نشوند</translation>
 <translation id="1070901266639972381">شب</translation>
 <translation id="1074497978438210769">امن نیست</translation>
 <translation id="1080116354587839789">متناسب با پهنا</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">بدون عنوان</translation>
 <translation id="1236081509407217141">‏VR مجاز باشد؟</translation>
 <translation id="1240347957665416060">نام دستگاهتان</translation>
+<translation id="124116460088058876">زبان‌های بیشتر</translation>
 <translation id="1250759482327835220">‏برای اینکه دفعه بعد پرداخت سریع‌تری داشته باشید، اطلاعات کارت، نام و نشانی صورت‌حسابتان را در حساب Google خود ذخیره کنید.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />، <ph name="TYPE_2" /> (همگام‌سازی‌شده)</translation>
 <translation id="1256368399071562588">‏&lt;p&gt;اگر می‌خواهید از وب‌سایتی بازدید کنید و باز نمی‌شود، ابتدا سعی کنید با این مراحل عیب‌یابی خطا را برطرف کنید:&lt;/p&gt;
@@ -838,6 +840,7 @@
 <translation id="4424024547088906515">‏این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهی امنیتی آن مورداعتماد Chrome نیست. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجی اتصال شما را قطع کرده است.</translation>
 <translation id="443121186588148776">درگاه سریالی</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> گواهی ورود به سیستمتان را نپذیرفت یا ممکن است گواهی‌ای ارائه نشده باشد.</translation>
+<translation id="4432792777822557199">از این به بعد، صفحه‌های <ph name="SOURCE_LANGUAGE" />، به <ph name="TARGET_LANGUAGE" /> ترجمه خواهند شد</translation>
 <translation id="4434045419905280838">پنجره‌های بازشو و هدایت‌ها</translation>
 <translation id="4435702339979719576">Postcard)</translation>
 <translation id="443673843213245140">استفاده از پروکسی غیرفعال است اما یک پیکربندی خاص برای پروکسی تعیین شده است.</translation>
@@ -1069,6 +1072,7 @@
 <translation id="5431657950005405462">فایل شما پیدا نشد</translation>
 <translation id="5439770059721715174">خطای تأیید طرح در «<ph name="ERROR_PATH" />»:‏ <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">روبه‌بالا به‌ترتیب معکوس</translation>
+<translation id="5447765697759493033">این سایت ترجمه نخواهد شد</translation>
 <translation id="5452270690849572955">صفحه <ph name="HOST_NAME" /> پیدا نمی‌شود</translation>
 <translation id="5455374756549232013">مهر زمان خط‌مشی نادرست است</translation>
 <translation id="5457113250005438886">نامعتبر</translation>
@@ -1615,6 +1619,7 @@
 <translation id="7716375162095500223">هنوز بارگذاری نشده است یا رد شده است</translation>
 <translation id="7716424297397655342">این سایت نمی‌تواند از حافظه پنهان بار شود</translation>
 <translation id="7723047071702270851">ویرایش کارت</translation>
+<translation id="773466115871691567">صفحه‌های <ph name="SOURCE_LANGUAGE" /> همیشه ترجمه شوند</translation>
 <translation id="7740996059027112821">استاندارد</translation>
 <translation id="774634243536837715">محتوای خطرناک مسدود شد.</translation>
 <translation id="7752995774971033316">مدیریت نشده</translation>
@@ -1760,6 +1765,7 @@
 <translation id="831997045666694187">شب</translation>
 <translation id="8332188693563227489">دسترسی به <ph name="HOST_NAME" /> رد شد</translation>
 <translation id="833262891116910667">برجسته‌سازی</translation>
+<translation id="8339163506404995330">صفحه‌های <ph name="LANGUAGE" /> ترجمه نخواند شد</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">اگر خطرات امنیتی‌ای که متوجه شما هستند را درک می‌کنید، می‌توانید قبل از حذف شدن برنامه‌های خطرناک، <ph name="BEGIN_LINK" />از این سایت بازدید کنید<ph name="END_LINK" />.</translation>
 <translation id="8349305172487531364">نوار نشانک‌ها</translation>

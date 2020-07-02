@@ -26,6 +26,7 @@
 #import "ios/chrome/app/application_delegate/user_activity_handler.h"
 #import "ios/chrome/app/deferred_initialization_runner.h"
 #import "ios/chrome/app/main_application_delegate.h"
+#import "ios/chrome/app/scoped_ui_blocker.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_constants.h"
@@ -110,6 +111,9 @@ NSString* const kStartupAttemptReset = @"StartupAttempReset";
   BOOL _applicationInBackground;
   // YES if cookies are currently being flushed to disk.
   BOOL _savingCookies;
+
+  // Multiwindow UI blocker used when safe mode is active.
+  std::unique_ptr<ScopedUIBlocker> _safeModeBlocker;
 }
 
 // Container for observers.
@@ -138,6 +142,14 @@ NSString* const kStartupAttemptReset = @"StartupAttempReset";
 // This flag is set when the first scene has activated since the startup, and
 // never reset.
 @property(nonatomic, assign) BOOL firstSceneHasActivated;
+
+// Redefined as readwrite.
+@property(nonatomic, weak, readwrite) SceneState* sceneShowingBlockingUI;
+
+// The counter of currently shown blocking UIs. Do not use this directly,
+// instead use incrementBlockingUICounterForScene: and
+// incrementBlockingUICounterForScene or the ScopedUIBlocker.
+@property(nonatomic, assign) NSUInteger blockingUICounter;
 
 @end
 
@@ -514,6 +526,21 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 
 #pragma mark - Multiwindow-related
 
+- (void)decrementBlockingUICounter {
+  DCHECK(self.blockingUICounter > 0 && self.sceneShowingBlockingUI != nil);
+  self.blockingUICounter--;
+}
+
+- (void)incrementBlockingUICounterForScene:(SceneState*)scene {
+  DCHECK(self.sceneShowingBlockingUI == nil ||
+         scene == self.sceneShowingBlockingUI)
+      << "Another scene is already showing a blocking UI!";
+  self.blockingUICounter++;
+  if (!self.sceneShowingBlockingUI) {
+    self.sceneShowingBlockingUI = scene;
+  }
+}
+
 - (SceneState*)foregroundActiveScene {
   for (SceneState* sceneState in self.connectedScenes) {
     if (sceneState.activationLevel == SceneActivationLevelForegroundActive) {
@@ -552,7 +579,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 #pragma mark - SafeModeCoordinatorDelegate Implementation
 
 - (void)coordinatorDidExitSafeMode:(nonnull SafeModeCoordinator*)coordinator {
-  self.sceneShowingBlockingUI = nil;
+  _safeModeBlocker.reset();
   self.safeModeCoordinator = nil;
   self.inSafeMode = NO;
   [_browserLauncher startUpBrowserToStage:INITIALIZATION_STAGE_FOREGROUND];
@@ -569,6 +596,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
     self.mainSceneState.activationLevel = SceneActivationLevelForegroundActive;
   }
   DCHECK(self.foregroundActiveScene);
+  DCHECK(!_safeModeBlocker);
   SafeModeCoordinator* safeModeCoordinator = [[SafeModeCoordinator alloc]
       initWithWindow:self.foregroundActiveScene.window];
 
@@ -580,7 +608,8 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 
   [self.safeModeCoordinator start];
 
-  self.sceneShowingBlockingUI = self.foregroundActiveScene;
+  _safeModeBlocker =
+      std::make_unique<ScopedUIBlocker>(self.foregroundActiveScene);
 }
 
 - (void)initializeUI {

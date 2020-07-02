@@ -9,6 +9,7 @@
 
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_shader.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -21,7 +22,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_paint_util.h"
@@ -73,8 +73,8 @@ void Canvas::SizeStringInt(const base::string16& text,
   float factional_height = static_cast<float>(*height);
   SizeStringFloat(text, font_list, &fractional_width, &factional_height,
                   line_height, flags);
-  *width = ToCeiledInt(fractional_width);
-  *height = ToCeiledInt(factional_height);
+  *width = base::Ceil(fractional_width);
+  *height = base::Ceil(factional_height);
 }
 
 // static
@@ -315,8 +315,8 @@ void Canvas::DrawImageInt(const ImageSkia& image,
   ScopedCanvas scoper(this);
   canvas_->scale(SkFloatToScalar(1.0f / bitmap_scale),
                  SkFloatToScalar(1.0f / bitmap_scale));
-  canvas_->translate(std::round(x * bitmap_scale),
-                     std::round(y * bitmap_scale));
+  canvas_->translate(SkFloatToScalar(std::round(x * bitmap_scale)),
+                     SkFloatToScalar(std::round(y * bitmap_scale)));
   canvas_->saveLayer(nullptr, &flags);
   canvas_->drawPicture(image_rep.GetPaintRecord());
   canvas_->restore();

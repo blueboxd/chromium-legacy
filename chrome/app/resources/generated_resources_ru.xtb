@@ -220,7 +220,7 @@
 <translation id="1263490604593716556">Администраторы аккаунта: <ph name="FIRST_PARENT_EMAIL" /> и <ph name="SECOND_PARENT_EMAIL" />. Чтобы выйти из основного аккаунта на этом устройстве, нажмите на время в правой нижней части экрана. В появившемся меню выберите "Выйти".</translation>
 <translation id="1263733306853729545">Пролистывать список вариантов клавишами "<ph name="MINUS" />" и "<ph name="EQUAL" />"</translation>
 <translation id="126387934568812801">Добавить этот скриншот и заголовки открытых вкладок</translation>
-<translation id="1264337193001759725">Чтобы посмотреть журналы интерфейса сети, откройте страницу<ph name="DEVICE_LOG_LINK" />.</translation>
+<translation id="1264337193001759725">Чтобы посмотреть журналы интерфейса сети, откройте страницу <ph name="DEVICE_LOG_LINK" />.</translation>
 <translation id="126710816202626562">Перевести на:</translation>
 <translation id="126768002343224824">16x</translation>
 <translation id="1272079795634619415">Остановить</translation>
@@ -528,7 +528,6 @@
 <translation id="1645516838734033527">Чтобы защитить устройство <ph name="DEVICE_TYPE" /> с помощью Smart Lock, включите блокировку экрана на телефоне.</translation>
 <translation id="1646982517418478057">Введите пароль для шифрования этого сертификата</translation>
 <translation id="1648528859488547844">Использовать для определения местоположения Wi‑Fi или мобильные сети</translation>
-<translation id="1648943974594387137">Данные для входа в аккаунт устарели</translation>
 <translation id="164936512206786300">Отключить устройство Bluetooth</translation>
 <translation id="1650371550981945235">Показывать параметры ввода</translation>
 <translation id="1651008383952180276">Необходимо дважды ввести одну кодовую фразу</translation>
@@ -1054,7 +1053,7 @@
 <translation id="2295864384543949385">Результатов: <ph name="NUM_RESULTS" /></translation>
 <translation id="2297705863329999812">Найти принтеры</translation>
 <translation id="2299734369537008228">Ползунок с минимальным значением "<ph name="MIN_LABEL" />" и максимальным значением "<ph name="MAX_LABEL" />"</translation>
-<translation id="2299941608784654630">Включать все файлы журналов, собранные сервисом debugd, в виде отдельного архива.</translation>
+<translation id="2299941608784654630">Включать все файлы журналов, собранные сервисом debugd, в виде отдельного архива</translation>
 <translation id="2300383962156589922">Настройка приложения "<ph name="APP_NAME" />" и управление им</translation>
 <translation id="2301382460326681002">Недействительный корневой каталог расширения.</translation>
 <translation id="23030561267973084">Приложение "<ph name="EXTENSION_NAME" />" запросило дополнительные разрешения.</translation>
@@ -1331,7 +1330,6 @@
 <translation id="2635276683026132559">Подпись</translation>
 <translation id="2636625531157955190">У Chrome нет доступа к изображению.</translation>
 <translation id="2637400434494156704">Неверный PIN-код. Осталась одна попытка.</translation>
-<translation id="2638087589890736295">Чтобы начать синхронизацию, введите кодовую фразу</translation>
 <translation id="2638662041295312666">Изображение на странице входа</translation>
 <translation id="264083724974021997">Подключение к телефону – диалоговое окно</translation>
 <translation id="2641065435954454414">Подготовка к скачиванию…</translation>
@@ -1485,7 +1483,6 @@
 <translation id="2809586584051668049">и ещё <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
 <translation id="2810390687497823527">Если вы обнаружили незнакомое расширение или заметили сбои в работе браузера, вы можете отключить расширение или изменить его настройки.</translation>
 <translation id="2812049959647166806">Thunderbolt не поддерживается</translation>
-<translation id="2812944337881233323">Выйдите из Chrome и снова войдите в систему</translation>
 <translation id="2812989263793994277">Не показывать</translation>
 <translation id="2813094189969465044">Родительский контроль</translation>
 <translation id="281390819046738856">Не удалось подписать запрос.</translation>
@@ -3406,7 +3403,6 @@
 <translation id="529175790091471945">Форматировать устройство</translation>
 <translation id="5293170712604732402">Восстановление настроек по умолчанию</translation>
 <translation id="5294097441441645251">Имя должно начинаться со строчной буквы или символа подчеркивания.</translation>
-<translation id="5296471962619441686">Чтобы продолжить синхронизацию, устраните проблему.</translation>
 <translation id="5297082477358294722">Пароль сохранен. Просматривать сохраненные пароли и управлять ими можно на странице <ph name="SAVED_PASSWORDS_STORE" />.</translation>
 <translation id="5298219193514155779">Автор темы:</translation>
 <translation id="5299109548848736476">Запрет отслеживания</translation>
@@ -3474,7 +3470,7 @@
 <translation id="5388885445722491159">Пара создана</translation>
 <translation id="5389237414310520250">Не удалось создать контролируемый профиль. Убедитесь, что у вас есть необходимые разрешения и свободное место на жестком диске, а затем повторите попытку.</translation>
 <translation id="5390100381392048184">Разрешить сайтам воспроизводить звуки</translation>
-<translation id="5390112241331447203">Включать файл system_logs.txt, который отправляется в отчетах об отзывах.</translation>
+<translation id="5390112241331447203">Включать файл system_logs.txt, который отправляется в отчетах об отзывах</translation>
 <translation id="5390677308841849479">Темно-красный с оранжевым</translation>
 <translation id="5390743329570580756">Отправка</translation>
 <translation id="5395869306561378615">Работа принтера "<ph name="PRINTER_NAME" />" приостановлена.</translation>
@@ -4225,7 +4221,7 @@
 <translation id="6317318380444133405">Принтер больше не поддерживается.</translation>
 <translation id="6317369057005134371">Запуск приложения…</translation>
 <translation id="6317608858038767920">Пользовательский DNS-сервер <ph name="INPUT_INDEX" /></translation>
-<translation id="6318125393809743217">Включить файл policies.json в правила.</translation>
+<translation id="6318125393809743217">Включить файл policies.json в правила</translation>
 <translation id="6318407754858604988">Скачивание началось</translation>
 <translation id="6318944945640833942">Принтер не найден. Укажите адрес ещё раз.</translation>
 <translation id="6322653941595359182">Отправлять и получать SMS на устройстве Chromebook</translation>
@@ -4406,7 +4402,7 @@
 <translation id="6557290421156335491">Мои ярлыки</translation>
 <translation id="6561560012278703671">Не прерывать мою работу при запросе разрешения на показ уведомлений</translation>
 <translation id="6561726789132298588">Войти</translation>
-<translation id="6562117348069327379">Сохранять системные журналы в каталоге "Скачанные файлы".</translation>
+<translation id="6562117348069327379">Системные журналы будут сохраняться в каталоге "Скачанные файлы".</translation>
 <translation id="656293578423618167">Слишком длинное название файла или путь к нему. Выберите другое название или каталог.</translation>
 <translation id="6563469144985748109">Ещё не одобрено администратором</translation>
 <translation id="6569934958368283244">Другие пользователи</translation>
@@ -4815,7 +4811,7 @@
 <translation id="7081952801286122383">Режим инкогнито</translation>
 <translation id="708278670402572152">Чтобы запустить сканирование, отключитесь от сети.</translation>
 <translation id="7085389578340536476">Разрешить Chrome записывать аудио?</translation>
-<translation id="7086672505018440886">Включать файлы журналов Chrome в архив.</translation>
+<translation id="7086672505018440886">Включать файлы журналов Chrome в архив</translation>
 <translation id="7088434364990739311">Не удалось выполнить проверку обновлений (код ошибки: <ph name="ERROR" />).</translation>
 <translation id="7088561041432335295">Zip Archiver – работа с ZIP-архивами в приложении "Файлы"</translation>
 <translation id="7088674813905715446">Это устройство отключено администратором. Чтобы можно было выполнить регистрацию, устройство следует перевести в состояние ожидания подключения.</translation>
@@ -5645,7 +5641,7 @@
 <translation id="809792523045608178">В <ph name="IDS_SHORT_PRODUCT_NAME" /> используются настройки прокси-сервера из расширения.</translation>
 <translation id="8097959162767603171">Сначала администратор должен принять Условия использования, которые можно найти на странице со списком устройств Chrome в консоли администратора.</translation>
 <translation id="8101987792947961127">При следующей перезагрузке устройства необходимо выполнить Powerwash</translation>
-<translation id="8102139037507939978">Удалять из файла system_logs.txt информацию, позволяющую идентифицировать личность.</translation>
+<translation id="8102139037507939978">Удалять из файла system_logs.txt информацию, позволяющую идентифицировать личность</translation>
 <translation id="8102159139658438129">Чтобы открыть параметры подключенного телефона, перейдите в <ph name="LINK_BEGIN" />Настройки<ph name="LINK_END" />.</translation>
 <translation id="8104696615244072556">Воспользуйтесь функцией Powerwash на устройстве <ph name="IDS_SHORT_PRODUCT_NAME" /> и вернитесь к предыдущей версии.</translation>
 <translation id="8107015733319732394">Установка Google Play Маркета на устройство <ph name="DEVICE_TYPE" /> (может занять несколько минут)…</translation>
@@ -5769,7 +5765,6 @@
 <translation id="8256417822772703842">В принтере "<ph name="PRINTER_NAME" />" заканчиваются чернила.</translation>
 <translation id="8257950718085972371">Всегда блокировать доступ к камере</translation>
 <translation id="8259239505248583312">Начать</translation>
-<translation id="8260126382462817229">Снова войдите в аккаунт</translation>
 <translation id="8260864402787962391">Мышь</translation>
 <translation id="8261378640211443080"><ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> не содержит сведений об этом расширении, то есть оно могло быть установлено без вашего ведома.</translation>
 <translation id="8261506727792406068">Удалить</translation>

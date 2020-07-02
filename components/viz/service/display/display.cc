@@ -920,6 +920,16 @@ void Display::DidReceiveSwapBuffersAck(const gfx::SwapTimings& timings) {
         "Compositing.Display.DrawToSwapUs", delta, kDrawToSwapMin,
         kDrawToSwapMax, kDrawToSwapUsBuckets);
   }
+
+  if (!timings.viz_scheduled_draw.is_null()) {
+    DCHECK(!timings.gpu_started_draw.is_null());
+    DCHECK_LE(timings.viz_scheduled_draw, timings.gpu_started_draw);
+    base::TimeDelta delta =
+        timings.gpu_started_draw - timings.viz_scheduled_draw;
+    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+        "Compositing.Display.VizScheduledDrawToGpuStartedDrawUs", delta,
+        kDrawToSwapMin, kDrawToSwapMax, kDrawToSwapUsBuckets);
+  }
 }
 
 void Display::DidReceiveTextureInUseResponses(

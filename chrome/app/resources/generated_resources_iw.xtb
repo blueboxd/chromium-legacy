@@ -526,7 +526,6 @@
 <translation id="1645516838734033527">‏כדי לשמור על הבטיחות של <ph name="DEVICE_TYPE" />, Smart Lock מחייב נעילת מסך בטלפון שלך.</translation>
 <translation id="1646982517418478057">הזן סיסמה כדי להצפין את האישור הזה</translation>
 <translation id="1648528859488547844">‏קביעת מיקום באמצעות Wi-Fi או רשתות סלולריות</translation>
-<translation id="1648943974594387137">פרטי הכניסה אינם מעודכנים</translation>
 <translation id="164936512206786300">‏ביטול הצמדה של התקן Bluetooth</translation>
 <translation id="1650371550981945235">הצג אפשרויות קלט</translation>
 <translation id="1651008383952180276">עליך להזין אותו ביטוי סיסמה פעמיים</translation>
@@ -1330,7 +1329,6 @@
 <translation id="2635276683026132559">חתימה</translation>
 <translation id="2636625531157955190">‏ל-Chrome אין אפשרות לגשת לתמונה.</translation>
 <translation id="2637400434494156704">קוד אימות שגוי. נשאר לך ניסיון אחד.</translation>
-<translation id="2638087589890736295">יש להזין את ביטוי הסיסמה כדי להתחיל את הסנכרון</translation>
 <translation id="2638662041295312666">תמונת המשתמש</translation>
 <translation id="264083724974021997">התחברות לטלפון – תיבת דו-שיח</translation>
 <translation id="2641065435954454414">המערכת מכינה את ההורדה</translation>
@@ -1485,7 +1483,6 @@
 <translation id="2809586584051668049">ועוד <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
 <translation id="2810390687497823527">אם לא מזהים תוסף כלשהו או אם הדפדפן לא פועל בצורה תקינה, אפשר להשבית את התוספים או להתאים אותם אישית מכאן.</translation>
 <translation id="2812049959647166806">‏Thunderbolt אינו נתמך</translation>
-<translation id="2812944337881233323">נסה לצאת ולהיכנס שוב</translation>
 <translation id="2812989263793994277">אל תציג אף תמונה</translation>
 <translation id="2813094189969465044">בקרת הורים</translation>
 <translation id="281390819046738856">לא ניתן לחתום על הבקשה.</translation>
@@ -3406,7 +3403,6 @@
 <translation id="529175790091471945">פרמט מכשיר זה</translation>
 <translation id="5293170712604732402">שחזור ההגדרות לברירות המחדל המקוריות שלהן</translation>
 <translation id="5294097441441645251">השם צריך להתחיל באות קטנה או בקו תחתון</translation>
-<translation id="5296471962619441686">צריך לפתור השגיאה כדי להמשיך בסנכרון</translation>
 <translation id="5297082477358294722">הסיסמה נשמרה. אפשר להציג סיסמאות שמורות ולנהל אותן דרך <ph name="SAVED_PASSWORDS_STORE" />.</translation>
 <translation id="5298219193514155779">נושא שנוצר על ידי</translation>
 <translation id="5299109548848736476">‏לא לעקוב (DNT)</translation>
@@ -5771,7 +5767,6 @@
 <translation id="8256417822772703842">לא נשאר הרבה דיו במדפסת <ph name="PRINTER_NAME" /></translation>
 <translation id="8257950718085972371">המשך לחסום גישה למצלמה</translation>
 <translation id="8259239505248583312">קדימה, מתחילים!</translation>
-<translation id="8260126382462817229">נסה להיכנס שוב</translation>
 <translation id="8260864402787962391">עכבר</translation>
 <translation id="8261378640211443080">התוסף הזה לא רשום ב<ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> וייתכן שנוסף ללא ידיעתך.</translation>
 <translation id="8261506727792406068">מחיקה</translation>

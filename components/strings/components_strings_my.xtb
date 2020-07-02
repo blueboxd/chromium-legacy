@@ -20,6 +20,7 @@
 <translation id="10614374240317010">ဘယ်တော့မှ မသိမ်းဆည်းရန်</translation>
 <translation id="1062160989074299343">Prc10 (စာအိတ်)</translation>
 <translation id="106701514854093668">ဒက်စတော့ စာညှပ်</translation>
+<translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" /> ဘာသာ စာမျက်နှာများကို ဘယ်သောအခါမျှ ဘာသာမပြန်ရန်</translation>
 <translation id="1070901266639972381">ည</translation>
 <translation id="1074497978438210769">လုံခြုံမှုမရှိပါ</translation>
 <translation id="1080116354587839789">အနံ အပြည့်</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">ခေါင်းစဉ်မဲ့</translation>
 <translation id="1236081509407217141">VR ကို ခွင့်ပြုမလား။</translation>
 <translation id="1240347957665416060">သင့်စက်၏ အမည်</translation>
+<translation id="124116460088058876">နောက်ထပ် ဘာသာစကားများ</translation>
 <translation id="1250759482327835220">နောင်တွင် မြန်ဆန်စွာပေးချေနိုင်ရန် သင်၏ကတ်၊ အမည်နှင့် ငွေတောင်းခံလွှာပို့ရန် လိပ်စာကို သင့် Google အကောင့်တွင် သိမ်းပါ။</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />၊ <ph name="TYPE_2" /> (စင့်ခ်လုပ်ထားသည်)</translation>
 <translation id="1256368399071562588">&lt;p&gt;သင်သည် ဝဘ်ဆိုက်သို့ ဝင်ကြည့်သည့်အခါ ၎င်းက ပွင့်မလာလျှင် အောက်ပါ အမှားရှာဖွေဖြေရှင်းခြင်း အဆင့်များဖြင့် အမှားအယွင်းများကို ဖြေရှင်းကြည့်ပါ−&lt;/p&gt;
@@ -840,6 +842,7 @@
 <translation id="4424024547088906515">ဒီဆာဗာက <ph name="DOMAIN" /> ဖြစ်တာကို သက်သေထူ မပြနိုင်ခဲ့ပါ၊ ၎င်း၏ လုံခြုံရေး လက်မှတ်ကို Chrome ဘက်မှ မယုံကြည်ပါ။ ဖွဲ့စည်းစီစဉ်မှု အမှားကြောင့် သို့မဟုတ် တိုက်ခိုက်လိုသူက သင်၏ ချိတ်ဆက်မှုကို ကြားဖြတ်ယူနေ၍ ထိုသို့ ဖြစ်လာနိုင်ခဲ့ပါသည်။</translation>
 <translation id="443121186588148776">နံပါတ်စဉ်ပို့တ်</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> သည် သင်၏ ဝင်ရောက်ခွင့်အသိအမှတ်ပြုလက်မှတ်ကို လက်မခံပါ သို့မဟုတ် ၎င်းကို ပေးမထားခြင်းဖြစ်နိုင်သည်။</translation>
+<translation id="4432792777822557199"><ph name="SOURCE_LANGUAGE" /> ဘာသာဖြင့် စာမျက်နှာများကို ယခုမှစ၍ <ph name="TARGET_LANGUAGE" /> ဘာသာသို့ ဘာသာပြန်သွားပါမည်</translation>
 <translation id="4434045419905280838">ပေါ့ပ်အပ်နှင့် တစ်ဆင့်ညွှန်ချက်</translation>
 <translation id="4435702339979719576">ပို့စ်ကတ်)</translation>
 <translation id="443673843213245140">ပရောက်စီ သုံးရန်ပိတ်ထားသော်လည်း တိကျသည့် ပရောက်စီ စီစဉ်ဖွဲ့စည်းမှုကို သတ်မှတ်ထားသည်။</translation>
@@ -1071,6 +1074,7 @@
 <translation id="5431657950005405462">သင့်ဖိုင်ကို မတွေ့ပါ</translation>
 <translation id="5439770059721715174">Schema မှန်ကန်ကြောင်းအတည်ပြုမှု မှားယွင်းခြင်း "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">ပြောင်းပြန်အစဉ်ဖြင့် အပေါ်လှန်ထားရန်</translation>
+<translation id="5447765697759493033">ဤဝဘ်ဆိုက်ကို ဘာသာပြန်မည် မဟုတ်ပါ</translation>
 <translation id="5452270690849572955">ဤ <ph name="HOST_NAME" /> စာမျက်နှာကို မတွေ့ပါ</translation>
 <translation id="5455374756549232013">မူဝါဒ အချိန်ထုမှု ညံ့ဖျင်း</translation>
 <translation id="5457113250005438886">မမှန်ပါ</translation>
@@ -1617,6 +1621,7 @@
 <translation id="7716375162095500223">အပ်လုဒ်မလုပ်ရသေးပါ (သို့) လျစ်လျူရှုထားသည်</translation>
 <translation id="7716424297397655342">ဤဆိုက်ကို ယာယီမှတ်ဉာဏ်မှ ဖွင့်၍မရနိုင်ပါ</translation>
 <translation id="7723047071702270851">ကတ်ကို တည်းဖြတ်ခြင်း</translation>
+<translation id="773466115871691567"><ph name="SOURCE_LANGUAGE" /> ဘာသာဖြင့် စာမျက်နှာများအားလုံးကို အမြဲဘာသာပြန်ရန်</translation>
 <translation id="7740996059027112821">ပုံမှန်</translation>
 <translation id="774634243536837715">အန္တရာယ်ရှိသည့် အကြောင်းအရာများကို ပိတ်ထားပါသည်</translation>
 <translation id="7752995774971033316">စီမံကွပ်ကဲမထား</translation>
@@ -1762,6 +1767,7 @@
 <translation id="831997045666694187">ညနေ</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" /> အားအသုံးပြုခွင့် ပယ်ချခံခဲ့ရပါသည်</translation>
 <translation id="833262891116910667">အထူးအသားပေး ဖော်ပြချက်</translation>
+<translation id="8339163506404995330"><ph name="LANGUAGE" /> ဘာသာဖြင့် စာမျက်နှာများကို ဘာသာပြန်သွားပါမည်</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">သင်က သင့် လုံခြုံမှုအတွက် ရှိနိုင်သည့် အန္တရာယ်များကို နားလည်သည် ဆိုလျှင်၊ သင်သည် အန္တရာယ် ရှိကြသည့် ပရိုဂရမ်များကို ဖယ်ရှားမပေးခင်မှာ <ph name="BEGIN_LINK" /> ဒီ ဆိုက်ကို<ph name="END_LINK" /> ဝင်ကြည့်သင့်ပါသည်။</translation>
 <translation id="8349305172487531364">စာညှပ် ဘား</translation>

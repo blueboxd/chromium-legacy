@@ -525,7 +525,6 @@
 <translation id="1645516838734033527">તમારા <ph name="DEVICE_TYPE" />ને સુરક્ષિત રાખવા માટે, Smart Lockને તમારા ફોન પર સ્ક્રીન લૉકની જરૂર છે.</translation>
 <translation id="1646982517418478057">આ પ્રમાણપત્રને એન્ક્રિપ્ટ કરવા માટે કૃપા કરીને પાસવર્ડ દાખલ કરો</translation>
 <translation id="1648528859488547844">સ્થાન નક્કી કરવા માટે વાઇ-ફાઇ અથવા મોબાઇલ નેટવર્કનો ઉપયોગ કરો</translation>
-<translation id="1648943974594387137">સાઇન-ઇન વિગતો જૂની થઈ ગઈ છે</translation>
 <translation id="164936512206786300">બ્લૂટૂથ ડિવાઇસ સાથેનું જોડાણ તોડો</translation>
 <translation id="1650371550981945235">ઇનપુટ વિકલ્પો બતાવો</translation>
 <translation id="1651008383952180276">તમારે તે જ પાસફ્રેઝ બે વાર દાખલ કરવો આવશ્યક છે</translation>
@@ -1329,7 +1328,6 @@
 <translation id="2635276683026132559">સાઇનિંગ</translation>
 <translation id="2636625531157955190">Chrome છબી ઍક્સેસ કરી શકતું નથી.</translation>
 <translation id="2637400434494156704">ખોટો પિન. તમારી પાસે હવે એક પ્રયાસ બાકી છે.</translation>
-<translation id="2638087589890736295">સમન્વયનને પ્રારંભ કરવા માટે પાસફ્રેઝ આવશ્યક</translation>
 <translation id="2638662041295312666">સાઇન ઇન છબી</translation>
 <translation id="264083724974021997">તમારા ફોન સાથે કનેક્ટ કરો - સંવાદ</translation>
 <translation id="2641065435954454414">ડાઉનલોડની તૈયારી કરી રહ્યા છીએ</translation>
@@ -1483,7 +1481,6 @@
 <translation id="2809586584051668049">અને <ph name="NUMBER_ADDITIONAL_DISABLED" /> વધુ</translation>
 <translation id="2810390687497823527">જો તમે એક્સ્ટેંશનને ઓળખતા ન હો અથવા તમારું બ્રાઉઝર અપેક્ષા પ્રમાણે કામ ન કરતું હોય, તો તમે અહીં એક્સ્ટેંશનને કસ્ટમાઇઝ કરી શકો છો અથવા બંધ કરી શકો છો.</translation>
 <translation id="2812049959647166806">Thunderboltની સુવિધા ઉપલબ્ધ નથી</translation>
-<translation id="2812944337881233323">સાઇન આઉટ કરીને ફરી પાછા સાઇન ઇન કરવાનો પ્રયાસ કરો</translation>
 <translation id="2812989263793994277">કોઈ પણ છબીઓ બતાવશો નહીં</translation>
 <translation id="2813094189969465044">પેરેંટલ કન્ટ્રોલ</translation>
 <translation id="281390819046738856">વિનંતી પર સહી કરી શક્યાં નથી.</translation>
@@ -3404,7 +3401,6 @@
 <translation id="529175790091471945">આ ઉપકરણને ફોર્મેટ કરો</translation>
 <translation id="5293170712604732402">સેટિંગ્સને તેમના મૂળ ડિફૉલ્ટ પર પુનઃસ્થાપિત કરો</translation>
 <translation id="5294097441441645251">કોઈ લોઅરકેસ અક્ષર અથવા અન્ડરસ્કોરથી જ શરૂ કરવું જોઈએ</translation>
-<translation id="5296471962619441686">સિંક ફરી શરૂ કરવા માટે ભૂલ સુધારો</translation>
 <translation id="5297082477358294722">પાસવર્ડ સાચવ્યો. સાચવેલા પાસવર્ડ તમારા <ph name="SAVED_PASSWORDS_STORE" />માં જુઓ અને મેનેજ કરો.</translation>
 <translation id="5298219193514155779">થીમ રચનાકાર</translation>
 <translation id="5299109548848736476">ટ્રૅક કરશો નહીં</translation>
@@ -5764,7 +5760,6 @@ USB ડિવાઇસ</translation>
 <translation id="8256417822772703842"><ph name="PRINTER_NAME" />માં શાહી ઓછી થઈ ગઈ છે</translation>
 <translation id="8257950718085972371">કૅમેરાની ઍક્સેસને અવરોધિત કરવાનું ચાલુ રાખો</translation>
 <translation id="8259239505248583312">ચાલો જઈએ</translation>
-<translation id="8260126382462817229">ફરીથી સાઇન ઇન કરવાનો પ્રયાસ કરો</translation>
 <translation id="8260864402787962391">માઉસ</translation>
 <translation id="8261378640211443080">આ એક્સટેન્શન <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> માં સૂચિબદ્ધ નથી અને તમારી જાણ વિના ઉમેરવામાં આવ્યું હોઈ શકે છે.</translation>
 <translation id="8261506727792406068">ડિલીટ કરો</translation>

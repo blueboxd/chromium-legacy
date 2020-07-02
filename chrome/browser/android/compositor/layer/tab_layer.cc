@@ -435,9 +435,8 @@ void TabLayer::SetProperties(int id,
   if (!back_visible) {
     gfx::Rect rounded_descaled_content_area(
         round(descaled_local_content_area.x()),
-        round(descaled_local_content_area.y()),
-        round(desired_content_size.width()),
-        round(desired_content_size.height()));
+        round(descaled_local_content_area.y()), desired_content_size.width(),
+        desired_content_size.height());
 
     SetContentProperties(
         id, ids, can_use_live_layer, static_to_view_blend, true, alpha,

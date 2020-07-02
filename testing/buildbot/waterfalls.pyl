@@ -847,7 +847,6 @@
           'app_list_unittests',
           'base_unittests',
           'browser_tests',
-          'cacheinvalidation_unittests',
           'chromeos_unittests',
           'components_unittests',
           'compositor_unittests',
@@ -2964,8 +2963,8 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_gtests',
-          'isolated_scripts': 'gpu_angle_perf_smoke_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_webgl_conformance_gles_passthrough_telemetry_tests',
+          'isolated_scripts': 'gpu_angle_perf_smoke_isolated_scripts',
         },
       },
       'ANGLE GPU Linux Release (Intel HD 630)': {
@@ -2976,8 +2975,8 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_linux_gtests',
-          'isolated_scripts': 'gpu_angle_perf_smoke_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_angle_linux_telemetry_tests',
+          'isolated_scripts': 'gpu_angle_isolated_scripts',
         },
       },
       'ANGLE GPU Linux Release (NVIDIA)': {
@@ -2988,8 +2987,8 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_linux_gtests',
-          'isolated_scripts': 'gpu_angle_perf_smoke_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_angle_linux_telemetry_tests',
+          'isolated_scripts': 'gpu_angle_isolated_scripts',
         },
       },
       'ANGLE GPU Mac Release (Intel)': {
@@ -3001,6 +3000,7 @@
         'test_suites': {
           'gtest_tests': 'gpu_angle_mac_gtests',
           'gpu_telemetry_tests': 'gpu_angle_mac_telemetry_tests',
+          'isolated_scripts': 'gpu_standalone_angle_unittests_isolated_scripts',
         },
       },
       'ANGLE GPU Mac Retina Release (AMD)': {
@@ -3012,6 +3012,7 @@
         'test_suites': {
           'gtest_tests': 'gpu_angle_mac_gtests',
           'gpu_telemetry_tests': 'gpu_angle_mac_telemetry_tests',
+          'isolated_scripts': 'gpu_standalone_angle_unittests_isolated_scripts',
         },
       },
       'ANGLE GPU Mac Retina Release (NVIDIA)': {
@@ -3033,8 +3034,8 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_win_gtests',
-          'isolated_scripts': 'gpu_angle_perf_smoke_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_angle_win_intel_nvidia_telemetry_tests',
+          'isolated_scripts': 'gpu_angle_isolated_scripts',
         },
       },
       'ANGLE GPU Win10 x64 Release (NVIDIA)': {
@@ -3045,8 +3046,8 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_win_gtests',
-          'isolated_scripts': 'gpu_angle_fyi_win_optional_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_angle_win_intel_nvidia_telemetry_tests',
+          'isolated_scripts': 'gpu_angle_isolated_scripts',
         },
       },
       # END Fake builder used as mirror targets for ANGLE's GPU tryservers
@@ -3934,6 +3935,7 @@
         'test_suites': {
           'gtest_tests': 'gpu_win_angle_amd_gtests',
           'gpu_telemetry_tests': 'gpu_win_angle_amd_telemetry_tests',
+          'isolated_scripts': 'gpu_standalone_angle_unittests_isolated_scripts',
         },
       },
       'Win7 FYI Debug (AMD)': {
@@ -5159,7 +5161,6 @@
           'accessibility_unittests',
           'aura_unittests',
           'browser_tests',
-          'cacheinvalidation_unittests',
           'capture_unittests',
           'cast_unittests',
           'cc_unittests',

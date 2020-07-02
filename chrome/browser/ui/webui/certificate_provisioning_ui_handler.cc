@@ -126,8 +126,9 @@ void CollectProvisioningProcesses(
     const chromeos::cert_provisioning::FailedWorkerInfo& worker =
         failed_worker_entry.second;
     list_to_append_to->Append(CreateProvisioningProcessEntry(
-        failed_worker_entry.first, is_device_wide, worker.state,
-        worker.last_update_time, worker.public_key));
+        failed_worker_entry.first, is_device_wide,
+        CertProvisioningWorkerState::kFailed, worker.last_update_time,
+        worker.public_key));
   }
 }
 

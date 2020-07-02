@@ -602,6 +602,11 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void GetCharacterIndexAtPoint(const gfx::Point& point) final;
   void GetFirstRectForRange(const gfx::Range& range) final;
 #endif
+  void InstallCoopAccessMonitor(
+      const base::UnguessableToken& accessed_window,
+      mojo::PendingRemote<
+          network::mojom::blink::CrossOriginOpenerPolicyReporter> reporter)
+      final;
 
   SystemClipboard* GetSystemClipboard();
   RawSystemClipboard* GetRawSystemClipboard();

@@ -347,4 +347,8 @@ gpu::MemoryTracker* VizProcessContextProvider::GetMemoryTracker() {
   return command_buffer_->GetMemoryTracker();
 }
 
+void VizProcessContextProvider::SetNeedsMeasureNextDrawLatency() {
+  return command_buffer_->SetNeedsMeasureNextDrawLatency();
+}
+
 }  // namespace viz

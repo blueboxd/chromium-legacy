@@ -15,6 +15,7 @@
 <translation id="137466361146087520">Google Chrome Beta</translation>
 <translation id="1399397803214730675">Este computador já tem uma versão mais recente do Google Chrome. Se o software não estiver a funcionar, desinstale o Google Chrome e tente novamente.</translation>
 <translation id="1434626383986940139">Apps do Chrome para o Canary</translation>
+<translation id="1514913130539345610">O seu administrador desativou a verificação da existência de software prejudicial do Chrome.</translation>
 <translation id="1553358976309200471">Atualizar o Chrome</translation>
 <translation id="1587223624401073077">O Google Chrome está a utilizar a câmara.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> é perigoso, por isso o Chrome bloqueou-o.</translation>
@@ -121,6 +122,7 @@
 <translation id="4458462641685292929">Está em curso outra operação no Google Chrome. Tente novamente mais tarde.</translation>
 <translation id="4480040274068703980">O Chrome OS não conseguiu sincronizar os dados devido a um erro no início de sessão.</translation>
 <translation id="4521185804071812304">Opcional: ajudar a melhorar as funcionalidades e o desempenho do Chrome OS ao enviar automaticamente dados de diagnóstico e de utilização para a Google.</translation>
+<translation id="4552702433620284371">O Chrome não consegue verificar o software do dispositivo. Experimente verificar a sua ligação à Internet.</translation>
 <translation id="4561051373932531560">O Google Chrome permite-lhe clicar num número de telefone na Web e fazer a chamada com o Skype!</translation>
 <translation id="4567424176335768812">Tem sessão iniciada como <ph name="USER_EMAIL_ADDRESS" />. Agora, pode aceder aos seus marcadores, ao histórico e a outras definições em todos os dispositivos com sessão iniciada.</translation>
 <translation id="4571503333518166079">Aceder às definições de notificação do Chrome</translation>
@@ -242,6 +244,7 @@
 <translation id="8641606876632989680">O Chrome envia-lhe uma notificação quando iniciar sessão com uma palavra-passe comprometida.</translation>
 <translation id="8669527147644353129">Ajudante do Google Chrome</translation>
 <translation id="8679801911857917785">Também controla a página apresentada quando inicia o Chrome.</translation>
+<translation id="8681614230122836773">O Chrome encontrou software prejudicial no seu computador.</translation>
 <translation id="870251953148363156">Atualizar o &amp;Google Chrome</translation>
 <translation id="873133009373065397">O Google Chrome não consegue determinar ou definir o navegador predefinido</translation>
 <translation id="8823341990149967727">O Chrome Está Desatualizado</translation>

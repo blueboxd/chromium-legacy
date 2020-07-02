@@ -45,7 +45,7 @@
 <translation id="1395262318152388157">Arama kaydırma çubuğu</translation>
 <translation id="1399648040768741453">Telugu dili klavye (Fonetik)</translation>
 <translation id="1430915738399379752">Yazdır</translation>
-<translation id="1433600251059882049">Bu dosya Windows ve Linux ile paylaşılıyor</translation>
+<translation id="1433600251059882049">Bu klasör Windows ve Linux ile paylaşılıyor</translation>
 <translation id="1435838927755162558">Parallels Desktop ile klasör paylaşın</translation>
 <translation id="1439494416798956626"><ph name="FOLDER_NAME" /> klasörüne taşındı.</translation>
 <translation id="1441841714100794440">Vietnamca klavye (Teleks)</translation>
@@ -81,7 +81,7 @@
 <translation id="1844692022597038441">Bu dosya çevrimdışı kullanılamıyor.</translation>
 <translation id="184633654410729720">Tayca klavye (Kedmanee)</translation>
 <translation id="1847880352285315359">Kaydedildi</translation>
-<translation id="1853795129690976061">Bu dosya Linux ile paylaşılıyor.</translation>
+<translation id="1853795129690976061">Bu klasör Linux ile paylaşılıyor.</translation>
 <translation id="1864756863218646478">Dosya bulunamadı.</translation>
 <translation id="1921986354447415460">Türkçe F klavye</translation>
 <translation id="1924372192547904021"><ph name="DRIVE_NAME" /> biçimlendirildi</translation>
@@ -346,7 +346,7 @@
 <translation id="4924638091161556692">Sabit</translation>
 <translation id="4935975195727477204">Gazania Çiçeği</translation>
 <translation id="4943368462779413526">Futbol</translation>
-<translation id="4961158930123534723">1 dosya Parallels Desktop ile paylaşıldı</translation>
+<translation id="4961158930123534723">1 klasör Parallels Desktop ile paylaşıldı</translation>
 <translation id="4969785127455456148">Albüm</translation>
 <translation id="497244430928947428">Malayalam dili klavye (Fonetik)</translation>
 <translation id="4973523518332075481">En fazla <ph name="MAX_LENGTH" /> karakterden oluşan bir ad kullanın</translation>
@@ -508,7 +508,7 @@
 <translation id="656398493051028875">"<ph name="FILENAME" />" siliniyor...</translation>
 <translation id="6581162200855843583">Google Drive bağlantısı</translation>
 <translation id="6607272825297743757">Dosya bilgileri</translation>
-<translation id="6609332149380188670"><ph name="NUMBER_OF_ITEMS" /> dosya Parallels Desktop ile paylaşıldı</translation>
+<translation id="6609332149380188670"><ph name="NUMBER_OF_ITEMS" /> klasör Parallels Desktop ile paylaşıldı</translation>
 <translation id="6629841649550503054">Tümü <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" />'a yedeklendi!</translation>
 <translation id="6643016212128521049">Temizle</translation>
 <translation id="6650726141019353908">Pembe kelebek</translation>

@@ -14,13 +14,16 @@ class PasswordsModelDelegate;
 class PostSaveCompromisedBubbleController
     : public PasswordBubbleControllerBase {
  public:
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
   enum class BubbleType {
     // Last compromised password was updated. The user is presumed safe.
-    kPasswordUpdatedSafeState,
+    kPasswordUpdatedSafeState = 0,
     // A compromised password was updated and there are more issues to fix.
-    kPasswordUpdatedWithMoreToFix,
+    kPasswordUpdatedWithMoreToFix = 1,
     // There are stored compromised credentials.
-    kUnsafeState,
+    kUnsafeState = 2,
+    kMaxValue = kUnsafeState,
   };
   explicit PostSaveCompromisedBubbleController(
       base::WeakPtr<PasswordsModelDelegate> delegate);
@@ -40,6 +43,7 @@ class PostSaveCompromisedBubbleController
   void ReportInteractions() override;
 
   BubbleType type_;
+  bool checked_clicked_ = false;
 };
 
 #endif  // CHROME_BROWSER_UI_PASSWORDS_BUBBLE_CONTROLLERS_POST_SAVE_COMPROMISED_BUBBLE_CONTROLLER_H_

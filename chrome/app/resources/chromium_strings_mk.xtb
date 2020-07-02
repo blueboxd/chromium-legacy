@@ -18,6 +18,7 @@
 <translation id="1774152462503052664">Остави го Chromium да работи во заднина</translation>
 <translation id="1779356040007214683">За Chromium да биде побезбеден, оневозможивме неколку наставки што не се наведени во <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> и можеби се додадени без ваше знаење.</translation>
 <translation id="1808667845054772817">Преинсталирај го Chromium</translation>
+<translation id="1865035435995743337">Chromium не може да го провери софтверот на вашиот уред. Проверете ја интернет-врската.</translation>
 <translation id="1881322772814446296">Се најавувате со управувана сметка и му давате контрола на администраторот за вашиот профил на Chromium. Вашите податоци на Chromium, како на пример, апликации, обележувачи, историја, лозинки и други поставки ќе бидат трајно поврзани со <ph name="USER_NAME" />. Ќе може да ги бришете овие податоци преку информациската табла на сметки на Google, но нема да може да ги поврзете со друга сметка. <ph name="LEARN_MORE" /></translation>
 <translation id="1911763535808217981">Ако го исклучите ова, може да се најавувате на сајтови на Google, како што е Gmail, без да се најавите на Chromium</translation>
 <translation id="1929939181775079593">Chromium не реагира. Да се рестартира сега?</translation>
@@ -116,6 +117,7 @@
 <translation id="5480860683791598150">На Chromium му треба пристап до вашата локација за да ја сподели со сајтов</translation>
 <translation id="549669000822060376">Почекајте додека Chromium ги инсталира последните системски ажурирања.</translation>
 <translation id="5496810170689441661">Chromium се обидува да измени лозинки. Внесете ја својата лозинка за Windows за да го дозволите ова.</translation>
+<translation id="5556694182460963866">Администраторот му оневозможил на Chromium да проверува дали има штетен софтвер</translation>
 <translation id="5623402015214259806">{0,plural, =0{Достапно е ажурирање за Chromium}=1{Достапно е ажурирање за Chromium}one{Достапно е ажурирање за Chromium веќе # ден}other{Достапно е ажурирање за Chromium веќе # дена}}</translation>
 <translation id="5631814766731275228">Име и слика на Chromium</translation>
 <translation id="5634636535844844681">Chromium бара Windows 7 или понова верзија.</translation>
@@ -196,6 +198,7 @@ Chromium не може да ги обнови вашите поставки.</tr
     поставките за Chromium OS<ph name="LINK_END" /></translation>
 <translation id="761356813943268536">Chromium ги користи фотоапаратот и микрофонот.</translation>
 <translation id="7617377681829253106">Chromium е подобрен</translation>
+<translation id="7628001322379820951">Chromium најде штетен софтвер на вашиот компјутер</translation>
 <translation id="7686590090926151193">Chromium не е вашиот стандарден прелистувач</translation>
 <translation id="7689606757190482937">Синхронизирајте го и персонализирајте го Chromium на сите ваши уреди</translation>
 <translation id="7729447699958282447">Chromium не можеше да ги синхронизира вашите податоци затоа што Синхронизација не е достапна на вашиот домен.</translation>

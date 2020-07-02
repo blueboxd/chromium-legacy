@@ -20,6 +20,7 @@
 <translation id="10614374240317010">ຢ່າ​ບັນທຶກ</translation>
 <translation id="1062160989074299343">Prc10 (ຊອງຈົດໝາຍ)</translation>
 <translation id="106701514854093668">ບຸກມາກສ໌ເດັສທັອບ</translation>
+<translation id="1068672505746868501">ຢ່າແປໜ້າຕ່າງໆໃນ <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1070901266639972381">ກາງຄືນ</translation>
 <translation id="1074497978438210769">ບໍ່ປອດໄພ</translation>
 <translation id="1080116354587839789">ເຮັດ​ໃຫ້​ເຂົ້າ​ກັນ​ກັບ​ລວງ​ກ້​ວາງ</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">ບໍ່ມີຫົວຂໍ້</translation>
 <translation id="1236081509407217141">ອະນຸຍາດ VR ບໍ?</translation>
 <translation id="1240347957665416060">ຊື່ອຸປະກອນຂອງທ່ານ</translation>
+<translation id="124116460088058876">ພາສາເພີ່ມເຕີມ</translation>
 <translation id="1250759482327835220">ເພື່ອຈ່າຍໄດ້ໄວກວ່າໃນຄັ້ງຕໍ່ໄປ, ກະລຸນາບັນທຶກບັດ ແລະ ທີ່ຢູ່ຮຽກເກັບເງິນຂອງທ່ານໄວ້ໃນບັນຊີ Google ຂອງທ່ານ.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (ຊິ້ງຂໍ້ມູນແລ້ວ)</translation>
 <translation id="1256368399071562588">&lt;p&gt;ຖ້າທ່ານພະຍາຍາເຂົ້າເບິ່ງເວັບໄຊ ແລະ ມັນບໍ່ເປີດຂຶ້ນມາ, ກ່ອນອື່ນກະລຸນາລອງແກ້ໄຂຂໍ້ຜິດພາດດ້ວຍຂັ້ນຕອນແກ້ໄຂບັນຫາເຫຼົ່ານີ້:&lt;/p&gt;
@@ -840,6 +842,7 @@
 <translation id="4424024547088906515">ເຊີບເວີນີ້ບໍ່ສາມາດພິສູດໄດ້ວ່າ ມັນແມ່ນ <ph name="DOMAIN" />; ໃບຢັ້ງຢືນຄວາມປອດໄພຂອງມັນບໍ່ໄດ້ຮັບການເຊື່ອໝັ້ນຈາກ Chrome. ອັນນີ້ອາດຈະເຮັດໃຫ້ເກີດມີການປັບຕັ້ງຄ່າຜິດ ຫຼືຜູ້ໂຈມຕີອາດຈະດັກເອົາການເຊື່ອມຕໍ່ຂອງທ່ານ.</translation>
 <translation id="443121186588148776">ຜອດອະນຸກຳ</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> ບໍ່ຍອມຮັບໃບຮັບຮອງການເຂົ້າສູ່ລະບົບຂອງທ່ານ ຫຼື ຍັງບໍ່ມີການໃຫ້ໃບຮັບຮອງເທື່ອ.</translation>
+<translation id="4432792777822557199">ໜ້າຕ່າງໆຢູ່ໃນ <ph name="SOURCE_LANGUAGE" /> ຈະຖືກແປເປັນ <ph name="TARGET_LANGUAGE" /> ຈາກນີ້ເປັນຕົ້ນໄປ</translation>
 <translation id="4434045419905280838">ປັອບອັບ ແລະ ການປ່ຽນເສັ້ນທາງ</translation>
 <translation id="4435702339979719576">ໂພສກາດ)</translation>
 <translation id="443673843213245140">ການໃຊ້ພຣັອກຊີປິດໃຊ້ງານແລ້ວ ແຕ່ການປັບຕັ້ງພຣັອກຊີຈະແຈ້ງໄດ້ຮັບການລະບຸ.</translation>
@@ -1071,6 +1074,7 @@
 <translation id="5431657950005405462">ບໍ່ພົບໄຟລ໌ຂອງທ່ານ</translation>
 <translation id="5439770059721715174">ການຮັບຮອງຮູບແບບຜິດພາດຢູ່ທີ່ "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">ລຳດັບຍ້ອນກັບປີ້ນໜ້າຂຶ້ນ</translation>
+<translation id="5447765697759493033">ເວັບໄຊນີ້ຈະບໍ່ຖືກແປ</translation>
 <translation id="5452270690849572955">ບໍ່ສາມາດຊອກພົບໜ້າ <ph name="HOST_NAME" /> ນີ້ໄດ້</translation>
 <translation id="5455374756549232013">ສະແຕັມເວລານະ​ໂຍ​ບາຍ​ບໍ່​ດີ</translation>
 <translation id="5457113250005438886">ໃຊ້ບໍ່ໄດ້</translation>
@@ -1617,6 +1621,7 @@
 <translation id="7716375162095500223">ບໍ່ທັນອັບໂຫຼດເທື່ອ ຫຼື ລະເລີຍ</translation>
 <translation id="7716424297397655342">ບໍ່ສາມາດຊອກພົບເວັບໄຊນີ້ໄດ້ຈາກແຄສ</translation>
 <translation id="7723047071702270851">ແກ້ໄຂບັດ</translation>
+<translation id="773466115871691567">ແປໜ້າຕ່າງໆສະເໝີໃນ <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7740996059027112821">ມາດ​ຕະ​ຖານ</translation>
 <translation id="774634243536837715">ບລັອກເນື້ອຫາອັນຕະລາຍແລ້ວ.</translation>
 <translation id="7752995774971033316">ບໍ່ໄດ້ຈັດການ</translation>
@@ -1762,6 +1767,7 @@
 <translation id="831997045666694187">ຕອນແລງ</translation>
 <translation id="8332188693563227489">ການເຂົ້າເຖິງ <ph name="HOST_NAME" /> ຖືກປະຕິເສດແລ້ວ</translation>
 <translation id="833262891116910667">ໄຮໄລ</translation>
+<translation id="8339163506404995330">ໜ້າຕ່າງໆໃນ <ph name="LANGUAGE" /> ຈະບໍ່ຖືກແປ</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">ຖ້າທ່ານເຂົ້າໃຈຄວາມສ່ຽງຕໍ່ຄວາມປອດໄພຂອງທ່ານ, ທ່ານອາດຈະ <ph name="BEGIN_LINK" />ເຂົ້າເບິ່ງເວັບໄຊທ໌ນີ້<ph name="END_LINK" /> ກ່ອນໂປຣແກຣມອັນຕະລາຍຈະຖືກຍ້າຍອອກໄປ.</translation>
 <translation id="8349305172487531364">ແຖບບຸກມາກສ໌</translation>

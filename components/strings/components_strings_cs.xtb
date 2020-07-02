@@ -20,6 +20,7 @@
 <translation id="10614374240317010">Nikdy se neukládají</translation>
 <translation id="1062160989074299343">Prc10 (obálka)</translation>
 <translation id="106701514854093668">Záložky v PC</translation>
+<translation id="1068672505746868501">Stránky v jazyce <ph name="SOURCE_LANGUAGE" /> nikdy nepřekládat</translation>
 <translation id="1070901266639972381">Noc</translation>
 <translation id="1074497978438210769">Nezabezpečeno</translation>
 <translation id="1080116354587839789">Přizpůsobit na šířku</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">Bez názvu</translation>
 <translation id="1236081509407217141">Povolit virtuální realitu?</translation>
 <translation id="1240347957665416060">Název zařízení</translation>
+<translation id="124116460088058876">Další jazyky</translation>
 <translation id="1250759482327835220">Abyste příště mohli zaplatit rychleji, uložte si kartu, jméno a fakturační adresu do účtu Google.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (synchronizováno)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Pokud se pokoušíte navštívit konkrétní web, ale ten se neotevírá, nejdříve chybu zkuste opravit provedením těchto kroků:&lt;/p&gt;
@@ -825,6 +827,7 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="4424024547088906515">Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Chrome jeho bezpečnostnímu certifikátu nedůvěřuje. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník.</translation>
 <translation id="443121186588148776">Sériový port</translation>
 <translation id="4432688616882109544">Web <ph name="HOST_NAME" /> nepřijal přihlašovací certifikát, případně žádný certifikát nebyl poskytnut.</translation>
+<translation id="4432792777822557199">Stránky v jazyce <ph name="SOURCE_LANGUAGE" /> od teď budou překládány do jazyka <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">Vyskakovací okna a přesměrování</translation>
 <translation id="4435702339979719576">Postcard)</translation>
 <translation id="443673843213245140">Využití proxy serveru je zakázáno, je však určena explicitní konfigurace proxy serveru.</translation>
@@ -1056,6 +1059,7 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="5431657950005405462">Soubor nebyl nalezen</translation>
 <translation id="5439770059721715174">Chyba validace schématu v místě <ph name="ERROR_PATH" />: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Obrácené pořadí lícem nahoru</translation>
+<translation id="5447765697759493033">Tento web nebude přeložen</translation>
 <translation id="5452270690849572955">Tuto stránku na webu <ph name="HOST_NAME" /> nelze najít</translation>
 <translation id="5455374756549232013">Chybné časové razítko zásady</translation>
 <translation id="5457113250005438886">Neplatné</translation>
@@ -1600,6 +1604,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7716375162095500223">Zatím nenahráno ani neignorováno</translation>
 <translation id="7716424297397655342">Tento web nelze načíst z mezipaměti</translation>
 <translation id="7723047071702270851">Úprava karty</translation>
+<translation id="773466115871691567">Stránky v jazyce <ph name="SOURCE_LANGUAGE" /> vždy překládat</translation>
 <translation id="7740996059027112821">Standardně</translation>
 <translation id="774634243536837715">Byl zablokován nebezpečný obsah.</translation>
 <translation id="7752995774971033316">Nespravováno</translation>
@@ -1745,6 +1750,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="831997045666694187">Večer</translation>
 <translation id="8332188693563227489">Přístup k webu <ph name="HOST_NAME" /> byl odepřen</translation>
 <translation id="833262891116910667">Zvýraznit</translation>
+<translation id="8339163506404995330">Stránky v jazyce <ph name="LANGUAGE" /> nebudou překládány</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Pokud bezpečnostní rizika chápete, můžete <ph name="BEGIN_LINK" />tento web navštívit<ph name="END_LINK" /> před tím, než budou nebezpečné programy odstraněny.</translation>
 <translation id="8349305172487531364">Lišta záložek</translation>

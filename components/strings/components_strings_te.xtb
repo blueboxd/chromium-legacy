@@ -20,6 +20,7 @@
 <translation id="10614374240317010">ఎప్పటికి సేవ్ చెయ్యబడవు</translation>
 <translation id="1062160989074299343">Prc10 (ఎన్వలప్)</translation>
 <translation id="106701514854093668">డెస్క్‌టాప్‌ బుక్‌మార్క్‌లు</translation>
+<translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" />లో ఉన్న పేజీలను ఎప్పుడూ అనువదించవద్దు</translation>
 <translation id="1070901266639972381">రాత్రి</translation>
 <translation id="1074497978438210769">సురక్షితం కాదు</translation>
 <translation id="1080116354587839789">వెడల్పు సరిపోయేలా అమర్చు</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">శీర్షికలేనిది</translation>
 <translation id="1236081509407217141">VRను అనుమతించాలా?</translation>
 <translation id="1240347957665416060">మీ పరికరం పేరు</translation>
+<translation id="124116460088058876">మరిన్ని భాషలు</translation>
 <translation id="1250759482327835220">తర్వాతిసారి మరింత వేగంగా చెల్లించడానికి, మీ కార్డ్, పేరు మరియు బిల్లింగ్ చిరునామాను మీ Google ఖాతాకు సేవ్ చేయండి.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (సమకాలీకరించబడ్డాయి)</translation>
 <translation id="1256368399071562588">&lt;p&gt;మీరు ఏదైనా వెబ్‌సైట్‌ను తెరవడానికి ప్రయత్నించినప్పుడు, అది తెరవబడకుంటే, ముందుగా ఈ సమస్య నివారణ ప్రక్రియ దశలను ఉపయోగించి ఎర్రర్‌ను పరిష్కరించడానికి ప్రయత్నించండి:&lt;/p&gt;
@@ -840,6 +842,7 @@
 <translation id="4424024547088906515">ఈ సర్వర్ <ph name="DOMAIN" /> అని నిరూపించుకోలేకపోయింది; దీని భద్రతా ప్రమాణపత్రాన్ని Chrome విశ్వసించలేదు. ఇది తప్పుగా కాన్ఫిగర్ చేయడం వలన లేదా దాడిచేసే వ్యక్తి మీ కనెక్షన్‌కు అంతరాయం కలిగించడం వలన జరిగి ఉండవచ్చు.</translation>
 <translation id="443121186588148776">శ్రేణీకృత పోర్ట్</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> మీ లాగిన్ ప్రమాణపత్రాన్ని ఆమోదించలేదు లేదా ఏదీ అందించి ఉండకపోవచ్చు.</translation>
+<translation id="4432792777822557199">ఇప్పటి నుండి <ph name="SOURCE_LANGUAGE" />లో ఉన్న పేజీలు <ph name="TARGET_LANGUAGE" />కు అనువదించబడతాయి</translation>
 <translation id="4434045419905280838">పాప్-అప్‌లు మరియు మళ్లింపులు</translation>
 <translation id="4435702339979719576">పోస్ట్‌కార్డ్)</translation>
 <translation id="443673843213245140">ప్రాక్సీని ఉపయోగించడం ఆపివేయబడింది కానీ స్పష్టమైన ప్రాక్సీ కాన్ఫిగరేషన్ పేర్కొనబడింది.</translation>
@@ -1071,6 +1074,7 @@
 <translation id="5431657950005405462">మీ ఫైల్ కనుగొనబడలేదు</translation>
 <translation id="5439770059721715174">"<ph name="ERROR_PATH" />"లో స్కీమా ప్రామాణీకరణ ఎర్రర్: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">వ్యతిరేక క్రమంలో ఉన్న ఫేస్ అప్</translation>
+<translation id="5447765697759493033">ఈ సైట్ అనువదించబడదు</translation>
 <translation id="5452270690849572955">ఈ <ph name="HOST_NAME" /> పేజీ కనుగొనబడలేదు</translation>
 <translation id="5455374756549232013">చెల్లని విధాన సమయముద్ర</translation>
 <translation id="5457113250005438886">చెల్లదు</translation>
@@ -1617,6 +1621,7 @@
 <translation id="7716375162095500223">ఇంకా అప్‌లోడ్ చేయలేదు లేదా విస్మరించబడింది</translation>
 <translation id="7716424297397655342">కాష్ నుండి ఈ సైట్‌ను లోడ్ చేయలేకపోయాము</translation>
 <translation id="7723047071702270851">కార్డ్‌ను సవరించండి</translation>
+<translation id="773466115871691567"><ph name="SOURCE_LANGUAGE" />లో ఉన్న పేజీలను ఎల్లప్పుడూ అనువదించు</translation>
 <translation id="7740996059027112821">ప్రామాణికం</translation>
 <translation id="774634243536837715">హానికరమైన కంటెంట్ బ్లాక్ చేయబడింది.</translation>
 <translation id="7752995774971033316">నిర్వహించడం లేదు</translation>
@@ -1762,6 +1767,7 @@
 <translation id="831997045666694187">సాయంత్రం</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" />కి యాక్సెస్ నిరాకరించబడింది</translation>
 <translation id="833262891116910667">హైలైట్ చేస్తుంది</translation>
+<translation id="8339163506404995330"><ph name="LANGUAGE" />లో ఉన్న పేజీలు అనువదించబడవు</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">మీ భద్రతకు వాటిల్లే ఆపదల గురించి మీకు అర్థం అయ్యి ఉంటే, హానికర ప్రోగ్రామ్‌లు తీసివేయబడటానికి ముందే మీరు <ph name="BEGIN_LINK" />ఈ సైట్‌ను సందర్శించవచ్చు<ph name="END_LINK" />.</translation>
 <translation id="8349305172487531364">బుక్‌మార్క్‌ల పట్టీ</translation>

@@ -29,9 +29,9 @@ class UsageReportsBufferService;
 class DataObserver : public bookmarks::BookmarkModelObserver,
                      public history::HistoryServiceObserver {
  public:
-  DataObserver(base::Callback<void(void)> data_changed_callback,
-               base::Callback<void(void)> data_cleared_callback,
-               base::Callback<void(void)> stop_reporting_callback,
+  DataObserver(base::RepeatingCallback<void(void)> data_changed_callback,
+               base::RepeatingCallback<void(void)> data_cleared_callback,
+               base::RepeatingCallback<void(void)> stop_reporting_callback,
                DeltaFileService* delta_file_service,
                UsageReportsBufferService* usage_reports_buffer_service,
                bookmarks::BookmarkModel* bookmark_model,
@@ -81,9 +81,9 @@ class DataObserver : public bookmarks::BookmarkModelObserver,
   void DeleteBookmarks(const std::set<GURL>& removed_urls);
 
   bookmarks::BookmarkModel* bookmark_model_;
-  base::Callback<void(void)> data_changed_callback_;
-  base::Callback<void(void)> data_cleared_callback_;
-  base::Callback<void(void)> stop_reporting_callback_;
+  base::RepeatingCallback<void(void)> data_changed_callback_;
+  base::RepeatingCallback<void(void)> data_cleared_callback_;
+  base::RepeatingCallback<void(void)> stop_reporting_callback_;
   DeltaFileService* delta_file_service_;
   UsageReportsBufferService* usage_reports_buffer_service_;
 

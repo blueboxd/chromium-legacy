@@ -20,6 +20,7 @@
 <translation id="10614374240317010">Ayikaze yalondolozwa</translation>
 <translation id="1062160989074299343">Prc10 (Envelope)</translation>
 <translation id="106701514854093668">Amabhukhimakhi wedeskithophu</translation>
+<translation id="1068672505746868501">Ungahumushi amakhasi ngesi-<ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1070901266639972381">Ebusuku</translation>
 <translation id="1074497978438210769">Akuphephile</translation>
 <translation id="1080116354587839789">Lingana nobubanzi</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">Okungenasihloko</translation>
 <translation id="1236081509407217141">Vumela i-VR?</translation>
 <translation id="1240347957665416060">Igama ledivayisi yakho</translation>
+<translation id="124116460088058876">Izilimi eziningi</translation>
 <translation id="1250759482327835220">Ukuze ukhokhe ngokushesha ngokuzayo, londoloza ikhadi lakho, igama, nekheli lokukhokha ku-akhawunti yakho ye-Google.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (kuvumelanisiwe)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Uma uzama ukuvakashela iwebhusayithi futhi ingavuli, qala ngokuzama ukulungisa iphutha ngalezi zinyathelo zokuxazulula inkinga:&lt;/p&gt;
@@ -837,6 +839,7 @@ Lokhu uma kungenjalo kuzovinjelwa izilungiselelo zakho zobumfihlo. Lokhu kuzovum
 <translation id="4424024547088906515">Le seva ayikwazanga ukukhombisa ukuthi iyi-<ph name="DOMAIN" />; isitifiketi sayo sokuvikeleka asithenjiwe yi-Chrome. Lokhu kungenzeka kubangelwe ukulungisa okungalungile noma umhlaseli uzama ukufinyelela uxhumo lwakho.</translation>
 <translation id="443121186588148776">Imbobo ye-Serial</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> ayamukelanga isitifiketi sakho sokungena, noma singahle singanikeziwe.</translation>
+<translation id="4432792777822557199">Amakhasi ngesi-<ph name="SOURCE_LANGUAGE" /> azohumushelwa kusi-<ph name="TARGET_LANGUAGE" /> kusuka manje</translation>
 <translation id="4434045419905280838">Okwesikhashana nokuqondiswa kabusha</translation>
 <translation id="4435702339979719576">Ikhadi lokuposa)</translation>
 <translation id="443673843213245140">Ukusetshenziswa ummeleli kukhitshaziwe kodwa ukulungiselelwa okubekelwe obala kommeleli kucacisiwe.</translation>
@@ -1068,6 +1071,7 @@ Lokhu uma kungenjalo kuzovinjelwa izilungiselelo zakho zobumfihlo. Lokhu kuzovum
 <translation id="5431657950005405462">Ifayela lakho alizange litholwe</translation>
 <translation id="5439770059721715174">Iphutha lokuqinisekisa i-schema ku-"<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">I-oda elingemuva libheke phezulu</translation>
+<translation id="5447765697759493033">Leli sayithi ngeke lihumushwe</translation>
 <translation id="5452270690849572955">Leli khasi le-<ph name="HOST_NAME" /> alikwazi ukutholwa</translation>
 <translation id="5455374756549232013">Isitembu sesikhathi senqubomgomo embi</translation>
 <translation id="5457113250005438886">Ayivumelekile</translation>
@@ -1614,6 +1618,7 @@ Imininingwane engeziwe:
 <translation id="7716375162095500223">Kusengakalayisheki, noma akunakiwe</translation>
 <translation id="7716424297397655342">Leli sayithi alikwazi ukulayishwa kusukela kunqolobane</translation>
 <translation id="7723047071702270851">Hlela ikhadi</translation>
+<translation id="773466115871691567">Njalo humusha amakhasi ngesi-<ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7740996059027112821">Okujwayelekile</translation>
 <translation id="774634243536837715">Okuqukethwe okuyingozi kuvinjelwe.</translation>
 <translation id="7752995774971033316">Akuphethwe</translation>
@@ -1759,6 +1764,7 @@ Imininingwane engeziwe:
 <translation id="831997045666694187">Kusihlwa</translation>
 <translation id="8332188693563227489">Ukufinyelela ku-<ph name="HOST_NAME" /> kunqatshelwe</translation>
 <translation id="833262891116910667">Gqamisa</translation>
+<translation id="8339163506404995330">Amakhasi ngesi-<ph name="LANGUAGE" /> ngeke ahumushwe</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Uma uqonda ubungozi ekuphepheni kwakho, unghle <ph name="BEGIN_LINK" />uvakashele leli sayithi<ph name="END_LINK" /> ngaphambi kokuthi izinhlelo eziyingozi zisuswe.</translation>
 <translation id="8349305172487531364">Ibha yamabhukhimakhi</translation>

@@ -132,6 +132,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
       const OverlayProcessorInterface::OutputSurfaceOverlayPlane&
           output_surface_plane);
   void SwapBuffers(
+      base::TimeTicks post_task_timestamp,
       OutputSurfaceFrame frame,
       base::OnceCallback<bool()> deferred_framebuffer_draw_closure);
   // Runs |deferred_framebuffer_draw_closure| when SwapBuffers() or CopyOutput()
@@ -140,7 +141,8 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
       base::OnceCallback<bool()> deferred_framebuffer_draw_closure);
   void EnsureBackbuffer() { output_device_->EnsureBackbuffer(); }
   void DiscardBackbuffer() { output_device_->DiscardBackbuffer(); }
-  void FinishPaintRenderPass(RenderPassId id,
+  void FinishPaintRenderPass(base::TimeTicks post_task_timestamp,
+                             RenderPassId id,
                              sk_sp<SkDeferredDisplayList> ddl,
                              std::vector<ImageContextImpl*> image_contexts,
                              std::vector<gpu::SyncToken> sync_tokens,

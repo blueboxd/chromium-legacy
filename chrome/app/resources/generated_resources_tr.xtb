@@ -77,7 +77,7 @@
 <translation id="1091767800771861448">Atlamak için ESCAPE tuşuna basın (Yalnızca resmi olmayan sürümler).</translation>
 <translation id="1093457606523402488">Görünür Ağlar:</translation>
 <translation id="1094607894174825014">Şu cihazda geçersiz bir ofset değeriyle okuma veya yazma işlemi istendi: "<ph name="DEVICE_NAME" />".</translation>
-<translation id="109647177154844434">Parallels Desktop'ı kaldırmak Windows görüntünüzü silecek. Bu işlem, Plugin VM'nin uygulamalarını, ayarlarını ve verilerini içerir. Devam etmek istediğinizden emin misiniz?</translation>
+<translation id="109647177154844434">Parallels Desktop'ı kaldırmak Windows görüntünüzü silecek. Bu işlem, Parallels Desktop'ın uygulamalarını, ayarlarını ve verilerini içerir. Devam etmek istediğinizden emin misiniz?</translation>
 <translation id="1097658378307015415">Oturum açmadan önce <ph name="NETWORK_ID" /> ağını etkinleştirmek için lütfen Misafir olarak giriş yapın</translation>
 <translation id="1099962274138857708">Resim, <ph name="DEVICE_NAME" /> cihazından kopyalandı</translation>
 <translation id="1102187190604780492">Asistanınızın, ekranınızda bulunan içerikle ilgili bilgileri proaktif olarak göstermesine izin verin</translation>
@@ -529,7 +529,6 @@
 <translation id="1645516838734033527">Smart Lock, <ph name="DEVICE_TYPE" /> cihazınızın güvenliğini sağlamak için telefonunuzda bir ekran kilidinin bulunmasını gerektirir.</translation>
 <translation id="1646982517418478057">Lütfen bu sertifika dosyasını şifrelemek için bir şifre girin</translation>
 <translation id="1648528859488547844">Konum için kablosuz veya mobil ağlar kullanılır</translation>
-<translation id="1648943974594387137">Oturum açma ayrıntıları güncel değil</translation>
 <translation id="164936512206786300">Bluetooth cihazı ile eşlemeyi kaldır</translation>
 <translation id="1650371550981945235">Giriş seçeneklerini göster</translation>
 <translation id="1651008383952180276">Aynı parolayı iki kez girmelisiniz</translation>
@@ -1333,7 +1332,6 @@ Cihazınızda Family Link uygulamasını yükleyerek bu hesabın ayarlarını y�
 <translation id="2635276683026132559">İmzalama</translation>
 <translation id="2636625531157955190">Chrome resme erişemiyor.</translation>
 <translation id="2637400434494156704">Yanlış PIN. Tek bir deneme hakkınız kaldı.</translation>
-<translation id="2638087589890736295">Senkronizasyonu başlatmak için parola gerekiyor</translation>
 <translation id="2638662041295312666">Oturum açma resmi</translation>
 <translation id="264083724974021997">Telefonunuza bağlama - İletişim kutusu</translation>
 <translation id="2641065435954454414">İndirme işlemi hazırlanıyor</translation>
@@ -1487,7 +1485,6 @@ Cihazınızda Family Link uygulamasını yükleyerek bu hesabın ayarlarını y�
 <translation id="2809586584051668049">ve diğer <ph name="NUMBER_ADDITIONAL_DISABLED" /> öğe</translation>
 <translation id="2810390687497823527">Bir uzantıyı tanımıyorsanız ya da tarayıcınız beklendiği gibi çalışmıyorsa uzantıları burada kapatabilir veya özelleştirebilirsiniz.</translation>
 <translation id="2812049959647166806">Thunderbolt desteklenmiyor</translation>
-<translation id="2812944337881233323">Oturumu kapatıp tekrar açmayı deneyin</translation>
 <translation id="2812989263793994277">Hiçbir resmi gösterme</translation>
 <translation id="2813094189969465044">Ebeveyn denetimleri</translation>
 <translation id="281390819046738856">İstek imzalanamadı.</translation>
@@ -3408,7 +3405,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="529175790091471945">Bu cihazı biçimlendir</translation>
 <translation id="5293170712604732402">Ayarları orijinal varsayılan değerlerine geri yükleyin</translation>
 <translation id="5294097441441645251">Küçük harf veya alt çizgi ile başlamalıdır</translation>
-<translation id="5296471962619441686">Senkronizasyonun devam etmesi için hatayı giderin.</translation>
 <translation id="5297082477358294722">Şifre kaydedildi. Kayıtlı şifrelerinizi <ph name="SAVED_PASSWORDS_STORE" /> üzerinde görüntüleyebilir ve yönetebilirsiniz.</translation>
 <translation id="5298219193514155779">Temayı oluşturan:</translation>
 <translation id="5299109548848736476">Do Not Track</translation>
@@ -5772,7 +5768,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8256417822772703842"><ph name="PRINTER_NAME" /> adlı yazıcının mürekkebi azaldı</translation>
 <translation id="8257950718085972371">Kamera erişimini engellemeye devam et</translation>
 <translation id="8259239505248583312">Başlayalım</translation>
-<translation id="8260126382462817229">Tekrar oturum açmayı deneyin</translation>
 <translation id="8260864402787962391">Fare</translation>
 <translation id="8261378640211443080">Bu uzantı <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> altında listelenmiyor ve bilginiz dışında eklenmiş olabilir.</translation>
 <translation id="8261506727792406068">Sil</translation>

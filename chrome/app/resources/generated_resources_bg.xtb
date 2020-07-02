@@ -526,7 +526,6 @@
 <translation id="1645516838734033527">За да бъде защитен вашият <ph name="DEVICE_TYPE" />, Smart Lock изисква опция за заключване на екрана на телефона ви.</translation>
 <translation id="1646982517418478057">Моля, въведете парола за шифроване на този сертификат</translation>
 <translation id="1648528859488547844">Определяне на местоположението посредством Wi‑Fi или мобилни мрежи</translation>
-<translation id="1648943974594387137">Данните за вход не са актуални</translation>
 <translation id="164936512206786300">Прекратяване на сдвояването на устройство с Bluetooth</translation>
 <translation id="1650371550981945235">Показване на опциите за въвеждане</translation>
 <translation id="1651008383952180276">Трябва да въведете един и същ пропуск два пъти</translation>
@@ -1330,7 +1329,6 @@
 <translation id="2635276683026132559">Подписване</translation>
 <translation id="2636625531157955190">Chrome няма достъп до изображението.</translation>
 <translation id="2637400434494156704">Неправилен ПИН код. Остава ви един опит.</translation>
-<translation id="2638087589890736295">За стартиране на синхронизирането е необходим пропуск</translation>
 <translation id="2638662041295312666">Изображение при вход</translation>
 <translation id="264083724974021997">Свързване с телефона ви – Диалогов прозорец</translation>
 <translation id="2641065435954454414">Изтеглянето се подготвя</translation>
@@ -1484,7 +1482,6 @@
 <translation id="2809586584051668049">и още <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
 <translation id="2810390687497823527">Ако не разпознавате дадено разширение или браузърът ви не работи правилно, оттук можете да изключите или да персонализирате разширенията.</translation>
 <translation id="2812049959647166806">Thunderbolt не се поддържа</translation>
-<translation id="2812944337881233323">Опитайте да излезете от профила си и отново да влезете в него</translation>
 <translation id="2812989263793994277">Без показване на изображения</translation>
 <translation id="2813094189969465044">Родителски контроли</translation>
 <translation id="281390819046738856">Заявката не можа да бъде подписана.</translation>
@@ -3407,7 +3404,6 @@
 <translation id="529175790091471945">Форматиране на това устройство</translation>
 <translation id="5293170712604732402">Възстановяване на настройките към първоначалните им стандартни стойности</translation>
 <translation id="5294097441441645251">Трябва да започва с малка буква или долна черта</translation>
-<translation id="5296471962619441686">Отстранете грешката, за да възобновите синхронизирането</translation>
 <translation id="5297082477358294722">Паролата е запазена. Преглеждайте и управлявайте запазените пароли в <ph name="SAVED_PASSWORDS_STORE" />.</translation>
 <translation id="5298219193514155779">Темата е създадена от</translation>
 <translation id="5299109548848736476">Заявка „Do Not Track“</translation>
@@ -5772,7 +5768,6 @@
 <translation id="8256417822772703842">Мастилото в(ъв) <ph name="PRINTER_NAME" /> привършва</translation>
 <translation id="8257950718085972371">Достъпът до камерата да продължи да се блокира</translation>
 <translation id="8259239505248583312">Начало</translation>
-<translation id="8260126382462817229">Опитайте да влезете отново</translation>
 <translation id="8260864402787962391">Мишка</translation>
 <translation id="8261378640211443080">Това разширение не е посочено в <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> и може да е било добавено без ваше знание.</translation>
 <translation id="8261506727792406068">Изтриване</translation>

@@ -528,7 +528,6 @@
 <translation id="1645516838734033527">Para manter o <ph name="DEVICE_TYPE" /> seguro, Smart Lock require que o teléfono teña activado un bloqueo de pantalla.</translation>
 <translation id="1646982517418478057">Introduce un contrasinal para encriptar este certificado</translation>
 <translation id="1648528859488547844">Utilizar a wifi ou as redes de telefonía móbil para determinar a localización</translation>
-<translation id="1648943974594387137">Os detalles de inicio de sesión están caducados</translation>
 <translation id="164936512206786300">Desvincular dispositivo Bluetooth</translation>
 <translation id="1650371550981945235">Mostrar opcións de entrada</translation>
 <translation id="1651008383952180276">Debes introducir a mesma frase de acceso dúas veces</translation>
@@ -1332,7 +1331,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="2635276683026132559">Sinatura</translation>
 <translation id="2636625531157955190">Chrome non pode acceder á imaxe.</translation>
 <translation id="2637400434494156704">O PIN é incorrecto. Quédache un intento.</translation>
-<translation id="2638087589890736295">Introduce a frase de acceso para iniciar a sincronización</translation>
 <translation id="2638662041295312666">Imaxe de inicio de sesión</translation>
 <translation id="264083724974021997">Conectarse ao teléfono: cadro de diálogo</translation>
 <translation id="2641065435954454414">Preparando descarga</translation>
@@ -1486,7 +1484,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="2809586584051668049">e <ph name="NUMBER_ADDITIONAL_DISABLED" /> máis</translation>
 <translation id="2810390687497823527">Se non recoñeces unha extensión ou se o navegador non funciona como debería, podes desactivar ou personalizar as extensións aquí.</translation>
 <translation id="2812049959647166806">A tecnoloxía Thunderbolt non é compatible</translation>
-<translation id="2812944337881233323">Tenta pechar sesión e volver iniciala</translation>
 <translation id="2812989263793994277">Non mostrar ningunha imaxe</translation>
 <translation id="2813094189969465044">Controis parentais</translation>
 <translation id="281390819046738856">Non se puido asinar a solicitude.</translation>
@@ -3407,7 +3404,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="529175790091471945">Formatar este dispositivo</translation>
 <translation id="5293170712604732402">Restaura a configuración cos valores predeterminados orixinais</translation>
 <translation id="5294097441441645251">Debe comezar cun carácter en minúscula ou guión baixo</translation>
-<translation id="5296471962619441686">Corrixe o erro para retomar a sincronización</translation>
 <translation id="5297082477358294722">Gardouse o contrasinal. Para consultar e xestionar os contrasinais gardados, accede á túa <ph name="SAVED_PASSWORDS_STORE" />.</translation>
 <translation id="5298219193514155779">Tema creado por</translation>
 <translation id="5299109548848736476">Non realizar seguimento</translation>
@@ -5770,7 +5766,6 @@ Mantén o ficheiro de clave nun lugar seguro, xa que o precisarás para crear no
 <translation id="8256417822772703842">A impresora (<ph name="PRINTER_NAME" />) ten pouca tinta</translation>
 <translation id="8257950718085972371">Continuar bloqueando o acceso á cámara</translation>
 <translation id="8259239505248583312">Vamos aló</translation>
-<translation id="8260126382462817229">Proba a volver iniciar sesión</translation>
 <translation id="8260864402787962391">Rato</translation>
 <translation id="8261378640211443080">Esta extensión non figura en <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> e é posible que se engadise sen o teu coñecemento.</translation>
 <translation id="8261506727792406068">Eliminar</translation>

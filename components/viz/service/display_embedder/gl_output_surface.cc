@@ -259,4 +259,8 @@ void GLOutputSurface::SetFrameRate(float frame_rate) {
   viz_context_provider_->ContextSupport()->SetFrameRate(frame_rate);
 }
 
+void GLOutputSurface::SetNeedsMeasureNextDrawLatency() {
+  viz_context_provider_->SetNeedsMeasureNextDrawLatency();
+}
+
 }  // namespace viz

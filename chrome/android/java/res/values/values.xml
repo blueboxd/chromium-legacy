@@ -54,6 +54,7 @@
     <string name="help_context_sync_and_services">syncgoogleservices</string>
     <string name="help_context_passwords">passwords</string>
     <string name="help_context_password_leak_detection">leak_detection_android</string>
+    <string name="help_context_check_passwords">check_passwords</string>
     <!-- TODO(peconn): Add help section. -->
     <!-- <string name="help_context_suggestions">mobile_content_suggestions</string> -->
 

@@ -13,6 +13,7 @@
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/numerics/ranges.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
@@ -29,7 +30,6 @@
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/icc_profile.h"
@@ -928,8 +928,8 @@ int ScreenWin::GetSystemMetricsForScaleFactor(float scale_factor,
 
   // Windows 8.1 doesn't support GetSystemMetricsForDpi(), yet does support
   // per-process dpi awareness.
-  return gfx::ToRoundedInt(GetSystemMetrics(metric) * scale_factor /
-                           GetPrimaryDisplay().device_scale_factor());
+  return base::Round(GetSystemMetrics(metric) * scale_factor /
+                     GetPrimaryDisplay().device_scale_factor());
 }
 
 void ScreenWin::RecordDisplayScaleFactors() const {

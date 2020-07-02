@@ -104,9 +104,10 @@ base::Value ProcessNodeImplDescriber::DescribeProcessNodeData(
                   base::saturated_cast<int>(impl->resident_set_kb()));
   }
 
-  if (impl->GetRenderProcessId() !=
-      content::ChildProcessHost::kInvalidUniqueID) {
-    ret.SetIntKey("render_process_id", impl->GetRenderProcessId());
+  constexpr RenderProcessHostId kInvalidRenderProcessHostId =
+      RenderProcessHostId(content::ChildProcessHost::kInvalidUniqueID);
+  if (impl->GetRenderProcessId() != kInvalidRenderProcessHostId) {
+    ret.SetIntKey("render_process_id", impl->GetRenderProcessId().value());
   }
 
   // The content function returns "Tab" for renderers - whereas "Renderer" is
@@ -126,11 +127,6 @@ base::Value ProcessNodeImplDescriber::DescribeProcessNodeData(
 
   if (impl->exit_status()) {
     ret.SetIntKey("exit_status", impl->exit_status().value());
-  }
-
-  if (!impl->expected_task_queueing_duration().is_zero()) {
-    ret.SetDoubleKey("expected_task_queueing_duration_msec",
-                     impl->expected_task_queueing_duration().InMillisecondsF());
   }
 
   ret.SetBoolKey("main_thread_task_load_is_low",

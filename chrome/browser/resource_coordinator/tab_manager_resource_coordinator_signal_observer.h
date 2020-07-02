@@ -32,11 +32,6 @@ class TabManager::ResourceCoordinatorSignalObserver
       const base::WeakPtr<TabManager>& tab_manager);
   ~ResourceCoordinatorSignalObserver() override;
 
-  // ProcessNode::ObserverDefaultImpl:
-  // This function run on the performance manager sequence.
-  void OnExpectedTaskQueueingDurationSample(
-      const ProcessNode* process_node) override;
-
   // PageNode::ObserverDefaultImpl:
   // This function run on the performance manager sequence.
   void OnIsLoadingChanged(const PageNode* page_node) override;
@@ -57,11 +52,6 @@ class TabManager::ResourceCoordinatorSignalObserver
 
   // Posted to the UI thread from the GraphObserver functions above.
   static void OnPageStoppedLoadingOnUi(const WebContentsProxy& contents_proxy);
-  static void OnExpectedTaskQueueingDurationSampleOnUi(
-      const base::WeakPtr<TabManager>& tab_manager,
-      const WebContentsProxy& contents_proxy,
-      int64_t navigation_id,
-      base::TimeDelta duration);
 
   // Can only be dereferenced on the UI thread. When the tab manager dies this
   // is used to drop messages received from the performance manager. Ideally

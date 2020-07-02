@@ -273,7 +273,11 @@ class FormStructure {
 
   bool all_fields_are_passwords() const { return all_fields_are_passwords_; }
 
-  FormSignature form_signature() const { return form_signature_; }
+  const FormSignature form_signature() const { return form_signature_; }
+
+  void set_form_signature(FormSignature signature) {
+    form_signature_ = signature;
+  }
 
   // Returns a FormData containing the data this form structure knows about.
   FormData ToFormData() const;

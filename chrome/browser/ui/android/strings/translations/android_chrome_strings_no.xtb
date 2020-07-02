@@ -10,7 +10,6 @@
 <translation id="1049743911850919806">Inkognito</translation>
 <translation id="10614374240317010">Aldri lagret</translation>
 <translation id="1067922213147265141">Andre Google-tjenester</translation>
-<translation id="1068672505746868501">Oversett aldri sider på <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="107147699690128016">Hvis du endrer filetternavnet, kan filen bli åpnet i et annet program og muligens utgjøre en fare for enheten.</translation>
 <translation id="1100066534610197918">Åpne i en ny fane i en gruppe</translation>
 <translation id="1105960400813249514">Skjermdump</translation>
@@ -35,13 +34,11 @@
 <translation id="1229399675748764149">Angi denne siden som startside</translation>
 <translation id="1231733316453485619">Vil du slå på synkronisering?</translation>
 <translation id="123724288017357924">Last inn siden på nytt, men ignorer bufret innhold</translation>
-<translation id="124116460088058876">Flere språk</translation>
 <translation id="124678866338384709">Lukk den aktive fanen</translation>
 <translation id="1258753120186372309">Google-doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Søk og utforsk</translation>
 <translation id="1266864766717917324">Kunne ikke dele <ph name="CONTENT_TYPE" /></translation>
 <translation id="1283039547216852943">Trykk for å vise</translation>
-<translation id="1285320974508926690">Oversett aldri dette nettstedet</translation>
 <translation id="1291207594882862231">Slett loggoppføringer, informasjonskapsler, nettstedsdata, bufferen …</translation>
 <translation id="129553762522093515">Nylig lukket</translation>
 <translation id="1303339473099049190">Finner ikke det passordet. Kontrollér stavemåten, og prøv på nytt.</translation>
@@ -239,7 +236,6 @@ Trykk og hold inne på et ord for å søke. For å finstemme søket, merk flere 
 <translation id="2898264748040935573">Endre det lagrede passordet</translation>
 <translation id="2900528713135656174">Opprett hendelse</translation>
 <translation id="2903493209154104877">Adresser</translation>
-<translation id="290376772003165898">Er ikke siden på <ph name="LANGUAGE" />?</translation>
 <translation id="2904414404539560095">Listen over enheter du kan dele faner med, er åpnet i full høyde.</translation>
 <translation id="2905036901251765993">For å dele med personer i nærheten, la dem skanne denne QR-koden</translation>
 <translation id="2909615210195135082">Google Notifications Platform</translation>
@@ -415,7 +411,6 @@ Trykk og hold inne på et ord for å søke. For å finstemme søket, merk flere 
 <translation id="4405224443901389797">Flytt til …</translation>
 <translation id="4411535500181276704">Forenklet modus</translation>
 <translation id="4415276339145661267">Administrer Google-kontoen din</translation>
-<translation id="4432792777822557199">Fra nå av oversettes sider på <ph name="SOURCE_LANGUAGE" /> til <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4440958355523780886">Forenklet versjon av siden levert av Google. Trykk for å laste inn den opprinnelige siden.</translation>
 <translation id="4452411734226507615">Lukk <ph name="TAB_TITLE" />-fanen</translation>
 <translation id="4452548195519783679">Satt som bokmerke i <ph name="FOLDER_NAME" /></translation>
@@ -550,7 +545,6 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="543509235395288790">Laster ned <ph name="COUNT" /> filer (<ph name="MEGABYTES" />).</translation>
 <translation id="5441522332038954058">Gå til adressefeltet</translation>
 <translation id="5447201525962359567">All nettstedslagring, inkludert informasjonskapsler og andre lokalt lagrede data</translation>
-<translation id="5447765697759493033">Dette nettstedet oversettes ikke</translation>
 <translation id="545042621069398927">Øker hastigheten på nedlastingen.</translation>
 <translation id="5456381639095306749">Last ned siden</translation>
 <translation id="548278423535722844">Åpne i en kartapp</translation>
@@ -580,7 +574,6 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5659593005791499971">E-post</translation>
 <translation id="5665379678064389456">Opprett en aktivitet i <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Overstyr nettstedets forespørsel om å forhindre zooming</translation>
-<translation id="5684874026226664614">Beklager. Denne siden kunne ikke oversettes.</translation>
 <translation id="5686790454216892815">Filnavnet er for langt</translation>
 <translation id="5694049548840660018">Kom enkelt tilbake til start</translation>
 <translation id="569536719314091526">Oversett denne siden til hvilket som helst språk via Flere alternativer-knappen</translation>
@@ -734,7 +727,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6767294960381293877">Listen over enheter du kan dele faner med, er åpnet i halv høyde.</translation>
 <translation id="6811034713472274749">Siden er klar til å vises</translation>
 <translation id="6820686453637990663">CVC</translation>
-<translation id="6831043979455480757">Oversett</translation>
 <translation id="6845325883481699275">Bidra til å gjøre Chrome sikrere</translation>
 <translation id="6846298663435243399">Laster inn …</translation>
 <translation id="6850409657436465440">Nedlastingen din pågår fremdeles</translation>
@@ -842,7 +834,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7698359219371678927">Opprett en e-post i <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Autofullfør søk og nettadresser</translation>
 <translation id="7725024127233776428">Sider du setter som bokmerker, vises her</translation>
-<translation id="773466115871691567">Oversett alltid sider på <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7746457520633464754">For å oppdage farlige apper og nettsteder sender Chrome nettadressene til noen av sidene du besøker, begrenset systeminformasjon og noe sideinnhold til Google.</translation>
 <translation id="7757787379047923882">Tekst delt fra <ph name="DEVICE_NAME" /></translation>
 <translation id="7761849928583394409">Velg dato og klokkeslett</translation>
@@ -922,7 +913,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="8310344678080805313">Standardfaner</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> og flere nettsteder</translation>
 <translation id="8327155640814342956">For å få den beste surfeopplevelsen, åpne for å oppdatere Chrome</translation>
-<translation id="8339163506404995330">Sider på <ph name="LANGUAGE" /> oversettes ikke</translation>
 <translation id="8349013245300336738">Sortér etter mengden data som er brukt</translation>
 <translation id="8364299278605033898">Se populære nettsteder</translation>
 <translation id="8368027906805972958">Ukjent eller ikke-støttet enhet (<ph name="DEVICE_ID" />)</translation>

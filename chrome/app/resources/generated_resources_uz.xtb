@@ -527,7 +527,6 @@ xizmatlarini sizga moslashtirish maqsadlarida foydalanishi mumkin. Bu ruxsatni m
 <translation id="1645516838734033527"><ph name="DEVICE_TYPE" /> xavfsizligi uchun Smart Lock telefoningiz ekranini qulflashni talab qilyapti.</translation>
 <translation id="1646982517418478057">Bu sertifikat faylini shifrlash uchun parol kiriting</translation>
 <translation id="1648528859488547844">Joylashuvni aniqlash uchun Wi-Fi, Bluetooth yoki mobil tarmoqlardan foydalanish</translation>
-<translation id="1648943974594387137">Hisob ma’lumotlari eskirgan</translation>
 <translation id="164936512206786300">Bluetooth qurilmani uzish</translation>
 <translation id="1650371550981945235">Matn kiritish parametrlarini ko‘rsatish</translation>
 <translation id="1651008383952180276">Siz kodli iborani ikki marta bir xil kiritishingiz kerak.</translation>
@@ -1331,7 +1330,6 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="2635276683026132559">Imzo</translation>
 <translation id="2636625531157955190">Chrome rasmni ko‘ra olmadi.</translation>
 <translation id="2637400434494156704">PIN kod xato. Yana bir marta urinishingiz mumkin.</translation>
-<translation id="2638087589890736295">Sinxronizatsiyani boshlash uchun kodli iborani kiriting</translation>
 <translation id="2638662041295312666">Kirish sahifasidagi rasm</translation>
 <translation id="264083724974021997">Telefonga ulanish – muloqot oynasi</translation>
 <translation id="2641065435954454414">Yuklab olishga tayyorlanmoqda</translation>
@@ -1485,7 +1483,6 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="2809586584051668049">shuningdek, <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
 <translation id="2810390687497823527">Kengaytmani tanimasangiz yoki brauzer kutganingizdek ishlamasa, kengaytmalarni bu yerdan faolsizlantirishingiz yoki boshqarishingiz mumkin.</translation>
 <translation id="2812049959647166806">Thunderbolt qoʻllab-quvvatlanmaydi</translation>
-<translation id="2812944337881233323">Hisobingizdan chiqing va yana kiring</translation>
 <translation id="2812989263793994277">Ko‘rsatilmasin</translation>
 <translation id="2813094189969465044">Ota-ona nazorati</translation>
 <translation id="281390819046738856">Soʻrov imzolanmadi.</translation>
@@ -3406,7 +3403,6 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="529175790091471945">Bu qurilmani formatlash</translation>
 <translation id="5293170712604732402">Sozlamalarni asliga qaytarish</translation>
 <translation id="5294097441441645251">Faqat kichik harf yoki ostki chiziq bilan boshlansin</translation>
-<translation id="5296471962619441686">Sinxronizatsiyani qaytarish uchun xatoni tuzating</translation>
 <translation id="5297082477358294722">Parol saqlandi. <ph name="SAVED_PASSWORDS_STORE" /> omboridagi saqlangan parollarni ko‘rish va boshqarish.</translation>
 <translation id="5298219193514155779">Mavzu muallifi:</translation>
 <translation id="5299109548848736476">Kuzatilmasin</translation>
@@ -5768,7 +5764,6 @@ Kalit faylini ishonchli joyda saqlang. U kengaytmaning yangi versiyalarini yarat
 <translation id="8256417822772703842"><ph name="PRINTER_NAME" /> siyohi kam qolgan</translation>
 <translation id="8257950718085972371">Kamera doim bloklansin</translation>
 <translation id="8259239505248583312">Qani, ketdik</translation>
-<translation id="8260126382462817229">Qaytadan kirib ko‘ring</translation>
 <translation id="8260864402787962391">Sichqoncha</translation>
 <translation id="8261378640211443080"><ph name="IDS_EXTENSION_WEB_STORE_TITLE" />‘da bu kengaytma haqida ma’lumotlar yo‘q, kengaytma ruxsatingizsiz o‘rnatilgan bo‘lishi mumkin.</translation>
 <translation id="8261506727792406068">O‘chirish</translation>

@@ -20,6 +20,7 @@
 <translation id="10614374240317010">Không bao giờ lưu</translation>
 <translation id="1062160989074299343">Prc10 (Phong bì)</translation>
 <translation id="106701514854093668">Dấu trang máy tính</translation>
+<translation id="1068672505746868501">Không bao giờ dịch các trang viết bằng <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1070901266639972381">Đêm</translation>
 <translation id="1074497978438210769">Không bảo mật</translation>
 <translation id="1080116354587839789">Vừa với chiều rộng</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">Không tên</translation>
 <translation id="1236081509407217141">Cho phép môi trường Thực tế ảo?</translation>
 <translation id="1240347957665416060">Tên thiết bị của bạn</translation>
+<translation id="124116460088058876">Ngôn ngữ khác</translation>
 <translation id="1250759482327835220">Để thanh toán nhanh hơn vào lần tới, hãy lưu địa chỉ thanh toán, tên và thẻ vào Tài khoản Google của bạn.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (được đồng bộ hóa)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Nếu bạn cố truy cập vào một trang web nhưng vẫn không mở được, trước tiên, hãy tìm cách khắc phục lỗi này bằng các bước khắc phục sự cố dưới đây:&lt;/p&gt;
@@ -840,6 +842,7 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="4424024547088906515">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này không được Chrome tin cậy. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
 <translation id="443121186588148776">Cổng nối tiếp</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> không chấp nhận chứng chỉ đăng nhập của bạn hoặc có thể bạn chưa cung cấp chứng chỉ đăng nhập.</translation>
+<translation id="4432792777822557199">Kể từ bây giờ trở đi, các trang viết bằng <ph name="SOURCE_LANGUAGE" /> sẽ được dịch sang <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">Cửa sổ bật lên và liên kết chuyển hướng</translation>
 <translation id="4435702339979719576">Bưu thiếp)</translation>
 <translation id="443673843213245140">Đã tắt sử dụng proxy nhưng cấu hình proxy rõ ràng được chỉ định.</translation>
@@ -1071,6 +1074,7 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="5431657950005405462">Không tìm thấy tệp của bạn</translation>
 <translation id="5439770059721715174">Lỗi xác thực lược đồ tại "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Thứ tự đảo ngược hướng lên</translation>
+<translation id="5447765697759493033">Trang web này sẽ không được dịch</translation>
 <translation id="5452270690849572955">Không thể tìm thấy trang <ph name="HOST_NAME" /> này</translation>
 <translation id="5455374756549232013">Dấu thời gian chính sách không hợp lệ</translation>
 <translation id="5457113250005438886">Không hợp lệ</translation>
@@ -1617,6 +1621,7 @@ Thông tin chi tiết bổ sung:
 <translation id="7716375162095500223">Chưa tải lên hoặc đã bỏ qua</translation>
 <translation id="7716424297397655342">Không thể tải trang web này từ bộ nhớ đệm</translation>
 <translation id="7723047071702270851">Chỉnh sửa thẻ</translation>
+<translation id="773466115871691567">Luôn dịch các trang viết bằng <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7740996059027112821">Chuẩn</translation>
 <translation id="774634243536837715">Đã chặn nội dung nguy hiểm.</translation>
 <translation id="7752995774971033316">Không được quản lý</translation>
@@ -1762,6 +1767,7 @@ Thông tin chi tiết bổ sung:
 <translation id="831997045666694187">Buổi tối</translation>
 <translation id="8332188693563227489">Quyền truy cập <ph name="HOST_NAME" /> bị từ chối</translation>
 <translation id="833262891116910667">Đánh dấu</translation>
+<translation id="8339163506404995330">Các trang viết bằng <ph name="LANGUAGE" /> sẽ không được dịch</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Nếu bạn hiểu các rủi ro về bảo mật, bạn có thể <ph name="BEGIN_LINK" />truy cập trang này<ph name="END_LINK" /> trước khi các chương trình độc hại bị xóa.</translation>
 <translation id="8349305172487531364">Thanh dấu trang</translation>

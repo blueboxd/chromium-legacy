@@ -20,6 +20,7 @@
 <translation id="10614374240317010">Незапазвани никога</translation>
 <translation id="1062160989074299343">Prc10 (плик)</translation>
 <translation id="106701514854093668">Настолни отметки</translation>
+<translation id="1068672505746868501">Страниците на <ph name="SOURCE_LANGUAGE" /> да не се превеждат</translation>
 <translation id="1070901266639972381">През нощта</translation>
 <translation id="1074497978438210769">Няма защита</translation>
 <translation id="1080116354587839789">Побиране на ширина</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">Неозаглавен</translation>
 <translation id="1236081509407217141">Да се разреши ли VR?</translation>
 <translation id="1240347957665416060">Името на устройството ви</translation>
+<translation id="124116460088058876">Още езици</translation>
 <translation id="1250759482327835220">За да платите по-бързо следващия път, запазете картата, името и адреса си за фактуриране в профила си в Google.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (синхронизирани)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Ако опитате да посетите уебсайт и той не се отваря, първо, пробвайте да изпълните следните стъпки за отстраняване на неизправности:&lt;/p&gt;
@@ -836,6 +838,7 @@
 <translation id="4424024547088906515">Сървърът не можа да докаже, че е <ph name="DOMAIN" />; Chrome няма доверие на сертификата му за сигурност. Това може да се дължи на неправилно конфигуриране или на прихващане на връзката ви от атакуващ.</translation>
 <translation id="443121186588148776">Сериен порт</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> не прие сертификата ви за вход или е възможно да не е предоставен такъв.</translation>
+<translation id="4432792777822557199">От сега нататък страниците на <ph name="SOURCE_LANGUAGE" /> ще се превеждат на <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">Изскач. прозорци и пренасочвания</translation>
 <translation id="4435702339979719576">пощенска картичка)</translation>
 <translation id="443673843213245140">Използването на прокси сървър е деактивирано, но е посочена изрична негова конфигурация.</translation>
@@ -1067,6 +1070,7 @@
 <translation id="5431657950005405462">Файлът ви не бе намерен</translation>
 <translation id="5439770059721715174">При потвърждаване на схемата възникна грешка в/ъв „<ph name="ERROR_PATH" />“: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">В обратен ред с отпечатаната страна нагоре</translation>
+<translation id="5447765697759493033">Този сайт няма да се превежда</translation>
 <translation id="5452270690849572955">Тази страница на <ph name="HOST_NAME" /> не може да бъде намерена</translation>
 <translation id="5455374756549232013">Невалидно клеймо за дата и час на правилото</translation>
 <translation id="5457113250005438886">Невалидно</translation>
@@ -1613,6 +1617,7 @@
 <translation id="7716375162095500223">Още не е качено или пренебрегнато</translation>
 <translation id="7716424297397655342">Този сайт не може да се зареди от кеш паметта</translation>
 <translation id="7723047071702270851">Редактиране на картата</translation>
+<translation id="773466115871691567">Страниците на <ph name="SOURCE_LANGUAGE" /> да се превеждат винаги</translation>
 <translation id="7740996059027112821">Стандартна</translation>
 <translation id="774634243536837715">Блокирахме опасно съдържание.</translation>
 <translation id="7752995774971033316">Не се управлява</translation>
@@ -1758,6 +1763,7 @@
 <translation id="831997045666694187">Вечерта</translation>
 <translation id="8332188693563227489">Достъпът до <ph name="HOST_NAME" /> бе отказан</translation>
 <translation id="833262891116910667">Открояване</translation>
+<translation id="8339163506404995330">Страниците на <ph name="LANGUAGE" /> няма да се превеждат</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Ако разбирате рисковете за сигурността си, може <ph name="BEGIN_LINK" />да посетите този сайт<ph name="END_LINK" /> преди премахването на опасните програми.</translation>
 <translation id="8349305172487531364">Лента на отметките</translation>

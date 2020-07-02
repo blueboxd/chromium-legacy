@@ -175,8 +175,10 @@ bool CreateRemoteBoundLogFile(const base::FilePath& dir,
 class NullWebRtcEventLogUploader : public WebRtcEventLogUploader {
  public:
   NullWebRtcEventLogUploader(const WebRtcLogFileInfo& log_file,
+                             UploadResultCallback callback,
                              bool cancellation_expected)
       : log_file_(log_file),
+        callback_(std::move(callback)),
         cancellation_expected_(cancellation_expected),
         was_cancelled_(false) {}
 
@@ -191,6 +193,11 @@ class NullWebRtcEventLogUploader : public WebRtcEventLogUploader {
   void Cancel() override {
     EXPECT_TRUE(cancellation_expected_);
     was_cancelled_ = true;
+    if (callback_) {
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::BindOnce(std::move(callback_), log_file_.path, false));
+    }
   }
 
   class Factory : public WebRtcEventLogUploader::Factory {
@@ -214,7 +221,7 @@ class NullWebRtcEventLogUploader : public WebRtcEventLogUploader {
         EXPECT_LE(++instance_count_, expected_instance_count_.value());
       }
       return std::make_unique<NullWebRtcEventLogUploader>(
-          log_file, cancellation_expected_);
+          log_file, std::move(callback), cancellation_expected_);
     }
 
    private:
@@ -225,6 +232,7 @@ class NullWebRtcEventLogUploader : public WebRtcEventLogUploader {
 
  private:
   const WebRtcLogFileInfo log_file_;
+  UploadResultCallback callback_;
   const bool cancellation_expected_;
   bool was_cancelled_;
 };

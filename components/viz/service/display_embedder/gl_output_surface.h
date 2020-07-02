@@ -6,6 +6,7 @@
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_GL_OUTPUT_SURFACE_H_
 
 #include <memory>
+#include <vector>
 
 #include "components/viz/common/display/update_vsync_parameters_callback.h"
 #include "components/viz/service/display/output_surface.h"
@@ -56,6 +57,7 @@ class GLOutputSurface : public OutputSurface {
       override;
   gpu::MemoryTracker* GetMemoryTracker() override;
   void SetFrameRate(float frame_rate) override;
+  void SetNeedsMeasureNextDrawLatency() override;
 
  protected:
   OutputSurfaceClient* client() const { return client_; }

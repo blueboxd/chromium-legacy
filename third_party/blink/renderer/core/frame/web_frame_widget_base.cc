@@ -1120,11 +1120,14 @@ void WebFrameWidgetBase::AddEditCommandForNextKeyEvent(const WebString& name,
 
 bool WebFrameWidgetBase::HandleCurrentKeyboardEvent() {
   bool did_execute_command = false;
+  WebLocalFrame* frame = FocusedWebLocalFrameInWidget();
+  if (!frame)
+    frame = local_root_;
   for (const auto& command : edit_commands_) {
     // In gtk and cocoa, it's possible to bind multiple edit commands to one
     // key (but it's the exception). Once one edit command is not executed, it
     // seems safest to not execute the rest.
-    if (!local_root_->ExecuteCommand(command->name, command->value))
+    if (!frame->ExecuteCommand(command->name, command->value))
       break;
     did_execute_command = true;
   }

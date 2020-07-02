@@ -8,7 +8,6 @@ import android.graphics.Color;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.util.ColorUtils;
 
 /**
@@ -53,24 +52,5 @@ public class TabState {
     /** @return True if the tab has a theme color set. */
     public boolean hasThemeColor() {
         return themeColor != UNSPECIFIED_THEME_COLOR && ColorUtils.isValidThemeColor(themeColor);
-    }
-
-    /**
-     * Creates a historical tab from a tab being closed.
-     */
-    public static void createHistoricalTab(Tab tab) {
-        if (tab.isFrozen()) {
-            WebContentsState state = ((TabImpl) tab).getFrozenContentsState();
-            if (state != null) {
-                WebContents webContents =
-                        WebContentsStateBridge.restoreContentsFromByteBuffer(state, true);
-                if (webContents != null) {
-                    WebContentsStateBridge.createHistoricalTabFromContents(webContents);
-                    webContents.destroy();
-                }
-            }
-        } else {
-            WebContentsStateBridge.createHistoricalTabFromContents(tab.getWebContents());
-        }
     }
 }

@@ -31,6 +31,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CLIPBOARD_DATA_OBJECT_ITEM_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CLIPBOARD_DATA_OBJECT_ITEM_H_
 
+#include "base/optional.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/blink/public/mojom/native_file_system/native_file_system_transfer_token.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -89,14 +92,40 @@ class CORE_EXPORT DataObjectItem final
   bool HasFileSystemId() const;
   String FileSystemId() const;
 
+  bool HasNativeFileSystemEntry() const;
+  String NativeFileSystemFileName() const;
+  bool NativeFileSystemEntryIsDirectory() const;
+  mojo::PendingRemote<mojom::blink::NativeFileSystemTransferToken>
+  CloneNativeFileSystemEntryToken() const;
+
   void Trace(Visitor*) const;
 
  private:
+  // Incoming DroppedNativeFileSystemEntriy objects are stored using this
+  // intermediary type. This is because this class must own a
+  // Remote<NativeFileSystemTransferToken> to clone tokens, and the Mojo
+  // DroppedNativeFileSystemEntry struct only allows storing a
+  // PendingRemote<NativeFileSystemTransferToken>.
+  struct NativeFileSystemEntryData {
+    NativeFileSystemEntryData(
+        String name,
+        bool is_directory,
+        mojo::Remote<mojom::blink::NativeFileSystemTransferToken> token_remote)
+        : name(name),
+          is_directory(is_directory),
+          token_remote(std::move(token_remote)) {}
+
+    String name;
+    bool is_directory;
+    mojo::Remote<mojom::blink::NativeFileSystemTransferToken> token_remote;
+  };
+
   enum class DataSource {
     kClipboardSource,
     kInternalSource,
   };
 
+  base::Optional<NativeFileSystemEntryData> native_file_system_entry_;
   DataSource source_;
   ItemKind kind_;
   String type_;

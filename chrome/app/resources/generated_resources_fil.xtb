@@ -529,7 +529,6 @@
 <translation id="1645516838734033527">Upang panatilihing ligtas ang iyong <ph name="DEVICE_TYPE" />, kinakailangan ng Smart Lock ng lock ng screen sa telepono mo.</translation>
 <translation id="1646982517418478057">Mangyaring maglagay ng password upang i-encrypt ang certificate na ito</translation>
 <translation id="1648528859488547844">Gumamit ng Wi‑Fi o mga mobile network upang matukoy ang lokasyon</translation>
-<translation id="1648943974594387137">Luma na ang mga detalye ng pag-sign in</translation>
 <translation id="164936512206786300">I-unpair ang Bluetooth device</translation>
 <translation id="1650371550981945235">Ipakita ang mga opsyon sa pag-input</translation>
 <translation id="1651008383952180276">Dapat mong ilagay ang katulad na passphrase nang dalawang beses</translation>
@@ -1333,7 +1332,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="2635276683026132559">Paglagda</translation>
 <translation id="2636625531157955190">Hindi ma-access ng Chrome ang larawan.</translation>
 <translation id="2637400434494156704">Maling PIN. May isa kang pagtatangkang natitira.</translation>
-<translation id="2638087589890736295">Kinakailangan ang passphrase upang masimulan ang pag-sync</translation>
 <translation id="2638662041295312666">Larawan sa pag-sign in</translation>
 <translation id="264083724974021997">Kumonekta sa iyong telepono - Dialog</translation>
 <translation id="2641065435954454414">Inihahanda ang pag-download</translation>
@@ -1487,7 +1485,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="2809586584051668049">at <ph name="NUMBER_ADDITIONAL_DISABLED" /> pa</translation>
 <translation id="2810390687497823527">Kung hindi mo nakikilala ang isang extension, o kung hindi gumagana ang iyong browser gaya nang inaasahan, puwede mong i-off o i-customize ang mga extension dito.</translation>
 <translation id="2812049959647166806">Hindi sinusuportahan ang thunderbolt</translation>
-<translation id="2812944337881233323">Subukang mag-sign out at muling mag-sign in</translation>
 <translation id="2812989263793994277">Huwag magpakita ng anumang mga larawan</translation>
 <translation id="2813094189969465044">Mga kontrol ng magulang</translation>
 <translation id="281390819046738856">Hindi malagdaan ang kahilingan.</translation>
@@ -3408,7 +3405,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="529175790091471945">I-format ang device na ito</translation>
 <translation id="5293170712604732402">I-restore ang mga setting sa mga orihinal na default ng mga ito</translation>
 <translation id="5294097441441645251">Dapat ay nagsisimula sa maliit na character o underscore</translation>
-<translation id="5296471962619441686">Ayusin ang error para maipagpatuloy ang pag-sync</translation>
 <translation id="5297082477358294722">Na-save ang password. Tingnan at pamahalaan ang mga naka-save na password sa iyong <ph name="SAVED_PASSWORDS_STORE" />.</translation>
 <translation id="5298219193514155779">Ang tema ay nilikha ni</translation>
 <translation id="5299109548848736476">Huwag Subaybayan</translation>
@@ -5772,7 +5768,6 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8256417822772703842">Kaunti na ang ink ng <ph name="PRINTER_NAME" /></translation>
 <translation id="8257950718085972371">Ipagpatuloy ang pag-block ng access sa camera</translation>
 <translation id="8259239505248583312">Tara na</translation>
-<translation id="8260126382462817229">Subukang mag-sign in muli</translation>
 <translation id="8260864402787962391">Mouse</translation>
 <translation id="8261378640211443080">Hindi nakalista ang extension na ito sa <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> at maaaring naidagdag nang hindi mo nalalaman.</translation>
 <translation id="8261506727792406068">I-delete</translation>

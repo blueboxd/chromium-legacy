@@ -4840,29 +4840,28 @@ void RenderFrameHostImpl::CreateNewWindow(
 
   network::CrossOriginOpenerPolicy popup_coop;
   network::CrossOriginEmbedderPolicy popup_coep;
-  if (base::FeatureList::IsEnabled(
-          network::features::kCrossOriginOpenerPolicy)) {
-    // On popup creation, if the opener and the openers's top-level document
-    // are same origin, then the popup's initial empty document inherits its
-    // COOP policy from the opener's top-level document. See
-    // https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e#model
-    RenderFrameHostImpl* top_level_opener = GetMainFrame();
-    // Verify that they are same origin.
-    if (top_level_opener->GetLastCommittedOrigin().IsSameOriginWith(
-            GetLastCommittedOrigin())) {
-      popup_coop = top_level_opener->cross_origin_opener_policy();
-    } else {
-      // The documents are cross origin, leave COOP of the popup to the default
-      // unsafe-none.
-      // Then set the popup to noopener if the top level COOP is same origin.
-      if (top_level_opener->cross_origin_opener_policy().value ==
-          network::mojom::CrossOriginOpenerPolicyValue::kSameOrigin) {
-        params->opener_suppressed = true;
-        // The frame name should not be forwarded to a noopener popup.
-        // TODO(https://crbug.com/1060691) This should be applied to all
-        // popups opened with noopener.
-        params->frame_name.clear();
-      }
+  // On popup creation, if the opener and the openers's top-level document
+  // are same origin, then the popup's initial empty document inherits its
+  // COOP policy from the opener's top-level document. See
+  // https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e#model
+  RenderFrameHostImpl* top_level_opener = GetMainFrame();
+  // Verify that they are same origin.
+  if (top_level_opener->GetLastCommittedOrigin().IsSameOriginWith(
+          GetLastCommittedOrigin())) {
+    popup_coop = top_level_opener->cross_origin_opener_policy();
+  } else {
+    // The documents are cross origin, leave COOP of the popup to the default
+    // unsafe-none.
+    // Then set the popup to noopener if the top level COOP is same origin.
+    if (top_level_opener->cross_origin_opener_policy().value ==
+        network::mojom::CrossOriginOpenerPolicyValue::kSameOrigin) {
+      DCHECK(base::FeatureList::IsEnabled(
+          network::features::kCrossOriginOpenerPolicy));
+      params->opener_suppressed = true;
+      // The frame name should not be forwarded to a noopener popup.
+      // TODO(https://crbug.com/1060691) This should be applied to all
+      // popups opened with noopener.
+      params->frame_name.clear();
     }
   }
 

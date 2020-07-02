@@ -526,7 +526,6 @@
 <translation id="1645516838734033527">Smart Lock krever en skjermlås på telefonen for å holde <ph name="DEVICE_TYPE" />-enheten trygg.</translation>
 <translation id="1646982517418478057">Skriv inn et passord for å kryptere dette sertifikatet.</translation>
 <translation id="1648528859488547844">Bruk Wi-Fi eller mobilnettverk til å fastslå posisjonen</translation>
-<translation id="1648943974594387137">Påloggingsdetaljene er utdatert.</translation>
 <translation id="164936512206786300">Koble fra Bluetooth-enheten</translation>
 <translation id="1650371550981945235">Vis inndataalternativer</translation>
 <translation id="1651008383952180276">Du må skrive inn den samme passordfrasen to ganger</translation>
@@ -1330,7 +1329,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="2635276683026132559">Signering</translation>
 <translation id="2636625531157955190">Chrome kan ikke få tilgang til bildet.</translation>
 <translation id="2637400434494156704">Feil PIN-kode. Du har ett forsøk igjen.</translation>
-<translation id="2638087589890736295">Det kreves en passordfrase for å starte synkroniseringen</translation>
 <translation id="2638662041295312666">Påloggingsbilde</translation>
 <translation id="264083724974021997">Koble til telefonen din – dialogboks</translation>
 <translation id="2641065435954454414">Klargjør for nedlasting</translation>
@@ -1484,7 +1482,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="2809586584051668049">og <ph name="NUMBER_ADDITIONAL_DISABLED" /> til</translation>
 <translation id="2810390687497823527">Hvis det er utvidelser du ikke kjenner igjen, eller hvis nettleseren ikke fungerer som forventet, kan du slå av eller tilpasse utvidelser her.</translation>
 <translation id="2812049959647166806">Thunderbolt støttes ikke</translation>
-<translation id="2812944337881233323">Prøv å logge av og på igjen</translation>
 <translation id="2812989263793994277">Ikke vis bilder</translation>
 <translation id="2813094189969465044">Foreldrekontroll</translation>
 <translation id="281390819046738856">Forespørselen kunne ikke signeres.</translation>
@@ -3403,7 +3400,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="529175790091471945">Formatér denne enheten</translation>
 <translation id="5293170712604732402">Tilbakestill innstillingene til standardverdiene</translation>
 <translation id="5294097441441645251">Må begynne med liten bokstav eller understrek</translation>
-<translation id="5296471962619441686">Løs feilen for å gjenoppta synkroniseringen</translation>
 <translation id="5297082477358294722">Passordet er lagret. Se og administrer lagrede passord på <ph name="SAVED_PASSWORDS_STORE" /> din.</translation>
 <translation id="5298219193514155779">Tema opprettet av</translation>
 <translation id="5299109548848736476">Ingen sporing</translation>
@@ -5767,7 +5763,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8256417822772703842"><ph name="PRINTER_NAME" /> har lite blekk</translation>
 <translation id="8257950718085972371">Fortsett blokkering av kameratilgang</translation>
 <translation id="8259239505248583312">Sett i gang</translation>
-<translation id="8260126382462817229">Prøv å logge på igjen</translation>
 <translation id="8260864402787962391">Mus</translation>
 <translation id="8261378640211443080">Denne utvidelsen er ikke oppført i <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />, og kan ha blitt lagt uten at du har vært klar over det.</translation>
 <translation id="8261506727792406068">Slett</translation>

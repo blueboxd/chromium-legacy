@@ -89,8 +89,6 @@ class TestRunner {
   void ResetWebView(WebViewTestProxy* web_view_test_proxy);
   // Resets state on the |web_widget_test_proxy| for the next test.
   void ResetWebWidget(WebWidgetTestProxy* web_widget_test_proxy);
-  // Resets state on the |web_frame_test_proxy| for the next test.
-  void ResetWebFrame(WebFrameTestProxy* web_frame_test_proxy);
 
   void SetTestIsRunning(bool);
   bool TestIsRunning() const { return test_is_running_; }
@@ -175,12 +173,10 @@ class TestRunner {
                     const std::string& frontend_url);
   void SetV8CacheDisabled(bool);
   void SetShouldDumpAsText(bool);
-  void SetShouldDumpAsMarkup(bool);
   void SetShouldDumpAsLayout(bool);
   void SetCustomTextOutput(const std::string& text);
   void SetShouldGeneratePixelResults(bool);
   void SetShouldDumpFrameLoadCallbacks(bool);
-  void SetShouldEnableViewSource(bool);
   bool ShouldDumpEditingCallbacks() const;
   bool ShouldDumpFrameLoadCallbacks() const;
   bool ShouldDumpPingLoaderCallbacks() const;

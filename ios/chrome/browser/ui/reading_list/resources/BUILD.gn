@@ -14,6 +14,14 @@ imageset("distillation_fail_new") {
   ]
 }
 
+imageset("reading_list_empty") {
+  sources = [
+    "reading_list_empty.imageset/Contents.json",
+    "reading_list_empty.imageset/reading_list_empty.pdf",
+    "reading_list_empty.imageset/reading_list_empty_dark.pdf",
+  ]
+}
+
 imageset("reading_list_empty_state") {
   sources = [
     "reading_list_empty_state.imageset/Contents.json",

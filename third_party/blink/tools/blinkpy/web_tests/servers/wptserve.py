@@ -17,7 +17,8 @@ class WPTServe(server_base.ServerBase):
     def __init__(self, port_obj, output_dir):
         super(WPTServe, self).__init__(port_obj, output_dir)
         # These ports must match wpt_support/wpt.config.json
-        http_port, http_alt_port, https_port = (8001, 8081, 8444)
+        http_port, http_alt_port, https_port, https_alt_port = (8001, 8081,
+                                                                8444, 8445)
         ws_port, wss_port = (9001, 9444)
         self._name = 'wptserve'
         self._log_prefixes = ('wptserve_stderr', )
@@ -29,6 +30,10 @@ class WPTServe(server_base.ServerBase):
             'scheme': 'http'
         }, {
             'port': https_port,
+            'scheme': 'https',
+            'sslcert': True
+        }, {
+            'port': https_alt_port,
             'scheme': 'https',
             'sslcert': True
         }, {

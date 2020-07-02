@@ -10,7 +10,6 @@
 <translation id="1049743911850919806">ناشناس</translation>
 <translation id="10614374240317010">هرگز ذخیره نمی‌شود</translation>
 <translation id="1067922213147265141">‏سایر سرویس‌های Google</translation>
-<translation id="1068672505746868501">هرگز صفحه‌های <ph name="SOURCE_LANGUAGE" /> ترجمه نشوند</translation>
 <translation id="107147699690128016">اگر پسوند فایل را تغییر دهید، ممکن است فایل در برنامه دیگری باز شود و به‌طور بالقوه برای دستگاه مضر باشد.</translation>
 <translation id="1100066534610197918">باز کردن در برگه جدید در گروه</translation>
 <translation id="1105960400813249514">گرفتن عکس از صفحه‌</translation>
@@ -35,13 +34,11 @@
 <translation id="1229399675748764149">تنظیم این صفحه به‌عنوان صفحه اصلی</translation>
 <translation id="1231733316453485619">همگام‌سازی روشن شود؟</translation>
 <translation id="123724288017357924">تازه‌سازی صفحه اصلی با نادیده گرفتن محتوای حافظه پنهان</translation>
-<translation id="124116460088058876">زبان‌های بیشتر</translation>
 <translation id="124678866338384709">بستن برگه کنونی</translation>
 <translation id="1258753120186372309">‏Google doodle: ‏<ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">جستجو و کاوش</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> هم‌رسانی نشد</translation>
 <translation id="1283039547216852943">برای بزرگ کردن ضربه بزنید</translation>
-<translation id="1285320974508926690">این سایت هرگز ترجمه نشود</translation>
 <translation id="1291207594882862231">پاک کردن سابقه، کوکی‌ها، داده‌های سایت، حافظه پنهان…</translation>
 <translation id="129553762522093515">اخیراً بسته‌شده</translation>
 <translation id="1303339473099049190">گذرواژه پیدا نشد. املای آن را بررسی و دوباره امتحان کنید.</translation>
@@ -171,6 +168,7 @@
 <translation id="2353636109065292463">بررسی اتصال اینترنت</translation>
 <translation id="2359808026110333948">ادامه</translation>
 <translation id="2369533728426058518">برگه‌های باز</translation>
+<translation id="2377295302146152376">‏Chrome نمی‌تواند به‌روزرسانی‌ها را بررسی کند</translation>
 <translation id="2387895666653383613">اندازه قلم نوشتار</translation>
 <translation id="2394602618534698961">فایل‌هایی که بارگیری می‌کنید، اینجا نشان داده می‌شود</translation>
 <translation id="2407481962792080328">‏وقتی به «حساب Google» خود وارد می‌شوید، این ویژگی روشن می‌شود</translation>
@@ -239,7 +237,6 @@
 <translation id="2898264748040935573">ویرایش گذرواژه ذخیره‌شده</translation>
 <translation id="2900528713135656174">ایجاد رویداد</translation>
 <translation id="2903493209154104877">آدرس‌ها</translation>
-<translation id="290376772003165898">صفحه به زبان <ph name="LANGUAGE" /> وجود ندارد؟</translation>
 <translation id="2904414404539560095">فهرست دستگاه‌هایی که می‌توان با آن‌ها برگه هم‌رسانی کرد کاملاً باز است.</translation>
 <translation id="2905036901251765993">‏برای هم‌رسانی کردن با افراد اطراف، اجازه دهید این کد QR را اسکن کنند</translation>
 <translation id="2909615210195135082">‏پلتفورم اعلان‌های Google</translation>
@@ -415,7 +412,6 @@
 <translation id="4405224443901389797">انتقال به…</translation>
 <translation id="4411535500181276704">حالت ساده</translation>
 <translation id="4415276339145661267">‏مدیریت «حساب Google»</translation>
-<translation id="4432792777822557199">از این به بعد، صفحه‌های <ph name="SOURCE_LANGUAGE" />، به <ph name="TARGET_LANGUAGE" /> ترجمه خواهند شد</translation>
 <translation id="4440958355523780886">‏صفحه ساده‌شده را Google ارائه کرده است. برای بارگیری صفحه اصلی، ضربه بزنید.</translation>
 <translation id="4452411734226507615">بستن برگه <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">در <ph name="FOLDER_NAME" /> نشانک گذاشته شد</translation>
@@ -550,8 +546,8 @@
 <translation id="543509235395288790">درحال بارگیری <ph name="COUNT" /> فایل (<ph name="MEGABYTES" />).</translation>
 <translation id="5441522332038954058">رفتن به نوار نشانی</translation>
 <translation id="5447201525962359567">همه فضای ذخیره سایت‌ها، ازجمله کوکی‌ها و سایر داده‌های ذخیره‌شده در دستگاه</translation>
-<translation id="5447765697759493033">این سایت ترجمه نخواهد شد</translation>
 <translation id="545042621069398927">درحال سرعت بخشیدن به بارگیری.</translation>
+<translation id="5454513945794364671">سرپرستتان «مرور ایمن» را خاموش کرده است</translation>
 <translation id="5456381639095306749">بارگیری صفحه</translation>
 <translation id="548278423535722844">‏باز کردن در برنامه Maps</translation>
 <translation id="5487521232677179737">پاک کردن داده‌ها</translation>
@@ -580,7 +576,6 @@
 <translation id="5659593005791499971">ایمیل</translation>
 <translation id="5665379678064389456">ایجاد رویداد در <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">لغو درخواست وب‌سایت برای جلوگیری از بزرگ‌نمایی</translation>
-<translation id="5684874026226664614">متأسفیم. این صفحه ترجمه نشد.</translation>
 <translation id="5686790454216892815">نام فایل خیلی طولانی است</translation>
 <translation id="5694049548840660018">برگشت آسان به صفحه اصلی</translation>
 <translation id="569536719314091526">با استفاده از دکمه «گزینه‌های بیشتر»، این صفحه را به زبان‌های دیگر ترجمه کنید</translation>
@@ -592,6 +587,7 @@
 <translation id="5732819098735351888">‏بارگیری هنگام اتصال به Wi-Fi شروع خواهد شد.</translation>
 <translation id="5748802427693696783">به برگه‌های استاندارد تغییر یافت</translation>
 <translation id="5749068826913805084">‏Chrome برای بارگیری فایل‌ها باید به حافظه دسترسی داشته باشد.</translation>
+<translation id="5754350196967618083">«یافته‌ها» بازخوانی نمی‌شود</translation>
 <translation id="5763382633136178763">برگه‌های ناشناس</translation>
 <translation id="5763514718066511291">برای کپی کردن نشانی وب این برنامه ضربه بزنید</translation>
 <translation id="5765780083710877561">توضیح:</translation>
@@ -719,6 +715,7 @@
 <translation id="6656545060687952787">‏Chrome برای جستجوی دستگاه‌ها باید به مکان دسترسی داشته باشد. <ph name="BEGIN_LINK" />به‌روزرسانی مجوزها<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">گذرواژه</translation>
 <translation id="6659594942844771486">برگه</translation>
+<translation id="666573598175432848">‏نسخه جدیدتری از Chrome دردسترس است. برای رفتن به «فروشگاه Play»، روی این عنصر ضربه بزنید.</translation>
 <translation id="666731172850799929">باز کردن در <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">‏اخطار حریم خصوصی Chrome</translation>
 <translation id="6671495933530132209">کپی تصویر</translation>
@@ -734,7 +731,6 @@
 <translation id="6767294960381293877">فهرست نیمه‌باز دستگاه‌هایی که می‌توان با آن‌ها برگه هم‌رسانی کرد.</translation>
 <translation id="6811034713472274749">صفحه آماده مشاهده است</translation>
 <translation id="6820686453637990663">CVC</translation>
-<translation id="6831043979455480757">ترجمه</translation>
 <translation id="6845325883481699275">‏کمک به بهبود امنیت Chrome</translation>
 <translation id="6846298663435243399">درحال بارگیری…</translation>
 <translation id="6850409657436465440">بارگیری هنوز درحال انجام است</translation>
@@ -842,7 +838,6 @@
 <translation id="7698359219371678927">ایجاد ایمیل در <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">تکمیل خودکار جستجوها و نشانی‌های وب</translation>
 <translation id="7725024127233776428">صفحاتی را که نشانک‌گذاری می‌کنید، در اینجا نشان داده می‌شوند</translation>
-<translation id="773466115871691567">صفحه‌های <ph name="SOURCE_LANGUAGE" /> همیشه ترجمه شوند</translation>
 <translation id="7746457520633464754">‏برای حذف برنامه‌ها و سایت‌های خطرناک، Chrome نشانی‌های وب برخی از صفحه‌هایی را که بازدید می‌کنید، اطلاعات سیستم محدود و برخی از محتوای صفحه را به Google می‌فرستد.</translation>
 <translation id="7757787379047923882">نوشتار هم‌رسانی‌شده از <ph name="DEVICE_NAME" /></translation>
 <translation id="7761849928583394409">انتخاب تاریخ و زمان</translation>
@@ -851,6 +846,7 @@
 <translation id="7772032839648071052">تأیید عبارت عبور</translation>
 <translation id="7772375229873196092">بستن <ph name="APP_NAME" /></translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{‏<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 و <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> روش پرداخت دیگر}one{‏<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 و <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> روش پرداخت دیگر}other{‏<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 و <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> روش پرداخت دیگر}}</translation>
+<translation id="7778840695157240389">برای خواندن داستان‌های جدید، بعداً دوباره سربزنید</translation>
 <translation id="7791543448312431591">افزودن</translation>
 <translation id="780301667611848630">نه متشکرم</translation>
 <translation id="7810647596859435254">باز کردن با…</translation>
@@ -922,7 +918,6 @@
 <translation id="8310344678080805313">برگه‌های استاندارد</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> و سایت‌های دیگر</translation>
 <translation id="8327155640814342956">‏برای بهترین تجربه مرور، Chrome را به‌روزرسانی کنید</translation>
-<translation id="8339163506404995330">صفحه‌های <ph name="LANGUAGE" /> ترجمه نخواند شد</translation>
 <translation id="8349013245300336738">مرتب‌سازی براساس مقدار داده استفاده‌شده</translation>
 <translation id="8364299278605033898">مشاهده وب‌سایت‌های پرطرفدار</translation>
 <translation id="8368027906805972958">دستگاه ناشناس یا پشتیبانی‌نشده (<ph name="DEVICE_ID" />)</translation>
@@ -933,6 +928,7 @@
 <translation id="8427875596167638501">برگه پیش‌نمایش نیمه‌باز است</translation>
 <translation id="8428213095426709021">تنظیمات</translation>
 <translation id="8438566539970814960">بهبود جستجوها و مرور</translation>
+<translation id="8442258441309440798">هیچ داستانی دردسترس نیست</translation>
 <translation id="8443209985646068659">‏Chrome به‌روزرسانی نشد</translation>
 <translation id="8445448999790540984">گذرواژه‌ها صادر نشدند</translation>
 <translation id="8461694314515752532">رمزگذاری داده‌های همگام‌سازی‌شده با عبارت عبور همگام‌سازی خودتان</translation>
@@ -984,6 +980,7 @@
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />، برگه</translation>
 <translation id="8854223127042600341">مشاهده فایل‌های آفلاین</translation>
 <translation id="889338405075704026">‏به تنظیمات Chrome بروید</translation>
+<translation id="8893398027601469503">‏از جدیدترین نسخه Chrome استفاده می‌کنید</translation>
 <translation id="8909135823018751308">اشتراک‌گذاری‌...</translation>
 <translation id="8912362522468806198">‏حساب Google</translation>
 <translation id="8920114477895755567">در انتظار اطلاعات والدین.</translation>

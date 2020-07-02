@@ -2256,12 +2256,6 @@ void TestRunner::ResetWebWidget(WebWidgetTestProxy* web_widget_test_proxy) {
   }
 }
 
-void TestRunner::ResetWebFrame(WebFrameTestProxy* web_frame_test_proxy) {
-  blink::WebLocalFrame* web_frame = web_frame_test_proxy->GetWebFrame();
-
-  web_frame->EnableViewSourceMode(false);
-}
-
 void TestRunner::SetTestIsRunning(bool running) {
   test_is_running_ = running;
 }
@@ -2276,11 +2270,6 @@ bool TestRunner::ShouldDumpEditingCallbacks() const {
 
 void TestRunner::SetShouldDumpAsText(bool value) {
   web_test_runtime_flags_.set_dump_as_text(value);
-  OnWebTestRuntimeFlagsChanged();
-}
-
-void TestRunner::SetShouldDumpAsMarkup(bool value) {
-  web_test_runtime_flags_.set_dump_as_markup(value);
   OnWebTestRuntimeFlagsChanged();
 }
 
@@ -2408,19 +2397,6 @@ void TestRunner::SetShouldDumpFrameLoadCallbacks(bool value) {
 bool TestRunner::ShouldDumpPingLoaderCallbacks() const {
   return test_is_running_ &&
          web_test_runtime_flags_.dump_ping_loader_callbacks();
-}
-
-void TestRunner::SetShouldEnableViewSource(bool value) {
-  // TODO(lukasza): This flag should be 1) replicated across OOPIFs and
-  // 2) applied to all views, not just the main window view.
-
-  // Path-based test config is trigerred by BlinkTestRunner, when |main_view_|
-  // is guaranteed to exist at this point.
-  DCHECK(main_view_);
-
-  CHECK(main_view_->MainFrame()->IsWebLocalFrame())
-      << "This function requires that the main frame is a local frame.";
-  main_view_->MainFrame()->ToWebLocalFrame()->EnableViewSourceMode(value);
 }
 
 bool TestRunner::ShouldDumpUserGestureInFrameLoadCallbacks() const {

@@ -20,6 +20,7 @@
 <translation id="10614374240317010">Сайты, пароли для которых не сохраняются</translation>
 <translation id="1062160989074299343">Prc10 (конверт)</translation>
 <translation id="106701514854093668">Закладки на компьютере</translation>
+<translation id="1068672505746868501">Не переводить страницы на этом языке: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1070901266639972381">До ночи</translation>
 <translation id="1074497978438210769">Не защищено</translation>
 <translation id="1080116354587839789">Выровнять по ширине окна</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">Без имени</translation>
 <translation id="1236081509407217141">Разрешить VR?</translation>
 <translation id="1240347957665416060">Название вашего устройства</translation>
+<translation id="124116460088058876">Другие языки</translation>
 <translation id="1250759482327835220">Чтобы ускорить процесс оплаты в будущем, сохраните карту, свое имя и платежный адрес в аккаунте Google.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (данные синхронизируются)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Если сайт не открывается, выполните следующие действия:&lt;/p&gt;
@@ -100,7 +102,7 @@
 <translation id="1346748346194534595">Справа</translation>
 <translation id="1348198688976932919">Сайт содержит опасные приложения</translation>
 <translation id="1348779747280417563">Подтверждение</translation>
-<translation id="1357195169723583938">Кто и когда использовал устройство.</translation>
+<translation id="1357195169723583938">кто и когда использовал устройство;</translation>
 <translation id="1364822246244961190">Правило заблокировано. Его значение не будет учтено.</translation>
 <translation id="1374468813861204354">подсказки</translation>
 <translation id="1374692235857187091">Index-4x6 (открытка)</translation>
@@ -828,6 +830,7 @@
 <translation id="4424024547088906515">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Chrome не доверяет его сертификату безопасности. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.</translation>
 <translation id="443121186588148776">Последовательный порт</translation>
 <translation id="4432688616882109544">Ваш сертификат отклонен сайтом <ph name="HOST_NAME" /> или не был выдан.</translation>
+<translation id="4432792777822557199">Страницы на этом языке (<ph name="SOURCE_LANGUAGE" />) будут автоматически переводиться на <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">Всплывающие окна и переадресация</translation>
 <translation id="4435702339979719576">Открытка</translation>
 <translation id="443673843213245140">Прокси-сервер отключен, но при этом его конфигурация задана явным образом.</translation>
@@ -972,7 +975,7 @@
 <translation id="5093232627742069661">Фальцовка гармошкой в два сгиба</translation>
 <translation id="5094747076828555589">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Chromium не доверяет его сертификату безопасности. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.</translation>
 <translation id="5095208057601539847">Провинция</translation>
-<translation id="5097099694988056070">Статистические данные устройства, например об использовании процессора или оперативной памяти.</translation>
+<translation id="5097099694988056070">статистические данные устройства, например об использовании процессора или оперативной памяти;</translation>
 <translation id="5097501891273180634">A2</translation>
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
@@ -1020,7 +1023,7 @@
 <translation id="5273658854610202413">Внимание! Это правило не объединено в соответствии с правилом PolicyDictionaryMultipleSourceMergeList, так как оно не относится к словарю.</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="528468243742722775">Завершить</translation>
-<translation id="5284909709419567258">Сетевые адреса.</translation>
+<translation id="5284909709419567258">сетевые адреса;</translation>
 <translation id="5285570108065881030">Показать все сохраненные пароли</translation>
 <translation id="5287240709317226393">Показать файлы сookie</translation>
 <translation id="5287456746628258573">Настройки безопасности этого сайта устарели. Злоумышленники могут получить доступ к вашим данным (например, паролям и номерам банковских карт) при их отправке на этот сайт.</translation>
@@ -1059,6 +1062,7 @@
 <translation id="5431657950005405462">Файл не найден</translation>
 <translation id="5439770059721715174">Ошибка проверки схемы, <ph name="ERROR_PATH" />: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">В обратном порядке лицевой стороной вверх</translation>
+<translation id="5447765697759493033">Этот сайт не будет переводиться автоматически</translation>
 <translation id="5452270690849572955">Страница <ph name="HOST_NAME" /> не найдена</translation>
 <translation id="5455374756549232013">Неверная временная метка политики</translation>
 <translation id="5457113250005438886">Недопустимые данные</translation>
@@ -1605,6 +1609,7 @@
 <translation id="7716375162095500223">Проигнорирован или ещё не загружен</translation>
 <translation id="7716424297397655342">Не удалось загрузить сайт из кеша</translation>
 <translation id="7723047071702270851">Измените данные карты</translation>
+<translation id="773466115871691567">Переводить страницы на этом языке: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7740996059027112821">Стандартный</translation>
 <translation id="774634243536837715">Опасный контент заблокирован</translation>
 <translation id="7752995774971033316">Не управляется</translation>
@@ -1745,11 +1750,12 @@
 <translation id="8298115750975731693">Возможно, вам нужно перейти на страницу <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> сети Wi-Fi (<ph name="WIFI_NAME" />).</translation>
 <translation id="830498451218851433">Фальцовка книжкой</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
-<translation id="8307888238279532626">Установленные приложения и способы их использования</translation>
+<translation id="8307888238279532626">установленные приложения и частоту их использования.</translation>
 <translation id="831207732689920588">Эта страница выглядит подозрительно (пометка добавлена браузером Chrome).</translation>
 <translation id="831997045666694187">До вечера</translation>
 <translation id="8332188693563227489">Доступ к <ph name="HOST_NAME" /> запрещен</translation>
 <translation id="833262891116910667">Выделить</translation>
+<translation id="8339163506404995330">Страницы на этом языке (<ph name="LANGUAGE" />) не будут переводиться автоматически</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Если вы готовы подвергнуть риску ваши личные данные, вы можете <ph name="BEGIN_LINK" />перейти на зараженный сайт<ph name="END_LINK" />, не дожидаясь удаления вредоносного ПО.</translation>
 <translation id="8349305172487531364">Панель закладок</translation>

@@ -49,10 +49,6 @@ class MetricsCollector : public FrameNode::ObserverDefaultImpl,
   void OnFaviconUpdated(const PageNode* page_node) override;
   void OnTitleUpdated(const PageNode* page_node) override;
 
-  // ProcessNodeObserver implementation:
-  void OnExpectedTaskQueueingDurationSample(
-      const ProcessNode* process_node) override;
-
  protected:
   friend class MetricsReportRecordHolder;
   friend class UkmCollectionStateHolder;
@@ -81,7 +77,6 @@ class MetricsCollector : public FrameNode::ObserverDefaultImpl,
   };
 
   struct UkmCollectionState {
-    int num_unreported_eqt_measurements = 0u;
     ukm::SourceId ukm_source_id = ukm::kInvalidSourceId;
   };
 
@@ -96,22 +91,13 @@ class MetricsCollector : public FrameNode::ObserverDefaultImpl,
   void UnregisterObservers(Graph* graph);
 
   bool ShouldReportMetrics(const PageNode* page_node);
-  bool IsCollectingExpectedQueueingTimeForUkm(const PageNode* page_node);
-  void RecordExpectedQueueingTimeForUkm(
-      const PageNode* page_node,
-      const base::TimeDelta& expected_queueing_time);
   void UpdateUkmSourceIdForPage(const PageNode* page_node,
                                 ukm::SourceId ukm_source_id);
-  void UpdateWithFieldTrialParams();
   void ResetMetricsReportRecord(const PageNode* page_nod);
 
   // The graph to which this object belongs.
   Graph* graph_ = nullptr;
 
-  // The number of reports to wait before reporting ExpectedQueueingTime. For
-  // example, if |frequency_ukm_eqt_reported_| is 2, then the first value is not
-  // reported, the second one is, the third one isn't, etc.
-  int frequency_ukm_eqt_reported_;
   DISALLOW_COPY_AND_ASSIGN(MetricsCollector);
 };
 

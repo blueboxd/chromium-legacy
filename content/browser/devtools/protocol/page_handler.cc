@@ -14,6 +14,7 @@
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
@@ -777,8 +778,8 @@ void PageHandler::CaptureScreenshot(
   if (clip.isJust()) {
     double scale = dpfactor * clip.fromJust()->GetScale();
     widget_host->GetView()->SetSize(
-        gfx::Size(gfx::ToRoundedInt(clip.fromJust()->GetWidth() * scale),
-                  gfx::ToRoundedInt(clip.fromJust()->GetHeight() * scale)));
+        gfx::Size(base::Round(clip.fromJust()->GetWidth() * scale),
+                  base::Round(clip.fromJust()->GetHeight() * scale)));
   } else if (emulation_enabled) {
     widget_host->GetView()->SetSize(
         gfx::ScaleToFlooredSize(emulated_view_size, dpfactor));

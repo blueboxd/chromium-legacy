@@ -20,6 +20,7 @@
 <translation id="10614374240317010">Δεν έχει αποθηκευθεί ποτέ</translation>
 <translation id="1062160989074299343">Prc10 (Φάκελος)</translation>
 <translation id="106701514854093668">Σελιδοδείκτες επιτραπέζιου υπολογιστή</translation>
+<translation id="1068672505746868501">Να μην γίνεται μετάφραση σελίδων στα <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1070901266639972381">Νύχτα</translation>
 <translation id="1074497978438210769">Μη ασφαλής</translation>
 <translation id="1080116354587839789">Προσαρμογή στο πλάτος</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">Χωρίς τίτλο</translation>
 <translation id="1236081509407217141">Να επιτρέπεται το VR;</translation>
 <translation id="1240347957665416060">Το όνομα της συσκευής σας</translation>
+<translation id="124116460088058876">Περισσότερες γλώσσες</translation>
 <translation id="1250759482327835220">Για πιο γρήγορες πληρωμές στο μέλλον, αποθηκεύστε τα στοιχεία της κάρτας σας, το όνομα και τη διεύθυνση χρέωσης στον Λογαριασμό σας Google.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (συγχρονισμένο)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Αν προσπαθείτε να επισκεφτείτε έναν ιστότοπο και ο ιστότοπος δεν ανοίγει, δοκιμάστε πρώτα να διορθώσετε το σφάλμα, ακολουθώντας τα παρακάτω βήματα αντιμετώπισης προβλημάτων:&lt;/p&gt;
@@ -841,6 +843,7 @@
 <translation id="4424024547088906515">Ο διακομιστής δεν μπόρεσε να αποδείξει ότι είναι <ph name="DOMAIN" />. Το πιστοποιητικό ασφαλείας του δεν θεωρείται έμπιστο από τον Chrome. Αυτό μπορεί να οφείλεται σε λανθασμένη ρύθμιση ή σε κάποιον τρίτο που επιτίθεται στη σύνδεσή σας.</translation>
 <translation id="443121186588148776">Σειριακή θύρα</translation>
 <translation id="4432688616882109544">Ο κεντρικός υπολογιστής <ph name="HOST_NAME" /> δεν αποδέχτηκε το πιστοποιητικό σύνδεσής σας ή μπορεί να μην διατέθηκε πιστοποιητικό σύνδεσης.</translation>
+<translation id="4432792777822557199">Από εδώ και στο εξής, οι σελίδες στα <ph name="SOURCE_LANGUAGE" /> θα μεταφράζονται στα <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">Αναδυόμενα παράθυρα και ανακατευθύνσεις</translation>
 <translation id="4435702339979719576">Ταχυδρομική κάρτα)</translation>
 <translation id="443673843213245140">Η χρήση ενός διακομιστή μεσολάβησης είναι απενεργοποιημένη, αλλά έχει καθοριστεί μια ρητή διαμόρφωση διακομιστή μεσολάβησης.</translation>
@@ -1072,6 +1075,7 @@
 <translation id="5431657950005405462">Το αρχείο σας δεν βρέθηκε</translation>
 <translation id="5439770059721715174">Σφάλμα επαλήθευσης σχήματος σε "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Αντίστροφη σειρά με την πρόσοψη προς τα επάνω</translation>
+<translation id="5447765697759493033">Αυτός ο ιστότοπος δεν θα μεταφραστεί</translation>
 <translation id="5452270690849572955">Δεν είναι δυνατός ο εντοπισμός αυτής της σελίδας του κεντρικού υπολογιστή <ph name="HOST_NAME" /></translation>
 <translation id="5455374756549232013">Εσφαλμένη χρονική σήμανση πολιτικής</translation>
 <translation id="5457113250005438886">Μη έγκυρο</translation>
@@ -1618,6 +1622,7 @@
 <translation id="7716375162095500223">Δεν έγινε ακόμη μεταφόρτωση ή παράβλεψη</translation>
 <translation id="7716424297397655342">Δεν είναι δυνατή η φόρτωση αυτού του ιστότοπου από την κρυφή μνήμη</translation>
 <translation id="7723047071702270851">Επεξεργασία κάρτας</translation>
+<translation id="773466115871691567">Να μεταφράζονται πάντα οι σελίδες προς τα <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7740996059027112821">Τυπική</translation>
 <translation id="774634243536837715">Το επικίνδυνο περιεχόμενο αποκλείστηκε.</translation>
 <translation id="7752995774971033316">Χωρίς διαχείριση</translation>
@@ -1763,6 +1768,7 @@
 <translation id="831997045666694187">Βράδυ</translation>
 <translation id="8332188693563227489">Απορρίφθηκε η πρόσβαση στο κεντρικό υπολογιστή <ph name="HOST_NAME" /></translation>
 <translation id="833262891116910667">Επισήμανση</translation>
+<translation id="8339163506404995330">Οι σελίδες στα <ph name="LANGUAGE" /> δεν θα μεταφράζονται</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Εάν κατανοείτε τους κινδύνους για την ασφάλειά σας, μπορείτε να <ph name="BEGIN_LINK" />επισκεφτείτε αυτόν τον ιστότοπο<ph name="END_LINK" /> πριν από την κατάργηση των επικίνδυνων προγραμμάτων.</translation>
 <translation id="8349305172487531364">Γραμμή σελιδοδεικτών</translation>

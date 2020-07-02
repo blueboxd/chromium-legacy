@@ -139,8 +139,6 @@ void ShellPlatformDelegate::Initialize(const gfx::Size& default_window_size) {
 void ShellPlatformDelegate::CreatePlatformWindow(
     Shell* shell,
     const gfx::Size& initial_size) {
-  DCHECK(!shell->headless());
-
   DCHECK(!base::Contains(shell_data_map_, shell));
   ShellData& shell_data = shell_data_map_[shell];
 
@@ -250,8 +248,6 @@ void ShellPlatformDelegate::SetContents(Shell* shell) {
 
 void ShellPlatformDelegate::ResizeWebContent(Shell* shell,
                                              const gfx::Size& content_size) {
-  DCHECK(!shell->headless());
-
   DCHECK(base::Contains(shell_data_map_, shell));
   ShellData& shell_data = shell_data_map_[shell];
 
@@ -264,8 +260,6 @@ void ShellPlatformDelegate::ResizeWebContent(Shell* shell,
 void ShellPlatformDelegate::EnableUIControl(Shell* shell,
                                             UIControl control,
                                             bool is_enabled) {
-  DCHECK(!shell->headless());
-
   DCHECK(base::Contains(shell_data_map_, shell));
   ShellData& shell_data = shell_data_map_[shell];
 
@@ -289,8 +283,6 @@ void ShellPlatformDelegate::EnableUIControl(Shell* shell,
 }
 
 void ShellPlatformDelegate::SetAddressBarURL(Shell* shell, const GURL& url) {
-  DCHECK(!shell->headless());
-
   if (Shell::ShouldHideToolbar())
     return;
 
@@ -305,8 +297,6 @@ void ShellPlatformDelegate::SetIsLoading(Shell* shell, bool loading) {}
 
 void ShellPlatformDelegate::SetTitle(Shell* shell,
                                      const base::string16& title) {
-  DCHECK(!shell->headless());
-
   DCHECK(base::Contains(shell_data_map_, shell));
   ShellData& shell_data = shell_data_map_[shell];
 
@@ -315,12 +305,9 @@ void ShellPlatformDelegate::SetTitle(Shell* shell,
 }
 
 void ShellPlatformDelegate::RenderViewReady(Shell* shell) {
-  DCHECK(!shell->headless());
 }
 
 bool ShellPlatformDelegate::DestroyShell(Shell* shell) {
-  DCHECK(!shell->headless());
-
   DCHECK(base::Contains(shell_data_map_, shell));
   ShellData& shell_data = shell_data_map_[shell];
 
@@ -330,8 +317,6 @@ bool ShellPlatformDelegate::DestroyShell(Shell* shell) {
 
 void ShellPlatformDelegate::ActivateContents(Shell* shell,
                                              WebContents* top_contents) {
-  DCHECK(!shell->headless());
-
   DCHECK(base::Contains(shell_data_map_, shell));
   ShellData& shell_data = shell_data_map_[shell];
 
@@ -352,8 +337,6 @@ bool ShellPlatformDelegate::HandleKeyboardEvent(
     Shell* shell,
     WebContents* source,
     const NativeWebKeyboardEvent& event) {
-  DCHECK(!shell->headless());
-
   if (event.skip_in_browser || Shell::ShouldHideToolbar())
     return false;
 

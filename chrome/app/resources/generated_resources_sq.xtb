@@ -526,7 +526,6 @@
 <translation id="1645516838734033527">Për ta mbajtur <ph name="DEVICE_TYPE" /> të sigurt, Smart Lock kërkon një kyçje ekrani në telefonin tënd.</translation>
 <translation id="1646982517418478057">Fut një fjalëkalimin për të enkriptuar këtë certifikatë</translation>
 <translation id="1648528859488547844">Përdor Wi‑Fi ose rrjetet celulare për të përcaktuar vendndodhjen</translation>
-<translation id="1648943974594387137">Detajet e identifikimit nuk janë të përditësuara</translation>
 <translation id="164936512206786300">Shkëput pajisjen me Bluetooth</translation>
 <translation id="1650371550981945235">Shfaq opsionet e hyrjes</translation>
 <translation id="1651008383952180276">Duhet të fusësh dy herë të njëjtën frazë kalimi</translation>
@@ -1330,7 +1329,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="2635276683026132559">Po nënshkruhet</translation>
 <translation id="2636625531157955190">Chrome nuk mund të qaset tek imazhi.</translation>
 <translation id="2637400434494156704">Kodi PIN është i pasaktë. Të ka mbetur një përpjekje.</translation>
-<translation id="2638087589890736295">Kërkohet shprehja e kalimit për të nisur sinkronizimin</translation>
 <translation id="2638662041295312666">Imazhi i identifikimit</translation>
 <translation id="264083724974021997">Lidh me telefonin - dialogu</translation>
 <translation id="2641065435954454414">Po përgatit shkarkimin</translation>
@@ -1484,7 +1482,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="2809586584051668049">dhe <ph name="NUMBER_ADDITIONAL_DISABLED" /> të tjerë</translation>
 <translation id="2810390687497823527">Nëse nuk e njeh një shtesë ose nëse shfletuesi nuk funksionon siç pritet, mund t'i çaktivizosh ose personalizosh shtesat këtu.</translation>
 <translation id="2812049959647166806">Thunderbolt nuk mbështetet</translation>
-<translation id="2812944337881233323">Provo të dalësh dhe të identifikohesh sërish</translation>
 <translation id="2812989263793994277">Mos shfaq asnjë imazh</translation>
 <translation id="2813094189969465044">Kontrollet prindërore</translation>
 <translation id="281390819046738856">Kërkesa nuk mund të nënshkruhej.</translation>
@@ -3405,7 +3402,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="529175790091471945">Formatoje këtë pajisje</translation>
 <translation id="5293170712604732402">Rivendos cilësimet në parazgjedhjet e tyre fillestare</translation>
 <translation id="5294097441441645251">Duhet të fillojë me një shkronjë të vogël ose vizë poshtë</translation>
-<translation id="5296471962619441686">Rregullo gabimin për të rifilluar sinkronizimin</translation>
 <translation id="5297082477358294722">Fjalëkalimi u ruajt. Shfaq dhe menaxho fjalëkalimet e ruajtura në <ph name="SAVED_PASSWORDS_STORE" />.</translation>
 <translation id="5298219193514155779">Tema u krijua nga</translation>
 <translation id="5299109548848736476">Mos gjurmo</translation>
@@ -5767,7 +5763,6 @@ Mbaje skedarin e çelësit tënd në një vend të sigurt. Do të të duhet për
 <translation id="8256417822772703842"><ph name="PRINTER_NAME" /> ka pak bojë</translation>
 <translation id="8257950718085972371">Vazhdo bllokimin e qasjes te kamera</translation>
 <translation id="8259239505248583312">Fillojmë</translation>
-<translation id="8260126382462817229">Provo të identifikohesh përsëri</translation>
 <translation id="8260864402787962391">Miu</translation>
 <translation id="8261378640211443080">Kjo shtesë nuk është e listuar në <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> dhe mund të jetë shtuar pa dijeninë tënde.</translation>
 <translation id="8261506727792406068">Fshi</translation>

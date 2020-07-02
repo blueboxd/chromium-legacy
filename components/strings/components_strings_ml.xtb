@@ -20,6 +20,7 @@
 <translation id="10614374240317010">ഒരിക്കലും സംരക്ഷിച്ചില്ല</translation>
 <translation id="1062160989074299343">Prc10 (എൻവലപ്പ്)</translation>
 <translation id="106701514854093668">ഡെസ്‌ക്‌ടോപ്പ് ബുക്ക്‌മാർക്കുകൾ</translation>
+<translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" /> ഭാഷയിലുള്ള പേജുകൾ ഒരിക്കലും വിവർത്തനം ചെയ്യരുത്</translation>
 <translation id="1070901266639972381">രാത്രി</translation>
 <translation id="1074497978438210769">സുരക്ഷിതമല്ല</translation>
 <translation id="1080116354587839789">അനുയോജ്യമായ വീതിയിലാക്കുക</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">ശീര്‍ഷകമില്ലാത്ത</translation>
 <translation id="1236081509407217141">VR അനുവദിക്കണോ?</translation>
 <translation id="1240347957665416060">നിങ്ങളുടെ ഉപകരണത്തിൻ്റെ പേര്</translation>
+<translation id="124116460088058876">കൂടുതൽ ഭാഷകൾ</translation>
 <translation id="1250759482327835220">അടുത്ത പ്രാവശ്യം കൂടുതൽ വേഗത്തിൽ പണമടയ്ക്കാൻ, നിങ്ങളുടെ Google അക്കൗണ്ടിൽ കാർഡ്, പേര്, ബില്ലിംഗ് വിലാസം എന്നിവ സംരക്ഷിക്കുക.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (സമന്വയിപ്പിച്ചു)</translation>
 <translation id="1256368399071562588">&lt;p&gt;നിങ്ങളൊരു വെബ്‌സൈറ്റ് സന്ദർശിക്കാൻ ശ്രമിക്കുകയും അത് തുറക്കാതിരിക്കുകയുമാണെങ്കിൽ, ഇനിപ്പറയുന്ന ട്രബിള്‍ഷൂട്ടിംഗ് ഘട്ടങ്ങൾ ഉപയോഗിച്ച്, പ്രശ്നം പരിഹരിക്കാൻ ശ്രമിക്കുക:&lt;/p&gt;
@@ -834,6 +836,7 @@
 <translation id="4424024547088906515">ഈ സെർവറിന് അത് <ph name="DOMAIN" /> ആണെന്ന് തെളിയിക്കാനായില്ല; അതിന്റെ സുരക്ഷാ സർട്ടിഫിക്കറ്റ് Chrome-ന് പരിചയമില്ലാത്തതാണ്. തെറ്റായ കോൺഫിഗറേഷൻ കാരണമോ ഒരു അക്രമണകാരി നിങ്ങളുടെ കണക്ഷനെ തടസ്സപ്പെടുത്തുന്നത് കൊണ്ടോ ആയിരിക്കാം ഇത് സംഭവിച്ചത്.</translation>
 <translation id="443121186588148776">സീരിയൽ പോർട്ട്</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" />, നിങ്ങളുടെ ലോഗിൻ സർട്ടിഫിക്കറ്റിന് അംഗീകരിച്ചിട്ടില്ല, അല്ലെങ്കിൽ അങ്ങനെയൊരെണ്ണം നൽകിയിട്ടില്ലായിരിക്കാം.</translation>
+<translation id="4432792777822557199">ഇനിമുതൽ <ph name="SOURCE_LANGUAGE" /> ഭാഷയിലുള്ള പേജുകൾ <ph name="TARGET_LANGUAGE" /> ഭാഷയിലേക്ക് വിവർത്തനം ചെയ്യപ്പെടും</translation>
 <translation id="4434045419905280838">പോപ്-അപ്പുകളും റീഡയറക്‌റ്റുകളും</translation>
 <translation id="4435702339979719576">പോസ്‌റ്റ്‌ കാർഡ്)</translation>
 <translation id="443673843213245140">പ്രോക്‌സി ഉപയോഗം അപ്രാപ്‌തമാക്കി പക്ഷെ ഒരു വ്യക്തമായ പ്രോക്‌സി കോൺഫിഗറേഷൻ നിർദ്ദേശിച്ചു.</translation>
@@ -1065,6 +1068,7 @@
 <translation id="5431657950005405462">നിങ്ങളുടെ ഫയൽ കണ്ടെത്തിയില്ല</translation>
 <translation id="5439770059721715174">"<ph name="ERROR_PATH" />" എന്നതിൽ സ്‌കീമ മൂല്ല്യനിർണ്ണയ പിശക്: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">വിപരീത ക്രമത്തിൽ ഫേസ് അപ്പ്</translation>
+<translation id="5447765697759493033">ഈ സൈറ്റ് വിവർത്തനം ചെയ്യപ്പെടില്ല</translation>
 <translation id="5452270690849572955">ഈ <ph name="HOST_NAME" /> പേജ് കണ്ടെത്താനായില്ല</translation>
 <translation id="5455374756549232013">മോശം നയ ടൈംസ്റ്റാമ്പ്</translation>
 <translation id="5457113250005438886">അസാധുവാണ്</translation>
@@ -1574,7 +1578,7 @@
 <translation id="7610193165460212391">മൂല്യം പരിധിക്ക് പുറത്താണ് <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">കാലഹരണപ്പെടുന്നത്: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Google അക്കൗണ്ട് പാസ്‌വേഡിന്റെ വ്യത്യസ്ത പതിപ്പ് ഉപയോഗിച്ച് എൻക്രിപ്റ്റ് ചെയ്ത ഡേറ്റ ഇപ്പോൾ തന്നെ നിങ്ങളുടെ കൈവശമുണ്ട്. ആ പാസ്‌വേഡ് താഴെ നൽകുക.</translation>
-<translation id="7616645509853975347">അഡ്‌മിൻ നിങ്ങളുടെ ബ്രൗസറിൽ Chrome എന്റർപ്രൈസ് കണക്റ്ററുകൾ ഓണാക്കിയിരിക്കുന്നു. ഈ കണക്‌റ്ററുകൾക്ക് നിങ്ങളുടെ ചില ഡാറ്റയിലേക്ക് ആക്‌സസ് ഉണ്ട്.</translation>
+<translation id="7616645509853975347">അഡ്‌മിൻ നിങ്ങളുടെ ബ്രൗസറിൽ Chrome Enterprise Connectors ഓണാക്കിയിരിക്കുന്നു. ഈ കണക്‌റ്ററുകൾക്ക് നിങ്ങളുടെ ചില ഡാറ്റയിലേക്ക് ആക്‌സസ് ഉണ്ട്.</translation>
 <translation id="7619838219691048931">അവസാന ഷീറ്റ്</translation>
 <translation id="762844065391966283">ഒരു സമയം ഒന്ന്</translation>
 <translation id="7633909222644580952">പ്രകടന ഡാറ്റയും ക്രാഷ് റിപ്പോർട്ടുകളും</translation>
@@ -1609,6 +1613,7 @@
 <translation id="7716375162095500223">ഇതുവരെ അപ്‌ലോഡ് ചെയ്തിട്ടില്ല, അല്ലെങ്കിൽ അവഗണിച്ചു</translation>
 <translation id="7716424297397655342">ഈ സൈറ്റ് കാഷെയിൽ നിന്ന് ലോഡ് ചെയ്യാനാകില്ല</translation>
 <translation id="7723047071702270851">കാർഡ് എഡിറ്റ് ചെയ്യുക</translation>
+<translation id="773466115871691567"><ph name="SOURCE_LANGUAGE" /> ഭാഷയിലുള്ള പേജുകൾ എപ്പോഴും വിവർത്തനം ചെയ്യുക</translation>
 <translation id="7740996059027112821">സാധാരണം</translation>
 <translation id="774634243536837715">അപകടകരമായ ഉള്ളടക്കം ബ്ലോക്ക് ചെയ്‌തു.</translation>
 <translation id="7752995774971033316">നിയന്ത്രിക്കാനാകാത്തത്</translation>
@@ -1754,6 +1759,7 @@
 <translation id="831997045666694187">വൈകുന്നേരം</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" /> ഹോസ്‌റ്റിലേക്കുള്ള ആക്‌സസ് നിരസിച്ചു</translation>
 <translation id="833262891116910667">ഹൈലൈറ്റ് ചെയ്യുക</translation>
+<translation id="8339163506404995330"><ph name="LANGUAGE" /> ഭാഷയിലുള്ള പേജുകൾ വിവർത്തനം ചെയ്യില്ല</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">നിങ്ങളുടെ സുരക്ഷയെ ബാധിക്കാനിടയുണ്ടെന്ന് മനസ്സിലാക്കുകയാണെങ്കിൽ, ദോഷകരമായ പ്രോഗ്രാമുകൾ നീക്കംചെയ്യുന്നതിനു മുമ്പ് <ph name="BEGIN_LINK" />ഈ സൈറ്റ് നിങ്ങൾക്ക് സന്ദർശിക്കാം<ph name="END_LINK" />.</translation>
 <translation id="8349305172487531364">ബുക്മാര്‍ക്ക് ബാര്‍</translation>

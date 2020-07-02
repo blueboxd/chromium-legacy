@@ -20,6 +20,7 @@
 <translation id="10614374240317010">Aldrig sparad</translation>
 <translation id="1062160989074299343">Prc10 (kuvert)</translation>
 <translation id="106701514854093668">Bokmärken på skrivbordet</translation>
+<translation id="1068672505746868501">Översätt aldrig sidor på <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1070901266639972381">nattetid</translation>
 <translation id="1074497978438210769">Inte säker</translation>
 <translation id="1080116354587839789">Anpassa till fönstrets bredd</translation>
@@ -62,6 +63,7 @@
 <translation id="1232569758102978740">Namnlös</translation>
 <translation id="1236081509407217141">Vill du tillåta VR?</translation>
 <translation id="1240347957665416060">Ditt enhetsnamn</translation>
+<translation id="124116460088058876">Fler språk</translation>
 <translation id="1250759482327835220">Spara kortet, faktureringsadressen och ditt namn i Google-kontot så går det snabbare att betala nästa gång.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (synkroniserade)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Om det inte går att öppna en webbplats testar du först att åtgärda felet med hjälp av dessa felsökningssteg:&lt;/p&gt;
@@ -840,6 +842,7 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="4424024547088906515">Servern kunde inte bevisa att den är <ph name="DOMAIN" /> eftersom Chrome inte litar på dess säkerhetscertifikat. Detta kan orsakas av en felaktig konfigurering eller att någon spärrar anslutningen.</translation>
 <translation id="443121186588148776">Serieport</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> godkände inte inloggningscertifikatet eller så har inget inloggningscertifikat angetts.</translation>
+<translation id="4432792777822557199">Sidor på <ph name="SOURCE_LANGUAGE" /> översätts till <ph name="TARGET_LANGUAGE" /> från och med nu</translation>
 <translation id="4434045419905280838">Popup och omdirigeringar</translation>
 <translation id="4435702339979719576">vykort)</translation>
 <translation id="443673843213245140">Användning av proxy är inaktiverad men en explicit proxykonfiguration har angetts.</translation>
@@ -1071,6 +1074,7 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="5431657950005405462">Filen hittades inte</translation>
 <translation id="5439770059721715174">Schemavalideringsfel i <ph name="ERROR_PATH" />: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Omvänd ordning – framsidan uppåt</translation>
+<translation id="5447765697759493033">Den här webbplatsen översätts inte</translation>
 <translation id="5452270690849572955">Sidan på <ph name="HOST_NAME" /> kan inte hittas</translation>
 <translation id="5455374756549232013">Felaktig tidsstämpel för policy</translation>
 <translation id="5457113250005438886">Ogiltigt</translation>
@@ -1617,6 +1621,7 @@ Mer information.
 <translation id="7716375162095500223">Ignorerad eller ännu inte uppladdad</translation>
 <translation id="7716424297397655342">Det går inte att läsa in webbplatsen från cachelagringen</translation>
 <translation id="7723047071702270851">Redigera kortet</translation>
+<translation id="773466115871691567">Översätt alltid sidor på <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7740996059027112821">Standard</translation>
 <translation id="774634243536837715">Farligt innehåll har blockerats.</translation>
 <translation id="7752995774971033316">Hanteras inte</translation>
@@ -1762,6 +1767,7 @@ Mer information.
 <translation id="831997045666694187">kvällen</translation>
 <translation id="8332188693563227489">Åtkomst nekades till <ph name="HOST_NAME" />.</translation>
 <translation id="833262891116910667">Markera</translation>
+<translation id="8339163506404995330">Sidor på <ph name="LANGUAGE" /> översätts inte</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Om du är medveten om säkerhetsriskerna kan du <ph name="BEGIN_LINK" />besöka den här osäkra webbplatsen<ph name="END_LINK" /> innan de skadliga programmen har tagits bort.</translation>
 <translation id="8349305172487531364">Bokmärkesfältet</translation>

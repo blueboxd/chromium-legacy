@@ -10,7 +10,6 @@
 <translation id="1049743911850919806">អនាមិក</translation>
 <translation id="10614374240317010">មិនដែលបានរក្សាទុក</translation>
 <translation id="1067922213147265141">សេវាកម្ម​​ Google ផ្សេងទៀត</translation>
-<translation id="1068672505746868501">កុំ​បកប្រែ​ទំព័រ​ជាភាសា <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="107147699690128016">ប្រសិនបើអ្នក​ប្ដូរកន្ទុយ​ឯកសារ ឯកសារនេះ​អាចបើកនៅក្នុងកម្មវិធី​ផ្សេង និងអាចបង្កគ្រោះថ្នាក់ដល់​ឧបករណ៍​របស់អ្នក។</translation>
 <translation id="1100066534610197918">បើកនៅក្នុងផ្ទាំងថ្មី​នៅក្នុងក្រុម</translation>
 <translation id="1105960400813249514">ការថត​អេក្រង់</translation>
@@ -35,13 +34,11 @@
 <translation id="1229399675748764149">កំណត់​ទំព័រនេះ​ជា​ទំព័រដើម​របស់អ្នក</translation>
 <translation id="1231733316453485619">បើក​សមកាលកម្ម?</translation>
 <translation id="123724288017357924">ផ្ទុកទំព័របច្ចុប្បន្នឡើងវិញ ដោយមិនអើពីនឹងមាតិកាដែលបានរក្សាទុកក្នុងឃ្លាំងផ្ទុកទិន្នន័យ</translation>
-<translation id="124116460088058876">ភាសា​ច្រើន​ទៀត</translation>
 <translation id="124678866338384709">បិទផ្ទាំងបច្ចុប្បន្ន</translation>
 <translation id="1258753120186372309">Google doodle៖ <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">ស្វែងរក និងរុករក</translation>
 <translation id="1266864766717917324">មិនអាចចែករំលែក <ph name="CONTENT_TYPE" /> បានទេ</translation>
 <translation id="1283039547216852943">ចុច​ដើម្បី​ពង្រីក</translation>
-<translation id="1285320974508926690">មិនបកប្រែគេហទំព័រនេះទៀតឡើយ</translation>
 <translation id="1291207594882862231">ជម្រះប្រវត្តិ ខុកឃី ទិន្នន័យគេហទំព័រ ឃ្លាំងសម្ងាត់…</translation>
 <translation id="129553762522093515">បានបិទកន្លងទៅថ្មីៗ</translation>
 <translation id="1303339473099049190">រកមិនឃើញពាក្យសម្ងាត់ទេ។ សូមពិនិត្យ​មើល​អក្ខរាវិរុទ្ធ​ រួចព្យាយាម​ម្ដង​ទៀត។</translation>
@@ -239,7 +236,6 @@
 <translation id="2898264748040935573">កែពាក្យសម្ងាត់​ដែលបានរក្សាទុក</translation>
 <translation id="2900528713135656174">បង្កើតព្រឹត្តិការណ៍</translation>
 <translation id="2903493209154104877">អាសយដ្ឋាន</translation>
-<translation id="290376772003165898">ទំព័រមិនមានជាភាសា <ph name="LANGUAGE" /> ទេ?</translation>
 <translation id="2904414404539560095">បានបើក​ពេញអេក្រង់នូវបញ្ជីឧបករណ៍​ដែលត្រូវ​ចែករំលែក​ផ្ទាំងជាមួយ​។</translation>
 <translation id="2905036901251765993">ដើម្បីចែករំលែក​ជាមួយមនុស្ស​នៅជិត សូមអនុញ្ញាត​ឱ្យពួកគេ​ស្កេនកូដ QR នេះ</translation>
 <translation id="2909615210195135082">Google Notifications Platform</translation>
@@ -415,7 +411,6 @@
 <translation id="4405224443901389797">ផ្លាស់ទីទៅ…</translation>
 <translation id="4411535500181276704">មុខងារស្រាល</translation>
 <translation id="4415276339145661267">គ្រប់គ្រង​គណនី Google របស់​អ្នក</translation>
-<translation id="4432792777822557199">ទំព័រជាភាសា <ph name="SOURCE_LANGUAGE" /> នឹងត្រូវបានបកប្រែទៅជាភាសា <ph name="TARGET_LANGUAGE" /> ចាប់ពីពេលនេះតទៅ</translation>
 <translation id="4440958355523780886">ទំព័រស្រាល​ដែល​ផ្ដល់​ដោយ Google ។ សូម​ចុច​ដើម្បីផ្ទុក​ទំព័រ​ដើម។</translation>
 <translation id="4452411734226507615">បិទ​ផ្ទាំង <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">បានបន្ថែមចំណាំទៅ <ph name="FOLDER_NAME" /></translation>
@@ -550,7 +545,6 @@
 <translation id="543509235395288790">កំពុង​ទាញយក​ឯកសារ <ph name="COUNT" /> (<ph name="MEGABYTES" />)។</translation>
 <translation id="5441522332038954058">លោតទៅរបារអាសយដ្ឋាន</translation>
 <translation id="5447201525962359567">ទំហំផ្ទុកគេហទំព័រទាំងអស់ ដោយរាប់បញ្ចូលទាំងខុកឃី និងទិន្នន័យផ្សេងទៀតដែលបានផ្ទុកជាមូលដ្ឋាន</translation>
-<translation id="5447765697759493033">ទំព័រ​នេះ​នឹង​មិនត្រូវ​បានបកប្រែទេ</translation>
 <translation id="545042621069398927">កំពុង​បង្កើនល្បឿន​នៃការទាញយក​របស់អ្នក។</translation>
 <translation id="5456381639095306749">ទាញយកទំព័រ</translation>
 <translation id="548278423535722844">បើកនៅក្នុងកម្មវិធីផែនទី</translation>
@@ -580,7 +574,6 @@
 <translation id="5659593005791499971">អ៊ីម៉េល</translation>
 <translation id="5665379678064389456">បង្កើតព្រឹត្តិការណ៍នៅក្នុង <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">បដិសេធសំណើរគេហទំព័រដើម្បីបង្ការការពង្រីក</translation>
-<translation id="5684874026226664614">អូ។ ទំព័រនេះមិនអាចបកប្រែទេ។</translation>
 <translation id="5686790454216892815">ឈ្មោះ​ឯកសារ​វែងពេក</translation>
 <translation id="5694049548840660018">ត្រឡប់ទៅ​ទំព័រដើមវិញ​បានយ៉ាង​ងាយស្រួល</translation>
 <translation id="569536719314091526">បកប្រែ​ទំព័រនេះ​ទៅជាភាសា​ណាមួយពី​ប៊ូតុងជម្រើស​ច្រើនទៀត</translation>
@@ -589,7 +582,7 @@
 <translation id="572328651809341494">ផ្ទាំងកន្លងទៅថ្មីៗ</translation>
 <translation id="5723735397759933332">ឥឡូវនេះ មុខងារស្រាល​សន្សំសំចៃ​ទិន្នន័យ​ឱ្យអ្នក​បានច្រើនជាងមុន ដោយបង្កើនគុណភាព​រូបភាព​នៅលើ​ទំព័រ HTTPS​។</translation>
 <translation id="5726692708398506830">ធ្វើឲ្យអ្វីគ្រប់យ៉ាងនៅលើទំព័រនេះធំជាងមុន</translation>
-<translation id="5732819098735351888">ការទាញយក​នឹងចាប់ផ្ដើមតាមរយៈ Wi-Fi។</translation>
+<translation id="5732819098735351888">ការទាញយក​នឹងចាប់ផ្ដើមពេលមាន Wi-Fi។</translation>
 <translation id="5748802427693696783">បានប្តូរទៅផ្ទាំងស្តង់ដារ</translation>
 <translation id="5749068826913805084">Chrome ត្រូវការលទ្ធភាពចូលប្រើទំហំផ្ទុកដើម្បីដោនឡូតឯកសារ</translation>
 <translation id="5763382633136178763">ផ្ទាំងអនាមិក</translation>
@@ -734,7 +727,6 @@
 <translation id="6767294960381293877">បានបើកពាក់​កណ្ដាល​អេក្រង់នូវបញ្ជីឧបករណ៍​ដែលត្រូវ​ចែករំលែក​ផ្ទាំងជាមួយ​។</translation>
 <translation id="6811034713472274749">ទំព័រអាច​មើលបានហើយ</translation>
 <translation id="6820686453637990663">CVC</translation>
-<translation id="6831043979455480757">បកប្រែ</translation>
 <translation id="6845325883481699275">ជួយ​កែលម្អ​សុវត្ថិភាព Chrome</translation>
 <translation id="6846298663435243399">កំពុងដំណើរការ...</translation>
 <translation id="6850409657436465440">ការទាញយក​របស់អ្នក​កំពុង​ដំណើរការ​នៅឡើយ</translation>
@@ -842,7 +834,6 @@
 <translation id="7698359219371678927">បង្កើតអ៊ីមែលនៅក្នុង <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">បំពេញ​ការស្វែងរក និង URL ដោយស្វ័យប្រវត្តិ</translation>
 <translation id="7725024127233776428">ទំព័រ​ដែលអ្នកចំណាំ​បង្ហាញនៅទីនេះ</translation>
-<translation id="773466115871691567">បកប្រែ​ទំព័រ​ជាភាសា <ph name="SOURCE_LANGUAGE" /> ជានិច្ច</translation>
 <translation id="7746457520633464754">ដើម្បី​រកមើល​កម្មវិធី​ និងគេហទំព័រ​គ្រោះថ្នាក់ Chrome ផ្ញើ​ URL របស់ទំព័រ​មួយចំនួន​ដែលអ្នកចូលមើល ព្រមទាំងខ្លឹមសារទំព័រ និងព័ត៌មានប្រព័ន្ធមួយចំនួន​ទៅ Google</translation>
 <translation id="7757787379047923882">អត្ថបទ​ដែលបានចែករំលែកពី <ph name="DEVICE_NAME" /></translation>
 <translation id="7761849928583394409">ជ្រើសរើស​កាល​បរិច្ឆេទ និង​ម៉ោង</translation>
@@ -922,7 +913,6 @@
 <translation id="8310344678080805313">ផ្ទាំងបទដ្ឋាន</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> និងទំព័រច្រើនទៀត</translation>
 <translation id="8327155640814342956">ដើម្បី​ទទួលបាន​បទពិសោធន៍រុករក​ដែលល្អបំផុត សូមបើក​ដើម្បី​ដំឡើងកំណែ Chrome</translation>
-<translation id="8339163506404995330">ទំព័រជាភាសា <ph name="LANGUAGE" /> នឹងមិនត្រូវបានបកប្រែទេ</translation>
 <translation id="8349013245300336738">តម្រៀប​តាម​បរិមាណ​ទិន្នន័យ​ដែលបានប្រើ</translation>
 <translation id="8364299278605033898">មើល​គេហទំព័រ​ពេញនិយម</translation>
 <translation id="8368027906805972958">ឧបករណ៍ដែល​មិនស្គាល់ ឬ​មិនអាច​ប្រើបាន (<ph name="DEVICE_ID" />)</translation>

@@ -21,10 +21,13 @@ void StyleTraversalRoot::Update(ContainerNode* common_ancestor,
     //
     // TODO(futhark): Disallow Document as the root. All traversals start at
     // the RootElement().
+    Element* document_element = dirty_node->GetDocument().documentElement();
     if (dirty_node->IsDocumentNode() ||
-        (root_node_ &&
-         dirty_node == dirty_node->GetDocument().documentElement())) {
+        (root_node_ && dirty_node == document_element)) {
       root_type_ = RootType::kCommonRoot;
+    } else {
+      DCHECK(!document_element ||
+             (!root_node_ && root_type_ == RootType::kSingleRoot));
     }
     root_node_ = dirty_node;
     return;

@@ -355,7 +355,6 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
          const optimization_guide::OptimizationMetadata& metadata) {
         EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
                   decision);
-        EXPECT_TRUE(metadata.previews_metadata().has_value());
         run_loop->Quit();
       },
       run_loop.get()));

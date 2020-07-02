@@ -23,6 +23,9 @@ struct Data {
 
   // Data item will be matched between its search tags and query term.
   array<Content> contents;
+
+  // If unset, we will use system configured locale.
+  string locale;
 };
 
 struct SearchParams {

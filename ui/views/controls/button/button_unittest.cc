@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/scoped_observer.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/layout.h"
@@ -138,43 +139,50 @@ class TestButton : public Button, public ButtonListener {
 
 class TestButtonObserver : public ButtonObserver {
  public:
-  TestButtonObserver() = default;
+  explicit TestButtonObserver(Button* button) { observer_.Add(button); }
   ~TestButtonObserver() override = default;
 
   void OnHighlightChanged(views::Button* observed_button,
                           bool highlighted) override {
-    observed_button_ = observed_button;
+    EXPECT_TRUE(observer_.IsObserving(observed_button));
+    highlighted_changed_ = true;
     highlighted_ = highlighted;
   }
 
   void OnStateChanged(views::Button* observed_button,
                       views::Button::ButtonState old_state) override {
-    observed_button_ = observed_button;
+    EXPECT_TRUE(observer_.IsObserving(observed_button));
     state_changed_ = true;
   }
 
   void Reset() {
-    observed_button_ = nullptr;
+    highlighted_changed_ = false;
     highlighted_ = false;
     state_changed_ = false;
   }
 
-  views::Button* observed_button() { return observed_button_; }
+  bool highlighted_changed() const { return highlighted_changed_; }
   bool highlighted() const { return highlighted_; }
   bool state_changed() const { return state_changed_; }
 
  private:
-  views::Button* observed_button_ = nullptr;
+  bool highlighted_changed_ = false;
   bool highlighted_ = false;
   bool state_changed_ = false;
 
- private:
+  ScopedObserver<Button,
+                 ButtonObserver,
+                 &Button::AddButtonObserver,
+                 &Button::RemoveButtonObserver>
+      observer_{this};
+
   DISALLOW_COPY_AND_ASSIGN(TestButtonObserver);
 };
 
 TestInkDrop* AddTestInkDrop(TestButton* button) {
   auto owned_ink_drop = std::make_unique<TestInkDrop>();
   TestInkDrop* ink_drop = owned_ink_drop.get();
+  button->SetInkDropMode(InkDropHostView::InkDropMode::ON);
   InkDropHostViewTestApi(button).SetInkDrop(std::move(owned_ink_drop));
   return ink_drop;
 }
@@ -207,9 +215,6 @@ class ButtonTest : public ViewsTestBase {
   }
 
   void TearDown() override {
-    if (button_observer_)
-      button_->RemoveButtonObserver(button_observer_.get());
-
     button_observer_.reset();
     widget_.reset();
 
@@ -222,16 +227,10 @@ class ButtonTest : public ViewsTestBase {
     return AddTestInkDrop(button_);
   }
 
-  void CreateButtonWithRealInkDrop() {
-    button_ = widget()->SetContentsView(std::make_unique<TestButton>(false));
-    InkDropHostViewTestApi(button_).SetInkDrop(
-        std::make_unique<InkDropImpl>(button_, button_->size()));
-  }
-
   void CreateButtonWithObserver() {
     button_ = widget()->SetContentsView(std::make_unique<TestButton>(false));
-    button_observer_ = std::make_unique<TestButtonObserver>();
-    button_->AddButtonObserver(button_observer_.get());
+    button_->SetInkDropMode(InkDropHostView::InkDropMode::ON);
+    button_observer_ = std::make_unique<TestButtonObserver>(button_);
   }
 
  protected:
@@ -872,19 +871,27 @@ TEST_F(ButtonTest, CustomActionOnKeyPressedEvent) {
   EXPECT_FALSE(button()->OnKeyReleased(control_release));
 }
 
-// Verifies that ButtonObserver is notified when the button activition highlight
+// Verifies that ButtonObserver is notified when the button activation highlight
 // state is changed. Also verifies the |observed_button| and |highlighted|
 // passed to observer are correct.
 TEST_F(ButtonTest, ChangingHighlightStateNotifiesListener) {
   CreateButtonWithObserver();
+  EXPECT_FALSE(button_observer()->highlighted_changed());
+  EXPECT_FALSE(button()->GetHighlighted());
   EXPECT_FALSE(button_observer()->highlighted());
 
   button()->SetHighlighted(/*bubble_visible=*/true);
-  EXPECT_EQ(button_observer()->observed_button(), button());
+  EXPECT_TRUE(button_observer()->highlighted_changed());
+  EXPECT_TRUE(button()->GetHighlighted());
   EXPECT_TRUE(button_observer()->highlighted());
 
+  button_observer()->Reset();
+  EXPECT_FALSE(button_observer()->highlighted_changed());
+  EXPECT_TRUE(button()->GetHighlighted());
+
   button()->SetHighlighted(/*bubble_visible=*/false);
-  EXPECT_EQ(button_observer()->observed_button(), button());
+  EXPECT_TRUE(button_observer()->highlighted_changed());
+  EXPECT_FALSE(button()->GetHighlighted());
   EXPECT_FALSE(button_observer()->highlighted());
 }
 
@@ -892,18 +899,16 @@ TEST_F(ButtonTest, ChangingHighlightStateNotifiesListener) {
 // and that the |observed_button| is passed to observer correctly.
 TEST_F(ButtonTest, ClickingButtonNotifiesObserverOfStateChanges) {
   CreateButtonWithObserver();
+  EXPECT_FALSE(button_observer()->state_changed());
 
   event_generator()->MoveMouseTo(button()->GetBoundsInScreen().CenterPoint());
   event_generator()->PressLeftButton();
-  EXPECT_EQ(button_observer()->observed_button(), button());
   EXPECT_TRUE(button_observer()->state_changed());
 
   button_observer()->Reset();
-  EXPECT_EQ(button_observer()->observed_button(), nullptr);
   EXPECT_FALSE(button_observer()->state_changed());
 
   event_generator()->ReleaseLeftButton();
-  EXPECT_EQ(button_observer()->observed_button(), button());
   EXPECT_TRUE(button_observer()->state_changed());
 }
 
@@ -911,17 +916,15 @@ TEST_F(ButtonTest, ClickingButtonNotifiesObserverOfStateChanges) {
 // called directly.
 TEST_F(ButtonTest, SetStateNotifiesObserver) {
   CreateButtonWithObserver();
+  EXPECT_FALSE(button_observer()->state_changed());
 
-  button()->SetState(Button::ButtonState::STATE_HOVERED);
-  EXPECT_EQ(button_observer()->observed_button(), button());
+  button()->SetState(Button::STATE_HOVERED);
   EXPECT_TRUE(button_observer()->state_changed());
 
   button_observer()->Reset();
-  EXPECT_EQ(button_observer()->observed_button(), nullptr);
   EXPECT_FALSE(button_observer()->state_changed());
 
-  button()->SetState(Button::ButtonState::STATE_NORMAL);
-  EXPECT_EQ(button_observer()->observed_button(), button());
+  button()->SetState(Button::STATE_NORMAL);
   EXPECT_TRUE(button_observer()->state_changed());
 }
 

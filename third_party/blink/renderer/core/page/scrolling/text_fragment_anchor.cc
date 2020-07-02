@@ -456,7 +456,8 @@ void TextFragmentAnchor::ApplyTargetToCommonAncestor(
 
 void TextFragmentAnchor::FireBeforeMatchEvent(Element* element) {
   if (RuntimeEnabledFeatures::BeforeMatchEventEnabled())
-    element->DispatchEvent(*Event::Create(event_type_names::kBeforematch));
+    element->DispatchEvent(
+        *Event::CreateBubble(event_type_names::kBeforematch));
   beforematch_state_ = kFiredEvent;
 }
 

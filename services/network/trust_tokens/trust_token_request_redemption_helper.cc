@@ -73,9 +73,6 @@ void TrustTokenRequestRedemptionHelper::Begin(
     net::URLRequest* request,
     base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done) {
   DCHECK(request);
-  DCHECK(!request->initiator() ||
-         IsOriginPotentiallyTrustworthy(*request->initiator()))
-      << *request->initiator();
 
   net_log_.BeginEvent(
       net::NetLogEventType::TRUST_TOKEN_OPERATION_BEGIN_REDEMPTION);

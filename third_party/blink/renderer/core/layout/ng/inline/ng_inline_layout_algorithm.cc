@@ -288,9 +288,16 @@ void NGInlineLayoutAlgorithm::CreateLine(
       has_out_of_flow_positioned_items = true;
     } else if (item.Type() == NGInlineItem::kFloating) {
       if (item_result.positioned_float) {
-        line_box_.AddChild(
-            std::move(item_result.positioned_float->layout_result),
-            item_result.positioned_float->bfc_offset, item.BidiLevel());
+        if (scoped_refptr<const NGLayoutResult> layout_result =
+                item_result.positioned_float->layout_result) {
+          line_box_.AddChild(std::move(layout_result),
+                             item_result.positioned_float->bfc_offset,
+                             item.BidiLevel());
+        } else {
+          // If we didn't produce a result, it means that we decided to push the
+          // float to the next fragmentainer.
+          DCHECK(ConstraintSpace().HasBlockFragmentation());
+        }
       } else {
         line_box_.AddChild(item.GetLayoutObject(), item.BidiLevel());
       }
@@ -700,10 +707,24 @@ void NGInlineLayoutAlgorithm::PlaceFloatingObjects(
     if (child.unpositioned_float) {
       NGPositionedFloat positioned_float = PositionFloat(
           origin_bfc_block_offset, child.unpositioned_float, exclusion_space);
-
-      child.layout_result = std::move(positioned_float.layout_result);
-      child.bfc_offset = positioned_float.bfc_offset;
-      child.unpositioned_float = nullptr;
+      if (positioned_float.need_break_before) {
+        // We decided to break before the float. No fragment here. Create a
+        // break token and propagate it to the block container.
+        NGBlockNode float_node(ToLayoutBox(child.unpositioned_float));
+        auto break_before = NGBlockBreakToken::CreateBreakBefore(
+            float_node, /* is_forced_break */ false);
+        context_->PropagateBreakToken(std::move(break_before));
+        continue;
+      } else {
+        // If the float broke inside, we need to propagate the break token to
+        // the block container, so that we'll resume in the next fragmentainer.
+        if (scoped_refptr<const NGBreakToken> token =
+                positioned_float.layout_result->PhysicalFragment().BreakToken())
+          context_->PropagateBreakToken(To<NGBlockBreakToken>(token.get()));
+        child.layout_result = std::move(positioned_float.layout_result);
+        child.bfc_offset = positioned_float.bfc_offset;
+        child.unpositioned_float = nullptr;
+      }
     }
 
     // Skip any children which aren't positioned floats.
@@ -1055,6 +1076,12 @@ scoped_refptr<const NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
     // Success!
     container_builder_.SetBreakToken(line_breaker.CreateBreakToken(line_info));
 
+    // Propagate any break tokens for floats that we fragmented before or inside
+    // to the block container.
+    for (scoped_refptr<const NGBlockBreakToken> break_token :
+         line_breaker.PropagatedBreakTokens())
+      context_->PropagateBreakToken(std::move(break_token));
+
     if (is_empty_inline) {
       DCHECK_EQ(container_builder_.BlockSize(), 0);
     } else {
@@ -1133,6 +1160,22 @@ unsigned NGInlineLayoutAlgorithm::PositionLeadingFloats(
 
     NGPositionedFloat positioned_float = PositionFloat(
         origin_bfc_block_offset, item.GetLayoutObject(), exclusion_space);
+
+    if (ConstraintSpace().HasBlockFragmentation()) {
+      // Propagate any breaks before or inside floats to the block container.
+      if (positioned_float.need_break_before) {
+        NGBlockNode float_node(ToLayoutBox(item.GetLayoutObject()));
+        auto break_before = NGBlockBreakToken::CreateBreakBefore(
+            float_node, /* is_forced_break */ false);
+        context_->PropagateBreakToken(std::move(break_before));
+        positioned_float.layout_result = nullptr;
+      } else if (scoped_refptr<const NGBreakToken> token =
+                     positioned_float.layout_result->PhysicalFragment()
+                         .BreakToken()) {
+        context_->PropagateBreakToken(To<NGBlockBreakToken>(token.get()));
+      }
+    }
+
     positioned_floats->push_back(std::move(positioned_float));
   }
 

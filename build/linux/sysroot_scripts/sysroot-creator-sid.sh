@@ -361,7 +361,6 @@ DEBIAN_PACKAGES="\
   libzstd1
   linux-libc-dev
   mesa-common-dev
-  python-xcbgen
   shared-mime-info
   speech-dispatcher
   uuid-dev
@@ -378,7 +377,6 @@ DEBIAN_PACKAGES="\
   x11proto-scrnsaver-dev
   x11proto-xext-dev
   x11proto-xinerama-dev
-  xcb-proto
   zlib1g
   zlib1g-dev
 "

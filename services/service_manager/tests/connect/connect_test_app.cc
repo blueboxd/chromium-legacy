@@ -16,7 +16,7 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/service_receiver.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/service_manager/tests/connect/connect.test-mojom.h"
@@ -50,8 +50,8 @@ class ConnectTestApp : public Service,
                        public test::mojom::BlockedInterface,
                        public test::mojom::IdentityTest {
  public:
-  explicit ConnectTestApp(mojom::ServiceRequest request)
-      : service_binding_(this, std::move(request)) {}
+  explicit ConnectTestApp(mojo::PendingReceiver<mojom::Service> receiver)
+      : service_receiver_(this, std::move(receiver)) {}
 
   ~ConnectTestApp() override = default;
 
@@ -88,12 +88,12 @@ class ConnectTestApp : public Service,
     state->connection_remote_name = source_info.identity.name();
     state->connection_remote_instance_group =
         source_info.identity.instance_group();
-    state->initialize_local_name = service_binding_.identity().name();
+    state->initialize_local_name = service_receiver_.identity().name();
     state->initialize_local_instance_group =
-        service_binding_.identity().instance_group();
+        service_receiver_.identity().instance_group();
 
     caller_.reset();
-    service_binding_.GetConnector()->Connect(
+    service_receiver_.GetConnector()->Connect(
         source_info.identity, caller_.BindNewPipeAndPassReceiver());
     caller_->ConnectionAccepted(std::move(state));
   }
@@ -122,7 +122,7 @@ class ConnectTestApp : public Service,
   }
 
   void GetInstanceId(GetInstanceIdCallback callback) override {
-    std::move(callback).Run(service_binding_.identity().instance_id());
+    std::move(callback).Run(service_receiver_.identity().instance_id());
   }
 
   // test::mojom::StandaloneApp:
@@ -130,7 +130,7 @@ class ConnectTestApp : public Service,
       ConnectToAllowedAppInBlockedPackageCallback callback) override {
     base::RunLoop run_loop{base::RunLoop::Type::kNestableTasksAllowed};
     mojo::Remote<test::mojom::ConnectTestService> test_service;
-    service_binding_.GetConnector()->Connect(
+    service_receiver_.GetConnector()->Connect(
         "connect_test_a", test_service.BindNewPipeAndPassReceiver());
     test_service.set_disconnect_handler(base::BindOnce(
         &ConnectTestApp::OnGotTitle, base::Unretained(this),
@@ -147,7 +147,7 @@ class ConnectTestApp : public Service,
   void ConnectToClassInterface(
       ConnectToClassInterfaceCallback callback) override {
     mojo::Remote<test::mojom::ClassInterface> class_interface;
-    service_binding_.GetConnector()->Connect(
+    service_receiver_.GetConnector()->Connect(
         "connect_test_class_app", class_interface.BindNewPipeAndPassReceiver());
     std::string ping_response;
     {
@@ -157,7 +157,7 @@ class ConnectTestApp : public Service,
       loop.Run();
     }
     mojo::Remote<test::mojom::ConnectTestService> service;
-    service_binding_.GetConnector()->Connect(
+    service_receiver_.GetConnector()->Connect(
         "connect_test_class_app", service.BindNewPipeAndPassReceiver());
     std::string title_response;
     {
@@ -181,7 +181,7 @@ class ConnectTestApp : public Service,
     mojom::ConnectResult result;
     base::Optional<Identity> resolved_identity;
     base::RunLoop loop{base::RunLoop::Type::kNestableTasksAllowed};
-    service_binding_.GetConnector()->WarmService(
+    service_receiver_.GetConnector()->WarmService(
         filter, base::BindOnce(&OnConnectResult, loop.QuitClosure(), &result,
                                &resolved_identity));
     loop.Run();
@@ -200,7 +200,7 @@ class ConnectTestApp : public Service,
       Terminate();
   }
 
-  ServiceBinding service_binding_;
+  ServiceReceiver service_receiver_;
   BinderRegistryWithArgs<const BindSourceInfo&> registry_;
   mojo::ReceiverSet<test::mojom::ConnectTestService> receivers_;
   mojo::ReceiverSet<test::mojom::StandaloneApp> standalone_receivers_;
@@ -213,7 +213,8 @@ class ConnectTestApp : public Service,
 
 }  // namespace service_manager
 
-void ServiceMain(service_manager::mojom::ServiceRequest request) {
+void ServiceMain(
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver) {
   base::SingleThreadTaskExecutor main_task_executor;
-  service_manager::ConnectTestApp(std::move(request)).RunUntilTermination();
+  service_manager::ConnectTestApp(std::move(receiver)).RunUntilTermination();
 }

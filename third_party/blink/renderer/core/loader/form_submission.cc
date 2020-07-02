@@ -216,7 +216,7 @@ FormSubmission* FormSubmission::Create(HTMLFormElement* form,
                                              ? document.Url().GetString()
                                              : copied_attributes.Action());
 
-  if ((document.GetSecurityContext().GetInsecureRequestPolicy() &
+  if ((document.domWindow()->GetSecurityContext().GetInsecureRequestPolicy() &
        mojom::blink::InsecureRequestPolicy::kUpgradeInsecureRequests) !=
           mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone &&
       action_url.ProtocolIs("http") &&

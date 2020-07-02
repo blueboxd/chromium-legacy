@@ -45,6 +45,8 @@
 <translation id="1395262318152388157">រកមើលរបាររំកិល</translation>
 <translation id="1399648040768741453">ក្តារចុចតេឡូហ្គូ (Phonetic)</translation>
 <translation id="1430915738399379752">បោះពុម្ព</translation>
+<translation id="1433600251059882049">ថតនេះ​ត្រូវបានចែករំលែក​ជាមួយ Linux និង Windows</translation>
+<translation id="1435838927755162558">ចែករំលែក​ថត​ជាមួយ Parallels Desktop</translation>
 <translation id="1439494416798956626">បាន​ផ្លាស់ទីទៅ <ph name="FOLDER_NAME" /> ។</translation>
 <translation id="1441841714100794440">ក្តារចុចវៀតណាម (Telex)</translation>
 <translation id="1455548678241328678">ក្តារចុចន័រវេ</translation>
@@ -79,6 +81,7 @@
 <translation id="1844692022597038441">ឯកសារនេះមិនមាននៅក្រៅបណ្តាញទេ។</translation>
 <translation id="184633654410729720">ក្តារចុចថៃ (Kedmanee)</translation>
 <translation id="1847880352285315359">បាន​រក្សាទុក</translation>
+<translation id="1853795129690976061">ថតនេះ​ត្រូវបានចែករំលែក​ជាមួយ Linux</translation>
 <translation id="1864756863218646478">ឯកសារមិនត្រូវបានរកឃើញទេ។</translation>
 <translation id="1921986354447415460">ក្តារចុច តួកគី-F</translation>
 <translation id="1924372192547904021">បានសម្អាត <ph name="DRIVE_NAME" /></translation>
@@ -180,6 +183,7 @@
 <translation id="303198083543495566">ភូមិសាស្ដ្រ</translation>
 <translation id="3057861065630527966">បម្រុងទុករូបថត និងវីដេអូរបស់អ្នក</translation>
 <translation id="3064388234319122767">ការសរសេរតាមសូរស័ព្ទ (zdravo → здраво)</translation>
+<translation id="3067790092342515856">ឯកសារ Windows</translation>
 <translation id="3078461028045006476">ចែករំលែកជាមួយ <ph name="EXTENSION_NAME" /></translation>
 <translation id="3088034400796962477">ការសរសេរតាមសូរស័ព្ទ (salam ← سلام)</translation>
 <translation id="3116361045094675131">ក្តារចុចចក្រភពអង់គ្លេស</translation>
@@ -262,6 +266,7 @@
 <translation id="3943857333388298514">បិទភ្ជាប់</translation>
 <translation id="3958548648197196644">គីវី</translation>
 <translation id="3966388904776714213">កម្មវិធីចាក់ចម្រៀង</translation>
+<translation id="3984317463833596033">ផ្ដល់ការអនុញ្ញាតឱ្យ Parallels Desktop កែប្រែ​ឯកសារ​នៅក្នុងថត <ph name="FOLDER_NAME" /></translation>
 <translation id="4002066346123236978">ចំណងជើង</translation>
 <translation id="4070370845051020638">វិធីសាស្ត្របញ្ចូលភាសាកាតាំង</translation>
 <translation id="4072248638558688893">ក្តារចុចតាមិល (Phonetic)</translation>
@@ -290,6 +295,7 @@
 <translation id="4470564870223067757">ហានគុល 2 ឈុត</translation>
 <translation id="4477219268485577442">សូរសព្ទប៊ុលហ្គារី</translation>
 <translation id="4479812471636796472">ក្តារចុចអាមេរិក Dvorak</translation>
+<translation id="4481711095103932593">ថតនេះ​ត្រូវបានចែករំលែក​ជាមួយ Windows</translation>
 <translation id="4487088045714738411">ក្តារចុចបែលហ្សិុក</translation>
 <translation id="4522570452068850558">ព័ត៌មានលំអិត</translation>
 <translation id="4552678318981539154">ទិន្នន័យចន្លោះផ្ទុ</translation>
@@ -335,10 +341,12 @@
 <translation id="4881695831933465202">បើក</translation>
 <translation id="4886021172213954916">ក្តារចុចតាមីល (Typewriter)</translation>
 <translation id="4892969127351273348">មិនអាចបើក​ដោយប្រើ <ph name="APP_NAME" /> បានទេ</translation>
+<translation id="4900532980794411603">ចែករំលែក​ជាមួយ Parallels Desktop</translation>
 <translation id="4905417359854579806">រួចរាល់​ដើម្បី​បម្រុងទុក <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">បានដោះស្រាយ</translation>
 <translation id="4935975195727477204">ផ្កា Gazania</translation>
 <translation id="4943368462779413526">បាល់ទាត់</translation>
+<translation id="4961158930123534723">បានចែករំលែក​ថត 1 ជាមួយ Parallels Desktop</translation>
 <translation id="4969785127455456148">អាល់ប៊ុម</translation>
 <translation id="497244430928947428">ក្តារចុចម៉ាឡាយ៉ាឡាម (Phonetic)</translation>
 <translation id="4973523518332075481">ប្រើឈ្មោះដែលមានអក្សរ <ph name="MAX_LENGTH" /> តួ ឬតិចជាងនេះ</translation>
@@ -350,6 +358,7 @@
 <translation id="5010406651457630570">កុំព្យូទ័រ</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5024856940085636730">ប្រតិបត្តិចំណាយពេលយូរជាងការរំពឹងទុក។ តើអ្នកចង់បោះបង់វាទេ?</translation>
+<translation id="5036159836254554629">គ្រប់គ្រង​ការចែករំលែក Parallels Desktop</translation>
 <translation id="5038625366300922036">មើលបន្ថែមទៀត...</translation>
 <translation id="5061708541166515394">ភាពដិត</translation>
 <translation id="5068919226082848014">ភីហ្សា</translation>
@@ -498,6 +507,7 @@
 <translation id="656398493051028875">កំពុងលុប "<ph name="FILENAME" />"...</translation>
 <translation id="6581162200855843583">តំណ Google Drive</translation>
 <translation id="6607272825297743757">ព័ត៌មានឯកសារ</translation>
+<translation id="6609332149380188670">បានចែករំលែក​ថត <ph name="NUMBER_OF_ITEMS" /> ជាមួយ Parallels Desktop</translation>
 <translation id="6629841649550503054">បានបម្រុងទុកទៅក្នុង <ph name="BEGIN_LINK" />Google Drive!<ph name="END_LINK" />អស់ហើយ</translation>
 <translation id="6643016212128521049">ជម្រះ</translation>
 <translation id="6650726141019353908">មេអំបៅ​ពណ៌​ផ្កាឈូក</translation>
@@ -679,6 +689,7 @@
 <translation id="8475647382427415476">Google ថាសមិនអាចធ្វើសមកាលកម្ម "<ph name="FILENAME" />" បានទេឥឡូវនេះ។ Google ថាសនឹងព្យាយាមម្តងទៀតពេលក្រោយ។</translation>
 <translation id="8477649328507734757">Spin</translation>
 <translation id="8487700953926739672">មាននៅក្រៅបណ្តាញ</translation>
+<translation id="8490342535582768689">ផ្ដល់ការអនុញ្ញាតឱ្យ Parallels Desktop កែប្រែ​ឯកសារ​នៅក្នុង Google ថាស​របស់អ្នក។ ការផ្លាស់ប្ដូរនឹង​ធ្វើសមកាលកម្ម​ទៅឧបករណ៍​ផ្សេងទៀត​របស់អ្នក។</translation>
 <translation id="8521441079177373948">ភាសាអង់គ្លេស</translation>
 <translation id="8525306231823319788">ពេញអេក្រង់</translation>
 <translation id="8551494947769799688">ភាសាឡាត់វៀ</translation>

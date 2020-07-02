@@ -10,15 +10,17 @@
 
 #include "base/callback_forward.h"
 #include "base/component_export.h"
+#include "base/containers/flat_map.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/strings/string_piece.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_test_util.h"
-#include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "services/network/trust_tokens/trust_token_request_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/origin.h"
 
 namespace net {
 class URLRequest;
@@ -235,10 +237,12 @@ const TrustTokenTestParameters kSigningTrustTokenTestParameters[]{
 // a serialized one-item dictionary mapping the commitment to the issuer.
 //
 // Example:
-//   WrapKeyCommitmentForIssuer("https://issuer.com", R"( {"srrkey": "abcd"} )")
+//   WrapKeyCommitmentForIssuers({{
+//      "https://issuer.com", R"( {"srrkey": "abcd"} )"
+//      }})
 //   =  R"( { "https://issuer.com": { "srrkey": "abcd" } } )"
-std::string WrapKeyCommitmentForIssuer(const url::Origin& issuer,
-                                       base::StringPiece commitment);
+std::string WrapKeyCommitmentsForIssuers(
+    base::flat_map<url::Origin, base::StringPiece> issuers_and_commitments);
 
 }  // namespace network
 

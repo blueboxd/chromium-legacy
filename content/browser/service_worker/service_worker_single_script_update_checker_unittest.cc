@@ -106,7 +106,8 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
   mojo::Remote<storage::mojom::ServiceWorkerResourceReader> WrapReader(
       std::unique_ptr<MockServiceWorkerResourceReader> reader) {
     mojo::Remote<storage::mojom::ServiceWorkerResourceReader> remote;
-    remote.Bind(reader->BindNewPipeAndPassRemote(base::BindOnce(
+    MockServiceWorkerResourceReader* raw_reader = reader.get();
+    remote.Bind(raw_reader->BindNewPipeAndPassRemote(base::BindOnce(
         [](std::unique_ptr<MockServiceWorkerResourceReader>) {
           // Keep |reader| until mojo connection is destroyed.
         },
@@ -117,7 +118,8 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
   mojo::Remote<storage::mojom::ServiceWorkerResourceWriter> WrapWriter(
       std::unique_ptr<MockServiceWorkerResourceWriter> writer) {
     mojo::Remote<storage::mojom::ServiceWorkerResourceWriter> remote;
-    remote.Bind(writer->BindNewPipeAndPassRemote(base::BindOnce(
+    MockServiceWorkerResourceWriter* raw_writer = writer.get();
+    remote.Bind(raw_writer->BindNewPipeAndPassRemote(base::BindOnce(
         [](std::unique_ptr<MockServiceWorkerResourceWriter>) {
           // Keep |writer| until mojo connection is destroyed.
         },

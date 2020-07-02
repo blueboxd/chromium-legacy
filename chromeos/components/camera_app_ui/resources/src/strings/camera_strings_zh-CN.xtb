@@ -30,6 +30,7 @@
 <translation id="3517926952904427380">无法拍摄纵向照片</translation>
 <translation id="3569311554794739032">确定要移除“<ph name="FILE" />”吗？</translation>
 <translation id="3810838688059735925">视频</translation>
+<translation id="4118525110028899586">暂停录制</translation>
 <translation id="4279490309300973883">正在镜像</translation>
 <translation id="4329152592498422850">切换到正方形照片拍摄模式</translation>
 <translation id="4383571725254449280">打印性能日志</translation>
@@ -67,11 +68,13 @@
 <translation id="8067883171444229417">播放视频</translation>
 <translation id="8131740175452115882">确认</translation>
 <translation id="8145038249676204903">切换到拍照模式</translation>
+<translation id="8239780215768881278">拍摄视频快照</translation>
 <translation id="8261506727792406068">删除</translation>
 <translation id="8428213095426709021">设置</translation>
 <translation id="8687491812650032292">高清 <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
 <translation id="8732462232047530626">预览元数据</translation>
 <translation id="8815966864175525708">切换到纵向照片拍摄模式</translation>
+<translation id="8828441885228359828">继续录制</translation>
 <translation id="8870695351537079478">无法开始录制</translation>
 <translation id="9045155556724273246">10 秒</translation>
 <translation id="945522503751344254">发送反馈</translation>

@@ -9,6 +9,8 @@ import android.content.pm.ResolveInfo;
 import android.text.TextUtils;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
@@ -48,11 +50,11 @@ public class DefaultBrowserPromoUtils {
     private static final String PROMO_COUNT_PARAM = "max_promo_count";
     private static final String PROMO_INTERVAL_PARAM = "promo_interval";
 
-    private static final String CHROME_STABLE_PACKAGE_NAME = "com.android.chrome";
+    static final String CHROME_STABLE_PACKAGE_NAME = "com.android.chrome";
 
     // TODO(crbug.com/1090103): move to some util class for reuse.
-    private static final String[] CHROME_PACKAGE_NAMES = {CHROME_STABLE_PACKAGE_NAME,
-            "org.chromium.chrome", "com.chrome.canary", "com.chrome.beta", "com.chrome.dev"};
+    static final String[] CHROME_PACKAGE_NAMES = {CHROME_STABLE_PACKAGE_NAME, "org.chromium.chrome",
+            "com.chrome.canary", "com.chrome.beta", "com.chrome.dev"};
 
     /**
      * Determine whether a promo dialog should be displayed or not. And prepare related logic to
@@ -160,9 +162,8 @@ public class DefaultBrowserPromoUtils {
     }
 
     /**
-     * Check the result of default browser promo on start up if needed.
-     * @return True if the default browser promo dialog is displayed in this session or last session
-     *         and the result has not been recorded yet.
+     * Check the result of default browser promo on start up if the default browser promo dialog is
+     * displayed in this session or last session and the result has not been recorded yet.
      */
     public static void maybeRecordOutcomeOnStart() {
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_DEFAULT_BROWSER_PROMO)) return;
@@ -178,7 +179,8 @@ public class DefaultBrowserPromoUtils {
                 ChromePreferenceKeys.DEFAULT_BROWSER_PROMO_PROMOED_BY_SYSTEM_SETTINGS, false);
     }
 
-    private static boolean isChromePreStableInstalled() {
+    @VisibleForTesting
+    static boolean isChromePreStableInstalled() {
         for (ResolveInfo info : PackageManagerUtils.queryAllWebBrowsersInfo()) {
             for (String name : CHROME_PACKAGE_NAMES) {
                 if (name.equals(CHROME_STABLE_PACKAGE_NAME)) continue;
@@ -188,7 +190,8 @@ public class DefaultBrowserPromoUtils {
         return false;
     }
 
-    private static boolean isCurrentDefaultBrowserChrome(ResolveInfo info) {
+    @VisibleForTesting
+    static boolean isCurrentDefaultBrowserChrome(ResolveInfo info) {
         String packageName = info.activityInfo.packageName;
         for (String name : CHROME_PACKAGE_NAMES) {
             if (name.equals(packageName)) return true;
@@ -196,8 +199,9 @@ public class DefaultBrowserPromoUtils {
         return false;
     }
 
+    @VisibleForTesting
     @DefaultBrowserState
-    private static int getCurrentDefaultBrowserState(ResolveInfo info) {
+    static int getCurrentDefaultBrowserState(@NonNull ResolveInfo info) {
         if (info.match == 0) return DefaultBrowserState.NO_DEFAULT; // no default
         if (TextUtils.equals(ContextUtils.getApplicationContext().getPackageName(),
                     info.activityInfo.packageName)) {

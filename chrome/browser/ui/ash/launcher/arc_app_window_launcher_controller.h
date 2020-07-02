@@ -24,6 +24,10 @@ namespace aura {
 class Window;
 }
 
+namespace gfx {
+class ImageSkia;
+}
+
 class ArcAppWindow;
 class ArcAppWindowLauncherItemController;
 class ChromeLauncherController;
@@ -115,6 +119,11 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
   void OnArcOptInManagementCheckStarted() override;
   void OnArcSessionStopped(arc::ArcStopReason stop_reason) override;
 
+  // Sets the window title and icon.
+  void SetDescription(int32_t task_id,
+                      const std::string& title,
+                      gfx::ImageSkia icon);
+
   int active_task_id_ = -1;
   TaskIdToAppWindowInfo task_id_to_app_window_info_;
   ShelfGroupToAppControllerMap app_shelf_group_to_controller_map_;
@@ -126,6 +135,8 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
   // starts for the first time. OptIn management check is preceding step before
   // ARC container is actually started.
   base::Time opt_in_management_check_start_time_;
+
+  base::WeakPtrFactory<ArcAppWindowLauncherController> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppWindowLauncherController);
 };

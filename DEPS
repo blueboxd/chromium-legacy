@@ -188,11 +188,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'b7bfbc299aaeab626e9ace51598d4fe75d163831',
+  'skia_revision': '7a3ea55259873508171a0e488930d383530d5d41',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '9e077af88d05b69292a949d61e5bb7ee1752a130',
+  'v8_revision': 'fa98c38d25098210b3116360b6b7bf0920d30570',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -200,7 +200,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '2cc63feff1127fe65efac7ee8c88a073912fe7b8',
+  'angle_revision': 'cbcc500fa4261651bafd079d48a93c6b9b2fd5d5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -311,11 +311,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '2ffc55ab385d5a6e4bb4c6b261692842574d771e',
+  'dawn_revision': '509b811a75c21301fec013594815fdbc62869c76',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': '1bb8308215d886eff707802a882302d5a5c525a9',
+  'quiche_revision': 'c41d2fe865c99b1e01fcaecf697247d126cdf8fd',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -327,7 +327,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling wuffs
   # and whatever else without interference from each other.
-  'wuffs_revision': '00cc8a50aa0c86b6bcb37e9ece8fb100047cc17b',
+  'wuffs_revision': '991e1b2667173424abc9327a945a6ab2bce8ac38',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libgifcodec
   # and whatever else without interference from each other.
@@ -346,7 +346,7 @@ vars = {
   # revisions.
 
   # GN CIPD package version.
-  'gn_version': 'git_revision:7d7e8deea36d126397bda2cf924682504271f0e1',
+  'gn_version': 'git_revision:cd3869be2477f7ee1aa3f27f43ee934e74722dfb',
 
   # Also, if you change these, update buildtools/DEPS too. Also update the
   # libc++ svn_revision in //buildtools/deps_revisions.gni.
@@ -454,7 +454,7 @@ deps = {
     'packages': [
       {
         'package': 'chromium/chrome/test/data/autofill/captured_sites',
-        'version': '_spxwHuc66jyUSt1TusjXfMvywpnPJzFCH-4vkPBPsYC',
+        'version': 'ANsUq8exbUu7n2CoTrrGCi4jmlXNCf1vPwaoV9XJSd4C',
       }
     ],
     'condition': 'checkout_chromium_autofill_test_dependencies',
@@ -901,7 +901,7 @@ deps = {
   },
 
   'src/third_party/ffmpeg':
-    Var('chromium_git') + '/chromium/third_party/ffmpeg.git' + '@' + '23b2a15c2595925c8ec0d3be9a51ec3257281bd1',
+    Var('chromium_git') + '/chromium/third_party/ffmpeg.git' + '@' + '388ba367aad4c288ebe2ef382fd80c7abc32b2c8',
 
   'src/third_party/flac':
     Var('chromium_git') + '/chromium/deps/flac.git' + '@' + 'af862024c8c8fa0ae07ced05e89013d881b00596',
@@ -1525,7 +1525,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@30ceaafc85cb2055fdbcc0cc410c7b670d650df3',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@232b0b4dc0b5ae9f481311b204d7a9973ff9edcb',
     'condition': 'checkout_src_internal',
   },
 

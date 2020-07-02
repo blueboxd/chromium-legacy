@@ -45,6 +45,8 @@
 <translation id="1395262318152388157">Soekglyer</translation>
 <translation id="1399648040768741453">Telugu-sleutelbord (foneties)</translation>
 <translation id="1430915738399379752">Druk uit</translation>
+<translation id="1433600251059882049">Hierdie vouer word met Linux en Windows gedeel</translation>
+<translation id="1435838927755162558">Deel vouer met Parallels Desktop</translation>
 <translation id="1439494416798956626">Geskuif na <ph name="FOLDER_NAME" /></translation>
 <translation id="1441841714100794440">Viëtnamese sleutelbord (Telex)</translation>
 <translation id="1455548678241328678">Noorweegse sleutelbord</translation>
@@ -79,6 +81,7 @@
 <translation id="1844692022597038441">Hierdie lêer is nie vanlyn beskikbaar nie.</translation>
 <translation id="184633654410729720">Thaise sleutelbord (Kedmanee)</translation>
 <translation id="1847880352285315359">Gestoor</translation>
+<translation id="1853795129690976061">Hierdie vouer word met Linux gedeel</translation>
 <translation id="1864756863218646478">Die lêer kon nie gevind word nie.</translation>
 <translation id="1921986354447415460">Turkse F-sleutelbord</translation>
 <translation id="1924372192547904021">Het <ph name="DRIVE_NAME" /> geformateer</translation>
@@ -180,6 +183,7 @@
 <translation id="303198083543495566">Geografie</translation>
 <translation id="3057861065630527966">Rugsteun jou foto's en video's</translation>
 <translation id="3064388234319122767">Transliterasie (zdravo → здраво)</translation>
+<translation id="3067790092342515856">Windows-lêers</translation>
 <translation id="3078461028045006476">Deel met <ph name="EXTENSION_NAME" /></translation>
 <translation id="3088034400796962477">Transliterasie (salam ← سلام)</translation>
 <translation id="3116361045094675131">VK-sleutelbord</translation>
@@ -262,6 +266,7 @@
 <translation id="3943857333388298514">Plak</translation>
 <translation id="3958548648197196644">Kiwi</translation>
 <translation id="3966388904776714213">Oudiospeler</translation>
+<translation id="3984317463833596033">Gee Parallels Desktop toestemming om lêers in die <ph name="FOLDER_NAME" />-vouer te wysig</translation>
 <translation id="4002066346123236978">Titel</translation>
 <translation id="4070370845051020638">Kantonnese invoermetode</translation>
 <translation id="4072248638558688893">Tamil-sleutelbord (foneties)</translation>
@@ -290,6 +295,7 @@
 <translation id="4470564870223067757">Hangul 2 Stel</translation>
 <translation id="4477219268485577442">Bulgaars foneties</translation>
 <translation id="4479812471636796472">VSA Dvorak-sleutelbord</translation>
+<translation id="4481711095103932593">Hierdie vouer word met Windows gedeel</translation>
 <translation id="4487088045714738411">Belgiese sleutelbord</translation>
 <translation id="4522570452068850558">Besonderhede</translation>
 <translation id="4552678318981539154">Koop meer berging</translation>
@@ -335,10 +341,12 @@
 <translation id="4881695831933465202">Maak oop</translation>
 <translation id="4886021172213954916">Tamil-sleutelbord (tikmasjien)</translation>
 <translation id="4892969127351273348">Kan nie met <ph name="APP_NAME" /> oopmaak nie</translation>
+<translation id="4900532980794411603">Deel met Parallels Desktop</translation>
 <translation id="4905417359854579806">Gereed om <ph name="FILE_COUNT" /> te rugsteun</translation>
 <translation id="4924638091161556692">Reggestel</translation>
 <translation id="4935975195727477204">Botterblom</translation>
 <translation id="4943368462779413526">Voetbal</translation>
+<translation id="4961158930123534723">1 vouer is met Parallels Desktop gedeel</translation>
 <translation id="4969785127455456148">Album</translation>
 <translation id="497244430928947428">Malabaarse sleutelbord (foneties)</translation>
 <translation id="4973523518332075481">Gebruik 'n naam wat <ph name="MAX_LENGTH" /> karakters of minder bevat</translation>
@@ -350,6 +358,7 @@
 <translation id="5010406651457630570">Rekenaars</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5024856940085636730">'n Handeling vat langer as verwag. Wil jy dit staak?</translation>
+<translation id="5036159836254554629">Bestuur Parallels Desktop-deling</translation>
 <translation id="5038625366300922036">Sien nog …</translation>
 <translation id="5061708541166515394">Kontras</translation>
 <translation id="5068919226082848014">Pizza</translation>
@@ -498,6 +507,7 @@
 <translation id="656398493051028875">Vee tans "<ph name="FILENAME" />" uit …</translation>
 <translation id="6581162200855843583">Google Drive-skakel</translation>
 <translation id="6607272825297743757">Lêerinligting</translation>
+<translation id="6609332149380188670"><ph name="NUMBER_OF_ITEMS" /> vouers is met Parallels Desktop gedeel</translation>
 <translation id="6629841649550503054">Alles is gerugsteun na <ph name="BEGIN_LINK" />Google Drive!<ph name="END_LINK" /></translation>
 <translation id="6643016212128521049">Vee uit</translation>
 <translation id="6650726141019353908">Pienk skoenlapper</translation>
@@ -679,6 +689,7 @@
 <translation id="8475647382427415476">Google Drive kon <ph name="FILENAME" /> nie nou onmiddellik sinkroniseer nie. Google Drive sal later weer probeer.</translation>
 <translation id="8477649328507734757">Spin</translation>
 <translation id="8487700953926739672">Vanlyn beskikbaar</translation>
+<translation id="8490342535582768689">Gee Parallels Desktop toestemming om lêers in jou Google Drive te wysig. Veranderinge sal met jou ander toestelle gesinkroniseer word.</translation>
 <translation id="8521441079177373948">VK</translation>
 <translation id="8525306231823319788">Volskerm</translation>
 <translation id="8551494947769799688">Letties</translation>

@@ -221,6 +221,23 @@ Polymer({
     showFullOngoingStatus_: Boolean,
   },
 
+  listeners: {
+    'click': 'onClick_',
+  },
+
+  /** @private */
+  onClick_() {
+    // Since the status or cancel button has the focus-row-control attribute,
+    // this will trigger the iron-list focus behavior and highlight the entire
+    // entry.
+    if (this.isCompletedPrintJob_()) {
+      this.$$('#completionStatus').focus();
+      return;
+    }
+    // Focus on the cancel button when clicking on the entry.
+    this.$$('#cancelPrintJobButton').focus();
+  },
+
   /** @override */
   attached() {
     IronA11yAnnouncer.requestAvailability();

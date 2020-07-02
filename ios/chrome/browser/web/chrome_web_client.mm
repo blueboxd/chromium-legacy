@@ -33,6 +33,9 @@
 #import "ios/chrome/browser/web/error_page_util.h"
 #include "ios/chrome/browser/web/features.h"
 #import "ios/components/security_interstitials/ios_blocking_page_tab_helper.h"
+#import "ios/components/security_interstitials/lookalikes/lookalike_url_blocking_page.h"
+#import "ios/components/security_interstitials/lookalikes/lookalike_url_container.h"
+#import "ios/components/security_interstitials/lookalikes/lookalike_url_controller_client.h"
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_error.h"
 #include "ios/components/webui/web_ui_url_constants.h"
 #include "ios/public/provider/chrome/browser/browser_url_rewriter_provider.h"
@@ -45,6 +48,7 @@
 #include "ios/web/public/navigation/browser_url_rewriter.h"
 #include "ios/web/public/navigation/navigation_manager.h"
 #include "net/http/http_util.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
@@ -100,7 +104,26 @@ NSString* GetSafeBrowsingErrorPageHTML(web::WebState* web_state,
 // Returns the lookalike error page HTML.
 NSString* GetLookalikeErrorPageHTML(web::WebState* web_state,
                                     int64_t navigation_id) {
-  std::string error_page_content = "lookalike error";
+  // Fetch the lookalike URL info from the WebState's container.
+  LookalikeUrlContainer* container =
+      LookalikeUrlContainer::FromWebState(web_state);
+  std::unique_ptr<LookalikeUrlContainer::LookalikeUrlInfo> lookalike_info =
+      container->ReleaseLookalikeUrlInfo();
+
+  // Construct the blocking page and associate it with the WebState.
+  std::unique_ptr<security_interstitials::IOSSecurityInterstitialPage> page =
+      std::make_unique<LookalikeUrlBlockingPage>(
+          web_state, lookalike_info->safe_url, lookalike_info->request_url,
+          ukm::ConvertToSourceId(navigation_id,
+                                 ukm::SourceIdType::NAVIGATION_ID),
+          lookalike_info->match_type,
+          std::make_unique<LookalikeUrlControllerClient>(
+              web_state, lookalike_info->safe_url, lookalike_info->request_url,
+              GetApplicationContext()->GetApplicationLocale()));
+  std::string error_page_content = page->GetHtmlContents();
+  security_interstitials::IOSBlockingPageTabHelper::FromWebState(web_state)
+      ->AssociateBlockingPage(navigation_id, std::move(page));
+
   return base::SysUTF8ToNSString(error_page_content);
 }
 

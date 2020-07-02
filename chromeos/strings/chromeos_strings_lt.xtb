@@ -15,6 +15,7 @@
 <translation id="1947737735496445907">Atspausdinta</translation>
 <translation id="1979103255016296513">Vėluojama pakeisti slaptažodį</translation>
 <translation id="2049639323467105390">Įrenginys valdomas „<ph name="DOMAIN" />“.</translation>
+<translation id="2161394479394250669">Atšaukti spausdinimo užduotį</translation>
 <translation id="2338501278241028356">Įjunkite „Bluetooth“, kad aptiktumėte įrenginius netoliese</translation>
 <translation id="2375079107209812402">Liko bandymų: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="2805756323405976993">Taikomosios programos</translation>
@@ -24,12 +25,12 @@
 <translation id="3268178239013324452">Nepavyko – atidarytos durelės</translation>
 <translation id="3369013195428705271">Ar tikrai norite išvalyti visą spausdinimo istoriją? Vykdomos spausdinimo užduotys nebus išvalytos.</translation>
 <translation id="3456078764689556234">Atspausdinta <ph name="PRINTED_PAGES" /> iš <ph name="TOTAL_PAGES" /> psl.</translation>
+<translation id="3459509316159669723">Spausdinimas</translation>
 <translation id="3527036260304016759">Nepavyko – nežinoma klaida</translation>
 <translation id="3749289110408117711">Failo pavadinimas</translation>
 <translation id="38114475217616659">Išvalyti visą istoriją</translation>
 <translation id="3820172043799983114">Netinkamas PIN kodas.</translation>
 <translation id="3838338534323494292">Naujas slaptažodis</translation>
-<translation id="3953601359945991637"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> iš <ph name="TOTAL_PAGE_NUMBER" /> psl.</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> tvarko šį įrenginį ir gali pasiekti visus naudotojo veiklos duomenis, įskaitant tinklalapius, kuriuose lankėsi, slaptažodžius ir el. paštą.</translation>
 <translation id="4003384961948020559">Nepavyko – išvestis pilna</translation>
 <translation id="4034824040120875894">Spausdintuvas</translation>

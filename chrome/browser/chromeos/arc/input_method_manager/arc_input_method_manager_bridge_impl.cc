@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "components/arc/session/arc_bridge_service.h"
-#include "mojo/public/cpp/bindings/interface_ptr.h"
 
 namespace arc {
 

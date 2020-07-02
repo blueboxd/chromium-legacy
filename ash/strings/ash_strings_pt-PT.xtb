@@ -73,6 +73,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="1747827819627189109">Teclado no ecrã ativado</translation>
 <translation id="1761222317188459878">Ativar/desativar ligação de rede. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Deslocar para a direita</translation>
+<translation id="1782199038061388045">tradução</translation>
 <translation id="181103072419391116">Intensidade do sinal: <ph name="SIGNAL_STRENGTH" />, gerida pelo administrador</translation>
 <translation id="1812997170047690955">O que está no meu ecrã?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
@@ -103,7 +104,6 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="2126242104232412123">Novo espaço de trabalho</translation>
 <translation id="2127372758936585790">Carregador de baixo consumo</translation>
 <translation id="2135456203358955318">Lupa ancorada</translation>
-<translation id="2143915448548023856">Definições de visualização</translation>
 <translation id="2144487987174258011">Reinicie para atualizar o Adobe Flash Player</translation>
 <translation id="2208323208084708176">Modo de ambiente de trabalho unificado</translation>
 <translation id="2220572644011485463">PIN ou palavra-passe</translation>
@@ -185,6 +185,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="3081696990447829002">Expandir menu</translation>
 <translation id="3087734570205094154">Parte inferior</translation>
 <translation id="309749186376891736">Mover o cursor</translation>
+<translation id="3098580329624789136">Obtenha a intenção <ph name="INTENT" /> de "<ph name="QUERY" />"</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Reiniciar para atualizar</translation>
 <translation id="3139942575505304791">Secretária 1</translation>
@@ -222,6 +223,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="3465356146291925647">Gerida pelo administrador</translation>
 <translation id="3477079411857374384">Control-Shift-Espaço</translation>
 <translation id="3485319357743610354"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, intensidade do sinal: <ph name="SIGNAL_STRENGTH" /></translation>
+<translation id="3486220673238053218">definição</translation>
 <translation id="3510164367642747937">Realçar cursor do rato</translation>
 <translation id="3513798432020909783">Conta gerida por <ph name="MANAGER_EMAIL" />.</translation>
 <translation id="3573179567135747900">Reverter alteração para <ph name="FROM_LOCALE" /> (requer reinicio)</translation>
@@ -272,8 +274,8 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="4072264167173457037">Sinal médio</translation>
 <translation id="4112140312785995938">Procurar para trás</translation>
 <translation id="4129129681837227511">Para ver notificações no ecrã de bloqueio, desbloqueie o mesmo para alterar a definição</translation>
-<translation id="4144413954005649103">Ao clicar com o botão direito do rato ou ao manter o botão premido, o Assistente mostra-lhe informações relacionadas com o que selecionou no ecrã.</translation>
 <translation id="4146833061457621061">Tocar música</translation>
+<translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> gerido por <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Idiomas</translation>
 <translation id="4195877955194704651">Botão de cliques automáticos</translation>
 <translation id="4197790712631116042">Desativado</translation>
@@ -528,6 +530,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="7378594059915113390">Controlos de multimédia</translation>
 <translation id="7398254312354928459">Ligação de rede alterada</translation>
 <translation id="7405710164030118432">Para desbloquear este dispositivo, introduza o código de acesso parental do seu Family Link.</translation>
+<translation id="741244894080940828">conversão</translation>
 <translation id="742594950370306541">A câmara está a ser utilizada.</translation>
 <translation id="743058460480092004">A câmara e o microfone estão a ser utilizados.</translation>
 <translation id="7436182601308224670">Boa tarde, <ph name="GIVEN_NAME" /></translation>
@@ -540,6 +543,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="7562368315689366235">Paleta de emoji</translation>
 <translation id="7564874036684306347">A movimentação de janelas para outro ambiente de trabalho pode provocar um comportamento inesperado. É possível dividir as notificações, as janelas e as caixas de diálogo subsequentes entre ambientes de trabalho.</translation>
 <translation id="7568294522609223312">Desative os cliques automáticos</translation>
+<translation id="7568637526529101738">Ao clicar com o botão direito do rato ou ao manter o botão premido, o Assistente mostra-lhe informações como a definição ou a conversão de unidades para a sua seleção.</translation>
 <translation id="7569509451529460200">O braille e o ChromeVox estão ativados</translation>
 <translation id="7593891976182323525">Pesquisar ou Shift</translation>
 <translation id="7600875258240007829">Ver todas as notificações</translation>

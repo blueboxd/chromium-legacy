@@ -15,6 +15,9 @@
 
 namespace blink {
 
+DOMFeaturePolicy::DOMFeaturePolicy(ExecutionContext* context)
+    : context_(context) {}
+
 bool DOMFeaturePolicy::allowsFeature(ScriptState* script_state,
                                      const String& feature) const {
   ExecutionContext* execution_context =
@@ -36,7 +39,7 @@ bool DOMFeaturePolicy::allowsFeature(ScriptState* script_state,
   scoped_refptr<const SecurityOrigin> origin =
       SecurityOrigin::CreateFromString(url);
   if (!origin || origin->IsOpaque()) {
-    GetDocument()->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+    context_->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kOther,
         mojom::ConsoleMessageLevel::kWarning,
         "Invalid origin url for feature '" + feature + "': " + url + "."));
@@ -100,17 +103,14 @@ Vector<String> DOMFeaturePolicy::getAllowlistForFeature(
 
 void DOMFeaturePolicy::AddWarningForUnrecognizedFeature(
     const String& feature) const {
-  GetDocument()->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+  context_->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
       mojom::ConsoleMessageSource::kOther, mojom::ConsoleMessageLevel::kWarning,
       "Unrecognized feature: '" + feature + "'."));
 }
 
 void DOMFeaturePolicy::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
+  visitor->Trace(context_);
 }
-
-void DOMFeaturePolicy::UpdateContainerPolicy(
-    const ParsedFeaturePolicy& container_policy,
-    scoped_refptr<const SecurityOrigin> src_origin) {}
 
 }  // namespace blink

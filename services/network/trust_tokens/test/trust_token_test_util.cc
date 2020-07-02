@@ -9,7 +9,6 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
-#include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 
 namespace network {
 
@@ -191,16 +190,24 @@ SerializeTrustTokenParametersAndConstructExpectation(
   return {std::move(trust_token_params), std::move(serialized_parameters)};
 }
 
-std::string WrapKeyCommitmentForIssuer(const url::Origin& issuer,
-                                       base::StringPiece commitment) {
+std::string WrapKeyCommitmentsForIssuers(
+    base::flat_map<url::Origin, base::StringPiece> issuers_and_commitments) {
   std::string ret;
   JSONStringValueSerializer serializer(&ret);
 
-  CHECK_NE(issuer.Serialize(),
-           "");  // guard against accidentally passing an opaque origin
-
   base::Value to_serialize(base::Value::Type::DICTIONARY);
-  to_serialize.SetKey(issuer.Serialize(), *base::JSONReader::Read(commitment));
+
+  for (const auto& kv : issuers_and_commitments) {
+    const url::Origin& issuer = kv.first;
+    base::StringPiece commitment = kv.second;
+
+    // guard against accidentally passing an origin without a unique
+    // serialization
+    CHECK_NE(issuer.Serialize(), "null");
+
+    to_serialize.SetKey(issuer.Serialize(),
+                        *base::JSONReader::Read(commitment));
+  }
   CHECK(serializer.Serialize(to_serialize));
   return ret;
 }

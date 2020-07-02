@@ -69,6 +69,7 @@
 <translation id="2583543531130364912">Адкалібруйце сэнсарны экран</translation>
 <translation id="2666092431469916601">Зверху</translation>
 <translation id="2701330563083355633">Абагулена з прылады <ph name="DEVICE_NAME" /></translation>
+<translation id="271033894570825754">Новае</translation>
 <translation id="2743387203779672305">Скапіраваць у буфер абмену</translation>
 <translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">Адкрыць папку</translation>
@@ -208,7 +209,7 @@
 <translation id="7848989271541991537">Перамешчана на старонку <ph name="PAGE_NUMBER" />, радок <ph name="ROW_NUMBER" />, слупок <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">Не блакіраваць</translation>
 <translation id="7907591526440419938">Адкрыць файл</translation>
-<translation id="7952747673138230804">Chrome OS паказвае прапановы для азнаямлення з новым змесцівам. Статыстыка для паляпшэнне якасці будзе адпраўляцца, толькі калі вы згадзіліся на абагульванне даных пра выкарыстанне. <ph name="MANAGE_SETTINGS" /></translation>
+<translation id="7952747673138230804">Chrome OS паказвае прапановы для азнаямлення з новым змесцівам. Статыстыка для паляпшэння якасці прапаноў будзе адпраўляцца, толькі калі вы згадзіліся на абагульванне даных пра выкарыстанне. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">Command</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Больш чым 1 непрачытанае апавяшчэнне}one{Больш чым # непрачытанае апавяшчэнне}few{Больш чым # непрачытаныя апавяшчэнні}many{Больш чым # непрачытаных апавяшчэнняў}other{Больш чым # непрачытанага апавяшчэння}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{праз 1 хв}one{праз # хв}few{праз # хв}many{праз # хв}other{праз # хв}}</translation>

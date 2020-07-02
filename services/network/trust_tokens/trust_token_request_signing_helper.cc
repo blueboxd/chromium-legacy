@@ -231,9 +231,6 @@ void TrustTokenRequestSigningHelper::Begin(
     net::URLRequest* request,
     base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done) {
   DCHECK(request);
-  DCHECK(!request->initiator() ||
-         IsOriginPotentiallyTrustworthy(*request->initiator()))
-      << *request->initiator();
 #if DCHECK_IS_ON()
   // Add some postcondition checking on return.
   done = base::BindOnce(

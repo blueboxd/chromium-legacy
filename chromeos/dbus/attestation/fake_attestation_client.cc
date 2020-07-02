@@ -8,11 +8,15 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "third_party/cros_system_api/dbus/attestation/dbus-constants.h"
 
 namespace chromeos {
 namespace {
+
+constexpr int kCertificateNotAssigned = 0;
+constexpr char kFakeCertPrefix[] = "fake cert";
 
 // Posts |callback| on the current thread's task runner, passing it the
 // |response| message.
@@ -21,6 +25,22 @@ void PostProtoResponse(base::OnceCallback<void(const ReplyType&)> callback,
                        const ReplyType& reply) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), reply));
+}
+
+bool GetCertificateRequestEqual(::attestation::GetCertificateRequest r1,
+                                ::attestation::GetCertificateRequest r2) {
+  // To prevent regression from future expansion to |GetCertificateRequest|, we
+  // compare their serialized results so the difference doesn't get away from
+  // this function. We can't really make use of
+  // |google::protobuf::util::MessageDifferencer|, which doesn't apply to
+  // |MessageLite|.
+
+  // |shall_trigger_enrollment| and |forced| shouldn't affect the whilelisting.
+  r1.clear_forced();
+  r2.clear_forced();
+  r1.clear_shall_trigger_enrollment();
+  r2.clear_shall_trigger_enrollment();
+  return r1.SerializeAsString() == r2.SerializeAsString();
 }
 
 }  // namespace
@@ -136,7 +156,31 @@ void FakeAttestationClient::Enroll(const ::attestation::EnrollRequest& request,
 void FakeAttestationClient::GetCertificate(
     const ::attestation::GetCertificateRequest& request,
     GetCertificateCallback callback) {
-  NOTIMPLEMENTED();
+  ::attestation::GetCertificateReply reply;
+  reply.set_status(
+      ::attestation::AttestationStatus::STATUS_UNEXPECTED_DEVICE_ERROR);
+
+  is_enrolled_ |= request.shall_trigger_enrollment();
+  if (!is_enrolled_) {
+    PostProtoResponse(std::move(callback), reply);
+    return;
+  }
+
+  for (size_t i = 0; i < allowlisted_requests_.size(); ++i) {
+    if (GetCertificateRequestEqual(allowlisted_requests_[i], request)) {
+      if (request.forced() ||
+          certificate_indices_[i] == kCertificateNotAssigned) {
+        ++certificate_count_;
+        certificate_indices_[i] = certificate_count_;
+      }
+      reply.set_status(::attestation::AttestationStatus::STATUS_SUCCESS);
+      reply.set_certificate(kFakeCertPrefix +
+                            base::NumberToString(certificate_indices_[i]));
+      break;
+    }
+  }
+
+  PostProtoResponse(std::move(callback), reply);
 }
 
 void FakeAttestationClient::SignEnterpriseChallenge(
@@ -188,6 +232,17 @@ void FakeAttestationClient::ConfigureEnrollmentPreparations(bool is_prepared) {
 void FakeAttestationClient::ConfigureEnrollmentPreparationsSequence(
     std::deque<bool> sequence) {
   preparation_sequences_ = std::move(sequence);
+}
+
+void FakeAttestationClient::AllowlistCertificateRequest(
+    const ::attestation::GetCertificateRequest& request) {
+  for (const auto& req : allowlisted_requests_) {
+    if (GetCertificateRequestEqual(req, request)) {
+      return;
+    }
+  }
+  allowlisted_requests_.push_back(request);
+  certificate_indices_.push_back(kCertificateNotAssigned);
 }
 
 AttestationClient::TestInterface* FakeAttestationClient::GetTestInterface() {

@@ -1852,8 +1852,8 @@ class NewLinkedHashSetWrapper final
   void Trace(Visitor* v) const { v->Trace(hash_set_); }
 
   void Swap() {
-    HashType* hash_set = MakeGarbageCollected<HashType>();
-    hash_set_.Swap(*hash_set);
+    HashType hash_set;
+    hash_set_.Swap(hash_set);
   }
 
   HashType hash_set_;

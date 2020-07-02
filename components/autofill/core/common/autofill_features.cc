@@ -152,6 +152,11 @@ const base::Feature kAutofillProfileImportFromUnifiedSection{
     "AutofillProfileImportFromUnifiedSection",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// TODO(crbug.com/1101280): Remove once feature is tested.
+const base::Feature kAutofillProfileImportFromUnfocusableFields{
+    "kAutofillProfileImportFromUnfocusableFields",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether Autofill uses server-side validation to ensure that fields
 // with invalid data are not suggested.
 const base::Feature kAutofillProfileServerValidation{

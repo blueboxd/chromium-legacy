@@ -1631,6 +1631,9 @@ class MockFileSelectListener : public FileChooserImpl::FileSelectListenerImpl {
                     const base::FilePath& base_dir,
                     blink::mojom::FileChooserParams::Mode mode) override {}
   void FileSelectionCanceled() override {}
+
+ private:
+  ~MockFileSelectListener() override = default;
 };
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
@@ -2475,7 +2478,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, FileChooserEndsFullscreen) {
   wc->EnterFullscreenMode(wc->GetMainFrame(), {});
   EXPECT_TRUE(wc->IsFullscreen());
   wc->RunFileChooser(wc->GetMainFrame(),
-                     std::make_unique<MockFileSelectListener>(),
+                     base::MakeRefCounted<MockFileSelectListener>(),
                      blink::mojom::FileChooserParams());
   EXPECT_FALSE(wc->IsFullscreen());
 }

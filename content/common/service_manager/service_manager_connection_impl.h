@@ -13,6 +13,7 @@
 #include "base/sequenced_task_runner.h"
 #include "content/common/content_export.h"
 #include "content/public/common/service_manager_connection.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
@@ -27,7 +28,7 @@ class CONTENT_EXPORT ServiceManagerConnectionImpl
     : public ServiceManagerConnection {
  public:
   explicit ServiceManagerConnectionImpl(
-      service_manager::mojom::ServiceRequest request,
+      mojo::PendingReceiver<service_manager::mojom::Service> receiver,
       scoped_refptr<base::SequencedTaskRunner> io_task_runner);
   ~ServiceManagerConnectionImpl() override;
 

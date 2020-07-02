@@ -193,6 +193,8 @@ message Optimization {
 }
 
 message PageHint {
+  reserved 2;
+
   // The pattern to match against the committed page URL.
   //
   // The pattern may be a single substring to match against the full URL or it
@@ -200,9 +202,6 @@ message PageHint {
   // separated by the ‘*’ wildcard character (with an implicit ‘*’ at the
   // beginning and end).
   optional string page_pattern = 1;
-  // The maximum effective connection type threshold for triggering the
-  // optimization associated with this hint.
-  optional EffectiveConnectionType max_ect_trigger = 2 [deprecated = true];
   // An ordered set of optimizations that should be whitelisted for this page
   // pattern.
   //

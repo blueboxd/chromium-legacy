@@ -221,9 +221,6 @@ public class ChromeTabModalPresenter
     }
 
     @Override
-    public void onContentOffsetChanged(int offset) {}
-
-    @Override
     public void onControlsOffsetChanged(int topOffset, int topControlsMinHeightOffset,
             int bottomOffset, int bottomControlsMinHeightOffset, boolean needsAnimate) {
         if (getDialogModel() == null || !mRunEnterAnimationOnCallback

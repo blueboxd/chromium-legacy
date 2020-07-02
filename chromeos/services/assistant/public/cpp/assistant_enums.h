@@ -7,7 +7,6 @@
 
 namespace chromeos {
 namespace assistant {
-
 // The initial state is NOT_READY, after Assistant service started it becomes
 // READY. When Assistant UI shows up the state becomes VISIBLE.
 enum AssistantStatus {

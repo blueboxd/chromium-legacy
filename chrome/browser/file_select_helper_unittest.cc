@@ -38,6 +38,7 @@ class TestFileSelectListener : public content::FileSelectListener {
       : files_(files) {}
 
  private:
+  ~TestFileSelectListener() override = default;
   // content::FileSelectListener overrides.
   void FileSelected(std::vector<blink::mojom::FileChooserFileInfoPtr> files,
                     const base::FilePath& base_dir,
@@ -245,7 +246,7 @@ TEST_F(FileSelectHelperTest, DeepScanCompletionCallback_NoFiles) {
       new FileSelectHelper(&profile);
 
   std::vector<blink::mojom::FileChooserFileInfoPtr> files;
-  auto listener = std::make_unique<TestFileSelectListener>(&files);
+  auto listener = base::MakeRefCounted<TestFileSelectListener>(&files);
   file_select_helper->SetFileSelectListenerForTesting(std::move(listener));
   file_select_helper->DontAbortOnMissingWebContentsForTesting();
 
@@ -266,7 +267,7 @@ TEST_F(FileSelectHelperTest, DeepScanCompletionCallback_OneOKFile) {
       new FileSelectHelper(&profile);
 
   std::vector<blink::mojom::FileChooserFileInfoPtr> files;
-  auto listener = std::make_unique<TestFileSelectListener>(&files);
+  auto listener = base::MakeRefCounted<TestFileSelectListener>(&files);
   file_select_helper->SetFileSelectListenerForTesting(std::move(listener));
   file_select_helper->DontAbortOnMissingWebContentsForTesting();
 
@@ -290,7 +291,7 @@ TEST_F(FileSelectHelperTest, DeepScanCompletionCallback_TwoOKFiles) {
       new FileSelectHelper(&profile);
 
   std::vector<blink::mojom::FileChooserFileInfoPtr> files;
-  auto listener = std::make_unique<TestFileSelectListener>(&files);
+  auto listener = base::MakeRefCounted<TestFileSelectListener>(&files);
   file_select_helper->SetFileSelectListenerForTesting(std::move(listener));
   file_select_helper->DontAbortOnMissingWebContentsForTesting();
 
@@ -315,7 +316,7 @@ TEST_F(FileSelectHelperTest, DeepScanCompletionCallback_TwoBadFiles) {
       new FileSelectHelper(&profile);
 
   std::vector<blink::mojom::FileChooserFileInfoPtr> files;
-  auto listener = std::make_unique<TestFileSelectListener>(&files);
+  auto listener = base::MakeRefCounted<TestFileSelectListener>(&files);
   file_select_helper->SetFileSelectListenerForTesting(std::move(listener));
   file_select_helper->DontAbortOnMissingWebContentsForTesting();
 
@@ -340,7 +341,7 @@ TEST_F(FileSelectHelperTest, DeepScanCompletionCallback_OKBadFiles) {
       new FileSelectHelper(&profile);
 
   std::vector<blink::mojom::FileChooserFileInfoPtr> files;
-  auto listener = std::make_unique<TestFileSelectListener>(&files);
+  auto listener = base::MakeRefCounted<TestFileSelectListener>(&files);
   file_select_helper->SetFileSelectListenerForTesting(std::move(listener));
   file_select_helper->DontAbortOnMissingWebContentsForTesting();
 

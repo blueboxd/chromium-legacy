@@ -73,6 +73,7 @@
 <translation id="1747827819627189109">Экрандагы баскычтоп күйгүзүлдү</translation>
 <translation id="1761222317188459878">Тармакка туташууну өчүрүү/күйгүзүү. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Оңго сыдыруу</translation>
+<translation id="1782199038061388045">котормосу</translation>
 <translation id="181103072419391116">Сигналдын күчү <ph name="SIGNAL_STRENGTH" />, Администраторуңуз башкарат</translation>
 <translation id="1812997170047690955">Экранымда эмне көрсөтүлүп турат?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
@@ -103,7 +104,6 @@
 <translation id="2126242104232412123">Жаңы иш такта</translation>
 <translation id="2127372758936585790">Кубаты төмөн кубаттагыч</translation>
 <translation id="2135456203358955318">Жалгаштырылган лупа</translation>
-<translation id="2143915448548023856">Дисплей жөндөөлөрү</translation>
 <translation id="2144487987174258011">Adobe Flash Player'ди жаңыртуу үчүн түзмөктү өчүрүп күйгүзүңүз</translation>
 <translation id="2208323208084708176">Биргелешкен иш тактасы режими</translation>
 <translation id="2220572644011485463">PIN же сырсөз</translation>
@@ -185,6 +185,7 @@
 <translation id="3081696990447829002">Менюну жайып көрсөтүү</translation>
 <translation id="3087734570205094154">Аягы</translation>
 <translation id="309749186376891736">Курсорду жылдыруу</translation>
+<translation id="3098580329624789136">"<ph name="QUERY" />" үчүн <ph name="INTENT" /> алуу</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Жаңыртуу үчүн өчүрүп күйгүзүңүз</translation>
 <translation id="3139942575505304791">1-иш такта</translation>
@@ -222,6 +223,7 @@
 <translation id="3465356146291925647">Администраторуңуз башкарат</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3485319357743610354"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Сигналдын күчү <ph name="SIGNAL_STRENGTH" /></translation>
+<translation id="3486220673238053218">аныктама</translation>
 <translation id="3510164367642747937">Чычкан курсору баса белгиленсин</translation>
 <translation id="3513798432020909783">Аккаунтту башкарган: <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Төмөнкүгө кайра өзгөртүү "<ph name="FROM_LOCALE" />" (өчүрүп күйгүзүү керек)</translation>
@@ -272,8 +274,8 @@
 <translation id="4072264167173457037">Орточо сигнал</translation>
 <translation id="4112140312785995938">Артка түрдүрүү</translation>
 <translation id="4129129681837227511">Билдирмелерди кулпуланган экранда көрүү максатында өзгөртүү киргизүү үчүн, түзмөгүңүздүн кулпусун ачыңыз</translation>
-<translation id="4144413954005649103">Чычкандын оң баскычын чыкылдатуу же коё бербей басып туруу менен, Жардамчы экранда тандаган нерсеге окшош маалыматты көрсөтөт.</translation>
 <translation id="4146833061457621061">Музыканы ойнотуу</translation>
+<translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> түзмөгү <ph name="DOMAIN" /> тарабынан башкарылат</translation>
 <translation id="4181841719683918333">Тилдер</translation>
 <translation id="4195877955194704651">Автоматтык чыкылдатуу баскычы</translation>
 <translation id="4197790712631116042">Өчүк</translation>
@@ -528,6 +530,7 @@
 <translation id="7378594059915113390">Медианы башкаруу элементтери</translation>
 <translation id="7398254312354928459">Башка тармакка которулду</translation>
 <translation id="7405710164030118432">Бул түзмөктүн кулпусун ачуу үчүн, Family Link'теги ата-эненин кирүү кодун териңиз</translation>
+<translation id="741244894080940828">которуу</translation>
 <translation id="742594950370306541">Камера колдонулууда.</translation>
 <translation id="743058460480092004">Камера менен микрофон колдонулууда.</translation>
 <translation id="7436182601308224670">Кутман күнүңүз менен, <ph name="GIVEN_NAME" /></translation>
@@ -540,6 +543,7 @@
 <translation id="7562368315689366235">Быйтыкчалар тактасы</translation>
 <translation id="7564874036684306347">Терезелер башка иш тактасына жылдырылганда күтүлбөгөн аракеттер орун алышы мүмкүн. Кийинки билдирмелер, терезелер жана диалог кутучалары иш такталардын ортосунда бөлүнүп калышы мүмкүн.</translation>
 <translation id="7568294522609223312">Автоматтык түрдө чыкылдатууларды өчүрүү</translation>
+<translation id="7568637526529101738">Чычкандын оң баскычын чыкылдатып же коё бербей басып турсаңыз, Жардамчы тандаган нерсенин аныктамасы же бирдикти которуу сыяктуу маалыматты көрсөтөт.</translation>
 <translation id="7569509451529460200">Брайль жана ChromeVox иштетилди</translation>
 <translation id="7593891976182323525">Издөө же Shift</translation>
 <translation id="7600875258240007829">Бардык билдирмелерди көрүү</translation>

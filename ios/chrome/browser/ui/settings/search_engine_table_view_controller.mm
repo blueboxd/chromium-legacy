@@ -171,6 +171,11 @@ const char kUmaSelectDefaultSearchEngine[] =
 }
 
 - (void)setEditing:(BOOL)editing animated:(BOOL)animated {
+  if (editing) {
+    base::RecordAction(
+        base::UserMetricsAction("IOS.SearchEngines.RecentlyViewed.Edit"));
+  }
+
   [super setEditing:editing animated:animated];
 
   // Disable prepopulated engines and remove the checkmark in editing mode, and
@@ -229,6 +234,8 @@ const char kUmaSelectDefaultSearchEngine[] =
 #pragma mark - SettingsRootTableViewController
 
 - (void)deleteItems:(NSArray<NSIndexPath*>*)indexPaths {
+  base::RecordAction(
+      base::UserMetricsAction("IOS.SearchEngines.RecentlyViewed.Delete"));
   // Do not call super as this also deletes the section if it is empty.
   [self deleteItemAtIndexPaths:indexPaths];
 }

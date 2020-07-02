@@ -560,7 +560,10 @@ input[type="hidden" i], input[type="image" i], input[type="file" i] {
 input[type="file" i] {
     align-items: baseline;
     color: inherit;
+    overflow: hidden;
     text-align: start !important;
+    text-overflow: ellipsis;
+    white-space: pre;
 }
 
 input[type="image" i] {
@@ -607,6 +610,7 @@ input[type="file" i]::-webkit-file-upload-button {
     -webkit-user-modify: read-only !important;
     white-space: nowrap;
     margin: 0;
+    margin-inline-end: 4px;
     font-size: inherit;
 }
 

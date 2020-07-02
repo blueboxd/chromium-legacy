@@ -12,43 +12,36 @@
 
 namespace updater {
 
-base::ScopedCFTypeRef<CFStringRef> CopyGoogleUpdateServiceLaunchDName() {
-  return base::SysUTF8ToCFStringRef(base::StrCat({
-      MAC_BUNDLE_IDENTIFIER_STRING,
-      ".service",
-  }));
+base::ScopedCFTypeRef<CFStringRef> CopyServiceLaunchDName() {
+  return base::SysUTF8ToCFStringRef(MAC_BUNDLE_IDENTIFIER_STRING ".service");
 }
 
-base::ScopedCFTypeRef<CFStringRef> CopyGoogleUpdateAdministrationLaunchDName() {
-  return base::SysUTF8ToCFStringRef(base::StrCat({
-      MAC_BUNDLE_IDENTIFIER_STRING,
-      ".admin",
-  }));
+base::ScopedCFTypeRef<CFStringRef> CopyAdministrationLaunchDName() {
+  return base::SysUTF8ToCFStringRef(MAC_BUNDLE_IDENTIFIER_STRING
+                                    ".admin." UPDATER_VERSION_STRING);
 }
 
-base::scoped_nsobject<NSString> GetGoogleUpdateServiceLaunchDLabel() {
+base::scoped_nsobject<NSString> GetServiceLaunchDLabel() {
   return base::scoped_nsobject<NSString>(
-      base::mac::CFToNSCast(CopyGoogleUpdateServiceLaunchDName().release()));
+      base::mac::CFToNSCast(CopyServiceLaunchDName().release()));
 }
 
-base::scoped_nsobject<NSString> GetGoogleUpdateAdministrationLaunchDLabel() {
-  return base::scoped_nsobject<NSString>(base::mac::CFToNSCast(
-      CopyGoogleUpdateAdministrationLaunchDName().release()));
+base::scoped_nsobject<NSString> GetAdministrationLaunchDLabel() {
+  return base::scoped_nsobject<NSString>(
+      base::mac::CFToNSCast(CopyAdministrationLaunchDName().release()));
 }
 
-base::scoped_nsobject<NSString> GetGoogleUpdateServiceMachName(NSString* name) {
+base::scoped_nsobject<NSString> GetServiceMachName(NSString* name) {
   return base::scoped_nsobject<NSString>(
       [name stringByAppendingFormat:@".%lu", [name hash]],
       base::scoped_policy::RETAIN);
 }
 
-base::scoped_nsobject<NSString> GetGoogleUpdateServiceMachName() {
+base::scoped_nsobject<NSString> GetServiceMachName() {
   base::scoped_nsobject<NSString> name(
-      base::mac::CFToNSCast(CopyGoogleUpdateServiceLaunchDName().release()));
+      base::mac::CFToNSCast(CopyServiceLaunchDName().release()));
   return base::scoped_nsobject<NSString>(
-      [name
-          stringByAppendingFormat:@".%lu",
-                                  [GetGoogleUpdateServiceLaunchDLabel() hash]],
+      [name stringByAppendingFormat:@".%lu", [GetServiceLaunchDLabel() hash]],
       base::scoped_policy::RETAIN);
 }
 

@@ -24,7 +24,6 @@ UtilityServiceFactory::~UtilityServiceFactory() = default;
 void UtilityServiceFactory::RunService(
     const std::string& service_name,
     mojo::PendingReceiver<service_manager::mojom::Service> receiver) {
-  auto request = service_manager::mojom::ServiceRequest(std::move(receiver));
   auto* trace_log = base::trace_event::TraceLog::GetInstance();
   if (trace_log->IsProcessNameEmpty())
     trace_log->set_process_name("Service: " + service_name);
@@ -35,8 +34,8 @@ void UtilityServiceFactory::RunService(
 
   std::unique_ptr<service_manager::Service> service;
 
-  if (GetContentClient()->utility()->HandleServiceRequest(service_name,
-                                                          std::move(request))) {
+  if (GetContentClient()->utility()->HandleServiceRequest(
+          service_name, std::move(receiver))) {
     return;
   }
 

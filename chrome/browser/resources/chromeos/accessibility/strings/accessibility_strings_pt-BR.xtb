@@ -224,7 +224,7 @@
 <translation id="2737898226590637227">Nenhum ponto de referência ARIA a seguir</translation>
 <translation id="2749275490991666823">Marcado</translation>
 <translation id="27527859628328957">Ir para o próximo item focalizável</translation>
-<translation id="2756452585631602151">Insira um rótulo personalizado</translation>
+<translation id="2756452585631602151">Insira uma etiqueta personalizada</translation>
 <translation id="2766299274563946262">Nenhuma célula à esquerda</translation>
 <translation id="2783001728278437613">{COUNT,plural, =1{+#}one{+#}other{+#}}</translation>
 <translation id="280499067616661124">Encontrar na página do ChromeVox</translation>
@@ -305,7 +305,7 @@
 <translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
 <translation id="3260949043575829030">Item semelhante anterior</translation>
 <translation id="3270069636408109001">Nenhuma tabela a seguir</translation>
-<translation id="3273791280096244679">Salvar rótulo</translation>
+<translation id="3273791280096244679">Salvar etiqueta</translation>
 <translation id="3283583562490372694">desmarcado</translation>
 <translation id="3286372614333682499">retrato</translation>
 <translation id="3286390186030710347">Slide</translation>
@@ -817,7 +817,7 @@
 <translation id="7505149250476994901">Dizer "maiúsculo" depois da letra</translation>
 <translation id="7518543783849163354">Para interromper temporariamente a fala do ChromeVox, pressione a tecla Control.</translation>
 <translation id="7533226154149229506">Amarelo-dourado-claro</translation>
-<translation id="7543255924852002459">Descartar rótulo</translation>
+<translation id="7543255924852002459">Descartar etiqueta</translation>
 <translation id="7552432549459840808">Atalhos úteis do Chrome</translation>
 <translation id="7569983096843329377">Preto</translation>
 <translation id="7579911500627256166">ponto <ph name="DOT" /></translation>

@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/cdm_context.h"
 #include "media/base/demuxer_stream.h"
@@ -38,7 +39,12 @@ bool MojoAudioDecoder::IsPlatformDecoder() const {
 }
 
 bool MojoAudioDecoder::SupportsDecryption() const {
+  // Currently only the android backends support decryption
+#if defined(OS_ANDROID)
   return true;
+#else
+  return false;
+#endif
 }
 
 std::string MojoAudioDecoder::GetDisplayName() const {

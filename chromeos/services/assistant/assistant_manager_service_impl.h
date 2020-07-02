@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "ash/public/cpp/assistant/controller/assistant_screen_context_controller.h"
-#include "ash/public/mojom/assistant_controller.mojom.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
@@ -24,16 +23,15 @@
 #include "chromeos/services/assistant/assistant_manager_service.h"
 #include "chromeos/services/assistant/assistant_settings_impl.h"
 #include "chromeos/services/assistant/chromium_api_delegate.h"
+#include "chromeos/services/assistant/public/cpp/assistant_notification.h"
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "chromeos/services/assistant/public/cpp/device_actions.h"
 #include "libassistant/shared/internal_api/assistant_manager_delegate.h"
 #include "libassistant/shared/public/conversation_state_listener.h"
 #include "libassistant/shared/public/device_state_listener.h"
 #include "libassistant/shared/public/media_manager.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
@@ -42,6 +40,7 @@
 
 namespace ash {
 class AssistantAlarmTimerController;
+class AssistantNotificationController;
 class AssistantStateBase;
 }  // namespace ash
 
@@ -153,10 +152,9 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
       AssistantInteractionSubscriber* subscriber) override;
   void RemoveAssistantInteractionSubscriber(
       AssistantInteractionSubscriber* subscriber) override;
-  void RetrieveNotification(const mojom::AssistantNotification& notification,
+  void RetrieveNotification(const AssistantNotification& notification,
                             int action_index) override;
-  void DismissNotification(
-      const mojom::AssistantNotification& notification) override;
+  void DismissNotification(const AssistantNotification& notification) override;
   void OnAccessibilityStatusChanged(bool spoken_feedback_enabled) override;
   void SendAssistantFeedback(const AssistantFeedback& feedback) override;
   void NotifyEntryIntoAssistantUi(AssistantEntryPoint entry_point) override;
@@ -303,8 +301,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
                                 bool is_user_initiated);
 
   ash::AssistantAlarmTimerController* assistant_alarm_timer_controller();
-  ash::mojom::AssistantNotificationController*
-  assistant_notification_controller();
+  ash::AssistantNotificationController* assistant_notification_controller();
   ash::AssistantScreenContextController* assistant_screen_context_controller();
   ash::AssistantStateBase* assistant_state();
   DeviceActions* device_actions();
@@ -380,7 +377,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
                  AppListEventSubscriber,
                  &DeviceActions::AddAppListEventSubscriber,
                  &DeviceActions::RemoveAppListEventSubscriber>
-      scoped_app_list_event_subscriber{this};
+      scoped_app_list_event_subscriber_{this};
   base::ObserverList<CommunicationErrorObserver> error_observers_;
   base::ObserverList<StateObserver> state_observers_;
 

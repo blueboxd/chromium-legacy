@@ -45,6 +45,8 @@
 <translation id="1395262318152388157">স্লাইডার খুঁজুন</translation>
 <translation id="1399648040768741453">তেলুগু কীবোর্ড (ফোনেটিক)</translation>
 <translation id="1430915738399379752">প্রিন্ট</translation>
+<translation id="1433600251059882049">এই ফোল্ডার Linux ও Windows-এর সাথে শেয়ার করা হয়েছে</translation>
+<translation id="1435838927755162558">Parallels Desktop-এর সাথে ফোল্ডার শেয়ার করুন</translation>
 <translation id="1439494416798956626"><ph name="FOLDER_NAME" /> এ সরানো হয়েছে।</translation>
 <translation id="1441841714100794440">ভিয়েতনামি কীবোর্ড (টেলেক্স)</translation>
 <translation id="1455548678241328678">নরওয়েয়ান কীবোর্ড</translation>
@@ -79,6 +81,7 @@
 <translation id="1844692022597038441">এই ফাইলটি অফলাইনে উপলব্ধ নয়৷</translation>
 <translation id="184633654410729720">থাই কীবোর্ড (কেদমানি)</translation>
 <translation id="1847880352285315359">সেভ করা হয়েছে</translation>
+<translation id="1853795129690976061">এই ফোল্ডার Linux-এর সাথে শেয়ার করা হয়েছে</translation>
 <translation id="1864756863218646478">ফাইলটি পাওয়া যায়নি৷</translation>
 <translation id="1921986354447415460">তুর্কি-এফ কীবোর্ড</translation>
 <translation id="1924372192547904021"><ph name="DRIVE_NAME" /> ফরম্যাট করা হয়েছে</translation>
@@ -180,6 +183,7 @@
 <translation id="303198083543495566">ভূগোল</translation>
 <translation id="3057861065630527966">আপনার ফটো ও ভিডিওগুলির ব্যাকআপ নিন</translation>
 <translation id="3064388234319122767">লিপ্যন্তরকরণ (zdravo → здраво)</translation>
+<translation id="3067790092342515856">Windows ফাইল</translation>
 <translation id="3078461028045006476"><ph name="EXTENSION_NAME" /> এর সাথে শেয়ার করুন</translation>
 <translation id="3088034400796962477">লিপ্যন্তরকরণ (salam ← سلام)</translation>
 <translation id="3116361045094675131">ইউকে কীবোর্ড</translation>
@@ -262,6 +266,7 @@
 <translation id="3943857333388298514">পেস্ট করুন</translation>
 <translation id="3958548648197196644">কিউই</translation>
 <translation id="3966388904776714213">অডিও প্লেয়ার</translation>
+<translation id="3984317463833596033">Parallels Desktop-কে <ph name="FOLDER_NAME" /> ফোল্ডারে ফাইল পরিবর্তন করার অনুমতি দিন</translation>
 <translation id="4002066346123236978">শিরোনাম</translation>
 <translation id="4070370845051020638">ক্যান্টনীজ ইনপুট পদ্ধতি</translation>
 <translation id="4072248638558688893">তামিল কীবোর্ড (ফোনেটিক)</translation>
@@ -290,6 +295,7 @@
 <translation id="4470564870223067757">হাঙ্গুল ২ সেট</translation>
 <translation id="4477219268485577442">বুলগেরিয়ান ফনেটিক</translation>
 <translation id="4479812471636796472">ইউএস দভোরাক কীবোর্ড</translation>
+<translation id="4481711095103932593">এই ফোল্ডারটি Windows-এর সাথে শেয়ার করা হয়েছে</translation>
 <translation id="4487088045714738411">বেলজিয়ান কীবোর্ড</translation>
 <translation id="4522570452068850558">বিশদ বিবরণ</translation>
 <translation id="4552678318981539154">আরও সঞ্চয়স্থান কিনুন</translation>
@@ -335,10 +341,12 @@
 <translation id="4881695831933465202">খুলুন</translation>
 <translation id="4886021172213954916">তামিল কীবোর্ড (টাইপরাইটার)</translation>
 <translation id="4892969127351273348"><ph name="APP_NAME" /> দিয়ে খোলা যায়নি</translation>
+<translation id="4900532980794411603">Parallels Desktop-এর সাথে শেয়ার করুন</translation>
 <translation id="4905417359854579806"><ph name="FILE_COUNT" />টির ব্যাকআপ নিতে প্রস্তুত</translation>
 <translation id="4924638091161556692">স্থির</translation>
 <translation id="4935975195727477204">গাজানিয়া ফুল</translation>
 <translation id="4943368462779413526">ফুটবল</translation>
+<translation id="4961158930123534723">১টি ফোল্ডার Parallels Desktop-এর সাথে শেয়ার করা হয়েছে</translation>
 <translation id="4969785127455456148">অ্যালবাম</translation>
 <translation id="497244430928947428">মালায়ালম কীবোর্ড (ফোনেটিক)</translation>
 <translation id="4973523518332075481">এমন একটি নাম ব্যবহার করুন যেটিতে <ph name="MAX_LENGTH" /> বা তার কম অক্ষর আছে</translation>
@@ -350,6 +358,7 @@
 <translation id="5010406651457630570">কম্পিউটার</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5024856940085636730">একটি অ্যাক্টিভিটি প্রত্যাশিত সময়ের থেকে বেশি সময় নিচ্ছে। আপনি কি এটি থামাতে চান?</translation>
+<translation id="5036159836254554629">Parallels Desktop শেয়ারিং ম্যানেজ করুন</translation>
 <translation id="5038625366300922036">আরও দেখুন...</translation>
 <translation id="5061708541166515394">তুলনা</translation>
 <translation id="5068919226082848014">পিৎজা</translation>
@@ -498,6 +507,7 @@
 <translation id="656398493051028875">"<ph name="FILENAME" />" মোছা হচ্ছে...</translation>
 <translation id="6581162200855843583">Google ড্রাইভ লিঙ্ক</translation>
 <translation id="6607272825297743757">ফাইলের তথ্য</translation>
+<translation id="6609332149380188670">Parallels Desktop-এর সাথে <ph name="NUMBER_OF_ITEMS" /> ফোল্ডার শেয়ার করা হয়েছে</translation>
 <translation id="6629841649550503054"><ph name="BEGIN_LINK" />Google ড্রাইভ<ph name="END_LINK" /> এ সবগুলির ব্যাকআপ নেওয়া হয়েছে</translation>
 <translation id="6643016212128521049">সাফ করুন</translation>
 <translation id="6650726141019353908">গোলাপি প্রজাপতি</translation>
@@ -679,6 +689,7 @@
 <translation id="8475647382427415476">Google ড্রাইভ এই মুহূর্তে "<ph name="FILENAME" />" সিঙ্ক করতে পারেনি। Google ড্রাইভ পরে আবার চেষ্টা করবে।</translation>
 <translation id="8477649328507734757">ঘোরানো</translation>
 <translation id="8487700953926739672">অফলাইনে উপলব্ধ</translation>
+<translation id="8490342535582768689">Parallels Desktop-কে আপনার Google Drive-এ ফাইল পরিবর্তন করার অনুমতি দিন। পরিবর্তনগুলি আপনার অন্যান্য ডিভাইসের সাথে সিঙ্ক হয়ে যাবে।</translation>
 <translation id="8521441079177373948">যুক্তরাজ্য</translation>
 <translation id="8525306231823319788">পূর্ণ স্ক্রীণ</translation>
 <translation id="8551494947769799688">লাটভিও</translation>

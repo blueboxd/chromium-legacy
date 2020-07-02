@@ -95,11 +95,10 @@ class TestAssistantService : public chromeos::assistant::Assistant {
   void RemoveAssistantInteractionSubscriber(
       chromeos::assistant::AssistantInteractionSubscriber* subscriber) override;
   void RetrieveNotification(
-      const chromeos::assistant::mojom::AssistantNotification& notification,
+      const chromeos::assistant::AssistantNotification& notification,
       int action_index) override;
   void DismissNotification(
-      const chromeos::assistant::mojom::AssistantNotification& notification)
-      override;
+      const chromeos::assistant::AssistantNotification& notification) override;
   void OnAccessibilityStatusChanged(bool spoken_feedback_enabled) override;
   void SendAssistantFeedback(
       const chromeos::assistant::AssistantFeedback& feedback) override;

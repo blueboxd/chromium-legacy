@@ -215,22 +215,6 @@ void URLLoaderFactory::CreateLoaderAndStart(
     return;
   }
 
-  if (url_request.trust_token_params && !context_->trust_token_store()) {
-    mojo::ReportBadMessage(
-        "Got a request with Trust Tokens parameters with Trust tokens "
-        "disabled.");
-    return;
-  }
-
-  if (url_request.trust_token_params && url_request.request_initiator &&
-      !IsOriginPotentiallyTrustworthy(*url_request.request_initiator)) {
-    mojo::ReportBadMessage(
-        "Got a request with Trust Tokens parameters from an insecure context, "
-        "but Trust Tokens operations may only be executed from secure "
-        "contexts.");
-    return;
-  }
-
   std::unique_ptr<TrustTokenRequestHelperFactory> trust_token_factory;
   if (url_request.trust_token_params) {
     trust_token_factory = std::make_unique<TrustTokenRequestHelperFactory>(

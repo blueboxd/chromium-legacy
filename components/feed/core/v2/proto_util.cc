@@ -119,6 +119,9 @@ feedwire::Request CreateFeedQueryRequest(
   feed_request.add_client_capability(feedwire::Capability::OPEN_IN_TAB);
   feed_request.add_client_capability(feedwire::Capability::DOWNLOAD_LINK);
   feed_request.add_client_capability(feedwire::Capability::INFINITE_FEED);
+  feed_request.add_client_capability(feedwire::Capability::DISMISS_COMMAND);
+  feed_request.add_client_capability(
+      feedwire::Capability::UNDO_FOR_DISMISS_COMMAND);
 
   *feed_request.mutable_client_info() = CreateClientInfo(request_metadata);
   feedwire::FeedQuery& query = *feed_request.mutable_feed_query();

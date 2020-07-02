@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.gesturenav;
 
 import android.app.Activity;
 import android.graphics.Point;
-import android.os.Handler;
 import android.support.test.InstrumentationRegistry;
 import android.util.DisplayMetrics;
 
@@ -22,23 +21,29 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandler;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeController;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabbed_mode.TabbedRootUiCoordinator;
+import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.components.embedder_support.util.UrlConstants;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.ui.base.PageTransition;
+import org.chromium.ui.test.util.UiRestriction;
 
 /**
  * Tests {@link NavigationHandler} navigating back/forward using overscroll history navigation.
- * TODO(jinsukkim): Add more tests (right swipe, tab switcher, etc).
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.
@@ -94,21 +99,47 @@ public class NavigationHandlerTest {
     private void swipeFromEdge(boolean leftEdge) {
         Point size = new Point();
         mActivityTestRule.getActivity().getWindowManager().getDefaultDisplay().getSize(size);
-
-        // Swipe from an edge toward the middle of the screen.
-        final int eventCounts = 100;
         final float startx = leftEdge ? mEdgeWidthPx / 2 : size.x - mEdgeWidthPx / 2;
-        final float y = size.y / 2;
-        final float step = (size.x / 2 - startx) / eventCounts;
+        final float endx = size.x / 2;
+        final float yMiddle = size.y / 2;
+        swipe(leftEdge, startx, endx, yMiddle);
+    }
+
+    // Make an edge swipe too short to trigger the navigation.
+    private void shortSwipeFromEdge(boolean leftEdge) {
+        Point size = new Point();
+        mActivityTestRule.getActivity().getWindowManager().getDefaultDisplay().getSize(size);
+        final float startx = leftEdge ? 0 : size.x;
+        final float endx = leftEdge ? mEdgeWidthPx : size.x - mEdgeWidthPx;
+        final float yMiddle = size.y / 2;
+        swipe(leftEdge, startx, endx, yMiddle);
+    }
+
+    private void swipe(boolean leftEdge, float startx, float endx, float y) {
+        // # of pixels (of reasonally small value) which a finger moves across
+        // per one motion event.
+        final float distancePx = 6.0f;
+        final float step = Math.signum(endx - startx) * distancePx;
+        final int eventCounts = (int) ((endx - startx) / step);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mNavigationHandler.onDown();
-            float endx = startx + step;
-            for (int i = 0; i < eventCounts; i++, endx += step) {
-                mNavigationHandler.onScroll(startx, -step, 0, endx, y);
+            float nextx = startx + step;
+            for (int i = 0; i < eventCounts; i++, nextx += step) {
+                mNavigationHandler.onScroll(startx, -step, 0, nextx, y);
             }
             mNavigationHandler.release(true);
         });
+    }
+
+    @Test
+    @SmallTest
+    public void testShortSwipeDoesNotTriggerNavigation() {
+        mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
+        shortSwipeFromEdge(LEFT_EDGE);
+        CriteriaHelper.pollUiThread(mNavigationHandler::isLayoutDetached);
+        Assert.assertEquals("Current page should not change", UrlConstants.NTP_URL,
+                currentTab().getUrlString());
     }
 
     @Test
@@ -121,6 +152,16 @@ public class NavigationHandlerTest {
             int state = ApplicationStatus.getStateForActivity(activity);
             return state == ActivityState.STOPPED || state == ActivityState.DESTROYED;
         }, "Chrome should be in background");
+    }
+
+    @Test
+    @SmallTest
+    public void testLayoutGetsDetachedAfterUse() {
+        mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
+        mActivityTestRule.loadUrl(UrlConstants.RECENT_TABS_URL);
+        swipeFromEdge(LEFT_EDGE);
+        CriteriaHelper.pollUiThread(mNavigationHandler::isLayoutDetached,
+                "Navigation Layout should be detached after use");
     }
 
     @Test
@@ -141,11 +182,54 @@ public class NavigationHandlerTest {
         mActivityTestRule.loadUrl(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
         assertNavigateOnSwipeFrom(LEFT_EDGE, mTestServer.getURL(RENDERED_PAGE));
-        // clang-format off
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            new Handler().postDelayed(() -> assertNavigateOnSwipeFrom(
-                    RIGHT_EDGE, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL), PAGELOAD_TIMEOUT_MS);
+        assertNavigateOnSwipeFrom(RIGHT_EDGE, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
+    }
+
+    @Test
+    @SmallTest
+    public void testLeftEdgeSwipeClosesTabLaunchedFromLink() {
+        Tab oldTab = currentTab();
+        TabCreator tabCreator = mActivityTestRule.getActivity().getTabCreator(false);
+        Tab newTab = TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
+            return tabCreator.createNewTab(
+                    new LoadUrlParams(UrlConstants.RECENT_TABS_URL, PageTransition.LINK),
+                    TabLaunchType.FROM_LINK, oldTab);
         });
-        // clang-format on
+        Assert.assertEquals(newTab, currentTab());
+        swipeFromEdge(LEFT_EDGE);
+
+        // Assert that the new tab was closed and the old tab is the current tab again.
+        CriteriaHelper.pollUiThread(Criteria.equals(false, newTab::isInitialized));
+        Assert.assertEquals(oldTab, currentTab());
+        Assert.assertEquals("Chrome should remain in foreground", ActivityState.RESUMED,
+                ApplicationStatus.getStateForActivity(mActivityTestRule.getActivity()));
+    }
+
+    @Test
+    @SmallTest
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    public void testEdgeSwipeIsNoopInTabSwitcher() {
+        mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
+        mActivityTestRule.loadUrl(UrlConstants.RECENT_TABS_URL);
+        setTabSwitcherModeAndWait(true);
+        swipeFromEdge(LEFT_EDGE);
+        Assert.assertTrue("Chrome should stay in tab switcher",
+                mActivityTestRule.getActivity().isInOverviewMode());
+        setTabSwitcherModeAndWait(false);
+        Assert.assertEquals("Current page should not change", UrlConstants.RECENT_TABS_URL,
+                currentTab().getUrlString());
+    }
+
+    /**
+     * Enter or exit the tab switcher with animations and wait for the scene to change.
+     * @param inSwitcher Whether to enter or exit the tab switcher.
+     */
+    private void setTabSwitcherModeAndWait(boolean inSwitcher) {
+        OverviewModeController controller = mActivityTestRule.getActivity().getLayoutManager();
+        if (inSwitcher) {
+            TestThreadUtils.runOnUiThreadBlocking(() -> controller.showOverview(false));
+        } else {
+            TestThreadUtils.runOnUiThreadBlocking(() -> controller.hideOverview(false));
+        }
     }
 }

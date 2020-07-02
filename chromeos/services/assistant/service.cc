@@ -12,6 +12,7 @@
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/assistant/controller/assistant_alarm_timer_controller.h"
 #include "ash/public/cpp/assistant/controller/assistant_controller.h"
+#include "ash/public/cpp/assistant/controller/assistant_notification_controller.h"
 #include "ash/public/cpp/session/session_controller.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -165,9 +166,9 @@ class Service::Context : public ServiceContext {
     return ash::AssistantController::Get();
   }
 
-  ash::mojom::AssistantNotificationController*
-  assistant_notification_controller() override {
-    return parent_->assistant_notification_controller_.get();
+  ash::AssistantNotificationController* assistant_notification_controller()
+      override {
+    return ash::AssistantNotificationController::Get();
   }
 
   ash::AssistantScreenContextController* assistant_screen_context_controller()
@@ -563,10 +564,6 @@ void Service::FinalizeAssistantManagerService() {
   if (is_assistant_manager_service_finalized_)
     return;
   is_assistant_manager_service_finalized_ = true;
-
-  // Bind to the AssistantNotificationController in ash.
-  AssistantClient::Get()->RequestAssistantNotificationController(
-      assistant_notification_controller_.BindNewPipeAndPassReceiver());
 
   AddAshSessionObserver();
 

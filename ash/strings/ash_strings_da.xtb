@@ -73,6 +73,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="1747827819627189109">Skærmtastaturet er aktiveret</translation>
 <translation id="1761222317188459878">Slå netværksforbindelse til eller fra. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Rul til højre</translation>
+<translation id="1782199038061388045">oversættelse</translation>
 <translation id="181103072419391116">Signalstyrke <ph name="SIGNAL_STRENGTH" />, administreret af din administrator</translation>
 <translation id="1812997170047690955">Hvad vises der på min skærm?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
@@ -103,7 +104,6 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="2126242104232412123">Nyt skrivebord</translation>
 <translation id="2127372758936585790">Oplader ved lav kraft</translation>
 <translation id="2135456203358955318">Fastgjort lupvindue</translation>
-<translation id="2143915448548023856">Skærmindstillinger</translation>
 <translation id="2144487987174258011">Genstart for at opdatere Adobe Flash Player</translation>
 <translation id="2208323208084708176">Samlet skrivebordstilstand</translation>
 <translation id="2220572644011485463">Pin- eller adgangskode</translation>
@@ -185,6 +185,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="3081696990447829002">Udvid menu</translation>
 <translation id="3087734570205094154">Bund</translation>
 <translation id="309749186376891736">Flyttemarkør</translation>
+<translation id="3098580329624789136">Hent <ph name="INTENT" /> til "<ph name="QUERY" />"</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Genstart for at opdatere</translation>
 <translation id="3139942575505304791">Skrivebord 1</translation>
@@ -222,6 +223,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="3465356146291925647">Administreret af din administrator</translation>
 <translation id="3477079411857374384">Ctrl-Shift-mellemrumstast</translation>
 <translation id="3485319357743610354"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, signalstyrke <ph name="SIGNAL_STRENGTH" /></translation>
+<translation id="3486220673238053218">definition</translation>
 <translation id="3510164367642747937">Fremhæv musemarkør</translation>
 <translation id="3513798432020909783">Kontoen administreres af <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Skift tilbage til "<ph name="FROM_LOCALE" />" (kræver genstart)</translation>
@@ -272,8 +274,8 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="4072264167173457037">Middel signal</translation>
 <translation id="4112140312785995938">Spol tilbage</translation>
 <translation id="4129129681837227511">Du kan se notifikationer på din låseskærm ved at låse skærmen op og ændre indstillingen</translation>
-<translation id="4144413954005649103">Når du højreklikker eller laver et langt tryk, viser Assistent dig oplysninger, som er relateret til det, du har valgt på skærmen.</translation>
 <translation id="4146833061457621061">Spil musik</translation>
+<translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> administreres af <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Sprog</translation>
 <translation id="4195877955194704651">Knap til automatisk klik</translation>
 <translation id="4197790712631116042">Fra</translation>
@@ -529,6 +531,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7378594059915113390">Mediestyring</translation>
 <translation id="7398254312354928459">Der blev skiftet netværksforbindelse</translation>
 <translation id="7405710164030118432">Angiv forældreadgangskoden til Family Link for at låse enheden op</translation>
+<translation id="741244894080940828">konvertering</translation>
 <translation id="742594950370306541">Kameraet er i brug.</translation>
 <translation id="743058460480092004">Kamera og mikrofon er i brug.</translation>
 <translation id="7436182601308224670">Goddag, <ph name="GIVEN_NAME" /></translation>
@@ -541,6 +544,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7562368315689366235">Emojipalet</translation>
 <translation id="7564874036684306347">Hvis du flytter vinduer til et andet skrivebord, kan det resultere i uventet adfærd. Efterfølgende notifikationer, vinduer og dialogbokse kan blive delt mellem skriveborde.</translation>
 <translation id="7568294522609223312">Deaktiver automatiske klik</translation>
+<translation id="7568637526529101738">Når du højreklikker eller bruger langt tryk, viser Google Assistent dig oplysninger som f.eks. definitionen eller enhedskonverteringen for dit valg.</translation>
 <translation id="7569509451529460200">Braille og ChromeVox er aktiveret</translation>
 <translation id="7593891976182323525">Søg eller Shift</translation>
 <translation id="7600875258240007829">Se alle notifikationer</translation>

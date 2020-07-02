@@ -250,8 +250,9 @@ public final class ShareSheetPropertyModelBuilderTest {
     public void selectThirdPartyApps_sharingHub15Disabled_returnsTextSharingModels() {
         ShareParams shareParams = new ShareParams.Builder(null, "", "").build();
 
-        List<PropertyModel> propertyModels = mPropertyModelBuilder.selectThirdPartyApps(
-                null, new HashSet<>(), shareParams, /*saveLastUsed=*/false, /*shareStartTime=*/0);
+        List<PropertyModel> propertyModels =
+                mPropertyModelBuilder.selectThirdPartyApps(null, new HashSet<>(), shareParams,
+                        /*saveLastUsed=*/false, /*WindowAndroid=*/null, /*shareStartTime=*/0);
 
         assertEquals("Incorrect number of property models.", 2, propertyModels.size());
         assertModelsAreInTheRightOrder(
@@ -266,6 +267,7 @@ public final class ShareSheetPropertyModelBuilderTest {
 
         List<PropertyModel> propertyModels = mPropertyModelBuilder.selectThirdPartyApps(null,
                 ImmutableSet.of(ContentType.LINK_PAGE_VISIBLE), shareParams, /*saveLastUsed=*/false,
+                /*WindowAndroid=*/null,
                 /*shareStartTime=*/0);
 
         assertEquals("Incorrect number of property models.", 2, propertyModels.size());
@@ -280,9 +282,9 @@ public final class ShareSheetPropertyModelBuilderTest {
         ShareParams shareParams =
                 new ShareParams.Builder(null, "", "").setFileContentType("image/jpeg").build();
 
-        List<PropertyModel> propertyModels =
-                mPropertyModelBuilder.selectThirdPartyApps(null, ImmutableSet.of(ContentType.IMAGE),
-                        shareParams, /*saveLastUsed=*/false, /*shareStartTime=*/0);
+        List<PropertyModel> propertyModels = mPropertyModelBuilder.selectThirdPartyApps(null,
+                ImmutableSet.of(ContentType.IMAGE), shareParams, /*saveLastUsed=*/false,
+                /*WindowAndroid=*/null, /*shareStartTime=*/0);
 
         assertEquals("Incorrect number of property models.", 2, propertyModels.size());
         assertModelsAreInTheRightOrder(
@@ -299,7 +301,7 @@ public final class ShareSheetPropertyModelBuilderTest {
 
         List<PropertyModel> propertyModels = mPropertyModelBuilder.selectThirdPartyApps(null,
                 ImmutableSet.of(ContentType.LINK_PAGE_VISIBLE, ContentType.IMAGE), shareParams,
-                /*saveLastUsed=*/false, /*shareStartTime=*/0);
+                /*saveLastUsed=*/false, /*WindowAndroid=*/null, /*shareStartTime=*/0);
 
         assertEquals("Incorrect number of property models.", 4, propertyModels.size());
         assertModelsAreInTheRightOrder(propertyModels,

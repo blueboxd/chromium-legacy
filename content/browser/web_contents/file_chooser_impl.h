@@ -25,10 +25,11 @@ class CONTENT_EXPORT FileChooserImpl : public blink::mojom::FileChooser,
   using FileChooserResult = blink::mojom::FileChooserResult;
 
  public:
+  // A FileSelectListenerImpl instance is owned by a FileChooserImpl and/or a
+  // WebContents.
   class CONTENT_EXPORT FileSelectListenerImpl : public FileSelectListener {
    public:
     explicit FileSelectListenerImpl(FileChooserImpl* owner) : owner_(owner) {}
-    ~FileSelectListenerImpl() override;
     void SetFullscreenBlock(base::ScopedClosureRunner fullscreen_block);
     void ResetOwner() { owner_ = nullptr; }
 
@@ -41,6 +42,7 @@ class CONTENT_EXPORT FileChooserImpl : public blink::mojom::FileChooser,
     void FileSelectionCanceled() override;
 
    protected:
+    ~FileSelectListenerImpl() override;
     // This sets |was_file_select_listener_function_called_| to true so that
     // tests can pass with mocked overrides of this class.
     void SetListenerFunctionCalledTrueForTesting();
@@ -67,8 +69,6 @@ class CONTENT_EXPORT FileChooserImpl : public blink::mojom::FileChooser,
 
   void FileSelectionCanceled();
 
-  void ResetListenerImpl();
-
   // blink::mojom::FileChooser overrides:
 
   void OpenFileChooser(blink::mojom::FileChooserParamsPtr params,
@@ -88,7 +88,7 @@ class CONTENT_EXPORT FileChooserImpl : public blink::mojom::FileChooser,
   void WebContentsDestroyed() override;
 
   RenderFrameHostImpl* render_frame_host_;
-  FileSelectListenerImpl* listener_impl_ = nullptr;
+  scoped_refptr<FileSelectListenerImpl> listener_impl_;
   base::OnceCallback<void(blink::mojom::FileChooserResultPtr)> callback_;
 };
 

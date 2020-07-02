@@ -48,7 +48,7 @@ FakeServiceContext& FakeServiceContext::set_assistant_state(
 }
 
 FakeServiceContext& FakeServiceContext::set_assistant_notification_controller(
-    ash::mojom::AssistantNotificationController* value) {
+    ash::AssistantNotificationController* value) {
   assistant_notification_controller_ = value;
   return *this;
 }
@@ -64,7 +64,7 @@ ash::AssistantController* FakeServiceContext::assistant_controller() {
   return nullptr;
 }
 
-ash::mojom::AssistantNotificationController*
+ash::AssistantNotificationController*
 FakeServiceContext::assistant_notification_controller() {
   DCHECK(assistant_notification_controller_ != nullptr);
   return assistant_notification_controller_;

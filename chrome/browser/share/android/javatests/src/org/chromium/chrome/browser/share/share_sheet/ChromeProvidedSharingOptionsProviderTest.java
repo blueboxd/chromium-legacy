@@ -60,6 +60,9 @@ public class ChromeProvidedSharingOptionsProviderTest {
 
     private static final String URL = "http://www.google.com/";
 
+    @Mock
+    private ShareSheetCoordinator mShareSheetCoordinator;
+
     private Activity mActivity;
     private ChromeProvidedSharingOptionsProvider mChromeProvidedSharingOptionsProvider;
 
@@ -220,12 +223,11 @@ public class ChromeProvidedSharingOptionsProviderTest {
 
         mChromeProvidedSharingOptionsProvider = new ChromeProvidedSharingOptionsProvider(mActivity,
                 /*activityTabProvider=*/null, /*bottomSheetController=*/null,
-                new ShareSheetBottomSheetContent(mActivity), mPrefServiceBridge,
-                new ShareParams.Builder(null, "", "").build(),
+                new ShareSheetBottomSheetContent(mActivity, mShareSheetCoordinator),
+                mPrefServiceBridge, new ShareParams.Builder(null, "", "").build(),
                 new ChromeShareExtras.Builder().build(),
                 /*TabPrinterDelegate=*/null,
-                /*shareStartTime=*/0,
-                /*shareSheetCoordinator=*/null);
+                /*shareStartTime=*/0, mShareSheetCoordinator);
     }
 
     private void assertModelsAreInTheRightOrder(

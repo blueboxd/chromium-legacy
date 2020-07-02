@@ -10,6 +10,7 @@
 <translation id="1201402288615127009">Επόμενο</translation>
 <translation id="1242008676835033345">Ενσωματωμένο σε <ph name="WEBSITE_URL" /></translation>
 <translation id="1272079795634619415">Διακοπή</translation>
+<translation id="1289742167380433257">Οι εικόνες αυτής της σελίδας έχουν βελτιστοποιηθεί από την Google για την εξοικονόμηση των δεδομένων σας.</translation>
 <translation id="129382876167171263">Τα αρχεία που αποθηκεύονται από ιστοτόπους εμφανίζονται εδώ</translation>
 <translation id="1364532808393826295"><ph name="APP_NAME" />-<ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">Προστέθηκε ο ιστότοπος <ph name="SITE_NAME" /></translation>
@@ -189,6 +190,7 @@
 <translation id="7128222689758636196">Να επιτρέπεται για την τρέχουσα μηχανή αναζήτησης</translation>
 <translation id="7141896414559753902">Αποκλεισμός εμφάνισης αναδυόμενων παραθύρων και ανακατευθύνσεων σε ιστοτόπους (συνιστάται)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
+<translation id="7243308994586599757">Διαθέσιμες επιλογές κοντά κάτω μέρος της οθόνης</translation>
 <translation id="7250468141469952378">Επιλέχθηκαν <ph name="ITEM_COUNT" /></translation>
 <translation id="7302486331832100261">Συνήθως αποκλείετε τις ειδοποιήσεις. Για να τις επιτρέψετε, πατήστε Λεπτομέρειες.</translation>
 <translation id="7423098979219808738">Να γίνεται ερώτηση πρώτα</translation>
@@ -227,6 +229,7 @@
 <translation id="83792324527827022">Ένας ιστότοπος χρησιμοποιεί την κάμερα και το μικρόφωνό σας.</translation>
 <translation id="8380167699614421159">Αυτός ο ιστότοπος εμφανίζει παρεμβατικές ή παραπλανητικές διαφημίσεις</translation>
 <translation id="8394832520002899662">Πατήστε για επιστροφή στον ιστότοπο</translation>
+<translation id="8425213833346101688">Αλλαγή</translation>
 <translation id="8441146129660941386">Αναζήτηση προς τα πίσω</translation>
 <translation id="8447861592752582886">Ανάκληση άδειας συσκευής</translation>
 <translation id="8463851957836045671">Ο ιστότοπος είναι γρήγορος</translation>

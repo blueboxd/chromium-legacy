@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
@@ -416,7 +417,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   // This function is responsible for calling listener->FileSelected() or
   // listener->FileSelectionCanceled().
   virtual void RunFileChooser(RenderFrameHost* render_frame_host,
-                              std::unique_ptr<FileSelectListener> listener,
+                              scoped_refptr<FileSelectListener> listener,
                               const blink::mojom::FileChooserParams& params);
 
   // Request to enumerate a directory.  This is equivalent to running the file
@@ -425,7 +426,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   // This function is responsible for calling listener->FileSelected() or
   // listener->FileSelectionCanceled().
   virtual void EnumerateDirectory(WebContents* web_contents,
-                                  std::unique_ptr<FileSelectListener> listener,
+                                  scoped_refptr<FileSelectListener> listener,
                                   const base::FilePath& path);
 
   // Shows a chooser for the user to select a nearby Bluetooth device. The

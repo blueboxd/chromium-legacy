@@ -254,11 +254,11 @@ void TestAssistantService::RemoveAssistantInteractionSubscriber(
 }
 
 void TestAssistantService::RetrieveNotification(
-    const chromeos::assistant::mojom::AssistantNotification& notification,
+    const chromeos::assistant::AssistantNotification& notification,
     int action_index) {}
 
 void TestAssistantService::DismissNotification(
-    const chromeos::assistant::mojom::AssistantNotification& notification) {}
+    const chromeos::assistant::AssistantNotification& notification) {}
 
 void TestAssistantService::OnAccessibilityStatusChanged(
     bool spoken_feedback_enabled) {}

@@ -197,10 +197,11 @@ void NGBoxFragmentBuilder::AddResult(const NGLayoutResult& child_layout_result,
 }
 
 void NGBoxFragmentBuilder::AddBreakToken(
-    scoped_refptr<const NGBreakToken> token) {
+    scoped_refptr<const NGBreakToken> token,
+    bool is_in_parallel_flow) {
   DCHECK(token.get());
   child_break_tokens_.push_back(std::move(token));
-  has_inflow_child_break_inside_ = true;
+  has_inflow_child_break_inside_ |= !is_in_parallel_flow;
 }
 
 void NGBoxFragmentBuilder::AddOutOfFlowLegacyCandidate(

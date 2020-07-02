@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_ASSISTANT_ASSISTANT_NOTIFICATION_CONTROLLER_H_
-#define ASH_ASSISTANT_ASSISTANT_NOTIFICATION_CONTROLLER_H_
+#ifndef ASH_ASSISTANT_ASSISTANT_NOTIFICATION_CONTROLLER_IMPL_H_
+#define ASH_ASSISTANT_ASSISTANT_NOTIFICATION_CONTROLLER_IMPL_H_
 
 #include <string>
 
@@ -11,8 +11,9 @@
 #include "ash/assistant/assistant_notification_expiry_monitor.h"
 #include "ash/assistant/model/assistant_notification_model.h"
 #include "ash/assistant/model/assistant_notification_model_observer.h"
-#include "ash/public/mojom/assistant_controller.mojom.h"
+#include "ash/public/cpp/assistant/controller/assistant_notification_controller.h"
 #include "base/macros.h"
+#include "chromeos/services/assistant/public/cpp/assistant_notification.h"
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -22,21 +23,15 @@
 namespace ash {
 
 // The class to manage Assistant notifications.
-class ASH_EXPORT AssistantNotificationController
-    : public mojom::AssistantNotificationController,
+class ASH_EXPORT AssistantNotificationControllerImpl
+    : public AssistantNotificationController,
       public AssistantNotificationModelObserver,
       public message_center::MessageCenterObserver {
  public:
-  using AssistantNotification =
-      chromeos::assistant::mojom::AssistantNotification;
-  using AssistantNotificationPtr =
-      chromeos::assistant::mojom::AssistantNotificationPtr;
+  using AssistantNotification = chromeos::assistant::AssistantNotification;
 
-  AssistantNotificationController();
-  ~AssistantNotificationController() override;
-
-  void BindReceiver(
-      mojo::PendingReceiver<mojom::AssistantNotificationController> receiver);
+  AssistantNotificationControllerImpl();
+  ~AssistantNotificationControllerImpl() override;
 
   // Returns the underlying model.
   const AssistantNotificationModel* model() const { return &model_; }
@@ -44,8 +39,8 @@ class ASH_EXPORT AssistantNotificationController
   // Provides a pointer to the |assistant| owned by AssistantController.
   void SetAssistant(chromeos::assistant::Assistant* assistant);
 
-  // mojom::AssistantNotificationController:
-  void AddOrUpdateNotification(AssistantNotificationPtr notification) override;
+  // AssistantNotificationController:
+  void AddOrUpdateNotification(AssistantNotification&& notification) override;
   void RemoveNotificationById(const std::string& id, bool from_server) override;
   void RemoveNotificationByGroupingKey(const std::string& grouping_id,
                                        bool from_server) override;
@@ -71,8 +66,6 @@ class ASH_EXPORT AssistantNotificationController
                              bool by_user) override;
 
  private:
-  mojo::Receiver<mojom::AssistantNotificationController> receiver_{this};
-
   AssistantNotificationModel model_;
   AssistantNotificationExpiryMonitor expiry_monitor_;
 
@@ -81,9 +74,9 @@ class ASH_EXPORT AssistantNotificationController
 
   const message_center::NotifierId notifier_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(AssistantNotificationController);
+  DISALLOW_COPY_AND_ASSIGN(AssistantNotificationControllerImpl);
 };
 
 }  // namespace ash
 
-#endif  // ASH_ASSISTANT_ASSISTANT_NOTIFICATION_CONTROLLER_H_
+#endif  // ASH_ASSISTANT_ASSISTANT_NOTIFICATION_CONTROLLER_IMPL_H_

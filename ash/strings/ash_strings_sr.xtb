@@ -73,6 +73,7 @@
 <translation id="1747827819627189109">Тастатура на екрану је омогућена</translation>
 <translation id="1761222317188459878">Укључите/искључите мрежну везу. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Помери надесно</translation>
+<translation id="1782199038061388045">превод</translation>
 <translation id="181103072419391116">Јачина сигнала <ph name="SIGNAL_STRENGTH" />, управља администратор</translation>
 <translation id="1812997170047690955">Шта је на екрану?</translation>
 <translation id="1823873187264960516">Етернет: <ph name="ADDRESS" /></translation>
@@ -103,7 +104,6 @@
 <translation id="2126242104232412123">Нови радни простор</translation>
 <translation id="2127372758936585790">Пуњач мале снаге</translation>
 <translation id="2135456203358955318">Монтирана лупа екрана</translation>
-<translation id="2143915448548023856">Подешавања екрана</translation>
 <translation id="2144487987174258011">Покрените поново да бисте ажурирали Adobe Flash Player</translation>
 <translation id="2208323208084708176">Режим спојених радних површина</translation>
 <translation id="2220572644011485463">PIN или лозинка</translation>
@@ -185,6 +185,7 @@
 <translation id="3081696990447829002">Прошири мени</translation>
 <translation id="3087734570205094154">Дно</translation>
 <translation id="309749186376891736">Померите курсор</translation>
+<translation id="3098580329624789136">Потражите <ph name="INTENT" /> за „<ph name="QUERY" />“</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Покрените поново да бисте ажурирали</translation>
 <translation id="3139942575505304791">Радна површина 1</translation>
@@ -222,6 +223,7 @@
 <translation id="3465356146291925647">Управља администратор</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3485319357743610354"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, јачина сигнала <ph name="SIGNAL_STRENGTH" /></translation>
+<translation id="3486220673238053218">дефиниција</translation>
 <translation id="3510164367642747937">Истакни курсор миша</translation>
 <translation id="3513798432020909783">Налогом управља <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Врати на „<ph name="FROM_LOCALE" />“ (потребно је поновно покретање)</translation>
@@ -272,8 +274,8 @@
 <translation id="4072264167173457037">Сигнал средње јачине</translation>
 <translation id="4112140312785995938">Премотај уназад</translation>
 <translation id="4129129681837227511">Да бисте видели обавештења на закључаном екрану, откључајте га како бисте променили подешавање</translation>
-<translation id="4144413954005649103">Када кликнете десним татером или притиснете и задржите, Помоћник вам приказује информације на основу онога што изаберете на екрану.</translation>
 <translation id="4146833061457621061">Пусти музику</translation>
+<translation id="4149156641122542261">Уређајем <ph name="DEVICE_TYPE" /> управља <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Језици</translation>
 <translation id="4195877955194704651">Аутоматски кликови на дугмад</translation>
 <translation id="4197790712631116042">Искључено</translation>
@@ -528,6 +530,7 @@
 <translation id="7378594059915113390">Контроле за медије</translation>
 <translation id="7398254312354928459">Мрежна веза је промењена</translation>
 <translation id="7405710164030118432">Да бисте откључали уређај, унесите приступни кôд родитеља за Family Link</translation>
+<translation id="741244894080940828">конверзију</translation>
 <translation id="742594950370306541">Камера се користи.</translation>
 <translation id="743058460480092004">Камера и микрофон се користе.</translation>
 <translation id="7436182601308224670">Добар дан, <ph name="GIVEN_NAME" /></translation>
@@ -540,6 +543,7 @@
 <translation id="7562368315689366235">Палета емоџија</translation>
 <translation id="7564874036684306347">Премештање прозора на други рачунар може да доведе до неочекиваног понашања. Накнадна обавештења, прозори и дијалози ће можда бити подељени између рачунара.</translation>
 <translation id="7568294522609223312">Искључите аутоматске кликове</translation>
+<translation id="7568637526529101738">Кликом десним тастером или дугим притиском Помоћник приказује информације, попут дефиниције или конверзије јединице за ваш избор.</translation>
 <translation id="7569509451529460200">Брајева азбука и ChromeVox су омогућени</translation>
 <translation id="7593891976182323525">Тастер за претрагу или Shift</translation>
 <translation id="7600875258240007829">Погледајте сва обавештења</translation>

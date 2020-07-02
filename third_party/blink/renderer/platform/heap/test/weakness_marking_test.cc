@@ -255,6 +255,22 @@ TEST_F(WeaknessMarkingTest, ClearWeakHashTableAfterMarking) {
   driver.FinishGC();
 }
 
+TEST_F(WeaknessMarkingTest, StrongifyBackingOnStack) {
+  // Test eunsures that conservative GC strongifies the backing store of
+  // on-stack NewLinkedHashSet.
+  using WeakSet = HeapNewLinkedHashSet<WeakMember<IntegerObject>>;
+  using StrongSet = HeapNewLinkedHashSet<Member<IntegerObject>>;
+  WeakSet weak_set_on_stack;
+  weak_set_on_stack.insert(MakeGarbageCollected<IntegerObject>(1));
+  StrongSet strong_set_on_stack;
+  strong_set_on_stack.insert(MakeGarbageCollected<IntegerObject>(1));
+  TestSupportingGC::ConservativelyCollectGarbage();
+  EXPECT_EQ(1u, weak_set_on_stack.size());
+  EXPECT_EQ(1u, strong_set_on_stack.size());
+  EXPECT_EQ(1, weak_set_on_stack.begin()->Get()->Value());
+  EXPECT_EQ(1, strong_set_on_stack.begin()->Get()->Value());
+}
+
 }  // namespace weakness_marking_test
 
 }  // namespace blink

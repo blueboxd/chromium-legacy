@@ -10,6 +10,7 @@
 <translation id="1201402288615127009">次へ</translation>
 <translation id="1242008676835033345"><ph name="WEBSITE_URL" /> に埋め込まれたページ</translation>
 <translation id="1272079795634619415">中止</translation>
+<translation id="1289742167380433257">データを節約するため、このページの画像は Google によって最適化されています。</translation>
 <translation id="129382876167171263">ウェブサイトによって保存されたファイルがここに表示されます</translation>
 <translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">サイト <ph name="SITE_NAME" /> を追加しました</translation>
@@ -189,6 +190,7 @@
 <translation id="7128222689758636196">現在の検索エンジンに対して許可</translation>
 <translation id="7141896414559753902">サイトでのポップアップ表示とリダイレクトをブロックする（推奨）</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
+<translation id="7243308994586599757">画面の下の方にオプションがあります</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> 件選択されています</translation>
 <translation id="7302486331832100261">通知はデフォルトでブロックされています。許可するには [詳細] をタップしてください。</translation>
 <translation id="7423098979219808738">最初に確認する</translation>
@@ -227,6 +229,7 @@
 <translation id="83792324527827022">サイトでカメラとマイクが使用されています</translation>
 <translation id="8380167699614421159">このサイトでは煩わしい広告や誤解を招く広告が表示されます</translation>
 <translation id="8394832520002899662">タップしてサイトに戻る</translation>
+<translation id="8425213833346101688">変更</translation>
 <translation id="8441146129660941386">後方にシーク再生</translation>
 <translation id="8447861592752582886">デバイスの許可を取り消します</translation>
 <translation id="8463851957836045671">サイトは高速です</translation>

@@ -73,6 +73,7 @@
 <translation id="1747827819627189109">Тастатурата на екранот е овозможена</translation>
 <translation id="1761222317188459878">Вклучи/исклучи мрежна врска. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Лизгај надесно</translation>
+<translation id="1782199038061388045">превод</translation>
 <translation id="181103072419391116">Јачина на сигналот: <ph name="SIGNAL_STRENGTH" />, управувана од администраторот</translation>
 <translation id="1812997170047690955">Што има на мојот екран?</translation>
 <translation id="1823873187264960516">Етернет: <ph name="ADDRESS" /></translation>
@@ -103,7 +104,6 @@
 <translation id="2126242104232412123">Нов работен простор</translation>
 <translation id="2127372758936585790">Полнач со ниско напојување</translation>
 <translation id="2135456203358955318">Закотвена лупа</translation>
-<translation id="2143915448548023856">Поставки на екранот</translation>
 <translation id="2144487987174258011">Рестартирајте за да се ажурира Adobe Flash Player</translation>
 <translation id="2208323208084708176">Режим на единствена работна површина</translation>
 <translation id="2220572644011485463">PIN или лозинка</translation>
@@ -185,6 +185,7 @@
 <translation id="3081696990447829002">Прошири го менито</translation>
 <translation id="3087734570205094154">Дно</translation>
 <translation id="309749186376891736">Премести го покажувачот</translation>
+<translation id="3098580329624789136">Добијте <ph name="INTENT" /> за „<ph name="QUERY" />“</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Рестартирај за да се ажурира</translation>
 <translation id="3139942575505304791">Биро 1</translation>
@@ -222,6 +223,7 @@
 <translation id="3465356146291925647">Управувана од администраторот</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3485319357743610354"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, јачина на сигналот: <ph name="SIGNAL_STRENGTH" /></translation>
+<translation id="3486220673238053218">дефиниција</translation>
 <translation id="3510164367642747937">Нагласи го покажувачот на глувчето</translation>
 <translation id="3513798432020909783"><ph name="MANAGER_EMAIL" /> управува со сметката</translation>
 <translation id="3573179567135747900">Врати назад на „<ph name="FROM_LOCALE" />“ (потребно е рестартирање)</translation>
@@ -273,8 +275,8 @@
 <translation id="4072264167173457037">Среден сигнал</translation>
 <translation id="4112140312785995938">Премотај наназад</translation>
 <translation id="4129129681837227511">За да гледате известувања на заклучениот екран, отклучете за да ја промените поставката</translation>
-<translation id="4144413954005649103">Со кликнување со десното копче или со долго притискање, „Помошникот“ ви прикажува информации поврзани со она што ќе го изберете на екранот.</translation>
 <translation id="4146833061457621061">Пушти музика</translation>
+<translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> е управуван од <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Јазици</translation>
 <translation id="4195877955194704651">Копче за автоматско кликнување</translation>
 <translation id="4197790712631116042">Исклучено</translation>
@@ -529,6 +531,7 @@
 <translation id="7378594059915113390">Контроли за аудиовизуелни медиуми</translation>
 <translation id="7398254312354928459">Мрежната врска е префрлена</translation>
 <translation id="7405710164030118432">За да го отклучите уредот, внесете го кодот за пристап на родителот за Family Link</translation>
+<translation id="741244894080940828">конверзија</translation>
 <translation id="742594950370306541">Фотоапаратот е во употреба.</translation>
 <translation id="743058460480092004">Се користат фотоапаратот и микрофонот.</translation>
 <translation id="7436182601308224670">Добар ден <ph name="GIVEN_NAME" /></translation>
@@ -541,6 +544,7 @@
 <translation id="7562368315689366235">Палета со емотикони</translation>
 <translation id="7564874036684306347">Преместувањето на прозорците на друга работна површина може да доведе до неочекувано однесување. Следните известувања, прозорци и дијалози може да се поделат помеѓу работните површини.</translation>
 <translation id="7568294522609223312">Исклучете ги автоматските кликови</translation>
+<translation id="7568637526529101738">Со кликнување со десното копче или со долго притискање, „Помошникот“ ви прикажува информации, како што се дефиниција или конверзија на единиците за вашиот избор.</translation>
 <translation id="7569509451529460200">Брајовото писмо и ChromeVox се овозможени</translation>
 <translation id="7593891976182323525">Search или Shift</translation>
 <translation id="7600875258240007829">Видете ги сите известувања</translation>

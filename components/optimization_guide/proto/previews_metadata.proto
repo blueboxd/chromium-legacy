@@ -10,8 +10,6 @@ option java_outer_classname = "PreviewsMetadataProto";
 
 package optimization_guide.proto;
 
-import "common_types.proto";
-
 enum LoadingOptimizationType {
   LOADING_UNSPECIFIED = 0;
   // The resource should not be loaded.
@@ -34,6 +32,8 @@ message ResourceLoadingHint {
 // Currently, this is just populated for optimization types NOSCRIPT and
 // RESOURCE_LOADING.
 message PreviewsMetadata {
+  reserved 2;
+
   // A percent value to inflate the number of received bytes by for the purposes
   // of data savings calculations in the client.
   //
@@ -43,9 +43,6 @@ message PreviewsMetadata {
   // inflated bytes calculated by the client will be 30 in order to have a total
   // consumed bytes value of 130.
   optional int64 inflation_percent = 1;
-  // The maximum effective connection type threshold for triggering the
-  // optimization associated with this optimization.
-  optional EffectiveConnectionType max_ect_trigger = 2;
   // An ordered set of resource loading hints.
   //
   // Only the first ResourceLoadingHint record that matches a target resource

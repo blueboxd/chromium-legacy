@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/dom/scriptable_document_parser.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -113,7 +114,7 @@ void HttpEquiv::Process(Document& document,
       document.GetContentSecurityPolicy()->ReportMetaOutsideHead(content);
   } else if (EqualIgnoringASCIICase(equiv, http_names::kOriginTrial)) {
     if (in_document_head_element) {
-      ProcessHttpEquivOriginTrial(document, content);
+      ProcessHttpEquivOriginTrial(document.domWindow(), content);
     }
   }
 }
@@ -168,8 +169,10 @@ void HttpEquiv::ProcessHttpEquivDefaultStyle(Document& document,
   document.GetStyleEngine().SetHttpDefaultStyle(content);
 }
 
-void HttpEquiv::ProcessHttpEquivOriginTrial(Document& document,
+void HttpEquiv::ProcessHttpEquivOriginTrial(LocalDOMWindow* window,
                                             const AtomicString& content) {
+  if (!window)
+    return;
   // For meta tags injected by script, process the token with the origin of the
   // external script, if available.
   // NOTE: The external script origin is not considered security-critical. See
@@ -181,14 +184,14 @@ void HttpEquiv::ProcessHttpEquivOriginTrial(Document& document,
     if (external_script_url.IsValid()) {
       scoped_refptr<SecurityOrigin> external_origin =
           SecurityOrigin::Create(external_script_url);
-      document.GetOriginTrialContext()->AddTokenFromExternalScript(
+      window->GetOriginTrialContext()->AddTokenFromExternalScript(
           content, external_origin.get());
       return;
     }
   }
 
   // Process token as usual, without an external script origin.
-  document.GetOriginTrialContext()->AddToken(content);
+  window->GetOriginTrialContext()->AddToken(content);
 }
 
 void HttpEquiv::ProcessHttpEquivRefresh(Document& document,

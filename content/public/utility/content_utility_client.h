@@ -60,7 +60,7 @@ class CONTENT_EXPORT ContentUtilityClient {
   // If the embedder returns |false| this process is terminated immediately.
   virtual bool HandleServiceRequest(
       const std::string& service_name,
-      service_manager::mojom::ServiceRequest request);
+      mojo::PendingReceiver<service_manager::mojom::Service> receiver);
 
   // Allows the embedder to handle an incoming service interface request to run
   // a service on the IO thread. Should return a ServiceFactory instance which

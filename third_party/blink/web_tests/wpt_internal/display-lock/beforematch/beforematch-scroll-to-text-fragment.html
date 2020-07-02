@@ -36,7 +36,7 @@ promise_test(t => new Promise((resolve, reject) => {
   const key = token();
   test_driver.bless('Open a scroll to text fragment URL', () => {
     window.open(
-`resources/beforematch-scroll-to-text-fragment-with-anchor.html?key=${key}#:~:text=foo`,
+      `resources/beforematch-scroll-to-text-fragment-with-anchor.html?key=${key}#:~:text=foo`,
       '_blank',
       'noopener');
   });
@@ -48,6 +48,21 @@ promise_test(t => new Promise((resolve, reject) => {
     'bar should not get the beforematch event despite being the target of an element fragment due to the text fragment.');
 }), 'Verifies that beforematch is only fired on elements targeted by a text fragment when there is both a text fragment and an element fragment.');
 
+promise_test(t => new Promise((resolve, reject) => {
+  const key = token();
+  test_driver.bless('Open a scroll to text fragment URL', () => {
+    window.open(
+      `resources/beforematch-scroll-to-text-fragment-bubble.html?key=${key}#:~:text=foo`,
+      '_blank',
+      'noopener');
+  });
+  fetchResults(key, resolve, reject);
+}).then(results => {
+  assert_true(results.beforematchFiredOnChild,
+    'The element containing the searched text should have beforematch fired on it.');
+  assert_true(results.beforematchFiredOnParent,
+    'The parent element of the element containing the matching text should have the beforematch event fired on it because the event should bubble.');
+}), 'Verifies that the beforematch event bubbles with scroll to text fragment.');
 
 // TODO(jarhar): Write more tests here once we decide on a behavior here: https://github.com/WICG/display-locking/issues/150
 </script>

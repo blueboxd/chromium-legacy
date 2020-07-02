@@ -351,7 +351,8 @@ class ComputedStyle : public ComputedStyleBase,
       const ComputedStyle* new_style);
 
   // Returns true if the ComputedStyle change requires a LayoutObject re-attach.
-  static bool NeedsReattachLayoutTree(const ComputedStyle* old_style,
+  static bool NeedsReattachLayoutTree(const Element& element,
+                                      const ComputedStyle* old_style,
                                       const ComputedStyle* new_style);
 
   // Copies the values of any independent inherited properties from the parent

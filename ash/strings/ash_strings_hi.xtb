@@ -73,6 +73,7 @@
 <translation id="1747827819627189109">ऑन-स्‍क्रीन कीबोर्ड सक्षम है</translation>
 <translation id="1761222317188459878">नेटवर्क कनेक्शन टॉगल करें. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">दाईं तरफ़ स्क्रोल करें</translation>
+<translation id="1782199038061388045">अनुवाद</translation>
 <translation id="181103072419391116">सिग्नल की क्षमता <ph name="SIGNAL_STRENGTH" />, आपका एडमिन प्रबंधित करता है</translation>
 <translation id="1812997170047690955">मेरी स्क्रीन पर क्या है?</translation>
 <translation id="1823873187264960516">ईथरनेट: <ph name="ADDRESS" /></translation>
@@ -103,7 +104,6 @@
 <translation id="2126242104232412123">नया डेस्क</translation>
 <translation id="2127372758936585790">कम-शक्ति वाला चार्जर</translation>
 <translation id="2135456203358955318">सामग्री को बड़ा दिखाने की डॉक की गई सुविधा</translation>
-<translation id="2143915448548023856">प्रदर्शन सेटिंग</translation>
 <translation id="2144487987174258011">Adobe Flash Player को अपडेट करने के लिए रीस्टार्ट करें</translation>
 <translation id="2208323208084708176">संयुक्त डेस्कटॉप मोड</translation>
 <translation id="2220572644011485463">पिन या पासवर्ड</translation>
@@ -185,6 +185,7 @@
 <translation id="3081696990447829002">मेन्यू बड़ा करें</translation>
 <translation id="3087734570205094154">नीचे</translation>
 <translation id="309749186376891736">कर्सर घुमाएं</translation>
+<translation id="3098580329624789136">"<ph name="QUERY" />" के लिए <ph name="INTENT" /> पाएं</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (ब्लूटूथ)</translation>
 <translation id="3126069444801937830">अपडेट करने के लिए रीस्टार्ट करें</translation>
 <translation id="3139942575505304791">डेस्क 1</translation>
@@ -222,6 +223,7 @@
 <translation id="3465356146291925647">आपका एडमिन प्रबंधित करता है</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3485319357743610354"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, सिग्नल की क्षमता <ph name="SIGNAL_STRENGTH" /></translation>
+<translation id="3486220673238053218">परिभाषा</translation>
 <translation id="3510164367642747937">माउस कर्सर को हाइलाइट करें</translation>
 <translation id="3513798432020909783"><ph name="MANAGER_EMAIL" /> खाता संभालते हैं</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" में फिर से बदलें (फिर से आरंभ करने की आवश्यकता है)</translation>
@@ -273,8 +275,8 @@
 <translation id="4072264167173457037">मध्यम सिग्नल</translation>
 <translation id="4112140312785995938">पीछे जाएं</translation>
 <translation id="4129129681837227511">अपनी लॉक स्क्रीन पर सूचनाएं देखने की सेटिंग बदलने के लिए स्क्रीन अनलॉक करें</translation>
-<translation id="4144413954005649103">दायां क्लिक करने या दबाकर रखने पर, Assistant आपको स्क्रीन पर चुनी गई सामग्री से जुड़ी जानकारी दिखाती है.</translation>
 <translation id="4146833061457621061">गाने चलाओ</translation>
+<translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> को <ph name="DOMAIN" /> प्रबंधित करता है</translation>
 <translation id="4181841719683918333">भाषाएं</translation>
 <translation id="4195877955194704651">अपने-आप क्लिक बटन</translation>
 <translation id="4197790712631116042">बंद है</translation>
@@ -529,6 +531,7 @@
 <translation id="7378594059915113390">मीडिया नियंत्रण</translation>
 <translation id="7398254312354928459">नेटवर्क कनेक्शन स्विच किया गया</translation>
 <translation id="7405710164030118432">यह डिवाइस अनलॉक करने के लिए, अपना Family Link का माता-पिता वाला ऐक्सेस कोड डालें</translation>
+<translation id="741244894080940828">एक यूनिट से दूसरी यूनिट में बदलना</translation>
 <translation id="742594950370306541">कैमरे का उपयोग हो रहा है.</translation>
 <translation id="743058460480092004">कैमरे और माइक्रोफ़ोन का उपयोग हो रहा है.</translation>
 <translation id="7436182601308224670">गुड आफ़्टरनून <ph name="GIVEN_NAME" /></translation>
@@ -541,6 +544,7 @@
 <translation id="7562368315689366235">इमोजी पैलेट</translation>
 <translation id="7564874036684306347">विंडो को किसी दूसरे डेस्कटॉप पर ले जाने से अनचाहा बर्ताव हो सकता है. इसके बाद की सूचनाएं, विंडो और संवाद डेस्कटॉप के बीच बंट सकती हैं.</translation>
 <translation id="7568294522609223312">अपने-आप क्लिक होने की सुविधा बंद करें</translation>
+<translation id="7568637526529101738">दायां क्लिक करने या दबाकर रखने पर, Assistant आपको स्क्रीन पर चुने गए कॉन्टेंट से जुड़ी जानकारी दिखाती है. जैसे कि परिभाषा या एक यूनिट से दूसरी यूनिट में बदलकर दिखाना.</translation>
 <translation id="7569509451529460200">ब्रेल और ChromeVox सक्षम हैं</translation>
 <translation id="7593891976182323525">Search या Shift</translation>
 <translation id="7600875258240007829">सभी सूचनाएं देखें</translation>

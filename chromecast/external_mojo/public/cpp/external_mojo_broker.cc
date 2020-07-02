@@ -35,8 +35,8 @@
 #include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/cpp/service_filter.h"
+#include "services/service_manager/public/cpp/service_receiver.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 
@@ -92,7 +92,7 @@ class ExternalMojoBroker::ConnectorImpl : public mojom::ExternalConnector {
         mojo::PendingReceiver<::service_manager::mojom::Service> receiver)
         : connector_(connector),
           service_name_(std::move(service_name)),
-          service_binding_(this, std::move(receiver)) {
+          service_receiver_(this, std::move(receiver)) {
       DCHECK(connector_);
     }
 
@@ -107,7 +107,7 @@ class ExternalMojoBroker::ConnectorImpl : public mojom::ExternalConnector {
 
     ConnectorImpl* const connector_;
     const std::string service_name_;
-    service_manager::ServiceBinding service_binding_;
+    service_manager::ServiceReceiver service_receiver_;
 
     DISALLOW_COPY_AND_ASSIGN(ExternalServiceProxy);
   };

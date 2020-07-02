@@ -95,6 +95,8 @@ class MEDIA_EXPORT VideoDecoderConfig {
   // in this region are valid.
   const gfx::Size& coded_size() const { return coded_size_; }
 
+  void set_coded_size(const gfx::Size& coded_size) { coded_size_ = coded_size; }
+
   // Region of coded_size() that contains image data, also known as the clean
   // aperture. Usually, but not always, origin-aligned (top-left).
   const gfx::Rect& visible_rect() const { return visible_rect_; }

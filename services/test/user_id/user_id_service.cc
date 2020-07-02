@@ -4,11 +4,13 @@
 
 #include "services/test/user_id/user_id_service.h"
 #include "base/bind.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace user_id {
 
-UserIdService::UserIdService(service_manager::mojom::ServiceRequest request)
-    : service_binding_(this, std::move(request)) {
+UserIdService::UserIdService(
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver)
+    : service_receiver_(this, std::move(receiver)) {
   registry_.AddInterface<mojom::UserId>(base::BindRepeating(
       &UserIdService::BindUserIdReceiver, base::Unretained(this)));
 }
@@ -28,7 +30,7 @@ void UserIdService::BindUserIdReceiver(
 }
 
 void UserIdService::GetInstanceGroup(GetInstanceGroupCallback callback) {
-  std::move(callback).Run(service_binding_.identity().instance_group());
+  std::move(callback).Run(service_receiver_.identity().instance_group());
 }
 
 }  // namespace user_id

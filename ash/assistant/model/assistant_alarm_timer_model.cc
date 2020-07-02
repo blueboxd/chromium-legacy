@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "ash/assistant/model/assistant_alarm_timer_model_observer.h"
-#include "ash/public/mojom/assistant_controller.mojom.h"
 #include "base/time/time.h"
 
 namespace ash {

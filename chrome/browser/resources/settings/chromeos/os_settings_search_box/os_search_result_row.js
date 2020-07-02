@@ -289,7 +289,7 @@ cr.define('settings', function() {
      * are only one character long are ignored.
      * @param {string} normalizedQuery A lowercased query which does not contain
      *     hyphens or accents.
-     * @return {!Array<string>} queryTokens QueryTokens that do not contain
+     * @return {!Array<string>} QueryTokens that do not contain
      *     blankspaces and are substrings of the normalized result text
      * @private
      */
@@ -350,39 +350,78 @@ cr.define('settings', function() {
             queryToken => queryToken.length === maxLengthQueryToken);
       };
 
-      // Since the order of key value pairs is maintained in the
+      // A 2D array such that each array contains queryTokens of a querySegment.
+      // Note that the order of key value pairs is maintained in the
       // |segmentToTokenMap| relative to the |normalizedQuery|, and the order
-      // of queryTokens maintained in each key value pair, |inOrderTokens| is
-      // an ordered array of queryTokens that are substrings of
-      // |normalizedQuery|. Note that joining |inOrderTokens| will not always
-      // form a subsequence of |normalizedQuery|. There may be repeated matches,
-      // and a joined |inOrderTokens| may be longer than the |normalizedQuery|.
-      const inOrderTokens =
-          Array.from(segmentToTokenMap).map(getLongestTokensPerSegment).flat();
+      // of the queryTokens within each inner array is also maintained relative
+      // to the |normalizedQuery|.
+      const inOrderTokenGroups =
+          Array.from(segmentToTokenMap).map(getLongestTokensPerSegment);
 
+      // Flatten the 2D |inOrderTokenGroups|, and remove duplicate queryTokens.
+      // Note that even though joining |inOrderTokens| will always form a
+      // subsequence of |normalizedQuery|, it will not be a subsequence of
+      // |normalizedResultText|.
+      // Example: |this.resultText| = "Touchpad tap-to-click"
+      //          |normalizedResultText| = "touchpad taptoclick"
+      //          |normalizedQuery| = "tap to cli"
+      //          |inOrderTokenGroups| = [['tap']. ['to', 'to']. ['cli']]
+      //          |inOrderTokens| = ['tap', 'to', 'cli']
+      // |inOrderTokenGroups| contains an inner array of two 'to's because
+      // the |querySegment| = 'to' matches with 'touchpad' and 'taptoclick'.
+      // Duplicate entries are removed in |inOrderTokens| because
+      // if a |queryToken| is merged to form a compound worded queryToken, it
+      // should not be used to bold another |resultText| word. In the fictitious
+      // case that |inOrderTokenGroups| is [['tap']. ['to', 'xy']. ['cli']],
+      // |inOrderTokens| will be ['tap', 'to', 'xy', 'cli'], and only 'Tap-to'
+      // will be bolded. This is fine because 'toxy' is a subsequence of a
+      // |querySegment| the user inputted, and the order of bolding
+      // will prefer the user's input in these extenuating circumstances.
+      const inOrderTokens = [...new Set(inOrderTokenGroups.flat())];
+      return this.mergeValidTokensToCompounded_(inOrderTokens);
+    },
+
+    /**
+     * Possibly merges costituent queryTokens in |inOrderQueryTokens| to form
+     * new, longer, valid queryTokens that match with normalized compounded
+     * words in |this.resultText|.
+     * @param {!Array<string>} inOrderQueryTokens An array of valid queryTokens
+     *     that do not contain dups.
+     * @return {!Array<string>} An array of queryTokens of equal or lesser size
+     *     than |inOrderQueryTokens|, each of which do not contain blankspaces
+     *     and are substrings of the normalized result text.
+     * @private
+     */
+    mergeValidTokensToCompounded_(inOrderQueryTokens) {
       // If |this.resultToken| does not contain any hyphens, this will be
-      // be the same as |inOrderTokens|.
+      // be the same as |inOrderQueryTokens|.
       const longestCompoundWordTokens = [];
 
-      // Instead of stripping all hyphen like in |normalizedResultText|,
-      // convert all hyphens to |DELOCALIZED_HYPHEN|. This string will
-      // be compared with compound query tokens to find query tokens that
-      // are compound substrings longer than the constituent query tokens.
+      // Instead of stripping all hyphen as would be the case if the result
+      // text were normalized, convert all hyphens to |DELOCALIZED_HYPHEN|. This
+      // string will be compared with compound query tokens to find query tokens
+      // that are compound substrings longer than the constituent query tokens.
       const hyphenatedResultText =
           removeAccents(this.resultText_)
               .replace(HYPHENS_REGEX, DELOCALIZED_HYPHEN);
 
       // Create the longest combined tokens delimited by |DELOCALIZED_HYPHEN|s
       // that are a substrings of |hyphenatedResultText|. Worst case visit each
-      // token twice.
+      // token twice. Note that if a token is used to form a compound word, it
+      // will no longer be present for other words.
+      // Example: |this.resultText| = "Touchpad tap-to-click"
+      //          |this.searchQuery| = "tap to clic"
+      // The token "to" will fail to highlight "To" in "Touchpad", and instead
+      // will be combined with "tap" and "clic" to bold "tap-to-click".
       let i = 0;
-      while (i < inOrderTokens.length) {
-        let prefixToken = inOrderTokens[i];
+      while (i < inOrderQueryTokens.length) {
+        let prefixToken = inOrderQueryTokens[i];
         i++;
-        while (i < inOrderTokens.length) {
-          // Create a compound token with the next token within |inOrderTokens|.
+        while (i < inOrderQueryTokens.length) {
+          // Create a compound token with the next token within
+          // |inOrderQueryTokens|.
           const compoundToken =
-              prefixToken + DELOCALIZED_HYPHEN + inOrderTokens[i];
+              prefixToken + DELOCALIZED_HYPHEN + inOrderQueryTokens[i];
 
           // If the constructed compoundToken from valid queryTokens is not a
           // substring of the |hyphenatedResultText|, break from the inner loop

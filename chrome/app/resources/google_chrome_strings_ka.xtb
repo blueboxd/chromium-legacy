@@ -57,7 +57,6 @@
 <translation id="2534507159460261402">Google Pay (Chrome-ში კოპირებული)</translation>
 <translation id="2580411288591421699">შეუძლებელია იმავე Google Chrome-ის ვერსიის დაყენება, რომელიც ამჟამად გაშვებულია. დახურეთ Google Chrome და ხელახლა სცადეთ.</translation>
 <translation id="2586406160782125153">ეს მოქმედება წაშლის თქვენს დათვალიერების მონაცემებს ამ მოწყობილობიდან. თქვენი მონაცემების მოგვიანებით მისაღებად, შედით Chrome-ში, როგორც <ph name="USER_EMAIL" />.</translation>
-<translation id="2588322182880276190">Chrome-ის ლოგო</translation>
 <translation id="2622559029861875898">Chrome ვერ ახერხებს განახლებების შემოწმებას. შეამოწმეთ კავშირი ინტერნეტთან.</translation>
 <translation id="2644798301485385923">Chrome OS სისტემა</translation>
 <translation id="2652691236519827073">ბმულის გახსნა Chrome-ის ახალ ჩა&amp;ნართში</translation>
@@ -70,6 +69,7 @@
 <translation id="2847461019998147611">Google Chrome-ის ამ ენაზე ჩვენება</translation>
 <translation id="2857540653560290388">მიმდინარეობს Chrome-ის გაშვება…</translation>
 <translation id="2871893339301912279">თქვენ შესული ხართ Chrome-ში!</translation>
+<translation id="2885378588091291677">ამოცანების მმართველი</translation>
 <translation id="2888126860611144412">Chrome-ის შესახებ</translation>
 <translation id="2929907241665500097">Chrome-ის განახლება ვერ მოხერხდა შეფერხების გამო. <ph name="BEGIN_LINK" />შეასწორეთ Chrome-ის განახლებასთან დაკავშირებული პრობლემები და განუხორციელებელი განახლებები.<ph name="END_LINK" /></translation>
 <translation id="2969728957078202736"><ph name="PAGE_TITLE" /> — ქსელში შესვლა — Chrome</translation>

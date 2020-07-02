@@ -45,6 +45,8 @@
 <translation id="1395262318152388157">Drsnik za iskanje</translation>
 <translation id="1399648040768741453">Tipkovnica za teluščino (fonetična)</translation>
 <translation id="1430915738399379752">Natisni</translation>
+<translation id="1433600251059882049">Ta mapa je deljena z Linuxom in sistemom Windows</translation>
+<translation id="1435838927755162558">Deljenje mape s programom Parallels Desktop</translation>
 <translation id="1439494416798956626">Premaknjeno v mapo <ph name="FOLDER_NAME" />.</translation>
 <translation id="1441841714100794440">Tipkovnica za vietnamščino (Telex)</translation>
 <translation id="1455548678241328678">Norveška tipkovnica</translation>
@@ -79,6 +81,7 @@
 <translation id="1844692022597038441">Ta datoteka ni na voljo brez povezave.</translation>
 <translation id="184633654410729720">Tipkovnica za tajščino (Kedmanee)</translation>
 <translation id="1847880352285315359">Shranjeno</translation>
+<translation id="1853795129690976061">Ta datoteka je deljena z Linuxom</translation>
 <translation id="1864756863218646478">Datoteke ni bilo mogoče najti.</translation>
 <translation id="1921986354447415460">Turška tipkovnica F</translation>
 <translation id="1924372192547904021">Pogon <ph name="DRIVE_NAME" /> je bil formatiran</translation>
@@ -180,6 +183,7 @@
 <translation id="303198083543495566">Geografija</translation>
 <translation id="3057861065630527966">Varnostno kopiranje fotografij videoposnetkov</translation>
 <translation id="3064388234319122767">Prečrkovanje (zdravo → здраво)</translation>
+<translation id="3067790092342515856">Datoteka sistema Windows</translation>
 <translation id="3078461028045006476">Skupna raba z: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3088034400796962477">Prečrkovanje (salam ← سلام)</translation>
 <translation id="3116361045094675131">Angleška tipkovnica (Velika Britanija)</translation>
@@ -262,6 +266,7 @@
 <translation id="3943857333388298514">Prilepi</translation>
 <translation id="3958548648197196644">Kivi</translation>
 <translation id="3966388904776714213">Zvočni predvajalnik</translation>
+<translation id="3984317463833596033">Programu Parallels Desktop dovolite spreminjanje datotek v mapi <ph name="FOLDER_NAME" /></translation>
 <translation id="4002066346123236978">Naslov</translation>
 <translation id="4070370845051020638">Način vnosa za kantonščino</translation>
 <translation id="4072248638558688893">Tipkovnica za tamilščino (fonetična)</translation>
@@ -290,6 +295,7 @@
 <translation id="4470564870223067757">Dvodelni hangulski način</translation>
 <translation id="4477219268485577442">bolgarščina (fonetična)</translation>
 <translation id="4479812471636796472">Angleška tipkovnica Dvorak (ZDA)</translation>
+<translation id="4481711095103932593">Ta mapa je deljena s sistemom Windows</translation>
 <translation id="4487088045714738411">Belgijska tipkovnica</translation>
 <translation id="4522570452068850558">Podrobnosti</translation>
 <translation id="4552678318981539154">Nakup dodatnega prostora za shranjevanje ...</translation>
@@ -335,10 +341,12 @@
 <translation id="4881695831933465202">Odpri</translation>
 <translation id="4886021172213954916">Tipkovnica za tamilščino (pisalni stroj)</translation>
 <translation id="4892969127351273348">Ni mogoče odpreti z aplikacijo <ph name="APP_NAME" /></translation>
+<translation id="4900532980794411603">Deljenje s programom Parallels Desktop</translation>
 <translation id="4905417359854579806">Pripravljeno za varnostno kopiranje: <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Popravljeno</translation>
 <translation id="4935975195727477204">Roža</translation>
 <translation id="4943368462779413526">Žoga</translation>
+<translation id="4961158930123534723">1 mapa je deljena s programom Parallels Desktop</translation>
 <translation id="4969785127455456148">Album</translation>
 <translation id="497244430928947428">Tipkovnica za malajalamščino (fonetična)</translation>
 <translation id="4973523518332075481">Uporabite ime, ki vsebuje največ toliko znakov: <ph name="MAX_LENGTH" /></translation>
@@ -350,6 +358,7 @@
 <translation id="5010406651457630570">Računalniki</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5024856940085636730">Eden od postopkov traja dlje, kot je pričakovano. Ali ga želite opustiti?</translation>
+<translation id="5036159836254554629">Upravljanje deljenja v programu Parallels Desktop</translation>
 <translation id="5038625366300922036">Več ...</translation>
 <translation id="5061708541166515394">Kontrast</translation>
 <translation id="5068919226082848014">Pica</translation>
@@ -499,6 +508,7 @@
 <translation id="656398493051028875">Brisanje datoteke »<ph name="FILENAME" />« ...</translation>
 <translation id="6581162200855843583">Povezava Google Drive</translation>
 <translation id="6607272825297743757">Podatki o datoteki</translation>
+<translation id="6609332149380188670">Št. map, deljenih s programom Parallels Desktop: <ph name="NUMBER_OF_ITEMS" /></translation>
 <translation id="6629841649550503054">Vse varnostno kopirano v <ph name="BEGIN_LINK" />Google Drive!<ph name="END_LINK" /></translation>
 <translation id="6643016212128521049">Izbriši</translation>
 <translation id="6650726141019353908">Rožnat metulj</translation>
@@ -680,6 +690,7 @@
 <translation id="8475647382427415476">Google Drive trenutno ne more sinhronizirati datoteke »<ph name="FILENAME" />«. Google Drive bo poskusil znova pozneje.</translation>
 <translation id="8477649328507734757">Krogci</translation>
 <translation id="8487700953926739672">Na voljo brez povezave</translation>
+<translation id="8490342535582768689">Programu Parallels Desktop dovolite spreminjanje datotek v Googlu Drive. Spremembe bodo sinhronizirane z drugimi napravami.</translation>
 <translation id="8521441079177373948">Združeno kraljestvo</translation>
 <translation id="8525306231823319788">Celozaslonsko</translation>
 <translation id="8551494947769799688">latvijščina</translation>

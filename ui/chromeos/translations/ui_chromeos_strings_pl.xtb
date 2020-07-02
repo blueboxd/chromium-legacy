@@ -45,6 +45,8 @@
 <translation id="1395262318152388157">Suwak wyszukiwania</translation>
 <translation id="1399648040768741453">Klawiatura telugu (fonetyczna)</translation>
 <translation id="1430915738399379752">Drukuj</translation>
+<translation id="1433600251059882049">Ten folder jest udostępniany systemom Linux i Windows</translation>
+<translation id="1435838927755162558">Udostępnij folder aplikacji Parallels Desktop</translation>
 <translation id="1439494416798956626">Przeniesiono do: <ph name="FOLDER_NAME" />.</translation>
 <translation id="1441841714100794440">Klawiatura wietnamska (teleks)</translation>
 <translation id="1455548678241328678">Klawiatura norweska</translation>
@@ -79,6 +81,7 @@
 <translation id="1844692022597038441">Ten plik nie jest dostępny offline.</translation>
 <translation id="184633654410729720">Klawiatura tajska (Kedmanee)</translation>
 <translation id="1847880352285315359">Zapisano</translation>
+<translation id="1853795129690976061">Ten folder jest udostępniany Linuksowi</translation>
 <translation id="1864756863218646478">Nie można znaleźć pliku.</translation>
 <translation id="1921986354447415460">Klawiatura turecka (wersja F)</translation>
 <translation id="1924372192547904021">Sformatowano: <ph name="DRIVE_NAME" /></translation>
@@ -180,6 +183,7 @@
 <translation id="303198083543495566">Lokalizacja</translation>
 <translation id="3057861065630527966">Utwórz kopię zapasową zdjęć i filmów</translation>
 <translation id="3064388234319122767">Transliteracja (zdravo → здраво)</translation>
+<translation id="3067790092342515856">Pliki systemu Windows</translation>
 <translation id="3078461028045006476">Udostępnij w rozszerzeniu <ph name="EXTENSION_NAME" /></translation>
 <translation id="3088034400796962477">Transliteracja (salam ← سلام)</translation>
 <translation id="3116361045094675131">Klawiatura brytyjska</translation>
@@ -262,6 +266,7 @@
 <translation id="3943857333388298514">Wklej</translation>
 <translation id="3958548648197196644">Kiwi</translation>
 <translation id="3966388904776714213">Odtwarzacze dźwięku</translation>
+<translation id="3984317463833596033">Przyznaj aplikacji Parallels Desktop uprawnienia do modyfikowania plików w folderze <ph name="FOLDER_NAME" /></translation>
 <translation id="4002066346123236978">Tytuł</translation>
 <translation id="4070370845051020638">Metoda wprowadzania – kantoński</translation>
 <translation id="4072248638558688893">Klawiatura tamilska (fonetyczna)</translation>
@@ -290,6 +295,7 @@
 <translation id="4470564870223067757">Zestaw Hangul 2</translation>
 <translation id="4477219268485577442">bułgarska klawiatura fonetyczna</translation>
 <translation id="4479812471636796472">Klawiatura amerykańska (Dvorak)</translation>
+<translation id="4481711095103932593">Ten folder jest udostępniany systemowi Windows</translation>
 <translation id="4487088045714738411">Klawiatura belgijska</translation>
 <translation id="4522570452068850558">Szczegóły</translation>
 <translation id="4552678318981539154">Kup więcej miejsca</translation>
@@ -335,10 +341,12 @@
 <translation id="4881695831933465202">Otwórz</translation>
 <translation id="4886021172213954916">Klawiatura tamilska (maszyna do pisania)</translation>
 <translation id="4892969127351273348">Nie można otworzyć za pomocą aplikacji <ph name="APP_NAME" /></translation>
+<translation id="4900532980794411603">Udostępnij aplikacji Parallels Desktop</translation>
 <translation id="4905417359854579806">Wszystko gotowe do utworzenia kopii zapasowych: <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Poprawione</translation>
 <translation id="4935975195727477204">Kwiat gazanii</translation>
 <translation id="4943368462779413526">Piłka futbolowa</translation>
+<translation id="4961158930123534723">Udostępniono 1 folder aplikacji Parallels Desktop</translation>
 <translation id="4969785127455456148">Album</translation>
 <translation id="497244430928947428">Klawiatura malajalam (fonetyczna)</translation>
 <translation id="4973523518332075481">Użyj nazwy, której długość nie przekracza <ph name="MAX_LENGTH" /> znaków</translation>
@@ -350,6 +358,7 @@
 <translation id="5010406651457630570">Komputery</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5024856940085636730">Operacja trwa dłużej niż powinna. Chcesz ją przerwać?</translation>
+<translation id="5036159836254554629">Zarządzaj udostępnianiem aplikacji Parallels Desktop</translation>
 <translation id="5038625366300922036">Zobacz więcej...</translation>
 <translation id="5061708541166515394">Kontrast</translation>
 <translation id="5068919226082848014">Pizza</translation>
@@ -499,6 +508,7 @@
 <translation id="656398493051028875">Usuwam „<ph name="FILENAME" />”...</translation>
 <translation id="6581162200855843583">Link Dysku Google</translation>
 <translation id="6607272825297743757">Informacje o pliku</translation>
+<translation id="6609332149380188670">Udostępniono foldery (<ph name="NUMBER_OF_ITEMS" />) aplikacji Parallels Desktop</translation>
 <translation id="6629841649550503054">Kopie zapasowe wszystkich materiałów zostały utworzone na <ph name="BEGIN_LINK" />Dysku Google<ph name="END_LINK" />.</translation>
 <translation id="6643016212128521049">Wyczyść</translation>
 <translation id="6650726141019353908">Różowy motyl</translation>
@@ -680,6 +690,7 @@
 <translation id="8475647382427415476">Dysk Google nie mógł zsynchronizować pliku „<ph name="FILENAME" />”. Spróbujemy ponownie później.</translation>
 <translation id="8477649328507734757">Wirowanie</translation>
 <translation id="8487700953926739672">Dostępny offline</translation>
+<translation id="8490342535582768689">Przyznaj aplikacji Parallels Desktop uprawnienia do modyfikowania plików na dysku Google. Zmiany będą synchronizowane z innymi urządzeniami.</translation>
 <translation id="8521441079177373948">brytyjska klawiatura</translation>
 <translation id="8525306231823319788">Pełny ekran</translation>
 <translation id="8551494947769799688">Łotewski</translation>

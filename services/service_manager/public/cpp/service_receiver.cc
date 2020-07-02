@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/service_receiver.h"
 
 #include <utility>
 
@@ -14,35 +14,35 @@
 
 namespace service_manager {
 
-ServiceBinding::ServiceBinding(service_manager::Service* service)
+ServiceReceiver::ServiceReceiver(service_manager::Service* service)
     : service_(service) {
   DCHECK(service_);
 }
 
-ServiceBinding::ServiceBinding(service_manager::Service* service,
-                               mojo::PendingReceiver<mojom::Service> receiver)
-    : ServiceBinding(service) {
+ServiceReceiver::ServiceReceiver(service_manager::Service* service,
+                                 mojo::PendingReceiver<mojom::Service> receiver)
+    : ServiceReceiver(service) {
   if (receiver.is_valid())
     Bind(std::move(receiver));
 }
 
-ServiceBinding::~ServiceBinding() = default;
+ServiceReceiver::~ServiceReceiver() = default;
 
-Connector* ServiceBinding::GetConnector() {
+Connector* ServiceReceiver::GetConnector() {
   if (!connector_)
     connector_ = Connector::Create(&pending_connector_receiver_);
   return connector_.get();
 }
 
-void ServiceBinding::Bind(mojo::PendingReceiver<mojom::Service> receiver) {
+void ServiceReceiver::Bind(mojo::PendingReceiver<mojom::Service> receiver) {
   DCHECK(!is_bound());
   receiver_.Bind(std::move(receiver));
   receiver_.set_disconnect_handler(base::BindOnce(
-      &ServiceBinding::OnConnectionError, base::Unretained(this)));
+      &ServiceReceiver::OnConnectionError, base::Unretained(this)));
 }
 
-void ServiceBinding::RequestClose() {
-  // We allow for innoccuous RequestClose() calls on unbound ServiceBindings.
+void ServiceReceiver::RequestClose() {
+  // We allow for innoccuous RequestClose() calls on unbound ServiceReceivers.
   // This may occur e.g. when running a service in-process.
   if (!is_bound())
     return;
@@ -58,19 +58,19 @@ void ServiceBinding::RequestClose() {
   }
 }
 
-void ServiceBinding::Close() {
+void ServiceReceiver::Close() {
   DCHECK(is_bound());
   receiver_.reset();
   service_control_.reset();
   connector_.reset();
 }
 
-void ServiceBinding::OnConnectionError() {
+void ServiceReceiver::OnConnectionError() {
   service_->OnDisconnected();
 }
 
-void ServiceBinding::OnStart(const Identity& identity,
-                             OnStartCallback callback) {
+void ServiceReceiver::OnStart(const Identity& identity,
+                              OnStartCallback callback) {
   identity_ = identity;
 
   if (!pending_connector_receiver_.is_valid())
@@ -85,7 +85,7 @@ void ServiceBinding::OnStart(const Identity& identity,
     service_control_->RequestQuit();
 }
 
-void ServiceBinding::OnBindInterface(
+void ServiceReceiver::OnBindInterface(
     const BindSourceInfo& source_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe,
@@ -96,7 +96,7 @@ void ServiceBinding::OnBindInterface(
   service_->OnConnect(source_info, interface_name, std::move(interface_pipe));
 }
 
-void ServiceBinding::CreatePackagedServiceInstance(
+void ServiceReceiver::CreatePackagedServiceInstance(
     const Identity& identity,
     mojo::PendingReceiver<mojom::Service> receiver,
     mojo::PendingRemote<mojom::ProcessMetadata> metadata) {

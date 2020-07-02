@@ -45,6 +45,8 @@
 <translation id="1395262318152388157">ဆလိုက်ဒါးကို ရှာပါ</translation>
 <translation id="1399648040768741453">တဲလ်ဂူ (Phonetic)</translation>
 <translation id="1430915738399379752">ပရင့်</translation>
+<translation id="1433600251059882049">ဤဖိုင်တွဲကို Linux နှင့် Windows တို့အား မျှဝေထားသည်</translation>
+<translation id="1435838927755162558">ဖိုင်တွဲကို Parallels Desktop အား မျှဝေခြင်း</translation>
 <translation id="1439494416798956626"><ph name="FOLDER_NAME" /> ဖိုင်တွဲသို့ ရွှေ့ထားသည်။</translation>
 <translation id="1441841714100794440">ဗီယက်နမ် ကီးဘုတ် (Telex)</translation>
 <translation id="1455548678241328678">နော်ဝေ ကီးဘုတ်</translation>
@@ -79,6 +81,7 @@
 <translation id="1844692022597038441">ဒီဖိုင်ကို အော့ဖ်လိုင်း မရနိုင်ပါ။</translation>
 <translation id="184633654410729720">ထိုင်း ကီးဘုတ် (Kedmanee)</translation>
 <translation id="1847880352285315359">သိမ်းပြီးပါပြီ</translation>
+<translation id="1853795129690976061">ဤဖိုင်တွဲကို Linux အား မျှဝေထားသည်</translation>
 <translation id="1864756863218646478">ဖိုင်ကို မတွေ့နိုင်ပါ။</translation>
 <translation id="1921986354447415460">Turkish-F ကီးဘုတ်</translation>
 <translation id="1924372192547904021"><ph name="DRIVE_NAME" /> ကို ဖော်မက်ချထားသည်</translation>
@@ -180,6 +183,7 @@
 <translation id="303198083543495566">ပထဝီ</translation>
 <translation id="3057861065630527966">သင့်ဓာတ်ပုံများနှင့် ဗီဒီယိုများကို အရံသိမ်းဆည်းပါ</translation>
 <translation id="3064388234319122767">အက္ခရာဖလှယ်မှု (zdravo → здраво)</translation>
+<translation id="3067790092342515856">Windows ဖိုင်များ</translation>
 <translation id="3078461028045006476"><ph name="EXTENSION_NAME" /> နှင့်မျှဝေပါ</translation>
 <translation id="3088034400796962477">အက္ခရာဖလှယ်မှု (salam ← سلام)</translation>
 <translation id="3116361045094675131">UK ကီးဘုတ်</translation>
@@ -262,6 +266,7 @@
 <translation id="3943857333388298514">ကူးဖြည့်ရန်</translation>
 <translation id="3958548648197196644">NOTHING</translation>
 <translation id="3966388904776714213">အသံဖွင့် ကိရိယာ</translation>
+<translation id="3984317463833596033"><ph name="FOLDER_NAME" /> ဖိုင်တွဲရှိ ဖိုင်များကို Parallels Desktop အား ပြုပြင်ခွင့်ပေးပါ</translation>
 <translation id="4002066346123236978">ခေါင်းစဉ်</translation>
 <translation id="4070370845051020638">ကွမ်တုံးထည့်သွင်းမှုနည်းလမ်း</translation>
 <translation id="4072248638558688893">တမီးလ် ကီးဘုတ် (Phonetic)</translation>
@@ -290,6 +295,7 @@
 <translation id="4470564870223067757">ဟံဂူလ် ၂ စုံ</translation>
 <translation id="4477219268485577442">ဘာလ်ဂေရီယမ် အသံထွက်</translation>
 <translation id="4479812471636796472">US Dvorak ကီးဘုတ်</translation>
+<translation id="4481711095103932593">ဤဖိုင်တွဲကို Windows အား မျှဝေထားသည်</translation>
 <translation id="4487088045714738411">ဘယ်လ်ဂျီယံ ကီးဘုတ်</translation>
 <translation id="4522570452068850558">အသေးစိတ်များ</translation>
 <translation id="4552678318981539154">နောက်ထပ် သိုလှောင်ခြင်း ဝယ်မည်</translation>
@@ -335,10 +341,12 @@
 <translation id="4881695831933465202">ဖွင့်</translation>
 <translation id="4886021172213954916">တမီးလ် ကီးဘုတ် (လက်နှိပ်စက်)</translation>
 <translation id="4892969127351273348"><ph name="APP_NAME" /> ဖြင့် ဖွင့်၍မရပါ</translation>
+<translation id="4900532980794411603">Parallels Desktop အား မျှဝေရန်</translation>
 <translation id="4905417359854579806"><ph name="FILE_COUNT" /> ကို မိတ္ထူပွားရန် အသင့်ဖြစ်ပါပြီ</translation>
 <translation id="4924638091161556692">ဖြေရှင်းပြီး</translation>
 <translation id="4935975195727477204">ဂါဇာနီယာပန်း</translation>
 <translation id="4943368462779413526">ဘောလုံး</translation>
+<translation id="4961158930123534723">ဖိုင်တွဲ 1 ခုကို Parallels Desktop အား မျှဝေထားသည်</translation>
 <translation id="4969785127455456148">အယ်လ်ဘမ်</translation>
 <translation id="497244430928947428">မလေးလံ ကီးဘုတ် (Phonetic)</translation>
 <translation id="4973523518332075481">စကားလုံး <ph name="MAX_LENGTH" /> လုံးနှင့် အောက်ရှိသည့် အမည်ကို အသုံးပြုပါ</translation>
@@ -350,6 +358,7 @@
 <translation id="5010406651457630570">ကွန်ပျူတာများ</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5024856940085636730">လုပ်ကိုင်မှု  တစ်ခုသည် မျှော်လင့်ခဲ့တာထက် ပိုကြာနေသည်။ သင်သည် အဲဒါကို ဖျက်သိမ်းချင်ပါသလား?</translation>
+<translation id="5036159836254554629">Parallels Desktop မျှဝေခြင်းကို စီမံရန်</translation>
 <translation id="5038625366300922036">နောက်ထပ် ကြည့်ရန်...</translation>
 <translation id="5061708541166515394">ဆန့်ကျင်ကွဲလွဲမှု</translation>
 <translation id="5068919226082848014">ပီဇာ</translation>
@@ -498,6 +507,7 @@
 <translation id="656398493051028875">ဖျက်နေ "<ph name="FILENAME" />"...</translation>
 <translation id="6581162200855843583">Google ဒရိုက်ဗ် လင့်</translation>
 <translation id="6607272825297743757">ဖိုင်အချက်အလက်</translation>
+<translation id="6609332149380188670">ဖိုင်တွဲ <ph name="NUMBER_OF_ITEMS" /> ခုကို Parallels Desktop အား မျှဝေထားသည်</translation>
 <translation id="6629841649550503054">အားလုံးကို <ph name="BEGIN_LINK" /> Google Drive<ph name="END_LINK" /> သို့အရံသိမ်းဆည်းမည်!</translation>
 <translation id="6643016212128521049">ရှင်းရန်</translation>
 <translation id="6650726141019353908">ပန်းရောင်လိပ်ပြာ</translation>
@@ -679,6 +689,7 @@
 <translation id="8475647382427415476">Google Drive က "<ph name="FILENAME" />" ကို ယခုချက်ချင်း စင့်က် မလုပ်နိုင်ခဲ့ပါ။ Google Drive သည် နောက်မှာ ထပ်စမ်းကြည့်မည်။</translation>
 <translation id="8477649328507734757">လှည့်ခြင်း</translation>
 <translation id="8487700953926739672">Offline ရနိုင်</translation>
+<translation id="8490342535582768689">သင်၏ Google Drive ရှိ ဖိုင်များကို Parallels Desktop အား ပြုပြင်ခွင့်ပေးပါ။ ပြောင်းလဲမှုများကို သင်၏အခြားစက်များနှင့် စင့်ခ်လုပ်သွားပါမည်။</translation>
 <translation id="8521441079177373948">ယူကေ</translation>
 <translation id="8525306231823319788">မျက်နှာပြင် အပြည့်</translation>
 <translation id="8551494947769799688">လာတ်ဗီယန်း</translation>

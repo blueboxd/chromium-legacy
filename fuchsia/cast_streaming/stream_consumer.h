@@ -8,23 +8,33 @@
 #include <fuchsia/media/cpp/fidl.h>
 
 #include "base/callback.h"
-#include "base/time/time.h"
-#include "media/base/decoder_buffer.h"
+#include "media/mojo/mojom/media_types.mojom.h"
+#include "mojo/public/cpp/system/data_pipe.h"
+#include "mojo/public/cpp/system/simple_watcher.h"
 #include "third_party/openscreen/src/cast/streaming/receiver.h"
 #include "third_party/openscreen/src/cast/streaming/receiver_session.h"
 
 namespace cast_streaming {
 
-// Attaches to an Open Screen Receiver to receive frames and invokes
-// |frame_received_cb_| with each received buffer of encoded data.
+// Attaches to an Open Screen Receiver to receive buffers of encoded data and
+// invokes |frame_received_cb_| with each buffer.
+//
+// Internally, this class writes buffers of encoded data directly to
+// |data_pipe_| rather than using a helper class like MojoDecoderBufferWriter.
+// This allows us to use |data_pipe_| as an end-to-end buffer to cap memory
+// usage. Receiving new buffers is delayed until the pipe has free memory again.
+// The Open Screen library takes care of discarding buffers that are too old and
+// requesting new key frames as needed.
 class StreamConsumer : public openscreen::cast::Receiver::Consumer {
  public:
   using FrameReceivedCB =
-      base::RepeatingCallback<void(scoped_refptr<media::DecoderBuffer>)>;
+      base::RepeatingCallback<void(media::mojom::DecoderBufferPtr)>;
 
   // |receiver| sends frames to this object. It must outlive this object.
-  // |frame_received_cb| is called on every new frame.
+  // |frame_received_cb| is called on every new frame, after a new frame has
+  // been written to |data_pipe|. On error, |data_pipe| will be closed.
   StreamConsumer(openscreen::cast::Receiver* receiver,
+                 mojo::ScopedDataPipeProducerHandle data_pipe,
                  FrameReceivedCB frame_received_cb);
   ~StreamConsumer() final;
 
@@ -32,14 +42,34 @@ class StreamConsumer : public openscreen::cast::Receiver::Consumer {
   StreamConsumer& operator=(const StreamConsumer&) = delete;
 
  private:
+  // Maximum frame size that OnFramesReady() can accept.
+  static constexpr uint32_t kMaxFrameSize = 512 * 1024;
+
+  // Closes |data_pipe_| and resets the Consumer in |receiver_|. No frames will
+  // be received after this call.
+  void CloseDataPipeOnError();
+
+  // Callback when |data_pipe_| can be written to again after it was full.
+  void OnPipeWritable(MojoResult result);
+
   // openscreen::cast::Receiver::Consumer implementation.
   void OnFramesReady(int next_frame_buffer_size) final;
 
   openscreen::cast::Receiver* const receiver_;
+  mojo::ScopedDataPipeProducerHandle data_pipe_;
   const FrameReceivedCB frame_received_cb_;
 
-  // Initialized to a negative value so the first frame is not dropped.
-  base::TimeDelta last_playout_time_ = base::TimeDelta::Min();
+  // Provides notifications about |data_pipe_| readiness.
+  mojo::SimpleWatcher pipe_watcher_;
+
+  // Buffer used when |data_pipe_| is too full to accept the next frame size.
+  uint8_t pending_buffer_[kMaxFrameSize];
+
+  // Current offset for data |pending_buffer_| to be written to |data_pipe_|.
+  size_t pending_buffer_offset_ = 0;
+
+  // Remaining bytes to write from |pending_buffer_| to |data_pipe_|.
+  size_t pending_buffer_remaining_bytes_ = 0;
 };
 
 }  // namespace cast_streaming

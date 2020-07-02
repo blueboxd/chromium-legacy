@@ -15,6 +15,7 @@
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "components/lookalikes/core/lookalike_url_util.h"
 #import "components/safe_browsing/ios/browser/safe_browsing_url_allow_list.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
 #include "components/strings/grit/components_strings.h"
@@ -27,6 +28,8 @@
 #import "ios/chrome/browser/web/error_page_util.h"
 #include "ios/chrome/browser/web/features.h"
 #import "ios/components/security_interstitials/ios_blocking_page_tab_helper.h"
+#import "ios/components/security_interstitials/lookalikes/lookalike_url_container.h"
+#import "ios/components/security_interstitials/lookalikes/lookalike_url_error.h"
 #include "ios/web/common/features.h"
 #import "ios/web/common/web_view_creation_util.h"
 #import "ios/web/public/test/error_test_util.h"
@@ -374,6 +377,44 @@ TEST_F(ChromeWebClientTest, PrepareErrorPageForSafeBrowsingError) {
   EXPECT_TRUE(callback_called);
   NSString* error_string = l10n_util::GetNSString(IDS_PHISHING_V4_HEADING);
   EXPECT_TRUE([page containsString:error_string]);
+}
+
+// Tests PrepareErrorPage for a lookalike error, which results in a
+// committed lookalike interstitial.
+TEST_F(ChromeWebClientTest, PrepareErrorPageForLookalikeError) {
+  web::TestWebState web_state;
+  web_state.SetBrowserState(browser_state());
+  LookalikeUrlContainer::CreateForWebState(&web_state);
+  security_interstitials::IOSBlockingPageTabHelper::CreateForWebState(
+      &web_state);
+
+  LookalikeUrlContainer::FromWebState(&web_state)
+      ->SetLookalikeUrlInfo(GURL("https://www.safe.test"), GURL(kTestUrl),
+                            LookalikeUrlMatchType::kSkeletonMatchTop5k);
+
+  NSError* error = [NSError errorWithDomain:kLookalikeUrlErrorDomain
+                                       code:kLookalikeUrlErrorCode
+                                   userInfo:nil];
+  __block bool callback_called = false;
+  __block NSString* page = nil;
+  base::OnceCallback<void(NSString*)> callback =
+      base::BindOnce(^(NSString* error_html) {
+        callback_called = true;
+        page = error_html;
+      });
+
+  ChromeWebClient web_client;
+  web_client.PrepareErrorPage(&web_state, GURL(kTestUrl), error,
+                              /*is_post=*/false,
+                              /*is_off_the_record=*/false,
+                              /*info=*/base::Optional<net::SSLInfo>(),
+                              /*navigation_id=*/0, std::move(callback));
+
+  EXPECT_TRUE(callback_called);
+  NSString* error_string =
+      l10n_util::GetNSString(IDS_LOOKALIKE_URL_PRIMARY_PARAGRAPH);
+  EXPECT_TRUE([page containsString:error_string])
+      << base::SysNSStringToUTF8(page);
 }
 
 // Tests the default user agent for different views.

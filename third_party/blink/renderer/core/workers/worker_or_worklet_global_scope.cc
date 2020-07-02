@@ -196,7 +196,7 @@ WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(
           MakeGarbageCollected<WorkerOrWorkletScriptController>(this, isolate)),
       v8_cache_options_(v8_cache_options),
       reporting_proxy_(reporting_proxy) {
-  GetSecurityContext().GetOriginTrialContext()->BindExecutionContext(this);
+  GetOriginTrialContext()->BindExecutionContext(this);
   if (worker_clients_)
     worker_clients_->ReattachThread();
 }

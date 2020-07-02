@@ -27,7 +27,7 @@ static constexpr PartitionTag kTagTemporaryInitialValue = 0x0BAD;
 // (reserved).
 static constexpr size_t kPartitionTagSize = 16;
 
-#if DCHECK_IS_ON()
+#if DCHECK_IS_ON() && !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 // The layout inside the slot is |tag|cookie|object|(empty)|cookie|.
 static constexpr size_t kPartitionTagOffset = kPartitionTagSize + kCookieSize;
 #else

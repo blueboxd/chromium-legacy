@@ -43,13 +43,18 @@
     margin-inline-end: 16px;
   }
 
+  #rowWrapper:active {
+    background-color: var(--google-blue-50);
+    outline: none;
+  }
+
   paper-progress {
     --paper-progress-active-color: var(--google-blue-600);
     --paper-progress-container-color: rgba(var(--google-blue-600-rgb), .24);
     width: 72px;
   }
 </style>
-<div focus-row-container>
+<div id="rowWrapper" focus-row-container>
   <!-- TODO(crbug/1073693): Update the a11y based on expert guidance -->
   <div class="list-item flex-center"
       aria-label$="[[jobEntryAriaLabel_]]">

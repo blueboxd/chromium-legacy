@@ -45,6 +45,8 @@
 <translation id="1395262318152388157">సీక్ స్లయిడర్</translation>
 <translation id="1399648040768741453">తెలుగు కీబోర్డ్ (ఫొనెటిక్)</translation>
 <translation id="1430915738399379752">ముద్రించు</translation>
+<translation id="1433600251059882049">Linux ఇంకా Windowsలతో ఈ ఫోల్డర్ షేర్ చేయబడినది</translation>
+<translation id="1435838927755162558">Parallels Desktopతో ఫోల్డర్‌ను షేర్ చేయండి</translation>
 <translation id="1439494416798956626"><ph name="FOLDER_NAME" />లోకి తరలించబడింది.</translation>
 <translation id="1441841714100794440">వియత్నామీస్ కీబోర్డ్ (టెలెక్స్)</translation>
 <translation id="1455548678241328678">నార్వేజియన్ కీబోర్డ్</translation>
@@ -79,6 +81,7 @@
 <translation id="1844692022597038441">ఈ ఫైల్ ఆఫ్‌లైన్‌లో అందుబాటులో లేదు.</translation>
 <translation id="184633654410729720">థాయ్ కీబోర్డ్ (కెడ్మానీ)</translation>
 <translation id="1847880352285315359">సేవ్ చేయబడింది</translation>
+<translation id="1853795129690976061">ఈ ఫోల్డర్ Linuxతో షేర్ చేయబడింది</translation>
 <translation id="1864756863218646478">ఫైల్‌ను కనుగొనబడలేదు.</translation>
 <translation id="1921986354447415460">టర్కిష్-ఎఫ్ కీబోర్డ్</translation>
 <translation id="1924372192547904021"><ph name="DRIVE_NAME" /> ఫార్మాట్ చేయబడింది</translation>
@@ -180,6 +183,7 @@
 <translation id="303198083543495566">భూగోళ శాస్త్రం</translation>
 <translation id="3057861065630527966">మీ ఫోటోలను, వీడియోలను బ్యాకప్ చేయండి</translation>
 <translation id="3064388234319122767">లిప్యంతరీకరణ (zdravo → здраво)</translation>
+<translation id="3067790092342515856">Windows ఫైల్‌లు</translation>
 <translation id="3078461028045006476"><ph name="EXTENSION_NAME" />తో భాగస్వామ్యం చేయండి</translation>
 <translation id="3088034400796962477">లిప్యంతరీకరణ (salam ← سلام)</translation>
 <translation id="3116361045094675131">UK కీబోర్డ్</translation>
@@ -262,6 +266,7 @@
 <translation id="3943857333388298514">అతికించు</translation>
 <translation id="3958548648197196644">కివి</translation>
 <translation id="3966388904776714213">ఆడియో ప్లేయర్</translation>
+<translation id="3984317463833596033"><ph name="FOLDER_NAME" /> ఫోల్డర్‌లోని ఫైల్స్‌ను సవరించడానికి Parallels Desktop అనుమతులను ఇవ్వండి</translation>
 <translation id="4002066346123236978">శీర్షిక</translation>
 <translation id="4070370845051020638">Cantonese ఇన్‌పుట్ పద్ధతి</translation>
 <translation id="4072248638558688893">తమిళ కీబోర్డ్ (ఫొనెటిక్)</translation>
@@ -290,6 +295,7 @@
 <translation id="4470564870223067757">హాంగుల్ 2 సెట్</translation>
 <translation id="4477219268485577442">బల్గేరియన్ ఫోనెటిక్</translation>
 <translation id="4479812471636796472">US డ్వొరక్ కీబోర్డ్</translation>
+<translation id="4481711095103932593">ఈ ఫోల్డర్ Windowsతో షేర్ చేయబడింది</translation>
 <translation id="4487088045714738411">బెల్జియన్ కీబోర్డ్</translation>
 <translation id="4522570452068850558">వివరాలు</translation>
 <translation id="4552678318981539154">మరింత నిల్వను కొనుగోలు చేయండి</translation>
@@ -335,10 +341,12 @@
 <translation id="4881695831933465202">తెరువు</translation>
 <translation id="4886021172213954916">తమిళ కీబోర్డ్ (టైప్‌రైటర్)</translation>
 <translation id="4892969127351273348"><ph name="APP_NAME" />తో తెరవడం సాధ్యపడలేదు</translation>
+<translation id="4900532980794411603">Parallels Desktopతో షేర్ చేయండి</translation>
 <translation id="4905417359854579806"><ph name="FILE_COUNT" /> వాటిని బ్యాకప్ చేయడానికి సిద్ధంగా ఉంది</translation>
 <translation id="4924638091161556692">స్థిరపరచబడింది</translation>
 <translation id="4935975195727477204">గజేనియా పుష్పం</translation>
 <translation id="4943368462779413526">ఫుట్‌బాల్</translation>
+<translation id="4961158930123534723">Parallels Desktopతో 1 ఫోల్డర్ షేర్ చేయబడింది</translation>
 <translation id="4969785127455456148">ఆల్బమ్</translation>
 <translation id="497244430928947428">మలయాళం కీబోర్డ్ (ఫొనెటిక్)</translation>
 <translation id="4973523518332075481"><ph name="MAX_LENGTH" /> లేదా అంతకంటే తక్కువ అక్షరాలు ఉన్న పేరుని ఉపయోగించండి</translation>
@@ -350,6 +358,7 @@
 <translation id="5010406651457630570">కంప్యూటర్‌లు</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5024856940085636730">ఈ చర్య పూర్తి చేయడానికి అనుకున్నదాని కంటే ఎక్కువ సమయం పడుతోంది. మీరు దీనిని రద్దు చేయాలనుకుంటున్నారా?</translation>
+<translation id="5036159836254554629">Parallels Desktop షేరింగ్‌ను మేనేజ్ చేయండి</translation>
 <translation id="5038625366300922036">మరింత చూడండి...</translation>
 <translation id="5061708541166515394">వ్యత్యాసం</translation>
 <translation id="5068919226082848014">పిజ్జా</translation>
@@ -499,6 +508,7 @@
 <translation id="656398493051028875">"<ph name="FILENAME" />"ని తొలగిస్తోంది...</translation>
 <translation id="6581162200855843583">Google డిస్క్ లింక్</translation>
 <translation id="6607272825297743757">ఫైల్ సమాచారం</translation>
+<translation id="6609332149380188670"><ph name="NUMBER_OF_ITEMS" /> ఫోల్డర్‌లు Parallels Desktopతో చేర్చబడ్డాయి</translation>
 <translation id="6629841649550503054">అన్నీ <ph name="BEGIN_LINK" />Google డిస్క్<ph name="END_LINK" />కి బ్యాకప్ చేయబడ్డాయి!</translation>
 <translation id="6643016212128521049">క్లియర్ చేయి</translation>
 <translation id="6650726141019353908">గులాబి రంగు సీతాకోకచిలుక</translation>
@@ -680,6 +690,7 @@
 <translation id="8475647382427415476">Google డిస్క్ ప్రస్తుతం "<ph name="FILENAME" />"ని సమకాలీకరించలేకపోయింది. Google డిస్క్ తర్వాత మళ్లీ ప్రయత్నిస్తుంది.</translation>
 <translation id="8477649328507734757">స్పిన్</translation>
 <translation id="8487700953926739672">ఆఫ్‌లైన్‌లో అందుబాటు</translation>
+<translation id="8490342535582768689">Google Driveలోని ఫైల్స్‌ను సవరించడానికి Parallels Desktop అనుమతులను ఇవ్వండి. మార్పులు మీ ఇతర పరికరాలలో కూడా సింక్ చేయబడతాయి.</translation>
 <translation id="8521441079177373948">యుకె</translation>
 <translation id="8525306231823319788">పూర్తి స్క్రీన్</translation>
 <translation id="8551494947769799688">లాత్వియన్</translation>

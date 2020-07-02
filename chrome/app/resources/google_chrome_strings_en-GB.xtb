@@ -57,7 +57,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2534507159460261402">Google Pay (copied to Chrome)</translation>
 <translation id="2580411288591421699">Cannot install the same Google Chrome version that is currently running. Please close Google Chrome and try again.</translation>
 <translation id="2586406160782125153">This will delete your browsing data from this device. To retrieve your data later, sign in to Chrome as <ph name="USER_EMAIL" />.</translation>
-<translation id="2588322182880276190">Chrome logo</translation>
 <translation id="2622559029861875898">Chrome can't check for updates. Try checking your Internet connection.</translation>
 <translation id="2644798301485385923">Chrome OS System</translation>
 <translation id="2652691236519827073">Open Link in New Chrome &amp;tab</translation>
@@ -70,6 +69,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2847461019998147611">Display Google Chrome in this language</translation>
 <translation id="2857540653560290388">Launching Chrome...</translation>
 <translation id="2871893339301912279">You're signed in to Chrome!</translation>
+<translation id="2885378588091291677">Task Manager</translation>
 <translation id="2888126860611144412">About Chrome</translation>
 <translation id="2929907241665500097">Chrome didn't update. Something went wrong. <ph name="BEGIN_LINK" />Fix Chrome update problems and failed updates.<ph name="END_LINK" /></translation>
 <translation id="2969728957078202736"><ph name="PAGE_TITLE" /> – Network sign-in – Chrome</translation>

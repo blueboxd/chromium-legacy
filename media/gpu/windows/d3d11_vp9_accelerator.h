@@ -24,7 +24,6 @@ class D3D11VP9Accelerator : public VP9Decoder::VP9Accelerator {
  public:
   D3D11VP9Accelerator(D3D11VideoDecoderClient* client,
                       MediaLog* media_log,
-                      ComD3D11VideoDecoder video_decoder,
                       ComD3D11VideoDevice video_device,
                       std::unique_ptr<VideoContextWrapper> video_context);
   ~D3D11VP9Accelerator() override;
@@ -68,6 +67,8 @@ class D3D11VP9Accelerator : public VP9Decoder::VP9Accelerator {
                            const D3D11VP9Picture& pic);
 
   void RecordFailure(const std::string& fail_type, const std::string& reason);
+
+  void SetVideoDecoder(ComD3D11VideoDecoder video_decoder);
 
   D3D11VideoDecoderClient* client_;
   MediaLog* const media_log_;

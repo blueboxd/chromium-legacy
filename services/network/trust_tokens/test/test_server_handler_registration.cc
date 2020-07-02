@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/test/bind_test_util.h"
+#include "net/http/http_request_headers.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "services/network/trust_tokens/test/trust_token_request_handler.h"
@@ -95,13 +96,21 @@ void RegisterTrustTokenTestHandlers(net::EmbeddedTestServer* test_server,
         if (request.relative_url != kSignedRequestVerificationRelativePath)
           return nullptr;
 
+        GURL::Replacements replacements;
+        std::string host_and_maybe_port =
+            request.headers.at(net::HttpRequestHeaders::kHost);
+        if (base::Contains(host_and_maybe_port, ':'))
+          host_and_maybe_port.resize(host_and_maybe_port.find(':'));
+        replacements.SetHostStr(host_and_maybe_port);
+        GURL destination_url = request.GetURL().ReplaceComponents(replacements);
+
         std::string error;
         net::HttpRequestHeaders headers;
         for (const auto& name_and_value : request.headers)
           headers.SetHeader(name_and_value.first, name_and_value.second);
 
         bool success =
-            handler->VerifySignedRequest(request.GetURL(), headers, &error);
+            handler->VerifySignedRequest(destination_url, headers, &error);
         LOG_IF(ERROR, !success) << error;
 
         // Unlike issuance and redemption, there's no special state to return

@@ -19,7 +19,6 @@
 #import "chrome/updater/app/server/mac/app_server.h"
 #include "chrome/updater/app/server/mac/service_delegate.h"
 #include "chrome/updater/configurator.h"
-#import "chrome/updater/mac/setup/info_plist.h"
 #import "chrome/updater/mac/xpc_service_names.h"
 #include "chrome/updater/prefs.h"
 #include "chrome/updater/update_service_in_process.h"
@@ -48,24 +47,20 @@ void AppServerMac::ActiveDuty() {
                     appServer:scoped_refptr<AppServerMac>(this)]);
 
     update_check_listener_.reset([[NSXPCListener alloc]
-        initWithMachServiceName:GetGoogleUpdateServiceMachName().get()]);
+        initWithMachServiceName:GetServiceMachName().get()]);
     update_check_listener_.get().delegate = update_check_delegate_.get();
 
     [update_check_listener_ resume];
 
     // Sets up a listener and delegate for the CRUAdministering XPC connection
-    const std::unique_ptr<InfoPlist> info_plist =
-        InfoPlist::Create(InfoPlistPath());
-    CHECK(info_plist);
     administration_delegate_.reset([[CRUAdministrationXPCServiceDelegate alloc]
         initWithUpdateService:base::MakeRefCounted<UpdateServiceInProcess>(
                                   config_)
                     appServer:scoped_refptr<AppServerMac>(this)]);
 
     administration_listener_.reset([[NSXPCListener alloc]
-        initWithMachServiceName:
-            base::mac::CFToNSCast(
-                info_plist->GoogleUpdateServiceLaunchdNameVersioned().get())]);
+        initWithMachServiceName:base::mac::CFToNSCast(
+                                    CopyAdministrationLaunchDName().get())]);
     administration_listener_.get().delegate = administration_delegate_.get();
 
     [administration_listener_ resume];

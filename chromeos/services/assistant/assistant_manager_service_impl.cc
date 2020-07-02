@@ -11,6 +11,7 @@
 #include "ash/public/cpp/ambient/ambient_ui_model.h"
 #include "ash/public/cpp/assistant/assistant_state_base.h"
 #include "ash/public/cpp/assistant/controller/assistant_alarm_timer_controller.h"
+#include "ash/public/cpp/assistant/controller/assistant_notification_controller.h"
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback_forward.h"
@@ -563,7 +564,7 @@ void AssistantManagerServiceImpl::RemoveAssistantInteractionSubscriber(
 }
 
 void AssistantManagerServiceImpl::RetrieveNotification(
-    const mojom::AssistantNotification& notification,
+    const AssistantNotification& notification,
     int action_index) {
   const std::string& notification_id = notification.server_id;
   const std::string& consistency_token = notification.consistency_token;
@@ -579,7 +580,7 @@ void AssistantManagerServiceImpl::RetrieveNotification(
 }
 
 void AssistantManagerServiceImpl::DismissNotification(
-    const mojom::AssistantNotification& notification) {
+    const AssistantNotification& notification) {
   // |assistant_manager_internal_| may not exist if we are dismissing
   // notifications as part of a shutdown sequence.
   if (!assistant_manager_internal_)
@@ -774,38 +775,39 @@ void AssistantManagerServiceImpl::OnShowNotification(
   ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnShowNotification,
                      notification);
 
-  mojom::AssistantNotificationPtr notification_ptr =
-      mojom::AssistantNotification::New();
-  notification_ptr->title = notification.title;
-  notification_ptr->message = notification.text;
-  notification_ptr->action_url = GURL(notification.action_url);
-  notification_ptr->client_id = notification.notification_id;
-  notification_ptr->server_id = notification.notification_id;
-  notification_ptr->consistency_token = notification.consistency_token;
-  notification_ptr->opaque_token = notification.opaque_token;
-  notification_ptr->grouping_key = notification.grouping_key;
-  notification_ptr->obfuscated_gaia_id = notification.obfuscated_gaia_id;
-  notification_ptr->from_server = true;
+  AssistantNotification assistant_notification;
+  assistant_notification.title = notification.title;
+  assistant_notification.message = notification.text;
+  assistant_notification.action_url = GURL(notification.action_url);
+  assistant_notification.client_id = notification.notification_id;
+  assistant_notification.server_id = notification.notification_id;
+  assistant_notification.consistency_token = notification.consistency_token;
+  assistant_notification.opaque_token = notification.opaque_token;
+  assistant_notification.grouping_key = notification.grouping_key;
+  assistant_notification.obfuscated_gaia_id = notification.obfuscated_gaia_id;
+  assistant_notification.from_server = true;
 
   if (notification.expiry_timestamp_ms) {
-    notification_ptr->expiry_time =
+    assistant_notification.expiry_time =
         base::Time::FromJavaTime(notification.expiry_timestamp_ms);
   }
 
   // The server sometimes sends an empty |notification_id|, but our client
   // requires a non-empty |client_id| for notifications. Known instances in
   // which the server sends an empty |notification_id| are for Reminders.
-  if (notification_ptr->client_id.empty())
-    notification_ptr->client_id = base::UnguessableToken::Create().ToString();
+  if (assistant_notification.client_id.empty()) {
+    assistant_notification.client_id =
+        base::UnguessableToken::Create().ToString();
+  }
 
   for (const auto& button : notification.buttons) {
-    notification_ptr->buttons.push_back(mojom::AssistantNotificationButton::New(
-        button.label, GURL(button.action_url),
-        /*remove_notification_on_click=*/true));
+    assistant_notification.buttons.push_back(
+        {button.label, GURL(button.action_url),
+         /*remove_notification_on_click=*/true});
   }
 
   assistant_notification_controller()->AddOrUpdateNotification(
-      notification_ptr.Clone());
+      std::move(assistant_notification));
 }
 
 void AssistantManagerServiceImpl::OnOpenAndroidApp(
@@ -1117,8 +1119,9 @@ void AssistantManagerServiceImpl::PostInitAssistant() {
 
   assistant_settings_->UpdateServerDeviceSettings();
 
-  if (base::FeatureList::IsEnabled(assistant::features::kAssistantAppSupport)) {
-    scoped_app_list_event_subscriber.Add(device_actions());
+  if (base::FeatureList::IsEnabled(assistant::features::kAssistantAppSupport) &&
+      !scoped_app_list_event_subscriber_.IsObservingSources()) {
+    scoped_app_list_event_subscriber_.Add(device_actions());
   }
 }
 
@@ -1467,7 +1470,7 @@ AssistantManagerServiceImpl::assistant_alarm_timer_controller() {
   return context_->assistant_alarm_timer_controller();
 }
 
-ash::mojom::AssistantNotificationController*
+ash::AssistantNotificationController*
 AssistantManagerServiceImpl::assistant_notification_controller() {
   return context_->assistant_notification_controller();
 }

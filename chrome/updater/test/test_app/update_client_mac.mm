@@ -19,7 +19,6 @@
 #include "base/version.h"
 #import "chrome/updater/app/server/mac/service_protocol.h"
 #import "chrome/updater/app/server/mac/update_service_wrappers.h"
-#import "chrome/updater/mac/setup/info_plist.h"
 #include "chrome/updater/test/test_app/test_app_version.h"
 
 namespace {

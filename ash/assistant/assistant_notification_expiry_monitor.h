@@ -6,6 +6,7 @@
 #define ASH_ASSISTANT_ASSISTANT_NOTIFICATION_EXPIRY_MONITOR_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "ash/assistant/model/assistant_notification_model_observer.h"
@@ -14,7 +15,7 @@
 
 namespace ash {
 
-class AssistantNotificationController;
+class AssistantNotificationControllerImpl;
 
 // Will track all Assistant notifications by subscribing to the given
 // |controller| and will call
@@ -23,11 +24,10 @@ class AssistantNotificationController;
 // expiry_time| field).
 class AssistantNotificationExpiryMonitor {
  public:
-  using AssistantNotification =
-      chromeos::assistant::mojom::AssistantNotification;
+  using AssistantNotification = chromeos::assistant::AssistantNotification;
 
   explicit AssistantNotificationExpiryMonitor(
-      AssistantNotificationController* controller);
+      AssistantNotificationControllerImpl* controller);
   ~AssistantNotificationExpiryMonitor();
 
  private:
@@ -46,7 +46,7 @@ class AssistantNotificationExpiryMonitor {
   std::vector<const AssistantNotification*> GetNotifications() const;
 
   base::OneShotTimer timer_;
-  AssistantNotificationController* const controller_;
+  AssistantNotificationControllerImpl* const controller_;
   std::unique_ptr<Observer> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantNotificationExpiryMonitor);

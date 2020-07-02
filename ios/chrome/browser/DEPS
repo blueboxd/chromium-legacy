@@ -37,6 +37,7 @@ include_rules = [
   "+components/language",
   "+components/language_usage_metrics",
   "+components/leveldb_proto",
+  "+components/lookalikes/core",
   "+components/metrics",
   "+components/ntp_tiles",
   "+components/user_prefs",

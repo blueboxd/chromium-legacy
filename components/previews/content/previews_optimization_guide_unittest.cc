@@ -146,8 +146,6 @@ class PreviewsOptimizationGuideTest : public testing::Test {
 
     optimization_guide::proto::PreviewsMetadata rlh_previews_metadata;
     rlh_previews_metadata.set_inflation_percent(123);
-    rlh_previews_metadata.set_max_ect_trigger(
-        optimization_guide::proto::EFFECTIVE_CONNECTION_TYPE_3G);
     auto* rlh1 = rlh_previews_metadata.add_resource_loading_hints();
     rlh1->set_resource_pattern("resource1");
     rlh1->set_loading_optimization_type(

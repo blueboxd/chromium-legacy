@@ -44,7 +44,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="1346748346194534595">Dreta</translation>
 <translation id="1351937230027495976">Replega el menú</translation>
 <translation id="1383876407941801731">Cerca</translation>
-<translation id="1391102559483454063">Activat</translation>
+<translation id="1391102559483454063">Activada</translation>
 <translation id="1419738280318246476">Desbloqueja el dispositiu per dur a terme l'acció que indica la notificació</translation>
 <translation id="1420408895951708260">Activa o desactiva la funció Llum nocturna. <ph name="STATE_TEXT" /></translation>
 <translation id="1426410128494586442">Sí</translation>
@@ -73,6 +73,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="1747827819627189109">Teclat en pantalla activat</translation>
 <translation id="1761222317188459878">Activa o desactiva la connexió a la xarxa. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Desplaça't cap a la dreta</translation>
+<translation id="1782199038061388045">traducció</translation>
 <translation id="181103072419391116"><ph name="SIGNAL_STRENGTH" /> d'intensitat del senyal, xarxa gestionada per l'administrador</translation>
 <translation id="1812997170047690955">Què hi ha a la pantalla?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
@@ -103,7 +104,6 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="2126242104232412123">Escriptori nou</translation>
 <translation id="2127372758936585790">Carregador de baix consum</translation>
 <translation id="2135456203358955318">Lupa acoblada</translation>
-<translation id="2143915448548023856">Configuració de visualització</translation>
 <translation id="2144487987174258011">Reinicia per actualitzar Adobe Flash Player</translation>
 <translation id="2208323208084708176">Mode d'escriptori unificat</translation>
 <translation id="2220572644011485463">PIN o contrasenya</translation>
@@ -134,7 +134,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="2435457462613246316">Mostra la contrasenya</translation>
 <translation id="2473177541599297363">Confirma la resolució</translation>
 <translation id="2482878487686419369">Notificacions</translation>
-<translation id="2484513351006226581">Prem <ph name="KEYBOARD_SHORTCUT" /> per canviar el disseny del teclat.</translation>
+<translation id="2484513351006226581">Prem <ph name="KEYBOARD_SHORTCUT" /> per canviar la disposició del teclat.</translation>
 <translation id="2501920221385095727">Tecles permanents</translation>
 <translation id="2509468283778169019">BLOQ MAJ està activat.</translation>
 <translation id="2542089167727451762">Toca la teva imatge de perfil</translation>
@@ -185,6 +185,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="3081696990447829002">Desplega el menú</translation>
 <translation id="3087734570205094154">Part inferior</translation>
 <translation id="309749186376891736">Mou el cursor</translation>
+<translation id="3098580329624789136">Obtén la <ph name="INTENT" /> del terme "<ph name="QUERY" />"</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Reinicia per actualitzar</translation>
 <translation id="3139942575505304791">Escriptori 1</translation>
@@ -222,6 +223,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="3465356146291925647">Gestionada per l'administrador</translation>
 <translation id="3477079411857374384">Control+Maj+espai</translation>
 <translation id="3485319357743610354"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, <ph name="SIGNAL_STRENGTH" /> d'intensitat del senyal</translation>
+<translation id="3486220673238053218">definició</translation>
 <translation id="3510164367642747937">Ressalta el cursor del ratolí</translation>
 <translation id="3513798432020909783">Compte gestionat per <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Torna a canviar a "<ph name="FROM_LOCALE" />" (requereix reiniciar)</translation>
@@ -272,8 +274,8 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="4072264167173457037">Senyal mitjà</translation>
 <translation id="4112140312785995938">Retrocedeix</translation>
 <translation id="4129129681837227511">Per veure notificacions a la pantalla de bloqueig, desbloqueja el dispositiu per canviar aquesta opció</translation>
-<translation id="4144413954005649103">Si mantens el botó premut o fas clic amb el botó dret, l'Assistent et mostrarà informació relacionada amb el que selecciones a la pantalla.</translation>
 <translation id="4146833061457621061">Reprodueix música</translation>
+<translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> gestionat per <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Idiomes</translation>
 <translation id="4195877955194704651">Botó Clics automàtics</translation>
 <translation id="4197790712631116042">Desactivat</translation>
@@ -358,7 +360,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="5283198616748585639">Afegeix 1 minut</translation>
 <translation id="528468243742722775">Finalitza</translation>
 <translation id="5286194356314741248">S'està cercant</translation>
-<translation id="5297704307811127955">Desactivat</translation>
+<translation id="5297704307811127955">Desactivada</translation>
 <translation id="5302048478445481009">Idioma</translation>
 <translation id="5313326810920013265">Configuració del Bluetooth</translation>
 <translation id="5331975486040154427">Dispositiu USB-C (port posterior esquerre)</translation>
@@ -528,6 +530,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="7378594059915113390">Controls multimèdia</translation>
 <translation id="7398254312354928459">S'ha canviat la connexió a la xarxa</translation>
 <translation id="7405710164030118432">Introdueix el codi d'accés parental de Family Link per desbloquejar el dispositiu</translation>
+<translation id="741244894080940828">conversió</translation>
 <translation id="742594950370306541">La càmera s'està utilitzant.</translation>
 <translation id="743058460480092004">La càmera i el micròfon s'estan utilitzant.</translation>
 <translation id="7436182601308224670">Bona tarda, <ph name="GIVEN_NAME" /></translation>
@@ -540,6 +543,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="7562368315689366235">Paleta d'emoji</translation>
 <translation id="7564874036684306347">Moure finestres a un altre escriptori pot provocar un comportament imprevist. És possible que les notificacions, les finestres i els quadres de diàleg següents quedin dividits entre escriptoris.</translation>
 <translation id="7568294522609223312">Desactiva els clics automàtics</translation>
+<translation id="7568637526529101738">Si mantens el botó premut o fas clic amb el botó dret en un element, l'Assistent et mostrarà informació com ara la definició o la conversió d'unitats.</translation>
 <translation id="7569509451529460200">S'ha activat el braille i ChromeVox</translation>
 <translation id="7593891976182323525">Cerca o Maj</translation>
 <translation id="7600875258240007829">Mostra totes les notificacions</translation>

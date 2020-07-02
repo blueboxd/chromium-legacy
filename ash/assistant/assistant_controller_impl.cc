@@ -326,12 +326,6 @@ void AssistantControllerImpl::OnLockedFullScreenStateChanged(bool enabled) {
         chromeos::assistant::AssistantExitPoint::kUnspecified);
 }
 
-void AssistantControllerImpl::BindNotificationController(
-    mojo::PendingReceiver<mojom::AssistantNotificationController> receiver) {
-  Shell::Get()->assistant_controller()->notification_controller()->BindReceiver(
-      std::move(receiver));
-}
-
 void AssistantControllerImpl::BindVolumeControl(
     mojo::PendingReceiver<mojom::AssistantVolumeControl> receiver) {
   Shell::Get()->assistant_controller()->BindReceiver(std::move(receiver));

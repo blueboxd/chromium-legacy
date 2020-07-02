@@ -1159,6 +1159,8 @@ static_library("browser") {
     "policy/messaging_layer/storage/storage_module.h",
     "policy/messaging_layer/storage/storage_queue.cc",
     "policy/messaging_layer/storage/storage_queue.h",
+    "policy/messaging_layer/upload/dm_server_upload_service.cc",
+    "policy/messaging_layer/upload/dm_server_upload_service.h",
     "policy/messaging_layer/util/backoff_settings.cc",
     "policy/messaging_layer/util/backoff_settings.h",
     "policy/messaging_layer/util/status.cc",

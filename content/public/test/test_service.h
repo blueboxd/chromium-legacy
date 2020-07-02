@@ -13,7 +13,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/service_receiver.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace content {
@@ -24,7 +24,8 @@ extern const char kTestServiceUrl[];
 // terminates itself after its TestService fulfills a single DoSomething call.
 class TestService : public service_manager::Service, public mojom::TestService {
  public:
-  explicit TestService(service_manager::mojom::ServiceRequest request);
+  explicit TestService(
+      mojo::PendingReceiver<service_manager::mojom::Service> receiver);
   ~TestService() override;
 
  private:
@@ -52,7 +53,7 @@ class TestService : public service_manager::Service, public mojom::TestService {
       CreateUnsafeSharedMemoryRegionCallback callback) override;
   void IsProcessSandboxed(IsProcessSandboxedCallback callback) override;
 
-  service_manager::ServiceBinding service_binding_;
+  service_manager::ServiceReceiver service_receiver_;
   service_manager::BinderRegistry registry_;
   mojo::Receiver<mojom::TestService> receiver_{this};
 

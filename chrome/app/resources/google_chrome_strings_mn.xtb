@@ -57,7 +57,6 @@
 <translation id="2534507159460261402">Google Pay (Chrome-д хуулсан)</translation>
 <translation id="2580411288591421699">Одоо ажиллаж байгаа Google Chrome-ийн хувилбарыг суурьлуулах боломжгүй. Google Chrome-оо хаагаад, дахин оролдоно уу.</translation>
 <translation id="2586406160782125153">Энэ нь төхөөрөмжөөс таны хайлтын өгөгдлийг устгах болно. Өгөгдлөө дараа нь сэргээхийн тулд Chrome-д <ph name="USER_EMAIL" />-р нэвтэрнэ үү.</translation>
-<translation id="2588322182880276190">Chrome лого</translation>
 <translation id="2622559029861875898">Chrome нь шинэчлэлтийг шалгах боломжгүй байна. Интернэт холболтоо шалгаж үзнэ үү.</translation>
 <translation id="2644798301485385923">Chrome OS-н систем</translation>
 <translation id="2652691236519827073">Холбоосыг шинэ Chrome-н чихтэй хуудсанд нээх</translation>
@@ -70,6 +69,7 @@
 <translation id="2847461019998147611">Google Chrome-г энэ хэлээр харуулах</translation>
 <translation id="2857540653560290388">Chrome-г эхлүүлж байна...</translation>
 <translation id="2871893339301912279">Та Chrome-д нэвтэрсэн байна!</translation>
+<translation id="2885378588091291677">Асуудлын менежер</translation>
 <translation id="2888126860611144412">Chrome-н тухай</translation>
 <translation id="2929907241665500097">Chrome-г шинэчлээгүй, ямар нэг алдаа гарлаа. <ph name="BEGIN_LINK" />Chrome-г шинэчлэхтэй холбоотой асуудлууд болон амжилтгүй болсон шинэчлэлтүүдийг засна уу.<ph name="END_LINK" /></translation>
 <translation id="2969728957078202736"><ph name="PAGE_TITLE" /> - Сүлжээнд нэвтрэх - Chrome</translation>

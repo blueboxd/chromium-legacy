@@ -15,6 +15,7 @@
 <translation id="1947737735496445907">Impreso</translation>
 <translation id="1979103255016296513">Ya ha terminado el plazo para cambiar la contraseña</translation>
 <translation id="2049639323467105390">Este dispositivo está gestionado por <ph name="DOMAIN" /></translation>
+<translation id="2161394479394250669">Cancelar trabajo de impresión</translation>
 <translation id="2338501278241028356">Activa el Bluetooth para encontrar dispositivos cercanos</translation>
 <translation id="2375079107209812402">Intentos restantes: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="2805756323405976993">Aplicaciones</translation>
@@ -24,12 +25,12 @@
 <translation id="3268178239013324452">No se ha podido imprimir - Cierra la cubierta</translation>
 <translation id="3369013195428705271">¿Seguro que quieres borrar todo el historial de impresión? Los trabajos de impresión en curso no se borrarán.</translation>
 <translation id="3456078764689556234">Se ha impreso la página <ph name="PRINTED_PAGES" /> de <ph name="TOTAL_PAGES" />.</translation>
+<translation id="3459509316159669723">Imprimir</translation>
 <translation id="3527036260304016759">No se ha podido imprimir - Error desconocido</translation>
 <translation id="3749289110408117711">Nombre del archivo</translation>
 <translation id="38114475217616659">Borrar todo el historial</translation>
 <translation id="3820172043799983114">PIN no válido.</translation>
 <translation id="3838338534323494292">Contraseña nueva</translation>
-<translation id="3953601359945991637"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> de <ph name="TOTAL_PAGE_NUMBER" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> gestiona este dispositivo y tiene acceso a toda la actividad del usuario, incluidas las páginas web visitadas, sus contraseñas y su correo electrónico.</translation>
 <translation id="4003384961948020559">No se ha podido imprimir - Salida llena</translation>
 <translation id="4034824040120875894">Impresora</translation>

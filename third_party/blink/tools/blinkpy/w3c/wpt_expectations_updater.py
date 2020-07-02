@@ -51,7 +51,12 @@ class WPTExpectationsUpdater(object):
         parser = argparse.ArgumentParser(description=__doc__)
         self.add_arguments(parser)
         self.options = parser.parse_args(args or [])
-
+        if not (self.options.clean_up_test_expectations or
+                self.options.clean_up_test_expectations_only):
+            assert not self.options.clean_up_affected_tests_only, (
+                'Cannot use --clean-up-affected-tests-only without using '
+                '--clean-up-test-expectations or '
+                '--clean-up-test-expectations-only')
         # Set up TestExpectations instance which contains all
         # expectations files associated with the platform.
         expectations_dict = {p: self.host.filesystem.read_text_file(p)
@@ -80,11 +85,13 @@ class WPTExpectationsUpdater(object):
 
         self.patchset = self.options.patchset
 
-        # Remove expectations for deleted tests and rename tests in expectations
-        # for renamed tests.
-        self.cleanup_test_expectations_files()
+        if (self.options.clean_up_test_expectations or
+                self.options.clean_up_test_expectations_only):
+            # Remove expectations for deleted tests and rename tests in
+            # expectations for renamed tests.
+            self.cleanup_test_expectations_files()
 
-        if not self.options.cleanup_test_expectations_only:
+        if not self.options.clean_up_test_expectations_only:
             # Use try job results to update expectations and baselines
             self.update_expectations()
 
@@ -101,15 +108,19 @@ class WPTExpectationsUpdater(object):
             action='store_true',
             help='More verbose logging.')
         parser.add_argument(
+            '--clean-up-test-expectations',
+            action='store_true',
+            help='Cleanup test expectations files.')
+        parser.add_argument(
+            '--clean-up-test-expectations-only',
+            action='store_true',
+            help='Clean up expectations and then exit script.')
+        parser.add_argument(
             '--clean-up-affected-tests-only',
             action='store_true',
             help='Only cleanup expectations deleted or renamed in current CL. '
                  'If flag is not used then a full cleanup of deleted or '
                  'renamed tests will be done in expectations.')
-        parser.add_argument(
-            '--cleanup-test-expectations-only',
-            action='store_true',
-            help='Cleanup test expectations files and then exit script.')
         # TODO(rmhasan): Move this argument to the
         # AndroidWPTExpectationsUpdater add_arguments implementation.
         # Also look into using sub parsers to separate android and

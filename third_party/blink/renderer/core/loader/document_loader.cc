@@ -1802,8 +1802,6 @@ void DocumentLoader::CommitNavigation() {
 }
 
 void DocumentLoader::CreateParserPostCommit() {
-  Document* document = frame_->GetDocument();
-
   // DidObserveLoadingBehavior() must be called after DispatchDidCommitLoad() is
   // called for the metrics tracking logic to handle it properly.
   if (service_worker_network_provider_ &&
@@ -1823,30 +1821,31 @@ void DocumentLoader::CreateParserPostCommit() {
   // We can safely omit installing original trials on initial empty document
   // and wait for the real load.
   if (GetFrameLoader().StateMachine()->CommittedFirstRealDocumentLoad()) {
-    if (document->GetSettings()
+    LocalDOMWindow* window = frame_->DomWindow();
+    if (frame_->GetSettings()
             ->GetForceTouchEventFeatureDetectionForInspector()) {
-      document->GetOriginTrialContext()->AddFeature(
+      window->GetOriginTrialContext()->AddFeature(
           OriginTrialFeature::kTouchEventFeatureDetection);
     }
 
     // Enable any origin trials that have been force enabled for this commit.
-    document->GetOriginTrialContext()->AddForceEnabledTrials(
+    window->GetOriginTrialContext()->AddForceEnabledTrials(
         force_enabled_origin_trials_);
 
 #if defined(OS_CHROMEOS)
     // Enable Auto Picture-in-Picture feature for the built-in Chrome OS Video
     // Player app.
-    const url::Origin origin = document->GetSecurityOrigin()->ToUrlOrigin();
+    const url::Origin origin = window->GetSecurityOrigin()->ToUrlOrigin();
     if (origin.scheme() == "chrome-extension" &&
         origin.DomainIs("jcgeabjmjgoblfofpppfkcoakmfobdko") &&
         origin.port() == 0) {
-      document->GetOriginTrialContext()->AddFeature(
+      window->GetOriginTrialContext()->AddFeature(
           OriginTrialFeature::kAutoPictureInPicture);
     }
 #endif
 
     OriginTrialContext::ActivateNavigationFeaturesFromInitiator(
-        frame_->DomWindow(), &initiator_origin_trial_features_);
+        window, &initiator_origin_trial_features_);
   }
 
   ParserSynchronizationPolicy parsing_policy =
@@ -1861,6 +1860,7 @@ void DocumentLoader::CreateParserPostCommit() {
                                      ? "UTF-8"
                                      : response_.TextEncodingName();
 
+  Document* document = frame_->GetDocument();
   parser_ = document->OpenForNavigation(parsing_policy, MimeType(), encoding);
 
   // XSLT processing converts the response into UTF-8 before sending it through

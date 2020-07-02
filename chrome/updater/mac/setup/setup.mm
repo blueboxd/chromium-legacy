@@ -24,7 +24,6 @@
 #include "chrome/updater/constants.h"
 #include "chrome/updater/crash_client.h"
 #include "chrome/updater/crash_reporter.h"
-#import "chrome/updater/mac/setup/info_plist.h"
 #import "chrome/updater/mac/xpc_service_names.h"
 #include "chrome/updater/updater_version.h"
 #include "chrome/updater/util.h"
@@ -55,8 +54,15 @@ bool IsSystemInstall() {
 const base::FilePath GetLibraryFolderPath() {
   // For user installations: the "~/Library" for the logged in user.
   // For system installations: "/Library".
-  return IsSystemInstall() ? GetLocalLibraryDirectory()
-                           : base::mac::GetUserLibraryPath();
+  if (IsSystemInstall()) {
+    base::FilePath local_library_path;
+    if (!base::mac::GetLocalDirectory(NSLibraryDirectory,
+                                      &local_library_path)) {
+      VLOG(1) << "Could not get local library path";
+    }
+    return local_library_path;
+  }
+  return base::mac::GetUserLibraryPath();
 }
 
 const base::FilePath GetUpdaterFolderPath() {
@@ -67,6 +73,10 @@ const base::FilePath GetUpdaterFolderPath() {
   // /Library/COMPANY_SHORTNAME_STRING/PRODUCT_FULLNAME_STRING.
   // e.g. /Library/Google/GoogleUpdater
   return GetLibraryFolderPath().Append(GetUpdateFolderName());
+}
+
+const base::FilePath GetVersionedUpdaterFolderPath() {
+  return GetUpdaterFolderPath().AppendASCII(UPDATER_VERSION_STRING);
 }
 
 Launchd::Domain LaunchdDomain() {
@@ -103,7 +113,7 @@ NSString* MakeProgramArgument(const char* argument) {
   return base::SysUTF8ToNSString(base::StrCat({"--", argument}));
 }
 
-base::ScopedCFTypeRef<CFDictionaryRef> CreateGoogleUpdateServiceLaunchdPlist(
+base::ScopedCFTypeRef<CFDictionaryRef> CreateServiceLaunchdPlist(
     const base::ScopedCFTypeRef<CFStringRef> label,
     const base::FilePath& updater_path) {
   // See the man page for launchd.plist.
@@ -114,7 +124,7 @@ base::ScopedCFTypeRef<CFDictionaryRef> CreateGoogleUpdateServiceLaunchdPlist(
       MakeProgramArgument(kServerSwitch)
     ],
     @LAUNCH_JOBKEY_MACHSERVICES :
-        @{GetGoogleUpdateServiceMachName(base::mac::CFToNSCast(label)) : @YES},
+        @{GetServiceMachName(base::mac::CFToNSCast(label)) : @YES},
     @LAUNCH_JOBKEY_ABANDONPROCESSGROUP : @NO,
     @LAUNCH_JOBKEY_LIMITLOADTOSESSIONTYPE : @"Aqua"
   };
@@ -124,9 +134,7 @@ base::ScopedCFTypeRef<CFDictionaryRef> CreateGoogleUpdateServiceLaunchdPlist(
       base::scoped_policy::RETAIN);
 }
 
-base::ScopedCFTypeRef<CFDictionaryRef>
-CreateGoogleUpdaterAdministrationLaunchdPlist(
-    const base::ScopedCFTypeRef<CFStringRef> label,
+base::ScopedCFTypeRef<CFDictionaryRef> CreateAdministrationLaunchdPlist(
     const base::FilePath& updater_path) {
   // See the man page for launchd.plist.
   NSMutableArray<NSString*>* program_arguments =
@@ -139,7 +147,8 @@ CreateGoogleUpdaterAdministrationLaunchdPlist(
     [program_arguments addObject:MakeProgramArgument(kSystemSwitch)];
 
   NSDictionary<NSString*, id>* launchd_plist = @{
-    @LAUNCH_JOBKEY_LABEL : base::mac::CFToNSCast(label),
+    @LAUNCH_JOBKEY_LABEL :
+        base::mac::CFToNSCast(CopyAdministrationLaunchDName()),
     @LAUNCH_JOBKEY_PROGRAMARGUMENTS : program_arguments,
     @LAUNCH_JOBKEY_STARTINTERVAL : @3600,
     @LAUNCH_JOBKEY_ABANDONPROCESSGROUP : @NO,
@@ -159,22 +168,21 @@ bool CreateUpdateServiceLaunchdJobPlist(
                                                 base::BlockingType::MAY_BLOCK);
 
   base::ScopedCFTypeRef<CFDictionaryRef> plist(
-      CreateGoogleUpdateServiceLaunchdPlist(name, updater_path));
+      CreateServiceLaunchdPlist(name, updater_path));
   return Launchd::GetInstance()->WritePlistToFile(
       LaunchdDomain(), ServiceLaunchdType(), name, plist);
 }
 
 bool CreateUpdateAdministrationLaunchdJobPlist(
-    const base::ScopedCFTypeRef<CFStringRef> name,
     const base::FilePath& updater_path) {
   // We're creating directories and writing a file.
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
-
   base::ScopedCFTypeRef<CFDictionaryRef> plist(
-      CreateGoogleUpdaterAdministrationLaunchdPlist(name, updater_path));
+      CreateAdministrationLaunchdPlist(updater_path));
   return Launchd::GetInstance()->WritePlistToFile(
-      LaunchdDomain(), ServiceLaunchdType(), name, plist);
+      LaunchdDomain(), ServiceLaunchdType(), CopyAdministrationLaunchDName(),
+      plist);
 }
 
 bool StartUpdateServiceVersionedLaunchdJob(
@@ -183,15 +191,14 @@ bool StartUpdateServiceVersionedLaunchdJob(
       LaunchdDomain(), ServiceLaunchdType(), name, CFSTR("Aqua"));
 }
 
-bool StartUpdateAdministrationVersionedLaunchdJob(
-    const base::ScopedCFTypeRef<CFStringRef> name) {
+bool StartUpdateAdministrationVersionedLaunchdJob() {
   return Launchd::GetInstance()->RestartJob(
-      LaunchdDomain(), ServiceLaunchdType(), name, CFSTR("Aqua"));
+      LaunchdDomain(), ServiceLaunchdType(), CopyAdministrationLaunchDName(),
+      CFSTR("Aqua"));
 }
 
 bool StartLaunchdServiceJob() {
-  return StartUpdateServiceVersionedLaunchdJob(
-      CopyGoogleUpdateServiceLaunchDName());
+  return StartUpdateServiceVersionedLaunchdJob(CopyServiceLaunchDName());
 }
 
 bool RemoveJobFromLaunchd(Launchd::Domain domain,
@@ -218,13 +225,11 @@ bool RemoveUpdateServiceJobFromLaunchd(
 }
 
 bool RemoveUpdateServiceJobFromLaunchd() {
-  return RemoveUpdateServiceJobFromLaunchd(
-      CopyGoogleUpdateServiceLaunchDName());
+  return RemoveUpdateServiceJobFromLaunchd(CopyServiceLaunchDName());
 }
 
-bool RemoveUpdateAdministrationJobFromLaunchd(
-    base::ScopedCFTypeRef<CFStringRef> name) {
-  return RemoveClientJobFromLaunchd(name);
+bool RemoveUpdateAdministrationJobFromLaunchd() {
+  return RemoveClientJobFromLaunchd(CopyAdministrationLaunchDName());
 }
 
 bool DeleteInstallFolder(const base::FilePath& installed_path) {
@@ -242,40 +247,21 @@ bool DeleteInstallFolder() {
 }  // namespace
 
 int InstallCandidate() {
-  const std::unique_ptr<InfoPlist> info_plist =
-      InfoPlist::Create(InfoPlistPath());
-  CHECK(info_plist);
-
-  const base::FilePath dest_path =
-      info_plist->UpdaterVersionedFolderPath(GetUpdaterFolderPath());
+  const base::FilePath dest_path = GetVersionedUpdaterFolderPath();
 
   if (!CopyBundle(dest_path))
     return setup_exit_codes::kFailedToCopyBundle;
 
-  base::FilePath updater_executable_path = info_plist->UpdaterExecutablePath(
-      GetLibraryFolderPath(), GetUpdateFolderName(), GetUpdaterAppName(),
-      GetUpdaterAppExecutablePath());
-
-  if (!CreateUpdateServiceLaunchdJobPlist(
-          info_plist->GoogleUpdateServiceLaunchdNameVersioned(),
-          updater_executable_path)) {
-    return setup_exit_codes::
-        kFailedToCreateVersionedUpdateServiceLaunchdJobPlist;
-  }
+  const base::FilePath updater_executable_path =
+      dest_path.Append(GetUpdaterAppName())
+          .Append(GetUpdaterAppExecutablePath());
 
   if (!CreateUpdateAdministrationLaunchdJobPlist(
-          info_plist->GoogleUpdateAdministrationLaunchdNameVersioned(),
           updater_executable_path)) {
     return setup_exit_codes::kFailedToCreateAdministrationLaunchdJobPlist;
   }
 
-  if (!StartUpdateServiceVersionedLaunchdJob(
-          info_plist->GoogleUpdateServiceLaunchdNameVersioned())) {
-    return setup_exit_codes::kFailedToStartLaunchdVersionedServiceJob;
-  }
-
-  if (!StartUpdateAdministrationVersionedLaunchdJob(
-          info_plist->GoogleUpdateAdministrationLaunchdNameVersioned())) {
+  if (!StartUpdateAdministrationVersionedLaunchdJob()) {
     return setup_exit_codes::kFailedToStartLaunchdAdministrationJob;
   }
 
@@ -283,33 +269,18 @@ int InstallCandidate() {
 }
 
 int UninstallCandidate() {
-  const std::unique_ptr<InfoPlist> info_plist =
-      InfoPlist::Create(InfoPlistPath());
-  CHECK(info_plist);
-
-  RemoveUpdateAdministrationJobFromLaunchd(
-      info_plist->GoogleUpdateAdministrationLaunchdNameVersioned());
-  RemoveUpdateServiceJobFromLaunchd(
-      info_plist->GoogleUpdateServiceLaunchdNameVersioned());
-  DeleteInstallFolder(
-      info_plist->UpdaterVersionedFolderPath(GetUpdaterFolderPath()));
-
+  RemoveUpdateAdministrationJobFromLaunchd();
+  DeleteInstallFolder(GetVersionedUpdaterFolderPath());
   return setup_exit_codes::kSuccess;
 }
 
 int PromoteCandidate() {
-  const std::unique_ptr<InfoPlist> info_plist =
-      InfoPlist::Create(InfoPlistPath());
-  CHECK(info_plist);
+  const base::FilePath dest_path = GetVersionedUpdaterFolderPath();
+  const base::FilePath updater_executable_path =
+      dest_path.Append(GetUpdaterAppName())
+          .Append(GetUpdaterAppExecutablePath());
 
-  const base::FilePath dest_path =
-      info_plist->UpdaterVersionedFolderPath(GetUpdaterFolderPath());
-
-  base::FilePath updater_executable_path = info_plist->UpdaterExecutablePath(
-      GetLibraryFolderPath(), GetUpdateFolderName(), GetUpdaterAppName(),
-      GetUpdaterAppExecutablePath());
-
-  if (!CreateUpdateServiceLaunchdJobPlist(CopyGoogleUpdateServiceLaunchDName(),
+  if (!CreateUpdateServiceLaunchdJobPlist(CopyServiceLaunchDName(),
                                           updater_executable_path)) {
     return setup_exit_codes::kFailedToCreateUpdateServiceLaunchdJobPlist;
   }
@@ -324,20 +295,9 @@ int PromoteCandidate() {
 #pragma mark Uninstall
 int Uninstall(bool is_machine) {
   ALLOW_UNUSED_LOCAL(is_machine);
-
-  const std::unique_ptr<InfoPlist> info_plist =
-      InfoPlist::Create(InfoPlistPath());
-  CHECK(info_plist);
-
-  if (!RemoveUpdateServiceJobFromLaunchd(
-          info_plist->GoogleUpdateServiceLaunchdNameVersioned())) {
-    return setup_exit_codes::
-        kFailedToRemoveCandidateUpdateServiceJobFromLaunchd;
-  }
-
-  if (!RemoveUpdateAdministrationJobFromLaunchd(
-          info_plist->GoogleUpdateAdministrationLaunchdNameVersioned()))
-    return setup_exit_codes::kFailedToRemoveAdministrationJobFromLaunchd;
+  const int exit = UninstallCandidate();
+  if (exit != setup_exit_codes::kSuccess)
+    return exit;
 
   if (!RemoveUpdateServiceJobFromLaunchd())
     return setup_exit_codes::kFailedToRemoveActiveUpdateServiceJobFromLaunchd;

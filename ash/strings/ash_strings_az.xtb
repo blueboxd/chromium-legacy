@@ -73,6 +73,7 @@ Başlamaq üçün aşağıdakıları yoxlaya bilərsiniz.</translation>
 <translation id="1747827819627189109">Ekrandakı klaviaturanı aktiv edin</translation>
 <translation id="1761222317188459878">Şəbəkə bağlantısını aktiv edin. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Sağa sürüşdürün</translation>
+<translation id="1782199038061388045">tərcümə</translation>
 <translation id="181103072419391116">Siqnal Gücü <ph name="SIGNAL_STRENGTH" />, Administratorunuz tərəfindən idarə olunur</translation>
 <translation id="1812997170047690955">Ekranımda nə var?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
@@ -103,7 +104,6 @@ Başlamaq üçün aşağıdakıları yoxlaya bilərsiniz.</translation>
 <translation id="2126242104232412123">Yeni iş masası</translation>
 <translation id="2127372758936585790">Gücü az şarjer</translation>
 <translation id="2135456203358955318">Daxili miqyas</translation>
-<translation id="2143915448548023856">Displey ayarları</translation>
 <translation id="2144487987174258011">Adobe Flash Player'i güncəlləmək üçün yenidən başladın</translation>
 <translation id="2208323208084708176">Vahid masa üstü rejimi</translation>
 <translation id="2220572644011485463">PIN və ya parol</translation>
@@ -185,6 +185,7 @@ Başlamaq üçün aşağıdakıları yoxlaya bilərsiniz.</translation>
 <translation id="3081696990447829002">Menyunu genişləndirin</translation>
 <translation id="3087734570205094154">Alt</translation>
 <translation id="309749186376891736">Kursoru hərəkət etdirin</translation>
+<translation id="3098580329624789136">"<ph name="QUERY" />" üçün <ph name="INTENT" /> əldə edin</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Güncəlləşmək üçün yenidən başladın</translation>
 <translation id="3139942575505304791">Masa 1</translation>
@@ -222,6 +223,7 @@ Başlamaq üçün aşağıdakıları yoxlaya bilərsiniz.</translation>
 <translation id="3465356146291925647">Administratorunuz tərəfindən idarə olunur</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3485319357743610354"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Siqnal Gücü <ph name="SIGNAL_STRENGTH" /></translation>
+<translation id="3486220673238053218">təsvir</translation>
 <translation id="3510164367642747937">Maus kursorunu vurğulayın</translation>
 <translation id="3513798432020909783"><ph name="MANAGER_EMAIL" /> tərəfindən idarə edilən hesab</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" qaytarın (yenidən başlanmanı tələb edir)</translation>
@@ -272,8 +274,8 @@ Başlamaq üçün aşağıdakıları yoxlaya bilərsiniz.</translation>
 <translation id="4072264167173457037">Ortaq siqnal</translation>
 <translation id="4112140312785995938">Geri çəkin</translation>
 <translation id="4129129681837227511">Bildirişlərin kilid ekranında görünməsini istəyirsinizsə, ayarı dəyişmək üçün cihazı kiliddən çıxarın</translation>
-<translation id="4144413954005649103">Sağ düymə ilə toxunduqda və ya basıb saxladıqda Assistent sizə ekranda etdiyiniz seçimlə əlaqədar məlumatları göstərir.</translation>
 <translation id="4146833061457621061">Musiqini oxudun</translation>
+<translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> <ph name="DOMAIN" /> tərəfindən idarə edilir</translation>
 <translation id="4181841719683918333">Dillər</translation>
 <translation id="4195877955194704651">Avtomatik klik düyməsi</translation>
 <translation id="4197790712631116042">Deaktiv</translation>
@@ -528,6 +530,7 @@ Başlamaq üçün aşağıdakıları yoxlaya bilərsiniz.</translation>
 <translation id="7378594059915113390">Media Nəzarətləri</translation>
 <translation id="7398254312354928459">Şəbəkə bağlantısına keçildi</translation>
 <translation id="7405710164030118432">Cihazı kiliddən çıxarmaq üçün Family Link ailə giriş kodunu daxil edin</translation>
+<translation id="741244894080940828">çevirmə</translation>
 <translation id="742594950370306541">Kamera istifadə olunur.</translation>
 <translation id="743058460480092004">Kamera və mikrofon istifadə olunur.</translation>
 <translation id="7436182601308224670">Günortanız xeyir, <ph name="GIVEN_NAME" /></translation>
@@ -540,6 +543,7 @@ Başlamaq üçün aşağıdakıları yoxlaya bilərsiniz.</translation>
 <translation id="7562368315689366235">Emoji paleti</translation>
 <translation id="7564874036684306347">Pəncərənin digər masaüstünə köçürülməsi gözlənilməz nəticələr verə bilər. Növbəti bildirişlər, pəncərə və dialoqlar masaüstülər arasında bölüşdürülə bilər.</translation>
 <translation id="7568294522609223312">Avtomatik klikləri deaktiv edin</translation>
+<translation id="7568637526529101738">Sağ düymə ilə toxunduqda və ya basıb saxladıqda Assistent seçiminiz üçün izahat və ya vahidin çevrilməsi kimi məlumatı göstərir.</translation>
 <translation id="7569509451529460200">Brayl və ChromeVox aktiv edildi</translation>
 <translation id="7593891976182323525">Axtarın və ya Dəyişin</translation>
 <translation id="7600875258240007829">Bütün bildirişlərə baxın</translation>

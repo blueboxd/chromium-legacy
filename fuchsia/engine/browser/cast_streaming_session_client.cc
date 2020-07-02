@@ -5,8 +5,9 @@
 #include "fuchsia/engine/browser/cast_streaming_session_client.h"
 
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "media/base/media_util.h"
-#include "media/mojo/common/mojo_decoder_buffer_converter.h"
+#include "media/base/audio_decoder_config.h"
+#include "media/base/video_decoder_config.h"
+#include "media/mojo/mojom/media_types.mojom.h"
 
 CastStreamingSessionClient::CastStreamingSessionClient(
     fidl::InterfaceRequest<fuchsia::web::MessagePort> message_port_request)
@@ -37,37 +38,31 @@ void CastStreamingSessionClient::OnReceiverEnabled() {
 }
 
 void CastStreamingSessionClient::OnInitializationSuccess(
-    base::Optional<media::AudioDecoderConfig> audio_decoder_config,
-    base::Optional<media::VideoDecoderConfig> video_decoder_config) {
+    base::Optional<cast_streaming::CastStreamingSession::AudioStreamInfo>
+        audio_stream_info,
+    base::Optional<cast_streaming::CastStreamingSession::VideoStreamInfo>
+        video_stream_info) {
   DVLOG(1) << __func__;
-  DCHECK(audio_decoder_config || video_decoder_config);
+  DCHECK(audio_stream_info || video_stream_info);
 
-  mojom::AudioStreamInfoPtr audio_stream_info;
-  if (audio_decoder_config) {
-    mojo::ScopedDataPipeConsumerHandle audio_consumer;
-    audio_buffer_writer_ = media::MojoDecoderBufferWriter::Create(
-        media::GetDefaultDecoderBufferConverterCapacity(
-            media::DemuxerStream::Type::AUDIO),
-        &audio_consumer);
-    audio_stream_info = mojom::AudioStreamInfo::New(
-        audio_decoder_config.value(),
-        audio_remote_.BindNewPipeAndPassReceiver(), std::move(audio_consumer));
+  mojom::AudioStreamInfoPtr mojo_audio_stream_info;
+  if (audio_stream_info) {
+    mojo_audio_stream_info =
+        mojom::AudioStreamInfo::New(audio_stream_info->decoder_config,
+                                    audio_remote_.BindNewPipeAndPassReceiver(),
+                                    std::move(audio_stream_info->data_pipe));
   }
 
-  mojom::VideoStreamInfoPtr video_stream_info;
-  if (video_decoder_config) {
-    mojo::ScopedDataPipeConsumerHandle video_consumer;
-    video_buffer_writer_ = media::MojoDecoderBufferWriter::Create(
-        media::GetDefaultDecoderBufferConverterCapacity(
-            media::DemuxerStream::Type::VIDEO),
-        &video_consumer);
-    video_stream_info = mojom::VideoStreamInfo::New(
-        video_decoder_config.value(),
-        video_remote_.BindNewPipeAndPassReceiver(), std::move(video_consumer));
+  mojom::VideoStreamInfoPtr mojo_video_stream_info;
+  if (video_stream_info) {
+    mojo_video_stream_info =
+        mojom::VideoStreamInfo::New(video_stream_info->decoder_config,
+                                    video_remote_.BindNewPipeAndPassReceiver(),
+                                    std::move(video_stream_info->data_pipe));
   }
 
-  cast_streaming_receiver_->OnStreamsInitialized(std::move(audio_stream_info),
-                                                 std::move(video_stream_info));
+  cast_streaming_receiver_->OnStreamsInitialized(
+      std::move(mojo_audio_stream_info), std::move(mojo_video_stream_info));
 }
 
 void CastStreamingSessionClient::OnInitializationFailure() {
@@ -75,30 +70,18 @@ void CastStreamingSessionClient::OnInitializationFailure() {
   cast_streaming_receiver_.reset();
 }
 
-void CastStreamingSessionClient::OnAudioFrameReceived(
-    scoped_refptr<media::DecoderBuffer> buffer) {
+void CastStreamingSessionClient::OnAudioBufferReceived(
+    media::mojom::DecoderBufferPtr buffer) {
   DVLOG(3) << __func__;
-  DCHECK(audio_buffer_writer_);
-  media::mojom::DecoderBufferPtr mojo_decoder_buffer =
-      audio_buffer_writer_->WriteDecoderBuffer(buffer);
-  if (!mojo_decoder_buffer) {
-    DVLOG(2) << "Audio mojo pipe has been closed.";
-    return;
-  }
-  audio_remote_->ProvideBuffer(std::move(mojo_decoder_buffer));
+  DCHECK(audio_remote_);
+  audio_remote_->ProvideBuffer(std::move(buffer));
 }
 
-void CastStreamingSessionClient::OnVideoFrameReceived(
-    scoped_refptr<media::DecoderBuffer> buffer) {
+void CastStreamingSessionClient::OnVideoBufferReceived(
+    media::mojom::DecoderBufferPtr buffer) {
   DVLOG(3) << __func__;
-  DCHECK(video_buffer_writer_);
-  media::mojom::DecoderBufferPtr mojo_decoder_buffer =
-      video_buffer_writer_->WriteDecoderBuffer(buffer);
-  if (!mojo_decoder_buffer) {
-    DVLOG(2) << "Video mojo pipe has been closed.";
-    return;
-  }
-  video_remote_->ProvideBuffer(std::move(mojo_decoder_buffer));
+  DCHECK(video_remote_);
+  video_remote_->ProvideBuffer(std::move(buffer));
 }
 
 void CastStreamingSessionClient::OnReceiverSessionEnded() {
@@ -123,8 +106,6 @@ void CastStreamingSessionClient::OnMojoDisconnect() {
   cast_streaming_session_.Stop();
 
   // Tear down all remaining Mojo objects.
-  audio_buffer_writer_.reset();
-  video_buffer_writer_.reset();
   audio_remote_.reset();
   video_remote_.reset();
 }

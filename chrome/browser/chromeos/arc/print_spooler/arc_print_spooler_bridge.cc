@@ -23,7 +23,6 @@
 #include "components/arc/session/arc_bridge_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
-#include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "net/base/filename_util.h"
 #include "ui/aura/window.h"
 #include "url/gurl.h"

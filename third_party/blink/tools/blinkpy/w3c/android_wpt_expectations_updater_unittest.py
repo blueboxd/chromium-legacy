@@ -115,6 +115,7 @@ class AndroidWPTExpectationsUpdaterTest(LoggingTestCase):
             step_name=WEBVIEW_WPT_STEP + ' (with patch)')
         updater = AndroidWPTExpectationsUpdater(
             host, ['-vvv',  '--android-product', ANDROID_WEBVIEW,
+                   '--clean-up-test-expectations',
                    '--clean-up-affected-tests-only'])
         updater.git_cl = MockGitCL(host, {
             Build('MOCK Android Pie', 123):
@@ -203,6 +204,7 @@ class AndroidWPTExpectationsUpdaterTest(LoggingTestCase):
             step_name=WEBLAYER_WPT_STEP + ' (with patch)')
         updater = AndroidWPTExpectationsUpdater(
             host, ['-vvv', '--android-product', ANDROID_WEBLAYER,
+                   '--clean-up-test-expectations',
                    '--clean-up-affected-tests-only'])
         updater.git_cl = MockGitCL(host, {
             Build('MOCK Android Weblayer - Pie', 123):
@@ -321,6 +323,7 @@ class AndroidWPTExpectationsUpdaterTest(LoggingTestCase):
             step_name=CHROME_ANDROID_WPT_STEP + ' (with patch)')
         updater = AndroidWPTExpectationsUpdater(
             host, ['-vvv',
+                   '--clean-up-test-expectations',
                    '--clean-up-affected-tests-only',
                    '--android-product', ANDROID_WEBLAYER,
                    '--android-product', CHROME_ANDROID,

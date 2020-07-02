@@ -30,6 +30,7 @@
 <translation id="3517926952904427380">Snimanje uspravne slike nije uspelo</translation>
 <translation id="3569311554794739032">Želite li stvarno da uklonite datoteku <ph name="FILE" />?</translation>
 <translation id="3810838688059735925">Video</translation>
+<translation id="4118525110028899586">Pauziraj snimanje</translation>
 <translation id="4279490309300973883">Preslikavanje</translation>
 <translation id="4329152592498422850">Pređi na režim za snimanje slika u obliku kvadrata</translation>
 <translation id="4383571725254449280">Evidencije o učinku štampanja</translation>
@@ -67,11 +68,13 @@
 <translation id="8067883171444229417">Pusti video</translation>
 <translation id="8131740175452115882">Potvrdi</translation>
 <translation id="8145038249676204903">Pređi na režim za snimanje slika</translation>
+<translation id="8239780215768881278">Napravite video-snimak</translation>
 <translation id="8261506727792406068">Izbriši</translation>
 <translation id="8428213095426709021">Podešavanja</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" /> piksela (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
 <translation id="8732462232047530626">Prikaži metapodatke</translation>
 <translation id="8815966864175525708">Pređi na režim za snimanje uspravnih slika</translation>
+<translation id="8828441885228359828">Nastavi snimanje</translation>
 <translation id="8870695351537079478">Snimanje nije moglo da počne</translation>
 <translation id="9045155556724273246">10 sekundi</translation>
 <translation id="945522503751344254">Pošalji povratne informacije</translation>

@@ -45,6 +45,8 @@
 <translation id="1395262318152388157">Leitarsleði</translation>
 <translation id="1399648040768741453">Telúgú-lyklaborð (hljóðritun)</translation>
 <translation id="1430915738399379752">Prenta</translation>
+<translation id="1433600251059882049">Þessari möppu er deilt með Linux og Windows</translation>
+<translation id="1435838927755162558">Deila möppu með Parallels Desktop</translation>
 <translation id="1439494416798956626">Fært í <ph name="FOLDER_NAME" />.</translation>
 <translation id="1441841714100794440">Víetnamskt lyklaborð (telex)</translation>
 <translation id="1455548678241328678">Norskt lyklaborð</translation>
@@ -79,6 +81,7 @@
 <translation id="1844692022597038441">Þessi skrá er ekki tiltæk án nettengingar.</translation>
 <translation id="184633654410729720">Taílenskt lyklaborð (kedmanee)</translation>
 <translation id="1847880352285315359">Vistað</translation>
+<translation id="1853795129690976061">Þessari möppu er deilt með Linux</translation>
 <translation id="1864756863218646478">Skráin fannst ekki.</translation>
 <translation id="1921986354447415460">Tyrkneskt F-lyklaborð</translation>
 <translation id="1924372192547904021"><ph name="DRIVE_NAME" /> var forsniðið</translation>
@@ -180,6 +183,7 @@
 <translation id="303198083543495566">Landafræði</translation>
 <translation id="3057861065630527966">Afrita myndir og myndskeið</translation>
 <translation id="3064388234319122767">Umritun (zdravo → здраво)</translation>
+<translation id="3067790092342515856">Windows-skrár</translation>
 <translation id="3078461028045006476">Deila með <ph name="EXTENSION_NAME" /></translation>
 <translation id="3088034400796962477">Umritun (salam ← سلام)</translation>
 <translation id="3116361045094675131">Breskt lyklaborð</translation>
@@ -262,6 +266,7 @@
 <translation id="3943857333388298514">Líma</translation>
 <translation id="3958548648197196644">Loðber</translation>
 <translation id="3966388904776714213">Hljóðspilari</translation>
+<translation id="3984317463833596033">Veita Parallels Desktop heimild til að breyta skrám í möppunni <ph name="FOLDER_NAME" /></translation>
 <translation id="4002066346123236978">Heiti</translation>
 <translation id="4070370845051020638">Kantónsk innsláttaraðferð</translation>
 <translation id="4072248638558688893">Tamil-lyklaborð (hljóðritun)</translation>
@@ -290,6 +295,7 @@
 <translation id="4470564870223067757">Hangul 2 sett</translation>
 <translation id="4477219268485577442">Búlgarskt hljóðritunarlyklaborð</translation>
 <translation id="4479812471636796472">Bandarískt Dvorak-lyklaborð</translation>
+<translation id="4481711095103932593">Þessari möppu er deilt með Windows</translation>
 <translation id="4487088045714738411">Belgískt lyklaborð</translation>
 <translation id="4522570452068850558">Upplýsingar</translation>
 <translation id="4552678318981539154">Kaupa meira geymslurými</translation>
@@ -335,10 +341,12 @@
 <translation id="4881695831933465202">Opna</translation>
 <translation id="4886021172213954916">Tamil-lyklaborð (ritvél)</translation>
 <translation id="4892969127351273348">Ekki tókst að opna með <ph name="APP_NAME" /></translation>
+<translation id="4900532980794411603">Deila með Parallels Desktop</translation>
 <translation id="4905417359854579806">Tilbúið að afrita <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Lagfærð</translation>
 <translation id="4935975195727477204">Blóm</translation>
 <translation id="4943368462779413526">Amerískur fótbolti</translation>
+<translation id="4961158930123534723">1 möppu deilt með Parallels Desktop</translation>
 <translation id="4969785127455456148">Plata</translation>
 <translation id="497244430928947428">Malayalam-lyklaborð (hljóðritun)</translation>
 <translation id="4973523518332075481">Notaðu nafn sem er <ph name="MAX_LENGTH" /> stafir eða styttra</translation>
@@ -350,6 +358,7 @@
 <translation id="5010406651457630570">Tölvur</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5024856940085636730">Aðgerð tekur lengri tíma en áætlað var. Viltu hætta við hana?</translation>
+<translation id="5036159836254554629">Stjórna deilingu Parallels Desktop</translation>
 <translation id="5038625366300922036">Sjá meira...</translation>
 <translation id="5061708541166515394">Birtuskil</translation>
 <translation id="5068919226082848014">Pítsa</translation>
@@ -498,6 +507,7 @@
 <translation id="656398493051028875">Eyðir „<ph name="FILENAME" />“...</translation>
 <translation id="6581162200855843583">Google Drive tengill</translation>
 <translation id="6607272825297743757">Skráarupplýsingar</translation>
+<translation id="6609332149380188670"><ph name="NUMBER_OF_ITEMS" /> möppum deilt með Parallels Desktop</translation>
 <translation id="6629841649550503054">Allt afritað á <ph name="BEGIN_LINK" />Google Drive!<ph name="END_LINK" /></translation>
 <translation id="6643016212128521049">Hreinsa</translation>
 <translation id="6650726141019353908">Bleikt fiðrildi</translation>
@@ -679,6 +689,7 @@
 <translation id="8475647382427415476">Google Drive tókst ekki að samstilla „<ph name="FILENAME" />“ rétt í þessu. Google Drive mun reyna aftur síðar.</translation>
 <translation id="8477649328507734757">Snúningur</translation>
 <translation id="8487700953926739672">Í boði án nettengingar</translation>
+<translation id="8490342535582768689">Veita Parallels Desktop heimild til að breyta skránum þínum á Google Drive. Breytingar samstillast við önnur tæki.</translation>
 <translation id="8521441079177373948">Breskt</translation>
 <translation id="8525306231823319788">Allur skjárinn</translation>
 <translation id="8551494947769799688">Lettneskt</translation>

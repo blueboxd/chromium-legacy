@@ -17,7 +17,6 @@
 #include "base/synchronization/lock.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "net/base/url_util.h"
 #include "storage/browser/file_system/async_file_util_adapter.h"
 #include "storage/browser/file_system/file_stream_reader.h"
 #include "storage/browser/file_system/file_stream_writer.h"
@@ -260,7 +259,7 @@ void PluginPrivateFileSystemBackend::GetOriginsForTypeOnFileTaskRunner(
       obfuscated_file_util()->CreateOriginEnumerator());
   base::Optional<url::Origin> origin;
   while ((origin = enumerator->Next()).has_value())
-    origins->insert(origin.value());
+    origins->insert(std::move(origin).value());
 }
 
 void PluginPrivateFileSystemBackend::GetOriginsForHostOnFileTaskRunner(
@@ -273,8 +272,8 @@ void PluginPrivateFileSystemBackend::GetOriginsForHostOnFileTaskRunner(
       obfuscated_file_util()->CreateOriginEnumerator());
   base::Optional<url::Origin> origin;
   while ((origin = enumerator->Next()).has_value()) {
-    if (host == net::GetHostOrSpecFromURL(origin->GetURL()))
-      origins->insert(origin.value());
+    if (host == origin->host())
+      origins->insert(std::move(origin).value());
   }
 }
 

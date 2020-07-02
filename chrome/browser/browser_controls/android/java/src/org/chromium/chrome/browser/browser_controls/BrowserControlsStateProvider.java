@@ -13,13 +13,6 @@ public interface BrowserControlsStateProvider {
      */
     interface Observer {
         /**
-         * Called whenever the content's offset changes.
-         *
-         * @param offset The new offset of the content from the top of the screen in px.
-         */
-        default void onContentOffsetChanged(int offset) {}
-
-        /**
          * Called whenever the controls' offset changes.
          *
          * @param topOffset The new value of the offset from the top of the top control in px.

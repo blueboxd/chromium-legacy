@@ -358,11 +358,6 @@ class AssistantOverlayDrawable extends Drawable implements BrowserControlsStateP
     }
 
     @Override
-    public void onContentOffsetChanged(int offset) {
-        invalidateSelf();
-    }
-
-    @Override
     public void onControlsOffsetChanged(int topOffset, int topControlsMinHeightOffset,
             int bottomOffset, int bottomControlsMinHeightOffset, boolean needsAnimate) {
         invalidateSelf();

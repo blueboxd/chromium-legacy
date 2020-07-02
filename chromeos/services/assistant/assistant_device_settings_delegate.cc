@@ -8,7 +8,7 @@
 #include <memory>
 #include <utility>
 
-#include "ash/public/mojom/assistant_controller.mojom.h"
+#include "ash/public/cpp/assistant/controller/assistant_notification_controller.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
@@ -198,8 +198,7 @@ class DoNotDisturbSetting : public Setting {
   }
 
  private:
-  ash::mojom::AssistantNotificationController*
-  assistant_notification_controller() {
+  ash::AssistantNotificationController* assistant_notification_controller() {
     return context_->assistant_notification_controller();
   }
 

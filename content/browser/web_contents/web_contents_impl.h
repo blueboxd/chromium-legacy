@@ -1126,7 +1126,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Called when a file selection is to be done.
   void RunFileChooser(
       RenderFrameHost* render_frame_host,
-      std::unique_ptr<FileChooserImpl::FileSelectListenerImpl> listener,
+      scoped_refptr<FileChooserImpl::FileSelectListenerImpl> listener,
       const blink::mojom::FileChooserParams& params);
 
   // Request to enumerate a directory.  This is equivalent to running the file
@@ -1134,7 +1134,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // directory.
   void EnumerateDirectory(
       RenderFrameHost* render_frame_host,
-      std::unique_ptr<FileChooserImpl::FileSelectListenerImpl> listener,
+      scoped_refptr<FileChooserImpl::FileSelectListenerImpl> listener,
       const base::FilePath& directory_path);
 
 #if defined(OS_ANDROID)

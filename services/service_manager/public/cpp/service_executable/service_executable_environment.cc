@@ -64,12 +64,12 @@ ServiceExecutableEnvironment::ServiceExecutableEnvironment()
 
 ServiceExecutableEnvironment::~ServiceExecutableEnvironment() = default;
 
-mojom::ServiceRequest
+mojo::PendingReceiver<mojom::Service>
 ServiceExecutableEnvironment::TakeServiceRequestFromCommandLine() {
   auto invitation = mojo::IncomingInvitation::Accept(
       mojo::PlatformChannel::RecoverPassedEndpointFromCommandLine(
           *base::CommandLine::ForCurrentProcess()));
-  return mojom::ServiceRequest(invitation.ExtractMessagePipe(
+  return mojo::PendingReceiver<mojom::Service>(invitation.ExtractMessagePipe(
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kServiceRequestAttachmentName)));
 }

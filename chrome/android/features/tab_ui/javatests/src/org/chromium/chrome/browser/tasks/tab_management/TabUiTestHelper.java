@@ -611,7 +611,7 @@ public class TabUiTestHelper {
      * CriteriaHelper.pollInstrumentationThread().
      * @return whether the visibility checking and the clicking have finished or not.
      */
-    static boolean verifyUndoBarShowingAndClickUndo() {
+    public static boolean verifyUndoBarShowingAndClickUndo() {
         boolean hasClicked = true;
         try {
             onView(withId(R.id.snackbar_button)).check(matches(isCompletelyDisplayed()));

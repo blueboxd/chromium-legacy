@@ -40,13 +40,25 @@ struct ASH_PUBLIC_EXPORT AssistantTimer {
   AssistantTimer& operator=(const AssistantTimer&);
   ~AssistantTimer();
 
+  // Returns whether |this| is considered equal in LibAssistant to |other|.
+  // NOTE: this *only* checks against fields which are set by LibAssistant.
+  bool IsEqualInLibAssistantTo(const AssistantTimer& other) const;
+
+  // These fields are set *only* by LibAssistant.
   std::string id;
   std::string label;
-  AssistantTimerState state{AssistantTimerState::kUnknown};
-  base::Optional<base::Time> creation_time;
-  base::TimeDelta original_duration;
   base::Time fire_time;
+  base::TimeDelta original_duration;
+
+  // These fields are set *only* by Chrome.
+  base::Optional<base::Time> creation_time;
   base::TimeDelta remaining_time;
+
+  // This field is set *only* by LibAssistant *except* in timers v2 where we may
+  // update a timer from |kScheduled| to |kFired| state in Chrome in order to
+  // reduce UI jank that would otherwise occur if we waited for LibAssistant to
+  // notify us of the state change.
+  AssistantTimerState state{AssistantTimerState::kUnknown};
 };
 
 using AssistantTimerPtr = std::unique_ptr<AssistantTimer>;

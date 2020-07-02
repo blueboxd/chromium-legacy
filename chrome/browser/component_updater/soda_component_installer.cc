@@ -38,7 +38,7 @@ const char kSODAManifestName[] = "SODA Library";
 }  // namespace
 
 SODAComponentInstallerPolicy::SODAComponentInstallerPolicy(
-    const OnSODAComponentReadyCallback& callback)
+    OnSODAComponentReadyCallback callback)
     : on_component_ready_callback_(callback) {}
 
 SODAComponentInstallerPolicy::~SODAComponentInstallerPolicy() = default;

@@ -10,6 +10,7 @@
 <translation id="1201402288615127009">Հաջորդը</translation>
 <translation id="1242008676835033345">Զետեղված է <ph name="WEBSITE_URL" /> կայքում</translation>
 <translation id="1272079795634619415">Դադարեցնել</translation>
+<translation id="1289742167380433257">Թրաֆիկը խնայելու համար այս էջի պատկերները Google-ի կողմից օպտիմալացվել են։</translation>
 <translation id="129382876167171263">Կայքերի կողմից պահված ֆայլերը կցուցադրվեն այստեղ</translation>
 <translation id="1364532808393826295"><ph name="APP_NAME" /> – <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676"><ph name="SITE_NAME" /> կայքն ավելացվել է</translation>
@@ -189,6 +190,7 @@
 <translation id="7128222689758636196">Թույլատրել ընթացիկ որոնիչին</translation>
 <translation id="7141896414559753902">Արգելափակել ելնող պատուհանները և վերահասցեավորումը կայքերում (խորհուրդ է տրվում)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> ԿԲ</translation>
+<translation id="7243308994586599757">Ընտրանքները հասանելի են էկրանի ստորին հատվածում</translation>
 <translation id="7250468141469952378">Ընտրված է <ph name="ITEM_COUNT" /> տարր</translation>
 <translation id="7302486331832100261">Դուք սովորաբար արգելափակում եք ծանուցումները։ Թույլատրելու համար սեղմեք «Մանրամասներ»։</translation>
 <translation id="7423098979219808738">Նախ հարցնել</translation>
@@ -227,6 +229,7 @@
 <translation id="83792324527827022">Կայքն օգտագործում է ձեր տեսախցիկն ու խոսափողը</translation>
 <translation id="8380167699614421159">Այս կայքը հոգնեցնող կամ մոլորեցնող գովազդ է ցուցադրում։</translation>
 <translation id="8394832520002899662">Հպեք՝ կայք վերադառնալու համար</translation>
+<translation id="8425213833346101688">Փոխել</translation>
 <translation id="8441146129660941386">Որոնել դեպի հետ</translation>
 <translation id="8447861592752582886">Արգելել սարքի օգտագործումը</translation>
 <translation id="8463851957836045671">Կայքը բեռնվում է արագ</translation>

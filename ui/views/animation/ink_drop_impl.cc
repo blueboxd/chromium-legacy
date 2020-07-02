@@ -822,6 +822,8 @@ void InkDropImpl::SetHighlight(bool should_highlight,
   } else {
     highlight_->FadeOut(animation_duration);
   }
+
+  ink_drop_host_->OnInkDropHighlightedChanged();
 }
 
 bool InkDropImpl::ShouldHighlight() const {

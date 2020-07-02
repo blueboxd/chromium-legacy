@@ -12,7 +12,7 @@
 #include "base/observer_list_types.h"
 #include "base/scoped_observer.h"
 #include "chromeos/services/assistant/public/cpp/assistant_enums.h"
-#include "chromeos/services/assistant/public/mojom/assistant_notification.mojom.h"
+#include "chromeos/services/assistant/public/cpp/assistant_notification.h"
 #include "ui/accessibility/mojom/ax_assistant_structure.mojom.h"
 
 namespace chromeos {
@@ -231,13 +231,12 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) Assistant {
   // |action_index| is the index of the tapped action. The main UI in the
   // notification contains the top level action, which index is 0. The buttons
   // have the additional actions, which are indexed starting from 1.
-  virtual void RetrieveNotification(
-      const mojom::AssistantNotification& notification,
-      int action_index) = 0;
+  virtual void RetrieveNotification(const AssistantNotification& notification,
+                                    int action_index) = 0;
 
   // Dismisses a notification.
   virtual void DismissNotification(
-      const mojom::AssistantNotification& notification) = 0;
+      const AssistantNotification& notification) = 0;
 
   // Invoked when accessibility status is changed. Note that though
   // accessibility status has changed, |spoken_feedback_enabled| may not have.

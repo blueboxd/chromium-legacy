@@ -6,7 +6,6 @@
 #define ASH_PUBLIC_CPP_ASSISTANT_ASSISTANT_INTERFACE_BINDER_H_
 
 #include "ash/public/cpp/ash_public_export.h"
-#include "ash/public/mojom/assistant_controller.mojom.h"
 #include "ash/public/mojom/assistant_volume_control.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 
@@ -19,9 +18,6 @@ class ASH_PUBLIC_EXPORT AssistantInterfaceBinder {
   static AssistantInterfaceBinder* GetInstance();
   static void SetInstance(AssistantInterfaceBinder* binder);
 
-  virtual void BindNotificationController(
-      mojo::PendingReceiver<mojom::AssistantNotificationController>
-          receiver) = 0;
   virtual void BindVolumeControl(
       mojo::PendingReceiver<mojom::AssistantVolumeControl> receiver) = 0;
 

@@ -24,8 +24,7 @@ class ArcAppWindowInfo {
   ArcAppWindowInfo(const ArcAppWindowInfo&) = delete;
   ArcAppWindowInfo& operator=(const ArcAppWindowInfo&) = delete;
 
-  void SetDescription(const std::string& title,
-                      const std::vector<uint8_t>& icon_data_png);
+  void SetDescription(const std::string& title, const gfx::ImageSkia& icon);
 
   void set_window(aura::Window* window);
 
@@ -43,7 +42,7 @@ class ArcAppWindowInfo {
 
   const std::string& title() const;
 
-  const std::vector<uint8_t>& icon_data_png() const;
+  const gfx::ImageSkia& icon() const;
 
   const std::string& logical_window_id() const;
 
@@ -59,7 +58,7 @@ class ArcAppWindowInfo {
   // Keeps overridden window title.
   std::string title_;
   // Keeps overridden window icon.
-  std::vector<uint8_t> icon_data_png_;
+  gfx::ImageSkia icon_;
 
   aura::Window* window_ = nullptr;
 };

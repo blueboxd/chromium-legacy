@@ -12,6 +12,8 @@ component("cpp") {
     "assistant_client.cc",
     "assistant_client.h",
     "assistant_enums.h",
+    "assistant_notification.cc",
+    "assistant_notification.h",
     "assistant_prefs.cc",
     "assistant_prefs.h",
     "assistant_service.cc",

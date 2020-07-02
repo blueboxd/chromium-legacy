@@ -82,7 +82,8 @@ TEST_F(ContentSecurityPolicyTest, ParseInsecureRequestPolicy) {
 
     auto dummy = std::make_unique<DummyPageHolder>();
     dummy->GetDocument().SetURL(secure_url);
-    auto& security_context = dummy->GetDocument().GetSecurityContext();
+    auto& security_context =
+        dummy->GetFrame().DomWindow()->GetSecurityContext();
     security_context.SetSecurityOriginForTesting(secure_origin);
 
     csp->BindToDelegate(

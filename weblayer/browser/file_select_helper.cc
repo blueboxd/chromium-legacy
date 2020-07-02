@@ -27,7 +27,7 @@ using blink::mojom::FileChooserParamsPtr;
 // static
 void FileSelectHelper::RunFileChooser(
     content::RenderFrameHost* render_frame_host,
-    std::unique_ptr<content::FileSelectListener> listener,
+    scoped_refptr<content::FileSelectListener> listener,
     const FileChooserParams& params) {
   // TODO: Should we handle text/json+contacts accept type?
 
@@ -49,7 +49,7 @@ FileSelectHelper::~FileSelectHelper() {
 
 void FileSelectHelper::RunFileChooser(
     content::RenderFrameHost* render_frame_host,
-    std::unique_ptr<content::FileSelectListener> listener,
+    scoped_refptr<content::FileSelectListener> listener,
     FileChooserParamsPtr params) {
   DCHECK(!web_contents());
   DCHECK(listener);

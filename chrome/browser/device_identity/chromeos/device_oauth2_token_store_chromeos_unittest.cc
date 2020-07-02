@@ -217,8 +217,9 @@ TEST_F(DeviceOAuth2TokenStoreChromeOSTest, DoNotAnnounceTokenWithoutAccountID) {
 
   class StoreObserver : public DeviceOAuth2TokenStore::Observer {
    public:
-    using Callback = base::Callback<void()>;
-    explicit StoreObserver(Callback callback) : callback_(callback) {}
+    using Callback = base::RepeatingClosure;
+    explicit StoreObserver(Callback callback)
+        : callback_(std::move(callback)) {}
 
     void OnRefreshTokenAvailable() override { callback_.Run(); }
 

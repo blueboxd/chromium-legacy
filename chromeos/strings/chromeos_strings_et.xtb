@@ -15,6 +15,7 @@
 <translation id="1947737735496445907">Prinditud</translation>
 <translation id="1979103255016296513">Parooli muutmise tähtaeg on möödunud</translation>
 <translation id="2049639323467105390">Seadet haldab <ph name="DOMAIN" />.</translation>
+<translation id="2161394479394250669">Tühista prinditöö</translation>
 <translation id="2338501278241028356">Lülitage Bluetooth sisse, et läheduses olevaid seadmeid avastada</translation>
 <translation id="2375079107209812402">Jäänud on <ph name="ATTEMPTS_LEFT" /> katset</translation>
 <translation id="2805756323405976993">Rakendused</translation>
@@ -24,12 +25,12 @@
 <translation id="3268178239013324452">Ebaõnnestus – luuk on avatud</translation>
 <translation id="3369013195428705271">Kas soovite kindlasti kogu printimise ajaloo kustutada? Teie pooleliolevaid prinditöid ei kustutata.</translation>
 <translation id="3456078764689556234">Prinditi <ph name="PRINTED_PAGES" />. leht <ph name="TOTAL_PAGES" />-st.</translation>
+<translation id="3459509316159669723">Printimine</translation>
 <translation id="3527036260304016759">Ebaõnnestus – tundmatu viga</translation>
 <translation id="3749289110408117711">Faili nimi</translation>
 <translation id="38114475217616659">Kustuta kogu ajalugu</translation>
 <translation id="3820172043799983114">Vale PIN-kood.</translation>
 <translation id="3838338534323494292">Uus parool</translation>
-<translation id="3953601359945991637"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" />/<ph name="TOTAL_PAGE_NUMBER" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> haldab seda seadet ja sellel on juurdepääs kogu kasutaja tegevusele, sh külastatud veebilehtedele, paroolidele ning e-postile.</translation>
 <translation id="4003384961948020559">Ebaõnnestus – väljastusala on täis</translation>
 <translation id="4034824040120875894">Printer</translation>

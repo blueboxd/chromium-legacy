@@ -15,8 +15,6 @@ namespace {
 constexpr char kLogicalWindowIntentPrefix[] =
     "S.org.chromium.arc.logical_window_id=";
 
-constexpr size_t kMaxIconPngSize = 64 * 1024;  // 64 kb
-
 std::string GetLogicalWindowIdFromIntent(const std::string& launch_intent) {
   arc::Intent intent;
   if (!arc::ParseIntent(launch_intent, &intent))
@@ -41,19 +39,15 @@ ArcAppWindowInfo::ArcAppWindowInfo(const arc::ArcAppShelfId& app_shelf_id,
 
 ArcAppWindowInfo::~ArcAppWindowInfo() = default;
 
-void ArcAppWindowInfo::SetDescription(
-    const std::string& title,
-    const std::vector<uint8_t>& icon_data_png) {
+void ArcAppWindowInfo::SetDescription(const std::string& title,
+                                      const gfx::ImageSkia& icon) {
   DCHECK(base::IsStringUTF8(title));
   title_ = title;
 
   // Chrome has custom Play Store icon. Don't overwrite it.
   if (app_shelf_id_.app_id() == arc::kPlayStoreAppId)
     return;
-  if (icon_data_png.size() < kMaxIconPngSize)
-    icon_data_png_ = icon_data_png;
-  else
-    VLOG(1) << "Task icon size is too big " << icon_data_png.size() << ".";
+  icon_ = icon;
 }
 
 void ArcAppWindowInfo::set_hidden_from_shelf(bool hidden) {
@@ -101,8 +95,8 @@ const std::string& ArcAppWindowInfo::title() const {
   return title_;
 }
 
-const std::vector<uint8_t>& ArcAppWindowInfo::icon_data_png() const {
-  return icon_data_png_;
+const gfx::ImageSkia& ArcAppWindowInfo::icon() const {
+  return icon_;
 }
 
 const std::string& ArcAppWindowInfo::logical_window_id() const {

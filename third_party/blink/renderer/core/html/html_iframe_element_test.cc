@@ -7,8 +7,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/document_init.h"
 #include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
@@ -29,22 +29,23 @@ class HTMLIFrameElementTest : public testing::Test {
   void SetUp() final {
     const KURL document_url("http://example.com");
     page_holder_ = std::make_unique<DummyPageHolder>(IntSize(800, 600));
-    document_ = &page_holder_->GetDocument();
-    document_->SetURL(document_url);
-    document_->GetSecurityContext().SetSecurityOriginForTesting(
+    window_ = page_holder_->GetFrame().DomWindow();
+    window_->document()->SetURL(document_url);
+    window_->GetSecurityContext().SetSecurityOriginForTesting(
         SecurityOrigin::Create(document_url));
-    frame_element_ = MakeGarbageCollected<HTMLIFrameElement>(*document_);
+    frame_element_ =
+        MakeGarbageCollected<HTMLIFrameElement>(*window_->document());
   }
 
   void TearDown() final {
     frame_element_.Clear();
-    document_.Clear();
+    window_.Clear();
     page_holder_.reset();
   }
 
  protected:
   std::unique_ptr<DummyPageHolder> page_holder_;
-  Persistent<Document> document_;
+  Persistent<LocalDOMWindow> window_;
   Persistent<HTMLIFrameElement> frame_element_;
 };
 
@@ -54,20 +55,19 @@ TEST_F(HTMLIFrameElementTest, FramesUseCorrectOrigin) {
   frame_element_->setAttribute(html_names::kSrcAttr, "about:blank");
   scoped_refptr<const SecurityOrigin> effective_origin =
       GetOriginForFeaturePolicy(frame_element_);
-  EXPECT_TRUE(
-      effective_origin->IsSameOriginWith(document_->GetSecurityOrigin()));
+  EXPECT_TRUE(effective_origin->IsSameOriginWith(window_->GetSecurityOrigin()));
 
   frame_element_->setAttribute(
       html_names::kSrcAttr, "data:text/html;base64,PHRpdGxlPkFCQzwvdGl0bGU+");
   effective_origin = GetOriginForFeaturePolicy(frame_element_);
   EXPECT_FALSE(
-      effective_origin->IsSameOriginWith(document_->GetSecurityOrigin()));
+      effective_origin->IsSameOriginWith(window_->GetSecurityOrigin()));
   EXPECT_TRUE(effective_origin->IsOpaque());
 
   frame_element_->setAttribute(html_names::kSrcAttr, "http://example.net/");
   effective_origin = GetOriginForFeaturePolicy(frame_element_);
   EXPECT_FALSE(
-      effective_origin->IsSameOriginWith(document_->GetSecurityOrigin()));
+      effective_origin->IsSameOriginWith(window_->GetSecurityOrigin()));
   EXPECT_FALSE(effective_origin->IsOpaque());
 }
 
@@ -79,13 +79,13 @@ TEST_F(HTMLIFrameElementTest, SandboxFramesUseCorrectOrigin) {
   scoped_refptr<const SecurityOrigin> effective_origin =
       GetOriginForFeaturePolicy(frame_element_);
   EXPECT_FALSE(
-      effective_origin->IsSameOriginWith(document_->GetSecurityOrigin()));
+      effective_origin->IsSameOriginWith(window_->GetSecurityOrigin()));
   EXPECT_TRUE(effective_origin->IsOpaque());
 
   frame_element_->setAttribute(html_names::kSrcAttr, "http://example.net/");
   effective_origin = GetOriginForFeaturePolicy(frame_element_);
   EXPECT_FALSE(
-      effective_origin->IsSameOriginWith(document_->GetSecurityOrigin()));
+      effective_origin->IsSameOriginWith(window_->GetSecurityOrigin()));
   EXPECT_TRUE(effective_origin->IsOpaque());
 }
 
@@ -96,8 +96,7 @@ TEST_F(HTMLIFrameElementTest, SameOriginSandboxFramesUseCorrectOrigin) {
   frame_element_->setAttribute(html_names::kSrcAttr, "http://example.com/");
   scoped_refptr<const SecurityOrigin> effective_origin =
       GetOriginForFeaturePolicy(frame_element_);
-  EXPECT_TRUE(
-      effective_origin->IsSameOriginWith(document_->GetSecurityOrigin()));
+  EXPECT_TRUE(effective_origin->IsSameOriginWith(window_->GetSecurityOrigin()));
   EXPECT_FALSE(effective_origin->IsOpaque());
 }
 
@@ -107,8 +106,7 @@ TEST_F(HTMLIFrameElementTest, SrcdocFramesUseCorrectOrigin) {
   frame_element_->setAttribute(html_names::kSrcdocAttr, "<title>title</title>");
   scoped_refptr<const SecurityOrigin> effective_origin =
       GetOriginForFeaturePolicy(frame_element_);
-  EXPECT_TRUE(
-      effective_origin->IsSameOriginWith(document_->GetSecurityOrigin()));
+  EXPECT_TRUE(effective_origin->IsSameOriginWith(window_->GetSecurityOrigin()));
 }
 
 // Test that a unique origin is used when constructing the container policy in a
@@ -119,7 +117,7 @@ TEST_F(HTMLIFrameElementTest, SandboxedSrcdocFramesUseCorrectOrigin) {
   scoped_refptr<const SecurityOrigin> effective_origin =
       GetOriginForFeaturePolicy(frame_element_);
   EXPECT_FALSE(
-      effective_origin->IsSameOriginWith(document_->GetSecurityOrigin()));
+      effective_origin->IsSameOriginWith(window_->GetSecurityOrigin()));
   EXPECT_TRUE(effective_origin->IsOpaque());
 }
 
@@ -130,15 +128,14 @@ TEST_F(HTMLIFrameElementTest, RelativeURLsUseCorrectOrigin) {
   frame_element_->setAttribute(html_names::kSrcAttr, "index2.html");
   scoped_refptr<const SecurityOrigin> effective_origin =
       GetOriginForFeaturePolicy(frame_element_);
-  EXPECT_TRUE(
-      effective_origin->IsSameOriginWith(document_->GetSecurityOrigin()));
+  EXPECT_TRUE(effective_origin->IsSameOriginWith(window_->GetSecurityOrigin()));
 
   // Scheme-relative URLs should not resolve to the same domain as the parent.
   frame_element_->setAttribute(html_names::kSrcAttr,
                                "//example.net/index2.html");
   effective_origin = GetOriginForFeaturePolicy(frame_element_);
   EXPECT_FALSE(
-      effective_origin->IsSameOriginWith(document_->GetSecurityOrigin()));
+      effective_origin->IsSameOriginWith(window_->GetSecurityOrigin()));
 }
 
 // Test that various iframe attribute configurations result in the correct

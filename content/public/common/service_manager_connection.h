@@ -10,6 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/sequenced_task_runner.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/mojom/connector.mojom-forward.h"
@@ -33,10 +34,10 @@ namespace content {
 // ContentBrowserClient::RegisterInProcessServices().
 class CONTENT_EXPORT ServiceManagerConnection {
  public:
-  using ServiceRequestHandler =
-      base::RepeatingCallback<void(service_manager::mojom::ServiceRequest)>;
+  using ServiceRequestHandler = base::RepeatingCallback<void(
+      mojo::PendingReceiver<service_manager::mojom::Service>)>;
   using ServiceRequestHandlerWithCallback = base::RepeatingCallback<void(
-      service_manager::mojom::ServiceRequest,
+      mojo::PendingReceiver<service_manager::mojom::Service>,
       service_manager::Service::CreatePackagedServiceInstanceCallback)>;
   using Factory =
       base::RepeatingCallback<std::unique_ptr<ServiceManagerConnection>(void)>;
@@ -65,7 +66,7 @@ class CONTENT_EXPORT ServiceManagerConnection {
   // its interfaces and accept new connections on |io_task_runner| only. Note
   // that no incoming connections are accepted until Start() is called.
   static std::unique_ptr<ServiceManagerConnection> Create(
-      service_manager::mojom::ServiceRequest request,
+      mojo::PendingReceiver<service_manager::mojom::Service> receiver,
       scoped_refptr<base::SequencedTaskRunner> io_task_runner);
 
   // Begins accepting incoming connections.
@@ -100,9 +101,9 @@ class CONTENT_EXPORT ServiceManagerConnection {
 
   // Sets a request handler to use if no registered handlers were interested in
   // an incoming service request. Must be called before |Start()|.
-  using DefaultServiceRequestHandler =
-      base::RepeatingCallback<void(const std::string& service_name,
-                                   service_manager::mojom::ServiceRequest)>;
+  using DefaultServiceRequestHandler = base::RepeatingCallback<void(
+      const std::string& service_name,
+      mojo::PendingReceiver<service_manager::mojom::Service>)>;
   virtual void SetDefaultServiceRequestHandler(
       const DefaultServiceRequestHandler& handler) = 0;
 };

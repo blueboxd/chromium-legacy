@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "ash/public/mojom/assistant_controller.mojom.h"
+#include "ash/public/cpp/assistant/controller/assistant_notification_controller.h"
 #include "base/command_line.h"
 #include "chromeos/assistant/internal/internal_util.h"
 #include "chromeos/assistant/internal/proto/google3/assistant/api/client_op/device_args.pb.h"
@@ -73,15 +73,14 @@ class ScopedDeviceActionsMock : public ScopedDeviceActions {
 };
 
 class AssistantNotificationControllerMock
-    : public ash::mojom::AssistantNotificationController {
+    : public ash::AssistantNotificationController {
  public:
-  using AssistantNotificationPtr =
-      chromeos::assistant::mojom::AssistantNotificationPtr;
+  using AssistantNotification = chromeos::assistant::AssistantNotification;
 
-  // ash::mojom::AssistantNotificationController implementation:
+  // ash::AssistantNotificationController implementation:
   MOCK_METHOD(void,
               AddOrUpdateNotification,
-              (AssistantNotificationPtr notification));
+              (AssistantNotification && notification));
   MOCK_METHOD(void,
               RemoveNotificationById,
               (const std::string& id, bool from_server));

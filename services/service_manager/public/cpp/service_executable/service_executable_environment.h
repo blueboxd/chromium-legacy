@@ -9,6 +9,7 @@
 #include "base/optional.h"
 #include "base/threading/thread.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace service_manager {
@@ -32,7 +33,7 @@ class ServiceExecutableEnvironment {
 
   // Returns a ServiceRequest which should be passed to the Service
   // implementation which will run within the extent of this environment.
-  mojom::ServiceRequest TakeServiceRequestFromCommandLine();
+  mojo::PendingReceiver<mojom::Service> TakeServiceRequestFromCommandLine();
 
  private:
   base::Thread ipc_thread_;

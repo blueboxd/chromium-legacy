@@ -13,6 +13,7 @@
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -20,7 +21,7 @@
 #include "services/service_manager/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/service_receiver.h"
 #include "services/service_manager/tests/background.test-mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -54,14 +55,14 @@ const std::vector<Manifest>& GetTestManifests() {
 // The parent unit test suite service, not the underlying test service.
 class ServiceImpl : public Service {
  public:
-  explicit ServiceImpl(mojom::ServiceRequest request)
-      : binding_(this, std::move(request)) {}
+  explicit ServiceImpl(mojo::PendingReceiver<mojom::Service> receiver)
+      : receiver_(this, std::move(receiver)) {}
   ~ServiceImpl() override = default;
 
-  Connector* connector() { return binding_.GetConnector(); }
+  Connector* connector() { return receiver_.GetConnector(); }
 
  private:
-  ServiceBinding binding_;
+  ServiceReceiver receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceImpl);
 };

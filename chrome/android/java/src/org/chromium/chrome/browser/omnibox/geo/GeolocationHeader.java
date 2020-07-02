@@ -286,6 +286,8 @@ public class GeolocationHeader {
     public static String getGeoHeader(String url, Tab tab) {
         // TODO(lbargu): Refactor and simplify flow.
         Profile profile = Profile.fromWebContents(tab.getWebContents());
+        if (profile == null) return null;
+
         Location locationToAttach = null;
         VisibleNetworks visibleNetworksToAttach = null;
         long locationAge = Long.MAX_VALUE;

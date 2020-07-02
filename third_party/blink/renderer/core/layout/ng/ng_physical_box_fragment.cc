@@ -618,8 +618,10 @@ void NGPhysicalBoxFragment::CheckIntegrity() const {
     if (has_line_boxes) {
       DCHECK(!has_inlines);
       DCHECK(!has_inflow_blocks);
-      // Following objects should be in the items, not in the tree.
-      DCHECK(!has_floats);
+      // The following objects should be in the items, not in the tree. One
+      // exception is that floats may occur as regular fragments in the tree
+      // after a fragmentainer break.
+      DCHECK(!has_floats || !IsFirstForNode());
       DCHECK(!has_list_markers);
     }
   }

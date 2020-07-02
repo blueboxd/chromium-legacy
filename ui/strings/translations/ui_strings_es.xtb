@@ -69,6 +69,7 @@
 <translation id="2583543531130364912">Calibra la pantalla táctil</translation>
 <translation id="2666092431469916601">Superior</translation>
 <translation id="2701330563083355633">Compartido desde <ph name="DEVICE_NAME" /></translation>
+<translation id="271033894570825754">Nuevo</translation>
 <translation id="2743387203779672305">Copiar en el portapapeles</translation>
 <translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">Abrir carpeta</translation>
@@ -199,7 +200,7 @@
 <translation id="7365057348334984696">{MINUTES,plural, =1{Hace 1 min}other{Hace # min}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Queda 1 minuto}other{Quedan # minutos}}</translation>
-<translation id="7430878839542012341">¿Quieres eliminar esta búsqueda de tu historial?</translation>
+<translation id="7430878839542012341">¿Eliminar esta búsqueda de tu historial?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emoji</translation>
 <translation id="7658239707568436148">Cancelar</translation>

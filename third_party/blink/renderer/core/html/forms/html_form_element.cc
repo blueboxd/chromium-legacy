@@ -591,7 +591,9 @@ void HTMLFormElement::ParseAttribute(
     // If we're not upgrading insecure requests, and the new action attribute is
     // pointing to an insecure "action" location from a secure page it is marked
     // as "passive" mixed content.
-    if ((GetDocument().GetSecurityContext().GetInsecureRequestPolicy() &
+    if ((GetExecutionContext()
+             ->GetSecurityContext()
+             .GetInsecureRequestPolicy() &
          mojom::blink::InsecureRequestPolicy::kUpgradeInsecureRequests) !=
         mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone)
       return;

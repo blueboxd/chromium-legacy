@@ -58,9 +58,13 @@ void LayoutTextControl::StyleDidChange(StyleDifference diff,
     // This is necessary to update the style on the inner_editor based on the
     // changes in the input element ComputedStyle.
     // (See TextControlInnerEditorElement::CreateInnerEditorStyle()).
-    inner_editor->SetNeedsStyleRecalc(
-        kLocalStyleChange,
-        StyleChangeReasonForTracing::Create(style_change_reason::kControl));
+    {
+      StyleEngine::AllowMarkStyleDirtyFromRecalcScope scope(
+          GetDocument().GetStyleEngine());
+      inner_editor->SetNeedsStyleRecalc(
+          kLocalStyleChange,
+          StyleChangeReasonForTracing::Create(style_change_reason::kControl));
+    }
 
     // The inner editor element uses the LayoutTextControl's ::selection style
     // (see: GetUncachedSelectionStyle in SelectionPaintingUtils.cpp) so ensure

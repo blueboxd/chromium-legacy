@@ -70,7 +70,8 @@ class TestImporter(object):
         self.new_test_expectations = {}
         self.verbose = False
 
-        args = ['--clean-up-affected-tests-only']
+        args = ['--clean-up-affected-tests-only',
+                '--clean-up-test-expectations']
         self._expectations_updater = WPTExpectationsUpdater(self.host, args)
 
     def main(self, argv=None):

@@ -53,6 +53,10 @@ enum class StatusCode : StatusCodeType {
   kCantCreateEglStream = 0x00000304,
   kCantCreateEglStreamConsumer = 0x00000305,
   kCantCreateEglStreamProducer = 0x00000306,
+  kCannotCreateTextureSelector = 0x00000307,
+  kCannotQueryID3D11Multithread = 0x00000308,
+  kCannotGetDecoderConfigCount = 0x00000309,
+  kCannotGetDecoderConfig = 0x0000030A,
 
   // MojoDecoder Errors: 0x04
   kMojoDecoderNoWrappedDecoder = 0x00000401,

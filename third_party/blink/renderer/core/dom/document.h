@@ -338,7 +338,6 @@ class CORE_EXPORT Document : public ContainerNode,
   bool IsSandboxed(network::mojom::blink::WebSandboxFlags mask) const;
   SecureContextMode GetSecureContextMode() const;
   void SetSecureContextModeForTesting(SecureContextMode);
-  OriginTrialContext* GetOriginTrialContext() const;
 
   String addressSpaceForBindings(ScriptState*) const;
 

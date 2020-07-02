@@ -15,6 +15,7 @@
 <translation id="1947737735496445907">Stampato</translation>
 <translation id="1979103255016296513">Modifica della password scaduta</translation>
 <translation id="2049639323467105390">Questo dispositivo è gestito da <ph name="DOMAIN" />.</translation>
+<translation id="2161394479394250669">Annulla processo di stampa</translation>
 <translation id="2338501278241028356">Attiva il Bluetooth per trovare dispositivi nelle vicinanze</translation>
 <translation id="2375079107209812402"><ph name="ATTEMPTS_LEFT" /> tentativi rimanenti</translation>
 <translation id="2805756323405976993">App</translation>
@@ -24,12 +25,12 @@
 <translation id="3268178239013324452">Operazione non riuscita - Sportello aperto</translation>
 <translation id="3369013195428705271">Vuoi cancellare l'intera cronologia di stampa? I processi di stampa in corso non verranno cancellati.</translation>
 <translation id="3456078764689556234"><ph name="PRINTED_PAGES" /> pagina stampata su <ph name="TOTAL_PAGES" />.</translation>
+<translation id="3459509316159669723">Stampa</translation>
 <translation id="3527036260304016759">Operazione non riuscita - Errore sconosciuto</translation>
 <translation id="3749289110408117711">Nome file</translation>
 <translation id="38114475217616659">Cancella tutta la cronologia</translation>
 <translation id="3820172043799983114">PIN non valido.</translation>
 <translation id="3838338534323494292">Nuova password</translation>
-<translation id="3953601359945991637"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> su <ph name="TOTAL_PAGE_NUMBER" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> gestisce questo dispositivo e ha accesso a tutta l'attività utente, tra cui le pagine web visitate, le password e le email.</translation>
 <translation id="4003384961948020559">Operazione non riuscita - Scomparto di uscita pieno</translation>
 <translation id="4034824040120875894">Stampante</translation>

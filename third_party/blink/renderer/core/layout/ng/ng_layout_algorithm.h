@@ -79,7 +79,7 @@ class CORE_EXPORT NGLayoutAlgorithm : public NGLayoutAlgorithmOperations {
                            &space,
                            {space.GetWritingMode(), direction}) {
     if (UNLIKELY(space.HasBlockFragmentation())) {
-      DCHECK(space.IsAnonymous() || !node.IsMonolithic());
+      DCHECK(space.IsAnonymous() || node.IsInline() || !node.IsMonolithic());
       SetupFragmentBuilderForFragmentation(space, BreakToken(),
                                            &container_builder_);
     }

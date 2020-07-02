@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/assistant/assistant_notification_controller.h"
+#include "ash/assistant/assistant_notification_controller_impl.h"
 
 #include <map>
 #include <memory>
@@ -24,11 +24,9 @@ namespace ash {
 
 namespace {
 
-using chromeos::assistant::mojom::AssistantNotification;
-using chromeos::assistant::mojom::AssistantNotificationButton;
-using chromeos::assistant::mojom::AssistantNotificationButtonPtr;
-using chromeos::assistant::mojom::AssistantNotificationPriority;
-using chromeos::assistant::mojom::AssistantNotificationPtr;
+using chromeos::assistant::AssistantNotification;
+using chromeos::assistant::AssistantNotificationButton;
+using chromeos::assistant::AssistantNotificationPriority;
 
 using testing::_;
 using testing::Eq;
@@ -58,60 +56,59 @@ class AssistantNotificationBuilder {
   AssistantNotificationBuilder() = default;
 
   AssistantNotificationBuilder(const AssistantNotificationBuilder& bldr) {
-    notification_ = bldr.notification_->Clone();
+    notification_ = bldr.notification_;
   }
 
   ~AssistantNotificationBuilder() = default;
 
-  AssistantNotificationPtr Build() const { return notification_->Clone(); }
+  AssistantNotification Build() const { return notification_; }
 
   AssistantNotificationBuilder& WithId(const std::string& id) {
-    notification_->client_id = id;
-    notification_->server_id = id;
+    notification_.client_id = id;
+    notification_.server_id = id;
     return *this;
   }
 
   AssistantNotificationBuilder& WithActionUrl(const GURL& action_url) {
-    notification_->action_url = action_url;
+    notification_.action_url = action_url;
     return *this;
   }
 
-  AssistantNotificationBuilder& WithButton(
-      AssistantNotificationButtonPtr button,
-      int index = -1) {
+  AssistantNotificationBuilder& WithButton(AssistantNotificationButton&& button,
+                                           int index = -1) {
     if (index != -1) {
-      notification_->buttons.insert(notification_->buttons.begin() + index,
-                                    std::move(button));
+      notification_.buttons.insert(notification_.buttons.begin() + index,
+                                   std::move(button));
     } else {
-      notification_->buttons.push_back(std::move(button));
+      notification_.buttons.push_back(std::move(button));
     }
     return *this;
   }
 
   AssistantNotificationBuilder& WithFromServer(bool from_server) {
-    notification_->from_server = from_server;
+    notification_.from_server = from_server;
     return *this;
   }
 
   AssistantNotificationBuilder& WithIsPinned(bool is_pinned) {
-    notification_->is_pinned = is_pinned;
+    notification_.is_pinned = is_pinned;
     return *this;
   }
 
   AssistantNotificationBuilder& WithPriority(
       AssistantNotificationPriority priority) {
-    notification_->priority = priority;
+    notification_.priority = priority;
     return *this;
   }
 
   AssistantNotificationBuilder& WithRemoveOnClick(bool remove_on_click) {
-    notification_->remove_on_click = remove_on_click;
+    notification_.remove_on_click = remove_on_click;
     return *this;
   }
 
   AssistantNotificationBuilder& WithTimeout(
       base::Optional<base::TimeDelta> timeout) {
-    notification_->expiry_time =
+    notification_.expiry_time =
         timeout.has_value()
             ? base::Optional<base::Time>(base::Time::Now() + timeout.value())
             : base::nullopt;
@@ -123,7 +120,7 @@ class AssistantNotificationBuilder {
   }
 
  private:
-  AssistantNotificationPtr notification_ = AssistantNotification::New();
+  AssistantNotification notification_;
 };
 
 class AssistantNotificationButtonBuilder {
@@ -132,31 +129,31 @@ class AssistantNotificationButtonBuilder {
 
   AssistantNotificationButtonBuilder(
       const AssistantNotificationButtonBuilder& bldr) {
-    button_ = bldr.button_->Clone();
+    button_ = bldr.button_;
   }
 
   ~AssistantNotificationButtonBuilder() = default;
 
-  AssistantNotificationButtonPtr Build() const { return button_->Clone(); }
+  AssistantNotificationButton Build() const { return button_; }
 
   AssistantNotificationButtonBuilder& WithLabel(const std::string& label) {
-    button_->label = label;
+    button_.label = label;
     return *this;
   }
 
   AssistantNotificationButtonBuilder& WithActionUrl(const GURL& action_url) {
-    button_->action_url = action_url;
+    button_.action_url = action_url;
     return *this;
   }
 
   AssistantNotificationButtonBuilder& WithRemoveNotificationOnClick(
       bool remove_notification_on_click) {
-    button_->remove_notification_on_click = remove_notification_on_click;
+    button_.remove_notification_on_click = remove_notification_on_click;
     return *this;
   }
 
  private:
-  AssistantNotificationButtonPtr button_ = AssistantNotificationButton::New();
+  AssistantNotificationButton button_;
 };
 
 // Mocks -----------------------------------------------------------------------
@@ -209,7 +206,7 @@ class AssistantNotificationControllerTest : public AshTestBase {
     DCHECK(controller_);
   }
 
-  AssistantNotificationController& controller() { return *controller_; }
+  AssistantNotificationControllerImpl& controller() { return *controller_; }
 
   AssistantNotificationModelObserverMock& AddStrictObserverMock() {
     observer_ =
@@ -218,7 +215,7 @@ class AssistantNotificationControllerTest : public AshTestBase {
     return *observer_;
   }
 
-  void AddOrUpdateNotification(AssistantNotificationPtr notification) {
+  void AddOrUpdateNotification(AssistantNotification&& notification) {
     controller().AddOrUpdateNotification(std::move(notification));
   }
 
@@ -232,7 +229,7 @@ class AssistantNotificationControllerTest : public AshTestBase {
   }
 
  private:
-  AssistantNotificationController* controller_;
+  AssistantNotificationControllerImpl* controller_;
   std::unique_ptr<AssistantNotificationModelObserverMock> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantNotificationControllerTest);
@@ -253,26 +250,26 @@ TEST_F(AssistantNotificationControllerTest,
 
 TEST_F(AssistantNotificationControllerTest,
        ShouldInformObserverOfUpdatedNotifications) {
-  const auto notification = AssistantNotificationBuilder().WithId("id").Build();
-  controller().AddOrUpdateNotification(notification.Clone());
+  const auto builder = AssistantNotificationBuilder().WithId("id");
+  controller().AddOrUpdateNotification(builder.Build());
 
   auto& observer = AddStrictObserverMock();
 
   EXPECT_CALL(observer, OnNotificationUpdated(IdIs("id")));
-  controller().AddOrUpdateNotification(notification.Clone());
+  controller().AddOrUpdateNotification(builder.Build());
 }
 
 TEST_F(AssistantNotificationControllerTest,
        ShouldInformObserverOfRemovedNotifications) {
   constexpr bool kFromServer = kAnyBool;
 
-  const auto notification = AssistantNotificationBuilder().WithId("id").Build();
-  controller().AddOrUpdateNotification(notification.Clone());
+  auto builder = AssistantNotificationBuilder().WithId("id");
+  controller().AddOrUpdateNotification(builder.Build());
 
   auto& observer = AddStrictObserverMock();
 
   EXPECT_CALL(observer, OnNotificationRemoved(IdIs("id"), Eq(kFromServer)));
-  controller().RemoveNotificationById(notification->client_id, kFromServer);
+  controller().RemoveNotificationById(builder.Build().client_id, kFromServer);
 }
 
 TEST_F(AssistantNotificationControllerTest,

@@ -660,9 +660,6 @@ bool LocalFrame::CanAccessEvent(
         }
       }
 
-      auto* frame_origin =
-          frame_document->GetSecurityContext().GetSecurityOrigin();
-
       cc::ElementId element_id = attribution.target_frame_id();
       if (!element_id)
         return false;
@@ -671,14 +668,11 @@ bool LocalFrame::CanAccessEvent(
           DOMNodeIdFromCompositorElementId(element_id);
       Document* target_document =
           DynamicTo<Document>(DOMNodeIds::NodeForId(target_document_id));
-      if (!target_document || !target_document->IsActive())
+      if (!target_document || !target_document->domWindow())
         return false;
 
-      const auto* target_document_origin = target_document->GetSecurityOrigin();
-      if (!target_document_origin)
-        return false;
-
-      return frame_origin->CanAccess(target_document_origin);
+      return GetSecurityContext()->GetSecurityOrigin()->CanAccess(
+          target_document->domWindow()->GetSecurityOrigin());
     }
     case WebInputEventAttribution::kFocusedFrame:
       return GetPage() ? GetPage()->GetFocusController().FocusedFrame() == this

@@ -918,6 +918,7 @@ ci.linux_builder(
         short_name = 'ozo',
     ),
     main_console_view = settings.main_console_name,
+    notifies = ['linux-ozone-rel'],
 )
 
 ci.linux_builder(

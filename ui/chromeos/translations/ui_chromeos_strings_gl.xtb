@@ -45,6 +45,8 @@
 <translation id="1395262318152388157">Control desprazable de busca</translation>
 <translation id="1399648040768741453">Teclado telugu (fonético)</translation>
 <translation id="1430915738399379752">Imprimir</translation>
+<translation id="1433600251059882049">Este cartafol compártese con Linux e Windows</translation>
+<translation id="1435838927755162558">Compartir cartafol con Parallels Desktop</translation>
 <translation id="1439494416798956626">Moveuse a <ph name="FOLDER_NAME" />.</translation>
 <translation id="1441841714100794440">Teclado vietnamita (telex)</translation>
 <translation id="1455548678241328678">Teclado noruegués</translation>
@@ -79,6 +81,7 @@
 <translation id="1844692022597038441">Este ficheiro non está dispoñible sen conexión.</translation>
 <translation id="184633654410729720">Teclado tailandés (kedmanee)</translation>
 <translation id="1847880352285315359">Gardáronse os cambios</translation>
+<translation id="1853795129690976061">Este cartafol compártese con Linux</translation>
 <translation id="1864756863218646478">Non se puido atopar o ficheiro.</translation>
 <translation id="1921986354447415460">Teclado turco F</translation>
 <translation id="1924372192547904021">Formatouse <ph name="DRIVE_NAME" /></translation>
@@ -180,6 +183,7 @@
 <translation id="303198083543495566">Xeografía</translation>
 <translation id="3057861065630527966">Crea unha copia de seguranza das túas fotos e vídeos</translation>
 <translation id="3064388234319122767">Transliteración (zdravo → здраво)</translation>
+<translation id="3067790092342515856">Ficheiros de Windows</translation>
 <translation id="3078461028045006476">Compartir con <ph name="EXTENSION_NAME" /></translation>
 <translation id="3088034400796962477">Transliteración (salam ← سلام)</translation>
 <translation id="3116361045094675131">Teclado do Reino Unido</translation>
@@ -262,6 +266,7 @@
 <translation id="3943857333388298514">Pegar</translation>
 <translation id="3958548648197196644">Kiwi</translation>
 <translation id="3966388904776714213">Reprodutor de audio</translation>
+<translation id="3984317463833596033">Concede permiso a Parallels Desktop para modificar ficheiros do cartafol <ph name="FOLDER_NAME" /></translation>
 <translation id="4002066346123236978">Título</translation>
 <translation id="4070370845051020638">Método de introdución de cantonés</translation>
 <translation id="4072248638558688893">Teclado támil (fonético)</translation>
@@ -290,6 +295,7 @@
 <translation id="4470564870223067757">Dobre alternancia hangul</translation>
 <translation id="4477219268485577442">Búlgaro fonético</translation>
 <translation id="4479812471636796472">Teclado Dvorak estadounidense</translation>
+<translation id="4481711095103932593">Este cartafol compártese con Windows</translation>
 <translation id="4487088045714738411">Teclado belga</translation>
 <translation id="4522570452068850558">Detalles</translation>
 <translation id="4552678318981539154">Comprar máis almacenamento</translation>
@@ -335,10 +341,12 @@
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="4886021172213954916">Teclado támil (máquina de escribir)</translation>
 <translation id="4892969127351273348">Non se puido abrir con <ph name="APP_NAME" /></translation>
+<translation id="4900532980794411603">Compartir con Parallels Desktop</translation>
 <translation id="4905417359854579806">Listo para facer unha copia de seguranza de <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Corrixido</translation>
 <translation id="4935975195727477204">Flor de gazania</translation>
 <translation id="4943368462779413526">Fútbol</translation>
+<translation id="4961158930123534723">Compartiuse 1 cartafol con Parallels Desktop</translation>
 <translation id="4969785127455456148">Álbum</translation>
 <translation id="497244430928947428">Teclado malaialam (fonético)</translation>
 <translation id="4973523518332075481">Utiliza un nome de <ph name="MAX_LENGTH" /> caracteres ou menos</translation>
@@ -350,6 +358,7 @@
 <translation id="5010406651457630570">Ordenadores</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5024856940085636730">Hai unha acción que tarda máis do esperado. Queres cancelala?</translation>
+<translation id="5036159836254554629">Xestionar uso compartido de Parallels Desktop</translation>
 <translation id="5038625366300922036">Máis información...</translation>
 <translation id="5061708541166515394">Contraste</translation>
 <translation id="5068919226082848014">Pizza</translation>
@@ -498,6 +507,7 @@
 <translation id="656398493051028875">Eliminando "<ph name="FILENAME" />"...</translation>
 <translation id="6581162200855843583">Ligazón de Google Drive</translation>
 <translation id="6607272825297743757">Información do ficheiro</translation>
+<translation id="6609332149380188670">Compartíronse <ph name="NUMBER_OF_ITEMS" /> cartafoles con Parallels Desktop</translation>
 <translation id="6629841649550503054">Todos os ficheiros teñen unha copia de seguranza en <ph name="BEGIN_LINK" />Google Drive.<ph name="END_LINK" /></translation>
 <translation id="6643016212128521049">Borrar</translation>
 <translation id="6650726141019353908">Bolboreta rosa</translation>
@@ -679,6 +689,7 @@
 <translation id="8475647382427415476">Google Drive non puido sincronizar <ph name="FILENAME" /> neste momento. Google Drive tentarao de novo máis tarde.</translation>
 <translation id="8477649328507734757">Círculos</translation>
 <translation id="8487700953926739672">Dispoñible sen conexión</translation>
+<translation id="8490342535582768689">Concede permiso a Parallels Desktop para modificar ficheiros en Google Drive. Os cambios sincronizaranse cos demais dispositivos.</translation>
 <translation id="8521441079177373948">RU</translation>
 <translation id="8525306231823319788">Pantalla completa</translation>
 <translation id="8551494947769799688">Letón</translation>

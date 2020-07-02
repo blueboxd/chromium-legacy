@@ -16,8 +16,9 @@ namespace content {
 
 const char kTestServiceUrl[] = "system:content_test_service";
 
-TestService::TestService(service_manager::mojom::ServiceRequest request)
-    : service_binding_(this, std::move(request)) {
+TestService::TestService(
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver)
+    : service_receiver_(this, std::move(receiver)) {
   registry_.AddInterface<mojom::TestService>(
       base::BindRepeating(&TestService::Create, base::Unretained(this)));
 }

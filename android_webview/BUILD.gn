@@ -48,7 +48,7 @@ standalone_system_webview_apk_tmpl("system_webview_apk") {
 }
 
 # This version of the WebView APK doesn't include WebLayer java and resources.
-# It's used to define the whitelist of resources to be pulled out of language
+# It's used to define the allowlist of resources to be pulled out of language
 # splits. See |shared_resources_allowlist_target|.
 standalone_system_webview_apk_tmpl("system_webview_no_weblayer_apk") {
   exclude_weblayer_java = true

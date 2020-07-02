@@ -24,12 +24,12 @@ namespace component_updater {
 
 // Success callback to be run after the component is downloaded.
 using OnGamesComponentReadyCallback =
-    base::Callback<void(const base::FilePath&)>;
+    base::RepeatingCallback<void(const base::FilePath&)>;
 
 class GamesComponentInstallerPolicy : public ComponentInstallerPolicy {
  public:
   explicit GamesComponentInstallerPolicy(
-      const OnGamesComponentReadyCallback& callback);
+      OnGamesComponentReadyCallback callback);
   ~GamesComponentInstallerPolicy() override;
 
  private:

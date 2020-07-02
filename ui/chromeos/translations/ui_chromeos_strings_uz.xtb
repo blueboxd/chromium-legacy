@@ -45,6 +45,8 @@
 <translation id="1395262318152388157">Ijro slayderi</translation>
 <translation id="1399648040768741453">Telugu klaviaturasi (Fonetik)</translation>
 <translation id="1430915738399379752">Chop etish</translation>
+<translation id="1433600251059882049">Bu jild Linux va Windowsga ulashilgan</translation>
+<translation id="1435838927755162558">Jildni Parallels Desktopga ulashish</translation>
 <translation id="1439494416798956626"><ph name="FOLDER_NAME" /> jildiga koʻchirildi</translation>
 <translation id="1441841714100794440">Vyetnam klaviaturasi (telex)</translation>
 <translation id="1455548678241328678">Norveg klaviaturasi</translation>
@@ -79,6 +81,7 @@
 <translation id="1844692022597038441">Bu fayl internetsiz ishlamaydi.</translation>
 <translation id="184633654410729720">Tay klaviaturasi (Kedmanee)</translation>
 <translation id="1847880352285315359">Saqlandi</translation>
+<translation id="1853795129690976061">Bu jild Linuxga ulashilgan</translation>
 <translation id="1864756863218646478">Fayl topilmadi.</translation>
 <translation id="1921986354447415460">Turk-F klaviaturasi</translation>
 <translation id="1924372192547904021"><ph name="DRIVE_NAME" /> formatlandi</translation>
@@ -180,6 +183,7 @@
 <translation id="303198083543495566">Geografiya</translation>
 <translation id="3057861065630527966">Rasmlar va videolarni zaxiralash</translation>
 <translation id="3064388234319122767">Transliteratsiya (zdravo → здраво)</translation>
+<translation id="3067790092342515856">Windows fayllari</translation>
 <translation id="3078461028045006476"><ph name="EXTENSION_NAME" /> orqali yuborish</translation>
 <translation id="3088034400796962477">Transliteratsiya (salam ← سلام)</translation>
 <translation id="3116361045094675131">Ingliz (Birlashgan Qirollik)</translation>
@@ -262,6 +266,7 @@
 <translation id="3943857333388298514">Joylash</translation>
 <translation id="3958548648197196644">Kivi</translation>
 <translation id="3966388904776714213">Audiopleyer</translation>
+<translation id="3984317463833596033">Parallels Desktopga <ph name="FOLDER_NAME" /> jildidagi fayllarni oʻzgartirishga ruxsat berish</translation>
 <translation id="4002066346123236978">Nomi</translation>
 <translation id="4070370845051020638">Kantoncha matn kiritish usuli</translation>
 <translation id="4072248638558688893">Tamil klaviaturasi (fonetik)</translation>
@@ -290,6 +295,7 @@
 <translation id="4470564870223067757">Hangul 2 majmuali</translation>
 <translation id="4477219268485577442">Bolgar fonetik</translation>
 <translation id="4479812471636796472">AQSH Dvorak klaviaturasi</translation>
+<translation id="4481711095103932593">Bu jild Windowsga ulashilgan</translation>
 <translation id="4487088045714738411">Belgiyacha klaviatura</translation>
 <translation id="4522570452068850558">Tafsilotlar</translation>
 <translation id="4552678318981539154">Ko‘proq joy sotib olish</translation>
@@ -335,10 +341,12 @@
 <translation id="4881695831933465202">Ochish</translation>
 <translation id="4886021172213954916">Tamil klaviaturasi (“yozuv mashinkasi”)</translation>
 <translation id="4892969127351273348"><ph name="APP_NAME" /> bilan ochilmadi</translation>
+<translation id="4900532980794411603">Parallels Desktopga ulashish</translation>
 <translation id="4905417359854579806"><ph name="FILE_COUNT" /> nusxasi zaxiralash uchun tayyor</translation>
 <translation id="4924638091161556692">Tuzatildi</translation>
 <translation id="4935975195727477204">Gatsaniya guli</translation>
 <translation id="4943368462779413526">Futbol</translation>
+<translation id="4961158930123534723">1 ta jild Parallels Desktopga ulashilgan</translation>
 <translation id="4969785127455456148">Albom</translation>
 <translation id="497244430928947428">Malay klaviaturasi (Fonetik)</translation>
 <translation id="4973523518332075481">Nom <ph name="MAX_LENGTH" /> yoki undan kam belgilardan iborat bo‘lishi zarur</translation>
@@ -350,6 +358,7 @@
 <translation id="5010406651457630570">Kompyuterlar</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5024856940085636730">Jarayon kutilgandan ko‘ra ko‘proq vaqt olishi mumkin. To‘xtatilsinmi?</translation>
+<translation id="5036159836254554629">Parallels Desktop ulashuvlarini boshqarish</translation>
 <translation id="5038625366300922036">Batafsil...</translation>
 <translation id="5061708541166515394">Kontrast</translation>
 <translation id="5068919226082848014">Pitsa</translation>
@@ -498,6 +507,7 @@ Amal bajarilishini kuting va qurilmani “Fayllar” ilovasida chiqarib oling. A
 <translation id="656398493051028875">“<ph name="FILENAME" />” fayli o‘chirilmoqda...</translation>
 <translation id="6581162200855843583">Google Disk havolasi</translation>
 <translation id="6607272825297743757">Fayl haqida</translation>
+<translation id="6609332149380188670"><ph name="NUMBER_OF_ITEMS" /> ta jild Parallels Desktopga ulashilgan</translation>
 <translation id="6629841649550503054">Hammasi <ph name="BEGIN_LINK" />Google Drive’ga<ph name="END_LINK" /> zaxiralandi!</translation>
 <translation id="6643016212128521049">Tozalash</translation>
 <translation id="6650726141019353908">Pushti kapalak</translation>
@@ -679,6 +689,7 @@ Amal bajarilishini kuting va qurilmani “Fayllar” ilovasida chiqarib oling. A
 <translation id="8475647382427415476">“<ph name="FILENAME" />” faylini Google Drive bilan sinxronlab bo‘lmadi. Tizim keyinroq qayta urinib ko‘radi.</translation>
 <translation id="8477649328507734757">Spin</translation>
 <translation id="8487700953926739672">Internetsiz foydalanish mumkin</translation>
+<translation id="8490342535582768689">Parallels Desktopga Google Drive omboringizdagi fayllarni ochishga ruxsat bering. Oʻzgarishlar boshqa qurilmalaringizga sinxronlanadi.</translation>
 <translation id="8521441079177373948">UK</translation>
 <translation id="8525306231823319788">To‘liq ekran rejimi</translation>
 <translation id="8551494947769799688">Latviy tili</translation>

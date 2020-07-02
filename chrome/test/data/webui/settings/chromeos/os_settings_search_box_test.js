@@ -428,26 +428,39 @@ suite('OSSettingsSearchBox', () => {
         searchBox.getSelectedOsSearchResultRow_().$.resultText.innerHTML,
         `Turn on <b>Wi-F</b>i`);
 
-    settingsSearchHandler.setFakeResults([fakeResult('Tap-to-click')]);
+    settingsSearchHandler.setFakeResults([fakeResult('Touchpad tap-to-click')]);
     await simulateSearch(`tap to cli`);
     assertEquals(
         searchBox.getSelectedOsSearchResultRow_().$.resultText.innerHTML,
-        `<b>Tap-to-cli</b>ck`);
+        `Touchpad <b>tap-to-cli</b>ck`);
+
     await simulateSearch(`taptocli`);
     assertEquals(
         searchBox.getSelectedOsSearchResultRow_().$.resultText.innerHTML,
-        `<b>Tap-to-cli</b>ck`);
+        `Touchpad <b>tap-to-cli</b>ck`);
     await simulateSearch(`tap-to-cli`);
     assertEquals(
         searchBox.getSelectedOsSearchResultRow_().$.resultText.innerHTML,
-        `<b>Tap-to-cli</b>ck`);
+        `Touchpad <b>tap-to-cli</b>ck`);
+
+    settingsSearchHandler.setFakeResults([fakeResult('Touchpad tap-to-click')]);
+    await simulateSearch(`tap top cli`);
+    assertEquals(
+        searchBox.getSelectedOsSearchResultRow_().$.resultText.innerHTML,
+        `Touchpad <b>tap-to-cli</b>ck`);
+
+    settingsSearchHandler.setFakeResults([fakeResult('wxyz Tap-To-Click')]);
+    await simulateSearch(`tap toxy cli`);
+    assertEquals(
+        searchBox.getSelectedOsSearchResultRow_().$.resultText.innerHTML,
+        `w<b>xy</b>z <b>Tap-To</b>-Click`);
 
     settingsSearchHandler.setFakeResults(
         [fakeResult('Tap-to-click Tips Title')]);
-    await simulateSearch(`tap t`);
+    await simulateSearch(`tap ti`);
     assertEquals(
         searchBox.getSelectedOsSearchResultRow_().$.resultText.innerHTML,
-        `<b>Tap-t</b>o-click <b>T</b>ips <b>T</b>i<b>t</b>le`);
+        `<b>Tap</b>-to-click <b>Ti</b>ps <b>Ti</b>tle`);
   });
 
   test('Test query longer than result blocks', async () => {

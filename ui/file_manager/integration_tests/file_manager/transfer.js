@@ -644,6 +644,60 @@ testcase.transferDragDropTreeItemAccepts = async () => {
 };
 
 /**
+ * Tests that dragging a file over a directory tree item that cannot accept
+ * the drop changes the class of that tree item to 'denies'.
+ */
+testcase.transferDragDropTreeItemDenies = async () => {
+  const entries = [ENTRIES.hello, ENTRIES.photos];
+
+  // Open files app.
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, entries, []);
+
+  // The drag has to start in the file list column "name" text, otherwise it
+  // starts a drag-selection instead of a drag operation.
+  const source =
+      `#file-list li[file-name="${ENTRIES.hello.nameText}"] .entry-name`;
+
+  // Select the source file.
+  await remoteCall.waitAndClickElement(appId, source);
+
+  // Wait for the directory tree target.
+  const target = '#directory-tree [entry-label="Recent"]';
+  await remoteCall.waitForElement(appId, target);
+
+  // Drag the source and hover it over the target.
+  const skipDrop = true;
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil(
+          'fakeDragAndDrop', appId, [source, target, skipDrop]),
+      'fakeDragAndDrop failed');
+
+  // Check: drag hovering should navigate the file list.
+  await remoteCall.waitUntilCurrentDirectoryIsChanged(appId, '/Recent');
+
+  // Check: the target should have denies class.
+  const willDenyDrop = '#directory-tree [entry-label="Recent"].denies';
+  await remoteCall.waitForElement(appId, willDenyDrop);
+
+  // Check: the target should not have accepts class.
+  const willAcceptDrop = '#directory-tree [entry-label="Recent"].accepts';
+  await remoteCall.waitForElementLost(appId, willAcceptDrop);
+
+  // Send a dragleave event to the target to end drag-drop operations.
+  const dragLeave = true;
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil(
+          'fakeDragLeaveOrDrop', appId, ['#file-list', target, dragLeave]),
+      'fakeDragLeaveOrDrop failed');
+
+  // Check: the target should not have denies class.
+  await remoteCall.waitForElementLost(appId, willDenyDrop);
+
+  // Check: the target should not have accepts class.
+  await remoteCall.waitForElementLost(appId, willAcceptDrop);
+};
+
+/**
  * Tests that we can drag a file from #file-list to #directory-tree.
  * It copies the file from Downloads to Downloads/photos.
  */

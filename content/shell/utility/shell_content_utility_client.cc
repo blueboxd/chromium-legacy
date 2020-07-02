@@ -155,10 +155,10 @@ void ShellContentUtilityClient::ExposeInterfacesToBrowser(
 
 bool ShellContentUtilityClient::HandleServiceRequest(
     const std::string& service_name,
-    service_manager::mojom::ServiceRequest request) {
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver) {
   std::unique_ptr<service_manager::Service> service;
   if (service_name == kTestServiceUrl) {
-    service = std::make_unique<TestService>(std::move(request));
+    service = std::make_unique<TestService>(std::move(receiver));
   }
 
   if (service) {

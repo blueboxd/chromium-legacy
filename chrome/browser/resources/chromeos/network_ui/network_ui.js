@@ -64,6 +64,23 @@ Polymer({
     this.$$('#import-onc').value = '';
 
     this.requestGlobalPolicy_();
+    this.selectTabFromHash_();
+    window.addEventListener('hashchange', () => {
+      this.selectTabFromHash_();
+    });
+  },
+
+  /** @private */
+  selectTabFromHash_() {
+    const selectedTab = window.location.hash.substring(1);
+    if (!selectedTab)
+      return;
+    const tabpanels = this.$$('iron-pages').querySelectorAll('.tabpanel');
+    for (let idx = 0; idx < tabpanels.length; ++idx) {
+      if (tabpanels[idx].id == selectedTab) {
+        this.selectedTab_ = idx;
+      }
+    }
   },
 
   /** @private */

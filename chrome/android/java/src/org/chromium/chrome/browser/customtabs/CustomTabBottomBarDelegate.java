@@ -369,7 +369,4 @@ public class CustomTabBottomBarDelegate implements BrowserControlsStateProvider.
             mFullscreenManager.setBottomControlsHeight(getBottomBarHeight(), 0);
         }
     }
-
-    @Override
-    public void onContentOffsetChanged(int offset) {}
 }

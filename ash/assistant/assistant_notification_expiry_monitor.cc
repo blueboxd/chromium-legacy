@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "ash/assistant/assistant_notification_controller.h"
+#include "ash/assistant/assistant_notification_controller_impl.h"
 #include "ash/assistant/model/assistant_notification_model.h"
 #include "ash/assistant/model/assistant_notification_model_observer.h"
 #include "base/bind.h"
@@ -68,7 +68,7 @@ class AssistantNotificationExpiryMonitor::Observer
 };
 
 AssistantNotificationExpiryMonitor::AssistantNotificationExpiryMonitor(
-    AssistantNotificationController* controller)
+    AssistantNotificationControllerImpl* controller)
     : controller_(controller), observer_(std::make_unique<Observer>(this)) {
   DCHECK(controller_);
   controller_->model()->AddObserver(observer_.get());

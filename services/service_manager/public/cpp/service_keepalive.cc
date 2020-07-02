@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
-#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/service_receiver.h"
 
 namespace service_manager {
 
@@ -56,9 +56,9 @@ class ServiceKeepaliveRefImpl : public ServiceKeepaliveRef {
   DISALLOW_COPY_AND_ASSIGN(ServiceKeepaliveRefImpl);
 };
 
-ServiceKeepalive::ServiceKeepalive(ServiceBinding* binding,
+ServiceKeepalive::ServiceKeepalive(ServiceReceiver* receiver,
                                    base::Optional<base::TimeDelta> idle_timeout)
-    : binding_(binding), idle_timeout_(idle_timeout) {}
+    : receiver_(receiver), idle_timeout_(idle_timeout) {}
 
 ServiceKeepalive::~ServiceKeepalive() = default;
 
@@ -111,10 +111,10 @@ void ServiceKeepalive::OnTimerExpired() {
   for (auto& observer : observers_)
     observer.OnIdleTimeout();
 
-  // NOTE: We allow for a null |binding_| because it's convenient in some
+  // NOTE: We allow for a null |receiver_| because it's convenient in some
   // testing scenarios and adds no real complexity to this implementation.
-  if (binding_)
-    binding_->RequestClose();
+  if (receiver_)
+    receiver_->RequestClose();
 }
 
 }  // namespace service_manager

@@ -113,7 +113,7 @@ void AwWebContentsDelegate::FindReply(WebContents* web_contents,
 
 void AwWebContentsDelegate::RunFileChooser(
     content::RenderFrameHost* render_frame_host,
-    std::unique_ptr<content::FileSelectListener> listener,
+    scoped_refptr<content::FileSelectListener> listener,
     const FileChooserParams& params) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> java_delegate = GetJavaDelegate(env);
@@ -308,7 +308,7 @@ void AwWebContentsDelegate::UpdateUserGestureCarryoverInfo(
     intercept_navigation_delegate->UpdateLastUserGestureCarryoverTimestamp();
 }
 
-std::unique_ptr<content::FileSelectListener>
+scoped_refptr<content::FileSelectListener>
 AwWebContentsDelegate::TakeFileSelectListener() {
   return std::move(file_select_listener_);
 }
@@ -329,7 +329,7 @@ static void JNI_AwWebContentsDelegate_FilesSelectedInChooser(
       static_cast<AwWebContentsDelegate*>(web_contents->GetDelegate());
   if (!delegate)
     return;
-  std::unique_ptr<content::FileSelectListener> listener =
+  scoped_refptr<content::FileSelectListener> listener =
       delegate->TakeFileSelectListener();
 
   if (!file_paths.obj()) {

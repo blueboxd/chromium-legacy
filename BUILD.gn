@@ -929,7 +929,7 @@ if (is_chromeos) {
   # of Chrome for Chrome OS.
   group("chromiumos_preflight") {
     testonly = true
-    deps = [
+    data_deps = [
       "//chrome",
       "//chrome/test/chromedriver",
       "//components/chromeos_camera:jpeg_decode_accelerator_unittest",
@@ -950,14 +950,14 @@ if (is_chromeos) {
     ]
 
     if (use_v4l2_codec || use_vaapi) {
-      deps += [
+      data_deps += [
         "//components/chromeos_camera:jpeg_encode_accelerator_unittest",
         "//media/gpu:video_decode_accelerator_perf_tests",
         "//media/gpu:video_decode_accelerator_tests",
         "//media/gpu:video_encode_accelerator_unittest",
       ]
       if (use_vaapi) {
-        deps += [ "//media/gpu/vaapi:vaapi_unittest" ]
+        data_deps += [ "//media/gpu/vaapi:vaapi_unittest" ]
       }
     }
   }

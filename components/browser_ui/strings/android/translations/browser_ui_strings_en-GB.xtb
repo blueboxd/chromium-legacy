@@ -10,6 +10,7 @@
 <translation id="1201402288615127009">Next</translation>
 <translation id="1242008676835033345">Embedded on <ph name="WEBSITE_URL" /></translation>
 <translation id="1272079795634619415">Stop</translation>
+<translation id="1289742167380433257">To save you data, this page's images have been optimised by Google.</translation>
 <translation id="129382876167171263">Files saved by websites appear here</translation>
 <translation id="1364532808393826295"><ph name="APP_NAME" />–<ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">Site <ph name="SITE_NAME" /> added</translation>
@@ -189,6 +190,7 @@
 <translation id="7128222689758636196">Allow for current search engine</translation>
 <translation id="7141896414559753902">Block sites from showing pop-ups and redirects (recommended)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
+<translation id="7243308994586599757">Options available near bottom of the screen</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> selected</translation>
 <translation id="7302486331832100261">You usually block notifications. To allow, tap Details.</translation>
 <translation id="7423098979219808738">Ask first</translation>
@@ -227,6 +229,7 @@
 <translation id="83792324527827022">A site is using your camera and microphone</translation>
 <translation id="8380167699614421159">This site shows intrusive or misleading ads</translation>
 <translation id="8394832520002899662">Tap to return to the site</translation>
+<translation id="8425213833346101688">Change</translation>
 <translation id="8441146129660941386">Seek backward</translation>
 <translation id="8447861592752582886">Revoke device permission</translation>
 <translation id="8463851957836045671">Site is fast</translation>

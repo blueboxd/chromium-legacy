@@ -11,9 +11,10 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/sequence_bound.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/service_receiver.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace base {
@@ -44,11 +45,12 @@ class BrokerService : public ::service_manager::Service {
   // Returns the manifest for this service.
   static const service_manager::Manifest& GetManifest();
 
-  explicit BrokerService(service_manager::mojom::ServiceRequest request);
+  explicit BrokerService(
+      mojo::PendingReceiver<service_manager::mojom::Service> receiver);
   ~BrokerService() override;
 
  private:
-  service_manager::ServiceBinding service_binding_;
+  service_manager::ServiceReceiver service_receiver_;
 
   std::unique_ptr<base::Thread> io_thread_;
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;

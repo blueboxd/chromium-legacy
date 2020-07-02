@@ -45,6 +45,8 @@
 <translation id="1395262318152388157">اسلایدر جستجو</translation>
 <translation id="1399648040768741453">صفحه‌کلید تلوگو (آوایی)</translation>
 <translation id="1430915738399379752">چاپ</translation>
+<translation id="1433600251059882049">‏این پوشه با Windows و Linux هم‌رسانی شده است</translation>
+<translation id="1435838927755162558">‏هم‌رسانی پوشه با Parallels Desktop</translation>
 <translation id="1439494416798956626">به <ph name="FOLDER_NAME" /> منتقل شد.</translation>
 <translation id="1441841714100794440">صفحه‌کلید ویتنامی (تلکس)</translation>
 <translation id="1455548678241328678">صفحه‌کلید نروژی</translation>
@@ -79,6 +81,7 @@
 <translation id="1844692022597038441">این فایل به‌صورت آفلاین در دسترس نیست.</translation>
 <translation id="184633654410729720">صفحه‌کلید تایلندی (کدمانی)</translation>
 <translation id="1847880352285315359">ذخیره شد</translation>
+<translation id="1853795129690976061">‏این پوشه با Linux هم‌رسانی شده است</translation>
 <translation id="1864756863218646478">این فایل پیدا نشد.</translation>
 <translation id="1921986354447415460">‏صفحه‌کلید ترکی F</translation>
 <translation id="1924372192547904021"><ph name="DRIVE_NAME" /> قالب‌بندی شد</translation>
@@ -180,6 +183,7 @@
 <translation id="303198083543495566">جغرافیا</translation>
 <translation id="3057861065630527966">از عکس‌ها و ویدئوهایتان پشتیبان بگیرید</translation>
 <translation id="3064388234319122767">‏نویسه‌گردانی (zdravo ← ‏здраво)</translation>
+<translation id="3067790092342515856">‏فایل‌های Windows</translation>
 <translation id="3078461028045006476">اشتراک‌گذاری با <ph name="EXTENSION_NAME" /></translation>
 <translation id="3088034400796962477">‏نویسه‌گردانی (salam ← سلام)</translation>
 <translation id="3116361045094675131">صفحه‌کلید انگلیسی</translation>
@@ -262,6 +266,7 @@
 <translation id="3943857333388298514">جاگذاری</translation>
 <translation id="3958548648197196644">کیوی</translation>
 <translation id="3966388904776714213">پخش‌کننده صوتی</translation>
+<translation id="3984317463833596033">‏به Parallels Desktop اجازه دهید فایل‌های موجود در پوشه <ph name="FOLDER_NAME" /> را تغییر دهد</translation>
 <translation id="4002066346123236978">عنوان</translation>
 <translation id="4070370845051020638">روش ورودی کانتونی</translation>
 <translation id="4072248638558688893">صفحه‌‌کلید تامیل (آوایی)</translation>
@@ -290,6 +295,7 @@
 <translation id="4470564870223067757">مجموعه هانگول ۲</translation>
 <translation id="4477219268485577442">آوایی بلغاری</translation>
 <translation id="4479812471636796472">صفحه‌کلید دووراک آمریکایی</translation>
+<translation id="4481711095103932593">‏این پوشه با Windows هم‌رسانی شده است</translation>
 <translation id="4487088045714738411">صفحه‌کلید بلژیکی</translation>
 <translation id="4522570452068850558">جزئیات</translation>
 <translation id="4552678318981539154">خرید فضای ذخیره بیشتر</translation>
@@ -335,10 +341,12 @@
 <translation id="4881695831933465202">باز کردن</translation>
 <translation id="4886021172213954916">صفحه‌کلید تامیل (ماشین تحریر)</translation>
 <translation id="4892969127351273348">با <ph name="APP_NAME" /> باز نشد</translation>
+<translation id="4900532980794411603">‏هم‌رسانی با Parallels Desktop</translation>
 <translation id="4905417359854579806">آماده پشتیبان گرفتن از <ph name="FILE_COUNT" /> مورد</translation>
 <translation id="4924638091161556692">تصحیح شد</translation>
 <translation id="4935975195727477204">گل میخک</translation>
 <translation id="4943368462779413526">فوتبال</translation>
+<translation id="4961158930123534723">‏۱ پوشه با Parallels Desktop هم‌رسانی شد</translation>
 <translation id="4969785127455456148">آلبوم</translation>
 <translation id="497244430928947428">صفحه‌کلید مالایالامی (آوایی)</translation>
 <translation id="4973523518332075481">‏از نامی استفاده کنید که ‎<ph name="MAX_LENGTH" /> نویسه یا کمتر داشته باشد</translation>
@@ -350,6 +358,7 @@
 <translation id="5010406651457630570">رایانه‌ها</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5024856940085636730">اقدام بیشتر از انتظار طول می‌کشد. می‌خواهید از این کار صرف‌نظر کنید؟</translation>
+<translation id="5036159836254554629">‏مدیریت هم‌رسانی Parallels Desktop</translation>
 <translation id="5038625366300922036">مشاهده موارد بیشتر...</translation>
 <translation id="5061708541166515394">کنتراست</translation>
 <translation id="5068919226082848014">پیتزا</translation>
@@ -499,6 +508,7 @@
 <translation id="656398493051028875">در حال حذف «<ph name="FILENAME" />»...</translation>
 <translation id="6581162200855843583">‏پیوند Google Drive</translation>
 <translation id="6607272825297743757">اطلاعات فایل</translation>
+<translation id="6609332149380188670">‏<ph name="NUMBER_OF_ITEMS" /> پوشه با Parallels Desktop هم‌رسانی شد</translation>
 <translation id="6629841649550503054">‏همه در <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /> پشتیبان گرفته شدند</translation>
 <translation id="6643016212128521049">پاک کردن</translation>
 <translation id="6650726141019353908">پروانه صورتی</translation>
@@ -680,6 +690,7 @@
 <translation id="8475647382427415476">‏Google Drive نتوانست در این لحظه «<ph name="FILENAME" />» را همگام‌سازی کند. Google Drive بعداً دوباره امتحان می‌کند.</translation>
 <translation id="8477649328507734757">اسپینینگ</translation>
 <translation id="8487700953926739672">امکان دسترسی به صورت آفلاین</translation>
+<translation id="8490342535582768689">‏به Parallels Desktop اجازه دهید فایل‌های موجود در Google Drive را تغییر دهد. تغییرات در دیگر دستگاه‌هایتان همگام‌سازی خواهد شد.</translation>
 <translation id="8521441079177373948">بریتانیایی</translation>
 <translation id="8525306231823319788">تمام صفحه</translation>
 <translation id="8551494947769799688">لتونیایی</translation>

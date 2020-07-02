@@ -73,6 +73,7 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="1747827819627189109">Softwarová klávesnice je aktivována</translation>
 <translation id="1761222317188459878">Přepnout připojení k síti. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Posunout doprava</translation>
+<translation id="1782199038061388045">překlad</translation>
 <translation id="181103072419391116">Síla signálu: <ph name="SIGNAL_STRENGTH" />, spravováno vaším administrátorem</translation>
 <translation id="1812997170047690955">Co je na obrazovce?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
@@ -103,7 +104,6 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="2126242104232412123">Nová plocha</translation>
 <translation id="2127372758936585790">Nabíječka má příliš nízký výkon</translation>
 <translation id="2135456203358955318">Zabudovaná lupa</translation>
-<translation id="2143915448548023856">Nastavení zobrazení</translation>
 <translation id="2144487987174258011">Aktualizace přehrávače Adobe Flash Player vyžaduje restart</translation>
 <translation id="2208323208084708176">Jednotný režim klasické plochy</translation>
 <translation id="2220572644011485463">PIN nebo heslo</translation>
@@ -185,6 +185,7 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="3081696990447829002">Rozbalit nabídku</translation>
 <translation id="3087734570205094154">Až dolů</translation>
 <translation id="309749186376891736">Přesunout kurzor</translation>
+<translation id="3098580329624789136">Získání <ph name="INTENT" /> pro dotaz „<ph name="QUERY" />“</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Restartovat a aktualizovat</translation>
 <translation id="3139942575505304791">Plocha 1</translation>
@@ -222,6 +223,7 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="3465356146291925647">Spravováno vaším administrátorem</translation>
 <translation id="3477079411857374384">Control + Shift + mezerník</translation>
 <translation id="3485319357743610354"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, síla signálu: <ph name="SIGNAL_STRENGTH" /></translation>
+<translation id="3486220673238053218">definice</translation>
 <translation id="3510164367642747937">Zvýraznit ukazatel myši</translation>
 <translation id="3513798432020909783">Správce účtu: <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Změnit zpět na jazyk <ph name="FROM_LOCALE" /> (vyžaduje restart)</translation>
@@ -272,8 +274,8 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="4072264167173457037">Střední signál</translation>
 <translation id="4112140312785995938">Přetočit dozadu</translation>
 <translation id="4129129681837227511">Chcete-li zobrazovat oznámení na obrazovce uzamčení, odemkněte zařízení a změňte příslušné nastavení.</translation>
-<translation id="4144413954005649103">Po kliknutí pravým tlačítkem nebo dlouhém stisknutí vám Asistent zobrazí informace související s obsahem vybraným na obrazovce.</translation>
 <translation id="4146833061457621061">Přehrát hudbu</translation>
+<translation id="4149156641122542261">Zařízení <ph name="DEVICE_TYPE" /> spravované doménou <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Jazyky</translation>
 <translation id="4195877955194704651">Tlačítko automatických kliknutí</translation>
 <translation id="4197790712631116042">Vypnuto</translation>
@@ -528,6 +530,7 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="7378594059915113390">Ovládání médií</translation>
 <translation id="7398254312354928459">Přepnuto na jinou síť</translation>
 <translation id="7405710164030118432">Chcete-li zařízení odemknout, zadejte svůj rodičovský přístupový kód služby Family Link</translation>
+<translation id="741244894080940828">převod</translation>
 <translation id="742594950370306541">Kamera je používána.</translation>
 <translation id="743058460480092004">Kamera a mikrofon jsou používány.</translation>
 <translation id="7436182601308224670">Dobré odpoledne, <ph name="GIVEN_NAME" /></translation>
@@ -540,6 +543,7 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="7562368315689366235">Paleta emodži</translation>
 <translation id="7564874036684306347">Přesunutí oken na jinou plochu může vést k neočekávanému chování. Následná oznámení, okna a dialogy mohou být rozděleny mezi plochy.</translation>
 <translation id="7568294522609223312">Vypnout automatická kliknutí</translation>
+<translation id="7568637526529101738">Po kliknutí pravým tlačítkem nebo dlouhém stisknutí vám Asistent zobrazí informace, jako je definice nebo převod jednotky související s vybraným obsahem.</translation>
 <translation id="7569509451529460200">Jsou zapnuty funkce Braille a ChromeVox</translation>
 <translation id="7593891976182323525">Vyhledávání nebo Shift</translation>
 <translation id="7600875258240007829">Zobrazit všechna oznámení</translation>

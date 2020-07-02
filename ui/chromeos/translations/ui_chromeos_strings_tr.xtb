@@ -45,6 +45,8 @@
 <translation id="1395262318152388157">Arama kaydırma çubuğu</translation>
 <translation id="1399648040768741453">Telugu dili klavye (Fonetik)</translation>
 <translation id="1430915738399379752">Yazdır</translation>
+<translation id="1433600251059882049">Bu dosya Windows ve Linux ile paylaşılıyor</translation>
+<translation id="1435838927755162558">Parallels Desktop ile klasör paylaşın</translation>
 <translation id="1439494416798956626"><ph name="FOLDER_NAME" /> klasörüne taşındı.</translation>
 <translation id="1441841714100794440">Vietnamca klavye (Teleks)</translation>
 <translation id="1455548678241328678">Norveççe klavye</translation>
@@ -79,6 +81,7 @@
 <translation id="1844692022597038441">Bu dosya çevrimdışı kullanılamıyor.</translation>
 <translation id="184633654410729720">Tayca klavye (Kedmanee)</translation>
 <translation id="1847880352285315359">Kaydedildi</translation>
+<translation id="1853795129690976061">Bu dosya Linux ile paylaşılıyor.</translation>
 <translation id="1864756863218646478">Dosya bulunamadı.</translation>
 <translation id="1921986354447415460">Türkçe F klavye</translation>
 <translation id="1924372192547904021"><ph name="DRIVE_NAME" /> biçimlendirildi</translation>
@@ -180,6 +183,7 @@
 <translation id="303198083543495566">Coğrafya</translation>
 <translation id="3057861065630527966">Fotoğraflarınızı ve videolarınızı yedekleyin</translation>
 <translation id="3064388234319122767">Harf çevirisi (zdravo → здраво)</translation>
+<translation id="3067790092342515856">Windows dosyaları</translation>
 <translation id="3078461028045006476"><ph name="EXTENSION_NAME" /> ile paylaş</translation>
 <translation id="3088034400796962477">Harf çevirisi (salam ← سلام)</translation>
 <translation id="3116361045094675131">İngilizce klavye</translation>
@@ -262,6 +266,7 @@
 <translation id="3943857333388298514">Yapıştır</translation>
 <translation id="3958548648197196644">Kivi</translation>
 <translation id="3966388904776714213">Ses Çalar</translation>
+<translation id="3984317463833596033">Parallels Desktop'a <ph name="FOLDER_NAME" /> klasöründeki dosyaları değiştirmesi için izin verin</translation>
 <translation id="4002066346123236978">Başlık</translation>
 <translation id="4070370845051020638">Kantonca giriş yöntemi</translation>
 <translation id="4072248638558688893">Tamilce klavye (Fonetik)</translation>
@@ -290,6 +295,7 @@
 <translation id="4470564870223067757">Hangul 2 Grubu</translation>
 <translation id="4477219268485577442">Bulgarca fonetik</translation>
 <translation id="4479812471636796472">ABD Dvorak klavye</translation>
+<translation id="4481711095103932593">Bu klasör Windows ile paylaşılıyor</translation>
 <translation id="4487088045714738411">Belçika dilinde klavye</translation>
 <translation id="4522570452068850558">Ayrıntılar</translation>
 <translation id="4552678318981539154">Daha fazla depolama alanı satın alın</translation>
@@ -335,10 +341,12 @@
 <translation id="4881695831933465202">Aç</translation>
 <translation id="4886021172213954916">Tamilce klavye (Daktilo)</translation>
 <translation id="4892969127351273348"><ph name="APP_NAME" /> ile açılamıyor</translation>
+<translation id="4900532980794411603">Parallels Desktop ile paylaş</translation>
 <translation id="4905417359854579806"><ph name="FILE_COUNT" /> yedeklenmeye hazır</translation>
 <translation id="4924638091161556692">Sabit</translation>
 <translation id="4935975195727477204">Gazania Çiçeği</translation>
 <translation id="4943368462779413526">Futbol</translation>
+<translation id="4961158930123534723">1 dosya Parallels Desktop ile paylaşıldı</translation>
 <translation id="4969785127455456148">Albüm</translation>
 <translation id="497244430928947428">Malayalam dili klavye (Fonetik)</translation>
 <translation id="4973523518332075481">En fazla <ph name="MAX_LENGTH" /> karakterden oluşan bir ad kullanın</translation>
@@ -350,6 +358,7 @@
 <translation id="5010406651457630570">Bilgisayarlar</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5024856940085636730">Bir işlem, beklenenden daha uzun sürüyor. İşlemi iptal etmek istiyor musunuz?</translation>
+<translation id="5036159836254554629">Parallels Desktop paylaşımını yönet</translation>
 <translation id="5038625366300922036">Daha fazlasını görüntüle...</translation>
 <translation id="5061708541166515394">Kontrast</translation>
 <translation id="5068919226082848014">Pizza</translation>
@@ -499,6 +508,7 @@
 <translation id="656398493051028875">"<ph name="FILENAME" />" siliniyor...</translation>
 <translation id="6581162200855843583">Google Drive bağlantısı</translation>
 <translation id="6607272825297743757">Dosya bilgileri</translation>
+<translation id="6609332149380188670"><ph name="NUMBER_OF_ITEMS" /> dosya Parallels Desktop ile paylaşıldı</translation>
 <translation id="6629841649550503054">Tümü <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" />'a yedeklendi!</translation>
 <translation id="6643016212128521049">Temizle</translation>
 <translation id="6650726141019353908">Pembe kelebek</translation>
@@ -680,6 +690,7 @@
 <translation id="8475647382427415476">Google Drive, "<ph name="FILENAME" />" dosyasını şu anda senkronize edemedi. Google Drive senkronize etme işlemini daha sonra tekrar deneyecek.</translation>
 <translation id="8477649328507734757">Dönme</translation>
 <translation id="8487700953926739672">Çevrimdışı kullanılabilir</translation>
+<translation id="8490342535582768689">Parallels Desktop'a Google Drive'ınızdaki dosyaları değiştirmesi için izin verin. Değişiklikler, diğer cihazlarınızla senkronize edilecektir.</translation>
 <translation id="8521441079177373948">İngiltere</translation>
 <translation id="8525306231823319788">Tam ekran</translation>
 <translation id="8551494947769799688">Letonca</translation>

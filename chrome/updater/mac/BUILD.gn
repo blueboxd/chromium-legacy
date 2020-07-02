@@ -62,8 +62,6 @@ mac_app_bundle("updater_bundle") {
 
 source_set("xpc_names") {
   sources = [
-    "setup/info_plist.h",
-    "setup/info_plist.mm",
     "xpc_service_names.h",
     "xpc_service_names.mm",
   ]

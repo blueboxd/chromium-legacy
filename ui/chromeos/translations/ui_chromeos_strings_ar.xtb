@@ -45,6 +45,8 @@
 <translation id="1395262318152388157">شريط تمرير البحث</translation>
 <translation id="1399648040768741453">لوحة المفاتيح التيلوغوية (صوتية)</translation>
 <translation id="1430915738399379752">طباعة</translation>
+<translation id="1433600251059882049">‏تمّت مشاركة هذا المجلد مع نظامَي التشغيل Linux وWindows.</translation>
+<translation id="1435838927755162558">‏مشاركة المجلد مع نظام Parallels Desktop</translation>
 <translation id="1439494416798956626">تم النقل إلى <ph name="FOLDER_NAME" />.</translation>
 <translation id="1441841714100794440">‏لوحة المفاتيح الفيتنامية (Telex)</translation>
 <translation id="1455548678241328678">لوحة المفاتيح النرويجية</translation>
@@ -79,6 +81,7 @@
 <translation id="1844692022597038441">هذا الملف غير متاح بلا إنترنت.</translation>
 <translation id="184633654410729720">‏لوحة المفاتيح التايلاندية (Kedmanee)</translation>
 <translation id="1847880352285315359">تم الحفظ</translation>
+<translation id="1853795129690976061">‏تمّت مشاركة هذا المجلد مع نظام التشغيل Linux.</translation>
 <translation id="1864756863218646478">تعذر العثور على الملف.</translation>
 <translation id="1921986354447415460">‏لوحة مفاتيح Turkish-F</translation>
 <translation id="1924372192547904021">تم ضبط <ph name="DRIVE_NAME" /></translation>
@@ -180,6 +183,7 @@
 <translation id="303198083543495566">الجغرافيا</translation>
 <translation id="3057861065630527966">نسخ الصور والفيديوهات احتياطيًا</translation>
 <translation id="3064388234319122767">‏التحويل الصوتي (ذدرافو ← здраво)</translation>
+<translation id="3067790092342515856">‏ملفات نظام التشغيل Windows</translation>
 <translation id="3078461028045006476">مشاركة مع <ph name="EXTENSION_NAME" /></translation>
 <translation id="3088034400796962477">‏التحويل الصوتي (سلام ← salam)</translation>
 <translation id="3116361045094675131">لوحة المفاتيح البريطانية</translation>
@@ -262,6 +266,7 @@
 <translation id="3943857333388298514">لصق</translation>
 <translation id="3958548648197196644">كيوي</translation>
 <translation id="3966388904776714213">‏مشغل Audio player</translation>
+<translation id="3984317463833596033">‏يمكنك منح نظام Parallels Desktop الإذن لتعديل الملفات في مجلد <ph name="FOLDER_NAME" />.</translation>
 <translation id="4002066346123236978">العنوان</translation>
 <translation id="4070370845051020638">أسلوب الإدخال باللغة الكانتونية</translation>
 <translation id="4072248638558688893">لوحة المفاتيح التاميلية (صوتية)</translation>
@@ -290,6 +295,7 @@
 <translation id="4470564870223067757">المجموعة رقم 2 الهانغولية</translation>
 <translation id="4477219268485577442">بلغارية صوتية</translation>
 <translation id="4479812471636796472">‏لوحة المفاتيح الأمريكية Dvorak</translation>
+<translation id="4481711095103932593">‏تمّت مشاركة هذا المجلد مع نظام التشغيل Windows.</translation>
 <translation id="4487088045714738411">لوحة المفاتيح البلجيكية</translation>
 <translation id="4522570452068850558">التفاصيل</translation>
 <translation id="4552678318981539154">شراء المزيد من مساحة التخزين</translation>
@@ -335,10 +341,12 @@
 <translation id="4881695831933465202">فتح</translation>
 <translation id="4886021172213954916">‏لوحة المفاتيح التاميلية (Typewriter)</translation>
 <translation id="4892969127351273348">يتعذَّر الفتح باستخدام <ph name="APP_NAME" /></translation>
+<translation id="4900532980794411603">‏المشاركة مع نظام Parallels Desktop</translation>
 <translation id="4905417359854579806">جاهز للاحتفاظ بنسخة احتياطية من <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">تم الإصلاح</translation>
 <translation id="4935975195727477204">زهرة غازانيا</translation>
 <translation id="4943368462779413526">كرة القدم</translation>
+<translation id="4961158930123534723">‏تمّت مشاركة ملف واحد مع نظام Parallels Desktop.</translation>
 <translation id="4969785127455456148">الألبوم</translation>
 <translation id="497244430928947428">لوحة المفاتيح الملايلامية (صوتية)</translation>
 <translation id="4973523518332075481">يرجى استخدام اسم يحتوي على <ph name="MAX_LENGTH" /> حرف أو أقل</translation>
@@ -350,6 +358,7 @@
 <translation id="5010406651457630570">أجهزة الكمبيوتر</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5024856940085636730">توجد عملية تستغرق وقتًا أكثر من المتوقع. هل ترغب في إيقافها؟</translation>
+<translation id="5036159836254554629">‏إدارة المشاركة في نظام Parallels Desktop</translation>
 <translation id="5038625366300922036">مشاهدة المزيد...</translation>
 <translation id="5061708541166515394">التباين</translation>
 <translation id="5068919226082848014">بيتزا</translation>
@@ -499,6 +508,7 @@
 <translation id="656398493051028875">جارٍ حذف "<ph name="FILENAME" />"...</translation>
 <translation id="6581162200855843583">‏رابط Google Drive</translation>
 <translation id="6607272825297743757">معلومات الملف</translation>
+<translation id="6609332149380188670">‏تمّت مشاركة <ph name="NUMBER_OF_ITEMS" /> مجلد مع نظام Parallels Desktop.</translation>
 <translation id="6629841649550503054">‏تم نسخ جميع العناصر احتياطيًا في <ph name="BEGIN_LINK" />Google Drive.<ph name="END_LINK" /></translation>
 <translation id="6643016212128521049">محو</translation>
 <translation id="6650726141019353908">فراشة وردية</translation>
@@ -680,6 +690,7 @@
 <translation id="8475647382427415476">‏تعذر على Google Drive مزامنة "<ph name="FILENAME" />" في الوقت الحالي. وسيعيد Google Drive المحاولة لاحقًا.</translation>
 <translation id="8477649328507734757">دوران</translation>
 <translation id="8487700953926739672">التوفر بلا إنترنت</translation>
+<translation id="8490342535582768689">‏يمكنك منح نظام Parallels Desktop الإذن لتعديل الملفات في Google Drive. وستتمّ مزامنة التغييرات مع الأجهزة الأخرى.</translation>
 <translation id="8521441079177373948">المملكة المتحدة</translation>
 <translation id="8525306231823319788">ملء الشاشة</translation>
 <translation id="8551494947769799688">اللاتفية</translation>

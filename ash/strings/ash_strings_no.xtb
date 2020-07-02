@@ -73,6 +73,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="1747827819627189109">Skjermtastaturet er aktivert</translation>
 <translation id="1761222317188459878">Slå av/på nettverkstilkobling. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Rull til høyre</translation>
+<translation id="1782199038061388045">oversettelse</translation>
 <translation id="181103072419391116">Signalstyrke <ph name="SIGNAL_STRENGTH" /> – administreres av administratoren din</translation>
 <translation id="1812997170047690955">Hva er på skjermen?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
@@ -103,7 +104,6 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="2126242104232412123">Nytt skrivebord</translation>
 <translation id="2127372758936585790">Lading med lav effekt</translation>
 <translation id="2135456203358955318">Dokket lupe</translation>
-<translation id="2143915448548023856">Skjerminnstillinger</translation>
 <translation id="2144487987174258011">Start på nytt for å oppdatere Adobe Flash Player</translation>
 <translation id="2208323208084708176">Enhetlig skrivebordsmodus</translation>
 <translation id="2220572644011485463">PIN-kode eller passord</translation>
@@ -185,6 +185,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="3081696990447829002">Vis menyen</translation>
 <translation id="3087734570205094154">Bunn</translation>
 <translation id="309749186376891736">Flytt markøren</translation>
+<translation id="3098580329624789136">Hent <ph name="INTENT" /> for «<ph name="QUERY" />»</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Start på nytt for å oppdatere</translation>
 <translation id="3139942575505304791">Skrivebord 1</translation>
@@ -222,6 +223,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="3465356146291925647">Administreres av administratoren din</translation>
 <translation id="3477079411857374384">Ctrl+Shift+Mellomrom</translation>
 <translation id="3485319357743610354"><ph name="SECURITY_STATUS" /> – <ph name="CONNECTION_STATUS" /> – signalstyrke <ph name="SIGNAL_STRENGTH" /></translation>
+<translation id="3486220673238053218">definisjon</translation>
 <translation id="3510164367642747937">Fremhev musemarkøren</translation>
 <translation id="3513798432020909783">Kontoen er administrert av <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Endre tilbake til <ph name="FROM_LOCALE" /> (krever omstart)</translation>
@@ -272,8 +274,8 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="4072264167173457037">Middels sterkt signal</translation>
 <translation id="4112140312785995938">Spol bakover</translation>
 <translation id="4129129681837227511">For å se varsler på låseskjermen, lås opp for å endre innstillingen</translation>
-<translation id="4144413954005649103">Med et høyreklikk eller langt trykk viser assistenten deg informasjon knyttet til det du merker på skjermen.</translation>
 <translation id="4146833061457621061">Spill av musikk</translation>
+<translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> administreres av <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Språk</translation>
 <translation id="4195877955194704651">Automatisk klikk-knapp</translation>
 <translation id="4197790712631116042">Av</translation>
@@ -528,6 +530,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="7378594059915113390">Mediekontroller</translation>
 <translation id="7398254312354928459">Byttet nettverkstilkobling</translation>
 <translation id="7405710164030118432">For å låse opp enheten, skriv inn koden din for foreldretilgang til Family Link</translation>
+<translation id="741244894080940828">omregning</translation>
 <translation id="742594950370306541">Kameraet er i bruk.</translation>
 <translation id="743058460480092004">Kameraet og mikrofonen er i bruk.</translation>
 <translation id="7436182601308224670">God ettermiddag, <ph name="GIVEN_NAME" /></translation>
@@ -540,6 +543,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="7562368315689366235">Emoji-palett</translation>
 <translation id="7564874036684306347">Flytting av vinduer til et annet skrivebord kan føre til uventet atferd. Følgende varsler, vinduer og dialogbokser kan bli delt mellom skrivebordene.</translation>
 <translation id="7568294522609223312">Slå av automatiske klikk</translation>
+<translation id="7568637526529101738">Med et høyreklikk eller langt trykk viser assistenten informasjon, som for eksempel definisjonen eller enhetsomregningen for teksten du har merket.</translation>
 <translation id="7569509451529460200">Braille og ChromeVox er slått på</translation>
 <translation id="7593891976182323525">Søk eller Shift</translation>
 <translation id="7600875258240007829">Se alle varslene</translation>

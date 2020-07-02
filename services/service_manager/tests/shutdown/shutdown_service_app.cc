@@ -10,8 +10,8 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/cpp/service_executable/service_main.h"
+#include "services/service_manager/public/cpp/service_receiver.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/service_manager/tests/shutdown/shutdown.test-mojom.h"
 
@@ -20,8 +20,8 @@ namespace {
 
 class ShutdownServiceApp : public Service, public mojom::ShutdownTestService {
  public:
-  explicit ShutdownServiceApp(mojom::ServiceRequest request)
-      : service_binding_(this, std::move(request)) {
+  explicit ShutdownServiceApp(mojo::PendingReceiver<mojom::Service> receiver)
+      : service_receiver_(this, std::move(receiver)) {
     registry_.AddInterface<mojom::ShutdownTestService>(base::BindRepeating(
         &ShutdownServiceApp::Create, base::Unretained(this)));
   }
@@ -45,7 +45,7 @@ class ShutdownServiceApp : public Service, public mojom::ShutdownTestService {
     receivers_.Add(this, std::move(receiver));
   }
 
-  ServiceBinding service_binding_;
+  ServiceReceiver service_receiver_;
   BinderRegistry registry_;
   mojo::ReceiverSet<mojom::ShutdownTestService> receivers_;
 
@@ -55,7 +55,9 @@ class ShutdownServiceApp : public Service, public mojom::ShutdownTestService {
 }  // namespace
 }  // namespace service_manager
 
-void ServiceMain(service_manager::mojom::ServiceRequest request) {
+void ServiceMain(
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver) {
   base::SingleThreadTaskExecutor main_task_executor;
-  service_manager::ShutdownServiceApp(std::move(request)).RunUntilTermination();
+  service_manager::ShutdownServiceApp(std::move(receiver))
+      .RunUntilTermination();
 }

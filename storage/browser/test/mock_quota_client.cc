@@ -13,7 +13,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "net/base/url_util.h"
 #include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "url/gurl.h"
@@ -146,10 +145,10 @@ void MockQuotaClient::RunGetOriginsForHost(blink::mojom::StorageType type,
                                            GetOriginsCallback callback) {
   std::set<url::Origin> origins;
   for (const auto& origin_type_usage : origin_data_) {
-    std::string host_or_spec =
-        net::GetHostOrSpecFromURL(origin_type_usage.first.first.GetURL());
-    if (type == origin_type_usage.first.second && host == host_or_spec)
+    if (type == origin_type_usage.first.second &&
+        host == origin_type_usage.first.first.host()) {
       origins.insert(origin_type_usage.first.first);
+    }
   }
   std::move(callback).Run(origins);
 }

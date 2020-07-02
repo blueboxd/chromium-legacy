@@ -109,7 +109,7 @@ class AwRenderViewHostExt : public content::WebContentsObserver {
   // *current* RVH.
   std::map<int, DocumentHasImagesResult> image_requests_callback_map_;
 
-  // Master copy of hit test data on the browser side. This is updated
+  // Authoritative copy of hit test data on the browser side. This is updated
   // as a result of DoHitTest called explicitly or when the FocusedNodeChanged
   // is called in AwRenderViewExt.
   AwHitTestData last_hit_test_data_;

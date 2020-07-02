@@ -73,6 +73,7 @@ Para comezar, podes probar o seguinte.</translation>
 <translation id="1747827819627189109">Teclado en pantalla activado</translation>
 <translation id="1761222317188459878">Activar/desactivar a conexión de rede. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Desprazarse á dereita</translation>
+<translation id="1782199038061388045">tradución</translation>
 <translation id="181103072419391116">Intensidade do sinal do <ph name="SIGNAL_STRENGTH" />, xestionada polo teu administrador</translation>
 <translation id="1812997170047690955">Que se mostra na miña pantalla?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
@@ -103,7 +104,6 @@ Para comezar, podes probar o seguinte.</translation>
 <translation id="2126242104232412123">Novo escritorio</translation>
 <translation id="2127372758936585790">Cargador de baixa potencia</translation>
 <translation id="2135456203358955318">Lupa ancorada</translation>
-<translation id="2143915448548023856">Configuración da pantalla</translation>
 <translation id="2144487987174258011">Reinicia para actualizar Adobe Flash Player</translation>
 <translation id="2208323208084708176">Modo de escritorio unificado</translation>
 <translation id="2220572644011485463">PIN ou contrasinal</translation>
@@ -185,6 +185,7 @@ Para comezar, podes probar o seguinte.</translation>
 <translation id="3081696990447829002">Despregar menú</translation>
 <translation id="3087734570205094154">Parte inferior</translation>
 <translation id="309749186376891736">Mover cursor</translation>
+<translation id="3098580329624789136">Obter <ph name="INTENT" /> de "<ph name="QUERY" />"</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Reinicia para actualizar</translation>
 <translation id="3139942575505304791">Escritorio 1</translation>
@@ -222,6 +223,7 @@ Para comezar, podes probar o seguinte.</translation>
 <translation id="3465356146291925647">Xestionada polo teu administrador</translation>
 <translation id="3477079411857374384">Control-Maúsculas-Espazo</translation>
 <translation id="3485319357743610354"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, intensidade do sinal do <ph name="SIGNAL_STRENGTH" /></translation>
+<translation id="3486220673238053218">definición</translation>
 <translation id="3510164367642747937">Destacar o cursor do rato</translation>
 <translation id="3513798432020909783">A conta está xestionada por <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Volver cambiar a "<ph name="FROM_LOCALE" />" (é necesario reiniciar)</translation>
@@ -273,8 +275,8 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="4072264167173457037">Sinal medio</translation>
 <translation id="4112140312785995938">Retroceder</translation>
 <translation id="4129129681837227511">Para ver notificacións na pantalla de bloqueo, desbloquea o dispositivo e cambia a opción de configuración correspondente</translation>
-<translation id="4144413954005649103">Se fas clic co botón dereito ou realizas unha pulsación longa, o Asistente móstrache información relacionada co que seleccionaches na pantalla.</translation>
 <translation id="4146833061457621061">Reproducir música</translation>
+<translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> (dispositivo xestionado por <ph name="DOMAIN" />)</translation>
 <translation id="4181841719683918333">Idiomas</translation>
 <translation id="4195877955194704651">Botón de clics automáticos</translation>
 <translation id="4197790712631116042">Desactivado</translation>
@@ -529,6 +531,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="7378594059915113390">Controis de contido multimedia</translation>
 <translation id="7398254312354928459">Cambiouse a conexión de rede</translation>
 <translation id="7405710164030118432">Para desbloquear o dispositivo, introduce o código de acceso parental de Family Link</translation>
+<translation id="741244894080940828">conversión</translation>
 <translation id="742594950370306541">Estase utilizando a cámara.</translation>
 <translation id="743058460480092004">Estanse utilizando a cámara e o micrófono.</translation>
 <translation id="7436182601308224670">Boas tardes, <ph name="GIVEN_NAME" /></translation>
@@ -541,6 +544,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="7562368315689366235">Paleta de emojis</translation>
 <translation id="7564874036684306347">Ao mover as ventás a outro ordenador pódese provocar un comportamento inesperado. É posible que as notificacións, as ventás e os cadros de diálogo posteriores se dividan entre os ordenadores.</translation>
 <translation id="7568294522609223312">Desactivar clics automáticos</translation>
+<translation id="7568637526529101738">Se fas clic co botón dereito ou realizas unha pulsación longa, o Asistente móstrache información como a definición ou a conversión de unidades relacionada coa túa selección.</translation>
 <translation id="7569509451529460200">Activouse o braille e ChromeVox</translation>
 <translation id="7593891976182323525">Busca ou Maiús</translation>
 <translation id="7600875258240007829">Ver todas as notificacións</translation>

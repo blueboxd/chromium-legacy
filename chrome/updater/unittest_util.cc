@@ -95,7 +95,7 @@ bool operator==(const UpdateService::UpdateState& lhs,
   return versions_equal && lhs.app_id == rhs.app_id && lhs.state == rhs.state &&
          lhs.downloaded_bytes == rhs.downloaded_bytes &&
          lhs.total_bytes == rhs.total_bytes &&
-         lhs.install_progress == rhs.total_bytes &&
+         lhs.install_progress == rhs.install_progress &&
          lhs.error_category == rhs.error_category &&
          lhs.error_code == rhs.error_code && lhs.extra_code1 == rhs.extra_code1;
 }

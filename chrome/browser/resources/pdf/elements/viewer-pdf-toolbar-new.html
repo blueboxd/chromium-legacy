@@ -29,6 +29,11 @@
     margin-inline-end: 6px;
   }
 
+  #start {
+    align-items: center;
+    display: flex;
+  }
+
   #start,
   #end {
     flex: 1;
@@ -97,9 +102,9 @@
   }
 </style>
 <!-- TODO(dpapad): Add aria-label and title for all buttons -->
-<!-- TODO(dpapad): Replace with the final icons provided by UX -->
 <div id="start">
-  <cr-icon-button id="menuButton" iron-icon="cr20:menu"></cr-icon-button>
+  <cr-icon-button id="menuButton" iron-icon="pdf:open-book">
+  </cr-icon-button>
   <span>[[docTitle]]</span>
 </div>
 <div id="center">
@@ -110,8 +115,8 @@
     <input type="text" value="100%"></input>
     <cr-icon-button iron-icon="pdf:add"></cr-icon-button>
   </span>
-  <cr-icon-button iron-icon="pdf:fullscreen-exit"></cr-icon-button>
-  <cr-icon-button iron-icon="pdf:rotate-right"></cr-icon-button>
+  <cr-icon-button iron-icon="pdf:fit-to-height"></cr-icon-button>
+  <cr-icon-button iron-icon="pdf:rotate-left"></cr-icon-button>
 </div>
 <div id="end">
   <cr-icon-button id="download" iron-icon="cr:file-download"

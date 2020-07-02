@@ -73,6 +73,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="1747827819627189109">Ekran klaviaturasi yoqildi</translation>
 <translation id="1761222317188459878">Tarmoq aloqasini yoqish/o‘chirish. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Oʻngga aylantirish</translation>
+<translation id="1782199038061388045">tarjima</translation>
 <translation id="181103072419391116">Signal darajasi: <ph name="SIGNAL_STRENGTH" />, Administrator boshqaruvida</translation>
 <translation id="1812997170047690955">Ekranda nimalar bor?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
@@ -103,7 +104,6 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="2126242104232412123">Yangi ish stoli</translation>
 <translation id="2127372758936585790">Kam quvvatli zaryadlovchi vosita</translation>
 <translation id="2135456203358955318">Mahkamlangan lupa</translation>
-<translation id="2143915448548023856">Displey sozlamalari</translation>
 <translation id="2144487987174258011">Adobe Flash Player’ni yangilash uchun qayta ishga tushiring</translation>
 <translation id="2208323208084708176">Birlashgan ish stoli rejimi</translation>
 <translation id="2220572644011485463">PIN kod yoki parol</translation>
@@ -185,6 +185,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="3081696990447829002">Menyuni ochish</translation>
 <translation id="3087734570205094154">Pastga</translation>
 <translation id="309749186376891736">Kursorni surish</translation>
+<translation id="3098580329624789136">“<ph name="QUERY" />” uchun <ph name="INTENT" /> olish</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Yangilash uchun qayta ishga tushiring</translation>
 <translation id="3139942575505304791">Desk 1</translation>
@@ -222,6 +223,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="3465356146291925647">Administrator boshqaruvida</translation>
 <translation id="3477079411857374384">Ctrl + Shift + BO‘SHLIQ</translation>
 <translation id="3485319357743610354">Himoya: <ph name="SECURITY_STATUS" />, Ulanish: <ph name="CONNECTION_STATUS" />, Signal darajasi:<ph name="SIGNAL_STRENGTH" /></translation>
+<translation id="3486220673238053218">ta’rif</translation>
 <translation id="3510164367642747937">Sichqoncha kursori ajratib ko‘rsatilsin</translation>
 <translation id="3513798432020909783">Hisobni <ph name="MANAGER_EMAIL" /> boshqaradi</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" tiliga qaytarish (qayta yuklash kerak bo‘ladi)</translation>
@@ -272,8 +274,8 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="4072264167173457037">Signal o‘rtacha</translation>
 <translation id="4112140312785995938">Orqaga qaytarish</translation>
 <translation id="4129129681837227511">Bildirishnomalar qulflangan ekranda chiqishi uchun avval qulfdan chiqaring va sozlamani yangilang</translation>
-<translation id="4144413954005649103">Oʻng klik yoki biroz bosib turilsa, Assistent ekranda tanlangan narsaga mos axborot chiqaradi.</translation>
 <translation id="4146833061457621061">Musiqani tinglash</translation>
+<translation id="4149156641122542261">Bu <ph name="DEVICE_TYPE" /> qurilmasi <ph name="DOMAIN" /> domeni tomonidan boshqariladi</translation>
 <translation id="4181841719683918333">Tillar</translation>
 <translation id="4195877955194704651">Avtomatik bosish menyusi</translation>
 <translation id="4197790712631116042">Yoqilmagan</translation>
@@ -528,6 +530,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="7378594059915113390">Media boshqaruv elementlari</translation>
 <translation id="7398254312354928459">Boshqa tarmoqqa ulanildi</translation>
 <translation id="7405710164030118432">Bu qurilma qulfini ochish uchun Family Link ota-ona kodini kiriting</translation>
+<translation id="741244894080940828">konversiya</translation>
 <translation id="742594950370306541">Kamera ish faoliyatida.</translation>
 <translation id="743058460480092004">Kamera va mikrofon ishlatilmoqda.</translation>
 <translation id="7436182601308224670">Xayrli kun, <ph name="GIVEN_NAME" /></translation>
@@ -540,6 +543,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="7562368315689366235">Emoji menyusi</translation>
 <translation id="7564874036684306347">Oynalarni boshqa ish stoliga ko‘chirish oqibatida kutilmagan xatti-harakatlar sodir bo‘lishi mumkin. Bildirishnomalar va muloqot oynalari turli ekranlarda ko‘rsatiladi.</translation>
 <translation id="7568294522609223312">Avtomatik kliklarni faolsizlantirish</translation>
+<translation id="7568637526529101738">Oʻng klik yoki biroz bosib turilsa, Assistent ekranda tanlangan narsaga mos tavsif yoki birliklar konvertorini chiqaradi.</translation>
 <translation id="7569509451529460200">Brayl yozuvi va ChromeVox yoqildi</translation>
 <translation id="7593891976182323525">Search yoki Shift</translation>
 <translation id="7600875258240007829">Barcha bildirishnomalarni ochish</translation>

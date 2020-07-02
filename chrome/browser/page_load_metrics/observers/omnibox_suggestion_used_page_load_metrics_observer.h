@@ -13,7 +13,7 @@
 class OmniboxSuggestionUsedMetricsObserver
     : public page_load_metrics::PageLoadMetricsObserver {
  public:
-  explicit OmniboxSuggestionUsedMetricsObserver(bool is_prerender);
+  OmniboxSuggestionUsedMetricsObserver();
   ~OmniboxSuggestionUsedMetricsObserver() override;
 
   // page_load_metrics::PageLoadMetricsObserver:
@@ -27,8 +27,6 @@ class OmniboxSuggestionUsedMetricsObserver
       const page_load_metrics::mojom::PageLoadTiming& timing) override;
 
  private:
-  // Indicates whether this page load comes from prerender.
-  const bool is_prerender_;
   ui::PageTransition transition_type_ = ui::PAGE_TRANSITION_LINK;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxSuggestionUsedMetricsObserver);

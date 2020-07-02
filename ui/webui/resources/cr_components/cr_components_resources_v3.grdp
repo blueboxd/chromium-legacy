@@ -22,6 +22,26 @@
            file="${root_gen_dir}/ui/webui/resources/cr_components/chromeos/bluetooth/bluetooth_dialog.m.js"
            use_base_dir="false"
            type="BINDATA" />
+    <include name="IDR_WEBUI_CHROMEOS_NETWORK_LISTENER_BEHAVIOR_M_JS"
+           file="${root_gen_dir}/ui/webui/resources/cr_components/chromeos/network/network_listener_behavior.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
+    <include name="IDR_WEBUI_CHROMEOS_ONC_MOJOM_M_JS"
+           file="${root_gen_dir}/ui/webui/resources/cr_components/chromeos/network/onc_mojo.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
+    <include name="IDR_WEBUI_CHROMEOS_MOJO_INTERFACE_PROVIDER_M_JS"
+           file="${root_gen_dir}/ui/webui/resources/cr_components/chromeos/network/mojo_interface_provider.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
+    <include name="IDR_WEBUI_CHROMEOS_NETWORK_ICON_M_JS"
+           file="${root_gen_dir}/ui/webui/resources/cr_components/chromeos/network/network_icon.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
+    <include name="IDR_WEBUI_CHROMEOS_NETWORK_ICONS_M_JS"
+           file="${root_gen_dir}/ui/webui/resources/cr_components/chromeos/network/network_icons.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
   </if>
   <if expr="use_nss_certs">
     <include name="IDR_WEBUI_CA_TRUST_EDIT_DIALOG_JS"

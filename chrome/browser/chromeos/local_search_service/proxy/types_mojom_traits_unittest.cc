@@ -27,18 +27,40 @@ TEST(LocalSearchMojomTraitsTest, DataTraits) {
   std::vector<Content> contents{
       Content("id1", base::UTF8ToUTF16("contents1"), 0.1),
       Content("id2", base::UTF8ToUTF16("contents2"), 0.2)};
-  Data input("id", contents);
-  Data output;
 
-  ASSERT_TRUE(
-      mojo::test::SerializeAndDeserialize<mojom::Data>(&input, &output));
-  EXPECT_EQ(input.id, output.id);
-  EXPECT_EQ(input.contents[0].id, output.contents[0].id);
-  EXPECT_EQ(input.contents[0].content, output.contents[0].content);
-  EXPECT_EQ(input.contents[0].weight, output.contents[0].weight);
-  EXPECT_EQ(input.contents[1].id, output.contents[1].id);
-  EXPECT_EQ(input.contents[1].content, output.contents[1].content);
-  EXPECT_EQ(input.contents[1].weight, output.contents[1].weight);
+  {
+    // Empty locale.
+    Data input("id", contents);
+    Data output;
+
+    ASSERT_TRUE(
+        mojo::test::SerializeAndDeserialize<mojom::Data>(&input, &output));
+    EXPECT_EQ(input.id, output.id);
+    EXPECT_EQ(input.contents[0].id, output.contents[0].id);
+    EXPECT_EQ(input.contents[0].content, output.contents[0].content);
+    EXPECT_EQ(input.contents[0].weight, output.contents[0].weight);
+    EXPECT_EQ(input.contents[1].id, output.contents[1].id);
+    EXPECT_EQ(input.contents[1].content, output.contents[1].content);
+    EXPECT_EQ(input.contents[1].weight, output.contents[1].weight);
+    EXPECT_EQ(input.locale, output.locale);
+  }
+
+  {
+    // Non-empty locale.
+    Data input("id", contents, "en");
+    Data output;
+
+    ASSERT_TRUE(
+        mojo::test::SerializeAndDeserialize<mojom::Data>(&input, &output));
+    EXPECT_EQ(input.id, output.id);
+    EXPECT_EQ(input.contents[0].id, output.contents[0].id);
+    EXPECT_EQ(input.contents[0].content, output.contents[0].content);
+    EXPECT_EQ(input.contents[0].weight, output.contents[0].weight);
+    EXPECT_EQ(input.contents[1].id, output.contents[1].id);
+    EXPECT_EQ(input.contents[1].content, output.contents[1].content);
+    EXPECT_EQ(input.contents[1].weight, output.contents[1].weight);
+    EXPECT_EQ(input.locale, output.locale);
+  }
 }
 
 TEST(LocalSearchMojomTraitsTest, SearchParamsTraits) {

@@ -45,6 +45,8 @@
 <translation id="1395262318152388157">Барај лизгач</translation>
 <translation id="1399648040768741453">телугу тастатура (фонетска)</translation>
 <translation id="1430915738399379752">Печати</translation>
+<translation id="1433600251059882049">Папкава е споделена со Linux и Windows</translation>
+<translation id="1435838927755162558">Споделете папка со Parallels Desktop</translation>
 <translation id="1439494416798956626">Преместена во <ph name="FOLDER_NAME" />.</translation>
 <translation id="1441841714100794440">виетнамска тастатура (Telex)</translation>
 <translation id="1455548678241328678">норвешка тастатура</translation>
@@ -79,6 +81,7 @@
 <translation id="1844692022597038441">Датотеката не е достапна локално.</translation>
 <translation id="184633654410729720">тајландска тастатура (Kedmanee)</translation>
 <translation id="1847880352285315359">Зачувано</translation>
+<translation id="1853795129690976061">Папкава е споделена со Linux</translation>
 <translation id="1864756863218646478">Не може да се најде датотеката.</translation>
 <translation id="1921986354447415460">Турска-F тастатура</translation>
 <translation id="1924372192547904021"><ph name="DRIVE_NAME" /> е форматиран</translation>
@@ -180,6 +183,7 @@
 <translation id="303198083543495566">Географија</translation>
 <translation id="3057861065630527966">Бекап на фотографиите и видеата</translation>
 <translation id="3064388234319122767">Транслитерација (zdravo → здраво)</translation>
+<translation id="3067790092342515856">Датотеки на Windows</translation>
 <translation id="3078461028045006476">Споделете со <ph name="EXTENSION_NAME" /></translation>
 <translation id="3088034400796962477">Транслитерација (salam ← سلام)</translation>
 <translation id="3116361045094675131">САД тастатура</translation>
@@ -262,6 +266,7 @@
 <translation id="3943857333388298514">Залепи</translation>
 <translation id="3958548648197196644">Киви</translation>
 <translation id="3966388904776714213">Аудиоплеер</translation>
+<translation id="3984317463833596033">Дајте ѝ дозвола на Parallels Desktop да ги менува датотеките во папката „<ph name="FOLDER_NAME" />“</translation>
 <translation id="4002066346123236978">Наслов</translation>
 <translation id="4070370845051020638">Кантонски метод за внесување</translation>
 <translation id="4072248638558688893">тамилска тастатура (фонетска)</translation>
@@ -290,6 +295,7 @@
 <translation id="4470564870223067757">хангул, 2-делна</translation>
 <translation id="4477219268485577442">бугарска фонетска</translation>
 <translation id="4479812471636796472">САД тастатура Dvorak</translation>
+<translation id="4481711095103932593">Папкава е споделена со Windows</translation>
 <translation id="4487088045714738411">белгиска тастатура</translation>
 <translation id="4522570452068850558">Детали</translation>
 <translation id="4552678318981539154">Купете поголем простор за складирање</translation>
@@ -335,10 +341,12 @@
 <translation id="4881695831933465202">Отвори</translation>
 <translation id="4886021172213954916">тамилска тастатура (машина за пишување)</translation>
 <translation id="4892969127351273348">Не може да се отвори со <ph name="APP_NAME" /></translation>
+<translation id="4900532980794411603">Сподели со Parallels Desktop</translation>
 <translation id="4905417359854579806">Направете бекап на <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Поправено</translation>
 <translation id="4935975195727477204">Цвет од газанија</translation>
 <translation id="4943368462779413526">Фудбал</translation>
+<translation id="4961158930123534723">1 папка е споделена со Parallels Desktop</translation>
 <translation id="4969785127455456148">Албум</translation>
 <translation id="497244430928947428">малајамска тастатура (фонетска)</translation>
 <translation id="4973523518332075481">Користете име што содржи <ph name="MAX_LENGTH" /> знаци или помалку</translation>
@@ -350,6 +358,7 @@
 <translation id="5010406651457630570">Компјутери</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5024856940085636730">Операцијата трае подолго од очекуваното. Дали сакате да ја прекинете?</translation>
+<translation id="5036159836254554629">Управувајте со споделувањето на Parallels Desktop</translation>
 <translation id="5038625366300922036">Види повеќе...</translation>
 <translation id="5061708541166515394">Контраст</translation>
 <translation id="5068919226082848014">Пица</translation>
@@ -498,6 +507,7 @@
 <translation id="656398493051028875">Се брише „<ph name="FILENAME" />“...</translation>
 <translation id="6581162200855843583">Врска на Google Диск</translation>
 <translation id="6607272825297743757">Информации за датотека</translation>
+<translation id="6609332149380188670"><ph name="NUMBER_OF_ITEMS" /> папки се споделени со Parallels Desktop</translation>
 <translation id="6629841649550503054">Сѐ е ископирано на <ph name="BEGIN_LINK" />Google Drive!<ph name="END_LINK" /></translation>
 <translation id="6643016212128521049">Исчисти</translation>
 <translation id="6650726141019353908">Розова пеперутка</translation>
@@ -679,6 +689,7 @@
 <translation id="8475647382427415476">Google Drive не можеше да ја синхронизира „<ph name="FILENAME" />" во моментов. Ќе се обиде повторно подоцна.</translation>
 <translation id="8477649328507734757">Концентрични кругови</translation>
 <translation id="8487700953926739672">Достапно е исклучено од линија</translation>
+<translation id="8490342535582768689">Дајте ѝ дозвола на Parallels Desktop да ги менува датотеките во вашиот Google Drive. Промените ќе се синхронизираат со вашите други уреди.</translation>
 <translation id="8521441079177373948">UK</translation>
 <translation id="8525306231823319788">Цел екран</translation>
 <translation id="8551494947769799688">летонски</translation>

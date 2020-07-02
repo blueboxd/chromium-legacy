@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_INLINE_CHILD_LAYOUT_CONTEXT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_INLINE_CHILD_LAYOUT_CONTEXT_H_
 
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_box_state.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_logical_line_item.h"
@@ -19,10 +20,13 @@ class NGInlineItem;
 //
 // Because this context is in initial state for when fragmentation occurs and
 // some other cases, do not add things that are too expensive to rebuild.
-class NGInlineChildLayoutContext {
+class CORE_EXPORT NGInlineChildLayoutContext {
   STACK_ALLOCATED();
 
  public:
+  NGInlineChildLayoutContext();
+  ~NGInlineChildLayoutContext();
+
   NGFragmentItemsBuilder* ItemsBuilder() { return items_builder_; }
   void SetItemsBuilder(NGFragmentItemsBuilder* builder) {
     items_builder_ = builder;
@@ -50,6 +54,13 @@ class NGInlineChildLayoutContext {
     item_index_ = item_index;
   }
 
+  const Vector<scoped_refptr<const NGBlockBreakToken>>& PropagatedBreakTokens()
+      const {
+    return propagated_float_break_tokens_;
+  }
+  void ClearPropagatedBreakTokens();
+  void PropagateBreakToken(scoped_refptr<const NGBlockBreakToken>);
+
  private:
   // TODO(kojii): Probably better to own |NGInlineChildLayoutContext|. While we
   // transit, allocating separately is easier.
@@ -62,6 +73,8 @@ class NGInlineChildLayoutContext {
   // The items and its index this context is set up for.
   const Vector<NGInlineItem>* items_ = nullptr;
   unsigned item_index_ = 0;
+
+  Vector<scoped_refptr<const NGBlockBreakToken>> propagated_float_break_tokens_;
 };
 
 }  // namespace blink

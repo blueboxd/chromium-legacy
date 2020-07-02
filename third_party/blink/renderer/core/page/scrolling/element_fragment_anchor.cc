@@ -90,7 +90,8 @@ ElementFragmentAnchor* ElementFragmentAnchor::TryCreate(const KURL& url,
     return nullptr;
 
   if (RuntimeEnabledFeatures::BeforeMatchEventEnabled())
-    anchor_node->DispatchEvent(*Event::Create(event_type_names::kBeforematch));
+    anchor_node->DispatchEvent(
+        *Event::CreateBubble(event_type_names::kBeforematch));
 
   return MakeGarbageCollected<ElementFragmentAnchor>(*anchor_node, frame);
 }

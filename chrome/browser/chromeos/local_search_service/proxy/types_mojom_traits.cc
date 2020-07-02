@@ -86,10 +86,12 @@ bool StructTraits<local_search_service::mojom::DataDataView,
          local_search_service::Data* out) {
   std::string id;
   std::vector<local_search_service::Content> contents;
-  if (!data.ReadId(&id) || !data.ReadContents(&contents))
+  std::string locale;
+  if (!data.ReadId(&id) || !data.ReadContents(&contents) ||
+      !data.ReadLocale(&locale))
     return false;
 
-  *out = local_search_service::Data(id, contents);
+  *out = local_search_service::Data(id, contents, locale);
   return true;
 }
 

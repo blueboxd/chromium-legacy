@@ -8,8 +8,10 @@ file://infra/OWNERS
 bsheedy@chromium.org
 jam@chromium.org
 jochen@chromium.org
-machenbach@chromium.org
 sky@chromium.org
+
+# For V8 and DevTools related reviews.
+machenbach@chromium.org
 
 per-file *chromium.perf*.json=johnchen@chromium.org
 per-file *chromium.perf*.json=wenbinzhang@google.com

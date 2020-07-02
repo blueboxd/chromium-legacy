@@ -15,9 +15,9 @@
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/modules/websockets/mock_websocket_channel.h"
@@ -190,7 +190,7 @@ TEST(DOMWebSocketTest, insecureRequestsUpgrade) {
         .WillOnce(Return(true));
   }
 
-  scope.GetDocument().GetSecurityContext().SetInsecureRequestPolicy(
+  scope.GetWindow().GetSecurityContext().SetInsecureRequestPolicy(
       mojom::blink::InsecureRequestPolicy::kUpgradeInsecureRequests);
   websocket_scope.Socket().Connect("ws://example.com/endpoint",
                                    Vector<String>(), scope.GetExceptionState());
@@ -210,7 +210,7 @@ TEST(DOMWebSocketTest, insecureRequestsUpgradePotentiallyTrustworthy) {
         .WillOnce(Return(true));
   }
 
-  scope.GetDocument().GetSecurityContext().SetInsecureRequestPolicy(
+  scope.GetWindow().GetSecurityContext().SetInsecureRequestPolicy(
       mojom::blink::InsecureRequestPolicy::kUpgradeInsecureRequests);
   websocket_scope.Socket().Connect("ws://127.0.0.1/endpoint", Vector<String>(),
                                    scope.GetExceptionState());
@@ -230,7 +230,7 @@ TEST(DOMWebSocketTest, insecureRequestsDoNotUpgrade) {
         .WillOnce(Return(true));
   }
 
-  scope.GetDocument().GetSecurityContext().SetInsecureRequestPolicy(
+  scope.GetWindow().GetSecurityContext().SetInsecureRequestPolicy(
       mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone);
   websocket_scope.Socket().Connect("ws://example.com/endpoint",
                                    Vector<String>(), scope.GetExceptionState());

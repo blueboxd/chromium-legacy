@@ -15,6 +15,7 @@
 <translation id="1947737735496445907">Տպված է</translation>
 <translation id="1979103255016296513">Գաղտնաբառի փոփոխման ժամկետն անցել է</translation>
 <translation id="2049639323467105390">Այս սարքը կառավարվում է <ph name="DOMAIN" />-ի կողմից:</translation>
+<translation id="2161394479394250669">Չեղարկել տպման առաջադրանքը</translation>
 <translation id="2338501278241028356">Մոտակա սարքերը գտնելու համար միացրեք Bluetooth-ը</translation>
 <translation id="2375079107209812402">Մնաց <ph name="ATTEMPTS_LEFT" /> փորձ</translation>
 <translation id="2805756323405976993">Հավելվածներ</translation>
@@ -24,12 +25,12 @@
 <translation id="3268178239013324452">Չհաջողվեց տպել – Կափարիչը բաց է</translation>
 <translation id="3369013195428705271">Մաքրե՞լ ամբողջ տպման պատմությունը: Ընթացիկ տպման աշխատանքները չեն ջնջվի։</translation>
 <translation id="3456078764689556234">Տպված էջ՝ <ph name="PRINTED_PAGES" />/<ph name="TOTAL_PAGES" />։</translation>
+<translation id="3459509316159669723">Տպում</translation>
 <translation id="3527036260304016759">Չհաջողվեց տպել – Անհայտ սխալ</translation>
 <translation id="3749289110408117711">Ֆայլի անունը</translation>
 <translation id="38114475217616659">Մաքրել ամբողջ պատմությունը</translation>
 <translation id="3820172043799983114">PIN-ը սխալ է</translation>
 <translation id="3838338534323494292">Նոր գաղտնաբառը</translation>
-<translation id="3953601359945991637"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" />/<ph name="TOTAL_PAGE_NUMBER" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> տիրույթը կառավարում է այս սարքը, և դրան տեսանելի են օգտատիրոջ բոլոր գործողությունները, այդ թվում՝ այցելած կայքերը, գաղտնաբառերը և նամակները:</translation>
 <translation id="4003384961948020559">Չհաջողվեց տպել – Ելքը լցված է</translation>
 <translation id="4034824040120875894">Տպիչ</translation>

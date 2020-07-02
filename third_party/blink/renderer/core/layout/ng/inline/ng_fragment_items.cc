@@ -68,9 +68,30 @@ void NGFragmentItems::FinalizeAfterLayout(
       item.SetDeltaToNextForSameLayoutObject(0);
       item.SetIsLastForNode(false);
 
-      const auto last_item_result =
-          last_items.insert(layout_object, LastItem{&item, 0, index});
-      if (last_item_result.is_new_entry) {
+      // Fragments that aren't really on a line, such as floats, will have block
+      // break tokens if they continue in a subsequent fragmentainer, so just
+      // check that. Floats in particular will continue as regular box fragment
+      // children in subsequent fragmentainers, i.e. they will not be fragment
+      // items (even if we're in an inline formatting context). So we're not
+      // going to find the last fragment by just looking for items.
+      bool skip_last_items_map = false;
+      if (const NGPhysicalBoxFragment* child_fragment = item.BoxFragment()) {
+        if (!child_fragment->IsInline()) {
+          item.SetIsLastForNode(!child_fragment->BreakToken());
+          skip_last_items_map = true;
+        }
+      }
+
+      bool is_first = skip_last_items_map;
+      LastItem* last = nullptr;
+      if (!skip_last_items_map) {
+        const auto last_item_result =
+            last_items.insert(layout_object, LastItem{&item, 0, index});
+        is_first = last_item_result.is_new_entry;
+        last = &last_item_result.stored_value->value;
+      }
+
+      if (is_first) {
         item.SetFragmentId(0);
         if (create_index_cache) {
           DCHECK_EQ(layout_object->FirstInlineFragmentItemIndex(), 0u);
@@ -79,7 +100,6 @@ void NGFragmentItems::FinalizeAfterLayout(
         continue;
       }
 
-      LastItem* last = &last_item_result.stored_value->value;
       const NGFragmentItem* last_item = last->item;
       DCHECK_EQ(last_item->DeltaToNextForSameLayoutObject(), 0u);
       if (create_index_cache) {

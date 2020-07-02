@@ -84,6 +84,12 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS_ATTESTATION) AttestationClient {
     // the |sequence| one-by-one until all the elements are consumed.
     virtual void ConfigureEnrollmentPreparationsSequence(
         std::deque<bool> sequence) = 0;
+
+    // Allowlists |request| so the certificate requests that comes in afterwards
+    // will get a fake certificate. if any alias of |request| has been
+    // allowlisted this functions performs no-ops.
+    virtual void AllowlistCertificateRequest(
+        const ::attestation::GetCertificateRequest& request) = 0;
   };
 
   // Not copyable or movable.

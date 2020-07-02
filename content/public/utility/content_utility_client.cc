@@ -12,7 +12,7 @@ bool ContentUtilityClient::OnMessageReceived(const IPC::Message& message) {
 
 bool ContentUtilityClient::HandleServiceRequest(
     const std::string& service_name,
-    service_manager::mojom::ServiceRequest request) {
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver) {
   return false;
 }
 

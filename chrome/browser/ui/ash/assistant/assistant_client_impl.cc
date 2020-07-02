@@ -114,13 +114,6 @@ void AssistantClientImpl::OnAssistantStatusChanged(
   ash::AssistantState::Get()->NotifyStatusChanged(new_status);
 }
 
-void AssistantClientImpl::RequestAssistantNotificationController(
-    mojo::PendingReceiver<ash::mojom::AssistantNotificationController>
-        receiver) {
-  ash::AssistantInterfaceBinder::GetInstance()->BindNotificationController(
-      std::move(receiver));
-}
-
 void AssistantClientImpl::RequestAssistantVolumeControl(
     mojo::PendingReceiver<ash::mojom::AssistantVolumeControl> receiver) {
   ash::AssistantInterfaceBinder::GetInstance()->BindVolumeControl(

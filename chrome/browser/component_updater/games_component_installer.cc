@@ -70,7 +70,7 @@ void RegisterGamesComponentHelper(ComponentUpdateService* cus,
 }  // namespace
 
 GamesComponentInstallerPolicy::GamesComponentInstallerPolicy(
-    const OnGamesComponentReadyCallback& callback)
+    OnGamesComponentReadyCallback callback)
     : on_component_ready_callback_(callback) {}
 
 GamesComponentInstallerPolicy::~GamesComponentInstallerPolicy() = default;

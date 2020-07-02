@@ -53,9 +53,9 @@ using Events = update_client::UpdateClient::Observer::Events;
 class SwReporterInstallerTest : public ::testing::Test {
  public:
   SwReporterInstallerTest()
-      : on_component_ready_callback_(
-            base::Bind(&SwReporterInstallerTest::SwReporterComponentReady,
-                       base::Unretained(this))),
+      : on_component_ready_callback_(base::BindRepeating(
+            &SwReporterInstallerTest::SwReporterComponentReady,
+            base::Unretained(this))),
         default_version_("1.2.3"),
         default_path_(L"C:\\full\\path\\to\\download") {}
 

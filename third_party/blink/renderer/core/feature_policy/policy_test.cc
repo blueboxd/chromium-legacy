@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/feature_policy/dom_document_policy.h"
+#include "third_party/blink/renderer/core/feature_policy/dom_feature_policy.h"
 #include "third_party/blink/renderer/core/feature_policy/iframe_policy.h"
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
@@ -38,7 +38,8 @@ class PolicyTest : public testing::Test {
         dummy_logger_);
     feature_policy->SetHeaderPolicy(header);
 
-    auto& security_context = page_holder_->GetDocument().GetSecurityContext();
+    auto& security_context =
+        page_holder_->GetFrame().DomWindow()->GetSecurityContext();
     security_context.SetSecurityOriginForTesting(origin);
     security_context.SetFeaturePolicy(std::move(feature_policy));
   }
@@ -50,16 +51,15 @@ class PolicyTest : public testing::Test {
 
  protected:
   std::unique_ptr<DummyPageHolder> page_holder_;
-  Persistent<Document> document_;
   Persistent<DOMFeaturePolicy> policy_;
 };
 
-class DOMDocumentPolicyTest : public PolicyTest {
+class DOMFeaturePolicyTest : public PolicyTest {
  public:
   void SetUp() override {
     PolicyTest::SetUp();
-    policy_ =
-        MakeGarbageCollected<DOMDocumentPolicy>(&page_holder_->GetDocument());
+    policy_ = MakeGarbageCollected<DOMFeaturePolicy>(
+        page_holder_->GetFrame().DomWindow());
   }
 };
 
@@ -68,12 +68,12 @@ class IFramePolicyTest : public PolicyTest {
   void SetUp() override {
     PolicyTest::SetUp();
     policy_ = MakeGarbageCollected<IFramePolicy>(
-        &page_holder_->GetDocument(), ParsedFeaturePolicy(),
+        page_holder_->GetFrame().DomWindow(), ParsedFeaturePolicy(),
         SecurityOrigin::CreateFromString(kSelfOrigin));
   }
 };
 
-TEST_F(DOMDocumentPolicyTest, TestAllowsFeature) {
+TEST_F(DOMFeaturePolicyTest, TestAllowsFeature) {
   EXPECT_FALSE(GetPolicy()->allowsFeature(nullptr, "badfeature"));
   EXPECT_FALSE(GetPolicy()->allowsFeature(nullptr, "midi"));
   EXPECT_FALSE(GetPolicy()->allowsFeature(nullptr, "midi", kSelfOrigin));
@@ -92,7 +92,7 @@ TEST_F(DOMDocumentPolicyTest, TestAllowsFeature) {
   EXPECT_TRUE(GetPolicy()->allowsFeature(nullptr, "sync-xhr", kOriginA));
 }
 
-TEST_F(DOMDocumentPolicyTest, TestGetAllowList) {
+TEST_F(DOMFeaturePolicyTest, TestGetAllowList) {
   EXPECT_THAT(GetPolicy()->getAllowlistForFeature(nullptr, "camera"),
               UnorderedElementsAre(kSelfOrigin, kOriginA, kOriginB));
   EXPECT_THAT(GetPolicy()->getAllowlistForFeature(nullptr, "payment"),
@@ -108,7 +108,7 @@ TEST_F(DOMDocumentPolicyTest, TestGetAllowList) {
               UnorderedElementsAre("*"));
 }
 
-TEST_F(DOMDocumentPolicyTest, TestAllowedFeatures) {
+TEST_F(DOMFeaturePolicyTest, TestAllowedFeatures) {
   Vector<String> allowed_features = GetPolicy()->allowedFeatures(nullptr);
   EXPECT_TRUE(allowed_features.Contains("fullscreen"));
   EXPECT_TRUE(allowed_features.Contains("payment"));

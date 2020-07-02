@@ -568,8 +568,32 @@ void NGBoxFragmentPainter::PaintObject(
           PaintInlineItems(paint_info.ForDescendants(), paint_offset,
                            PhysicalOffset(), &cursor);
         }
-      } else if (physical_box_fragment.IsInlineFormattingContext()) {
-        DCHECK(!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
+      } else if (!physical_box_fragment.IsInlineFormattingContext()) {
+        PaintBlockChildren(paint_info, paint_offset);
+      } else if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+        // This is the NGPaintFragment code path. We need the check for
+        // !LayoutNGFragmentItemEnabled above, since it's possible to come up
+        // with an empty (item-less) box that's in an inline formatting context,
+        // even when that feature is enabled. This happens when an inline-level
+        // float descendant gets block-fragmented. When resuming float layout in
+        // the next fragment, the float will no longer be associated with a line
+        // or a fragment item (this is an implementation detail), but rather a
+        // regular box fragment child of this container. If there's no inline
+        // content to put in that fragment, there'll be no items, just the box
+        // fragment for the float. In that case, we have no work to do here.
+        //
+        // <div style="columns:2; column-fill:auto; height:100px;">
+        //   <div id="child">
+        //     <div id="fl" style="float:left; height:150px;"></div>
+        //     text
+        //   </div>
+        // </div>
+        //
+        // #child will get two fragments. The first one will contain a line with
+        // items for a 100px tall #fl fragment, and the text. The second
+        // fragment of #child will just contain a regular box fragment child for
+        // the remaining 50px of #fl - no items (all in-flow content fits in the
+        // first fragment).
         DCHECK(paint_fragment_);
         if (physical_box_fragment.IsBlockFlow()) {
           PaintBlockFlowContents(paint_info, paint_offset);
@@ -583,8 +607,6 @@ void NGBoxFragmentPainter::PaintObject(
           PaintInlineChildren(paint_fragment_->Children(), paint_info,
                               paint_offset);
         }
-      } else {
-        PaintBlockChildren(paint_info, paint_offset);
       }
     }
 
@@ -732,13 +754,10 @@ void NGBoxFragmentPainter::PaintFloatingItems(const PaintInfo& paint_info,
     if (!child_fragment || child_fragment->HasSelfPaintingLayer() ||
         !child_fragment->IsFloating())
       continue;
-    // TODO(kojii): The float is outside of the inline formatting context and
-    // that it maybe another NG inline formatting context, NG block layout, or
-    // legacy. NGBoxFragmentPainter can handle only the first case. In order
-    // to cover more tests for other two cases, we always fallback to legacy,
-    // which will forward back to NGBoxFragmentPainter if the float is for
-    // NGBoxFragmentPainter. We can shortcut this for the first case when
-    // we're more stable.
+    if (child_fragment->CanTraverse()) {
+      NGBoxFragmentPainter(*child_fragment).Paint(paint_info);
+      continue;
+    }
     ObjectPainter(*child_fragment->GetLayoutObject())
         .PaintAllPhasesAtomically(paint_info);
   }
@@ -749,23 +768,6 @@ void NGBoxFragmentPainter::PaintFloatingChildren(
     const PaintInfo& paint_info,
     const PaintInfo& float_paint_info) {
   DCHECK(container.HasFloatingDescendantsForPaint());
-
-  if (const NGPhysicalBoxFragment* box =
-          DynamicTo<NGPhysicalBoxFragment>(&container)) {
-    if (const NGFragmentItems* items = box->Items()) {
-      NGInlineCursor cursor(*items);
-      PaintFloatingItems(float_paint_info, &cursor);
-      return;
-    }
-    if (inline_box_cursor_) {
-      DCHECK(box->IsInlineBox());
-      NGInlineCursor descendants = inline_box_cursor_->CursorForDescendants();
-      PaintFloatingItems(float_paint_info, &descendants);
-      return;
-    }
-    DCHECK(!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled() ||
-           !box->IsInlineBox());
-  }
 
   for (const NGLink& child : container.Children()) {
     const NGPhysicalFragment& child_fragment = *child;
@@ -840,6 +842,27 @@ void NGBoxFragmentPainter::PaintFloatingChildren(
     } else {
       PaintFloatingChildren(*child_container, paint_info, float_paint_info);
     }
+  }
+
+  // Now process the inline formatting context, if any. Note that even if this
+  // is an inline formatting context, we still need to walk the box fragment
+  // children (like we did above). If a float is block-fragmented, it is resumed
+  // as a regular box fragment child, rather than becoming a fragment item.
+  if (const NGPhysicalBoxFragment* box =
+          DynamicTo<NGPhysicalBoxFragment>(&container)) {
+    if (const NGFragmentItems* items = box->Items()) {
+      NGInlineCursor cursor(*items);
+      PaintFloatingItems(float_paint_info, &cursor);
+      return;
+    }
+    if (inline_box_cursor_) {
+      DCHECK(box->IsInlineBox());
+      NGInlineCursor descendants = inline_box_cursor_->CursorForDescendants();
+      PaintFloatingItems(float_paint_info, &descendants);
+      return;
+    }
+    DCHECK(!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled() ||
+           !box->IsInlineBox());
   }
 }
 
@@ -2357,7 +2380,12 @@ bool NGBoxFragmentPainter::HitTestFloatingChildren(
   if (const auto* box = DynamicTo<NGPhysicalBoxFragment>(&container)) {
     if (const NGFragmentItems* items = box->Items()) {
       NGInlineCursor children(*items);
-      return HitTestFloatingChildItems(hit_test, children, accumulated_offset);
+      if (HitTestFloatingChildItems(hit_test, children, accumulated_offset))
+        return true;
+      // Even if this turned out to be an inline formatting context, we need to
+      // continue walking the box fragment children now. If a float is
+      // block-fragmented, it is resumed as a regular box fragment child, rather
+      // than becoming a fragment item.
     }
   }
 

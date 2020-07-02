@@ -14,8 +14,6 @@ namespace views {
 
 // A non-functional implementation of an InkDropHost that can be used during
 // tests.  Tracks the number of hosted ink drop layers.
-//
-// Note that CreateInkDrop() is not supported.
 class TestInkDropHost : public InkDropHostView {
  public:
   TestInkDropHost();
@@ -47,6 +45,7 @@ class TestInkDropHost : public InkDropHostView {
   // InkDropHostView:
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
+  std::unique_ptr<InkDrop> CreateInkDrop() override;
   std::unique_ptr<InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<InkDropHighlight> CreateInkDropHighlight() const override;
 

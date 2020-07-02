@@ -45,6 +45,8 @@
 <translation id="1395262318152388157">进度滑块</translation>
 <translation id="1399648040768741453">泰卢固语键盘（注音）</translation>
 <translation id="1430915738399379752">打印</translation>
+<translation id="1433600251059882049">已与 Linux 和 Windows 共享此文件夹</translation>
+<translation id="1435838927755162558">与 Parallels Desktop 共享文件夹</translation>
 <translation id="1439494416798956626">已移至“<ph name="FOLDER_NAME" />”。</translation>
 <translation id="1441841714100794440">越南语键盘（电传机）</translation>
 <translation id="1455548678241328678">挪威语键盘</translation>
@@ -79,6 +81,7 @@
 <translation id="1844692022597038441">此文件无法在离线模式下播放。</translation>
 <translation id="184633654410729720">泰语键盘(Kedmanee)</translation>
 <translation id="1847880352285315359">已保存</translation>
+<translation id="1853795129690976061">已与 Linux 共享此文件夹</translation>
 <translation id="1864756863218646478">找不到该文件。</translation>
 <translation id="1921986354447415460">土耳其语 F 键盘</translation>
 <translation id="1924372192547904021">已将“<ph name="DRIVE_NAME" />”格式化</translation>
@@ -180,6 +183,7 @@
 <translation id="303198083543495566">地理位置</translation>
 <translation id="3057861065630527966">备份您的照片和视频</translation>
 <translation id="3064388234319122767">音译(zdravo → здраво)</translation>
+<translation id="3067790092342515856">Windows 文件</translation>
 <translation id="3078461028045006476">使用“<ph name="EXTENSION_NAME" />”分享</translation>
 <translation id="3088034400796962477">音译(salam ← سلام)</translation>
 <translation id="3116361045094675131">英语（英国）键盘</translation>
@@ -262,6 +266,7 @@
 <translation id="3943857333388298514">粘贴</translation>
 <translation id="3958548648197196644">猕猴桃</translation>
 <translation id="3966388904776714213">音频播放器</translation>
+<translation id="3984317463833596033">授权 Parallels Desktop 修改“<ph name="FOLDER_NAME" />”文件夹中的文件</translation>
 <translation id="4002066346123236978">标题</translation>
 <translation id="4070370845051020638">粤语输入法</translation>
 <translation id="4072248638558688893">泰米尔语键盘（注音）</translation>
@@ -290,6 +295,7 @@
 <translation id="4470564870223067757">韩语(2 Set)</translation>
 <translation id="4477219268485577442">保加利亚语（注音）</translation>
 <translation id="4479812471636796472">英语（美国）德沃夏克键盘</translation>
+<translation id="4481711095103932593">已与 Windows 共享此文件夹</translation>
 <translation id="4487088045714738411">比利时键盘</translation>
 <translation id="4522570452068850558">详细信息</translation>
 <translation id="4552678318981539154">购买更多存储空间</translation>
@@ -335,10 +341,12 @@
 <translation id="4881695831933465202">打开</translation>
 <translation id="4886021172213954916">泰米尔语键盘（打字机）</translation>
 <translation id="4892969127351273348">无法使用“<ph name="APP_NAME" />”打开</translation>
+<translation id="4900532980794411603">与 Parallels Desktop 共享</translation>
 <translation id="4905417359854579806">可以开始备份 <ph name="FILE_COUNT" />了</translation>
 <translation id="4924638091161556692">已修正</translation>
 <translation id="4935975195727477204">杂色菊</translation>
 <translation id="4943368462779413526">美式足球</translation>
+<translation id="4961158930123534723">已与 Parallels Desktop 共享 1 个文件夹</translation>
 <translation id="4969785127455456148">专辑</translation>
 <translation id="497244430928947428">马拉雅拉姆语键盘（注音）</translation>
 <translation id="4973523518332075481">所用名称的长度不得超过 <ph name="MAX_LENGTH" /> 个字符</translation>
@@ -350,6 +358,7 @@
 <translation id="5010406651457630570">计算机</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5024856940085636730">某项操作所用的时间超出预期。要取消该操作吗？</translation>
+<translation id="5036159836254554629">管理与 Parallels Desktop 的共享</translation>
 <translation id="5038625366300922036">查看更多…</translation>
 <translation id="5061708541166515394">对比度</translation>
 <translation id="5068919226082848014">披萨</translation>
@@ -494,6 +503,7 @@
 <translation id="656398493051028875">正在删除“<ph name="FILENAME" />”…</translation>
 <translation id="6581162200855843583">Google 云端硬盘链接</translation>
 <translation id="6607272825297743757">文件信息</translation>
+<translation id="6609332149380188670">已与 Parallels Desktop 共享 <ph name="NUMBER_OF_ITEMS" /> 个文件夹</translation>
 <translation id="6629841649550503054">所有文件都已备份到 <ph name="BEGIN_LINK" />Google 云端硬盘<ph name="END_LINK" />！</translation>
 <translation id="6643016212128521049">清除</translation>
 <translation id="6650726141019353908">粉蝴蝶</translation>
@@ -675,6 +685,7 @@
 <translation id="8475647382427415476">Google 云端硬盘暂时无法同步“<ph name="FILENAME" />”，将在稍后重试。</translation>
 <translation id="8477649328507734757">同心圆</translation>
 <translation id="8487700953926739672">可离线使用</translation>
+<translation id="8490342535582768689">授权 Parallels Desktop 修改您 Google 云端硬盘中的文件。相关更改会同步到您的其他设备。</translation>
 <translation id="8521441079177373948">英国英语</translation>
 <translation id="8525306231823319788">全屏</translation>
 <translation id="8551494947769799688">拉脱维亚语</translation>

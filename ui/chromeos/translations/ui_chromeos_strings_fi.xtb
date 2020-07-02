@@ -45,6 +45,8 @@
 <translation id="1395262318152388157">Kelaamisen liukusäädin</translation>
 <translation id="1399648040768741453">Telugunkielinen näppäimistö (foneettinen)</translation>
 <translation id="1430915738399379752">Tulosta</translation>
+<translation id="1433600251059882049">Tämä kansio on jaettu Linuxille ja Windowsille</translation>
+<translation id="1435838927755162558">Jaa kansio Parallels Desktopille</translation>
 <translation id="1439494416798956626">Siirretty kansioon <ph name="FOLDER_NAME" /></translation>
 <translation id="1441841714100794440">Vietnamilainen näppäimistö (telex)</translation>
 <translation id="1455548678241328678">Näppäimistö: norja</translation>
@@ -79,6 +81,7 @@
 <translation id="1844692022597038441">Tämä tiedosto ei ole käytettävissä offline-tilassa.</translation>
 <translation id="184633654410729720">Thainkielinen näppäimistö (kedmanee)</translation>
 <translation id="1847880352285315359">Tallennettu</translation>
+<translation id="1853795129690976061">Tämä kansio on jaettu Linuxille</translation>
 <translation id="1864756863218646478">Tiedostoa ei löytynyt.</translation>
 <translation id="1921986354447415460">Näppäimistö: turkki (F-tyyppi)</translation>
 <translation id="1924372192547904021"><ph name="DRIVE_NAME" /> alustettu</translation>
@@ -180,6 +183,7 @@
 <translation id="303198083543495566">Sijainti</translation>
 <translation id="3057861065630527966">Varmuuskopioi valokuvasi ja videosi.</translation>
 <translation id="3064388234319122767">Translitterointi (zdravo → здраво)</translation>
+<translation id="3067790092342515856">Windows-tiedostot</translation>
 <translation id="3078461028045006476">Jaa laajennuksen <ph name="EXTENSION_NAME" /> kanssa</translation>
 <translation id="3088034400796962477">Translitterointi (salam ← سلام)</translation>
 <translation id="3116361045094675131">Näppäimistö: UK</translation>
@@ -262,6 +266,7 @@
 <translation id="3943857333388298514">Liitä</translation>
 <translation id="3958548648197196644">Kiivi</translation>
 <translation id="3966388904776714213">Äänisoitin</translation>
+<translation id="3984317463833596033">Anna Parallels Desktopille lupa muokata kansiossa <ph name="FOLDER_NAME" /> olevia tiedostoja</translation>
 <translation id="4002066346123236978">Nimi</translation>
 <translation id="4070370845051020638">Kantoninkiina-syöttötapa</translation>
 <translation id="4072248638558688893">Tamilinkielinen näppäimistö (foneettinen)</translation>
@@ -290,6 +295,7 @@
 <translation id="4470564870223067757">Hangul 2-set</translation>
 <translation id="4477219268485577442">bulgaria, foneettinen</translation>
 <translation id="4479812471636796472">Näppäimistö: US, Dvorak</translation>
+<translation id="4481711095103932593">Tämä kansio on jaettu Windowsille</translation>
 <translation id="4487088045714738411">Näppäimistö: Belgia</translation>
 <translation id="4522570452068850558">Tiedot</translation>
 <translation id="4552678318981539154">Osta lisää tallennustilaa</translation>
@@ -335,10 +341,12 @@
 <translation id="4881695831933465202">Avaa</translation>
 <translation id="4886021172213954916">Tamilinkielinen näppäimistö (kirjoituskone)</translation>
 <translation id="4892969127351273348"><ph name="APP_NAME" /> ei onnistunut avaamaan tiedostoa</translation>
+<translation id="4900532980794411603">Jaa Parallels Desktopille</translation>
 <translation id="4905417359854579806"><ph name="FILE_COUNT" /> valmiina varmuuskopiointiin</translation>
 <translation id="4924638091161556692">Korjattu</translation>
 <translation id="4935975195727477204">Kukka</translation>
 <translation id="4943368462779413526">Jalkapallo</translation>
+<translation id="4961158930123534723">1 kansio jaettu Parallels Desktopille</translation>
 <translation id="4969785127455456148">Albumi</translation>
 <translation id="497244430928947428">Malajalaminkielinen näppäimistö (foneettinen)</translation>
 <translation id="4973523518332075481">Käytä nimeä, jonka pituus on enintään <ph name="MAX_LENGTH" /> merkkiä.</translation>
@@ -350,6 +358,7 @@
 <translation id="5010406651457630570">Tietokoneet</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5024856940085636730">Toiminto kestää odotettua kauemmin. Haluatko keskeyttää sen?</translation>
+<translation id="5036159836254554629">Määritä Parallels Desktop ‑jakaminen</translation>
 <translation id="5038625366300922036">Lisätietoja…</translation>
 <translation id="5061708541166515394">Kontrasti</translation>
 <translation id="5068919226082848014">Pizza</translation>
@@ -499,6 +508,7 @@
 <translation id="656398493051028875">Poistetaan tiedostoa <ph name="FILENAME" />…</translation>
 <translation id="6581162200855843583">Google Drive -linkki</translation>
 <translation id="6607272825297743757">Tiedoston tiedot</translation>
+<translation id="6609332149380188670"><ph name="NUMBER_OF_ITEMS" /> kansiota jaettu Parallels Desktopille</translation>
 <translation id="6629841649550503054">Kaikki on varmuuskopioitu <ph name="BEGIN_LINK" />Google Driveen!<ph name="END_LINK" /></translation>
 <translation id="6643016212128521049">Tyhjennä</translation>
 <translation id="6650726141019353908">Vaaleanpunainen perhonen</translation>
@@ -680,6 +690,7 @@
 <translation id="8475647382427415476">Google Drive ei onnistunut synkronoimaan tiedostoa <ph name="FILENAME" />. Google Drive yrittää myöhemmin uudelleen.</translation>
 <translation id="8477649328507734757">Pyörä</translation>
 <translation id="8487700953926739672">Käytettävissä offline-tilassa</translation>
+<translation id="8490342535582768689">Anna Parallels Desktopille lupa muokata Google Driveesi tallennettuja tiedostoja. Muutokset synkronoidaan muille laitteillesi.</translation>
 <translation id="8521441079177373948">UK</translation>
 <translation id="8525306231823319788">Koko näyttö</translation>
 <translation id="8551494947769799688">latvia</translation>

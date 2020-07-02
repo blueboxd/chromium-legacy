@@ -11,7 +11,6 @@
 #include "ash/public/cpp/ambient/ambient_ui_model.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/session/session_activation_observer.h"
-#include "ash/public/mojom/assistant_controller.mojom.h"
 #include "base/callback.h"
 #include "base/cancelable_callback.h"
 #include "base/component_export.h"
@@ -182,9 +181,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
       assistant_manager_service_for_testing_ = nullptr;
 
   base::Optional<std::string> access_token_;
-
-  mojo::Remote<ash::mojom::AssistantNotificationController>
-      assistant_notification_controller_;
 
   // |ServiceContext| object passed to child classes so they can access some of
   // our functionality without depending on us.

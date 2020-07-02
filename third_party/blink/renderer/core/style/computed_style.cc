@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/html/html_progress_element.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/ng/custom/layout_worklet.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
@@ -206,7 +207,8 @@ static bool PseudoElementStylesEqual(const ComputedStyle& old_style,
   return true;
 }
 
-bool ComputedStyle::NeedsReattachLayoutTree(const ComputedStyle* old_style,
+bool ComputedStyle::NeedsReattachLayoutTree(const Element& element,
+                                            const ComputedStyle* old_style,
                                             const ComputedStyle* new_style) {
   if (old_style == new_style)
     return false;
@@ -233,6 +235,13 @@ bool ComputedStyle::NeedsReattachLayoutTree(const ComputedStyle* old_style,
   if (old_style->DisplayLayoutCustomName() !=
       new_style->DisplayLayoutCustomName())
     return true;
+  if (old_style->HasEffectiveAppearance() !=
+          new_style->HasEffectiveAppearance() &&
+      IsA<HTMLProgressElement>(element)) {
+    // HTMLProgressElement::CreateLayoutObject creates different LayoutObjects
+    // based on appearance.
+    return true;
+  }
   if (!RuntimeEnabledFeatures::LayoutNGEnabled())
     return false;
 

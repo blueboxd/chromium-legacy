@@ -1003,10 +1003,13 @@ TEST_F(CompositorFrameReportingControllerTest,
   histogram_tester.ExpectTotalCount("EventLatency.TouchPressed.TotalLatency",
                                     1);
   histogram_tester.ExpectTotalCount("EventLatency.TouchMoved.TotalLatency", 2);
+  histogram_tester.ExpectTotalCount("EventLatency.TotalLatency", 3);
   histogram_tester.ExpectBucketCount("EventLatency.TouchPressed.TotalLatency",
                                      latency_ms, 1);
   histogram_tester.ExpectBucketCount("EventLatency.TouchMoved.TotalLatency",
                                      latency_ms, 2);
+  histogram_tester.ExpectBucketCount("EventLatency.TotalLatency", latency_ms,
+                                     3);
 }
 
 // Tests that EventLatency breakdown histograms are reported properly when a
@@ -1110,6 +1113,8 @@ TEST_F(CompositorFrameReportingControllerTest,
            viz_breakdown.swap_timings.swap_end},
       {"EventLatency.TouchPressed.TotalLatency",
        viz_breakdown.presentation_feedback.timestamp - event_time},
+      {"EventLatency.TotalLatency",
+       viz_breakdown.presentation_feedback.timestamp - event_time},
   };
 
   for (const auto& expected_latency : expected_latencies) {
@@ -1177,6 +1182,7 @@ TEST_F(CompositorFrameReportingControllerTest,
     histogram_tester.ExpectBucketCount(
         expected_count.name, expected_count.latency_ms, expected_count.count);
   }
+  histogram_tester.ExpectTotalCount("EventLatency.TotalLatency", 3);
 }
 
 // Tests that EventLatency histograms are not reported when the frame is dropped

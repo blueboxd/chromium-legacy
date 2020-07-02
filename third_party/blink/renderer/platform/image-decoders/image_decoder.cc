@@ -23,6 +23,7 @@
 #include <memory>
 
 #include "base/numerics/safe_conversions.h"
+#include "base/sys_byteorder.h"
 #include "build/build_config.h"
 #include "media/media_buildflags.h"
 #include "third_party/blink/public/common/features.h"
@@ -231,7 +232,31 @@ std::unique_ptr<ImageDecoder> ImageDecoder::CreateByMimeType(
 }
 
 bool ImageDecoder::HasSufficientDataToSniffMimeType(const SharedBuffer& data) {
-  return data.size() >= kLongestSignatureLength;
+  // At least kLongestSignatureLength bytes are needed to sniff the signature.
+  if (data.size() < kLongestSignatureLength)
+    return false;
+
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+  if (base::FeatureList::IsEnabled(features::kAVIF)) {
+    // Check for an ISO BMFF File Type Box. Assume that 'largesize' is not used.
+    // The first eight bytes would be a big-endian 32-bit unsigned integer
+    // 'size' and a four-byte 'type'.
+    struct {
+      uint32_t size;  // unsigned int(32) size;
+      char type[4];   // unsigned int(32) type = boxtype;
+    } box;
+    static_assert(sizeof(box) == 8, "");
+    static_assert(8 <= kLongestSignatureLength, "");
+    bool ok = data.GetBytes(&box, 8u);
+    DCHECK(ok);
+    if (memcmp(box.type, "ftyp", 4) == 0) {
+      // Returns whether we have received the File Type Box in its entirety.
+      box.size = base::NetToHost32(box.size);
+      return box.size <= data.size();
+    }
+  }
+#endif
+  return true;
 }
 
 // static

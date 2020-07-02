@@ -60,6 +60,10 @@ struct StructTraits<local_search_service::mojom::DataDataView,
     return d.contents;
   }
 
+  static std::string locale(const local_search_service::Data& d) {
+    return d.locale;
+  }
+
   static bool Read(local_search_service::mojom::DataDataView data,
                    local_search_service::Data* out);
 };

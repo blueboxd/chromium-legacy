@@ -6,6 +6,7 @@
 <translation id="1044891598689252897">Sites will work normally</translation>
 <translation id="1047726139967079566">Bookmark This Page...</translation>
 <translation id="1049743911850919806">Incognito</translation>
+<translation id="105093091697134113">The following accounts use passwords which were exposed in a third-party data breach or entered on a deceptive website. Change these passwords immediately to keep your accounts safe.</translation>
 <translation id="1063454504051558093">Use other password...</translation>
 <translation id="1066060668811609597">Manage Sync</translation>
 <translation id="1076421457278169141">Code scanned</translation>
@@ -81,7 +82,6 @@
 <translation id="1809939268435598390">Delete Folder</translation>
 <translation id="1813414402673211292">Clear Browsing Data</translation>
 <translation id="1820259098641718022">Added to Reading List</translation>
-<translation id="1828824471510190776">Suggest  Password…</translation>
 <translation id="1870148520156231997">Reveal password</translation>
 <translation id="1872096359983322073">Torch</translation>
 <translation id="1911619930368729126">Upload to Google Drive</translation>
@@ -119,6 +119,9 @@
 <translation id="2359043044084662842">Translate</translation>
 <translation id="2359808026110333948">Continue</translation>
 <translation id="2360196772093551345">Request Mobile Site</translation>
+<translation id="236977714248711277">Sites can't use cookies to improve your browsing experience, for example, to keep you signed in or to remember items in your shopping basket.
+
+Sites can't use cookies to see your browsing activity across different sites, for example, to personalise ads.</translation>
 <translation id="2379896346847637748">Open in a new window</translation>
 <translation id="2381405137052800939">Basics</translation>
 <translation id="2386793615875593361">1 selected</translation>
@@ -185,6 +188,9 @@
 <translation id="3175081911749765310">Web Services</translation>
 <translation id="3178650076442119961">Active today</translation>
 <translation id="3181954750937456830">Safe Browsing (protects you and your device from dangerous sites)</translation>
+<translation id="3196681740617426482">Sites can use cookies to improve your browsing experience, for example, to keep you signed in or to remember items in your shopping basket.
+
+While in Incognito, sites can't use cookies to see your browsing activity across different sites, for example, to personalise ads.</translation>
 <translation id="3207960819495026254">Bookmarked</translation>
 <translation id="3224641773458703735">To export passwords, you must first set a passcode on your device.</translation>
 <translation id="3240426699337459095">Link copied</translation>
@@ -266,6 +272,7 @@
 <translation id="4263576668337963058">Show available page actions</translation>
 <translation id="4272631900155121838">To scan a QR code, enable the camera from settings</translation>
 <translation id="4276041135170112053">Fix now.</translation>
+<translation id="4277990410970811858">Safe Browsing</translation>
 <translation id="4281844954008187215">Terms of Service</translation>
 <translation id="430793432425771671">Sync Everything</translation>
 <translation id="430967081421617822">All time</translation>
@@ -305,6 +312,7 @@ Your data is encrypted with your sync passphrase. Enter it to start sync.</trans
 
 To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">Invalid Card Number</translation>
+<translation id="4808744395915275922">Updates</translation>
 <translation id="4818522717893377262">Add language…</translation>
 <translation id="481968316161811770">Cookies, Site Data</translation>
 <translation id="4826218269716039351">Block third party</translation>
@@ -357,6 +365,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5443952882982198570">Credit cards</translation>
 <translation id="5457907402803865181">Error syncing passwords.</translation>
 <translation id="5489208564673669003">To manage cookies for all sites, see <ph name="BEGIN_LINK" />Cookie settings<ph name="END_LINK" />.</translation>
+<translation id="5490005495580364134">Block all cookies (not recommended)</translation>
 <translation id="5508435575041083207">Sign out and clear data from this device</translation>
 <translation id="5525269841082836315">Create a Pass phrase</translation>
 <translation id="5548760955356983418">Handoff lets you start browsing a website on this device and then easily continue on your Mac. The current open website will appear in the Dock of your Mac.
@@ -451,6 +460,9 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="6445981559479772097">Message sent.</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6464071786529933911">Open in New Incognito Tab</translation>
+<translation id="6464397691496239022">Sites can use cookies to improve your browsing experience, for example, to keep you signed in or to remember items in your shopping basket.
+
+Sites can't use cookies to see your browsing activity across different sites, for example, to personalise ads.</translation>
 <translation id="6476800141292307438">Translating the page to <ph name="LANGUAGE" />. Options available near bottom of the screen.</translation>
 <translation id="648164694371393720">Authentication error</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> items deleted</translation>
@@ -570,6 +582,9 @@ Because your account is managed by <ph name="HOSTED_DOMAIN" />, your Chrome data
 <translation id="7947953824732555851">Accept and sign in</translation>
 <translation id="794799177247607889">Stop logging</translation>
 <translation id="7961015016161918242">Never</translation>
+<translation id="7966516440812255683">Sites can use cookies to improve your browsing experience, for example, to keep you signed in or to remember items in your shopping basket.
+
+Sites can use cookies to see your browsing activity across different sites, for example, to personalise ads.</translation>
 <translation id="7971521879845308059">Block Pop-ups</translation>
 <translation id="7982789257301363584">Network</translation>
 <translation id="7993619969781047893">Features on some sites may break</translation>
@@ -617,12 +632,14 @@ Because your account is managed by <ph name="HOSTED_DOMAIN" />, your Chrome data
 <translation id="8548878600947630424">Find in page...</translation>
 <translation id="8574235780160508979">Chrome’s Terms of Service are changing on 31 March. <ph name="BEGIN_LINK" />Please review<ph name="END_LINK" /></translation>
 <translation id="8588404856427128947">Off</translation>
+<translation id="8591976964826315682">Block third-party cookies in Incognito</translation>
 <translation id="8605219856220328675">Close tab.</translation>
 <translation id="8620640915598389714">Edit</translation>
 <translation id="8636825310635137004">To get your tabs from your other devices, turn on sync.</translation>
 <translation id="8654802032646794042">Cancel</translation>
 <translation id="8668210798914567634">This page has been saved to your Reading List.</translation>
 <translation id="8680787084697685621">Account sign-in details are out of date.</translation>
+<translation id="8706588385081740091">Passwords</translation>
 <translation id="8721297211384281569">Tools Menu</translation>
 <translation id="8725066075913043281">Try again</translation>
 <translation id="8730621377337864115">Done</translation>

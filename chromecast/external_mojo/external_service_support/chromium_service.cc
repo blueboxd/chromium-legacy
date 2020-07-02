@@ -10,7 +10,6 @@
 #include "base/check.h"
 #include "base/token.h"
 #include "chromecast/external_mojo/external_service_support/external_connector.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"

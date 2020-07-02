@@ -15,6 +15,7 @@
 <translation id="1947737735496445907">Одштампано</translation>
 <translation id="1979103255016296513">Рок за промену лозинке је истекао</translation>
 <translation id="2049639323467105390">Овим уређајем управља домен <ph name="DOMAIN" />.</translation>
+<translation id="2161394479394250669">Откажи задатак штампања</translation>
 <translation id="2338501278241028356">Укључите Bluetooth да бисте открили уређаје у близини</translation>
 <translation id="2375079107209812402">Преостали покушаји: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="2805756323405976993">Апликације</translation>
@@ -24,12 +25,12 @@
 <translation id="3268178239013324452">Није успело – врата су отворена</translation>
 <translation id="3369013195428705271">Желите ли стварно да обришете целу историју штампања? Задаци штампања који су у току се не бришу.</translation>
 <translation id="3456078764689556234">Одштампаних страница: <ph name="PRINTED_PAGES" /> од <ph name="TOTAL_PAGES" />.</translation>
+<translation id="3459509316159669723">Штампање</translation>
 <translation id="3527036260304016759">Није успело – непозната грешка</translation>
 <translation id="3749289110408117711">Назив датотеке</translation>
 <translation id="38114475217616659">Обриши сву историју</translation>
 <translation id="3820172043799983114">Неважећи PIN.</translation>
 <translation id="3838338534323494292">Нова лозинка</translation>
-<translation id="3953601359945991637"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> од <ph name="TOTAL_PAGE_NUMBER" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> управља овим уређајем и има приступ свим активностима корисника, укључујући посећене веб-странице, лозинке и имејлове.</translation>
 <translation id="4003384961948020559">Није успело – излаз је пун</translation>
 <translation id="4034824040120875894">Штампач</translation>

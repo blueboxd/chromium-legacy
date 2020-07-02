@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "ash/public/mojom/assistant_controller.mojom.h"
 #include "base/component_export.h"
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "chromeos/services/assistant/public/cpp/assistant_settings.h"

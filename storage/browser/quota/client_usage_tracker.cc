@@ -11,7 +11,6 @@
 #include "base/callback_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
-#include "net/base/url_util.h"
 
 namespace storage {
 
@@ -156,7 +155,7 @@ void ClientUsageTracker::GetHostUsage(const std::string& host,
 void ClientUsageTracker::UpdateUsageCache(const url::Origin& origin,
                                           int64_t delta) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::string host = net::GetHostOrSpecFromURL(origin.GetURL());
+  const std::string& host = origin.host();
   if (base::Contains(cached_hosts_, host)) {
     if (!IsUsageCacheEnabledForOrigin(origin))
       return;
@@ -221,7 +220,7 @@ std::set<url::Origin> ClientUsageTracker::GetCachedOrigins() const {
 void ClientUsageTracker::SetUsageCacheEnabled(const url::Origin& origin,
                                               bool enabled) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::string host = net::GetHostOrSpecFromURL(origin.GetURL());
+  const std::string& host = origin.host();
   if (!enabled) {
     // Erase |origin| from cache and subtract its usage.
     auto found_host = cached_usage_by_host_.find(host);
@@ -274,10 +273,8 @@ void ClientUsageTracker::DidGetOriginsForGlobalUsage(
     const std::set<url::Origin>& origins) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   OriginSetByHost origins_by_host;
-  for (const auto& origin : origins) {
-    GURL origin_url = origin.GetURL();
-    origins_by_host[net::GetHostOrSpecFromURL(origin_url)].insert(origin);
-  }
+  for (const auto& origin : origins)
+    origins_by_host[origin.host()].insert(origin);
 
   AccumulateInfo* info = new AccumulateInfo;
   // Getting host usage may synchronously return the result if the usage is
@@ -343,7 +340,7 @@ void ClientUsageTracker::GetUsageForOrigins(
                           AsWeakPtr(), base::Owned(info), host);
 
   for (const auto& origin : origins) {
-    DCHECK_EQ(host, net::GetHostOrSpecFromURL(origin.GetURL()));
+    DCHECK_EQ(host, origin.host());
 
     int64_t origin_usage = 0;
     if (GetCachedOriginUsage(origin, &origin_usage)) {
@@ -399,7 +396,7 @@ void ClientUsageTracker::AddCachedOrigin(const url::Origin& origin,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsUsageCacheEnabledForOrigin(origin));
 
-  std::string host = net::GetHostOrSpecFromURL(origin.GetURL());
+  const std::string& host = origin.host();
   int64_t* usage = &cached_usage_by_host_[host][origin];
   int64_t delta = new_usage - *usage;
   *usage = new_usage;
@@ -431,7 +428,7 @@ int64_t ClientUsageTracker::GetCachedHostUsage(const std::string& host) const {
 bool ClientUsageTracker::GetCachedOriginUsage(const url::Origin& origin,
                                               int64_t* usage) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::string host = net::GetHostOrSpecFromURL(origin.GetURL());
+  const std::string& host = origin.host();
   auto found_host = cached_usage_by_host_.find(host);
   if (found_host == cached_usage_by_host_.end())
     return false;
@@ -448,7 +445,7 @@ bool ClientUsageTracker::GetCachedOriginUsage(const url::Origin& origin,
 bool ClientUsageTracker::IsUsageCacheEnabledForOrigin(
     const url::Origin& origin) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::string host = net::GetHostOrSpecFromURL(origin.GetURL());
+  const std::string& host = origin.host();
   return !OriginSetContainsOrigin(non_cached_limited_origins_by_host_,
                                   host, origin) &&
       !OriginSetContainsOrigin(non_cached_unlimited_origins_by_host_,
@@ -465,7 +462,7 @@ void ClientUsageTracker::OnGranted(const url::Origin& origin,
       global_limited_usage_ -= usage;
     }
 
-    std::string host = net::GetHostOrSpecFromURL(origin.GetURL());
+    const std::string& host = origin.host();
     if (EraseOriginFromOriginSet(&non_cached_limited_origins_by_host_,
                                  host, origin))
       non_cached_unlimited_origins_by_host_[host].insert(origin);
@@ -482,7 +479,7 @@ void ClientUsageTracker::OnRevoked(const url::Origin& origin,
       global_limited_usage_ += usage;
     }
 
-    std::string host = net::GetHostOrSpecFromURL(origin.GetURL());
+    const std::string& host = origin.host();
     if (EraseOriginFromOriginSet(&non_cached_unlimited_origins_by_host_,
                                  host, origin))
       non_cached_limited_origins_by_host_[host].insert(origin);

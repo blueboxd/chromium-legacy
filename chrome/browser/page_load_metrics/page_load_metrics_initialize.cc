@@ -168,7 +168,7 @@ void PageLoadMetricsEmbedder::RegisterEmbedderObservers(
         std::make_unique<LocalNetworkRequestsPageLoadMetricsObserver>());
   }
   tracker->AddObserver(
-      std::make_unique<OmniboxSuggestionUsedMetricsObserver>(IsPrerendering()));
+      std::make_unique<OmniboxSuggestionUsedMetricsObserver>());
   tracker->AddObserver(
       SecurityStatePageLoadMetricsObserver::MaybeCreateForProfile(
           web_contents()->GetBrowserContext()));

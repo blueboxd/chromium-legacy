@@ -45,6 +45,8 @@
 <translation id="1395262318152388157">Erreprodukzio-barra</translation>
 <translation id="1399648040768741453">Teklatu teluguarra (fonetikoa)</translation>
 <translation id="1430915738399379752">Inprimatu</translation>
+<translation id="1433600251059882049">Karpeta hau Linux eta Windows-ekin partekatuta dago</translation>
+<translation id="1435838927755162558">Partekatu karpeta Parallels Desktop aplikazioarekin</translation>
 <translation id="1439494416798956626">Eraman da <ph name="FOLDER_NAME" /> karpetara.</translation>
 <translation id="1441841714100794440">Teklatu vietnamdarra (telex)</translation>
 <translation id="1455548678241328678">Teklatu norvegiarra</translation>
@@ -79,6 +81,7 @@
 <translation id="1844692022597038441">Fitxategia ez dago erabilgarri konexiorik gabe.</translation>
 <translation id="184633654410729720">Teklatu thailandiarra (kedmanee)</translation>
 <translation id="1847880352285315359">Gordeta</translation>
+<translation id="1853795129690976061">Karpeta hau Linux-ekin partekatuta dago</translation>
 <translation id="1864756863218646478">Ezin izan da aurkitu fitxategia.</translation>
 <translation id="1921986354447415460">Turkierako F teklatua</translation>
 <translation id="1924372192547904021">Formateatu da <ph name="DRIVE_NAME" /></translation>
@@ -180,6 +183,7 @@
 <translation id="303198083543495566">Geografia</translation>
 <translation id="3057861065630527966">Egin argazkien eta bideoen babeskopiak</translation>
 <translation id="3064388234319122767">Transliterazioa (zdravo → здраво)</translation>
+<translation id="3067790092342515856">Windows-en fitxategiak</translation>
 <translation id="3078461028045006476">Partekatu <ph name="EXTENSION_NAME" /> luzapenarekin</translation>
 <translation id="3088034400796962477">Transliterazioa (salam ← سلام)</translation>
 <translation id="3116361045094675131">Erresuma Batuko teklatua</translation>
@@ -262,6 +266,7 @@
 <translation id="3943857333388298514">Itsatsi</translation>
 <translation id="3958548648197196644">Kiwia</translation>
 <translation id="3966388904776714213">Audio erreproduzigailua</translation>
+<translation id="3984317463833596033">Eman <ph name="FOLDER_NAME" /> karpetan fitxategiak aldatzeko baimena Parallels Desktop aplikazioari</translation>
 <translation id="4002066346123236978">Izena</translation>
 <translation id="4070370845051020638">Idazketa-metodo kantondarra</translation>
 <translation id="4072248638558688893">Teklatu tamildarra (fonetikoa)</translation>
@@ -290,6 +295,7 @@
 <translation id="4470564870223067757">2. hangul-karaktere sorta</translation>
 <translation id="4477219268485577442">Bulgariar fonetikoa</translation>
 <translation id="4479812471636796472">AEBko Dvorak teklatua</translation>
+<translation id="4481711095103932593">Karpeta hau Windows-ekin partekatuta dago</translation>
 <translation id="4487088045714738411">Teklatu belgikarra</translation>
 <translation id="4522570452068850558">Xehetasunak</translation>
 <translation id="4552678318981539154">Erosi memoria gehiago</translation>
@@ -335,10 +341,12 @@
 <translation id="4881695831933465202">Ireki</translation>
 <translation id="4886021172213954916">Teklatu tamildarra (idazmakina)</translation>
 <translation id="4892969127351273348">Ezin da ireki <ph name="APP_NAME" /> aplikazioarekin</translation>
+<translation id="4900532980794411603">Partekatu Parallels Desktop aplikazioarekin</translation>
 <translation id="4905417359854579806">Hauen babeskopia egiteko prest: <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Finkatu egin da</translation>
 <translation id="4935975195727477204">Lorea</translation>
 <translation id="4943368462779413526">Futboleko baloia</translation>
+<translation id="4961158930123534723">Karpeta bat partekatu da Parallels Desktop aplikazioarekin</translation>
 <translation id="4969785127455456148">Albuma</translation>
 <translation id="497244430928947428">Teklatu malayalamdarra (fonetikoa)</translation>
 <translation id="4973523518332075481">Erabili <ph name="MAX_LENGTH" /> karaktere edo gutxiago dituen izen bat</translation>
@@ -350,6 +358,7 @@
 <translation id="5010406651457630570">Ordenagailuak</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5024856940085636730">Eragiketa bat uste baino gehiago luzatzen ari da. Bertan behera utzi nahi duzu?</translation>
+<translation id="5036159836254554629">Kudeatu Parallels Desktop aplikazioaren partekatzea</translation>
 <translation id="5038625366300922036">Ikusi gehiago…</translation>
 <translation id="5061708541166515394">Kontrastea</translation>
 <translation id="5068919226082848014">Pizza</translation>
@@ -498,6 +507,7 @@
 <translation id="656398493051028875">"<ph name="FILENAME" />" ezabatzen…</translation>
 <translation id="6581162200855843583">Google Drive esteka</translation>
 <translation id="6607272825297743757">Fitxategiari buruzko informazioa</translation>
+<translation id="6609332149380188670"><ph name="NUMBER_OF_ITEMS" /> karpeta partekatu dira Parallels Desktop aplikazioarekin</translation>
 <translation id="6629841649550503054">Fitxategi guztien babeskopia egin da <ph name="BEGIN_LINK" />Google Drive-n!<ph name="END_LINK" /></translation>
 <translation id="6643016212128521049">Garbitu</translation>
 <translation id="6650726141019353908">Tximeleta arrosa</translation>
@@ -679,6 +689,7 @@
 <translation id="8475647382427415476">Google Drive-k ezin izan du sinkronizatu "<ph name="FILENAME" />". Berriro saiatuko da geroago.</translation>
 <translation id="8477649328507734757">Zirkuluak</translation>
 <translation id="8487700953926739672">Konexiorik gabe erabilgarri</translation>
+<translation id="8490342535582768689">Eman Google Drive-ko fitxategiak aldatzeko baimena Parallels Desktop aplikazioari. Aldaketak beste gailuekin sinkronizatuko dira.</translation>
 <translation id="8521441079177373948">Erresuma Batukoa</translation>
 <translation id="8525306231823319788">Pantaila osoa</translation>
 <translation id="8551494947769799688">Letoniarra</translation>

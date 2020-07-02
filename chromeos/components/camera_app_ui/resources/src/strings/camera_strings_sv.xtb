@@ -30,6 +30,7 @@
 <translation id="3517926952904427380">Det gick inte att ta porträttfoto</translation>
 <translation id="3569311554794739032">Vill du ta bort <ph name="FILE" />?</translation>
 <translation id="3810838688059735925">Video</translation>
+<translation id="4118525110028899586">Pausa inspelning</translation>
 <translation id="4279490309300973883">Spegling</translation>
 <translation id="4329152592498422850">Byt till att ta kvadratiskt foto</translation>
 <translation id="4383571725254449280">Skriva ut resultatloggar</translation>
@@ -67,11 +68,13 @@
 <translation id="8067883171444229417">Spela upp video</translation>
 <translation id="8131740175452115882">Bekräfta</translation>
 <translation id="8145038249676204903">Byt till fotoläge</translation>
+<translation id="8239780215768881278">Spela in en ögonblicksvideo</translation>
 <translation id="8261506727792406068">Radera</translation>
 <translation id="8428213095426709021">Inställningar</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
 <translation id="8732462232047530626">Förhandsgranska metadata</translation>
 <translation id="8815966864175525708">Byt till att ta porträttfoto</translation>
+<translation id="8828441885228359828">Återuppta inspelning</translation>
 <translation id="8870695351537079478">Det gick inte att starta inspelningen</translation>
 <translation id="9045155556724273246">Tio sekunder</translation>
 <translation id="945522503751344254">Skicka synpunkter</translation>

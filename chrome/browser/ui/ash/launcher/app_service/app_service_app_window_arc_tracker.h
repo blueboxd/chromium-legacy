@@ -32,6 +32,10 @@ namespace base {
 class Time;
 }
 
+namespace gfx {
+class ImageSkia;
+}
+
 class AppServiceAppWindowLauncherController;
 class AppServiceAppWindowLauncherItemController;
 class ArcAppWindowInfo;
@@ -117,6 +121,11 @@ class AppServiceAppWindowArcTracker : public ArcAppListPrefs::Observer,
 
   std::vector<int> GetTaskIdsForApp(const std::string& arc_app_id) const;
 
+  // Sets the window title and icon.
+  void SetDescription(int32_t task_id,
+                      const std::string& title,
+                      gfx::ImageSkia icon);
+
   Profile* const observed_profile_;
   AppServiceAppWindowLauncherController* const app_service_controller_;
 
@@ -138,6 +147,8 @@ class AppServiceAppWindowArcTracker : public ArcAppListPrefs::Observer,
   // starts for the first time. OptIn management check is preceding step before
   // ARC container is actually started.
   base::Time opt_in_management_check_start_time_;
+
+  base::WeakPtrFactory<AppServiceAppWindowArcTracker> weak_ptr_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_UI_ASH_LAUNCHER_APP_SERVICE_APP_SERVICE_APP_WINDOW_ARC_TRACKER_H_

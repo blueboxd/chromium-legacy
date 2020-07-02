@@ -103,11 +103,11 @@ void FakeAssistantManagerServiceImpl::RemoveAssistantInteractionSubscriber(
     AssistantInteractionSubscriber* subscriber) {}
 
 void FakeAssistantManagerServiceImpl::RetrieveNotification(
-    const mojom::AssistantNotification& notification,
+    const AssistantNotification& notification,
     int action_index) {}
 
 void FakeAssistantManagerServiceImpl::DismissNotification(
-    const mojom::AssistantNotification& notification) {}
+    const AssistantNotification& notification) {}
 
 void FakeAssistantManagerServiceImpl::OnAccessibilityStatusChanged(
     bool spoken_feedback_enabled) {}

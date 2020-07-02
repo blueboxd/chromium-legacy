@@ -45,6 +45,8 @@
 <translation id="1395262318152388157">Barre de recherche</translation>
 <translation id="1399648040768741453">Clavier télougou (phonétique)</translation>
 <translation id="1430915738399379752">Imprimer</translation>
+<translation id="1433600251059882049">Ce dossier est partagé avec Linux et Windows</translation>
+<translation id="1435838927755162558">Partager le dossier avec Parallels Desktop</translation>
 <translation id="1439494416798956626">Déplacé vers <ph name="FOLDER_NAME" />.</translation>
 <translation id="1441841714100794440">Clavier vietnamien (Télex)</translation>
 <translation id="1455548678241328678">Clavier norvégien</translation>
@@ -79,6 +81,7 @@
 <translation id="1844692022597038441">Ce fichier n'est pas disponible hors connexion.</translation>
 <translation id="184633654410729720">Clavier thaï (kedmanee)</translation>
 <translation id="1847880352285315359">Enregistré</translation>
+<translation id="1853795129690976061">Ce dossier est partagé avec Linux</translation>
 <translation id="1864756863218646478">Fichier introuvable.</translation>
 <translation id="1921986354447415460">Clavier turc en F</translation>
 <translation id="1924372192547904021"><ph name="DRIVE_NAME" /> a bien été formaté</translation>
@@ -180,6 +183,7 @@
 <translation id="303198083543495566">Géographie</translation>
 <translation id="3057861065630527966">Sauvegarder vos photos et vos vidéos</translation>
 <translation id="3064388234319122767">Translittération (zdravo → здраво)</translation>
+<translation id="3067790092342515856">Fichiers Windows</translation>
 <translation id="3078461028045006476">Partager avec <ph name="EXTENSION_NAME" /></translation>
 <translation id="3088034400796962477">Translittération (salam ← سلام)</translation>
 <translation id="3116361045094675131">Clavier britannique</translation>
@@ -262,6 +266,7 @@
 <translation id="3943857333388298514">Coller</translation>
 <translation id="3958548648197196644">Kiwi</translation>
 <translation id="3966388904776714213">Lecteur audio</translation>
+<translation id="3984317463833596033">Autorisez Parallels Desktop à modifier les fichiers du dossier "<ph name="FOLDER_NAME" />"</translation>
 <translation id="4002066346123236978">Titre</translation>
 <translation id="4070370845051020638">Mode de saisie cantonais</translation>
 <translation id="4072248638558688893">Clavier tamoul (phonétique)</translation>
@@ -290,6 +295,7 @@
 <translation id="4470564870223067757">Hangûl, dubeol-sik</translation>
 <translation id="4477219268485577442">Phonétique bulgare</translation>
 <translation id="4479812471636796472">Clavier Dvorak américain</translation>
+<translation id="4481711095103932593">Ce dossier est partagé avec Windows</translation>
 <translation id="4487088045714738411">Clavier belge</translation>
 <translation id="4522570452068850558">Détails</translation>
 <translation id="4552678318981539154">Acheter de l'espace de stockage supplémentaire</translation>
@@ -335,10 +341,12 @@
 <translation id="4881695831933465202">Ouvrir</translation>
 <translation id="4886021172213954916">Clavier tamoul (machine à écrire)</translation>
 <translation id="4892969127351273348">Impossible d'ouvrir le fichier avec <ph name="APP_NAME" /></translation>
+<translation id="4900532980794411603">Partager avec Parallels Desktop</translation>
 <translation id="4905417359854579806">Prêt à sauvegarder <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Corrigé</translation>
 <translation id="4935975195727477204">Fleur de gazania</translation>
 <translation id="4943368462779413526">Football américain</translation>
+<translation id="4961158930123534723">1 dossier partagé avec Parallels Desktop</translation>
 <translation id="4969785127455456148">Album</translation>
 <translation id="497244430928947428">Clavier malayalam (phonétique)</translation>
 <translation id="4973523518332075481">Utilisez un nom comportant <ph name="MAX_LENGTH" /> caractères au maximum</translation>
@@ -350,6 +358,7 @@
 <translation id="5010406651457630570">Ordinateurs</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5024856940085636730">Une opération dure plus longtemps que prévu. Voulez-vous l'annuler ?</translation>
+<translation id="5036159836254554629">Gérer le partage avec Parallels Desktop</translation>
 <translation id="5038625366300922036">Plus…</translation>
 <translation id="5061708541166515394">Contraste</translation>
 <translation id="5068919226082848014">Pizza</translation>
@@ -499,6 +508,7 @@
 <translation id="656398493051028875">Suppression de "<ph name="FILENAME" />" en cours...</translation>
 <translation id="6581162200855843583">Lien Google Drive</translation>
 <translation id="6607272825297743757">Informations sur le fichier</translation>
+<translation id="6609332149380188670"><ph name="NUMBER_OF_ITEMS" /> dossiers partagés avec Parallels Desktop</translation>
 <translation id="6629841649550503054">Tous les contenus sont sauvegardés sur <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" />.</translation>
 <translation id="6643016212128521049">Effacer</translation>
 <translation id="6650726141019353908">Papillon rose</translation>
@@ -680,6 +690,7 @@
 <translation id="8475647382427415476">Impossible de synchroniser "<ph name="FILENAME" />" sur Google Drive pour le moment. Une nouvelle tentative aura lieu plus tard.</translation>
 <translation id="8477649328507734757">Toupie</translation>
 <translation id="8487700953926739672">Disponible hors connexion</translation>
+<translation id="8490342535582768689">Autoriser Parallels Desktop à modifier les fichiers de Google Drive. Les modifications apportées seront synchronisées avec vos autres appareils.</translation>
 <translation id="8521441079177373948">Royaume-Uni</translation>
 <translation id="8525306231823319788">Plein écran</translation>
 <translation id="8551494947769799688">Letton</translation>

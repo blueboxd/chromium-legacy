@@ -13,6 +13,9 @@ let topMenu;
 /** @type {cr.ui.Menu} */
 let subMenu;
 
+/** @type {cr.ui.Menu} */
+let secondSubMenu;
+
 // Set up test components.
 function setUp() {
   // Internals of WebUI reference this property when processing
@@ -42,10 +45,16 @@ function setUp() {
     '  <cr-menu-item id="host-sub-menu" command="#show-submenu"',
     'visibleif="full-page" class="hide-on-toolbar"',
     'sub-menu="#sub-menu" hidden></cr-menu-item>',
+    '  <cr-menu-item id="host-second-sub-menu" command="#show-submenu"',
+    'visibleif="full-page" class="hide-on-toolbar"',
+    'sub-menu="#second-sub-menu" hidden></cr-menu-item>',
     '</cr-menu>',
     '<cr-menu id="sub-menu" hidden>',
     '  <cr-menu-item id="first" class="custom-appearance"></cr-menu-item>',
     '  <cr-menu-item id="second" class="custom-appearance"></cr-menu-item>',
+    '</cr-menu>',
+    '<cr-menu id="second-sub-menu" hidden>',
+    '  <cr-menu-item id="secondone" class="custom-appearance"></cr-menu-item>',
     '</cr-menu>',
     '<div id="focus-div" tabindex="1"/>',
     '<button id="focus-button" tabindex="2"/>',
@@ -59,6 +68,7 @@ function setUp() {
       util.queryDecoratedElement('#test-menu-button', cr.ui.MultiMenuButton);
   topMenu = util.queryDecoratedElement('#menu', cr.ui.Menu);
   subMenu = util.queryDecoratedElement('#sub-menu', cr.ui.Menu);
+  secondSubMenu = util.queryDecoratedElement('#second-sub-menu', cr.ui.Menu);
 }
 
 /**
@@ -409,4 +419,16 @@ function testFocusMenuButtonWithMouse() {
 
   // Verify the menu button has taken focus.
   assertTrue(document.hasFocus() && document.activeElement === menubutton);
+}
+
+/**
+ * Tests that opening a sub menu hides any showing sub menu.
+ */
+function testShowSubMenuHidesExisting() {
+  testMouseOverHostMenuShowsSubMenu();
+  sendMouseOver('#host-second-sub-menu');
+  // Check the previously shown sub menu is hidden.
+  assertTrue(subMenu.hasAttribute('hidden'));
+  // Check the second sub menu is visible.
+  assertFalse(secondSubMenu.hasAttribute('hidden'));
 }

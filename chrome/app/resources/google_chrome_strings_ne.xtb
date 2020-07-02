@@ -55,7 +55,6 @@
 <translation id="2534507159460261402">Google Pay (Chrome मा प्रतिलिपि गरियो)</translation>
 <translation id="2580411288591421699">हाल चलिरहेको Google Chrome संस्करणलाई स्थापना गर्न सकिँदैन। कृपया Google Chrome बन्द गर्नुहोस् र पुन: प्रयास गर्नुहोस्।</translation>
 <translation id="2586406160782125153">यसले यस यन्त्रको तपाईंको ब्राउजिङको डेटा मेट्नेछ। पछि आफ्नो डेटा प्राप्त गर्न Chrome मा <ph name="USER_EMAIL" /> को रूपमा साइन इन गर्नुहोस्।</translation>
-<translation id="2588322182880276190">Chrome चिन्ह</translation>
 <translation id="2622559029861875898">Chrome ले अद्यावधिक छ वा छैन भन्ने कुराको जाँच गर्न सकेन। आफ्नो इन्टरनेट जडान जाँच गरी हेर्नुहोस्।</translation>
 <translation id="2644798301485385923">Chrome OS प्रणाली</translation>
 <translation id="2652691236519827073">लिंकलाई Chrome को नयाँ ट्याबमा खोल्नुहोस्</translation>
@@ -68,6 +67,7 @@
 <translation id="2847461019998147611">यो भाषामा Google Chrome प्रदर्शन गर्नुहोस्</translation>
 <translation id="2857540653560290388">Chrome सुरु गर्दै…</translation>
 <translation id="2871893339301912279">तपाईं Chrome मा साइन इन हुनुभएको छ!</translation>
+<translation id="2885378588091291677">कार्य व्यवस्थापक</translation>
 <translation id="2888126860611144412">Chrome को बारेमा</translation>
 <translation id="2929907241665500097">Chrome अद्यावधिक भएन, केही चिज गडबड भयो। <ph name="BEGIN_LINK" />Chrome अद्यावधिक गर्दा देखिएका समस्या तथा अद्यावधिक नहुने समस्याहरू समाधान गर्नुहोस्।<ph name="END_LINK" /></translation>
 <translation id="2969728957078202736"><ph name="PAGE_TITLE" /> - नेटवर्क साइन इन - Chrome</translation>

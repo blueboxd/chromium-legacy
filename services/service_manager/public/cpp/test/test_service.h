@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/service_receiver.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace service_manager {
@@ -44,13 +44,13 @@ namespace service_manager {
 //   }
 class TestService : public Service {
  public:
-  explicit TestService(mojom::ServiceRequest request);
+  explicit TestService(mojo::PendingReceiver<mojom::Service> receiver);
   ~TestService() override;
 
-  Connector* connector() { return binding_.GetConnector(); }
+  Connector* connector() { return receiver_.GetConnector(); }
 
  private:
-  ServiceBinding binding_;
+  ServiceReceiver receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(TestService);
 };

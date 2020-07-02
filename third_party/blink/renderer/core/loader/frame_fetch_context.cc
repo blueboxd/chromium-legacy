@@ -458,7 +458,9 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   // policy is used to enable hints for all subresources, based on the policy of
   // the requesting document, and the origin of the resource.
   const FeaturePolicy* policy =
-      document_ ? document_->GetSecurityContext().GetFeaturePolicy() : nullptr;
+      document_
+          ? document_->domWindow()->GetSecurityContext().GetFeaturePolicy()
+          : nullptr;
 
   url::Origin resource_origin =
       SecurityOrigin::Create(request.Url())->ToUrlOrigin();
@@ -907,8 +909,9 @@ base::Optional<UserAgentMetadata> FrameFetchContext::GetUserAgentMetadata()
 }
 
 const FeaturePolicy* FrameFetchContext::GetFeaturePolicy() const {
-  return document_ ? document_->GetSecurityContext().GetFeaturePolicy()
-                   : nullptr;
+  return document_
+             ? document_->domWindow()->GetSecurityContext().GetFeaturePolicy()
+             : nullptr;
 }
 
 const ClientHintsPreferences FrameFetchContext::GetClientHintsPreferences()

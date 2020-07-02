@@ -7,13 +7,13 @@
 
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 
-class Document;
 class ScriptState;
 class SecurityOrigin;
 
@@ -23,11 +23,12 @@ class CORE_EXPORT DOMFeaturePolicy : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  explicit DOMFeaturePolicy(ExecutionContext*);
   ~DOMFeaturePolicy() override = default;
 
   // Implementation of methods of the policy interface:
   // Returns whether or not the given feature is allowed on the origin of the
-  // document that owns the policy.
+  // context that owns the policy.
   bool allowsFeature(ScriptState* script_state, const String& feature) const;
   // Returns whether or not the given feature is allowed on the origin of the
   // given URL.
@@ -47,14 +48,16 @@ class CORE_EXPORT DOMFeaturePolicy : public ScriptWrappable {
   // element has changed.
   virtual void UpdateContainerPolicy(
       const ParsedFeaturePolicy& container_policy = {},
-      scoped_refptr<const SecurityOrigin> src_origin = nullptr);
+      scoped_refptr<const SecurityOrigin> src_origin = nullptr) {}
 
   void Trace(Visitor*) const override;
 
  protected:
-  virtual const FeaturePolicy* GetPolicy() const = 0;
-  // Get the containing document.
-  virtual Document* GetDocument() const = 0;
+  virtual const FeaturePolicy* GetPolicy() const {
+    return context_->GetSecurityContext().GetFeaturePolicy();
+  }
+
+  Member<ExecutionContext> context_;
 
  private:
   // Add console message to the containing document.

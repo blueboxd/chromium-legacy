@@ -45,6 +45,8 @@
 <translation id="1395262318152388157">播放進度控制滑桿</translation>
 <translation id="1399648040768741453">特拉古文鍵盤 (拼音)</translation>
 <translation id="1430915738399379752">列印</translation>
+<translation id="1433600251059882049">已與 Linux 和 Windows 共用這個資料夾</translation>
+<translation id="1435838927755162558">與 Parallels Desktop 共用資料夾</translation>
 <translation id="1439494416798956626">已移至「<ph name="FOLDER_NAME" />」。</translation>
 <translation id="1441841714100794440">越南文鍵盤 (電報打字機)</translation>
 <translation id="1455548678241328678">挪威文鍵盤</translation>
@@ -79,6 +81,7 @@
 <translation id="1844692022597038441">這個檔案無法離線瀏覽。</translation>
 <translation id="184633654410729720">泰文鍵盤 (Kedmanee)</translation>
 <translation id="1847880352285315359">已儲存</translation>
+<translation id="1853795129690976061">已與 Linux 共用這個資料夾</translation>
 <translation id="1864756863218646478">找不到檔案。</translation>
 <translation id="1921986354447415460">土耳其文 F 鍵盤</translation>
 <translation id="1924372192547904021">已格式化 <ph name="DRIVE_NAME" /></translation>
@@ -180,6 +183,7 @@
 <translation id="303198083543495566">地理位置</translation>
 <translation id="3057861065630527966">備份您的相片和影片</translation>
 <translation id="3064388234319122767">音譯 (zdravo → здраво)</translation>
+<translation id="3067790092342515856">Windows 檔案</translation>
 <translation id="3078461028045006476">使用「<ph name="EXTENSION_NAME" />」分享/共用</translation>
 <translation id="3088034400796962477">音譯 (salam ← سلام)</translation>
 <translation id="3116361045094675131">英式鍵盤</translation>
@@ -262,6 +266,7 @@
 <translation id="3943857333388298514">貼上</translation>
 <translation id="3958548648197196644">奇異果</translation>
 <translation id="3966388904776714213">音訊播放器</translation>
+<translation id="3984317463833596033">授權 Parallels Desktop 修改「<ph name="FOLDER_NAME" />」資料夾中的檔案</translation>
 <translation id="4002066346123236978">標題</translation>
 <translation id="4070370845051020638">粵語輸入法</translation>
 <translation id="4072248638558688893">坦米爾文鍵盤 (拼音)</translation>
@@ -290,6 +295,7 @@
 <translation id="4470564870223067757">韓文 2 Set</translation>
 <translation id="4477219268485577442">保加利亞文 (拼音)</translation>
 <translation id="4479812471636796472">美式 Dvorak 鍵盤</translation>
+<translation id="4481711095103932593">已與 Windows 共用這個資料夾</translation>
 <translation id="4487088045714738411">比利時文鍵盤</translation>
 <translation id="4522570452068850558">詳細資訊</translation>
 <translation id="4552678318981539154">購買更多儲存空間</translation>
@@ -335,10 +341,12 @@
 <translation id="4881695831933465202">開啟</translation>
 <translation id="4886021172213954916">坦米爾文鍵盤 (打字機)</translation>
 <translation id="4892969127351273348">無法使用「<ph name="APP_NAME" />」開啟</translation>
+<translation id="4900532980794411603">與 Parallels Desktop 共用</translation>
 <translation id="4905417359854579806">現在可以備份 <ph name="FILE_COUNT" />了</translation>
 <translation id="4924638091161556692">已修正</translation>
 <translation id="4935975195727477204">勳章菊花</translation>
 <translation id="4943368462779413526">足球</translation>
+<translation id="4961158930123534723">已與 Parallels Desktop 共用 1 個資料夾</translation>
 <translation id="4969785127455456148">相簿</translation>
 <translation id="497244430928947428">馬來文鍵盤 (拼音)</translation>
 <translation id="4973523518332075481">請使用長度不超過 <ph name="MAX_LENGTH" /> 個字元的名稱</translation>
@@ -350,6 +358,7 @@
 <translation id="5010406651457630570">電腦</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5024856940085636730">作業處理時間超出預期。你想中斷作業嗎？</translation>
+<translation id="5036159836254554629">管理 Parallels Desktop 共用項目</translation>
 <translation id="5038625366300922036">顯示更多...</translation>
 <translation id="5061708541166515394">對比</translation>
 <translation id="5068919226082848014">披薩</translation>
@@ -499,6 +508,7 @@
 <translation id="656398493051028875">正在刪除「<ph name="FILENAME" />」...</translation>
 <translation id="6581162200855843583">Google 雲端硬碟連結</translation>
 <translation id="6607272825297743757">檔案資訊</translation>
+<translation id="6609332149380188670">已與 Parallels Desktop 共用 <ph name="NUMBER_OF_ITEMS" /> 個資料夾</translation>
 <translation id="6629841649550503054">所有檔案都已備份到 <ph name="BEGIN_LINK" />Google 雲端硬碟<ph name="END_LINK" />！</translation>
 <translation id="6643016212128521049">清除</translation>
 <translation id="6650726141019353908">粉紅蝴蝶</translation>
@@ -680,6 +690,7 @@
 <translation id="8475647382427415476">Google 雲端硬碟目前無法同步處理「<ph name="FILENAME" />」，將於稍後再試。</translation>
 <translation id="8477649328507734757">同心圓</translation>
 <translation id="8487700953926739672">可離線使用</translation>
+<translation id="8490342535582768689">授權 Parallels Desktop 修改 Google 雲端硬碟中的檔案。系統會將變更內容同步至你的其他裝置。</translation>
 <translation id="8521441079177373948">英式配置</translation>
 <translation id="8525306231823319788">全螢幕</translation>
 <translation id="8551494947769799688">拉脫維亞文</translation>

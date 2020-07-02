@@ -94,7 +94,6 @@ public class ChromeFullscreenManager implements ActivityStateListener,
     private int mRendererTopContentOffset;
     private int mRendererTopControlsMinHeightOffset;
     private int mRendererBottomControlsMinHeightOffset;
-    private int mPreviousContentOffset;
     private float mControlOffsetRatio;
     private boolean mOffsetsChanged;
     private ActivityTabTabObserver mActiveTabObserver;
@@ -198,7 +197,7 @@ public class ChromeFullscreenManager implements ActivityStateListener,
 
             @Override
             public void onContentViewScrollingStateChanged(boolean scrolling) {
-                if (!scrolling) updateContentOffsetAndNotify();
+                if (!scrolling) updateContentViewChildrenState();
             }
         };
 
@@ -513,14 +512,17 @@ public class ChromeFullscreenManager implements ActivityStateListener,
      * the current fullscreen state.
      */
     private void updateContentViewChildrenState() {
-        ViewGroup view = getContentView();
-        if (view == null) return;
+        TraceEvent.begin("FullscreenManager:updateContentViewChildrenState");
 
-        float topViewsTranslation = getTopVisibleContentOffset();
-        float bottomMargin = getBottomContentOffset();
-        applyTranslationToTopChildViews(view, topViewsTranslation);
-        applyMarginToFullChildViews(view, topViewsTranslation, bottomMargin);
-        if (mViewportSizeDelegate != null) mViewportSizeDelegate.run();
+        ViewGroup view = getContentView();
+        if (view != null) {
+            float topViewsTranslation = getTopVisibleContentOffset();
+            float bottomMargin = getBottomContentOffset();
+            applyTranslationToTopChildViews(view, topViewsTranslation);
+            applyMarginToFullChildViews(view, topViewsTranslation, bottomMargin);
+            if (mViewportSizeDelegate != null) mViewportSizeDelegate.run();
+        }
+        TraceEvent.end("FullscreenManager:updateContentViewChildrenState");
     }
 
     /**
@@ -535,25 +537,6 @@ public class ChromeFullscreenManager implements ActivityStateListener,
         if (mControlContainer.getView().getVisibility() == desiredVisibility) return;
         mControlContainer.getView().removeCallbacks(mUpdateVisibilityRunnable);
         mControlContainer.getView().postOnAnimation(mUpdateVisibilityRunnable);
-    }
-
-    /**
-     * Updates top content offset and notify the change.
-     */
-    public void updateContentOffsetAndNotify() {
-        TraceEvent.begin("FullscreenManager:updateContentOffsetAndNotify");
-
-        updateContentViewChildrenState();
-
-        int contentOffset = getContentOffset();
-        if (mPreviousContentOffset != contentOffset) {
-            for (BrowserControlsStateProvider.Observer obs : mControlsObservers) {
-                obs.onContentOffsetChanged(contentOffset);
-            }
-            mPreviousContentOffset = contentOffset;
-        }
-
-        TraceEvent.end("FullscreenManager:updateContentOffsetAndNotify");
     }
 
     /**
@@ -703,7 +686,7 @@ public class ChromeFullscreenManager implements ActivityStateListener,
                 && getBottomContentOffset() == getBottomControlsMinHeight());
         updateControlOffset();
         notifyControlOffsetChanged();
-        updateContentOffsetAndNotify();
+        updateContentViewChildrenState();
     }
 
     private void notifyControlOffsetChanged() {

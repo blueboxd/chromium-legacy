@@ -56,7 +56,7 @@ class MockSupervisedUserWhitelistInstaller
   // SupervisedUserWhitelistInstaller implementation:
   void RegisterComponents() override {}
 
-  void Subscribe(const WhitelistReadyCallback& callback) override {
+  void Subscribe(WhitelistReadyCallback callback) override {
     ready_callbacks_.push_back(callback);
   }
 

@@ -175,6 +175,7 @@ void XRFrameProvider::OnSessionEnded(XRSession* session) {
 
 // Schedule a session to be notified when the next XR frame is available.
 void XRFrameProvider::RequestFrame(XRSession* session) {
+  DVLOG(3) << __FUNCTION__;
   TRACE_EVENT0("gpu", __FUNCTION__);
   DCHECK(session);
 
@@ -192,8 +193,10 @@ void XRFrameProvider::RequestFrame(XRSession* session) {
 
   // Duplicate frame requests are treated as a no-op.
   if (requesting_sessions_.Contains(session)) {
+    DVLOG(2) << __FUNCTION__ << ": session requested duplicate frame";
     return;
   }
+
   requesting_sessions_.insert(session, nullptr);
 
   // If there's an active immersive session save the request but suppress
@@ -221,12 +224,16 @@ void XRFrameProvider::ScheduleImmersiveFrame(
 
 void XRFrameProvider::ScheduleNonImmersiveFrame(
     device::mojom::blink::XRFrameDataRequestOptionsPtr options) {
+  DVLOG(3) << __FUNCTION__;
   TRACE_EVENT0("gpu", __FUNCTION__);
+
   DCHECK(!immersive_session_)
       << "Scheduling should be done via the exclusive session if present.";
 
-  if (pending_non_immersive_vsync_)
+  if (pending_non_immersive_vsync_) {
+    DVLOG(3) << __FUNCTION__ << ": non immersive vsync already pending";
     return;
+  }
 
   LocalFrame* frame = xr_->GetFrame();
   if (!frame)
@@ -352,10 +359,18 @@ void XRFrameProvider::OnNonImmersiveFrameData(
   // when the request was sent and this callback, so skip it in that case.
   auto request = requesting_sessions_.find(session);
   if (request == requesting_sessions_.end()) {
+    DVLOG(3) << __FUNCTION__
+             << ": request corresponding to received frame data not found";
+    if (!session->ended()) {
+      DVLOG(2) << __FUNCTION__
+               << ": the session's frame data provider missed the vsync";
+    }
+
     return;
   }
 
   if (frame_data) {
+    DVLOG(3) << __FUNCTION__ << ": frame data for session stored";
     request->value = std::move(frame_data);
   } else {
     // Unexpectedly didn't get frame data, and we don't have a timestamp.
@@ -368,6 +383,8 @@ void XRFrameProvider::OnNonImmersiveFrameData(
 }
 
 void XRFrameProvider::RequestNonImmersiveFrameData(XRSession* session) {
+  DVLOG(3) << __FUNCTION__;
+
   DCHECK(session);
   DCHECK(!session->immersive());
   DCHECK(!immersive_session_);
@@ -396,7 +413,8 @@ void XRFrameProvider::RequestNonImmersiveFrameData(XRSession* session) {
 void XRFrameProvider::ProcessScheduledFrame(
     device::mojom::blink::XRFrameDataPtr frame_data,
     double high_res_now_ms) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__ << ": frame_id_=" << frame_id_
+           << ", high_res_now_ms=" << high_res_now_ms;
 
   TRACE_EVENT2("gpu", "XRFrameProvider::ProcessScheduledFrame", "frame",
                frame_id_, "timestamp", high_res_now_ms);
@@ -478,6 +496,8 @@ void XRFrameProvider::ProcessScheduledFrame(
     // extremely likely to request another frame. Work off of a separate list
     // from the requests to prevent infinite loops.
     decltype(requesting_sessions_) processing_sessions;
+
+    DVLOG(3) << __FUNCTION__ << ": clearing requesting_sessions_";
     swap(requesting_sessions_, processing_sessions);
 
     // Inform sessions with a pending request of the new frame

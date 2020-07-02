@@ -487,6 +487,17 @@ class ChromeDriverTestWithCustomCapability(ChromeDriverBaseTestWithWebServer):
     self.assertRaises(chromedriver.InvalidArgument,
                       self.CreateDriver, page_load_strategy="unsupported")
 
+  def testGetUrlOnInvalidUrl(self):
+    # Make sure we don't return 'chrome-error://chromewebdata/' (see
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1272).
+    # Block DNS resolution for all hosts so that the navigation results
+    # in a DNS lookup error.
+    driver = self.CreateDriver(
+        chrome_switches=['--host-resolver-rules=MAP * ~NOTFOUND'])
+    self.assertRaises(chromedriver.ChromeDriverException,
+                      driver.Load, 'http://invalid/')
+    self.assertEquals('http://invalid/', driver.GetCurrentUrl())
+
 
 class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
   """End to end tests for ChromeDriver."""
@@ -2023,14 +2034,6 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     cookies = self._driver.GetCookies()
     self.assertEquals(1, len(cookies))
     self.assertEquals('outer', cookies[0]['name'])
-
-  def testGetUrlOnInvalidUrl(self):
-    # Make sure we don't return 'chrome-error://chromewebdata/' (see
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1272). RFC 6761
-    # requires domain registrars to keep 'invalid.' unregistered (see
-    # https://tools.ietf.org/html/rfc6761#section-6.4).
-    self.assertRaises(chromedriver.ChromeDriverException, self._driver.Load, 'http://invalid./')
-    self.assertEquals('http://invalid./', self._driver.GetCurrentUrl())
 
   def testCanClickAlertInIframes(self):
     # This test requires that the page be loaded from a file:// URI, rather than

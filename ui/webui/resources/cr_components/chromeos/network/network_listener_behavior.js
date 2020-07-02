@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// #import {MojoInterfaceProviderImpl} from './mojo_interface_provider.m.js';
+
 /**
  * @fileoverview Polymer behavior for observing CrosNetworkConfigObserver
  * events.
  */
 
 /** @polymerBehavior */
-const NetworkListenerBehavior = {
+/* #export */ const NetworkListenerBehavior = {
   /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigObserver} */
   observer_: null,
 

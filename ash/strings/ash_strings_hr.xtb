@@ -73,6 +73,7 @@ Evo nekih stvari koje možete pokušati pokrenuti.</translation>
 <translation id="1747827819627189109">Tipkovnica na zaslonu omogućena je</translation>
 <translation id="1761222317188459878">Prebacivanje mrežne veze. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Pomicanje udesno</translation>
+<translation id="1782199038061388045">prijevod</translation>
 <translation id="181103072419391116">Jačina signala <ph name="SIGNAL_STRENGTH" />, upravlja administrator</translation>
 <translation id="1812997170047690955">Što je na mojem zaslonu?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
@@ -103,7 +104,6 @@ Evo nekih stvari koje možete pokušati pokrenuti.</translation>
 <translation id="2126242104232412123">Nova radna površina</translation>
 <translation id="2127372758936585790">Punjač male snage</translation>
 <translation id="2135456203358955318">Usidreno povećalo</translation>
-<translation id="2143915448548023856">Postavke zaslona</translation>
 <translation id="2144487987174258011">Ponovno pokrenite da biste ažurirali Adobe Flash Player</translation>
 <translation id="2208323208084708176">Način jedinstvene radne površine</translation>
 <translation id="2220572644011485463">PIN ili zaporka</translation>
@@ -185,6 +185,7 @@ Evo nekih stvari koje možete pokušati pokrenuti.</translation>
 <translation id="3081696990447829002">Proširi izbornik</translation>
 <translation id="3087734570205094154">Donji</translation>
 <translation id="309749186376891736">Pomicanje pokazivača</translation>
+<translation id="3098580329624789136">Saznajte <ph name="INTENT" /> za "<ph name="QUERY" />"</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Ponovo pokrenite za ažuriranje</translation>
 <translation id="3139942575505304791">Radna površina 1</translation>
@@ -222,6 +223,7 @@ Evo nekih stvari koje možete pokušati pokrenuti.</translation>
 <translation id="3465356146291925647">Upravlja administrator</translation>
 <translation id="3477079411857374384">Control-Shift-razmaknica</translation>
 <translation id="3485319357743610354"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, jačina signala <ph name="SIGNAL_STRENGTH" /></translation>
+<translation id="3486220673238053218">definicija</translation>
 <translation id="3510164367642747937">Istakni pokazivač miša</translation>
 <translation id="3513798432020909783">Računom upravlja <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Vratite na "<ph name="FROM_LOCALE" />" (zahtijeva ponovno pokretanje)</translation>
@@ -272,8 +274,8 @@ Evo nekih stvari koje možete pokušati pokrenuti.</translation>
 <translation id="4072264167173457037">Signal srednje jačine</translation>
 <translation id="4112140312785995938">Traži unatrag</translation>
 <translation id="4129129681837227511">Za prikaz obavijesti na zaključanom zaslonu otključajte zaslon da biste promijenili postavku</translation>
-<translation id="4144413954005649103">Ako kliknete desnom tipkom ili dugo zadržite pritisak, Asistent će vam prikazati podatke o vašem odabiru na zaslonu.</translation>
 <translation id="4146833061457621061">Pusti glazbu</translation>
+<translation id="4149156641122542261">Uređajem <ph name="DEVICE_TYPE" /> upravlja <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Jezici</translation>
 <translation id="4195877955194704651">Automatski klikovi na gumb</translation>
 <translation id="4197790712631116042">Isključeno</translation>
@@ -528,6 +530,7 @@ Evo nekih stvari koje možete pokušati pokrenuti.</translation>
 <translation id="7378594059915113390">Medijske kontrole</translation>
 <translation id="7398254312354928459">Promijenjena je mrežna veza</translation>
 <translation id="7405710164030118432">Da biste otključali uređaj, unesite kôd za roditeljski pristup Family Linka</translation>
+<translation id="741244894080940828">preračunavanje</translation>
 <translation id="742594950370306541">Fotoaparat je aktivan.</translation>
 <translation id="743058460480092004">Fotoaparat i mikrofon su aktivni.</translation>
 <translation id="7436182601308224670">Dobar dan, <ph name="GIVEN_NAME" /></translation>
@@ -540,6 +543,7 @@ Evo nekih stvari koje možete pokušati pokrenuti.</translation>
 <translation id="7562368315689366235">Paleta emojija</translation>
 <translation id="7564874036684306347">Premještanje prozora na drugu radnu površinu može dovesti do neočekivanog ponašanja. Daljnje obavijesti, prozori i dijaloški okviri mogu se podijeliti između radnih površina.</translation>
 <translation id="7568294522609223312">Isključi automatske klikove</translation>
+<translation id="7568637526529101738">Ako kliknete desnom tipkom ili dugo zadržite pritisak, Asistent će vam prikazati informacije kao što su definicija ili preračunavanje jedinica za vaš odabir.</translation>
 <translation id="7569509451529460200">Brajica i ChromeVox omogućeni</translation>
 <translation id="7593891976182323525">Pretraživanje ili Shift</translation>
 <translation id="7600875258240007829">Pogledajte sve obavijesti</translation>

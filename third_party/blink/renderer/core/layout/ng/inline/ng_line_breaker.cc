@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_positioned_float.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -1492,9 +1493,6 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item,
     return;
   }
 
-  // TODO(ikilpatrick): Add support for float break tokens inside an inline
-  // layout context.
-
   LayoutUnit bfc_block_offset = line_opportunity_.bfc_block_offset;
   NGUnpositionedFloat unpositioned_float(
       NGBlockNode(ToLayoutBox(item.GetLayoutObject())),
@@ -1527,6 +1525,7 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item,
   //    also is strictly within the non-shape area).
   //  - It will be moved down due to block-start edge alignment.
   //  - It will be moved down due to clearance.
+  //  - An earlier float has been pushed to the next fragmentainer.
   bool float_after_line =
       !can_fit_float ||
       exclusion_space_->LastFloatBlockStart() > bfc_block_offset ||
@@ -1537,23 +1536,44 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item,
   // higher than any block or floated box generated before.
   if (HasUnpositionedFloats(line_info->Results()) || float_after_line) {
     item_result->has_unpositioned_floats = true;
-  } else {
-    NGPositionedFloat positioned_float =
-        PositionFloat(&unpositioned_float, exclusion_space_);
-    item_result->positioned_float = positioned_float;
-
-    NGLayoutOpportunity opportunity = exclusion_space_->FindLayoutOpportunity(
-        {constraint_space_.BfcOffset().line_offset, bfc_block_offset},
-        constraint_space_.AvailableSize().inline_size);
-
-    DCHECK_EQ(bfc_block_offset, opportunity.rect.BlockStartOffset());
-
-    line_opportunity_ = opportunity.ComputeLineLayoutOpportunity(
-        constraint_space_, line_opportunity_.line_block_size, LayoutUnit());
-    available_width_ = ComputeAvailableWidth();
-
-    DCHECK_GE(AvailableWidth(), LayoutUnit());
+    return;
   }
+
+  NGPositionedFloat positioned_float =
+      PositionFloat(&unpositioned_float, exclusion_space_);
+
+  if (constraint_space_.HasBlockFragmentation()) {
+    if (positioned_float.need_break_before) {
+      // We broke before the float, and there's no fragment. Create a break
+      // token and propagate it all the way to the block container layout
+      // algorithm. The float will start in the next fragmentainer.
+      auto break_before = NGBlockBreakToken::CreateBreakBefore(
+          unpositioned_float.node, /* is_forced_break */ false);
+      RemoveLastItem(line_info);
+      PropagateBreakToken(break_before);
+      return;
+    }
+    // If we broke inside the float, we also need to propagate a break token to
+    // the block container. Layout of the float will resume in the next
+    // fragmentainer.
+    if (scoped_refptr<const NGBreakToken> token =
+            positioned_float.layout_result->PhysicalFragment().BreakToken())
+      PropagateBreakToken(std::move(To<NGBlockBreakToken>(token.get())));
+  }
+
+  item_result->positioned_float = positioned_float;
+
+  NGLayoutOpportunity opportunity = exclusion_space_->FindLayoutOpportunity(
+      {constraint_space_.BfcOffset().line_offset, bfc_block_offset},
+      constraint_space_.AvailableSize().inline_size);
+
+  DCHECK_EQ(bfc_block_offset, opportunity.rect.BlockStartOffset());
+
+  line_opportunity_ = opportunity.ComputeLineLayoutOpportunity(
+      constraint_space_, line_opportunity_.line_block_size, LayoutUnit());
+  available_width_ = ComputeAvailableWidth();
+
+  DCHECK_GE(AvailableWidth(), LayoutUnit());
 }
 
 void NGLineBreaker::HandleOutOfFlowPositioned(const NGInlineItem& item,
@@ -2134,6 +2154,11 @@ scoped_refptr<NGInlineBreakToken> NGLineBreaker::CreateBreakToken(
       ((is_after_forced_break_ ? NGInlineBreakToken::kIsForcedBreak : 0) |
        (line_info.UseFirstLineStyle() ? NGInlineBreakToken::kUseFirstLineStyle
                                       : 0)));
+}
+
+void NGLineBreaker::PropagateBreakToken(
+    scoped_refptr<const NGBlockBreakToken> token) {
+  propagated_break_tokens_.push_back(std::move(token));
 }
 
 }  // namespace blink

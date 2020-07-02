@@ -133,6 +133,14 @@ TEST_F(FileHandlersMimeUtilTest, GetMimeTypeForLocalPath) {
     // chrome, use lower case.
     EXPECT_EQ("audio/amr", base::ToLowerASCII(result));
   }
+
+  {
+    std::string result;
+    GetMimeTypeForLocalPath(browser_context(), html_mime_file_path_.DirName(),
+                            base::BindOnce(&OnMimeTypeResult, &result));
+    content::RunAllTasksUntilIdle();
+    EXPECT_EQ("inode/directory", result);
+  }
 }
 
 TEST_F(FileHandlersMimeUtilTest, MimeTypeCollector_ForURLs) {
@@ -147,16 +155,19 @@ TEST_F(FileHandlersMimeUtilTest, MimeTypeCollector_ForURLs) {
       base::FilePath::FromUTF8Unsafe(kJPEGExtensionUpperCaseFilePath)));
   urls.push_back(CreateNativeLocalFileSystemURL(file_system_context_.get(),
                                                 html_mime_file_path_));
+  urls.push_back(CreateNativeLocalFileSystemURL(
+      file_system_context_.get(), html_mime_file_path_.DirName()));
 
   std::vector<std::string> result;
   collector.CollectForURLs(urls,
                            base::BindOnce(&OnMimeTypesCollected, &result));
   content::RunAllTasksUntilIdle();
 
-  ASSERT_EQ(3u, result.size());
+  ASSERT_EQ(4u, result.size());
   EXPECT_EQ("image/jpeg", result[0]);
   EXPECT_EQ("image/jpeg", result[1]);
   EXPECT_EQ("text/html", result[2]);
+  EXPECT_EQ("inode/directory", result[3]);
 }
 
 TEST_F(FileHandlersMimeUtilTest, MimeTypeCollector_ForLocalPaths) {
@@ -167,16 +178,18 @@ TEST_F(FileHandlersMimeUtilTest, MimeTypeCollector_ForLocalPaths) {
   local_paths.push_back(
       base::FilePath::FromUTF8Unsafe(kJPEGExtensionUpperCaseFilePath));
   local_paths.push_back(html_mime_file_path_);
+  local_paths.push_back(html_mime_file_path_.DirName());
 
   std::vector<std::string> result;
   collector.CollectForLocalPaths(
       local_paths, base::BindOnce(&OnMimeTypesCollected, &result));
   content::RunAllTasksUntilIdle();
 
-  ASSERT_EQ(3u, result.size());
+  ASSERT_EQ(4u, result.size());
   EXPECT_EQ("image/jpeg", result[0]);
   EXPECT_EQ("image/jpeg", result[1]);
   EXPECT_EQ("text/html", result[2]);
+  EXPECT_EQ("inode/directory", result[3]);
 }
 
 }  // namespace app_file_handler_util

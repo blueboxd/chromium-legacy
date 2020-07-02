@@ -13,11 +13,8 @@
 namespace ash {
 class AssistantAlarmTimerController;
 class AssistantController;
-class AssistantStateBase;
-
-namespace mojom {
 class AssistantNotificationController;
-}  // namespace mojom
+class AssistantStateBase;
 }  // namespace ash
 
 namespace chromeos {
@@ -45,7 +42,7 @@ class ServiceContext {
 
   virtual ash::AssistantController* assistant_controller() = 0;
 
-  virtual ash::mojom::AssistantNotificationController*
+  virtual ash::AssistantNotificationController*
   assistant_notification_controller() = 0;
 
   virtual ash::AssistantScreenContextController*

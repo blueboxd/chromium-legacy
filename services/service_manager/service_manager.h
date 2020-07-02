@@ -23,7 +23,7 @@
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/service_receiver.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
@@ -194,7 +194,7 @@ class ServiceManager : public Service {
 
   const std::unique_ptr<Delegate> delegate_;
 
-  ServiceBinding service_binding_{this};
+  ServiceReceiver service_receiver_{this};
 
   // Ownership of all ServiceInstances.
   using InstanceMap =

@@ -22,6 +22,7 @@
 #include "base/test/task_environment.h"
 #include "base/test/test_suite.h"
 #include "base/token.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -29,7 +30,7 @@
 #include "services/service_manager/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/service_receiver.h"
 #include "services/service_manager/public/cpp/test/test_service_manager.h"
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
 #include "services/service_manager/tests/connect/connect.test-mojom.h"
@@ -233,12 +234,12 @@ void QuitLoop(base::RunLoop* loop) {
 
 class TestTargetService : public Service {
  public:
-  explicit TestTargetService(mojom::ServiceRequest request)
-      : binding_(this, std::move(request)) {}
+  explicit TestTargetService(mojo::PendingReceiver<mojom::Service> receiver)
+      : receiver_(this, std::move(receiver)) {}
   ~TestTargetService() override = default;
 
-  const Identity& identity() const { return binding_.identity(); }
-  Connector* connector() { return binding_.GetConnector(); }
+  const Identity& identity() const { return receiver_.identity(); }
+  Connector* connector() { return receiver_.GetConnector(); }
 
   void CallOnNextBindInterface(base::OnceClosure callback) {
     next_bind_interface_callback_ = std::move(callback);
@@ -252,7 +253,7 @@ class TestTargetService : public Service {
   }
 
   void QuitGracefullyAndWait() {
-    binding_.RequestClose();
+    receiver_.RequestClose();
     wait_for_disconnect_loop_.Run();
   }
 
@@ -269,7 +270,7 @@ class TestTargetService : public Service {
   }
   void OnDisconnected() override { wait_for_disconnect_loop_.Quit(); }
 
-  ServiceBinding binding_;
+  ServiceReceiver receiver_;
   base::RunLoop wait_for_start_loop_;
   base::RunLoop wait_for_disconnect_loop_;
   base::Optional<base::RunLoop> wait_for_bind_interface_loop_;
@@ -285,7 +286,7 @@ class ConnectTest : public testing::Test,
   ConnectTest() : test_service_manager_(GetTestManifests()) {}
   ~ConnectTest() override = default;
 
-  Connector* connector() { return service_binding_.GetConnector(); }
+  Connector* connector() { return service_receiver_.GetConnector(); }
 
  protected:
   void CompareConnectionState(
@@ -303,17 +304,17 @@ class ConnectTest : public testing::Test,
               connection_state_->initialize_local_instance_group);
   }
 
-  mojom::ServiceRequest RegisterServiceInstance(
+  mojo::PendingReceiver<mojom::Service> RegisterServiceInstance(
       const std::string& service_name) {
     return test_service_manager_.RegisterInstance(
-        Identity{service_name, service_binding_.identity().instance_group(),
+        Identity{service_name, service_receiver_.identity().instance_group(),
                  base::Token{}, base::Token::CreateRandom()});
   }
 
  private:
   // testing::Test:
   void SetUp() override {
-    service_binding_.Bind(
+    service_receiver_.Bind(
         test_service_manager_.RegisterTestInstance(kTestServiceName));
 
     mojo::Remote<test::mojom::ConnectTestService> root_service;
@@ -343,7 +344,7 @@ class ConnectTest : public testing::Test,
 
   base::test::TaskEnvironment task_environment_;
   TestServiceManager test_service_manager_;
-  ServiceBinding service_binding_{this};
+  ServiceReceiver service_receiver_{this};
   mojo::ReceiverSet<test::mojom::ExposedInterface> receivers_;
   test::mojom::ConnectionStatePtr connection_state_;
 

@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.share.ShareParams;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.base.WindowAndroid.ActivityStateObserver;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -40,6 +41,7 @@ public class ShareSheetCoordinator implements ActivityStateObserver, ChromeOptio
     private long mShareStartTime;
     private boolean mExcludeFirstParty;
     private ShareSheetBottomSheetContent mBottomSheet;
+    private WindowAndroid mWindowAndroid;
 
     /**
      * Constructs a new ShareSheetCoordinator.
@@ -57,21 +59,30 @@ public class ShareSheetCoordinator implements ActivityStateObserver, ChromeOptio
         mBottomSheetController = controller;
         mTabProvider = tabProvider;
         mPropertyModelBuilder = modelBuilder;
-        mExcludeFirstParty = false;
         mPrefServiceBridge = prefServiceBridge;
         mPrintTabCallback = printTab;
+    }
+
+    protected void destroy() {
+        if (mWindowAndroid != null) {
+            mWindowAndroid.removeActivityStateObserver(this);
+        }
     }
 
     // TODO(crbug/1022172): Should be package-protected once modularization is complete.
     public void showShareSheet(
             ShareParams params, ChromeShareExtras chromeShareExtras, long shareStartTime) {
         Activity activity = params.getWindow().getActivity().get();
-        if (activity == null) {
-            return;
-        }
-        params.getWindow().addActivityStateObserver(this);
+        if (activity == null) return;
 
-        mBottomSheet = new ShareSheetBottomSheetContent(activity);
+        if (mWindowAndroid == null) {
+            mWindowAndroid = params.getWindow();
+            if (mWindowAndroid != null) {
+                mWindowAndroid.addActivityStateObserver(this);
+            }
+        }
+
+        mBottomSheet = new ShareSheetBottomSheetContent(activity, this);
 
         mShareStartTime = shareStartTime;
         Set<Integer> contentTypes = ShareSheetPropertyModelBuilder.getContentTypes(
@@ -115,8 +126,9 @@ public class ShareSheetCoordinator implements ActivityStateObserver, ChromeOptio
     @VisibleForTesting
     List<PropertyModel> createBottomRowPropertyModels(Activity activity, ShareParams params,
             Set<Integer> contentTypes, boolean saveLastUsed) {
-        List<PropertyModel> models = mPropertyModelBuilder.selectThirdPartyApps(
-                mBottomSheet, contentTypes, params, saveLastUsed, mShareStartTime);
+        if (params == null) return null;
+        List<PropertyModel> models = mPropertyModelBuilder.selectThirdPartyApps(mBottomSheet,
+                contentTypes, params, saveLastUsed, params.getWindow(), mShareStartTime);
         // More...
         PropertyModel morePropertyModel = ShareSheetPropertyModelBuilder.createPropertyModel(
                 AppCompatResources.getDrawable(activity, R.drawable.sharing_more),

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <deque>
 #include <string>
 #include <vector>
 
@@ -14,6 +15,7 @@
 #include "ash/system/unified/unified_system_tray.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string_util.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/icu_test_util.h"
 #include "chrome/browser/ui/ash/assistant/assistant_test_mixin.h"
 #include "chrome/browser/ui/ash/assistant/test_support/test_util.h"
@@ -77,6 +79,12 @@ message_center::NotificationList::Notifications FindAssistantNotifications() {
   return MessageCenter::Get()->FindNotificationsByAppId("assistant");
 }
 
+// Returns the visible notification specified by |id|.
+message_center::Notification* FindVisibleNotificationById(
+    const std::string& id) {
+  return MessageCenter::Get()->FindVisibleNotificationById(id);
+}
+
 // Returns visible notifications having id starting with |prefix|.
 std::vector<message_center::Notification*> FindVisibleNotificationsByPrefixedId(
     const std::string& prefix) {
@@ -123,6 +131,21 @@ FindActionButtonsForNotification(
   return action_buttons;
 }
 
+// Returns the label for the specified |notification| title.
+// NOTE: This method assumes that the title string is unique from other strings
+// displayed in the notification. This should be safe since we only use this API
+// under controlled circumstances.
+views::Label* FindTitleLabelForNotification(
+    const message_center::Notification* notification) {
+  std::vector<views::Label*> labels;
+  FindDescendentsOfClass(FindViewForNotification(notification), &labels);
+  for (auto* label : labels) {
+    if (label->GetText() == notification->title())
+      return label;
+  }
+  return nullptr;
+}
+
 // Performs a tap of the specified |view| and waits until the RunLoop idles.
 void TapOnAndWait(const views::View* view) {
   auto* root_window = view->GetWidget()->GetNativeWindow()->GetRootWindow();
@@ -151,6 +174,11 @@ class MockMessageCenterObserver
   // MessageCenterObserver:
   MOCK_METHOD(void,
               OnNotificationAdded,
+              (const std::string& notification_id),
+              (override));
+
+  MOCK_METHOD(void,
+              OnNotificationUpdated,
               (const std::string& notification_id),
               (override));
 };
@@ -261,6 +289,85 @@ IN_PROC_BROWSER_TEST_F(AssistantTimersBrowserTest,
   tester()->ExpectAnyOfTheseTextResponses({
       "It looks like you don't have any timers set at the moment.",
   });
+}
+
+// Verifies that timer notifications are ticked at regular intervals.
+IN_PROC_BROWSER_TEST_F(AssistantTimersBrowserTest,
+                       ShouldTickNotificationsAtRegularIntervals) {
+  // Observe notifications.
+  MockMessageCenterObserver mock;
+  ScopedObserver<MessageCenter, MessageCenterObserver> scoped_observer{&mock};
+  scoped_observer.Add(MessageCenter::Get());
+
+  // Show Assistant UI (once ready).
+  tester()->StartAssistantAndWaitForReady();
+  ShowAssistantUi();
+  EXPECT_TRUE(tester()->IsVisible());
+
+  // Start a timer for five seconds.
+  tester()->SendTextQuery("Set a timer for 5 seconds");
+
+  // We're going to cache the time of the last notification update so that we
+  // can verify updates occur within an expected time frame.
+  base::Time last_update;
+
+  // Expect and wait for our five second timer notification to be created.
+  base::RunLoop notification_add_run_loop;
+  EXPECT_CALL(mock, OnNotificationAdded)
+      .WillRepeatedly(testing::Invoke([&](const std::string& notification_id) {
+        last_update = base::Time::Now();
+
+        // Tap status area widget (to show notifications in the Message Center).
+        TapOnAndWait(FindStatusAreaWidget());
+
+        // Assert that the notification has the expected title.
+        auto* notification = FindVisibleNotificationById(notification_id);
+        auto* title_label = FindTitleLabelForNotification(notification);
+        auto title = base::UTF16ToUTF8(title_label->GetText());
+        EXPECT_EQ("0:05", title);
+
+        // Allow test to proceed.
+        notification_add_run_loop.QuitClosure().Run();
+      }));
+  notification_add_run_loop.Run();
+
+  // We are going to assert that updates to our notification occur within an
+  // expected time frame, allowing a degree of tolerance to reduce flakiness.
+  constexpr auto kExpectedMillisBetweenUpdates = 1000;
+  constexpr auto kMillisBetweenUpdatesTolerance = 100;
+
+  // We're going to watch notification updates until 5 seconds past fire time.
+  std::deque<std::string> expected_titles = {"0:04",  "0:03",  "0:02",  "0:01",
+                                             "0:00",  "-0:01", "-0:02", "-0:03",
+                                             "-0:04", "-0:05"};
+
+  auto* title_label =
+      FindTitleLabelForNotification(*FindAssistantNotifications().begin());
+
+  // Watch |title_label| and await all expected notification updates.
+  base::RunLoop notification_update_run_loop;
+  auto notification_update_subscription =
+      title_label->AddTextChangedCallback(base::BindLambdaForTesting([&]() {
+        base::Time now = base::Time::Now();
+
+        // Assert that the update was received within our expected time frame.
+        EXPECT_NEAR((now - last_update).InMilliseconds(),
+                    kExpectedMillisBetweenUpdates,
+                    kMillisBetweenUpdatesTolerance);
+
+        // Assert that the notification has the expected title.
+        auto title = base::UTF16ToUTF8(title_label->GetText());
+        EXPECT_EQ(expected_titles.front(), title);
+
+        // Update time of |last_update|.
+        last_update = now;
+
+        // When |expected_titles| is empty, our test is finished.
+        expected_titles.pop_front();
+        if (expected_titles.empty())
+          notification_update_run_loop.QuitClosure().Run();
+      }));
+  notification_update_run_loop.Run();
 }
 
 }  // namespace assistant

@@ -32,6 +32,9 @@ class FileSystemURL;
 namespace extensions {
 namespace app_file_handler_util {
 
+extern const char kMimeTypeApplicationOctetStream[];
+extern const char kMimeTypeInodeDirectory[];
+
 // Gets a MIME type for a local path and returns it with |callback|. If not
 // found, then the MIME type is an empty string.
 void GetMimeTypeForLocalPath(

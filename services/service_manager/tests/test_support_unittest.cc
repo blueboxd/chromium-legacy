@@ -14,7 +14,7 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/service_receiver.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "services/service_manager/tests/test_support.test-mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -62,8 +62,8 @@ void OnTestCReceiver(mojo::PendingReceiver<mojom::TestC> receiver) {
 
 class TestBServiceImpl : public Service {
  public:
-  TestBServiceImpl(mojom::ServiceRequest request)
-      : service_binding_(this, std::move(request)) {
+  explicit TestBServiceImpl(mojo::PendingReceiver<mojom::Service> receiver)
+      : service_receiver_(this, std::move(receiver)) {
     registry_.AddInterface(base::BindRepeating(&OnTestBReceiver));
   }
 
@@ -77,7 +77,7 @@ class TestBServiceImpl : public Service {
     registry_.BindInterface(interface_name, std::move(interface_pipe));
   }
 
-  service_manager::ServiceBinding service_binding_;
+  service_manager::ServiceReceiver service_receiver_;
   service_manager::BinderRegistry registry_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBServiceImpl);
@@ -85,8 +85,8 @@ class TestBServiceImpl : public Service {
 
 class TestCServiceImpl : public Service {
  public:
-  TestCServiceImpl(mojom::ServiceRequest request)
-      : service_binding_(this, std::move(request)) {
+  explicit TestCServiceImpl(mojo::PendingReceiver<mojom::Service> receiver)
+      : service_receiver_(this, std::move(receiver)) {
     registry_.AddInterface(base::BindRepeating(&OnTestCReceiver));
   }
 
@@ -100,7 +100,7 @@ class TestCServiceImpl : public Service {
     registry_.BindInterface(interface_name, std::move(interface_pipe));
   }
 
-  service_manager::ServiceBinding service_binding_;
+  service_manager::ServiceReceiver service_receiver_;
   service_manager::BinderRegistry registry_;
 
   DISALLOW_COPY_AND_ASSIGN(TestCServiceImpl);

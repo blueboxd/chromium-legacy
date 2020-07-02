@@ -439,3 +439,17 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_pto_timeout, true)
 // If true, consider frame expansion when calculating extra padding bytes to
 // meet minimum plaintext packet size required for header protection.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_extra_padding_bytes, false)
+
+// If true, do not try to close stream again if stream fails to be closed upon
+// connection close.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_do_not_close_stream_again_on_connection_close,
+    false)
+
+// If true, determine a serialized packet's fate before the packet gets
+// serialized.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_determine_serialized_packet_fate_early,
+    false)

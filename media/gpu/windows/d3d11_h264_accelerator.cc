@@ -63,16 +63,16 @@ D3D11H264Picture::~D3D11H264Picture() {
 D3D11H264Accelerator::D3D11H264Accelerator(
     D3D11VideoDecoderClient* client,
     MediaLog* media_log,
-    ComD3D11VideoDecoder video_decoder,
     ComD3D11VideoDevice video_device,
     std::unique_ptr<VideoContextWrapper> video_context)
     : client_(client),
       media_log_(media_log),
-      video_decoder_(video_decoder),
       video_device_(video_device),
       video_context_(std::move(video_context)) {
   DCHECK(client);
   DCHECK(media_log_);
+  client->SetDecoderCB(base::BindRepeating(
+      &D3D11H264Accelerator::SetVideoDecoder, base::Unretained(this)));
 }
 
 D3D11H264Accelerator::~D3D11H264Accelerator() {}
@@ -586,6 +586,10 @@ void D3D11H264Accelerator::RecordFailure(const std::string& reason,
 
   DLOG(ERROR) << reason << hr_string;
   MEDIA_LOG(ERROR, media_log_) << hr_string << ": " << reason;
+}
+
+void D3D11H264Accelerator::SetVideoDecoder(ComD3D11VideoDecoder video_decoder) {
+  video_decoder_ = std::move(video_decoder);
 }
 
 }  // namespace media

@@ -69,6 +69,11 @@ public class UndoBarController implements SnackbarManager.SnackbarController {
                         && !overviewModeBehavior.overviewVisible()) {
                     return false;
                 }
+                // If grid tab switcher is enabled, show the undo snack bar regardless of whether
+                // accessibility mode is enabled.
+                if (TabUiFeatureUtilities.isGridTabSwitcherEnabled()) {
+                    return false;
+                }
                 return ChromeAccessibilityUtil.get().isAccessibilityEnabled()
                         || DeviceClassManager.enableAccessibilityLayout();
             }

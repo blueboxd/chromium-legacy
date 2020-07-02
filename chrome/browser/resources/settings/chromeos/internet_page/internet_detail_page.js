@@ -396,7 +396,6 @@ Polymer({
       return;
     }
     this.getDeviceState_();
-    this.getNetworkDetails_();
   },
 
   /** @private */
@@ -449,6 +448,23 @@ Polymer({
     }
   },
 
+  /**
+   * Returns true if all significant DeviceState fields match. Ignores
+   * |scanning| which can be noisy and is handled separately.
+   * @param {!OncMojo.DeviceStateProperties} a
+   * @param {!OncMojo.DeviceStateProperties} b
+   * @return {boolean}
+   * @private
+   */
+  deviceStatesMatch_(a, b) {
+    return a.type === b.type && a.macAddress === b.macAddress &&
+        a.simAbsent === b.simAbsent && a.deviceState === b.deviceState &&
+        a.managedNetworkAvailable === b.managedNetworkAvailable &&
+        OncMojo.ipAddressMatch(a.ipv4Address, b.ipv4Address) &&
+        OncMojo.ipAddressMatch(a.ipv6Address, b.ipv6Address) &&
+        OncMojo.simLockStatusMatch(a.simLockStatus, b.simLockStatus);
+  },
+
   /** @private */
   getDeviceState_() {
     if (!this.managedProperties_) {
@@ -457,7 +473,27 @@ Polymer({
     const type = this.managedProperties_.type;
     this.networkConfig_.getDeviceStateList().then(response => {
       const devices = response.result;
-      this.deviceState_ = devices.find(device => device.type == type) || null;
+      const newDeviceState =
+          devices.find(device => device.type == type) || null;
+      let shouldGetNetworkDetails = false;
+      if (!this.deviceState_ || !newDeviceState) {
+        this.deviceState_ = newDeviceState;
+        shouldGetNetworkDetails = !!this.deviceState_;
+      } else if (!this.deviceStatesMatch_(this.deviceState_, newDeviceState)) {
+        // Only request a network state update if the deviceState changed.
+        shouldGetNetworkDetails =
+            this.deviceState_.deviceState != newDeviceState.deviceState;
+        this.deviceState_ = newDeviceState;
+      } else if (
+          this.deviceState_ &&
+          this.deviceState_.scanning != newDeviceState.scanning) {
+        // Update just the scanning state to avoid interrupting other parts of
+        // the UI (e.g. custom IP addresses or nameservers).
+        this.deviceState_.scanning = newDeviceState.scanning;
+      }
+      if (shouldGetNetworkDetails) {
+        this.getNetworkDetails_();
+      }
     });
   },
 

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.gesturenav;
 
 import android.content.Context;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +15,7 @@ import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.supplier.Supplier;
+import org.chromium.chrome.browser.compositor.CompositorViewHolder.TouchEventObserver;
 import org.chromium.chrome.browser.gesturenav.NavigationBubble.CloseTarget;
 
 import java.lang.annotation.Retention;
@@ -22,7 +24,7 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * Handles history overscroll navigation controlling the underlying UI widget.
  */
-public class NavigationHandler {
+public class NavigationHandler implements TouchEventObserver {
     // Width of a rectangluar area in dp on the left/right edge used for navigation.
     // Swipe beginning from a point within these rects triggers the operation.
     @VisibleForTesting
@@ -66,6 +68,9 @@ public class NavigationHandler {
     // Handles removing the layout from the view hierarchy.  This is posted to ensure
     // it does not conflict with pending Android draws.
     private Runnable mDetachLayoutRunnable;
+    private GestureDetector mDetector;
+    private View.OnAttachStateChangeListener mAttachStateListener;
+    private final Supplier<Boolean> mIsNativePage;
 
     /**
      * Interface to perform actions for navigating.
@@ -94,12 +99,39 @@ public class NavigationHandler {
         boolean willBackExitApp();
     }
 
-    public NavigationHandler(
-            ViewGroup parentView, Context context, Supplier<NavigationGlow> glowEffect) {
+    private class SideNavGestureListener extends GestureDetector.SimpleOnGestureListener {
+        @Override
+        public boolean onDown(MotionEvent event) {
+            return NavigationHandler.this.onDown();
+        }
+
+        @Override
+        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+            // |onScroll| needs handling only after the state moved away from |NONE|.
+            if (isStopped()) return true;
+            return NavigationHandler.this.onScroll(
+                    e1.getX(), distanceX, distanceY, e2.getX(), e2.getY());
+        }
+    }
+
+    public NavigationHandler(ViewGroup parentView, Supplier<NavigationGlow> glowEffect,
+            Supplier<Boolean> isNativePage) {
         mParentView = parentView;
-        mContext = context;
+        mContext = parentView.getContext();
         mGlowEffectSupplier = glowEffect;
+        mIsNativePage = isNativePage;
         mEdgeWidthPx = EDGE_WIDTH_DP * parentView.getResources().getDisplayMetrics().density;
+        mDetector = new GestureDetector(mContext, new SideNavGestureListener());
+        mAttachStateListener = new View.OnAttachStateChangeListener() {
+            @Override
+            public void onViewAttachedToWindow(View v) {}
+
+            @Override
+            public void onViewDetachedFromWindow(View v) {
+                reset();
+            }
+        };
+        parentView.addOnAttachStateChangeListener(mAttachStateListener);
     }
 
     private void createLayout() {
@@ -137,11 +169,19 @@ public class NavigationHandler {
         if (mNavigationSheet != null) mNavigationSheet.setDelegate(delegate.createSheetDelegate());
     }
 
-    /**
-     * @see View#onTouchEvent(MotionEvent)
-     */
-    public void onTouchEvent(int action) {
-        if (action == MotionEvent.ACTION_UP) {
+    @Override
+    public boolean shouldInterceptTouchEvent(MotionEvent e) {
+        // Forward gesture events only for native pages. Rendered pages receive events
+        // from SwipeRefreshHandler.
+        if (!mIsNativePage.get()) return false;
+        return isActive();
+    }
+
+    @Override
+    public void handleTouchEvent(MotionEvent e) {
+        if (!mIsNativePage.get()) return;
+        mDetector.onTouchEvent(e);
+        if (e.getAction() == MotionEvent.ACTION_UP) {
             if (mState == GestureState.DRAGGED && mSideSlideLayout != null) {
                 mSideSlideLayout.release(mNavigationSheet.isHidden());
                 mNavigationSheet.release();
@@ -167,10 +207,10 @@ public class NavigationHandler {
      * @param endX X coordinate of the current motion event.
      * @param endY Y coordinate of the current motion event.
      */
-    public boolean onScroll(
-            float startX, float distanceX, float distanceY, float endX, float endY) {
+    @VisibleForTesting
+    boolean onScroll(float startX, float distanceX, float distanceY, float endX, float endY) {
         // onScroll needs handling only after the state moves away from |NONE|.
-        if (mState == GestureState.NONE) return true;
+        if (mState == GestureState.NONE || mActionDelegate == null) return true;
 
         if (mState == GestureState.STARTED) {
             if (shouldTriggerUi(startX, distanceX, distanceY)) {
@@ -277,14 +317,14 @@ public class NavigationHandler {
      * @return {@code true} if navigation was triggered and its UI is in action, or
      *         edge glow effect is visible.
      */
-    public boolean isActive() {
+    private boolean isActive() {
         return mState == GestureState.DRAGGED || mState == GestureState.GLOW;
     }
 
     /**
      * @return {@code true} if navigation is not in operation.
      */
-    public boolean isStopped() {
+    private boolean isStopped() {
         return mState == GestureState.NONE;
     }
 
@@ -342,12 +382,25 @@ public class NavigationHandler {
         // The animation view is attached/detached on-demand to minimize overlap
         // with composited SurfaceView content.
         cancelDetachLayoutRunnable();
-        if (mSideSlideLayout.getParent() == null) mParentView.addView(mSideSlideLayout);
+        if (isLayoutDetached()) mParentView.addView(mSideSlideLayout);
     }
 
     private void detachLayoutIfNecessary() {
         if (mSideSlideLayout == null) return;
         cancelDetachLayoutRunnable();
-        if (mSideSlideLayout.getParent() != null) mParentView.removeView(mSideSlideLayout);
+        if (!isLayoutDetached()) mParentView.removeView(mSideSlideLayout);
+    }
+
+    @VisibleForTesting
+    boolean isLayoutDetached() {
+        return mSideSlideLayout == null || mSideSlideLayout.getParent() == null;
+    }
+
+    /**
+     * Performs cleanup upon destruction.
+     */
+    void destroy() {
+        mParentView.removeOnAttachStateChangeListener(mAttachStateListener);
+        mDetector = null;
     }
 }

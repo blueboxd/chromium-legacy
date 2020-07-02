@@ -623,6 +623,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("transferDragDropActiveLeave"),
         TestCase("transferDragDropActiveDrop"),
         TestCase("transferDragDropTreeItemAccepts").FilesNg(),
+        TestCase("transferDragDropTreeItemDenies").FilesNg(),
         TestCase("transferDragAndDrop"),
         TestCase("transferDragAndHover"),
         TestCase("transferFromDownloadsToDownloads"),

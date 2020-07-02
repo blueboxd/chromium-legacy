@@ -11,7 +11,6 @@
 #include "base/process/process.h"
 #include "chrome/common/mac/launchd.h"
 #include "chrome/updater/constants.h"
-#include "chrome/updater/mac/setup/info_plist.h"
 #include "chrome/updater/mac/xpc_service_names.h"
 #include "chrome/updater/updater_version.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,16 +20,6 @@ namespace updater {
 namespace test {
 
 namespace {
-
-base::FilePath GetInfoPlistPath() {
-  base::FilePath test_executable;
-  if (!base::PathService::Get(base::FILE_EXE, &test_executable))
-    return base::FilePath();
-  return test_executable.DirName()
-      .Append(FILE_PATH_LITERAL(PRODUCT_FULLNAME_STRING ".App"))
-      .Append(FILE_PATH_LITERAL("Contents"))
-      .Append(FILE_PATH_LITERAL("Info.plist"));
-}
 
 base::FilePath GetExecutablePath() {
   base::FilePath test_executable;
@@ -62,53 +51,27 @@ bool Run(base::CommandLine command_line, int* exit_code) {
 }  // namespace
 
 void Clean() {
-  const std::unique_ptr<InfoPlist> info_plist =
-      InfoPlist::Create(GetInfoPlistPath());
-  EXPECT_TRUE(info_plist != nullptr);
-
   EXPECT_TRUE(base::DeleteFile(GetProductPath(), true));
   EXPECT_TRUE(Launchd::GetInstance()->DeletePlist(
-      Launchd::User, Launchd::Agent,
-      info_plist->GoogleUpdateAdministrationLaunchdNameVersioned()));
+      Launchd::User, Launchd::Agent, updater::CopyAdministrationLaunchDName()));
   EXPECT_TRUE(Launchd::GetInstance()->DeletePlist(
-      Launchd::User, Launchd::Agent,
-      info_plist->GoogleUpdateServiceLaunchdNameVersioned()));
-  EXPECT_TRUE(Launchd::GetInstance()->DeletePlist(
-      Launchd::User, Launchd::Agent,
-      updater::CopyGoogleUpdateServiceLaunchDName()));
+      Launchd::User, Launchd::Agent, updater::CopyServiceLaunchDName()));
 }
 
 void ExpectClean() {
-  const std::unique_ptr<InfoPlist> info_plist =
-      InfoPlist::Create(GetInfoPlistPath());
-  EXPECT_TRUE(info_plist != nullptr);
-
   // Files must not exist on the file system.
   EXPECT_FALSE(base::PathExists(GetProductPath()));
   EXPECT_FALSE(Launchd::GetInstance()->PlistExists(
-      Launchd::User, Launchd::Agent,
-      info_plist->GoogleUpdateAdministrationLaunchdNameVersioned()));
+      Launchd::User, Launchd::Agent, updater::CopyAdministrationLaunchDName()));
   EXPECT_FALSE(Launchd::GetInstance()->PlistExists(
-      Launchd::User, Launchd::Agent,
-      info_plist->GoogleUpdateServiceLaunchdNameVersioned()));
-  EXPECT_FALSE(Launchd::GetInstance()->PlistExists(
-      Launchd::User, Launchd::Agent,
-      updater::CopyGoogleUpdateServiceLaunchDName()));
+      Launchd::User, Launchd::Agent, updater::CopyServiceLaunchDName()));
 }
 
 void ExpectInstalled() {
-  const std::unique_ptr<InfoPlist> info_plist =
-      InfoPlist::Create(GetInfoPlistPath());
-  EXPECT_TRUE(info_plist != nullptr);
-
   // Files must exist on the file system.
   EXPECT_TRUE(base::PathExists(GetProductPath()));
   EXPECT_TRUE(Launchd::GetInstance()->PlistExists(
-      Launchd::User, Launchd::Agent,
-      info_plist->GoogleUpdateAdministrationLaunchdNameVersioned()));
-  EXPECT_TRUE(Launchd::GetInstance()->PlistExists(
-      Launchd::User, Launchd::Agent,
-      info_plist->GoogleUpdateServiceLaunchdNameVersioned()));
+      Launchd::User, Launchd::Agent, CopyAdministrationLaunchDName()));
 }
 
 void Install() {
@@ -122,22 +85,10 @@ void Install() {
 }
 
 void ExpectActive() {
-  const std::unique_ptr<InfoPlist> info_plist =
-      InfoPlist::Create(GetInfoPlistPath());
-  EXPECT_TRUE(info_plist != nullptr);
-
   // Files must exist on the file system.
   EXPECT_TRUE(base::PathExists(GetProductPath()));
-  EXPECT_TRUE(Launchd::GetInstance()->PlistExists(
-      Launchd::User, Launchd::Agent,
-      info_plist->GoogleUpdateAdministrationLaunchdNameVersioned()));
-  EXPECT_TRUE(Launchd::GetInstance()->PlistExists(
-      Launchd::User, Launchd::Agent, CopyGoogleUpdateServiceLaunchDName()));
-  EXPECT_TRUE(Launchd::GetInstance()->PlistExists(
-      Launchd::User, Launchd::Agent, CopyGoogleUpdateServiceLaunchDName()));
-  EXPECT_TRUE(Launchd::GetInstance()->PlistExists(
-      Launchd::User, Launchd::Agent,
-      info_plist->GoogleUpdateServiceLaunchdNameVersioned()));
+  EXPECT_TRUE(Launchd::GetInstance()->PlistExists(Launchd::User, Launchd::Agent,
+                                                  CopyServiceLaunchDName()));
 }
 
 void PromoteCandidate() {

@@ -34,7 +34,6 @@ class D3D11H264Accelerator : public H264Decoder::H264Accelerator {
  public:
   D3D11H264Accelerator(D3D11VideoDecoderClient* client,
                        MediaLog* media_log,
-                       ComD3D11VideoDecoder video_decoder,
                        ComD3D11VideoDevice video_device,
                        std::unique_ptr<VideoContextWrapper> video_context);
   ~D3D11H264Accelerator() override;
@@ -77,6 +76,8 @@ class D3D11H264Accelerator : public H264Decoder::H264Accelerator {
 
   void PicParamsFromPic(DXVA_PicParams_H264* pic_param,
                         scoped_refptr<H264Picture> pic);
+
+  void SetVideoDecoder(ComD3D11VideoDecoder video_decoder);
 
  private:
   bool SubmitSliceData();

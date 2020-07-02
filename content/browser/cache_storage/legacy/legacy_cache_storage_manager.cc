@@ -31,7 +31,6 @@
 #include "content/browser/cache_storage/cache_storage.h"
 #include "content/browser/cache_storage/cache_storage.pb.h"
 #include "content/browser/cache_storage/cache_storage_quota_client.h"
-#include "net/base/url_util.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/common/database/database_identifier.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
@@ -205,11 +204,11 @@ void GetOriginsForHostDidListOrigins(
   // On scheduler sequence.
   std::set<url::Origin> out_origins;
   for (const url::Origin& origin : origins) {
-    if (host == net::GetHostOrSpecFromURL(origin.GetURL()))
+    if (host == origin.host())
       out_origins.insert(origin);
   }
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), out_origins));
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(out_origins)));
 }
 
 void AllOriginSizesReported(
@@ -421,7 +420,7 @@ void LegacyCacheStorageManager::GetOrigins(
         origins.insert(key_value.first.first);
 
     scheduler_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), origins));
+        FROM_HERE, base::BindOnce(std::move(callback), std::move(origins)));
     return;
   }
 
@@ -442,11 +441,11 @@ void LegacyCacheStorageManager::GetOriginsForHost(
     for (const auto& key_value : cache_storage_map_) {
       if (key_value.first.second != owner)
         continue;
-      if (host == net::GetHostOrSpecFromURL(key_value.first.first.GetURL()))
+      if (host == key_value.first.first.host())
         origins.insert(key_value.first.first);
     }
     scheduler_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), origins));
+        FROM_HERE, base::BindOnce(std::move(callback), std::move(origins)));
     return;
   }
 

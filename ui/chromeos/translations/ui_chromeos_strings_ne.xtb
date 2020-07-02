@@ -45,6 +45,8 @@
 <translation id="1395262318152388157">सिक स्लाइडर</translation>
 <translation id="1399648040768741453">तेलुगु किबोर्ड (ध्वन्यात्मक)</translation>
 <translation id="1430915738399379752">प्रिन्ट गर्नुहोस्</translation>
+<translation id="1433600251059882049">यो फोल्डर Linux र Windows सँग सेयर गरिएको छ</translation>
+<translation id="1435838927755162558">Parallels Desktop सँग फोल्डर सेयर गर्नुहोस्</translation>
 <translation id="1439494416798956626"><ph name="FOLDER_NAME" />मा सारियो।</translation>
 <translation id="1441841714100794440">भियतनामी किबोर्ड (टेलेक्स)</translation>
 <translation id="1455548678241328678">नर्वेजियन किबोर्ड</translation>
@@ -79,6 +81,7 @@
 <translation id="1844692022597038441">यो फाइल अफलाइन उपलब्ध छैन।</translation>
 <translation id="184633654410729720">थाई किबोर्ड (केदमानी)</translation>
 <translation id="1847880352285315359">सुरक्षित गरियो</translation>
+<translation id="1853795129690976061">यो फोल्डर Linux सँग सेयर गरिएको छ</translation>
 <translation id="1864756863218646478">फाइल फेला पर्न सकेन।</translation>
 <translation id="1921986354447415460">टर्किस-एफ किबोर्ड</translation>
 <translation id="1924372192547904021"><ph name="DRIVE_NAME" /> फर्म्याट गरियो</translation>
@@ -180,6 +183,7 @@
 <translation id="303198083543495566">भूगोल</translation>
 <translation id="3057861065630527966">तपाईँको तस्बिर र भिडियोहरू जगेडा गर्नुहोस्</translation>
 <translation id="3064388234319122767">ट्रान्सलिटेरेशन (Zdravo → здраво)</translation>
+<translation id="3067790092342515856">Windows फाइलहरू</translation>
 <translation id="3078461028045006476"><ph name="EXTENSION_NAME" /> मार्फत सेयर गर्नुहोस्</translation>
 <translation id="3088034400796962477">ट्रान्सलिटेरेशन (सलाम ← سلام)</translation>
 <translation id="3116361045094675131">बेलायत किबोर्ड</translation>
@@ -262,6 +266,7 @@
 <translation id="3943857333388298514">टाँस्नुहोस्</translation>
 <translation id="3958548648197196644">कीवी</translation>
 <translation id="3966388904776714213">अडियो प्लेयर</translation>
+<translation id="3984317463833596033">Parallels Desktop लाई <ph name="FOLDER_NAME" /> फोल्डरमा रहेका फाइलहरू परिमार्जन गर्ने अनुमति दिनुहोस्</translation>
 <translation id="4002066346123236978">शीर्षक</translation>
 <translation id="4070370845051020638">क्यान्टोनिज इनपुट विधि</translation>
 <translation id="4072248638558688893">तामिल किबोर्ड (ध्वन्यात्मक)</translation>
@@ -290,6 +295,7 @@
 <translation id="4470564870223067757">हंगुल 2 सेट</translation>
 <translation id="4477219268485577442">बुल्गेरियन फोनेटिक</translation>
 <translation id="4479812471636796472">अमेरिकी ड्भोराक किबोर्ड</translation>
+<translation id="4481711095103932593">यो फोल्डर Windows सँग सेयर गरिएको छ</translation>
 <translation id="4487088045714738411">बेल्जियम किबोर्ड</translation>
 <translation id="4522570452068850558">विवरणहरू</translation>
 <translation id="4552678318981539154">थप भण्डारण खरीद गर्नुहोस्</translation>
@@ -335,10 +341,12 @@
 <translation id="4881695831933465202">खोल्नुहोस्</translation>
 <translation id="4886021172213954916">तामिल किबोर्ड (टाइपराइटर)</translation>
 <translation id="4892969127351273348"><ph name="APP_NAME" /> मार्फत खोल्न सकिएन</translation>
+<translation id="4900532980794411603">Parallels Desktop सँग सेयर गर्नुहोस्</translation>
 <translation id="4905417359854579806"><ph name="FILE_COUNT" /> ब्याकअपको लागि तयार छ</translation>
 <translation id="4924638091161556692">स्थिर</translation>
 <translation id="4935975195727477204">गाजानिया फुल</translation>
 <translation id="4943368462779413526">फुटबल</translation>
+<translation id="4961158930123534723">Parallels Desktop सँग एउटा फोल्डर सेयर गरियो</translation>
 <translation id="4969785127455456148">एल्बम</translation>
 <translation id="497244430928947428">मलयालम किबोर्ड (ध्वन्यात्मक)</translation>
 <translation id="4973523518332075481"><ph name="MAX_LENGTH" /> वा सोभन्दा कम वर्णहरू भएको कुनै नाम प्रयोग गर्नुहोस्</translation>
@@ -350,6 +358,7 @@
 <translation id="5010406651457630570">कम्प्युटरहरू</translation>
 <translation id="5011233892417813670">Chromeपुस्तिका</translation>
 <translation id="5024856940085636730">एउटा कार्यले अपेक्षा गरेभन्दा बढी समय लिइरहेको छ। के तपाईं त्यसलाई रद्द गर्न चाहनुहुन्छ?</translation>
+<translation id="5036159836254554629">Parallels Desktop सँग कुन कुन फाइल तथा फोल्डरहरू सेयर गर्ने भन्ने कुरा व्यवस्थापन गर्नुहोस्</translation>
 <translation id="5038625366300922036">थप हेर्नुहोस्...</translation>
 <translation id="5061708541166515394">कन्ट्रास्ट</translation>
 <translation id="5068919226082848014">पिजा</translation>
@@ -498,6 +507,7 @@
 <translation id="656398493051028875">"<ph name="FILENAME" />" लाई मेटाउँदै...</translation>
 <translation id="6581162200855843583">Google ड्राइभ लिङ्क</translation>
 <translation id="6607272825297743757">फाइल बारे जानकारी</translation>
+<translation id="6609332149380188670">Parallels Desktop सँग <ph name="NUMBER_OF_ITEMS" /> वटा फोल्डर सेयर गरियो</translation>
 <translation id="6629841649550503054">सबै <ph name="BEGIN_LINK" />Google ड्राइभ<ph name="END_LINK" /> मा जगेडा गरियो!</translation>
 <translation id="6643016212128521049">खालि गर्नुहोस्</translation>
 <translation id="6650726141019353908">गुलाफी पुतली</translation>
@@ -679,6 +689,7 @@
 <translation id="8475647382427415476">Google ड्राइभ अहिले "<ph name="FILENAME" />" सिंक गर्न असमर्थ थियो। Google ड्राइभले फेरि पछि प्रयास गर्ने छ।</translation>
 <translation id="8477649328507734757">स्पिन</translation>
 <translation id="8487700953926739672">अफलाईन उपलब्ध</translation>
+<translation id="8490342535582768689">Parallels Desktop लाई आफ्नो Google Drive मा रहेका फाइलहरू परिमार्जन गर्ने अनुमति दिनुहोस्। परिवर्तनहरू तपाईंका अन्य यन्त्रमा पनि सिंक हुने छन्।</translation>
 <translation id="8521441079177373948">बेलायत</translation>
 <translation id="8525306231823319788">पूर्ण स्क्रीन</translation>
 <translation id="8551494947769799688">लाट्भियन</translation>

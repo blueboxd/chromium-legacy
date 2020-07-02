@@ -30,6 +30,7 @@ Le app con autorizzazioni di accesso allo spazio di archiviazione potranno acced
 <translation id="3517926952904427380">Impossibile scattare foto verticale</translation>
 <translation id="3569311554794739032">Vuoi rimuovere <ph name="FILE" />?</translation>
 <translation id="3810838688059735925">Video</translation>
+<translation id="4118525110028899586">Metti in pausa la registrazione</translation>
 <translation id="4279490309300973883">Mirroring</translation>
 <translation id="4329152592498422850">Passa alla modalità foto quadrata</translation>
 <translation id="4383571725254449280">Log relativi alle prestazioni di stampa</translation>
@@ -67,11 +68,13 @@ Le app con autorizzazioni di accesso allo spazio di archiviazione potranno acced
 <translation id="8067883171444229417">Guarda il video</translation>
 <translation id="8131740175452115882">Conferma</translation>
 <translation id="8145038249676204903">Passa alla modalità foto</translation>
+<translation id="8239780215768881278">Scatta istantanea video</translation>
 <translation id="8261506727792406068">Elimina</translation>
 <translation id="8428213095426709021">Impostazioni</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
 <translation id="8732462232047530626">Anteprima metadati</translation>
 <translation id="8815966864175525708">Passa alla modalità foto verticale</translation>
+<translation id="8828441885228359828">Riprendi la registrazione</translation>
 <translation id="8870695351537079478">Impossibile avviare la registrazione</translation>
 <translation id="9045155556724273246">10 secondi</translation>
 <translation id="945522503751344254">Invia feedback</translation>

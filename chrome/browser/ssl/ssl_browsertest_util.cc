@@ -19,9 +19,14 @@
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "net/base/features.h"
 #include "net/cert/cert_status_flags.h"
+#include "net/cert/ev_root_ca_metadata.h"
 #include "net/net_buildflags.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif
 
 namespace ssl_test_util {
 
@@ -134,7 +139,7 @@ void SecurityStateWebContentsObserver::DidChangeVisibleSecurityState() {
   run_loop_.Quit();
 }
 
-static bool UsingBuiltinCertVerifier() {
+bool UsingBuiltinCertVerifier() {
 #if defined(OS_FUCHSIA) || defined(OS_LINUX) || defined(OS_CHROMEOS)
   return true;
 #elif BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
@@ -142,6 +147,42 @@ static bool UsingBuiltinCertVerifier() {
     return true;
 #endif
   return false;
+}
+
+bool SystemSupportsHardFailRevocationChecking() {
+  if (UsingBuiltinCertVerifier())
+    return true;
+#if defined(OS_WIN)
+  return true;
+#else
+  return false;
+#endif
+}
+
+bool SystemUsesChromiumEVMetadata() {
+  if (UsingBuiltinCertVerifier())
+    return true;
+#if defined(PLATFORM_USES_CHROMIUM_EV_METADATA)
+  return true;
+#else
+  return false;
+#endif
+}
+
+bool SystemSupportsOCSPStapling() {
+  if (UsingBuiltinCertVerifier())
+    return true;
+#if defined(OS_ANDROID)
+  return false;
+#elif defined(OS_MACOSX)
+  // The SecTrustSetOCSPResponse function exists since macOS 10.9+, but does
+  // not actually do anything until 10.12.
+  if (base::mac::IsAtLeastOS10_12())
+    return true;
+  return false;
+#else
+  return true;
+#endif
 }
 
 bool CertVerifierSupportsCRLSetBlocking() {

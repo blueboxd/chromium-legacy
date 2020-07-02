@@ -10,9 +10,7 @@
 
 namespace chromeos {
 namespace assistant {
-namespace mojom {
-class AssistantNotification;
-}  // namespace mojom
+struct AssistantNotification;
 }  // namespace assistant
 }  // namespace chromeos
 
@@ -23,8 +21,7 @@ namespace ash {
 class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantNotificationModelObserver
     : public base::CheckedObserver {
  public:
-  using AssistantNotification =
-      chromeos::assistant::mojom::AssistantNotification;
+  using AssistantNotification = chromeos::assistant::AssistantNotification;
 
   // Invoked when the specified |notification| has been added.
   virtual void OnNotificationAdded(const AssistantNotification& notification) {}

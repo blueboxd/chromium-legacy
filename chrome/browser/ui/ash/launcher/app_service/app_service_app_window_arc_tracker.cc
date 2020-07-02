@@ -11,7 +11,10 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
 #include "base/feature_list.h"
+#include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
+#include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
@@ -28,6 +31,7 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/views/widget/widget.h"
 
 AppServiceAppWindowArcTracker::AppServiceAppWindowArcTracker(
@@ -155,13 +159,10 @@ void AppServiceAppWindowArcTracker::OnTaskDescriptionUpdated(
   if (it == task_id_to_arc_app_window_info_.end())
     return;
 
-  ArcAppWindowInfo* const info = it->second.get();
-  DCHECK(info);
-  info->SetDescription(label, icon_png_data);
-  AppWindowBase* app_window =
-      app_service_controller_->GetAppWindow(it->second->window());
-  if (app_window)
-    app_window->SetDescription(label, icon_png_data);
+  apps::CompressedDataToImageSkiaCallback(
+      base::BindOnce(&AppServiceAppWindowArcTracker::SetDescription,
+                     weak_ptr_factory_.GetWeakPtr(), task_id, label))
+      .Run(std::move(icon_png_data));
 }
 
 void AppServiceAppWindowArcTracker::OnTaskDestroyed(int task_id) {
@@ -301,7 +302,7 @@ void AppServiceAppWindowArcTracker::AttachControllerToWindow(
   app_service_controller_->AddWindowToShelf(window, shelf_id);
   AppWindowBase* app_window = app_service_controller_->GetAppWindow(window);
   if (app_window)
-    app_window->SetDescription(info->title(), info->icon_data_png());
+    app_window->SetDescription(info->title(), info->icon());
 
   window->SetProperty(ash::kShelfIDKey, shelf_id.Serialize());
   window->SetProperty(ash::kArcPackageNameKey,
@@ -451,4 +452,20 @@ std::vector<int> AppServiceAppWindowArcTracker::GetTaskIdsForApp(
   }
 
   return task_ids;
+}
+
+void AppServiceAppWindowArcTracker::SetDescription(int32_t task_id,
+                                                   const std::string& title,
+                                                   gfx::ImageSkia icon) {
+  auto it = task_id_to_arc_app_window_info_.find(task_id);
+  if (it == task_id_to_arc_app_window_info_.end())
+    return;
+
+  ArcAppWindowInfo* const info = it->second.get();
+  DCHECK(info);
+  info->SetDescription(title, icon);
+  AppWindowBase* app_window =
+      app_service_controller_->GetAppWindow(it->second->window());
+  if (app_window)
+    app_window->SetDescription(title, icon);
 }

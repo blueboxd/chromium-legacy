@@ -33,7 +33,7 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/service_receiver.h"
 #include "services/service_manager/public/cpp/test/test_service_manager.h"
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
 #include "services/service_manager/service_process_launcher.h"
@@ -73,8 +73,8 @@ void OnServicePIDReceivedCallback(std::string* service_name,
 
 class TestService : public Service, public test::mojom::CreateInstanceTest {
  public:
-  explicit TestService(mojom::ServiceRequest request)
-      : service_binding_(this, std::move(request)) {
+  explicit TestService(mojo::PendingReceiver<mojom::Service> receiver)
+      : service_receiver_(this, std::move(receiver)) {
     registry_.AddInterface<test::mojom::CreateInstanceTest>(
         base::BindRepeating(&TestService::Create, base::Unretained(this)));
   }
@@ -87,7 +87,7 @@ class TestService : public Service, public test::mojom::CreateInstanceTest {
     wait_for_target_identity_loop_->Run();
   }
 
-  Connector* connector() { return service_binding_.GetConnector(); }
+  Connector* connector() { return service_receiver_.GetConnector(); }
 
  private:
   // Service:
@@ -110,7 +110,7 @@ class TestService : public Service, public test::mojom::CreateInstanceTest {
       wait_for_target_identity_loop_->Quit();
   }
 
-  ServiceBinding service_binding_;
+  ServiceReceiver service_receiver_;
   Identity target_identity_;
   std::unique_ptr<base::RunLoop> wait_for_target_identity_loop_;
 
@@ -122,11 +122,11 @@ class TestService : public Service, public test::mojom::CreateInstanceTest {
 
 class SimpleService : public Service {
  public:
-  explicit SimpleService(mojom::ServiceRequest request)
-      : binding_(this, std::move(request)) {}
-  ~SimpleService() override {}
+  explicit SimpleService(mojo::PendingReceiver<mojom::Service> receiver)
+      : receiver_(this, std::move(receiver)) {}
+  ~SimpleService() override = default;
 
-  Connector* connector() { return binding_.GetConnector(); }
+  Connector* connector() { return receiver_.GetConnector(); }
 
   void WaitForDisconnect() {
     base::RunLoop loop;
@@ -142,7 +142,7 @@ class SimpleService : public Service {
     Terminate();
   }
 
-  ServiceBinding binding_;
+  ServiceReceiver receiver_;
   base::OnceClosure connection_lost_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleService);

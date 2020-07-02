@@ -124,6 +124,7 @@
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
+#include "third_party/blink/renderer/core/dom/focus_params.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/live_node_list.h"
 #include "third_party/blink/renderer/core/dom/mutation_observer.h"
@@ -159,7 +160,7 @@
 #include "third_party/blink/renderer/core/events/visual_viewport_scroll_event.h"
 #include "third_party/blink/renderer/core/execution_context/security_context_init.h"
 #include "third_party/blink/renderer/core/execution_context/window_agent.h"
-#include "third_party/blink/renderer/core/feature_policy/dom_document_policy.h"
+#include "third_party/blink/renderer/core/feature_policy/dom_feature_policy.h"
 #include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/dom_timer.h"
@@ -791,9 +792,9 @@ Document::Document(const DocumentInit& initializer,
       permission_service_(GetExecutionContext()),
       has_trust_tokens_answerer_(GetExecutionContext()),
       font_preload_manager_(*this) {
-  GetOriginTrialContext()->BindExecutionContext(GetExecutionContext());
-
   if (dom_window_) {
+    GetSecurityContext().GetOriginTrialContext()->BindExecutionContext(
+        dom_window_.Get());
     pending_fp_headers_ = security_initializer.FeaturePolicyHeader();
     pending_dp_headers_ = initializer.GetDocumentPolicy().feature_state;
   }
@@ -987,20 +988,12 @@ const SecurityOrigin* Document::GetSecurityOrigin() const {
   return GetSecurityContext().GetSecurityOrigin();
 }
 
-SecurityOrigin* Document::GetMutableSecurityOrigin() {
-  return GetSecurityContext().GetMutableSecurityOrigin();
-}
-
 ContentSecurityPolicy* Document::GetContentSecurityPolicy() const {
   return GetSecurityContext().GetContentSecurityPolicy();
 }
 
 SecureContextMode Document::GetSecureContextMode() const {
   return GetSecurityContext().GetSecureContextMode();
-}
-
-OriginTrialContext* Document::GetOriginTrialContext() const {
-  return TreeRootDocument().GetSecurityContext().GetOriginTrialContext();
 }
 
 void Document::SetSecureContextModeForTesting(SecureContextMode mode) {
@@ -5901,7 +5894,7 @@ void Document::setDomain(const String& raw_domain,
         GetFrame()->IsCrossOriginToMainFrame();
     bool was_cross_origin_to_parent_frame =
         GetFrame()->IsCrossOriginToParentFrame();
-    GetMutableSecurityOrigin()->SetDomainFromDOM(new_domain);
+    dom_window_->GetMutableSecurityOrigin()->SetDomainFromDOM(new_domain);
     bool is_cross_origin_to_main_frame = GetFrame()->IsCrossOriginToMainFrame();
     if (FrameScheduler* frame_scheduler = GetFrame()->GetFrameScheduler())
       frame_scheduler->SetCrossOriginToMainFrame(is_cross_origin_to_main_frame);
@@ -8087,8 +8080,8 @@ scoped_refptr<base::SingleThreadTaskRunner> Document::GetTaskRunner(
 }
 
 DOMFeaturePolicy* Document::featurePolicy() {
-  if (!policy_)
-    policy_ = MakeGarbageCollected<DOMDocumentPolicy>(this);
+  if (!policy_ && GetExecutionContext())
+    policy_ = MakeGarbageCollected<DOMFeaturePolicy>(GetExecutionContext());
   return policy_.Get();
 }
 

@@ -12,7 +12,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "chromeos/services/assistant/public/mojom/assistant_notification.mojom-forward.h"
+#include "chromeos/services/assistant/public/cpp/assistant_notification.h"
 
 namespace ash {
 
@@ -22,10 +22,7 @@ class AssistantNotificationModelObserver;
 // notification state and notifies a pool of observers.
 class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantNotificationModel {
  public:
-  using AssistantNotification =
-      chromeos::assistant::mojom::AssistantNotification;
-  using AssistantNotificationPtr =
-      chromeos::assistant::mojom::AssistantNotificationPtr;
+  using AssistantNotification = chromeos::assistant::AssistantNotification;
 
   AssistantNotificationModel();
   ~AssistantNotificationModel();
@@ -37,7 +34,7 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantNotificationModel {
   // Adds or updates the specified |notification| in the model. If there is an
   // existing notification with the same |client_id|, an update will occur.
   // Otherwise a new notification will be added.
-  void AddOrUpdateNotification(AssistantNotificationPtr notification);
+  void AddOrUpdateNotification(AssistantNotification&& notification);
 
   // Removes the notification uniquely identified by |id|. If |from_server| is
   // true the request to remove was initiated by the server.
@@ -70,7 +67,7 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantNotificationModel {
   void NotifyAllNotificationsRemoved(bool from_server);
 
   // Notifications are each mapped to their unique id.
-  std::map<std::string, AssistantNotificationPtr> notifications_;
+  std::map<std::string, AssistantNotification> notifications_;
 
   mutable base::ObserverList<AssistantNotificationModelObserver> observers_;
 

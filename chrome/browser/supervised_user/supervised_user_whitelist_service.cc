@@ -64,8 +64,8 @@ void SupervisedUserWhitelistService::Init() {
     return;
 
   installer_->Subscribe(
-      base::Bind(&SupervisedUserWhitelistService::OnWhitelistReady,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(&SupervisedUserWhitelistService::OnWhitelistReady,
+                          weak_ptr_factory_.GetWeakPtr()));
 
   // Register whitelists specified on the command line.
   for (const auto& whitelist : GetWhitelistsFromCommandLine())

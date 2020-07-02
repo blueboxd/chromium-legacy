@@ -14,7 +14,6 @@
 #include "base/mac/bundle_locations.h"
 #import "base/mac/foundation_util.h"
 #include "base/process/launch.h"
-#import "chrome/updater/mac/setup/info_plist.h"
 #include "chrome/updater/mac/xpc_service_names.h"
 #include "chrome/updater/test/test_app/constants.h"
 #include "chrome/updater/test/test_app/test_app_version.h"
@@ -45,13 +44,11 @@ base::FilePath GetUpdaterAppExecutablePath() {
 }
 
 void SwapUpdater(const base::FilePath& updater_bundle_path) {
-  base::FilePath plist_path =
-      updater_bundle_path.Append("Contents").Append("Info.plist");
-  std::unique_ptr<InfoPlist> plist = InfoPlist::Create(plist_path);
-
-  base::FilePath updater_executable_path = plist->UpdaterExecutablePath(
-      base::mac::GetUserLibraryPath(), GetUpdateFolderName(),
-      GetUpdaterAppName(), GetUpdaterAppExecutablePath());
+  base::FilePath updater_executable_path =
+      base::mac::GetUserLibraryPath()
+          .Append(GetUpdateFolderName())
+          .Append(GetUpdaterAppName())
+          .Append(GetUpdaterAppExecutablePath());
 
   base::CommandLine swap_command(updater_executable_path);
   swap_command.AppendSwitch(kSwapAppCommand);

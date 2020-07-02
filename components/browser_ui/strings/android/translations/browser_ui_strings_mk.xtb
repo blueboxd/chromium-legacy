@@ -10,6 +10,7 @@
 <translation id="1201402288615127009">Следно</translation>
 <translation id="1242008676835033345">Вметнато во <ph name="WEBSITE_URL" /></translation>
 <translation id="1272079795634619415">Запри</translation>
+<translation id="1289742167380433257">Google ги оптимизираше сликите на страницава за да ви заштеди интернет.</translation>
 <translation id="129382876167171263">Датотеките зачувани од веб-сајтовите се појавуваат тука</translation>
 <translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">Локацијата <ph name="SITE_NAME" /> е додадена</translation>
@@ -189,6 +190,7 @@
 <translation id="7128222689758636196">Дозволи за тековниот пребарувач</translation>
 <translation id="7141896414559753902">Блокирај го прикажувањето скокачки прозорци и пренасочувања на сајтовите (се препорачува)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
+<translation id="7243308994586599757">Достапни се опции на дното на екранот</translation>
 <translation id="7250468141469952378">Избрани ставки: <ph name="ITEM_COUNT" /></translation>
 <translation id="7302486331832100261">Вообичаено ги блокирате известувањата. За да ги дозволите, допрете „Детали“.</translation>
 <translation id="7423098979219808738">Прво прашај</translation>
@@ -227,6 +229,7 @@
 <translation id="83792324527827022">Сајтот ги користи камерата и микрофонот</translation>
 <translation id="8380167699614421159">Сајтов прикажува нападни или лажни реклами</translation>
 <translation id="8394832520002899662">Допрете за да се вратите на сајтот</translation>
+<translation id="8425213833346101688">Промени</translation>
 <translation id="8441146129660941386">Барај поназад</translation>
 <translation id="8447861592752582886">Отповикај ја дозволата за пристап до уредот</translation>
 <translation id="8463851957836045671">Сајтот е брз</translation>

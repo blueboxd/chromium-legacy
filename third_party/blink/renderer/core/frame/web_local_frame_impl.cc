@@ -1921,7 +1921,7 @@ void WebLocalFrameImpl::InitializeCoreFrame(
   CHECK(frame_->Loader().StateMachine()->IsDisplayingInitialEmptyDocument());
   if (!Parent() && !Opener() &&
       frame_->GetSettings()->GetShouldReuseGlobalForUnownedMainFrame()) {
-    frame_->GetDocument()->GetMutableSecurityOrigin()->GrantUniversalAccess();
+    frame_->DomWindow()->GetMutableSecurityOrigin()->GrantUniversalAccess();
   }
 
   if (!owner) {
@@ -2627,10 +2627,8 @@ void WebLocalFrameImpl::SetAllowsCrossBrowsingInstanceFrameLookup() {
   // that match everything except the agent cluster check. This is needed
   // for embedders that hand out frame references outside of a browsing
   // instance, for example extensions and webview tag.
-  GetFrame()
-      ->GetDocument()
-      ->GetMutableSecurityOrigin()
-      ->GrantCrossAgentClusterAccess();
+  auto* window = GetFrame()->DomWindow();
+  window->GetMutableSecurityOrigin()->GrantCrossAgentClusterAccess();
 }
 
 }  // namespace blink

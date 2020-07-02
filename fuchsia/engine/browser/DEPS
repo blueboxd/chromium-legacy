@@ -7,6 +7,7 @@ include_rules = [
   "+media/fuchsia/cdm/service",
   "+media/fuchsia/mojom",
   "+media/mojo/common",
+  "+media/mojo/mojom",
   "+media/mojo/services",
   "+mojo/public/cpp/bindings",
   "+mojo/public/cpp/system",

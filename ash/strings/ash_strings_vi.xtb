@@ -73,6 +73,7 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="1747827819627189109">Đã bật bàn phím ảo</translation>
 <translation id="1761222317188459878">Bật/tắt kết nối mạng. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Cuộn sang phải</translation>
+<translation id="1782199038061388045">dịch</translation>
 <translation id="181103072419391116">Cường độ tín hiệu <ph name="SIGNAL_STRENGTH" />, Do quản trị viên của bạn quản lý</translation>
 <translation id="1812997170047690955">Trên màn hình của tôi có nội dung gì?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
@@ -103,7 +104,6 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="2126242104232412123">Không gian làm việc mới</translation>
 <translation id="2127372758936585790">Bộ sạc công suất thấp</translation>
 <translation id="2135456203358955318">Phóng to ở vị trí cố định</translation>
-<translation id="2143915448548023856">Cài đặt hiển thị</translation>
 <translation id="2144487987174258011">Khởi động lại để cập nhật Adobe Flash Player</translation>
 <translation id="2208323208084708176">Chế độ màn hình đồng nhất</translation>
 <translation id="2220572644011485463">Mã PIN hoặc mật khẩu</translation>
@@ -185,6 +185,7 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="3081696990447829002">Mở rộng menu</translation>
 <translation id="3087734570205094154">Bên dưới</translation>
 <translation id="309749186376891736">Di con trỏ</translation>
+<translation id="3098580329624789136">Xem <ph name="INTENT" /> của "<ph name="QUERY" />"</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Khởi động lại để cập nhật</translation>
 <translation id="3139942575505304791">Không gian làm việc 1</translation>
@@ -222,8 +223,9 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="3465356146291925647">Do quản trị viên của bạn quản lý</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3485319357743610354"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Cường độ tín hiệu <ph name="SIGNAL_STRENGTH" /></translation>
+<translation id="3486220673238053218">định nghĩa</translation>
 <translation id="3510164367642747937">Đánh dấu con trỏ chuột</translation>
-<translation id="3513798432020909783">Tài khoản được quản lý bởi <ph name="MANAGER_EMAIL" /></translation>
+<translation id="3513798432020909783">Người quản lý tài khoản: <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Thay đổi lại thành "<ph name="FROM_LOCALE" />" (yêu cầu khởi động lại)</translation>
 <translation id="3576141592585647168">Thay đổi múi giờ</translation>
 <translation id="3593646411856133110">Vuốt lên và giữ để xem các ứng dụng đang mở</translation>
@@ -272,8 +274,8 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="4072264167173457037">Tín hiệu trung bình</translation>
 <translation id="4112140312785995938">Tua lùi</translation>
 <translation id="4129129681837227511">Để xem thông báo trên màn hình khóa, hãy mở khóa thiết bị để thay đổi tùy chọn cài đặt này</translation>
-<translation id="4144413954005649103">Khi nhấp chuột phải hoặc nhấn và giữ, Trợ lý sẽ hiển thị cho bạn thông tin liên quan đến nội dung bạn chọn trên màn hình.</translation>
 <translation id="4146833061457621061">Phát nhạc</translation>
+<translation id="4149156641122542261"><ph name="DOMAIN" /> quản lý <ph name="DEVICE_TYPE" /></translation>
 <translation id="4181841719683918333">Ngôn ngữ</translation>
 <translation id="4195877955194704651">Nút Lượt nhấp tự động</translation>
 <translation id="4197790712631116042">Đang tắt</translation>
@@ -528,6 +530,7 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="7378594059915113390">Các chức năng điều khiển nội dung đa phương tiện</translation>
 <translation id="7398254312354928459">Đã chuyển kết nối mạng</translation>
 <translation id="7405710164030118432">Để mở khóa thiết bị này, hãy nhập mã truy cập Family Link dành cho cha mẹ của bạn</translation>
+<translation id="741244894080940828">chuyển đổi</translation>
 <translation id="742594950370306541">Máy ảnh đang được sử dụng.</translation>
 <translation id="743058460480092004">Máy ảnh và micrô đang được sử dụng.</translation>
 <translation id="7436182601308224670">Chào buổi chiều <ph name="GIVEN_NAME" />!</translation>
@@ -540,6 +543,7 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="7562368315689366235">Bảng màu biểu tượng cảm xúc</translation>
 <translation id="7564874036684306347">Di chuyển cửa sổ sang màn hình khác có thể gây ra hoạt động không mong muốn. Các thông báo, cửa sổ và hộp thoại tiếp theo có thể bị phân tách giữa các màn hình.</translation>
 <translation id="7568294522609223312">Tắt tính năng tự động nhấp</translation>
+<translation id="7568637526529101738">Khi nhấp chuột phải hoặc nhấn và giữ, Trợ lý sẽ hiển thị các thông tin như định nghĩa hoặc hoạt động chuyển đổi đơn vị để bạn lựa chọn.</translation>
 <translation id="7569509451529460200">Đã bật chữ nổi Braille và ChromeVox</translation>
 <translation id="7593891976182323525">Search hoặc Shift</translation>
 <translation id="7600875258240007829">Xem tất cả thông báo</translation>

@@ -174,8 +174,10 @@ static_assert(base::size(kReportTypeNames) == kFrameReportTypeCount,
 constexpr int kMaxCompositorLatencyHistogramIndex =
     kFrameReportTypeCount * kFrameSequenceTrackerTypeCount *
     (kStageTypeCount + kAllBreakdownCount);
-constexpr int kCompositorLatencyHistogramMin = 1;
-constexpr int kCompositorLatencyHistogramMax = 350000;
+constexpr base::TimeDelta kCompositorLatencyHistogramMin =
+    base::TimeDelta::FromMicroseconds(1);
+constexpr base::TimeDelta kCompositorLatencyHistogramMax =
+    base::TimeDelta::FromMilliseconds(350);
 constexpr int kCompositorLatencyHistogramBucketCount = 50;
 
 constexpr int kEventLatencyEventTypeCount =
@@ -186,8 +188,10 @@ constexpr int kMaxEventLatencyHistogramBaseIndex =
     kEventLatencyEventTypeCount * kEventLatencyScrollTypeCount;
 constexpr int kMaxEventLatencyHistogramIndex =
     kMaxEventLatencyHistogramBaseIndex * (kStageTypeCount + kAllBreakdownCount);
-constexpr int kEventLatencyHistogramMin = 1;
-constexpr int kEventLatencyHistogramMax = 5000000;
+constexpr base::TimeDelta kEventLatencyHistogramMin =
+    base::TimeDelta::FromMicroseconds(1);
+constexpr base::TimeDelta kEventLatencyHistogramMax =
+    base::TimeDelta::FromSeconds(5);
 constexpr int kEventLatencyHistogramBucketCount = 100;
 
 bool ShouldReportLatencyMetricsForSequenceType(
@@ -614,7 +618,7 @@ void CompositorFrameReporter::ReportCompositorLatencyHistogram(
             report_type_index, frame_sequence_tracker_type, stage_type_index),
         histogram_index, kMaxCompositorLatencyHistogramIndex,
         AddTimeMicrosecondsGranularity(time_delta),
-        base::Histogram::FactoryGet(
+        base::Histogram::FactoryMicrosecondsTimeGet(
             GetCompositorLatencyHistogramName(report_type_index,
                                               frame_sequence_tracker_type,
                                               stage_type_index),
@@ -648,7 +652,7 @@ void CompositorFrameReporter::ReportEventLatencyHistograms() const {
           swap_end_histogram_name, histogram_base_index,
           kMaxEventLatencyHistogramBaseIndex,
           AddTimeMicrosecondsGranularity(swap_end_latency),
-          base::Histogram::FactoryGet(
+          base::Histogram::FactoryMicrosecondsTimeGet(
               swap_end_histogram_name, kEventLatencyHistogramMin,
               kEventLatencyHistogramMax, kEventLatencyHistogramBucketCount,
               base::HistogramBase::kUmaTargetedHistogramFlag));
@@ -682,7 +686,7 @@ void CompositorFrameReporter::ReportEventLatencyHistograms() const {
         b2r_histogram_name, histogram_base_index,
         kMaxEventLatencyHistogramBaseIndex,
         AddTimeMicrosecondsGranularity(b2r_latency),
-        base::Histogram::FactoryGet(
+        base::Histogram::FactoryMicrosecondsTimeGet(
             b2r_histogram_name, kEventLatencyHistogramMin,
             kEventLatencyHistogramMax, kEventLatencyHistogramBucketCount,
             base::HistogramBase::kUmaTargetedHistogramFlag));
@@ -706,6 +710,11 @@ void CompositorFrameReporter::ReportEventLatencyHistograms() const {
         case StageType::kSubmitCompositorFrameToPresentationCompositorFrame:
           ReportEventLatencyVizBreakdowns(histogram_base_index,
                                           histogram_base_name);
+          break;
+        case StageType::kTotalLatency:
+          UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+              "EventLatency.TotalLatency", latency, kEventLatencyHistogramMin,
+              kEventLatencyHistogramMax, kEventLatencyHistogramBucketCount);
           break;
         default:
           break;
@@ -762,7 +771,7 @@ void CompositorFrameReporter::ReportEventLatencyHistogram(
   STATIC_HISTOGRAM_POINTER_GROUP(
       histogram_name, histogram_index, kMaxEventLatencyHistogramIndex,
       AddTimeMicrosecondsGranularity(latency),
-      base::Histogram::FactoryGet(
+      base::Histogram::FactoryMicrosecondsTimeGet(
           histogram_name, kEventLatencyHistogramMin, kEventLatencyHistogramMax,
           kEventLatencyHistogramBucketCount,
           base::HistogramBase::kUmaTargetedHistogramFlag));

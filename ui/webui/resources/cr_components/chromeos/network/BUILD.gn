@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
+import("../os_cr_components.gni")
 
 assert(is_chromeos, "Only ChromeOS components belong here.")
 
@@ -241,46 +242,48 @@ js_library("onc_mojo") {
   ]
 }
 
-# TODO: Uncomment as the Polymer3 migration makes progress.
-# js_type_check("closure_compile_module") {
-#   is_polymer3 = true
-#   deps = [
-#      ":mojo_interface_provider.m",
-#      ":cr_policy_network_behavior_mojo.m",
-#      ":cr_policy_network_indicator_mojo.m",
-#      ":network_apnlist.m",
-#      ":network_choose_mobile.m",
-#      ":network_config.m",
-#      ":network_config_element_behavior.m",
-#      ":network_config_input.m",
-#      ":network_config_select.m",
-#      ":network_config_toggle.m",
-#      ":network_icon.m",
-#      ":network_icons.m",
-#      ":network_ip_config.m",
-#      ":network_list.m",
-#      ":network_list_item.m",
-#      ":network_list_types.m",
-#      ":network_listener_behavior.m",
-#      ":network_nameservers.m",
-#      ":network_password_input.m",
-#      ":network_property_list_mojo.m",
-#      ":network_proxy.m",
-#      ":network_proxy_exclusions.m",
-#      ":network_proxy_input.m",
-#      ":network_select.m",
-#      ":network_shared_css.m",
-#      ":network_siminfo.m",
-#      ":onc_mojo.m"
-#   ]
-# }
+js_type_check("closure_compile_module") {
+  is_polymer3 = true
+  deps = [
+    ":mojo_interface_provider.m",
+
+    #  ":cr_policy_network_behavior_mojo.m",
+    #  ":cr_policy_network_indicator_mojo.m",
+    #  ":network_apnlist.m",
+    #  ":network_choose_mobile.m",
+    #  ":network_config.m",
+    #  ":network_config_element_behavior.m",
+    #  ":network_config_input.m",
+    #  ":network_config_select.m",
+    #  ":network_config_toggle.m",
+    ":network_icon.m",
+
+    #  ":network_ip_config.m",
+    #  ":network_list.m",
+    #  ":network_list_item.m",
+    #  ":network_list_types.m",
+    ":network_listener_behavior.m",
+
+    #  ":network_nameservers.m",
+    #  ":network_password_input.m",
+    #  ":network_property_list_mojo.m",
+    #  ":network_proxy.m",
+    #  ":network_proxy_exclusions.m",
+    #  ":network_proxy_input.m",
+    #  ":network_select.m",
+    #  ":network_shared_css.m",
+    #  ":network_siminfo.m",
+    ":onc_mojo.m",
+  ]
+}
 
 js_library("mojo_interface_provider.m") {
   sources = [ "$root_gen_dir/ui/webui/resources/cr_components/chromeos/network/mojo_interface_provider.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    "//chromeos/services/network_config/public/mojom:mojom_js_library_for_compile",
+    "//ui/webui/resources/js:cr.m",
   ]
-  extra_deps = [ ":mojo_interface_provider_module" ]
+  extra_deps = [ ":modulize" ]
 }
 
 js_library("cr_policy_network_behavior_mojo.m") {
@@ -358,17 +361,11 @@ js_library("network_config_toggle.m") {
 js_library("network_icon.m") {
   sources = [ "$root_gen_dir/ui/webui/resources/cr_components/chromeos/network/network_icon.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    ":onc_mojo.m",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:i18n_behavior.m",
   ]
   extra_deps = [ ":network_icon_module" ]
-}
-
-js_library("network_icons.m") {
-  sources = [ "$root_gen_dir/ui/webui/resources/cr_components/chromeos/network/network_icons.m.js" ]
-  deps = [
-    # TODO: Fill those in.
-  ]
-  extra_deps = [ ":network_icons_module" ]
 }
 
 js_library("network_ip_config.m") {
@@ -406,7 +403,8 @@ js_library("network_list_types.m") {
 js_library("network_listener_behavior.m") {
   sources = [ "$root_gen_dir/ui/webui/resources/cr_components/chromeos/network/network_listener_behavior.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    ":mojo_interface_provider.m",
+    "//ui/webui/resources/js:assert.m",
   ]
   extra_deps = [ ":modulize" ]
 }
@@ -486,9 +484,11 @@ js_library("network_siminfo.m") {
 js_library("onc_mojo.m") {
   sources = [ "$root_gen_dir/ui/webui/resources/cr_components/chromeos/network/onc_mojo.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    "//chromeos/services/network_config/public/mojom:mojom_js_library_for_compile",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:load_time_data.m",
   ]
-  extra_deps = [ ":onc_mojo_module" ]
+  extra_deps = [ ":modulize" ]
 }
 
 import("//tools/polymer/polymer.gni")
@@ -498,7 +498,6 @@ group("polymer3_elements") {
     ":cr_policy_network_behavior_mojo_module",
     ":cr_policy_network_indicator_mojo_module",
     ":modulize",
-    ":mojo_interface_provider_module",
     ":network_apnlist_module",
     ":network_choose_mobile_module",
     ":network_config_input_module",
@@ -519,14 +518,7 @@ group("polymer3_elements") {
     ":network_select_module",
     ":network_shared_css_module",
     ":network_siminfo_module",
-    ":onc_mojo_module",
   ]
-}
-
-polymer_modulizer("mojo_interface_provider") {
-  js_file = "mojo_interface_provider.js"
-  html_file = "mojo_interface_provider.html"
-  html_type = "dom-module"
 }
 
 polymer_modulizer("cr_policy_network_behavior_mojo") {
@@ -581,6 +573,7 @@ polymer_modulizer("network_icon") {
   js_file = "network_icon.js"
   html_file = "network_icon.html"
   html_type = "dom-module"
+  auto_imports = cr_components_chromeos_auto_imports
 }
 
 polymer_modulizer("network_icons") {
@@ -661,18 +654,15 @@ polymer_modulizer("network_siminfo") {
   html_type = "dom-module"
 }
 
-polymer_modulizer("onc_mojo") {
-  js_file = "onc_mojo.js"
-  html_file = "onc_mojo.html"
-  html_type = "dom-module"
-}
-
 import("//ui/webui/resources/tools/js_modulizer.gni")
 
 js_modulizer("modulize") {
   input_files = [
+    "mojo_interface_provider.js",
     "network_config_element_behavior.js",
     "network_listener_behavior.js",
     "network_proxy.js",
+    "onc_mojo.js",
   ]
+  namespace_rewrites = cr_components_chromeos_namespace_rewrites
 }

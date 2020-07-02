@@ -109,10 +109,9 @@ class SqliteIntegrityTest : public DiagnosticsTest {
       // Set the error callback so that we can get useful results in a debug
       // build for a corrupted database. Without setting the error callback,
       // sql::Database will just DCHECK.
-      database.set_error_callback(
-          base::Bind(&SqliteIntegrityTest::ErrorRecorder::RecordSqliteError,
-                     recorder->AsWeakPtr(),
-                     &database));
+      database.set_error_callback(base::BindRepeating(
+          &SqliteIntegrityTest::ErrorRecorder::RecordSqliteError,
+          recorder->AsWeakPtr(), &database));
       if (!database.Open(path)) {
         RecordFailure(DIAG_SQLITE_CANNOT_OPEN_DB,
                       "Cannot open DB. Possibly corrupted");

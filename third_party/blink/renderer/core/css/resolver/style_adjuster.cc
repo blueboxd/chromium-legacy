@@ -227,6 +227,14 @@ static void AdjustStyleForFirstLetter(ComputedStyle& style) {
   style.SetPosition(EPosition::kStatic);
 }
 
+static void AdjustStyleForFirstLine(ComputedStyle& style) {
+  if (style.StyleType() != kPseudoIdFirstLine)
+    return;
+
+  // Force inline display.
+  style.SetDisplay(EDisplay::kInline);
+}
+
 static void AdjustStyleForMarker(ComputedStyle& style,
                                  const ComputedStyle& parent_style,
                                  const Element& parent_element) {
@@ -643,6 +651,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     // We don't adjust the first letter style earlier because we may change the
     // display setting in adjustStyeForTagName() above.
     AdjustStyleForFirstLetter(style);
+    AdjustStyleForFirstLine(style);
     AdjustStyleForMarker(style, parent_style, state.GetElement());
 
     AdjustStyleForDisplay(style, layout_parent_style,

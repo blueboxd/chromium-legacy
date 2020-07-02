@@ -484,14 +484,6 @@ FloatRect Font::SelectionRectForText(const TextRun& run,
       FloatRect(point.X() + range.start, point.Y(), range.Width(), height));
 }
 
-FloatRect Font::BoundingBox(const TextRun& run, int from, int to) const {
-  to = (to == -1 ? run.length() : to);
-  FontCachePurgePreventer purge_preventer;
-  CachingWordShaper shaper(*this);
-  CharacterRange range = shaper.GetCharacterRange(run, from, to);
-  return FloatRect(range.start, -range.ascent, range.Width(), range.Height());
-}
-
 int Font::OffsetForPosition(const TextRun& run,
                             float x_float,
                             IncludePartialGlyphsOption partial_glyphs,

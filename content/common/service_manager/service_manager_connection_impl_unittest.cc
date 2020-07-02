@@ -34,10 +34,11 @@ TEST(ServiceManagerConnectionImplTest, ServiceLaunchThreading) {
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   connection.AddServiceRequestHandler(
-      kTestServiceName, base::BindLambdaForTesting(
-                            [&event](service_manager::mojom::ServiceRequest) {
-                              event.Signal();
-                            }));
+      kTestServiceName,
+      base::BindLambdaForTesting(
+          [&event](mojo::PendingReceiver<service_manager::mojom::Service>) {
+            event.Signal();
+          }));
   connection.Start();
 
   mojo::PendingRemote<service_manager::mojom::Service> packaged_service;

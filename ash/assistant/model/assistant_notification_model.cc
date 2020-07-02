@@ -8,7 +8,7 @@
 
 #include "ash/assistant/model/assistant_notification_model_observer.h"
 #include "base/stl_util.h"
-#include "chromeos/services/assistant/public/mojom/assistant_notification.mojom.h"
+#include "chromeos/services/assistant/public/cpp/assistant_notification.h"
 
 namespace ash {
 
@@ -27,18 +27,17 @@ void AssistantNotificationModel::RemoveObserver(
 }
 
 void AssistantNotificationModel::AddOrUpdateNotification(
-    AssistantNotificationPtr notification) {
-  AssistantNotification* ptr = notification.get();
+    AssistantNotification&& notification) {
+  const auto client_id = notification.client_id;
+  DCHECK(!client_id.empty());
+  bool is_update = HasNotificationForId(client_id);
 
-  DCHECK(!ptr->client_id.empty());
-  bool is_update = HasNotificationForId(ptr->client_id);
-
-  notifications_[ptr->client_id] = std::move(notification);
+  notifications_[client_id] = std::move(notification);
 
   if (is_update)
-    NotifyNotificationUpdated(*ptr);
+    NotifyNotificationUpdated(notifications_[client_id]);
   else
-    NotifyNotificationAdded(*ptr);
+    NotifyNotificationAdded(notifications_[client_id]);
 }
 
 void AssistantNotificationModel::RemoveNotificationById(const std::string& id,
@@ -47,20 +46,20 @@ void AssistantNotificationModel::RemoveNotificationById(const std::string& id,
   if (it == notifications_.end())
     return;
 
-  AssistantNotificationPtr notification = std::move(it->second);
+  AssistantNotification notification = std::move(it->second);
   notifications_.erase(id);
-  NotifyNotificationRemoved(*notification, from_server);
+  NotifyNotificationRemoved(notification, from_server);
 }
 
 void AssistantNotificationModel::RemoveNotificationsByGroupingKey(
     const std::string& grouping_key,
     bool from_server) {
   for (auto it = notifications_.begin(); it != notifications_.end();) {
-    if (it->second->grouping_key == grouping_key) {
-      AssistantNotificationPtr notification =
-          std::move(notifications_[it->second->client_id]);
+    if (it->second.grouping_key == grouping_key) {
+      AssistantNotification notification =
+          std::move(notifications_[it->second.client_id]);
       it = notifications_.erase(it);
-      NotifyNotificationRemoved(*notification, from_server);
+      NotifyNotificationRemoved(notification, from_server);
       continue;
     }
     ++it;
@@ -75,17 +74,17 @@ void AssistantNotificationModel::RemoveAllNotifications(bool from_server) {
   NotifyAllNotificationsRemoved(from_server);
 }
 
-const chromeos::assistant::mojom::AssistantNotification*
+const chromeos::assistant::AssistantNotification*
 AssistantNotificationModel::GetNotificationById(const std::string& id) const {
   auto it = notifications_.find(id);
-  return it != notifications_.end() ? it->second.get() : nullptr;
+  return it != notifications_.end() ? &it->second : nullptr;
 }
 
-std::vector<const chromeos::assistant::mojom::AssistantNotification*>
+std::vector<const chromeos::assistant::AssistantNotification*>
 AssistantNotificationModel::GetNotifications() const {
   std::vector<const AssistantNotification*> notifications;
   for (const auto& notification : notifications_)
-    notifications.push_back(notification.second.get());
+    notifications.push_back(&notification.second);
   return notifications;
 }
 

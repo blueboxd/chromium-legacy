@@ -175,8 +175,10 @@ void SetupSpaceBuilderForFragmentation(const NGConstraintSpace& parent_space,
   // fragmentation. If it's too tall to fit, it will either overflow the
   // fragmentainer or get brutally sliced into pieces (without looking for
   // allowed breakpoints, since there are none, by definition), depending on
-  // fragmentation type (multicol vs. printing).
-  if (child.IsMonolithic())
+  // fragmentation type (multicol vs. printing). We still need to perform block
+  // fragmentation inside inline nodes, though: While the line box itself is
+  // monolithic, there may be floats inside, which are fragmentable.
+  if (child.IsMonolithic() && !child.IsInline())
     return;
 
   builder->SetFragmentainerBlockSize(parent_space.FragmentainerBlockSize());

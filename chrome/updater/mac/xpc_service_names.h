@@ -9,12 +9,14 @@
 #include "base/mac/scoped_nsobject.h"
 
 namespace updater {
-base::ScopedCFTypeRef<CFStringRef> CopyGoogleUpdateServiceLaunchDName();
-base::ScopedCFTypeRef<CFStringRef> CopyGoogleUpdateAdministrationLaunchDName();
-base::scoped_nsobject<NSString> GetGoogleUpdateServiceLaunchDLabel();
-base::scoped_nsobject<NSString> GetGoogleUpdateAdministrationLaunchDLabel();
-base::scoped_nsobject<NSString> GetGoogleUpdateServiceMachName(NSString* name);
-base::scoped_nsobject<NSString> GetGoogleUpdateServiceMachName();
+
+base::ScopedCFTypeRef<CFStringRef> CopyServiceLaunchDName();
+base::ScopedCFTypeRef<CFStringRef> CopyAdministrationLaunchDName();
+base::scoped_nsobject<NSString> GetServiceLaunchDLabel();
+base::scoped_nsobject<NSString> GetAdministrationLaunchDLabel();
+base::scoped_nsobject<NSString> GetServiceMachName(NSString* name);
+base::scoped_nsobject<NSString> GetServiceMachName();
+
 }  // namespace updater
 
 #endif  // CHROME_UPDATER_MAC_XPC_SERVICE_NAMES_H_

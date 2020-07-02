@@ -115,32 +115,6 @@ base::OnceCallback<void(const SkBitmap&)> SkBitmapToImageSkiaCallback(
       std::move(callback));
 }
 
-// Returns a callback that converts compressed data to an ImageSkia.
-base::OnceCallback<void(std::vector<uint8_t> compressed_data)>
-CompressedDataToImageSkiaCallback(
-    base::OnceCallback<void(gfx::ImageSkia)> callback) {
-  return base::BindOnce(
-      [](base::OnceCallback<void(gfx::ImageSkia)> callback,
-         std::vector<uint8_t> compressed_data) {
-        if (compressed_data.empty()) {
-          std::move(callback).Run(gfx::ImageSkia());
-          return;
-        }
-        // DecompressToSkBitmap is a CPU intensive task that must not run on the
-        // UI thread, so post the processing over to the thread pool.
-        base::ThreadPool::PostTaskAndReplyWithResult(
-            FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-            base::BindOnce(
-                [](std::vector<uint8_t> compressed_data) {
-                  return SkBitmapToImageSkia(DecompressToSkBitmap(
-                      compressed_data.data(), compressed_data.size()));
-                },
-                std::move(compressed_data)),
-            std::move(callback));
-      },
-      std::move(callback));
-}
-
 // Returns a callback that converts a gfx::Image to an ImageSkia.
 base::OnceCallback<void(const gfx::Image&)> ImageToImageSkia(
     base::OnceCallback<void(gfx::ImageSkia)> callback) {
@@ -164,7 +138,7 @@ FaviconResultToImageSkia(base::OnceCallback<void(gfx::ImageSkia)> callback) {
         // It would be nice to not do a memory copy here, but
         // DecodeImageIsolated requires a std::vector, and RefCountedMemory
         // doesn't supply that.
-        std::move(CompressedDataToImageSkiaCallback(std::move(callback)))
+        std::move(apps::CompressedDataToImageSkiaCallback(std::move(callback)))
             .Run(std::vector<uint8_t>(
                 result.bitmap_data->front(),
                 result.bitmap_data->front() + result.bitmap_data->size()));
@@ -208,6 +182,39 @@ void LoadCompressedDataFromExtension(
       base::BindOnce(&CompressedDataFromResource, std::move(ext_resource)),
       std::move(compressed_data_callback));
 }
+
+#if defined(OS_CHROMEOS)
+gfx::ImageSkia LoadMaskImage(const gfx::Size& image_size) {
+  std::map<std::pair<int, int>, gfx::ImageSkia>& cache = GetResourceIconCache();
+  const auto cache_key = std::make_pair(IDR_ICON_MASK, image_size.width());
+  const auto cache_iter = cache.find(cache_key);
+  if (cache_iter != cache.end()) {
+    return cache_iter->second;
+  }
+
+  const gfx::ImageSkia* mask_image =
+      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(IDR_ICON_MASK);
+  DCHECK(mask_image);
+  gfx::ImageSkia resized_mask_image = *mask_image;
+  if (mask_image->size() != image_size) {
+    resized_mask_image = gfx::ImageSkiaOperations::CreateResizedImage(
+        *mask_image, skia::ImageOperations::RESIZE_BEST, image_size);
+  }
+  cache.insert(std::make_pair(cache_key, resized_mask_image));
+  return resized_mask_image;
+}
+
+void ApplyBackgroundAndMask(
+    int size_hint_in_dip,
+    base::OnceCallback<void(const gfx::ImageSkia& icon)> callback,
+    gfx::ImageSkia image) {
+  std::move(callback).Run(gfx::ImageSkiaOperations::CreateResizedImage(
+      gfx::ImageSkiaOperations::CreateButtonBackground(
+          SK_ColorWHITE, image, LoadMaskImage(image.size())),
+      skia::ImageOperations::RESIZE_BEST,
+      gfx::Size(size_hint_in_dip, size_hint_in_dip)));
+}
+#endif  // OS_CHROMEOS
 
 // This pipeline is meant to:
 // * Simplify loading icons, as things like effects and type are common
@@ -253,6 +260,12 @@ class IconLoadingPipeline : public base::RefCounted<IconLoadingPipeline> {
         callback_(std::move(callback)),
         fallback_callback_(std::move(fallback)) {}
 
+  IconLoadingPipeline(
+      int size_hint_in_dip,
+      base::OnceCallback<void(const gfx::ImageSkia& icon)> callback)
+      : size_hint_in_dip_(size_hint_in_dip),
+        image_skia_callback_(std::move(callback)) {}
+
   void LoadWebAppIcon(const std::string& web_app_id,
                       const GURL& launch_url,
                       const web_app::AppIconManager& icon_manager,
@@ -267,6 +280,11 @@ class IconLoadingPipeline : public base::RefCounted<IconLoadingPipeline> {
 
   void LoadIconFromResource(int icon_resource);
 
+  // For ARC icons, composite the foreground image and the background image,
+  // then apply the mask.
+  void LoadCompositeImages(std::vector<uint8_t> foreground_data,
+                           std::vector<uint8_t> background_data);
+
  private:
   friend class base::RefCounted<IconLoadingPipeline>;
 
@@ -275,6 +293,8 @@ class IconLoadingPipeline : public base::RefCounted<IconLoadingPipeline> {
       std::move(callback_).Run(apps::mojom::IconValue::New());
     }
   }
+
+  void CompositeImagesAndApplyMask(bool is_foreground, gfx::ImageSkia image);
 
   void MaybeApplyEffectsAndComplete(const gfx::ImageSkia image);
 
@@ -307,6 +327,12 @@ class IconLoadingPipeline : public base::RefCounted<IconLoadingPipeline> {
       fallback_callback_;
 
   base::CancelableTaskTracker cancelable_task_tracker_;
+
+  gfx::ImageSkia foreground_image_;
+  gfx::ImageSkia background_image_;
+  bool foreground_is_set_ = false;
+  bool background_is_set_ = false;
+  base::OnceCallback<void(const gfx::ImageSkia& icon)> image_skia_callback_;
 };
 
 void IconLoadingPipeline::LoadWebAppIcon(
@@ -422,7 +448,7 @@ void IconLoadingPipeline::LoadCompressedIconFromFile(
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&ReadFileAsCompressedData, path),
-      CompressedDataToImageSkiaCallback(
+      apps::CompressedDataToImageSkiaCallback(
           base::BindOnce(&IconLoadingPipeline::MaybeApplyEffectsAndComplete,
                          base::WrapRefCounted(this))));
 }
@@ -432,7 +458,7 @@ void IconLoadingPipeline::LoadIconFromCompressedData(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   std::vector<uint8_t> data(compressed_icon_data.begin(),
                             compressed_icon_data.end());
-  CompressedDataToImageSkiaCallback(
+  apps::CompressedDataToImageSkiaCallback(
       base::BindOnce(&IconLoadingPipeline::MaybeApplyEffectsAndComplete,
                      base::WrapRefCounted(this)))
       .Run(std::move(data));
@@ -493,6 +519,52 @@ void IconLoadingPipeline::LoadIconFromResource(int icon_resource) {
       break;
   }
   MaybeLoadFallbackOrCompleteEmpty();
+}
+
+void IconLoadingPipeline::LoadCompositeImages(
+    std::vector<uint8_t> foreground_data,
+    std::vector<uint8_t> background_data) {
+#if defined(OS_CHROMEOS)
+  apps::CompressedDataToImageSkiaCallback(
+      base::BindOnce(&IconLoadingPipeline::CompositeImagesAndApplyMask,
+                     base::WrapRefCounted(this), true /* is_foreground */))
+      .Run(std::move(foreground_data));
+  apps::CompressedDataToImageSkiaCallback(
+      base::BindOnce(&IconLoadingPipeline::CompositeImagesAndApplyMask,
+                     base::WrapRefCounted(this), false /* is_foreground */))
+      .Run(std::move(background_data));
+#endif  // OS_CHROMEOS
+}
+
+void IconLoadingPipeline::CompositeImagesAndApplyMask(bool is_foreground,
+                                                      gfx::ImageSkia image) {
+#if defined(OS_CHROMEOS)
+  if (is_foreground) {
+    foreground_is_set_ = true;
+    foreground_image_ = image;
+  } else {
+    background_is_set_ = true;
+    background_image_ = image;
+  }
+
+  if (!foreground_is_set_ || !background_is_set_ || callback_.is_null()) {
+    return;
+  }
+
+  if (foreground_image_.isNull() || background_image_.isNull()) {
+    std::move(image_skia_callback_).Run(gfx::ImageSkia());
+    return;
+  }
+
+  std::move(image_skia_callback_)
+      .Run(gfx::ImageSkiaOperations::CreateResizedImage(
+          gfx::ImageSkiaOperations::CreateMaskedImage(
+              gfx::ImageSkiaOperations::CreateSuperimposedImage(
+                  background_image_, foreground_image_),
+              LoadMaskImage(image.size())),
+          skia::ImageOperations::RESIZE_BEST,
+          gfx::Size(size_hint_in_dip_, size_hint_in_dip_)));
+#endif  // OS_CHROMEOS
 }
 
 void IconLoadingPipeline::MaybeApplyEffectsAndComplete(
@@ -620,6 +692,31 @@ void IconLoadingPipeline::MaybeLoadFallbackOrCompleteEmpty() {
 
 namespace apps {
 
+base::OnceCallback<void(std::vector<uint8_t> compressed_data)>
+CompressedDataToImageSkiaCallback(
+    base::OnceCallback<void(gfx::ImageSkia)> callback) {
+  return base::BindOnce(
+      [](base::OnceCallback<void(gfx::ImageSkia)> callback,
+         std::vector<uint8_t> compressed_data) {
+        if (compressed_data.empty()) {
+          std::move(callback).Run(gfx::ImageSkia());
+          return;
+        }
+        // DecompressToSkBitmap is a CPU intensive task that must not run on the
+        // UI thread, so post the processing over to the thread pool.
+        base::ThreadPool::PostTaskAndReplyWithResult(
+            FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+            base::BindOnce(
+                [](std::vector<uint8_t> compressed_data) {
+                  return SkBitmapToImageSkia(DecompressToSkBitmap(
+                      compressed_data.data(), compressed_data.size()));
+                },
+                std::move(compressed_data)),
+            std::move(callback));
+      },
+      std::move(callback));
+}
+
 std::vector<uint8_t> EncodeImageToPngBytes(const gfx::ImageSkia image) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
@@ -646,6 +743,50 @@ std::vector<uint8_t> EncodeImageToPngBytes(const gfx::ImageSkia image) {
   return image_data;
 }
 
+#if defined(OS_CHROMEOS)
+void ArcRawIconPngDataToImageSkia(
+    arc::mojom::RawIconPngDataPtr icon,
+    int size_hint_in_dip,
+    base::OnceCallback<void(const gfx::ImageSkia& icon)> callback) {
+  if (!icon) {
+    std::move(callback).Run(gfx::ImageSkia());
+    return;
+  }
+
+  // For non-adaptive icons, add the white color background, and apply the mask.
+  if (!icon->is_adaptive_icon) {
+    if (!icon->icon_png_data.has_value() ||
+        icon->icon_png_data.value().empty()) {
+      std::move(callback).Run(gfx::ImageSkia());
+      return;
+    }
+
+    CompressedDataToImageSkiaCallback(base::BindOnce(&ApplyBackgroundAndMask,
+                                                     size_hint_in_dip,
+                                                     std::move(callback)))
+        .Run(std::move(icon->icon_png_data.value()));
+    return;
+  }
+
+  if (!icon->foreground_icon_png_data.has_value() ||
+      icon->foreground_icon_png_data.value().empty() ||
+      !icon->background_icon_png_data.has_value() ||
+      icon->background_icon_png_data.value().empty()) {
+    std::move(callback).Run(gfx::ImageSkia());
+    return;
+  }
+
+  // For adaptive icons, composite the background and the foreground images
+  // together, then applying the mask
+  scoped_refptr<IconLoadingPipeline> icon_loader =
+      base::MakeRefCounted<IconLoadingPipeline>(size_hint_in_dip,
+                                                std::move(callback));
+  icon_loader->LoadCompositeImages(
+      std::move(icon->foreground_icon_png_data.value()),
+      std::move(icon->background_icon_png_data.value()));
+}
+#endif  // OS_CHROMEOS
+
 void ApplyIconEffects(IconEffects icon_effects,
                       int size_hint_in_dip,
                       gfx::ImageSkia* image_skia) {
@@ -661,17 +802,8 @@ void ApplyIconEffects(IconEffects icon_effects,
   }
 
   if (icon_effects & IconEffects::kCrOsStandardMask) {
-    const gfx::ImageSkia* mask_image =
-        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-            IDR_ICON_MASK);
-    DCHECK(mask_image);
-    gfx::ImageSkia resized_badge_image = *mask_image;
-    if (mask_image->size() != image_skia->size()) {
-      resized_badge_image = gfx::ImageSkiaOperations::CreateResizedImage(
-          *mask_image, skia::ImageOperations::RESIZE_BEST, image_skia->size());
-    }
     *image_skia = gfx::ImageSkiaOperations::CreateMaskedImage(
-        *image_skia, resized_badge_image);
+        *image_skia, LoadMaskImage(image_skia->size()));
   }
 #endif
 

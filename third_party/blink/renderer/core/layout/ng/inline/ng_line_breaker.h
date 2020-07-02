@@ -63,6 +63,11 @@ class CORE_EXPORT NGLineBreaker {
   // Create an NGInlineBreakToken for the last line returned by NextLine().
   scoped_refptr<NGInlineBreakToken> CreateBreakToken(const NGLineInfo&) const;
 
+  void PropagateBreakToken(scoped_refptr<const NGBlockBreakToken>);
+  Vector<scoped_refptr<const NGBlockBreakToken>>& PropagatedBreakTokens() {
+    return propagated_break_tokens_;
+  }
+
   // Computing |NGLineBreakerMode::kMinContent| with |MaxSizeCache| caches
   // information that can help computing |kMaxContent|. It is recommended to set
   // this when computing both |kMinContent| and |kMaxContent|.
@@ -308,6 +313,8 @@ class CORE_EXPORT NGLineBreaker {
   // This is copied from NGInlineNode, then updated after each forced line break
   // if 'unicode-bidi: plaintext'.
   TextDirection base_direction_;
+
+  Vector<scoped_refptr<const NGBlockBreakToken>> propagated_break_tokens_;
 
 #if DCHECK_IS_ON()
   // These fields are to detect rewind-loop.

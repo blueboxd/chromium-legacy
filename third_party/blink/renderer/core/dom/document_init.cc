@@ -320,8 +320,8 @@ scoped_refptr<SecurityOrigin> DocumentInit::GetDocumentOrigin() const {
                           ->GetDocument()
                           .GetSecurityOrigin()
                           ->IsolatedCopy();
-  } else if (owner_document_) {
-    document_origin = owner_document_->GetMutableSecurityOrigin();
+  } else if (owner_document_ && owner_document_->domWindow()) {
+    document_origin = owner_document_->domWindow()->GetMutableSecurityOrigin();
   } else {
     // Otherwise, create an origin that propagates precursor information
     // as needed. For non-opaque origins, this creates a standard tuple

@@ -187,6 +187,7 @@ ci.android_builder(
     ),
     executable = 'recipe:swarming/deterministic_build',
     execution_timeout = 6 * time.hour,
+    notifies = ['Deterministic Android'],
 )
 
 ci.android_builder(
@@ -197,6 +198,7 @@ ci.android_builder(
     ),
     executable = 'recipe:swarming/deterministic_build',
     execution_timeout = 6 * time.hour,
+    notifies = ['Deterministic Android'],
 )
 
 ci.android_builder(
@@ -447,6 +449,7 @@ ci.chromium_builder(
     ),
     cores = 32,
     main_console_view = 'main',
+    notifies = ['linux-archive-rel'],
 )
 
 ci.chromium_builder(
@@ -569,6 +572,7 @@ ci.clang_builder(
         category = 'CFI|Linux',
         short_name = 'CF',
     ),
+    notifies = ['CFI Linux'],
 )
 
 ci.clang_builder(
@@ -577,6 +581,7 @@ ci.clang_builder(
         category = 'CFI|Linux',
         short_name = 'ToT',
     ),
+    notifies = ['CFI Linux'],
 )
 
 ci.clang_builder(
@@ -1356,6 +1361,7 @@ ci.fyi_builder(
         category = 'closure_compilation',
     ),
     executable = 'recipe:closure_compilation',
+    notifies = ['Closure Compilation Linux'],
 )
 
 ci.fyi_builder(
@@ -1409,6 +1415,7 @@ ci.fyi_builder(
     console_view_entry = ci.console_view_entry(
         category = 'site_isolation',
     ),
+    notifies = ['Site Isolation Android'],
 )
 
 ci.fyi_builder(
@@ -1484,6 +1491,7 @@ ci.fyi_builder(
         category = 'network|traffic|annotations',
         short_name = 'lnx',
     ),
+    notifies = ['annotator-rel'],
 )
 
 ci.fyi_builder(
@@ -1515,6 +1523,7 @@ ci.fyi_builder(
         category = 'linux|blink',
         short_name = 'VF',
     ),
+    notifies = ['linux-blink-heap-verification'],
 )
 
 ci.fyi_builder(
@@ -1900,6 +1909,7 @@ ci.fyi_windows_builder(
         category = 'win10',
     ),
     os = os.WINDOWS_10,
+    notifies = ['Win 10 Fast Ring'],
 )
 
 ci.fyi_windows_builder(
@@ -1919,6 +1929,7 @@ ci.fyi_windows_builder(
         short_name = 'win',
     ),
     execution_timeout = 16 * time.hour,
+    notifies = ['annotator-rel'],
 )
 
 ci.fyi_windows_builder(
@@ -2755,6 +2766,7 @@ ci.linux_builder(
     executable = 'recipe:swarming/deterministic_build',
     execution_timeout = 6 * time.hour,
     main_console_view = 'main',
+    notifies = ['Deterministic Linux'],
 )
 
 ci.linux_builder(

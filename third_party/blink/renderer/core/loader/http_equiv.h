@@ -11,6 +11,7 @@
 namespace blink {
 
 class Document;
+class LocalDOMWindow;
 class Element;
 
 /**
@@ -34,7 +35,7 @@ class HttpEquiv {
  private:
   static void ProcessHttpEquivDefaultStyle(Document&,
                                            const AtomicString& content);
-  static void ProcessHttpEquivOriginTrial(Document&,
+  static void ProcessHttpEquivOriginTrial(LocalDOMWindow*,
                                           const AtomicString& content);
   static void ProcessHttpEquivRefresh(Document&,
                                       const AtomicString& content,

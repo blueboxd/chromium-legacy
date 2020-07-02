@@ -45,6 +45,8 @@
 <translation id="1395262318152388157">Sökningsreglage</translation>
 <translation id="1399648040768741453">Tangentbord för telugu (fonetiskt)</translation>
 <translation id="1430915738399379752">Skriv ut</translation>
+<translation id="1433600251059882049">Den här mappen delas med Linux och Windows</translation>
+<translation id="1435838927755162558">Dela mappen med Parallels Desktop</translation>
 <translation id="1439494416798956626">Har flyttats till <ph name="FOLDER_NAME" />.</translation>
 <translation id="1441841714100794440">Tangentbord för vietnamesiska (Telex)</translation>
 <translation id="1455548678241328678">Norskt tangentbord</translation>
@@ -79,6 +81,7 @@
 <translation id="1844692022597038441">Den här filen är inte tillgänglig offline.</translation>
 <translation id="184633654410729720">Tangentbord för thailändska (Kedmanee)</translation>
 <translation id="1847880352285315359">Sparat</translation>
+<translation id="1853795129690976061">Den här mappen delas med Linux</translation>
 <translation id="1864756863218646478">Filen hittades inte.</translation>
 <translation id="1921986354447415460">Tangentbord för turkiska F</translation>
 <translation id="1924372192547904021"><ph name="DRIVE_NAME" /> har formaterats</translation>
@@ -180,6 +183,7 @@
 <translation id="303198083543495566">Geografi</translation>
 <translation id="3057861065630527966">Säkerhetskopiera foton och videor</translation>
 <translation id="3064388234319122767">Translitterering (zdravo → здраво)</translation>
+<translation id="3067790092342515856">Windows-filer</translation>
 <translation id="3078461028045006476">Dela med <ph name="EXTENSION_NAME" /></translation>
 <translation id="3088034400796962477">Translitterering (salam ← سلام)</translation>
 <translation id="3116361045094675131">Brittiskt tangentbord</translation>
@@ -262,6 +266,7 @@
 <translation id="3943857333388298514">Klistra in</translation>
 <translation id="3958548648197196644">Kiwi</translation>
 <translation id="3966388904776714213">Ljudspelare</translation>
+<translation id="3984317463833596033">Ge Parallels Desktop behörighet att ändra filer i mappen <ph name="FOLDER_NAME" /></translation>
 <translation id="4002066346123236978">Titel</translation>
 <translation id="4070370845051020638">Inmatningsmetod för kantonesiska</translation>
 <translation id="4072248638558688893">Tangentbord för tamil (fonetiskt)</translation>
@@ -290,6 +295,7 @@
 <translation id="4470564870223067757">Hangul 2 Set</translation>
 <translation id="4477219268485577442">Bulgariska (fonetiskt)</translation>
 <translation id="4479812471636796472">Dvorak-tangentbord för USA</translation>
+<translation id="4481711095103932593">Den här mappen delas med Windows</translation>
 <translation id="4487088045714738411">Belgiskt tangentbord</translation>
 <translation id="4522570452068850558">Info</translation>
 <translation id="4552678318981539154">Köp mer lagringsutrymme</translation>
@@ -335,10 +341,12 @@
 <translation id="4881695831933465202">Öppna</translation>
 <translation id="4886021172213954916">Tangentbord för tamil (skrivmaskin)</translation>
 <translation id="4892969127351273348">Det går inte att öppna med <ph name="APP_NAME" /></translation>
+<translation id="4900532980794411603">Dela med Parallels Desktop</translation>
 <translation id="4905417359854579806">Klar att säkerhetskopiera <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Åtgärdat</translation>
 <translation id="4935975195727477204">Gazaniablomma</translation>
 <translation id="4943368462779413526">Amerikansk fotboll</translation>
+<translation id="4961158930123534723">1 mapp delas med Parallels Desktop</translation>
 <translation id="4969785127455456148">Album</translation>
 <translation id="497244430928947428">Tangentbord för malayalam (fonetiskt)</translation>
 <translation id="4973523518332075481">Ange ett namn på högst <ph name="MAX_LENGTH" /> tecken</translation>
@@ -350,6 +358,7 @@
 <translation id="5010406651457630570">Datorer</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5024856940085636730">En åtgärd tar längre tid än väntat. Vill du avbryta den?</translation>
+<translation id="5036159836254554629">Hantera delning med Parallels Desktop</translation>
 <translation id="5038625366300922036">Visa fler ...</translation>
 <translation id="5061708541166515394">Kontrast</translation>
 <translation id="5068919226082848014">Pizza</translation>
@@ -499,6 +508,7 @@
 <translation id="656398493051028875"><ph name="FILENAME" /> tas bort ...</translation>
 <translation id="6581162200855843583">Google Drive-länk</translation>
 <translation id="6607272825297743757">Filinformation</translation>
+<translation id="6609332149380188670"><ph name="NUMBER_OF_ITEMS" /> mappar delas med Parallels Desktop</translation>
 <translation id="6629841649550503054">Allt har säkerhetskopierats på <ph name="BEGIN_LINK" />Google Drive!<ph name="END_LINK" /></translation>
 <translation id="6643016212128521049">Rensa</translation>
 <translation id="6650726141019353908">Rosa fjäril</translation>
@@ -680,6 +690,7 @@
 <translation id="8475647382427415476">Det gick inte att synkronisera <ph name="FILENAME" /> med Google Drive just nu. Ett nytt försök görs senare.</translation>
 <translation id="8477649328507734757">Snurra</translation>
 <translation id="8487700953926739672">Tillgänglig offline</translation>
+<translation id="8490342535582768689">Ge Parallels Desktop behörighet att ändra filer på Google Drive. Ändringarna synkas med dina andra enheter.</translation>
 <translation id="8521441079177373948">Storbritannien</translation>
 <translation id="8525306231823319788">Helskärm</translation>
 <translation id="8551494947769799688">lettiska</translation>

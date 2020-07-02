@@ -102,8 +102,8 @@ class MetricsStateManager final {
       PrefService* local_state,
       EnabledStateProvider* enabled_state_provider,
       const base::string16& backup_registry_key,
-      const StoreClientInfoCallback& store_client_info,
-      const LoadClientInfoCallback& load_client_info);
+      StoreClientInfoCallback store_client_info,
+      LoadClientInfoCallback load_client_info);
 
   // Registers local state prefs used by this class.
   static void RegisterPrefs(PrefRegistrySimple* registry);
@@ -138,8 +138,8 @@ class MetricsStateManager final {
   MetricsStateManager(PrefService* local_state,
                       EnabledStateProvider* enabled_state_provider,
                       const base::string16& backup_registry_key,
-                      const StoreClientInfoCallback& store_client_info,
-                      const LoadClientInfoCallback& load_client_info);
+                      StoreClientInfoCallback store_client_info,
+                      LoadClientInfoCallback load_client_info);
 
   // Backs up the current client info via |store_client_info_|.
   void BackUpCurrentClientInfo();

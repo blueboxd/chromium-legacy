@@ -45,6 +45,8 @@
 <translation id="1395262318152388157">Dispositivo di scorrimento</translation>
 <translation id="1399648040768741453">Tastiera Telugu (fonetica)</translation>
 <translation id="1430915738399379752">Stampa</translation>
+<translation id="1433600251059882049">Questa cartella è condivisa con Linux e Windows</translation>
+<translation id="1435838927755162558">Condividi cartella con Parallels Desktop</translation>
 <translation id="1439494416798956626">Spostamento in <ph name="FOLDER_NAME" /> eseguito.</translation>
 <translation id="1441841714100794440">Tastiera Vietnamita (Telex)</translation>
 <translation id="1455548678241328678">Tastiera norvegese</translation>
@@ -79,6 +81,7 @@
 <translation id="1844692022597038441">Questo file non è disponibile offline.</translation>
 <translation id="184633654410729720">Tastiera Thailandese (Kedmanee)</translation>
 <translation id="1847880352285315359">Modifiche salvate</translation>
+<translation id="1853795129690976061">Questa cartella è condivisa con Linux</translation>
 <translation id="1864756863218646478">Impossibile trovare il file.</translation>
 <translation id="1921986354447415460">Tastiera Turco F</translation>
 <translation id="1924372192547904021">Formattazione di <ph name="DRIVE_NAME" /> eseguita</translation>
@@ -180,6 +183,7 @@
 <translation id="303198083543495566">Area geografica</translation>
 <translation id="3057861065630527966">Effettua il backup di foto e video</translation>
 <translation id="3064388234319122767">Traslitterazione (zdravo → здраво)</translation>
+<translation id="3067790092342515856">File di Windows</translation>
 <translation id="3078461028045006476">Condividi con l'estensione <ph name="EXTENSION_NAME" /></translation>
 <translation id="3088034400796962477">Traslitterazione (salam ← سلام)</translation>
 <translation id="3116361045094675131">Tastiera britannica</translation>
@@ -262,6 +266,7 @@
 <translation id="3943857333388298514">Incolla</translation>
 <translation id="3958548648197196644">Kiwi</translation>
 <translation id="3966388904776714213">Lettore audio</translation>
+<translation id="3984317463833596033">Concedi a Parallels Desktop l'autorizzazione per modificare i file nella cartella <ph name="FOLDER_NAME" /></translation>
 <translation id="4002066346123236978">Titolo</translation>
 <translation id="4070370845051020638">Metodo di immissione Cantonese</translation>
 <translation id="4072248638558688893">Tastiera Tamil (fonetica)</translation>
@@ -290,6 +295,7 @@
 <translation id="4470564870223067757">Hangul 2 Set</translation>
 <translation id="4477219268485577442">Fonetica bulgara</translation>
 <translation id="4479812471636796472">Tastiera Dvorak USA</translation>
+<translation id="4481711095103932593">Questa cartella è condivisa con Windows</translation>
 <translation id="4487088045714738411">Tastiera belga</translation>
 <translation id="4522570452068850558">Dettagli</translation>
 <translation id="4552678318981539154">Acquista più spazio di archiviazione</translation>
@@ -335,10 +341,12 @@
 <translation id="4881695831933465202">Apri</translation>
 <translation id="4886021172213954916">Tastiera Tamil (macchina da scrivere)</translation>
 <translation id="4892969127351273348">Impossibile aprire con <ph name="APP_NAME" /></translation>
+<translation id="4900532980794411603">Condividi con Parallels Desktop</translation>
 <translation id="4905417359854579806">Pronto per il backup di <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Corretta</translation>
 <translation id="4935975195727477204">Gazania</translation>
 <translation id="4943368462779413526">Calcio</translation>
+<translation id="4961158930123534723">1 cartella condivisa con Parallels Desktop</translation>
 <translation id="4969785127455456148">Album</translation>
 <translation id="497244430928947428">Tastiera Malayalam (fonetica)</translation>
 <translation id="4973523518332075481">Il nome deve contenere un massimo di <ph name="MAX_LENGTH" /> caratteri</translation>
@@ -350,6 +358,7 @@
 <translation id="5010406651457630570">Computer</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5024856940085636730">Un'operazione richiede più tempo del previsto. Vuoi interromperla?</translation>
+<translation id="5036159836254554629">Gestisci condivisione con Parallels Desktop</translation>
 <translation id="5038625366300922036">Visualizza altre...</translation>
 <translation id="5061708541166515394">Contrasto</translation>
 <translation id="5068919226082848014">Pizza</translation>
@@ -498,6 +507,7 @@
 <translation id="656398493051028875">Eliminazione di "<ph name="FILENAME" />"...</translation>
 <translation id="6581162200855843583">Link Google Drive</translation>
 <translation id="6607272825297743757">Info sul file</translation>
+<translation id="6609332149380188670"><ph name="NUMBER_OF_ITEMS" /> cartelle condivise con Parallels Desktop</translation>
 <translation id="6629841649550503054">Backup di tutti gli elementi su <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /> completato.</translation>
 <translation id="6643016212128521049">Cancella</translation>
 <translation id="6650726141019353908">Farfalla rosa</translation>
@@ -679,6 +689,7 @@
 <translation id="8475647382427415476">Al momento non è possibile sincronizzare il file "<ph name="FILENAME" />" con Google Drive. Google Drive riproverà più tardi.</translation>
 <translation id="8477649328507734757">Rotazione</translation>
 <translation id="8487700953926739672">Disponibile offline</translation>
+<translation id="8490342535582768689">Concedi a Parallels Desktop l'autorizzazione per modificare i file nel tuo account Google Drive. Le modifiche verranno sincronizzate con i tuoi altri dispositivi.</translation>
 <translation id="8521441079177373948">Regno Unito</translation>
 <translation id="8525306231823319788">Schermo intero</translation>
 <translation id="8551494947769799688">Lettone</translation>

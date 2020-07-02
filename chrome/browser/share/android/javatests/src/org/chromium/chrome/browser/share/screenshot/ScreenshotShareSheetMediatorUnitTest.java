@@ -8,11 +8,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import android.app.Activity;
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.net.Uri;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -24,10 +27,7 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.share.BitmapUriRequest;
-import org.chromium.chrome.browser.share.BitmapUriRequestJni;
 import org.chromium.chrome.browser.share.share_sheet.ChromeOptionShareCallback;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.util.browser.Features;
@@ -63,14 +63,29 @@ public class ScreenshotShareSheetMediatorUnitTest {
     @Mock
     ChromeOptionShareCallback mShareCallback;
 
-    @Rule
-    public JniMocker mJniMocker = new JniMocker();
-
-    @Mock
-    private BitmapUriRequest.Natives mBitmapUriRequest;
-
     private PropertyModel mModel;
-    private ScreenshotShareSheetMediator mMediator;
+
+    private class MockScreenshotShareSheetMediator extends ScreenshotShareSheetMediator {
+        private boolean mGenerateTemporaryUriFromBitmapCalled;
+
+        MockScreenshotShareSheetMediator(Context context, PropertyModel propertyModel,
+                Runnable deleteRunnable, Runnable saveRunnable, Tab tab,
+                ChromeOptionShareCallback chromeOptionShareCallback, Runnable installRunnable) {
+            super(context, propertyModel, deleteRunnable, saveRunnable, tab,
+                    chromeOptionShareCallback, installRunnable);
+        }
+        @Override
+        protected void generateTemporaryUriFromBitmap(
+                Context context, String fileName, Bitmap bitmap, Callback<Uri> callback) {
+            mGenerateTemporaryUriFromBitmapCalled = true;
+        }
+
+        public boolean generateTemporaryUriFromBitmapCalled() {
+            return mGenerateTemporaryUriFromBitmapCalled;
+        }
+    };
+
+    private MockScreenshotShareSheetMediator mMediator;
 
     @Before
     public void setUp() {
@@ -82,13 +97,9 @@ public class ScreenshotShareSheetMediatorUnitTest {
 
         doNothing().when(mShareCallback).showThirdPartyShareSheet(any(), any(), anyLong());
 
-        mJniMocker.mock(BitmapUriRequestJni.TEST_HOOKS, mBitmapUriRequest);
-
-        when(mBitmapUriRequest.bitmapUri(any())).thenReturn("bitmapUri");
-
         mModel = new PropertyModel(ScreenshotShareSheetViewProperties.ALL_KEYS);
 
-        mMediator = new ScreenshotShareSheetMediator(mContext, mModel, mDeleteRunnable,
+        mMediator = new MockScreenshotShareSheetMediator(mContext, mModel, mDeleteRunnable,
                 mSaveRunnable, mTab, mShareCallback, mInstallRunnable);
     }
 
@@ -116,7 +127,7 @@ public class ScreenshotShareSheetMediatorUnitTest {
                 mModel.get(ScreenshotShareSheetViewProperties.NO_ARG_OPERATION_LISTENER);
         callback.onResult(ScreenshotShareSheetViewProperties.NoArgOperation.SHARE);
 
-        verify(mShareCallback).showThirdPartyShareSheet(any(), any(), anyLong());
+        Assert.assertTrue(mMediator.generateTemporaryUriFromBitmapCalled());
         verify(mDeleteRunnable).run();
     }
 

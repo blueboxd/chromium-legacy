@@ -32,19 +32,21 @@ import java.util.List;
  * Bottom sheet content to display a 2-row custom share sheet.
  */
 class ShareSheetBottomSheetContent implements BottomSheetContent, OnItemClickListener {
-    private Context mContext;
+    private static final int SHARE_SHEET_ITEM = 0;
+    private final Context mContext;
+    private final ShareSheetCoordinator mShareSheetCoordinator;
     private ViewGroup mToolbarView;
     private ViewGroup mContentView;
-    private static final int SHARE_SHEET_ITEM = 0;
 
     /**
      * Creates a ShareSheetBottomSheetContent (custom share sheet) opened from the given activity.
      *
      * @param context The context the share sheet was launched from.
+     * @param shareSheetCoordinator The Cooredinator that instatiated this BottomSheetContent.
      */
-    ShareSheetBottomSheetContent(Context context) {
+    ShareSheetBottomSheetContent(Context context, ShareSheetCoordinator shareSheetCoordinator) {
         mContext = context;
-
+        mShareSheetCoordinator = shareSheetCoordinator;
         createContentView();
     }
 
@@ -142,7 +144,9 @@ class ShareSheetBottomSheetContent implements BottomSheetContent, OnItemClickLis
     }
 
     @Override
-    public void destroy() {}
+    public void destroy() {
+        mShareSheetCoordinator.destroy();
+    }
 
     @Override
     public int getPriority() {

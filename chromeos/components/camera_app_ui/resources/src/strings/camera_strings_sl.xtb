@@ -30,6 +30,7 @@
 <translation id="3517926952904427380">Portretne fotografije ni bilo mogoče posneti</translation>
 <translation id="3569311554794739032">Ali res želite odstraniti datoteko <ph name="FILE" />?</translation>
 <translation id="3810838688059735925">Video</translation>
+<translation id="4118525110028899586">Začasna zaustavitev snemanja</translation>
 <translation id="4279490309300973883">Zrcaljenje</translation>
 <translation id="4329152592498422850">Preklop na snemanje kvadratnih fotografij</translation>
 <translation id="4383571725254449280">Tiskanje dnevnikov delovanja</translation>
@@ -67,11 +68,13 @@
 <translation id="8067883171444229417">Predvajanje videa</translation>
 <translation id="8131740175452115882">Potrdi</translation>
 <translation id="8145038249676204903">Preklop na fotografiranje</translation>
+<translation id="8239780215768881278">Posnetek videa</translation>
 <translation id="8261506727792406068">Izbriši</translation>
 <translation id="8428213095426709021">Nastavitve</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" /> : <ph name="HEIGHT" />)</translation>
 <translation id="8732462232047530626">Predogled metapodatkov</translation>
 <translation id="8815966864175525708">Preklop na snemanje portretnih fotografij</translation>
+<translation id="8828441885228359828">Nadaljevanje snemanja</translation>
 <translation id="8870695351537079478">Snemanja ni mogoče začeti</translation>
 <translation id="9045155556724273246">10 sekund</translation>
 <translation id="945522503751344254">Pošlji povratne informacije</translation>

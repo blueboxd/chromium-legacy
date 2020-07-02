@@ -26,8 +26,6 @@ FileChooserImpl::FileSelectListenerImpl::~FileSelectListenerImpl() {
   // blink::mojom::FileChooser are. https://crbug.com/1054811
   /* DCHECK(was_fullscreen_block_set_) << "The fullscreen block was not set"; */
 #endif
-  if (owner_)
-    owner_->ResetListenerImpl();
 }
 
 void FileChooserImpl::FileSelectListenerImpl::SetFullscreenBlock(
@@ -106,7 +104,7 @@ void FileChooserImpl::OpenFileChooser(blink::mojom::FileChooserParamsPtr params,
     return;
   }
   callback_ = std::move(callback);
-  auto listener = std::make_unique<FileSelectListenerImpl>(this);
+  auto listener = base::MakeRefCounted<FileSelectListenerImpl>(this);
   listener_impl_ = listener.get();
   // Do not allow messages with absolute paths in them as this can permit a
   // renderer to coerce the browser to perform I/O on a renderer controlled
@@ -135,7 +133,7 @@ void FileChooserImpl::EnumerateChosenDirectory(
     return;
   }
   callback_ = std::move(callback);
-  auto listener = std::make_unique<FileSelectListenerImpl>(this);
+  auto listener = base::MakeRefCounted<FileSelectListenerImpl>(this);
   listener_impl_ = listener.get();
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
   if (policy->CanReadFile(render_frame_host_->GetProcess()->GetID(),
@@ -187,10 +185,6 @@ void FileChooserImpl::FileSelectionCanceled() {
   if (!render_frame_host_)
     return;
   std::move(callback_).Run(nullptr);
-}
-
-void FileChooserImpl::ResetListenerImpl() {
-  listener_impl_ = nullptr;
 }
 
 void FileChooserImpl::RenderFrameHostChanged(RenderFrameHost* old_host,

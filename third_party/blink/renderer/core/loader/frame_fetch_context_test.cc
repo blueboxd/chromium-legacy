@@ -353,7 +353,8 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
     resource_request.SetRequestContext(mojom::RequestContextType::AUDIO);
 
     RecreateFetchContext(main_frame_url);
-    document->GetSecurityContext().SetInsecureRequestPolicy(policy);
+    document->domWindow()->GetSecurityContext().SetInsecureRequestPolicy(
+        policy);
 
     ModifyRequestForCSP(resource_request,
                         mojom::RequestContextFrameType::kNone);
@@ -413,11 +414,13 @@ TEST_F(FrameFetchContextModifyRequestTest, UpgradeInsecureResourceRequests) {
        "ftp://example.test:1212/image.png"},
   };
 
-  document->GetSecurityContext().SetInsecureRequestPolicy(
+  document->domWindow()->GetSecurityContext().SetInsecureRequestPolicy(
       mojom::blink::InsecureRequestPolicy::kUpgradeInsecureRequests);
 
   for (const auto& test : tests) {
-    document->GetSecurityContext().ClearInsecureNavigationsToUpgradeForTest();
+    document->domWindow()
+        ->GetSecurityContext()
+        .ClearInsecureNavigationsToUpgradeForTest();
 
     // We always upgrade for FrameTypeNone.
     ExpectUpgrade(test.original, mojom::RequestContextType::SCRIPT,
@@ -442,7 +445,7 @@ TEST_F(FrameFetchContextModifyRequestTest, UpgradeInsecureResourceRequests) {
 
     // Or unless the host of the resource is in the document's
     // InsecureNavigationsSet:
-    document->GetSecurityContext().AddInsecureNavigationUpgrade(
+    document->domWindow()->GetSecurityContext().AddInsecureNavigationUpgrade(
         example_origin->Host().Impl()->GetHash());
     ExpectUpgrade(test.original, mojom::RequestContextType::SCRIPT,
                   mojom::RequestContextFrameType::kTopLevel, test.upgraded);
@@ -457,7 +460,7 @@ TEST_F(FrameFetchContextModifyRequestTest,
   feature_list.InitAndDisableFeature(blink::features::kMixedContentAutoupgrade);
 
   RecreateFetchContext(KURL("https://secureorigin.test/image.png"));
-  document->GetSecurityContext().SetInsecureRequestPolicy(
+  document->domWindow()->GetSecurityContext().SetInsecureRequestPolicy(
       mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone);
 
   ExpectUpgrade("http://example.test/image.png",
@@ -533,24 +536,24 @@ TEST_F(FrameFetchContextModifyRequestTest, SendUpgradeInsecureRequestHeader) {
   // and when it doesn't (e.g. during main frame navigations), so run through
   // the tests both before and after providing a document to the context.
   for (const auto& test : tests) {
-    document->GetSecurityContext().SetInsecureRequestPolicy(
+    document->domWindow()->GetSecurityContext().SetInsecureRequestPolicy(
         mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone);
     ExpectUpgradeInsecureRequestHeader(test.to_request, test.frame_type,
                                        test.should_prefer);
 
-    document->GetSecurityContext().SetInsecureRequestPolicy(
+    document->domWindow()->GetSecurityContext().SetInsecureRequestPolicy(
         mojom::blink::InsecureRequestPolicy::kUpgradeInsecureRequests);
     ExpectUpgradeInsecureRequestHeader(test.to_request, test.frame_type,
                                        test.should_prefer);
   }
 
   for (const auto& test : tests) {
-    document->GetSecurityContext().SetInsecureRequestPolicy(
+    document->domWindow()->GetSecurityContext().SetInsecureRequestPolicy(
         mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone);
     ExpectUpgradeInsecureRequestHeader(test.to_request, test.frame_type,
                                        test.should_prefer);
 
-    document->GetSecurityContext().SetInsecureRequestPolicy(
+    document->domWindow()->GetSecurityContext().SetInsecureRequestPolicy(
         mojom::blink::InsecureRequestPolicy::kUpgradeInsecureRequests);
     ExpectUpgradeInsecureRequestHeader(test.to_request, test.frame_type,
                                        test.should_prefer);

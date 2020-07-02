@@ -10,6 +10,7 @@
 <translation id="1201402288615127009">Naprej</translation>
 <translation id="1242008676835033345">Vdelano v <ph name="WEBSITE_URL" /></translation>
 <translation id="1272079795634619415">Ustavi</translation>
+<translation id="1289742167380433257">Google optimizira slike na tej strani, da prihranite pri prenosu podatkov.</translation>
 <translation id="129382876167171263">Datoteke, ki jih shranijo spletna mesta, so prikazane tukaj</translation>
 <translation id="1364532808393826295"><ph name="APP_NAME" /> – <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">Spletno mesto <ph name="SITE_NAME" /> je bilo dodano</translation>
@@ -189,6 +190,7 @@
 <translation id="7128222689758636196">Dovoli za trenutni iskalnik</translation>
 <translation id="7141896414559753902">Preprečevanje, da spletna mesta prikazujejo pojavna okna in preusmeritve (priporočeno)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
+<translation id="7243308994586599757">Možnosti so na voljo pri dnu zaslona</translation>
 <translation id="7250468141469952378">Št. izbranih: <ph name="ITEM_COUNT" /></translation>
 <translation id="7302486331832100261">Obvestila običajno blokirate. Če želite to omogočiti, se dotaknite Podrobnosti.</translation>
 <translation id="7423098979219808738">Najprej vprašaj</translation>
@@ -227,6 +229,7 @@
 <translation id="83792324527827022">Spletno mesto uporablja kamero in mikrofon</translation>
 <translation id="8380167699614421159">To spletno mesto prikazuje vsiljive ali zavajajoče oglase</translation>
 <translation id="8394832520002899662">Dotaknite se, če se želite vrniti na spletno mesto</translation>
+<translation id="8425213833346101688">Spremeni</translation>
 <translation id="8441146129660941386">Išči nazaj</translation>
 <translation id="8447861592752582886">Umik dovoljenja za dostop do naprave</translation>
 <translation id="8463851957836045671">Spletno mesto je hitro</translation>

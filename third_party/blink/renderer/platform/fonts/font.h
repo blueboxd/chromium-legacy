@@ -162,7 +162,6 @@ class PLATFORM_EXPORT Font {
                                  float height,
                                  int from = 0,
                                  int to = -1) const;
-  FloatRect BoundingBox(const TextRun&, int from = 0, int to = -1) const;
   CharacterRange GetCharacterRange(const TextRun&,
                                    unsigned from,
                                    unsigned to) const;

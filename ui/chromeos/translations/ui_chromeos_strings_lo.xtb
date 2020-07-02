@@ -45,6 +45,8 @@
 <translation id="1395262318152388157">​ແຖບເລື່ອນ​ຊອກ​ຫາ</translation>
 <translation id="1399648040768741453">ຄີບອດພາສາເຕກູລູ (ການອອກສຽງ​)</translation>
 <translation id="1430915738399379752">ພິມ</translation>
+<translation id="1433600251059882049">ມີການແບ່ງປັນໂຟນເດີນີ້ກັບ Linux ແລະ Windows</translation>
+<translation id="1435838927755162558">ແບ່ງປັນໂຟນເດີກັບ Parallels Desktop</translation>
 <translation id="1439494416798956626">ຍ້າຍໄປໃສ່ <ph name="FOLDER_NAME" /> ແລ້ວ.</translation>
 <translation id="1441841714100794440">ຄີບອດພາສາ​ຫວຽດ​ນາມ (Telex​)</translation>
 <translation id="1455548678241328678">ຄີບອດພາສານໍເວຈຽນ</translation>
@@ -79,6 +81,7 @@
 <translation id="1844692022597038441">ໄຟລ໌ນີ້ບໍ່​ມີ​ໃຫ້​ແບບອອຟລາຍນ໌.</translation>
 <translation id="184633654410729720">ຄີບອດ​ພາ​ສາ​ໄທ (ເກດມະນີ​)</translation>
 <translation id="1847880352285315359">ບັນທຶກແລ້ວ</translation>
+<translation id="1853795129690976061">ມີການແບ່ງປັນໂຟນເດີນີ້ກັບ Linux</translation>
 <translation id="1864756863218646478">ບໍ່​ສາ​ມາດພົບໄຟລ​໌ໄດ້​.</translation>
 <translation id="1921986354447415460">ແປ້ນພິມພາສາຕວກ​ກີ-F</translation>
 <translation id="1924372192547904021">ຟໍແມັດ <ph name="DRIVE_NAME" /> ແລ້ວ</translation>
@@ -180,6 +183,7 @@
 <translation id="303198083543495566">ພູມສາດ</translation>
 <translation id="3057861065630527966">ສຳ​ຮອງ​ຮູບ ແລະ​ວິ​ດີ​ໂອ​ຂອງ​ທ່ານ</translation>
 <translation id="3064388234319122767">ການປ່ຽນ​ຖ່າຍ​ຕົວ​ອັກສອນ (zdravo →ຊະດຣາໂວ​)</translation>
+<translation id="3067790092342515856">ໄຟລ໌ Windows</translation>
 <translation id="3078461028045006476">ແບ່ງປັນກັບ <ph name="EXTENSION_NAME" /></translation>
 <translation id="3088034400796962477">ການປ່ຽນ​ຖ່າຍ​ຕົວ​ອັກສອນ (salam ←​ຊາລໍາ​)</translation>
 <translation id="3116361045094675131">ຄີບອດສະ​ຫະ​ລາດຊະອານາຈັກ</translation>
@@ -262,6 +266,7 @@
 <translation id="3943857333388298514">ແປະໃສ່</translation>
 <translation id="3958548648197196644">Kiwi</translation>
 <translation id="3966388904776714213">ເຄື່ອງຫຼິ້ນສຽງ</translation>
+<translation id="3984317463833596033">ອະນຸຍາດໃຫ້ Parallels Desktop ແກ້ໄຂໄຟລ໌ໃນໂຟນເດີ <ph name="FOLDER_NAME" /></translation>
 <translation id="4002066346123236978">ຫົວຂໍ້</translation>
 <translation id="4070370845051020638">ວິທີການປ້ອນຂໍ້ມູນພາສາຈີນກວາງຕຸ້ງ</translation>
 <translation id="4072248638558688893">ຄີບອດພາສາຕາມິນ (ການອອກສຽງ​)</translation>
@@ -290,6 +295,7 @@
 <translation id="4470564870223067757">ຮາງກຸລ 2 ຊຸດ</translation>
 <translation id="4477219268485577442">ການອອກສຽງພາສາບຸນ​ກາ​ຣີ</translation>
 <translation id="4479812471636796472">ຄີບອດດີວໍຣັກສະ​ຫະ​ລັດ</translation>
+<translation id="4481711095103932593">ມີການແບ່ງປັນໂຟນເດີນີ້ກັບ Windows</translation>
 <translation id="4487088045714738411">ຄີບອດພາສາແບນຊິກ</translation>
 <translation id="4522570452068850558">ລາຍ​ລະ​ອຽດ</translation>
 <translation id="4552678318981539154">ຊື້​ບ່ອນເກັບຂໍ້ມູນເພີ່ມເຕີມ</translation>
@@ -335,10 +341,12 @@
 <translation id="4881695831933465202">ເປີດ</translation>
 <translation id="4886021172213954916">ຄີບອດພາສາຕາມິນ (ພິມດີດ​)</translation>
 <translation id="4892969127351273348">ບໍ່ສາມາດເປີດດ້ວຍ <ph name="APP_NAME" /> ໄດ້</translation>
+<translation id="4900532980794411603">ແບ່ງປັນກັບ Parallels Desktop</translation>
 <translation id="4905417359854579806">ພ້ອມສຳຮອງ <ph name="FILE_COUNT" /> ໄວ້ແລ້ວ</translation>
 <translation id="4924638091161556692">ກໍາ​ນົດໄວ້</translation>
 <translation id="4935975195727477204">ດອກ​ກາ​ຊາ​ເນຍ</translation>
 <translation id="4943368462779413526">ບານເຕະ</translation>
+<translation id="4961158930123534723">ແບ່ງປັນ 1 ໂຟນເດີກັບ Parallels Desktop ແລ້ວ</translation>
 <translation id="4969785127455456148">ອະ​ລະ​ບໍ້າ</translation>
 <translation id="497244430928947428">ຄີບອດພາສາມາລາຢາລໍາ (ການອອກສຽງ)</translation>
 <translation id="4973523518332075481">ໃຊ້ຊື່ທີ່ມີຕົວອັກສອນ <ph name="MAX_LENGTH" /> ຕົວລົງມາ</translation>
@@ -350,6 +358,7 @@
 <translation id="5010406651457630570">ຄອມພິວເຕີ</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5024856940085636730">ການດໍາເນີນການໃຊ້ເວລາດົນກ່ວາທີ່ຄາດໄວ້. ທ່ານຕ້ອງການຍົກເລີກມັນບໍ?</translation>
+<translation id="5036159836254554629">ຈັດການການແບ່ງປັນ Parallels Desktop</translation>
 <translation id="5038625366300922036">ເບິ່ງ​ເພີ່ມ​ເຕີມ...</translation>
 <translation id="5061708541166515394">ສີຕັດກັນ</translation>
 <translation id="5068919226082848014">ພິດຊ່າ</translation>
@@ -498,6 +507,7 @@
 <translation id="656398493051028875">ກໍາລັງລຶບ "<ph name="FILENAME" />"...</translation>
 <translation id="6581162200855843583">ລິ້ງ Google Drive</translation>
 <translation id="6607272825297743757">ຂໍ້​ມູນໄຟລ໌</translation>
+<translation id="6609332149380188670">ແບ່ງປັນ <ph name="NUMBER_OF_ITEMS" /> ໄຟລ໌ກັບ Parallels Desktop ແລ້ວ</translation>
 <translation id="6629841649550503054">ທັງ​ໝົດ​ຖືກ​ສຳ​ຮອງ​ໄປ​ໃສ່ <ph name="BEGIN_LINK" />Google Drive!<ph name="END_LINK" /> ແລ້ວ</translation>
 <translation id="6643016212128521049">ລຶບ</translation>
 <translation id="6650726141019353908">ແມງກະເບື້ອສີບົວ</translation>
@@ -679,6 +689,7 @@
 <translation id="8475647382427415476">Google Drive ບໍ່​ສາ​ມາດ​ຊິງ​ຄ໌ "<ph name="FILENAME" />" ໄດ້​ໃນ​ເວ​ລາ​ນີ້. Google Drive ຈະ​ລອງ​ໃໝ່​ພາຍ​ຫຼັງ.</translation>
 <translation id="8477649328507734757">ໝຸນ</translation>
 <translation id="8487700953926739672">ມີອອຟລາຍນ໌ຢູ່</translation>
+<translation id="8490342535582768689">ອະນຸຍາດໃຫ້ Parallels Desktop ແກ້ໄຂໄຟລ໌ໃນ Google Drive ຂອງທ່ານ. ການປ່ຽນແປງຈະຊິ້ງຂໍ້ມູນກັບອຸປະກອນອື່ນຂອງທ່ານ.</translation>
 <translation id="8521441079177373948">ສະຫະ​ລາຊະ​ອານາຈັກ</translation>
 <translation id="8525306231823319788">ເຕັມຫນ້າ​ຈໍ​</translation>
 <translation id="8551494947769799688">ພາສາລັດເວຍ</translation>

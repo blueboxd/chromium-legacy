@@ -12,6 +12,9 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/window_properties.h"
 #include "base/bind.h"
+#include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
+#include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -29,13 +32,8 @@
 #include "ui/aura/env.h"
 #include "ui/base/base_window.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/views/widget/widget.h"
-
-namespace {
-
-constexpr size_t kMaxIconPngSize = 64 * 1024;  // 64 kb
-
-}  // namespace
 
 // The information about the arc application window which has to be kept
 // even when its AppWindow is not present.
@@ -49,19 +47,14 @@ class ArcAppWindowLauncherController::AppWindowInfo {
         package_name_(package_name) {}
   ~AppWindowInfo() = default;
 
-  void SetDescription(const std::string& title,
-                      const std::vector<uint8_t>& icon_data_png) {
+  void SetDescription(const std::string& title, const gfx::ImageSkia& icon) {
     if (base::IsStringUTF8(title))
       title_ = title;
     else
       VLOG(1) << "Task label is not UTF-8 string.";
     // Chrome has custom Play Store icon. Don't overwrite it.
-    if (app_shelf_id_.app_id() != arc::kPlayStoreAppId) {
-      if (icon_data_png.size() < kMaxIconPngSize)
-        icon_data_png_ = icon_data_png;
-      else
-        VLOG(1) << "Task icon size is too big " << icon_data_png.size() << ".";
-    }
+    if (app_shelf_id_.app_id() != arc::kPlayStoreAppId)
+      icon_ = icon;
   }
 
   void set_app_window(std::unique_ptr<ArcAppWindow> window) {
@@ -78,7 +71,7 @@ class ArcAppWindowLauncherController::AppWindowInfo {
 
   const std::string& title() const { return title_; }
 
-  const std::vector<uint8_t>& icon_data_png() const { return icon_data_png_; }
+  const gfx::ImageSkia& icon() const { return icon_; }
 
  private:
   const arc::ArcAppShelfId app_shelf_id_;
@@ -87,7 +80,7 @@ class ArcAppWindowLauncherController::AppWindowInfo {
   // Keeps overridden window title.
   std::string title_;
   // Keeps overridden window icon.
-  std::vector<uint8_t> icon_data_png_;
+  gfx::ImageSkia icon_;
   std::unique_ptr<ArcAppWindow> app_window_;
 
   DISALLOW_COPY_AND_ASSIGN(AppWindowInfo);
@@ -248,7 +241,7 @@ void ArcAppWindowLauncherController::AttachControllerToWindowIfNeeded(
   DCHECK(!info->app_window());
   info->set_app_window(std::make_unique<ArcAppWindow>(
       task_id, info->app_shelf_id(), widget, this, observed_profile_));
-  info->app_window()->SetDescription(info->title(), info->icon_data_png());
+  info->app_window()->SetDescription(info->title(), info->icon());
   RegisterApp(info);
   DCHECK(info->app_window()->controller());
   const ash::ShelfID shelf_id(info->app_window()->shelf_id());
@@ -317,11 +310,13 @@ void ArcAppWindowLauncherController::OnTaskDescriptionUpdated(
     const std::string& label,
     const std::vector<uint8_t>& icon_png_data) {
   AppWindowInfo* info = GetAppWindowInfoForTask(task_id);
-  if (info) {
-    info->SetDescription(label, icon_png_data);
-    if (info->app_window())
-      info->app_window()->SetDescription(label, icon_png_data);
-  }
+  if (!info)
+    return;
+
+  apps::CompressedDataToImageSkiaCallback(
+      base::BindOnce(&ArcAppWindowLauncherController::SetDescription,
+                     weak_ptr_factory_.GetWeakPtr(), task_id, label))
+      .Run(std::move(icon_png_data));
 }
 
 void ArcAppWindowLauncherController::OnTaskDestroyed(int task_id) {
@@ -550,5 +545,16 @@ void ArcAppWindowLauncherController::HandlePlayStoreLaunch(
         base::TimeDelta::FromMilliseconds(start_request_ms);
     DCHECK_GE(launch_time, base::TimeDelta());
     arc::UpdatePlayStoreLaunchTime(launch_time);
+  }
+}
+
+void ArcAppWindowLauncherController::SetDescription(int32_t task_id,
+                                                    const std::string& title,
+                                                    gfx::ImageSkia icon) {
+  AppWindowInfo* info = GetAppWindowInfoForTask(task_id);
+  if (info) {
+    info->SetDescription(title, icon);
+    if (info->app_window())
+      info->app_window()->SetDescription(title, icon);
   }
 }

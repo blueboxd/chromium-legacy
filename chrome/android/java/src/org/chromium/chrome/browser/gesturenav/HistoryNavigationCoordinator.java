@@ -46,6 +46,9 @@ public class HistoryNavigationCoordinator
     private Tab mTab;
     private boolean mEnabled;
 
+    private NavigationHandler mNavigationHandler;
+    private HistoryNavigationDelegate mDelegate;
+
     /**
      * Creates the coordinator for gesture navigation and initializes internal objects.
      * @param lifecycleDispatcher Lifecycle dispatcher for the associated activity.
@@ -83,7 +86,9 @@ public class HistoryNavigationCoordinator
             InsetObserverView insetObserverView, Function<Tab, Boolean> backShouldCloseTab,
             Runnable onBackPressed, Consumer<Tab> showHistoryManager, String historyMenu,
             Supplier<BottomSheetController> bottomSheetControllerSupplier) {
-        mNavigationLayout = new HistoryNavigationLayout(compositorViewHolder.getContext());
+        mNavigationLayout =
+                new HistoryNavigationLayout(compositorViewHolder.getContext(), this::isNativePage);
+
         mCompositorViewHolder = compositorViewHolder;
         mActivityLifecycleDispatcher = lifecycleDispatcher;
         mBackShouldCloseTab = backShouldCloseTab;
@@ -94,7 +99,7 @@ public class HistoryNavigationCoordinator
         lifecycleDispatcher.register(this);
 
         compositorViewHolder.addView(mNavigationLayout);
-        compositorViewHolder.addTouchEventObserver(mNavigationLayout);
+
         mActivityTabObserver = new ActivityTabProvider.ActivityTabTabObserver(tabProvider) {
             @Override
             protected void onObservingDifferentTab(Tab tab) {
@@ -128,6 +133,10 @@ public class HistoryNavigationCoordinator
             mInsetObserverView = insetObserverView;
             insetObserverView.addObserver(this);
         }
+    }
+
+    private boolean isNativePage() {
+        return mTab != null && mTab.isNativePage();
     }
 
     private static boolean isDetached(Tab tab) {
@@ -210,15 +219,31 @@ public class HistoryNavigationCoordinator
                         ? createDelegate(mTab, mBackShouldCloseTab, mOnBackPressed,
                                 mShowHistoryManager, mHistoryMenu, mBottomSheetControllerSupplier)
                         : HistoryNavigationDelegate.DEFAULT;
-                boolean isNativePage = mTab != null ? mTab.isNativePage() : false;
-                mNavigationLayout.initNavigationHandler(delegate, webContents, isNativePage);
+                initNavigationHandler(delegate);
+                mNavigationLayout.resetCompositorGlow(webContents);
             }
         } else {
             mNavigationLayout.destroy();
         }
         if (mTab != null) {
-            SwipeRefreshHandler.from(mTab).setNavigationHandler(
-                    mNavigationLayout.getNavigationHandler());
+            SwipeRefreshHandler.from(mTab).setNavigationHandler(mNavigationHandler);
+        }
+    }
+
+    /**
+     * Initialize {@link NavigationHandler} object.
+     * @param delegate {@link HistoryNavigationDelegate} providing info and a factory method.
+     * @param webContents A new WebContents object.
+     */
+    private void initNavigationHandler(HistoryNavigationDelegate delegate) {
+        if (mNavigationHandler == null) {
+            mNavigationHandler = new NavigationHandler(
+                    mNavigationLayout, mNavigationLayout::getGlowEffect, this::isNativePage);
+            mCompositorViewHolder.addTouchEventObserver(mNavigationHandler);
+        }
+        if (mDelegate != delegate) {
+            mNavigationHandler.setDelegate(delegate);
+            mDelegate = delegate;
         }
     }
 
@@ -247,14 +272,20 @@ public class HistoryNavigationCoordinator
             mInsetObserverView.removeObserver(this);
             mInsetObserverView = null;
         }
-        if (mCompositorViewHolder != null && mNavigationLayout != null) {
-            mCompositorViewHolder.removeTouchEventObserver(mNavigationLayout);
+        if (mCompositorViewHolder != null && mNavigationHandler != null) {
+            mCompositorViewHolder.removeTouchEventObserver(mNavigationHandler);
             mCompositorViewHolder = null;
         }
         if (mNavigationLayout != null) {
             mNavigationLayout.removeCallbacks(mUpdateNavigationStateRunnable);
             mNavigationLayout.destroy();
             mNavigationLayout = null;
+        }
+        mDelegate = HistoryNavigationDelegate.DEFAULT;
+        if (mNavigationHandler != null) {
+            mNavigationHandler.setDelegate(mDelegate);
+            mNavigationHandler.destroy();
+            mNavigationHandler = null;
         }
         if (mActivityLifecycleDispatcher != null) {
             mActivityLifecycleDispatcher.unregister(this);
@@ -264,7 +295,6 @@ public class HistoryNavigationCoordinator
 
     @VisibleForTesting
     NavigationHandler getNavigationHandlerForTesting() {
-        assert mNavigationLayout != null;
-        return mNavigationLayout.getNavigationHandler();
+        return mNavigationHandler;
     }
 }

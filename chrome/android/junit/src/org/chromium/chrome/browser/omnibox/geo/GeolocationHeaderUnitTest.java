@@ -274,6 +274,13 @@ public class GeolocationHeaderUnitTest {
     }
 
     @Test
+    public void testGetGeoHeaderNoProfile() {
+        when(mProfileJniMock.fromWebContents(any(WebContents.class))).thenReturn(null);
+        String header = GeolocationHeader.getGeoHeader(SEARCH_URL, mTab);
+        assertNull(header);
+    }
+
+    @Test
     @Config(shadows = {ShadowVisibleNetworksTracker.class, ShadowGeolocationTracker.class})
     public void testPrimeLocationForGeoHeader() {
         GeolocationHeader.primeLocationForGeoHeader();

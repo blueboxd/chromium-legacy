@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-load('//lib/builders.star', 'builder', 'defaults', 'os')
+load('//lib/builders.star', 'builder', 'defaults', 'goma', 'os')
 
 luci.bucket(
     name = 'findit',
@@ -47,6 +47,7 @@ defaults.caches.set([
 builder(
     name = 'findit-rerun',
     executable = 'recipe:findit/chromium/single_revision',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 # Dimensionless trybot for findit.
@@ -63,6 +64,7 @@ builder(
     # we specify them here is to pass validation of the buildbucket config.
     # Also, to illustrate the typical use case of this bucket.
     executable = 'recipe:findit/chromium/compile',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 builder(

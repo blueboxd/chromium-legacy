@@ -15,7 +15,6 @@
 #include "ash/public/cpp/assistant/controller/assistant_alarm_timer_controller.h"
 #include "ash/public/cpp/assistant/controller/assistant_controller.h"
 #include "ash/public/cpp/assistant/controller/assistant_controller_observer.h"
-#include "ash/public/mojom/assistant_controller.mojom.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "base/timer/timer.h"

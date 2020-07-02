@@ -73,6 +73,7 @@ Hier is 'n paar dinge wat jy kan probeer om aan die gang te kom.</translation>
 <translation id="1747827819627189109">Opskerm-sleutelbord geaktiveer</translation>
 <translation id="1761222317188459878">Wissel netwerkverbinding. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Rollees regs</translation>
+<translation id="1782199038061388045">vertaling</translation>
 <translation id="181103072419391116">Seinsterkte <ph name="SIGNAL_STRENGTH" />, deur jou administrateur bestuur</translation>
 <translation id="1812997170047690955">Wat wys op my skerm?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
@@ -103,7 +104,6 @@ Hier is 'n paar dinge wat jy kan probeer om aan die gang te kom.</translation>
 <translation id="2126242104232412123">Nuwe lessenaar</translation>
 <translation id="2127372758936585790">Laekrag-laaier</translation>
 <translation id="2135456203358955318">Gedokte vergrootglas</translation>
-<translation id="2143915448548023856">Vertooninstellings</translation>
 <translation id="2144487987174258011">Herbegin om Adobe Flash Player op te dateer</translation>
 <translation id="2208323208084708176">Verenigde werkskermmodus</translation>
 <translation id="2220572644011485463">PIN of wagwoord</translation>
@@ -185,6 +185,7 @@ Hier is 'n paar dinge wat jy kan probeer om aan die gang te kom.</translation>
 <translation id="3081696990447829002">Vou kieslys uit</translation>
 <translation id="3087734570205094154">Onderkant</translation>
 <translation id="309749186376891736">Beweeg merker</translation>
+<translation id="3098580329624789136">Kry die <ph name="INTENT" /> vir "<ph name="QUERY" />"</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Herbegin om op te dateer</translation>
 <translation id="3139942575505304791">Lessenaar 1</translation>
@@ -222,6 +223,7 @@ Hier is 'n paar dinge wat jy kan probeer om aan die gang te kom.</translation>
 <translation id="3465356146291925647">Deur jou administrateur bestuur</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3485319357743610354"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, seinsterkte <ph name="SIGNAL_STRENGTH" /></translation>
+<translation id="3486220673238053218">definisie</translation>
 <translation id="3510164367642747937">Lig muismerker uit</translation>
 <translation id="3513798432020909783">Rekening word bestuur deur <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Verander terug na "<ph name="FROM_LOCALE" />" (vereis herbegin)</translation>
@@ -273,8 +275,8 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="4072264167173457037">Medium sein</translation>
 <translation id="4112140312785995938">Soek agtertoe</translation>
 <translation id="4129129681837227511">Om kennisgewings op jou sluitskerm te sien, ontsluit om die instelling te verander</translation>
-<translation id="4144413954005649103">As jy regsklik of lank druk, wys Assistent vir jou inligting wat verband hou met wat op die skerm gekies is.</translation>
 <translation id="4146833061457621061">Speel musiek</translation>
+<translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> bestuur deur <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Tale</translation>
 <translation id="4195877955194704651">Outomatiese Klikke-knoppie</translation>
 <translation id="4197790712631116042">Af</translation>
@@ -529,6 +531,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="7378594059915113390">Media-kontroles</translation>
 <translation id="7398254312354928459">Het netwerkverbinding gewissel</translation>
 <translation id="7405710164030118432">Voer jou Family Link-ouertoegangskode in om die toestel te ontsluit</translation>
+<translation id="741244894080940828">omskakeling</translation>
 <translation id="742594950370306541">Kamera word gebruik.</translation>
 <translation id="743058460480092004">Kamera en mikrofoon word gebruik.</translation>
 <translation id="7436182601308224670">Goeiemiddag, <ph name="GIVEN_NAME" /></translation>
@@ -541,6 +544,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="7562368315689366235">Emosiekoon-palet</translation>
 <translation id="7564874036684306347">Om vensters na 'n ander werkskerm te skuif, kan lei tot onverwagte gedrag. Opeenvolgende kennisgewings, vensters en dialoë kan tussen werkskerms verdeel word.</translation>
 <translation id="7568294522609223312">Skakel outomatiese klikke af</translation>
+<translation id="7568637526529101738">Met 'n regsklik of langdruk wys Assistent inligting soos die definisie of eenheidomskakeling van jou keuse.</translation>
 <translation id="7569509451529460200">Braille en ChromeVox is geaktiveer</translation>
 <translation id="7593891976182323525">Search of Shift</translation>
 <translation id="7600875258240007829">Sien alle kennisgewings</translation>

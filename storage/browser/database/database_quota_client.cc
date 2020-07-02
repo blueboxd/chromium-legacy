@@ -18,7 +18,6 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
-#include "net/base/url_util.h"
 #include "storage/browser/database/database_tracker.h"
 #include "storage/browser/database/database_util.h"
 #include "storage/browser/quota/quota_client_type.h"
@@ -56,7 +55,7 @@ void GetOriginsForHostOnDBThread(DatabaseTracker* db_tracker,
   if (db_tracker->GetAllOriginIdentifiers(&origin_identifiers)) {
     for (const auto& identifier : origin_identifiers) {
       url::Origin origin = GetOriginFromIdentifier(identifier);
-      if (host == net::GetHostOrSpecFromURL(origin.GetURL()))
+      if (host == origin.host())
         origins_ptr->insert(origin);
     }
   }

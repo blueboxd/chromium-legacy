@@ -45,6 +45,8 @@
 <translation id="1395262318152388157">Tafuta Kitelezi</translation>
 <translation id="1399648040768741453">Kibodi ya Kitelugu (Fonetiki)</translation>
 <translation id="1430915738399379752">Chapisha</translation>
+<translation id="1433600251059882049">Folda hii imeshirikiwa na Linux na Windows</translation>
+<translation id="1435838927755162558">Shiriki folda na Parallels Desktop</translation>
 <translation id="1439494416798956626">Imehamishiwa kwenye <ph name="FOLDER_NAME" />.</translation>
 <translation id="1441841714100794440">Kibodi ya Kivietnamu (Telex)</translation>
 <translation id="1455548678241328678">Kibodi ya Kinorwe</translation>
@@ -79,6 +81,7 @@
 <translation id="1844692022597038441">Faili hii haipatikani nje ya mtandao.</translation>
 <translation id="184633654410729720">Kibodi ya Kithai (Kedmanee)</translation>
 <translation id="1847880352285315359">Imehifadhi</translation>
+<translation id="1853795129690976061">Umeshiriki folda hii na Linux</translation>
 <translation id="1864756863218646478">Faili haikupatikana.</translation>
 <translation id="1921986354447415460">Kibodi ya Kituruki-F</translation>
 <translation id="1924372192547904021">Imebadilisha muundo <ph name="DRIVE_NAME" /></translation>
@@ -180,6 +183,7 @@
 <translation id="303198083543495566">Jiografia</translation>
 <translation id="3057861065630527966">Weka hifadhi rudufu ya picha na video zako</translation>
 <translation id="3064388234319122767">Unukuzi wa mfumo wa kuandika (zdravo → здраво)</translation>
+<translation id="3067790092342515856">Faili za Windows</translation>
 <translation id="3078461028045006476">Shiriki na <ph name="EXTENSION_NAME" /></translation>
 <translation id="3088034400796962477">Unukuzi wa mfumo wa kuandika (salam ← سلام)</translation>
 <translation id="3116361045094675131">Kibodi ya Uingereza</translation>
@@ -262,6 +266,7 @@
 <translation id="3943857333388298514">Bandika</translation>
 <translation id="3958548648197196644">Kiwi</translation>
 <translation id="3966388904776714213">Kichezaji cha Sauti</translation>
+<translation id="3984317463833596033">Ruhusu Parallels Desktop ibadilishe faili katika folda ya <ph name="FOLDER_NAME" /></translation>
 <translation id="4002066346123236978">Kichwa</translation>
 <translation id="4070370845051020638">Mbinu ya Kikantoni ya kuingiza data</translation>
 <translation id="4072248638558688893">Kibodi ya Kitamil (Fonetiki)</translation>
@@ -290,6 +295,7 @@
 <translation id="4470564870223067757">Seti ya Hangul 2</translation>
 <translation id="4477219268485577442">Fonetiki ya Kibulgaria</translation>
 <translation id="4479812471636796472">Kibodi ya Dvorak ya Marekani</translation>
+<translation id="4481711095103932593">Umeshiriki folda hii na Windows</translation>
 <translation id="4487088045714738411">Kibodi ya Kibelgiji</translation>
 <translation id="4522570452068850558">Maelezo</translation>
 <translation id="4552678318981539154">Nunua hifadhi zaidi</translation>
@@ -335,10 +341,12 @@
 <translation id="4881695831933465202">Fungua</translation>
 <translation id="4886021172213954916">Kibodi ya Kitamil (Typewriter)</translation>
 <translation id="4892969127351273348">Imeshindwa kufungua kwa kutumia <ph name="APP_NAME" /></translation>
+<translation id="4900532980794411603">Shiriki na Parallels Desktop</translation>
 <translation id="4905417359854579806">Iko tayari kuhifadhi nakala ya <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Imerekebishwa</translation>
 <translation id="4935975195727477204">Ua la Gazania</translation>
 <translation id="4943368462779413526">Kandanda</translation>
+<translation id="4961158930123534723">Umeshiriki folda moja na Parallels Desktop</translation>
 <translation id="4969785127455456148">Albamu</translation>
 <translation id="497244430928947428">Kibodi ya Malayalam (Fonetiki)</translation>
 <translation id="4973523518332075481">Tumia jina lenye herufi <ph name="MAX_LENGTH" /> au chache</translation>
@@ -350,6 +358,7 @@
 <translation id="5010406651457630570">Kompyuta</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5024856940085636730">Kitendo kinachukua muda zaidi ya ilivyotarajiwa. Unataka kuughairi?</translation>
+<translation id="5036159836254554629">Dhibiti shughuli ya kushiriki ya Parallels Desktop</translation>
 <translation id="5038625366300922036">Tazama zaidi...</translation>
 <translation id="5061708541166515394">Ulinganuzi</translation>
 <translation id="5068919226082848014">Piza</translation>
@@ -499,6 +508,7 @@
 <translation id="656398493051028875">Inafuta "<ph name="FILENAME" />"...</translation>
 <translation id="6581162200855843583">Kiungo cha Hifadhi ya Google</translation>
 <translation id="6607272825297743757">Maelezo ya faili</translation>
+<translation id="6609332149380188670">Umeshiriki folda <ph name="NUMBER_OF_ITEMS" /> na Parallels Desktop</translation>
 <translation id="6629841649550503054">Zote zimehifadhiwa nakala kwenye <ph name="BEGIN_LINK" />Hifadhi ya Google!<ph name="END_LINK" /></translation>
 <translation id="6643016212128521049">Futa</translation>
 <translation id="6650726141019353908">Kipepeo wa waridi</translation>
@@ -680,6 +690,7 @@
 <translation id="8475647382427415476">Hifadhi ya Google haikuweza kusawazisha "<ph name="FILENAME" />" hivi sasa. Hifadhi ya Google itajaribu tena baadaye.</translation>
 <translation id="8477649328507734757">Duara za kati moja</translation>
 <translation id="8487700953926739672">Kinapatikana nje ya mtandao</translation>
+<translation id="8490342535582768689">Ruhusu Parallels Desktop ibadilishe faili katika Hifadhi yako ya Google. Mabadiliko yatasawazishwa kwenye vifaa vyako vingine.</translation>
 <translation id="8521441079177373948">Kiingereza cha Uingereza</translation>
 <translation id="8525306231823319788">Skrini nzima</translation>
 <translation id="8551494947769799688">Kilatvia</translation>

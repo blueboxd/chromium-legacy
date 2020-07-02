@@ -15,6 +15,7 @@
 <translation id="1947737735496445907">Printed</translation>
 <translation id="1979103255016296513">Password change overdue</translation>
 <translation id="2049639323467105390">This device is managed by <ph name="DOMAIN" />.</translation>
+<translation id="2161394479394250669">Cancel print job</translation>
 <translation id="2338501278241028356">Turn on Bluetooth to discover nearby devices</translation>
 <translation id="2375079107209812402"><ph name="ATTEMPTS_LEFT" /> attempts left</translation>
 <translation id="2805756323405976993">Apps</translation>
@@ -24,12 +25,12 @@
 <translation id="3268178239013324452">Failed – Door open</translation>
 <translation id="3369013195428705271">Are you sure you want to clear all print history? Your ongoing print jobs will not be cleared.</translation>
 <translation id="3456078764689556234">Printed page <ph name="PRINTED_PAGES" /> out of <ph name="TOTAL_PAGES" />.</translation>
+<translation id="3459509316159669723">Printing</translation>
 <translation id="3527036260304016759">Failed – Unknown error</translation>
 <translation id="3749289110408117711">File name</translation>
 <translation id="38114475217616659">Clear all history</translation>
 <translation id="3820172043799983114">Invalid PIN.</translation>
 <translation id="3838338534323494292">New password</translation>
-<translation id="3953601359945991637"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> out of <ph name="TOTAL_PAGE_NUMBER" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> manages this device and has access to all user activity, including web pages visited, passwords and email.</translation>
 <translation id="4003384961948020559">Failed – Output full</translation>
 <translation id="4034824040120875894">Printer</translation>

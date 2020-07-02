@@ -22,10 +22,10 @@ class IFramePolicy final : public DOMFeaturePolicy {
 
   // Create a new IFramePolicy, which is synthetic for a frame contained within
   // a document.
-  IFramePolicy(Document* parent_document,
+  IFramePolicy(ExecutionContext* parent_context,
                const ParsedFeaturePolicy& container_policy,
                scoped_refptr<const SecurityOrigin> src_origin)
-      : parent_document_(parent_document) {
+      : DOMFeaturePolicy(parent_context) {
     DCHECK(src_origin);
     UpdateContainerPolicy(container_policy, src_origin);
   }
@@ -34,21 +34,14 @@ class IFramePolicy final : public DOMFeaturePolicy {
       const ParsedFeaturePolicy& container_policy,
       scoped_refptr<const SecurityOrigin> src_origin) override {
     policy_ = FeaturePolicy::CreateFromParentPolicy(
-        parent_document_->GetSecurityContext().GetFeaturePolicy(),
-        container_policy, src_origin->ToUrlOrigin());
-  }
-
-  void Trace(Visitor* visitor) const override {
-    visitor->Trace(parent_document_);
-    DOMFeaturePolicy::Trace(visitor);
+        context_->GetSecurityContext().GetFeaturePolicy(), container_policy,
+        src_origin->ToUrlOrigin());
   }
 
  protected:
   const FeaturePolicy* GetPolicy() const override { return policy_.get(); }
-  Document* GetDocument() const override { return parent_document_; }
 
  private:
-  Member<Document> parent_document_;
   std::unique_ptr<FeaturePolicy> policy_;
 };
 

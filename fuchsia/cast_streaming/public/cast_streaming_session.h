@@ -13,8 +13,9 @@
 #include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "media/base/audio_decoder_config.h"
-#include "media/base/decoder_buffer.h"
 #include "media/base/video_decoder_config.h"
+#include "media/mojo/mojom/media_types.mojom.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 
 namespace network {
 namespace mojom {
@@ -37,25 +38,35 @@ class CastStreamingSession {
   // OnReceiverSessionEnded().
   static void SetNetworkContextGetter(NetworkContextGetter getter);
 
+  template <class T>
+  struct StreamInfo {
+    T decoder_config;
+    mojo::ScopedDataPipeConsumerHandle data_pipe;
+  };
+  using AudioStreamInfo = StreamInfo<media::AudioDecoderConfig>;
+  using VideoStreamInfo = StreamInfo<media::VideoDecoderConfig>;
+
   class Client {
    public:
     // Called when the Cast Streaming Session has been successfully initialized.
-    // It is guaranteed that at least one of |audio_decoder_config| or
-    // |video_decoder_config| will be set.
+    // It is guaranteed that at least one of |audio_stream_info| or
+    // |video_stream_info| will be set.
     virtual void OnInitializationSuccess(
-        base::Optional<media::AudioDecoderConfig> audio_decoder_config,
-        base::Optional<media::VideoDecoderConfig> video_decoder_config) = 0;
+        base::Optional<AudioStreamInfo> audio_stream_info,
+        base::Optional<VideoStreamInfo> video_stream_info) = 0;
 
     // Called when the Cast Stream Session failed to initialize.
     virtual void OnInitializationFailure() = 0;
 
-    // Called on every new audio frame after OnInitializationSuccess().
-    virtual void OnAudioFrameReceived(
-        scoped_refptr<media::DecoderBuffer> buffer) = 0;
+    // Called on every new audio buffer after OnInitializationSuccess(). The
+    // frame data must be accessed via the |data_pipe| property in StreamInfo.
+    virtual void OnAudioBufferReceived(
+        media::mojom::DecoderBufferPtr buffer) = 0;
 
-    // Called on every new video frame after OnInitializationSuccess().
-    virtual void OnVideoFrameReceived(
-        scoped_refptr<media::DecoderBuffer> buffer) = 0;
+    // Called on every new video buffer after OnInitializationSuccess(). The
+    // frame data must be accessed via the |data_pipe| property in StreamInfo.
+    virtual void OnVideoBufferReceived(
+        media::mojom::DecoderBufferPtr buffer) = 0;
 
     // Called when the Cast Streaming Session has ended.
     virtual void OnReceiverSessionEnded() = 0;

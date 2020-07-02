@@ -160,7 +160,7 @@ ServiceManager::ServiceManager(const std::vector<Manifest>& manifests,
   service_manager_instance_->SetPID(GetCurrentPid());
 
   mojo::PendingRemote<mojom::Service> remote;
-  service_binding_.Bind(remote.InitWithNewPipeAndPassReceiver());
+  service_receiver_.Bind(remote.InitWithNewPipeAndPassReceiver());
   service_manager_instance_->StartWithRemote(std::move(remote));
 }
 

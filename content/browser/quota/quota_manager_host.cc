@@ -20,7 +20,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_client.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
-#include "net/base/url_util.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "url/origin.h"
 
@@ -155,11 +154,8 @@ void QuotaManagerHost::DidGetPermissionResponse(
   }
 
   // Otherwise, return the new quota.
-  // TODO(sashab): net::GetHostOrSpecFromURL(origin.GetURL()) potentially does
-  // wasted work, e.g. if the origin has a host it can return that early. Maybe
-  // rewrite to just convert the host to a string directly.
   quota_manager_->SetPersistentHostQuota(
-      net::GetHostOrSpecFromURL(origin_.GetURL()), requested_quota,
+      origin_.host(), requested_quota,
       base::BindOnce(&QuotaManagerHost::DidSetHostQuota,
                      weak_factory_.GetWeakPtr(), current_usage,
                      std::move(callback)));

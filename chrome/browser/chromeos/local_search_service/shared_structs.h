@@ -55,7 +55,13 @@ struct Data {
   // Data item will be matched between its search tags and query term.
   std::vector<Content> contents;
 
-  Data(const std::string& id, const std::vector<Content>& contents);
+  // Locale of the data. This is currently used by inverted index only.
+  // If unset, we will use system configured locale.
+  // TODO(jiameng): apply locale-dependent tokenization to linear map.
+  std::string locale;
+  Data(const std::string& id,
+       const std::vector<Content>& contents,
+       const std::string& locale = "");
   Data();
   Data(const Data& data);
   ~Data();

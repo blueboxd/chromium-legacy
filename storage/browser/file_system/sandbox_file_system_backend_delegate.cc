@@ -18,7 +18,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
-#include "net/base/url_util.h"
 #include "storage/browser/file_system/async_file_util_adapter.h"
 #include "storage/browser/file_system/file_stream_reader.h"
 #include "storage/browser/file_system/file_system_context.h"
@@ -401,8 +400,7 @@ void SandboxFileSystemBackendDelegate::GetOriginsForHostOnFileTaskRunner(
   std::unique_ptr<OriginEnumerator> enumerator(CreateOriginEnumerator());
   base::Optional<url::Origin> origin;
   while ((origin = enumerator->Next()).has_value()) {
-    if (host == net::GetHostOrSpecFromURL(origin->GetURL()) &&
-        enumerator->HasFileSystemType(type))
+    if (host == origin->host() && enumerator->HasFileSystemType(type))
       origins->insert(origin.value());
   }
 }

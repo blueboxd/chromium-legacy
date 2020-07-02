@@ -53,7 +53,6 @@
 <translation id="2534507159460261402">Google Pay (скопирована в Chrome)</translation>
 <translation id="2580411288591421699">Не удается установить версию Google Chrome, аналогичную уже выполняемой. Закройте Google Chrome и повторите попытку.</translation>
 <translation id="2586406160782125153">Данные о работе в браузере будут удалены с устройства. Чтобы восстановить данные позже, войдите в Chrome как <ph name="USER_EMAIL" />.</translation>
-<translation id="2588322182880276190">Логотип Chrome</translation>
 <translation id="2622559029861875898">Не удалось проверить наличие обновлений в Chrome. Проверьте подключение к Интернету.</translation>
 <translation id="2644798301485385923">Chrome OS</translation>
 <translation id="2652691236519827073">Открыть ссылку в новой вкладке браузера Chrome</translation>
@@ -66,6 +65,7 @@
 <translation id="2847461019998147611">Отображать Google Chrome на этом языке</translation>
 <translation id="2857540653560290388">Запуск Chrome...</translation>
 <translation id="2871893339301912279">Добро пожаловать в Chrome!</translation>
+<translation id="2885378588091291677">Диспетчер задач</translation>
 <translation id="2888126860611144412">О браузере Chrome</translation>
 <translation id="2929907241665500097">Не удалось обновить Chrome. <ph name="BEGIN_LINK" />Выяснить причины неполадок и устранить их<ph name="END_LINK" /></translation>
 <translation id="2969728957078202736">"<ph name="PAGE_TITLE" />" – вход в сеть – Chrome</translation>

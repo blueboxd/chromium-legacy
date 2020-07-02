@@ -179,6 +179,10 @@ class ErrorOr {
   // the value in question.
   ErrorOr(Status&& error) : error_(std::move(error)) {}
   ErrorOr(const Status& error) : error_(error) {}
+  ErrorOr(StatusCode code,
+          const base::Location& location = base::Location::Current())
+      : error_(Status(code, "", location)) {}
+
   ErrorOr(T&& value) : value_(std::move(value)) {}
   ErrorOr(const T& value) : value_(value) {}
 

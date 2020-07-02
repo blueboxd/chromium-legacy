@@ -10,6 +10,7 @@
 <translation id="1201402288615127009">Dalje</translation>
 <translation id="1242008676835033345">Ugrađeno u sajt <ph name="WEBSITE_URL" /></translation>
 <translation id="1272079795634619415">Zaustavi</translation>
+<translation id="1289742167380433257">Da bi se smanjilo korišćenje podataka, Google je optimizovao slike na ovoj stranici.</translation>
 <translation id="129382876167171263">Datoteke koje su sačuvali veb-sajtovi prikazuju se ovde</translation>
 <translation id="1364532808393826295"><ph name="APP_NAME" /> – <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">Sajt <ph name="SITE_NAME" /> je dodat</translation>
@@ -189,6 +190,7 @@
 <translation id="7128222689758636196">Dozvoli za aktuelni pretraživač</translation>
 <translation id="7141896414559753902">Blokiraj prikazivanje iskačućih prozora i preusmeravanja na sajtovima (preporučeno)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> kB</translation>
+<translation id="7243308994586599757">Opcije su dostupne u dnu ekrana</translation>
 <translation id="7250468141469952378">Izabrali ste <ph name="ITEM_COUNT" /></translation>
 <translation id="7302486331832100261">Obično blokirate obaveštenja. Da biste ih dozvolili, dodirnite Detalji.</translation>
 <translation id="7423098979219808738">Prvo pitaj</translation>
@@ -227,6 +229,7 @@
 <translation id="83792324527827022">Sajt koristi kameru i mikrofon</translation>
 <translation id="8380167699614421159">Ovaj sajt prikazuje oglase koji ometaju aktivnosti ili obmanjujuće oglase</translation>
 <translation id="8394832520002899662">Dodirnite da biste se vratili na sajt</translation>
+<translation id="8425213833346101688">Promeni</translation>
 <translation id="8441146129660941386">Premotaj unazad</translation>
 <translation id="8447861592752582886">Opozovi dozvolu za uređaj</translation>
 <translation id="8463851957836045671">Sajt je brz</translation>

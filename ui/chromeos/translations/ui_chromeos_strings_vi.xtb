@@ -45,6 +45,8 @@
 <translation id="1395262318152388157">Thanh trượt tìm kiếm</translation>
 <translation id="1399648040768741453">Bàn phím tiếng Telugu (Ngữ âm)</translation>
 <translation id="1430915738399379752">In</translation>
+<translation id="1433600251059882049">Thư mục này được chia sẻ với Linux và Windows</translation>
+<translation id="1435838927755162558">Chia sẻ thư mục với ứng dụng Parallels Desktop</translation>
 <translation id="1439494416798956626">Đã di chuyển sang <ph name="FOLDER_NAME" />.</translation>
 <translation id="1441841714100794440">Bàn phím tiếng Việt (Telex)</translation>
 <translation id="1455548678241328678">Bàn phím tiếng Na Uy</translation>
@@ -79,6 +81,7 @@
 <translation id="1844692022597038441">Tệp này không có khi ngoại tuyến.</translation>
 <translation id="184633654410729720">Bàn phím tiếng Thái (Kedmanee)</translation>
 <translation id="1847880352285315359">Đã lưu</translation>
+<translation id="1853795129690976061">Thư mục này được chia sẻ với Linux</translation>
 <translation id="1864756863218646478">Không thể tìm thấy tệp.</translation>
 <translation id="1921986354447415460">Bàn phím tiếng Thổ Nhĩ Kỳ-F</translation>
 <translation id="1924372192547904021">Đã định dạng <ph name="DRIVE_NAME" /></translation>
@@ -180,6 +183,7 @@
 <translation id="303198083543495566">Địa lý</translation>
 <translation id="3057861065630527966">Sao lưu ảnh và video của bạn</translation>
 <translation id="3064388234319122767">Chuyển ngữ (zdravo → здраво)</translation>
+<translation id="3067790092342515856">Tệp Windows</translation>
 <translation id="3078461028045006476">Chia sẻ với <ph name="EXTENSION_NAME" /></translation>
 <translation id="3088034400796962477">Chuyển ngữ (salam ← سلام)</translation>
 <translation id="3116361045094675131">Bàn phím Vương quốc Anh</translation>
@@ -262,6 +266,7 @@
 <translation id="3943857333388298514">Dán</translation>
 <translation id="3958548648197196644">Kiwi</translation>
 <translation id="3966388904776714213">Trình phát âm thanh</translation>
+<translation id="3984317463833596033">Cho phép ứng dụng Parallels Desktop sửa đổi các tệp trong thư mục <ph name="FOLDER_NAME" /></translation>
 <translation id="4002066346123236978">Tiêu đề</translation>
 <translation id="4070370845051020638">Phương thức nhập tiếng Quảng Đông</translation>
 <translation id="4072248638558688893">Bàn phím tiếng Tamil (Ngữ âm)</translation>
@@ -290,6 +295,7 @@
 <translation id="4470564870223067757">Hangul 2 bộ</translation>
 <translation id="4477219268485577442">Ngữ âm tiếng Bungary</translation>
 <translation id="4479812471636796472">Bàn phím Dvorak Hoa Kỳ</translation>
+<translation id="4481711095103932593">Thư mục này được chia sẻ với Windows</translation>
 <translation id="4487088045714738411">Bàn phím tiếng Bỉ</translation>
 <translation id="4522570452068850558">Chi tiết</translation>
 <translation id="4552678318981539154">Mua thêm dung lượng lưu trữ</translation>
@@ -335,10 +341,12 @@
 <translation id="4881695831933465202">Mở</translation>
 <translation id="4886021172213954916">Bàn phím tiếng Tamil (Máy đánh chữ)</translation>
 <translation id="4892969127351273348">Không thể mở bằng <ph name="APP_NAME" /></translation>
+<translation id="4900532980794411603">Chia sẻ với ứng dụng Parallels Desktop</translation>
 <translation id="4905417359854579806">Đã sẵn sàng sao lưu <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Đã sửa</translation>
 <translation id="4935975195727477204">Hoa Gazania</translation>
 <translation id="4943368462779413526">Bóng đá</translation>
+<translation id="4961158930123534723">Đã chia sẻ 1 thư mục với ứng dụng Parallels Desktop</translation>
 <translation id="4969785127455456148">Album</translation>
 <translation id="497244430928947428">Bàn phím tiếng Malayalam (Ngữ âm)</translation>
 <translation id="4973523518332075481">Hãy sử dụng tên có tối đa <ph name="MAX_LENGTH" /> ký tự</translation>
@@ -350,6 +358,7 @@
 <translation id="5010406651457630570">Máy tính</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5024856940085636730">Một tác vụ đang diễn ra lâu hơn thông thường. Bạn có muốn hủy tác vụ này không?</translation>
+<translation id="5036159836254554629">Quản lý việc chia sẻ với ứng dụng Parallels Desktop</translation>
 <translation id="5038625366300922036">Xem thêm...</translation>
 <translation id="5061708541166515394">Độ tương phản</translation>
 <translation id="5068919226082848014">Pizza</translation>
@@ -499,6 +508,7 @@
 <translation id="656398493051028875">Đang xóa "<ph name="FILENAME" />"...</translation>
 <translation id="6581162200855843583">Liên kết Google Drive</translation>
 <translation id="6607272825297743757">Thông tin tệp</translation>
+<translation id="6609332149380188670">Đã chia sẻ <ph name="NUMBER_OF_ITEMS" /> thư mục với ứng dụng Parallels Desktop</translation>
 <translation id="6629841649550503054">Đã sao lưu toàn bộ vào <ph name="BEGIN_LINK" />Google Drive!<ph name="END_LINK" /></translation>
 <translation id="6643016212128521049">Xóa</translation>
 <translation id="6650726141019353908">Bướm màu hồng</translation>
@@ -680,6 +690,7 @@
 <translation id="8475647382427415476">Google Drive không thể đồng bộ hóa "<ph name="FILENAME" />" ngay bây giờ. Google Drive sẽ thử lại sau.</translation>
 <translation id="8477649328507734757">Hình tròn</translation>
 <translation id="8487700953926739672">Khả dụng ngoại tuyến</translation>
+<translation id="8490342535582768689">Cho phép ứng dụng Parallels Desktop sửa đổi các tệp trên Google Drive của bạn. Các thay đổi sẽ đồng bộ hóa với những thiết bị khác của bạn.</translation>
 <translation id="8521441079177373948">Vương quốc Anh</translation>
 <translation id="8525306231823319788">Toàn màn hình</translation>
 <translation id="8551494947769799688">Tiếng Lát-vi-a</translation>

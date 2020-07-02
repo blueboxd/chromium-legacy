@@ -199,7 +199,8 @@ class CORE_EXPORT NGBoxFragmentBuilder final
 
   // Manually add a break token to the builder. Note that we're assuming that
   // this break token is for content in the same flow as this parent.
-  void AddBreakToken(scoped_refptr<const NGBreakToken>);
+  void AddBreakToken(scoped_refptr<const NGBreakToken>,
+                     bool is_in_parallel_flow = false);
 
   void AddOutOfFlowLegacyCandidate(NGBlockNode,
                                    const NGLogicalStaticPosition&,

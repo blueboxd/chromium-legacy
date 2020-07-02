@@ -13,8 +13,8 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/cpp/service_executable/service_main.h"
+#include "services/service_manager/public/cpp/service_receiver.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/service_manager/tests/lifecycle/lifecycle.test-mojom.h"
 
@@ -25,7 +25,7 @@ class Parent : public service_manager::Service,
  public:
   explicit Parent(
       mojo::PendingReceiver<service_manager::mojom::Service> receiver)
-      : service_binding_(this, std::move(receiver)) {
+      : service_receiver_(this, std::move(receiver)) {
     registry_.AddInterface<service_manager::test::mojom::Parent>(
         base::BindRepeating(&Parent::Create, base::Unretained(this)));
   }
@@ -48,7 +48,7 @@ class Parent : public service_manager::Service,
   // service_manager::test::mojom::Parent:
   void ConnectToChild(ConnectToChildCallback callback) override {
     mojo::Remote<service_manager::test::mojom::LifecycleControl> lifecycle;
-    service_binding_.GetConnector()->BindInterface(
+    service_receiver_.GetConnector()->BindInterface(
         "lifecycle_unittest_app", lifecycle.BindNewPipeAndPassReceiver());
 
     base::RunLoop loop(base::RunLoop::Type::kNestableTasksAllowed);
@@ -60,7 +60,7 @@ class Parent : public service_manager::Service,
 
   void Quit() override { Terminate(); }
 
-  service_manager::ServiceBinding service_binding_;
+  service_manager::ServiceReceiver service_receiver_;
   service_manager::BinderRegistry registry_;
   mojo::ReceiverSet<service_manager::test::mojom::Parent> parent_receivers_;
 
@@ -69,7 +69,8 @@ class Parent : public service_manager::Service,
 
 }  // namespace
 
-void ServiceMain(service_manager::mojom::ServiceRequest request) {
+void ServiceMain(
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver) {
   base::SingleThreadTaskExecutor main_task_executor;
-  Parent(std::move(request)).RunUntilTermination();
+  Parent(std::move(receiver)).RunUntilTermination();
 }

@@ -73,6 +73,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="1747827819627189109">Klawiatura ekranowa włączona</translation>
 <translation id="1761222317188459878">Włącz lub wyłącz połączenie sieciowe. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Przewiń w prawo</translation>
+<translation id="1782199038061388045">tłumaczenie</translation>
 <translation id="181103072419391116">Siła sygnału: <ph name="SIGNAL_STRENGTH" />, zarządzana przez administratora</translation>
 <translation id="1812997170047690955">Co widać na moim ekranie?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
@@ -103,7 +104,6 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="2126242104232412123">Nowy pulpit</translation>
 <translation id="2127372758936585790">Ładowarka o małej mocy</translation>
 <translation id="2135456203358955318">Lupa zadokowana</translation>
-<translation id="2143915448548023856">Ustawienia wyświetlacza</translation>
 <translation id="2144487987174258011">Uruchom ponownie, by zaktualizować Adobe Flash Playera</translation>
 <translation id="2208323208084708176">Tryb ujednoliconego pulpitu</translation>
 <translation id="2220572644011485463">Kod PIN lub hasło</translation>
@@ -185,6 +185,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="3081696990447829002">Rozwiń menu</translation>
 <translation id="3087734570205094154">Na dół</translation>
 <translation id="309749186376891736">Przesuwanie kursora</translation>
+<translation id="3098580329624789136">Zobacz: <ph name="INTENT" /> dla zapytania „<ph name="QUERY" />”</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Uruchom ponownie i zaktualizuj</translation>
 <translation id="3139942575505304791">Biurko 1</translation>
@@ -222,6 +223,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="3465356146291925647">Zarządzana przez administratora</translation>
 <translation id="3477079411857374384">Control+Shift+spacja</translation>
 <translation id="3485319357743610354"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, siła sygnału: <ph name="SIGNAL_STRENGTH" /></translation>
+<translation id="3486220673238053218">definicja</translation>
 <translation id="3510164367642747937">Podświetlaj wskaźnik myszy</translation>
 <translation id="3513798432020909783">Kontem zarządza <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Zmień z powrotem na „<ph name="FROM_LOCALE" />” (wymaga ponownego uruchomienia)</translation>
@@ -272,8 +274,8 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="4072264167173457037">średni sygnał</translation>
 <translation id="4112140312785995938">Przewiń do tyłu</translation>
 <translation id="4129129681837227511">Aby wyświetlać powiadomienia na ekranie blokady, odblokuj ekran i zmień ustawienie</translation>
-<translation id="4144413954005649103">Gdy klikniesz prawym przyciskiem lub przytrzymasz zaznaczony na ekranie fragment, Asystent poda Ci związane z nim informacje.</translation>
 <translation id="4146833061457621061">Włącz muzykę</translation>
+<translation id="4149156641122542261">Urządzenie <ph name="DEVICE_TYPE" /> zarządzane przez <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Języki</translation>
 <translation id="4195877955194704651">Automatyczne klikanie przycisku</translation>
 <translation id="4197790712631116042">Wyłączono</translation>
@@ -528,6 +530,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="7378594059915113390">Sterowanie multimediami</translation>
 <translation id="7398254312354928459">Przełączono połączenie sieciowe</translation>
 <translation id="7405710164030118432">Aby odblokować urządzenie, wpisz kod dostępu Family Link rodzica</translation>
+<translation id="741244894080940828">przeliczanie</translation>
 <translation id="742594950370306541">Aparat jest używany.</translation>
 <translation id="743058460480092004">Aparat i mikrofon są używane.</translation>
 <translation id="7436182601308224670">Dzień dobry, <ph name="GIVEN_NAME" /></translation>
@@ -540,6 +543,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="7562368315689366235">Paleta emotikonów</translation>
 <translation id="7564874036684306347">Przenoszenie okien na inny pulpit może spowodować nieoczekiwane zachowanie. Kolejne powiadomienia, okna i okna dialogowe mogą pojawiać się na różnych pulpitach.</translation>
 <translation id="7568294522609223312">Wyłączanie automatycznych kliknięć</translation>
+<translation id="7568637526529101738">Gdy klikniesz prawym przyciskiem lub przytrzymasz zaznaczony na ekranie fragment, Asystent poda Ci związane z nim informacje, takie jak definicja lub przeliczenie jednostek.</translation>
 <translation id="7569509451529460200">Włączono Braille'a i ChromeVox</translation>
 <translation id="7593891976182323525">Szukaj lub Shift</translation>
 <translation id="7600875258240007829">Zobacz wszystkie powiadomienia</translation>

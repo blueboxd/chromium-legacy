@@ -25,11 +25,11 @@ component("cpp") {
     "manifest_builder.h",
     "service.cc",
     "service.h",
-    "service_binding.cc",
-    "service_binding.h",
     "service_context_ref.h",
     "service_keepalive.cc",
     "service_keepalive.h",
+    "service_receiver.cc",
+    "service_receiver.h",
     "standalone_connector_impl.cc",
     "standalone_connector_impl.h",
   ]

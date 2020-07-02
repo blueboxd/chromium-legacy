@@ -1694,8 +1694,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, LineAtColumnBoundaryInFirstBlock) {
   EXPECT_EQ(expectation, dump);
 }
 
-// TODO(crbug.com/915929): Fix inline-level float fragmentation.
-TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_LinesAndFloatsMulticol) {
+TEST_F(NGColumnLayoutAlgorithmTest, LinesAndFloatsMulticol) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #parent {
@@ -1728,9 +1727,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_LinesAndFloatsMulticol) {
     offset:0,0 size:320x70
       offset:0,0 size:100x70
         offset:0,0 size:0x20
-        offset:0,20 size:10x50
         offset:10,20 size:0x20
-        offset:10,40 size:11x30
         offset:21,40 size:0x20
       offset:110,0 size:100x70
         offset:0,0 size:10x70
@@ -1743,8 +1740,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_LinesAndFloatsMulticol) {
   EXPECT_EQ(expectation, dump);
 }
 
-// TODO(crbug.com/915929): Fix inline-level float fragmentation.
-TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_FloatBelowLastLineInColumn) {
+TEST_F(NGColumnLayoutAlgorithmTest, FloatBelowLastLineInColumn) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #parent {
@@ -1778,13 +1774,11 @@ TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_FloatBelowLastLineInColumn) {
         offset:0,0 size:0x20
         offset:0,20 size:0x20
         offset:0,40 size:0x20
-        offset:0,60 size:11x10
       offset:110,0 size:100x70
-        offset:0,0 size:11x70
         offset:11,0 size:0x20
         offset:11,20 size:0x20
       offset:220,0 size:100x70
-        offset:0,0 size:11x40
+        offset:0,0 size:11x50
 )DUMP";
   EXPECT_EQ(expectation, dump);
 }
@@ -2232,8 +2226,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, BreakBetweenLinesNotBefore3) {
   EXPECT_EQ(expectation, dump);
 }
 
-// TODO(crbug.com/915929): Fix inline-level float fragmentation.
-TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_FloatInBlockMovedByOrphans) {
+TEST_F(NGColumnLayoutAlgorithmTest, FloatInBlockMovedByOrphans) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #parent {
@@ -2268,14 +2261,12 @@ TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_FloatInBlockMovedByOrphans) {
       offset:110,0 size:100x70
         offset:0,0 size:77x40
           offset:0,0 size:0x20
-          offset:0,20 size:10x10
           offset:10,20 size:0x20
 )DUMP";
   EXPECT_EQ(expectation, dump);
 }
 
-// TODO(crbug.com/915929): Fix inline-level float fragmentation.
-TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_FloatMovedWithWidows) {
+TEST_F(NGColumnLayoutAlgorithmTest, FloatMovedWithWidows) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #parent {
@@ -2310,7 +2301,6 @@ TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_FloatMovedWithWidows) {
       offset:110,0 size:100x90
         offset:0,0 size:0x20
         offset:0,20 size:0x20
-        offset:0,40 size:10x10
         offset:10,40 size:0x20
         offset:0,60 size:0x20
 )DUMP";

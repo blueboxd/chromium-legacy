@@ -510,6 +510,7 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
                                     }
                                 },
                                 Snackbar.TYPE_ACTION, Snackbar.UMA_FEED_NTP_STREAM)
+                        .setAction(actionLabel, /*actionData=*/null)
                         .setDuration(durationMs));
     }
 

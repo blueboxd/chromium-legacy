@@ -248,14 +248,14 @@ class SupervisedUserWhitelistComponentInstallerPolicy
     : public ComponentInstallerPolicy {
  public:
   using RawWhitelistReadyCallback =
-      base::Callback<void(const base::string16&, /* title */
-                          const base::FilePath&, /* icon_path */
-                          const base::FilePath& /* whitelist_path */)>;
+      base::RepeatingCallback<void(const base::string16&, /* title */
+                                   const base::FilePath&, /* icon_path */
+                                   const base::FilePath& /* whitelist_path */)>;
 
   SupervisedUserWhitelistComponentInstallerPolicy(
       const std::string& crx_id,
       const std::string& name,
-      const RawWhitelistReadyCallback& callback)
+      RawWhitelistReadyCallback callback)
       : crx_id_(crx_id), name_(name), callback_(callback) {}
   ~SupervisedUserWhitelistComponentInstallerPolicy() override = default;
 
@@ -383,7 +383,7 @@ class SupervisedUserWhitelistInstallerImpl
 
   // SupervisedUserWhitelistInstaller overrides:
   void RegisterComponents() override;
-  void Subscribe(const WhitelistReadyCallback& callback) override;
+  void Subscribe(WhitelistReadyCallback callback) override;
   void RegisterWhitelist(const std::string& client_id,
                          const std::string& crx_id,
                          const std::string& name) override;
@@ -491,7 +491,7 @@ void SupervisedUserWhitelistInstallerImpl::OnSanitizedWhitelistReady(
     const std::string& crx_id,
     const base::string16& title,
     const base::FilePath& large_icon_path) {
-  for (const WhitelistReadyCallback& callback : callbacks_)
+  for (WhitelistReadyCallback callback : callbacks_)
     callback.Run(crx_id, title, large_icon_path,
                  GetSanitizedWhitelistPath(crx_id));
 }
@@ -539,7 +539,7 @@ void SupervisedUserWhitelistInstallerImpl::RegisterComponents() {
 }
 
 void SupervisedUserWhitelistInstallerImpl::Subscribe(
-    const WhitelistReadyCallback& callback) {
+    WhitelistReadyCallback callback) {
   return callbacks_.push_back(callback);
 }
 

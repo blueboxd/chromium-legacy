@@ -34,14 +34,14 @@ class FakeServiceContext : public ServiceContext {
   FakeServiceContext& set_primary_account_gaia_id(std::string);
   FakeServiceContext& set_assistant_state(ash::AssistantStateBase*);
   FakeServiceContext& set_assistant_notification_controller(
-      ash::mojom::AssistantNotificationController*);
+      ash::AssistantNotificationController*);
 
   // ServiceContext implementation:
   ash::AssistantAlarmTimerController* assistant_alarm_timer_controller()
       override;
   ash::AssistantController* assistant_controller() override;
-  ash::mojom::AssistantNotificationController*
-  assistant_notification_controller() override;
+  ash::AssistantNotificationController* assistant_notification_controller()
+      override;
   ash::AssistantScreenContextController* assistant_screen_context_controller()
       override;
   ash::AssistantStateBase* assistant_state() override;
@@ -58,8 +58,8 @@ class FakeServiceContext : public ServiceContext {
   std::string gaia_id_ = kGaiaId;
   ash::AssistantAlarmTimerController* assistant_alarm_timer_controller_ =
       nullptr;
-  ash::mojom::AssistantNotificationController*
-      assistant_notification_controller_ = nullptr;
+  ash::AssistantNotificationController* assistant_notification_controller_ =
+      nullptr;
 };
 }  // namespace assistant
 }  // namespace chromeos

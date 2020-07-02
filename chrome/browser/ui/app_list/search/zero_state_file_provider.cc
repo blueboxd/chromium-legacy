@@ -68,7 +68,7 @@ ZeroStateFileProvider::ZeroStateFileProvider(Profile* profile)
     file_tasks_observer_.Add(notifier);
 
     RecurrenceRankerConfigProto config;
-    config.set_min_seconds_between_saves(300u);
+    config.set_min_seconds_between_saves(120u);
     config.set_condition_limit(1u);
     config.set_condition_decay(0.5f);
     config.set_target_limit(200);

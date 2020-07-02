@@ -1028,6 +1028,11 @@ class GenXproto(FileWriter):
             self.write()
             self.is_read = True
             self.copy_container(event, '(*event_)')
+            if event.is_ge_event:
+                self.write('Align(&buf, 4);')
+                self.write('DCHECK_EQ(buf.offset, 32 + 4 * length);')
+            else:
+                self.write('DCHECK_LE(buf.offset, 32ul);')
         self.write()
 
     def define_type(self, item, name):

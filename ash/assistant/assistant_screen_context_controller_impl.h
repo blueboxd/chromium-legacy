@@ -15,7 +15,6 @@
 #include "ash/public/cpp/assistant/controller/assistant_controller.h"
 #include "ash/public/cpp/assistant/controller/assistant_controller_observer.h"
 #include "ash/public/cpp/assistant/controller/assistant_screen_context_controller.h"
-#include "ash/public/mojom/assistant_controller.mojom.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/optional.h"

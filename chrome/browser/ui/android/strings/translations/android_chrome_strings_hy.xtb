@@ -24,6 +24,7 @@
 <translation id="116280672541001035">Օգտագործվեց</translation>
 <translation id="1171770572613082465">Սեղմեք «Կայքերի ընտրանի» կոճակը և դիտեք թոփ կայքերը</translation>
 <translation id="1173894706177603556">Վերանվանել</translation>
+<translation id="1177863135347784049">Անհատականացված</translation>
 <translation id="1197267115302279827">Տեղափոխել էջանիշները</translation>
 <translation id="1201402288615127009">Հաջորդը</translation>
 <translation id="1204037785786432551">Ներբեռնել հղումը</translation>
@@ -85,7 +86,7 @@
 <translation id="1670399744444387456">Հիմնական</translation>
 <translation id="1671236975893690980">Պատրաստվում է ներբեռնման…</translation>
 <translation id="1672586136351118594">Այլևս ցույց չտալ</translation>
-<translation id="1680919990519905526">Գնել պատկեր Google Տեսապակու միջոցով <ph name="BEGIN_NEW" />Նոր<ph name="END_NEW" /></translation>
+<translation id="1680919990519905526">Գնել Տեսապակու միջոցով <ph name="BEGIN_NEW" />Նորույթ<ph name="END_NEW" /></translation>
 <translation id="1692118695553449118">Համաժամացումը միացված է</translation>
 <translation id="1718835860248848330">Վերջին 1 ժամվա</translation>
 <translation id="1736419249208073774">Ուսումնասիրել</translation>
@@ -203,6 +204,7 @@
 <translation id="2587052924345400782">Հասանելի է նոր տարբերակ</translation>
 <translation id="2593272815202181319">Միալայն</translation>
 <translation id="2612676031748830579">Քարտի համարը</translation>
+<translation id="2622559029861875898">Chrome-ը չի կարող ստուգել թարմացումների առկայությունը։ Ստուգեք ինտերնետ կապը։</translation>
 <translation id="2625189173221582860">Գաղտնաբառը պատճենվեց</translation>
 <translation id="2631006050119455616">Խնայվեց</translation>
 <translation id="2647434099613338025">Ավելացնել լեզու</translation>
@@ -242,6 +244,7 @@
 <translation id="2905036901251765993">Մոտակայքում գտնվող մարդկանց հետ կիսվելու համար սկանավորեք այս QR կոդը</translation>
 <translation id="2909615210195135082">Google ծանուցումների հարթակ</translation>
 <translation id="2923908459366352541">Անունն անվավեր է:</translation>
+<translation id="2927707377793151377">Ընտրել մեկ այլ մատակարար՝</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" />-ի օգտագործած տարածքը</translation>
 <translation id="2942036813789421260">Նախադիտման ներդիրը փակված է</translation>
 <translation id="2956410042958133412">Այս հաշիվը կառավարվում է <ph name="PARENT_NAME_1" /> և <ph name="PARENT_NAME_2" /> հաշիվների կողմից:</translation>
@@ -254,6 +257,7 @@
 <translation id="2996809686854298943">Պահանջվում է URL-ը</translation>
 <translation id="3016635187733453316">Համոզվեք, որ սարքը միացած է ինտերնետին</translation>
 <translation id="3029704984691124060">Անցաբառերը չեն համընկնում</translation>
+<translation id="3034163383943672781">Ներբեռնումը կսկսվի <ph name="DATE" />-ին։</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Ստացեք օգնություն<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Տեղորոշումն անջատված է: Միացրեք այն <ph name="BEGIN_LINK" />Android-ի կարգավորումներում<ph name="END_LINK" />:</translation>
 <translation id="3058498974290601450">Համաժամացումը կարող եք ցանկացած ժամանակ միացնել կարգավորումներում:</translation>
@@ -295,6 +299,7 @@
 <translation id="3341058695485821946">Դիտեք պահված տվյալների ծավալը</translation>
 <translation id="3350687908700087792">Փակել բոլոր ինկոգնիտո ներդիրները</translation>
 <translation id="3353615205017136254">Էջի Lite տարբերակը տրամադրվել է Google-ի կողմից։ Բնօրինակը բեռնելու համար սեղմեք համապատասխան կոճակը։</translation>
+<translation id="3359667936385849800">Օգտագործել իմ ընթացիկ մատակարարը</translation>
 <translation id="3367813778245106622">Նորից մուտք գործեք՝ համաժամացումը սկսելու համար</translation>
 <translation id="337236281855091893">Որոնելու համար հպեք բառին և պահեք</translation>
 <translation id="3373979091428520308">Այս էջով մեկ այլ սարքի հետ կիսվելու համար միացրեք համաժամացումը այդ սարքի Chrome-ի կարգավորումներում</translation>
@@ -340,6 +345,7 @@
 <translation id="3763247130972274048">10 վ առաջ/հետ անցնելու համար կրկնակի հպեք տեսանյութի աջ/ձախ մասում</translation>
 <translation id="3771001275138982843">Չհաջողվեց ներբեռնել թարմացումը</translation>
 <translation id="3771033907050503522">Ինկոգնիտո ներդիրներ</translation>
+<translation id="3771290962915251154">Այս կարգավորումն անջատված է, քանի որ ակտիվ է ծնողական վերահսկողությունը</translation>
 <translation id="3771694256347217732">Google-ի օգտագործման պայմաններ</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Միացրեք Bluetooth-ը<ph name="END_LINK" />` զուգակցումը թույլատրելու համար</translation>
 <translation id="3775705724665058594">Ուղարկել սարքերին</translation>
@@ -349,6 +355,7 @@
 <translation id="3810973564298564668">Կառավարել</translation>
 <translation id="381841723434055211">Հեռախոսահամարներ</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> ներբեռնում ջնջվեց</translation>
+<translation id="3856096718352044181">Հաստատեք, որ սա վավեր մատակարար է կամ նորից փորձեք</translation>
 <translation id="388596076286380598">Դուք կարող եք կարդալ հոդվածներ, դիտել տեսանյութեր և այլ բովանդակություն ձեր սիրած կայքերից նույնիսկ, երբ կապը թույլ է կամ բացակայում է։</translation>
 <translation id="3892148308691398805">Պատճենել տեքստը</translation>
 <translation id="3894427358181296146">Պանակի ավելացում</translation>
@@ -387,7 +394,7 @@
 <translation id="4183868528246477015">Որոնել Տեսապակու միջոցով <ph name="BEGIN_NEW" />Նոր<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Բացել նոր ներդիրով</translation>
 <translation id="4198423547019359126">Ներբեռնումների պանակներ չկան</translation>
-<translation id="4202553989407425169">Google-ը կարող է ստուգել՝ արդյոք ձեր կարգավորումները պաշտպանում են ձեզ՝</translation>
+<translation id="4202553989407425169">Chrome-ը կարող է ստուգել՝ արդյոք ձեր կարգավորումները պաշտպանում են ձեզ՝</translation>
 <translation id="4209895695669353772">Google-ից անհատականացված բովանդակություն ստանալու համար միացրեք համաժամացումը</translation>
 <translation id="423219824432660969">Գաղտնագրել համաժամացված տվյալները Google-ի գաղտնաբառով՝ սկսած <ph name="TIME" />-ից</translation>
 <translation id="4242533952199664413">Բացել կարգավորումները</translation>
@@ -455,6 +462,7 @@
 <translation id="4749960740855309258">Բացել նոր ներդիր</translation>
 <translation id="4759238208242260848">Ներբեռնումներ</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 ֆայլ ներբեռնվեց։}one{# ֆայլ ներբեռնվեց։}other{# ֆայլ ներբեռնվեց։}}</translation>
+<translation id="4767937498890654900">{FILE_COUNT,plural, =1{1 պլանավորված ներբեռնում}one{# պլանավորված ներբեռնում}other{# պլանավորված ներբեռնում}}</translation>
 <translation id="478981486571169252">Դուք կտեսնեք ձեր <ph name="SITE_NAME" /> հաշվի մուտքի կարգավիճակը, այցելությունների պատմությունը և կայքի տվյալները Chrome-ում։</translation>
 <translation id="4802417911091824046">Անցաբառով գաղտնագրումը չի կիրառվում վճարման եղանակների և Google Pay-ի հասցեների համար։
 
@@ -503,7 +511,7 @@
 <translation id="5127805178023152808">Համաժամացումն անջատված է</translation>
 <translation id="5129038482087801250">Տեղադրել վեբ հավելվածը</translation>
 <translation id="5132942445612118989">Համաժամացրեք ձեր գաղտնաբառերը, պատմությունն ու մյուս կարգավորումները ձեր բոլոր սարքերում</translation>
-<translation id="5136035049889637840">Գնել նման ապրանքներ <ph name="BEGIN_NEW" />Նոր<ph name="END_NEW" /></translation>
+<translation id="5136035049889637840">Գնել նման ապրանքներ <ph name="BEGIN_NEW" />Նորույթ<ph name="END_NEW" /></translation>
 <translation id="5139940364318403933">Իմացեք, թե ինչպես օգտագործել Google Drive-ը</translation>
 <translation id="5152843274749979095">Աջակցվող հավելվածներ չեն տեղադրվել</translation>
 <translation id="5161254044473106830">Վերնագիրը պարտադիր է</translation>
@@ -576,9 +584,12 @@
 <translation id="5686790454216892815">Ֆայլի անունը չափազանց երկար է</translation>
 <translation id="5694049548840660018">Արագ անցում գլխավոր էջ</translation>
 <translation id="569536719314091526">Թարգմանեք այս կայքը «Այլ ընտրանքներ» կոճակի միջոցով</translation>
+<translation id="5697688514913266141">Ձեր ֆայլը կպահվի <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" /> պանակում։ <ph name="BEGIN_LINK2" />Փոխել<ph name="END_LINK2" /></translation>
 <translation id="570347048394355941">Անցնել ներդիր</translation>
 <translation id="572328651809341494">Վերջերս բացված ներդիրներ</translation>
+<translation id="5723735397759933332">HTTPS էջերում պատկերների օպտիմալացման շնորհիվ Lite ռեժիմն այժմ ավելի շատ թրաֆիկ է խնայում։</translation>
 <translation id="5726692708398506830">Էջում ամեն ինչ մեծացնել</translation>
+<translation id="5732819098735351888">Ներբեռնումը կսկսվի Wi-Fi ցանցին միանալիս։</translation>
 <translation id="5748802427693696783">Դուք անցում կատարեցիք սովորական ներդիրների ռեժիմին</translation>
 <translation id="5749068826913805084">Ֆայլեր ներբեռնելու համար Chrome-ին անհրաժեշտ է պահեստի մուտք:</translation>
 <translation id="5763382633136178763">Ինկոգնիտո ներդիրներ</translation>
@@ -619,10 +630,12 @@
 <translation id="6005538289190791541">Առաջարկվող գաղտնաբառ</translation>
 <translation id="6036057147555329831">Լրացուցիչ ICU մոդուլ</translation>
 <translation id="6039379616847168523">Անցնել հաջորդ ներդիր</translation>
+<translation id="604124094241169006">Ավտոմատ</translation>
 <translation id="6042308850641462728">Ավելին</translation>
 <translation id="604996488070107836"><ph name="FILE_NAME" /> ֆայլի ներբեռնումը ձախողվեց՝ անհայտ սխալի պատճառով:</translation>
 <translation id="605721222689873409">տարի</translation>
 <translation id="6059830886158432458">Կառավարեք ձեր պատմություններն ու գործողություններն այստեղ</translation>
+<translation id="6085886413119427067">Սահմանում է, թե ինչպես միանալ կայքերին ապահով կապի միջոցով</translation>
 <translation id="60923314841986378">Մնացել է <ph name="HOURS" /> ժամ</translation>
 <translation id="6108923351542677676">Կարգավորումն ընթացքի մեջ է…</translation>
 <translation id="6111020039983847643">օգտագործվել է</translation>
@@ -637,7 +650,7 @@
 <translation id="6201345951596836663">Հղումը պատճենվեց</translation>
 <translation id="6206830853671714236">Ընտրեք, թե երբ է պետք ներբեռնել</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> հաշիվը ձե՞րը չէ</translation>
-<translation id="6218096829563201111">Որոնել նման ապրանքներ <ph name="BEGIN_NEW" />Նոր<ph name="END_NEW" /></translation>
+<translation id="6218096829563201111">Որոնել նման ապրանքներ <ph name="BEGIN_NEW" />Նորույթ<ph name="END_NEW" /></translation>
 <translation id="6221633008163990886">Գաղտնաբառերն արտահանելու համար ապակողպեք էկրանը</translation>
 <translation id="6232535412751077445">Եթե միացնեք «Չհետևել» գործառույթը, ձեր դիտարկման հոսքում կներառվի նաև հարցում: Արդյունքները կախված են նրանից, թե կպատասխանի արդյոք վեբկայքը հարցմանը և թե ինչպես այն կմեկնաբանվի:
 
@@ -693,6 +706,7 @@
 <translation id="6573096386450695060">Միշտ թույլատրել</translation>
 <translation id="6573431926118603307">Ձեր մյուս սարքերում Chrome-ով բացված ներդիրները կտեսնեք այստեղ:</translation>
 <translation id="6583199322650523874">Էջանշել ընթացիկ էջը</translation>
+<translation id="6588043302623806746">Օգտագործել ապահով DNS</translation>
 <translation id="6593061639179217415">Համակարգչային տարբերակ</translation>
 <translation id="6597891566292541626">Տեղադրեք QR-կոդը/գծակոդը այս շրջանակում։</translation>
 <translation id="6600954340915313787">Պատճենվել է Chrome-ում</translation>
@@ -717,7 +731,6 @@
 <translation id="6710213216561001401">Նախորդը</translation>
 <translation id="671481426037969117"><ph name="FQDN" />-ի համար նախատեսված ժամանակը լրացել է։ Վաղը այն նորից կաշխատի:</translation>
 <translation id="6738867403308150051">Ներբեռնում…</translation>
-<translation id="6741063444351041466"><ph name="BEGIN_LINK" />Ձեր ադմինիստրատորը<ph name="END_LINK" /> անջատել է անվտանգ դիտարկումը</translation>
 <translation id="6767294960381293877">Սարքերը, որոնց հետ կիսվելու եք ներդիրով, ցուցադրված են էկրանի կեսով:</translation>
 <translation id="6811034713472274749">Էջը պատրաստ է</translation>
 <translation id="6820686453637990663">CVC</translation>
@@ -736,6 +749,7 @@
 <translation id="6903907808598579934">Միացնել համաժամացումը</translation>
 <translation id="6942665639005891494">Դուք ցանկացած ժամանակ կարող եք փոխել ներբեռնումների կանխադրված պանակը կարգավորումներում</translation>
 <translation id="6945221475159498467">Ընտրել</translation>
+<translation id="6955535239952325894">Այս կարգավորումը ցուցադրվում է կառավարվող դիտարկիչներում</translation>
 <translation id="6963766334940102469">Ջնջել էջանիշները</translation>
 <translation id="6979737339423435258">Ամբողջ ժամանակաշրջանի</translation>
 <translation id="6981982820502123353">Մատչելիությունը</translation>
@@ -764,7 +778,6 @@
 <translation id="7191430249889272776">Հետնաշերտում ներդիր է բացված:</translation>
 <translation id="723171743924126238">Ընտրեք պատկերներ</translation>
 <translation id="7233236755231902816">Կայքերը ձեր լեզվով դիտելու համար տեղադրեք Chrome-ի վերջին տարբերակը</translation>
-<translation id="7243308994586599757">Ընտրանքները հասանելի են էկրանի ստորին հատվածում</translation>
 <translation id="7248069434667874558">Համոզվեք, որ <ph name="TARGET_DEVICE_NAME" /> սարքի Chrome դիտարկիչում միացված է համաժամացումը:</translation>
 <translation id="7274013316676448362">Արգելափակված կայք</translation>
 <translation id="7290209999329137901">Հնարավոր չէ վերանվանել</translation>
@@ -799,8 +812,10 @@
 <translation id="7493994139787901920"><ph name="VERSION" /> (Թարմացվել է <ph name="TIME_SINCE_UPDATE" />-ին)</translation>
 <translation id="7494974237137038751">խնայվել է</translation>
 <translation id="7498271377022651285">Սպասեք…</translation>
+<translation id="7507207699631365376">Տեսնել այս մատակարարի <ph name="BEGIN_LINK" />գաղտնիության քաղաքականությունը<ph name="END_LINK" /></translation>
 <translation id="7514365320538308">Ներբեռնել</translation>
 <translation id="751961395872307827">Չի հաջողվում միանալ կայքին</translation>
+<translation id="753225086557513863">Պլանավորված է ավելի ուշ ժամանակահատվածի համար</translation>
 <translation id="7542481630195938534">Չհաջողվեց ստանալ առաջարկները</translation>
 <translation id="7559975015014302720">Lite ռեժիմն անջատած է</translation>
 <translation id="7562080006725997899">Ջնջվում են զննարկման տվյալները</translation>
@@ -816,6 +831,7 @@
 <translation id="7619072057915878432"><ph name="FILE_NAME" /> ֆայլի ներբեռնումը ձախողվեց՝ ցանցային սխալների պատճառով:</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Ստացեք օգնություն<ph name="END_LINK1" /> կամ <ph name="BEGIN_LINK2" />նորից որոնեք<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Բարի գալուստ Chrome</translation>
+<translation id="7630202231528827509">Մատակարարի URL-ը</translation>
 <translation id="7638584964844754484">Սխալ անցաբառ</translation>
 <translation id="7641339528570811325">Մաքրել այցելությունների պատմությունը…</translation>
 <translation id="7648422057306047504">Գաղտնագրել գաղտնաբառերը Google հավատարմագրերի միջոցով</translation>
@@ -843,6 +859,7 @@
 <translation id="7846296061357476882">Google-ի ծառայություններ</translation>
 <translation id="784934925303690534">Ժամանակի սանդղակ</translation>
 <translation id="7851858861565204677">Այլ սարքեր</translation>
+<translation id="7857691613771368249">Հարցնել, թե երբ պահել ֆայլերը</translation>
 <translation id="7875915731392087153">Ստեղծեք նամակ</translation>
 <translation id="7876243839304621966">Հեռացնել բոլորը</translation>
 <translation id="7882131421121961860">Պատմությունը դատարկ է</translation>
@@ -932,6 +949,7 @@
 <translation id="8516012719330875537">Պատկերների խմբագրիչ</translation>
 <translation id="8523928698583292556">Ջնջել պահված գաղտնաբառը</translation>
 <translation id="8525306231823319788">Լիաէկրան</translation>
+<translation id="8540136935098276800">Մուտքագրեք ճիշտ ձևաչափի URL</translation>
 <translation id="854522910157234410">Բացել այս էջը</translation>
 <translation id="8555836665334561807">Wi-Fi-ի միջոցով</translation>
 <translation id="8558485628462305855">Լրացված իրականության ռեժիմում բովանդակությունը դիտելու համար թարմացրեք ARCore հավելվածը</translation>
@@ -964,6 +982,7 @@
 <translation id="883806473910249246">Բովանդակությունը ներբեռնելիս սխալ առաջացավ:</translation>
 <translation id="8840953339110955557">Այս էջը կարող է տարբերվել առցանց տարբերակից։</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, ներդիր</translation>
+<translation id="8854223127042600341">Դիտեք անցանց ֆայլերը</translation>
 <translation id="889338405075704026">Անցնել Chrome-ի կարգավորումներ</translation>
 <translation id="8909135823018751308">Կիսվել…</translation>
 <translation id="8912362522468806198">Google հաշիվ</translation>
@@ -995,6 +1014,7 @@
 <translation id="9102803872260866941">Նախադիտման ներդիրը բացված է</translation>
 <translation id="9104217018994036254">Սարքերը, որոնց հետ կիսվելու եք ներդիրով:</translation>
 <translation id="9108312223223904744">Հեռախոսի օգտագործում որպես անվտանգության բանալի</translation>
+<translation id="9108808586816295166">Ապահով DNS-ը կարող է ամբողջ ընթացքում հասանելի չլինել</translation>
 <translation id="9133397713400217035">Դիտել անցանց ռեժիմում</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Ցույց տալ բնօրինակը</translation>

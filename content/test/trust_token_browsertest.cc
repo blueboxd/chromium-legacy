@@ -9,6 +9,8 @@
 #include "base/strings/string_piece.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/threading/thread_restrictions.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -18,6 +20,7 @@
 #include "content/public/test/url_loader_monitor.h"
 #include "content/shell/browser/shell.h"
 #include "net/base/escape.h"
+#include "net/base/filename_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -31,6 +34,7 @@
 #include "services/network/trust_tokens/test/trust_token_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/url_canon_stdstring.h"
 
 namespace content {
 
@@ -68,10 +72,12 @@ class TrustTokenBrowsertest : public ContentBrowserTest {
   // data is correctly structured and that the provided Sec-Signature header's
   // verification key was previously bound to a successful token redemption.
   void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+
+    server_.SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
     server_.AddDefaultHandlers(
         base::FilePath(FILE_PATH_LITERAL("content/test/data")));
 
-    host_resolver()->AddRule("*", "127.0.0.1");
     SetupCrossSiteRedirector(embedded_test_server());
     SetupCrossSiteRedirector(&server_);
 
@@ -81,6 +87,49 @@ class TrustTokenBrowsertest : public ContentBrowserTest {
   }
 
  protected:
+  // Provides the network service key commitments from the internal
+  // TrustTokenRequestHandler. All hosts in |hosts| will be provided identical
+  // commitments.
+  void ProvideRequestHandlerKeyCommitmentsToNetworkService(
+      std::vector<base::StringPiece> hosts = {}) {
+    base::flat_map<url::Origin, base::StringPiece> origins_and_commitments;
+    std::string key_commitments = request_handler_.GetKeyCommitmentRecord();
+
+    // TODO(davidvc): This could be extended to make the request handler aware
+    // of different origins, which would allow using different key commitments
+    // per origin.
+    for (base::StringPiece host : hosts) {
+      GURL::Replacements replacements;
+      replacements.SetHostStr(host);
+      origins_and_commitments.insert_or_assign(
+          url::Origin::Create(
+              server_.base_url().ReplaceComponents(replacements)),
+          key_commitments);
+    }
+
+    if (origins_and_commitments.empty()) {
+      origins_and_commitments = {
+          {url::Origin::Create(server_.base_url()), key_commitments}};
+    }
+
+    base::RunLoop run_loop;
+    GetNetworkService()->SetTrustTokenKeyCommitments(
+        network::WrapKeyCommitmentsForIssuers(
+            std::move(origins_and_commitments)),
+        run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+  // Given a host (e.g. "a.test"), returns the corresponding storage origin
+  // for Trust Tokens state. (This adds the correct scheme---probably https---as
+  // well as |server_|'s port, which can vary from test to test. There's no
+  // ambiguity in the result because the scheme and port are both fixed across
+  // all domains.)
+  std::string IssuanceOriginFromHost(const std::string& host) const {
+    auto ret = url::Origin::Create(server_.GetURL(host, "/")).Serialize();
+    return ret;
+  }
+
   base::test::ScopedFeatureList features_;
 
   // TODO(davidvc): Extend this to support more than one key set.
@@ -92,51 +141,37 @@ class TrustTokenBrowsertest : public ContentBrowserTest {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, FetchEndToEnd) {
-  base::RunLoop run_loop;
-  GetNetworkService()->SetTrustTokenKeyCommitments(
-      network::WrapKeyCommitmentForIssuer(
-          url::Origin::Create(server_.base_url()),
-          request_handler_.GetKeyCommitmentRecord()),
-      run_loop.QuitClosure());
-  run_loop.Run();
+  ProvideRequestHandlerKeyCommitmentsToNetworkService({"a.test"});
 
-  GURL start_url(server_.GetURL("/title1.html"));
-  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+  GURL start_url = server_.GetURL("a.test", "/title1.html");
+  ASSERT_TRUE(NavigateToURL(shell(), start_url));
 
-  std::string cmd = R"(
+  std::string command = R"(
   (async () => {
     await fetch("/issue", {trustToken: {type: 'token-request'}});
     await fetch("/redeem", {trustToken: {type: 'srr-token-redemption'}});
     await fetch("/sign", {trustToken: {type: 'send-srr',
                                   signRequestData: 'include',
-                                  issuer: $1}}); })(); )";
+                                  issuer: $1}});
+    return "Success"; })(); )";
 
   // We use EvalJs here, not ExecJs, because EvalJs waits for promises to
   // resolve.
   EXPECT_EQ(
-      EvalJs(
-          shell(),
-          JsReplace(cmd, url::Origin::Create(server_.base_url()).Serialize()))
-          .error,
-      "");
+      "Success",
+      EvalJs(shell(), JsReplace(command, IssuanceOriginFromHost("a.test"))));
 
   EXPECT_EQ(request_handler_.LastVerificationError(), base::nullopt);
 }
 
 IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, XhrEndToEnd) {
-  base::RunLoop run_loop;
-  GetNetworkService()->SetTrustTokenKeyCommitments(
-      network::WrapKeyCommitmentForIssuer(
-          url::Origin::Create(server_.base_url()),
-          request_handler_.GetKeyCommitmentRecord()),
-      run_loop.QuitClosure());
-  run_loop.Run();
+  ProvideRequestHandlerKeyCommitmentsToNetworkService({"a.test"});
 
-  GURL start_url(server_.GetURL("/title1.html"));
-  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+  GURL start_url = server_.GetURL("a.test", "/title1.html");
+  ASSERT_TRUE(NavigateToURL(shell(), start_url));
 
   // If this isn't idiomatic JS, I don't know what is.
-  std::string cmd = R"(
+  std::string command = R"(
   (async () => {
     let request = new XMLHttpRequest();
     request.open('GET', '/issue');
@@ -172,31 +207,24 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, XhrEndToEnd) {
     });
     request.send();
     await promise;
+    return "Success";
     })(); )";
 
   // We use EvalJs here, not ExecJs, because EvalJs waits for promises to
   // resolve.
   EXPECT_EQ(
-      EvalJs(
-          shell(),
-          JsReplace(cmd, url::Origin::Create(server_.base_url()).Serialize()))
-          .error,
-      "");
+      "Success",
+      EvalJs(shell(), JsReplace(command, IssuanceOriginFromHost("a.test"))));
 
-  EXPECT_EQ(request_handler_.LastVerificationError(), base::nullopt);
+  EXPECT_EQ(request_handler_.LastVerificationError(), base::nullopt)
+      << *request_handler_.LastVerificationError();
 }
 
 IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, IframeEndToEnd) {
-  base::RunLoop run_loop;
-  GetNetworkService()->SetTrustTokenKeyCommitments(
-      network::WrapKeyCommitmentForIssuer(
-          url::Origin::Create(server_.base_url()),
-          request_handler_.GetKeyCommitmentRecord()),
-      run_loop.QuitClosure());
-  run_loop.Run();
+  ProvideRequestHandlerKeyCommitmentsToNetworkService({"a.test"});
 
-  GURL start_url(server_.GetURL("/page_with_iframe.html"));
-  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+  GURL start_url = server_.GetURL("a.test", "/page_with_iframe.html");
+  ASSERT_TRUE(NavigateToURL(shell(), start_url));
 
   auto execute_op_via_iframe = [&](base::StringPiece path,
                                    base::StringPiece trust_token) {
@@ -218,36 +246,29 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, IframeEndToEnd) {
       "/sign",
       JsReplace(
           R"({"type": "send-srr", "signRequestData": "include", "issuer": $1})",
-          url::Origin::Create(server_.base_url()).Serialize()));
+          IssuanceOriginFromHost("a.test")));
   EXPECT_EQ(request_handler_.LastVerificationError(), base::nullopt);
 }
 
 IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, HasTrustTokenAfterIssuance) {
-  base::RunLoop run_loop;
-  GetNetworkService()->SetTrustTokenKeyCommitments(
-      network::WrapKeyCommitmentForIssuer(
-          url::Origin::Create(server_.base_url()),
-          request_handler_.GetKeyCommitmentRecord()),
-      run_loop.QuitClosure());
-  run_loop.Run();
+  ProvideRequestHandlerKeyCommitmentsToNetworkService({"a.test"});
 
-  GURL start_url(server_.GetURL("/title1.html"));
-  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+  GURL start_url = server_.GetURL("a.test", "/title1.html");
+  ASSERT_TRUE(NavigateToURL(shell(), start_url));
 
-  std::string cmd =
-      JsReplace(R"(
+  std::string command = JsReplace(R"(
   (async () => {
     await fetch("/issue", {trustToken: {type: 'token-request'}});
     return await document.hasTrustToken($1);
   })();)",
-                url::Origin::Create(server_.base_url()).Serialize());
+                                  IssuanceOriginFromHost("a.test"));
 
   // We use EvalJs here, not ExecJs, because EvalJs waits for promises to
   // resolve.
   //
   // Note: EvalJs's EXPECT_EQ type-conversion magic only supports the
   // "Yoda-style" EXPECT_EQ(expected, actual).
-  EXPECT_EQ(true, EvalJs(shell(), cmd));
+  EXPECT_EQ(true, EvalJs(shell(), command));
 }
 
 IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest,
@@ -257,22 +278,22 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest,
       TrustTokenRequestHandler::SigningOutcome::kFailure;
   request_handler_.UpdateOptions(std::move(options));
 
-  GURL start_url(server_.GetURL("/title1.html"));
-  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+  GURL start_url = server_.GetURL("a.test", "/title1.html");
+  ASSERT_TRUE(NavigateToURL(shell(), start_url));
 
   // This sign operation will fail, because we don't have a signed redemption
   // record in storage, a prerequisite. However, the failure shouldn't be fatal.
-  std::string cmd =
-      JsReplace(R"((async () => {
+  std::string command = JsReplace(R"((async () => {
       await fetch("/sign", {trustToken: {type: 'send-srr',
                                          signRequestData: 'include',
-                                         issuer: $1}}); }
-                                         )(); )",
-                url::Origin::Create(server_.base_url()).Serialize());
+                                         issuer: $1}});
+      return "Success";
+      })(); )",
+                                  IssuanceOriginFromHost("a.test"));
 
   // We use EvalJs here, not ExecJs, because EvalJs waits for promises to
   // resolve.
-  EXPECT_EQ(EvalJs(shell(), cmd).error, "");
+  EXPECT_EQ("Success", EvalJs(shell(), command));
   EXPECT_EQ(request_handler_.LastVerificationError(), base::nullopt);
 }
 
@@ -281,67 +302,53 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, FetchEndToEndInIsolatedWorld) {
   // window's main world can. In particular, this ensures that the
   // redemtion-and-signing feature policy is appropriately propagated by the
   // browser process.
-  base::RunLoop run_loop;
-  GetNetworkService()->SetTrustTokenKeyCommitments(
-      network::WrapKeyCommitmentForIssuer(
-          url::Origin::Create(server_.base_url()),
-          request_handler_.GetKeyCommitmentRecord()),
-      run_loop.QuitClosure());
-  run_loop.Run();
 
-  GURL start_url(server_.GetURL("/title1.html"));
-  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+  ProvideRequestHandlerKeyCommitmentsToNetworkService({"a.test"});
 
-  std::string cmd = R"(
+  GURL start_url = server_.GetURL("a.test", "/title1.html");
+  ASSERT_TRUE(NavigateToURL(shell(), start_url));
+
+  std::string command = R"(
   (async () => {
     await fetch("/issue", {trustToken: {type: 'token-request'}});
     await fetch("/redeem", {trustToken: {type: 'srr-token-redemption'}});
     await fetch("/sign", {trustToken: {type: 'send-srr',
                                   signRequestData: 'include',
-                                  issuer: $1}}); })(); )";
+                                  issuer: $1}});
+    return "Success"; })(); )";
 
   // We use EvalJs here, not ExecJs, because EvalJs waits for promises to
   // resolve.
   EXPECT_EQ(
-      EvalJs(
-          shell(),
-          JsReplace(cmd, url::Origin::Create(server_.base_url()).Serialize()),
-          EXECUTE_SCRIPT_DEFAULT_OPTIONS,
-          /*world_id=*/30)
-          .error,
-      "");
+      "Success",
+      EvalJs(shell(), JsReplace(command, IssuanceOriginFromHost("a.test")),
+             EXECUTE_SCRIPT_DEFAULT_OPTIONS,
+             /*world_id=*/30));
   EXPECT_EQ(request_handler_.LastVerificationError(), base::nullopt);
 }
 
 IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, RecordsTimers) {
   base::HistogramTester histograms;
-  base::RunLoop run_loop;
-  GetNetworkService()->SetTrustTokenKeyCommitments(
-      network::WrapKeyCommitmentForIssuer(
-          url::Origin::Create(server_.base_url()),
-          request_handler_.GetKeyCommitmentRecord()),
-      run_loop.QuitClosure());
-  run_loop.Run();
 
-  GURL start_url(server_.GetURL("/title1.html"));
-  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+  ProvideRequestHandlerKeyCommitmentsToNetworkService({"a.test"});
 
-  std::string cmd = R"(
+  GURL start_url = server_.GetURL("a.test", "/title1.html");
+  ASSERT_TRUE(NavigateToURL(shell(), start_url));
+
+  std::string command = R"(
   (async () => {
     await fetch("/issue", {trustToken: {type: 'token-request'}});
     await fetch("/redeem", {trustToken: {type: 'srr-token-redemption'}});
     await fetch("/sign", {trustToken: {type: 'send-srr',
                                   signRequestData: 'include',
-                                  issuer: $1}}); })(); )";
+                                  issuer: $1}});
+    return "Success"; })(); )";
 
   // We use EvalJs here, not ExecJs, because EvalJs waits for promises to
   // resolve.
   EXPECT_EQ(
-      EvalJs(
-          shell(),
-          JsReplace(cmd, url::Origin::Create(server_.base_url()).Serialize()))
-          .error,
-      "");
+      "Success",
+      EvalJs(shell(), JsReplace(command, IssuanceOriginFromHost("a.test"))));
 
   // Just check that the timers were populated: since we can't mock a clock in
   // this browser test, it's hard to check the recorded values for
@@ -363,16 +370,18 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, RecordsTimers) {
 IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, OperationsRequireSecureContext) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  GURL start_url(
-      embedded_test_server()->GetURL("a.com", "/page_with_iframe.html"));
+  GURL start_url(embedded_test_server()->GetURL("insecure.test",
+                                                "/page_with_iframe.html"));
   // Make sure that we are, in fact, using an insecure page.
   ASSERT_FALSE(network::IsUrlPotentiallyTrustworthy(start_url));
 
-  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+  ASSERT_TRUE(NavigateToURL(shell(), start_url));
 
   // 1. Confirm that the Fetch interface doesn't work:
-  std::string cmd = R"(fetch($1, {trustToken: {type: 'token-request'}});)";
-  EXPECT_THAT(EvalJs(shell(), JsReplace(cmd, server_.GetURL("/issue"))).error,
+  std::string command =
+      R"(fetch("/issue", {trustToken: {type: 'token-request'}})
+           .catch(error => error.message);)";
+  EXPECT_THAT(EvalJs(shell(), command).ExtractString(),
               HasSubstr("secure context"));
 
   // 2. Confirm that the XHR interface isn't present:
@@ -397,15 +406,8 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, OperationsRequireSecureContext) {
 }
 
 IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, AdditionalSigningData) {
-  base::RunLoop run_loop;
-  GetNetworkService()->SetTrustTokenKeyCommitments(
-      network::WrapKeyCommitmentForIssuer(
-          url::Origin::Create(server_.base_url()),
-          request_handler_.GetKeyCommitmentRecord()),
-      run_loop.QuitClosure());
-  run_loop.Run();
-
-  GURL start_url(server_.GetURL("/title1.html"));
+  ProvideRequestHandlerKeyCommitmentsToNetworkService({"a.test"});
+  GURL start_url = server_.GetURL("a.test", "/title1.html");
   EXPECT_TRUE(NavigateToURL(shell(), start_url));
 
   std::string cmd = R"(
@@ -420,26 +422,17 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, AdditionalSigningData) {
 
   // We use EvalJs here, not ExecJs, because EvalJs waits for promises to
   // resolve.
-  EXPECT_EQ(
-      "Success",
-      EvalJs(
-          shell(),
-          JsReplace(cmd, url::Origin::Create(server_.base_url()).Serialize())));
+  EXPECT_EQ("Success",
+            EvalJs(shell(), JsReplace(cmd, IssuanceOriginFromHost("a.test"))));
 
   EXPECT_EQ(request_handler_.LastVerificationError(), base::nullopt);
 }
 
 IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, OverlongAdditionalSigningData) {
-  base::RunLoop run_loop;
-  GetNetworkService()->SetTrustTokenKeyCommitments(
-      network::WrapKeyCommitmentForIssuer(
-          url::Origin::Create(server_.base_url()),
-          request_handler_.GetKeyCommitmentRecord()),
-      run_loop.QuitClosure());
-  run_loop.Run();
+  ProvideRequestHandlerKeyCommitmentsToNetworkService({"a.test"});
 
-  GURL start_url(server_.GetURL("/title1.html"));
-  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+  GURL start_url = server_.GetURL("a.test", "/title1.html");
+  ASSERT_TRUE(NavigateToURL(shell(), start_url));
 
   std::string cmd = R"(
   (async () => {
@@ -467,25 +460,16 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, OverlongAdditionalSigningData) {
       issuer: $1,
       additionalSigningData: $2}}).then(()=>"Success").catch(e=>e.name);)";
 
-  EXPECT_THAT(
-      EvalJs(shell(),
-             JsReplace(cmd, url::Origin::Create(server_.base_url()).Serialize(),
-                       overlong_signing_data))
-          .ExtractString(),
-      HasSubstr("OperationError"));
+  EXPECT_THAT(EvalJs(shell(), JsReplace(cmd, IssuanceOriginFromHost("a.test"),
+                                        overlong_signing_data))
+                  .ExtractString(),
+              HasSubstr("OperationError"));
 }
 
 IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest,
                        AdditionalSigningDataNotAValidHeader) {
-  base::RunLoop run_loop;
-  GetNetworkService()->SetTrustTokenKeyCommitments(
-      network::WrapKeyCommitmentForIssuer(
-          url::Origin::Create(server_.base_url()),
-          request_handler_.GetKeyCommitmentRecord()),
-      run_loop.QuitClosure());
-  run_loop.Run();
-
-  GURL start_url(server_.GetURL("/title1.html"));
+  ProvideRequestHandlerKeyCommitmentsToNetworkService({"a.test"});
+  GURL start_url = server_.GetURL("a.test", "/title1.html");
   EXPECT_TRUE(NavigateToURL(shell(), start_url));
 
   std::string command = R"(
@@ -505,11 +489,102 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest,
       additionalSigningData: '\r'}}).then(()=>"Success").catch(e=>e.name);)";
 
   EXPECT_THAT(
-      EvalJs(shell(),
-             JsReplace(command,
-                       url::Origin::Create(server_.base_url()).Serialize()))
+      EvalJs(shell(), JsReplace(command, IssuanceOriginFromHost("a.test")))
           .ExtractString(),
       HasSubstr("OperationError"));
+}
+
+// Issuance from a context with a secure-but-non-HTTP/S top frame origin
+// should fail.
+IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest,
+                       IssuanceRequiresSuitableTopFrameOrigin) {
+  ProvideRequestHandlerKeyCommitmentsToNetworkService();
+
+  GURL file_url = GetTestUrl(/*dir=*/nullptr, "title1.html");
+  ASSERT_TRUE(file_url.SchemeIsFile());
+
+  ASSERT_TRUE(NavigateToURL(shell(), file_url));
+
+  std::string command =
+      R"(fetch($1, {trustToken: {type: 'token-request'}})
+           .catch(error => error.name);)";
+
+  // We use EvalJs here, not ExecJs, because EvalJs waits for promises to
+  // resolve.
+  EXPECT_EQ("InvalidStateError",
+            EvalJs(shell(), JsReplace(command, server_.GetURL("/issue"))));
+
+  ASSERT_TRUE(NavigateToURL(shell(), server_.GetURL("a.test", "/title1.html")));
+  EXPECT_EQ(
+      false,
+      EvalJs(shell(),
+             JsReplace("document.hasTrustToken($1);",
+                       url::Origin::Create(server_.base_url()).Serialize())));
+}
+
+// Redemption from a secure-but-non-HTTP(S) top frame origin should fail.
+IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest,
+                       RedemptionRequiresSuitableTopFrameOrigin) {
+  ProvideRequestHandlerKeyCommitmentsToNetworkService({"a.test"});
+
+  GURL start_url = server_.GetURL("a.test", "/title1.html");
+  ASSERT_TRUE(NavigateToURL(shell(), start_url));
+
+  std::string command =
+      R"(fetch("/issue", {trustToken: {type: 'token-request'}})
+                             .then(() => "Success")
+                             .catch(error => error.name);)";
+
+  // We use EvalJs here, not ExecJs, because EvalJs waits for promises to
+  // resolve.
+  EXPECT_EQ("Success", EvalJs(shell(), command));
+
+  GURL file_url = GetTestUrl(/*dir=*/nullptr, "title1.html");
+
+  ASSERT_TRUE(NavigateToURL(shell(), file_url));
+
+  // Redemption from a page with a file:// top frame origin should fail.
+  command = R"(fetch($1, {trustToken: {type: 'srr-token-redemption'}})
+                 .catch(error => error.name);)";
+  EXPECT_EQ(
+      "InvalidStateError",
+      EvalJs(shell(), JsReplace(command, server_.GetURL("a.test", "/redeem"))));
+}
+
+// hasTrustToken from a context with a secure-but-non-HTTP/S top frame origin
+// should fail.
+IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest,
+                       HasTrustTokenRequiresSuitableTopFrameOrigin) {
+  GURL file_url = GetTestUrl(/*dir=*/nullptr, "title1.html");
+  ASSERT_TRUE(file_url.SchemeIsFile());
+  ASSERT_TRUE(NavigateToURL(shell(), file_url));
+
+  EXPECT_EQ("NotAllowedError",
+            EvalJs(shell(),
+                   R"(document.hasTrustToken('https://issuer.example')
+                              .catch(error => error.name);)"));
+}
+
+// An operation initiated from a secure context should succeed even if the
+// operation's associated request's initiator is opaque (e.g. from a sandboxed
+// iframe).
+IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest,
+                       OperationFromSecureSubframeWithOpaqueOrigin) {
+  ProvideRequestHandlerKeyCommitmentsToNetworkService({"a.test"});
+
+  ASSERT_TRUE(NavigateToURL(
+      shell(), server_.GetURL("a.test", "/page_with_sandboxed_iframe.html")));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  EXPECT_EQ("Success", EvalJs(root->child_at(0)->current_frame_host(),
+                              JsReplace(R"(
+                              fetch($1, {mode: 'no-cors',
+                                         trustToken: {type: 'token-request'}
+                                         }).then(()=>'Success');)",
+                                        server_.GetURL("a.test", "/issue"))));
 }
 
 }  // namespace content

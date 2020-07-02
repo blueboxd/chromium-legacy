@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "chromeos/dbus/attestation/fake_attestation_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -22,6 +23,10 @@
 
 namespace chromeos {
 namespace {
+
+// An arbitrary timeout for getting a certificate.
+constexpr base::TimeDelta kGetCertificateTimeout =
+    base::TimeDelta::FromSeconds(80);
 
 AttestationClient* g_instance = nullptr;
 
@@ -157,7 +162,9 @@ class AttestationClientImpl : public AttestationClient {
 
   void GetCertificate(const ::attestation::GetCertificateRequest& request,
                       GetCertificateCallback callback) override {
-    CallProtoMethod(attestation::kGetCertificate, request, std::move(callback));
+    CallProtoMethodWithTimeout(attestation::kGetCertificate,
+                               kGetCertificateTimeout.InMilliseconds(), request,
+                               std::move(callback));
   }
 
   void SignEnterpriseChallenge(
@@ -211,13 +218,15 @@ class AttestationClientImpl : public AttestationClient {
  private:
   TestInterface* GetTestInterface() override { return nullptr; }
 
-  // Calls attestationd's |method_name| method, passing in |request| as input.
-  // Once the (asynchronous) call finishes, |callback| is called with the
-  // response proto.
+  // Calls attestationd's |method_name| method, passing in |request| as input
+  // with |timeout_ms|. Once the (asynchronous) call finishes, |callback| is
+  // called with the response proto.
   template <typename RequestType, typename ReplyType>
-  void CallProtoMethod(const char* method_name,
-                       const RequestType& request,
-                       base::OnceCallback<void(const ReplyType&)> callback) {
+  void CallProtoMethodWithTimeout(
+      const char* method_name,
+      int timeout_ms,
+      const RequestType& request,
+      base::OnceCallback<void(const ReplyType&)> callback) {
     dbus::MethodCall method_call(attestation::kAttestationInterface,
                                  method_name);
     dbus::MessageWriter writer(&method_call);
@@ -231,14 +240,26 @@ class AttestationClientImpl : public AttestationClient {
     // Bind with the weak pointer of |this| so the response is not
     // handled once |this| is already destroyed.
     proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        &method_call, timeout_ms,
         base::BindOnce(&AttestationClientImpl::HandleResponse<ReplyType>,
                        weak_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  // Calls attestationd's |method_name| method, passing in |request| as input
+  // with the default timeout. Once the (asynchronous) call finishes, |callback|
+  // is called with the response proto.
+  template <typename RequestType, typename ReplyType>
+  void CallProtoMethod(const char* method_name,
+                       const RequestType& request,
+                       base::OnceCallback<void(const ReplyType&)> callback) {
+    CallProtoMethodWithTimeout(method_name,
+                               dbus::ObjectProxy::TIMEOUT_USE_DEFAULT, request,
+                               std::move(callback));
+  }
+
   // Parses the response proto message from |response| and calls |callback| with
   // the decoded message. Calls |callback| with an
-  // |STATUS_UNEXPECTED_DEVICE_ERROR| message on error.
+  // |STATUS_UNEXPECTED_DEVICE_ERROR| message on error, including timeout.
   template <typename ReplyType>
   void HandleResponse(base::OnceCallback<void(const ReplyType&)> callback,
                       dbus::Response* response) {

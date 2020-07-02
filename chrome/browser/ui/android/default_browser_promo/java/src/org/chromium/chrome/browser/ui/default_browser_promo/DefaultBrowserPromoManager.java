@@ -55,7 +55,6 @@ public class DefaultBrowserPromoManager implements PauseResumeWithNativeObserver
             WindowAndroid windowAndroid) {
         mActivity = activity;
         mDispatcher = dispatcher;
-        mDispatcher.register(this);
         mWindowAndroid = windowAndroid;
     }
 
@@ -75,6 +74,8 @@ public class DefaultBrowserPromoManager implements PauseResumeWithNativeObserver
             promoByDisambiguationSheet();
         } else if (sdkInt >= Build.VERSION_CODES.M) {
             promoBySystemSettings();
+        } else {
+            destroy();
         }
     }
 
@@ -150,6 +151,7 @@ public class DefaultBrowserPromoManager implements PauseResumeWithNativeObserver
         });
 
         DefaultBrowserPromoMetrics.recordDialogShow(mCurrentState);
+        mDispatcher.register(this);
         mDialog.show();
     }
 
@@ -157,6 +159,7 @@ public class DefaultBrowserPromoManager implements PauseResumeWithNativeObserver
     public void onResumeWithNative() {
         // TODO(crbug.com/1090103): Edge case: user might shut down chrome when disambiguation sheet
         // or role manager dialog is shown, leading to no metrics recording.
+        if (mPromoStyle == null) return;
         if (mPromoStyle == DialogStyle.DISAMBIGUATION_SHEET) {
             DefaultBrowserPromoMetrics.recordOutcome(
                     mCurrentState, DefaultBrowserPromoUtils.getCurrentDefaultBrowserState());
@@ -178,13 +181,12 @@ public class DefaultBrowserPromoManager implements PauseResumeWithNativeObserver
     }
 
     @VisibleForTesting
-    public DefaultBrowserPromoDialog getDialogForTesting() {
+    DefaultBrowserPromoDialog getDialogForTesting() {
         return mDialog;
     }
 
     @VisibleForTesting
-    public void promoForTesting(
-            @DefaultBrowserPromoUtils.DefaultBrowserState int state, int sdkInt) {
+    void promoForTesting(@DefaultBrowserPromoUtils.DefaultBrowserState int state, int sdkInt) {
         promoInternal(state, sdkInt);
     }
 }

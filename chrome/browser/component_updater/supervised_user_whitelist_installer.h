@@ -31,10 +31,10 @@ class OnDemandUpdater;
 class SupervisedUserWhitelistInstaller {
  public:
   using WhitelistReadyCallback =
-      base::Callback<void(const std::string& crx_id,
-                          const base::string16& title,
-                          const base::FilePath& large_icon_path,
-                          const base::FilePath& whitelist_path)>;
+      base::RepeatingCallback<void(const std::string& crx_id,
+                                   const base::string16& title,
+                                   const base::FilePath& large_icon_path,
+                                   const base::FilePath& whitelist_path)>;
 
   virtual ~SupervisedUserWhitelistInstaller() = default;
 
@@ -65,7 +65,7 @@ class SupervisedUserWhitelistInstaller {
   // Subscribes for notifications about available whitelists. Clients should
   // filter out the whitelists they are interested in via the |crx_id|
   // parameter.
-  virtual void Subscribe(const WhitelistReadyCallback& callback) = 0;
+  virtual void Subscribe(WhitelistReadyCallback callback) = 0;
 
   // Registers a new whitelist with the given |crx_id|.
   // The |client_id| should be a unique identifier for the client that is stable

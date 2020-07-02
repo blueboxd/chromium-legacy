@@ -15,12 +15,12 @@
 
 namespace service_manager {
 
-class ServiceBinding;
+class ServiceReceiver;
 class ServiceKeepaliveRef;
 
 // Service implementations are responsible for managing their own lifetime and
-// as such are expected to call |ServiceBinding::RequestClose()| on their own
-// ServiceBinding when they are no longer in use by any clients and otherwise
+// as such are expected to call |ServiceReceiver::RequestClose()| on their own
+// ServiceReceiver when they are no longer in use by any clients and otherwise
 // have no reason to keep running (e.g. no active UI visible).
 //
 // ServiceKeepalive helps Service implementations accomplish this by vending
@@ -32,7 +32,7 @@ class ServiceKeepaliveRef;
 // If the ServiceKeepalive's number of living ServiceKeepaliveRef instances goes
 // to zero, the service is considered idle. If the ServiceKeepalive is
 // configured with an idle timeout, it will automatically invoke
-// |ServiceBinding::RequestClose()| on its associated ServiceBinding once the
+// |ServiceReceiver::RequestClose()| on its associated ServiceReceiver once the
 // service has remained idle for that continuous duration.
 //
 // Services can use this mechanism to vend ServiceKeepaliveRefs to various parts
@@ -55,10 +55,10 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) ServiceKeepalive {
   };
 
   // Constructs a ServiceKeepalive to control the lifetime behavior of
-  // |*binding|. Note that if either |binding| or |idle_timeout| is null, this
+  // |*receiver|. Note that if either |receiver| or |idle_timeout| is null, this
   // object will not do any automatic lifetime management and will instead only
   // maintain an internal ref-count which the consumer can query.
-  ServiceKeepalive(ServiceBinding* binding,
+  ServiceKeepalive(ServiceReceiver* receiver,
                    base::Optional<base::TimeDelta> idle_timeout);
   ~ServiceKeepalive();
 
@@ -82,7 +82,7 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) ServiceKeepalive {
 
   void OnTimerExpired();
 
-  ServiceBinding* const binding_;
+  ServiceReceiver* const receiver_;
   const base::Optional<base::TimeDelta> idle_timeout_;
   base::Optional<base::OneShotTimer> idle_timer_;
   base::ObserverList<Observer> observers_;
@@ -93,7 +93,7 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) ServiceKeepalive {
 };
 
 // Objects which can be created by a |ServiceKeepalive| and cloned from each
-// other. The ServiceBinding referenced by a ServiceKeepalive is considered
+// other. The ServiceReceiver referenced by a ServiceKeepalive is considered
 // active as long as one of these objects exists and is associated with that
 // ServiceKeepalive.
 class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) ServiceKeepaliveRef {

@@ -45,6 +45,8 @@
 <translation id="1395262318152388157">Meklēšanas slīdnis</translation>
 <translation id="1399648040768741453">Telugu valodas tastatūra (fonētiskā)</translation>
 <translation id="1430915738399379752">Drukāt</translation>
+<translation id="1433600251059882049">Šī mape ir kopīgota ar Linux un Windows</translation>
+<translation id="1435838927755162558">Mapes kopīgošana ar Parallels Desktop</translation>
 <translation id="1439494416798956626">Pārvietots uz mapi “<ph name="FOLDER_NAME" />”.</translation>
 <translation id="1441841714100794440">Vjetnamiešu valodas tastatūra (telekss)</translation>
 <translation id="1455548678241328678">Norvēģu valodas tastatūra</translation>
@@ -79,6 +81,7 @@
 <translation id="1844692022597038441">Šis fails nav pieejams bezsaistē.</translation>
 <translation id="184633654410729720">Taju valodas tastatūra (Kedmanee)</translation>
 <translation id="1847880352285315359">Saglabāts</translation>
+<translation id="1853795129690976061">Šī mape ir kopīgota ar Linux</translation>
 <translation id="1864756863218646478">Failu nevarēja atrast.</translation>
 <translation id="1921986354447415460">Turku-F tastatūra</translation>
 <translation id="1924372192547904021">Disks “<ph name="DRIVE_NAME" />” formatēts</translation>
@@ -180,6 +183,7 @@
 <translation id="303198083543495566">Ģeogrāfiskie dati</translation>
 <translation id="3057861065630527966">Dublēt fotoattēlus un videoklipus</translation>
 <translation id="3064388234319122767">Transliterācija (zdravo → здраво)</translation>
+<translation id="3067790092342515856">Windows faili</translation>
 <translation id="3078461028045006476">Kopīgot ar paplašinājumu <ph name="EXTENSION_NAME" /></translation>
 <translation id="3088034400796962477">Transliterācija (salam ← سلام)</translation>
 <translation id="3116361045094675131">AK tastatūra</translation>
@@ -262,6 +266,7 @@
 <translation id="3943857333388298514">Ielīmēt</translation>
 <translation id="3958548648197196644">Kivi</translation>
 <translation id="3966388904776714213">Audio atskaņotājs</translation>
+<translation id="3984317463833596033">Parallels Desktop saņems atļauju modificēt failus mapē <ph name="FOLDER_NAME" /></translation>
 <translation id="4002066346123236978">Nosaukums</translation>
 <translation id="4070370845051020638">Kantonas dialekta ievades metode</translation>
 <translation id="4072248638558688893">Tamilu valodas tastatūra (fonētiskā)</translation>
@@ -290,6 +295,7 @@
 <translation id="4470564870223067757">Hangils (2 Set)</translation>
 <translation id="4477219268485577442">Bulgāru fonētiskā</translation>
 <translation id="4479812471636796472">ASV Dvoraka tastatūra</translation>
+<translation id="4481711095103932593">Šī mape ir kopīgota ar Windows</translation>
 <translation id="4487088045714738411">Beļģu tastatūra</translation>
 <translation id="4522570452068850558">Informācija</translation>
 <translation id="4552678318981539154">Iegādāties papildu vietu krātuvē</translation>
@@ -335,10 +341,12 @@
 <translation id="4881695831933465202">Atvērt</translation>
 <translation id="4886021172213954916">Tamilu valodas tastatūra (rakstāmmašīna)</translation>
 <translation id="4892969127351273348">Nevar atvērt, izmantojot lietotni <ph name="APP_NAME" /></translation>
+<translation id="4900532980794411603">Kopīgot ar Parallels Desktop</translation>
 <translation id="4905417359854579806">Gatavs dublēšanai: <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Fiksēts</translation>
 <translation id="4935975195727477204">Gazānijas zieds</translation>
 <translation id="4943368462779413526">Futbols</translation>
+<translation id="4961158930123534723">Viena mape tika kopīgota ar Parallels Desktop</translation>
 <translation id="4969785127455456148">Albums</translation>
 <translation id="497244430928947428">Malajalu valodas tastatūra (fonētiskā)</translation>
 <translation id="4973523518332075481">Izmantojiet nosaukumu, kas nepārsniedz <ph name="MAX_LENGTH" /> rakstzīmes.</translation>
@@ -350,6 +358,7 @@
 <translation id="5010406651457630570">Datori</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5024856940085636730">Darbība aizņem vairāk laika, nekā paredzēts. Vai vēlaties to priekšlaikus pārtraukt?</translation>
+<translation id="5036159836254554629">Pārvaldīt kopīgošanu ar Parallels Desktop</translation>
 <translation id="5038625366300922036">Skatīt vairāk...</translation>
 <translation id="5061708541166515394">Kontrasts</translation>
 <translation id="5068919226082848014">Pica</translation>
@@ -499,6 +508,7 @@
 <translation id="656398493051028875">Notiek faila “<ph name="FILENAME" />” dzēšana...</translation>
 <translation id="6581162200855843583">Google diska saite</translation>
 <translation id="6607272825297743757">Faila informācija</translation>
+<translation id="6609332149380188670">Vairākas mapes (kopā <ph name="NUMBER_OF_ITEMS" />) tika kopīgotas ar Parallels Desktop</translation>
 <translation id="6629841649550503054">Visi faili ir dublēti <ph name="BEGIN_LINK" />Google diskā<ph name="END_LINK" />.</translation>
 <translation id="6643016212128521049">Notīrīt</translation>
 <translation id="6650726141019353908">Rozā tauriņš</translation>
@@ -680,6 +690,7 @@
 <translation id="8475647382427415476">Google diskā pašlaik nevar sinhronizēt failu “<ph name="FILENAME" />”. Google diskā vēlāk tiks veikts atkārtots mēģinājums.</translation>
 <translation id="8477649328507734757">Aplis</translation>
 <translation id="8487700953926739672">Pieejams bezsaistē</translation>
+<translation id="8490342535582768689">Parallels Desktop saņems atļauju modificēt failus jūsu Google diskā. Izmaiņas tiks sinhronizētas ar citām jūsu ierīcēm.</translation>
 <translation id="8521441079177373948">Lielbritānijas</translation>
 <translation id="8525306231823319788">Pilnekrāna režīms</translation>
 <translation id="8551494947769799688">Latviešu valoda</translation>

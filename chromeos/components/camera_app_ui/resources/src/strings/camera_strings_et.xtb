@@ -30,6 +30,7 @@ Salvestusruumi kasutuse lubadega rakendustel on juurdepääs teie fotodele ja vi
 <translation id="3517926952904427380">Vertikaalpaigutuses fotot ei saa jäädvustada</translation>
 <translation id="3569311554794739032">Kas soovite faili <ph name="FILE" /> kindlasti eemaldada?</translation>
 <translation id="3810838688059735925">Video</translation>
+<translation id="4118525110028899586">Peata salvestamine</translation>
 <translation id="4279490309300973883">Peegeldamine</translation>
 <translation id="4329152592498422850">Vaheta ruudukujulise foto jäädvustamiseks</translation>
 <translation id="4383571725254449280">Printimise toimivuslogid</translation>
@@ -67,11 +68,13 @@ Salvestusruumi kasutuse lubadega rakendustel on juurdepääs teie fotodele ja vi
 <translation id="8067883171444229417">Esita video</translation>
 <translation id="8131740175452115882">Kinnita</translation>
 <translation id="8145038249676204903">Vaheta foto jäädvustamise režiimile</translation>
+<translation id="8239780215768881278">Jäädvusta video hetktõmmis</translation>
 <translation id="8261506727792406068">Kustuta</translation>
 <translation id="8428213095426709021">Seaded</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" /> : <ph name="HEIGHT" />)</translation>
 <translation id="8732462232047530626">Metaandmete eelvaade</translation>
 <translation id="8815966864175525708">Vaheta vertikaalpaigutuses foto jäädvustamiseks</translation>
+<translation id="8828441885228359828">Jätka salvestamist</translation>
 <translation id="8870695351537079478">Salvestamise alustamine ebaõnnestus</translation>
 <translation id="9045155556724273246">10 sekundit</translation>
 <translation id="945522503751344254">Saada tagasisidet</translation>

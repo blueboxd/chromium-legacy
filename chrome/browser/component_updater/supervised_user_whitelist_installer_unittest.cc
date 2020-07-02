@@ -166,8 +166,9 @@ class MockComponentUpdateService : public ComponentUpdateService,
 class WhitelistLoadObserver {
  public:
   explicit WhitelistLoadObserver(SupervisedUserWhitelistInstaller* installer) {
-    installer->Subscribe(base::Bind(&WhitelistLoadObserver::OnWhitelistReady,
-                                    weak_ptr_factory_.GetWeakPtr()));
+    installer->Subscribe(
+        base::BindRepeating(&WhitelistLoadObserver::OnWhitelistReady,
+                            weak_ptr_factory_.GetWeakPtr()));
   }
 
   void Wait() { run_loop_.Run(); }

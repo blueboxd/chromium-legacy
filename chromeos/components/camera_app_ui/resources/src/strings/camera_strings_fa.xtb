@@ -30,6 +30,7 @@
 <translation id="3517926952904427380">عکس عمودی ممکن نیست</translation>
 <translation id="3569311554794739032">واقعاً می‌خواهید <ph name="FILE" /> را بردارید؟</translation>
 <translation id="3810838688059735925">فیلم</translation>
+<translation id="4118525110028899586">توقف موقت ضبط</translation>
 <translation id="4279490309300973883">بازتاب می‌شود</translation>
 <translation id="4329152592498422850">تغییر وضعیت به گرفتن عکس مربع</translation>
 <translation id="4383571725254449280">چاپ گزارش‌های عملکرد</translation>
@@ -67,11 +68,13 @@
 <translation id="8067883171444229417">پخش ویدیو</translation>
 <translation id="8131740175452115882">تأیید</translation>
 <translation id="8145038249676204903">رفتن به حالت عکس‌برداری</translation>
+<translation id="8239780215768881278">گرفتن عکس آنی از ویدیو</translation>
 <translation id="8261506727792406068">حذف</translation>
 <translation id="8428213095426709021">تنظیمات</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
 <translation id="8732462232047530626">پیش‌نمایش فراداده</translation>
 <translation id="8815966864175525708">تغییر به گرفتن عکس عمودی</translation>
+<translation id="8828441885228359828">ازسرگیری ضبط</translation>
 <translation id="8870695351537079478">شروع ضبط انجام نشد</translation>
 <translation id="9045155556724273246">۱۰ ثانیه</translation>
 <translation id="945522503751344254">ارسال بازخورد</translation>

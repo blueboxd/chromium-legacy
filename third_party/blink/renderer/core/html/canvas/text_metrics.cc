@@ -100,19 +100,6 @@ void TextMetrics::Update(const Font& font,
     xpos += run_width;
   }
   double real_width = xpos;
-#if DCHECK_IS_ON()
-  // This DCHECK is for limited time only; to use |glyph_bounds| instead of
-  // |BoundingBox| and make sure they are compatible.
-  if (runs.size() == 1 && direction == runs[0].Direction()) {
-    FloatRect bbox = font.BoundingBox(text_run);
-    // |GetCharacterRange|, the underlying function of |BoundingBox|, clamps
-    // negative |MaxY| to 0. This is unintentional, and that we are not copying
-    // the behavior.
-    DCHECK_EQ(bbox.Y(), std::min(glyph_bounds.Y(), .0f));
-    DCHECK_EQ(bbox.MaxY(), std::max(glyph_bounds.MaxY(), .0f));
-    DCHECK_EQ(bbox.Width(), real_width);
-  }
-#endif
   width_ = real_width;
 
   float dx = 0.0f;

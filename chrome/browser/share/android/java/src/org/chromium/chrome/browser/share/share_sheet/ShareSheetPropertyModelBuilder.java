@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.share.ShareParams;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.lang.annotation.Retention;
@@ -129,9 +130,9 @@ public class ShareSheetPropertyModelBuilder {
         return contentTypes;
     }
 
-    List<PropertyModel> selectThirdPartyApps(ShareSheetBottomSheetContent bottomSheet,
+    protected List<PropertyModel> selectThirdPartyApps(ShareSheetBottomSheetContent bottomSheet,
             Set<Integer> contentTypes, ShareParams params, boolean saveLastUsed,
-            long shareStartTime) {
+            WindowAndroid window, long shareStartTime) {
         List<String> thirdPartyActivityNames = getThirdPartyActivityNames();
         final ShareParams.TargetChosenCallback callback = params.getCallback();
         List<ResolveInfo> resolveInfoList =
@@ -164,32 +165,43 @@ public class ShareSheetPropertyModelBuilder {
         for (int i = 0; i < MAX_NUM_APPS && i < thirdPartyActivities.size(); ++i) {
             ResolveInfo info = thirdPartyActivities.get(i);
             final int logIndex = i;
+            OnClickListener onClickListener = v -> {
+                onThirdPartyAppSelected(bottomSheet, params, window, callback, saveLastUsed,
+                        info.activityInfo, logIndex, shareStartTime);
+            };
             PropertyModel propertyModel =
                     createPropertyModel(ShareHelper.loadIconForResolveInfo(info, mPackageManager),
-                            (String) info.loadLabel(mPackageManager), (shareParams) -> {
-                                RecordUserAction.record("SharingHubAndroid.ThirdPartyAppSelected");
-                                RecordHistogram.recordEnumeratedHistogram(
-                                        "Sharing.SharingHubAndroid.ThirdPartyAppUsage", logIndex,
-                                        MAX_NUM_APPS + 1);
-                                RecordHistogram.recordMediumTimesHistogram(
-                                        "Sharing.SharingHubAndroid.TimeToShare",
-                                        System.currentTimeMillis() - shareStartTime);
-                                ActivityInfo ai = info.activityInfo;
-
-                                ComponentName component =
-                                        new ComponentName(ai.applicationInfo.packageName, ai.name);
-                                if (callback != null) {
-                                    callback.onTargetChosen(component);
-                                }
-                                if (saveLastUsed) {
-                                    ShareHelper.setLastShareComponentName(component);
-                                }
-                                mBottomSheetController.hideContent(bottomSheet, true);
-                                ShareHelper.shareDirectly(params, component);
-                            }, /*isFirstParty=*/false);
+                            (String) info.loadLabel(mPackageManager), onClickListener,
+                            /*isFirstParty=*/false);
             models.add(propertyModel);
-        }
+        };
+
         return models;
+    }
+
+    private void onThirdPartyAppSelected(ShareSheetBottomSheetContent bottomSheet,
+            ShareParams params, WindowAndroid window, ShareParams.TargetChosenCallback callback,
+            boolean saveLastUsed, ActivityInfo ai, int logIndex, long shareStartTime) {
+        // Record all metrics.
+        RecordUserAction.record("SharingHubAndroid.ThirdPartyAppSelected");
+        RecordHistogram.recordEnumeratedHistogram(
+                "Sharing.SharingHubAndroid.ThirdPartyAppUsage", logIndex, MAX_NUM_APPS + 1);
+        RecordHistogram.recordMediumTimesHistogram("Sharing.SharingHubAndroid.TimeToShare",
+                System.currentTimeMillis() - shareStartTime);
+        ComponentName component = new ComponentName(ai.applicationInfo.packageName, ai.name);
+        if (callback != null) {
+            callback.onTargetChosen(component);
+        }
+        if (saveLastUsed) {
+            ShareHelper.setLastShareComponentName(component);
+        }
+        mBottomSheetController.hideContent(bottomSheet, true);
+        // Fire intent through ShareHelper.
+        if (params.getScreenshotUri() != null) {
+            ShareHelper.shareImage(window, component, params.getScreenshotUri());
+        } else {
+            ShareHelper.shareDirectly(params, component);
+        }
     }
 
     /**

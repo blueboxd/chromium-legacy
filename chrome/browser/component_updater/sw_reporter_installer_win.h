@@ -46,12 +46,12 @@ enum SoftwareReporterConfigurationError {
 };
 
 // Callback for running the software reporter after it is downloaded.
-using OnComponentReadyCallback = base::Callback<void(
+using OnComponentReadyCallback = base::RepeatingCallback<void(
     safe_browsing::SwReporterInvocationSequence&& invocations)>;
 
 class SwReporterInstallerPolicy : public ComponentInstallerPolicy {
  public:
-  explicit SwReporterInstallerPolicy(const OnComponentReadyCallback& callback);
+  explicit SwReporterInstallerPolicy(OnComponentReadyCallback callback);
   ~SwReporterInstallerPolicy() override;
 
   // ComponentInstallerPolicy implementation.

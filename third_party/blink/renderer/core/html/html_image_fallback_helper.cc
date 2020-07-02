@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/html/html_image_fallback_helper.h"
 
+#include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/element_rare_data.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/text.h"
@@ -150,6 +151,15 @@ void HTMLImageFallbackHelper::CustomStyleForAltText(Element& element,
   // it with fallback content yet.
   if (!fallback.HasContentElements())
     return;
+
+  // This method is called during style recalc, and it is generally not allowed
+  // to mark nodes style dirty during recalc. The code below modifies inline
+  // style in the UA shadow tree below based on the computed style for the image
+  // element. As part of that we mark elements in the shadow tree style dirty.
+  // The scope object here is to allow that and avoid DCHECK failures which
+  // would otherwise have been triggered.
+  StyleEngine::AllowMarkStyleDirtyFromRecalcScope scope(
+      element.GetDocument().GetStyleEngine());
 
   if (element.GetDocument().InQuirksMode()) {
     // Mimic the behaviour of the image host by setting symmetric dimensions if

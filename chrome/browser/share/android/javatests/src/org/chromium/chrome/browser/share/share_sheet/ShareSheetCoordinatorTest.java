@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.components.browser_ui.share.ShareParams;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.test.util.DummyUiActivity;
 
@@ -56,6 +57,9 @@ public final class ShareSheetCoordinatorTest {
     @Mock
     private ShareSheetPropertyModelBuilder mPropertyModelBuilder;
 
+    @Mock
+    private ShareParams mParams;
+
     private ShareSheetCoordinator mShareSheetCoordinator;
 
     @Before
@@ -77,7 +81,7 @@ public final class ShareSheetCoordinatorTest {
         ArrayList<PropertyModel> thirdPartyPropertyModels =
                 new ArrayList<>(Arrays.asList(testModel1, testModel2));
         Mockito.when(mPropertyModelBuilder.selectThirdPartyApps(
-                             any(), anySet(), any(), anyBoolean(), anyLong()))
+                             any(), anySet(), any(), anyBoolean(), any(), anyLong()))
                 .thenReturn(thirdPartyPropertyModels);
 
         mShareSheetCoordinator =
@@ -90,10 +94,9 @@ public final class ShareSheetCoordinatorTest {
         mShareSheetCoordinator.disableFirstPartyFeaturesForTesting();
         Activity activity = mActivityTestRule.getActivity();
 
-        List<PropertyModel> propertyModels =
-                mShareSheetCoordinator.createTopRowPropertyModels(activity,
-                        /*shareParams=*/null, /*chromeShareExtras=*/null,
-                        ShareSheetPropertyModelBuilder.ALL_CONTENT_TYPES);
+        List<PropertyModel> propertyModels = mShareSheetCoordinator.createTopRowPropertyModels(
+                activity, mParams, /*chromeShareExtras=*/null,
+                ShareSheetPropertyModelBuilder.ALL_CONTENT_TYPES);
         assertEquals("Property model list should be empty.", 0, propertyModels.size());
     }
 
@@ -102,9 +105,9 @@ public final class ShareSheetCoordinatorTest {
     public void testCreateBottomRowPropertyModels() {
         Activity activity = mActivityTestRule.getActivity();
 
-        List<PropertyModel> propertyModels =
-                mShareSheetCoordinator.createBottomRowPropertyModels(activity, /*shareParams=*/null,
-                        ShareSheetPropertyModelBuilder.ALL_CONTENT_TYPES, /*saveLastUsed=*/false);
+        List<PropertyModel> propertyModels = mShareSheetCoordinator.createBottomRowPropertyModels(
+                activity, mParams, ShareSheetPropertyModelBuilder.ALL_CONTENT_TYPES,
+                /*saveLastUsed=*/false);
         assertEquals("Incorrect number of property models.", 3, propertyModels.size());
         assertEquals("First property model isn't testModel1.", "testModel1",
                 propertyModels.get(0).get(ShareSheetItemViewProperties.LABEL));

@@ -2069,14 +2069,24 @@ void StyleEngine::UpdateStyleInvalidationRoot(ContainerNode* ancestor,
 
 void StyleEngine::UpdateStyleRecalcRoot(ContainerNode* ancestor,
                                         Node* dirty_node) {
-  if (GetDocument().IsActive()) {
-    DCHECK(!in_layout_tree_rebuild_);
-    if (in_dom_removal_) {
-      ancestor = nullptr;
-      dirty_node = document_;
-    }
-    style_recalc_root_.Update(ancestor, dirty_node);
+  if (!GetDocument().IsActive())
+    return;
+  // We have at least one instance where we mark style dirty from style recalc
+  // (from LayoutTextControl::StyleDidChange()). That means we are in the
+  // process of traversing down the tree from the recalc root. Any updates to
+  // the style recalc root will be cleared after the style recalc traversal
+  // finishes and updating it may just trigger sanity DCHECKs in
+  // StyleTraversalRoot. Just return here instead.
+  if (GetDocument().InStyleRecalc()) {
+    DCHECK(allow_mark_style_dirty_from_recalc_);
+    return;
   }
+  DCHECK(!in_layout_tree_rebuild_);
+  if (in_dom_removal_) {
+    ancestor = nullptr;
+    dirty_node = document_;
+  }
+  style_recalc_root_.Update(ancestor, dirty_node);
 }
 
 void StyleEngine::UpdateLayoutTreeRebuildRoot(ContainerNode* ancestor,

@@ -720,15 +720,17 @@ SkRect NativeThemeBase::PaintCheckboxRadioCommon(
     flags.setStyle(cc::PaintFlags::kFill_Style);
     canvas->drawRoundRect(background_rect, border_radius, border_radius, flags);
 
-    // Draw the border.
-    if (!(is_checkbox && button.checked)) {
+    // For checkbox the border is drawn only when it is unchecked or
+    // indeterminate. For radio the border is always drawn.
+    if (!(is_checkbox && button.checked && !button.indeterminate)) {
       // Shrink half border width so the final pixels of the border will be
       // within the rectangle.
       const auto border_rect =
           skrect.makeInset(kBorderWidth / 2, kBorderWidth / 2);
       SkColor border_color =
-          button.checked ? ControlsAccentColorForState(state, color_scheme)
-                         : ControlsBorderColorForState(state, color_scheme);
+          (button.checked && !button.indeterminate)
+              ? ControlsAccentColorForState(state, color_scheme)
+              : ControlsBorderColorForState(state, color_scheme);
       flags.setColor(border_color);
       flags.setStyle(cc::PaintFlags::kStroke_Style);
       flags.setStrokeWidth(kBorderWidth);

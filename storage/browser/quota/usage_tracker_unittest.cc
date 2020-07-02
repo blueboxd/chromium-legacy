@@ -14,7 +14,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "net/base/url_util.h"
 #include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/usage_tracker.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
@@ -75,7 +74,7 @@ class UsageTrackerTestQuotaClient : public QuotaClient {
     EXPECT_EQ(StorageType::kTemporary, type);
     std::set<url::Origin> origins;
     for (const auto& origin_usage_pair : origin_usage_map_) {
-      if (net::GetHostOrSpecFromURL(origin_usage_pair.first.GetURL()) == host)
+      if (origin_usage_pair.first.host() == host)
         origins.insert(origin_usage_pair.first);
     }
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -251,7 +250,7 @@ TEST_F(UsageTrackerTest, GrantAndRevokeUnlimitedStorage) {
 
   // TODO(crbug.com/889590): Use helper for url::Origin creation from string.
   const url::Origin origin = url::Origin::Create(GURL("http://example.com"));
-  const std::string host(net::GetHostOrSpecFromURL(origin.GetURL()));
+  const std::string& host = origin.host();
 
   UpdateUsage(origin, 100);
   GetGlobalUsage(&usage, &unlimited_usage);
@@ -291,7 +290,7 @@ TEST_F(UsageTrackerTest, CacheDisabledClientTest) {
       blink::mojom::UsageBreakdown::New();
 
   const url::Origin origin = url::Origin::Create(GURL("http://example.com"));
-  const std::string host(net::GetHostOrSpecFromURL(origin.GetURL()));
+  const std::string& host = origin.host();
 
   UpdateUsage(origin, 100);
   GetGlobalUsage(&usage, &unlimited_usage);

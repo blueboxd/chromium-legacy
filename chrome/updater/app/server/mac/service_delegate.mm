@@ -94,7 +94,7 @@ const base::Version& GetSelfVersion() {
 
 - (void)dialUpdateCheckXPCConnection {
   _updateCheckXPCConnection.reset([[NSXPCConnection alloc]
-      initWithMachServiceName:updater::GetGoogleUpdateServiceMachName().get()
+      initWithMachServiceName:updater::GetServiceMachName().get()
                       options:_updateCheckXPCConnectionOptions]);
 
   _updateCheckXPCConnection.get().remoteObjectInterface =

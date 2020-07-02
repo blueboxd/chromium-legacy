@@ -65,15 +65,6 @@ bool VerifyTrustTokenParamsIntegrityIfPresent(
     return false;
   }
 
-  if (url_request.request_initiator &&
-      !IsOriginPotentiallyTrustworthy(*url_request.request_initiator)) {
-    // Got a request with Trust Tokens parameters from an insecure context,
-    // but Trust Tokens operations may only be executed from secure
-    // contexts.
-    mojo::ReportBadMessage("TrustTokenParamsIntegrity: NotFromSecureContext");
-    return false;
-  }
-
   if (trust_token_redemption_policy ==
           mojom::TrustTokenRedemptionPolicy::kForbid &&
       DoesTrustTokenOperationRequireFeaturePolicy(

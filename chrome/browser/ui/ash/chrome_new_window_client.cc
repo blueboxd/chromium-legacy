@@ -64,7 +64,6 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
-#include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "ui/aura/window.h"
 #include "ui/base/base_window.h"
 #include "ui/base/page_transition_types.h"

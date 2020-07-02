@@ -20,14 +20,18 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_host_resolver.h"
+#include "crypto/sha2.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "net/base/hash_value.h"
 #include "net/base/ip_address.h"
+#include "net/cert/ev_root_ca_metadata.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/test_root_certs.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/transport_security_state.h"
 #include "net/http/transport_security_state_test_util.h"
 #include "net/nqe/network_quality_estimator.h"
+#include "net/test/cert_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
@@ -247,6 +251,19 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
     base::FieldTrialList::FindFullName(field_trial_name);
   }
 
+  void SetEVPolicy(const std::vector<uint8_t>& fingerprint_sha256,
+                   const std::string& policy_oid,
+                   SetEVPolicyCallback callback) override {
+    CHECK_EQ(fingerprint_sha256.size(), crypto::kSHA256Length);
+    net::SHA256HashValue fingerprint_sha256_hash;
+    memcpy(&fingerprint_sha256_hash.data, fingerprint_sha256.data(),
+           crypto::kSHA256Length);
+    ev_test_policy_ = std::make_unique<net::ScopedTestEVPolicy>(
+        net::EVRootCAMetadata::GetInstance(), fingerprint_sha256_hash,
+        policy_oid.data());
+    std::move(callback).Run();
+  }
+
   void BindReceiver(
       mojo::PendingReceiver<network::mojom::NetworkServiceTest> receiver) {
     receivers_.Add(this, std::move(receiver));
@@ -278,6 +295,7 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
   base::MemoryPressureListener::MemoryPressureLevel
       latest_memory_pressure_level_ =
           base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
+  std::unique_ptr<net::ScopedTestEVPolicy> ev_test_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceTestImpl);
 };

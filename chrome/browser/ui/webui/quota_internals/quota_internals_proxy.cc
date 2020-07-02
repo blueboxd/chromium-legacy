@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/webui/quota_internals/quota_internals_handler.h"
 #include "chrome/browser/ui/webui/quota_internals/quota_internals_types.h"
 #include "content/public/browser/browser_task_traits.h"
-#include "net/base/url_util.h"
 #include "url/origin.h"
 
 using blink::mojom::StorageType;
@@ -193,7 +192,7 @@ void QuotaInternalsProxy::RequestPerOriginInfo(StorageType type) {
     info.set_in_use(quota_manager_->IsOriginInUse(origin));
     origin_info.push_back(info);
 
-    std::string host(net::GetHostOrSpecFromURL(origin.GetURL()));
+    const std::string& host = origin.host();
     if (hosts.insert(host).second) {
       PerHostStorageInfo info(host, type);
       host_info.push_back(info);

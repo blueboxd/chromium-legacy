@@ -32,7 +32,7 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) Service {
   // default implementation of |OnDisconnected()|.
   //
   // This should really only be called on a Service instance that has a bound
-  // connection to the Service Manager, e.g. a functioning ServiceBinding. If
+  // connection to the Service Manager, e.g. a functioning ServiceReceiver. If
   // the service never calls |Terminate()|, it will effectively leak.
   //
   // If |callback| is non-null, it will be invoked after |service| is destroyed.

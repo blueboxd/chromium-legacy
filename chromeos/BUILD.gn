@@ -97,6 +97,7 @@ component("chromeos") {
       "printing/ppd_metadata_parser.cc",
       "printing/ppd_metadata_parser.h",
       "printing/ppd_provider_v3.cc",
+      "printing/ppd_provider_v3.h",
       "printing/printer_config_cache.cc",
       "printing/printer_config_cache.h",
     ]

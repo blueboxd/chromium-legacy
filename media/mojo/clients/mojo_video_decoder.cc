@@ -134,7 +134,12 @@ bool MojoVideoDecoder::IsPlatformDecoder() const {
 }
 
 bool MojoVideoDecoder::SupportsDecryption() const {
+  // Currently only the android backends support decryption
+#if defined(OS_ANDROID)
   return true;
+#else
+  return false;
+#endif
 }
 
 std::string MojoVideoDecoder::GetDisplayName() const {

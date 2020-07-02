@@ -40,7 +40,7 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
   // Show the file chooser dialog.
   static void RunFileChooser(
       content::RenderFrameHost* render_frame_host,
-      std::unique_ptr<content::FileSelectListener> listener,
+      scoped_refptr<content::FileSelectListener> listener,
       const blink::mojom::FileChooserParams& params);
 
  private:
@@ -53,7 +53,7 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
   ~FileSelectHelper() override;
 
   void RunFileChooser(content::RenderFrameHost* render_frame_host,
-                      std::unique_ptr<content::FileSelectListener> listener,
+                      scoped_refptr<content::FileSelectListener> listener,
                       blink::mojom::FileChooserParamsPtr params);
 
   // Cleans up and releases this instance. This must be called after the last
@@ -85,7 +85,7 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
   bool AbortIfWebContentsDestroyed();
 
   // |listener_| receives the result of the FileSelectHelper.
-  std::unique_ptr<content::FileSelectListener> listener_;
+  scoped_refptr<content::FileSelectListener> listener_;
 
   // Dialog box used for choosing files to upload from file form fields.
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;

@@ -527,7 +527,6 @@ class HeapNewLinkedHashSet : public NewLinkedHashSet<ValueArg, HeapAllocator> {
   }
 
   HeapNewLinkedHashSet() {
-    DCHECK(!ThreadState::Current()->IsOnStack(reinterpret_cast<Address>(this)));
     CheckType();
   }
 };

@@ -276,5 +276,16 @@ TEST_F(InkDropHostViewTest, DismissInkDropOnTouchOrGestureEvents) {
 }
 #endif
 
+// Verifies that calling OnInkDropHighlightedChanged() triggers a property
+// changed notification for the highlighted property.
+TEST_F(InkDropHostViewTest, HighlightedChangedFired) {
+  bool callback_called = false;
+  auto subscription =
+      host_view_.AddHighlightedChangedCallback(base::BindRepeating(
+          [](bool* called) { *called = true; }, &callback_called));
+  host_view_.OnInkDropHighlightedChanged();
+  EXPECT_TRUE(callback_called);
+}
+
 }  // namespace test
 }  // namespace views

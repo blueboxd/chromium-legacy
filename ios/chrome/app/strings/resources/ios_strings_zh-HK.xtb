@@ -6,6 +6,7 @@
 <translation id="1044891598689252897">網站將正常運作</translation>
 <translation id="1047726139967079566">將這個網頁加入書籤…</translation>
 <translation id="1049743911850919806">無痕模式</translation>
+<translation id="105093091697134113">下列帳戶使用的密碼已在第三方資料外洩事件中洩露，或輸入到欺詐網站中。請立即變更這些密碼，以確保帳戶安全。</translation>
 <translation id="1063454504051558093">使用其他密碼…</translation>
 <translation id="1066060668811609597">管理同步功能</translation>
 <translation id="1076421457278169141">已掃描編碼</translation>
@@ -81,7 +82,6 @@
 <translation id="1809939268435598390">刪除資料夾</translation>
 <translation id="1813414402673211292">清除瀏覽資料</translation>
 <translation id="1820259098641718022">已加入閣讀清單</translation>
-<translation id="1828824471510190776">建議密碼…</translation>
 <translation id="1870148520156231997">顯示密碼</translation>
 <translation id="1872096359983322073">閃光燈</translation>
 <translation id="1911619930368729126">上傳至 Google 雲端硬碟</translation>
@@ -119,6 +119,9 @@
 <translation id="2359043044084662842">翻譯</translation>
 <translation id="2359808026110333948">繼續</translation>
 <translation id="2360196772093551345">切換至流動網站</translation>
+<translation id="236977714248711277">網站不可使用 Cookie 來改善瀏覽體驗，例如讓您保持登入狀態或記住購物車中的商品。
+
+網站不可使用 Cookie 來查看您在各網站的瀏覽活動，例如放送個人化廣告。</translation>
 <translation id="2379896346847637748">在新視窗中開啟</translation>
 <translation id="2381405137052800939">基本</translation>
 <translation id="2386793615875593361">已選取 1 張</translation>
@@ -185,6 +188,9 @@
 <translation id="3175081911749765310">網路服務</translation>
 <translation id="3178650076442119961">今天在線</translation>
 <translation id="3181954750937456830">安全瀏覽 (保護您和裝置免受危險網站攻擊)</translation>
+<translation id="3196681740617426482">網站可使用 Cookie 來改善瀏覽體驗，例如讓您保持登入狀態或記住購物車中的商品。
+
+在無痕模式中，網站不能使用 Cookie 查看您在各網站的瀏覽活動，例如放送個人化廣告。</translation>
 <translation id="3207960819495026254">已加入書籤</translation>
 <translation id="3224641773458703735">如要匯出密碼，您必須先在裝置上設定密碼。</translation>
 <translation id="3240426699337459095">連結已複製</translation>
@@ -266,6 +272,7 @@
 <translation id="4263576668337963058">顯示可用的網頁動作</translation>
 <translation id="4272631900155121838">如要掃描二維條碼，請在設定中啟用相機</translation>
 <translation id="4276041135170112053">請立即修正。</translation>
+<translation id="4277990410970811858">安全瀏覽</translation>
 <translation id="4281844954008187215">服務條款</translation>
 <translation id="430793432425771671">同步處理所有資料</translation>
 <translation id="430967081421617822">不限時間</translation>
@@ -305,6 +312,7 @@
 
 如要變更此設定，請<ph name="BEGIN_LINK" />重設同步功能<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">信用卡號碼無效</translation>
+<translation id="4808744395915275922">更新</translation>
 <translation id="4818522717893377262">新增語言…</translation>
 <translation id="481968316161811770">Cookie、網站資料</translation>
 <translation id="4826218269716039351">封鎖第三方 Cookie</translation>
@@ -357,6 +365,7 @@
 <translation id="5443952882982198570">信用卡</translation>
 <translation id="5457907402803865181">同步處理密碼時發生錯誤。</translation>
 <translation id="5489208564673669003">如要管理所有網站的 Cookie，請參閱 <ph name="BEGIN_LINK" />Cookie 設定<ph name="END_LINK" />。</translation>
+<translation id="5490005495580364134">封鎖所有 Cookie (不建議)</translation>
 <translation id="5508435575041083207">登出並清除此裝置上的資料</translation>
 <translation id="5525269841082836315">建立通關密語</translation>
 <translation id="5548760955356983418">有了 Handoff，您使用這個裝置開始瀏覽網站後，可輕鬆改用 Mac 繼續瀏覽。目前開啟的網站會自動顯示在 Mac 的 Dock 中。
@@ -451,6 +460,9 @@
 <translation id="6445981559479772097">訊息已送出。</translation>
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="6464071786529933911">在新無痕式分頁中開啟</translation>
+<translation id="6464397691496239022">網站可使用 Cookie 來改善瀏覽體驗，例如讓您保持登入狀態或記住購物車中的商品。
+
+網站不可使用 Cookie 來查看您在各網站的瀏覽活動，例如放送個人化廣告。</translation>
 <translation id="6476800141292307438">將網頁翻譯成<ph name="LANGUAGE" />。翻譯選項喺喺接近畫面底部附近。</translation>
 <translation id="648164694371393720">驗證錯誤</translation>
 <translation id="6482629121755362506">已刪除 <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> 個項目</translation>
@@ -570,6 +582,9 @@
 <translation id="7947953824732555851">接受並登入</translation>
 <translation id="794799177247607889">停止記錄</translation>
 <translation id="7961015016161918242">從來沒有</translation>
+<translation id="7966516440812255683">網站可使用 Cookie 來改善瀏覽體驗，例如讓您保持登入狀態或記住購物車中的商品。
+
+網站可使用 Cookie 來查看您在各網站的瀏覽活動，例如放送個人化廣告。</translation>
 <translation id="7971521879845308059">封鎖彈出式視窗</translation>
 <translation id="7982789257301363584">網絡</translation>
 <translation id="7993619969781047893">部分網站的功能可能會無法正常運作</translation>
@@ -617,12 +632,14 @@
 <translation id="8548878600947630424">從網頁中尋找…</translation>
 <translation id="8574235780160508979">Chrome 的《服務條款》將於 3 月 31 日變更。<ph name="BEGIN_LINK" />請查看詳情<ph name="END_LINK" /></translation>
 <translation id="8588404856427128947">閂</translation>
+<translation id="8591976964826315682">在無痕模式中封鎖第三方 Cookie</translation>
 <translation id="8605219856220328675">關閉分頁</translation>
 <translation id="8620640915598389714">編輯</translation>
 <translation id="8636825310635137004">如要取得其他裝置上的分頁，請開啟同步處理功能。</translation>
 <translation id="8654802032646794042">取消</translation>
 <translation id="8668210798914567634">此網頁已儲存至您的閱讀清單。</translation>
 <translation id="8680787084697685621">帳戶登入詳情已過期。</translation>
+<translation id="8706588385081740091">密碼</translation>
 <translation id="8721297211384281569">工具選單</translation>
 <translation id="8725066075913043281">再試一次</translation>
 <translation id="8730621377337864115">完成</translation>

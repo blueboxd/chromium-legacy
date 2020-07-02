@@ -180,6 +180,7 @@ IN_PROC_BROWSER_TEST_F(EventLatencyBrowserTest, DISABLED_KeyPressOnButton) {
        "SwapEndToPresentationCompositorFrame",
        1},
       {"EventLatency.KeyReleased.TotalLatency", 1},
+      {"EventLatency.TotalLatency", 2},
   };
   EXPECT_THAT(histogram_tester.GetTotalCountsForPrefix("EventLatency."),
               testing::ContainerEq(expected_counts));
@@ -305,6 +306,7 @@ IN_PROC_BROWSER_TEST_F(EventLatencyBrowserTest,
        "SwapEndToPresentationCompositorFrame",
        1},
       {"EventLatency.KeyReleased.TotalLatency", 1},
+      {"EventLatency.TotalLatency", 2},
   };
   EXPECT_THAT(histogram_tester.GetTotalCountsForPrefix("EventLatency."),
               testing::ContainerEq(expected_counts));
@@ -387,6 +389,7 @@ IN_PROC_BROWSER_TEST_F(EventLatencyBrowserTest,
        "SwapEndToPresentationCompositorFrame",
        2},
       {"EventLatency.KeyPressed.TotalLatency", 2},
+      {"EventLatency.TotalLatency", 2},
   };
   EXPECT_THAT(histogram_tester.GetTotalCountsForPrefix("EventLatency."),
               testing::ContainerEq(expected_counts));

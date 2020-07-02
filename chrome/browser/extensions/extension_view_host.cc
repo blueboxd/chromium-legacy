@@ -224,7 +224,7 @@ content::ColorChooser* ExtensionViewHost::OpenColorChooser(
 
 void ExtensionViewHost::RunFileChooser(
     content::RenderFrameHost* render_frame_host,
-    std::unique_ptr<content::FileSelectListener> listener,
+    scoped_refptr<content::FileSelectListener> listener,
     const blink::mojom::FileChooserParams& params) {
   // For security reasons opening a file picker requires a visible <input>
   // element to click on, so this code only exists for extensions with a view.

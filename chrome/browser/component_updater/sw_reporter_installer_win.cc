@@ -288,7 +288,7 @@ void ReportOnDemandUpdateSucceededHistogram(bool value) {
 }  // namespace
 
 SwReporterInstallerPolicy::SwReporterInstallerPolicy(
-    const OnComponentReadyCallback& on_component_ready_callback)
+    OnComponentReadyCallback on_component_ready_callback)
     : on_component_ready_callback_(on_component_ready_callback) {}
 
 SwReporterInstallerPolicy::~SwReporterInstallerPolicy() = default;

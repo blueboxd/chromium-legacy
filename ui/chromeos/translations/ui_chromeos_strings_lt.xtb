@@ -45,6 +45,8 @@
 <translation id="1395262318152388157">Paieškos šliaužiklis</translation>
 <translation id="1399648040768741453">Telugiška klaviatūra (fonetinė)</translation>
 <translation id="1430915738399379752">Spausdinti</translation>
+<translation id="1433600251059882049">Šis aplankas bendrinamas su „Linux“ ir „Windows“</translation>
+<translation id="1435838927755162558">Bendrinkite aplanką su „Parallels Desktop“</translation>
 <translation id="1439494416798956626">Perkelta į aplanką „<ph name="FOLDER_NAME" />“.</translation>
 <translation id="1441841714100794440">Vietnamietiška klaviatūra (telekso išdėstymas)</translation>
 <translation id="1455548678241328678">Norvegiška klaviatūra</translation>
@@ -79,6 +81,7 @@
 <translation id="1844692022597038441">Šis failas nepasiekiamas neprisijungus.</translation>
 <translation id="184633654410729720">Tailandietiška klaviatūra („Kedmanee“)</translation>
 <translation id="1847880352285315359">Išsaugota</translation>
+<translation id="1853795129690976061">Šis aplankas bendrinamas su „Linux“</translation>
 <translation id="1864756863218646478">Nepavyko rasti failo.</translation>
 <translation id="1921986354447415460">Turkiška klaviatūra</translation>
 <translation id="1924372192547904021">Suformatuota: „<ph name="DRIVE_NAME" />“</translation>
@@ -180,6 +183,7 @@
 <translation id="303198083543495566">Geografija</translation>
 <translation id="3057861065630527966">Kurkite atsargines nuotraukų ir vaizdo įrašų kopijas</translation>
 <translation id="3064388234319122767">Transliteracija (zdravo → здраво)</translation>
+<translation id="3067790092342515856">„Windows“ failai</translation>
 <translation id="3078461028045006476">Bendrinti su „<ph name="EXTENSION_NAME" />“</translation>
 <translation id="3088034400796962477">Transliteracija (salam ← سلام)</translation>
 <translation id="3116361045094675131">JK klaviatūra</translation>
@@ -262,6 +266,7 @@
 <translation id="3943857333388298514">Įklijuoti</translation>
 <translation id="3958548648197196644">Kivis</translation>
 <translation id="3966388904776714213">Garso įrašų grotuvas</translation>
+<translation id="3984317463833596033">Suteikite „Parallels Desktop“ leidimą keisti failus aplanke „<ph name="FOLDER_NAME" />“</translation>
 <translation id="4002066346123236978">Pavadinimas</translation>
 <translation id="4070370845051020638">Įvesties kantoniečių dialektu metodas</translation>
 <translation id="4072248638558688893">Tamiliška klaviatūra (fonetinė)</translation>
@@ -290,6 +295,7 @@
 <translation id="4470564870223067757">Hangul 2 rinkinys</translation>
 <translation id="4477219268485577442">Fonetinė bulgarų</translation>
 <translation id="4479812471636796472">JAV Dvorako klaviatūra</translation>
+<translation id="4481711095103932593">Šis aplankas bendrinamas su „Windows“</translation>
 <translation id="4487088045714738411">Belgiška klaviatūra</translation>
 <translation id="4522570452068850558">Išsami informacija</translation>
 <translation id="4552678318981539154">Įsigyti daugiau atminties</translation>
@@ -335,10 +341,12 @@
 <translation id="4881695831933465202">Atidaryti</translation>
 <translation id="4886021172213954916">Tamiliška klaviatūra (rašomosios mašinėlės išdėstymas)</translation>
 <translation id="4892969127351273348">Nepavyko atidaryti naudojant „<ph name="APP_NAME" />“</translation>
+<translation id="4900532980794411603">Bendrinti su „Parallels Desktop“</translation>
 <translation id="4905417359854579806">Paruošta kurti atsargines kopijas: <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Pataisyta</translation>
 <translation id="4935975195727477204">Gėlė</translation>
 <translation id="4943368462779413526">Futbolas</translation>
+<translation id="4961158930123534723">Vienas aplankas bendrinamas su „Parallels Desktop“</translation>
 <translation id="4969785127455456148">Albumas</translation>
 <translation id="497244430928947428">Malajališka klaviatūra (fonetinė)</translation>
 <translation id="4973523518332075481">Naudokite pavadinimą, sudarytą iš <ph name="MAX_LENGTH" /> ar mažiau simbolių</translation>
@@ -350,6 +358,7 @@
 <translation id="5010406651457630570">Kompiuteriai</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5024856940085636730">Operacija trunka ilgiau nei tikėtasi. Ar norite ją nutraukti?</translation>
+<translation id="5036159836254554629">Tvarkyti „Parallels Desktop“ bendrinimą</translation>
 <translation id="5038625366300922036">Žr. daugiau...</translation>
 <translation id="5061708541166515394">Kontrastas</translation>
 <translation id="5068919226082848014">Pica</translation>
@@ -499,6 +508,7 @@
 <translation id="656398493051028875">Ištrinamas failas „<ph name="FILENAME" />“...</translation>
 <translation id="6581162200855843583">„Google“ disko nuoroda</translation>
 <translation id="6607272825297743757">Failo informacija</translation>
+<translation id="6609332149380188670">Su „Parallels Desktop“ bendrinamų aplankų: <ph name="NUMBER_OF_ITEMS" /></translation>
 <translation id="6629841649550503054">Visų failų atsarginės kopijos sukurtos <ph name="BEGIN_LINK" />„Google“ diske!<ph name="END_LINK" /></translation>
 <translation id="6643016212128521049">Išvalyti</translation>
 <translation id="6650726141019353908">Rožinis drugelis</translation>
@@ -680,6 +690,7 @@
 <translation id="8475647382427415476">„Google“ diskui dabar nepavyko sinchronizuoti failo „<ph name="FILENAME" />“. „Google“ diskas vėliau bandys dar kartą.</translation>
 <translation id="8477649328507734757">Sukimasis</translation>
 <translation id="8487700953926739672">Pasiekiama neprisijungus</translation>
+<translation id="8490342535582768689">Suteikti „Parallels Desktop“ leidimą keisti failus „Google“ diske. Pakeitimai bus sinchronizuoti su kitais jūsų įrenginiais.</translation>
 <translation id="8521441079177373948">JK</translation>
 <translation id="8525306231823319788">Viso ekrano režimas</translation>
 <translation id="8551494947769799688">Latvių</translation>

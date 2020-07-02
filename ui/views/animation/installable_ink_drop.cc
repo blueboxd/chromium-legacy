@@ -5,6 +5,7 @@
 #include "ui/views/animation/installable_ink_drop.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/check_op.h"
 #include "base/memory/ptr_util.h"
@@ -86,6 +87,13 @@ InstallableInkDrop::InstallableInkDrop(InkDropHostView* ink_drop_host_view)
   // To get all events, we must override InkDropHostView's event handler.
   ink_drop_host_view->set_ink_drop_event_handler_override(&event_handler_);
   ink_drop_host_view_ = ink_drop_host_view;
+
+  // TODO(crbug.com/931964): When this is removed, classes relying on property
+  // changed notifications from InkDropHostView for the highlighted state will
+  // need to register here instead.
+  RegisterHighlightedChangedCallback(
+      base::BindRepeating(&InkDropHostView::OnInkDropHighlightedChanged,
+                          base::Unretained(ink_drop_host_view_)));
 }
 
 InstallableInkDrop::~InstallableInkDrop() {
@@ -99,6 +107,12 @@ InstallableInkDrop::~InstallableInkDrop() {
 void InstallableInkDrop::SetConfig(InstallableInkDropConfig config) {
   config_ = config;
   SchedulePaint();
+}
+
+std::unique_ptr<base::RepeatingClosureList::Subscription>
+InstallableInkDrop::RegisterHighlightedChangedCallback(
+    base::RepeatingClosure callback) {
+  return highlighted_changed_list_.Add(std::move(callback));
 }
 
 void InstallableInkDrop::HostSizeChanged(const gfx::Size& new_size) {
@@ -143,11 +157,15 @@ void InstallableInkDrop::SnapToHidden() {
 }
 
 void InstallableInkDrop::SetHovered(bool is_hovered) {
+  if (is_hovered_ == is_hovered)
+    return;
   is_hovered_ = is_hovered;
   UpdateAnimatorHighlight();
 }
 
 void InstallableInkDrop::SetFocused(bool is_focused) {
+  if (is_focused_ == is_focused)
+    return;
   is_focused_ = is_focused;
   UpdateAnimatorHighlight();
 }
@@ -201,6 +219,7 @@ void InstallableInkDrop::SchedulePaint() {
 
 void InstallableInkDrop::UpdateAnimatorHighlight() {
   animator_.AnimateHighlight(is_hovered_ || is_focused_);
+  highlighted_changed_list_.Notify();
 }
 
 }  // namespace views

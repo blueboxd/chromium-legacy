@@ -18,6 +18,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/session/arc_service_launcher.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
@@ -313,6 +314,11 @@ class ArcAppLauncherBrowserTest : public extensions::ExtensionBrowserTest {
   ash::ShelfItemDelegate* GetShelfItemDelegate(const std::string& id) {
     auto* model = ChromeLauncherController::instance()->shelf_model();
     return model->GetShelfItemDelegate(ash::ShelfID(id));
+  }
+
+  void WaitForDecompressTask() {
+    base::ThreadPoolInstance::Get()->FlushForTesting();
+    base::RunLoop().RunUntilIdle();
   }
 
   ArcAppListPrefs* app_prefs() { return ArcAppListPrefs::Get(profile()); }
@@ -705,7 +711,7 @@ IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, LogicalWindow) {
                                 kTestShelfGroups[1], kTestLogicalWindows[1]));
   app_host()->OnTaskDescriptionUpdated(1, kTestWindowTitles[1],
                                        std::vector<uint8_t>());
-
+  WaitForDecompressTask();
   ash::ShelfItemDelegate* delegate1 = GetShelfItemDelegate(shelf_id1);
 
   ASSERT_TRUE(delegate1);
@@ -718,6 +724,7 @@ IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, LogicalWindow) {
   app_host()->OnTaskDescriptionUpdated(2, kTestWindowTitles[2],
                                        std::vector<uint8_t>());
 
+  WaitForDecompressTask();
   ASSERT_EQ(delegate1, GetShelfItemDelegate(shelf_id1));
   ASSERT_EQ(1u, delegate1->GetAppMenuItems(0).size());
   ASSERT_EQ(kTestWindowUTF16Title, delegate1->GetAppMenuItems(0)[0].first);
@@ -732,6 +739,7 @@ IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, LogicalWindow) {
                                          std::vector<uint8_t>());
   }
 
+  WaitForDecompressTask();
   ASSERT_EQ(delegate1, GetShelfItemDelegate(shelf_id1));
   ASSERT_EQ(2u, delegate1->GetAppMenuItems(0).size());
   ASSERT_EQ(kTestWindowUTF16Title, delegate1->GetAppMenuItems(0)[1].first);
@@ -745,6 +753,7 @@ IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, LogicalWindow) {
                                        std::vector<uint8_t>());
   ash::ShelfItemDelegate* delegate2 = GetShelfItemDelegate(shelf_id2);
 
+  WaitForDecompressTask();
   ASSERT_TRUE(delegate2);
   ASSERT_NE(delegate1, delegate2);
   ASSERT_EQ(1u, delegate2->GetAppMenuItems(0).size());
@@ -756,6 +765,7 @@ IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, LogicalWindow) {
   app_host()->OnTaskDescriptionUpdated(7, kTestWindowTitles[7],
                                        std::vector<uint8_t>());
 
+  WaitForDecompressTask();
   ASSERT_EQ(delegate2, GetShelfItemDelegate(shelf_id2));
   ASSERT_EQ(1u, delegate2->GetAppMenuItems(0).size());
   ASSERT_EQ(kTestWindowUTF16Title, delegate2->GetAppMenuItems(0)[0].first);

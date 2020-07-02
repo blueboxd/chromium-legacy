@@ -36,7 +36,7 @@ class AwWebContentsDelegate
                  int active_match_ordinal,
                  bool final_update) override;
   void RunFileChooser(content::RenderFrameHost* render_frame_host,
-                      std::unique_ptr<content::FileSelectListener> listener,
+                      scoped_refptr<content::FileSelectListener> listener,
                       const blink::mojom::FileChooserParams& params) override;
   // See //android_webview/docs/how-does-on-create-window-work.md for more
   // details.
@@ -75,14 +75,14 @@ class AwWebContentsDelegate
   void UpdateUserGestureCarryoverInfo(
       content::WebContents* web_contents) override;
 
-  std::unique_ptr<content::FileSelectListener> TakeFileSelectListener();
+  scoped_refptr<content::FileSelectListener> TakeFileSelectListener();
 
  private:
   bool is_fullscreen_;
 
   // Maintain a FileSelectListener instance passed to RunFileChooser() until
   // a callback is called.
-  std::unique_ptr<content::FileSelectListener> file_select_listener_;
+  scoped_refptr<content::FileSelectListener> file_select_listener_;
 };
 
 }  // namespace android_webview

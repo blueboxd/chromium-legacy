@@ -69,6 +69,7 @@
 <translation id="2583543531130364912">校准您的触摸屏</translation>
 <translation id="2666092431469916601">顶部</translation>
 <translation id="2701330563083355633">共享自 <ph name="DEVICE_NAME" /></translation>
+<translation id="271033894570825754">新建</translation>
 <translation id="2743387203779672305">复制到剪贴板</translation>
 <translation id="2749082172777216925"><ph name="APP_NAME_INFO" />，<ph name="PRICE" /></translation>
 <translation id="2803313416453193357">打开文件夹</translation>
@@ -208,7 +209,7 @@
 <translation id="7848989271541991537">已移至第 <ph name="PAGE_NUMBER" /> 页中第 <ph name="ROW_NUMBER" /> 行与第 <ph name="COLUMN_NUMBER" /> 列的相交处。</translation>
 <translation id="7879499977785298635">不屏蔽</translation>
 <translation id="7907591526440419938">打开文件</translation>
-<translation id="7952747673138230804">Chrome 操作系统会显示有关新内容的建议以供探索。仅当您已选择分享使用情况数据时，系统才会向 Google 服务器发送统计信息以提升建议质量。<ph name="MANAGE_SETTINGS" /></translation>
+<translation id="7952747673138230804">Chrome 操作系统会显示有关新内容的建议以供探索。仅当您已选择分享使用情况数据时，系统才会向 Google 发送统计信息用于提升建议的质量。<ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">Cmd 键</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{超过 1 条未读通知}other{超过 # 条未读通知}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{1 分钟后}other{# 分钟后}}</translation>

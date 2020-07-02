@@ -23,8 +23,10 @@ local_search_service::Content::Content() = default;
 local_search_service::Content::Content(const Content& content) = default;
 local_search_service::Content::~Content() = default;
 
-Data::Data(const std::string& id, const std::vector<Content>& contents)
-    : id(id), contents(contents) {}
+Data::Data(const std::string& id,
+           const std::vector<Content>& contents,
+           const std::string& locale)
+    : id(id), contents(contents), locale(locale) {}
 Data::Data() = default;
 Data::Data(const Data& data) = default;
 Data::~Data() = default;

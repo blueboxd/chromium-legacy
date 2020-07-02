@@ -164,8 +164,10 @@ TEST(PerformanceLifetimeTest, SurviveContextSwitch) {
   // from its opener. This is necessary to ensure window reuse below, as that
   // only happens when origins match.
   KURL url("https://example.com");
-  page_holder->GetDocument().GetSecurityContext().SetSecurityOriginForTesting(
-      SecurityOrigin::Create(KURL(url)));
+  page_holder->GetFrame()
+      .DomWindow()
+      ->GetSecurityContext()
+      .SetSecurityOriginForTesting(SecurityOrigin::Create(KURL(url)));
 
   WindowPerformance* perf =
       DOMWindowPerformance::performance(*page_holder->GetFrame().DomWindow());

@@ -350,8 +350,6 @@ class OptimizationGuideHintsManagerTest
     hint1->set_version("someversion");
     optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
     page_hint1->set_page_pattern("/news/");
-    page_hint1->set_max_ect_trigger(
-        optimization_guide::proto::EFFECTIVE_CONNECTION_TYPE_3G);
     optimization_guide::proto::Optimization* experimental_opt =
         page_hint1->add_whitelisted_optimizations();
     experimental_opt->set_optimization_type(
@@ -1550,8 +1548,6 @@ TEST_F(OptimizationGuideHintsManagerTest,
   hint1->set_version("someversion");
   optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
   page_hint1->set_page_pattern("https://notfiltered.com");
-  page_hint1->set_max_ect_trigger(
-      optimization_guide::proto::EFFECTIVE_CONNECTION_TYPE_3G);
   optimization_guide::proto::Optimization* optimization1 =
       page_hint1->add_whitelisted_optimizations();
   optimization1->set_optimization_type(

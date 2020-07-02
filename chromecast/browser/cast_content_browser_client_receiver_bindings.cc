@@ -82,9 +82,9 @@ void CreateMediaDrmStorage(
 
 #if BUILDFLAG(ENABLE_EXTERNAL_MOJO_SERVICES)
 void StartExternalMojoBrokerService(
-    service_manager::mojom::ServiceRequest request) {
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver) {
   service_manager::Service::RunAsyncUntilTermination(
-      std::make_unique<external_mojo::BrokerService>(std::move(request)));
+      std::make_unique<external_mojo::BrokerService>(std::move(receiver)));
 }
 #endif  // BUILDFLAG(ENABLE_EXTERNAL_MOJO_SERVICES)
 

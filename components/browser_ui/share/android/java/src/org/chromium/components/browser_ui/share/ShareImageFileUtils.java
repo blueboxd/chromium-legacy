@@ -151,6 +151,36 @@ public class ShareImageFileUtils {
     }
 
     /**
+     * Temporarily saves the bitmap and provides that URI to a callback for sharing.
+     *
+     * @param context The Context to use for determining download location.
+     * @param filename The filename without extension.
+     * @param bitmap The Bitmap to download.
+     * @param callback A provided callback function which will act on the generated URI.
+     */
+    public static void generateTemporaryUriFromBitmap(
+            final Context context, String fileName, Bitmap bitmap, Callback<Uri> callback) {
+        OnImageSaveListener listener = new OnImageSaveListener() {
+            @Override
+            public void onImageSaved(Uri uri, String displayName) {
+                callback.onResult(uri);
+            }
+            @Override
+            public void onImageSaveError(String displayName) {}
+        };
+
+        FilePathProvider filePathProvider = () -> {
+            return "";
+        };
+        FileOutputStreamWriter fileWriter = (fos) -> {
+            writeBitmap(fos, bitmap);
+        };
+
+        saveImage(fileName, filePathProvider, listener, fileWriter, /*isTemporary=*/true,
+                JPEG_EXTENSION);
+    }
+
+    /**
      * Saves bitmap to external storage directory.
      *
      * @param context The Context to use for determining download location.

@@ -9,7 +9,7 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/service_receiver.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/test/user_id/public/mojom/user_id.mojom.h"
 
@@ -17,7 +17,8 @@ namespace user_id {
 
 class UserIdService : public service_manager::Service, public mojom::UserId {
  public:
-  explicit UserIdService(service_manager::mojom::ServiceRequest request);
+  explicit UserIdService(
+      mojo::PenidngReceiver<service_manager::mojom::Service> receiver);
   ~UserIdService() override;
 
  private:
@@ -31,7 +32,7 @@ class UserIdService : public service_manager::Service, public mojom::UserId {
 
   void BindUserIdReceiver(mojo::PendingReceiver<mojom::UserId> receiver);
 
-  service_manager::ServiceBinding service_binding_;
+  service_manager::ServiceReceiver service_receiver_;
   service_manager::BinderRegistry registry_;
   mojo::ReceiverSet<mojom::UserId> receivers_;
 

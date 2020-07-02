@@ -138,6 +138,17 @@ class VIEWS_EXPORT InkDropHostView : public View {
   // this isn't necessary anymore.
   virtual InkDrop* GetInkDrop();
 
+  // Returns whether the ink drop should be considered "highlighted" (in or
+  // animating into "highlight visible" steady state).
+  bool GetHighlighted() const;
+
+  PropertyChangedSubscription AddHighlightedChangedCallback(
+      PropertyChangedCallback callback);
+
+  // Should be called by InkDrop implementations when their highlight state
+  // changes, to trigger the corresponding property change notification here.
+  void OnInkDropHighlightedChanged();
+
  protected:
   // Size used for the default SquareInkDropRipple.
   static constexpr gfx::Size kDefaultInkDropSize = gfx::Size(24, 24);

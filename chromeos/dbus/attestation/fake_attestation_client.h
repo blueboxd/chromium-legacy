@@ -8,6 +8,7 @@
 #include "chromeos/dbus/attestation/attestation_client.h"
 
 #include <deque>
+#include <vector>
 
 #include "base/component_export.h"
 #include "chromeos/dbus/attestation/interface.pb.h"
@@ -94,12 +95,23 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS_ATTESTATION) FakeAttestationClient
   void ConfigureEnrollmentPreparations(bool is_prepared) override;
   void ConfigureEnrollmentPreparationsSequence(
       std::deque<bool> sequence) override;
+  void AllowlistCertificateRequest(
+      const ::attestation::GetCertificateRequest& request) override;
 
   AttestationClient::TestInterface* GetTestInterface() override;
 
  private:
   bool is_prepared_{false};
   std::deque<bool> preparation_sequences_;
+
+  bool is_enrolled_ = false;
+
+  // Maintains the allowlisted certificate requests.
+  std::vector<::attestation::GetCertificateRequest> allowlisted_requests_;
+  // Maintains the numbers assigned to the allowlisted requests.
+  std::vector<int> certificate_indices_;
+  // The count of certificates that has been issued.
+  int certificate_count_ = 0;
 };
 
 }  // namespace chromeos

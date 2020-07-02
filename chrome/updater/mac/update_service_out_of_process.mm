@@ -18,7 +18,6 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #import "chrome/updater/app/server/mac/service_protocol.h"
 #import "chrome/updater/app/server/mac/update_service_wrappers.h"
-#import "chrome/updater/mac/setup/info_plist.h"
 #import "chrome/updater/mac/xpc_service_names.h"
 #include "chrome/updater/update_service.h"
 #include "chrome/updater/updater_version.h"
@@ -48,7 +47,7 @@ using base::SysUTF8ToNSString;
 - (instancetype)initWithConnectionOptions:(NSXPCConnectionOptions)options {
   if ((self = [super init])) {
     _updateCheckXPCConnection.reset([[NSXPCConnection alloc]
-        initWithMachServiceName:updater::GetGoogleUpdateServiceMachName().get()
+        initWithMachServiceName:updater::GetServiceMachName().get()
                         options:options]);
 
     _updateCheckXPCConnection.get().remoteObjectInterface =
@@ -177,14 +176,10 @@ using base::SysUTF8ToNSString;
 
 - (instancetype)initWithConnectionOptions:(NSXPCConnectionOptions)options {
   if ((self = [super init])) {
-    const std::unique_ptr<updater::InfoPlist> infoPlist =
-        updater::InfoPlist::Create(updater::InfoPlistPath());
-    CHECK(infoPlist);
-
     _administrationXPCConnection.reset([[NSXPCConnection alloc]
-        initWithMachServiceName:
-            base::mac::CFToNSCast(
-                infoPlist->GoogleUpdateServiceLaunchdNameVersioned().get())
+        initWithMachServiceName:base::mac::CFToNSCast(
+                                    updater::CopyAdministrationLaunchDName()
+                                        .get())
                         options:options]);
 
     _administrationXPCConnection.get().remoteObjectInterface =

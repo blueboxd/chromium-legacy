@@ -45,6 +45,8 @@
 <translation id="1395262318152388157">Schieberegler für die Suche</translation>
 <translation id="1399648040768741453">Telugu-Tastatur (phonetisch)</translation>
 <translation id="1430915738399379752">Drucken</translation>
+<translation id="1433600251059882049">Dieser Ordner ist für Linux und Windows freigegeben</translation>
+<translation id="1435838927755162558">Ordner für Parallels Desktop freigeben</translation>
 <translation id="1439494416798956626">Verschoben nach <ph name="FOLDER_NAME" />.</translation>
 <translation id="1441841714100794440">Vietnamesische Tastatur (Telex)</translation>
 <translation id="1455548678241328678">Norwegische Tastatur</translation>
@@ -79,6 +81,7 @@
 <translation id="1844692022597038441">Diese Datei ist offline nicht verfügbar.</translation>
 <translation id="184633654410729720">Thailändische Tastatur (Kedmanee)</translation>
 <translation id="1847880352285315359">Gespeichert</translation>
+<translation id="1853795129690976061">Dieser Ordner wird für Linux freigegeben</translation>
 <translation id="1864756863218646478">Die Datei wurde nicht gefunden.</translation>
 <translation id="1921986354447415460">Tastatur "Türkisch-F"</translation>
 <translation id="1924372192547904021">"<ph name="DRIVE_NAME" />" wurde formatiert</translation>
@@ -180,6 +183,7 @@
 <translation id="303198083543495566">Längen- und Breitengrad</translation>
 <translation id="3057861065630527966">Fotos und Videos sichern</translation>
 <translation id="3064388234319122767">Transliteration (zdravo → здраво)</translation>
+<translation id="3067790092342515856">Windows-Dateien</translation>
 <translation id="3078461028045006476">Teilen mit <ph name="EXTENSION_NAME" /></translation>
 <translation id="3088034400796962477">Transliteration (salam ← سلام)</translation>
 <translation id="3116361045094675131">UK-Englische Tastatur </translation>
@@ -262,6 +266,7 @@
 <translation id="3943857333388298514">Einfügen</translation>
 <translation id="3958548648197196644">Kiwi</translation>
 <translation id="3966388904776714213">Audio-Player</translation>
+<translation id="3984317463833596033">Parallels Desktop erlauben, Dateien im Ordner "<ph name="FOLDER_NAME" />" zu ändern</translation>
 <translation id="4002066346123236978">Titel</translation>
 <translation id="4070370845051020638">Kantonesische Eingabemethode</translation>
 <translation id="4072248638558688893">Tamil-Tastatur (phonetisch)</translation>
@@ -290,6 +295,7 @@
 <translation id="4470564870223067757">Hangul 2 Set</translation>
 <translation id="4477219268485577442">Bulgarisch – phonetisch</translation>
 <translation id="4479812471636796472">US-amerikanische Dvorak-Tastatur</translation>
+<translation id="4481711095103932593">Dieser Ordner wird für Windows freigegeben</translation>
 <translation id="4487088045714738411">Belgische Tastatur</translation>
 <translation id="4522570452068850558">Details</translation>
 <translation id="4552678318981539154">Mehr Speicherplatz erwerben</translation>
@@ -335,10 +341,12 @@
 <translation id="4881695831933465202">Öffnen</translation>
 <translation id="4886021172213954916">Tamil-Tastatur (Schreibmaschine)</translation>
 <translation id="4892969127351273348">Öffnen mit <ph name="APP_NAME" /> nicht möglich</translation>
+<translation id="4900532980794411603">Für Parallels Desktop freigeben</translation>
 <translation id="4905417359854579806">Bereit zum Sichern von <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Korrigiert</translation>
 <translation id="4935975195727477204">Mittagsgoldblume</translation>
 <translation id="4943368462779413526">Fußball</translation>
+<translation id="4961158930123534723">1 Ordner für Parallels Desktop freigegeben</translation>
 <translation id="4969785127455456148">Album</translation>
 <translation id="497244430928947428">Malayalam-Tastatur (phonetisch)</translation>
 <translation id="4973523518332075481">Der Name darf höchstens <ph name="MAX_LENGTH" /> Zeichen lang sein</translation>
@@ -350,6 +358,7 @@
 <translation id="5010406651457630570">Computer</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5024856940085636730">Ein Vorgang dauert länger als erwartet. Möchten Sie ihn abbrechen?</translation>
+<translation id="5036159836254554629">Freigabe von Parallels Desktop verwalten</translation>
 <translation id="5038625366300922036">Mehr...</translation>
 <translation id="5061708541166515394">Kontrast</translation>
 <translation id="5068919226082848014">Pizza</translation>
@@ -499,6 +508,7 @@
 <translation id="656398493051028875">"<ph name="FILENAME" />" wird gelöscht...</translation>
 <translation id="6581162200855843583">Google Drive-Link</translation>
 <translation id="6607272825297743757">Dateiinformationen</translation>
+<translation id="6609332149380188670"><ph name="NUMBER_OF_ITEMS" /> Ordner für Parallels Desktop freigegeben</translation>
 <translation id="6629841649550503054">Alle Daten wurden in <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /> gesichert.</translation>
 <translation id="6643016212128521049">Löschen</translation>
 <translation id="6650726141019353908">Rosa Schmetterling</translation>
@@ -680,6 +690,7 @@
 <translation id="8475647382427415476">"<ph name="FILENAME" />" konnte nicht in Google Drive synchronisiert werden. Google Drive versucht es später erneut.</translation>
 <translation id="8477649328507734757">Kreise</translation>
 <translation id="8487700953926739672">Offline verfügbar</translation>
+<translation id="8490342535582768689">Parallels Desktop erlauben, Dateien in Google Drive zu ändern. Änderungen werden mit Ihren anderen Geräten synchronisiert.</translation>
 <translation id="8521441079177373948">UK</translation>
 <translation id="8525306231823319788">Vollbildmodus</translation>
 <translation id="8551494947769799688">Lettisch</translation>

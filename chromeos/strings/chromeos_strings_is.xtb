@@ -15,6 +15,7 @@
 <translation id="1947737735496445907">Prentað</translation>
 <translation id="1979103255016296513">Breyting á aðgangsorði komin fram yfir tíma</translation>
 <translation id="2049639323467105390">Þessu tæki er stjórnað af <ph name="DOMAIN" />.</translation>
+<translation id="2161394479394250669">Hætta við prentverk</translation>
 <translation id="2338501278241028356">Kveiktu á Bluetooth til að uppgötva nálæg tæki</translation>
 <translation id="2375079107209812402"><ph name="ATTEMPTS_LEFT" /> tilraunir eftir</translation>
 <translation id="2805756323405976993">Forrit</translation>
@@ -24,17 +25,17 @@
 <translation id="3268178239013324452">Mistókst – hlíf er opin</translation>
 <translation id="3369013195428705271">Viltu örugglega hreinsa allan prentferil? Prentverk sem eru í gangi verða ekki hreinsuð.</translation>
 <translation id="3456078764689556234">Prentaði síðu <ph name="PRINTED_PAGES" /> af <ph name="TOTAL_PAGES" />.</translation>
+<translation id="3459509316159669723">Prentun</translation>
 <translation id="3527036260304016759">Mistókst – óþekkt villa</translation>
 <translation id="3749289110408117711">Skráarheiti</translation>
 <translation id="38114475217616659">Hreinsa allan feril</translation>
 <translation id="3820172043799983114">Ógilt PIN-númer.</translation>
 <translation id="3838338534323494292">Nýtt aðgangsorð</translation>
-<translation id="3953601359945991637"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> af <ph name="TOTAL_PAGE_NUMBER" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> stjórnar þessu tæki og hefur aðgang að öllum aðgerðum, þ.m.t. heimsóttum vefsíðum, aðgangsorðum og tölvupósti.</translation>
 <translation id="4003384961948020559">Mistókst – úttakið er fullt</translation>
 <translation id="4034824040120875894">Prentari</translation>
 <translation id="4227825898293920515">Aðgangsorð rennur út eftir <ph name="TIME" /></translation>
-<translation id="4238516577297848345">Engin prentun stendur yfir</translation>
+<translation id="4238516577297848345">Engin prentun í gangi</translation>
 <translation id="428217921675623177">Prentverk sem eru eldri en 90 dagar verða fjarlægð</translation>
 <translation id="4429881212383817840">Kerberos-miði rennur út fljótlega</translation>
 <translation id="445059817448385655">Eldra aðgangsorð</translation>

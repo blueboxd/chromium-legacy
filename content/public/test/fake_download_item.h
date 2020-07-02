@@ -125,7 +125,8 @@ class FakeDownloadItem : public download::DownloadItem {
               RenameDownloadCallback callback) override;
   void OnAsyncScanningCompleted(
       download::DownloadDangerType danger_type) override;
-
+  void OnDownloadScheduleChanged(
+      base::Optional<download::DownloadSchedule> schedule) override;
   bool removed() const { return removed_; }
   void NotifyDownloadDestroyed();
   void NotifyDownloadRemoved();

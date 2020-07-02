@@ -150,6 +150,59 @@ IN_PROC_BROWSER_TEST_F(ArcAccessibilityHelperBridgeBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ArcAccessibilityHelperBridgeBrowserTest,
+                       RequestTreeSyncOnWindowIdChange) {
+  exo::test::ExoTestHelper exo_test_helper;
+  exo::test::ExoTestWindow test_window_1 =
+      exo_test_helper.CreateWindow(640, 480, false /* is_modal */);
+  exo::test::ExoTestWindow test_window_2 =
+      exo_test_helper.CreateWindow(640, 480, false /* is_modal */);
+
+  exo::SetShellApplicationId(
+      test_window_1.shell_surface()->GetWidget()->GetNativeWindow(),
+      "org.chromium.arc.1");
+  exo::SetShellApplicationId(
+      test_window_2.shell_surface()->GetWidget()->GetNativeWindow(),
+      "org.chromium.arc.2");
+
+  wm::ActivationClient* activation_client =
+      ash::Shell::Get()->activation_client();
+  activation_client->ActivateWindow(
+      test_window_1.shell_surface()->GetWidget()->GetNativeWindow());
+
+  chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(true);
+
+  exo::SetShellClientAccessibilityId(
+      test_window_1.shell_surface()->GetWidget()->GetNativeWindow(), 10);
+  exo::SetShellClientAccessibilityId(
+      test_window_2.shell_surface()->GetWidget()->GetNativeWindow(), 20);
+
+  EXPECT_TRUE(
+      fake_accessibility_helper_instance_->last_requested_tree_window_key()
+          ->get()
+          ->is_window_id());
+  EXPECT_EQ(
+      10U, fake_accessibility_helper_instance_->last_requested_tree_window_key()
+               ->get()
+               ->get_window_id());
+
+  activation_client->ActivateWindow(
+      test_window_2.shell_surface()->GetWidget()->GetNativeWindow());
+
+  EXPECT_EQ(
+      20U, fake_accessibility_helper_instance_->last_requested_tree_window_key()
+               ->get()
+               ->get_window_id());
+
+  exo::SetShellClientAccessibilityId(
+      test_window_2.shell_surface()->GetWidget()->GetNativeWindow(), 21);
+
+  EXPECT_EQ(
+      21U, fake_accessibility_helper_instance_->last_requested_tree_window_key()
+               ->get()
+               ->get_window_id());
+}
+
+IN_PROC_BROWSER_TEST_F(ArcAccessibilityHelperBridgeBrowserTest,
                        ExploreByTouchMode) {
   chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(true);
   EXPECT_TRUE(fake_accessibility_helper_instance_->explore_by_touch_enabled());

@@ -20,6 +20,7 @@
 #include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "ui/accessibility/ax_action_handler.h"
+#include "ui/aura/window_observer.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/wm/public/activation_change_observer.h"
 
@@ -52,7 +53,8 @@ class ArcAccessibilityHelperBridge
       public AXTreeSourceArc::Delegate,
       public ArcAppListPrefs::Observer,
       public arc::ArcInputMethodManagerService::Observer,
-      public ash::ArcNotificationSurfaceManager::Observer {
+      public ash::ArcNotificationSurfaceManager::Observer,
+      public aura::WindowObserver {
  public:
   // Builds the ArcAccessibilityHelperBridgeFactory.
   static void CreateFactory();
@@ -115,6 +117,11 @@ class ArcAccessibilityHelperBridge
                          aura::Window* gained_active,
                          aura::Window* lost_active) override;
 
+  // aura::WindowObserver overrides.
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override;
+
   void InvokeUpdateEnabledFeatureForTesting();
 
   enum class TreeKeyType {
@@ -158,6 +165,9 @@ class ArcAccessibilityHelperBridge
   void HandleFilterTypeFocusEvent(mojom::AccessibilityEventDataPtr event_data);
   void HandleFilterTypeAllEvent(mojom::AccessibilityEventDataPtr event_data);
 
+  // Update |window_id_to_task_id_| with a given window if necessary.
+  void UpdateWindowIdMapping(aura::Window* window);
+
   void DispatchEventTextAnnouncement(
       mojom::AccessibilityEventData* event_data) const;
   void DispatchCustomSpokenFeedbackToggled(bool enabled) const;
@@ -172,6 +182,8 @@ class ArcAccessibilityHelperBridge
   Profile* const profile_;
   ArcBridgeService* const arc_bridge_service_;
   TreeMap trees_;
+
+  std::map<int32_t, int32_t> window_id_to_task_id_;
 
   std::unique_ptr<chromeos::AccessibilityStatusSubscription>
       accessibility_status_subscription_;

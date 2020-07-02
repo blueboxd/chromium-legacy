@@ -1145,6 +1145,26 @@ void DownloadItemImpl::OnAsyncScanningCompleted(
   UpdateObservers();
 }
 
+void DownloadItemImpl::OnDownloadScheduleChanged(
+    base::Optional<DownloadSchedule> schedule) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (!base::FeatureList::IsEnabled(features::kDownloadLater) ||
+      state_ != INTERRUPTED_INTERNAL) {
+    return;
+  }
+
+  SwapDownloadSchedule(std::move(schedule));
+
+  // Need to start later, don't proceed and ping observers.
+  if (ShouldDownloadLater()) {
+    UpdateObservers();
+    return;
+  }
+
+  // Download now. allow_metered_ will be updated afterward.
+  Resume(true /*user_resume*/);
+}
+
 void DownloadItemImpl::SetOpenWhenComplete(bool open) {
   open_when_complete_ = open;
 }
@@ -1674,14 +1694,7 @@ void DownloadItemImpl::OnDownloadTargetDetermined(
     return;
   }
 
-  if (base::FeatureList::IsEnabled(features::kDownloadLater)) {
-    // If the user select to download on wifi only, use |allow_metered_| to
-    // enforce it. If the user select to download later, allow download on
-    // metered network.
-    download_schedule_ = std::move(download_schedule);
-    if (download_schedule.has_value())
-      allow_metered_ = !download_schedule->only_on_wifi();
-  }
+  SwapDownloadSchedule(std::move(download_schedule));
 
   // There were no other pending errors, and we just failed to determined the
   // download target. The target path, if it is non-empty, should be considered
@@ -1840,15 +1853,7 @@ bool DownloadItemImpl::MaybeDownloadLater() {
     return false;
   }
 
-  bool network_type_ok = !download_schedule_->only_on_wifi() ||
-                         !delegate_->IsActiveNetworkMetered();
-  bool should_start_later = false;
-  if (download_schedule_->start_time().has_value() &&
-      download_schedule_->start_time() > base::Time::Now()) {
-    should_start_later = true;
-  }
-
-  if (!network_type_ok || should_start_later) {
+  if (ShouldDownloadLater()) {
     // TODO(xingliu): Maybe add a new interrupt reason for download later
     // feature.
     InterruptWithPartialState(GetReceivedBytes(), std::move(hash_state_),
@@ -1857,6 +1862,31 @@ bool DownloadItemImpl::MaybeDownloadLater() {
   }
 
   return false;
+}
+
+bool DownloadItemImpl::ShouldDownloadLater() const {
+  // No schedule, just proceed.
+  if (!download_schedule_)
+    return false;
+
+  bool network_type_ok = !download_schedule_->only_on_wifi() ||
+                         !delegate_->IsActiveNetworkMetered();
+  bool should_start_later =
+      download_schedule_->start_time().has_value() &&
+      download_schedule_->start_time() > base::Time::Now();
+
+  // Don't proceed if network requirement is not met or has a scheduled start
+  // time.
+  return !network_type_ok || should_start_later;
+}
+
+void DownloadItemImpl::SwapDownloadSchedule(
+    base::Optional<DownloadSchedule> download_schedule) {
+  if (!base::FeatureList::IsEnabled(features::kDownloadLater))
+    return;
+  download_schedule_ = std::move(download_schedule);
+  if (download_schedule_)
+    allow_metered_ = !download_schedule_->only_on_wifi();
 }
 
 // When SavePackage downloads MHTML to GData (see

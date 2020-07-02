@@ -48,5 +48,8 @@ void FakeAccessibilityHelperInstance::SetCaptionStyle(
     mojom::CaptionStylePtr style_ptr) {}
 
 void FakeAccessibilityHelperInstance::RequestSendAccessibilityTree(
-    mojom::AccessibilityWindowKeyPtr window_ptr) {}
+    mojom::AccessibilityWindowKeyPtr window_ptr) {
+  last_requested_tree_window_key_ = std::move(window_ptr);
+}
+
 }  // namespace arc

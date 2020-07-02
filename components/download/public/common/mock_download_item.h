@@ -137,6 +137,10 @@ class MockDownloadItem : public DownloadItem {
   MOCK_METHOD1(SimulateErrorForTesting, void(DownloadInterruptReason));
   MOCK_METHOD2(Rename, void(const base::FilePath&, RenameDownloadCallback));
   MOCK_METHOD1(OnAsyncScanningCompleted, void(DownloadDangerType));
+  MOCK_METHOD(void,
+              OnDownloadScheduleChanged,
+              (base::Optional<DownloadSchedule>),
+              (override));
 
  private:
   base::ObserverList<Observer>::Unchecked observers_;

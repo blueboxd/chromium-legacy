@@ -535,6 +535,10 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItem : public base::SupportsUserData {
   // Called when async scanning completes with the given |danger_type|.
   virtual void OnAsyncScanningCompleted(DownloadDangerType danger_type) = 0;
 
+  // Called when the user changes the download schedule options.
+  virtual void OnDownloadScheduleChanged(
+      base::Optional<DownloadSchedule> schedule) = 0;
+
   // Mark the download to be auto-opened when completed.
   virtual void SetOpenWhenComplete(bool open) = 0;
 

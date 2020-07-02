@@ -55,6 +55,7 @@ const base::FilePath::CharType kDummyTargetPath[] =
     FILE_PATH_LITERAL("/testpath");
 const base::FilePath::CharType kDummyIntermediatePath[] =
     FILE_PATH_LITERAL("/testpathx");
+const char kGuid[] = "8DF158E8-C980-4618-BB03-EBA3242EB48B";
 
 namespace download {
 namespace {
@@ -253,6 +254,25 @@ class DownloadItemTest : public testing::Test {
         mock_delegate(), ++next_download_id_, *create_info_);
     allocated_downloads_[download] = base::WrapUnique(download);
     return download;
+  }
+
+  std::unique_ptr<DownloadItemImpl> CreateDownloadItem(
+      DownloadItem::DownloadState state,
+      download::DownloadInterruptReason reason) {
+    auto item = std::make_unique<download::DownloadItemImpl>(
+        mock_delegate(), kGuid, 10, base::FilePath(), base::FilePath(),
+        std::vector<GURL>(), GURL("http://example.com/a"),
+        GURL("http://example.com/a"), GURL("http://example.com/a"),
+        GURL("http://example.com/a"),
+        url::Origin::Create(GURL("http://example.com")),
+        "application/octet-stream", "application/octet-stream",
+        base::Time::Now(), base::Time::Now(), std::string(), std::string(), 10,
+        10, 0, std::string(), state,
+        download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, reason, false, false,
+        false, base::Time::Now(), true,
+        std::vector<download::DownloadItem::ReceivedSlice>(),
+        base::nullopt /*download_schedule*/, nullptr /* download_entry */);
+    return item;
   }
 
   // Add DownloadFile to DownloadItem.
@@ -2646,7 +2666,7 @@ INSTANTIATE_TEST_SUITE_P(All,
                          DownloadLaterTest,
                          testing::ValuesIn(DownloadLaterTestParams()));
 
-TEST_P(DownloadLaterTest, TestAll) {
+TEST_P(DownloadLaterTest, TestDownloadScheduleAfterTargetDetermined) {
   const auto& param = GetParam();
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kDownloadLater);
@@ -2683,6 +2703,40 @@ TEST_P(DownloadLaterTest, TestAll) {
   }
 
   CleanupItem(item, download_file, param.state);
+}
+
+TEST_P(DownloadLaterTest, TestOnDownloadScheduleChanged) {
+  const auto& param = GetParam();
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kDownloadLater);
+
+  auto item = CreateDownloadItem(DownloadItem::DownloadState::INTERRUPTED,
+                                 DOWNLOAD_INTERRUPT_REASON_CRASH);
+  EXPECT_EQ(DownloadItem::INTERRUPTED, item->GetState());
+
+  // Setup network type and download schedule.
+  EXPECT_CALL(*mock_delegate(), IsActiveNetworkMetered)
+      .WillRepeatedly(Return(param.is_active_network_metered));
+
+  bool will_resume = (param.state == DownloadItem::DownloadState::IN_PROGRESS);
+  EXPECT_CALL(*mock_delegate(), MockResumeInterruptedDownload(_))
+      .Times(will_resume);
+
+  // Change the download schedule.
+  base::Optional<DownloadSchedule> download_schedule =
+      base::make_optional<DownloadSchedule>(param.only_on_wifi,
+                                            param.start_time);
+
+  item->OnDownloadScheduleChanged(std::move(download_schedule));
+
+  // Verify final states.
+  ASSERT_EQ(param.allow_metered, item->AllowMetered());
+  ASSERT_EQ(param.state, item->GetState());
+  ASSERT_EQ(0, item->GetAutoResumeCount())
+      << "Download should not be auto resumed with DownloadSchedule.";
+  if (param.state == DownloadItem::INTERRUPTED) {
+    ASSERT_EQ(DOWNLOAD_INTERRUPT_REASON_CRASH, item->GetLastReason());
+  }
 }
 
 }  // namespace

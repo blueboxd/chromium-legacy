@@ -6404,7 +6404,6 @@
 <translation id="9033765790910064284">متابعة على أي حال</translation>
 <translation id="9033857511263905942">ل&amp;صق</translation>
 <translation id="9037965129289936994">عرض الصفحة الأصلية</translation>
-<translation id="903797871439633902">‏هذا هو آخر تحديث تلقائي للبرامج والأمان لهذا <ph name="DEVICE_TYPE" />. للحصول على التحديثات في المستقبل، قم بالترقية إلى طراز أحدث. &lt;a target="_blank" href="<ph name="URL" />"&gt;مزيد من المعلومات&lt;/a&gt;</translation>
 <translation id="9039014462651733343">{NUM_ATTEMPTS,plural, =1{يتبقى لديك محاولة واحدة.}zero{يتبقى لديك # محاولة.}two{يتبقى لديك محاولتان.}few{يتبقى لديك # محاولات.}many{يتبقى لديك # محاولةً.}other{يتبقى لديك # محاولة.}}</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571">هل تريد تحديث كلمة المرور لـ <ph name="ORIGIN" />؟</translation>

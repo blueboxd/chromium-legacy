@@ -11,78 +11,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
-
-// These binary operators are implemented here because they are used in this
-// unittest. They cannot be enclosed by anonymous namespace, because they must
-// be visible by gtest in linking.
-bool operator==(const ::media::ScalingSettings& l,
-                const ::media::ScalingSettings& r) {
-  return l.min_qp == r.min_qp && l.max_qp == r.max_qp;
-}
-
-bool operator!=(const ::media::ScalingSettings& l,
-                const ::media::ScalingSettings& r) {
-  return !(l == r);
-}
-
-bool operator==(const ::media::ResolutionBitrateLimit& l,
-                const ::media::ResolutionBitrateLimit& r) {
-  return (l.frame_size == r.frame_size &&
-          l.min_start_bitrate_bps == r.min_start_bitrate_bps &&
-          l.min_bitrate_bps == r.min_bitrate_bps &&
-          l.max_bitrate_bps == r.max_bitrate_bps);
-}
-
-bool operator!=(const ::media::ResolutionBitrateLimit& l,
-                const ::media::ResolutionBitrateLimit& r) {
-  return !(l == r);
-}
-
-bool operator==(const ::media::VideoEncoderInfo& l,
-                const ::media::VideoEncoderInfo& r) {
-  if (l.implementation_name != r.implementation_name)
-    return false;
-  if (l.supports_native_handle != r.supports_native_handle)
-    return false;
-  if (l.has_trusted_rate_controller != r.has_trusted_rate_controller)
-    return false;
-  if (l.is_hardware_accelerated != r.is_hardware_accelerated)
-    return false;
-  if (l.supports_simulcast != r.supports_simulcast)
-    return false;
-  if (l.scaling_settings != r.scaling_settings)
-    return false;
-  for (size_t i = 0; i < ::media::VideoEncoderInfo::kMaxSpatialLayers; ++i) {
-    if (l.fps_allocation[i] != r.fps_allocation[i])
-      return false;
-  }
-  if (l.resolution_bitrate_limits != r.resolution_bitrate_limits)
-    return false;
-  return true;
-}
-
-bool operator==(
-    const ::media::VideoEncodeAccelerator::Config::SpatialLayer& l,
-    const ::media::VideoEncodeAccelerator::Config::SpatialLayer& r) {
-  return (l.width == r.width && l.height == r.height &&
-          l.bitrate_bps == r.bitrate_bps && l.framerate == r.framerate &&
-          l.max_qp == r.max_qp &&
-          l.num_of_temporal_layers == r.num_of_temporal_layers);
-}
-
-bool operator==(const ::media::VideoEncodeAccelerator::Config& l,
-                const ::media::VideoEncodeAccelerator::Config& r) {
-  return l.input_format == r.input_format &&
-         l.input_visible_size == r.input_visible_size &&
-         l.output_profile == r.output_profile &&
-         l.initial_bitrate == r.initial_bitrate &&
-         l.initial_framerate == r.initial_framerate &&
-         l.gop_length == r.gop_length &&
-         l.h264_output_level == r.h264_output_level &&
-         l.storage_type == r.storage_type && l.content_type == r.content_type &&
-         l.spatial_layers == r.spatial_layers;
-}
-
 TEST(VideoEncoderInfoStructTraitTest, RoundTrip) {
   ::media::VideoEncoderInfo input;
   input.implementation_name = "FakeVideoEncodeAccelerator";
@@ -152,5 +80,41 @@ TEST(VideoEncodeAcceleratorConfigStructTraitTest, RoundTrip) {
           &input_config, &output_config));
   DVLOG(4) << output_config.AsHumanReadableString();
   EXPECT_EQ(input_config, output_config);
+}
+
+TEST(BitstreamBufferMetadataTraitTest, RoundTrip) {
+  ::media::BitstreamBufferMetadata input_metadata;
+  input_metadata.payload_size_bytes = 1234;
+  input_metadata.key_frame = true;
+  input_metadata.timestamp = base::TimeDelta::FromMilliseconds(123456);
+  ::media::BitstreamBufferMetadata output_metadata;
+  ASSERT_TRUE(
+      mojo::test::SerializeAndDeserialize<mojom::BitstreamBufferMetadata>(
+          &input_metadata, &output_metadata));
+  EXPECT_EQ(input_metadata, output_metadata);
+
+  Vp8Metadata vp8;
+  vp8.non_reference = true;
+  vp8.temporal_idx = 1;
+  vp8.layer_sync = false;
+  input_metadata.vp8 = vp8;
+  output_metadata = ::media::BitstreamBufferMetadata();
+  ASSERT_TRUE(
+      mojo::test::SerializeAndDeserialize<mojom::BitstreamBufferMetadata>(
+          &input_metadata, &output_metadata));
+  EXPECT_EQ(input_metadata, output_metadata);
+  input_metadata.vp8.reset();
+
+  Vp9Metadata vp9;
+  vp9.has_reference = true;
+  vp9.temporal_up_switch = true;
+  vp9.temporal_idx = 2;
+  vp9.p_diffs = {0, 1};
+  input_metadata.vp9 = vp9;
+  output_metadata = ::media::BitstreamBufferMetadata();
+  ASSERT_TRUE(
+      mojo::test::SerializeAndDeserialize<mojom::BitstreamBufferMetadata>(
+          &input_metadata, &output_metadata));
+  EXPECT_EQ(input_metadata, output_metadata);
 }
 }  // namespace media

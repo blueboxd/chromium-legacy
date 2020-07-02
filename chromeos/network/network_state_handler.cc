@@ -35,6 +35,9 @@ namespace chromeos {
 
 namespace {
 
+// Ignore changes to signal strength less than this value for active networks.
+const int kSignalStrengthChangeThreshold = 5;
+
 // Constants used for logging.
 constexpr char kReasonStateChange[] = "State Change";
 constexpr char kReasonChange[] = "New Network";
@@ -123,7 +126,7 @@ class NetworkStateHandler::ActiveNetworkState {
            activation_state_ == network->activation_state() &&
            connect_requested_ == network->connect_requested() &&
            (abs(signal_strength_ - network->signal_strength()) <
-            NetworkState::kSignalStrengthChangeThreshold) &&
+            kSignalStrengthChangeThreshold) &&
            network_technology_ == network->network_technology();
   }
 

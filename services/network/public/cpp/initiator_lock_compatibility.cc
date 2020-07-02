@@ -36,7 +36,7 @@ InitiatorLockCompatibility VerifyRequestInitiatorLock(
   if (initiator.opaque() || (initiator == lock))
     return InitiatorLockCompatibility::kCompatibleLock;
 
-  // TODO(lukasza): https://crbug.com/891872: Return kIncorrectLock if
+  // TODO(lukasza): https://crbug.com/1098938: Return kIncorrectLock if
   // the origins do not match exactly in the previous if statement.  This should
   // be possible to do once we no longer vend process-wide factory.
   if (!initiator.opaque() && !lock.opaque() &&

@@ -113,6 +113,7 @@ class MODULES_EXPORT ServiceWorkerEventQueue {
 
   // Sets the |idle_delay_| to the new value, and re-schedule the idle callback
   // based on the new delay if it's now pending.
+  // This method must be called after the event queue is started.
   void SetIdleDelay(base::TimeDelta idle_delay);
 
   // Returns true if the event queue thinks no events ran for a while, and has

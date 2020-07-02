@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_engine_base.h"
 #include "chrome/browser/chromeos/input_method/suggester.h"
 #include "chrome/browser/chromeos/input_method/suggestion_enums.h"
+#include "chrome/browser/chromeos/input_method/ui/assistive_delegate.h"
 
 namespace chromeos {
 
@@ -40,6 +41,7 @@ class EmojiSuggester : public Suggester {
   void OnEmojiDataLoaded(const std::string& emoji_data);
   void RecordAcceptanceIndex(int index);
   void ResetState();
+  void BuildCandidateAnnounceString();
 
   InputMethodEngine* const engine_;
 
@@ -55,8 +57,7 @@ class EmojiSuggester : public Suggester {
   std::vector<base::string16> candidates_;
   AssistiveWindowProperties properties_;
 
-  // The current candidate_id chosen.
-  int candidate_id_ = -1;
+  ui::ime::AssistiveWindowButton current_candidate_;
 
   // The map holding one-word-mapping to emojis.
   std::map<std::string, std::vector<base::string16>> emoji_map_;

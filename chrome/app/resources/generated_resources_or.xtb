@@ -6396,7 +6396,6 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="9033765790910064284">ଯେ କୌଣସି ମତେ ଜାରି ରଖନ୍ତୁ</translation>
 <translation id="9033857511263905942">&amp;ପେଷ୍ଟ କରନ୍ତୁ</translation>
 <translation id="9037965129289936994">ମୂଳ ଲେଖା ଦେଖାନ୍ତୁ</translation>
-<translation id="903797871439633902">ଏହି <ph name="DEVICE_TYPE" /> ପାଇଁ ଏହା ଶେଷ ସ୍ୱଚାଳିତ ସଫ୍ଟୱେୟାର ଏବଂ ସୁରକ୍ଷା ଅପ୍‍‍ଡେଟ୍ ଅଟେ। ଭବିଷ୍ୟତରେ ଅପ୍‌ଡେଟ୍‍ଗୁଡ଼ିକ ପାଇବା ପାଇଁ, ଏକ ନୂଆ ମଡେଲ୍‍କୁ ଅପଗ୍ରେଡ୍ କରନ୍ତୁ। &lt;a target="_blank" href="<ph name="URL" />"&gt;ଅଧିକ ଜାଣନ୍ତୁ&lt;/a&gt;</translation>
 <translation id="9039014462651733343">{NUM_ATTEMPTS,plural, =1{ଆପଣଙ୍କର ଗୋଟିଏ ପ୍ରଚେଷ୍ଟା ବାକି ଅଛି।}other{ଆପଣଙ୍କର #ଟି ପ୍ରଚେଷ୍ଟା ବାକି ଅଛି।}}</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571"><ph name="ORIGIN" /> ପାଇଁ ପାସ୍‍ୱାର୍ଡକୁ ଅପ୍‍ଡେଟ୍ କରିବେ କି?</translation>

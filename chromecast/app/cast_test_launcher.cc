@@ -45,10 +45,9 @@ class CastTestLauncherDelegate : public content::TestLauncherDelegate {
 
 int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
-  size_t parallel_jobs = base::NumParallelJobs();
-  if (parallel_jobs > 1U) {
-    parallel_jobs /= 2U;
-  }
+  size_t parallel_jobs = base::NumParallelJobs(/*cores_per_job=*/2);
+  if (parallel_jobs == 0U)
+    return 1;
   chromecast::shell::CastTestLauncherDelegate launcher_delegate;
   mojo::core::Init();
   content::ForceInProcessNetworkService(true);

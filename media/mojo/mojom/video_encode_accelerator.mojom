@@ -133,11 +133,26 @@ struct Vp8Metadata {
   bool layer_sync;
 };
 
+// This defines a mojo transport format for media::Vp9Metadata.
+// See media::Vp9Metadata for the descriptions of the variables.
+struct Vp9Metadata {
+  bool has_reference;
+  bool temporal_up_switch;
+  uint8 temporal_idx;
+  array<uint8> p_diffs;
+};
+
+// Codec specific metadata.
+union CodecMetadata {
+  Vp8Metadata vp8;
+  Vp9Metadata vp9;
+};
+
 struct BitstreamBufferMetadata {
   uint32 payload_size_bytes;
   bool key_frame;
   mojo_base.mojom.TimeDelta timestamp;
-  Vp8Metadata? vp8;
+  CodecMetadata? codec_metadata;
 };
 
 interface VideoEncodeAcceleratorClient {

@@ -90,15 +90,7 @@ bool NetworkState::PropertyChanged(const std::string& key,
   if (ManagedStatePropertyChanged(key, value))
     return true;
   if (key == shill::kSignalStrengthProperty) {
-    int signal_strength;
-    if (!GetIntegerValue(key, value, &signal_strength))
-      return false;
-    if (signal_strength_ > 0 && abs(signal_strength - signal_strength_) <
-                                    kSignalStrengthChangeThreshold) {
-      return false;
-    }
-    signal_strength_ = signal_strength;
-    return true;
+    return GetIntegerValue(key, value, &signal_strength_);
   } else if (key == shill::kStateProperty) {
     std::string connection_state;
     if (!GetStringValue(key, value, &connection_state))

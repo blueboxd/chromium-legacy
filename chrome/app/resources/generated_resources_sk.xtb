@@ -6403,7 +6403,6 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="9033765790910064284">Pokračovať</translation>
 <translation id="9033857511263905942">&amp;Prilepiť</translation>
 <translation id="9037965129289936994">Zobraziť originál</translation>
-<translation id="903797871439633902">Toto je posledná automatická aktualizácia softvéru a zabezpečenia zariadenia <ph name="DEVICE_TYPE" />. Ak chcete v budúcnosti dostávať aktualizácie, prejdite na novší model. &lt;a target="_blank" href="<ph name="URL" />"&gt;Ďalšie informácie&lt;/a&gt;</translation>
 <translation id="9039014462651733343">{NUM_ATTEMPTS,plural, =1{Zostáva posledný pokus.}few{Zostávajú # pokusy.}many{You have # attempts remaining.}other{Zostáva # pokusov.}}</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571">Aktualizovať heslo pre adresu <ph name="ORIGIN" />?</translation>

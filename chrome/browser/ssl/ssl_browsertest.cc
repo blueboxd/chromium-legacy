@@ -398,6 +398,8 @@ class SSLUITestBase : public InProcessBrowserTest,
         https_server_mismatched_(net::EmbeddedTestServer::TYPE_HTTPS),
         https_server_sha1_(net::EmbeddedTestServer::TYPE_HTTPS),
         https_server_common_name_only_(net::EmbeddedTestServer::TYPE_HTTPS),
+        https_server_ocsp_ok_(net::EmbeddedTestServer::TYPE_HTTPS),
+        https_server_ocsp_revoked_(net::EmbeddedTestServer::TYPE_HTTPS),
         wss_server_expired_(net::SpawnedTestServer::TYPE_WSS,
                             SSLOptions(SSLOptions::CERT_EXPIRED),
                             net::GetWebSocketTestDataDirectory()),
@@ -419,6 +421,20 @@ class SSLUITestBase : public InProcessBrowserTest,
     https_server_common_name_only_.SetSSLConfig(
         net::EmbeddedTestServer::CERT_COMMON_NAME_ONLY);
     https_server_common_name_only_.AddDefaultHandlers(GetChromeTestDataDir());
+
+    net::EmbeddedTestServer::ServerCertificateConfig ok_cert_config;
+    ok_cert_config.ocsp_config = net::EmbeddedTestServer::OCSPConfig(
+        {{net::OCSPRevocationStatus::GOOD,
+          net::EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid}});
+    https_server_ocsp_ok_.SetSSLConfig(ok_cert_config);
+    https_server_ocsp_ok_.AddDefaultHandlers(GetChromeTestDataDir());
+
+    net::EmbeddedTestServer::ServerCertificateConfig revoked_cert_config;
+    revoked_cert_config.ocsp_config = net::EmbeddedTestServer::OCSPConfig(
+        {{net::OCSPRevocationStatus::REVOKED,
+          net::EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid}});
+    https_server_ocsp_revoked_.SetSSLConfig(revoked_cert_config);
+    https_server_ocsp_revoked_.AddDefaultHandlers(GetChromeTestDataDir());
   }
 
   void SetUp() override {
@@ -783,9 +799,16 @@ class SSLUITestBase : public InProcessBrowserTest,
     EXPECT_EQ(app_url, new_tab->GetVisibleURL());
   }
 
+  void set_ssl_config_updated_callback(
+      const base::RepeatingClosure& ssl_config_updated_callback) {
+    ssl_config_updated_callback_ = std::move(ssl_config_updated_callback);
+  }
+
   // network::mojom::SSLConfigClient implementation.
   void OnSSLConfigUpdated(network::mojom::SSLConfigPtr ssl_config) override {
     last_ssl_config_ = *ssl_config;
+    if (ssl_config_updated_callback_)
+      ssl_config_updated_callback_.Run();
   }
 
  protected:
@@ -857,12 +880,15 @@ class SSLUITestBase : public InProcessBrowserTest,
   net::EmbeddedTestServer https_server_mismatched_;
   net::EmbeddedTestServer https_server_sha1_;
   net::EmbeddedTestServer https_server_common_name_only_;
+  net::EmbeddedTestServer https_server_ocsp_ok_;
+  net::EmbeddedTestServer https_server_ocsp_revoked_;
 
   net::SpawnedTestServer wss_server_expired_;
   net::SpawnedTestServer wss_server_mismatched_;
 
   policy::MockConfigurationPolicyProvider policy_provider_;
 
+  base::RepeatingClosure ssl_config_updated_callback_;
   network::mojom::SSLConfig last_ssl_config_;
   mojo::Receiver<network::mojom::SSLConfigClient> receiver_{this};
 
@@ -1588,6 +1614,100 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertGoBackUsingCommand) {
 
   // We should be back at the original good page.
   ssl_test_util::CheckUnauthenticatedState(tab, AuthState::NONE);
+}
+
+// Visits a page with revocation checking enabled and a valid OCSP response.
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSOCSPOk) {
+  // OCSP checking is disabled by default.
+  EXPECT_FALSE(last_ssl_config_.rev_checking_enabled);
+  EXPECT_FALSE(CreateDefaultNetworkContextParams()
+                   ->initial_ssl_config->rev_checking_enabled);
+
+  // Enable, and make sure the default network context params reflect the
+  // change.
+  base::RunLoop run_loop;
+  set_ssl_config_updated_callback(run_loop.QuitClosure());
+  ASSERT_NO_FATAL_FAILURE(
+      EnablePolicy(g_browser_process->local_state(),
+                   policy::key::kEnableOnlineRevocationChecks,
+                   prefs::kCertRevocationCheckingEnabled));
+  run_loop.Run();
+  EXPECT_TRUE(last_ssl_config_.rev_checking_enabled);
+  EXPECT_TRUE(CreateDefaultNetworkContextParams()
+                  ->initial_ssl_config->rev_checking_enabled);
+
+  ASSERT_TRUE(https_server_ocsp_ok_.Start());
+
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_ocsp_ok_.GetURL("/ssl/google.html"));
+
+  ssl_test_util::CheckAuthenticatedState(
+      browser()->tab_strip_model()->GetActiveWebContents(), AuthState::NONE);
+
+  content::NavigationEntry* entry = browser()
+                                        ->tab_strip_model()
+                                        ->GetActiveWebContents()
+                                        ->GetController()
+                                        .GetVisibleEntry();
+  ASSERT_TRUE(entry);
+  EXPECT_TRUE(entry->GetSSL().cert_status &
+              net::CERT_STATUS_REV_CHECKING_ENABLED);
+}
+
+// Visits a page with revocation checking enabled and a revoked OCSP response.
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSOCSPRevoked) {
+  // OCSP checking is disabled by default.
+  EXPECT_FALSE(last_ssl_config_.rev_checking_enabled);
+  EXPECT_FALSE(CreateDefaultNetworkContextParams()
+                   ->initial_ssl_config->rev_checking_enabled);
+
+  // Enable, and make sure the default network context params reflect the
+  // change.
+  base::RunLoop run_loop;
+  set_ssl_config_updated_callback(run_loop.QuitClosure());
+  ASSERT_NO_FATAL_FAILURE(
+      EnablePolicy(g_browser_process->local_state(),
+                   policy::key::kEnableOnlineRevocationChecks,
+                   prefs::kCertRevocationCheckingEnabled));
+  run_loop.Run();
+  EXPECT_TRUE(last_ssl_config_.rev_checking_enabled);
+  EXPECT_TRUE(CreateDefaultNetworkContextParams()
+                  ->initial_ssl_config->rev_checking_enabled);
+
+  ASSERT_TRUE(https_server_ocsp_revoked_.Start());
+
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_ocsp_revoked_.GetURL("/ssl/google.html"));
+
+  ssl_test_util::CheckAuthenticationBrokenState(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      net::CERT_STATUS_REVOKED, AuthState::SHOWING_INTERSTITIAL);
+}
+
+// Visits a page with revocation checking set to the default value (disabled)
+// and a revoked OCSP response.
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSOCSPRevokedButNotChecked) {
+  // OCSP checking is disabled by default.
+  EXPECT_FALSE(last_ssl_config_.rev_checking_enabled);
+  EXPECT_FALSE(CreateDefaultNetworkContextParams()
+                   ->initial_ssl_config->rev_checking_enabled);
+
+  ASSERT_TRUE(https_server_ocsp_revoked_.Start());
+
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_ocsp_revoked_.GetURL("/ssl/google.html"));
+
+  ssl_test_util::CheckAuthenticatedState(
+      browser()->tab_strip_model()->GetActiveWebContents(), AuthState::NONE);
+
+  content::NavigationEntry* entry = browser()
+                                        ->tab_strip_model()
+                                        ->GetActiveWebContents()
+                                        ->GetController()
+                                        .GetVisibleEntry();
+  ASSERT_TRUE(entry);
+  EXPECT_FALSE(entry->GetSSL().cert_status &
+               net::CERT_STATUS_REV_CHECKING_ENABLED);
 }
 
 // Visits a page that uses a SHA-1 leaf certificate, which should be rejected

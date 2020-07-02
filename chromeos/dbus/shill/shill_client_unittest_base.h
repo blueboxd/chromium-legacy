@@ -165,12 +165,12 @@ class ShillClientUnittestBase : public testing::Test {
   static void ExpectDictionaryValueResult(
       const base::DictionaryValue* expected_result,
       DBusMethodCallStatus call_status,
-      const base::DictionaryValue& result);
+      base::Value result);
 
   // Expects the |expected_result| to match the |result|.
   static void ExpectDictionaryValueResultWithoutStatus(
       const base::DictionaryValue* expected_result,
-      const base::DictionaryValue& result);
+      base::Value result);
 
   // A message loop to emulate asynchronous behavior.
   base::test::SingleThreadTaskEnvironment task_environment_;

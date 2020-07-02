@@ -419,8 +419,8 @@ static bool NeedsPaintOffsetTranslation(
        object.HasReflection()))
     return true;
 
-  // Don't let paint offset cross composited layer boundaries, to avoid
-  // unnecessary full layer paint/raster invalidation when paint offset in
+  // Don't let paint offset cross composited layer boundaries when possible, to
+  // avoid unnecessary full layer paint/raster invalidation when paint offset in
   // ancestor transform node changes which should not affect the descendants
   // of the composited layer. For now because of crbug.com/780242, this is
   // limited to LayoutBlocks and LayoutReplaceds that won't be escaped by
@@ -442,11 +442,9 @@ static bool NeedsPaintOffsetTranslation(
             EBackfaceVisibility::kHidden)
           return true;
       } else {
-        if (layer->GetCompositingReasons() &
-            ~(CompositingReason::kComboSquashableReasons |
-              CompositingReason::kSquashingDisallowed)) {
+        if (layer->NeedsPaintOffsetTranslationForCompositing())
           return true;
-        }
+
         if (is_affected_by_outer_viewport_bounds_delta)
           return true;
       }

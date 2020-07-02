@@ -131,19 +131,18 @@ void OnDictionaryValueMethod(
     ShillClientHelper::DictionaryValueCallback callback,
     dbus::Response* response) {
   if (!response) {
-    base::DictionaryValue result;
-    std::move(callback).Run(DBUS_METHOD_CALL_FAILURE, result);
+    std::move(callback).Run(DBUS_METHOD_CALL_FAILURE,
+                            base::Value(base::Value::Type::DICTIONARY));
     return;
   }
   dbus::MessageReader reader(response);
   std::unique_ptr<base::Value> value(dbus::PopDataAsValue(&reader));
   if (!value.get() || !value->is_dict()) {
-    base::DictionaryValue result;
-    std::move(callback).Run(DBUS_METHOD_CALL_FAILURE, result);
+    std::move(callback).Run(DBUS_METHOD_CALL_FAILURE,
+                            base::Value(base::Value::Type::DICTIONARY));
     return;
   }
-  std::move(callback).Run(DBUS_METHOD_CALL_SUCCESS,
-                          base::Value::AsDictionaryValue(*value));
+  std::move(callback).Run(DBUS_METHOD_CALL_SUCCESS, std::move(*value));
 }
 
 // Handles responses for methods without results.
@@ -167,7 +166,7 @@ void OnDictionaryValueMethodWithErrorCallback(
         .Run(kInvalidResponseErrorName, kInvalidResponseErrorMessage);
     return;
   }
-  std::move(callback).Run(base::Value::AsDictionaryValue(*value));
+  std::move(callback).Run(std::move(*value));
 }
 
 // Handles responses for methods with ListValue results.

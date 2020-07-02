@@ -64,6 +64,12 @@ struct MEDIA_EXPORT VideoEncoderInfo {
   std::vector<ResolutionBitrateLimit> resolution_bitrate_limits;
 };
 
+MEDIA_EXPORT bool operator==(const ScalingSettings& l,
+                             const ScalingSettings& r);
+MEDIA_EXPORT bool operator==(const ResolutionBitrateLimit& l,
+                             const ResolutionBitrateLimit& r);
+MEDIA_EXPORT bool operator==(const VideoEncoderInfo& l,
+                             const VideoEncoderInfo& r);
 }  // namespace media
 
 #endif  // MEDIA_VIDEO_VIDEO_ENCODER_INFO_H_

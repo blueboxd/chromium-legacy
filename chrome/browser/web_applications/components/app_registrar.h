@@ -53,6 +53,10 @@ class AppRegistrar {
   // apps. On Chrome OS all apps are always locally installed.
   virtual bool IsLocallyInstalled(const AppId& app_id) const = 0;
 
+  // The web app sync system reserves a |is_in_sync_install| web app object
+  // for an app to be synced. Always returns false for legacy bookmark apps.
+  virtual bool IsInSyncInstall(const AppId& app_id) const = 0;
+
   // Returns true if the app was installed by user, false if default installed.
   virtual bool WasInstalledByUser(const AppId& app_id) const = 0;
 

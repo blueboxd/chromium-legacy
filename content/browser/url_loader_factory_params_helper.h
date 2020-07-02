@@ -72,7 +72,7 @@ class URLLoaderFactoryParamsHelper {
       mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
           coep_reporter);
 
-  // TODO(kinuko, lukasza): https://crbug.com/891872: Remove, once all
+  // TODO(kinuko, lukasza): https://crbug.com/1098938: Remove, once all
   // URLLoaderFactories vended to a renderer process are associated with a
   // specific origin and an execution context (e.g. a frame, a service worker or
   // any other kind of worker).

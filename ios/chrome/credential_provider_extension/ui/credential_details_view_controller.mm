@@ -165,7 +165,7 @@ typedef NS_ENUM(NSInteger, RowIdentifier) {
 // Copy credential URL to clipboard.
 - (void)copyURL {
   UIPasteboard* generalPasteboard = [UIPasteboard generalPasteboard];
-  generalPasteboard.string = self.credential.serviceName;
+  generalPasteboard.string = self.credential.serviceIdentifier;
   UpdateUMACountForKey(app_group::kCredentialExtensionCopyURLCount);
 }
 

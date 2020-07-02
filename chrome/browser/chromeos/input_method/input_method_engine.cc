@@ -156,9 +156,11 @@ bool InputMethodEngine::ShowMultipleSuggestions(
   return true;
 }
 
-bool InputMethodEngine::HighlightSuggestionCandidate(int context_id,
-                                                     int index,
-                                                     std::string* error) {
+bool InputMethodEngine::SetButtonHighlighted(
+    int context_id,
+    const ui::ime::AssistiveWindowButton& button,
+    bool highlighted,
+    std::string* error) {
   if (!IsActive()) {
     *error = kErrorNotActive;
     return false;
@@ -170,7 +172,7 @@ bool InputMethodEngine::HighlightSuggestionCandidate(int context_id,
   IMEAssistiveWindowHandlerInterface* aw_handler =
       ui::IMEBridge::Get()->GetAssistiveWindowHandler();
   if (aw_handler)
-    aw_handler->HighlightSuggestionCandidate(index);
+    aw_handler->SetButtonHighlighted(button, highlighted);
   return true;
 }
 

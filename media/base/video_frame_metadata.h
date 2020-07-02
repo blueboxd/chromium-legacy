@@ -20,46 +20,9 @@
 
 namespace media {
 
-class MEDIA_EXPORT VideoFrameMetadata {
- public:
-  enum Key {
-    ALLOW_OVERLAY,
-    CAPTURE_BEGIN_TIME,
-    CAPTURE_END_TIME,
-    CAPTURE_COUNTER,
-    CAPTURE_UPDATE_RECT,
-    COPY_REQUIRED,
-    END_OF_STREAM,
-    FRAME_DURATION,
-    FRAME_RATE,
-    INTERACTIVE_CONTENT,
-    REFERENCE_TIME,
-    RESOURCE_UTILIZATION,
-    READ_LOCK_FENCES_ENABLED,
-    ROTATION,
-    TEXTURE_OWNER,
-    WANTS_PROMOTION_HINT,
-    PROTECTED_VIDEO,
-    HW_PROTECTED,
-    OVERLAY_PLANE_ID,
-    POWER_EFFICIENT,
-    DEVICE_SCALE_FACTOR,
-    PAGE_SCALE_FACTOR,
-    ROOT_SCROLL_OFFSET_X,
-    ROOT_SCROLL_OFFSET_Y,
-    TOP_CONTROLS_VISIBLE_HEIGHT,
-    DECODE_BEGIN_TIME,
-    DECODE_END_TIME,
-    PROCESSING_TIME,
-    RTP_TIMESTAMP,
-    RECEIVE_TIME,
-    WALLCLOCK_FRAME_DURATION,
-
-    NUM_KEYS
-  };
-
+struct MEDIA_EXPORT VideoFrameMetadata {
   VideoFrameMetadata();
-  ~VideoFrameMetadata();
+  ~VideoFrameMetadata() = default;
 
   VideoFrameMetadata(const VideoFrameMetadata& other);
 

@@ -6399,7 +6399,6 @@
 <translation id="9033765790910064284">जे भए पनि जारी राख्नुहोस्</translation>
 <translation id="9033857511263905942">&amp;टाँस्नुहोस्</translation>
 <translation id="9037965129289936994">मूल पाठ देखाउनुहोस्</translation>
-<translation id="903797871439633902">यो <ph name="DEVICE_TYPE" /> का लागि यो नै सफ्टवेयर र सुरक्षासम्बन्धी अन्तिम स्वचालित अद्यावधिक हो। भावी अद्यावधिकहरू प्राप्त गर्न स्तरवृद्धि गरी नयाँ मोडेल प्रयोग गर्न थाल्नुहोस्। &lt;a target="_blank" href="<ph name="URL" />"&gt;थप जान्नुहोस्&lt;/a&gt;</translation>
 <translation id="9039014462651733343">{NUM_ATTEMPTS,plural, =1{तपाईं अब एक पटक प्रयास गर्न सक्नुहुन्छ।}other{तपाईं अब # पटक प्रयास गर्न सक्नुहुन्छ।}}</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571"><ph name="ORIGIN" /> को पासवर्ड अद्यावधिक गर्ने हो?</translation>

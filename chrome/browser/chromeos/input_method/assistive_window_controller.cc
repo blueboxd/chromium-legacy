@@ -170,13 +170,21 @@ void AssistiveWindowController::ShowMultipleSuggestions(
   suggestion_window_view_->ShowMultipleCandidates(suggestions);
 }
 
-void AssistiveWindowController::HighlightSuggestionCandidate(int index) {
-  if (suggestion_window_view_)
-    suggestion_window_view_->HighlightCandidate(index);
-  if (index < static_cast<int>(window_.candidates.size()))
-    tts_handler_->Announce(base::StringPrintf(
-        "%s. %d of %zu", base::UTF16ToUTF8(window_.candidates[index]).c_str(),
-        index + 1, window_.candidates.size()));
+void AssistiveWindowController::SetButtonHighlighted(
+    const ui::ime::AssistiveWindowButton& button,
+    bool highlighted) {
+  switch (button.window_type) {
+    case ui::ime::AssistiveWindowType::kEmojiSuggestion:
+      if (!suggestion_window_view_)
+        return;
+
+      suggestion_window_view_->SetButtonHighlighted(button, highlighted);
+      tts_handler_->Announce(button.announce_string);
+      break;
+    case ui::ime::AssistiveWindowType::kUndoWindow:
+    case ui::ime::AssistiveWindowType::kNone:
+      break;
+  }
 }
 
 base::string16 AssistiveWindowController::GetSuggestionText() const {

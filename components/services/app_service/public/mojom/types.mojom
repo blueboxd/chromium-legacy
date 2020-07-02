@@ -304,6 +304,7 @@ struct Intent {
   string? action; // Intent action. e.g. view, send.
   url.mojom.Url? url; // The URL of the intent. e.g. https://www.google.com/.
   string? mime_type; // MIME type. e.g. text/plain, image/*.
+  array<url.mojom.Url>? file_urls; // The URLs of the files to share.
 };
 
 // Represents a group of |app_ids| that is no longer preferred app of their

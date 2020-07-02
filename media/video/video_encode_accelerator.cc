@@ -14,9 +14,15 @@ namespace media {
 Vp8Metadata::Vp8Metadata()
     : non_reference(false), temporal_idx(0), layer_sync(false) {}
 
+Vp9Metadata::Vp9Metadata() = default;
+Vp9Metadata::~Vp9Metadata() = default;
+Vp9Metadata::Vp9Metadata(const Vp9Metadata&) = default;
+
 BitstreamBufferMetadata::BitstreamBufferMetadata()
     : payload_size_bytes(0), key_frame(false) {}
 BitstreamBufferMetadata::BitstreamBufferMetadata(
+    const BitstreamBufferMetadata& other) = default;
+BitstreamBufferMetadata& BitstreamBufferMetadata::operator=(
     const BitstreamBufferMetadata& other) = default;
 BitstreamBufferMetadata::BitstreamBufferMetadata(
     BitstreamBufferMetadata&& other) = default;
@@ -149,6 +155,44 @@ void VideoEncodeAccelerator::RequestEncodingParametersChange(
   RequestEncodingParametersChange(bitrate_allocation.GetSumBps(), framerate);
 }
 
+bool operator==(const Vp8Metadata& l, const Vp8Metadata& r) {
+  return l.non_reference == r.non_reference &&
+         l.temporal_idx == r.temporal_idx && l.layer_sync == r.layer_sync;
+}
+
+bool operator==(const Vp9Metadata& l, const Vp9Metadata& r) {
+  return l.has_reference == r.has_reference &&
+         l.temporal_up_switch == r.temporal_up_switch &&
+         l.temporal_idx == r.temporal_idx && l.p_diffs == r.p_diffs;
+}
+
+bool operator==(const BitstreamBufferMetadata& l,
+                const BitstreamBufferMetadata& r) {
+  return l.payload_size_bytes == r.payload_size_bytes &&
+         l.key_frame == r.key_frame && l.timestamp == r.timestamp &&
+         l.vp8 == r.vp8 && l.vp9 == r.vp9;
+}
+
+bool operator==(const VideoEncodeAccelerator::Config::SpatialLayer& l,
+                const VideoEncodeAccelerator::Config::SpatialLayer& r) {
+  return l.width == r.width && l.height == r.height &&
+         l.bitrate_bps == r.bitrate_bps && l.framerate == r.framerate &&
+         l.max_qp == r.max_qp &&
+         l.num_of_temporal_layers == r.num_of_temporal_layers;
+}
+
+bool operator==(const VideoEncodeAccelerator::Config& l,
+                const VideoEncodeAccelerator::Config& r) {
+  return l.input_format == r.input_format &&
+         l.input_visible_size == r.input_visible_size &&
+         l.output_profile == r.output_profile &&
+         l.initial_bitrate == r.initial_bitrate &&
+         l.initial_framerate == r.initial_framerate &&
+         l.gop_length == r.gop_length &&
+         l.h264_output_level == r.h264_output_level &&
+         l.storage_type == r.storage_type && l.content_type == r.content_type &&
+         l.spatial_layers == r.spatial_layers;
+}
 }  // namespace media
 
 namespace std {

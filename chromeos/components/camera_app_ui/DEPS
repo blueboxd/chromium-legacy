@@ -1,5 +1,6 @@
 include_rules = [
   "+ash/public/cpp",
+  "+components/content_settings/core/common",
   "+content/public/browser",
   "+ui/aura",
   "+ui/webui",

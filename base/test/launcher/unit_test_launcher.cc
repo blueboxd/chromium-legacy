@@ -228,7 +228,7 @@ int LaunchUnitTests(int argc,
                     RunTestSuiteCallback run_test_suite,
                     size_t retry_limit) {
   CommandLine::Init(argc, argv);
-  size_t parallel_jobs = NumParallelJobs();
+  size_t parallel_jobs = NumParallelJobs(/*cores_per_job=*/1);
   if (parallel_jobs == 0U) {
     return 1;
   }
@@ -265,7 +265,7 @@ int LaunchUnitTests(int argc,
                     RunTestSuiteCallback run_test_suite) {
   // Windows CommandLine::Init ignores argv anyway.
   CommandLine::Init(argc, NULL);
-  size_t parallel_jobs = NumParallelJobs();
+  size_t parallel_jobs = NumParallelJobs(/*cores_per_job=*/1);
   if (parallel_jobs == 0U) {
     return 1;
   }

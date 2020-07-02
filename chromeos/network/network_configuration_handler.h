@@ -16,17 +16,12 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/values.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/network/network_configuration_observer.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_handler_callbacks.h"
 #include "chromeos/network/network_state_handler_observer.h"
-
-namespace base {
-class DictionaryValue;
-class ListValue;
-class Value;
-}
 
 namespace dbus {
 class ObjectPath;
@@ -180,7 +175,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConfigurationHandler
       const network_handler::ErrorCallback& error_callback,
       const std::string& service_path,
       DBusMethodCallStatus call_status,
-      const base::DictionaryValue& properties);
+      base::Value properties);
 
   // Invoke |callback| and inform NetworkStateHandler to request an update
   // for the service after setting properties.

@@ -67,6 +67,30 @@ bool IsAppCompactWidth() {
   return sizeClass == UIUserInterfaceSizeClassCompact;
 }
 
+// Helper class to disable EarlGrey's NSTimer tracking.
+// TODO(crbug.com/1101608): This is a workaround that should be removed once a
+// proper fix lands in EarlGrey.
+class ScopedDisableTimerTracking {
+ public:
+  ScopedDisableTimerTracking() {
+    original_interval_ =
+        GREY_CONFIG_DOUBLE(kGREYConfigKeyNSTimerMaxTrackableInterval);
+    [[GREYConfiguration sharedConfiguration]
+            setValue:@0
+        forConfigKey:kGREYConfigKeyNSTimerMaxTrackableInterval];
+  }
+
+  ~ScopedDisableTimerTracking() {
+    [[GREYConfiguration sharedConfiguration]
+            setValue:[NSNumber numberWithDouble:original_interval_]
+        forConfigKey:kGREYConfigKeyNSTimerMaxTrackableInterval];
+  }
+
+ private:
+  // The original NSTimer max trackable interval.
+  double original_interval_;
+};
+
 }  // namespace
 
 @implementation ChromeEarlGreyUIImpl
@@ -90,6 +114,7 @@ bool IsAppCompactWidth() {
 }
 
 - (void)tapToolsMenuButton:(id<GREYMatcher>)buttonMatcher {
+  ScopedDisableTimerTracking disabler;
   id<GREYMatcher> interactableSettingsButton =
       grey_allOf(buttonMatcher, grey_interactable(), nil);
   [[[EarlGrey selectElementWithMatcher:interactableSettingsButton]
@@ -98,6 +123,7 @@ bool IsAppCompactWidth() {
 }
 
 - (void)tapSettingsMenuButton:(id<GREYMatcher>)buttonMatcher {
+  ScopedDisableTimerTracking disabler;
   id<GREYMatcher> interactableButtonMatcher =
       grey_allOf(buttonMatcher, grey_interactable(), nil);
   [[[EarlGrey selectElementWithMatcher:interactableButtonMatcher]
@@ -107,6 +133,7 @@ bool IsAppCompactWidth() {
 }
 
 - (void)tapClearBrowsingDataMenuButton:(id<GREYMatcher>)buttonMatcher {
+  ScopedDisableTimerTracking disabler;
   id<GREYMatcher> interactableButtonMatcher =
       grey_allOf(buttonMatcher, grey_interactable(), nil);
   [[[EarlGrey selectElementWithMatcher:interactableButtonMatcher]
@@ -161,6 +188,7 @@ bool IsAppCompactWidth() {
 }
 
 - (void)tapPrivacyMenuButton:(id<GREYMatcher>)buttonMatcher {
+  ScopedDisableTimerTracking disabler;
   id<GREYMatcher> interactableButtonMatcher =
       grey_allOf(buttonMatcher, grey_interactable(), nil);
   [[[EarlGrey selectElementWithMatcher:interactableButtonMatcher]
@@ -170,6 +198,7 @@ bool IsAppCompactWidth() {
 }
 
 - (void)tapAccountsMenuButton:(id<GREYMatcher>)buttonMatcher {
+  ScopedDisableTimerTracking disabler;
   [[[EarlGrey selectElementWithMatcher:buttonMatcher]
          usingSearchAction:ScrollDown()
       onElementWithMatcher:chrome_test_util::SettingsAccountsCollectionView()]

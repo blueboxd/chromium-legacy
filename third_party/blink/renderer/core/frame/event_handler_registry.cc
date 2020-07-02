@@ -329,6 +329,10 @@ void EventHandlerRegistry::NotifyHandlersChanged(
 void EventHandlerRegistry::NotifyDidAddOrRemoveEventHandlerTarget(
     LocalFrame* frame,
     EventHandlerClass handler_class) {
+  // TODO(keishi): Added for crbug.com/1090687. Change to CHECK once bug is
+  // fixed.
+  if (!GetPage())
+    return;
   ScrollingCoordinator* scrolling_coordinator =
       GetPage()->GetScrollingCoordinator();
   if (scrolling_coordinator &&

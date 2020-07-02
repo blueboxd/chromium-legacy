@@ -123,7 +123,7 @@ bool SourceAllowPath(const mojom::CSPSourcePtr& source,
   if (has_followed_redirect)
     return true;
 
-  if (source->path.empty() || url.path().empty())
+  if (source->path.empty())
     return true;
 
   std::string url_path;

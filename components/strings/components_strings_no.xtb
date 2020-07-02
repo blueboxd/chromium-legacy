@@ -100,7 +100,7 @@
 <translation id="1346748346194534595">Høyre</translation>
 <translation id="1348198688976932919">Nettstedet du er på vei til, inneholder farlige apper</translation>
 <translation id="1348779747280417563">Bekreft navnet</translation>
-<translation id="1357195169723583938">Personer som har brukt enheten i det siste, og når de har gjort det</translation>
+<translation id="1357195169723583938">hvem som har brukt enheten i det siste, og når de har gjort det</translation>
 <translation id="1364822246244961190">Denne regelen er blokkert. Regelens verdi ignoreres.</translation>
 <translation id="1374468813861204354">forslagene</translation>
 <translation id="1374692235857187091">Index-4x6 (postkort)</translation>
@@ -984,7 +984,7 @@ brukere av denne nettleseren.</translation>
 <translation id="5093232627742069661">Z-fals</translation>
 <translation id="5094747076828555589">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Sikkerhetssertifikatet til tjeneren er ikke klarert av Chromium. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="5095208057601539847">Provins</translation>
-<translation id="5097099694988056070">Enhetsstatistikk, som prosessor- og minnebruk</translation>
+<translation id="5097099694988056070">enhetsstatistikk, som prosessor- og minnebruk</translation>
 <translation id="5097501891273180634">A2</translation>
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
@@ -1032,7 +1032,7 @@ brukere av denne nettleseren.</translation>
 <translation id="5273658854610202413">Advarsel: Denne regelen ble ikke sammenslått som angitt i PolicyDictionaryMultipleSourceMergeList-regelen fordi den ikke er en del av ordlistereglene som kan slås sammen.</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="528468243742722775">Avslutt</translation>
-<translation id="5284909709419567258">Nettverksadresser</translation>
+<translation id="5284909709419567258">nettverksadresser</translation>
 <translation id="5285570108065881030">Vis alle lagrede passord</translation>
 <translation id="5287240709317226393">Vis informasjonskapsler</translation>
 <translation id="5287456746628258573">Dette nettstedet bruker en utdatert sikkerhetskonfigurasjon, som betyr at informasjonen din (for eksempel passord eller kredittkortnumre) kan bli avslørt når den sendes til dette nettstedet.</translation>
@@ -1467,7 +1467,7 @@ brukere av denne nettleseren.</translation>
 <translation id="7186367841673660872">Denne siden har blitt oversatt fra<ph name="ORIGINAL_LANGUAGE" />til<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="7192203810768312527">Frigjør <ph name="SIZE" />. Det kan hende noen nettsteder lastes inn tregere neste gang du besøker dem.</translation>
 <translation id="719464814642662924">Visa</translation>
-<translation id="7201591969684833065">Administratoren kan se dette:</translation>
+<translation id="7201591969684833065">Administratoren kan se</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> retter seg ikke etter sikkerhetsstandardene.</translation>
 <translation id="7210993021468939304">Linux-aktivitet i beholderen, og kan installere og kjøre Linux-apper i beholderen</translation>

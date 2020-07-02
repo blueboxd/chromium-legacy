@@ -4,6 +4,14 @@
 var header = document.getElementById('untrusted-title');
 header.textContent = 'Untrusted Telemetry Extension';
 
+/**
+ * This is used to create TrustedScriptURL.
+ * @type {!TrustedTypePolicy}
+ */
+const workerUrlPolicy = trustedTypes.createPolicy(
+    'telemetry-extension-static',
+    {createScriptURL: () => 'untrusted_worker.js'});
+
 // For testing purposes: notify the parent window the iframe has been embedded
 // successfully.
 window.addEventListener('message', event => {
@@ -27,7 +35,15 @@ function runWebWorker() {
     return;
   }
 
-  let worker = new Worker('untrusted_worker.js');
+  // createScriptURL() always returns a 'untrusted_workjer.js' TrustedScriptURL,
+  // so pass an empty string. In the future we might be able to avoid the empty
+  // string if https://github.com/w3c/webappsec-trusted-types/issues/278 gets
+  // fixed.
+  /**
+   * Closure Compiler only support string type as an argument to Worker
+   * @suppress {checkTypes}
+   */
+  let worker = new Worker(workerUrlPolicy.createScriptURL(''));
 
   console.debug('Starting Worker...', worker);
 

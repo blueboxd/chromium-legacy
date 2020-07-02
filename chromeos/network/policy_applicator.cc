@@ -91,7 +91,7 @@ void PolicyApplicator::Run() {
 }
 
 void PolicyApplicator::GetProfilePropertiesCallback(
-    const base::DictionaryValue& profile_properties) {
+    base::Value profile_properties) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(2) << "Received properties for profile " << profile_.ToDebugString();
   const base::Value* entries =
@@ -137,21 +137,22 @@ void PolicyApplicator::GetProfilePropertiesError(
   NotifyConfigurationHandlerAndFinish();
 }
 
-void PolicyApplicator::GetEntryCallback(
-    const std::string& entry,
-    const base::DictionaryValue& entry_properties) {
+void PolicyApplicator::GetEntryCallback(const std::string& entry,
+                                        base::Value entry_properties) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(2) << "Received properties for entry " << entry << " of profile "
           << profile_.ToDebugString();
 
   std::unique_ptr<base::DictionaryValue> onc_part(
       onc::TranslateShillServiceToONCPart(
-          entry_properties, ::onc::ONC_SOURCE_UNKNOWN,
-          &onc::kNetworkWithStateSignature, nullptr /* network_state */));
+          base::Value::AsDictionaryValue(entry_properties),
+          ::onc::ONC_SOURCE_UNKNOWN, &onc::kNetworkWithStateSignature,
+          nullptr /* network_state */));
 
   std::string old_guid = GetGUIDFromONCPart(*onc_part);
   std::unique_ptr<NetworkUIData> ui_data =
-      shill_property_util::GetUIDataFromProperties(entry_properties);
+      shill_property_util::GetUIDataFromProperties(
+          base::Value::AsDictionaryValue(entry_properties));
   if (!ui_data) {
     VLOG(1) << "Entry " << entry << " of profile " << profile_.ToDebugString()
             << " contains no or no valid UIData.";
@@ -208,8 +209,9 @@ void PolicyApplicator::GetEntryCallback(
     return;
   }
 
-  ApplyGlobalPolicyOnUnmanagedEntry(entry, entry_properties,
-                                    std::move(profile_entry_finished_callback));
+  ApplyGlobalPolicyOnUnmanagedEntry(
+      entry, base::Value::AsDictionaryValue(entry_properties),
+      std::move(profile_entry_finished_callback));
 }
 
 void PolicyApplicator::GetEntryError(const std::string& entry,

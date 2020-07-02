@@ -6404,7 +6404,6 @@
 <translation id="9033765790910064284">എന്തായാലും തുടരുക</translation>
 <translation id="9033857511263905942">&amp;ഒട്ടിക്കുക</translation>
 <translation id="9037965129289936994">യഥാര്‍ത്ഥമായത് കാണിക്കുക</translation>
-<translation id="903797871439633902">ഈ <ph name="DEVICE_TYPE" />-ന് സ്വയമേവയുള്ള അവസാനത്തെ സോഫ്റ്റ്‌വെയർ, സുരക്ഷാ അപ്ഡേറ്റ് ആണിത്. ഭാവി അപ്ഡേറ്റുകൾ ലഭിക്കാൻ പുതിയൊരു മോഡലിലേക്ക് അപ്ഗ്രേഡ് ചെയ്യൂ. &lt;a target="_blank" href="<ph name="URL" />"&gt;കൂടുതലറിയുക&lt;/a&gt;</translation>
 <translation id="9039014462651733343">{NUM_ATTEMPTS,plural, =1{ഒരു ശ്രമം ശേഷിക്കുന്നു.}other{# ശ്രമങ്ങൾ ശേഷിക്കുന്നു.}}</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571"><ph name="ORIGIN" /> എന്നതിനായി പാസ്‌വേഡുകൾ അപ്‌ഡേറ്റ് ചെയ്യണോ?</translation>

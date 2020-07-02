@@ -73,6 +73,7 @@
 <translation id="1747827819627189109">Экранная клавиатура включена</translation>
 <translation id="1761222317188459878">Изменить настройки сетевого подключения. <ph name="STATE_TEXT" />.</translation>
 <translation id="1771761307086386028">Вправо</translation>
+<translation id="1782199038061388045">перевести</translation>
 <translation id="181103072419391116">Уровень сигнала – <ph name="SIGNAL_STRENGTH" />, под управлением администратора</translation>
 <translation id="1812997170047690955">Объекты на экране</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
@@ -184,6 +185,7 @@
 <translation id="3081696990447829002">Развернуть меню</translation>
 <translation id="3087734570205094154">Снизу</translation>
 <translation id="309749186376891736">Перемещение курсора</translation>
+<translation id="3098580329624789136">Как <ph name="INTENT" /> "<ph name="QUERY" />"</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Перезагрузите, чтобы обновить</translation>
 <translation id="3139942575505304791">Рабочий стол 1</translation>
@@ -528,6 +530,7 @@
 <translation id="7378594059915113390">Элементы управления медиафайлами</translation>
 <translation id="7398254312354928459">Установлено соединение с другой сетью</translation>
 <translation id="7405710164030118432">Чтобы разблокировать устройство, введите родительский код доступа Family Link.</translation>
+<translation id="741244894080940828">сконвертировать</translation>
 <translation id="742594950370306541">Камера используется.</translation>
 <translation id="743058460480092004">Камера и микрофон используются.</translation>
 <translation id="7436182601308224670">Добрый день, <ph name="GIVEN_NAME" />!</translation>
@@ -540,6 +543,7 @@
 <translation id="7562368315689366235">Меню смайликов</translation>
 <translation id="7564874036684306347">При переносе окон на другой рабочий стол иногда возникают ошибки. Уведомления и диалоговые окна могут появляться на разных рабочих столах.</translation>
 <translation id="7568294522609223312">Выключение автоматического нажатия</translation>
+<translation id="7568637526529101738">Чтобы увидеть определение термина, сконвертировать одни единицы измерения в другие и т. д., выберите нужный элемент с помощью правого клика или долгого нажатия.</translation>
 <translation id="7569509451529460200">Шрифт Брайля и функция ChromeVox включены</translation>
 <translation id="7593891976182323525">Search или Shift</translation>
 <translation id="7600875258240007829">Показать все уведомления</translation>

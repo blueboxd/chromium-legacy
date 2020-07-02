@@ -62,10 +62,12 @@ class ScriptExecutorTest : public testing::Test,
         /* listener= */ this, &scripts_state_, &ordered_interrupts_,
         /* delegate= */ &delegate_);
 
-    // In this test, "tell" actions always succeed and "click" actions always
-    // fail. The following makes a click action fail immediately
-    ON_CALL(mock_web_controller_, OnClickOrTapElement(_, _))
-        .WillByDefault(RunOnceCallback<1>(ClientStatus(OTHER_ACTION_STATUS)));
+    // In this test, "tell" actions always succeed and "click" actions,
+    // preceded by finding the element, always fail. The following makes a
+    // click action fail immediately
+    ON_CALL(mock_web_controller_, OnFindElement(_, _))
+        .WillByDefault(RunOnceCallback<1>(
+            ClientStatus(ELEMENT_RESOLUTION_FAILED), nullptr));
 
     ON_CALL(mock_web_controller_, OnElementCheck(_, _))
         .WillByDefault(RunOnceCallback<1>(OkClientStatus()));
@@ -223,7 +225,7 @@ TEST_F(ScriptExecutorTest, RunOneActionReportAndReturn) {
   executor_->Run(&user_data_, executor_callback_.Get());
 
   ASSERT_EQ(1u, processed_actions_capture.size());
-  EXPECT_EQ(OTHER_ACTION_STATUS, processed_actions_capture[0].status());
+  EXPECT_EQ(ELEMENT_RESOLUTION_FAILED, processed_actions_capture[0].status());
   EXPECT_TRUE(processed_actions_capture[0].has_run_time_ms());
   EXPECT_GE(processed_actions_capture[0].run_time_ms(), 0);
 }
@@ -318,7 +320,7 @@ TEST_F(ScriptExecutorTest, InterruptActionListOnError) {
 
   ASSERT_EQ(2u, processed_actions1_capture.size());
   EXPECT_EQ(ACTION_APPLIED, processed_actions1_capture[0].status());
-  EXPECT_EQ(OTHER_ACTION_STATUS, processed_actions1_capture[1].status());
+  EXPECT_EQ(ELEMENT_RESOLUTION_FAILED, processed_actions1_capture[1].status());
 
   ASSERT_EQ(1u, processed_actions2_capture.size());
   EXPECT_EQ(ACTION_APPLIED, processed_actions2_capture[0].status());
@@ -1167,7 +1169,7 @@ TEST_F(ScriptExecutorTest, ReportErrorAsNavigationError) {
 
   // The original error is overwritten; a navigation error is reported.
   EXPECT_EQ(NAVIGATION_ERROR, processed_actions_capture[0].status());
-  EXPECT_EQ(OTHER_ACTION_STATUS,
+  EXPECT_EQ(ELEMENT_RESOLUTION_FAILED,
             processed_actions_capture[0].status_details().original_status());
 }
 

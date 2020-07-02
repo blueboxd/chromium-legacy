@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/input_method/assistive_window_controller.h"
 
+#include "ash/public/cpp/ash_pref_names.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/chromeos/input_method/assistive_window_controller_delegate.h"
 #include "chrome/browser/chromeos/input_method/ui/suggestion_details.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -13,6 +15,10 @@
 #include "ui/aura/window.h"
 #include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/wm/core/window_util.h"
+
+namespace {
+const char kAnnounceString[] = "announce string";
+}  // namespace
 
 namespace chromeos {
 namespace input_method {
@@ -24,6 +30,20 @@ class MockDelegate : public AssistiveWindowControllerDelegate {
       const ui::ime::AssistiveWindowButton& button) const override {}
 };
 
+class TestTtsHandler : public TtsHandler {
+ public:
+  explicit TestTtsHandler(Profile* profile) : TtsHandler(profile) {}
+
+  void VerifyAnnouncement(const std::string& expected_text) {
+    EXPECT_EQ(text_, expected_text);
+  }
+
+ private:
+  void Speak(const std::string& text) override { text_ = text; }
+
+  std::string text_ = "";
+};
+
 class AssistiveWindowControllerTest : public ChromeAshTestBase {
  protected:
   AssistiveWindowControllerTest() { ui::IMEBridge::Initialize(); }
@@ -31,9 +51,11 @@ class AssistiveWindowControllerTest : public ChromeAshTestBase {
 
   void SetUp() override {
     profile_ = std::make_unique<TestingProfile>();
+    auto tts_handler = std::make_unique<TestTtsHandler>(profile_.get());
+    tts_handler_ = tts_handler.get();
 
-    controller_ = std::make_unique<AssistiveWindowController>(delegate_.get(),
-                                                              profile_.get());
+    controller_ = std::make_unique<AssistiveWindowController>(
+        delegate_.get(), profile_.get(), std::move(tts_handler));
     ui::IMEBridge::Get()->SetAssistiveWindowHandler(controller_.get());
 
     ChromeAshTestBase::SetUp();
@@ -41,10 +63,33 @@ class AssistiveWindowControllerTest : public ChromeAshTestBase {
     wm::ActivateWindow(window.get());
   }
 
+  std::vector<base::string16> Candidates() {
+    std::vector<base::string16> candidates;
+    for (int i = 0; i < 3; i++) {
+      std::string candidate = base::NumberToString(i);
+      candidates.push_back(base::UTF8ToUTF16(candidate));
+    }
+    return candidates;
+  }
+
+  void InitEmojiSuggestionWindow() {
+    emoji_window_.type = ui::ime::AssistiveWindowType::kEmojiSuggestion;
+    emoji_window_.visible = true;
+    emoji_window_.candidates = Candidates();
+  }
+
+  void InitEmojiButton() {
+    emoji_button_.window_type = ui::ime::AssistiveWindowType::kEmojiSuggestion;
+    emoji_button_.announce_string = kAnnounceString;
+  }
+
   std::unique_ptr<AssistiveWindowController> controller_;
   std::unique_ptr<MockDelegate> delegate_ = std::make_unique<MockDelegate>();
   std::unique_ptr<TestingProfile> profile_;
   const base::string16 suggestion_ = base::UTF8ToUTF16("test");
+  ui::ime::AssistiveWindowButton emoji_button_;
+  chromeos::AssistiveWindowProperties emoji_window_;
+  TestTtsHandler* tts_handler_;
 
   void TearDown() override {
     controller_.reset();
@@ -118,6 +163,93 @@ TEST_F(AssistiveWindowControllerTest,
   ui::IMEBridge::Get()->GetAssistiveWindowHandler()->SetBounds(new_bounds);
   EXPECT_EQ(new_bounds,
             controller_->GetSuggestionWindowViewForTesting()->GetAnchorRect());
+}
+
+TEST_F(AssistiveWindowControllerTest,
+       AnnouncesWhenSetButtonHighlightedInEmojiWindowHasAnnounceString) {
+  profile_->GetPrefs()->SetBoolean(
+      ash::prefs::kAccessibilitySpokenFeedbackEnabled, true);
+  InitEmojiSuggestionWindow();
+  InitEmojiButton();
+
+  ui::IMEBridge::Get()
+      ->GetAssistiveWindowHandler()
+      ->SetAssistiveWindowProperties(emoji_window_);
+  ui::IMEBridge::Get()->GetAssistiveWindowHandler()->SetButtonHighlighted(
+      emoji_button_, true);
+  task_environment()->RunUntilIdle();
+
+  tts_handler_->VerifyAnnouncement(kAnnounceString);
+}
+
+TEST_F(AssistiveWindowControllerTest,
+       DoesNotAnnounceWhenSetButtonHighlightedAndChromeVoxIsOff) {
+  profile_->GetPrefs()->SetBoolean(
+      ash::prefs::kAccessibilitySpokenFeedbackEnabled, false);
+  InitEmojiSuggestionWindow();
+  InitEmojiButton();
+
+  ui::IMEBridge::Get()
+      ->GetAssistiveWindowHandler()
+      ->SetAssistiveWindowProperties(emoji_window_);
+  ui::IMEBridge::Get()->GetAssistiveWindowHandler()->SetButtonHighlighted(
+      emoji_button_, true);
+  task_environment()->RunUntilIdle();
+
+  tts_handler_->VerifyAnnouncement(base::EmptyString());
+}
+
+TEST_F(
+    AssistiveWindowControllerTest,
+    DoesNotAnnounceWhenSetButtonHighlightedInEmojiWindowDoesNotHaveAnnounceString) {
+  profile_->GetPrefs()->SetBoolean(
+      ash::prefs::kAccessibilitySpokenFeedbackEnabled, true);
+  InitEmojiSuggestionWindow();
+  InitEmojiButton();
+  emoji_button_.announce_string = base::EmptyString();
+
+  ui::IMEBridge::Get()
+      ->GetAssistiveWindowHandler()
+      ->SetAssistiveWindowProperties(emoji_window_);
+  ui::IMEBridge::Get()->GetAssistiveWindowHandler()->SetButtonHighlighted(
+      emoji_button_, true);
+  task_environment()->RunUntilIdle();
+
+  tts_handler_->VerifyAnnouncement(base::EmptyString());
+}
+
+TEST_F(AssistiveWindowControllerTest,
+       DoesNotAnnounceWhenSetButtonHighlightedInUndoWindowHasAnnounceString) {
+  profile_->GetPrefs()->SetBoolean(
+      ash::prefs::kAccessibilitySpokenFeedbackEnabled, true);
+  InitEmojiSuggestionWindow();
+  ui::ime::AssistiveWindowButton button;
+  button.window_type = ui::ime::AssistiveWindowType::kUndoWindow;
+  button.announce_string = kAnnounceString;
+
+  ui::IMEBridge::Get()
+      ->GetAssistiveWindowHandler()
+      ->SetAssistiveWindowProperties(emoji_window_);
+  ui::IMEBridge::Get()->GetAssistiveWindowHandler()->SetButtonHighlighted(
+      button, true);
+  task_environment()->RunUntilIdle();
+
+  tts_handler_->VerifyAnnouncement(base::EmptyString());
+}
+
+TEST_F(
+    AssistiveWindowControllerTest,
+    DoesNotAnnounceWhenSetButtonHighlightedAndSuggestionWindowViewIsNotActive) {
+  profile_->GetPrefs()->SetBoolean(
+      ash::prefs::kAccessibilitySpokenFeedbackEnabled, true);
+  InitEmojiButton();
+
+  ui::IMEBridge::Get()->GetAssistiveWindowHandler()->SetButtonHighlighted(
+      emoji_button_, true);
+  task_environment()->RunUntilIdle();
+
+  std::string expected_announcement = base::EmptyString();
+  tts_handler_->VerifyAnnouncement(base::EmptyString());
 }
 
 }  // namespace input_method

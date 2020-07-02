@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Digital Goods API: Test calls from WebIDL to mojo and back.</title>
+  <script src="../resources/testharness.js"></script>
+  <script src="../resources/testharnessreport.js"></script>
+  <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings_lite.js"></script>
+  <script src="file:///gen/components/payments/mojom/payment_request_data.mojom-lite.js"></script>
+  <script src="file:///gen/third_party/blink/public/mojom/digital_goods/digital_goods.mojom-lite.js"></script>
+  <script src="resources/mock-digital-goods-service.js"></script>
+</head>
+<body>
+<script>
+'use strict';
+
+digital_goods_test(
+    async service => assert_not_equals(service, undefined),
+    {title: 'Digital goods service exists.'});
+
+digital_goods_test(
+    async service => assert_equals(service, undefined),
+    {
+      paymentMethod: 'https://not.known/payment/method',
+      title: 'Digital goods service null for unknown payment method.'
+    });
+
+digital_goods_test(async service => {
+  const response = await service.getDetails(['id1']);
+  assert_equals(response.length, 1);
+  assert_equals(response[0].itemId, 'id1');
+  assert_equals(response[0].title, 'title:id1');
+  assert_equals(response[0].description, 'description:id1');
+  assert_equals(response[0].price.currency, 'AUD');
+  assert_equals(response[0].price.value, '1.00');
+}, {title: 'GetDetails round trip.'});
+
+digital_goods_test(async service => {
+  const response = await service.getDetails(['id1', 'id2', 'id3', 'id4']);
+  assert_equals(response.length, 4);
+  const responseIds = response.map(i => i.itemId);
+  assert_array_equals(responseIds, ['id1', 'id2', 'id3', 'id4']);
+}, {title: 'GetDetails multiple IDs.'});
+
+digital_goods_test(async service => {
+  try {
+    await service.getDetails([]);
+    assert_unreached();
+  } catch (error) {
+    assert_equals(error.message, 'Must specify at least one item ID.');
+  }
+}, {title: 'GetDetails no IDs should error.'});
+
+digital_goods_test(async service => {
+  const response = await service.getDetails(['gone']);
+  assert_equals(response.length, 0);
+}, {title: 'GetDetails none found.'});
+
+digital_goods_test(async service => {
+  const response = await service.getDetails(['id1', 'gone1', 'id2', 'gone2']);
+  assert_equals(response.length, 2);
+}, {title: 'GetDetails not all found.'});
+
+digital_goods_test(async service => {
+  try {
+    await service.getDetails(['fail']);
+    assert_unreached();
+  } catch (error) {
+    assert_equals(error, 'error'); // TODO: throw an error instead of rejecting with a string?
+  }
+}, {title: 'GetDetails internal error.'});
+
+digital_goods_test(async service => {
+  const response = await service.acknowledge('token1', 'repeatable');
+  assert_equals(response, undefined);
+}, {
+  expectedAction: 'acknowledge:token1 true',
+  title: 'Acknowledge repeatable purchase.'
+});
+
+digital_goods_test(async service => {
+  const response = await service.acknowledge('token1', 'onetime');
+  assert_equals(response, undefined);
+}, {
+  expectedAction: 'acknowledge:token1 false',
+  title: 'Acknowledge one-time purchase.'
+});
+
+digital_goods_test(async service => {
+  try {
+    await service.acknowledge('fail', 'repeatable');
+    assert_unreached();
+  } catch (error) {
+    assert_equals(error, 'error'); // TODO: throw an error instead of rejecting with a string?
+  }
+}, {title: 'Acknowledge bad ID should error.'});
+
+digital_goods_test(async service => {
+  try {
+    await service.acknowledge('token1', 'badPurchaseType');
+    assert_unreached();
+  } catch (error) {
+    assert_regexp_match(error.message, /not a valid enum value of type PurchaseType/);
+  }
+}, {title: 'Acknowledge bad purchase type should error.'});
+
+</script>
+</body>
+</html>

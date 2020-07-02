@@ -294,6 +294,12 @@ public class TranslateMenuHelper implements AdapterView.OnItemClickListener {
                     if (getItem(position).mId == TranslateMenu.ID_OVERFLOW_ALWAYS_TRANSLATE
                             && mOptions.getTranslateState(TranslateOptions.Type.ALWAYS_LANGUAGE)) {
                         checkboxIcon.setVisibility(View.VISIBLE);
+                    } else if (getItem(position).mId == TranslateMenu.ID_OVERFLOW_NEVER_LANGUAGE
+                            && mOptions.getTranslateState(TranslateOptions.Type.NEVER_LANGUAGE)) {
+                        checkboxIcon.setVisibility(View.VISIBLE);
+                    } else if (getItem(position).mId == TranslateMenu.ID_OVERFLOW_NEVER_SITE
+                            && mOptions.getTranslateState(TranslateOptions.Type.NEVER_DOMAIN)) {
+                        checkboxIcon.setVisibility(View.VISIBLE);
                     } else {
                         checkboxIcon.setVisibility(View.INVISIBLE);
                     }

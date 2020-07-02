@@ -72,7 +72,7 @@ void NetworkProfileHandler::RemoveObserver(NetworkProfileObserver* observer) {
 
 void NetworkProfileHandler::GetManagerPropertiesCallback(
     DBusMethodCallStatus call_status,
-    const base::DictionaryValue& properties) {
+    base::Value properties) {
   if (DBUS_METHOD_CALL_FAILURE) {
     LOG(ERROR) << "Error when requesting manager properties.";
     return;
@@ -137,7 +137,7 @@ void NetworkProfileHandler::OnPropertyChanged(const std::string& name,
 
 void NetworkProfileHandler::GetProfilePropertiesCallback(
     const std::string& profile_path,
-    const base::DictionaryValue& properties) {
+    base::Value properties) {
   if (pending_profile_creations_.erase(profile_path) == 0) {
     VLOG(1) << "Ignore received properties, profile was removed.";
     return;

@@ -4407,9 +4407,6 @@
 <translation id="7724592140967451156">如果將這項政策設為 True，瀏覽器網址列中的網域以外的網頁元素將無法設定 Cookie。如果將這項政策設為 False，這類元素將可設定 Cookie，且使用者無法變更這項設定。
 
       如果不設定，系統會啟用第三方 Cookie，但使用者可以變更這項設定。</translation>
-<translation id="7724652568947700864">如果設定了這項政策，系統會將所有指定的資料類型從同步處理作業 (包含 Google Sync 和漫遊設定檔的同步處理作業) 中排除。這有助於縮減漫遊設定檔的大小，或限制上傳到 Google Sync 伺服器的資料類型。
-
-      這項政策目前涵蓋的資料類型為：「bookmarks」、「preferences」、「passwords」、「autofill」、「themes」、「typedUrls」、「extensions」、「apps」、「tabs」、「wifiConfiguration」。這些名稱有大小寫之分。</translation>
 <translation id="7731026922044991970">將所有網站上的 Cookie 還原成舊版的 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 行為</translation>
 <translation id="7732907212083471072">已移除的政策</translation>
 <translation id="7747447585227954402">允許裝置在 <ph name="PRODUCT_OS_NAME" /> 使用 <ph name="PLUGIN_VM_NAME" /></translation>

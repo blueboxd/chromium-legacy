@@ -29,22 +29,22 @@ class ShillLogSource : public SystemLogsSource {
 
  private:
   void OnGetManagerProperties(chromeos::DBusMethodCallStatus call_status,
-                              const base::DictionaryValue& result);
+                              base::Value result);
   void OnGetDevice(const std::string& device_path,
                    chromeos::DBusMethodCallStatus call_status,
-                   const base::DictionaryValue& properties);
+                   base::Value properties);
   void AddDeviceAndRequestIPConfigs(const std::string& device_path,
-                                    const base::DictionaryValue& properties);
+                                    const base::Value& properties);
   void OnGetIPConfig(const std::string& device_path,
                      const std::string& ip_config_path,
                      chromeos::DBusMethodCallStatus call_status,
-                     const base::DictionaryValue& properties);
+                     base::Value properties);
   void AddIPConfig(const std::string& device_path,
                    const std::string& ip_config_path,
-                   const base::DictionaryValue& properties);
+                   const base::Value& properties);
   void OnGetService(const std::string& service_path,
                     chromeos::DBusMethodCallStatus call_status,
-                    const base::DictionaryValue& properties);
+                    base::Value properties);
   // Scrubs |properties| for PII data based on the |object_path|. Also expands
   // UIData from JSON into a dictionary if present.
   base::Value ScrubAndExpandProperties(const std::string& object_path,

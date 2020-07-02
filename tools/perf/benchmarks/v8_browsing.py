@@ -22,6 +22,7 @@ def AugmentOptionsForV8BrowsingMetrics(options, enable_runtime_call_stats=True):
     # V8 categories.
     'disabled-by-default-v8.gc',
     'v8',
+    'v8.wasm',
     'v8.console',
     'webkit.console',
     # Blink categories.
@@ -49,6 +50,7 @@ def AugmentOptionsForV8BrowsingMetrics(options, enable_runtime_call_stats=True):
     'gcMetric',
     'memoryMetric',
     'reportedByPageMetric',
+    'wasmMetric',
   ]
   options.ExtendTimelineBasedMetric(metrics)
   if enable_runtime_call_stats:

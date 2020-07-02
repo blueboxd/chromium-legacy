@@ -17,8 +17,6 @@ namespace media {
 
 VideoFrameMetadata::VideoFrameMetadata() = default;
 
-VideoFrameMetadata::~VideoFrameMetadata() = default;
-
 VideoFrameMetadata::VideoFrameMetadata(const VideoFrameMetadata& other) =
     default;
 

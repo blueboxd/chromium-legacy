@@ -6406,7 +6406,6 @@
 <translation id="9033765790910064284">Շարունակել</translation>
 <translation id="9033857511263905942">&amp;Տեղադրել</translation>
 <translation id="9037965129289936994">Ցույց տալ բնօրինակը</translation>
-<translation id="903797871439633902">Սա ծրագրային և անվտանգության կարգավորումների վերջին ավտոմատ թարմացումն է այս <ph name="DEVICE_TYPE" /> սարքի համար։ Հետագա թարմացումները ստանալու համար անցեք ավելի նոր մոդելի։ &lt;a target="_blank" href="<ph name="URL" />"&gt;Իմանալ ավելին&lt;/a&gt;</translation>
 <translation id="9039014462651733343">{NUM_ATTEMPTS,plural, =1{Դուք ունեք ևս մեկ փորձ։}one{Դուք ունեք ևս # փորձ։}other{Դուք ունեք ևս # փորձ։}}</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571">Թարմացնե՞լ <ph name="ORIGIN" /> կայքի գաղտնաբառը</translation>

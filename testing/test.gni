@@ -29,11 +29,6 @@ if (is_ios) {
   import("//build/config/ios/rules.gni")
 }
 
-if ((is_linux && !is_chromeos) || is_mac || is_win) {
-  import("//build/config/sanitizers/sanitizers.gni")
-  import("//build/util/generate_wrapper.gni")
-}
-
 # Define a test as an executable (or apk on Android) with the "testonly" flag
 # set.
 # Variable:
@@ -357,71 +352,7 @@ template("test") {
       data += [ _runtime_deps_file ]
       deps += [ ":$_gen_runner_target" ]
     }
-  } else if (is_chromeos && cros_board == "") {
-    executable(target_name) {
-      forward_variables_from(invoker, "*")
-      if (!defined(deps)) {
-        deps = []
-      }
-
-      if (is_win) {
-        # Initializing CFG data during process creation is a significant
-        # bottleneck for large test binaries, and CFG is not needed for tests,
-        # so disable it. See https://crbug.com/950923 for details.
-        configs -= [ "//build/config/win:cfi_linker" ]
-      }
-      testonly = true
-      deps += [
-        # Give tests the default manifest on Windows (a no-op elsewhere).
-        "//build/win:default_exe_manifest",
-      ]
-    }
   } else {
-    if ((is_linux && !is_chromeos) || is_mac || is_win) {
-      _runtime_deps_file = "$root_out_dir/${target_name}.runtime_deps"
-      _executable = target_name
-      _gen_runner_target = "${target_name}__runner"
-
-      if (is_linux && defined(invoker.use_xvfb)) {
-        _use_xvfb = invoker.use_xvfb
-      } else {
-        _use_xvfb = false
-      }
-
-      generate_wrapper(_gen_runner_target) {
-        testonly = true
-        wrapper_script = "$root_build_dir/bin/run_" + _executable
-
-        if (_use_xvfb) {
-          executable = "//testing/xvfb.py"
-        } else {
-          executable = "//testing/test_env.py"
-        }
-
-        executable_args = [
-          "@WrappedPath(./${_executable})",
-          "--test-launcher-bot-mode",
-        ]
-        if (is_asan) {
-          executable_args += [ "--asan=true" ]
-        }
-        if (is_msan) {
-          executable_args += [ "--msan=true" ]
-        }
-        if (is_tsan) {
-          executable_args += [ "--tsan=true" ]
-        }
-        if (use_cfi_diag) {
-          executable_args += [ "--cfi-diag=true" ]
-        }
-
-        data = [
-          "//testing/test_env.py",
-          "//.vpython",
-        ]
-      }
-    }
-
     executable(target_name) {
       forward_variables_from(invoker, "*")
       if (!defined(deps)) {
@@ -439,11 +370,6 @@ template("test") {
         # Give tests the default manifest on Windows (a no-op elsewhere).
         "//build/win:default_exe_manifest",
       ]
-
-      if (is_linux || is_mac || is_win) {
-        write_runtime_deps = _runtime_deps_file
-        deps += [ ":$_gen_runner_target" ]
-      }
     }
   }
 }

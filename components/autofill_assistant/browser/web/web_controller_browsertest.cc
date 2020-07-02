@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/autofill_assistant/browser/web/web_controller.h"
+
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/strcat.h"
@@ -9,7 +11,7 @@
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/string_conversions_util.h"
 #include "components/autofill_assistant/browser/top_padding.h"
-#include "components/autofill_assistant/browser/web/web_controller.h"
+#include "components/autofill_assistant/browser/web/element_finder.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -137,18 +139,36 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     }
   }
 
-  void ClickElementCallback(base::OnceClosure done_callback,
+  void ClickElementCallback(std::unique_ptr<ElementFinder::Result> element,
+                            base::OnceClosure done_callback,
                             const ClientStatus& status) {
     EXPECT_EQ(ACTION_APPLIED, status.proto_status());
+    EXPECT_TRUE(element != nullptr);
     std::move(done_callback).Run();
+  }
+
+  void FindClickOrTapElementCallback(
+      ClickType click_type,
+      base::OnceClosure done_callback,
+      const ClientStatus& status,
+      std::unique_ptr<ElementFinder::Result> element_result) {
+    EXPECT_EQ(ACTION_APPLIED, status.proto_status());
+    EXPECT_TRUE(element_result != nullptr);
+    web_controller_->ClickOrTapElement(
+        *element_result, click_type,
+        base::BindOnce(&WebControllerBrowserTest::ClickElementCallback,
+                       base::Unretained(this), std::move(element_result),
+                       std::move(done_callback)));
   }
 
   void ClickOrTapElement(const Selector& selector, ClickType click_type) {
     base::RunLoop run_loop;
-    web_controller_->ClickOrTapElement(
-        selector, click_type,
-        base::BindOnce(&WebControllerBrowserTest::ClickElementCallback,
-                       base::Unretained(this), run_loop.QuitClosure()));
+    web_controller_->FindElement(
+        selector, /* strict_mode= */ true,
+        base::BindOnce(&WebControllerBrowserTest::FindClickOrTapElementCallback,
+                       base::Unretained(this), click_type,
+                       run_loop.QuitClosure()));
+
     run_loop.Run();
   }
 
@@ -301,8 +321,7 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
       *result_out = *result;
   }
 
-  void FindElementAndCheck(const Selector& selector,
-                           bool is_main_frame) {
+  void FindElementAndCheck(const Selector& selector, bool is_main_frame) {
     SCOPED_TRACE(::testing::Message() << selector << " strict");
     ClientStatus status;
     ElementFinder::Result result;
@@ -1241,7 +1260,6 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOption) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOptionInIFrame) {
-
   // IFrame.
   Selector select_selector({"#iframe", "select[name=state]"});
   EXPECT_EQ(
@@ -1379,7 +1397,6 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetAndSetFieldValue) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetAndSetFieldValueInIFrame) {
-
   // IFrame.
   Selector a_selector({"#iframe", "#input"});
   EXPECT_EQ(ACTION_APPLIED,

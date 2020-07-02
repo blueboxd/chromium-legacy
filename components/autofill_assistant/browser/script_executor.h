@@ -25,6 +25,7 @@
 #include "components/autofill_assistant/browser/script_executor_delegate.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/top_padding.h"
+#include "components/autofill_assistant/browser/web/element_finder.h"
 
 namespace autofill_assistant {
 class UserModel;
@@ -116,8 +117,10 @@ class ScriptExecutor : public ActionDelegate,
   std::string GetStatusMessage() override;
   void SetBubbleMessage(const std::string& message) override;
   std::string GetBubbleMessage() override;
+  void FindElement(const Selector& selector,
+                   ElementFinder::Callback callback) override;
   void ClickOrTapElement(
-      const Selector& selector,
+      const ElementFinder::Result& element,
       ClickType click_type,
       base::OnceCallback<void(const ClientStatus&)> callback) override;
   void CollectUserData(

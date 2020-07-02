@@ -213,15 +213,16 @@ class CORE_EXPORT CSPDirectiveList final
   ContentSecurityPolicy::DirectiveType FallbackDirective(
       const ContentSecurityPolicy::DirectiveType current_directive,
       const ContentSecurityPolicy::DirectiveType original_directive) const;
-  void ReportViolation(const String& directive_text,
-                       const ContentSecurityPolicy::DirectiveType,
-                       const String& console_message,
-                       const KURL& blocked_url,
-                       ResourceRequest::RedirectStatus,
-                       ContentSecurityPolicy::ViolationType violation_type =
-                           ContentSecurityPolicy::kURLViolation,
-                       const String& sample = String(),
-                       const String& sample_prefix = String()) const;
+  void ReportViolation(
+      const String& directive_text,
+      const ContentSecurityPolicy::DirectiveType,
+      const String& console_message,
+      const KURL& blocked_url,
+      ResourceRequest::RedirectStatus,
+      ContentSecurityPolicy::ContentSecurityPolicyViolationType violation_type =
+          ContentSecurityPolicy::kURLViolation,
+      const String& sample = String(),
+      const String& sample_prefix = String()) const;
   void ReportViolationWithFrame(const String& directive_text,
                                 const ContentSecurityPolicy::DirectiveType,
                                 const String& console_message,

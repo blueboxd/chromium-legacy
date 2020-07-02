@@ -57,6 +57,12 @@ bool BookmarkAppRegistrar::IsLocallyInstalled(
          BookmarkAppIsLocallyInstalled(profile(), extension);
 }
 
+bool BookmarkAppRegistrar::IsInSyncInstall(const web_app::AppId& app_id) const {
+  // The bookmark app sync system does not reserve an extension object
+  // for an app to be synced.
+  return false;
+}
+
 bool BookmarkAppRegistrar::WasInstalledByUser(
     const web_app::AppId& app_id) const {
   const Extension* extension = GetBookmarkAppDchecked(app_id);

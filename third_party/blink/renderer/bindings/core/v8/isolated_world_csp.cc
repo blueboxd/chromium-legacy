@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/check.h"
+#include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -97,6 +98,10 @@ class IsolatedWorldCSPDelegate final
   void AddConsoleMessage(ConsoleMessage* console_message) override {
     // Add console messages on the underlying window.
     window_->AddConsoleMessage(console_message);
+  }
+
+  void AddInspectorIssue(mojom::blink::InspectorIssueInfoPtr info) override {
+    window_->AddInspectorIssue(std::move(info));
   }
 
   void DisableEval(const String& error_message) override {

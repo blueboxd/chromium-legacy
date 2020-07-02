@@ -87,7 +87,10 @@ var MultiStepBehavior = {
   },
 
   onBeforeShow() {
-    this.setUIStep(this.defaultUIStep());
+    // Only set uiStep to defaultUIStep if it is not set yet.
+    if (!this.uiStep) {
+      this.setUIStep(this.defaultUIStep());
+    }
   },
 
   /**

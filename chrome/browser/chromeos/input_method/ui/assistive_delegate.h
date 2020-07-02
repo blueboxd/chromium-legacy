@@ -29,6 +29,7 @@ struct AssistiveWindowButton {
   ButtonId id = ButtonId::kNone;
   AssistiveWindowType window_type = AssistiveWindowType::kNone;
   size_t index = -1;
+  std::string announce_string;
 };
 
 class UI_CHROMEOS_EXPORT AssistiveDelegate {

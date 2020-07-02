@@ -261,7 +261,9 @@ app_management::mojom::AppPtr AppManagementPageHandler::CreateUIAppPtr(
 #endif
 
   app->hide_more_settings = ShouldHideMoreSettings(app->id);
-  app->hide_pin_to_shelf = ShouldHidePinToShelf(app->id);
+  app->hide_pin_to_shelf =
+      update.ShowInShelf() == apps::mojom::OptionalBool::kFalse ||
+      ShouldHidePinToShelf(app->id);
 
   return app;
 }

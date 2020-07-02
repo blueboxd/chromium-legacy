@@ -18,6 +18,7 @@
 #include "components/autofill_assistant/browser/top_padding.h"
 #include "components/autofill_assistant/browser/user_action.h"
 #include "components/autofill_assistant/browser/user_data.h"
+#include "components/autofill_assistant/browser/web/element_finder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill_assistant {
@@ -63,8 +64,10 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD0(GetStatusMessage, std::string());
   MOCK_METHOD1(SetBubbleMessage, void(const std::string& message));
   MOCK_METHOD0(GetBubbleMessage, std::string());
+  MOCK_METHOD2(FindElement,
+               void(const Selector& selector, ElementFinder::Callback));
   MOCK_METHOD3(ClickOrTapElement,
-               void(const Selector& selector,
+               void(const ElementFinder::Result& element,
                     ClickType click_type,
                     base::OnceCallback<void(const ClientStatus&)> callback));
 

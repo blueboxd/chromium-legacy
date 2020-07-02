@@ -44,6 +44,27 @@ struct MEDIA_EXPORT Vp8Metadata final {
   bool layer_sync;
 };
 
+// Metadata for a VP9 bitstream buffer
+// |has_reference|      is true iff this frame depends on previously coded frame
+//                      on the same spatial layer.
+// |temporal_up_switch| is true iff this frame only references TL0 frames.
+// |tempora_idx|        indicates the temporal index for this frame.
+// |p_diffs|            indicates the differences between the picture id of this
+//                      frame and picture ids of reference frames.
+// CAVEATS: This Vp9 metadata is for temporal layer bitstream and not sufficient
+// for spatial layer bitstream.
+struct MEDIA_EXPORT Vp9Metadata final {
+  Vp9Metadata();
+  ~Vp9Metadata();
+  Vp9Metadata(const Vp9Metadata&);
+
+  // Default values are for keyframe.
+  bool has_reference = false;
+  bool temporal_up_switch = false;
+  uint8_t temporal_idx = 0;
+  std::vector<uint8_t> p_diffs;
+};
+
 //  Metadata associated with a bitstream buffer.
 //  |payload_size| is the byte size of the used portion of the buffer.
 //  |key_frame| is true if this delivered frame is a keyframe.
@@ -52,6 +73,7 @@ struct MEDIA_EXPORT Vp8Metadata final {
 struct MEDIA_EXPORT BitstreamBufferMetadata final {
   BitstreamBufferMetadata();
   BitstreamBufferMetadata(const BitstreamBufferMetadata& other);
+  BitstreamBufferMetadata& operator=(const BitstreamBufferMetadata& other);
   BitstreamBufferMetadata(BitstreamBufferMetadata&& other);
   BitstreamBufferMetadata(size_t payload_size_bytes,
                           bool key_frame,
@@ -61,7 +83,11 @@ struct MEDIA_EXPORT BitstreamBufferMetadata final {
   size_t payload_size_bytes;
   bool key_frame;
   base::TimeDelta timestamp;
+
+  // Either |vp8| or |vp9| may be set, but not both of them. Presumably, it's
+  // also possible for none of them to be set.
   base::Optional<Vp8Metadata> vp8;
+  base::Optional<Vp9Metadata> vp9;
 };
 
 // Video encoder interface.
@@ -319,6 +345,15 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
   virtual ~VideoEncodeAccelerator();
 };
 
+MEDIA_EXPORT bool operator==(const Vp8Metadata& l, const Vp8Metadata& r);
+MEDIA_EXPORT bool operator==(const Vp9Metadata& l, const Vp9Metadata& r);
+MEDIA_EXPORT bool operator==(const BitstreamBufferMetadata& l,
+                             const BitstreamBufferMetadata& r);
+MEDIA_EXPORT bool operator==(
+    const VideoEncodeAccelerator::Config::SpatialLayer& l,
+    const VideoEncodeAccelerator::Config::SpatialLayer& r);
+MEDIA_EXPORT bool operator==(const VideoEncodeAccelerator::Config& l,
+                             const VideoEncodeAccelerator::Config& r);
 }  // namespace media
 
 namespace std {

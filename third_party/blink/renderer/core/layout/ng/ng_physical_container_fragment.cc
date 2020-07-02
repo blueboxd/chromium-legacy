@@ -200,7 +200,7 @@ void NGPhysicalContainerFragment::AddScrollableOverflowForInlineChild(
     if (const NGPhysicalBoxFragment* child_box = item->BoxFragment()) {
       PhysicalRect child_scroll_overflow;
       if (height_type == TextHeightType::kNormalHeight ||
-          child_box->BoxType() != kInlineBox)
+          (child_box->BoxType() != kInlineBox && !IsRubyBox()))
         child_scroll_overflow = item->RectInContainerBlock();
       if (child_box->IsInlineBox()) {
         child_box->AddScrollableOverflowForInlineChild(

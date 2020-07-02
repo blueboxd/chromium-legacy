@@ -105,7 +105,7 @@ void ShillLogSource::Fetch(SysLogsSourceCallback callback) {
 
 void ShillLogSource::OnGetManagerProperties(
     chromeos::DBusMethodCallStatus call_status,
-    const base::DictionaryValue& result) {
+    base::Value result) {
   if (call_status != chromeos::DBUS_METHOD_CALL_SUCCESS) {
     LOG(ERROR) << "ManagerPropertiesCallback Failed: " << call_status;
     std::move(callback_).Run(nullptr);
@@ -145,7 +145,7 @@ void ShillLogSource::OnGetManagerProperties(
 
 void ShillLogSource::OnGetDevice(const std::string& device_path,
                                  chromeos::DBusMethodCallStatus call_status,
-                                 const base::DictionaryValue& properties) {
+                                 base::Value properties) {
   if (call_status != chromeos::DBUS_METHOD_CALL_SUCCESS) {
     LOG(ERROR) << "Get Device Properties Failed for : " << device_path << ": "
                << call_status;
@@ -158,7 +158,7 @@ void ShillLogSource::OnGetDevice(const std::string& device_path,
 
 void ShillLogSource::AddDeviceAndRequestIPConfigs(
     const std::string& device_path,
-    const base::DictionaryValue& properties) {
+    const base::Value& properties) {
   base::Value* device = devices_.SetKey(
       device_path, ScrubAndExpandProperties(device_path, properties));
 
@@ -187,7 +187,7 @@ void ShillLogSource::AddDeviceAndRequestIPConfigs(
 void ShillLogSource::OnGetIPConfig(const std::string& device_path,
                                    const std::string& ip_config_path,
                                    chromeos::DBusMethodCallStatus call_status,
-                                   const base::DictionaryValue& properties) {
+                                   base::Value properties) {
   if (call_status != chromeos::DBUS_METHOD_CALL_SUCCESS) {
     LOG(ERROR) << "Get IPConfig Properties Failed for : " << device_path << ": "
                << ip_config_path << " : " << call_status;
@@ -201,7 +201,7 @@ void ShillLogSource::OnGetIPConfig(const std::string& device_path,
 
 void ShillLogSource::AddIPConfig(const std::string& device_path,
                                  const std::string& ip_config_path,
-                                 const base::DictionaryValue& properties) {
+                                 const base::Value& properties) {
   base::Value* device = devices_.FindKey(device_path);
   DCHECK(device);
   base::Value* ip_configs = device->FindDictKey(shill::kIPConfigsProperty);
@@ -212,7 +212,7 @@ void ShillLogSource::AddIPConfig(const std::string& device_path,
 
 void ShillLogSource::OnGetService(const std::string& service_path,
                                   chromeos::DBusMethodCallStatus call_status,
-                                  const base::DictionaryValue& properties) {
+                                  base::Value properties) {
   if (call_status != chromeos::DBUS_METHOD_CALL_SUCCESS) {
     LOG(ERROR) << "Get Service Properties Failed for : " << service_path << ": "
                << call_status;

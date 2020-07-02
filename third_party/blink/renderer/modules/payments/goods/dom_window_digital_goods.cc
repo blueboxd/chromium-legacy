@@ -10,8 +10,7 @@
 
 namespace {
 
-// TODO (crbug.com/1061503): Point URL to Play payment request API once known.
-const char known_payment_method_[] = "https://some.url/for/payment/request/api";
+const char known_payment_method_[] = "https://play.google.com/billing";
 
 }  // namespace
 

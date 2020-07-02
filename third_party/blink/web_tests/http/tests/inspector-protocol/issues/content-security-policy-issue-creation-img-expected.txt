@@ -1,0 +1,15 @@
+Verifies that CSP issue is created from a page with image source violation.
+
+Inspector issue: {
+    issue : {
+        code : ContentSecurityPolicyIssue
+        details : {
+            contentSecurityPolicyIssueDetails : {
+                blockedURL : https://thirdparty.test/network/resources/to-be-blocked.jpg
+                contentSecurityPolicyViolationType : kURLViolation
+                violatedDirective : img-src 'self'
+            }
+        }
+    }
+}
+

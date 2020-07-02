@@ -158,6 +158,22 @@ void SuggestionWindowView::MaybeInitializeSuggestionViews(
   }
 }
 
+void SuggestionWindowView::SetButtonHighlighted(
+    const AssistiveWindowButton& button,
+    bool highlighted) {
+  switch (button.id) {
+    case ButtonId::kSuggestion:
+      if (highlighted) {
+        HighlightCandidate(button.index);
+      } else {
+        UnhighlightCandidate(button.index);
+      }
+      break;
+    default:
+      break;
+  }
+}
+
 void SuggestionWindowView::HighlightCandidate(int index) {
   if (index == highlighted_index_ || index < 0 ||
       index >= static_cast<int>(candidate_views_.size())) {

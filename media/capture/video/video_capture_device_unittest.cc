@@ -707,7 +707,14 @@ void VideoCaptureDeviceTest::RunCaptureMjpegTestCase() {
   device->StopAndDeAllocate();
 }
 
-WRAPPED_TEST_P(VideoCaptureDeviceTest, NoCameraSupportsPixelFormatMax) {
+// Flaky on ChromeOS. See https://crbug.com/1096082
+#if defined(OS_CHROMEOS)
+#define MAYBE_NoCameraSupportsPixelFormatMax \
+  DISABLED_NoCameraSupportsPixelFormatMax
+#else
+#define MAYBE_NoCameraSupportsPixelFormatMax NoCameraSupportsPixelFormatMax
+#endif
+WRAPPED_TEST_P(VideoCaptureDeviceTest, MAYBE_NoCameraSupportsPixelFormatMax) {
   RunTestCase(base::BindOnce(
       &VideoCaptureDeviceTest::RunNoCameraSupportsPixelFormatMaxTestCase,
       base::Unretained(this)));

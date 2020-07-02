@@ -222,10 +222,10 @@ class NetworkConfigurationHandlerTest : public testing::Test {
 
   void ManagerGetPropertiesCallback(const std::string& success_callback_name,
                                     DBusMethodCallStatus call_status,
-                                    const base::DictionaryValue& result) {
+                                    base::Value result) {
     if (call_status == chromeos::DBUS_METHOD_CALL_SUCCESS)
       success_callback_name_ = success_callback_name;
-    manager_get_properties_ = result.Clone();
+    manager_get_properties_ = std::move(result);
   }
 
   void CreateConfigurationCallback(const std::string& service_path,

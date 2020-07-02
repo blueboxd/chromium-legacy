@@ -24,6 +24,8 @@ jumbo_static_library("browser") {
     "actions/action.cc",
     "actions/action.h",
     "actions/action_delegate.h",
+    "actions/action_delegate_util.cc",
+    "actions/action_delegate_util.h",
     "actions/click_action.cc",
     "actions/click_action.h",
     "actions/collect_user_data_action.cc",

@@ -313,32 +313,10 @@ cr.define('cr.ui.login.debug', function() {
     {
       id: 'enterprise-enrollment',
       kind: ScreenKind.NORMAL,
+      defaultState: 'step-signin',
+      handledSteps: 'error,ad-join',
       suffix: 'E',
       states: [
-        {
-          id: 'signin',
-          trigger: (screen) => {
-            screen.showStep('signin');
-          },
-        },
-        {
-          id: 'working',
-          trigger: (screen) => {
-            screen.showStep('working');
-          },
-        },
-        {
-          id: 'attributes',
-          trigger: (screen) => {
-            screen.showStep('attribute-prompt');
-          },
-        },
-        {
-          id: 'success',
-          trigger: (screen) => {
-            screen.showStep('success');
-          },
-        },
         {
           id: 'error',
           trigger: (screen) => {

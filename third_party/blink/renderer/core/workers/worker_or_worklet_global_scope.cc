@@ -6,6 +6,7 @@
 
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
@@ -159,6 +160,11 @@ class OutsideSettingsCSPDelegate final
     // Document.
     // ExecutionContextCSPDelegate::DidAddContentSecurityPolicies() does
     // nothing for workers/worklets.
+  }
+
+  void AddInspectorIssue(mojom::blink::InspectorIssueInfoPtr info) override {
+    DCHECK(global_scope_for_logging_->IsContextThread());
+    global_scope_for_logging_->AddInspectorIssue(std::move(info));
   }
 
  private:

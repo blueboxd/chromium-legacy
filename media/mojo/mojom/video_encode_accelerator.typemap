@@ -34,4 +34,5 @@ type_mappings = [
   "media.mojom.SpatialLayer=::media::VideoEncodeAccelerator::Config::SpatialLayer",
   "media.mojom.VideoEncodeAcceleratorSupportedProfile=::media::VideoEncodeAccelerator::SupportedProfile",
   "media.mojom.Vp8Metadata=::media::Vp8Metadata",
+  "media.mojom.Vp9Metadata=::media::Vp9Metadata",
 ]

@@ -36,6 +36,25 @@ IntentFilter::IntentFilter(
     paths_ = std::move(paths);
 }
 
+IntentFilter::IntentFilter(
+    const std::string& package_name,
+    const std::string& activity_name,
+    std::vector<std::string> actions,
+    std::vector<IntentFilter::AuthorityEntry> authorities,
+    std::vector<IntentFilter::PatternMatcher> paths,
+    std::vector<std::string> schemes,
+    std::vector<std::string> mime_types)
+    : package_name_(package_name),
+      activity_name_(activity_name),
+      actions_(std::move(actions)),
+      authorities_(std::move(authorities)),
+      schemes_(std::move(schemes)),
+      mime_types_(std::move(mime_types)) {
+  // In order to register a path we need to have at least one authority.
+  if (!authorities_.empty())
+    paths_ = std::move(paths);
+}
+
 IntentFilter::~IntentFilter() = default;
 
 IntentFilter& IntentFilter::operator=(IntentFilter&& other) = default;

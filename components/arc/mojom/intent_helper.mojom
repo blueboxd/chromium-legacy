@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 39
+// Next MinVersion: 40
 
 module arc.mojom;
 
@@ -83,6 +83,9 @@ struct IntentFilter {
   [MinVersion=10] array<PatternMatcher>? deprecated_data_scheme_specific_parts;
   [MinVersion=21] string? package_name; // Package which registered the filter.
   [MinVersion=38] array<string>? mime_types; // Intent filer mime types.
+
+  // Activity which registered the filter.
+  [MinVersion=39] string? activity_name;
 };
 
 // Describes a package that can handle an intent.

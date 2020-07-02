@@ -1121,6 +1121,16 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
                       : PhysicalOffset();
   }
 
+  bool NeedsPaintOffsetTranslationForCompositing() const {
+    DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+    DCHECK(IsAllowedToQueryCompositingState());
+    return needs_paint_offset_translation_for_compositing_;
+  }
+
+  void SetNeedsPaintOffsetTranslationForCompositing(bool b) {
+    needs_paint_offset_translation_for_compositing_ = b;
+  }
+
  private:
   void SetNeedsCompositingInputsUpdateInternal();
 
@@ -1367,6 +1377,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   unsigned needs_reorder_overlay_overflow_controls_ : 1;
   unsigned static_inline_edge_ : 2;
   unsigned static_block_edge_ : 2;
+
+  unsigned needs_paint_offset_translation_for_compositing_ : 1;
 
 #if DCHECK_IS_ON()
   mutable unsigned layer_list_mutation_allowed_ : 1;

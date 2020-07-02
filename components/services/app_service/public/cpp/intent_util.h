@@ -22,6 +22,12 @@ extern const char kIntentActionSendMultiple[];
 // Create an intent struct from URL.
 apps::mojom::IntentPtr CreateIntentFromUrl(const GURL& url);
 
+// Create an intent struct from the filesystem urls and mime types
+// of a list of files.
+apps::mojom::IntentPtr CreateShareIntentFromFiles(
+    const std::vector<GURL>& filesystem_urls,
+    const std::vector<std::string>& mime_types);
+
 // Return true if |value| matches with the |condition_value|, based on the
 // pattern match type in the |condition_value|.
 bool ConditionValueMatches(

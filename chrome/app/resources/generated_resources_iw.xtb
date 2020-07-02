@@ -6404,7 +6404,6 @@
 <translation id="9033765790910064284">אני רוצה להמשיך בכל זאת</translation>
 <translation id="9033857511263905942">&amp;הדבק</translation>
 <translation id="9037965129289936994">הצג מקור</translation>
-<translation id="903797871439633902">‏זהו העדכון האוטומטי האחרון של התוכנה והאבטחה עבור מכשיר <ph name="DEVICE_TYPE" /> זה. כדי לקבל עדכונים עתידיים, יש לשדרג לדגם חדש יותר. &lt;a target="_blank" href="<ph name="URL" />"&gt;מידע נוסף&lt;/a&gt;</translation>
 <translation id="9039014462651733343">{NUM_ATTEMPTS,plural, =1{נשאר לך ניסיון אחד.}two{נשארו לך # ניסיונות.}many{נשארו לך # ניסיונות.}other{נשארו לך # ניסיונות.}}</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571">האם לעדכן את הסיסמה של <ph name="ORIGIN" />?</translation>

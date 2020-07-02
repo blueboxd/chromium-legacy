@@ -12,7 +12,9 @@
 
 int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
-  size_t parallel_jobs = base::NumParallelJobs();
+  size_t parallel_jobs = base::NumParallelJobs(/*cores_per_job=*/1);
+  if (parallel_jobs == 0U)
+    return 1;
 
   // Set up a working test environment for the network service in case it's
   // used. Only create this object in the utility process, so that its members

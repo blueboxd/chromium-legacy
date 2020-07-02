@@ -873,9 +873,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
       std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
           subresource_loader_factories);
 
-  // Update the idle delay if the worker is starting or running and we don't
+  // When ServiceWorkerTerminationOnNoControlle is enabled and there's no
+  // controllee, update the idle delay if the worker is running and we don't
   // have to terminate the worker ASAP (e.g. for activation).
-  void UpdateIdleDelayIfNeeded(base::TimeDelta delay);
+  void MaybeUpdateIdleDelayForTerminationOnNoControllee(base::TimeDelta delay);
 
   const int64_t version_id_;
   const int64_t registration_id_;

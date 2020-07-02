@@ -6404,7 +6404,6 @@
 <translation id="9033765790910064284">Συνέχεια</translation>
 <translation id="9033857511263905942">&amp;Επικόλληση</translation>
 <translation id="9037965129289936994">Εμφάνιση πρωτοτύπου</translation>
-<translation id="903797871439633902">Αυτή είναι η τελευταία αυτόματη ενημέρωση λογισμικού και ασφαλείας για αυτήν τη συσκευή <ph name="DEVICE_TYPE" />. Για να λαμβάνετε μελλοντικές ενημερώσεις, αναβαθμίστε σε νεότερο μοντέλο. &lt;a target="_blank" href="<ph name="URL" />"&gt;Μάθετε περισσότερα&lt;/a&gt;</translation>
 <translation id="9039014462651733343">{NUM_ATTEMPTS,plural, =1{Σας απομένει 1 προσπάθεια.}other{Σας απομένουν # προσπάθειες.}}</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571">Ενημέρωση κωδικού πρόσβασης για <ph name="ORIGIN" />;</translation>

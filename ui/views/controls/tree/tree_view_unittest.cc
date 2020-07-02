@@ -19,6 +19,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 #include "ui/base/models/tree_node_model.h"
+#include "ui/compositor/canvas_painter.h"
 #include "ui/views/accessibility/ax_virtual_view.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/accessibility/view_ax_platform_node_delegate.h"
@@ -162,11 +163,11 @@ class TreeViewTest : public ViewsTestBase {
 void TreeViewTest::SetUp() {
   ViewsTestBase::SetUp();
   widget_ = std::make_unique<Widget>();
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  Widget::InitParams params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.bounds = gfx::Rect(0, 0, 200, 200);
   widget_->Init(std::move(params));
-  tree_ =
-      widget_->GetContentsView()->AddChildView(std::make_unique<TreeView>());
+  tree_ = widget_->SetContentsView(std::make_unique<TreeView>());
   tree_->RequestFocus();
 
   ViewAccessibility::AccessibilityEventsCallback accessibility_events_callback =
@@ -374,6 +375,16 @@ std::string TreeViewTest::InternalNodeAsString(TreeView::InternalNode* node) {
 TEST_F(TreeViewTest, MetadataTest) {
   tree_->SetModel(&model_);
   test::TestViewMetadata(tree_);
+}
+
+TEST_F(TreeViewTest, TreeViewPaintCoverage) {
+  tree_->SetModel(&model_);
+  SkBitmap bitmap;
+  gfx::Size size = tree_->size();
+  ui::CanvasPainter canvas_painter(&bitmap, size, 1.f, SK_ColorTRANSPARENT,
+                                   false);
+  widget_->GetRootView()->Paint(
+      PaintInfo::CreateRootPaintInfo(canvas_painter.context(), size));
 }
 
 // Verifies setting model correctly updates internal state.

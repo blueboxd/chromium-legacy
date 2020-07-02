@@ -1046,13 +1046,12 @@ void FakeShillManagerClient::PassStubProperties(
   base::Value stub_properties = stub_properties_.Clone();
   stub_properties.SetKey(shill::kServiceCompleteListProperty,
                          GetEnabledServiceList());
-  std::move(callback).Run(DBUS_METHOD_CALL_SUCCESS,
-                          base::Value::AsDictionaryValue(stub_properties));
+  std::move(callback).Run(DBUS_METHOD_CALL_SUCCESS, std::move(stub_properties));
 }
 
 void FakeShillManagerClient::PassStubGeoNetworks(
     DictionaryValueCallback callback) const {
-  std::move(callback).Run(DBUS_METHOD_CALL_SUCCESS, stub_geo_networks_);
+  std::move(callback).Run(DBUS_METHOD_CALL_SUCCESS, stub_geo_networks_.Clone());
 }
 
 void FakeShillManagerClient::CallNotifyObserversPropertyChanged(

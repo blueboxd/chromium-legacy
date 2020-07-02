@@ -4610,7 +4610,7 @@
 <translation id="6840155290835956714">Илгээхээсээ өмнө асуух</translation>
 <translation id="6840184929775541289">Гэрчилгээжүүлэх эрх байхгүй</translation>
 <translation id="6841186874966388268">Алдаа</translation>
-<translation id="6843264316370513305">Сүжээний дебаг</translation>
+<translation id="6843264316370513305">Сүлжээний дебаг</translation>
 <translation id="6843423766595476978">Ok Google бэлэн боллоо</translation>
 <translation id="6845038076637626672">Томоор нээ</translation>
 <translation id="6845325883481699275">Chrome-н аюулгүй байдлыг сайжруулахад туслах</translation>
@@ -4811,7 +4811,7 @@
 <translation id="7081952801286122383">Та нууцлалын горимд байна</translation>
 <translation id="708278670402572152">Шалгалтыг идэвхжүүлэхийн тулд салгах</translation>
 <translation id="7085389578340536476">Chrome-д аудио бичихийг зөвшөөрөх үү?</translation>
-<translation id="7086672505018440886">Архивын Chrome лог файлуудыг багтаана.</translation>
+<translation id="7086672505018440886">Архивт Chrome лог файлуудыг багтаана.</translation>
 <translation id="7088434364990739311">Шинэчлэлтийг шалгах ажиллагааг эхлүүлж чадсангүй (алдааны код <ph name="ERROR" /> ).</translation>
 <translation id="7088561041432335295">Зип архивлагч - ZIP файлыг нээж Файлс аппад багцалдаг.</translation>
 <translation id="7088674813905715446">Энэ нь төхөөрөмжийг админаас тодорхой нөхцөлгүй байдалд оруулсан байна. Үүнийг идэвхжүүлэхийн тулд админаас төхөөрөмжийг хүлээгдэж буй нөхцөл байдалд оруулах хэрэгтэй.</translation>
@@ -5638,7 +5638,7 @@
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> өргөтгөлийн прокси тохиргоог ашиглаж байна</translation>
 <translation id="8097959162767603171">Таны администратор эхлээд Админ консол дахь Chrome төхөөрөмжийн жагсаалтын үйлчилгээний нөхцөлийг зөвшөөрөх ёстой.</translation>
 <translation id="8101987792947961127">Дараа дахин ачаалахад та өөрийн төхөөрөмжинд хадгалагдаж буй мэдээллийг бүрэн цэвэрлэсэн байх шаардлагатай (Powerwash хийсэн байх шаардлагатай).</translation>
-<translation id="8102139037507939978">Хувь хүнийг тодорхойлох мэдээллийг system_logs.txt-с хуулна.</translation>
+<translation id="8102139037507939978">Хувь хүнийг тодорхойлох мэдээллийг system_logs.txt-с арилгана.</translation>
 <translation id="8102159139658438129">Холбогдсон утасныхаа сонголтыг харахын тулд <ph name="LINK_BEGIN" />Тохиргоо<ph name="LINK_END" /> хэсэгт очно уу</translation>
 <translation id="8104696615244072556"><ph name="IDS_SHORT_PRODUCT_NAME" /> төхөөрөмжөө цэвэрлээд, өмнөх хувилбарт шилжих.</translation>
 <translation id="8107015733319732394">Google Play Дэлгүүрийг таны <ph name="DEVICE_TYPE" />-д суулгаж байна. Суулгахад хэдэн хором болно.</translation>
@@ -6368,7 +6368,7 @@
 <translation id="9009369504041480176">Татаж оруулах ( <ph name="PROGRESS_PERCENT" /> %) ...</translation>
 <translation id="9009708085379296446">Та энэ хуудсыг өөрчлөх гэж байсан уу?</translation>
 <translation id="9011163749350026987">Байнга дүрс тэмдэг харуулах</translation>
-<translation id="9011393886518328654">Шинэ зурвасууд</translation>
+<translation id="9011393886518328654">Хувилбарын тайлбарууд</translation>
 <translation id="9013037634206938463">Linux-г суулгахад <ph name="INSTALL_SIZE" />-н сул зай шаардлагатай байна. Сул зайг нэмэгдүүлэхийн тулд төхөөрөмжөөсөө файлуудыг устгана уу.</translation>
 <translation id="9013707997379828817">Таны админ энэ төхөөрөмжийг буцаан шилжүүллээ. Чухал файлуудаа хадгалаад дахин эхлүүлнэ үү. Төхөөрөмж дээрх бүх өгөгдөл устах болно.</translation>
 <translation id="901668144954885282">Google Драйвт хуулбарлах</translation>
@@ -6393,7 +6393,6 @@
 <translation id="9033765790910064284">Ямартай ч үргэлжлүүлэх</translation>
 <translation id="9033857511263905942">&amp;Наах</translation>
 <translation id="9037965129289936994">Эх хувийг харуулах</translation>
-<translation id="903797871439633902">Энэ бол энэ <ph name="DEVICE_TYPE" />-н программ хангамж болон аюулгүй байдлын сүүлийн автомат шинэчлэлт. Ирээдүйд шинэчлэлт хийхийн тулд шинэ загварт дэвшүүлнэ үү. &lt;a target="_blank" href="<ph name="URL" />"&gt;Нэмэлт мэдээлэл авах&lt;/a&gt;</translation>
 <translation id="9039014462651733343">{NUM_ATTEMPTS,plural, =1{Танд нэг оролдлого үлдлээ.}other{Танд # оролдлого үлдлээ.}}</translation>
 <translation id="9039663905644212491">PEAP /Хамгаалагдсан өргөжих боломжтой таниулах протокол/</translation>
 <translation id="9040661932550800571"><ph name="ORIGIN" />-н нууц үгийг шинэчлэх үү?</translation>

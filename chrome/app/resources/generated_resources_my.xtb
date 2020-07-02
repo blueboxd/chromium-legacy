@@ -6402,7 +6402,6 @@
 <translation id="9033765790910064284">မည်သို့ဖြစ်စေ ရှေ့ဆက်ရန်</translation>
 <translation id="9033857511263905942">&amp;ကူးထည့်</translation>
 <translation id="9037965129289936994">မူရင်းကို ပြရန်</translation>
-<translation id="903797871439633902">ဤသည်မှာ <ph name="DEVICE_TYPE" /> အတွက် နောက်ဆုံးသော ဆော့ဖ်ဝဲနှင့် လုံခြုံရေး အလိုအလျောက်အပ်ဒိတ် ဖြစ်သည်။ အနာဂတ်အပ်ဒိတ်များ ရယူရန် မော်ဒယ်အသစ်သို့ အဆင့်မြှင့်တင်ပါ။ &lt;a target="_blank" href="<ph name="URL" />"&gt;ပိုမိုလေ့လာရန်&lt;/a&gt;</translation>
 <translation id="9039014462651733343">{NUM_ATTEMPTS,plural, =1{ကြိုးစားခွင့် တစ်ကြိမ် ကျန်ပါသည်။}other{ကြိုးစားခွင့် # ကြိမ် ကျန်ပါသည်။}}</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571"><ph name="ORIGIN" /> အတွက် စကားဝှက်ကို အပ်ဒိတ်လုပ်လိုပါသလား။</translation>

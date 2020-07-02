@@ -164,7 +164,7 @@ class PendingTaskWaiter : public content::WebContentsObserver {
     }
   }
 
-  base::Closure quit_closure_;
+  base::RepeatingClosure quit_closure_;
   GURL required_url_;
   base::Optional<base::string16> required_title_;
   base::WeakPtrFactory<PendingTaskWaiter> weak_factory_{this};

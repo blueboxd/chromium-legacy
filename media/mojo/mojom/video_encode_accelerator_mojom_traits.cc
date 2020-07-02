@@ -110,16 +110,34 @@ bool StructTraits<media::mojom::VideoBitrateAllocationDataView,
 }
 
 // static
+bool UnionTraits<media::mojom::CodecMetadataDataView,
+                 media::BitstreamBufferMetadata>::
+    Read(media::mojom::CodecMetadataDataView data,
+         media::BitstreamBufferMetadata* out) {
+  switch (data.tag()) {
+    case media::mojom::CodecMetadataDataView::Tag::VP8: {
+      return data.ReadVp8(&out->vp8);
+    }
+    case media::mojom::CodecMetadataDataView::Tag::VP9: {
+      return data.ReadVp9(&out->vp9);
+    }
+  }
+  NOTREACHED();
+  return false;
+}
+
+// static
 bool StructTraits<media::mojom::BitstreamBufferMetadataDataView,
                   media::BitstreamBufferMetadata>::
     Read(media::mojom::BitstreamBufferMetadataDataView data,
-         media::BitstreamBufferMetadata* out_metadata) {
-  out_metadata->payload_size_bytes = data.payload_size_bytes();
-  out_metadata->key_frame = data.key_frame();
-  if (!data.ReadTimestamp(&out_metadata->timestamp)) {
+         media::BitstreamBufferMetadata* metadata) {
+  metadata->payload_size_bytes = data.payload_size_bytes();
+  metadata->key_frame = data.key_frame();
+  if (!data.ReadTimestamp(&metadata->timestamp)) {
     return false;
   }
-  return data.ReadVp8(&out_metadata->vp8);
+
+  return data.ReadCodecMetadata(metadata);
 }
 
 // static
@@ -130,6 +148,16 @@ bool StructTraits<media::mojom::Vp8MetadataDataView, media::Vp8Metadata>::Read(
   out_metadata->temporal_idx = data.temporal_idx();
   out_metadata->layer_sync = data.layer_sync();
   return true;
+}
+
+// static
+bool StructTraits<media::mojom::Vp9MetadataDataView, media::Vp9Metadata>::Read(
+    media::mojom::Vp9MetadataDataView data,
+    media::Vp9Metadata* out_metadata) {
+  out_metadata->has_reference = data.has_reference();
+  out_metadata->temporal_up_switch = data.temporal_up_switch();
+  out_metadata->temporal_idx = data.temporal_idx();
+  return data.ReadPDiffs(&out_metadata->p_diffs);
 }
 
 // static

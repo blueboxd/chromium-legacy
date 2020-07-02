@@ -6402,7 +6402,6 @@
 <translation id="9033765790910064284">მაინც გაგრძელება</translation>
 <translation id="9033857511263905942">ჩ&amp;ასმა</translation>
 <translation id="9037965129289936994">ორიგინალის ჩვენება</translation>
-<translation id="903797871439633902">ეს არის პროგრამული უზრუნველყოფისა და უსაფრთხოების ბოლო განახლება, რომელსაც თქვენი <ph name="DEVICE_TYPE" /> იღებს. მომავალი განახლებების მისაღებად გადადით ახალ მოდელზე. &lt;a target="_blank" href="<ph name="URL" />"&gt;შეიტყვეთ მეტი&lt;/a&gt;</translation>
 <translation id="9039014462651733343">{NUM_ATTEMPTS,plural, =1{დაგრჩათ ერთი მცდელობა.}other{დაგრჩათ # მცდელობა.}}</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571">გსურთ <ph name="ORIGIN" />-ის პაროლის განახლება?</translation>

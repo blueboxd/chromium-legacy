@@ -7,6 +7,7 @@
 #include "services/network/public/cpp/web_sandbox_flags.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/security_context/insecure_request_policy.h"
+#include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -216,6 +217,11 @@ void ExecutionContextCSPDelegate::Count(WebFeature feature) {
 void ExecutionContextCSPDelegate::AddConsoleMessage(
     ConsoleMessage* console_message) {
   execution_context_->AddConsoleMessage(console_message);
+}
+
+void ExecutionContextCSPDelegate::AddInspectorIssue(
+    mojom::blink::InspectorIssueInfoPtr info) {
+  execution_context_->AddInspectorIssue(std::move(info));
 }
 
 void ExecutionContextCSPDelegate::DisableEval(const String& error_message) {

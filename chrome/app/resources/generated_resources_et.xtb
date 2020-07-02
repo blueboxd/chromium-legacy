@@ -6405,7 +6405,6 @@ Hoidke oma võtmefail kindlas kohas. Teil läheb seda oma laiendi uute versiooni
 <translation id="9033765790910064284">Jätka ikkagi</translation>
 <translation id="9033857511263905942">&amp;Kleebi</translation>
 <translation id="9037965129289936994">Kuva originaal</translation>
-<translation id="903797871439633902">See on seadme <ph name="DEVICE_TYPE" /> viimane automaatne tarkvara- ja turvavärskendus. Tulevaste värskenduste hankimiseks võtke kasutusele uuem mudel. &lt;a target="_blank" href="<ph name="URL" />"&gt;Lisateave&lt;/a&gt;</translation>
 <translation id="9039014462651733343">{NUM_ATTEMPTS,plural, =1{Teil on veel üks katse.}other{Teil on veel # katset.}}</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571">Kas värskendada saidi <ph name="ORIGIN" /> parooli?</translation>

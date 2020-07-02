@@ -73,10 +73,17 @@ class WebController {
   // been loaded.
   virtual void LoadURL(const GURL& url);
 
+  // Find the element given by |selector|. If multiple elements match
+  // |selector| and if |strict_mode| is false, return the first one that is
+  // found. Otherwise if |strict-mode| is true, do not return any.
+  virtual void FindElement(const Selector& selector,
+                           bool strict_mode,
+                           ElementFinder::Callback callback);
+
   // Perform a mouse left button click or a touch tap on the element given by
   // |selector| and return the result through callback.
   virtual void ClickOrTapElement(
-      const Selector& selector,
+      const ElementFinder::Result& element,
       ClickType click_type,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
@@ -253,43 +260,35 @@ class WebController {
     autofill::ContentAutofillDriver* content_autofill_driver_;
   };
 
-  void OnFindElementForClickOrTap(
-      base::OnceCallback<void(const ClientStatus&)> callback,
+  void OnWaitForDocumentToBecomeInteractiveForClickOrTap(
+      const ElementFinder::Result& target_element,
       ClickType click_type,
-      const ClientStatus& status,
-      std::unique_ptr<ElementFinder::Result> result);
-  void OnWaitDocumentToBecomeInteractiveForClickOrTap(
       base::OnceCallback<void(const ClientStatus&)> callback,
-      ClickType click_type,
-      std::unique_ptr<ElementFinder::Result> target_element,
       bool result);
-  void OnFindElementForTap(
-      base::OnceCallback<void(const ClientStatus&)> callback,
-      const ClientStatus& status,
-      std::unique_ptr<ElementFinder::Result> result);
-  void ClickOrTapElement(
-      std::unique_ptr<ElementFinder::Result> target_element,
+  void InternalClickOrTapElement(
+      const ElementFinder::Result& target_element,
       ClickType click_type,
       base::OnceCallback<void(const ClientStatus&)> callback);
+  void OnScrollIntoViewForClickOrTap(
+      const ElementFinder::Result& target_element,
+      ClickType click_type,
+      base::OnceCallback<void(const ClientStatus&)> callback,
+      const DevtoolsClient::ReplyStatus& reply_status,
+      std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnClickJS(base::OnceCallback<void(const ClientStatus&)> callback,
                  const DevtoolsClient::ReplyStatus& reply_status,
                  std::unique_ptr<runtime::CallFunctionOnResult> result);
-  void OnScrollIntoView(std::unique_ptr<ElementFinder::Result> target_element,
-                        base::OnceCallback<void(const ClientStatus&)> callback,
-                        ClickType click_type,
-                        const DevtoolsClient::ReplyStatus& reply_status,
-                        std::unique_ptr<runtime::CallFunctionOnResult> result);
   void TapOrClickOnCoordinates(
       ElementPositionGetter* getter_to_release,
-      base::OnceCallback<void(const ClientStatus&)> callback,
       const std::string& node_frame_id,
       ClickType click_type,
+      base::OnceCallback<void(const ClientStatus&)> callback,
       bool has_coordinates,
       int x,
       int y);
   void OnDispatchPressMouseEvent(
-      base::OnceCallback<void(const ClientStatus&)> callback,
       const std::string& node_frame_id,
+      base::OnceCallback<void(const ClientStatus&)> callback,
       int x,
       int y,
       const DevtoolsClient::ReplyStatus& reply_status,
@@ -299,8 +298,8 @@ class WebController {
       const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<input::DispatchMouseEventResult> result);
   void OnDispatchTouchEventStart(
-      base::OnceCallback<void(const ClientStatus&)> callback,
       const std::string& node_frame_id,
+      base::OnceCallback<void(const ClientStatus&)> callback,
       const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<input::DispatchTouchEventResult> result);
   void OnDispatchTouchEventEnd(
@@ -316,12 +315,6 @@ class WebController {
       const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::EvaluateResult> result);
 
-  // Find the element given by |selector|. If multiple elements match
-  // |selector| and if |strict_mode| is false, return the first one that is
-  // found. Otherwise if |strict-mode| is true, do not return any.
-  void FindElement(const Selector& selector,
-                   bool strict_mode,
-                   ElementFinder::Callback callback);
   void OnFindElementResult(ElementFinder* finder_to_release,
                            ElementFinder::Callback callback,
                            const ClientStatus& status,
@@ -463,7 +456,7 @@ class WebController {
       const ClientStatus& status,
       std::unique_ptr<ElementFinder::Result> element_result);
   void OnClickElementForSendKeyboardInput(
-      const std::string& node_frame_id,
+      std::unique_ptr<ElementFinder::Result> target_element,
       const std::vector<UChar32>& codepoints,
       int delay_in_milli,
       base::OnceCallback<void(const ClientStatus&)> callback,
@@ -540,7 +533,7 @@ class WebController {
   // extract the appropriate |ContentAutofillDriver|.
   base::OnceCallback<void(const ClientStatus&)>
   GetAssistantActionRunningStateRetainingCallback(
-      ElementFinder::Result* element_result,
+      const ElementFinder::Result& element_result,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
   // Weak pointer is fine here since it must outlive this web controller, which

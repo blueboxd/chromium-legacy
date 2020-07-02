@@ -80,7 +80,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkSmsHandler
 
   // Callback to handle the manager properties with the list of devices.
   void ManagerPropertiesCallback(DBusMethodCallStatus call_status,
-                                 const base::DictionaryValue& properties);
+                                 base::Value properties);
 
   // Requests properties for each entry in |devices|.
   void UpdateDevices(const base::Value& devices);
@@ -89,7 +89,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkSmsHandler
   // A NetworkSmsDeviceHandler will be instantiated for each cellular device.
   void DevicePropertiesCallback(const std::string& device_path,
                                 DBusMethodCallStatus call_status,
-                                const base::DictionaryValue& properties);
+                                base::Value properties);
 
   base::ObserverList<Observer, true>::Unchecked observers_;
   std::vector<std::unique_ptr<NetworkSmsDeviceHandler>> device_handlers_;

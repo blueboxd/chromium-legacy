@@ -46,8 +46,11 @@ void InvertedIndexSearch::AddOrUpdate(
     const std::vector<local_search_service::Data>& data,
     bool build_index) {
   for (const Data& d : data) {
-    // TODO(jiameng): use different locales.
-    const std::vector<Token> document_tokens = ExtractDocumentTokens(d, "en");
+    // Use input locale unless it's empty. In this case we will use system
+    // default locale.
+    const std::string locale =
+        d.locale.empty() ? base::i18n::GetConfiguredLocale() : d.locale;
+    const std::vector<Token> document_tokens = ExtractDocumentTokens(d, locale);
     DCHECK(!document_tokens.empty());
     inverted_index_->AddDocument(d.id, document_tokens);
   }

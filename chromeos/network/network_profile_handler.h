@@ -19,10 +19,6 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_profile.h"
 
-namespace base {
-class DictionaryValue;
-}
-
 namespace chromeos {
 
 class NetworkProfileObserver;
@@ -38,14 +34,14 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkProfileHandler
   void RemoveObserver(NetworkProfileObserver* observer);
 
   void GetManagerPropertiesCallback(DBusMethodCallStatus call_status,
-                                    const base::DictionaryValue& properties);
+                                    base::Value properties);
 
   // ShillPropertyChangedObserver overrides
   void OnPropertyChanged(const std::string& name,
                          const base::Value& value) override;
 
   void GetProfilePropertiesCallback(const std::string& profile_path,
-                                    const base::DictionaryValue& properties);
+                                    base::Value properties);
 
   const NetworkProfile* GetProfileForPath(
       const std::string& profile_path) const;

@@ -19,6 +19,7 @@ namespace ime {
 class AssistiveDelegate;
 class SettingLinkView;
 class SuggestionView;
+struct AssistiveWindowButton;
 struct SuggestionDetails;
 
 const int kInvalid = -1;
@@ -41,14 +42,10 @@ class UI_CHROMEOS_EXPORT SuggestionWindowView
 
   void ShowMultipleCandidates(const std::vector<base::string16>& candidates);
 
-  // This highlights at most one candidate at any time.
-  // No-op if index is out of range.
-  void HighlightCandidate(int index);
-
-  // This unhighlights the candidate at the given index.
-  // No-op if the candidate is currently not highlighted or index is out of
-  // range.
-  void UnhighlightCandidate(int index);
+  // This highlights/unhighlights a valid button based on the given params.
+  // Only one button of the same id will be highlighted at anytime.
+  void SetButtonHighlighted(const AssistiveWindowButton& button,
+                            bool highlighted);
 
   void SetBounds(const gfx::Rect& cursor_bounds);
 
@@ -65,6 +62,15 @@ class UI_CHROMEOS_EXPORT SuggestionWindowView
   void MaybeInitializeSuggestionViews(size_t candidates_size);
 
   void MakeVisible();
+
+  // This highlights at most one candidate at any time.
+  // No-op if index is out of range.
+  void HighlightCandidate(int index);
+
+  // This unhighlights the candidate at the given index.
+  // No-op if the candidate is currently not highlighted or index is out of
+  // range.
+  void UnhighlightCandidate(int index);
 
   // views::BubbleDialogDelegateView:
   const char* GetClassName() const override;

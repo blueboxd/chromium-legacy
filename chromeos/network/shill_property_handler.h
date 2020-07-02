@@ -13,16 +13,11 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/values.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/shill/shill_property_changed_observer.h"
 #include "chromeos/network/managed_state.h"
 #include "chromeos/network/network_handler_callbacks.h"
-
-namespace base {
-class DictionaryValue;
-class ListValue;
-class Value;
-}
 
 namespace chromeos {
 
@@ -172,7 +167,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ShillPropertyHandler
 
   // Callback for dbus method fetching properties.
   void ManagerPropertiesCallback(DBusMethodCallStatus call_status,
-                                 const base::DictionaryValue& properties);
+                                 base::Value properties);
 
   // Notifies the listener when a ManagedStateList has changed and all pending
   // updates have been received. |key| can either identify the list that
@@ -214,7 +209,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ShillPropertyHandler
   void GetPropertiesCallback(ManagedState::ManagedType type,
                              const std::string& path,
                              DBusMethodCallStatus call_status,
-                             const base::DictionaryValue& properties);
+                             base::Value properties);
 
   // Callback invoked when a watched property changes. Calls appropriate
   // handlers and signals observers.
@@ -245,7 +240,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ShillPropertyHandler
                            const std::string& path,
                            const std::string& ip_config_path,
                            DBusMethodCallStatus call_status,
-                           const base::DictionaryValue& properties);
+                           base::Value properties);
 
   void SetProhibitedTechnologiesEnforced(bool enforced);
 

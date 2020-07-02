@@ -6406,7 +6406,6 @@
 <translation id="9033765790910064284">பரவாயில்லை, தொடரவும்</translation>
 <translation id="9033857511263905942">&amp;ஒட்டு</translation>
 <translation id="9037965129289936994">அசல் மொழியில் காட்டு</translation>
-<translation id="903797871439633902"><ph name="DEVICE_TYPE" /> இன் மென்பொருளுக்கும் பாதுகாப்பிற்கும் தானாக செய்யப்படும் கடைசிப் புதுப்பிப்பு இது தான். எதிர்வரும் புதுப்பிப்புகளைப் பெற புதிய வகை சாதனங்களுக்கு மாறவும். &lt;a target="_blank" href="<ph name="URL" />"&gt;மேலும் அறிக&lt;/a&gt;</translation>
 <translation id="9039014462651733343">{NUM_ATTEMPTS,plural, =1{இன்னும் ஒருமுறை முயலலாம்.}other{இன்னும் # முறை முயலலாம்.}}</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571"><ph name="ORIGIN" />க்கான கடவுச்சொல்லைப் புதுப்பிக்கவா?</translation>

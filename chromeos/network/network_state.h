@@ -243,9 +243,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   static std::unique_ptr<NetworkState> CreateDefaultCellular(
       const std::string& device_path);
 
-  // Ignore changes to signal strength less than this value.
-  constexpr static const int kSignalStrengthChangeThreshold = 5;
-
  private:
   friend class MobileActivatorTest;
   friend class NetworkStateHandler;

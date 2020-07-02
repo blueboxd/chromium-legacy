@@ -114,7 +114,6 @@ namespace {
 class MixedContentCheckerMockLocalFrameClient : public EmptyLocalFrameClient {
  public:
   MixedContentCheckerMockLocalFrameClient() : EmptyLocalFrameClient() {}
-  MOCK_METHOD0(DidContainInsecureFormAction, void());
   MOCK_METHOD0(DidDisplayContentWithCertificateErrors, void());
   MOCK_METHOD0(DidRunContentWithCertificateErrors, void());
 };
@@ -169,8 +168,6 @@ TEST(MixedContentCheckerTest, DetectMixedForm) {
   KURL mailto_form_action_url(NullURL(), "mailto:action@example-action.test");
 
   // mailto and http are non-secure form targets.
-  EXPECT_CALL(*client, DidContainInsecureFormAction()).Times(2);
-
   EXPECT_TRUE(MixedContentChecker::IsMixedFormAction(
       &dummy_page_holder->GetFrame(), http_form_action_url,
       ReportingDisposition::kSuppressReporting));

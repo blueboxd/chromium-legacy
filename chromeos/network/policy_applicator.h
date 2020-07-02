@@ -73,16 +73,14 @@ class PolicyApplicator {
  private:
   // Called with the properties of the profile |profile_|. Requests the
   // properties of each entry, which are processed by GetEntryCallback.
-  void GetProfilePropertiesCallback(
-      const base::DictionaryValue& profile_properties);
+  void GetProfilePropertiesCallback(base::Value profile_properties);
   void GetProfilePropertiesError(const std::string& error_name,
                                  const std::string& error_message);
 
   // Called with the properties of the profile entry |entry|. Checks whether the
   // entry was previously managed, whether a current policy applies and then
   // either updates, deletes or not touches the entry.
-  void GetEntryCallback(const std::string& entry,
-                        const base::DictionaryValue& entry_properties);
+  void GetEntryCallback(const std::string& entry, base::Value entry_properties);
   void GetEntryError(const std::string& entry,
                      const std::string& error_name,
                      const std::string& error_message);

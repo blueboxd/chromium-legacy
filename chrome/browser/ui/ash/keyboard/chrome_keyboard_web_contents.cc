@@ -111,6 +111,11 @@ class ChromeKeyboardContentsDelegate : public content::WebContentsDelegate,
       case blink::WebInputEvent::Type::kGestureFlingStart:
       case blink::WebInputEvent::Type::kGestureFlingCancel:
         return false;
+      // Allow tap events to allow browser scrollbars to be draggable by touch.
+      case blink::WebInputEvent::Type::kGestureTapDown:
+      case blink::WebInputEvent::Type::kGestureTap:
+      case blink::WebInputEvent::Type::kGestureTapCancel:
+        return false;
       default:
         // Stop gesture events from being passed to renderer to suppress the
         // context menu. https://crbug.com/685140

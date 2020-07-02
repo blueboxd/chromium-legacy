@@ -6404,7 +6404,6 @@
 <translation id="9033765790910064284">Усё роўна працягнуць</translation>
 <translation id="9033857511263905942">&amp;Уставіць</translation>
 <translation id="9037965129289936994">Паказаць арыгінал</translation>
-<translation id="903797871439633902">Гэта апошняе аўтаматычнае абнаўленне праграмнага забеспячэння і сістэмы бяспекі для гэтай прылады <ph name="DEVICE_TYPE" />. Каб атрымліваць наступныя абнаўленні, перайдзіце на новую мадэль. &lt;a target="_blank" href="<ph name="URL" />"&gt;Даведацца больш&lt;/a&gt;</translation>
 <translation id="9039014462651733343">{NUM_ATTEMPTS,plural, =1{У вас засталася адна спроба.}one{У вас засталася # спроба.}few{У вас засталося # спробы.}many{У вас засталося # спроб.}other{У вас засталося # спробы.}}</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571">Абнавіць пароль для сайта <ph name="ORIGIN" />?</translation>

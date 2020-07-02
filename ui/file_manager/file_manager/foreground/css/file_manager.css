@@ -2346,12 +2346,13 @@ body.files-ng #default-tasks-list {
   padding-top: 8px;
 }
 
-body.files-ng #default-task-dialog::after {
+body.files-ng #default-task-dialog.bottom-shadow::after {
   background: linear-gradient(180deg, #FFF 0, rgba(255, 255, 255, 0) 100%);
   bottom: 24px;
   content: '';
   height: 40px;
   left: 0;
+  pointer-events: none;
   position: absolute;
   transform: rotate(-180deg);
   width: 100%

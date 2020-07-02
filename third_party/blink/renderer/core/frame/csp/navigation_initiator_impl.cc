@@ -51,7 +51,7 @@ void NavigationInitiatorImpl::SendViolationReport(
       violation->console_message, KURL(violation->blocked_url),
       violation->report_endpoints, violation->use_reporting_api,
       violation->header, violation->type,
-      ContentSecurityPolicy::ViolationType::kURLViolation,
+      ContentSecurityPolicy::ContentSecurityPolicyViolationType::kURLViolation,
       std::move(source_location), nullptr /* LocalFrame */,
       violation->after_redirect ? RedirectStatus::kFollowedRedirect
                                 : RedirectStatus::kNoRedirect,

@@ -128,6 +128,9 @@ enum FeaturePolicyFeature {
   // Client Hint for UA platform version.
   kClientHintUAPlatformVersion = 74,
 
+  // cross-origin isolated permission
+  kCrossOriginIsolated = 75,
+
   // Don't change assigned numbers of any item, and don't reuse removed slots.
   // Add new features at the end of the enum.
   // Also, run update_feature_policy_enum.py in

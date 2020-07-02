@@ -47,9 +47,24 @@ void Open(NSString* name) {
   // hidden UI element.
   id<GREYMatcher> visibleCellWithAccessibilityLabelMatcher = grey_allOf(
       grey_accessibilityLabel(name), grey_sufficientlyVisible(), nil);
+
+  // Disable EarlGrey's NSTimer tracking while scrolling.
+  // TODO(crbug.com/1101608): This is a workaround that should be removed once a
+  // proper fix lands in EarlGrey.
+  double original_interval =
+      GREY_CONFIG_DOUBLE(kGREYConfigKeyNSTimerMaxTrackableInterval);
+  [[GREYConfiguration sharedConfiguration]
+          setValue:@0
+      forConfigKey:kGREYConfigKeyNSTimerMaxTrackableInterval];
+
   [[[EarlGrey selectElementWithMatcher:visibleCellWithAccessibilityLabelMatcher]
          usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 200)
       onElementWithMatcher:HomeScreen()] performAction:grey_tap()];
+
+  // Restore the original NSTimer max tracking interval.
+  [[GREYConfiguration sharedConfiguration]
+          setValue:[NSNumber numberWithDouble:original_interval]
+      forConfigKey:kGREYConfigKeyNSTimerMaxTrackableInterval];
 }
 
 void Close() {

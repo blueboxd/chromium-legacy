@@ -9,6 +9,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -377,6 +378,45 @@ TEST_F(FieldTrialParamsTest, FeatureParamBool) {
   EXPECT_TRUE(d.Get());   // invalid
   EXPECT_TRUE(e.Get());   // empty
   EXPECT_TRUE(f.Get());   // empty
+}
+
+TEST_F(FieldTrialParamsTest, FeatureParamTimeDelta) {
+  const std::string kTrialName = "GetFieldTrialParamsByFeature";
+
+  static const Feature kFeature{"TestFeature", FEATURE_DISABLED_BY_DEFAULT};
+  static const FeatureParam<base::TimeDelta> a{&kFeature, "a",
+                                               base::TimeDelta()};
+  static const FeatureParam<base::TimeDelta> b{&kFeature, "b",
+                                               base::TimeDelta()};
+  static const FeatureParam<base::TimeDelta> c{&kFeature, "c",
+                                               base::TimeDelta()};
+  static const FeatureParam<base::TimeDelta> d{&kFeature, "d",
+                                               base::TimeDelta()};
+  static const FeatureParam<base::TimeDelta> e{&kFeature, "e",
+                                               base::TimeDelta()};
+  static const FeatureParam<base::TimeDelta> f{&kFeature, "f",
+                                               base::TimeDelta()};
+
+  std::map<std::string, std::string> params;
+  params["a"] = "1.5s";
+  params["b"] = "1h2m";
+  params["c"] = "1";
+  params["d"] = "true";
+  params["e"] = "";
+  // "f" is not registered
+  AssociateFieldTrialParams(kTrialName, "A", params);
+  scoped_refptr<FieldTrial> trial(
+      CreateFieldTrial(kTrialName, 100, "A", nullptr));
+
+  CreateFeatureWithTrial(kFeature, FeatureList::OVERRIDE_ENABLE_FEATURE,
+                         trial.get());
+
+  EXPECT_EQ(a.Get(), base::TimeDelta::FromSecondsD(1.5));
+  EXPECT_EQ(b.Get(), base::TimeDelta::FromMinutes(62));
+  EXPECT_EQ(c.Get(), base::TimeDelta());  // invalid
+  EXPECT_EQ(d.Get(), base::TimeDelta());  // invalid
+  EXPECT_EQ(e.Get(), base::TimeDelta());  // empty
+  EXPECT_EQ(f.Get(), base::TimeDelta());  // empty
 }
 
 enum Hand { ROCK, PAPER, SCISSORS };

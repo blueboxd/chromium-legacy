@@ -387,7 +387,7 @@ below.
 - `request_initiator_site_lock` may be missing in unlocked renderer
   processes on Android (for example affecting protections of CORB, CORP,
   Sec-Fetch-Site and in the future SameSite cookies and Origin
-  protections).  See also https://crbug.com/891872.
+  protections).  See also https://crbug.com/1098938.
 
 
 ## Renderer processes hosting DevTools frontend

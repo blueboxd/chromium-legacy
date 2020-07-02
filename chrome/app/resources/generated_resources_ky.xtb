@@ -6404,7 +6404,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="9033765790910064284">Баары бир улантуу</translation>
 <translation id="9033857511263905942">&amp;Чаптоо</translation>
 <translation id="9037965129289936994">Түпкү бетин көрсөтүү</translation>
-<translation id="903797871439633902">Бул <ph name="DEVICE_TYPE" /> үчүн программаны жаңылоо жана коопсуздук жаңыртуу акыркы жолу автоматтык түрдө аткарылат. Кийинки жаңыртууларды алуу үчүн учурдагы үлгүсүн кийинки версияга көтөрүңүз. &lt;a target="_blank" href="<ph name="URL" />"&gt;Кеңири маалымат&lt;/a&gt;</translation>
 <translation id="9039014462651733343">{NUM_ATTEMPTS,plural, =1{Дагы бир жолу аракет кыла аласыз.}other{# жолу аракет кыла аласыз.}}</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571"><ph name="ORIGIN" /> үчүн сырсөз жаңыртылсынбы?</translation>

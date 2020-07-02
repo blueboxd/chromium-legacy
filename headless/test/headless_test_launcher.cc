@@ -65,10 +65,9 @@ class HeadlessTestLauncherDelegate : public content::TestLauncherDelegate {
 
 int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
-  size_t parallel_jobs = base::NumParallelJobs();
-  if (parallel_jobs > 1U) {
-    parallel_jobs /= 2U;
-  }
+  size_t parallel_jobs = base::NumParallelJobs(/*cores_per_job=*/2);
+  if (parallel_jobs == 0U)
+    return 1;
 
   // Setup a working test environment for the network service in case it's used.
   // Only create this object in the utility process, so that its members don't

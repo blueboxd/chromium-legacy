@@ -4403,9 +4403,6 @@
 <translation id="7724592140967451156">如果此政策设为 True，系统会阻止并非来自浏览器地址栏所含网域的网页元素设置 Cookie。如果此政策设为 False，系统会允许这些元素设置 Cookie，并阻止用户更改此设置。
 
       如果此政策未设置，系统会启用第三方 Cookie，但用户可以更改此设置。</translation>
-<translation id="7724652568947700864">如果设置了此政策，所有指定的数据类型都会从同步操作（无论是 Google 同步还是漫游个人资料同步）中排除。这有助于缩减漫游个人资料的大小或限制向 Google 同步服务器上传的数据类型。
-
-      此政策当前可用的数据类型为：“bookmarks”、“preferences”、“passwords”、“autofill”、“themes”、“typedUrls”、“apps”、“tabs”、“wifiConfiguration”。这些名称区分大小写！</translation>
 <translation id="7731026922044991970">将所有网站上的 Cookie 都恢复为旧版 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 行为</translation>
 <translation id="7732907212083471072">已移除的政策</translation>
 <translation id="7747447585227954402">允许设备在 <ph name="PRODUCT_OS_NAME" />上使用 <ph name="PLUGIN_VM_NAME" /></translation>

@@ -6405,7 +6405,6 @@
 <translation id="9033765790910064284">ಹೇಗಾದರೂ ಮುಂದುವರಿಸಿ</translation>
 <translation id="9033857511263905942">&amp;ಅಂಟಿಸಿ</translation>
 <translation id="9037965129289936994">ಮೂಲವನ್ನು ತೋರಿಸು</translation>
-<translation id="903797871439633902">ಈ <ph name="DEVICE_TYPE" /> ಕ್ಕೆ, ಇದು ಕೊನೆಯ ಸ್ವಯಂಚಾಲಿತ ಸಾಫ್ಟ್‌ವೇರ್ ಹಾಗೂ ಸುರಕ್ಷತಾ ಅಪ್‌ಡೇಟ್ ಆಗಿದೆ. ನಂತರದ ದಿನಗಳಲ್ಲಿ ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ಪಡೆಯಲು, ಹೊಸ ಮಾಡೆಲ್‌ಗೆ ಅಪ್‌ಗ್ರೇಡ್ ಮಾಡಿ. &lt;a target="_blank" href="<ph name="URL" />"&gt;ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ&lt;/a&gt;</translation>
 <translation id="9039014462651733343">{NUM_ATTEMPTS,plural, =1{ನೀವು ಇನ್ನೂ ಒಂದು ಬಾರಿ ಪ್ರಯತ್ನಿಸಬಹುದು.}one{ನೀವು ಇನ್ನೂ # ಬಾರಿ ಪ್ರಯತ್ನಿಸಬಹುದು.}other{ನೀವು ಇನ್ನೂ # ಬಾರಿ ಪ್ರಯತ್ನಿಸಬಹುದು.}}</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571"><ph name="ORIGIN" /> ಗಾಗಿ ಪಾಸ್‌ವರ್ಡ್ ಅಪ್‌ಡೇಟ್‌ ಮಾಡುವುದೇ?</translation>

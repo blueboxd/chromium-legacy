@@ -26,7 +26,7 @@ void OnGetProperties(chromeos::DBusMethodCallStatus* call_status_out,
                      std::string* package_name_out,
                      const base::Closure& callback,
                      chromeos::DBusMethodCallStatus call_status,
-                     const base::DictionaryValue& result) {
+                     base::Value result) {
   *call_status_out = call_status;
   const base::Value* value = result.FindKeyOfType(
       shill::kAlwaysOnVpnPackageProperty, base::Value::Type::STRING);

@@ -6401,7 +6401,6 @@
 <translation id="9033765790910064284">ఏమైనప్పటికీ కొనసాగించు</translation>
 <translation id="9033857511263905942">&amp;అతికించు</translation>
 <translation id="9037965129289936994">అసలైనది చూపు</translation>
-<translation id="903797871439633902">ఈ <ph name="DEVICE_TYPE" />కు ఇదే చివరి ఆటోమేటిక్ సాఫ్ట్‌వేర్ మరియు భద్రతాపరమైన అప్‌డేట్. భవిష్యత్తు అప్‌డేట్‌లను పొందడానికి, సరికొత్త మోడల్‌కు అప్‌గ్రేడ్ చేయండి. &lt;a target="_blank" href="<ph name="URL" />"&gt;మరింత తెలుసుకోండి&lt;/a&gt;</translation>
 <translation id="9039014462651733343">{NUM_ATTEMPTS,plural, =1{మీకు ఒక ప్రయత్నం మిగిలి ఉంది.}other{మీకు # ప్రయత్నాలు మిగిలి ఉన్నాయి.}}</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571"><ph name="ORIGIN" /> కోసం పాస్‌వర్డ్‌ను అప్‌డేట్ చేయాలా?</translation>

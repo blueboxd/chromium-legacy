@@ -305,7 +305,7 @@ void ShillPropertyHandler::OnPropertyChanged(const std::string& key,
 
 void ShillPropertyHandler::ManagerPropertiesCallback(
     DBusMethodCallStatus call_status,
-    const base::DictionaryValue& properties) {
+    base::Value properties) {
   if (call_status != DBUS_METHOD_CALL_SUCCESS) {
     NET_LOG(ERROR) << "ManagerPropertiesCallback Failed: " << call_status;
     return;
@@ -548,7 +548,7 @@ void ShillPropertyHandler::GetPropertiesCallback(
     ManagedState::ManagedType type,
     const std::string& path,
     DBusMethodCallStatus call_status,
-    const base::DictionaryValue& properties) {
+    base::Value properties) {
   pending_updates_[type].erase(path);
   if (call_status != DBUS_METHOD_CALL_SUCCESS) {
     // The shill service no longer exists.  This can happen when a network
@@ -630,7 +630,7 @@ void ShillPropertyHandler::GetIPConfigCallback(
     const std::string& path,
     const std::string& ip_config_path,
     DBusMethodCallStatus call_status,
-    const base::DictionaryValue& properties) {
+    base::Value properties) {
   if (call_status != DBUS_METHOD_CALL_SUCCESS) {
     // IP Config properties not available. Shill will emit a property change
     // when they are.

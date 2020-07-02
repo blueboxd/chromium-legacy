@@ -32,6 +32,7 @@
 #include "services/network/public/mojom/content_security_policy.mojom-blink.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
+#include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_content_security_policy_struct.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
@@ -124,6 +125,7 @@ class CORE_EXPORT ContentSecurityPolicyDelegate : public GarbageCollectedMixin {
   virtual void Count(WebFeature) = 0;
 
   virtual void AddConsoleMessage(ConsoleMessage*) = 0;
+  virtual void AddInspectorIssue(mojom::blink::InspectorIssueInfoPtr) = 0;
   virtual void DisableEval(const String& error_message) = 0;
   virtual void ReportBlockedScriptExecutionToInspector(
       const String& directive_text) = 0;
@@ -143,7 +145,7 @@ class CORE_EXPORT ContentSecurityPolicy final
   //
   // Trusted Types violation's 'resource' values are defined in
   // https://wicg.github.io/trusted-types/dist/spec/#csp-violation-object-hdr.
-  enum ViolationType {
+  enum ContentSecurityPolicyViolationType {
     kInlineViolation,
     kEvalViolation,
     kURLViolation,
@@ -412,7 +414,7 @@ class CORE_EXPORT ContentSecurityPolicy final
                        bool use_reporting_api,
                        const String& header,
                        network::mojom::ContentSecurityPolicyType,
-                       ViolationType,
+                       ContentSecurityPolicyViolationType,
                        std::unique_ptr<SourceLocation>,
                        LocalFrame* = nullptr,
                        RedirectStatus = RedirectStatus::kFollowedRedirect,
@@ -577,6 +579,17 @@ class CORE_EXPORT ContentSecurityPolicy final
   bool ShouldBypassContentSecurityPolicy(
       const KURL&,
       SchemeRegistry::PolicyAreas = SchemeRegistry::kPolicyAreaAll) const;
+
+  // TODO: Consider replacing 'ContentSecurityPolicy::ViolationType' with the
+  // mojo enum.
+  mojom::blink::ContentSecurityPolicyViolationType BuildCSPViolationType(
+      ContentSecurityPolicy::ContentSecurityPolicyViolationType violation_type);
+
+  void ReportContentSecurityPolicyIssue(
+      const KURL&,
+      String violated_directive,
+      ContentSecurityPolicyViolationType violation_type,
+      LocalFrame* = nullptr);
 
   Member<ContentSecurityPolicyDelegate> delegate_;
   bool override_inline_style_allowed_;

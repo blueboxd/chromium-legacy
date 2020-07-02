@@ -278,7 +278,7 @@ void NetworkSmsHandler::MessageReceived(const base::DictionaryValue& message) {
 
 void NetworkSmsHandler::ManagerPropertiesCallback(
     DBusMethodCallStatus call_status,
-    const base::DictionaryValue& properties) {
+    base::Value properties) {
   if (call_status != DBUS_METHOD_CALL_SUCCESS) {
     LOG(ERROR) << "NetworkSmsHandler: Failed to get manager properties.";
     return;
@@ -312,7 +312,7 @@ void NetworkSmsHandler::UpdateDevices(const base::Value& devices) {
 void NetworkSmsHandler::DevicePropertiesCallback(
     const std::string& device_path,
     DBusMethodCallStatus call_status,
-    const base::DictionaryValue& properties) {
+    base::Value properties) {
   if (call_status != DBUS_METHOD_CALL_SUCCESS) {
     LOG(ERROR) << "NetworkSmsHandler: ERROR: " << call_status
                << " For: " << device_path;

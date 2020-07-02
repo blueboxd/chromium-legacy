@@ -73,9 +73,10 @@ class TestSuggestionHandler : public SuggestionHandlerInterface {
     return false;
   }
 
-  bool HighlightSuggestionCandidate(int context_id,
-                                    int index,
-                                    std::string* error) override {
+  bool SetButtonHighlighted(int context_id,
+                            const ui::ime::AssistiveWindowButton& button,
+                            bool highlighted,
+                            std::string* error) override {
     return false;
   }
 

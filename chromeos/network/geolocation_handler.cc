@@ -98,7 +98,7 @@ void GeolocationHandler::OnPropertyChanged(const std::string& key,
 
 void GeolocationHandler::ManagerPropertiesCallback(
     DBusMethodCallStatus call_status,
-    const base::DictionaryValue& properties) {
+    base::Value properties) {
   const base::Value* value =
       properties.FindKey(shill::kEnabledTechnologiesProperty);
   if (value)
@@ -142,9 +142,8 @@ void GeolocationHandler::RequestGeolocationObjects() {
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void GeolocationHandler::GeolocationCallback(
-    DBusMethodCallStatus call_status,
-    const base::DictionaryValue& properties) {
+void GeolocationHandler::GeolocationCallback(DBusMethodCallStatus call_status,
+                                             base::Value properties) {
   if (call_status != DBUS_METHOD_CALL_SUCCESS) {
     LOG(ERROR) << "Failed to get Geolocation data: " << call_status;
     return;

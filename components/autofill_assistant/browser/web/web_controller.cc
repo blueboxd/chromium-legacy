@@ -282,80 +282,57 @@ void WebController::LoadURL(const GURL& url) {
 }
 
 void WebController::ClickOrTapElement(
-    const Selector& selector,
+    const ElementFinder::Result& element,
     ClickType click_type,
     base::OnceCallback<void(const ClientStatus&)> callback) {
-  VLOG(3) << __func__ << " " << selector;
-  DCHECK(!selector.empty());
-  FindElement(selector,
-              /* strict_mode= */ true,
-              base::BindOnce(&WebController::OnFindElementForClickOrTap,
-                             weak_ptr_factory_.GetWeakPtr(),
-                             std::move(callback), click_type));
-}
-
-void WebController::OnFindElementForClickOrTap(
-    base::OnceCallback<void(const ClientStatus&)> callback,
-    ClickType click_type,
-    const ClientStatus& status,
-    std::unique_ptr<ElementFinder::Result> result) {
-  // Found element must belong to a frame.
-  if (!status.ok()) {
-    VLOG(1) << __func__ << " Failed to find the element to click or tap.";
-    std::move(callback).Run(status);
-    return;
-  }
-
   auto wrapped_callback = GetAssistantActionRunningStateRetainingCallback(
-      result.get(), std::move(callback));
+      element, std::move(callback));
 
-  std::string element_object_id = result->object_id;
   WaitForDocumentToBecomeInteractive(
-      settings_->document_ready_check_count, element_object_id,
-      result->node_frame_id,
+      settings_->document_ready_check_count, element.object_id,
+      element.node_frame_id,
       base::BindOnce(
-          &WebController::OnWaitDocumentToBecomeInteractiveForClickOrTap,
-          weak_ptr_factory_.GetWeakPtr(), std::move(wrapped_callback),
-          click_type, std::move(result)));
+          &WebController::OnWaitForDocumentToBecomeInteractiveForClickOrTap,
+          weak_ptr_factory_.GetWeakPtr(), element, click_type,
+          std::move(wrapped_callback)));
 }
 
-void WebController::OnWaitDocumentToBecomeInteractiveForClickOrTap(
-    base::OnceCallback<void(const ClientStatus&)> callback,
+void WebController::OnWaitForDocumentToBecomeInteractiveForClickOrTap(
+    const ElementFinder::Result& target_element,
     ClickType click_type,
-    std::unique_ptr<ElementFinder::Result> target_element,
+    base::OnceCallback<void(const ClientStatus&)> callback,
     bool result) {
   if (!result) {
     std::move(callback).Run(ClientStatus(TIMED_OUT));
     return;
   }
 
-  ClickOrTapElement(std::move(target_element), click_type, std::move(callback));
+  InternalClickOrTapElement(target_element, click_type, std::move(callback));
 }
 
-void WebController::ClickOrTapElement(
-    std::unique_ptr<ElementFinder::Result> target_element,
+void WebController::InternalClickOrTapElement(
+    const ElementFinder::Result& target_element,
     ClickType click_type,
     base::OnceCallback<void(const ClientStatus&)> callback) {
-  std::string element_object_id = target_element->object_id;
   std::vector<std::unique_ptr<runtime::CallArgument>> argument;
-  AddRuntimeCallArgumentObjectId(element_object_id, &argument);
+  AddRuntimeCallArgumentObjectId(target_element.object_id, &argument);
   devtools_client_->GetRuntime()->CallFunctionOn(
       runtime::CallFunctionOnParams::Builder()
-          .SetObjectId(element_object_id)
+          .SetObjectId(target_element.object_id)
           .SetArguments(std::move(argument))
           .SetFunctionDeclaration(std::string(kScrollIntoViewCenterScript))
           .SetReturnByValue(true)
           .Build(),
-      target_element->node_frame_id,
-      base::BindOnce(&WebController::OnScrollIntoView,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(target_element),
-                     std::move(callback), click_type));
+      target_element.node_frame_id,
+      base::BindOnce(&WebController::OnScrollIntoViewForClickOrTap,
+                     weak_ptr_factory_.GetWeakPtr(), target_element, click_type,
+                     std::move(callback)));
 }
 
-void WebController::OnScrollIntoView(
-    std::unique_ptr<ElementFinder::Result> target_element,
-    base::OnceCallback<void(const ClientStatus&)> callback,
+void WebController::OnScrollIntoViewForClickOrTap(
+    const ElementFinder::Result& target_element,
     ClickType click_type,
+    base::OnceCallback<void(const ClientStatus&)> callback,
     const DevtoolsClient::ReplyStatus& reply_status,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
   ClientStatus status =
@@ -367,16 +344,15 @@ void WebController::OnScrollIntoView(
   }
 
   if (click_type == ClickType::JAVASCRIPT) {
-    std::string element_object_id = target_element->object_id;
     std::vector<std::unique_ptr<runtime::CallArgument>> argument;
-    AddRuntimeCallArgumentObjectId(element_object_id, &argument);
+    AddRuntimeCallArgumentObjectId(target_element.object_id, &argument);
     devtools_client_->GetRuntime()->CallFunctionOn(
         runtime::CallFunctionOnParams::Builder()
-            .SetObjectId(element_object_id)
+            .SetObjectId(target_element.object_id)
             .SetArguments(std::move(argument))
             .SetFunctionDeclaration(kClickElement)
             .Build(),
-        target_element->node_frame_id,
+        target_element.node_frame_id,
         base::BindOnce(&WebController::OnClickJS,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
     return;
@@ -384,14 +360,14 @@ void WebController::OnScrollIntoView(
 
   std::unique_ptr<ElementPositionGetter> getter =
       std::make_unique<ElementPositionGetter>(
-          devtools_client_.get(), *settings_, target_element->node_frame_id);
+          devtools_client_.get(), *settings_, target_element.node_frame_id);
   auto* ptr = getter.get();
   pending_workers_.emplace_back(std::move(getter));
-  ptr->Start(
-      target_element->container_frame_host, target_element->object_id,
-      base::BindOnce(&WebController::TapOrClickOnCoordinates,
-                     weak_ptr_factory_.GetWeakPtr(), ptr, std::move(callback),
-                     target_element->node_frame_id, click_type));
+  ptr->Start(target_element.container_frame_host, target_element.object_id,
+             base::BindOnce(&WebController::TapOrClickOnCoordinates,
+                            weak_ptr_factory_.GetWeakPtr(), ptr,
+                            target_element.node_frame_id, click_type,
+                            std::move(callback)));
 }
 
 void WebController::OnClickJS(
@@ -408,9 +384,9 @@ void WebController::OnClickJS(
 
 void WebController::TapOrClickOnCoordinates(
     ElementPositionGetter* getter_to_release,
-    base::OnceCallback<void(const ClientStatus&)> callback,
     const std::string& node_frame_id,
     ClickType click_type,
+    base::OnceCallback<void(const ClientStatus&)> callback,
     bool has_coordinates,
     int x,
     int y) {
@@ -436,8 +412,8 @@ void WebController::TapOrClickOnCoordinates(
             .Build(),
         node_frame_id,
         base::BindOnce(&WebController::OnDispatchPressMouseEvent,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                       node_frame_id, x, y));
+                       weak_ptr_factory_.GetWeakPtr(), node_frame_id,
+                       std::move(callback), x, y));
     return;
   }
 
@@ -452,13 +428,13 @@ void WebController::TapOrClickOnCoordinates(
           .Build(),
       node_frame_id,
       base::BindOnce(&WebController::OnDispatchTouchEventStart,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                     node_frame_id));
+                     weak_ptr_factory_.GetWeakPtr(), node_frame_id,
+                     std::move(callback)));
 }
 
 void WebController::OnDispatchPressMouseEvent(
-    base::OnceCallback<void(const ClientStatus&)> callback,
     const std::string& node_frame_id,
+    base::OnceCallback<void(const ClientStatus&)> callback,
     int x,
     int y,
     const DevtoolsClient::ReplyStatus& reply_status,
@@ -498,8 +474,8 @@ void WebController::OnDispatchReleaseMouseEvent(
 }
 
 void WebController::OnDispatchTouchEventStart(
-    base::OnceCallback<void(const ClientStatus&)> callback,
     const std::string& node_frame_id,
+    base::OnceCallback<void(const ClientStatus&)> callback,
     const DevtoolsClient::ReplyStatus& reply_status,
     std::unique_ptr<input::DispatchTouchEventResult> result) {
   if (!result) {
@@ -1410,15 +1386,14 @@ void WebController::OnFindElementForSendKeyboardInput(
     return;
   }
   ClickOrTapElement(
-      selector, ClickType::CLICK,
+      *element_result, ClickType::CLICK,
       base::BindOnce(&WebController::OnClickElementForSendKeyboardInput,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     element_result->node_frame_id, codepoints,
-                     delay_in_millisecond, std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(element_result),
+                     codepoints, delay_in_millisecond, std::move(callback)));
 }
 
 void WebController::OnClickElementForSendKeyboardInput(
-    const std::string& node_frame_id,
+    std::unique_ptr<ElementFinder::Result> target_element,
     const std::vector<UChar32>& codepoints,
     int delay_in_millisecond,
     base::OnceCallback<void(const ClientStatus&)> callback,
@@ -1427,7 +1402,7 @@ void WebController::OnClickElementForSendKeyboardInput(
     std::move(callback).Run(click_status);
     return;
   }
-  DispatchKeyboardTextDownEvent(node_frame_id, codepoints, 0,
+  DispatchKeyboardTextDownEvent(target_element->node_frame_id, codepoints, 0,
                                 /* delay= */ false, delay_in_millisecond,
                                 std::move(callback));
 }
@@ -1698,11 +1673,11 @@ void WebController::RetainAssistantActionRunningStateAndExecuteCallback(
 
 base::OnceCallback<void(const ClientStatus&)>
 WebController::GetAssistantActionRunningStateRetainingCallback(
-    ElementFinder::Result* element_result,
+    const ElementFinder::Result& element_result,
     base::OnceCallback<void(const ClientStatus&)> callback) {
   ContentAutofillDriver* content_autofill_driver =
       ContentAutofillDriver::GetForRenderFrameHost(
-          element_result->container_frame_host);
+          element_result.container_frame_host);
   if (content_autofill_driver == nullptr) {
     return callback;
   }

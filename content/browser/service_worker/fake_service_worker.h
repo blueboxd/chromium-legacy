@@ -50,6 +50,9 @@ class FakeServiceWorker : public blink::mojom::ServiceWorker {
     return fetch_handler_existence_;
   }
 
+  // Flush messages in the message pipe.
+  void FlushForTesting();
+
  protected:
   // blink::mojom::ServiceWorker overrides:
   void InitializeGlobalScope(

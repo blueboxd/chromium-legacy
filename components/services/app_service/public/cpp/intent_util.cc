@@ -11,6 +11,10 @@
 
 namespace {
 
+const char kWildCardAny[] = "*";
+const char kMimeTypeSeparator[] = "/";
+constexpr size_t kMimeTypeComponentSize = 2;
+
 // Get the intent condition value based on the condition type.
 base::Optional<std::string> GetIntentConditionValueByType(
     apps::mojom::ConditionType condition_type,
@@ -35,45 +39,92 @@ base::Optional<std::string> GetIntentConditionValueByType(
   }
 }
 
-bool ComponentMatched(const std::string& component1,
-                      const std::string& component2) {
-  const char kWildCardAny[] = "*";
-  return component1 == kWildCardAny || component2 == kWildCardAny ||
-         component1 == component2;
+bool ComponentMatched(const std::string& intent_component,
+                      const std::string& filter_component) {
+  return filter_component == kWildCardAny ||
+         intent_component == filter_component;
 }
 
 // TODO(crbug.com/1092784): Handle file path with extension with mime type.
-bool MimeTypeMatched(const std::string& mime_type1,
-                     const std::string& mime_type2) {
-  const char kMimeTypeSeparator[] = "/";
+// Unlike Android mime type matching logic, if the intent mime type has *, it
+// can only match with *, not anything. The reason for this is the way we find
+// the common mime type for multiple files. It uses * to represent more than one
+// types in the list, which will cause an issue if we treat that as we want to
+// match with any filter. e.g. If we select a .zip, .jep and a .txt, the common
+// mime type will be */*, with Android matching logic, it will match with filter
+// that has mime type video, which is not what we expected.
+bool MimeTypeMatched(const std::string& intent_mime_type,
+                     const std::string& filter_mime_type) {
+  std::vector<std::string> intent_components =
+      base::SplitString(intent_mime_type, kMimeTypeSeparator,
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
-  std::vector<std::string> components1 =
-      base::SplitString(mime_type1, kMimeTypeSeparator, base::TRIM_WHITESPACE,
-                        base::SPLIT_WANT_NONEMPTY);
+  std::vector<std::string> filter_components =
+      base::SplitString(filter_mime_type, kMimeTypeSeparator,
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
-  std::vector<std::string> components2 =
-      base::SplitString(mime_type2, kMimeTypeSeparator, base::TRIM_WHITESPACE,
-                        base::SPLIT_WANT_NONEMPTY);
-
-  constexpr size_t kMimeTypeComponentSize = 2;
-  if (components1.size() > kMimeTypeComponentSize ||
-      components2.size() > kMimeTypeComponentSize || components1.size() == 0 ||
-      components2.size() == 0) {
+  if (intent_components.size() > kMimeTypeComponentSize ||
+      filter_components.size() > kMimeTypeComponentSize ||
+      intent_components.size() == 0 || filter_components.size() == 0) {
     return false;
   }
 
-  // For strings only contain the main mime type (i.e. no "/").
-  if (components1.size() == 1 || components2.size() == 1) {
-    return ComponentMatched(components1[0], components2[0]);
+  // If the filter component only contain main mime type, check if main type
+  // matches.
+  if (filter_components.size() == 1) {
+    return ComponentMatched(intent_components[0], filter_components[0]);
+  }
+
+  // If the intent component only contain main mime type, complete the
+  // mime type.
+  if (intent_components.size() == 1) {
+    intent_components.push_back(kWildCardAny);
   }
 
   // Both intent and intent filter can use wildcard for mime type.
   for (size_t i = 0; i < kMimeTypeComponentSize; i++) {
-    if (!ComponentMatched(components1[i], components2[i])) {
+    if (!ComponentMatched(intent_components[i], filter_components[i])) {
       return false;
     }
   }
   return true;
+}
+
+// Calculates the least general mime type that matches all of the given ones.
+// E.g., for ["image/jpeg", "image/png"] it will be "image/*". ["text/html",
+// "text/html"] will return "text/html", and ["text/html", "image/jpeg"]
+// becomes the fully wildcard pattern.
+std::string CalculateCommonMimeType(
+    const std::vector<std::string>& mime_types) {
+  const std::string any_mime_type = std::string(kWildCardAny) +
+                                    std::string(kMimeTypeSeparator) +
+                                    std::string(kWildCardAny);
+  if (mime_types.size() == 0) {
+    return any_mime_type;
+  }
+
+  std::vector<std::string> common_type =
+      base::SplitString(mime_types[0], kMimeTypeSeparator,
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  if (common_type.size() != 2) {
+    return any_mime_type;
+  }
+
+  for (auto& mime_type : mime_types) {
+    std::vector<std::string> type =
+        base::SplitString(mime_type, kMimeTypeSeparator, base::TRIM_WHITESPACE,
+                          base::SPLIT_WANT_NONEMPTY);
+    if (type.size() != kMimeTypeComponentSize) {
+      return any_mime_type;
+    }
+    if (common_type[0] != type[0]) {
+      return any_mime_type;
+    }
+    if (common_type[1] != type[1]) {
+      common_type[1] = kWildCardAny;
+    }
+  }
+  return common_type[0] + kMimeTypeSeparator + common_type[1];
 }
 
 }  // namespace
@@ -88,6 +139,17 @@ apps::mojom::IntentPtr CreateIntentFromUrl(const GURL& url) {
   auto intent = apps::mojom::Intent::New();
   intent->action = kIntentActionView;
   intent->url = url;
+  return intent;
+}
+
+apps::mojom::IntentPtr CreateShareIntentFromFiles(
+    const std::vector<GURL>& filesystem_urls,
+    const std::vector<std::string>& mime_types) {
+  auto intent = apps::mojom::Intent::New();
+  intent->action = filesystem_urls.size() == 1 ? kIntentActionSend
+                                               : kIntentActionSendMultiple;
+  intent->mime_type = CalculateCommonMimeType(mime_types);
+  intent->file_urls = filesystem_urls;
   return intent;
 }
 

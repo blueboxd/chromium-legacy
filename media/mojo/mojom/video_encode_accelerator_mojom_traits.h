@@ -69,6 +69,43 @@ class StructTraits<media::mojom::VideoBitrateAllocationDataView,
 };
 
 template <>
+struct UnionTraits<media::mojom::CodecMetadataDataView,
+                   media::BitstreamBufferMetadata> {
+  static media::mojom::CodecMetadataDataView::Tag GetTag(
+      const media::BitstreamBufferMetadata& metadata) {
+    if (metadata.vp8) {
+      return media::mojom::CodecMetadataDataView::Tag::VP8;
+    } else if (metadata.vp9) {
+      return media::mojom::CodecMetadataDataView::Tag::VP9;
+    }
+    NOTREACHED();
+    return media::mojom::CodecMetadataDataView::Tag::VP8;
+  }
+
+  static bool IsNull(const media::BitstreamBufferMetadata& metadata) {
+    return !metadata.vp8 && !metadata.vp9;
+  }
+
+  static void SetToNull(media::BitstreamBufferMetadata* metadata) {
+    metadata->vp8.reset();
+    metadata->vp9.reset();
+  }
+
+  static const media::Vp8Metadata& vp8(
+      const media::BitstreamBufferMetadata& metadata) {
+    return *metadata.vp8;
+  }
+
+  static const media::Vp9Metadata& vp9(
+      const media::BitstreamBufferMetadata& metadata) {
+    return *metadata.vp9;
+  }
+
+  static bool Read(media::mojom::CodecMetadataDataView data,
+                   media::BitstreamBufferMetadata* metadata);
+};
+
+template <>
 class StructTraits<media::mojom::BitstreamBufferMetadataDataView,
                    media::BitstreamBufferMetadata> {
  public:
@@ -81,9 +118,9 @@ class StructTraits<media::mojom::BitstreamBufferMetadataDataView,
   static base::TimeDelta timestamp(const media::BitstreamBufferMetadata& bbm) {
     return bbm.timestamp;
   }
-  static const base::Optional<media::Vp8Metadata>& vp8(
+  static const media::BitstreamBufferMetadata& codec_metadata(
       const media::BitstreamBufferMetadata& bbm) {
-    return bbm.vp8;
+    return bbm;
   }
 
   static bool Read(media::mojom::BitstreamBufferMetadataDataView data,
@@ -107,6 +144,26 @@ class StructTraits<media::mojom::Vp8MetadataDataView, media::Vp8Metadata> {
 
   static bool Read(media::mojom::Vp8MetadataDataView data,
                    media::Vp8Metadata* out_metadata);
+};
+
+template <>
+class StructTraits<media::mojom::Vp9MetadataDataView, media::Vp9Metadata> {
+ public:
+  static bool has_reference(const media::Vp9Metadata& vp9) {
+    return vp9.has_reference;
+  }
+  static bool temporal_up_switch(const media::Vp9Metadata& vp9) {
+    return vp9.temporal_up_switch;
+  }
+  static uint8_t temporal_idx(const media::Vp9Metadata& vp9) {
+    return vp9.temporal_idx;
+  }
+  static const std::vector<uint8_t>& p_diffs(const media::Vp9Metadata& vp9) {
+    return vp9.p_diffs;
+  }
+
+  static bool Read(media::mojom::Vp9MetadataDataView data,
+                   media::Vp9Metadata* out_metadata);
 };
 
 template <>

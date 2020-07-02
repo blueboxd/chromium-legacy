@@ -18,6 +18,7 @@
 #include "components/autofill_assistant/browser/top_padding.h"
 #include "components/autofill_assistant/browser/user_data.h"
 #include "components/autofill_assistant/browser/viewport_mode.h"
+#include "components/autofill_assistant/browser/web/element_finder.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 #include "third_party/icu/source/common/unicode/umachine.h"
 
@@ -95,9 +96,13 @@ class ActionDelegate {
                base::OnceCallback<void(const ClientStatus&)>)> check_elements,
       base::OnceCallback<void(const ClientStatus&)> callback) = 0;
 
-  // Click or tap the element given by |selector| on the web page.
+  // Find an element specified by |selector| on the web page.
+  virtual void FindElement(const Selector&,
+                           ElementFinder::Callback callback) = 0;
+
+  // Click or tap the |element|.
   virtual void ClickOrTapElement(
-      const Selector& selector,
+      const ElementFinder::Result& element,
       ClickType click_type,
       base::OnceCallback<void(const ClientStatus&)> callback) = 0;
 

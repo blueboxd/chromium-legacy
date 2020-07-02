@@ -10,11 +10,8 @@
 
 #include "base/callback.h"
 #include "base/component_export.h"
+#include "base/values.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
-
-namespace base {
-class DictionaryValue;
-}
 
 namespace chromeos {
 namespace network_handler {
@@ -87,7 +84,7 @@ void GetPropertiesCallback(DictionaryResultCallback callback,
                            const ErrorCallback& error_callback,
                            const std::string& path,
                            DBusMethodCallStatus call_status,
-                           const base::DictionaryValue& value);
+                           base::Value value);
 
 }  // namespace network_handler
 }  // namespace chromeos

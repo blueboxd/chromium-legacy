@@ -10,9 +10,11 @@
 #include "chromeos/components/camera_app_ui/url_constants.h"
 #include "chromeos/grit/chromeos_camera_app_resources.h"
 #include "chromeos/grit/chromeos_camera_app_resources_map.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "mojo/public/js/grit/mojo_bindings_resources.h"
+#include "ui/webui/webui_allowlist.h"
 
 namespace chromeos {
 
@@ -79,6 +81,25 @@ CameraAppUI::CameraAppUI(content::WebUI* web_ui)
     : ui::MojoWebUIController(web_ui) {
   content::BrowserContext* browser_context =
       web_ui->GetWebContents()->GetBrowserContext();
+
+  // Register auto-granted permissions.
+  auto* allowlist = WebUIAllowlist::GetOrCreate(browser_context);
+  const url::Origin host_origin =
+      url::Origin::Create(GURL(kChromeUICameraAppURL));
+  allowlist->RegisterAutoGrantedPermission(
+      host_origin, ContentSettingsType::MEDIASTREAM_MIC);
+  allowlist->RegisterAutoGrantedPermission(
+      host_origin, ContentSettingsType::MEDIASTREAM_CAMERA);
+  allowlist->RegisterAutoGrantedPermission(
+      host_origin, ContentSettingsType::NATIVE_FILE_SYSTEM_READ_GUARD);
+  allowlist->RegisterAutoGrantedPermission(
+      host_origin, ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD);
+  allowlist->RegisterAutoGrantedPermission(host_origin,
+                                           ContentSettingsType::COOKIES);
+  // The notifications permissison is needed by the IdleManager, which we use
+  // for lock screen detection.
+  allowlist->RegisterAutoGrantedPermission(host_origin,
+                                           ContentSettingsType::NOTIFICATIONS);
 
   // Set up the data source.
   content::WebUIDataSource* source = CreateCameraAppUIHTMLSource();

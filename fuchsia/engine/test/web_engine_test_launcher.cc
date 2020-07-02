@@ -54,10 +54,9 @@ int main(int argc, char** argv) {
   command_line->AppendSwitchASCII(switches::kEnableLogging, "stderr");
   command_line->AppendSwitch(switches::kDisableGpu);
 
-  size_t parallel_jobs = base::NumParallelJobs();
-  if (parallel_jobs > 1U) {
-    parallel_jobs /= 2U;
-  }
+  size_t parallel_jobs = base::NumParallelJobs(/*cores_per_job=*/2);
+  if (parallel_jobs == 0U)
+    return 1;
   ::WebEngineTestLauncherDelegate launcher_delegate;
   return LaunchTests(&launcher_delegate, parallel_jobs, argc, argv);
 }

@@ -6401,7 +6401,6 @@
 <translation id="9033765790910064284">Бәрібір жалғастыру</translation>
 <translation id="9033857511263905942">&amp;Қою</translation>
 <translation id="9037965129289936994">Түпнұсқаны көрсету</translation>
-<translation id="903797871439633902">Бұл – <ph name="DEVICE_TYPE" /> құрылғысына арналған бағдарламалық құрал мен қауіпсіздік жүйесінің жаңартылған нұсқасы. Оларды алдағы уақытта да алғыңыз келсе, жаңарақ үлгіге өтіңіз. &lt;a target="_blank" href="<ph name="URL" />"&gt;Толығырақ&lt;/a&gt;</translation>
 <translation id="9039014462651733343">{NUM_ATTEMPTS,plural, =1{Сізде бір мүмкіндік қалды.}other{Сізде # мүмкіндік қалды.}}</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571"><ph name="ORIGIN" /> құпия сөзі жаңартылсын ба?</translation>

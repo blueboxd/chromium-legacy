@@ -6,6 +6,8 @@ assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
 
 source_set("cpp") {
   sources = [
+    "handwriting_recognizer_manager.cc",
+    "handwriting_recognizer_manager.h",
     "service_connection.cc",
     "service_connection.h",
   ]

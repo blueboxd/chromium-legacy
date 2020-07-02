@@ -35,7 +35,7 @@ namespace {
 // |is_for_isolated_world|.  See also the doc comment for
 // extensions::URLLoaderFactoryManager::CreateFactory.
 //
-// TODO(kinuko, lukasza): https://crbug.com/891872: Make
+// TODO(kinuko, lukasza): https://crbug.com/1098938: Make
 // |request_initiator_site_lock| non-optional, once
 // URLLoaderFactoryParamsHelper::CreateForRendererProcess is removed.
 network::mojom::URLLoaderFactoryParamsPtr CreateParams(
@@ -213,7 +213,7 @@ URLLoaderFactoryParamsHelper::CreateForRendererProcess(
         SiteInstanceImpl::GetRequestInitiatorSiteLock(process_lock);
   }
 
-  // Since this function is about to get deprecated (crbug.com/891872), it
+  // Since this function is about to get deprecated (crbug.com/1098938), it
   // should be fine to not add support for isolation info thus using an empty
   // NetworkIsolationKey.
   //

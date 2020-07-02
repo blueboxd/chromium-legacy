@@ -41,6 +41,11 @@ bool TestAppRegistrar::IsLocallyInstalled(const AppId& app_id) const {
   return false;
 }
 
+bool TestAppRegistrar::IsInSyncInstall(const AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 bool TestAppRegistrar::WasInstalledByUser(const AppId& app_id) const {
   NOTIMPLEMENTED();
   return false;

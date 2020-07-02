@@ -1161,7 +1161,6 @@ if (!is_android) {
       "../browser/ssl/crlset_browsertest.cc",
       "../browser/ssl/known_interception_disclosure_infobar_browsertest.cc",
       "../browser/ssl/known_interception_disclosure_ui_browsertest.cc",
-      "../browser/ssl/ocsp_browsertest.cc",
       "../browser/ssl/security_state_tab_helper_browsertest.cc",
       "../browser/ssl/ssl_browsertest.cc",
       "../browser/ssl/ssl_client_certificate_selector_test.cc",

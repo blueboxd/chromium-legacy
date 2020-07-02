@@ -189,6 +189,9 @@ blink::protocol::String InspectorIssueCodeValue(
       return protocol::Audits::InspectorIssueCodeEnum::MixedContentIssue;
     case mojom::blink::InspectorIssueCode::kBlockedByResponseIssue:
       return protocol::Audits::InspectorIssueCodeEnum::BlockedByResponseIssue;
+    case mojom::blink::InspectorIssueCode::kContentSecurityPolicyIssue:
+      return protocol::Audits::InspectorIssueCodeEnum::
+          ContentSecurityPolicyIssue;
   }
 }
 
@@ -390,6 +393,31 @@ protocol::String BuildBlockedByResponseReason(
   }
 }
 
+protocol::String BuildViolationType(
+    mojom::blink::ContentSecurityPolicyViolationType violation_type) {
+  switch (violation_type) {
+    case blink::mojom::blink::ContentSecurityPolicyViolationType::
+        kInlineViolation:
+      return protocol::Audits::ContentSecurityPolicyViolationTypeEnum::
+          KInlineViolation;
+    case blink::mojom::blink::ContentSecurityPolicyViolationType::
+        kEvalViolation:
+      return protocol::Audits::ContentSecurityPolicyViolationTypeEnum::
+          KEvalViolation;
+    case blink::mojom::blink::ContentSecurityPolicyViolationType::kURLViolation:
+      return protocol::Audits::ContentSecurityPolicyViolationTypeEnum::
+          KURLViolation;
+    case blink::mojom::blink::ContentSecurityPolicyViolationType::
+        kTrustedTypesSinkViolation:
+      return protocol::Audits::ContentSecurityPolicyViolationTypeEnum::
+          KTrustedTypesSinkViolation;
+    case blink::mojom::blink::ContentSecurityPolicyViolationType::
+        kTrustedTypesPolicyViolation:
+      return protocol::Audits::ContentSecurityPolicyViolationTypeEnum::
+          KTrustedTypesPolicyViolation;
+  }
+}
+
 }  // namespace
 
 void InspectorAuditsAgent::InspectorIssueAdded(InspectorIssue* issue) {
@@ -447,6 +475,20 @@ void InspectorAuditsAgent::InspectorIssueAdded(InspectorIssue* issue) {
     }
     issueDetails.setBlockedByResponseIssueDetails(
         std::move(blockedByResponseDetails));
+  }
+
+  if (const auto* d = issue->Details()->csp_issue_details.get()) {
+    auto cspDetails =
+        std::move(protocol::Audits::ContentSecurityPolicyIssueDetails::create()
+                      .setViolatedDirective(d->violated_directive)
+                      .setContentSecurityPolicyViolationType(BuildViolationType(
+                          d->content_security_policy_violation_type)));
+    if (d->blocked_url) {
+      cspDetails.setBlockedURL(*d->blocked_url);
+    }
+    if (d->frame_ancestor)
+      cspDetails.setFrameAncestor(BuildAffectedFrame(d->frame_ancestor));
+    issueDetails.setContentSecurityPolicyIssueDetails(cspDetails.build());
   }
 
   auto inspector_issue = protocol::Audits::InspectorIssue::create()

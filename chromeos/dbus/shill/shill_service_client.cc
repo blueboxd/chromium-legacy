@@ -51,8 +51,8 @@ void OnGetDictionaryError(const std::string& method_name,
   else
     LOG(ERROR) << log_string;
 
-  base::DictionaryValue empty_dictionary;
-  std::move(callback).Run(DBUS_METHOD_CALL_FAILURE, empty_dictionary);
+  std::move(callback).Run(DBUS_METHOD_CALL_FAILURE,
+                          base::Value(base::Value::Type::DICTIONARY));
 }
 
 // The ShillServiceClient implementation.

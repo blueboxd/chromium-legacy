@@ -4567,9 +4567,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="7724592140967451156">정책을 True로 설정하면 브라우저의 주소 표시줄에 있는 도메인이 출처가 아닌 웹페이지 요소가 쿠키를 설정할 수 없습니다. 정책을 False로 설정하면 이러한 요소가 쿠키를 설정하도록 허용하고 사용자가 이 설정을 변경할 수 없습니다.
 
       설정하지 않으면 타사 쿠키가 사용 설정되지만 사용자가 이 설정을 변경할 수 있습니다.</translation>
-<translation id="7724652568947700864">정책이 설정되면 지정된 모든 데이터 유형이 Google 동기화와 로밍 프로필 동기화 모두에서 제외됩니다. 이렇게 하면 로밍 프로필의 크기를 줄이거나 Google 동기화 서버에 업로드되는 데이터의 유형을 제한하는 데 도움이 될 수 있습니다.
-
-      이 정책의 현재 데이터 유형은 'bookmarks', 'preferences', 'passwords', 'autofill', 'themes', 'typedUrls', 'extensions', 'apps', 'tabs', 'wifiConfiguration'입니다. 이름은 대소문자를 구분합니다.</translation>
 <translation id="7731026922044991970">모든 사이트에서 쿠키의 레거시 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 동작으로 되돌리기</translation>
 <translation id="7732907212083471072">삭제된 정책</translation>
 <translation id="7747447585227954402">기기가 <ph name="PRODUCT_OS_NAME" />에서 <ph name="PLUGIN_VM_NAME" />을(를) 사용하도록 허용합니다.</translation>

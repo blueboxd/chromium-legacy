@@ -124,6 +124,11 @@
       depends_on: ["ConversionMeasurement"],
     },
     {
+      name: "CrossOriginIsolated",
+      feature_policy_name: "cross-origin-isolated",
+      depends_on: ["CrossOriginIsolation"],
+    },
+    {
       name: "DocumentDomain",
       feature_policy_name: "document-domain",
     },

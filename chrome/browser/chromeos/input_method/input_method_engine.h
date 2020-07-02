@@ -122,9 +122,10 @@ class InputMethodEngine : public InputMethodEngineBase,
                                const std::vector<base::string16>& suggestions,
                                std::string* error) override;
 
-  bool HighlightSuggestionCandidate(int context_id,
-                                    int index,
-                                    std::string* error) override;
+  bool SetButtonHighlighted(int context_id,
+                            const ui::ime::AssistiveWindowButton& button,
+                            bool highlighted,
+                            std::string* error) override;
 
   bool AcceptSuggestionCandidate(int context_id,
                                  const base::string16& candidate,

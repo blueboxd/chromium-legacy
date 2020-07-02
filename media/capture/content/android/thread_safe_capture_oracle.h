@@ -23,7 +23,7 @@ namespace media {
 
 struct VideoCaptureParams;
 class VideoFrame;
-class VideoFrameMetadata;
+struct VideoFrameMetadata;
 
 // Thread-safe, refcounted proxy to the VideoCaptureOracle.  This proxy wraps
 // the VideoCaptureOracle, which decides which frames to capture, and a

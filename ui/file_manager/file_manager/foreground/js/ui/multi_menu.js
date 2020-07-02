@@ -213,8 +213,10 @@ cr.define('cr.ui', () => {
       const childRect = subMenu.getBoundingClientRect();
       const style = subMenu.style;
       // See if it fits on the right, if not position on the left
+      // if there's more room on the left.
       style.left = style.right = style.top = style.bottom = 'auto';
-      if ((itemRect.right + childRect.width) > viewportWidth) {
+      if ((itemRect.right + childRect.width) > viewportWidth &&
+          ((viewportWidth - itemRect.right) < itemRect.left)) {
         this.subMenuOnLeft = true;
         style.left = (itemRect.left - childRect.width) + 'px';
       } else {

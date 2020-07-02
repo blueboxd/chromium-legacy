@@ -203,11 +203,12 @@ void WebAppInstallManager::EnqueueInstallAppFromSync(
     OnceInstallCallback callback) {
   DCHECK(started_);
 
-  if (registrar()->IsInstalled(sync_app_id) ||
-      // Note that we call the callback too early here: an enqueued task has not
-      // yet installed the app. This is fine (for now) because |callback| is
-      // only used in tests.
+  if ((registrar()->IsInstalled(sync_app_id) &&
+       !registrar()->IsInSyncInstall(sync_app_id)) ||
       IsAppIdAlreadyEnqueued(sync_app_id)) {
+    // Note that we call the callback too early here: an enqueued task has not
+    // yet installed the app. This is fine (for now) because |callback| is
+    // only used in tests.
     std::move(callback).Run(sync_app_id,
                             InstallResultCode::kSuccessAlreadyInstalled);
     return;

@@ -176,6 +176,31 @@ bool GetFieldTrialParamByFeatureAsBool(const Feature& feature,
   return default_value;
 }
 
+base::TimeDelta GetFieldTrialParamByFeatureAsTimeDelta(
+    const Feature& feature,
+    const std::string& param_name,
+    base::TimeDelta default_value) {
+  std::string value_as_string =
+      GetFieldTrialParamValueByFeature(feature, param_name);
+
+  if (value_as_string.empty())
+    return default_value;
+
+  base::Optional<base::TimeDelta> ret =
+      base::TimeDelta::FromString(value_as_string);
+  if (!ret.has_value()) {
+    DLOG(WARNING)
+        << "Failed to parse field trial param " << param_name
+        << " with string value " << value_as_string << " under feature "
+        << feature.name
+        << " into a base::TimeDelta. Falling back to default value of "
+        << default_value;
+    return default_value;
+  }
+
+  return ret.value();
+}
+
 std::string FeatureParam<std::string>::Get() const {
   const std::string value = GetFieldTrialParamValueByFeature(*feature, name);
   return value.empty() ? default_value : value;
@@ -191,6 +216,10 @@ int FeatureParam<int>::Get() const {
 
 bool FeatureParam<bool>::Get() const {
   return GetFieldTrialParamByFeatureAsBool(*feature, name, default_value);
+}
+
+base::TimeDelta FeatureParam<base::TimeDelta>::Get() const {
+  return GetFieldTrialParamByFeatureAsTimeDelta(*feature, name, default_value);
 }
 
 void LogInvalidEnumValue(const Feature& feature,

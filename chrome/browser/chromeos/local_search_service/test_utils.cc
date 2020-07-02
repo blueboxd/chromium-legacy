@@ -24,6 +24,11 @@ std::vector<Data> CreateTestData(
   for (const auto& item : input) {
     Data data;
     data.id = item.first;
+    // Hardcode to "en" because it's unclear what config locale will be when
+    // running a test.
+    // TODO(jiameng): allow locale to be passed in if there's a need to use
+    // non-en data in tests.
+    data.locale = "en";
     std::vector<Content>& contents = data.contents;
     for (const auto& content_with_id : item.second) {
       const Content content(content_with_id.first,

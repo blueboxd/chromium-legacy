@@ -41,11 +41,9 @@ void FakeShillIPConfigClient::GetProperties(
   const base::Value* dict = ipconfigs_.FindDictKey(ipconfig_path.value());
   if (!dict)
     return;
-  std::unique_ptr<base::DictionaryValue> dict_copy =
-      base::DictionaryValue::From(dict->CreateDeepCopy());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), DBUS_METHOD_CALL_SUCCESS,
-                                std::move(*dict_copy)));
+                                dict->Clone()));
 }
 
 void FakeShillIPConfigClient::SetProperty(const dbus::ObjectPath& ipconfig_path,

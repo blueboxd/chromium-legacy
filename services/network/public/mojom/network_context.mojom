@@ -600,7 +600,7 @@ struct URLLoaderFactoryParams {
 
   // If specified, then |request_initiator_site_lock| locks
   // |ResourceRequest::request_initiator| to the specified origin.
-  // TODO(lukasza): https://crbug.com/891872: 1) Make this non-optional,
+  // TODO(lukasza): https://crbug.com/1098938: 1) Make this non-optional,
   // 2) Make this an *origin* lock (rather than a *site* lock).
   url.mojom.Origin? request_initiator_site_lock;
 

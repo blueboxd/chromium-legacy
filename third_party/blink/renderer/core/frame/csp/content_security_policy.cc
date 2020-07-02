@@ -975,7 +975,7 @@ static void GatherSecurityPolicyViolationEventData(
     const String& header,
     RedirectStatus redirect_status,
     ContentSecurityPolicyType header_type,
-    ContentSecurityPolicy::ViolationType violation_type,
+    ContentSecurityPolicy::ContentSecurityPolicyViolationType violation_type,
     std::unique_ptr<SourceLocation> source_location,
     const String& script_source,
     const String& sample_prefix) {
@@ -1106,7 +1106,7 @@ void ContentSecurityPolicy::ReportViolation(
     bool use_reporting_api,
     const String& header,
     ContentSecurityPolicyType header_type,
-    ViolationType violation_type,
+    ContentSecurityPolicyViolationType violation_type,
     std::unique_ptr<SourceLocation> source_location,
     LocalFrame* context_frame,
     RedirectStatus redirect_status,
@@ -1126,7 +1126,6 @@ void ContentSecurityPolicy::ReportViolation(
            effective_type == DirectiveType::kRequireTrustedTypesFor);
     return;
   }
-
   DCHECK((delegate_ && !context_frame) ||
          ((effective_type == DirectiveType::kFrameAncestors) && context_frame));
 
@@ -1162,6 +1161,9 @@ void ContentSecurityPolicy::ReportViolation(
   // processing 'frame-ancestors').
   if (delegate_)
     delegate_->DispatchViolationEvent(*violation_data, element);
+
+  ReportContentSecurityPolicyIssue(blocked_url, directive_text, violation_type,
+                                   context_frame);
 }
 
 void ContentSecurityPolicy::PostViolationReport(
@@ -1409,6 +1411,66 @@ void ContentSecurityPolicy::LogToConsole(const String& message,
                                          mojom::ConsoleMessageLevel level) {
   LogToConsole(MakeGarbageCollected<ConsoleMessage>(
       mojom::ConsoleMessageSource::kSecurity, level, message));
+}
+
+mojom::blink::ContentSecurityPolicyViolationType
+ContentSecurityPolicy::BuildCSPViolationType(
+    ContentSecurityPolicy::ContentSecurityPolicyViolationType violation_type) {
+  switch (violation_type) {
+    case blink::ContentSecurityPolicy::ContentSecurityPolicyViolationType::
+        kEvalViolation:
+      return mojom::blink::ContentSecurityPolicyViolationType::kEvalViolation;
+    case blink::ContentSecurityPolicy::ContentSecurityPolicyViolationType::
+        kInlineViolation:
+      return mojom::blink::ContentSecurityPolicyViolationType::kInlineViolation;
+    case blink::ContentSecurityPolicy::ContentSecurityPolicyViolationType::
+        kTrustedTypesPolicyViolation:
+      return mojom::blink::ContentSecurityPolicyViolationType::
+          kTrustedTypesPolicyViolation;
+    case blink::ContentSecurityPolicy::ContentSecurityPolicyViolationType::
+        kTrustedTypesSinkViolation:
+      return mojom::blink::ContentSecurityPolicyViolationType::
+          kTrustedTypesSinkViolation;
+    case blink::ContentSecurityPolicy::ContentSecurityPolicyViolationType::
+        kURLViolation:
+      return mojom::blink::ContentSecurityPolicyViolationType::kURLViolation;
+  }
+}
+
+void ContentSecurityPolicy::ReportContentSecurityPolicyIssue(
+    const KURL& blocked_url,
+    String violated_directive,
+    ContentSecurityPolicyViolationType violation_type,
+    LocalFrame* frame_ancestor) {
+  auto cspDetails = mojom::blink::ContentSecurityPolicyIssueDetails::New();
+  cspDetails->blocked_url = blocked_url;
+  cspDetails->violated_directive = violated_directive;
+  cspDetails->content_security_policy_violation_type =
+      BuildCSPViolationType(violation_type);
+  if (frame_ancestor) {
+    auto affected_frame = mojom::blink::AffectedFrame::New();
+    affected_frame->frame_id =
+        frame_ancestor->GetDevToolsFrameToken().ToString().c_str();
+    cspDetails->frame_ancestor = std::move(affected_frame);
+  }
+
+  auto details = mojom::blink::InspectorIssueDetails::New();
+  details->csp_issue_details = std::move(cspDetails);
+
+  mojom::blink::InspectorIssueInfoPtr info =
+      mojom::blink::InspectorIssueInfo::New(
+          mojom::blink::InspectorIssueCode::kContentSecurityPolicyIssue,
+          std::move(details));
+
+  // TODO(crbug.com/1082628): Add handling of other CSP violation types later as
+  // they'll need more work.
+  if (violation_type == blink::ContentSecurityPolicy::
+                            ContentSecurityPolicyViolationType::kURLViolation) {
+    if (frame_ancestor)
+      frame_ancestor->AddInspectorIssue(std::move(info));
+    else if (delegate_)
+      delegate_->AddInspectorIssue(std::move(info));
+  }
 }
 
 void ContentSecurityPolicy::LogToConsole(ConsoleMessage* console_message,

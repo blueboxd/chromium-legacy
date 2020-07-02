@@ -312,7 +312,7 @@ class TestLauncher {
 };
 
 // Return the number of parallel jobs to use, or 0U in case of error.
-size_t NumParallelJobs();
+size_t NumParallelJobs(unsigned int cores_per_job);
 
 // Extract part from |full_output| that applies to |result|.
 std::string GetTestOutputSnippet(const TestResult& result,

@@ -4431,9 +4431,6 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 このポリシーを False に設定した場合、これらの要素による Cookie の設定が許可され、ユーザーはこの設定を変更できません。
 
       このポリシーを未設定のままにした場合、サードパーティ Cookie は有効になりますが、ユーザーはこの設定を変更できます。</translation>
-<translation id="7724652568947700864">このポリシーを設定した場合、指定したすべてのデータタイプが Google Sync とローミング プロファイルの同期から除外されます。これにより、ローミング プロファイルのサイズを抑えたり、Google Sync サーバーにアップロードされるデータのタイプを制限したりできます。
-
-      現在、このポリシーで指定できるデータタイプは次のとおりです。"bookmarks"、"preferences"、"passwords"、"autofill"、"themes"、"typedUrls"、"extensions"、"apps"、"tabs"、"wifiConfiguration"データタイプの名前では大文字と小文字が区別されます。</translation>
 <translation id="7731026922044991970">すべてのサイトの Cookie を以前の <ph name="ATTRIBUTE_SAMESITE_NAME" /> 動作に戻す</translation>
 <translation id="7732907212083471072">削除済みのポリシー</translation>
 <translation id="7747447585227954402">デバイスが <ph name="PRODUCT_OS_NAME" /> で <ph name="PLUGIN_VM_NAME" /> を使用できるようにする</translation>

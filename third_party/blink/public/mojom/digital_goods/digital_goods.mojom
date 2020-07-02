@@ -8,22 +8,19 @@ import "components/payments/mojom/payment_request_data.mojom";
 
 // https://github.com/WICG/digital-goods/blob/master/explainer.md
 
-struct GetDetailsParams {
-  array<string> item_ids;
-};
+// Allow the renderer to talk to an associated digital goods backend.
+interface DigitalGoods {
+  // Queries the associated backend for information about one or more items.
+  GetDetails(array<string> item_ids)
+      => (BillingResponseCode code, array<ItemDetails> item_details_list);
 
-struct GetDetailsResponse {
-  BillingResponseCode code;
-  array<ItemDetails> item_details_list;
-};
-
-struct ConsumeParams {
-  string purchase_token;
-  bool make_available_again;
-};
-
-struct ConsumeResponse {
-  BillingResponseCode code;
+  // Informs the associated backend that the purchase identified by
+  // |purchase_token| was successfully acknowledged. If |make_available_again|
+  // is true, indicates that the purchase is repeatable (e.g. a consumable
+  // item). If it is false, indicates that the purchase is one-off (e.g. a
+  // permanent upgrade).
+  Acknowledge(string purchase_token, bool make_available_again)
+      => (BillingResponseCode code);
 };
 
 // TODO(crbug.com/1061503): Narrow down this list as discussions settle on

@@ -94,14 +94,14 @@ void GetPropertiesCallback(DictionaryResultCallback callback,
                            const ErrorCallback& error_callback,
                            const std::string& path,
                            DBusMethodCallStatus call_status,
-                           const base::DictionaryValue& value) {
+                           base::Value value) {
   if (call_status != DBUS_METHOD_CALL_SUCCESS) {
     NET_LOG(ERROR) << "GetProperties failed: " << NetworkPathId(path)
                    << " Status: " << call_status;
     RunErrorCallback(
         error_callback, path, kDBusFailedError, kDBusFailedErrorMessage);
   } else if (!callback.is_null()) {
-    std::move(callback).Run(path, value);
+    std::move(callback).Run(path, base::Value::AsDictionaryValue(value));
   }
 }
 

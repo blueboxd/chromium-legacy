@@ -58,12 +58,11 @@ void FakeShillProfileClient::GetProperties(
     entry_paths.Append(it.first);
   }
 
-  std::unique_ptr<base::DictionaryValue> properties =
-      profile->properties.CreateDeepCopy();
-  properties->SetKey(shill::kEntriesProperty, std::move(entry_paths));
+  base::Value properties = profile->properties.Clone();
+  properties.SetKey(shill::kEntriesProperty, std::move(entry_paths));
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), std::move(*properties)));
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(properties)));
 }
 
 void FakeShillProfileClient::GetEntry(
@@ -84,10 +83,8 @@ void FakeShillProfileClient::GetEntry(
     return;
   }
 
-  std::unique_ptr<base::DictionaryValue> entry_copy =
-      base::DictionaryValue::From(entry->CreateDeepCopy());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), std::move(*entry_copy)));
+      FROM_HERE, base::BindOnce(std::move(callback), entry->Clone()));
 }
 
 void FakeShillProfileClient::DeleteEntry(const dbus::ObjectPath& profile_path,

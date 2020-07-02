@@ -6407,7 +6407,6 @@
 <translation id="9033765790910064284">Сепак продолжи</translation>
 <translation id="9033857511263905942">&amp;Залепи</translation>
 <translation id="9037965129289936994">Прикажи го оригиналот</translation>
-<translation id="903797871439633902">Ова е последното автоматско софтверско и безбедносно ажурирање за овој <ph name="DEVICE_TYPE" />. За да добивате идни ажурирања, набавете понов модел. &lt;a target="_blank" href="<ph name="URL" />"&gt;Дознајте повеќе&lt;/a&gt;</translation>
 <translation id="9039014462651733343">{NUM_ATTEMPTS,plural, =1{Имате уште еден обид.}one{Имате уште # обид.}other{Имате уште # обиди.}}</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571">Дали да се ажурира лозинката за <ph name="ORIGIN" />?</translation>

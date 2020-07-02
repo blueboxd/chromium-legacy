@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_GOODS_DIGITAL_GOODS_SERVICE_H_
 
 #include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/blink/public/mojom/digital_goods/digital_goods.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 
 namespace blink {
@@ -28,6 +29,9 @@ class DigitalGoodsService final : public ScriptWrappable {
                             const String& purchase_type);
 
   void Trace(Visitor* visitor) const override;
+
+ private:
+  mojo::Remote<payments::mojom::blink::DigitalGoods> mojo_service_;
 };
 
 }  // namespace blink

@@ -9,10 +9,9 @@
 
 int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
-  size_t parallel_jobs = base::NumParallelJobs();
-  if (parallel_jobs > 1U) {
-    parallel_jobs /= 2U;
-  }
+  size_t parallel_jobs = base::NumParallelJobs(/*cores_per_job=*/2);
+  if (parallel_jobs == 0U)
+    return 1;
   extensions::AppShellTestLauncherDelegate launcher_delegate;
   return content::LaunchTests(&launcher_delegate, parallel_jobs, argc, argv);
 }

@@ -283,7 +283,10 @@ public class SplashController
 
     /** Hides the splash screen. */
     private void hideSplash(final Tab tab, boolean loadFailed) {
-        if (mActivity.isActivityFinishingOrDestroyed()) return;
+        if (mActivity.isActivityFinishingOrDestroyed()) {
+            RecordHistogram.recordBooleanHistogram("Mobile.Splash.HideSplashWhenFinishing", true);
+            return;
+        }
 
         if (mTranslucencyRemovalStrategy == TranslucencyRemoval.ON_SPLASH_HIDDEN
                 && !mRemovedTranslucency) {

@@ -1,0 +1,99 @@
+'use strict';
+
+class MockDigitalGoods {
+  constructor() {
+    this.interceptor_ =
+        new MojoInterfaceInterceptor(
+            payments.mojom.DigitalGoods.$interfaceName);
+    this.interceptor_.oninterfacerequest =
+        e => this.bindHandleToReceiver_(e.handle);
+
+    this.interceptor_.start();
+    this.resetRecordedAction_();
+  }
+
+  bindHandleToReceiver_(handle) {
+    this.receiver_ = new payments.mojom.DigitalGoodsReceiver(this);
+    this.receiver_.$.bindHandle(handle);
+  }
+
+  getRecordedAction_() {
+    return this.action;
+  }
+
+  resetRecordedAction_() {
+    this.action = new Promise((resolve, reject) => {
+      this.actionResolve_ = resolve;
+    });
+  }
+
+  makeItemDetails_(id) {
+    // itemDetails is a payments.mojom.ItemDetails.
+    let itemDetails = {};
+    itemDetails.itemId = id;
+    itemDetails.title = 'title:' + id;
+    itemDetails.description = 'description:' + id;
+    // price is a payments.mojom.PaymentCurrencyAmount.
+    itemDetails.price = {};
+    itemDetails.price.currency = 'AUD';
+    // Set price.value as on number in |id| dollars.
+    const matchNum = id.match(/\d+/);
+    if (matchNum) {
+      itemDetails.price.value = matchNum[0] + '.00';
+    } else {
+      itemDetails.price.value = '1.23';
+    }
+    return itemDetails;
+  }
+
+  async getDetails(itemIds) {
+    this.actionResolve_('getDetails:' + itemIds);
+
+    // Simulate some backend failure response.
+    if (itemIds.includes('fail')) {
+      return {code: /*BillingResponseCode.kError=*/1, itemDetailsList: []};
+    }
+
+    let itemDetailsList = [];
+    // Simulate some specified IDs are not found.
+    const found = itemIds.filter(id => !id.includes('gone'));
+    for (const id of found) {
+      itemDetailsList.push(this.makeItemDetails_(id));
+    }
+
+    return {
+      code: /*BillingResponseCode.kOk=*/0,
+      itemDetailsList: itemDetailsList
+    };
+  }
+
+  async acknowledge(purchaseToken, makeAvailableAgain) {
+    this.actionResolve_(
+        'acknowledge:' + purchaseToken + ' ' + makeAvailableAgain);
+
+    if (purchaseToken === 'fail') {
+      return {code: /*BillingResponseCode.kError=*/1};
+    }
+    return {code: /*BillingResponseCode.kOk=*/0};
+  }
+}
+
+let mockDigitalGoods = new MockDigitalGoods();
+
+function digital_goods_test(func, {
+  title,
+  expectedAction,
+  paymentMethod = 'https://play.google.com/billing',
+} = {}) {
+  promise_test(async () => {
+    mockDigitalGoods.resetRecordedAction_();
+    const service = await window.getDigitalGoodsService(paymentMethod);
+
+    await func(service);
+
+    if (expectedAction) {
+      const action = await mockDigitalGoods.getRecordedAction_();
+      assert_equals(action, expectedAction);
+    }
+  }, title);
+}

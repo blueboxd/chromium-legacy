@@ -145,6 +145,14 @@ class CORE_EXPORT NGPhysicalFragment
   }
   bool IsRubyRun() const { return layout_object_->IsRubyRun(); }
 
+  // Return true if this fragment is for LayoutNGRubyRun, LayoutNGRubyText, or
+  // LayoutNGRubyBase. They are handled specially in scrollable overflow
+  // computation.
+  bool IsRubyBox() const {
+    return layout_object_->IsRubyRun() || layout_object_->IsRubyText() ||
+           layout_object_->IsRubyBase();
+  }
+
   // Return true if this fragment is a container established by a fieldset
   // element. Such a fragment contains an optional rendered legend fragment and
   // an optional fieldset contents wrapper fragment (which holds everything

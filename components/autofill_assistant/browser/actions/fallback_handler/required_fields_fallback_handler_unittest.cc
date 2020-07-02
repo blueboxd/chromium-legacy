@@ -16,6 +16,7 @@
 #include "components/autofill_assistant/browser/actions/mock_action_delegate.h"
 #include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/service.pb.h"
+#include "components/autofill_assistant/browser/web/element_finder.h"
 #include "components/autofill_assistant/browser/web/mock_web_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -24,9 +25,13 @@ namespace {
 
 using ::base::test::RunOnceCallback;
 using ::testing::_;
-using ::testing::Eq;
 using ::testing::Expectation;
 using ::testing::Invoke;
+using ::testing::WithArgs;
+
+MATCHER_P(EqualsElement, element, "") {
+  return arg.object_id == element.object_id;
+}
 
 RequiredField CreateRequiredField(const std::string& value_expression,
                                   const std::vector<std::string>& selector) {
@@ -51,6 +56,19 @@ class RequiredFieldsFallbackHandlerTest : public testing::Test {
   }
 
  protected:
+  ElementFinder::Result MockFindElement(const Selector& selector) {
+    EXPECT_CALL(mock_action_delegate_, FindElement(selector, _))
+        .WillOnce(WithArgs<1>([&selector](auto&& callback) {
+          auto element_result = std::make_unique<ElementFinder::Result>();
+          element_result->object_id = selector.proto.filters(0).css_selector();
+          std::move(callback).Run(OkClientStatus(), std::move(element_result));
+        }));
+
+    ElementFinder::Result expected_result;
+    expected_result.object_id = selector.proto.filters(0).css_selector();
+    return expected_result;
+  }
+
   MockActionDelegate mock_action_delegate_;
   MockWebController mock_web_controller_;
 };
@@ -277,7 +295,7 @@ TEST_F(RequiredFieldsFallbackHandlerTest, FillsEmptyRequiredField) {
       .WillOnce(RunOnceCallback<1>(OkClientStatus(), ""));
   Expectation set_value =
       EXPECT_CALL(mock_action_delegate_,
-                  OnSetFieldValue(Eq(Selector({"#card_name"})), "John Doe", _))
+                  OnSetFieldValue(Selector({"#card_name"}), "John Doe", _))
           .WillOnce(RunOnceCallback<2>(OkClientStatus()));
   EXPECT_CALL(mock_web_controller_, OnGetFieldValue(_, _))
       .After(set_value)
@@ -311,7 +329,7 @@ TEST_F(RequiredFieldsFallbackHandlerTest, FallsBackForForcedFilledField) {
   ON_CALL(mock_web_controller_, OnGetFieldValue(_, _))
       .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "value"));
   EXPECT_CALL(mock_action_delegate_,
-              OnSetFieldValue(Eq(Selector({"#card_name"})), "John Doe", _))
+              OnSetFieldValue(Selector({"#card_name"}), "John Doe", _))
       .WillOnce(RunOnceCallback<2>(OkClientStatus()));
 
   std::vector<RequiredField> required_fields = {
@@ -385,7 +403,7 @@ TEST_F(RequiredFieldsFallbackHandlerTest, FillsFieldWithPattern) {
       .WillOnce(RunOnceCallback<1>(OkClientStatus(), ""));
   Expectation set_value =
       EXPECT_CALL(mock_action_delegate_,
-                  OnSetFieldValue(Eq(Selector({"#card_expiry"})), "08/2050", _))
+                  OnSetFieldValue(Selector({"#card_expiry"}), "08/2050", _))
           .WillOnce(RunOnceCallback<2>(OkClientStatus()));
   EXPECT_CALL(mock_web_controller_, OnGetFieldValue(_, _))
       .After(set_value)
@@ -481,18 +499,22 @@ TEST_F(RequiredFieldsFallbackHandlerTest,
 TEST_F(RequiredFieldsFallbackHandlerTest, ClicksOnCustomDropdown) {
   EXPECT_CALL(mock_web_controller_, OnGetFieldValue(_, _)).Times(0);
   EXPECT_CALL(mock_action_delegate_, OnSetFieldValue(_, _, _)).Times(0);
+  Selector expected_main_selector({"#card_expiry"});
   EXPECT_CALL(
       mock_action_delegate_,
-      ClickOrTapElement(Eq(Selector({"#card_expiry"})), ClickType::TAP, _))
+      ClickOrTapElement(EqualsElement(MockFindElement(expected_main_selector)),
+                        ClickType::TAP, _))
       .WillOnce(RunOnceCallback<2>(OkClientStatus()));
-  Selector expected_selector({".option"});
-  expected_selector.MatchingInnerText("08");
-  expected_selector.MustBeVisible();
+  Selector expected_option_selector({".option"});
+  expected_option_selector.MatchingInnerText("08");
+  expected_option_selector.MustBeVisible();
   EXPECT_CALL(mock_action_delegate_,
-              OnShortWaitForElement(Eq(expected_selector), _))
+              OnShortWaitForElement(expected_option_selector, _))
       .WillOnce(RunOnceCallback<1>(OkClientStatus()));
   EXPECT_CALL(mock_action_delegate_,
-              ClickOrTapElement(Eq(expected_selector), ClickType::TAP, _))
+              ClickOrTapElement(
+                  EqualsElement(MockFindElement(expected_option_selector)),
+                  ClickType::TAP, _))
       .WillOnce(RunOnceCallback<2>(OkClientStatus()));
 
   std::vector<RequiredField> required_fields = {
@@ -523,19 +545,24 @@ TEST_F(RequiredFieldsFallbackHandlerTest, ClicksOnCustomDropdown) {
 TEST_F(RequiredFieldsFallbackHandlerTest, CustomDropdownClicksStopOnError) {
   EXPECT_CALL(mock_web_controller_, OnGetFieldValue(_, _)).Times(0);
   EXPECT_CALL(mock_action_delegate_, OnSetFieldValue(_, _, _)).Times(0);
-  EXPECT_CALL(
-      mock_action_delegate_,
-      ClickOrTapElement(Eq(Selector({"#card_expiry"})), ClickType::TAP, _))
-      .WillOnce(RunOnceCallback<2>(OkClientStatus()));
-  Selector expected_selector({".option"});
-  expected_selector.MatchingInnerText("08");
-  expected_selector.MustBeVisible();
+  Selector expected_main_selector({"#card_expiry"});
+  Expectation main_click =
+      EXPECT_CALL(mock_action_delegate_,
+                  ClickOrTapElement(
+                      EqualsElement(MockFindElement(expected_main_selector)),
+                      ClickType::TAP, _))
+          .WillOnce(RunOnceCallback<2>(OkClientStatus()));
+  Selector expected_option_selector({".option"});
+  expected_option_selector.MatchingInnerText("08");
+  expected_option_selector.MustBeVisible();
   EXPECT_CALL(mock_action_delegate_,
-              OnShortWaitForElement(Eq(expected_selector), _))
+              OnShortWaitForElement(expected_option_selector, _))
       .WillOnce(RunOnceCallback<1>(ClientStatus(ELEMENT_RESOLUTION_FAILED)));
-  EXPECT_CALL(mock_action_delegate_,
-              ClickOrTapElement(Eq(expected_selector), _, _))
+  EXPECT_CALL(mock_action_delegate_, FindElement(expected_option_selector, _))
       .Times(0);
+  EXPECT_CALL(mock_action_delegate_, ClickOrTapElement(_, _, _))
+      .Times(0)
+      .After(main_click);
 
   std::vector<RequiredField> required_fields = {
       CreateRequiredField("${53}", {"#card_expiry"})};

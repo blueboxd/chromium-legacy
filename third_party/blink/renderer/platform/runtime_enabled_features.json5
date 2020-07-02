@@ -1998,11 +1998,11 @@
     // WebShare is enabled by default on Android.
     {
       name: "WebShare",
-      status: "experimental",
+      status: "test",
     },
     {
       name: "WebShareV2",
-      status: "experimental",
+      status: "test",
       depends_on: ["WebShare"],
     },
     {

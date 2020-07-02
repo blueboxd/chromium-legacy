@@ -357,7 +357,7 @@ void ShillClientUnittestBase::ExpectStringResultWithoutStatus(
 // static
 void ShillClientUnittestBase::ExpectDictionaryValueResultWithoutStatus(
     const base::DictionaryValue* expected_result,
-    const base::DictionaryValue& result) {
+    base::Value result) {
   std::string expected_result_string;
   base::JSONWriter::Write(*expected_result, &expected_result_string);
   std::string result_string;
@@ -369,9 +369,9 @@ void ShillClientUnittestBase::ExpectDictionaryValueResultWithoutStatus(
 void ShillClientUnittestBase::ExpectDictionaryValueResult(
     const base::DictionaryValue* expected_result,
     DBusMethodCallStatus call_status,
-    const base::DictionaryValue& result) {
+    base::Value result) {
   EXPECT_EQ(DBUS_METHOD_CALL_SUCCESS, call_status);
-  ExpectDictionaryValueResultWithoutStatus(expected_result, result);
+  ExpectDictionaryValueResultWithoutStatus(expected_result, std::move(result));
 }
 
 void ShillClientUnittestBase::OnConnectToPlatformMessage(

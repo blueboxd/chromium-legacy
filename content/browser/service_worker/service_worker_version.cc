@@ -761,14 +761,11 @@ void ServiceWorkerVersion::AddControllee(
   CHECK_NE(status_, INSTALLED);
   CHECK_NE(status_, REDUNDANT);
 
-  if (base::FeatureList::IsEnabled(
-          features::kServiceWorkerTerminationOnNoControllee) &&
-      !HasControllee()) {
-    // If the service worker starts to control a new client and the service
-    // worker needs to work, let's extend the idle timeout to the default value.
-    UpdateIdleDelayIfNeeded(base::TimeDelta::FromSeconds(
-        blink::mojom::kServiceWorkerDefaultIdleDelayInSeconds));
-  }
+  // Set the idle timeout to the default value if there's no controllee and the
+  // worker is running because the worker's idle delay has been set to a shorter
+  // value when all controllee are gone.
+  MaybeUpdateIdleDelayForTerminationOnNoControllee(base::TimeDelta::FromSeconds(
+      blink::mojom::kServiceWorkerDefaultIdleDelayInSeconds));
 
   controllee_map_[uuid] = container_host;
   embedded_worker_->UpdateForegroundPriority();
@@ -809,16 +806,10 @@ void ServiceWorkerVersion::RemoveControllee(const std::string& client_uuid) {
       FROM_HERE, base::BindOnce(&ServiceWorkerVersion::NotifyControlleeRemoved,
                                 weak_factory_.GetWeakPtr(), client_uuid));
 
-  if (base::FeatureList::IsEnabled(
-          features::kServiceWorkerTerminationOnNoControllee) &&
-      !HasControllee()) {
-    // Terminate the worker after all controllees are gone with a delay set by
-    // |kTerminationDelayParam|, which is provided by the field trial.
-    // When a new controllee checks in before the delay passes, the idle delay
-    // is set to the default in AddControllee().
-    UpdateIdleDelayIfNeeded(
-        base::TimeDelta::FromMilliseconds(kTerminationDelayParam.Get()));
-  }
+  // When a new controllee checks in before the delay passes, the idle delay
+  // is set to the default in AddControllee().
+  MaybeUpdateIdleDelayForTerminationOnNoControllee(
+      base::TimeDelta::FromMilliseconds(kTerminationDelayParam.Get()));
 }
 
 void ServiceWorkerVersion::OnControlleeNavigationCommitted(
@@ -1207,6 +1198,9 @@ void ServiceWorkerVersion::OnStarted(
     for (const std::string& request_uuid : pending_external_requests)
       StartExternalRequest(request_uuid);
   }
+
+  MaybeUpdateIdleDelayForTerminationOnNoControllee(
+      base::TimeDelta::FromMilliseconds(kTerminationDelayParam.Get()));
 }
 
 void ServiceWorkerVersion::OnStopping() {
@@ -2421,10 +2415,16 @@ void ServiceWorkerVersion::MaybeReportConsoleMessageToInternals(
                          script_url_);
 }
 
-void ServiceWorkerVersion::UpdateIdleDelayIfNeeded(base::TimeDelta delay) {
-  // The idle delay can be updated only when the worker is still running.
-  bool update_idle_delay = running_status() == EmbeddedWorkerStatus::STARTING ||
-                           running_status() == EmbeddedWorkerStatus::RUNNING;
+void ServiceWorkerVersion::MaybeUpdateIdleDelayForTerminationOnNoControllee(
+    base::TimeDelta delay) {
+  if (!base::FeatureList::IsEnabled(
+          features::kServiceWorkerTerminationOnNoControllee) ||
+      HasControllee() || running_status() != EmbeddedWorkerStatus::RUNNING) {
+    return;
+  }
+
+  // The idle delay can be updated only when the worker is running.
+  bool update_idle_delay = running_status() == EmbeddedWorkerStatus::RUNNING;
 
   // The idle delay should not be updated when the worker needs to be
   // terminated ASAP so that the new worker can be activated soon.

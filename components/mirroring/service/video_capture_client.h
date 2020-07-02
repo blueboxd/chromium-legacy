@@ -20,7 +20,7 @@
 
 namespace media {
 class VideoFrame;
-class VideoFrameMetadata;
+struct VideoFrameMetadata;
 }  // namespace media
 
 namespace mirroring {

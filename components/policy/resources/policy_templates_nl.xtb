@@ -4513,9 +4513,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7724592140967451156">Als je het beleid instelt op True, kunnen webpagina-elementen die niet afkomstig zijn van het domein dat in de adresbalk van de browser staat geen cookies instellen. Als je het beleid instelt op False, kunnen die elementen cookies instellen en kunnen gebruikers deze instelling niet wijzigen.
 
       Als je het beleid niet instelt, worden cookies van derden ingeschakeld maar kunnen gebruikers deze instelling wijzigen.</translation>
-<translation id="7724652568947700864">Als dit beleid is ingesteld, worden alle opgegeven gegevenstypen uitgesloten van synchronisatie voor zowel Google Sync als synchronisatie van roaming-profielen. Dit kan handig zijn om het roaming-profiel te verkleinen of het type gegevens te beperken dat wordt geüpload naar de Google Sync-servers.
-
-      De huidige gegevenstypen voor dit beleid zijn: 'bookmarks', 'preferences', 'passwords', 'autofill', 'themes', 'typedUrls', 'extensions', 'apps', 'tabs', 'wifiConfiguration'. Die namen zijn hoofdlettergevoelig.</translation>
 <translation id="7731026922044991970">Het verouderde gedrag van <ph name="ATTRIBUTE_SAMESITE_NAME" /> voor cookies op alle sites terugzetten</translation>
 <translation id="7732907212083471072">Verwijderd beleid</translation>
 <translation id="7747447585227954402">Toestaan dat apparaten een <ph name="PLUGIN_VM_NAME" /> gebruiken op <ph name="PRODUCT_OS_NAME" /></translation>

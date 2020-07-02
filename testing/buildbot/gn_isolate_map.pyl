@@ -17,9 +17,6 @@
 # much always the same as the Ninja target name, since GYP target names are not
 # hierarchical).
 #
-# TODO(crbug.com/816629): Remove the need for this file altogether :). Also,
-# see below.
-#
 # The "label" field specifies the matching GN label for the given ninja
 # target.
 #
@@ -51,17 +48,6 @@
 #  "unknown"
 #  : (the default), which indicates that we don't know what the command line
 #    needs to be (this is a fatal error).
-
-# TODO(crbug.com/816629): You may also set the type field to "wrapped_" +
-# one of the above values; doing so indicates that the target conforms to
-# the test wrapper API: for a given label //X:Y and build directory Z,
-# there will be either a "Z/bin/run_Y" bash script (on Unix systems) or a
-# "Z/bin/run_Y.bat" batch script (on Windows) that can be invoked directly
-# to run the target in a swarming task, and "Z/Y.runtime_deps" file that
-# contains the list of files and directories needed to run the task, in
-# the format that GN uses with write_runtime_deps: a newline-separated list
-# of files and directories relative to Z. Ultimately every target will
-# be converted to this format, and this entire file will be deleted.
 #
 # The optional "executable" field can be used to override the name
 # of the binary to run. If the field is not specified, the binary
@@ -1723,7 +1709,7 @@
   },
   "url_unittests": {
     "label": "//url:url_unittests",
-    "type": "wrapped_console_test_launcher",
+    "type": "console_test_launcher",
   },
   "usage_time_limit_unittests": {
     "label": "//chrome/test:usage_time_limit_unittests",

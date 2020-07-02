@@ -6405,7 +6405,6 @@
 <translation id="9033765790910064284">មិនអីទេ បន្តចុះ</translation>
 <translation id="9033857511263905942">បិទភ្ជាប់</translation>
 <translation id="9037965129289936994">បង្ហាញប្រភពដើម</translation>
-<translation id="903797871439633902">នេះគឺជា​កំណែថ្មី​របស់កម្មវិធី និង​សុវត្ថិភាព​ចុងក្រោយ​ដែលបានដំឡើង​ដោយស្វ័យប្រវត្តិ​សម្រាប់ <ph name="DEVICE_TYPE" /> នេះ។ ដើម្បី​ទទួលបាន​កំណែថ្មីក្នុងពេលអនាគត សូមប្ដូរទៅប្រើម៉ូដែលថ្មីជាងនេះ។ &lt;a target="_blank" href="<ph name="URL" />"&gt;ស្វែងយល់បន្ថែម&lt;/a&gt;</translation>
 <translation id="9039014462651733343">{NUM_ATTEMPTS,plural, =1{អ្នកអាច​បញ្ចូលបានតែម្ដង​ទៀតប៉ុណ្ណោះ។}other{អ្នកអាចបញ្ចូលបានតែ # ដងទៀតប៉ុណ្ណោះ។}}</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571">ធ្វើបច្ចុប្បន្នភាព​ពាក្យសម្ងាត់​សម្រាប់ <ph name="ORIGIN" />?</translation>

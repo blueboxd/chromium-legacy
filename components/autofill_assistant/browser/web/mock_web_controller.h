@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "components/autofill_assistant/browser/top_padding.h"
+#include "components/autofill_assistant/browser/web/element_finder.h"
 #include "components/autofill_assistant/browser/web/web_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -23,16 +24,25 @@ class MockWebController : public WebController {
 
   MOCK_METHOD1(LoadURL, void(const GURL&));
 
+  void FindElement(const Selector& selector,
+                   bool strict_mode,
+                   ElementFinder::Callback callback) override {
+    OnFindElement(selector, callback);
+  }
+  MOCK_METHOD2(OnFindElement,
+               void(const Selector& selector,
+                    ElementFinder::Callback& callback));
+
   void ClickOrTapElement(
-      const Selector& selector,
+      const ElementFinder::Result& element,
       ClickType click_type,
       base::OnceCallback<void(const ClientStatus&)> callback) override {
     // Transforming callback into a references allows using RunOnceCallback on
     // the argument.
-    OnClickOrTapElement(selector, callback);
+    OnClickOrTapElement(element, callback);
   }
   MOCK_METHOD2(OnClickOrTapElement,
-               void(const Selector& selector,
+               void(const ElementFinder::Result&,
                     base::OnceCallback<void(const ClientStatus&)>& callback));
 
   void FocusElement(

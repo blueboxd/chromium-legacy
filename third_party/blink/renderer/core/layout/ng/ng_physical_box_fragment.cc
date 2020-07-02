@@ -209,6 +209,9 @@ PhysicalRect NGPhysicalBoxFragment::ScrollableOverflow(
     return PhysicalRect();
   }
   const LayoutObject* layout_object = GetLayoutObject();
+  if (height_type == TextHeightType::kEmHeight && IsRubyBox()) {
+    return ScrollableOverflowFromChildren(height_type);
+  }
   if (layout_object->IsBox()) {
     if (HasOverflowClip())
       return PhysicalRect({}, Size());
@@ -389,6 +392,10 @@ PhysicalRect NGPhysicalBoxFragment::ScrollableOverflowFromChildren(
     } else if (add_inline_children && child->IsLineBox()) {
       context.AddLineBoxChild(To<NGPhysicalLineBoxFragment>(*child),
                               child.Offset());
+    } else if (height_type == TextHeightType::kEmHeight && IsRubyRun()) {
+      PhysicalRect r = child->ScrollableOverflow(*this, height_type);
+      r.offset += child.offset;
+      context.AddChild(r);
     }
   }
 

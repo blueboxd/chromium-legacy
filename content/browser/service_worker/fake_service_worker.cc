@@ -36,6 +36,10 @@ void FakeServiceWorker::RunUntilInitializeGlobalScope() {
   loop.Run();
 }
 
+void FakeServiceWorker::FlushForTesting() {
+  receiver_.FlushForTesting();
+}
+
 void FakeServiceWorker::InitializeGlobalScope(
     mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerHost>
         service_worker_host,

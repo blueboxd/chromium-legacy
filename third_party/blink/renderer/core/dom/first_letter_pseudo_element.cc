@@ -241,10 +241,9 @@ void FirstLetterPseudoElement::ClearRemainingTextLayoutObject() {
   DCHECK(remaining_text_layout_object_);
   remaining_text_layout_object_ = nullptr;
 
-  if (GetDocument().GetStyleEngine().InRebuildLayoutTree()) {
-    // We are in the layout tree rebuild phase. We will do UpdateFirstLetter()
-    // as part of RebuildFirstLetterLayoutTree() or AttachLayoutTree(). Marking
-    // us style-dirty during layout tree rebuild is not allowed.
+  if (GetDocument().InStyleRecalc()) {
+    // UpdateFirstLetterPseudoElement will handle remaining_text_layout_object_
+    // changes during style recalc and layout tree rebuild.
     return;
   }
 
@@ -253,8 +252,6 @@ void FirstLetterPseudoElement::ClearRemainingTextLayoutObject() {
   // first letter, we need to UpdateFirstLetter to render the new first letter
   // or remove the ::first-letter pseudo if there is no text left. Do that as
   // part of a style recalc for this ::first-letter.
-  StyleEngine::AllowMarkStyleDirtyFromRecalcScope scope(
-      GetDocument().GetStyleEngine());
   SetNeedsStyleRecalc(
       kLocalStyleChange,
       StyleChangeReasonForTracing::Create(style_change_reason::kPseudoClass));

@@ -40,15 +40,16 @@ class ShillClientHelper {
  public:
   class RefHolder;
 
-  // A callback to handle responses for methods with DictionaryValue results.
+  // A callback to handle responses for methods with Value of type DICTIONARY
+  // results.
   using DictionaryValueCallback =
       base::OnceCallback<void(DBusMethodCallStatus call_status,
-                              const base::DictionaryValue& result)>;
+                              base::Value result)>;
 
-  // A callback to handle responses for methods with DictionaryValue results.
-  // This is used by CallDictionaryValueMethodWithErrorCallback.
+  // A callback to handle responses for methods with Value of type DICTIONARY
+  // results. This is used by CallDictionaryValueMethodWithErrorCallback.
   using DictionaryValueCallbackWithoutStatus =
-      base::OnceCallback<void(const base::DictionaryValue& result)>;
+      base::OnceCallback<void(base::Value result)>;
 
   // A callback to handle responses of methods returning a ListValue.
   using ListValueCallback =

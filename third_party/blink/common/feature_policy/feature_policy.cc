@@ -220,8 +220,7 @@ FeaturePolicy::FeatureState FeaturePolicy::GetFeatureState() const {
 
 FeaturePolicy::FeaturePolicy(url::Origin origin,
                              const FeatureList& feature_list)
-    : origin_(std::move(origin)), feature_list_(feature_list) {
-}
+    : origin_(std::move(origin)), feature_list_(feature_list) {}
 
 FeaturePolicy::~FeaturePolicy() = default;
 
@@ -416,6 +415,8 @@ const FeaturePolicy::FeatureList& FeaturePolicy::GetDefaultFeatureList() {
        {mojom::FeaturePolicyFeature::kClientHintWidth,
         FeatureDefault(FeaturePolicy::FeatureDefault::EnableForSelf)},
        {mojom::FeaturePolicyFeature::kClipboard,
+        FeatureDefault(FeaturePolicy::FeatureDefault::EnableForSelf)},
+       {mojom::FeaturePolicyFeature::kCrossOriginIsolated,
         FeatureDefault(FeaturePolicy::FeatureDefault::EnableForSelf)},
        {mojom::FeaturePolicyFeature::kCamera,
         FeatureDefault(FeaturePolicy::FeatureDefault::EnableForSelf)},

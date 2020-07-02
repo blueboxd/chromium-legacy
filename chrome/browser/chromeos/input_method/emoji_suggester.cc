@@ -10,6 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -30,6 +31,7 @@ const char kShowEmojiSuggestionMessage[] =
     "Emoji suggested. Press up or down to choose an emoji. Press enter to "
     "insert.";
 const char kDismissEmojiSuggestionMessage[] = "Emoji suggestion dismissed.";
+const char kAnnounceCandidateTemplate[] = "%s. %zu of %zu";
 
 std::string ReadEmojiDataFromFile() {
   if (!base::DirectoryExists(base::FilePath(ime::kBundledInputMethodsDirPath)))
@@ -70,6 +72,9 @@ std::string GetLastWord(const std::string& str) {
 EmojiSuggester::EmojiSuggester(InputMethodEngine* engine) : engine_(engine) {
   LoadEmojiMap();
   properties_.type = ui::ime::AssistiveWindowType::kEmojiSuggestion;
+  current_candidate_.id = ui::ime::ButtonId::kSuggestion;
+  current_candidate_.window_type =
+      ui::ime::AssistiveWindowType::kEmojiSuggestion;
 }
 
 EmojiSuggester::~EmojiSuggester() = default;
@@ -126,19 +131,23 @@ SuggestionStatus EmojiSuggester::HandleKeyEvent(
   SuggestionStatus status = SuggestionStatus::kNotHandled;
   std::string error;
   if (event.key == "Enter") {
-    if (AcceptSuggestion(candidate_id_))
+    if (AcceptSuggestion(current_candidate_.index))
       status = SuggestionStatus::kAccept;
   } else if (event.key == "Down") {
-    candidate_id_ < static_cast<int>(candidates_.size()) - 1
-        ? candidate_id_++
-        : candidate_id_ = 0;
-    engine_->HighlightSuggestionCandidate(context_id_, candidate_id_, &error);
+    current_candidate_.index < candidates_.size() - 1
+        ? current_candidate_.index++
+        : current_candidate_.index = 0;
+    BuildCandidateAnnounceString();
+    engine_->SetButtonHighlighted(context_id_, current_candidate_, true,
+                                  &error);
     status = SuggestionStatus::kBrowsing;
   } else if (event.key == "Up") {
-    candidate_id_ > 0
-        ? candidate_id_--
-        : candidate_id_ = static_cast<int>(candidates_.size()) - 1;
-    engine_->HighlightSuggestionCandidate(context_id_, candidate_id_, &error);
+    current_candidate_.index > 0 && current_candidate_.index != INT_MAX
+        ? current_candidate_.index--
+        : current_candidate_.index = candidates_.size() - 1;
+    BuildCandidateAnnounceString();
+    engine_->SetButtonHighlighted(context_id_, current_candidate_, true,
+                                  &error);
     status = SuggestionStatus::kBrowsing;
   } else if (event.key == "Esc") {
     DismissSuggestion();
@@ -217,8 +226,15 @@ void EmojiSuggester::DismissSuggestion() {
 
 void EmojiSuggester::ResetState() {
   candidates_.clear();
-  candidate_id_ = -1;
+  current_candidate_.index = INT_MAX;
   last_event_key_ = base::EmptyString();
+}
+
+void EmojiSuggester::BuildCandidateAnnounceString() {
+  current_candidate_.announce_string = base::StringPrintf(
+      kAnnounceCandidateTemplate,
+      base::UTF16ToUTF8(candidates_[current_candidate_.index]).c_str(),
+      current_candidate_.index + 1, candidates_.size());
 }
 
 AssistiveType EmojiSuggester::GetProposeActionType() {

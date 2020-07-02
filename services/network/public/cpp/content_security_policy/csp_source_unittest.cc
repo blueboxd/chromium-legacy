@@ -243,6 +243,8 @@ TEST(CSPSourceTest, AllowPath) {
         Allow(source, GURL("http://a.com/path/to/file/subpath"), &context));
     EXPECT_FALSE(
         Allow(source, GURL("http://a.com/path/to/something"), &context));
+    EXPECT_FALSE(Allow(source, GURL("http://a.com/"), &context));
+    EXPECT_FALSE(Allow(source, GURL("http://a.com"), &context));
   }
 
   // Path to a directory
@@ -254,6 +256,8 @@ TEST(CSPSourceTest, AllowPath) {
     EXPECT_FALSE(Allow(source, GURL("http://a.com/path/"), &context));
     EXPECT_FALSE(Allow(source, GURL("http://a.com/path/to"), &context));
     EXPECT_FALSE(Allow(source, GURL("http://a.com/path/to"), &context));
+    EXPECT_FALSE(Allow(source, GURL("http://a.com/"), &context));
+    EXPECT_FALSE(Allow(source, GURL("http://a.com"), &context));
   }
 
   // Empty path

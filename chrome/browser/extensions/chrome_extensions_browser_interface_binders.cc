@@ -39,8 +39,10 @@
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
+#include "chromeos/services/machine_learning/public/cpp/handwriting_recognizer_manager.h"
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
 #include "chromeos/services/machine_learning/public/mojom/handwriting_recognizer.mojom.h"
+#include "chromeos/services/machine_learning/public/mojom/handwriting_recognizer_requestor.mojom.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #endif
@@ -69,6 +71,16 @@ void BindHandwritingRecognizer(
           chromeos::machine_learning::mojom::HandwritingRecognizerSpec::New(
               "en"),
           std::move(receiver), base::DoNothing());
+}
+
+void BindHandwritingRecognizerRequestor(
+    content::RenderFrameHost* render_frame_host,
+    mojo::PendingReceiver<
+        chromeos::machine_learning::mojom::HandwritingRecognizerRequestor>
+        receiver) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  chromeos::machine_learning::HandwritingRecognizerManager::GetInstance()
+      ->AddReceiver(std::move(receiver));
 }
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
@@ -179,6 +191,9 @@ void PopulateChromeFrameBindersForExtension(
         base::BindRepeating(&BindInputEngineManager));
     binder_map->Add<chromeos::machine_learning::mojom::HandwritingRecognizer>(
         base::BindRepeating(&BindHandwritingRecognizer));
+    binder_map->Add<
+        chromeos::machine_learning::mojom::HandwritingRecognizerRequestor>(
+        base::BindRepeating(&BindHandwritingRecognizerRequestor));
   }
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 

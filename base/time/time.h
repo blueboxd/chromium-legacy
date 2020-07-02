@@ -61,6 +61,8 @@
 #include "base/check_op.h"
 #include "base/compiler_specific.h"
 #include "base/numerics/safe_math.h"
+#include "base/optional.h"
+#include "base/strings/string_piece.h"
 #include "build/build_config.h"
 
 #if defined(OS_FUCHSIA)
@@ -149,6 +151,21 @@ class BASE_EXPORT TimeDelta {
 #if defined(OS_FUCHSIA)
   static TimeDelta FromZxDuration(zx_duration_t nanos);
 #endif
+
+  // From Go's doc at https://golang.org/pkg/time/#ParseDuration
+  //   [ParseDuration] parses a duration string. A duration string is
+  //   a possibly signed sequence of decimal numbers, each with optional
+  //   fraction and a unit suffix, such as "300ms", "-1.5h" or "2h45m".
+  //   Valid time units are "ns", "us" "ms", "s", "m", "h".
+  //
+  // Special values that are allowed without specifying units:
+  //  "0", "+0", "-0" -> TimeDelta()
+  //  "inf", "+inf"   -> TimeDelta::Max()
+  //  "-inf"          -> TimeDelta::Min()
+  // Returns |base::nullopt| when parsing fails. Numbers larger than 2^63-1
+  // will fail parsing. Overflowing `number * unit` will return +/-inf, as
+  // appropriate.
+  static Optional<TimeDelta> FromString(StringPiece duration_string);
 
   // Converts an integer value representing TimeDelta to a class. This is used
   // when deserializing a |TimeDelta| structure, using a value known to be

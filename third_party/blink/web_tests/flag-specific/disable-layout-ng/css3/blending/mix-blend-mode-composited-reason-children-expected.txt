@@ -6,17 +6,17 @@
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='stacking-context'",
+      "position": [8, 8],
       "contentsOpaque": true,
       "drawsContent": false,
-      "backgroundColor": "#FF0000",
-      "transform": 1
+      "backgroundColor": "#FF0000"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='stacking-context'",
+      "position": [8, 8],
       "bounds": [160, 90],
       "contentsOpaque": true,
-      "backgroundColor": "#008000",
-      "transform": 1
+      "backgroundColor": "#008000"
     },
     {
       "name": "LayoutBlockFlow DIV class='blended'",
@@ -31,8 +31,8 @@
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='stacking-context' (foreground) Layer",
-      "drawsContent": false,
-      "transform": 1
+      "position": [8, 8],
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow HTML (foreground) Layer",

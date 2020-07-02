@@ -4513,9 +4513,6 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
 <translation id="7724592140967451156">Politikayı True (Doğru) değerine ayarlamak tarayıcının adres çubuğundaki alan adına ait olmayan web sayfası öğelerinin çerez yerleştirmesini engeller. Politikayı False (Yanlış) değerine ayarlamak bu öğelerin çerez yerleştirmesine izin verir ve kullanıcıların bu ayarı değiştirmelerini önler.
 
       Politikayı ayarlamadan bırakırsanız üçüncü taraf çerezlerine izin verilir ancak kullanıcılar bu ayarı değiştirebilir.</translation>
-<translation id="7724652568947700864">Bu politika ayarlanırsa belirtilen tüm veri türleri hem Google Sync senkronizasyonunun hem de dolaşım profili senkronizasyonunun dışında tutulur. Bu, dolaşım profilinin boyutunu küçültmeye veya Google Sync sunucularına yüklenen veri türlerini sınırlandırmaya yarayabilir.
-
-      Şu anda bu politika kapsamında bulunan veri türleri şunlardır: "bookmarks", "preferences", "passwords", "autofill", "themes", "typedUrls", "extensions", "apps", "tabs", "wifiConfiguration". Bu adlar büyük/küçük harfe duyarlıdır.</translation>
 <translation id="7731026922044991970">Tüm sitelerde çerezler için eski <ph name="ATTRIBUTE_SAMESITE_NAME" /> davranışına geri dön</translation>
 <translation id="7732907212083471072">Kaldırılan politikalar</translation>
 <translation id="7747447585227954402">Cihazların <ph name="PRODUCT_OS_NAME" /> üzerinde bir <ph name="PLUGIN_VM_NAME" /> kullanmasına izin verir</translation>

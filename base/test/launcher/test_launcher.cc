@@ -1837,7 +1837,7 @@ void TestLauncher::OnOutputTimeout() {
   watchdog_timer_.Reset();
 }
 
-size_t NumParallelJobs() {
+size_t NumParallelJobs(unsigned int cores_per_job) {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kTestLauncherJobs)) {
     // If the number of test launcher jobs was specified, return that number.
@@ -1860,15 +1860,15 @@ size_t NumParallelJobs() {
     return 1U;
   }
 
-  // Default to the number of processor cores.
 #if defined(OS_WIN)
   // Use processors in all groups (Windows splits more than 64 logical
   // processors into groups).
-  return base::checked_cast<size_t>(
+  size_t cores = base::checked_cast<size_t>(
       ::GetActiveProcessorCount(ALL_PROCESSOR_GROUPS));
 #else
-  return base::checked_cast<size_t>(SysInfo::NumberOfProcessors());
+  size_t cores = base::checked_cast<size_t>(SysInfo::NumberOfProcessors());
 #endif
+  return std::max(size_t(1), cores / cores_per_job);
 }
 
 std::string GetTestOutputSnippet(const TestResult& result,

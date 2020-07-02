@@ -157,8 +157,9 @@ unsigned ExecutionContext::ContextLifecycleStateObserverCountForTesting()
 }
 
 bool ExecutionContext::IsCrossOriginIsolated() const {
-  // TODO(yhirano): Take cross-origin isolated permission into account.
-  return Agent::IsCrossOriginIsolated();
+  return Agent::IsCrossOriginIsolated() &&
+         IsFeatureEnabled(
+             mojom::blink::FeaturePolicyFeature::kCrossOriginIsolated);
 }
 
 void ExecutionContext::AddConsoleMessageImpl(mojom::ConsoleMessageSource source,

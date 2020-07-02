@@ -77,7 +77,7 @@
 <translation id="1091767800771861448">Trykk på ESC for å hoppe over denne (bare uoffisielle delversjoner).</translation>
 <translation id="1093457606523402488">Synlige nettverk:</translation>
 <translation id="1094607894174825014">Det ble bedt om en lese- eller skriveoperasjon med en ugyldig forskyvning på: «<ph name="DEVICE_NAME" />».</translation>
-<translation id="109647177154844434">Hvis du avinstallerer Parallels Desktop, blir Windows-avbildningen slettet. Dette omfatter applikasjonene, innstillingene og dataene i denne. Er du sikker på at du vil fortsette?</translation>
+<translation id="109647177154844434">Hvis du avinstallerer Parallels Desktop, blir Windows-avbildningen slettet. Dette inkluderer programmene, innstillingene og dataene i den. Er du sikker på at du vil fortsette?</translation>
 <translation id="1097658378307015415">Gå inn som gjest for å aktivere nettverket <ph name="NETWORK_ID" /> før du logger deg på.</translation>
 <translation id="1099962274138857708">Et bilde er kopiert fra <ph name="DEVICE_NAME" /></translation>
 <translation id="1102187190604780492">La assistenten proaktivt vise informasjon knyttet til det som er på skjermen din</translation>
@@ -2874,7 +2874,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4582563038311694664">Tilbakestill alle innstillingene</translation>
 <translation id="4585793705637313973">Endre siden</translation>
 <translation id="4586275095964870617">Kunne ikke åpne <ph name="URL" /> i en alternativ nettleser. Kontakt systemadministrator.</translation>
-<translation id="4589713469967853491">Loggene ble skrevet til Nedlastinger-katalogen.</translation>
+<translation id="4589713469967853491">Loggene er skrevet til Nedlastinger-katalogen.</translation>
 <translation id="4590324241397107707">Databaselagring</translation>
 <translation id="4592891116925567110">App for tegning med pekepenn</translation>
 <translation id="4593021220803146968">&amp;Gå til <ph name="URL" /></translation>
@@ -5049,7 +5049,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="7388044238629873883">Du er nesten ferdig!</translation>
 <translation id="7392118418926456391">Virusskanningen mislyktes</translation>
 <translation id="7392915005464253525">Gj&amp;enåpne det lukkede vinduet</translation>
-<translation id="7393472013449507620">Innstillinger med «*» som jokertegn støttes ikke lenger. Ta kontakt med utvikleren av utvidelsen eller administratoren din for å <ph name="BEGIN_LINK" /> endre disse innstillingene<ph name="END_LINK" />.</translation>
+<translation id="7393472013449507620">Innstillinger med «*» som jokertegn støttes ikke lenger. Ta kontakt med utvikleren av utvidelsen eller administratoren din for å <ph name="BEGIN_LINK" />endre disse innstillingene<ph name="END_LINK" />.</translation>
 <translation id="7396017167185131589">Delte mapper vises her</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> starter ved systemoppstart, og fortsetter å kjøre i bakgrunnen selv når du har lukket alle andre vinduer for <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7399045143794278225">Tilpass synkronisering</translation>
@@ -6400,7 +6400,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="9033765790910064284">Fortsett likevel</translation>
 <translation id="9033857511263905942">&amp;Lim inn</translation>
 <translation id="9037965129289936994">Vis original</translation>
-<translation id="903797871439633902">Dette er den siste automatiske programvare- og sikkerhetsoppdateringen for denne <ph name="DEVICE_TYPE" />-enheten. For å få fremtidige oppdateringer må du oppgradere til en nyere modell. &lt;a target="_blank" href="<ph name="URL" />"&gt;Finn ut mer&lt;/a&gt;</translation>
 <translation id="9039014462651733343">{NUM_ATTEMPTS,plural, =1{Du har ett forsøk igjen.}other{Du har # forsøk igjen.}}</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571">Vil du oppdatere passordet for <ph name="ORIGIN" />?</translation>

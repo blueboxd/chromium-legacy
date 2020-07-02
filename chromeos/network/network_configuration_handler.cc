@@ -125,9 +125,8 @@ class NetworkConfigurationHandler::ProfileEntryDeleter {
   }
 
  private:
-  void GetProfileEntriesToDeleteCallback(
-      DBusMethodCallStatus call_status,
-      const base::DictionaryValue& profile_entries) {
+  void GetProfileEntriesToDeleteCallback(DBusMethodCallStatus call_status,
+                                         base::Value profile_entries) {
     if (call_status != DBUS_METHOD_CALL_SUCCESS) {
       InvokeErrorCallback(service_path_, error_callback_,
                           "GetLoadableProfileEntriesFailed");
@@ -576,7 +575,7 @@ void NetworkConfigurationHandler::GetPropertiesCallback(
     const network_handler::ErrorCallback& error_callback,
     const std::string& service_path,
     DBusMethodCallStatus call_status,
-    const base::DictionaryValue& properties) {
+    base::Value properties) {
   if (call_status != DBUS_METHOD_CALL_SUCCESS) {
     // Because network services are added and removed frequently, we will see
     // failures regularly, so don't log these.

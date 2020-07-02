@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/web_apps/web_app_uninstall_dialog_view.h"
-#include <memory>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -41,6 +40,17 @@
 namespace {
 
 constexpr int kIconSizeInDip = 32;
+
+// The type of action the dialog took at close. Do not reorder this enum as it
+// is used in UMA histograms. Any new entries must be added into
+// WebappUninstallDialogAction enum in enums.xml file. Matches
+// ExtensionUninstallDialog::CloseAction for historical reasons.
+enum HistogramCloseAction {
+  kUninstall = 0,
+  kUninstallAndCheckboxChecked = 1,
+  kCancelled = 2,
+  kMaxValue = kCancelled
+};
 
 }  // namespace
 
@@ -111,6 +121,12 @@ void WebAppUninstallDialogDelegateView::OnDialogAccepted() {
   if (!dialog_)
     return;
 
+  HistogramCloseAction action =
+      checkbox_->GetChecked()
+          ? HistogramCloseAction::kUninstallAndCheckboxChecked
+          : HistogramCloseAction::kUninstall;
+  UMA_HISTOGRAM_ENUMERATION("Webapp.UninstallDialogAction", action);
+
   bool uninstalled = Uninstall();
   if (checkbox_->GetChecked())
     ClearWebAppSiteData();
@@ -119,6 +135,9 @@ void WebAppUninstallDialogDelegateView::OnDialogAccepted() {
 }
 
 void WebAppUninstallDialogDelegateView::OnDialogCanceled() {
+  UMA_HISTOGRAM_ENUMERATION("Webapp.UninstallDialogAction",
+                            HistogramCloseAction::kCancelled);
+
   if (dialog_)
     std::exchange(dialog_, nullptr)->CallCallback(/*uninstalled=*/false);
 }
@@ -201,7 +220,6 @@ void WebAppUninstallDialogViews::ConfirmUninstall(
     const web_app::AppId& app_id,
     WebAppUninstallDialogViews::OnWebAppUninstallDialogClosed closed_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  // TODO(loyso): Add UMA_HISTOGRAM_ENUMERATION here.
 
   app_id_ = app_id;
   closed_callback_ = std::move(closed_callback);

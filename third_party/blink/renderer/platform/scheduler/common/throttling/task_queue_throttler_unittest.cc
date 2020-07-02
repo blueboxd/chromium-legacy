@@ -1334,6 +1334,79 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
 }
 
 TEST_F(TaskQueueThrottlerTest,
+       WakeUpBasedThrottling_MultiplePoolsWithDifferentIntervalsOneEmpty) {
+  // Have |wake_up_budget_pool_| control |task_queue| with a wake-up inteval
+  // of one-minute.
+  wake_up_budget_pool_->SetWakeUpInterval(test_task_runner_->NowTicks(),
+                                          base::TimeDelta::FromMinutes(1));
+  task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
+  WakeUpBudgetPool* one_minute_pool = wake_up_budget_pool_;
+  scoped_refptr<base::SingleThreadTaskRunner> one_minute_task_runner =
+      timer_task_runner_;
+
+  // Create another TaskQueue, throttled by another WakeUpBudgetPool with
+  // a wake-up interval of two minutes.
+  WakeUpBudgetPool* two_minutes_pool =
+      task_queue_throttler_->CreateWakeUpBudgetPool(
+          "Two Minutes Interval Pool");
+  two_minutes_pool->SetWakeUpDuration(base::TimeDelta());
+  two_minutes_pool->SetWakeUpInterval(test_task_runner_->NowTicks(),
+                                      base::TimeDelta::FromMinutes(2));
+  scoped_refptr<TaskQueue> two_minutes_queue = scheduler_->NewTaskQueue(
+      MainThreadTaskQueue::QueueCreationParams(
+          MainThreadTaskQueue::QueueType::kFrameThrottleable)
+          .SetCanBeThrottled(true));
+  two_minutes_pool->AddQueue(base::TimeTicks(), two_minutes_queue.get());
+  scoped_refptr<base::SingleThreadTaskRunner> two_minutes_task_runner =
+      two_minutes_queue->task_runner();
+  task_queue_throttler_->IncreaseThrottleRefCount(two_minutes_queue.get());
+
+  // Post a task with a short delay to the first queue.
+  constexpr base::TimeDelta kShortDelay = base::TimeDelta::FromSeconds(1);
+  Vector<base::TimeTicks> run_times;
+  one_minute_task_runner->PostDelayedTask(
+      FROM_HERE, base::BindOnce(&TestTask, &run_times, test_task_runner_),
+      kShortDelay);
+
+  // Pools did not observe wake ups yet whether they had pending tasks or not.
+  EXPECT_EQ(one_minute_pool->last_wake_up_for_testing(), base::nullopt);
+  EXPECT_EQ(two_minutes_pool->last_wake_up_for_testing(), base::nullopt);
+
+  // The first task should run after 1 minute, which is the wake up interval of
+  // |one_minute_pool|.
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(1));
+  EXPECT_EQ(one_minute_pool->last_wake_up_for_testing(),
+            base::TimeTicks() + base::TimeDelta::FromMinutes(1));
+  EXPECT_THAT(run_times,
+              ElementsAre(base::TimeTicks() + base::TimeDelta::FromMinutes(1)));
+
+  // The second pool should not have woken up since it had no tasks.
+  EXPECT_EQ(two_minutes_pool->last_wake_up_for_testing(), base::nullopt);
+
+  // No new task execution or wake-ups for the first queue since it did not
+  // get new tasks executed.
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(1));
+  EXPECT_EQ(one_minute_pool->last_wake_up_for_testing(),
+            base::TimeTicks() + base::TimeDelta::FromMinutes(1));
+  EXPECT_THAT(run_times,
+              ElementsAre(base::TimeTicks() + base::TimeDelta::FromMinutes(1)));
+
+  // The second pool should not have woken up since it had no tasks.
+  EXPECT_EQ(two_minutes_pool->last_wake_up_for_testing(), base::nullopt);
+
+  // Still no new executions so no update on the wake-up for the queues.
+  test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_EQ(one_minute_pool->last_wake_up_for_testing(),
+            base::TimeTicks() + base::TimeDelta::FromMinutes(1));
+  EXPECT_EQ(two_minutes_pool->last_wake_up_for_testing(), base::nullopt);
+
+  // Clean up.
+  two_minutes_pool->RemoveQueue(test_task_runner_->NowTicks(),
+                                two_minutes_queue.get());
+  two_minutes_pool->Close();
+}
+
+TEST_F(TaskQueueThrottlerTest,
        WakeUpBasedThrottling_MultiplePoolsWithDifferentIntervals) {
   wake_up_budget_pool_->SetWakeUpInterval(test_task_runner_->NowTicks(),
                                           base::TimeDelta::FromMinutes(1));

@@ -64,6 +64,11 @@ public class PageInfoViewV2 extends PageInfoView {
         mOnUiClosingCallback = params.onUiClosingCallback;
     }
 
+    @Override
+    protected void initHttpsImageCompression(PageInfoViewParams params) {
+        // TODO(crbug.com/1077766): Migrate image compression UI.
+    }
+
     public PageInfoRowView getConnectionRowView() {
         return mConnectionRow;
     }

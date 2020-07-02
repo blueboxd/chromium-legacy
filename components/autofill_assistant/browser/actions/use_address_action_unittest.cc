@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill_assistant/browser/actions/action_test_utils.h"
 #include "components/autofill_assistant/browser/actions/mock_action_delegate.h"
 #include "components/autofill_assistant/browser/mock_personal_data_manager.h"
 #include "components/autofill_assistant/browser/user_model.h"
@@ -309,6 +310,10 @@ TEST_F(UseAddressActionTest, FallbackFails) {
                                  "}"}),
                    "#email");
 
+  Selector email_selector({"#email"});
+  Selector first_name_selector({"#first_name"});
+  Selector last_name_selector({"#last_name"});
+
   // Autofill succeeds.
   EXPECT_CALL(mock_action_delegate_,
               OnFillAddressForm(
@@ -316,19 +321,18 @@ TEST_F(UseAddressActionTest, FallbackFails) {
       .WillOnce(RunOnceCallback<2>(OkClientStatus()));
 
   // Validation fails when getting FIRST_NAME.
-  EXPECT_CALL(mock_web_controller_,
-              OnGetFieldValue(Eq(Selector({"#email"})), _))
+  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(email_selector, _))
       .WillOnce(RunOnceCallback<1>(OkClientStatus(), "not empty"));
-  EXPECT_CALL(mock_web_controller_,
-              OnGetFieldValue(Eq(Selector({"#first_name"})), _))
+  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(first_name_selector, _))
       .WillOnce(RunOnceCallback<1>(OkClientStatus(), ""));
-  EXPECT_CALL(mock_web_controller_,
-              OnGetFieldValue(Eq(Selector({"#last_name"})), _))
+  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(last_name_selector, _))
       .WillOnce(RunOnceCallback<1>(OkClientStatus(), "not empty"));
 
   // Fallback fails.
   EXPECT_CALL(mock_action_delegate_,
-              OnSetFieldValue(Eq(Selector({"#first_name"})), kFirstName, _))
+              OnSetFieldValue(EqualsElement(test_util::MockFindElement(
+                                  mock_action_delegate_, first_name_selector)),
+                              kFirstName, _))
       .WillOnce(RunOnceCallback<2>(ClientStatus(OTHER_ACTION_STATUS)));
 
   EXPECT_EQ(ProcessedActionStatusProto::AUTOFILL_INCOMPLETE,
@@ -359,6 +363,10 @@ TEST_F(UseAddressActionTest, FallbackSucceeds) {
                                  "}"}),
                    "#email");
 
+  Selector email_selector({"#email"});
+  Selector first_name_selector({"#first_name"});
+  Selector last_name_selector({"#last_name"});
+
   // Autofill succeeds.
   EXPECT_CALL(mock_action_delegate_,
               OnFillAddressForm(
@@ -366,20 +374,20 @@ TEST_F(UseAddressActionTest, FallbackSucceeds) {
       .WillOnce(RunOnceCallback<2>(OkClientStatus()));
 
   // Validation fails when getting FIRST_NAME.
-  EXPECT_CALL(mock_web_controller_,
-              OnGetFieldValue(Eq(Selector({"#email"})), _))
+  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(email_selector, _))
       .WillOnce(RunOnceCallback<1>(OkClientStatus(), "not empty"));
-  EXPECT_CALL(mock_web_controller_,
-              OnGetFieldValue(Eq(Selector({"#first_name"})), _))
+  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(first_name_selector, _))
       .WillOnce(RunOnceCallback<1>(OkClientStatus(), ""));
-  EXPECT_CALL(mock_web_controller_,
-              OnGetFieldValue(Eq(Selector({"#last_name"})), _))
+  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(last_name_selector, _))
       .WillOnce(RunOnceCallback<1>(OkClientStatus(), "not empty"));
 
   // Fallback succeeds.
   Expectation set_first_name =
-      EXPECT_CALL(mock_action_delegate_,
-                  OnSetFieldValue(Eq(Selector({"#first_name"})), kFirstName, _))
+      EXPECT_CALL(
+          mock_action_delegate_,
+          OnSetFieldValue(EqualsElement(test_util::MockFindElement(
+                              mock_action_delegate_, first_name_selector)),
+                          kFirstName, _))
           .WillOnce(RunOnceCallback<2>(OkClientStatus()));
 
   // Second validation succeeds.
@@ -423,6 +431,8 @@ TEST_F(UseAddressActionTest,
                                  "}"}),
                    "#first_name");
 
+  Selector first_name_selector({"#first_name"});
+
   EXPECT_CALL(mock_action_delegate_,
               OnFillAddressForm(
                   NotNull(), Eq(Selector({kFakeSelector}).MustBeVisible()), _))
@@ -430,17 +440,18 @@ TEST_F(UseAddressActionTest,
           FillAutofillErrorStatus(ClientStatus(OTHER_ACTION_STATUS))));
 
   // First validation fails.
-  EXPECT_CALL(mock_web_controller_,
-              OnGetFieldValue(Selector({"#first_name"}), _))
+  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(first_name_selector, _))
       .WillOnce(RunOnceCallback<1>(OkClientStatus(), ""));
   // Fill first name.
   Expectation set_first_name =
-      EXPECT_CALL(mock_action_delegate_,
-                  OnSetFieldValue(Selector({"#first_name"}), kFirstName, _))
+      EXPECT_CALL(
+          mock_action_delegate_,
+          OnSetFieldValue(EqualsElement(test_util::MockFindElement(
+                              mock_action_delegate_, first_name_selector)),
+                          kFirstName, _))
           .WillOnce(RunOnceCallback<2>(OkClientStatus()));
   // Second validation succeeds.
-  EXPECT_CALL(mock_web_controller_,
-              OnGetFieldValue(Selector({"#first_name"}), _))
+  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(first_name_selector, _))
       .After(set_first_name)
       .WillOnce(RunOnceCallback<1>(OkClientStatus(), "not empty"));
 
@@ -465,6 +476,8 @@ TEST_F(UseAddressActionTest, FallbackForPhoneSucceeds) {
   ActionProto action_proto = CreateUseAddressAction();
   AddRequiredField(&action_proto, "(+${12}) (${11}) ${10}", "#phone_number");
 
+  Selector phone_number_selector({"#phone_number"});
+
   // Autofill succeeds.
   EXPECT_CALL(mock_action_delegate_,
               OnFillAddressForm(
@@ -472,20 +485,21 @@ TEST_F(UseAddressActionTest, FallbackForPhoneSucceeds) {
       .WillOnce(RunOnceCallback<2>(OkClientStatus()));
 
   // Validation fails when getting phone number.
-  EXPECT_CALL(mock_web_controller_,
-              OnGetFieldValue(Eq(Selector({"#phone_number"})), _))
+  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(phone_number_selector, _))
       .WillOnce(RunOnceCallback<1>(OkClientStatus(), ""));
 
   // Fallback succeeds.
-  Expectation set_first_name =
-      EXPECT_CALL(mock_action_delegate_,
-                  OnSetFieldValue(Eq(Selector({"#phone_number"})),
-                                  "(+41) (79) 1234567", _))
+  Expectation set_phone_number_name =
+      EXPECT_CALL(
+          mock_action_delegate_,
+          OnSetFieldValue(EqualsElement(test_util::MockFindElement(
+                              mock_action_delegate_, phone_number_selector)),
+                          "(+41) (79) 1234567", _))
           .WillOnce(RunOnceCallback<2>(OkClientStatus()));
 
   // Second validation succeeds.
-  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(_, _))
-      .After(set_first_name)
+  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(phone_number_selector, _))
+      .After(set_phone_number_name)
       .WillRepeatedly(RunOnceCallback<1>(OkClientStatus(), "not empty"));
 
   EXPECT_EQ(ProcessedActionStatusProto::ACTION_APPLIED,
@@ -508,6 +522,8 @@ TEST_F(UseAddressActionTest, ForcedFallbackWithKeystrokes) {
   name_required->set_fill_strategy(SIMULATE_KEY_PRESSES);
   name_required->set_delay_in_millisecond(1000);
 
+  Selector first_name_selector({"#first_name"});
+
   // Autofill succeeds.
   EXPECT_CALL(mock_action_delegate_,
               OnFillAddressForm(
@@ -515,13 +531,15 @@ TEST_F(UseAddressActionTest, ForcedFallbackWithKeystrokes) {
       .WillOnce(RunOnceCallback<2>(OkClientStatus()));
 
   // The field is not empty.
-  ON_CALL(mock_web_controller_, OnGetFieldValue(_, _))
+  ON_CALL(mock_web_controller_, OnGetFieldValue(first_name_selector, _))
       .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "not empty"));
 
   // But we still want the first name filled, with
   // simulated keypresses.
-  EXPECT_CALL(mock_action_delegate_, OnSetFieldValue(Selector({"#first_name"}),
-                                                     kFirstName, true, 1000, _))
+  EXPECT_CALL(mock_action_delegate_,
+              OnSetFieldValue(EqualsElement(test_util::MockFindElement(
+                                  mock_action_delegate_, first_name_selector)),
+                              kFirstName, true, 1000, _))
       .WillOnce(RunOnceCallback<4>(OkClientStatus()));
 
   EXPECT_EQ(ProcessedActionStatusProto::ACTION_APPLIED,
@@ -542,21 +560,24 @@ TEST_F(UseAddressActionTest, SkippingAutofill) {
                    "#first_name");
   action_proto.mutable_use_address()->set_skip_autofill(true);
 
+  Selector first_name_selector({"#first_name"});
+
   EXPECT_CALL(mock_action_delegate_, OnShortWaitForElement(_, _)).Times(0);
   EXPECT_CALL(mock_action_delegate_, OnFillAddressForm(_, _, _)).Times(0);
 
   // First validation fails.
-  EXPECT_CALL(mock_web_controller_,
-              OnGetFieldValue(Selector({"#first_name"}), _))
+  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(first_name_selector, _))
       .WillOnce(RunOnceCallback<1>(OkClientStatus(), ""));
   // Fill first name.
   Expectation set_first_name =
-      EXPECT_CALL(mock_action_delegate_,
-                  OnSetFieldValue(Selector({"#first_name"}), kFirstName, _))
+      EXPECT_CALL(
+          mock_action_delegate_,
+          OnSetFieldValue(EqualsElement(test_util::MockFindElement(
+                              mock_action_delegate_, first_name_selector)),
+                          kFirstName, _))
           .WillOnce(RunOnceCallback<2>(OkClientStatus()));
   // Second validation succeeds.
-  EXPECT_CALL(mock_web_controller_,
-              OnGetFieldValue(Selector({"#first_name"}), _))
+  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(first_name_selector, _))
       .After(set_first_name)
       .WillOnce(RunOnceCallback<1>(OkClientStatus(), "not empty"));
 

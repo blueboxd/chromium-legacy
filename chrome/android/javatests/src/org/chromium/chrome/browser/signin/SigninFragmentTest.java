@@ -43,7 +43,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
-import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
@@ -97,8 +96,8 @@ public class SigninFragmentTest {
     @LargeTest
     @Feature("RenderTest")
     public void testSigninFragmentNotDefaultAccountWithPrimaryAccount() throws IOException {
-        Account account = mSyncTestRule.setUpTestAccount();
-        SigninTestUtil.addTestAccount("test.second.account@gmail.com");
+        Account account = mSyncTestRule.addTestAccount();
+        mSyncTestRule.addAccount("test.second.account@gmail.com");
         mSigninActivity = ActivityUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), SigninActivity.class, () -> {
                     SigninActivityLauncher.get().launchActivityForPromoChooseAccountFlow(
@@ -113,9 +112,9 @@ public class SigninFragmentTest {
     @LargeTest
     @Feature("RenderTest")
     public void testSigninFragmentNotDefaultAccountWithSecondaryAccount() throws IOException {
-        mSyncTestRule.setUpTestAccount();
+        mSyncTestRule.addTestAccount();
         String secondAccountName = "test.second.account@gmail.com";
-        SigninTestUtil.addTestAccount(secondAccountName);
+        mSyncTestRule.addAccount(secondAccountName);
         mSigninActivity = ActivityUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), SigninActivity.class, () -> {
                     SigninActivityLauncher.get().launchActivityForPromoChooseAccountFlow(
@@ -130,7 +129,7 @@ public class SigninFragmentTest {
     @LargeTest
     @Feature("RenderTest")
     public void testSigninFragmentDefaultAccount() throws IOException {
-        Account account = mSyncTestRule.setUpTestAccount();
+        Account account = mSyncTestRule.addTestAccount();
         mSigninActivity = ActivityUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), SigninActivity.class, () -> {
                     SigninActivityLauncher.get().launchActivityForPromoDefaultFlow(
@@ -144,7 +143,7 @@ public class SigninFragmentTest {
     @Test
     @LargeTest
     public void testClickingSettingsDoesNotSetFirstSetupComplete() {
-        Account account = mSyncTestRule.setUpTestAccount();
+        Account account = mSyncTestRule.addTestAccount();
         mSigninActivity = ActivityUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), SigninActivity.class, () -> {
                     SigninActivityLauncher.get().launchActivityForPromoDefaultFlow(
@@ -184,9 +183,9 @@ public class SigninFragmentTest {
     @Test
     @MediumTest
     public void testSelectNonDefaultAccountInAccountPickerDialog() {
-        Account defaultAccount = mSyncTestRule.setUpTestAccount();
+        Account defaultAccount = mSyncTestRule.addTestAccount();
         String nonDefaultAccountName = "test.account.nondefault@gmail.com";
-        SigninTestUtil.addTestAccount(nonDefaultAccountName);
+        mSyncTestRule.addAccount(nonDefaultAccountName);
         mSigninActivity = ActivityUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), SigninActivity.class, () -> {
                     SigninActivityLauncher.get().launchActivityForPromoDefaultFlow(

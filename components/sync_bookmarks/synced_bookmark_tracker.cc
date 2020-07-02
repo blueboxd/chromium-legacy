@@ -36,6 +36,13 @@ extern const base::Feature kInvalidateBookmarkSyncMetadataIfClientTagDuplicates{
     "InvalidateBookmarkSyncMetadataIfClientTagDuplicates",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
+// TODO(crbug.com/1032052): Enable by default once UMA metric
+// Sync.BookmarkModelMetadataClientTagState suggests that most users have
+// received client tag hashes (final GUIDs).
+extern const base::Feature kInvalidateBookmarkSyncMetadataIfClientTagMissing{
+    "InvalidateBookmarkSyncMetadataIfClientTagMissing",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 namespace {
 
 // These values are persisted to logs. Entries should not be renumbered and
@@ -631,6 +638,12 @@ SyncedBookmarkTracker::InitEntitiesFromModelAndMetadata(
       "Sync.BookmarkModelMetadataClientTagState",
       GetMetadataClientTagHashHistogramBucket(
           client_tag_mismatch_found, bookmark_without_client_tag_found));
+
+  if (bookmark_without_client_tag_found &&
+      base::FeatureList::IsEnabled(
+          kInvalidateBookmarkSyncMetadataIfClientTagMissing)) {
+    return CorruptionReason::MISSING_CLIENT_TAG_HASH;
+  }
 
   CheckAllNodesTracked(model);
   return CorruptionReason::NO_CORRUPTION;

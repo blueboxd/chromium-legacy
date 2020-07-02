@@ -18,6 +18,7 @@
 #include "ios/chrome/browser/metrics/tab_usage_recorder_metrics.h"
 #include "ios/chrome/browser/sessions/session_restoration_observer.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer.h"
+#include "ios/web/common/user_agent.h"
 #include "ios/web/public/web_state_observer.h"
 
 class PrerenderService;
@@ -131,6 +132,18 @@ class TabUsageRecorderBrowserAgent
   // still valid but will become invalid afterwards, so any reference to it
   // should be removed.
   void OnWebStateDestroyed(web::WebState* web_state);
+
+  // Returns whether |agent_type| and |other_agent_type| are different user
+  // agent types. If either of them is web::UserAgentType::NONE, then return
+  // false.
+  bool IsTransitionBetweenDesktopAndMobileUserAgent(
+      web::UserAgentType agent_type,
+      web::UserAgentType other_agent_type);
+
+  // Returns whether RecordPageLoadStart should be called for the given
+  // navigation.
+  bool ShouldRecordPageLoadStartForNavigation(
+      web::NavigationContext* navigation);
 
   // web::WebStateObserver implementation.
   void DidStartNavigation(web::WebState* web_state,

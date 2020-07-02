@@ -1049,17 +1049,16 @@ void WebController::OnGetValueAttribute(
 }
 
 void WebController::SetFieldValue(
-    const Selector& selector,
+    const ElementFinder::Result& element,
     const std::string& value,
     KeyboardValueFillStrategy fill_strategy,
     int key_press_delay_in_millisecond,
     base::OnceCallback<void(const ClientStatus&)> callback) {
 #ifdef NDEBUG
-  VLOG(3) << __func__ << " " << selector << ", value=(redacted)"
+  VLOG(3) << __func__ << " value=(redacted)"
           << ", strategy=" << fill_strategy;
 #else
-  DVLOG(3) << __func__ << " " << selector << ", value=" << value
-           << ", strategy=" << fill_strategy;
+  DVLOG(3) << __func__ << " value=" << value << ", strategy=" << fill_strategy;
 #endif
 
   if ((fill_strategy == SIMULATE_KEY_PRESSES ||
@@ -1075,25 +1074,26 @@ void WebController::SetFieldValue(
       // fails in WebControllerBrowserTest.GetAndSetFieldValue. Fixing this
       // might fix b/148001624 as well.
       SelectFieldValueForReplace(
-          selector,
+          element,
           base::BindOnce(&WebController::OnFieldValueSelectedForDispatchKeys,
-                         weak_ptr_factory_.GetWeakPtr(), UTF8ToUnicode(value),
-                         key_press_delay_in_millisecond, std::move(callback)));
+                         weak_ptr_factory_.GetWeakPtr(), element,
+                         UTF8ToUnicode(value), key_press_delay_in_millisecond,
+                         std::move(callback)));
     } else {
       InternalSetFieldValue(
-          selector, "",
+          element, "",
           base::BindOnce(&WebController::OnClearFieldForSendKeyboardInput,
-                         weak_ptr_factory_.GetWeakPtr(), selector,
+                         weak_ptr_factory_.GetWeakPtr(), element,
                          UTF8ToUnicode(value), key_press_delay_in_millisecond,
                          std::move(callback)));
     }
     return;
   }
-  InternalSetFieldValue(selector, value, std::move(callback));
+  InternalSetFieldValue(element, value, std::move(callback));
 }
 
 void WebController::OnClearFieldForSendKeyboardInput(
-    const Selector& selector,
+    const ElementFinder::Result& element,
     const std::vector<UChar32>& codepoints,
     int key_press_delay_in_millisecond,
     base::OnceCallback<void(const ClientStatus&)> callback,
@@ -1102,65 +1102,45 @@ void WebController::OnClearFieldForSendKeyboardInput(
     std::move(callback).Run(clear_status);
     return;
   }
-  SendKeyboardInput(selector, codepoints, key_press_delay_in_millisecond,
+  SendKeyboardInput(element, codepoints, key_press_delay_in_millisecond,
                     std::move(callback));
 }
 
 void WebController::SelectFieldValueForReplace(
-    const Selector& selector,
-    base::OnceCallback<void(std::unique_ptr<ElementFinder::Result>,
-                            const ClientStatus&)> callback) {
-  VLOG(2) << __func__ << " " << selector;
-  FindElement(
-      selector, /* strict_mode= */ true,
-      base::BindOnce(&WebController::OnFindElementForSelectValue,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-}
-
-void WebController::OnFindElementForSelectValue(
-    base::OnceCallback<void(std::unique_ptr<ElementFinder::Result>,
-                            const ClientStatus&)> callback,
-    const ClientStatus& element_status,
-    std::unique_ptr<ElementFinder::Result> element_result) {
-  if (!element_status.ok()) {
-    std::move(callback).Run(std::move(element_result), element_status);
-    return;
-  }
-
+    const ElementFinder::Result& element,
+    base::OnceCallback<void(const ClientStatus&)> callback) {
   devtools_client_->GetRuntime()->CallFunctionOn(
       runtime::CallFunctionOnParams::Builder()
-          .SetObjectId(element_result->object_id)
+          .SetObjectId(element.object_id)
           .SetFunctionDeclaration(std::string(kSelectFieldValue))
           .Build(),
-      element_result->node_frame_id,
+      element.node_frame_id,
       base::BindOnce(&WebController::OnSelectFieldValueForDispatchKeys,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(element_result),
+                     weak_ptr_factory_.GetWeakPtr(), element,
                      std::move(callback)));
 }
 
 void WebController::OnSelectFieldValueForDispatchKeys(
-    std::unique_ptr<ElementFinder::Result> element_result,
-    base::OnceCallback<void(std::unique_ptr<ElementFinder::Result>,
-                            const ClientStatus&)> callback,
+    const ElementFinder::Result& element,
+    base::OnceCallback<void(const ClientStatus&)> callback,
     const DevtoolsClient::ReplyStatus& reply_status,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
   std::move(callback).Run(
-      std::move(element_result),
       CheckJavaScriptResult(reply_status, result.get(), __FILE__, __LINE__));
 }
 
 void WebController::OnFieldValueSelectedForDispatchKeys(
+    const ElementFinder::Result& element,
     const std::vector<UChar32>& codepoints,
     int key_press_delay_in_millisecond,
     base::OnceCallback<void(const ClientStatus&)> callback,
-    std::unique_ptr<ElementFinder::Result> element_result,
     const ClientStatus& select_status) {
   if (!select_status.ok()) {
     std::move(callback).Run(select_status);
     return;
   }
   DispatchKeyboardTextDownEvent(
-      element_result->node_frame_id, codepoints, 0,
+      element.node_frame_id, codepoints, 0,
       /* delay= */ false, key_press_delay_in_millisecond, std::move(callback));
 }
 
@@ -1248,35 +1228,18 @@ auto WebController::CreateKeyEventParamsForCharacter(
 }
 
 void WebController::InternalSetFieldValue(
-    const Selector& selector,
+    const ElementFinder::Result& element,
     const std::string& value,
     base::OnceCallback<void(const ClientStatus&)> callback) {
-  FindElement(selector,
-              /* strict_mode= */ true,
-              base::BindOnce(&WebController::OnFindElementForSetFieldValue,
-                             weak_ptr_factory_.GetWeakPtr(), value,
-                             std::move(callback)));
-}
-
-void WebController::OnFindElementForSetFieldValue(
-    const std::string& value,
-    base::OnceCallback<void(const ClientStatus&)> callback,
-    const ClientStatus& status,
-    std::unique_ptr<ElementFinder::Result> element_result) {
-  if (!status.ok()) {
-    std::move(callback).Run(status);
-    return;
-  }
-
   std::vector<std::unique_ptr<runtime::CallArgument>> argument;
   AddRuntimeCallArgument(value, &argument);
   devtools_client_->GetRuntime()->CallFunctionOn(
       runtime::CallFunctionOnParams::Builder()
-          .SetObjectId(element_result->object_id)
+          .SetObjectId(element.object_id)
           .SetArguments(std::move(argument))
           .SetFunctionDeclaration(std::string(kSetValueAttributeScript))
           .Build(),
-      element_result->node_frame_id,
+      element.node_frame_id,
       base::BindOnce(&WebController::OnSetValueAttribute,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -1350,7 +1313,7 @@ void WebController::OnSetAttribute(
 }
 
 void WebController::SendKeyboardInput(
-    const Selector& selector,
+    const ElementFinder::Result& element,
     const std::vector<UChar32>& codepoints,
     const int delay_in_millisecond,
     base::OnceCallback<void(const ClientStatus&)> callback) {
@@ -1360,40 +1323,21 @@ void WebController::SendKeyboardInput(
       input_str.assign("<invalid input>");
     }
 #ifdef NDEBUG
-    VLOG(3) << __func__ << " " << selector << ", input=(redacted)";
+    VLOG(3) << __func__ << " input=(redacted)";
 #else
-    DVLOG(3) << __func__ << " " << selector << ", input=" << input_str;
+    DVLOG(3) << __func__ << " input=" << input_str;
 #endif
   }
 
-  DCHECK(!selector.empty());
-  FindElement(
-      selector, /* strict_mode= */ true,
-      base::BindOnce(&WebController::OnFindElementForSendKeyboardInput,
-                     weak_ptr_factory_.GetWeakPtr(), selector, codepoints,
+  ClickOrTapElement(
+      element, ClickType::CLICK,
+      base::BindOnce(&WebController::OnClickElementForSendKeyboardInput,
+                     weak_ptr_factory_.GetWeakPtr(), element, codepoints,
                      delay_in_millisecond, std::move(callback)));
 }
 
-void WebController::OnFindElementForSendKeyboardInput(
-    const Selector& selector,
-    const std::vector<UChar32>& codepoints,
-    const int delay_in_millisecond,
-    base::OnceCallback<void(const ClientStatus&)> callback,
-    const ClientStatus& status,
-    std::unique_ptr<ElementFinder::Result> element_result) {
-  if (!status.ok()) {
-    std::move(callback).Run(status);
-    return;
-  }
-  ClickOrTapElement(
-      *element_result, ClickType::CLICK,
-      base::BindOnce(&WebController::OnClickElementForSendKeyboardInput,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(element_result),
-                     codepoints, delay_in_millisecond, std::move(callback)));
-}
-
 void WebController::OnClickElementForSendKeyboardInput(
-    std::unique_ptr<ElementFinder::Result> target_element,
+    const ElementFinder::Result& target_element,
     const std::vector<UChar32>& codepoints,
     int delay_in_millisecond,
     base::OnceCallback<void(const ClientStatus&)> callback,
@@ -1402,7 +1346,7 @@ void WebController::OnClickElementForSendKeyboardInput(
     std::move(callback).Run(click_status);
     return;
   }
-  DispatchKeyboardTextDownEvent(target_element->node_frame_id, codepoints, 0,
+  DispatchKeyboardTextDownEvent(target_element.node_frame_id, codepoints, 0,
                                 /* delay= */ false, delay_in_millisecond,
                                 std::move(callback));
 }

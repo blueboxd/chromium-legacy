@@ -62,6 +62,8 @@ extern const char kChromeUIDeviceLogHost[];
 extern const char kChromeUIDevicesHost[];
 extern const char kChromeUIDevicesURL[];
 extern const char kChromeUIDevUiLoaderURL[];
+extern const char kChromeUIDiceWebSigninInterceptHost[];
+extern const char kChromeUIDiceWebSigninInterceptURL[];
 extern const char kChromeUIDomainReliabilityInternalsHost[];
 extern const char kChromeUIDownloadInternalsHost[];
 extern const char kChromeUIDownloadsHost[];

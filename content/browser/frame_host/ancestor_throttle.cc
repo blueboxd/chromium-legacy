@@ -22,8 +22,8 @@
 #include "content/public/browser/storage_partition.h"
 #include "net/http/http_response_headers.h"
 #include "services/network/public/cpp/content_security_policy/csp_context.h"
+#include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
-#include "url/origin.h"
 
 namespace content {
 
@@ -139,7 +139,7 @@ class FrameAncestorCSPContext : public network::CSPContext {
 };
 
 // Returns the parent, including outer delegates in the case of portals.
-RenderFrameHostImpl* ParentForAncestorThrottle(RenderFrameHostImpl* frame) {
+RenderFrameHostImpl* ParentOrOuterDelegate(RenderFrameHostImpl* frame) {
   return frame->InsidePortal() ? frame->ParentOrOuterDelegateFrame()
                                : frame->GetParent();
 }
@@ -212,9 +212,11 @@ NavigationThrottle::ThrottleCheckResult AncestorThrottle::ProcessResponseImpl(
       content_security_policies =
           request->response()->parsed_headers->content_security_policy;
 
-  if (EvaluateFrameAncestors(content_security_policies) == CheckResult::BLOCK) {
+  if (EvaluateFrameAncestors(content_security_policies) == CheckResult::BLOCK)
     return NavigationThrottle::BLOCK_RESPONSE;
-  }
+
+  if (EvaluateCSPEmbeddedEnforcement() == CheckResult::BLOCK)
+    return NavigationThrottle::BLOCK_RESPONSE;
 
   return NavigationThrottle::PROCEED;
 }
@@ -251,7 +253,7 @@ void AncestorThrottle::ParseXFrameOptionsError(const std::string& value,
   // the current RenderFrameHost itself doesn't yet have a document).
   auto* frame = static_cast<RenderFrameHostImpl*>(
       navigation_handle()->GetRenderFrameHost());
-  ParentForAncestorThrottle(frame)->AddMessageToConsole(
+  ParentOrOuterDelegate(frame)->AddMessageToConsole(
       blink::mojom::ConsoleMessageLevel::kError, message);
 }
 
@@ -272,7 +274,7 @@ void AncestorThrottle::ConsoleErrorXFrameOptions(
   // the current RenderFrameHost itself doesn't yet have a document).
   auto* frame = static_cast<RenderFrameHostImpl*>(
       navigation_handle()->GetRenderFrameHost());
-  ParentForAncestorThrottle(frame)->AddMessageToConsole(
+  ParentOrOuterDelegate(frame)->AddMessageToConsole(
       blink::mojom::ConsoleMessageLevel::kError, message);
 }
 
@@ -305,7 +307,7 @@ AncestorThrottle::CheckResult AncestorThrottle::EvaluateXFrameOptions(
 
     case HeaderDisposition::SAMEORIGIN: {
       // Block the request when any ancestor is not same-origin.
-      RenderFrameHostImpl* parent = ParentForAncestorThrottle(
+      RenderFrameHostImpl* parent = ParentOrOuterDelegate(
           request->frame_tree_node()->current_frame_host());
       url::Origin current_origin =
           url::Origin::Create(navigation_handle()->GetURL());
@@ -328,7 +330,7 @@ AncestorThrottle::CheckResult AncestorThrottle::EvaluateXFrameOptions(
 
           return CheckResult::BLOCK;
         }
-        parent = ParentForAncestorThrottle(parent);
+        parent = ParentOrOuterDelegate(parent);
       }
       RecordXFrameOptionsUsage(XFrameOptionsHistogram::SAMEORIGIN);
       return CheckResult::PROCEED;
@@ -365,7 +367,7 @@ AncestorThrottle::CheckResult AncestorThrottle::EvaluateFrameAncestors(
   // We enforce frame-ancestors in the outer delegate for portals, but not
   // for other uses of inner/outer WebContents (GuestViews).
   RenderFrameHostImpl* parent =
-      ParentForAncestorThrottle(static_cast<RenderFrameHostImpl*>(
+      ParentOrOuterDelegate(static_cast<RenderFrameHostImpl*>(
           navigation_handle()->GetRenderFrameHost()));
   while (parent) {
     if (!csp_context.IsAllowedByCsp(
@@ -377,10 +379,110 @@ AncestorThrottle::CheckResult AncestorThrottle::EvaluateFrameAncestors(
             navigation_handle()->IsFormSubmission())) {
       return CheckResult::BLOCK;
     }
-    parent = ParentForAncestorThrottle(parent);
+    parent = ParentOrOuterDelegate(parent);
   }
 
   return CheckResult::PROCEED;
+}
+
+// When the embedder requires the use of Content Security Policy via Embedded
+// Enforcement, framed documents must either
+// 1) Use the 'allow-csp-from' header to opt-into enforcement.
+// 2) Enforce its own CSP that subsumes the required CSP.
+// Framed documents that fail to do either of these will be blocked.
+//
+// See:
+// - https://w3c.github.io/webappsec-cspee/#required-csp-header
+// - https://w3c.github.io/webappsec-cspee/#allow-csp-from-header
+AncestorThrottle::CheckResult
+AncestorThrottle::EvaluateCSPEmbeddedEnforcement() {
+  if (!base::FeatureList::IsEnabled(network::features::kOutOfBlinkCSPEE))
+    return CheckResult::PROCEED;
+
+  if (NavigationRequest::From(navigation_handle())->IsInMainFrame()) {
+    // We enforce CSPEE only for frames, not for portals.
+    return CheckResult::PROCEED;
+  }
+
+  RenderFrameHostImpl* frame = static_cast<RenderFrameHostImpl*>(
+      navigation_handle()->GetRenderFrameHost());
+
+  const std::string& required_csp =
+      frame->frame_tree_node()->frame_owner_properties().required_csp;
+
+  if (required_csp.empty())
+    return CheckResult::PROCEED;
+
+  const network::mojom::AllowCSPFromHeaderValuePtr& allow_csp_from =
+      NavigationRequest::From(navigation_handle())
+          ->response()
+          ->parsed_headers->allow_csp_from;
+  if (AllowsBlanketEnforcementOfRequiredCSP(
+          frame->GetParent()->GetLastCommittedOrigin(),
+          navigation_handle()->GetURL(), allow_csp_from)) {
+    return CheckResult::PROCEED;
+  }
+
+  std::string sanitized_blocked_url =
+      navigation_handle()->GetRedirectChain().front().GetOrigin().spec();
+  if (allow_csp_from && allow_csp_from->is_error_message()) {
+    frame->GetParent()->AddMessageToConsole(
+        blink::mojom::ConsoleMessageLevel::kError,
+        base::StringPrintf("The value of the 'Allow-CSP-From' response header "
+                           "returned by %s is invalid: %s",
+                           sanitized_blocked_url.c_str(),
+                           allow_csp_from->get_error_message().c_str()));
+  }
+
+  // TODO(antoniosartori): This is temporary, since the check in this function
+  // is incomplete and will require iterations in several CLs. For now, let's
+  // allow anything that has no "allow-csp-from" header.
+  if (!NavigationRequest::From(navigation_handle())
+           ->GetResponseHeaders()
+           ->HasHeader("allow-csp-from")) {
+    return CheckResult::PROCEED;
+  }
+
+  frame->GetParent()->AddMessageToConsole(
+      blink::mojom::ConsoleMessageLevel::kError,
+      base::StringPrintf(
+          "Refused to display '%s' in a frame. The embedder requires it to "
+          "enforce the following Content Security Policy: '%s'. However, the "
+          "frame neither accepts that policy using the Allow-CSP-From header "
+          "nor delivers a Content Security Policy which is at least as strong "
+          "as that one.",
+          sanitized_blocked_url.c_str(), required_csp.c_str()));
+
+  return CheckResult::BLOCK;
+}
+
+// static
+bool AncestorThrottle::AllowsBlanketEnforcementOfRequiredCSP(
+    const url::Origin& request_origin,
+    const GURL& response_url,
+    const network::mojom::AllowCSPFromHeaderValuePtr& allow_csp_from) {
+  if (response_url.SchemeIs(url::kAboutScheme) ||
+      response_url.SchemeIs(url::kDataScheme) || response_url.SchemeIsFile() ||
+      response_url.SchemeIsFileSystem() || response_url.SchemeIsBlob()) {
+    return true;
+  }
+
+  if (request_origin.IsSameOriginWith(url::Origin::Create(response_url))) {
+    return true;
+  }
+
+  if (!allow_csp_from)
+    return false;
+
+  if (allow_csp_from->is_allow_star()) {
+    return true;
+  }
+  if (allow_csp_from->is_origin() &&
+      request_origin.IsSameOriginWith(allow_csp_from->get_origin())) {
+    return true;
+  }
+
+  return false;
 }
 
 AncestorThrottle::HeaderDisposition AncestorThrottle::ParseXFrameOptionsHeader(

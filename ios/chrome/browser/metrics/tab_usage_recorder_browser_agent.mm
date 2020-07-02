@@ -449,12 +449,81 @@ void TabUsageRecorderBrowserAgent::OnWebStateDestroyed(
   web_state->RemoveObserver(this);
 }
 
+bool TabUsageRecorderBrowserAgent::IsTransitionBetweenDesktopAndMobileUserAgent(
+    web::UserAgentType agent_type,
+    web::UserAgentType other_agent_type) {
+  if (agent_type == web::UserAgentType::NONE)
+    return false;
+
+  if (other_agent_type == web::UserAgentType::NONE)
+    return false;
+
+  return agent_type != other_agent_type;
+}
+
+bool TabUsageRecorderBrowserAgent::ShouldRecordPageLoadStartForNavigation(
+    web::NavigationContext* navigation) {
+  web::NavigationManager* navigation_manager =
+      navigation->GetWebState()->GetNavigationManager();
+
+  web::NavigationItem* last_committed_item =
+      navigation_manager->GetLastCommittedItem();
+  if (!last_committed_item) {
+    // Opening a child window and loading URL there.
+    // http://crbug.com/773160
+    return false;
+  }
+
+  web::NavigationItem* pending_item = navigation_manager->GetPendingItem();
+  if (pending_item) {
+    if (IsTransitionBetweenDesktopAndMobileUserAgent(
+            pending_item->GetUserAgentType(),
+            last_committed_item->GetUserAgentType())) {
+      // Switching between Desktop and Mobile user agent.
+      return false;
+    }
+  }
+
+  ui::PageTransition transition = navigation->GetPageTransition();
+  if (!ui::PageTransitionIsNewNavigation(transition)) {
+    // Back/forward navigation or reload.
+    return false;
+  }
+
+  if ((transition & ui::PAGE_TRANSITION_CLIENT_REDIRECT) != 0) {
+    // Client redirect.
+    return false;
+  }
+
+  static const ui::PageTransition kRecordedPageTransitionTypes[] = {
+      ui::PAGE_TRANSITION_TYPED,
+      ui::PAGE_TRANSITION_LINK,
+      ui::PAGE_TRANSITION_GENERATED,
+      ui::PAGE_TRANSITION_AUTO_BOOKMARK,
+      ui::PAGE_TRANSITION_FORM_SUBMIT,
+      ui::PAGE_TRANSITION_KEYWORD,
+      ui::PAGE_TRANSITION_KEYWORD_GENERATED,
+  };
+
+  for (size_t i = 0; i < base::size(kRecordedPageTransitionTypes); ++i) {
+    const ui::PageTransition recorded_type = kRecordedPageTransitionTypes[i];
+    if (ui::PageTransitionCoreTypeIs(transition, recorded_type)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 void TabUsageRecorderBrowserAgent::DidStartNavigation(
     web::WebState* web_state,
     web::NavigationContext* navigation_context) {
   if (PageTransitionCoreTypeIs(navigation_context->GetPageTransition(),
                                ui::PAGE_TRANSITION_RELOAD)) {
     RecordReload(web_state);
+  }
+  if (ShouldRecordPageLoadStartForNavigation(navigation_context)) {
+    RecordPageLoadStart(web_state);
   }
 }
 

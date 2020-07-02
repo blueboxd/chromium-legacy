@@ -41,13 +41,16 @@ void DecommitPages(void* address, size_t size) {
 #endif
 }
 
-void CommitPages(void* address, size_t size) {
+bool WARN_UNUSED_RESULT CommitPages(void* address, size_t size) {
 #if defined(OS_MACOSX)
   SetSystemPagesAccess(address, size, PageReadWrite);
 #else
-  PA_CHECK(RecommitSystemPages(address, size, PageReadWrite));
+  if (!RecommitSystemPages(address, size, PageReadWrite))
+    return false;
   SetSystemPagesAccess(address, size, PageReadWrite);
 #endif
+
+  return true;
 }
 
 }  // namespace
@@ -88,8 +91,9 @@ void AddressPoolManager::Remove(pool_handle handle) {
 char* AddressPoolManager::Alloc(pool_handle handle, size_t length) {
   Pool* pool = GetPool(handle);
   char* ptr = reinterpret_cast<char*>(pool->FindChunk(length));
-  if (LIKELY(ptr))
-    CommitPages(ptr, length);
+
+  if (UNLIKELY(!ptr) || !CommitPages(ptr, length))
+    return nullptr;
   return ptr;
 }
 

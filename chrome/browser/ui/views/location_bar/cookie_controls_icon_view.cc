@@ -53,16 +53,18 @@ void CookieControlsIconView::UpdateImpl() {
 void CookieControlsIconView::OnStatusChanged(
     CookieControlsStatus status,
     CookieControlsEnforcement enforcement,
+    int allowed_cookies,
     int blocked_cookies) {
   if (status_ != status) {
     status_ = status;
     SetVisible(ShouldBeVisible());
     UpdateIconImage();
   }
-  OnBlockedCookiesCountChanged(blocked_cookies);
+  OnCookiesCountChanged(allowed_cookies, blocked_cookies);
 }
 
-void CookieControlsIconView::OnBlockedCookiesCountChanged(int blocked_cookies) {
+void CookieControlsIconView::OnCookiesCountChanged(int allowed_cookies,
+                                                   int blocked_cookies) {
   // The blocked cookie count changes quite frequently, so avoid unnecessary
   // UI updates.
   if (has_blocked_cookies_ != blocked_cookies > 0) {

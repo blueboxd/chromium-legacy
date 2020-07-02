@@ -8,6 +8,7 @@ import("//tools/grit/grit_rule.gni")
 import("//tools/grit/repack.gni")
 
 mojom("mojo_bindings") {
+  testonly = true
   sources = [ "mojo_test.mojom" ]
 }
 

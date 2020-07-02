@@ -148,7 +148,7 @@ void DeviceOAuth2TokenService::OnGetTokenInfoResponse(
   token_info->GetString("email", &gaia_robot_id);
   gaia_oauth_client_.reset();
 
-  store_->PrepareTrustedAccountId(base::Bind(
+  store_->PrepareTrustedAccountId(base::BindRepeating(
       &DeviceOAuth2TokenService::OnPrepareTrustedAccountIdFinished,
       weak_ptr_factory_.GetWeakPtr(), CoreAccountId::FromEmail(gaia_robot_id)));
 }

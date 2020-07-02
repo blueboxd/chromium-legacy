@@ -1,0 +1,6 @@
+# Additional owners from EMEA.
+# Feel free to add components/page_info/OWNERS as well.
+dullweber@chromium.org
+eokoyomon@chromium.org
+
+# COMPONENT: UI>Browser>Bubbles>PageInfo

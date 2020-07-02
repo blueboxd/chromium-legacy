@@ -32,11 +32,10 @@ import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.UnifiedConsentServiceBridge;
 import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
+import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
-import org.chromium.components.signin.metrics.SignoutReason;
 import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.protocol.AutofillWalletSpecifics;
 import org.chromium.components.sync.protocol.EntitySpecifics;
@@ -53,8 +52,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
 
 /**
  * TestRule for common functionality between sync tests.
@@ -139,18 +136,13 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
     private FakeServerHelper mFakeServerHelper;
     private ProfileSyncService mProfileSyncService;
     private MockSyncContentResolverDelegate mSyncContentResolver;
-
-    private void ruleSetUp() {
-        // This must be called before super.setUp() in order for test authentication to work.
-        SigninTestUtil.setUpAuthForTesting();
-    }
+    private final AccountManagerTestRule mAccountManagerTestRule = new AccountManagerTestRule();
 
     private void ruleTearDown() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mProfileSyncService.requestStop();
             FakeServerHelper.deleteFakeServer();
         });
-        SigninTestUtil.tearDownAuthForTesting();
         ProfileSyncService.resetForTests();
     }
 
@@ -181,10 +173,28 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
         startMainActivityOnBlankPage();
     }
 
-    public Account setUpTestAccount() {
-        Account account = SigninTestUtil.addTestAccount();
+    /**
+     * Adds an account of default account name to AccountManagerFacade and waits for the seeding.
+     */
+    public Account addTestAccount() {
+        Account account = mAccountManagerTestRule.addAccountAndWaitForSeeding(
+                AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
         Assert.assertFalse(SyncTestUtil.isSyncRequested());
         return account;
+    }
+
+    /**
+     * Adds an account of given account name to AccountManagerFacade and waits for the seeding.
+     */
+    public Account addAccount(String accountName) {
+        return mAccountManagerTestRule.addAccountAndWaitForSeeding(accountName);
+    }
+
+    /**
+     * Returns the currently signed in account.
+     */
+    public Account getCurrentSignedInAccount() {
+        return mAccountManagerTestRule.getCurrentSignedInAccount();
     }
 
     /**
@@ -193,7 +203,7 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
      * @return the test account that is signed in.
      */
     public Account setUpAccountAndSignInForTesting() {
-        Account account = setUpTestAccount();
+        Account account = addTestAccount();
         signinAndEnableSync(account);
         return account;
     }
@@ -203,7 +213,7 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
      * @return the test account that is signed in.
      */
     public Account setUpTestAccountAndSignInWithSyncSetupAsIncomplete() {
-        Account account = setUpTestAccount();
+        Account account = addTestAccount();
         signinAndEnableSyncInternal(account, false);
         return account;
     }
@@ -226,15 +236,9 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
         signinAndEnableSyncInternal(account, true);
     }
 
-    public void signOut() throws InterruptedException {
-        final Semaphore s = new Semaphore(0);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            IdentityServicesProvider.get()
-                    .getSigninManager(Profile.getLastUsedRegularProfile())
-                    .signOut(SignoutReason.SIGNOUT_TEST, s::release, false);
-        });
-        Assert.assertTrue(s.tryAcquire(SyncTestUtil.TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        Assert.assertNull(SigninTestUtil.getCurrentAccount());
+    public void signOut() {
+        mAccountManagerTestRule.signOut();
+        Assert.assertNull(mAccountManagerTestRule.getCurrentSignedInAccount());
         Assert.assertFalse(SyncTestUtil.isSyncRequested());
     }
 
@@ -341,14 +345,13 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
                 statement.evaluate();
             }
         }, desc);
-        return new Statement() {
+        return mAccountManagerTestRule.apply(new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                ruleSetUp();
                 base.evaluate();
                 ruleTearDown();
             }
-        };
+        }, desc);
     }
 
     /*
@@ -440,6 +443,6 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
         } else {
             SyncTestUtil.waitForSyncTransportActive();
         }
-        Assert.assertEquals(account, SigninTestUtil.getCurrentAccount());
+        Assert.assertEquals(account, mAccountManagerTestRule.getCurrentSignedInAccount());
     }
 }

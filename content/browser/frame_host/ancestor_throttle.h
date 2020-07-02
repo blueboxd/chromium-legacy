@@ -12,6 +12,13 @@
 #include "base/macros.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "services/network/public/mojom/content_security_policy.mojom-forward.h"
+#include "services/network/public/mojom/parsed_headers.mojom-forward.h"
+
+class GURL;
+
+namespace url {
+class Origin;
+}
 
 namespace net {
 class HttpResponseHeaders;
@@ -51,6 +58,8 @@ class CONTENT_EXPORT AncestorThrottle : public NavigationThrottle {
   FRIEND_TEST_ALL_PREFIXES(AncestorThrottleTest, ErrorsParsingXFrameOptions);
   FRIEND_TEST_ALL_PREFIXES(AncestorThrottleTest,
                            IgnoreWhenFrameAncestorsPresent);
+  FRIEND_TEST_ALL_PREFIXES(AncestorThrottleTest,
+                           AllowsBlanketEnforcementOfRequiredCSP);
 
   explicit AncestorThrottle(NavigationHandle* handle);
   NavigationThrottle::ThrottleCheckResult ProcessResponseImpl(
@@ -63,6 +72,11 @@ class CONTENT_EXPORT AncestorThrottle : public NavigationThrottle {
   CheckResult EvaluateFrameAncestors(
       const std::vector<network::mojom::ContentSecurityPolicyPtr>&
           content_security_policy);
+  CheckResult EvaluateCSPEmbeddedEnforcement();
+  static bool AllowsBlanketEnforcementOfRequiredCSP(
+      const url::Origin& request_origin,
+      const GURL& response_url,
+      const network::mojom::AllowCSPFromHeaderValuePtr& allow_csp_from);
 
   // Parses an 'X-Frame-Options' header. If the result is either CONFLICT
   // or INVALID, |header_value| will be populated with the value which caused

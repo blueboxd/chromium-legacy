@@ -551,7 +551,7 @@ public class PageInfoController implements ModalDialogProperties.Controller,
     }
 
     @Override
-    public void onBlockedCookiesCountChanged(int blockedCookies) {
+    public void onCookiesCountChanged(int allowedCookies, int blockedCookies) {
         if (mIsV2Enabled) {
             mCookiesController.onBlockedCookiesCountChanged(blockedCookies);
         } else {

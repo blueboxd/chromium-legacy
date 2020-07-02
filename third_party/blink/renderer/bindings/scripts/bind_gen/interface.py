@@ -5194,6 +5194,18 @@ def make_install_properties(cg_context, function_name, class_name,
             body.add_template_var(arg_name, arg_name)
     bind_installer_local_vars(body, cg_context)
 
+    if (is_per_context_install
+            and "Global" in cg_context.interface.extended_attributes):
+        body.extend([
+            CxxLikelyIfNode(cond="${instance_object}.IsEmpty()",
+                            body=[
+                                TextNode("""\
+${instance_object} = ${v8_context}->Global()->GetPrototype().As<v8::Object>();\
+"""),
+                            ]),
+            EmptyNode(),
+        ])
+
     if install_prototype_object_node:
         body.extend([
             CxxLikelyIfNode(cond="${feature_selector}.IsAll()",
@@ -5995,11 +6007,15 @@ static_assert(
 # ----------------------------------------------------------------------------
 
 
-def make_v8_context_snapshot_api(cg_context, attribute_entries,
+def make_v8_context_snapshot_api(cg_context, component, attribute_entries,
                                  constant_entries, constructor_entries,
                                  exposed_construct_entries, operation_entries,
                                  named_properties_object_callback_defs,
-                                 cross_origin_property_callback_defs):
+                                 cross_origin_property_callback_defs,
+                                 install_context_independent_func_name):
+    assert isinstance(cg_context, CodeGenContext)
+    assert isinstance(component, web_idl.Component)
+
     derived_interfaces = cg_context.interface.deriveds
     derived_names = map(lambda interface: interface.identifier,
                         derived_interfaces)
@@ -6010,45 +6026,44 @@ def make_v8_context_snapshot_api(cg_context, attribute_entries,
     header_ns = CxxNamespaceNode(name_style.namespace("v8_context_snapshot"))
     source_ns = CxxNamespaceNode(name_style.namespace("v8_context_snapshot"))
 
-    (func_decl,
-     func_def) = make_v8_context_snapshot_get_reference_table_function(
-         cg_context, name_style.func("GetRefTableOf",
-                                     cg_context.class_name), attribute_entries,
-         constant_entries, constructor_entries, exposed_construct_entries,
-         operation_entries, named_properties_object_callback_defs,
-         cross_origin_property_callback_defs)
-    header_ns.body.extend([
-        func_decl,
-        EmptyNode(),
-    ])
-    source_ns.body.extend([
-        func_def,
-        EmptyNode(),
-    ])
+    export_text = component_export(component, False)
 
-    (func_decl,
-     func_def) = make_v8_context_snapshot_install_properties_function(
-         cg_context, name_style.func("InstallPropsOf",
-                                     cg_context.class_name), attribute_entries,
-         constant_entries, exposed_construct_entries, operation_entries)
-    header_ns.body.extend([
-        func_decl,
-        EmptyNode(),
-    ])
-    source_ns.body.extend([
-        func_def,
-        EmptyNode(),
-    ])
+    def add_func(func_decl, func_def):
+        header_ns.body.extend([
+            TextNode(export_text),
+            func_decl,
+            EmptyNode(),
+        ])
+        source_ns.body.extend([
+            func_def,
+            EmptyNode(),
+        ])
+
+    add_func(*_make_v8_context_snapshot_get_reference_table_function(
+        cg_context, name_style.func("GetRefTableOf",
+                                    cg_context.class_name), attribute_entries,
+        constant_entries, constructor_entries, exposed_construct_entries,
+        operation_entries, named_properties_object_callback_defs,
+        cross_origin_property_callback_defs))
+
+    add_func(*_make_v8_context_snapshot_install_props_per_context_function(
+        cg_context, name_style.func("InstallPropsOf",
+                                    cg_context.class_name), attribute_entries,
+        constant_entries, exposed_construct_entries, operation_entries))
+
+    add_func(*_make_v8_context_snapshot_install_props_per_isolate_function(
+        cg_context, name_style.func("InstallPropsOf", cg_context.class_name),
+        install_context_independent_func_name))
 
     return header_ns, source_ns
 
 
-def make_v8_context_snapshot_get_reference_table_function(
+def _make_v8_context_snapshot_get_reference_table_function(
         cg_context, function_name, attribute_entries, constant_entries,
         constructor_entries, exposed_construct_entries, operation_entries,
         named_properties_object_callback_defs,
         cross_origin_property_callback_defs):
-    callback_names = []
+    callback_names = ["${class_name}::GetWrapperTypeInfo()"]
 
     for entry in attribute_entries:
         if entry.exposure_conditional.is_always_true:
@@ -6070,7 +6085,7 @@ def make_v8_context_snapshot_get_reference_table_function(
     def collect_callbacks(node):
         if isinstance(node, CxxFuncDefNode):
             callback_names.append(node.function_name)
-        elif isinstance(node, ListNode):
+        elif hasattr(node, "__iter__"):
             for child_node in node:
                 collect_callbacks(child_node)
 
@@ -6100,7 +6115,7 @@ def make_v8_context_snapshot_get_reference_table_function(
     return func_decl, func_def
 
 
-def make_v8_context_snapshot_install_properties_function(
+def _make_v8_context_snapshot_install_props_per_context_function(
         cg_context, function_name, attribute_entries, constant_entries,
         exposed_construct_entries, operation_entries):
     def selector(entry):
@@ -6121,6 +6136,50 @@ def make_v8_context_snapshot_install_properties_function(
         exposed_construct_entries=filter(selector, exposed_construct_entries),
         operation_entries=filter(selector, operation_entries))
 
+    return func_decl, func_def
+
+
+def _make_v8_context_snapshot_install_props_per_isolate_function(
+        cg_context, function_name, install_context_independent_func_name):
+    arg_decls = [
+        "v8::Isolate* isolate",
+        "const DOMWrapperWorld& world",
+        "v8::Local<v8::ObjectTemplate> instance_template",
+        "v8::Local<v8::ObjectTemplate> prototype_template",
+        "v8::Local<v8::FunctionTemplate> interface_template",
+    ]
+    arg_names = [
+        "isolate",
+        "world",
+        "instance_template",
+        "prototype_template",
+        "interface_template",
+    ]
+    return_type = "void"
+
+    func_decl = CxxFuncDeclNode(name=function_name,
+                                arg_decls=arg_decls,
+                                return_type=return_type)
+    func_def = CxxFuncDefNode(name=function_name,
+                              arg_decls=arg_decls,
+                              return_type=return_type)
+
+    if not install_context_independent_func_name:
+        return func_decl, func_def
+
+    func_def.set_base_template_vars(cg_context.template_bindings())
+    body = func_def.body
+    for arg_name in arg_names:
+        body.add_template_var(arg_name, arg_name)
+    pattern = """\
+return ${class_name}::{func}(
+    ${isolate}, ${world},
+    ${instance_template},
+    ${prototype_template},
+    ${interface_template});\
+"""
+    body.append(
+        TextNode(_format(pattern, func=install_context_independent_func_name)))
     return func_decl, func_def
 
 
@@ -6518,10 +6577,12 @@ def generate_interface(interface):
     # V8 Context Snapshot
     (header_v8_context_snapshot_ns,
      source_v8_context_snapshot_ns) = make_v8_context_snapshot_api(
-         cg_context, attribute_entries, constant_entries, constructor_entries,
-         exposed_construct_entries, operation_entries,
+         cg_context, impl_component, attribute_entries, constant_entries,
+         constructor_entries, exposed_construct_entries, operation_entries,
          named_properties_object_callback_defs,
-         cross_origin_property_callback_defs)
+         cross_origin_property_callback_defs,
+         (install_context_independent_props_def
+          and FN_INSTALL_CONTEXT_INDEPENDENT_PROPS))
 
     # Header part (copyright, include directives, and forward declarations)
     api_header_node.extend([
@@ -6892,27 +6953,6 @@ using InstallFuncType =
             [path_manager.api_path(ext="h")])
 
     # The helper function
-    globals = filter(lambda x: "Global" in x.extended_attributes,
-                     set_of_interfaces)
-    entries = [
-        TextNode("{}::GetWrapperTypeInfo(), ".format(
-            v8_bridge_class_name(interface)))
-        for interface in sorted(globals, key=lambda x: x.identifier)
-    ]
-    has_globals = bool(entries)
-    if has_globals:
-        # TODO(yukishiino): Make WrapperTypeInfo have a bit flag to indicate
-        # whether an interface is a global interface or not.  Then, we can
-        # simplify this implementation.
-        helper_func_def.body.extend([
-            ListNode([
-                TextNode("static const WrapperTypeInfo* globals_body[] = {"),
-                ListNode(entries),
-                TextNode("};"),
-            ]),
-            TextNode("const auto& globals = base::make_span(globals_body);"),
-            EmptyNode(),
-        ])
     helper_func_def.body.append(
         TextNode("""\
 V8PerContextData* per_context_data = script_state->PerContextData();
@@ -6934,17 +6974,7 @@ for (const auto& pair : wrapper_type_info_list) {
           wrapper_type_info, &prototype_object, &interface_object)) {
     continue;
   }
-"""))
-    if has_globals:
-        helper_func_def.body.append(
-            TextNode("""\
-  if (std::find(globals.begin(), globals.end(), wrapper_type_info)
-      != globals.end()) {
-    instance_object = context->Global()->GetPrototype().As<v8::Object>();
-  }
-"""))
-    helper_func_def.body.append(
-        TextNode("""\
+
   interface_template = wrapper_type_info->DomTemplate(isolate, world);
   install_func(context, world, instance_object, prototype_object,
                interface_object, interface_template, feature_selector);

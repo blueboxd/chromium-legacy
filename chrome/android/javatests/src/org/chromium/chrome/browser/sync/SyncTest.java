@@ -22,7 +22,6 @@ import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninHelper;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.signin.MockChangeEventChecker;
-import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -42,7 +41,7 @@ public class SyncTest {
     @Test
     @LargeTest
     @Feature({"Sync"})
-    public void testSignInAndOut() throws InterruptedException {
+    public void testSignInAndOut() {
         Account account = mSyncTestRule.setUpAccountAndSignInForTesting();
 
         // Signing out should disable sync.
@@ -70,7 +69,7 @@ public class SyncTest {
         mSyncTestRule.clearServerData();
 
         // Clearing server data should turn off sync and sign out of chrome.
-        Assert.assertNull(SigninTestUtil.getCurrentAccount());
+        Assert.assertNull(mSyncTestRule.getCurrentSignedInAccount());
         Assert.assertFalse(SyncTestUtil.isSyncRequested());
         CriteriaHelper.pollUiThread(
                 ()
@@ -91,7 +90,7 @@ public class SyncTest {
     public void testRename() {
         // The two accounts object that would represent the account rename.
         final Account oldAccount = mSyncTestRule.setUpAccountAndSignInForTesting();
-        final Account newAccount = SigninTestUtil.addTestAccount("test2@gmail.com");
+        final Account newAccount = mSyncTestRule.addAccount("test2@gmail.com");
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // First, we force a call to updateAccountRenameData. In the real world,
@@ -113,7 +112,7 @@ public class SyncTest {
         });
 
         CriteriaHelper.pollInstrumentationThread(
-                Criteria.equals(newAccount, SigninTestUtil::getCurrentAccount));
+                Criteria.equals(newAccount, mSyncTestRule::getCurrentSignedInAccount));
         SyncTestUtil.waitForSyncActive();
     }
 
@@ -124,7 +123,7 @@ public class SyncTest {
         Account account = mSyncTestRule.setUpAccountAndSignInForTesting();
 
         mSyncTestRule.stopSync();
-        Assert.assertEquals(account, SigninTestUtil.getCurrentAccount());
+        Assert.assertEquals(account, mSyncTestRule.getCurrentSignedInAccount());
         Assert.assertFalse(SyncTestUtil.isSyncRequested());
 
         mSyncTestRule.startSyncAndWait();

@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/enterprise_reporting_private/device_info_fetcher_win.h"
 
 #include "base/path_service.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/win/windows_types.h"
@@ -12,6 +13,7 @@
 #include "net/base/network_interfaces.h"
 
 // Those headers need defines from windows_types.h, thus have to come after it.
+#include <iphlpapi.h>      // NOLINT(build/include_order)
 #include <powersetting.h>  // NOLINT(build/include_order)
 #include <propsys.h>       // NOLINT(build/include_order)
 #include <shobjidl.h>      // NOLINT(build/include_order)
@@ -212,6 +214,41 @@ enterprise_reporting_private::SettingValue GetDiskEncrypted() {
   return enterprise_reporting_private::SETTING_VALUE_DISABLED;
 }
 
+std::vector<std::string> GetMacAddresses() {
+  std::vector<std::string> mac_addresses;
+  ULONG adapter_info_size = 0;
+  // Get the right buffer size in case of overflow
+  if (::GetAdaptersInfo(nullptr, &adapter_info_size) != ERROR_BUFFER_OVERFLOW ||
+      adapter_info_size == 0) {
+    return mac_addresses;
+  }
+
+  std::vector<byte> adapters(adapter_info_size);
+  if (::GetAdaptersInfo(reinterpret_cast<PIP_ADAPTER_INFO>(adapters.data()),
+                        &adapter_info_size) != ERROR_SUCCESS) {
+    return mac_addresses;
+  }
+
+  // The returned value is not an array of IP_ADAPTER_INFO elements but a linked
+  // list of such
+  PIP_ADAPTER_INFO adapter =
+      reinterpret_cast<PIP_ADAPTER_INFO>(adapters.data());
+  while (adapter) {
+    if (adapter->AddressLength == 6) {
+      mac_addresses.push_back(
+          base::StringPrintf("%02X-%02X-%02X-%02X-%02X-%02X",
+                             static_cast<unsigned int>(adapter->Address[0]),
+                             static_cast<unsigned int>(adapter->Address[1]),
+                             static_cast<unsigned int>(adapter->Address[2]),
+                             static_cast<unsigned int>(adapter->Address[3]),
+                             static_cast<unsigned int>(adapter->Address[4]),
+                             static_cast<unsigned int>(adapter->Address[5])));
+    }
+    adapter = adapter->Next;
+  }
+  return mac_addresses;
+}
+
 }  // namespace
 
 DeviceInfoFetcherWin::DeviceInfoFetcherWin() = default;
@@ -227,6 +264,7 @@ DeviceInfo DeviceInfoFetcherWin::Fetch() {
   device_info.serial_number = GetSerialNumber();
   device_info.screen_lock_secured = GetScreenlockSecured();
   device_info.disk_encrypted = GetDiskEncrypted();
+  device_info.mac_addresses = GetMacAddresses();
   return device_info;
 }
 

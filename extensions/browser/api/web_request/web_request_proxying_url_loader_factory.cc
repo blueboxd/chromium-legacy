@@ -1024,6 +1024,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnRequestError(
   ExtensionWebRequestEventRouter::GetInstance()->OnErrorOccurred(
       factory_->browser_context_, &info_.value(), true /* started */,
       status.error_code);
+  state_ = state;
 
   // Deletes |this|.
   factory_->RemoveRequest(network_service_request_id_, request_id_);

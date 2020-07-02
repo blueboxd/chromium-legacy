@@ -161,25 +161,23 @@ class MockActionDelegate : public ActionDelegate {
                     base::OnceCallback<void(const ClientStatus&,
                                             const std::string&)>& callback));
 
-  void SetFieldValue(const Selector& selector,
+  void SetFieldValue(const ElementFinder::Result& element,
                      const std::string& value,
                      KeyboardValueFillStrategy fill_strategy,
                      int key_press_delay_in_millisecond,
                      base::OnceCallback<void(const ClientStatus&)> callback) {
-    OnSetFieldValue(selector, value, callback);
-    OnSetFieldValue(selector, value,
+    OnSetFieldValue(element, value, callback);
+    OnSetFieldValue(element, value,
                     fill_strategy == SIMULATE_KEY_PRESSES ||
                         fill_strategy == SIMULATE_KEY_PRESSES_SELECT_VALUE,
                     key_press_delay_in_millisecond, callback);
   }
-
   MOCK_METHOD3(OnSetFieldValue,
-               void(const Selector& selector,
+               void(const ElementFinder::Result& element,
                     const std::string& value,
                     base::OnceCallback<void(const ClientStatus&)>& callback));
-
   MOCK_METHOD5(OnSetFieldValue,
-               void(const Selector& selector,
+               void(const ElementFinder::Result& element,
                     const std::string& value,
                     bool simulate_key_presses,
                     int delay_in_millisecond,
@@ -192,15 +190,15 @@ class MockActionDelegate : public ActionDelegate {
                     base::OnceCallback<void(const ClientStatus&)> callback));
 
   void SendKeyboardInput(
-      const Selector& selector,
+      const ElementFinder::Result& element,
       const std::vector<UChar32>& codepoints,
       int delay_in_millisecond,
       base::OnceCallback<void(const ClientStatus&)> callback) {
-    OnSendKeyboardInput(selector, codepoints, delay_in_millisecond, callback);
+    OnSendKeyboardInput(element, codepoints, delay_in_millisecond, callback);
   }
 
   MOCK_METHOD4(OnSendKeyboardInput,
-               void(const Selector& selector,
+               void(const ElementFinder::Result& element,
                     const std::vector<UChar32>& codepoints,
                     int delay_in_millisecond,
                     base::OnceCallback<void(const ClientStatus&)>& callback));

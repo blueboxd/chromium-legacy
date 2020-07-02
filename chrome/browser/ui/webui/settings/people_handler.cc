@@ -175,9 +175,12 @@ std::string GetSyncErrorAction(sync_ui_util::ActionType action_type) {
       return "retrieveTrustedVaultKeys";
     case sync_ui_util::CONFIRM_SYNC_SETTINGS:
       return "confirmSyncSettings";
-    default:
+    case sync_ui_util::NO_ACTION:
       return "noAction";
   }
+
+  NOTREACHED();
+  return std::string();
 }
 
 // Returns the base::Value associated with the account, to use in the stored

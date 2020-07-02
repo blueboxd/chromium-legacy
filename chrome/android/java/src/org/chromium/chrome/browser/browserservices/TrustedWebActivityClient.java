@@ -95,7 +95,7 @@ public class TrustedWebActivityClient {
         default void onNoTwaFound() {}
     }
 
-    private interface ExecutionCallback {
+    public interface ExecutionCallback {
         void onConnected(Origin origin, TrustedWebActivityServiceConnection service)
                 throws RemoteException;
         default void onNoTwaFound() {}
@@ -310,7 +310,7 @@ public class TrustedWebActivityClient {
         connectAndExecute(scope, (origin, service) -> service.cancel(platformTag, platformId));
     }
 
-    private void connectAndExecute(Uri scope, ExecutionCallback callback) {
+    public void connectAndExecute(Uri scope, ExecutionCallback callback) {
         Origin origin = Origin.create(scope);
         if (origin == null) {
             callback.onNoTwaFound();

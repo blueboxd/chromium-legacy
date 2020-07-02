@@ -15,7 +15,6 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/rand_util.h"
@@ -1131,12 +1130,12 @@ std::unique_ptr<NativeWorkHandle> SequenceManagerImpl::OnNativeWorkPending(
 }
 
 void SequenceManagerImpl::AddDestructionObserver(
-    MessageLoopCurrent::DestructionObserver* destruction_observer) {
+    CurrentThread::DestructionObserver* destruction_observer) {
   main_thread_only().destruction_observers.AddObserver(destruction_observer);
 }
 
 void SequenceManagerImpl::RemoveDestructionObserver(
-    MessageLoopCurrent::DestructionObserver* destruction_observer) {
+    CurrentThread::DestructionObserver* destruction_observer) {
   main_thread_only().destruction_observers.RemoveObserver(destruction_observer);
 }
 

@@ -169,7 +169,7 @@ class ScriptExecutor : public ActionDelegate,
       base::OnceCallback<void(const ClientStatus&, const std::string&)>
           callback) override;
   void SetFieldValue(
-      const Selector& selector,
+      const ElementFinder::Result& element,
       const std::string& value,
       KeyboardValueFillStrategy fill_strategy,
       int key_press_delay_in_millisecond,
@@ -180,7 +180,7 @@ class ScriptExecutor : public ActionDelegate,
       const std::string& value,
       base::OnceCallback<void(const ClientStatus&)> callback) override;
   void SendKeyboardInput(
-      const Selector& selector,
+      const ElementFinder::Result& element,
       const std::vector<UChar32>& codepoints,
       int key_press_delay_in_millisecond,
       base::OnceCallback<void(const ClientStatus&)> callback) override;

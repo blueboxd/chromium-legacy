@@ -50,9 +50,11 @@ void CookieControlsController::Update(content::WebContents* web_contents) {
   if (!tab_observer_ || GetWebContents() != web_contents)
     tab_observer_ = std::make_unique<TabObserver>(this, web_contents);
   auto status = GetStatus(web_contents);
+  int used_count = GetBlockedCookieCount();
   int blocked_count = GetBlockedCookieCount();
   for (auto& observer : observers_)
-    observer.OnStatusChanged(status.first, status.second, blocked_count);
+    observer.OnStatusChanged(status.first, status.second, used_count,
+                             blocked_count);
 }
 
 std::pair<CookieControlsStatus, CookieControlsEnforcement>
@@ -105,6 +107,16 @@ void CookieControlsController::OnCookieBlockingEnabledForSite(
   }
 }
 
+int CookieControlsController::GetUsedCookieCount() {
+  auto* tscs =
+      content_settings::TabSpecificContentSettings::GetForCurrentDocument(
+          tab_observer_->web_contents()->GetMainFrame());
+  if (tscs) {
+    return tscs->allowed_local_shared_objects().GetObjectCount();
+  } else {
+    return 0;
+  }
+}
 int CookieControlsController::GetBlockedCookieCount() {
   auto* tscs =
       content_settings::TabSpecificContentSettings::GetForCurrentDocument(
@@ -118,8 +130,9 @@ int CookieControlsController::GetBlockedCookieCount() {
 
 void CookieControlsController::PresentBlockedCookieCounter() {
   int blocked_cookies = GetBlockedCookieCount();
+  int allowed_cookies = GetUsedCookieCount();
   for (auto& observer : observers_)
-    observer.OnBlockedCookiesCountChanged(blocked_cookies);
+    observer.OnCookiesCountChanged(allowed_cookies, blocked_cookies);
 }
 
 void CookieControlsController::OnThirdPartyCookieBlockingChanged(

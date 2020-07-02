@@ -101,6 +101,7 @@ class CORE_EXPORT SVGElement : public Element {
 
   ElementSMILAnimations* GetSMILAnimations();
   ElementSMILAnimations& EnsureSMILAnimations();
+  const ComputedStyle* BaseComputedStyleForSMIL();
 
   void SetAnimatedAttribute(const QualifiedName&, SVGPropertyBase*);
   void ClearAnimatedAttribute(const QualifiedName&);
@@ -159,7 +160,6 @@ class CORE_EXPORT SVGElement : public Element {
 
   MutableCSSPropertyValueSet* AnimatedSMILStyleProperties() const;
   MutableCSSPropertyValueSet* EnsureAnimatedSMILStyleProperties();
-  void SetUseOverrideComputedStyle(bool);
 
   virtual bool HaveLoadedRequiredResources();
 
@@ -273,11 +273,6 @@ class CORE_EXPORT SVGElement : public Element {
   bool IsStyledElement() const =
       delete;  // This will catch anyone doing an unnecessary check.
 
-  const ComputedStyle* EnsureComputedStyle(PseudoId = kPseudoIdNone);
-  const ComputedStyle* VirtualEnsureComputedStyle(
-      PseudoId pseudo_element_specifier = kPseudoIdNone) final {
-    return EnsureComputedStyle(pseudo_element_specifier);
-  }
   void WillRecalcStyle(const StyleRecalcChange) override;
   static SVGElementSet& GetDependencyTraversalVisitedSet();
   void UpdateWebAnimatedAttributeOnBaseValChange(const QualifiedName&);

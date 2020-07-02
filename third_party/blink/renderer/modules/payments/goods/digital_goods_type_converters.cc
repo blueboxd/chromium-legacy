@@ -31,24 +31,16 @@ TypeConverter<WTF::String, payments::mojom::blink::BillingResponseCode>::
       return "ok";
     case payments::mojom::blink::BillingResponseCode::kError:
       return "error";
-    case payments::mojom::blink::BillingResponseCode::kBillingUnavailable:
-      return "billingUnavailable";
-    case payments::mojom::blink::BillingResponseCode::kDeveloperError:
-      return "developerError";
-    case payments::mojom::blink::BillingResponseCode::kFeatureNotSupported:
-      return "featureNotSupported";
     case payments::mojom::blink::BillingResponseCode::kItemAlreadyOwned:
       return "itemAlreadyOwned";
     case payments::mojom::blink::BillingResponseCode::kItemNotOwned:
       return "itemNotOwned";
     case payments::mojom::blink::BillingResponseCode::kItemUnavailable:
       return "itemUnavailable";
-    case payments::mojom::blink::BillingResponseCode::kServiceDisconnected:
-      return "serviceDisconnected";
-    case payments::mojom::blink::BillingResponseCode::kServiceUnavailable:
-      return "serviceUnavailable";
-    case payments::mojom::blink::BillingResponseCode::kUserCancelled:
-      return "userCancelled";
+    case payments::mojom::blink::BillingResponseCode::kClientAppUnavailable:
+      return "clientAppUnavailable";
+    case payments::mojom::blink::BillingResponseCode::kClientAppError:
+      return "clientAppError";
   }
 
   NOTREACHED();

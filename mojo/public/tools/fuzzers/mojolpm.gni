@@ -2,9 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//third_party/protobuf/proto_library.gni")
-import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 
 # Generate a MojoLPM-based fuzzer test.
 #
@@ -70,7 +70,7 @@ template("mojolpm_fuzzer_test") {
           defined(invoker.testcase_proto_kind),
       "\"testcase_proto_kind\" must be defined for $target_name since \"seed_corpus_sources\" is defined.")
 
-  if (enable_ipc_fuzzer) {
+  if (enable_mojom_fuzzer) {
     proto_target_name = "${target_name}_proto"
 
     proto_library(proto_target_name) {

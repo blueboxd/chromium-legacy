@@ -102,7 +102,7 @@ class ExtensionPlatformKeysService : public KeyedService {
   // specifies the token to store the key pair on. |callback| will be invoked
   // with the resulting public key or an error. Will only call back during the
   // lifetime of this object.
-  void GenerateRSAKey(const std::string& token_id,
+  void GenerateRSAKey(platform_keys::TokenId token_id,
                       unsigned int modulus_length_bits,
                       const std::string& extension_id,
                       const GenerateKeyCallback& callback);
@@ -112,7 +112,7 @@ class ExtensionPlatformKeysService : public KeyedService {
   // token to store the key pair on. |callback| will be invoked with the
   // resulting public key or an error. Will only call back during the lifetime
   // of this object.
-  void GenerateECKey(const std::string& token_id,
+  void GenerateECKey(platform_keys::TokenId token_id,
                      const std::string& named_curve,
                      const std::string& extension_id,
                      const GenerateKeyCallback& callback);
@@ -130,14 +130,16 @@ class ExtensionPlatformKeysService : public KeyedService {
 
   // Digests |data|, applies PKCS1 padding if specified by |hash_algorithm| and
   // chooses the signature algorithm according to |key_type| and signs the data
-  // with the private key matching |public_key_spki_der|. If a non empty token
-  // id is provided and the key is not found in that token, the operation
-  // aborts. If the extension does not have permissions for signing with this
-  // key, the operation aborts. In case of a one time permission (granted after
+  // with the private key matching |public_key_spki_der|. If a |token_id|
+  // is provided and the key is not found in that token, the operation aborts.
+  // If |token_id| is not provided (nullopt), all tokens available to the caller
+  // will be considered while searching for the key.
+  // If the extension does not have permissions for signing with this key, the
+  // operation aborts. In case of a one time permission (granted after
   // generating the key), this function also removes the permission to prevent
   // future signing attempts. |callback| will be invoked with the signature or
   // an error message. Will only call back during the lifetime of this object.
-  void SignDigest(const std::string& token_id,
+  void SignDigest(base::Optional<platform_keys::TokenId> token_id,
                   const std::string& data,
                   const std::string& public_key_spki_der,
                   platform_keys::KeyType key_type,
@@ -146,18 +148,17 @@ class ExtensionPlatformKeysService : public KeyedService {
                   const SignCallback& callback);
 
   // Applies PKCS1 padding and afterwards signs the data with the private key
-  // matching |public_key_spki_der|. |data| is not digested. If a non empty
-  // token id is provided and the key is not found in that token, the operation
-  // aborts.
-  // The size of |data| (number of octets) must be smaller than k - 11, where k
-  // is the key size in octets.
+  // matching |public_key_spki_der|. |data| is not digested. If a |token_id|
+  // is provided and the key is not found in that token, the operation aborts.
+  // If |token_id| is not provided (nullopt), all available tokens to the caller
+  // will be considered while searching for the key. The size of |data| (number
+  // of octets) must be smaller than k - 11, where k is the key size in octets.
   // If the extension does not have permissions for signing with this key, the
   // operation aborts. In case of a one time permission (granted after
   // generating the key), this function also removes the permission to prevent
-  // future signing attempts.
-  // |callback| will be invoked with the signature or an error message.
-  // Will only call back during the lifetime of this object.
-  void SignRSAPKCS1Raw(const std::string& token_id,
+  // future signing attempts. |callback| will be invoked with the signature or
+  // an error message. Will only call back during the lifetime of this object.
+  void SignRSAPKCS1Raw(base::Optional<platform_keys::TokenId> token_id,
                        const std::string& data,
                        const std::string& public_key_spki_der,
                        const std::string& extension_id,

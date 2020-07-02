@@ -373,8 +373,8 @@ TEST_P(DisplayChangeObserverTest, SDRDisplayColorSpaces) {
 TEST_P(DisplayChangeObserverTest, HDRDisplayColorSpaces) {
   // TODO(crbug.com/1012846): Remove this flag and provision when HDR is fully
   // supported on ChromeOS.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableUseHDRTransferFunction);
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kUseHDRTransferFunction);
 
   const std::unique_ptr<DisplaySnapshot> display_snapshot =
       FakeDisplaySnapshot::Builder()

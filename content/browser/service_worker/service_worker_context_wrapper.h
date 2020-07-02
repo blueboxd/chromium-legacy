@@ -497,6 +497,12 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void DidGetRegisteredOrigins(std::vector<url::Origin> origins);
   void InitializeRegisteredOriginsOnUI(std::vector<url::Origin> origins);
 
+  static void DidGetRegisteredOriginsForGetInstalledRegistrationOrigins(
+      base::Optional<std::string> host_filter,
+      GetInstalledRegistrationOriginsCallback callback,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_callback,
+      std::vector<url::Origin> origins);
+
   // Temporary for crbug.com/824858.
   void GetAllOriginsInfoOnCoreThread(
       GetUsageInfoCallback callback,

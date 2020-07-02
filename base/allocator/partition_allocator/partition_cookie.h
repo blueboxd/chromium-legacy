@@ -21,7 +21,10 @@ static constexpr size_t kCookieSize = 16;
 // which is required.
 //
 // TODO(lizeb): Support cookies when used as the malloc() implementation.
-#if DCHECK_IS_ON() && !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+#define ENABLE_PARTITION_ALLOC_COOKIES \
+  DCHECK_IS_ON() && !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+
+#if ENABLE_PARTITION_ALLOC_COOKIES
 
 static constexpr unsigned char kCookieValue[kCookieSize] = {
     0xDE, 0xAD, 0xBE, 0xEF, 0xCA, 0xFE, 0xD0, 0x0D,
@@ -87,7 +90,7 @@ ALWAYS_INLINE size_t PartitionCookieSizeAdjustSubtract(size_t size) {
 }
 
 ALWAYS_INLINE void PartitionCookieWriteValue(void* ptr) {}
-#endif  // DCHECK_IS_ON() && !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+#endif  // ENABLE_PARTITION_ALLOC_COOKIES
 
 }  // namespace internal
 }  // namespace base

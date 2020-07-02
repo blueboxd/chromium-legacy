@@ -42,8 +42,9 @@ class CookieControlsBubbleView : public LocationBarBubbleDelegateView,
   // content_settings::CookieControlsView:
   void OnStatusChanged(CookieControlsStatus status,
                        CookieControlsEnforcement enforcement,
+                       int allowed_cookies,
                        int blocked_cookies) override;
-  void OnBlockedCookiesCountChanged(int blocked_cookies) override;
+  void OnCookiesCountChanged(int allowed_cookies, int blocked_cookies) override;
 
  private:
   enum class IntermediateStep {

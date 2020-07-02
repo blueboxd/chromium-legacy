@@ -470,14 +470,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,
 
 #if !defined(OS_CHROMEOS)
   // Verify the profile-menu error string.
-  int description_string_id;
-  int button_string_id;
   ASSERT_EQ(sync_ui_util::TRUSTED_VAULT_KEY_MISSING_FOR_PASSWORDS_ERROR,
-            sync_ui_util::GetMessagesForAvatarSyncError(
-                GetProfile(0), &description_string_id, &button_string_id));
-  ASSERT_EQ(IDS_SYNC_ERROR_USER_MENU_RETRIEVE_KEYS_MESSAGE,
-            description_string_id);
-  ASSERT_EQ(IDS_SYNC_ERROR_USER_MENU_RETRIEVE_KEYS_BUTTON, button_string_id);
+            sync_ui_util::GetAvatarSyncErrorType(GetProfile(0)));
 #endif  // !defined(OS_CHROMEOS)
 
   // Verify the string that would be displayed in settings.

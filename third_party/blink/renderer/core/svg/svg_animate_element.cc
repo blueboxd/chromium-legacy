@@ -22,7 +22,6 @@
 
 #include "third_party/blink/renderer/core/svg/svg_animate_element.h"
 
-#include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
@@ -54,13 +53,16 @@ String ComputeCSSPropertyValue(SVGElement* element, CSSPropertyID id) {
   // Refer to comment in Element::computedStyle.
   DCHECK(element->InActiveDocument());
 
+  element->GetDocument().UpdateStyleAndLayoutTreeForNode(element);
+
   // Don't include any properties resulting from CSS Transitions/Animations or
   // SMIL animations, as we want to retrieve the "base value".
-  element->SetUseOverrideComputedStyle(true);
-  String value = MakeGarbageCollected<CSSComputedStyleDeclaration>(element)
-                     ->GetPropertyValue(id);
-  element->SetUseOverrideComputedStyle(false);
-  return value;
+  const ComputedStyle* style = element->BaseComputedStyleForSMIL();
+  if (!style)
+    return "";
+  const CSSValue* value = CSSProperty::Get(id).CSSValueFromComputedStyle(
+      *style, element->GetLayoutObject(), false);
+  return value ? value->CssText() : "";
 }
 
 AnimatedPropertyValueType PropertyValueType(const QualifiedName& attribute_name,

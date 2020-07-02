@@ -326,9 +326,7 @@ IN_PROC_BROWSER_TEST_F(LiveSignInTest, MANUAL_WebSignOut) {
       identity_manager()->HasAccountWithRefreshTokenInPersistentErrorState(
           primary_account.account_id));
 #if !defined(OS_CHROMEOS)
-  int unused1, unused2;
-  EXPECT_EQ(sync_ui_util::GetMessagesForAvatarSyncError(browser()->profile(),
-                                                        &unused1, &unused2),
+  EXPECT_EQ(sync_ui_util::GetAvatarSyncErrorType(browser()->profile()),
             sync_ui_util::AUTH_ERROR);
 #endif  // !defined(OS_CHROMEOS)
 }

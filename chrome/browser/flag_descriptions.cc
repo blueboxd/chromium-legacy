@@ -3458,11 +3458,11 @@ const char kDisplayIdentificationDescription[] =
     "in the Displays Settings page. Only shown when the Displays Settings page "
     "is open.";
 
-const char kEnableUseHDRTransferFunctionName[] =
-    "Enable using HDR transfer function";
-const char kEnableUseHDRTransferFunctionDescription[] =
-    "Allows using an HDR transfer functions if any connected monitor supports "
-    "it";
+const char kUseHDRTransferFunctionName[] =
+    "Monitor/Display HDR transfer function";
+const char kUseHDRTransferFunctionDescription[] =
+    "Allows using the HDR transfer functions of any connected monitor that "
+    "supports it";
 
 const char kDisableOfficeEditingComponentAppName[] =
     "Disable Office Editing for Docs, Sheets & Slides";

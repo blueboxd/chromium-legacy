@@ -436,13 +436,13 @@ TEST_F(CertProvisioningWorkerTest, Success) {
     EXPECT_REGISTER_KEY_OK(*mock_tpm_challenge_key, StartRegisterKeyStep);
 
     EXPECT_SET_ATTRIBUTE_FOR_KEY_OK(SetAttributeForKey(
-        platform_keys::kTokenIdUser, GetPublicKey(),
+        platform_keys::TokenId::kUser, GetPublicKey(),
         platform_keys::KeyAttributeType::CertificateProvisioningId,
         kCertProfileId, _));
 
-    EXPECT_SIGN_RSAPKC1_DIGEST_OK(
-        SignRSAPKCS1Digest(platform_keys::kTokenIdUser, kDataToSign,
-                           GetPublicKey(), kPkHashAlgo, /*callback=*/_));
+    EXPECT_SIGN_RSAPKC1_DIGEST_OK(SignRSAPKCS1Digest(
+        ::testing::Optional(platform_keys::TokenId::kUser), kDataToSign,
+        GetPublicKey(), kPkHashAlgo, /*callback=*/_));
 
     EXPECT_FINISH_CSR_OK(ClientCertProvisioningFinishCsr(
         kCertScopeStrUser, kCertProfileId, kCertProfileVersion, GetPublicKey(),
@@ -453,7 +453,7 @@ TEST_F(CertProvisioningWorkerTest, Success) {
         /*callback=*/_));
 
     EXPECT_IMPORT_CERTIFICATE_OK(ImportCertificate(
-        platform_keys::kTokenIdUser, /*certificate=*/_, /*callback=*/_));
+        platform_keys::TokenId::kUser, /*certificate=*/_, /*callback=*/_));
 
     EXPECT_CALL(*mock_invalidator, Unregister()).Times(1);
 
@@ -490,9 +490,9 @@ TEST_F(CertProvisioningWorkerTest, NoVaSuccess) {
   {
     testing::InSequence seq;
 
-    EXPECT_CALL(
-        *platform_keys_service_,
-        GenerateRSAKey("user", kNonVaKeyModulusLengthBits, /*callback=*/_))
+    EXPECT_CALL(*platform_keys_service_,
+                GenerateRSAKey(platform_keys::TokenId::kUser,
+                               kNonVaKeyModulusLengthBits, /*callback=*/_))
         .Times(1)
         .WillOnce(RunOnceCallback<2>(GetPublicKey(), ""));
 
@@ -501,13 +501,13 @@ TEST_F(CertProvisioningWorkerTest, NoVaSuccess) {
         /*callback=*/_));
 
     EXPECT_SET_ATTRIBUTE_FOR_KEY_OK(SetAttributeForKey(
-        platform_keys::kTokenIdUser, GetPublicKey(),
+        platform_keys::TokenId::kUser, GetPublicKey(),
         platform_keys::KeyAttributeType::CertificateProvisioningId,
         kCertProfileId, _));
 
-    EXPECT_SIGN_RSAPKC1_DIGEST_OK(
-        SignRSAPKCS1Digest(platform_keys::kTokenIdUser, kDataToSign,
-                           GetPublicKey(), kPkHashAlgo, /*callback=*/_));
+    EXPECT_SIGN_RSAPKC1_DIGEST_OK(SignRSAPKCS1Digest(
+        ::testing::Optional(platform_keys::TokenId::kUser), kDataToSign,
+        GetPublicKey(), kPkHashAlgo, /*callback=*/_));
 
     EXPECT_FINISH_CSR_OK(ClientCertProvisioningFinishCsr(
         kCertScopeStrUser, kCertProfileId, kCertProfileVersion, GetPublicKey(),
@@ -518,7 +518,7 @@ TEST_F(CertProvisioningWorkerTest, NoVaSuccess) {
         /*callback=*/_));
 
     EXPECT_IMPORT_CERTIFICATE_OK(ImportCertificate(
-        platform_keys::kTokenIdUser, /*certificate=*/_, /*callback=*/_));
+        platform_keys::TokenId::kUser, /*certificate=*/_, /*callback=*/_));
 
     EXPECT_CALL(callback_observer_,
                 Callback(cert_profile, CertProvisioningWorkerState::kSucceeded))
@@ -576,7 +576,7 @@ TEST_F(CertProvisioningWorkerTest, TryLaterManualRetry) {
     EXPECT_REGISTER_KEY_OK(*mock_tpm_challenge_key, StartRegisterKeyStep);
 
     EXPECT_SET_ATTRIBUTE_FOR_KEY_OK(SetAttributeForKey(
-        platform_keys::kTokenIdSystem, GetPublicKey(),
+        platform_keys::TokenId::kSystem, GetPublicKey(),
         platform_keys::KeyAttributeType::CertificateProvisioningId,
         kCertProfileId, _));
 
@@ -619,7 +619,7 @@ TEST_F(CertProvisioningWorkerTest, TryLaterManualRetry) {
                                            /*callback=*/_));
 
     EXPECT_IMPORT_CERTIFICATE_OK(ImportCertificate(
-        platform_keys::kTokenIdSystem, /*certificate=*/_, /*callback=*/_));
+        platform_keys::TokenId::kSystem, /*certificate=*/_, /*callback=*/_));
 
     EXPECT_CALL(callback_observer_,
                 Callback(cert_profile, CertProvisioningWorkerState::kSucceeded))
@@ -682,13 +682,13 @@ TEST_F(CertProvisioningWorkerTest, TryLaterWait) {
     EXPECT_REGISTER_KEY_OK(*mock_tpm_challenge_key, StartRegisterKeyStep);
 
     EXPECT_SET_ATTRIBUTE_FOR_KEY_OK(SetAttributeForKey(
-        platform_keys::kTokenIdUser, GetPublicKey(),
+        platform_keys::TokenId::kUser, GetPublicKey(),
         platform_keys::KeyAttributeType::CertificateProvisioningId,
         kCertProfileId, _));
 
-    EXPECT_SIGN_RSAPKC1_DIGEST_OK(
-        SignRSAPKCS1Digest(platform_keys::kTokenIdUser, kDataToSign,
-                           GetPublicKey(), kPkHashAlgo, /*callback=*/_));
+    EXPECT_SIGN_RSAPKC1_DIGEST_OK(SignRSAPKCS1Digest(
+        ::testing::Optional(platform_keys::TokenId::kUser), kDataToSign,
+        GetPublicKey(), kPkHashAlgo, /*callback=*/_));
 
     EXPECT_FINISH_CSR_TRY_LATER(
         ClientCertProvisioningFinishCsr(
@@ -724,7 +724,7 @@ TEST_F(CertProvisioningWorkerTest, TryLaterWait) {
     EXPECT_DOWNLOAD_CERT_OK(ClientCertProvisioningDownloadCert);
 
     EXPECT_IMPORT_CERTIFICATE_OK(ImportCertificate(
-        platform_keys::kTokenIdUser, /*certificate=*/_, /*callback=*/_));
+        platform_keys::TokenId::kUser, /*certificate=*/_, /*callback=*/_));
 
     FastForwardBy(small_delay);
     // Check that minimum wait time is not too small even if the server
@@ -957,7 +957,7 @@ TEST_F(CertProvisioningWorkerTest, RemoveRegisteredKey) {
     EXPECT_REGISTER_KEY_OK(*mock_tpm_challenge_key, StartRegisterKeyStep);
 
     EXPECT_SET_ATTRIBUTE_FOR_KEY_FAIL(SetAttributeForKey(
-        platform_keys::kTokenIdUser, GetPublicKey(),
+        platform_keys::TokenId::kUser, GetPublicKey(),
         platform_keys::KeyAttributeType::CertificateProvisioningId,
         kCertProfileId, _));
 
@@ -965,7 +965,7 @@ TEST_F(CertProvisioningWorkerTest, RemoveRegisteredKey) {
 
     EXPECT_CALL(
         *platform_keys_service_,
-        RemoveKey(platform_keys::kTokenIdUser,
+        RemoveKey(platform_keys::TokenId::kUser,
                   /*public_key_spki_der=*/GetPublicKey(), /*callback=*/_))
         .Times(1)
         .WillOnce(RunOnceCallback<2>(/*error_message=*/""));
@@ -1104,13 +1104,13 @@ TEST_F(CertProvisioningWorkerTest, SerializationSuccess) {
     EXPECT_REGISTER_KEY_OK(*mock_tpm_challenge_key, StartRegisterKeyStep);
 
     EXPECT_SET_ATTRIBUTE_FOR_KEY_OK(SetAttributeForKey(
-        platform_keys::kTokenIdUser, GetPublicKey(),
+        platform_keys::TokenId::kUser, GetPublicKey(),
         platform_keys::KeyAttributeType::CertificateProvisioningId,
         kCertProfileId, _));
 
-    EXPECT_SIGN_RSAPKC1_DIGEST_OK(
-        SignRSAPKCS1Digest(platform_keys::kTokenIdUser, kDataToSign,
-                           GetPublicKey(), kPkHashAlgo, /*callback=*/_));
+    EXPECT_SIGN_RSAPKC1_DIGEST_OK(SignRSAPKCS1Digest(
+        ::testing::Optional(platform_keys::TokenId::kUser), kDataToSign,
+        GetPublicKey(), kPkHashAlgo, /*callback=*/_));
 
     EXPECT_FINISH_CSR_OK(ClientCertProvisioningFinishCsr(
         kCertScopeStrUser, kCertProfileId, kCertProfileVersion, GetPublicKey(),
@@ -1169,7 +1169,7 @@ TEST_F(CertProvisioningWorkerTest, SerializationSuccess) {
         /*callback=*/_));
 
     EXPECT_IMPORT_CERTIFICATE_OK(ImportCertificate(
-        platform_keys::kTokenIdUser, /*certificate=*/_, /*callback=*/_));
+        platform_keys::TokenId::kUser, /*certificate=*/_, /*callback=*/_));
 
     pref_val = ParseJson("{}");
     EXPECT_CALL(pref_observer, OnPrefValueUpdated(IsJson(pref_val))).Times(1);

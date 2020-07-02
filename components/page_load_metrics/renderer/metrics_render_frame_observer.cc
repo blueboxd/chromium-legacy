@@ -521,7 +521,7 @@ MetricsRenderFrameObserver::Timing MetricsRenderFrameObserver::GetTiming()
       if (first_input_delay.has_value()) {
         back_forward_cache_timing
             ->first_input_delay_after_back_forward_cache_restore =
-            ClampDelta(first_input_delay->InSecondsF(), navigation_start);
+            first_input_delay;
       }
       timing->back_forward_cache_timings.push_back(
           std::move(back_forward_cache_timing));

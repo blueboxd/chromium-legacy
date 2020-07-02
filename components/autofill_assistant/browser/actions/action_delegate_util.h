@@ -18,6 +18,19 @@ void ClickOrTapElement(ActionDelegate* delegate,
                        ClickType click_type,
                        base::OnceCallback<void(const ClientStatus&)> callback);
 
+void SendKeyboardInput(ActionDelegate* delegate,
+                       const Selector& selector,
+                       const std::vector<UChar32> codepoints,
+                       int delay_in_millis,
+                       base::OnceCallback<void(const ClientStatus&)> callback);
+
+void SetFieldValue(ActionDelegate* delegate,
+                   const Selector& selector,
+                   const std::string& value,
+                   KeyboardValueFillStrategy fill_strategy,
+                   int key_press_delay_in_millisecond,
+                   base::OnceCallback<void(const ClientStatus&)> callback);
+
 }  // namespace ActionDelegateUtil
 }  // namespace autofill_assistant
 

@@ -206,6 +206,7 @@ void ExtensionUninstallDialog::OnDialogClosed(CloseAction action) {
     UMA_HISTOGRAM_ENUMERATION("Extensions.UninstallDialogAction", action,
                               CLOSE_ACTION_LAST);
   } else if (ShouldShowRemoveDataCheckbox()) {
+    // TODO(crbug.com/1065748): Delete Webapp recording in extensions dialog.
     UMA_HISTOGRAM_ENUMERATION("Webapp.UninstallDialogAction", action,
                               CLOSE_ACTION_LAST);
   }

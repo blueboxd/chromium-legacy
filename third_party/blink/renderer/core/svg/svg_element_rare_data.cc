@@ -27,12 +27,10 @@ SVGElementRareData::EnsureAnimatedSMILStyleProperties() {
   return animated_smil_style_properties_.Get();
 }
 
-ComputedStyle* SVGElementRareData::OverrideComputedStyle(
+const ComputedStyle* SVGElementRareData::OverrideComputedStyle(
     Element* element,
     const ComputedStyle* parent_style) {
   DCHECK(element);
-  if (!use_override_computed_style_)
-    return nullptr;
   if (!override_computed_style_ || needs_override_computed_style_update_) {
     // The style computed here contains no CSS Animations/Transitions or SMIL
     // induced rules - this is needed to compute the "base value" for the SMIL

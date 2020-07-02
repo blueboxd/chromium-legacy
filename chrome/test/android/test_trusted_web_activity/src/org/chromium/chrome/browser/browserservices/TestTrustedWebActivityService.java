@@ -19,6 +19,13 @@ import androidx.browser.trusted.TrustedWebActivityService;
  * A TrustedWebActivityService to be used in TrustedWebActivityClientTest.
  */
 public class TestTrustedWebActivityService extends TrustedWebActivityService {
+    private static final String TAG = "TestTWAService";
+
+    public static final String COMMAND_SET_RESPONSE = "setResponse";
+    public static final String SET_RESPONSE_NAME = "setResponse.name";
+    public static final String SET_RESPONSE_BUNDLE = "setResponse.bundle";
+    public static final String SET_RESPONSE_RESPONSE = "setResponse.response";
+
     // TODO(peconn): Add an image resource to chrome_public_test_support, supply that in
     // getSmallIconId and verify it is used in notifyNotificationWithChannel.
     public static final int SMALL_ICON_ID = 42;
@@ -34,6 +41,8 @@ public class TestTrustedWebActivityService extends TrustedWebActivityService {
     private static final String EXTRA_COMMAND_SUCCESS = "success";
 
     private final TokenStore mTokenStore = new InMemoryStore();
+    private String mResponseName;
+    private Bundle mResponseBundle;
 
     @Override
     public void onCreate() {
@@ -68,48 +77,55 @@ public class TestTrustedWebActivityService extends TrustedWebActivityService {
         return SMALL_ICON_ID;
     }
 
+    @Nullable
     @Override
     public Bundle onExtraCommand(
             String commandName, Bundle args, @Nullable TrustedWebActivityCallbackRemote callback) {
         Bundle executionResult = new Bundle();
+        executionResult.putBoolean(EXTRA_COMMAND_SUCCESS, true);
+
         switch (commandName) {
-            case CHECK_LOCATION_PERMISSION_COMMAND_NAME: {
+            case CHECK_LOCATION_PERMISSION_COMMAND_NAME:
                 if (callback == null) break;
 
                 Bundle permission = new Bundle();
                 permission.putBoolean(LOCATION_PERMISSION_RESULT, true);
-                try {
-                    callback.runExtraCallback(CHECK_LOCATION_PERMISSION_COMMAND_NAME, permission);
-                } catch (RemoteException e) {
-                }
-
-                executionResult.putBoolean(EXTRA_COMMAND_SUCCESS, true);
+                runCallback(callback, CHECK_LOCATION_PERMISSION_COMMAND_NAME, permission);
                 break;
-            }
-            case START_LOCATION_COMMAND_NAME: {
+            case START_LOCATION_COMMAND_NAME:
                 if (callback == null) break;
 
                 Bundle locationResult = new Bundle();
                 locationResult.putDouble("latitude", 1.0);
                 locationResult.putDouble("longitude", -2.0);
                 locationResult.putLong("timeStamp", System.currentTimeMillis());
-                try {
-                    callback.runExtraCallback(
-                            EXTRA_NEW_LOCATION_AVAILABLE_CALLBACK, locationResult);
-                } catch (RemoteException e) {
-                }
-
-                executionResult.putBoolean(EXTRA_COMMAND_SUCCESS, true);
+                runCallback(callback, EXTRA_NEW_LOCATION_AVAILABLE_CALLBACK, locationResult);
                 break;
-            }
-            case STOP_LOCATION_COMMAND_NAME: {
-                executionResult.putBoolean(EXTRA_COMMAND_SUCCESS, true);
+            case STOP_LOCATION_COMMAND_NAME:
                 break;
-            }
+            case COMMAND_SET_RESPONSE:
+                mResponseName = args.getString(SET_RESPONSE_NAME);
+                mResponseBundle = args.getBundle(SET_RESPONSE_BUNDLE);
+                runCallback(callback, SET_RESPONSE_RESPONSE, null);
+                break;
             default:
-                executionResult.putBoolean(EXTRA_COMMAND_SUCCESS, false);
+                if (mResponseBundle != null) {
+                    runCallback(callback, mResponseName, mResponseBundle);
+                } else {
+                    executionResult.putBoolean(EXTRA_COMMAND_SUCCESS, false);
+                }
         }
         return executionResult;
+    }
+
+    private static void runCallback(TrustedWebActivityCallbackRemote callback, String name,
+            Bundle args) {
+        if (callback == null) return;
+        try {
+            callback.runExtraCallback(name, args);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static class InMemoryStore implements TokenStore {

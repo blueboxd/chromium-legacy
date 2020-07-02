@@ -180,12 +180,17 @@ EnterpriseReportingPrivateGetPersistentSecretFunction::
 
 ExtensionFunction::ResponseAction
 EnterpriseReportingPrivateGetPersistentSecretFunction::Run() {
-  // TODO(pastarmovj): Consider keying the secret retrieval by extension id.
+  std::unique_ptr<
+      api::enterprise_reporting_private::GetPersistentSecret::Params>
+      params(api::enterprise_reporting_private::GetPersistentSecret::Params::
+                 Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  bool force_create = params->reset_secret ? *params->reset_secret : false;
   base::ThreadPool::PostTask(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(
-          &RetrieveDeviceSecret,
+          &RetrieveDeviceSecret, force_create,
           base::BindOnce(
               &EnterpriseReportingPrivateGetPersistentSecretFunction::
                   OnDataRetrieved,

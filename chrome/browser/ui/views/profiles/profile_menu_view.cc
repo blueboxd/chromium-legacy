@@ -66,6 +66,39 @@ namespace {
 
 // Helpers --------------------------------------------------------------------
 
+// The strings should be consistent with the logic in
+// ProfileMenuView::OnSigninAccountButtonClicked().
+int GetButtonStringIdForAvatarError(sync_ui_util::AvatarSyncErrorType error) {
+  switch (error) {
+    case sync_ui_util::NO_SYNC_ERROR:
+      NOTREACHED();
+      break;
+    case sync_ui_util::MANAGED_USER_UNRECOVERABLE_ERROR:
+      // For a managed user, the user is directed to the signout confirmation
+      // dialogue in the settings page.
+      return IDS_SYNC_ERROR_USER_MENU_SIGNOUT_BUTTON;
+    case sync_ui_util::UNRECOVERABLE_ERROR:
+      // For a non-managed user, we sign out on the user's behalf and prompt the
+      // user to sign in again.
+      return IDS_SYNC_ERROR_USER_MENU_SIGNIN_AGAIN_BUTTON;
+    case sync_ui_util::AUTH_ERROR:
+      // The user can reauth to resolve the signin error.
+      return IDS_SYNC_ERROR_USER_MENU_SIGNIN_BUTTON;
+    case sync_ui_util::UPGRADE_CLIENT_ERROR:
+      return IDS_SYNC_ERROR_USER_MENU_UPGRADE_BUTTON;
+    case sync_ui_util::PASSPHRASE_ERROR:
+      return IDS_SYNC_ERROR_USER_MENU_PASSPHRASE_BUTTON;
+    case sync_ui_util::TRUSTED_VAULT_KEY_MISSING_FOR_EVERYTHING_ERROR:
+    case sync_ui_util::TRUSTED_VAULT_KEY_MISSING_FOR_PASSWORDS_ERROR:
+      return IDS_SYNC_ERROR_USER_MENU_RETRIEVE_KEYS_BUTTON;
+    case sync_ui_util::SETTINGS_UNCONFIRMED_ERROR:
+      return IDS_SYNC_ERROR_USER_MENU_CONFIRM_SYNC_SETTINGS_BUTTON;
+  }
+
+  NOTREACHED();
+  return 0;
+}
+
 ProfileAttributesEntry* GetProfileAttributesEntry(Profile* profile) {
   ProfileAttributesEntry* entry;
   CHECK(g_browser_process->profile_manager()
@@ -100,9 +133,8 @@ int CountBrowsersFor(Profile* profile) {
 }
 
 bool IsSyncPaused(Profile* profile) {
-  int unused;
-  return sync_ui_util::GetMessagesForAvatarSyncError(
-             profile, &unused, &unused) == sync_ui_util::AUTH_ERROR;
+  return sync_ui_util::GetAvatarSyncErrorType(profile) ==
+         sync_ui_util::AUTH_ERROR;
 }
 
 }  // namespace
@@ -154,9 +186,7 @@ gfx::ImageSkia ProfileMenuView::GetSyncIcon() const {
 
   const gfx::VectorIcon* icon = nullptr;
   ui::NativeTheme::ColorId color_id;
-  int unused;
-  switch (
-      sync_ui_util::GetMessagesForAvatarSyncError(profile, &unused, &unused)) {
+  switch (sync_ui_util::GetAvatarSyncErrorType(profile)) {
     case sync_ui_util::NO_SYNC_ERROR:
       icon = &kSyncCircleIcon;
       color_id = ui::NativeTheme::kColorId_AlertSeverityLow;
@@ -256,6 +286,8 @@ void ProfileMenuView::OnSyncErrorButtonClicked(
   RecordClick(ActionableItem::kSyncErrorButton);
   if (!perform_menu_actions())
     return;
+
+  // The logic below must be consistent with GetButtonStringIdForAvatarError().
   switch (error) {
     case sync_ui_util::MANAGED_USER_UNRECOVERABLE_ERROR:
       chrome::ShowSettingsSubPage(browser(), chrome::kSignOutSubPage);
@@ -463,10 +495,8 @@ void ProfileMenuView::BuildSyncInfo() {
 
   if (identity_manager->HasPrimaryAccount()) {
     // Show sync state.
-    int description_string_id, button_string_id;
-    sync_ui_util::AvatarSyncErrorType error =
-        sync_ui_util::GetMessagesForAvatarSyncError(
-            browser()->profile(), &description_string_id, &button_string_id);
+    const sync_ui_util::AvatarSyncErrorType error =
+        sync_ui_util::GetAvatarSyncErrorType(browser()->profile());
 
     if (error == sync_ui_util::NO_SYNC_ERROR) {
       SetSyncInfo(
@@ -476,13 +506,13 @@ void ProfileMenuView::BuildSyncInfo() {
           base::BindRepeating(&ProfileMenuView::OnSyncSettingsButtonClicked,
                               base::Unretained(this)));
     } else {
+      const int button_string_id = GetButtonStringIdForAvatarError(error);
       const bool sync_paused = (error == sync_ui_util::AUTH_ERROR);
       const bool passwords_only_error =
           (error ==
            sync_ui_util::TRUSTED_VAULT_KEY_MISSING_FOR_PASSWORDS_ERROR);
 
-      // Overwrite error description with short version for the menu.
-      description_string_id =
+      const int description_string_id =
           sync_paused
               ? IDS_PROFILES_DICE_SYNC_PAUSED_TITLE
               : passwords_only_error ? IDS_SYNC_ERROR_PASSWORDS_USER_MENU_TITLE

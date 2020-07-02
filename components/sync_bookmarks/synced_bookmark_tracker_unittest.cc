@@ -49,8 +49,9 @@ enum class ExpectedCorruptionReason {
   BOOKMARK_GUID_MISMATCH = 9,
   DUPLICATED_CLIENT_TAG_HASH = 10,
   TRACKED_MANAGED_NODE = 11,
+  MISSING_CLIENT_TAG_HASH = 12,
 
-  kMaxValue = TRACKED_MANAGED_NODE
+  kMaxValue = MISSING_CLIENT_TAG_HASH
 };
 
 sync_pb::EntitySpecifics GenerateSpecifics(const std::string& title,
@@ -780,11 +781,39 @@ TEST(SyncedBookmarkTrackerTest,
 }
 
 TEST(SyncedBookmarkTrackerTest,
+     ShouldNotMatchModelAndMetadataIfMissingClientTagHash) {
+  base::test::ScopedFeatureList override_features;
+  override_features.InitAndEnableFeature(
+      kInvalidateBookmarkSyncMetadataIfClientTagMissing);
+
+  std::unique_ptr<bookmarks::BookmarkModel> model =
+      bookmarks::TestBookmarkClient::CreateModel();
+
+  const bookmarks::BookmarkNode* bookmark_bar_node = model->bookmark_bar_node();
+  const bookmarks::BookmarkNode* node0 = model->AddFolder(
+      /*parent=*/bookmark_bar_node, /*index=*/0, base::UTF8ToUTF16("node0"));
+
+  sync_pb::BookmarkModelMetadata model_metadata =
+      CreateMetadataForPermanentNodes(model.get());
+  sync_pb::BookmarkMetadata* node0_metadata =
+      model_metadata.add_bookmarks_metadata();
+  *node0_metadata = CreateNodeMetadata(node0->id(), /*server_id=*/"id0");
+
+  node0_metadata->mutable_metadata()->clear_client_tag_hash();
+
+  base::HistogramTester histogram_tester;
+  EXPECT_THAT(SyncedBookmarkTracker::CreateFromBookmarkModelAndMetadata(
+                  model.get(), std::move(model_metadata)),
+              IsNull());
+
+  histogram_tester.ExpectUniqueSample(
+      "Sync.BookmarksModelMetadataCorruptionReason",
+      /*sample=*/ExpectedCorruptionReason::MISSING_CLIENT_TAG_HASH,
+      /*count=*/1);
+}
+
+TEST(SyncedBookmarkTrackerTest,
      ShouldNotMatchModelAndMetadataIfUnsyncableNodeIsTracked) {
-  // Add a managed node with an arbitrary id 100.
-  const int64_t kManagedNodeId = 100;
-  auto owned_managed_node = std::make_unique<bookmarks::BookmarkPermanentNode>(
-      kManagedNodeId, bookmarks::BookmarkNode::FOLDER);
   auto client = std::make_unique<bookmarks::TestBookmarkClient>();
   bookmarks::BookmarkNode* managed_node = client->EnableManagedNode();
 
@@ -792,7 +821,7 @@ TEST(SyncedBookmarkTrackerTest,
       bookmarks::TestBookmarkClient::CreateModelWithClient(std::move(client));
 
   // The model should contain the managed node now.
-  ASSERT_THAT(GetBookmarkNodeByID(model.get(), kManagedNodeId),
+  ASSERT_THAT(GetBookmarkNodeByID(model.get(), managed_node->id()),
               Eq(managed_node));
 
   // Add entries for all the permanent nodes. TestBookmarkClient creates all the
@@ -849,10 +878,6 @@ TEST(SyncedBookmarkTrackerTest,
 
 TEST(SyncedBookmarkTrackerTest,
      ShouldMatchModelWithUnsyncableNodesAndMetadata) {
-  // Add a managed node with an arbitrary id 100.
-  const int64_t kManagedNodeId = 100;
-  auto owned_managed_node = std::make_unique<bookmarks::BookmarkPermanentNode>(
-      kManagedNodeId, bookmarks::BookmarkNode::FOLDER);
   auto client = std::make_unique<bookmarks::TestBookmarkClient>();
   bookmarks::BookmarkNode* managed_node = client->EnableManagedNode();
 
@@ -860,7 +885,7 @@ TEST(SyncedBookmarkTrackerTest,
       bookmarks::TestBookmarkClient::CreateModelWithClient(std::move(client));
 
   // The model should contain the managed node now.
-  ASSERT_THAT(GetBookmarkNodeByID(model.get(), kManagedNodeId),
+  ASSERT_THAT(GetBookmarkNodeByID(model.get(), managed_node->id()),
               Eq(managed_node));
 
   // Add entries for all the permanent nodes. TestBookmarkClient creates all the

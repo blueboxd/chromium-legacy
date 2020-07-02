@@ -1130,14 +1130,11 @@ void ServiceWorkerContextWrapper::GetInstalledRegistrationOriginsOnCoreThread(
     GetInstalledRegistrationOriginsCallback callback,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_callback) {
   DCHECK_CURRENTLY_ON(GetCoreThreadId());
-  std::set<url::Origin> origins;
-  for (const auto& origin : registered_origins_) {
-    if (host_filter.has_value() && host_filter.value() != origin.host())
-      continue;
-    origins.insert(origin);
-  }
-  task_runner_for_callback->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), std::move(origins)));
+
+  context()->registry()->storage()->GetRegisteredOrigins(base::BindOnce(
+      &ServiceWorkerContextWrapper::
+          DidGetRegisteredOriginsForGetInstalledRegistrationOrigins,
+      host_filter, std::move(callback), task_runner_for_callback));
 }
 
 void ServiceWorkerContextWrapper::GetStorageUsageForOrigin(
@@ -2101,6 +2098,24 @@ void ServiceWorkerContextWrapper::InitializeRegisteredOriginsOnUI(
   registrations_initialized_ = true;
   if (on_registrations_initialized_)
     std::move(on_registrations_initialized_).Run();
+}
+
+// static
+void ServiceWorkerContextWrapper::
+    DidGetRegisteredOriginsForGetInstalledRegistrationOrigins(
+        base::Optional<std::string> host_filter,
+        GetInstalledRegistrationOriginsCallback callback,
+        scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_callback,
+        std::vector<url::Origin> origins) {
+  std::set<url::Origin> filtered_origins;
+  for (const auto& origin : origins) {
+    if (host_filter.has_value() && host_filter.value() != origin.host())
+      continue;
+    filtered_origins.insert(origin);
+  }
+  task_runner_for_callback->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), std::move(filtered_origins)));
 }
 
 }  // namespace content

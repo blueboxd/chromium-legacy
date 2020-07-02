@@ -16,6 +16,9 @@ struct ParsedHeaders {
   // The parsed Content-Security-Policy from the response headers.
   array<ContentSecurityPolicy> content_security_policy;
 
+  // The parsed value of the Allow-CSP-From response header.
+  AllowCSPFromHeaderValue? allow_csp_from;
+
   // The parsed representation of Cross-Origin-Embedder-Policy and
   // Cross-Origin-Embedder-Policy-Report-Only headers.
   CrossOriginEmbedderPolicy cross_origin_embedder_policy;

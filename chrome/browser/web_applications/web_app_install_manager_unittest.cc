@@ -1390,8 +1390,6 @@ TEST_F(WebAppInstallManagerTest, SyncRace_InstallWebAppFull_ThenBookmarkApp) {
   // The web app object arrives first from the server. It creates a registry
   // entry immediately (with is_in_sync_install() flag set to true).
   controller().ApplySyncChanges_AddApps({url});
-  // The web app sync system reserves a |is_in_sync_install| web app object.
-  EXPECT_TRUE(registrar().IsInstalled(app_id));
 
   auto server_bookmark_app_info = std::make_unique<WebApplicationInfo>();
   server_bookmark_app_info->app_url = url;

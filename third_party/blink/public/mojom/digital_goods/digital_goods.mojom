@@ -28,15 +28,11 @@ interface DigitalGoods {
 enum BillingResponseCode {
   kOk,
   kError,
-  kBillingUnavailable,
-  kDeveloperError,
-  kFeatureNotSupported,
   kItemAlreadyOwned,
   kItemNotOwned,
   kItemUnavailable,
-  kServiceDisconnected,
-  kServiceUnavailable,
-  kUserCancelled,
+  kClientAppUnavailable,
+  kClientAppError,
 };
 
 struct ItemDetails {

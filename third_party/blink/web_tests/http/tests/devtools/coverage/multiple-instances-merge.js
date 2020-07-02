@@ -17,14 +17,14 @@
   await TestRunner.evaluateInPagePromise('performActions(); frames[0].performActionsInFrame()');
   await CoverageTestRunner.stopCoverage();
 
-  var coverageView = self.runtime.sharedInstance(Coverage.CoverageView);
-  var dataGrid = coverageView._listView._dataGrid;
-  for (var child of dataGrid.rootNode().children) {
-    var data = child._coverageInfo;
-    var url = TestRunner.formatters.formatAsURL(data.url());
+  const coverageView = self.runtime.sharedInstance(Coverage.CoverageView);
+  const dataGrid = coverageView._listView._dataGrid;
+  for (const child of dataGrid.rootNode().children) {
+    const data = child._coverageInfo;
+    const url = TestRunner.formatters.formatAsURL(data.url());
     if (url.startsWith('test://'))
       continue;
-    var type = Coverage.CoverageListView._typeToString(data.type());
+    const type = Coverage.coverageTypeToString(data.type());
     TestRunner.addResult(`${url} ${type} used: ${data.usedSize()} unused: ${data.unusedSize()} total: ${data.size()}`);
   }
 

@@ -58,18 +58,19 @@ bool IsExtensionAllowlisted(const extensions::Extension* extension) {
 #endif  // defined(OS_CHROMEOS)
 
 // Converts |token_ids| (string-based token identifiers used in the
-// platformKeys API) to a vector of KeyPermissions::KeyLocation. Currently only
-// accepts |kTokenIdUser| and |kTokenIdSystem| as |token_ids| elements.
+// platformKeys API) to a vector of KeyPermissions::KeyLocation.
 std::vector<KeyPermissions::KeyLocation> TokenIdsToKeyLocations(
-    const std::vector<std::string>& token_ids) {
+    const std::vector<platform_keys::TokenId>& token_ids) {
   std::vector<KeyPermissions::KeyLocation> key_locations;
   for (const auto& token_id : token_ids) {
-    if (token_id == platform_keys::kTokenIdUser)
-      key_locations.push_back(KeyPermissions::KeyLocation::kUserSlot);
-    else if (token_id == platform_keys::kTokenIdSystem)
-      key_locations.push_back(KeyPermissions::KeyLocation::kSystemSlot);
-    else
-      NOTREACHED() << "Unknown platformKeys API token id " << token_id;
+    switch (token_id) {
+      case platform_keys::TokenId::kUser:
+        key_locations.push_back(KeyPermissions::KeyLocation::kUserSlot);
+        break;
+      case platform_keys::TokenId::kSystem:
+        key_locations.push_back(KeyPermissions::KeyLocation::kSystemSlot);
+        break;
+    }
   }
   return key_locations;
 }
@@ -96,7 +97,7 @@ class ExtensionPlatformKeysService::GenerateKeyTask : public Task {
     DONE,
   };
 
-  GenerateKeyTask(const std::string& token_id,
+  GenerateKeyTask(platform_keys::TokenId token_id,
                   const std::string& extension_id,
                   const GenerateKeyCallback& callback,
                   KeyPermissions* key_permissions,
@@ -119,7 +120,7 @@ class ExtensionPlatformKeysService::GenerateKeyTask : public Task {
  protected:
   virtual void GenerateKey(GenerateKeyCallback callback) = 0;
 
-  const std::string token_id_;
+  platform_keys::TokenId token_id_;
   std::string public_key_spki_der_;
   const std::string extension_id_;
   GenerateKeyCallback callback_;
@@ -201,7 +202,7 @@ class ExtensionPlatformKeysService::GenerateRSAKeyTask
   // This key task generates an RSA key with the parameters |token_id| and
   // |modulus_length| and registers it for the extension with id |extension_id|.
   // The generated key will be passed to |callback|.
-  GenerateRSAKeyTask(const std::string& token_id,
+  GenerateRSAKeyTask(platform_keys::TokenId token_id,
                      unsigned int modulus_length,
                      const std::string& extension_id,
                      const GenerateKeyCallback& callback,
@@ -231,7 +232,7 @@ class ExtensionPlatformKeysService::GenerateECKeyTask : public GenerateKeyTask {
   // This Task generates an EC key with the parameters |token_id| and
   // |named_curve| and registers it for the extension with id |extension_id|.
   // The generated key will be passed to |callback|.
-  GenerateECKeyTask(const std::string& token_id,
+  GenerateECKeyTask(platform_keys::TokenId token_id,
                     const std::string& named_curve,
                     const std::string& extension_id,
                     const GenerateKeyCallback& callback,
@@ -272,7 +273,7 @@ class ExtensionPlatformKeysService::SignTask : public Task {
   // multiple times, also updates the permission to prevent any future signing
   // operation of that extension using that same key. If an error occurs, an
   // error message is passed to |callback| instead.
-  SignTask(const std::string& token_id,
+  SignTask(base::Optional<platform_keys::TokenId> token_id,
            const std::string& data,
            const std::string& public_key_spki_der,
            bool raw_pkcs1,
@@ -358,7 +359,7 @@ class ExtensionPlatformKeysService::SignTask : public Task {
         base::BindRepeating(&SignTask::GotKeyLocation, base::Unretained(this)));
   }
 
-  void GotKeyLocation(const std::vector<std::string>& token_ids,
+  void GotKeyLocation(const std::vector<platform_keys::TokenId>& token_ids,
                       const std::string& error_message) {
     if (!error_message.empty()) {
       next_step_ = Step::DONE;
@@ -408,7 +409,7 @@ class ExtensionPlatformKeysService::SignTask : public Task {
 
   Step next_step_ = Step::GET_EXTENSION_PERMISSIONS;
 
-  const std::string token_id_;
+  base::Optional<platform_keys::TokenId> token_id_;
   const std::string data_;
   const std::string public_key_spki_der_;
 
@@ -602,7 +603,7 @@ class ExtensionPlatformKeysService::SelectTask : public Task {
   }
 
   void GotKeyLocations(const scoped_refptr<net::X509Certificate>& certificate,
-                       const std::vector<std::string>& token_ids,
+                       const std::vector<platform_keys::TokenId>& token_ids,
                        const std::string& error_message) {
     if (!error_message.empty()) {
       next_step_ = Step::DONE;
@@ -779,7 +780,7 @@ void ExtensionPlatformKeysService::SetSelectDelegate(
 }
 
 void ExtensionPlatformKeysService::GenerateRSAKey(
-    const std::string& token_id,
+    platform_keys::TokenId token_id,
     unsigned int modulus_length,
     const std::string& extension_id,
     const GenerateKeyCallback& callback) {
@@ -790,7 +791,7 @@ void ExtensionPlatformKeysService::GenerateRSAKey(
 }
 
 void ExtensionPlatformKeysService::GenerateECKey(
-    const std::string& token_id,
+    platform_keys::TokenId token_id,
     const std::string& named_curve,
     const std::string& extension_id,
     const GenerateKeyCallback& callback) {
@@ -805,7 +806,7 @@ bool ExtensionPlatformKeysService::IsUsingSigninProfile() {
 }
 
 void ExtensionPlatformKeysService::SignDigest(
-    const std::string& token_id,
+    base::Optional<platform_keys::TokenId> token_id,
     const std::string& data,
     const std::string& public_key_spki_der,
     platform_keys::KeyType key_type,
@@ -820,7 +821,7 @@ void ExtensionPlatformKeysService::SignDigest(
 }
 
 void ExtensionPlatformKeysService::SignRSAPKCS1Raw(
-    const std::string& token_id,
+    base::Optional<platform_keys::TokenId> token_id,
     const std::string& data,
     const std::string& public_key_spki_der,
     const std::string& extension_id,

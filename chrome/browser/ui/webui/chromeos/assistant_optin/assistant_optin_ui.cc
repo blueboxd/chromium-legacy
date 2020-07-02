@@ -103,19 +103,6 @@ AssistantOptInUI::AssistantOptInUI(content::WebUI* web_ui)
       content::HostZoomMap::GetForWebContents(web_ui->GetWebContents());
   DCHECK(zoom_map);
   zoom_map->SetZoomLevelForHost(web_ui->GetWebContents()->GetURL().host(), 0);
-
-  // If allowed, request that the shared resources send this page Polymer 1
-  // resources instead of Polymer 2.
-  // TODO (https://crbug.com/739611): Remove this exception by migrating to
-  // Polymer 2.
-  if (base::FeatureList::IsEnabled(features::kWebUIPolymer2Exceptions)) {
-    auto* shared_source = content::URLDataSource::GetSourceForURL(
-        Profile::FromWebUI(web_ui),
-        GURL("chrome://resources/polymer/v1_0/polymer/polymer.html"));
-    if (shared_source)
-      shared_source->DisablePolymer2ForHost(
-          chrome::kChromeUIAssistantOptInHost);
-  }
 }
 
 AssistantOptInUI::~AssistantOptInUI() = default;

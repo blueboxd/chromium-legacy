@@ -10,6 +10,12 @@ source_set("password") {
     "password_details_table_view_controller_delegate.h",
     "password_exporter.h",
     "password_exporter.mm",
+    "password_issue_with_form.h",
+    "password_issue_with_form.mm",
+    "password_issues_coordinator.h",
+    "password_issues_coordinator.mm",
+    "password_issues_mediator.h",
+    "password_issues_mediator.mm",
     "passwords_consumer.h",
     "passwords_mediator.h",
     "passwords_mediator.mm",
@@ -18,6 +24,7 @@ source_set("password") {
   ]
   deps = [
     ":password_constants",
+    ":password_ui",
     "//base",
     "//components/autofill/core/common",
     "//components/google/core/common",
@@ -35,13 +42,13 @@ source_set("password") {
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/settings:settings_root",
     "//ios/chrome/browser/ui/settings/cells",
     "//ios/chrome/browser/ui/settings/cells:public",
     "//ios/chrome/browser/ui/settings/elements:enterprise_info_popover_view_controller",
     "//ios/chrome/browser/ui/settings/utils",
     "//ios/chrome/browser/ui/table_view",
-    "//ios/chrome/browser/ui/table_view/cells",
     "//ios/chrome/browser/ui/table_view/cells:cells_constants",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common/ui/colors",
@@ -49,8 +56,37 @@ source_set("password") {
     "//ios/chrome/common/ui/util",
     "//ios/third_party/material_components_ios",
     "//ui/base",
+    "//ui/base",
     "//ui/base/clipboard:clipboard_types",
     "//url",
+  ]
+}
+
+source_set("password_ui") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "password_issue.h",
+    "password_issue_content_item.h",
+    "password_issue_content_item.mm",
+    "password_issues_consumer.h",
+    "password_issues_presenter.h",
+    "password_issues_table_view_controller.h",
+    "password_issues_table_view_controller.mm",
+  ]
+  deps = [
+    "//base",
+    "//components/password_manager/core/browser",
+    "//components/password_manager/core/common",
+    "//components/prefs",
+    "//components/strings",
+    "//components/url_formatter",
+    "//ios/chrome/app/strings:ios_strings_grit",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/ui/settings:settings_root",
+    "//ios/chrome/browser/ui/table_view/cells",
+    "//ios/chrome/browser/ui/util",
+    "//ios/chrome/common/ui/util",
+    "//ui/base",
   ]
 }
 
@@ -79,10 +115,12 @@ source_set("unit_tests") {
   sources = [
     "password_details_table_view_controller_unittest.mm",
     "password_exporter_unittest.mm",
+    "password_issues_table_view_controller_unittest.mm",
     "passwords_table_view_controller_unittest.mm",
   ]
   deps = [
     ":password",
+    ":password_ui",
     ":test_support",
     "//base",
     "//base/test:test_support",

@@ -13,6 +13,7 @@
 #include <string>
 
 #include "base/environment.h"
+#include "base/files/dir_reader_posix.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/nix/xdg_util.h"
@@ -113,6 +114,33 @@ enterprise_reporting_private::SettingValue GetDiskEncrypted() {
   return enterprise_reporting_private::SETTING_VALUE_UNKNOWN;
 }
 
+std::vector<std::string> GetMacAddresses() {
+  std::vector<std::string> result;
+  base::DirReaderPosix reader("/sys/class/net");
+  if (!reader.IsValid())
+    return result;
+  while (reader.Next()) {
+    std::string name = reader.name();
+    if (name == "." || name == "..")
+      continue;
+    std::string address;
+    base::FilePath address_file(
+        base::StringPrintf("/sys/class/net/%s/address", name.c_str()));
+    // Filter out the loopback interface here.
+    if (!base::PathExists(address_file) ||
+        !base::ReadFileToStringWithMaxSize(address_file, &address, 1024) ||
+        base::StartsWith(address, "00:00:00:00:00:00",
+                         base::CompareCase::SENSITIVE)) {
+      continue;
+    }
+
+    base::TrimWhitespaceASCII(address, base::TrimPositions::TRIM_TRAILING,
+                              &address);
+    result.push_back(address);
+  }
+  return result;
+}
+
 }  // namespace
 
 DeviceInfoFetcherLinux::DeviceInfoFetcherLinux() = default;
@@ -128,6 +156,7 @@ DeviceInfo DeviceInfoFetcherLinux::Fetch() {
   device_info.serial_number = GetSerialNumber();
   device_info.screen_lock_secured = GetScreenlockSecured();
   device_info.disk_encrypted = GetDiskEncrypted();
+  device_info.mac_addresses = GetMacAddresses();
   return device_info;
 }
 

@@ -227,10 +227,7 @@ MessageType GetStatus(Profile* profile) {
   return GetStatusLabels(profile).message_type;
 }
 
-AvatarSyncErrorType GetMessagesForAvatarSyncError(
-    Profile* profile,
-    int* content_string_id,
-    int* button_string_id) {
+AvatarSyncErrorType GetAvatarSyncErrorType(Profile* profile) {
   const syncer::SyncService* service =
       ProfileSyncServiceFactory::GetForProfile(profile);
 
@@ -246,16 +243,8 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(
   if (service->HasUnrecoverableError() && !service->RequiresClientUpgrade()) {
     // Display different messages and buttons for managed accounts.
     if (!signin_util::IsUserSignoutAllowedForProfile(profile)) {
-      // For a managed user, the user is directed to the signout
-      // confirmation dialogue in the settings page.
-      *content_string_id = IDS_SYNC_ERROR_USER_MENU_SIGNOUT_MESSAGE;
-      *button_string_id = IDS_SYNC_ERROR_USER_MENU_SIGNOUT_BUTTON;
       return MANAGED_USER_UNRECOVERABLE_ERROR;
     }
-    // For a non-managed user, we sign out on the user's behalf and prompt
-    // the user to sign in again.
-    *content_string_id = IDS_SYNC_ERROR_USER_MENU_SIGNIN_AGAIN_MESSAGE;
-    *button_string_id = IDS_SYNC_ERROR_USER_MENU_SIGNIN_AGAIN_BUTTON;
     return UNRECOVERABLE_ERROR;
   }
 
@@ -266,37 +255,26 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(
           ->GetErrorStateOfRefreshTokenForAccount(account_info.account_id);
 
   if (auth_error.state() != GoogleServiceAuthError::State::NONE) {
-    // The user can reauth to resolve the signin error.
-    *content_string_id = IDS_SYNC_ERROR_USER_MENU_SIGNIN_MESSAGE;
-    *button_string_id = IDS_SYNC_ERROR_USER_MENU_SIGNIN_BUTTON;
     return AUTH_ERROR;
   }
 
   // Check if the Chrome client needs to be updated.
   if (service->RequiresClientUpgrade()) {
-    *content_string_id = IDS_SYNC_ERROR_USER_MENU_UPGRADE_MESSAGE;
-    *button_string_id = IDS_SYNC_ERROR_USER_MENU_UPGRADE_BUTTON;
     return UPGRADE_CLIENT_ERROR;
   }
 
   // Check for a sync passphrase error.
   if (ShouldShowPassphraseError(service)) {
-    *content_string_id = IDS_SYNC_ERROR_USER_MENU_PASSPHRASE_MESSAGE;
-    *button_string_id = IDS_SYNC_ERROR_USER_MENU_PASSPHRASE_BUTTON;
     return PASSPHRASE_ERROR;
   }
 
   // Check for a sync confirmation error.
   if (ShouldRequestSyncConfirmation(service)) {
-    *content_string_id = IDS_SYNC_SETTINGS_NOT_CONFIRMED;
-    *button_string_id = IDS_SYNC_ERROR_USER_MENU_CONFIRM_SYNC_SETTINGS_BUTTON;
     return SETTINGS_UNCONFIRMED_ERROR;
   }
 
   // Check for sync encryption keys missing.
   if (ShouldShowSyncKeysMissingError(service)) {
-    *content_string_id = IDS_SYNC_ERROR_USER_MENU_RETRIEVE_KEYS_MESSAGE;
-    *button_string_id = IDS_SYNC_ERROR_USER_MENU_RETRIEVE_KEYS_BUTTON;
     return service->GetUserSettings()->IsEncryptEverythingEnabled()
                ? TRUSTED_VAULT_KEY_MISSING_FOR_EVERYTHING_ERROR
                : TRUSTED_VAULT_KEY_MISSING_FOR_PASSWORDS_ERROR;

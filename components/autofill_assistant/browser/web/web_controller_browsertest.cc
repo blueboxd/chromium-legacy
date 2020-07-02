@@ -139,37 +139,42 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     }
   }
 
-  void ClickElementCallback(std::unique_ptr<ElementFinder::Result> element,
-                            base::OnceClosure done_callback,
-                            const ClientStatus& status) {
-    EXPECT_EQ(ACTION_APPLIED, status.proto_status());
+  void ElementRetainingCallback(std::unique_ptr<ElementFinder::Result> element,
+                                base::OnceClosure done_callback,
+                                ClientStatus* result_output,
+                                const ClientStatus& status) {
     EXPECT_TRUE(element != nullptr);
+    *result_output = status;
     std::move(done_callback).Run();
+  }
+
+  void ClickOrTapElement(const Selector& selector, ClickType click_type) {
+    base::RunLoop run_loop;
+    ClientStatus result_output;
+
+    web_controller_->FindElement(
+        selector, /* strict_mode= */ true,
+        base::BindOnce(&WebControllerBrowserTest::FindClickOrTapElementCallback,
+                       base::Unretained(this), click_type,
+                       run_loop.QuitClosure(), &result_output));
+
+    run_loop.Run();
+    EXPECT_EQ(ACTION_APPLIED, result_output.proto_status());
   }
 
   void FindClickOrTapElementCallback(
       ClickType click_type,
       base::OnceClosure done_callback,
+      ClientStatus* result_output,
       const ClientStatus& status,
       std::unique_ptr<ElementFinder::Result> element_result) {
     EXPECT_EQ(ACTION_APPLIED, status.proto_status());
     EXPECT_TRUE(element_result != nullptr);
     web_controller_->ClickOrTapElement(
         *element_result, click_type,
-        base::BindOnce(&WebControllerBrowserTest::ClickElementCallback,
+        base::BindOnce(&WebControllerBrowserTest::ElementRetainingCallback,
                        base::Unretained(this), std::move(element_result),
-                       std::move(done_callback)));
-  }
-
-  void ClickOrTapElement(const Selector& selector, ClickType click_type) {
-    base::RunLoop run_loop;
-    web_controller_->FindElement(
-        selector, /* strict_mode= */ true,
-        base::BindOnce(&WebControllerBrowserTest::FindClickOrTapElementCallback,
-                       base::Unretained(this), click_type,
-                       run_loop.QuitClosure()));
-
-    run_loop.Run();
+                       std::move(done_callback), result_output));
   }
 
   void WaitForElementRemove(const Selector& selector) {
@@ -387,20 +392,37 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
                              KeyboardValueFillStrategy fill_strategy) {
     base::RunLoop run_loop;
     ClientStatus result;
-    web_controller_->SetFieldValue(
-        selector, value, fill_strategy, /* key_press_delay_in_millisecond= */ 0,
-        base::BindOnce(&WebControllerBrowserTest::OnSetFieldValue,
-                       base::Unretained(this), run_loop.QuitClosure(),
-                       &result));
+    web_controller_->FindElement(
+        selector, /* strict_mode= */ true,
+        base::BindOnce(
+            &WebControllerBrowserTest::FindSetFieldValueElementCallback,
+            base::Unretained(this), value, fill_strategy,
+            run_loop.QuitClosure(), &result));
     run_loop.Run();
     return result;
   }
 
-  void OnSetFieldValue(base::OnceClosure done_callback,
-                       ClientStatus* result_output,
-                       const ClientStatus& status) {
-    *result_output = status;
-    std::move(done_callback).Run();
+  void FindSetFieldValueElementCallback(
+      const std::string& value,
+      KeyboardValueFillStrategy fill_strategy,
+      base::OnceClosure done_callback,
+      ClientStatus* result_output,
+      const ClientStatus& element_status,
+      std::unique_ptr<ElementFinder::Result> element_result) {
+    if (!element_status.ok()) {
+      *result_output = element_status;
+      std::move(done_callback).Run();
+      return;
+    }
+
+    EXPECT_EQ(ACTION_APPLIED, element_status.proto_status());
+    EXPECT_TRUE(element_result != nullptr);
+    web_controller_->SetFieldValue(
+        *element_result, value, fill_strategy,
+        /* key_press_delay_in_millisecond= */ 0,
+        base::BindOnce(&WebControllerBrowserTest::ElementRetainingCallback,
+                       base::Unretained(this), std::move(element_result),
+                       std::move(done_callback), result_output));
   }
 
   ClientStatus SendKeyboardInput(const Selector& selector,
@@ -408,11 +430,12 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
                                  int delay_in_milli) {
     base::RunLoop run_loop;
     ClientStatus result;
-    web_controller_->SendKeyboardInput(
-        selector, codepoints, delay_in_milli,
-        base::BindOnce(&WebControllerBrowserTest::OnSendKeyboardInput,
-                       base::Unretained(this), run_loop.QuitClosure(),
-                       &result));
+    web_controller_->FindElement(
+        selector, /* strict_mode= */ true,
+        base::BindOnce(
+            &WebControllerBrowserTest::FindSendKeyboardInputElementCallback,
+            base::Unretained(this), codepoints, delay_in_milli,
+            run_loop.QuitClosure(), &result));
     run_loop.Run();
     return result;
   }
@@ -422,11 +445,20 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     return SendKeyboardInput(selector, codepoints, -1);
   }
 
-  void OnSendKeyboardInput(base::OnceClosure done_callback,
-                           ClientStatus* result_output,
-                           const ClientStatus& status) {
-    *result_output = status;
-    std::move(done_callback).Run();
+  void FindSendKeyboardInputElementCallback(
+      const std::vector<UChar32>& codepoints,
+      int delay_in_milli,
+      base::OnceClosure done_callback,
+      ClientStatus* result_output,
+      const ClientStatus& element_status,
+      std::unique_ptr<ElementFinder::Result> element_result) {
+    EXPECT_EQ(ACTION_APPLIED, element_status.proto_status());
+    EXPECT_TRUE(element_result != nullptr);
+    web_controller_->SendKeyboardInput(
+        *element_result, codepoints, delay_in_milli,
+        base::BindOnce(&WebControllerBrowserTest::ElementRetainingCallback,
+                       base::Unretained(this), std::move(element_result),
+                       std::move(done_callback), result_output));
   }
 
   ClientStatus SetAttribute(const Selector& selector,

@@ -40,6 +40,7 @@ CookieControlsBridge::CookieControlsBridge(
 void CookieControlsBridge::OnStatusChanged(
     CookieControlsStatus new_status,
     CookieControlsEnforcement new_enforcement,
+    int allowed_cookies,
     int blocked_cookies) {
   if (status_ != new_status || enforcement_ != new_enforcement) {
     status_ = new_status;
@@ -51,19 +52,22 @@ void CookieControlsBridge::OnStatusChanged(
         static_cast<int>(enforcement_));
   }
 
-  OnBlockedCookiesCountChanged(blocked_cookies);
+  OnCookiesCountChanged(allowed_cookies, blocked_cookies);
 }
 
-void CookieControlsBridge::OnBlockedCookiesCountChanged(int blocked_cookies) {
-  // The blocked cookie count changes quite frequently, so avoid unnecessary
+void CookieControlsBridge::OnCookiesCountChanged(int allowed_cookies,
+                                                 int blocked_cookies) {
+  // The cookie counts change quite frequently, so avoid unnecessary
   // UI updates if possible.
-  if (blocked_cookies_ == blocked_cookies)
+  if (allowed_cookies_ == allowed_cookies &&
+      blocked_cookies_ == blocked_cookies)
     return;
 
+  allowed_cookies_ = allowed_cookies;
   blocked_cookies_ = blocked_cookies;
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_CookieControlsBridge_onBlockedCookiesCountChanged(
-      env, jobject_, blocked_cookies_.value_or(0));
+  Java_CookieControlsBridge_onCookiesCountChanged(
+      env, jobject_, allowed_cookies, blocked_cookies);
 }
 
 void CookieControlsBridge::SetThirdPartyCookieBlockingEnabledForSite(

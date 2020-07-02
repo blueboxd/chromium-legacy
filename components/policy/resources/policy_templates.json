@@ -5675,13 +5675,15 @@
       'id': 486,
       'caption': '''Automatically grant permission to these sites to connect to USB devices with the given vendor and product IDs.''',
       'tags': ['website-sharing'],
-      'desc': '''Allows you to set a list of urls that specify which sites will automatically be granted permission to access a USB device with the given vendor and product IDs. Each item in the list must contain both devices and urls in order for the policy to be valid. Each item in devices can contain a vendor ID and product ID field. Any ID that is omitted is treated as a wildcard with one exception, and that exception is that a product ID cannot be specified without a vendor ID also being specified. Otherwise, the policy will not be valid and will be ignored.
+      'desc': '''Setting the policy lets you make a list of URL patterns that specify which sites are automatically granted permission to access a USB device with the given vendor and product IDs. Each list item must have devices and URLs for the policy to be valid. Each item in devices can have a vendor ID and product ID field. Any ID you omit is treated as a wildcard with one exception: You can't specify a product ID without also specifying a vendor ID. Otherwise, the policy won't be valid.
 
-        The USB permission model uses the URL of the requesting site ("requesting URL") and the URL of the top-level frame site ("embedding URL") to grant permission to the requesting URL to access the USB device. The requesting URL may be different than the embedding URL when the requesting site is loaded in an iframe. Therefore, the "urls" field can contain up to two URL strings delimited by a comma to specify the requesting and embedding URL respectively. If only one URL is specified, then access to the corresponding USB devices will be granted when the requesting site's URL matches this URL regardless of embedding status. The URLs in "urls" must be valid URLs, otherwise the policy will be ignored.
+      The USB permission model uses the requesting URL and the embedding URL (of the top-level frame site) to permit the requesting URL to access the USB device. The requesting URL might differ from the embedding URL when the requesting site loads in an iframe. So, the "urls" field can contain up to 2 strings delimited by a comma to specify these URLs. If you only specify one, then access to the corresponding USB devices is granted when the requesting site's URL matches this URL, regardless of embedding status. The URLs in "urls" must be valid URLs, or the policy is ignored.
 
-        If this policy is left not set, the global default value will be used for all sites either from the 'DefaultWebUsbGuardSetting' policy if it is set, or the user's personal configuration otherwise.
+      Leaving the policy unset means <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME">DefaultWebUsbGuardSetting</ph> applies, if it's set. If not, the user's personal setting applies.
 
-        URL patterns in this policy should not clash with the ones configured via WebUsbBlockedForUrls. If there is a clash, this policy will take precedence over WebUsbBlockedForUrls and WebUsbAskForUrls.''',
+      URL patterns in this policy shouldn't conflict with those configured through <ph name="WEB_USB_BLOCKED_FOR_URLS_POLICY_NAME">WebUsbBlockedForUrls</ph>. If they do, this policy takes precedence over <ph name="WEB_USB_BLOCKED_FOR_URLS_POLICY_NAME">WebUsbBlockedForUrls</ph> and <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME">WebUsbAskForUrls</ph>.
+
+      Values for this policy and <ph name="DEVICE_WEB_USB_ALLOW_DEVICES_FOR_URLS_POLICY_NAME">DeviceWebUsbAllowDevicesForUrls</ph> merge.''',
     },
     {
       'name': 'DeviceLoginScreenWebUsbAllowDevicesForUrls',
@@ -5746,13 +5748,13 @@
       'id': 439,
       'caption': '''Allow WebUSB on these sites''',
       'tags': ['website-sharing'],
-      'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to ask the user to grant them access to a USB device.
+      'desc': '''Setting the policy lets you list the URL patterns that specify which sites can ask users to grant them access to a USB device.
 
-          If this policy is left not set the global default value will be used for all sites either from the 'DefaultWebUsbGuardSetting' policy if it is set, or the user's personal configuration otherwise.
+      Leaving the policy unset means <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME">DefaultWebUsbGuardSetting</ph> applies for all sites, if it's set. If not, users' personal settings apply.
 
-          URL patterns in this policy should not clash with ones configured via WebUsbBlockedForUrls. It is unspecified which of the two policies takes precedence if a URL matches with both.
+      URL patterns must not conflict with <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME">WebUsbAskForUrls</ph>. Neither policy takes precedence if a URL matches with both.
 
-          For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
+      For detailed information on valid <ph name="URL_LABEL">url</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
       'name': 'WebUsbBlockedForUrls',
@@ -5771,13 +5773,13 @@
       'id': 440,
       'caption': '''Block WebUSB on these sites''',
       'tags': [],
-      'desc': '''Allows you to set a list of url patterns that specify sites which are prevented from asking the user to grant them access to a USB device.
+      'desc': '''Setting the policy lets you list the URL patterns that specify which sites can't ask users to grant them access to a USB device.
 
-          If this policy is left not set the global default value will be used for all sites either from the 'DefaultWebUsbGuardSetting' policy if it is set, or the user's personal configuration otherwise.
+      Leaving the policy unset means <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME">DefaultWebUsbGuardSetting</ph> applies for all sites, if it's set. If not, the user's personal setting applies.
 
-          URL patterns in this policy should not clash with ones configured via WebUsbAskForUrls. It is unspecified which of the two policies takes precedence if a URL matches with both.
+      URL patterns can't conflict with <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME">WebUsbAskForUrls</ph>. Neither policy takes precedence if a URL matches with both.
 
-          For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
+      For detailed information on valid <ph name="URL_LABEL">url</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
       'name': 'AutoSelectCertificateForUrls',
@@ -6013,13 +6015,13 @@
       'id': 70,
       'caption': '''Block images on these sites''',
       'tags': [],
-      'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to display images.
+      'desc': '''Setting the policy lets you set a list of URL patterns that specify sites that can't display images.
 
-          If this policy is left not set the global default value will be used for all sites either from the 'DefaultImagesSetting' policy if it is set, or the user's personal configuration otherwise.
+      Leaving the policy unset means <ph name="DEFAULT_IMAGE_SETTING_ENABLED_POLICY_NAME">DefaultImagesSetting</ph> applies for all sites, if it's set. If not, the user's personal setting applies.
 
-          Note that previously this policy was erroneously enabled on Android, but this functionality has never been fully supported on Android.
+       For detailed information on valid <ph name="URL_LABEL">url</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.
 
-          For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
+       Note that previously this policy was erroneously enabled on Android, but this functionality has never been fully supported on Android.''',
     },
     {
       'name': 'JavaScriptAllowedForUrls',
@@ -6038,11 +6040,11 @@
       'id': 71,
       'caption': '''Allow JavaScript on these sites''',
       'tags': [],
-      'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to run JavaScript.
+      'desc': '''Setting the policy lets you set a list of URL patterns that specify the sites that can run JavaScript.
 
-          If this policy is left not set the global default value will be used for all sites either from the 'DefaultJavaScriptSetting' policy if it is set, or the user's personal configuration otherwise.
+      Leaving the policy unset means <ph name="DEFAULT_JAVA_SCRIPT_SETTING_POLICY_NAME">DefaultJavaScriptSetting</ph> applies for all sites, if it's set. If not, the user's personal setting applies.
 
-          For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
+      For detailed information on valid <ph name="URL_LABEL">url</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
       'name': 'JavaScriptBlockedForUrls',
@@ -6061,11 +6063,11 @@
       'id': 72,
       'caption': '''Block JavaScript on these sites''',
       'tags': [],
-      'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to run JavaScript.
+      'desc': '''Setting the policy lets you set a list of URL patterns that specify the sites that can't run JavaScript.
 
-          If this policy is left not set the global default value will be used for all sites either from the 'DefaultJavaScriptSetting' policy if it is set, or the user's personal configuration otherwise.
+      Leaving the policy unset means <ph name="DEFAULT_JAVA_SCRIPT_SETTING_POLICY_NAME">DefaultJavaScriptSetting</ph> applies for all sites, if it's set. If not, the user's personal setting applies.
 
-          For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
+      For detailed information on valid <ph name="URL_LABEL">url</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
       'name': 'KeygenAllowedForUrls',
@@ -6194,11 +6196,11 @@
       'id': 73,
       'caption': '''Allow the <ph name="FLASH_PLUGIN_NAME">Flash</ph> plugin on these sites''',
       'tags': [],
-      'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to run the <ph name="FLASH_PLUGIN_NAME">Flash</ph> plugin.
+      'desc': '''Setting the policy lets you set a list of URL patterns that specify the sites that can run the <ph name="FLASH_PLUGIN_NAME">Flash</ph> plugin.
 
-          If this policy is left not set the global default value will be used for all sites either from the 'DefaultPluginsSetting' policy if it is set, or the user's personal configuration otherwise.
+      Leaving the policy unset means <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME">DefaultPluginsSetting</ph> applies for all sites, if it's set. If not, the user's personal setting applies.
 
-          For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns. However, starting in M85, patterns with '*' and '[*.]' wildcards in the host are no longer supported for this policy.''',
+      For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns. However, starting in M85, patterns with '*' and '[*.]' wildcards in the host are no longer supported for this policy.''',
     },
     {
       'name': 'PluginsBlockedForUrls',
@@ -6217,11 +6219,11 @@
       'id': 74,
       'caption': '''Block the <ph name="FLASH_PLUGIN_NAME">Flash</ph> plugin on these sites''',
       'tags': [],
-      'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to run the <ph name="FLASH_PLUGIN_NAME">Flash</ph> plugin.
+      'desc': '''Setting the policy lets you set a list of URL patterns that specify the sites that can't run the <ph name="FLASH_PLUGIN_NAME">Flash</ph> plugin.
 
-          If this policy is left not set the global default value will be used for all sites either from the 'DefaultPluginsSetting' policy if it is set, or the user's personal configuration otherwise.
+      Leaving the policy unset means <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME">DefaultPluginsSetting</ph> applies for all sites, if it's set. If not, the user's personal setting applies.
 
-          For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns. However, starting in M85, patterns with '*' and '[*.]' wildcards in the host are no longer supported for this policy.''',
+      For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns. However, starting in M85, patterns with '*' and '[*.]' wildcards in the host are no longer supported for this policy.''',
     },
     {
       'name': 'PopupsAllowedForUrls',
@@ -6245,11 +6247,11 @@
       'id': 75,
       'caption': '''Allow popups on these sites''',
       'tags': [],
-      'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to open popups.
+      'desc': '''Setting the policy lets you set a list of URL patterns that specify the sites that can open pop-ups.
 
-          If this policy is left not set the global default value will be used for all sites either from the 'DefaultPopupsSetting' policy if it is set, or the user's personal configuration otherwise.
+      Leaving the policy unset means <ph name="DEFAULT_POPUPS_SETTING_POLICY_NAME">DefaultPopupsSetting</ph> applies for all sites, if it's set. If not, the user's personal setting applies.
 
-          For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
+      For detailed information on valid <ph name="URL_LABEL">url</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
       'name': 'RegisteredProtocolHandlers',
@@ -6287,9 +6289,9 @@
       'id': 268,
       'caption': '''Register protocol handlers''',
       'tags': [],
-      'desc': '''Allows you to register a list of protocol handlers. This can only be a recommended policy. The property |protocol| should be set to the scheme such as 'mailto' and the property |url| should be set to the URL pattern of the application that handles the scheme. The pattern can include a '%s', which if present will be replaced by the handled URL.
+      'desc': '''Setting the policy (as recommended only) lets you register a list of protocol handlers, which merge with the ones that the user registers, putting both sets in use. Set the property (protocol) to the scheme, such as mailto, and set the property (URL) to the URL pattern of the application that handles the scheme. The pattern can include a %s, which the handled URL replaces.
 
-          The protocol handlers registered by policy are merged with the ones registered by the user and both are available for use. The user can override the protocol handlers installed by policy by installing a new default handler, but cannot remove a protocol handler registered by policy.''',
+      Users can't remove a protocol handler registered by policy. However, by installing a new default handler, they can change the protocol handlers installed by policy.''',
       'arc_support': 'The protocol handlers set via this policy are not used when handling Android intents.',
     },
     {
@@ -6314,11 +6316,11 @@
       'id': 76,
       'caption': '''Block popups on these sites''',
       'tags': [],
-      'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to open popups.
+      'desc': '''Setting the policy lets you set a list of URL patterns that specify the sites that can't open pop-ups.
 
-          If this policy is left not set the global default value will be used for all sites either from the 'DefaultPopupsSetting' policy if it is set, or the user's personal configuration otherwise.
+      Leaving the policy unset means <ph name="DEFAULT_POPUPS_SETTING_POLICY_NAME">DefaultPopupsSetting</ph> applies for all sites, if it's set. If not, the user's personal setting applies.
 
-          For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
+      For detailed information on valid <ph name="URL_LABEL">url</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
       'name': 'NotificationsAllowedForUrls',
@@ -6337,11 +6339,11 @@
       'id': 105,
       'caption': '''Allow notifications on these sites''',
       'tags': [],
-      'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to display notifications.
+      'desc': '''Setting the policy lets you set a list of URL patterns that specify the sites that can display notifications.
 
-          If this policy is left not set the global default value will be used for all sites either from the 'DefaultNotificationsSetting' policy if it is set, or the user's personal configuration otherwise.
+      Leaving the policy unset means <ph name="DEFAULT_JAVA_SCRIPT_SETTING_POLICY_NAME">DefaultJavaScriptSetting</ph> applies for all sites, if it's set. If not, the user's personal setting applies.
 
-          For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
+      For detailed information on valid <ph name="URL_LABEL">url</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
       'name': 'NotificationsBlockedForUrls',
@@ -6360,11 +6362,11 @@
       'id': 106,
       'caption': '''Block notifications on these sites''',
       'tags': [],
-      'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to display notifications.
+      'desc': '''Setting the policy lets you set a list of URL patterns that specify the sites that can't display notifications.
 
-          If this policy is left not set the global default value will be used for all sites either from the 'DefaultNotificationsSetting' policy if it is set, or the user's personal configuration otherwise.
+      Leaving the policy unset means <ph name="DEFAULT_JAVA_SCRIPT_SETTING_POLICY_NAME">DefaultJavaScriptSetting</ph> applies for all sites, if it's set. If not, the user's personal setting applies.
 
-          For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
+      For detailed information on valid <ph name="URL_LABEL">url</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
       'name': 'NativeMessagingBlacklist',
@@ -6825,15 +6827,9 @@
       'id': 80,
       'caption': '''Enable Translate''',
       'tags': [],
-      'desc': '''Enables the integrated Google Translate service on <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      'desc': '''Setting the policy to True provides translation functionality when it's appropriate for users by showing an integrated translate toolbar in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and a translate option on the right-click context menu. Setting the policy to False shuts off all built-in translate features.
 
-      If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will offer translation functionality to the user by showing an integrated translate toolbar (when appropriate) and a translate option on the right-click context menu.
-
-      If you disable this setting, all built-in translate features will be disabled.
-
-      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
-
-      If this setting is left not set the user can decide to use this function or not.''',
+      If you set the policy, users can't change this function. Leaving it unset lets them change the setting.''',
     },
     {
       'name': 'AllowOutdatedPlugins',
@@ -6888,11 +6884,11 @@
       'id': 391,
       'caption': '''Extend Flash content setting to all content''',
       'tags': ['system-security'],
-      'desc': '''If you enable this setting, all Flash content embedded on websites that have been set to allow Flash in content settings -- either by the user or by enterprise policy -- will be run, including content from other origins or small content.
+      'desc': '''Setting the policy to True runs all <ph name="FLASH_PLUGIN_NAME">Flash</ph> content embedded on websites that allow <ph name="FLASH_PLUGIN_NAME">Flash</ph>, including content from other origins or small content.
 
-      To control which websites are allowed to run Flash, see the "DefaultPluginsSetting", "PluginsAllowedForUrls", and "PluginsBlockedForUrls" policies.
+      Setting the policy to False or leaving it unset might block <ph name="FLASH_PLUGIN_NAME">Flash</ph> content from other origins or small content.
 
-      If this setting is disabled or not set, Flash content from other origins or small content might be blocked.''',
+      Note: To control which websites can run <ph name="FLASH_PLUGIN_NAME">Flash</ph>, see these policies: <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME">DefaultPluginsSetting</ph>, <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME">PluginsAllowedForUrls</ph>, and <ph name="PLUGINS_BLOCKED_FOR_URLS_POLICY_NAME">PluginsBlockedForUrls</ph>.''',
     },
     {
       'name': 'BookmarkBarEnabled',
@@ -18882,11 +18878,9 @@
       'id': 542,
       'caption': '''Enable Signed HTTP Exchange (SXG) support''',
       'tags': ['filtering'],
-      'desc': '''Enable support for Signed HTTP Exchange (SXG).
+      'desc': '''Setting the policy to True or leaving it unset means <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will accept web contents served as Signed HTTP Exchanges.
 
-          If this policy is unset or set to Enabled, Google Chrome will accept web contents served as Signed HTTP Exchanges.
-
-          If this policy is set to Disabled, Signed HTTP Exchanges cannot be loaded.''',
+      Setting the policy to False prevents Signed HTTP Exchanges from loading.''',
     },
     {
       'name': 'DeviceQuickFixBuildToken',

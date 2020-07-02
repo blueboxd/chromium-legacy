@@ -12,7 +12,7 @@ namespace display {
 namespace features {
 
 #if defined(OS_CHROMEOS)
-DISPLAY_EXPORT extern const base::Feature kUseMonitorColorSpace;
+DISPLAY_EXPORT extern const base::Feature kUseHDRTransferFunction;
 #endif
 
 DISPLAY_EXPORT extern const base::Feature kListAllDisplayModes;

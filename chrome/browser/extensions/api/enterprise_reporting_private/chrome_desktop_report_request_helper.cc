@@ -354,7 +354,7 @@ OSStatus AddRandomPasswordToKeychain(const crypto::AppleKeychain& keychain,
   return error;
 }
 
-OSStatus ReadEncryptedSecret(std::string* secret) {
+OSStatus ReadEncryptedSecret(std::string* secret, bool force_recreate) {
   UInt32 password_length = 0;
   void* password_data = nullptr;
   crypto::AppleKeychain keychain;
@@ -366,7 +366,7 @@ OSStatus ReadEncryptedSecret(std::string* secret) {
   if (error == noErr) {
     *secret = std::string(static_cast<char*>(password_data), password_length);
     keychain.ItemFreeContent(password_data);
-  } else if (error == errSecItemNotFound) {
+  } else if (error == errSecItemNotFound || force_recreate) {
     error = AddRandomPasswordToKeychain(keychain, secret);
   }
   return error;
@@ -522,6 +522,7 @@ void RetrieveDeviceData(
 }
 
 void RetrieveDeviceSecret(
+    bool force_recreate,
     base::OnceCallback<void(const std::string&, long int)> callback) {
   std::string secret;
 #if defined(OS_WIN)
@@ -531,8 +532,11 @@ void RetrieveDeviceSecret(
     result = CreateRandomSecret(&secret);
   else if (result == ERROR_SUCCESS)
     result = DecryptString(encrypted_secret, &secret);
+  // If something failed above [re]try creating the secret if forced.
+  if (result != ERROR_SUCCESS && force_recreate)
+    result = CreateRandomSecret(&secret);
 #elif defined(OS_MACOSX)
-  OSStatus result = ReadEncryptedSecret(&secret);
+  OSStatus result = ReadEncryptedSecret(&secret, force_recreate);
 #else
   long int result = -1;  // Anything but 0 is a failure.
 #endif

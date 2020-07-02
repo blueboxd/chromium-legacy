@@ -143,7 +143,6 @@ public class AccountManagerTestRule implements TestRule {
      * This method invokes native code. It shouldn't be called in a Robolectric test.
      */
     public void signOut() {
-        assert mIsSignedIn : "No account is signed in!";
         SigninTestUtil.signOut();
         mIsSignedIn = false;
     }

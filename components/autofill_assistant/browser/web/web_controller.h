@@ -141,11 +141,11 @@ class WebController {
       base::OnceCallback<void(const ClientStatus&, const std::string&)>
           callback);
 
-  // Set the |value| of field |selector| and return the result through
+  // Set the |value| of field |element| and return the result through
   // |callback|. The strategy used to fill the value is defined by
   // |fill_strategy|, see the proto for further explanation.
   virtual void SetFieldValue(
-      const Selector& selector,
+      const ElementFinder::Result& element,
       const std::string& value,
       KeyboardValueFillStrategy fill_strategy,
       int key_press_delay_in_millisecond,
@@ -158,12 +158,12 @@ class WebController {
       const std::string& value,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
-  // Sets the keyboard focus to |selector| and inputs |codepoints|, one
+  // Sets the keyboard focus to |element| and inputs |codepoints|, one
   // character at a time. Key presses will have a delay of |delay_in_milli|
   // between them.
   // Returns the result through |callback|.
   virtual void SendKeyboardInput(
-      const Selector& selector,
+      const ElementFinder::Result& element,
       const std::vector<UChar32>& codepoints,
       int delay_in_milli,
       base::OnceCallback<void(const ClientStatus&)> callback);
@@ -387,31 +387,24 @@ class WebController {
       const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnClearFieldForSendKeyboardInput(
-      const Selector& selector,
+      const ElementFinder::Result& element,
       const std::vector<UChar32>& codepoints,
       int key_press_delay_in_millisecond,
       base::OnceCallback<void(const ClientStatus&)> callback,
       const ClientStatus& clear_status);
   void SelectFieldValueForReplace(
-      const Selector& selector,
-      base::OnceCallback<void(std::unique_ptr<ElementFinder::Result>,
-                              const ClientStatus&)> callback);
-  void OnFindElementForSelectValue(
-      base::OnceCallback<void(std::unique_ptr<ElementFinder::Result>,
-                              const ClientStatus&)> callback,
-      const ClientStatus& element_status,
-      std::unique_ptr<ElementFinder::Result> element_result);
+      const ElementFinder::Result& element,
+      base::OnceCallback<void(const ClientStatus&)> callback);
   void OnSelectFieldValueForDispatchKeys(
-      std::unique_ptr<ElementFinder::Result> element_result,
-      base::OnceCallback<void(std::unique_ptr<ElementFinder::Result>,
-                              const ClientStatus&)> callback,
+      const ElementFinder::Result& element,
+      base::OnceCallback<void(const ClientStatus&)> callback,
       const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnFieldValueSelectedForDispatchKeys(
+      const ElementFinder::Result& element,
       const std::vector<UChar32>& codepoints,
       int key_press_delay_in_millisecond,
       base::OnceCallback<void(const ClientStatus&)> callback,
-      std::unique_ptr<ElementFinder::Result> element_result,
       const ClientStatus& select_status);
   void DispatchKeyboardTextDownEvent(
       const std::string& node_frame_id,
@@ -427,14 +420,9 @@ class WebController {
       int delay_in_milli,
       base::OnceCallback<void(const ClientStatus&)> callback);
   void InternalSetFieldValue(
-      const Selector& selector,
+      const ElementFinder::Result& element,
       const std::string& value,
       base::OnceCallback<void(const ClientStatus&)> callback);
-  void OnFindElementForSetFieldValue(
-      const std::string& value,
-      base::OnceCallback<void(const ClientStatus&)> callback,
-      const ClientStatus& status,
-      std::unique_ptr<ElementFinder::Result> element_result);
   void OnSetValueAttribute(
       base::OnceCallback<void(const ClientStatus&)> callback,
       const DevtoolsClient::ReplyStatus& reply_status,
@@ -448,15 +436,8 @@ class WebController {
   void OnSetAttribute(base::OnceCallback<void(const ClientStatus&)> callback,
                       const DevtoolsClient::ReplyStatus& reply_status,
                       std::unique_ptr<runtime::CallFunctionOnResult> result);
-  void OnFindElementForSendKeyboardInput(
-      const Selector& selector,
-      const std::vector<UChar32>& codepoints,
-      int delay_in_milli,
-      base::OnceCallback<void(const ClientStatus&)> callback,
-      const ClientStatus& status,
-      std::unique_ptr<ElementFinder::Result> element_result);
   void OnClickElementForSendKeyboardInput(
-      std::unique_ptr<ElementFinder::Result> target_element,
+      const ElementFinder::Result& target_element,
       const std::vector<UChar32>& codepoints,
       int delay_in_milli,
       base::OnceCallback<void(const ClientStatus&)> callback,

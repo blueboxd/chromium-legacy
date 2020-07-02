@@ -40,6 +40,7 @@ import org.chromium.components.content_settings.ContentSettingsFeatureList;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.location.LocationUtils;
 import org.chromium.components.page_info.PageInfoController;
+import org.chromium.components.page_info.PageInfoFeatureList;
 import org.chromium.components.page_info.PageInfoView;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentSwitches;
@@ -221,6 +222,18 @@ public class PageInfoViewTest {
         setThirdPartyCookieBlocking(true);
         loadUrlAndOpenPageInfo(mTestServerRule.getServer().getURL(mPath));
         mRenderTestRule.render(getPageInfoView(), "PageInfo_PermissionsAndCookieBlocking");
+    }
+
+    /**
+     * Tests the new PageInfo UI on a secure website.
+     */
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    @Features.EnableFeatures(PageInfoFeatureList.PAGE_INFO_V2)
+    public void testShowOnSecureWebsiteV2() throws IOException {
+        loadUrlAndOpenPageInfo(mTestServerRule.getServer().getURL(mPath));
+        mRenderTestRule.render(getPageInfoView(), "PageInfo_SecureWebsiteV2");
     }
 
     // TODO(1071762): Add tests for preview pages, offline pages, offline state and other states.

@@ -54,6 +54,7 @@
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
+#include "chrome/browser/chromeos/login/login_pref_names.h"
 #include "chrome/browser/chromeos/login/profile_auth_data.h"
 #include "chrome/browser/chromeos/login/quick_unlock/pin_backend.h"
 #include "chrome/browser/chromeos/login/saml/saml_offline_signin_limiter.h"
@@ -196,7 +197,7 @@ void InitLocaleAndInputMethodsForNewUser(
     prefs->SetString(language::prefs::kApplicationLocale, locale);
 
     // Suppress the locale change dialog.
-    prefs->SetString(prefs::kApplicationLocaleAccepted, locale);
+    prefs->SetString(::prefs::kApplicationLocaleAccepted, locale);
   } else {
     // Otherwise, assume that the session will use the current UI locale.
     locale = g_browser_process->GetApplicationLocale();
@@ -246,7 +247,7 @@ void InitLocaleAndInputMethodsForNewUser(
 
   // Save the input methods in the user's preferences.
   StringPrefMember language_preload_engines;
-  language_preload_engines.Init(prefs::kLanguagePreloadEngines, prefs);
+  language_preload_engines.Init(::prefs::kLanguagePreloadEngines, prefs);
   language_preload_engines.SetValue(base::JoinString(input_method_ids, ","));
   BootTimesRecorder::Get()->AddLoginTimeMarker("IMEStarted", false);
 
@@ -279,7 +280,7 @@ void InitLocaleAndInputMethodsForNewUser(
 
   // Indicate that we need to merge the syncable input methods when we sync,
   // since we have not applied the synced prefs before.
-  prefs->SetBoolean(prefs::kLanguageShouldMergeInputMethods, true);
+  prefs->SetBoolean(::prefs::kLanguageShouldMergeInputMethods, true);
 }
 
 // Returns new CommandLine with per-user flags.
@@ -428,8 +429,8 @@ void UserSessionManager::OverrideHomedir() {
 
 // static
 void UserSessionManager::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterStringPref(prefs::kRLZBrand, std::string());
-  registry->RegisterBooleanPref(prefs::kRLZDisabled, false);
+  registry->RegisterStringPref(::prefs::kRLZBrand, std::string());
+  registry->RegisterBooleanPref(::prefs::kRLZDisabled, false);
 }
 
 // static
@@ -440,7 +441,7 @@ void UserSessionManager::ApplyUserPolicyToSwitches(
   // policy. If it is supposed to be enabled, make sure it can not be disabled
   // using flags-induced command-line switches.
   const PrefService::Preference* site_per_process_pref =
-      user_profile_prefs->FindPreference(prefs::kSitePerProcess);
+      user_profile_prefs->FindPreference(::prefs::kSitePerProcess);
   if (site_per_process_pref->IsManaged() &&
       site_per_process_pref->GetValue()->GetBool()) {
     user_flags->RemoveSwitch(::switches::kDisableSiteIsolation);
@@ -759,7 +760,7 @@ bool UserSessionManager::RespectLocalePreference(
   const std::string pref_app_locale =
       prefs->GetString(language::prefs::kApplicationLocale);
   const std::string pref_bkup_locale =
-      prefs->GetString(prefs::kApplicationLocaleBackup);
+      prefs->GetString(::prefs::kApplicationLocaleBackup);
 
   pref_locale = pref_app_locale;
 
@@ -777,7 +778,7 @@ bool UserSessionManager::RespectLocalePreference(
 
   const std::string* account_locale = NULL;
   if (pref_locale.empty() && user->has_gaia_account() &&
-      prefs->GetList(prefs::kAllowedLanguages)->GetList().empty()) {
+      prefs->GetList(::prefs::kAllowedLanguages)->GetList().empty()) {
     if (user->GetAccountLocale() == NULL)
       return false;  // wait until Account profile is loaded.
     account_locale = user->GetAccountLocale();
@@ -1275,7 +1276,7 @@ void UserSessionManager::InitProfilePreferences(
     std::string supervised_user_sync_id =
         ChromeUserManager::Get()->GetSupervisedUserManager()->GetUserSyncId(
             active_user->GetAccountId().GetUserEmail());
-    profile->GetPrefs()->SetString(prefs::kSupervisedUserId,
+    profile->GetPrefs()->SetString(::prefs::kSupervisedUserId,
                                    supervised_user_sync_id);
   } else if (user_manager->IsLoggedInAsUserWithGaiaAccount()) {
     // Get the Gaia ID from the user context. This may not be available when
@@ -1747,6 +1748,8 @@ bool UserSessionManager::InitializeUserSession(Profile* profile) {
         cmdline->HasSwitch(chromeos::switches::kOobeSkipPostLogin);
 
     if (user_manager->IsCurrentUserNew() && !skip_post_login_screens) {
+      profile->GetPrefs()->SetTime(chromeos::prefs::kOobeOnboardingTime,
+                                   base::Time::Now());
       // Don't specify start URLs if the administrator has configured the start
       // URLs via policy.
       if (!SessionStartupPref::TypeIsManaged(profile->GetPrefs())) {

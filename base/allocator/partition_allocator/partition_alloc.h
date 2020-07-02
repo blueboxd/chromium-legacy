@@ -442,6 +442,15 @@ struct BASE_EXPORT PartitionRoot {
 
   NOINLINE void OutOfMemory(size_t size);
 
+  // Returns a pointer aligned on |alignement|, or nullptr.
+  //
+  // |alignment| has to be a power of two and a multiple of sizeof(void*) (as in
+  // posix_memalign() for POSIX systems). The returned pointer may include
+  // padding, and can be passed to |Free()| later.
+  //
+  // NOTE: Doesn't work when DCHECK_IS_ON(), as it is incompatible with cookies.
+  ALWAYS_INLINE void* AlignedAlloc(size_t alignment, size_t size);
+
   ALWAYS_INLINE void* Alloc(size_t size, const char* type_name);
   ALWAYS_INLINE void* AllocFlags(int flags, size_t size, const char* type_name);
 
@@ -793,6 +802,38 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFlags(
   }
 
   return result;
+#endif
+}
+
+template <bool thread_safe>
+ALWAYS_INLINE void* PartitionRoot<thread_safe>::AlignedAlloc(size_t alignment,
+                                                             size_t size) {
+#if ENABLE_PARTITION_ALLOC_COOKIES
+  CHECK(false) << "Aligned allocations do not work with cookies";
+  return nullptr;
+#else
+  // This is mandated by |posix_memalign()|, so should never fire.
+  PA_CHECK(base::bits::IsPowerOfTwo(alignment));
+
+  void* ptr;
+  // Handle cases such as size = 16, alignment = 64.
+  // Wastes memory when a large alignment is requested with a small size, but
+  // this is hard to avoid, and should not be too common.
+  if (size < alignment) {
+    ptr = Alloc(alignment, "");
+  } else {
+    // PartitionAlloc only guarantees alignment for power-of-two sized
+    // allocations. To make sure this applies here, round up the allocation
+    // size.
+    size_t size_rounded_up =
+        static_cast<size_t>(1)
+        << (sizeof(size_t) * 8 - base::bits::CountLeadingZeroBits(size - 1));
+    ptr = Alloc(size_rounded_up, "");
+  }
+
+  PA_CHECK(reinterpret_cast<uintptr_t>(ptr) % alignment == 0ull);
+
+  return ptr;
 #endif
 }
 

@@ -993,20 +993,12 @@ MutableCSSPropertyValueSet* SVGElement::EnsureAnimatedSMILStyleProperties() {
   return EnsureSVGRareData()->EnsureAnimatedSMILStyleProperties();
 }
 
-void SVGElement::SetUseOverrideComputedStyle(bool value) {
-  if (HasSVGRareData())
-    SvgRareData()->SetUseOverrideComputedStyle(value);
-}
-
-const ComputedStyle* SVGElement::EnsureComputedStyle(
-    PseudoId pseudo_element_specifier) {
-  if (!HasSVGRareData() || !SvgRareData()->UseOverrideComputedStyle())
-    return Element::EnsureComputedStyle(pseudo_element_specifier);
-
+const ComputedStyle* SVGElement::BaseComputedStyleForSMIL() {
+  if (!HasSVGRareData())
+    return EnsureComputedStyle();
   const ComputedStyle* parent_style = nullptr;
   if (ContainerNode* parent = LayoutTreeBuilderTraversal::Parent(*this))
     parent_style = parent->EnsureComputedStyle();
-
   return SvgRareData()->OverrideComputedStyle(this, parent_style);
 }
 

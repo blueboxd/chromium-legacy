@@ -38,7 +38,6 @@ import org.chromium.chrome.browser.signin.SigninActivityLauncher;
 import org.chromium.chrome.browser.sync.SyncTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.BookmarkTestRule;
-import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 
 /**
@@ -79,7 +78,7 @@ public class BookmarkPersonalizedSigninPromoTest {
         doNothing()
                 .when(SigninActivityLauncher.get())
                 .launchActivityForPromoDefaultFlow(any(Context.class), anyInt(), anyString());
-        Account account = SigninTestUtil.addTestAccount();
+        Account account = mSyncTestRule.addTestAccount();
         showBookmarkManagerAndCheckSigninPromoIsDisplayed();
         onView(withId(R.id.signin_promo_signin_button)).perform(click());
         verify(mMockSigninActivityLauncher)
@@ -93,7 +92,7 @@ public class BookmarkPersonalizedSigninPromoTest {
         doNothing()
                 .when(SigninActivityLauncher.get())
                 .launchActivityForPromoChooseAccountFlow(any(Context.class), anyInt(), anyString());
-        Account account = SigninTestUtil.addTestAccount();
+        Account account = mSyncTestRule.addTestAccount();
         showBookmarkManagerAndCheckSigninPromoIsDisplayed();
         onView(withId(R.id.signin_promo_choose_account_button)).perform(click());
         verify(mMockSigninActivityLauncher)

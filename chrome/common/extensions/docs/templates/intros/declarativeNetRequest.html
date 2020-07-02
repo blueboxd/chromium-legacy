@@ -22,7 +22,7 @@ the extension <a href="manifest">manifest</a> to use this API. The
 <code>"declarativeNetRequestFeedback"</code> permission is required to access
 functions and events which return information on declarative rules matched.
 <a href="declare_permissions">Host permissions</a> are required if the extension
-wants to redirect requests. To specify static
+wants to redirect requests or modify headers. To specify static
 <a href="#type-Ruleset">Rulesets</a>, extensions must also declare the
 <code>"declarative_net_request"</code> manifest key, which should be a
 dictionary with a single key called <code>"rule_resources"</code>. It should be
@@ -84,7 +84,7 @@ There are the following kinds of rules:
     Rules that redirect a network request.
   </li>
   <li>
-    Rules that remove headers from a network request.
+    Rules that modify headers from a network request.
   </li>
 </ul>
 
@@ -244,6 +244,31 @@ following order of decreasing precedence:
   <li><code>redirect</code></li>
 </ul>
 
+<p>
+If the request was not blocked or redirected, the matching
+<code>modifyHeaders</code> rules are evaluated with the most recently installed
+extensions getting priority. Within each extension, all
+<code>modifyHeaders</code> rules with a priority lower than matching
+<code>allow</code> or <code>allowAllRequests</code> rules are ignored.
+</p>
+
+<p>
+If multiple <code>modifyHeaders</code> rules specify the same header, the
+resulting modification for the header is determined based on the priority of
+each rule and the operations specified.
+</p>
+
+<ul>
+  <li>If a rule has appended to a header, then lower priority rules can only
+  append to that header. <code>set</code> and <code>remove</code> operations are
+  not permitted.</li>
+  <li>If a rule has set a header, then lower priority rules cannot further
+  modify the header, except for <code>append</code> rules from the same
+  extension.</li>
+  <li>If a rule has removed a header, then lower priority rules cannot further
+  modify the header.</li>
+</ul>
+
 <h3 id="web-request-comparison">
   Comparison with the <a href="webRequest">webRequest</a> API
 </h3>
@@ -260,8 +285,8 @@ following order of decreasing precedence:
     page; resulting in less memory consumption.
   </li>
   <li>
-    Unlike the webRequest API, blocking requests or removing headers using the
-    declarativeNetRequest API requires no host permissions.
+    Unlike the webRequest API, blocking requests using the declarativeNetRequest
+    API requires no host permissions.
   </li>
   <li>
     The declarativeNetRequest API provides better privacy to users because
@@ -304,6 +329,7 @@ following order of decreasing precedence:
     "*://*.abcd.com/*",
     "*://*.example.com/*",
     "http://*.xyz.com/*",
+    "*://*.headers.com/*",
     "declarativeNetRequest"
   ],
   "manifest_version": 2
@@ -391,7 +417,33 @@ following order of decreasing precedence:
       "urlFilter" : "script.js",
       "resourceTypes" : ["script"]
     }
-  }
+  },
+  {
+    "id": 10,
+    "priority": 2,
+    "action": {
+      "type": "modifyHeaders",
+      "responseHeaders": [
+        { "header": "h1", "operation": "remove" },
+        { "header": "h2", "operation": "set", "value": "v2" },
+        { "header": "h3", "operation": "append", "value": "v3" }
+      ]
+    },
+    "condition": { "urlFilter": "headers.com/123", "resourceTypes": ["main_frame"] }
+  },
+  {
+    "id": 11,
+    "priority": 1,
+    "action": {
+      "type": "modifyHeaders",
+      "responseHeaders": [
+        { "header": "h1", "operation": "set", "value": "v4" },
+        { "header": "h2", "operation": "append", "value": "v5" },
+        { "header": "h3", "operation": "append", "value": "v6" }
+      ]
+    },
+    "condition": { "urlFilter": "headers.com/12345", "resourceTypes": ["main_frame"] }
+  },
 ]
 </pre>
 
@@ -456,4 +508,11 @@ following order of decreasing precedence:
     be evaluated by the extensions’ ruleset. Requests in red will be blocked due
     to rule with id (9).
   </li>
+  <li>
+    Consider a navigation to <code>"http://headers.com/12345"</code> with
+    response headers <code>{ "h1": "initial_1", "h2": "initial_2" }</code>.
+    Rules with id (10) and (11) match. The request will have its response
+    headers modified to <code>{ "h2": "v2", "h2": "v5", "h3": "v3", "h3": "v6" }</code>.
+    Header <code>h1</code> was removed by (10), <code>h2</code> was set by (10)
+    then appended by (11), and <code>h3</code> was appended by (10) and (11).</li>
 </ul>

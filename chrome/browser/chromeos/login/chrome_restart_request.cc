@@ -51,6 +51,7 @@
 #include "third_party/blink/public/common/switches.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/display/display_features.h"
 #include "ui/display/display_switches.h"
 #include "ui/events/event_switches.h"
 #include "ui/gfx/switches.h"
@@ -116,7 +117,6 @@ void DeriveCommandLine(const GURL& start_url,
     ::switches::kEnablePreferCompositingToLCDText,
     ::switches::kEnableTouchDragDrop,
     ::switches::kEnableUnifiedDesktop,
-    ::switches::kEnableUseHDRTransferFunction,
     ::switches::kEnableUseZoomForDSF,
     ::switches::kEnableViewport,
     ::switches::kEnableHardwareOverlays,
@@ -232,6 +232,7 @@ void DeriveCommandLine(const GURL& start_url,
 void DeriveEnabledFeatures(base::CommandLine* out_command_line) {
   static const base::Feature* kForwardEnabledFeatures[] = {
       &ash::features::kAutoNightLight,
+      &display::features::kUseHDRTransferFunction,
   };
 
   std::vector<std::string> enabled_features;

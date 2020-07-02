@@ -7,7 +7,11 @@
 #import <Foundation/Foundation.h>
 
 #include <IOKit/IOKitLib.h>
+#include <ifaddrs.h>
+#include <net/if.h>
+#include <net/if_dl.h>
 #include <sys/sysctl.h>
+#include <sys/types.h>
 
 #include "base/files/file_util.h"
 #include "base/mac/foundation_util.h"
@@ -15,6 +19,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_ioobject.h"
 #include "base/process/launch.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "net/base/network_interfaces.h"
@@ -78,6 +83,32 @@ enterprise_reporting_private::SettingValue GetDiskEncrypted() {
   return enterprise_reporting_private::SETTING_VALUE_UNKNOWN;
 }
 
+std::vector<std::string> GetMacAddresses() {
+  std::vector<std::string> result;
+  struct ifaddrs* ifa = nullptr;
+
+  if (getifaddrs(&ifa) != 0)
+    return result;
+
+  struct ifaddrs* interface = ifa;
+  for (; interface != nullptr; interface = interface->ifa_next) {
+    if (interface->ifa_addr == nullptr ||
+        interface->ifa_addr->sa_family != AF_LINK) {
+      continue;
+    }
+    struct sockaddr_dl* sdl =
+        reinterpret_cast<struct sockaddr_dl*>(interface->ifa_addr);
+    if (!sdl || sdl->sdl_alen != 6)
+      continue;
+    char* link_address = static_cast<char*>(LLADDR(sdl));
+    result.push_back(base::StringPrintf(
+        "%02x:%02x:%02x:%02x:%02x:%02x", link_address[0] & 0xff,
+        link_address[1] & 0xff, link_address[2] & 0xff, link_address[3] & 0xff,
+        link_address[4] & 0xff, link_address[5] & 0xff));
+  }
+  return result;
+}
+
 }  // namespace
 
 DeviceInfoFetcherMac::DeviceInfoFetcherMac() {}
@@ -93,6 +124,7 @@ DeviceInfo DeviceInfoFetcherMac::Fetch() {
   device_info.serial_number = GetSerialNumber();
   device_info.screen_lock_secured = GetScreenlockSecured();
   device_info.disk_encrypted = GetDiskEncrypted();
+  device_info.mac_addresses = GetMacAddresses();
   return device_info;
 }
 

@@ -3253,6 +3253,7 @@ Unknown properties are collapsed to zero. -->
   <int value="15" label="Cloud provision flow reporeted internal error"/>
   <int value="16" label="ARC instance is stopped before complete provisioning"/>
   <int value="17" label="Overall sign in timeout"/>
+  <int value="18" label="Chrome server communication error"/>
   <int value="19" label="Network is unavailable"/>
   <int value="20" label="Disabled"/>
   <int value="21" label="Already provisioned"/>
@@ -40761,6 +40762,7 @@ from previous Chrome versions.
   <int value="-694622753" label="VizHitTest:disabled"/>
   <int value="-694187898" label="MashOopViz:disabled"/>
   <int value="-687302378" label="BluetoothFixA2dpPacketSize:enabled"/>
+  <int value="-686761381" label="UseHDRTransferFunction:enabled"/>
   <int value="-684900739" label="disable-merge-key-char-events"/>
   <int value="-684503292"
       label="OmniboxTabSwitchSuggestionsDedicatedRow:enabled"/>
@@ -42335,6 +42337,7 @@ from previous Chrome versions.
   <int value="1096477444" label="AssistantVoiceMatch:enabled"/>
   <int value="1097935876" label="CrostiniShowMicSetting:enabled"/>
   <int value="1097981222" label="OneGoogleBarModalOverlays:disabled"/>
+  <int value="1098610349" label="UseHDRTransferFunction:disabled"/>
   <int value="1098823967" label="ash-enable-window-cycle-ui"/>
   <int value="1100244809" label="MacSystemMediaPermissionsInfoUI:disabled"/>
   <int value="1101062411" label="Rar2Fs:disabled"/>
@@ -42865,7 +42868,6 @@ from previous Chrome versions.
   <int value="1670161209" label="ClickToOpenPDFPlaceholder:enabled"/>
   <int value="1670799163" label="ChromeHomeShowGoogleGWhenUrlCleared:enabled"/>
   <int value="1671021713" label="AutofillImportDynamicForms:disabled"/>
-  <int value="1673199712" label="enable-use-hdr-transfer-function"/>
   <int value="1673427566" label="ChromeHomeExpandButton:disabled"/>
   <int value="1677167062" label="AutomaticPasswordGeneration:enabled"/>
   <int value="1677258310" label="DragAppsInTabletMode:disabled"/>
@@ -67213,6 +67215,7 @@ would be helpful to identify which type is being sent.
   <int value="9" label="Client tag hash does not match bookmark GUID"/>
   <int value="10" label="Duplicate client tag hashes exist"/>
   <int value="11" label="Managed bookmark has sync metadata"/>
+  <int value="12" label="Entity missing client tag hash"/>
 </enum>
 
 <enum name="SyncBookmarkModelSyncState">

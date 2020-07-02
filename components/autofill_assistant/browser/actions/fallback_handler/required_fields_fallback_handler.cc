@@ -267,9 +267,9 @@ void RequiredFieldsFallbackHandler::OnGetFallbackFieldTag(
     return;
   }
 
-  action_delegate_->SetFieldValue(
-      required_field.selector, value, required_field.fill_strategy,
-      required_field.delay_in_millisecond,
+  ActionDelegateUtil::SetFieldValue(
+      action_delegate_, required_field.selector, value,
+      required_field.fill_strategy, required_field.delay_in_millisecond,
       base::BindOnce(&RequiredFieldsFallbackHandler::OnSetFallbackFieldValue,
                      weak_ptr_factory_.GetWeakPtr(), required_fields_index));
 }

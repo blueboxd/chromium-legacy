@@ -16,8 +16,10 @@ class CookieControlsView : public base::CheckedObserver {
  public:
   virtual void OnStatusChanged(CookieControlsStatus status,
                                CookieControlsEnforcement enforcement,
+                               int allowed_cookies,
                                int blocked_cookies) = 0;
-  virtual void OnBlockedCookiesCountChanged(int blocked_cookies) = 0;
+  virtual void OnCookiesCountChanged(int allowed_cookies,
+                                     int blocked_cookies) = 0;
 };
 
 }  // namespace content_settings

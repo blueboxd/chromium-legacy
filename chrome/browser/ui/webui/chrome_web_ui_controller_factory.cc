@@ -91,6 +91,7 @@
 #include "components/security_interstitials/content/connection_help_ui.h"
 #include "components/security_interstitials/content/known_interception_disclosure_ui.h"
 #include "components/security_interstitials/content/urls.h"
+#include "components/signin/public/base/signin_buildflags.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_client.h"
@@ -268,6 +269,10 @@
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/ui/webui/supervised_user_internals_ui.h"
+#endif
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+#include "chrome/browser/ui/webui/signin/dice_web_signin_intercept_ui.h"
 #endif
 
 using content::WebUI;
@@ -855,6 +860,11 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   if (url.host_piece() == chrome::kChromeUISupervisedUserInternalsHost)
     return &NewWebUI<SupervisedUserInternalsUI>;
+#endif
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  if (url.host_piece() == chrome::kChromeUIDiceWebSigninInterceptHost)
+    return &NewWebUI<DiceWebSigninInterceptUI>;
 #endif
 
   return nullptr;

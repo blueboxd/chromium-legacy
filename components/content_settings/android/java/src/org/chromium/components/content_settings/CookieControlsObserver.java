@@ -16,8 +16,9 @@ public interface CookieControlsObserver {
             @CookieControlsStatus int status, @CookieControlsEnforcement int enforcement);
 
     /**
-     * Called when there is an update in the cookies that are currently being blocked.
+     * Called when there is an update in the cookies that are currently being used or blocked.
+     * @param allowedCookies An integer indicating the number of cookies being used.
      * @param blockedCookies An integer indicating the number of cookies being blocked.
      */
-    public void onBlockedCookiesCountChanged(int blockedCookies);
+    public void onCookiesCountChanged(int allowedCookies, int blockedCookies);
 }

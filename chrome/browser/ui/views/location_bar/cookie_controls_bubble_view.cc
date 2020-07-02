@@ -76,9 +76,10 @@ CookieControlsBubbleView* CookieControlsBubbleView::GetCookieBubble() {
 void CookieControlsBubbleView::OnStatusChanged(
     CookieControlsStatus new_status,
     CookieControlsEnforcement new_enforcement,
+    int allowed_cookies,
     int blocked_cookies) {
-  if (status_ == new_status) {
-    OnBlockedCookiesCountChanged(blocked_cookies);
+  if (status_ == new_status && enforcement_ == new_enforcement) {
+    OnCookiesCountChanged(allowed_cookies, blocked_cookies);
     return;
   }
   if (new_status != CookieControlsStatus::kEnabled)
@@ -89,8 +90,8 @@ void CookieControlsBubbleView::OnStatusChanged(
   UpdateUi();
 }
 
-void CookieControlsBubbleView::OnBlockedCookiesCountChanged(
-    int blocked_cookies) {
+void CookieControlsBubbleView::OnCookiesCountChanged(int allowed_cookies,
+                                                     int blocked_cookies) {
   // The blocked cookie count changes quite frequently, so avoid unnecessary
   // UI updates if possible.
   if (blocked_cookies_ == blocked_cookies)

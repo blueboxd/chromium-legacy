@@ -236,7 +236,7 @@ void ConfigurationPolicyProviderTest::CheckValue(
   expected_bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
       .Set(policy_name, test_harness_->policy_level(),
            test_harness_->policy_scope(), test_harness_->policy_source(),
-           expected_value.CreateDeepCopy(), nullptr);
+           expected_value.Clone(), nullptr);
   EXPECT_TRUE(provider_->policies().Equals(expected_bundle));
   // TODO(joaodasilva): set the policy in the POLICY_DOMAIN_EXTENSIONS too,
   // and extend the |expected_bundle|, once all providers are ready.
@@ -340,7 +340,7 @@ TEST_P(ConfigurationPolicyProviderTest, RefreshPolicies) {
   bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
       .Set(test_keys::kKeyString, test_harness_->policy_level(),
            test_harness_->policy_scope(), test_harness_->policy_source(),
-           std::make_unique<base::Value>("value"), nullptr);
+           base::Value("value"), nullptr);
   EXPECT_TRUE(provider_->policies().Equals(bundle));
   provider_->RemoveObserver(&observer);
 }
@@ -390,8 +390,8 @@ TEST_P(Configuration3rdPartyPolicyProviderTest, Load3rdParty) {
   PolicyMap expected_policy;
   expected_policy.Set(test_keys::kKeyDictionary, test_harness_->policy_level(),
                       test_harness_->policy_scope(),
-                      test_harness_->policy_source(),
-                      policy_dict.CreateDeepCopy(), nullptr);
+                      test_harness_->policy_source(), policy_dict.Clone(),
+                      nullptr);
   PolicyBundle expected_bundle;
   expected_bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
       .CopyFrom(expected_policy);

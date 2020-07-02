@@ -20,6 +20,13 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+// Name of the cookie that is managed by AccountConsistencyService and is used
+// to inform Google web properties that the browser is connected and that Google
+// authentication cookies are managed by |AccountReconcilor|).
+const char kChromeConnectedCookieName[] = "CHROME_CONNECTED";
+}
+
 @interface GaiaAuthFetcherIOSURLSessionDelegate
     : NSObject <NSURLSessionTaskDelegate>
 
@@ -149,6 +156,11 @@ void GaiaAuthFetcherIOSNSURLSessionBridge::FetchPendingRequestWithCookies(
   NSMutableArray* http_cookies = [[NSMutableArray alloc]
       initWithCapacity:cookies_with_access_results.size()];
   for (const auto& cookie_with_access_result : cookies_with_access_results) {
+    // |CHROME_CONNECTED| cookie is attached to all web requests to Google web
+    // properties. Requests initiated from the browser services (e.g.
+    // GaiaCookieManagerService) must not include this cookie.
+    if (cookie_with_access_result.cookie.Name() == kChromeConnectedCookieName)
+      continue;
     [http_cookies addObject:net::SystemCookieFromCanonicalCookie(
                                 cookie_with_access_result.cookie)];
   }

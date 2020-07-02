@@ -27,8 +27,6 @@
 #include "components/bookmarks/browser/titled_url_index.h"
 #include "components/bookmarks/browser/url_index.h"
 #include "components/bookmarks/common/bookmark_constants.h"
-#include "components/strings/grit/components_strings.h"
-#include "ui/base/l10n/l10n_util.h"
 
 using base::TimeTicks;
 
@@ -173,14 +171,23 @@ BookmarkLoadDetails::BookmarkLoadDetails(BookmarkClient* client)
   // thread, and |client_| is not thread safe, and/or may be destroyed before
   // this.
   root_node_ = std::make_unique<BookmarkNode>(
-      /*id=*/0, BookmarkNode::RootNodeGuid(), GURL());
+      /*id=*/0, BookmarkNode::kRootNodeGuid, GURL());
   root_node_ptr_ = root_node_.get();
   // WARNING: order is important here, various places assume the order is
   // constant (but can vary between embedders with the initial visibility
   // of permanent nodes).
-  bb_node_ = CreatePermanentNode(client, BookmarkNode::BOOKMARK_BAR);
-  other_folder_node_ = CreatePermanentNode(client, BookmarkNode::OTHER_NODE);
-  mobile_folder_node_ = CreatePermanentNode(client, BookmarkNode::MOBILE);
+  bb_node_ = static_cast<BookmarkPermanentNode*>(
+      root_node_->Add(BookmarkPermanentNode::CreateBookmarkBar(
+          max_id_++, client->IsPermanentNodeVisibleWhenEmpty(
+                         BookmarkNode::BOOKMARK_BAR))));
+  other_folder_node_ = static_cast<BookmarkPermanentNode*>(
+      root_node_->Add(BookmarkPermanentNode::CreateOtherBookmarks(
+          max_id_++,
+          client->IsPermanentNodeVisibleWhenEmpty(BookmarkNode::OTHER_NODE))));
+  mobile_folder_node_ = static_cast<BookmarkPermanentNode*>(
+      root_node_->Add(BookmarkPermanentNode::CreateMobileBookmarks(
+          max_id_++,
+          client->IsPermanentNodeVisibleWhenEmpty(BookmarkNode::MOBILE))));
 }
 
 BookmarkLoadDetails::~BookmarkLoadDetails() {
@@ -201,38 +208,6 @@ bool BookmarkLoadDetails::LoadManagedNode() {
 
 void BookmarkLoadDetails::CreateUrlIndex() {
   url_index_ = base::MakeRefCounted<UrlIndex>(std::move(root_node_));
-}
-
-BookmarkPermanentNode* BookmarkLoadDetails::CreatePermanentNode(
-    BookmarkClient* client,
-    BookmarkNode::Type type) {
-  DCHECK(type == BookmarkNode::BOOKMARK_BAR ||
-         type == BookmarkNode::OTHER_NODE || type == BookmarkNode::MOBILE);
-  std::unique_ptr<BookmarkPermanentNode> node =
-      std::make_unique<BookmarkPermanentNode>(
-          max_id_++, type,
-          /*visible_when_empty=*/client->IsPermanentNodeVisibleWhenEmpty(type));
-
-  int title_id;
-  switch (type) {
-    case BookmarkNode::BOOKMARK_BAR:
-      title_id = IDS_BOOKMARK_BAR_FOLDER_NAME;
-      break;
-    case BookmarkNode::OTHER_NODE:
-      title_id = IDS_BOOKMARK_BAR_OTHER_FOLDER_NAME;
-      break;
-    case BookmarkNode::MOBILE:
-      title_id = IDS_BOOKMARK_BAR_MOBILE_FOLDER_NAME;
-      break;
-    default:
-      NOTREACHED();
-      title_id = IDS_BOOKMARK_BAR_FOLDER_NAME;
-      break;
-  }
-  node->SetTitle(l10n_util::GetStringUTF16(title_id));
-  BookmarkPermanentNode* permanent_node = node.get();
-  root_node_->Add(std::move(node));
-  return permanent_node;
 }
 
 // BookmarkStorage -------------------------------------------------------------

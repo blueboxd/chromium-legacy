@@ -207,12 +207,12 @@ class ActionDelegate {
       base::OnceCallback<void(const ClientStatus&, const std::string&)>
           callback) = 0;
 
-  // Set the |value| of field |selector| and return the result through
+  // Set the |value| of field |element| and return the result through
   // |callback|. If |simulate_key_presses| is true, the value will be set by
   // clicking the field and then simulating key presses, otherwise the `value`
   // attribute will be set directly.
   virtual void SetFieldValue(
-      const Selector& selector,
+      const ElementFinder::Result& element,
       const std::string& value,
       KeyboardValueFillStrategy fill_strategy,
       int key_press_delay_in_millisecond,
@@ -225,10 +225,10 @@ class ActionDelegate {
       const std::string& value,
       base::OnceCallback<void(const ClientStatus&)> callback) = 0;
 
-  // Sets the keyboard focus to |selector| and inputs the specified codepoints.
+  // Sets the keyboard focus to |element| and inputs the specified codepoints.
   // Returns the result through |callback|.
   virtual void SendKeyboardInput(
-      const Selector& selector,
+      const ElementFinder::Result& element,
       const std::vector<UChar32>& codepoints,
       int key_press_delay_in_millisecond,
       base::OnceCallback<void(const ClientStatus&)> callback) = 0;

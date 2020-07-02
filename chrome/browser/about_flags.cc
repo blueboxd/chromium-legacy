@@ -2245,10 +2245,10 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(switches::kDisableExplicitDmaFences)},
     // TODO(crbug.com/1012846): Remove this flag and provision when HDR is fully
     //  supported on ChromeOS.
-    {"enable-use-hdr-transfer-function",
-     flag_descriptions::kEnableUseHDRTransferFunctionName,
-     flag_descriptions::kEnableUseHDRTransferFunctionDescription, kOsCrOS,
-     SINGLE_DISABLE_VALUE_TYPE(switches::kEnableUseHDRTransferFunction)},
+    {"use-hdr-transfer-function",
+     flag_descriptions::kUseHDRTransferFunctionName,
+     flag_descriptions::kUseHDRTransferFunctionDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(display::features::kUseHDRTransferFunction)},
 #endif  // OS_CHROMEOS
 #if defined(OS_CHROMEOS)
     {"ash-limit-alt-tab-to-active-desk",

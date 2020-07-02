@@ -17,9 +17,6 @@
 namespace chromeos {
 namespace platform_keys {
 
-const char kTokenIdUser[] = "user";
-const char kTokenIdSystem[] = "system";
-
 namespace {
 
 void IntersectOnWorkerThread(const net::CertificateList& certs1,

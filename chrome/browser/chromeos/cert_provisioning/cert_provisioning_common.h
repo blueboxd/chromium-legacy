@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/optional.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
 #include "chromeos/dbus/constants/attestation_constants.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "net/cert/x509_certificate.h"
@@ -95,7 +96,7 @@ const char* GetPrefNameForSerialization(CertScope scope);
 std::string GetKeyName(CertProfileId profile_id);
 // Returns the key type for VA API calls for |scope|.
 attestation::AttestationKeyType GetVaKeyType(CertScope scope);
-const char* GetPlatformKeysTokenId(CertScope scope);
+platform_keys::TokenId GetPlatformKeysTokenId(CertScope scope);
 
 // The Verified Access APIs are used to generate key pairs. For user-specific
 // key pairs, it is possible to reuse the key pair that is used for Verified

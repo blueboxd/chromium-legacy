@@ -185,9 +185,8 @@ AvatarToolbarButton::State AvatarToolbarButtonDelegate::GetState() const {
   if (identity_manager->HasPrimaryAccount() &&
       ProfileSyncServiceFactory::IsSyncAllowed(profile_) &&
       error_controller_->HasAvatarError()) {
-    int unused;
     const sync_ui_util::AvatarSyncErrorType error =
-        sync_ui_util::GetMessagesForAvatarSyncError(profile_, &unused, &unused);
+        sync_ui_util::GetAvatarSyncErrorType(profile_);
 
     // When DICE is enabled and the error is an auth error, the sync-paused
     // icon is shown.

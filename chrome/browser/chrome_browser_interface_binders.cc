@@ -93,6 +93,7 @@
 #include "components/contextual_search/content/browser/contextual_search_js_api_service_impl.h"
 #include "components/contextual_search/content/common/mojom/contextual_search_js_api_service.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/mojom/digital_goods/digital_goods.mojom.h"
 #include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom.h"
 #include "third_party/blink/public/mojom/webshare/webshare.mojom.h"
 #if defined(ENABLE_SPATIAL_NAVIGATION_HOST)
@@ -401,6 +402,8 @@ void PopulateChromeFrameBinders(
 #if defined(OS_ANDROID)
   map->Add<blink::mojom::InstalledAppProvider>(base::BindRepeating(
       &ForwardToJavaFrame<blink::mojom::InstalledAppProvider>));
+  map->Add<payments::mojom::DigitalGoods>(base::BindRepeating(
+      &ForwardToJavaFrame<payments::mojom::DigitalGoods>));
 #if defined(BROWSER_MEDIA_CONTROLS_MENU)
   map->Add<blink::mojom::MediaControlsMenuHost>(base::BindRepeating(
       &ForwardToJavaFrame<blink::mojom::MediaControlsMenuHost>));

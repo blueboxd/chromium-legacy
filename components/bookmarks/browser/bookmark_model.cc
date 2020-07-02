@@ -128,7 +128,7 @@ void AddGuidsToIndexRecursive(const BookmarkNode* node,
 BookmarkModel::BookmarkModel(std::unique_ptr<BookmarkClient> client)
     : client_(std::move(client)),
       owned_root_(std::make_unique<BookmarkNode>(/*id=*/0,
-                                                 BookmarkNode::RootNodeGuid(),
+                                                 BookmarkNode::kRootNodeGuid,
                                                  GURL())),
       root_(owned_root_.get()),
       observers_(base::ObserverListPolicy::EXISTING_ONLY),

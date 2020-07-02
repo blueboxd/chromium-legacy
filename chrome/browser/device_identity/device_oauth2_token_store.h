@@ -42,7 +42,7 @@ class DeviceOAuth2TokenStore {
   // The param, |trusted_account_present| indicates whether the store was able
   // successfully prepare a trusted Account ID.
   using TrustedAccountIdCallback =
-      base::Callback<void(bool /* trusted_account_present */)>;
+      base::RepeatingCallback<void(bool /* trusted_account_present */)>;
 
   virtual ~DeviceOAuth2TokenStore() {}
 

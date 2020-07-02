@@ -15,7 +15,6 @@
 
 #include "base/allocator/partition_allocator/address_space_randomization.h"
 #include "base/allocator/partition_allocator/page_allocator_constants.h"
-#include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/partition_alloc_features.h"
 #include "base/logging.h"
@@ -2442,6 +2441,22 @@ TEST_F(PartitionAllocTest, FundamentalAlignment) {
     allocator.root()->Free(ptr3);
   }
 }
+
+#if !ENABLE_PARTITION_ALLOC_COOKIES
+TEST_F(PartitionAllocTest, AlignedAllocations) {
+  size_t alloc_sizes[] = {1, 10, 100, 1000, 100000, 1000000};
+  size_t alignemnts[] = {8, 16, 32, 64, 1024, 4096};
+
+  for (size_t alloc_size : alloc_sizes) {
+    for (size_t alignment : alignemnts) {
+      void* ptr = allocator.root()->AlignedAlloc(alignment, alloc_size);
+      ASSERT_TRUE(ptr);
+      EXPECT_EQ(reinterpret_cast<uintptr_t>(ptr) % alignment, 0ull);
+      allocator.root()->Free(ptr);
+    }
+  }
+}
+#endif  // !ENABLE_PARTITION_ALLOC_COOKIES
 
 #if ENABLE_CHECKED_PTR
 

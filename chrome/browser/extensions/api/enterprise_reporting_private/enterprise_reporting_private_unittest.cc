@@ -322,7 +322,7 @@ TEST_F(EnterpriseReportingPrivateGetPersistentSecretFunctionTest, GetSecret) {
   ASSERT_TRUE(result1->is_blob());
   auto generated_blob = result1->GetBlob();
 
-  // Re=running should not change the secret.
+  // Re-running should not change the secret.
   auto function2 = base::MakeRefCounted<
       EnterpriseReportingPrivateGetPersistentSecretFunction>();
   std::unique_ptr<base::Value> result2 =
@@ -330,6 +330,40 @@ TEST_F(EnterpriseReportingPrivateGetPersistentSecretFunctionTest, GetSecret) {
   ASSERT_TRUE(result2);
   ASSERT_TRUE(result2->is_blob());
   ASSERT_EQ(generated_blob, result2->GetBlob());
+
+  // Re-running should not change the secret even when force recreate is set.
+  auto function3 = base::MakeRefCounted<
+      EnterpriseReportingPrivateGetPersistentSecretFunction>();
+  std::unique_ptr<base::Value> result3 =
+      RunFunctionAndReturnValue(function3.get(), "[true]");
+  ASSERT_TRUE(result3);
+  ASSERT_TRUE(result3->is_blob());
+  ASSERT_EQ(generated_blob, result3->GetBlob());
+
+  const wchar_t kDefaultRegistryPath[] =
+      L"SOFTWARE\\Google\\Endpoint Verification";
+  const wchar_t kValueName[] = L"Safe Storage";
+
+  base::win::RegKey key;
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.Create(HKEY_CURRENT_USER, kDefaultRegistryPath, KEY_WRITE));
+  // Mess up with the value.
+  ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(kValueName, 1337));
+
+  // Re-running with no recreate enforcement should return an error.
+  auto function4 = base::MakeRefCounted<
+      EnterpriseReportingPrivateGetPersistentSecretFunction>();
+  std::string error = RunFunctionAndReturnError(function4.get(), "[]");
+  ASSERT_FALSE(error.empty());
+
+  // Re=running should not change the secret even when force recreate is set.
+  auto function5 = base::MakeRefCounted<
+      EnterpriseReportingPrivateGetPersistentSecretFunction>();
+  std::unique_ptr<base::Value> result5 =
+      RunFunctionAndReturnValue(function5.get(), "[true]");
+  ASSERT_TRUE(result5);
+  ASSERT_TRUE(result5->is_blob());
+  ASSERT_NE(generated_blob, result5->GetBlob());
 }
 
 #endif  // defined(OS_WIN)
@@ -366,6 +400,8 @@ TEST_F(EnterpriseReportingPrivateGetDeviceInfoTest, GetDeviceInfo) {
             info.screen_lock_secured);
   EXPECT_EQ(enterprise_reporting_private::SETTING_VALUE_DISABLED,
             info.disk_encrypted);
+  ASSERT_EQ(1, info.mac_addresses.size());
+  EXPECT_EQ("00:00:00:00:00:00", info.mac_addresses[0]);
 #endif
 }
 

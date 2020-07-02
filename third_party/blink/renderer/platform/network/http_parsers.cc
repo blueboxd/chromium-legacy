@@ -115,6 +115,24 @@ WTF::Vector<blink::ContentSecurityPolicyPtr> ConvertToBlink(
   return blink_policies;
 }
 
+blink::AllowCSPFromHeaderValuePtr ConvertToBlink(
+    AllowCSPFromHeaderValuePtr allow_csp_from) {
+  if (!allow_csp_from)
+    return nullptr;
+  switch (allow_csp_from->which()) {
+    case AllowCSPFromHeaderValue::Tag::ALLOW_STAR:
+      return blink::AllowCSPFromHeaderValue::NewAllowStar(
+          allow_csp_from->get_allow_star());
+    case AllowCSPFromHeaderValue::Tag::ORIGIN:
+      return blink::AllowCSPFromHeaderValue::NewOrigin(
+          ::blink::SecurityOrigin::CreateFromUrlOrigin(
+              allow_csp_from->get_origin()));
+    case AllowCSPFromHeaderValue::Tag::ERROR_MESSAGE:
+      return blink::AllowCSPFromHeaderValue::NewErrorMessage(
+          String::FromUTF8(allow_csp_from->get_error_message()));
+  }
+}
+
 WTF::Vector<network::mojom::blink::WebClientHintsType> ConvertToBlink(
     const std::vector<network::mojom::WebClientHintsType>& accept_ch) {
   WTF::Vector<network::mojom::blink::WebClientHintsType> blink_accept_ch;
@@ -125,6 +143,7 @@ WTF::Vector<network::mojom::blink::WebClientHintsType> ConvertToBlink(
 blink::ParsedHeadersPtr ConvertToBlink(ParsedHeadersPtr parsed_headers) {
   return blink::ParsedHeaders::New(
       ConvertToBlink(std::move(parsed_headers->content_security_policy)),
+      ConvertToBlink(std::move(parsed_headers->allow_csp_from)),
       std::move(parsed_headers->cross_origin_embedder_policy),
       std::move(parsed_headers->cross_origin_opener_policy),
       parsed_headers->origin_isolation,

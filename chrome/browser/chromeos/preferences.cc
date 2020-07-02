@@ -30,6 +30,7 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/first_run/help_app_first_run_field_trial.h"
 #include "chrome/browser/chromeos/input_method/input_method_syncer.h"
+#include "chrome/browser/chromeos/login/login_pref_names.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -435,6 +436,10 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(::prefs::kShowArcSettingsOnSessionStart, false);
   registry->RegisterBooleanPref(::prefs::kShowSyncSettingsOnSessionStart,
                                 false);
+
+  // OOBE and login related prefs.
+  registry->RegisterTimePref(chromeos::prefs::kOobeOnboardingTime,
+                             base::Time());
 
   // Text-to-speech prefs.
   registry->RegisterDictionaryPref(

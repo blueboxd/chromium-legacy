@@ -55,6 +55,9 @@ const char kChromeUIDeviceLogHost[] = "device-log";
 const char kChromeUIDevicesHost[] = "devices";
 const char kChromeUIDevicesURL[] = "chrome://devices/";
 const char kChromeUIDevUiLoaderURL[] = "chrome://dev-ui-loader/";
+const char kChromeUIDiceWebSigninInterceptHost[] = "signin-dice-web-intercept";
+const char kChromeUIDiceWebSigninInterceptURL[] =
+    "chrome://signin-dice-web-intercept/";
 const char kChromeUIDomainReliabilityInternalsHost[] =
     "domain-reliability-internals";
 const char kChromeUIDownloadInternalsHost[] = "download-internals";

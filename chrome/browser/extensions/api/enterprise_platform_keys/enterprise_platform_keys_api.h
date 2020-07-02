@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
 #include "chrome/browser/extensions/api/enterprise_platform_keys_private/enterprise_platform_keys_private_api.h"
 #include "extensions/browser/extension_function.h"
 
@@ -85,8 +86,9 @@ class EnterprisePlatformKeysInternalGetTokensFunction
 
   // Called when the list of tokens was determined. If an error occurred,
   // |token_ids| will be NULL and instead |error_message| be set.
-  void OnGotTokens(std::unique_ptr<std::vector<std::string>> token_ids,
-                   const std::string& error_message);
+  void OnGotTokens(
+      std::unique_ptr<std::vector<chromeos::platform_keys::TokenId>> token_ids,
+      const std::string& error_message);
 
   DECLARE_EXTENSION_FUNCTION("enterprise.platformKeysInternal.getTokens",
                              ENTERPRISE_PLATFORMKEYSINTERNAL_GETTOKENS)

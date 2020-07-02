@@ -26,9 +26,9 @@ class CookieControlsIconView : public PageActionIconView,
   // CookieControlsUI:
   void OnStatusChanged(CookieControlsStatus status,
                        CookieControlsEnforcement enforcement,
-
+                       int allowed_cookies,
                        int blocked_cookies) override;
-  void OnBlockedCookiesCountChanged(int blocked_cookies) override;
+  void OnCookiesCountChanged(int allowed_cookies, int blocked_cookies) override;
 
   // PageActionIconView:
   views::BubbleDialogDelegate* GetBubble() const override;

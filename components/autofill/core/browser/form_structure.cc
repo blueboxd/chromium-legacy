@@ -1093,7 +1093,13 @@ void FormStructure::RetrieveFromCache(
                  features::kAutofillKeepInitialFormValuesInCache))) {
           field->value = cached_field->second->value;
           value_from_dynamic_change_form_ = true;
-        } else if (field->value == cached_field->second->value) {
+        } else if (field->value == cached_field->second->value &&
+                   (!base::FeatureList::IsEnabled(
+                        features::
+                            kAutofillImportPrefilledCountryAndStateValues) ||
+                    (field->server_type() != ADDRESS_HOME_COUNTRY &&
+                     field->server_type() != ADDRESS_HOME_STATE))) {
+          // TODO(crbug.com/1100231): Remove feature check once launched.
           // From the perspective of learning user data, text fields containing
           // default values are equivalent to empty fields.
           field->value = base::string16();

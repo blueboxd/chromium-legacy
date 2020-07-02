@@ -49,6 +49,7 @@
 #import "ios/chrome/browser/ui/settings/password/password_details_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/password/password_details_table_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/password_exporter.h"
+#import "ios/chrome/browser/ui/settings/password/password_issues_coordinator.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_consumer.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_mediator.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_constants.h"
@@ -173,6 +174,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     PasswordExporterDelegate,
     PasswordExportActivityViewControllerDelegate,
     PasswordsConsumer,
+    PasswordIssuesCoordinatorDelegate,
     SavePasswordsConsumerDelegate,
     UISearchControllerDelegate,
     UISearchBarDelegate,
@@ -227,6 +229,8 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   // Alert informing the user that passwords are being prepared for
   // export.
   UIAlertController* _preparingPasswordsAlert;
+  // Coordinator for passwords issues screen.
+  PasswordIssuesCoordinator* _passwordIssuesCoordinator;
 }
 
 // Kick off async request to get logins from password store.
@@ -482,6 +486,10 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   if (self.navigationItem.searchController.active == YES) {
     self.navigationItem.searchController.active = NO;
   }
+
+  [_passwordIssuesCoordinator stop];
+  _passwordIssuesCoordinator.delegate = nil;
+  _passwordIssuesCoordinator = nil;
 }
 
 #pragma mark - Items
@@ -747,6 +755,16 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   }
 
   [self searchForTerm:searchText];
+}
+
+#pragma mark - PasswordIssuesViewControllerDelegate
+
+- (void)passwordIssuesCoordinatorDidRemove:
+    (PasswordIssuesCoordinator*)coordinator {
+  DCHECK_EQ(_passwordIssuesCoordinator, coordinator);
+  [_passwordIssuesCoordinator stop];
+  _passwordIssuesCoordinator.delegate = nil;
+  _passwordIssuesCoordinator = nil;
 }
 
 #pragma mark - Private methods
@@ -1126,6 +1144,18 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
       }];
 }
 
+- (void)showPasswordIssuesPage {
+  if (_passwordCheck->GetCompromisedCredentials().empty() ||
+      _passwordCheck->GetPasswordCheckState() == PasswordCheckState::kRunning)
+    return;
+  DCHECK(!_passwordIssuesCoordinator);
+  _passwordIssuesCoordinator = [[PasswordIssuesCoordinator alloc]
+      initWithBaseNavigationController:self.navigationController
+                  passwordCheckManager:_passwordCheck.get()];
+  _passwordIssuesCoordinator.delegate = self;
+  [_passwordIssuesCoordinator start];
+}
+
 #pragma mark UITableViewDelegate
 
 - (void)tableView:(UITableView*)tableView
@@ -1144,8 +1174,9 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     case ItemTypeHeader:
     case ItemTypeSavePasswordsSwitch:
     case ItemTypeManagedSavePasswords:
+      break;
     case ItemTypePasswordCheckStatus:
-      // TODO(crbug.com/1075494) - Show password issues page.
+      [self showPasswordIssuesPage];
       break;
     case ItemTypeSavedPassword: {
       DCHECK_EQ(SectionIdentifierSavedPasswords,

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_loop/message_loop_current.h"
+#include "base/task/current_thread.h"
 
 #include "base/bind.h"
 #include "base/message_loop/message_pump_for_io.h"
@@ -16,72 +16,72 @@
 namespace base {
 
 //------------------------------------------------------------------------------
-// MessageLoopCurrent
+// CurrentThread
 
 // static
 sequence_manager::internal::SequenceManagerImpl*
-MessageLoopCurrent::GetCurrentSequenceManagerImpl() {
+CurrentThread::GetCurrentSequenceManagerImpl() {
   return sequence_manager::internal::SequenceManagerImpl::GetCurrent();
 }
 
 // static
-MessageLoopCurrent MessageLoopCurrent::Get() {
-  return MessageLoopCurrent(GetCurrentSequenceManagerImpl());
+CurrentThread CurrentThread::Get() {
+  return CurrentThread(GetCurrentSequenceManagerImpl());
 }
 
 // static
-MessageLoopCurrent MessageLoopCurrent::GetNull() {
-  return MessageLoopCurrent(nullptr);
+CurrentThread CurrentThread::GetNull() {
+  return CurrentThread(nullptr);
 }
 
 // static
-bool MessageLoopCurrent::IsSet() {
+bool CurrentThread::IsSet() {
   return !!GetCurrentSequenceManagerImpl();
 }
 
-void MessageLoopCurrent::AddDestructionObserver(
+void CurrentThread::AddDestructionObserver(
     DestructionObserver* destruction_observer) {
   DCHECK(current_->IsBoundToCurrentThread());
   current_->AddDestructionObserver(destruction_observer);
 }
 
-void MessageLoopCurrent::RemoveDestructionObserver(
+void CurrentThread::RemoveDestructionObserver(
     DestructionObserver* destruction_observer) {
   DCHECK(current_->IsBoundToCurrentThread());
   current_->RemoveDestructionObserver(destruction_observer);
 }
 
-void MessageLoopCurrent::SetTaskRunner(
+void CurrentThread::SetTaskRunner(
     scoped_refptr<SingleThreadTaskRunner> task_runner) {
   DCHECK(current_->IsBoundToCurrentThread());
   current_->SetTaskRunner(std::move(task_runner));
 }
 
-bool MessageLoopCurrent::IsBoundToCurrentThread() const {
+bool CurrentThread::IsBoundToCurrentThread() const {
   return current_ == GetCurrentSequenceManagerImpl();
 }
 
-bool MessageLoopCurrent::IsIdleForTesting() {
+bool CurrentThread::IsIdleForTesting() {
   DCHECK(current_->IsBoundToCurrentThread());
   return current_->IsIdleForTesting();
 }
 
-void MessageLoopCurrent::AddTaskObserver(TaskObserver* task_observer) {
+void CurrentThread::AddTaskObserver(TaskObserver* task_observer) {
   DCHECK(current_->IsBoundToCurrentThread());
   current_->AddTaskObserver(task_observer);
 }
 
-void MessageLoopCurrent::RemoveTaskObserver(TaskObserver* task_observer) {
+void CurrentThread::RemoveTaskObserver(TaskObserver* task_observer) {
   DCHECK(current_->IsBoundToCurrentThread());
   current_->RemoveTaskObserver(task_observer);
 }
 
-void MessageLoopCurrent::SetAddQueueTimeToTasks(bool enable) {
+void CurrentThread::SetAddQueueTimeToTasks(bool enable) {
   DCHECK(current_->IsBoundToCurrentThread());
   current_->SetAddQueueTimeToTasks(enable);
 }
 
-MessageLoopCurrent::ScopedAllowApplicationTasksInNativeNestedLoop::
+CurrentThread::ScopedAllowApplicationTasksInNativeNestedLoop::
     ScopedAllowApplicationTasksInNativeNestedLoop()
     : sequence_manager_(GetCurrentSequenceManagerImpl()),
       previous_state_(sequence_manager_->IsTaskExecutionAllowed()) {
@@ -89,27 +89,27 @@ MessageLoopCurrent::ScopedAllowApplicationTasksInNativeNestedLoop::
   sequence_manager_->SetTaskExecutionAllowed(true);
 }
 
-MessageLoopCurrent::ScopedAllowApplicationTasksInNativeNestedLoop::
+CurrentThread::ScopedAllowApplicationTasksInNativeNestedLoop::
     ~ScopedAllowApplicationTasksInNativeNestedLoop() {
   sequence_manager_->SetTaskExecutionAllowed(previous_state_);
   TRACE_EVENT_END0("base", "ScopedNestableTaskAllower");
 }
 
-bool MessageLoopCurrent::NestableTasksAllowed() const {
+bool CurrentThread::NestableTasksAllowed() const {
   return current_->IsTaskExecutionAllowed();
 }
 
-bool MessageLoopCurrent::operator==(const MessageLoopCurrent& other) const {
+bool CurrentThread::operator==(const CurrentThread& other) const {
   return current_ == other.current_;
 }
 
 #if !defined(OS_NACL)
 
 //------------------------------------------------------------------------------
-// MessageLoopCurrentForUI
+// CurrentUIThread
 
 // static
-MessageLoopCurrentForUI MessageLoopCurrentForUI::Get() {
+CurrentUIThread CurrentUIThread::Get() {
   auto* sequence_manager = GetCurrentSequenceManagerImpl();
   DCHECK(sequence_manager);
 #if defined(OS_ANDROID)
@@ -118,11 +118,11 @@ MessageLoopCurrentForUI MessageLoopCurrentForUI::Get() {
 #else   // defined(OS_ANDROID)
   DCHECK(sequence_manager->IsType(MessagePumpType::UI));
 #endif  // defined(OS_ANDROID)
-  return MessageLoopCurrentForUI(sequence_manager);
+  return CurrentUIThread(sequence_manager);
 }
 
 // static
-bool MessageLoopCurrentForUI::IsSet() {
+bool CurrentUIThread::IsSet() {
   sequence_manager::internal::SequenceManagerImpl* sequence_manager =
       GetCurrentSequenceManagerImpl();
   return sequence_manager &&
@@ -134,12 +134,12 @@ bool MessageLoopCurrentForUI::IsSet() {
 #endif  // defined(OS_ANDROID)
 }
 
-MessagePumpForUI* MessageLoopCurrentForUI::GetMessagePumpForUI() const {
+MessagePumpForUI* CurrentUIThread::GetMessagePumpForUI() const {
   return static_cast<MessagePumpForUI*>(current_->GetMessagePump());
 }
 
 #if defined(USE_OZONE) && !defined(OS_FUCHSIA) && !defined(OS_WIN)
-bool MessageLoopCurrentForUI::WatchFileDescriptor(
+bool CurrentUIThread::WatchFileDescriptor(
     int fd,
     bool persistent,
     MessagePumpForUI::Mode mode,
@@ -152,24 +152,24 @@ bool MessageLoopCurrentForUI::WatchFileDescriptor(
 #endif
 
 #if defined(OS_IOS)
-void MessageLoopCurrentForUI::Attach() {
+void CurrentUIThread::Attach() {
   current_->AttachToMessagePump();
 }
 #endif  // defined(OS_IOS)
 
 #if defined(OS_ANDROID)
-void MessageLoopCurrentForUI::Abort() {
+void CurrentUIThread::Abort() {
   GetMessagePumpForUI()->Abort();
 }
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)
-void MessageLoopCurrentForUI::AddMessagePumpObserver(
+void CurrentUIThread::AddMessagePumpObserver(
     MessagePumpForUI::Observer* observer) {
   GetMessagePumpForUI()->AddObserver(observer);
 }
 
-void MessageLoopCurrentForUI::RemoveMessagePumpObserver(
+void CurrentUIThread::RemoveMessagePumpObserver(
     MessagePumpForUI::Observer* observer) {
   GetMessagePumpForUI()->RemoveObserver(observer);
 }
@@ -178,51 +178,49 @@ void MessageLoopCurrentForUI::RemoveMessagePumpObserver(
 #endif  // !defined(OS_NACL)
 
 //------------------------------------------------------------------------------
-// MessageLoopCurrentForIO
+// CurrentIOThread
 
 // static
-MessageLoopCurrentForIO MessageLoopCurrentForIO::Get() {
+CurrentIOThread CurrentIOThread::Get() {
   auto* sequence_manager = GetCurrentSequenceManagerImpl();
   DCHECK(sequence_manager);
   DCHECK(sequence_manager->IsType(MessagePumpType::IO));
-  return MessageLoopCurrentForIO(sequence_manager);
+  return CurrentIOThread(sequence_manager);
 }
 
 // static
-bool MessageLoopCurrentForIO::IsSet() {
+bool CurrentIOThread::IsSet() {
   auto* sequence_manager = GetCurrentSequenceManagerImpl();
   return sequence_manager && sequence_manager->IsType(MessagePumpType::IO);
 }
 
-MessagePumpForIO* MessageLoopCurrentForIO::GetMessagePumpForIO() const {
+MessagePumpForIO* CurrentIOThread::GetMessagePumpForIO() const {
   return static_cast<MessagePumpForIO*>(current_->GetMessagePump());
 }
 
 #if !defined(OS_NACL_SFI)
 
 #if defined(OS_WIN)
-HRESULT MessageLoopCurrentForIO::RegisterIOHandler(
+HRESULT CurrentIOThread::RegisterIOHandler(
     HANDLE file,
     MessagePumpForIO::IOHandler* handler) {
   DCHECK(current_->IsBoundToCurrentThread());
   return GetMessagePumpForIO()->RegisterIOHandler(file, handler);
 }
 
-bool MessageLoopCurrentForIO::RegisterJobObject(
-    HANDLE job,
-    MessagePumpForIO::IOHandler* handler) {
+bool CurrentIOThread::RegisterJobObject(HANDLE job,
+                                        MessagePumpForIO::IOHandler* handler) {
   DCHECK(current_->IsBoundToCurrentThread());
   return GetMessagePumpForIO()->RegisterJobObject(job, handler);
 }
 
-bool MessageLoopCurrentForIO::WaitForIOCompletion(
-    DWORD timeout,
-    MessagePumpForIO::IOHandler* filter) {
+bool CurrentIOThread::WaitForIOCompletion(DWORD timeout,
+                                          MessagePumpForIO::IOHandler* filter) {
   DCHECK(current_->IsBoundToCurrentThread());
   return GetMessagePumpForIO()->WaitForIOCompletion(timeout, filter);
 }
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
-bool MessageLoopCurrentForIO::WatchFileDescriptor(
+bool CurrentIOThread::WatchFileDescriptor(
     int fd,
     bool persistent,
     MessagePumpForIO::Mode mode,
@@ -235,7 +233,7 @@ bool MessageLoopCurrentForIO::WatchFileDescriptor(
 #endif  // defined(OS_WIN)
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-bool MessageLoopCurrentForIO::WatchMachReceivePort(
+bool CurrentIOThread::WatchMachReceivePort(
     mach_port_t port,
     MessagePumpForIO::MachPortWatchController* controller,
     MessagePumpForIO::MachPortWatcher* delegate) {
@@ -249,7 +247,7 @@ bool MessageLoopCurrentForIO::WatchMachReceivePort(
 
 #if defined(OS_FUCHSIA)
 // Additional watch API for native platform resources.
-bool MessageLoopCurrentForIO::WatchZxHandle(
+bool CurrentIOThread::WatchZxHandle(
     zx_handle_t handle,
     bool persistent,
     zx_signals_t signals,

@@ -839,7 +839,7 @@ events such as UI messages may be processed as well. On Windows APC calls (as
 time permits) and signals sent to a registered set of HANDLEs may also be
 processed.
 
-### MessagePump
+### MessagePump
 
 [MessagePumps](https://cs.chromium.org/chromium/src/base/message_loop/message_pump.h)
 are responsible for processing native messages as well as for giving cycles to
@@ -858,14 +858,14 @@ most common are:
 
 * CUSTOM: User provided implementation of MessagePump interface
 
-### RunLoop
+### RunLoop
 
 RunLoop is s helper class to run the RunLoop::Delegate associated with the
 current thread (usually a SequenceManager). Create a RunLoop on the stack and
 call Run/Quit to run a nested RunLoop but please avoid nested loops in
 production code!
 
-### Task Reentrancy
+### Task Reentrancy
 
 SequenceManager has task reentrancy protection. This means that if a
 task is being processed, a second task cannot start until the first task is
@@ -901,7 +901,7 @@ following:
 
 * SequenceLocalStorageSlot : Bind external state to a sequence.
 
-* base::MessageLoopCurrent : Proxy to a subset of Task related APIs bound to the current thread
+* base::CurrentThread : Proxy to a subset of Task related APIs bound to the current thread
 
 * Embedders may provide their own static accessors to post tasks on specific loops (e.g. content::BrowserThreads).
 
@@ -913,3 +913,11 @@ simple task posting environment (one default task queue) can use a
 
 Unit tests can use [TaskEnvironment](https://cs.chromium.org/chromium/src/base/test/task_environment.h)
 which is highly configurable.
+
+## MessageLoop and MessageLoopCurrent
+
+You might come across references to MessageLoop or MessageLoopCurrent in the
+code or documentation. These classes no longer exist and we are in the process
+or getting rid of all references to them. base::MessageLoopCurrent was replaced
+by base::CurrentThread and the drop in replacements for base::MessageLoop are
+base::SingleThreadTaskExecutor and base::Test::TaskEnvironment.

@@ -8032,32 +8032,17 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_SYNC_ERROR_PASSWORDS_USER_MENU_TITLE" desc="Title of the sync/signin error header of desktop user menu.">
         Password sync isn't working
       </message>
-      <message name="IDS_SYNC_ERROR_USER_MENU_SIGNIN_MESSAGE" desc="Message of the out-of-date signin info error in the header of desktop user menu.">
-        Sign-in details are out of date
-      </message>
       <message name="IDS_SYNC_ERROR_USER_MENU_SIGNIN_BUTTON" desc="Button in the header of desktop user menu that prompts the user to sign in again to fix the out-of-date signin info error.">
         Sign in again
-      </message>
-      <message name="IDS_SYNC_ERROR_USER_MENU_PASSPHRASE_MESSAGE" desc="Message of the out-of-date sync passphrase error in the header of desktop user menu.">
-        Passphrase required to start sync
       </message>
       <message name="IDS_SYNC_ERROR_USER_MENU_PASSPHRASE_BUTTON" desc="Button in the header of desktop user menu that prompts the user to enter the sync passphrase to fix the out-of-date passphrase error.">
         Enter passphrase
       </message>
-      <message name="IDS_SYNC_ERROR_USER_MENU_RETRIEVE_KEYS_MESSAGE" desc="Message of the sync error in the header of desktop user menu about reauthentication being required to sync encrypted datatypes.">
-        Fix the error to resume sync
-      </message>
       <message name="IDS_SYNC_ERROR_USER_MENU_RETRIEVE_KEYS_BUTTON" desc="Button in the header of desktop user menu that prompts the user to reauthentication to fix the sync error affecting encrypted datatypes.">
         Fix now
       </message>
-      <message name="IDS_SYNC_ERROR_USER_MENU_SIGNIN_AGAIN_MESSAGE" desc="Message of the unrecoverable error in the header of desktop user menu.">
-        Try signing in again
-      </message>
       <message name="IDS_SYNC_ERROR_USER_MENU_SIGNIN_AGAIN_BUTTON" desc="Button in the header of desktop user menu that signs out and signs back in in an attempt to resolve an unrecoverable error.">
         Sign in again
-      </message>
-      <message name="IDS_SYNC_ERROR_USER_MENU_SIGNOUT_MESSAGE" desc="Message of the unrecoverable error in the header of desktop user menu for managed users.">
-        Try signing out and back in again
       </message>
       <message name="IDS_SYNC_ERROR_USER_MENU_SIGNOUT_BUTTON" desc="Button in the header of desktop user menu for managed users to sign out in an attempt to resolve an unrecoverable error.">
         Sign out

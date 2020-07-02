@@ -148,7 +148,7 @@ TEST(ListPolicyHandlerTest, CheckPolicySettings) {
   // Not a list is not OK.
   policy_map.Set(kTestPolicy, policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-                 dict.CreateDeepCopy(), nullptr);
+                 dict.Clone(), nullptr);
   EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
   errors.Clear();
@@ -156,7 +156,7 @@ TEST(ListPolicyHandlerTest, CheckPolicySettings) {
   // Empty list is OK.
   policy_map.Set(kTestPolicy, policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-                 list.CreateDeepCopy(), nullptr);
+                 list.Clone(), nullptr);
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
   errors.Clear();
@@ -165,7 +165,7 @@ TEST(ListPolicyHandlerTest, CheckPolicySettings) {
   list.AppendInteger(175);  // hex af, 255's sake.
   policy_map.Set(kTestPolicy, policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-                 list.CreateDeepCopy(), nullptr);
+                 list.Clone(), nullptr);
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
   list.Clear();
@@ -175,7 +175,7 @@ TEST(ListPolicyHandlerTest, CheckPolicySettings) {
   list.AppendString("any_string");
   policy_map.Set(kTestPolicy, policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-                 list.CreateDeepCopy(), nullptr);
+                 list.Clone(), nullptr);
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
   errors.Clear();
@@ -191,7 +191,7 @@ TEST(StringListPolicyHandlerTest, ApplyPolicySettings) {
 
   // Empty list applies as empty list.
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, list.CreateDeepCopy(), nullptr);
+                 POLICY_SOURCE_CLOUD, list.Clone(), nullptr);
   handler.ApplyPolicySettings(policy_map, &prefs);
   EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
   EXPECT_EQ(expected, *value);
@@ -200,7 +200,7 @@ TEST(StringListPolicyHandlerTest, ApplyPolicySettings) {
   list.AppendString("any_string");
   expected.AppendString("any_string");
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, list.CreateDeepCopy(), nullptr);
+                 POLICY_SOURCE_CLOUD, list.Clone(), nullptr);
   handler.ApplyPolicySettings(policy_map, &prefs);
   EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
   EXPECT_EQ(expected, *value);
@@ -212,7 +212,7 @@ TEST(StringListPolicyHandlerTest, ApplyPolicySettings) {
   list.AppendInteger(42);
   expected.AppendString("any_string");
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, list.CreateDeepCopy(), nullptr);
+                 POLICY_SOURCE_CLOUD, list.Clone(), nullptr);
   handler.ApplyPolicySettings(policy_map, &prefs);
   EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
   EXPECT_EQ(expected, *value);
@@ -228,29 +228,28 @@ TEST(StringToIntEnumListPolicyHandlerTest, CheckPolicySettings) {
       kTestPolicy, kTestPref, base::BindRepeating(GetIntegerTypeMap));
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, list.CreateDeepCopy(), nullptr);
+                 POLICY_SOURCE_CLOUD, list.Clone(), nullptr);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
 
   list.AppendString("one");
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, list.CreateDeepCopy(), nullptr);
+                 POLICY_SOURCE_CLOUD, list.Clone(), nullptr);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
 
   list.AppendString("invalid");
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, list.CreateDeepCopy(), nullptr);
+                 POLICY_SOURCE_CLOUD, list.Clone(), nullptr);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
   EXPECT_FALSE(errors.GetErrors(kTestPolicy).empty());
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>("no list"),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value("no list"), nullptr);
   errors.Clear();
   EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
@@ -267,7 +266,7 @@ TEST(StringMappingListPolicyHandlerTest, ApplyPolicySettings) {
       kTestPolicy, kTestPref, base::BindRepeating(GetIntegerTypeMap));
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, list.CreateDeepCopy(), nullptr);
+                 POLICY_SOURCE_CLOUD, list.Clone(), nullptr);
   handler.ApplyPolicySettings(policy_map, &prefs);
   EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
   EXPECT_EQ(expected, *value);
@@ -275,14 +274,14 @@ TEST(StringMappingListPolicyHandlerTest, ApplyPolicySettings) {
   list.AppendString("two");
   expected.AppendInteger(2);
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, list.CreateDeepCopy(), nullptr);
+                 POLICY_SOURCE_CLOUD, list.Clone(), nullptr);
   handler.ApplyPolicySettings(policy_map, &prefs);
   EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
   EXPECT_EQ(expected, *value);
 
   list.AppendString("invalid");
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, list.CreateDeepCopy(), nullptr);
+                 POLICY_SOURCE_CLOUD, list.Clone(), nullptr);
   handler.ApplyPolicySettings(policy_map, &prefs);
   EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
   EXPECT_EQ(expected, *value);
@@ -298,22 +297,19 @@ TEST(IntRangePolicyHandler, CheckPolicySettingsClamp) {
 
   // Check that values lying in the accepted range are not rejected.
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(0),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value(0), nullptr);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(5),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value(5), nullptr);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(10),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value(10), nullptr);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
@@ -321,15 +317,13 @@ TEST(IntRangePolicyHandler, CheckPolicySettingsClamp) {
   // Check that values lying outside the accepted range are not rejected
   // (because clamping is enabled) but do yield a warning message.
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(-5),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value(-5), nullptr);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(15),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value(15), nullptr);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
@@ -337,8 +331,7 @@ TEST(IntRangePolicyHandler, CheckPolicySettingsClamp) {
   // Check that an entirely invalid value is rejected and yields an error
   // message.
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>("invalid"),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value("invalid"), nullptr);
   errors.Clear();
   EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
@@ -354,22 +347,19 @@ TEST(IntRangePolicyHandler, CheckPolicySettingsDontClamp) {
 
   // Check that values lying in the accepted range are not rejected.
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(0),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value(0), nullptr);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(5),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value(5), nullptr);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(10),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value(10), nullptr);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
@@ -377,15 +367,13 @@ TEST(IntRangePolicyHandler, CheckPolicySettingsDontClamp) {
   // Check that values lying outside the accepted range are rejected and yield
   // an error message.
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(-5),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value(-5), nullptr);
   errors.Clear();
   EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(15),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value(15), nullptr);
   errors.Clear();
   EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
@@ -393,8 +381,7 @@ TEST(IntRangePolicyHandler, CheckPolicySettingsDontClamp) {
   // Check that an entirely invalid value is rejected and yields an error
   // message.
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>("invalid"),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value("invalid"), nullptr);
   errors.Clear();
   EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
@@ -412,8 +399,7 @@ TEST(IntRangePolicyHandler, ApplyPolicySettingsClamp) {
 
   // Check that values lying in the accepted range are written to the pref.
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(0),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value(0), nullptr);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(new base::Value(0));
@@ -421,8 +407,7 @@ TEST(IntRangePolicyHandler, ApplyPolicySettingsClamp) {
   EXPECT_EQ(*expected, *value);
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(5),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value(5), nullptr);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(new base::Value(5));
@@ -430,8 +415,7 @@ TEST(IntRangePolicyHandler, ApplyPolicySettingsClamp) {
   EXPECT_EQ(*expected, *value);
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(10),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value(10), nullptr);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(new base::Value(10));
@@ -441,8 +425,7 @@ TEST(IntRangePolicyHandler, ApplyPolicySettingsClamp) {
   // Check that values lying outside the accepted range are clamped and written
   // to the pref.
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(-5),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value(-5), nullptr);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(new base::Value(0));
@@ -450,8 +433,7 @@ TEST(IntRangePolicyHandler, ApplyPolicySettingsClamp) {
   EXPECT_EQ(*expected, *value);
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(15),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value(15), nullptr);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(new base::Value(10));
@@ -471,8 +453,7 @@ TEST(IntRangePolicyHandler, ApplyPolicySettingsDontClamp) {
 
   // Check that values lying in the accepted range are written to the pref.
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(0),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value(0), nullptr);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(new base::Value(0));
@@ -480,8 +461,7 @@ TEST(IntRangePolicyHandler, ApplyPolicySettingsDontClamp) {
   EXPECT_EQ(*expected, *value);
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(5),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value(5), nullptr);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(new base::Value(5));
@@ -489,8 +469,7 @@ TEST(IntRangePolicyHandler, ApplyPolicySettingsDontClamp) {
   EXPECT_EQ(*expected, *value);
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(10),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value(10), nullptr);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(new base::Value(10));
@@ -509,22 +488,19 @@ TEST(IntPercentageToDoublePolicyHandler, CheckPolicySettingsClamp) {
 
   // Check that values lying in the accepted range are not rejected.
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(0),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value(0), nullptr);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(5),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value(5), nullptr);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(10),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value(10), nullptr);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
@@ -532,15 +508,13 @@ TEST(IntPercentageToDoublePolicyHandler, CheckPolicySettingsClamp) {
   // Check that values lying outside the accepted range are not rejected
   // (because clamping is enabled) but do yield a warning message.
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(-5),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value(-5), nullptr);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(15),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value(15), nullptr);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
@@ -548,8 +522,7 @@ TEST(IntPercentageToDoublePolicyHandler, CheckPolicySettingsClamp) {
   // Check that an entirely invalid value is rejected and yields an error
   // message.
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>("invalid"),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value("invalid"), nullptr);
   errors.Clear();
   EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
@@ -566,22 +539,19 @@ TEST(IntPercentageToDoublePolicyHandler, CheckPolicySettingsDontClamp) {
 
   // Check that values lying in the accepted range are not rejected.
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(0),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value(0), nullptr);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(5),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value(5), nullptr);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(10),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value(10), nullptr);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
@@ -589,15 +559,13 @@ TEST(IntPercentageToDoublePolicyHandler, CheckPolicySettingsDontClamp) {
   // Check that values lying outside the accepted range are rejected and yield
   // an error message.
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(-5),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value(-5), nullptr);
   errors.Clear();
   EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(15),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value(15), nullptr);
   errors.Clear();
   EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
@@ -605,8 +573,7 @@ TEST(IntPercentageToDoublePolicyHandler, CheckPolicySettingsDontClamp) {
   // Check that an entirely invalid value is rejected and yields an error
   // message.
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>("invalid"),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value("invalid"), nullptr);
   errors.Clear();
   EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
@@ -625,8 +592,7 @@ TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsClamp) {
 
   // Check that values lying in the accepted range are written to the pref.
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(0),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value(0), nullptr);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(new base::Value(0.0));
@@ -634,8 +600,7 @@ TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsClamp) {
   EXPECT_EQ(*expected, *value);
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(5),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value(5), nullptr);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(new base::Value(0.05));
@@ -643,8 +608,7 @@ TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsClamp) {
   EXPECT_EQ(*expected, *value);
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(10),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value(10), nullptr);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(new base::Value(0.1));
@@ -654,8 +618,7 @@ TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsClamp) {
   // Check that values lying outside the accepted range are clamped and written
   // to the pref.
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(-5),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value(-5), nullptr);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(new base::Value(0.0));
@@ -663,8 +626,7 @@ TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsClamp) {
   EXPECT_EQ(*expected, *value);
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(15),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value(15), nullptr);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(new base::Value(0.1));
@@ -685,8 +647,7 @@ TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsDontClamp) {
 
   // Check that values lying in the accepted range are written to the pref.
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(0),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value(0), nullptr);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(new base::Value(0.0));
@@ -694,8 +655,7 @@ TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsDontClamp) {
   EXPECT_EQ(*expected, *value);
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(5),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value(5), nullptr);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(new base::Value(0.05));
@@ -703,8 +663,7 @@ TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsDontClamp) {
   EXPECT_EQ(*expected, *value);
 
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(10),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value(10), nullptr);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
   expected.reset(new base::Value(0.1));

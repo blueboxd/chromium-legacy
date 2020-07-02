@@ -126,6 +126,12 @@ IOSChromePasswordCheckManager::GetCompromisedCredentials() const {
   return compromised_credentials_manager_.GetCompromisedCredentials();
 }
 
+password_manager::SavedPasswordsPresenter::SavedPasswordsView
+IOSChromePasswordCheckManager::GetSavedPasswordsFor(
+    const CredentialWithPassword& credential) const {
+  return compromised_credentials_manager_.GetSavedPasswordsFor(credential);
+}
+
 void IOSChromePasswordCheckManager::OnSavedPasswordsChanged(
     SavedPasswordsView) {
   // Observing saved passwords to update possible kNoPasswords state.

@@ -73,7 +73,7 @@ struct CertificateTestHelper {
     DCHECK(cert);
   }
 
-  void GetCertificates(const std::string& token_id,
+  void GetCertificates(chromeos::platform_keys::TokenId token_id,
                        const platform_keys::GetCertificatesCallback& callback) {
     auto result = std::make_unique<net::CertificateList>();
     *result = cert_list;

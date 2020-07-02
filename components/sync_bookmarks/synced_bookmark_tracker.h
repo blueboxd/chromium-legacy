@@ -32,6 +32,7 @@ namespace sync_bookmarks {
 
 // Exposed for testing.
 extern const base::Feature kInvalidateBookmarkSyncMetadataIfMismatchingGuid;
+extern const base::Feature kInvalidateBookmarkSyncMetadataIfClientTagMissing;
 
 // This class is responsible for keeping the mapping between bookmark nodes in
 // the local model and the server-side corresponding sync entities. It manages
@@ -302,8 +303,9 @@ class SyncedBookmarkTracker {
     BOOKMARK_GUID_MISMATCH = 9,
     DUPLICATED_CLIENT_TAG_HASH = 10,
     TRACKED_MANAGED_NODE = 11,
+    MISSING_CLIENT_TAG_HASH = 12,
 
-    kMaxValue = TRACKED_MANAGED_NODE
+    kMaxValue = MISSING_CLIENT_TAG_HASH
   };
 
   SyncedBookmarkTracker(sync_pb::ModelTypeState model_type_state,

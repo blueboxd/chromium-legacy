@@ -62,7 +62,8 @@ public class CookieControlsBridgeTest {
         }
 
         @Override
-        public void onBlockedCookiesCountChanged(int blockedCookies) {
+        public void onCookiesCountChanged(int allowedCookies, int blockedCookies) {
+            mAllowedCookies = allowedCookies;
             mBlockedCookies = blockedCookies;
             mHelper.notifyCalled();
         }
@@ -77,6 +78,7 @@ public class CookieControlsBridgeTest {
     private CookieControlsBridge mCookieControlsBridge;
     private int mStatus;
     private int mEnforcement;
+    private int mAllowedCookies;
     private int mBlockedCookies;
 
     @Before
@@ -86,6 +88,7 @@ public class CookieControlsBridgeTest {
         mActivityTestRule.startMainActivityOnBlankPage();
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mStatus = CookieControlsStatus.UNINITIALIZED;
+        mAllowedCookies = -1;
         mBlockedCookies = -1;
     }
 
@@ -121,6 +124,7 @@ public class CookieControlsBridgeTest {
         mCallbackHelper.waitForCallback(currentCallCount, 2);
         assertEquals(CookieControlsStatus.DISABLED, mStatus);
         assertEquals(CookieControlsEnforcement.NO_ENFORCEMENT, mEnforcement);
+        assertEquals(0, mAllowedCookies);
         assertEquals(0, mBlockedCookies);
     }
 
@@ -150,6 +154,40 @@ public class CookieControlsBridgeTest {
         mCallbackHelper.waitForCallback(currentCallCount, 2);
         assertEquals(CookieControlsStatus.ENABLED, mStatus);
         assertEquals(CookieControlsEnforcement.NO_ENFORCEMENT, mEnforcement);
+        assertEquals(0, mAllowedCookies);
+        assertEquals(0, mBlockedCookies);
+    }
+
+    /**
+     * Test blocked cookies count changes when new cookie tries to be set. Only one callback because
+     * status remains enabled.
+     */
+    @Test
+    @SmallTest
+    public void testCookieBridgeWithChangingAllowedCookiesCount() throws Exception {
+        int currentCallCount = mCallbackHelper.getCallCount();
+
+        // Navigate to a page
+        final String url = mTestServer.getURL("/chrome/test/data/android/cookie.html");
+        Tab tab = mActivityTestRule.loadUrlInNewTab(url, false);
+
+        // Create cookie bridge and wait for desired callbacks.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mCookieControlsBridge =
+                    new CookieControlsBridge(mCallbackHandler, tab.getWebContents(), null);
+        });
+
+        mCallbackHelper.waitForCallback(currentCallCount, 2);
+        assertEquals(CookieControlsStatus.DISABLED, mStatus);
+        assertEquals(CookieControlsEnforcement.NO_ENFORCEMENT, mEnforcement);
+        assertEquals(0, mAllowedCookies);
+        assertEquals(0, mBlockedCookies);
+
+        // Try to set a cookie on the page when cookies are allowed.
+        currentCallCount = mCallbackHelper.getCallCount();
+        JavaScriptUtils.executeJavaScriptAndWaitForResult(tab.getWebContents(), "setCookie()");
+        mCallbackHelper.waitForCallback(currentCallCount, 1);
+        assertEquals(1, mAllowedCookies);
         assertEquals(0, mBlockedCookies);
     }
 
@@ -182,12 +220,14 @@ public class CookieControlsBridgeTest {
         mCallbackHelper.waitForCallback(currentCallCount, 2);
         assertEquals(CookieControlsStatus.ENABLED, mStatus);
         assertEquals(CookieControlsEnforcement.NO_ENFORCEMENT, mEnforcement);
+        assertEquals(0, mAllowedCookies);
         assertEquals(0, mBlockedCookies);
 
         // Try to set a cookie on the page when cookies are blocked.
         currentCallCount = mCallbackHelper.getCallCount();
         JavaScriptUtils.executeJavaScriptAndWaitForResult(tab.getWebContents(), "setCookie()");
         mCallbackHelper.waitForCallback(currentCallCount, 1);
+        assertEquals(0, mAllowedCookies);
         assertEquals(1, mBlockedCookies);
     }
 
@@ -217,6 +257,7 @@ public class CookieControlsBridgeTest {
         mCallbackHelper.waitForCallback(currentCallCount, 2);
         assertEquals(CookieControlsStatus.DISABLED, mStatus);
         assertEquals(CookieControlsEnforcement.NO_ENFORCEMENT, mEnforcement);
+        assertEquals(0, mAllowedCookies);
         assertEquals(0, mBlockedCookies);
 
         // Make new incognito page now
@@ -229,6 +270,7 @@ public class CookieControlsBridgeTest {
         mCallbackHelper.waitForCallback(currentCallCount, 2);
         assertEquals(CookieControlsStatus.ENABLED, mStatus);
         assertEquals(CookieControlsEnforcement.NO_ENFORCEMENT, mEnforcement);
+        assertEquals(0, mAllowedCookies);
         assertEquals(0, mBlockedCookies);
     }
 }

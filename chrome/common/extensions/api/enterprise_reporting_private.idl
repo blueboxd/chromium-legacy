@@ -31,6 +31,7 @@ namespace enterprise.reportingPrivate {
     DOMString serialNumber;
     SettingValue screenLockSecured;
     SettingValue diskEncrypted;
+    DOMString[] macAddresses;
   };
 
   // Invoked by <code>getDeviceInfo</code> to return device information.
@@ -49,8 +50,12 @@ namespace enterprise.reportingPrivate {
     static void getDeviceId(optional GetDeviceIdCallback callback);
 
     // Gets a randomly generated persistent secret (symmetric key) that
-    // can be used to encrypt the data stored with |setDeviceData|.
-    static void getPersistentSecret(GetPersistentSecretCallback callback);
+    // can be used to encrypt the data stored with |setDeviceData|. If the
+    // optional parameter |forceCreation| is set to true the secret is recreated
+    // in case of any failure to retrieve the currently stored one. Sets
+    // $(ref:runtime.lastError) on failure.
+    static void getPersistentSecret(optional boolean resetSecret,
+        GetPersistentSecretCallback callback);
 
     // Gets the device data for |id|. Sets $(ref:runtime.lastError) on failure.
     static void getDeviceData(DOMString id, GetDeviceDataCallback callback);

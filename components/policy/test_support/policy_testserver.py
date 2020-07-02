@@ -108,6 +108,16 @@ try:
 except ImportError:
   dp = None
 
+# pyopenssl is only reliably available on Chrome OS builds.
+# This is currently OK because policy_testserver.py's support for certificate
+# provisioning is only used in Tast test for now.
+# TODO(https://bugs.chromium.org/p/chromium/issues/detail?id=1101729): Switch
+# to issuing certificates in the test..
+try:
+    from OpenSSL import crypto
+except ImportError:
+    crypto = None
+
 # ASN.1 object identifier for PKCS#1/RSA.
 PKCS1_RSA_OID = b'\x2a\x86\x48\x86\xf7\x0d\x01\x01\x01'
 
@@ -205,6 +215,37 @@ POLICY_COMMON_DEFINITIONS_TYPES = [
   'StringPolicyProto',
   'StringListPolicyProto'
 ]
+
+# Private key used for issuing certificates for issuing certificates
+# for the built-in certificate provisioning feature.
+CERT_PROVISIONING_CA_PRIVATE_KEY_PEM="""\
+-----BEGIN RSA PRIVATE KEY-----
+MIIEpAIBAAKCAQEAyh01PGm57kraP7TJpCtGEpvSx6OwKJmqCQp/kmr9hfFTrWW3
+W4QgdmprzmYNt8vxtJkRLCz9/4K1lk1hfoDu5Qpx5VaNZ0bcwfzRG/PxcB9+XzZp
+gppqpyq1HACYudqPi9wsxw1qSrB4Av1W+paOpdM6/blchwJpRuOmrb1iwooVYmR/
+CnSDIEppPk5I8iwN3VTq3cSErDrC4Xtquw3jHs4aaq55ZcD31WRumiTkZY6oBZsH
+gzFsy+uCqwfv8aIA6wU0nPo5tfq0xzIjDhAA/ZSkSx05UrEk1S7rgvpRIJMZ/+Pi
+Jz/VX32XOBXyrGuwD+pS9zvtsPQ2rzz9aPhDFwIDAQABAoIBAH8tPdBT3rD43Lf1
+dGQe7qrK7ii88R27A2lI99kUBY8AuVyEgonNa/fXIxru0Hb0l5TCNDIN5Y2fm8+F
+xXEqhCgPGHfsrHFt/375LENgjm21A3m57U5HCBFEKE4EehWIV4bz9iESae2xePK4
+osBveDcT4SzCNFynwcLfgIQWhUxPI7TlwEkR79vcM+l6CtbUVxUW+wTTS/Zp72FM
+sBBNsXIBB0yHh0m30vg43jv3apBaZxogAPx2crWOu1A2NK20gQPgrCIHIjn1Of4e
+JvWSwKFnmF9UzwDQ1KZo25EX4BEirVYYlk84Eq9Ds2ojOVD+mCEfbrEsqPorYl+c
+F2d9CQECgYEA96kRVjhrS/Hbo5KNUOnOBs0uD8hCJ0cGlTRAvkwhGAENolewIuyj
+wwXGfkAV0Rs3qf4HjzVeEiX1QegsHxqFPOhjuDK34pH6caU6UI1R6BAr9H6QmEO9
+53LlKvlX+6kJ+RjXxvmftRFWgPhY526IbXgY4judI1+LR9FPmzyCLEECgYEA0OuD
+Oc//mZomtnBVFiw0RiamERTMsWO6G7QVDs814utHaFVzJWkqVn6eIns5NgfyZ0ZE
+xand7/wUtz0YM0wvdZPllhL0zXSujfqScO3qeE3XLPspv4dom+jdgwr1uR8rE5Av
+8qeLrZaItSWDMKL2+1QX0Frn3k1cMO/wiw+w+VcCgYEAgtK5SL1W2HAzIK3anmJT
+Jb6e1VFouIzJSmmmxZ87YA22YQpHDbvJKczUNH6vx5zEA7Uf0yNSxO1uJ9l37Ro6
+RZlQi82m2zVXgU7RhhmQqbBZN7bftL8cArXrno7GTjbWANKBsSbNmX1GH6yQcfgu
+cv0cz+zDrhrbXR2RGqSU8sECgYBmf3VVMsfq+ycNENWd2DgZRrLo5HR8fzn6h4Jh
+TqXYW6gf9vRUIWFlKB+7OQtbh9CUfHQXKfy51cnwEGhEGpeaLuJPm6NA/YL6Izof
+b4o+VapA5kSYM/3NqBStSv49QZ5nrbDocuzjUFxnyyyu+vUDX0GDtmXVucyGMeGo
+yB0CZwKBgQDZ8RwInbSZbAo2/fjIxFGxxV0tSRH1n5L27QB5jzikXW+6jBOYRDQh
+fHXdC808L+jJ0zgOBlJbbCM3TliiVqDE6Lcc3GShA1mrjvGmAy05e1ejgGZYX7c5
+C97TFZS6CD+9uC2FV4RWJuO56kCGlDVLI3/iwIThtywvDt0qKnSsGA==
+-----END RSA PRIVATE KEY-----"""
 
 class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
   """Decodes and handles device management requests from clients.
@@ -365,6 +406,9 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     elif request_type == 'app_install_report':
       response = self.ProcessAppInstallReportRequest(
           rmsg.app_install_report_request)
+    elif request_type == 'client_cert_provisioning':
+      response = self.ProcessClientCertProvisioningRequest(
+          rmsg.client_certificate_provisioning_request)
     else:
       return (400, 'Invalid request parameter')
 
@@ -1221,6 +1265,89 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
               client_key['private_key'].hashAndSign(response.new_public_key))
 
     return (200, response.SerializeToString())
+
+  def ProcessClientCertProvisioningRequest(self, msg):
+    """Handles a client certificate provisioning request.
+
+    Issues a client certificate generated with the public key provided and
+    sends it back to the requesting client.
+
+    Args:
+      msg: The ClientCertificateProvisioningRequest message received from the
+        client. Contains one of start_csr_request, finish_csr_request, or
+        download_cert_request.
+
+    Returns:
+      A tuple of HTTP status code and a ClientCertificateProvisioningResponse
+      message that is filled with hard coded data and in the case of a
+      download_cert_request in addition with the generated certificate.
+    """
+
+    if crypto == None:
+      return (400, 'Could not find pyopenssl.')
+
+    if msg.HasField('start_csr_request'):
+      start_csr_response = dm.StartCsrResponse()
+
+      # real but outdated b64 encoded verified access challenge received from
+      # the Enterprise Verified Access Test extension
+      va_challenge_b64 = (
+        'CkEKFkVudGVycHJpc2VLZXlDaGFsbGVuZ2USIO6YSl1AvTjbEvRukIFMF2pA4AwCc1w4f'
+        'ZX3n3sGcLInGOPh+IWKLhKAAm/WHGk7ahCjPk4IXLfDlUUmmZdfW1scNcwkKk/x24Znvb'
+        'T7tyrmxLzO5nG69ycW7f+2bacbtfGlf0UOGeljcqBIIoHjJPlm0d2gCTa2msghS9ovaSg'
+        '/wbY5DPeNkcG5drDq5Es5hzlZ49Bhvv5cAbDDsGNobPJQ3ojbu/mrdlb3mlB1oNTmbfoP'
+        'TBrr6n9JXvywsJmHyInTySiFPOR8TT1cQoDA0pZ0ccHMJfLia1/FCW/pGpI6GpSzCQLq2'
+        'hH0cFVuef3lGn09EeUHTPejbm6gcrHe9VDAFXMI8SzUlgMBBjHtTpo9GXJbwkTrGFXdkE'
+        'U5BY1KukrsIVqdmAGFTDM='
+      )
+
+      va_challenge = base64.b64decode(va_challenge_b64)
+      start_csr_response.invalidation_topic = 'invalidation_topic_123'
+      start_csr_response.va_challenge = va_challenge
+      start_csr_response.hashing_algorithm = 2
+      start_csr_response.signing_algorithm = 1
+      start_csr_response.data_to_sign = 'data_to_sign_123'
+
+      response = dm.DeviceManagementResponse()
+      response.client_certificate_provisioning_response.start_csr_response.\
+          CopyFrom(start_csr_response)
+      return (200, response)
+
+    if msg.HasField('finish_csr_request'):
+      finish_csr_response = dm.FinishCsrResponse()
+
+      response = dm.DeviceManagementResponse()
+      response.client_certificate_provisioning_response.finish_csr_response.\
+          CopyFrom(finish_csr_response)
+      return (200, response)
+
+    if msg.HasField('download_cert_request'):
+      download_cert_response = dm.DownloadCertResponse()
+
+      pubKey = crypto.load_publickey(crypto.FILETYPE_ASN1, msg.public_key)
+
+      caPrivKey = crypto.load_privatekey(
+        crypto.FILETYPE_PEM, CERT_PROVISIONING_CA_PRIVATE_KEY_PEM, 'pass')
+
+      cert = crypto.X509()
+      cert.set_serial_number(3)
+      cert.gmtime_adj_notBefore(0)
+      cert.gmtime_adj_notAfter(365*24*60*60)
+      cert.get_subject().CN = "TastTest"
+      cert.set_issuer(cert.get_subject())
+      cert.set_issuer(cert.get_subject())
+      cert.set_pubkey(pubKey)
+      cert.sign(caPrivKey, 'sha256')
+
+      download_cert_response.pem_encoded_certificate  =\
+        crypto.dump_certificate(crypto.FILETYPE_PEM, cert)
+
+      response = dm.DeviceManagementResponse()
+      response.client_certificate_provisioning_response.\
+        download_cert_response.CopyFrom(download_cert_response)
+      return (200, response)
+
+    return (400, 'Invalid request parameter')
 
   def GetSignatureForDomain(self, signatures, username):
     parsed_username = username.split("@", 1)

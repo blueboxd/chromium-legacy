@@ -37,6 +37,7 @@ class StubDeviceFetcher : public DeviceInfoFetcher {
         ::extensions::api::enterprise_reporting_private::SETTING_VALUE_ENABLED;
     device_info.disk_encrypted =
         ::extensions::api::enterprise_reporting_private::SETTING_VALUE_DISABLED;
+    device_info.mac_addresses.push_back("00:00:00:00:00:00");
     return device_info;
   }
 

@@ -392,8 +392,7 @@ ManagedDisplayInfo DisplayChangeObserver::CreateManagedDisplayInfo(
   // TODO(crbug.com/1012846): Remove kEnableUseHDRTransferFunction usage when
   // HDR is fully supported on ChromeOS.
   const bool allow_high_bit_depth =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableUseHDRTransferFunction);
+      base::FeatureList::IsEnabled(features::kUseHDRTransferFunction);
   new_info.set_display_color_spaces(
       FillDisplayColorSpaces(snapshot->color_space(), allow_high_bit_depth));
   constexpr int32_t kNormalBitDepth = 8;

@@ -108,11 +108,6 @@ class BookmarkLoadDetails {
   UrlIndex* url_index() { return url_index_.get(); }
 
  private:
-  // Creates one of the possible permanent nodes (bookmark bar node, other node
-  // and mobile node) from |type|. The node is added to (and owned by) |root_|.
-  BookmarkPermanentNode* CreatePermanentNode(BookmarkClient* client,
-                                             BookmarkNode::Type type);
-
   std::unique_ptr<BookmarkNode> root_node_;
   BookmarkNode* root_node_ptr_;
   BookmarkPermanentNode* bb_node_ = nullptr;

@@ -36,6 +36,11 @@ void AddContentSecurityPolicyFromHeaders(
     const GURL& base_url,
     std::vector<mojom::ContentSecurityPolicyPtr>* out);
 
+// Parse and return the Allow-CSP-From header value from |headers|.
+COMPONENT_EXPORT(NETWORK_CPP)
+mojom::AllowCSPFromHeaderValuePtr ParseAllowCSPFromHeader(
+    const net::HttpResponseHeaders& headers);
+
 // Return true when the |policy| allows a request to the |url| in relation to
 // the |directive| for a given |context|.
 // Note: Any policy violation are reported to the |context|.

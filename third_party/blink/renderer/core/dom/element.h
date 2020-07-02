@@ -1096,7 +1096,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   virtual int DefaultTabIndex() const;
 
   const ComputedStyle* VirtualEnsureComputedStyle(
-      PseudoId pseudo_element_specifier = kPseudoIdNone) override {
+      PseudoId pseudo_element_specifier = kPseudoIdNone) final {
     return EnsureComputedStyle(pseudo_element_specifier);
   }
 

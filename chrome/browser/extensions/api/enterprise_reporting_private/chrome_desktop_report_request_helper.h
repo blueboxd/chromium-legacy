@@ -57,10 +57,12 @@ void RetrieveDeviceData(
 
 // Get the Endpoint Verification secret (symmetric key) for this system. If no
 // password exists in the Registry then one is generated, stored in the
-// Registry, and returned.
+// Registry, and returned. If the |force_recreate| flag is set to true then
+// the secret is also recreated on any error upon retrieval.
 // If one exists then it is fetched from the Registry and returned.
 // If an error occurs then the second parameter is false.
 void RetrieveDeviceSecret(
+    bool force_recreate,
     base::OnceCallback<void(const std::string&, long int)> callback);
 
 }  // namespace extensions

@@ -24,6 +24,8 @@ mojom::ParsedHeadersPtr PopulateParsedHeaders(
   AddContentSecurityPolicyFromHeaders(*headers, url,
                                       &parsed_headers->content_security_policy);
 
+  parsed_headers->allow_csp_from = ParseAllowCSPFromHeader(*headers);
+
   parsed_headers->cross_origin_embedder_policy =
       ParseCrossOriginEmbedderPolicy(*headers);
   parsed_headers->cross_origin_opener_policy =

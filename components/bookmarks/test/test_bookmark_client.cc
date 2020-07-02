@@ -43,8 +43,7 @@ std::unique_ptr<BookmarkModel> TestBookmarkClient::CreateModelWithClient(
 }
 
 BookmarkPermanentNode* TestBookmarkClient::EnableManagedNode() {
-  managed_node_ = std::make_unique<BookmarkPermanentNode>(
-      100, BookmarkNode::FOLDER, /*visible_when_empty=*/false);
+  managed_node_ = BookmarkPermanentNode::CreateManagedBookmarks(/*id=*/100);
   // Keep a copy of the node in |unowned_managed_node_| for the accessor
   // functions.
   unowned_managed_node_ = managed_node_.get();

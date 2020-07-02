@@ -41,17 +41,13 @@ void WebAppRegistrar::Shutdown() {
 }
 
 bool WebAppRegistrar::IsInstalled(const AppId& app_id) const {
-  return GetAppById(app_id) != nullptr;
+  const WebApp* web_app = GetAppById(app_id);
+  return web_app && !web_app->is_in_sync_install();
 }
 
 bool WebAppRegistrar::IsLocallyInstalled(const AppId& app_id) const {
   auto* web_app = GetAppById(app_id);
   return web_app ? web_app->is_locally_installed() : false;
-}
-
-bool WebAppRegistrar::IsInSyncInstall(const AppId& app_id) const {
-  auto* web_app = GetAppById(app_id);
-  return web_app ? web_app->is_in_sync_install() : false;
 }
 
 bool WebAppRegistrar::WasInstalledByUser(const AppId& app_id) const {

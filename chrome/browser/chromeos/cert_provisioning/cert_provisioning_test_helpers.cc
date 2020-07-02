@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_test_helpers.h"
 
 #include "base/test/gmock_callback_support.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "net/test/cert_builder.h"
@@ -54,7 +55,7 @@ CertificateHelperForTesting::CertificateHelperForTesting(
 CertificateHelperForTesting::~CertificateHelperForTesting() = default;
 
 void CertificateHelperForTesting::GetCertificates(
-    const std::string& token_id,
+    platform_keys::TokenId token_id,
     const platform_keys::GetCertificatesCallback& callback) {
   auto result = std::make_unique<net::CertificateList>();
   *result = cert_list_;

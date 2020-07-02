@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
+#include "components/autofill_assistant/browser/actions/action_delegate_util.h"
 #include "components/autofill_assistant/browser/client_status.h"
 
 namespace autofill_assistant {
@@ -169,9 +170,9 @@ void SetFormFieldValueAction::OnSetFieldValue(int next,
       /* next = */ next + 1);
   const auto& field_input = field_inputs_[next];
   if (field_input.keyboard_input) {
-    delegate_->SendKeyboardInput(selector_, *field_input.keyboard_input,
-                                 delay_in_millisecond,
-                                 std::move(next_field_callback));
+    ActionDelegateUtil::SendKeyboardInput(
+        delegate_, selector_, *field_input.keyboard_input, delay_in_millisecond,
+        std::move(next_field_callback));
   } else if (field_input.password_type != PasswordValueType::NOT_SET) {
     switch (field_input.password_type) {
       case PasswordValueType::NOT_SET:
@@ -188,12 +189,13 @@ void SetFormFieldValueAction::OnSetFieldValue(int next,
   } else {
     auto fill_strategy = proto_.set_form_value().fill_strategy();
     if (IsSimulatingKeyPresses(fill_strategy)) {
-      delegate_->SetFieldValue(selector_, field_input.value, fill_strategy,
-                               delay_in_millisecond,
-                               std::move(next_field_callback));
+      ActionDelegateUtil::SetFieldValue(delegate_, selector_, field_input.value,
+                                        fill_strategy, delay_in_millisecond,
+                                        std::move(next_field_callback));
     } else {
-      delegate_->SetFieldValue(
-          selector_, field_input.value, fill_strategy, delay_in_millisecond,
+      ActionDelegateUtil::SetFieldValue(
+          delegate_, selector_, field_input.value, fill_strategy,
+          delay_in_millisecond,
           base::BindOnce(
               &SetFormFieldValueAction::OnSetFieldValueAndCheckFallback,
               weak_ptr_factory_.GetWeakPtr(),
@@ -238,8 +240,8 @@ void SetFormFieldValueAction::OnGetFieldValue(
 
     // Run |SetFieldValue| with keyboard simulation on and move on to next value
     // afterwards.
-    delegate_->SetFieldValue(
-        selector_, requested_value, SIMULATE_KEY_PRESSES,
+    ActionDelegateUtil::SetFieldValue(
+        delegate_, selector_, requested_value, SIMULATE_KEY_PRESSES,
         proto_.set_form_value().delay_in_millisecond(),
         base::BindOnce(&SetFormFieldValueAction::OnSetFieldValue,
                        weak_ptr_factory_.GetWeakPtr(),
@@ -261,14 +263,14 @@ void SetFormFieldValueAction::OnGetStoredPassword(int field_index,
   auto fill_strategy = proto_.set_form_value().fill_strategy();
   int delay_in_millisecond = proto_.set_form_value().delay_in_millisecond();
   if (IsSimulatingKeyPresses(fill_strategy)) {
-    delegate_->SetFieldValue(
-        selector_, password, fill_strategy, delay_in_millisecond,
+    ActionDelegateUtil::SetFieldValue(
+        delegate_, selector_, password, fill_strategy, delay_in_millisecond,
         base::BindOnce(&SetFormFieldValueAction::OnSetFieldValue,
                        weak_ptr_factory_.GetWeakPtr(),
                        /* next = */ field_index + 1));
   } else {
-    delegate_->SetFieldValue(
-        selector_, password, fill_strategy, delay_in_millisecond,
+    ActionDelegateUtil::SetFieldValue(
+        delegate_, selector_, password, fill_strategy, delay_in_millisecond,
         base::BindOnce(
             &SetFormFieldValueAction::OnSetFieldValueAndCheckFallback,
             weak_ptr_factory_.GetWeakPtr(),

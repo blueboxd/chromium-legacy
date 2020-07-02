@@ -55,8 +55,6 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode>, public TitledUrlNode {
 
   ~BookmarkNode() override;
 
-  static std::string RootNodeGuid();
-
   // Returns true if the node is a BookmarkPermanentNode (which does not include
   // the root).
   bool is_permanent_node() const { return is_permanent_node_; }
@@ -223,14 +221,37 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode>, public TitledUrlNode {
 // Node used for the permanent folders (excluding the root).
 class BookmarkPermanentNode : public BookmarkNode {
  public:
-  // TODO(mastiz): Remove default value for |visible_when_empty|.
-  BookmarkPermanentNode(int64_t id, Type type, bool visible_when_empty = false);
+  // Permanent nodes are well-known, it's not allowed to create arbitrary ones.
+  static std::unique_ptr<BookmarkPermanentNode> CreateManagedBookmarks(
+      int64_t id);
+
   ~BookmarkPermanentNode() override;
 
   // BookmarkNode overrides:
   bool IsVisible() const override;
 
  private:
+  friend class BookmarkLoadDetails;
+
+  // Permanent nodes are well-known, it's not allowed to create arbitrary ones.
+  static std::unique_ptr<BookmarkPermanentNode> CreateBookmarkBar(
+      int64_t id,
+      bool visible_when_empty);
+  static std::unique_ptr<BookmarkPermanentNode> CreateOtherBookmarks(
+      int64_t id,
+      bool visible_when_empty);
+  static std::unique_ptr<BookmarkPermanentNode> CreateMobileBookmarks(
+      int64_t id,
+      bool visible_when_empty);
+
+  // Constructor is private to disallow the construction of permanent nodes
+  // other than the well-known ones, see factory methods.
+  BookmarkPermanentNode(int64_t id,
+                        Type type,
+                        const std::string& guid,
+                        const base::string16& title,
+                        bool visible_when_empty);
+
   const bool visible_when_empty_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkPermanentNode);

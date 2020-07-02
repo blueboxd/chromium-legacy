@@ -45,6 +45,10 @@ declare_args() {
 
   # Enables generating Typescript bindings and compiling them to JS bindings.
   enable_typescript_bindings = false
+
+  # Enables generating javascript fuzzing-related code and the bindings for the
+  # MojoLPM fuzzer targets. Off by default.
+  enable_mojom_fuzzer = false
 }
 
 # NOTE: We would like to avoid scrambling message IDs where it doesn't add
@@ -226,7 +230,7 @@ if (enable_mojom_typemapping) {
 #   cpp_only (optional)
 #       If set to true, only the C++ bindings targets will be generated.
 #
-#       NOTE: If the global |enable_ipc_fuzzer| build arg is true, JS bindings
+#       NOTE: If the global |enable_mojom_fuzzer| build arg is true, JS bindings
 #       will still be generated even when |cpp_only| is set to |true|, unless
 #       you also set |enable_fuzzing| to |false| in your mojom target.
 #
@@ -249,7 +253,7 @@ if (enable_mojom_typemapping) {
 #
 #   enable_fuzzing (optional)
 #       Enables generation of fuzzing sources for the target if the global build
-#       arg |enable_ipc_fuzzer| is also set to |true|. Defaults to |true|. If
+#       arg |enable_mojom_fuzzer| is also set to |true|. Defaults to |true|. If
 #       fuzzing generation is enabled for a target, the target will always
 #       generate JS bindings even if |cpp_only| is set to |true|. See note
 #       above.
@@ -613,7 +617,7 @@ template("mojom") {
 
   generate_fuzzing =
       (!defined(invoker.enable_fuzzing) || invoker.enable_fuzzing) &&
-      enable_ipc_fuzzer && (!defined(invoker.testonly) || !invoker.testonly)
+      enable_mojom_fuzzer && (!defined(invoker.testonly) || !invoker.testonly)
 
   parser_target_name = "${target_name}__parser"
   parser_deps = []

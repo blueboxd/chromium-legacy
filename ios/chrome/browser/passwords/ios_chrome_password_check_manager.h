@@ -65,6 +65,10 @@ class IOSChromePasswordCheckManager
   std::vector<password_manager::CredentialWithPassword>
   GetCompromisedCredentials() const;
 
+  password_manager::SavedPasswordsPresenter::SavedPasswordsView
+  GetSavedPasswordsFor(
+      const password_manager::CredentialWithPassword& credential) const;
+
   void AddObserver(Observer* observer) { observers_.AddObserver(observer); }
   void RemoveObserver(Observer* observer) {
     observers_.RemoveObserver(observer);

@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_common.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/platform_keys/mock_platform_keys_service.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -33,7 +34,7 @@ struct CertificateHelperForTesting {
   const net::CertificateList& GetCerts() const;
 
  private:
-  void GetCertificates(const std::string& token_id,
+  void GetCertificates(platform_keys::TokenId token_id,
                        const platform_keys::GetCertificatesCallback& callback);
 
   platform_keys::MockPlatformKeysService* platform_keys_service_ = nullptr;

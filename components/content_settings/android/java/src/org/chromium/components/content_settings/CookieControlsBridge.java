@@ -69,8 +69,8 @@ public class CookieControlsBridge {
     }
 
     @CalledByNative
-    private void onBlockedCookiesCountChanged(int blockedCookies) {
-        mObserver.onBlockedCookiesCountChanged(blockedCookies);
+    private void onCookiesCountChanged(int allowedCookies, int blockedCookies) {
+        mObserver.onCookiesCountChanged(allowedCookies, blockedCookies);
     }
 
     @NativeMethods

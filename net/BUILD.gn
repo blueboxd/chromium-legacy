@@ -1484,23 +1484,23 @@ component("net") {
   cflags = []
 
   if (is_mac) {
-    libs = [
+    libs = [ "resolv" ]
+    frameworks = [
       "CFNetwork.framework",
       "CoreServices.framework",
       "Foundation.framework",
       "Security.framework",
       "SystemConfiguration.framework",
-      "resolv",
     ]
   }
 
   if (is_ios) {
-    libs = [
+    libs = [ "resolv" ]
+    frameworks = [
       "CFNetwork.framework",
       "MobileCoreServices.framework",
       "Security.framework",
       "SystemConfiguration.framework",
-      "resolv",
     ]
   }
 
@@ -2239,7 +2239,7 @@ static_library("test_support") {
   data = [ "data/" ]
 
   if (is_mac) {
-    libs = [ "Security.framework" ]
+    frameworks = [ "Security.framework" ]
   }
 
   if (is_ios) {
@@ -2336,7 +2336,7 @@ if (!is_ios && !is_android) {
     ]
 
     if (is_mac) {
-      libs = [ "Security.framework" ]
+      frameworks = [ "Security.framework" ]
     }
   }
 
@@ -4606,7 +4606,7 @@ test("net_unittests") {
   }
 
   if (is_mac) {
-    libs = [ "Security.framework" ]
+    frameworks = [ "Security.framework" ]
   }
 
   if (!is_win) {

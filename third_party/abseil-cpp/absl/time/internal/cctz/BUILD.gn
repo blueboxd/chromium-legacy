@@ -37,7 +37,7 @@ absl_source_set("time_zone") {
     "include/cctz/zone_info_source.h",
   ]
   if (is_mac || is_ios) {
-    libs = [ "Foundation.framework" ]
+    frameworks = [ "Foundation.framework" ]
   }
   deps = [
     ":civil_time",

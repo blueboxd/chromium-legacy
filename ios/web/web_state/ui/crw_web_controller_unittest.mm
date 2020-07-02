@@ -378,7 +378,7 @@ TEST_F(CRWWebControllerTest, WebViewCreatedAfterEnsureWebViewCreated) {
 }
 
 // Test fixture to test JavaScriptDialogPresenter.
-class JavaScriptDialogPresenterTest : public WebTestWithWebState {
+class JavaScriptDialogPresenterTest : public WebTestWithWebController {
  protected:
   JavaScriptDialogPresenterTest() : page_url_("https://chromium.test/") {}
   void SetUp() override {
@@ -466,6 +466,26 @@ TEST_F(JavaScriptDialogPresenterTest, Prompt) {
   EXPECT_EQ(JAVASCRIPT_DIALOG_TYPE_PROMPT, dialog->java_script_dialog_type);
   EXPECT_NSEQ(@"Yes?", dialog->message_text);
   EXPECT_NSEQ(@"No", dialog->default_prompt_text);
+}
+
+// Tests that window.alert, window.confirm and window.prompt dialogs are not
+// shown if URL of presenting main frame is different from visible URL.
+TEST_F(JavaScriptDialogPresenterTest, DifferentVisibleUrl) {
+  ASSERT_TRUE(requested_dialogs().empty());
+
+  // Change visible URL.
+  AddPendingItem(GURL("https://pending.test/"), ui::PAGE_TRANSITION_TYPED);
+  web_controller().webStateImpl->SetIsLoading(true);
+  ASSERT_NE(page_url().GetOrigin(), web_state()->GetVisibleURL().GetOrigin());
+
+  ExecuteJavaScript(@"alert('test')");
+  ASSERT_TRUE(requested_dialogs().empty());
+
+  EXPECT_NSEQ(@NO, ExecuteJavaScript(@"confirm('test')"));
+  ASSERT_TRUE(requested_dialogs().empty());
+
+  EXPECT_NSEQ([NSNull null], ExecuteJavaScript(@"prompt('Yes?', 'No')"));
+  ASSERT_TRUE(requested_dialogs().empty());
 }
 
 // Test fixture for testing visible security state.

@@ -61,6 +61,7 @@ extern const char kFlashVersion[];
 extern const char kJSEngine[];
 extern const char kJSVersion[];
 #endif
+extern const char kLogoAltText[];
 extern const char kOfficial[];
 #if !defined(OS_CHROMEOS)
 extern const char kOSName[];

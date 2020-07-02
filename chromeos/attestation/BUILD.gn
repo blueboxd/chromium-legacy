@@ -12,6 +12,8 @@ component("attestation") {
     "//base",
     "//chromeos/cryptohome",
     "//chromeos/dbus:common",
+    "//chromeos/dbus/attestation",
+    "//chromeos/dbus/attestation:attestation_proto",
     "//chromeos/dbus/cryptohome",
     "//chromeos/dbus/cryptohome:cryptohome_proto",
     "//components/account_id",
@@ -28,6 +30,7 @@ source_set("test_support") {
   public_deps = [ ":attestation" ]
   deps = [
     "//base/test:test_support",
+    "//chromeos/dbus/attestation:attestation_proto",
     "//components/account_id",
     "//testing/gmock",
   ]
@@ -44,6 +47,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//chromeos/cryptohome:test_support",
     "//chromeos/dbus:test_support",
+    "//chromeos/dbus/attestation",
     "//components/account_id",
     "//testing/gmock",
     "//testing/gtest",

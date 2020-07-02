@@ -55,7 +55,7 @@ source_set("first_run") {
     "//ui/gfx",
     "//url",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("constants") {
@@ -110,7 +110,7 @@ source_set("eg2_tests") {
     "//ios/third_party/earl_grey2:test_lib",
     "//ui/base",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("eg_app_support+eg2") {

@@ -1,0 +1,26 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module sharing.mojom;
+
+// Listens for incoming webrtc signaling messages from other peers.
+interface IncomingMessagesListener {
+  // Called by the browser process when a new message is received.
+  OnMessage(string message);
+};
+
+// Runs in browser process and is used by the nearby library to send and
+// receive messages.
+interface WebRtcSignalingMessenger {
+  // Sends a signaling message |message| to |peer_id|.
+  SendMessage(string self_id, string peer_id, string message)
+    => (bool success);
+
+  // Registers |listener| to start receiving messages from other devices.
+  StartReceivingMessages(string self_id,
+    pending_remote<IncomingMessagesListener> listener) => (bool success);
+
+  // Unregisters listener and stops receiving messages from other devices.
+  StopReceivingMessages();
+};

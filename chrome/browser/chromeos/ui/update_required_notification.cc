@@ -23,6 +23,12 @@ const char kUpdateRequiredNotificationId[] = "policy.update_required";
 base::string16 GetTitle(NotificationType type, int days_remaining) {
   // TODO(https://crbug.com/1048607): Add and use title strings for weeks if
   // |days_remaining| >= 7.
+  // |days_remaining| could be zero if we are very close to the deadline, like
+  // 10 minutes as we round of the time remaining into days. In this case, we
+  // need to show the last day notification title which does not mention the
+  // number of remaining days but is rather a generic string like 'Immediate
+  // update required'.
+  days_remaining = days_remaining > 1 ? days_remaining : 1;
   switch (type) {
     case NotificationType::kNoConnection:
     case NotificationType::kMeteredConnection:

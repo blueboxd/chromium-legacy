@@ -32,7 +32,7 @@ jumbo_component("util") {
   if (is_chromeos) {
     deps += [ "//ui/display/types" ]
   } else if (is_mac) {
-    libs = [ "IOSurface.framework" ]
+    frameworks = [ "IOSurface.framework" ]
   }
 }
 

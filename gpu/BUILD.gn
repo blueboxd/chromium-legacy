@@ -267,7 +267,7 @@ if (!is_android && !is_fuchsia && !is_chromeos) {
     defines = [ "GL_GLEXT_PROTOTYPES" ]
 
     if (is_mac) {
-      libs = [ "IOSurface.framework" ]
+      frameworks = [ "IOSurface.framework" ]
     }
 
     deps = [

@@ -13,9 +13,15 @@
 #include "ash/public/cpp/ambient/ambient_backend_controller.h"
 #include "ash/shell.h"
 #include "base/barrier_closure.h"
+#include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/hash/sha1.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/system/sys_info.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "base/timer/timer.h"
@@ -52,7 +58,7 @@ TEST_F(AmbientPhotoControllerTest, ShouldStartToDownloadImages) {
 
   // Start to refresh images.
   photo_controller()->StartScreenUpdate();
-  base::RunLoop().RunUntilIdle();
+  task_environment()->FastForwardBy(1.2 * kPhotoRefreshInterval);
   image = photo_controller()->ambient_backend_model()->GetNextImage();
   EXPECT_FALSE(image.isNull());
 
@@ -70,7 +76,7 @@ TEST_F(AmbientPhotoControllerTest, ShouldUpdatePhotoPeriodically) {
 
   // Start to refresh images.
   photo_controller()->StartScreenUpdate();
-  base::RunLoop().RunUntilIdle();
+  task_environment()->FastForwardBy(1.2 * kPhotoRefreshInterval);
   image1 = photo_controller()->ambient_backend_model()->GetNextImage();
   EXPECT_FALSE(image1.isNull());
   EXPECT_TRUE(image2.isNull());
@@ -88,6 +94,36 @@ TEST_F(AmbientPhotoControllerTest, ShouldUpdatePhotoPeriodically) {
   EXPECT_FALSE(image3.isNull());
   EXPECT_FALSE(image1.BackedBySameObjectAs(image3));
   EXPECT_FALSE(image2.BackedBySameObjectAs(image3));
+
+  // Stop to refresh images.
+  photo_controller()->StopScreenUpdate();
+}
+
+// Test that image is saved and deleted when starting/stopping screen update.
+TEST_F(AmbientPhotoControllerTest, ShouldSaveAndDeleteImagesOnDisk) {
+  base::FilePath home_dir;
+  base::PathService::Get(base::DIR_HOME, &home_dir);
+
+  // Start to refresh images.
+  photo_controller()->StartScreenUpdate();
+  base::FilePath root_path =
+      home_dir.Append(FILE_PATH_LITERAL(kAmbientModeDirectoryName));
+  EXPECT_TRUE(!base::PathExists(root_path) ||
+              base::IsDirectoryEmpty(root_path));
+
+  task_environment()->FastForwardBy(1.2 * kPhotoRefreshInterval);
+  auto image = photo_controller()->ambient_backend_model()->GetNextImage();
+  EXPECT_FALSE(image.isNull());
+  EXPECT_TRUE(base::PathExists(root_path));
+  EXPECT_FALSE(base::IsDirectoryEmpty(root_path));
+
+  // Stop to refresh images.
+  photo_controller()->StopScreenUpdate();
+  task_environment()->FastForwardBy(1.2 * kPhotoRefreshInterval);
+  image = photo_controller()->ambient_backend_model()->GetNextImage();
+  EXPECT_TRUE(image.isNull());
+  EXPECT_TRUE(base::PathExists(root_path));
+  EXPECT_TRUE(base::IsDirectoryEmpty(root_path));
 }
 
 }  // namespace ash

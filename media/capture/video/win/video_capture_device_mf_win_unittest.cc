@@ -1265,6 +1265,37 @@ TEST_F(VideoCaptureDeviceMFWinTest, CallClientOnFireCaptureEngineInitEarly) {
   EXPECT_TRUE(device->Init());
 }
 
+// Send MFVideoCallback::OnEvent when VideoCaptureDeviceMFWin has been destroyed
+TEST_F(VideoCaptureDeviceMFWinTest,
+       SendMFVideoCallbackAfterVideoCaptureDeviceMFWinDestructor) {
+  if (ShouldSkipTest())
+    return;
+
+  VideoCaptureDeviceDescriptor descriptor = VideoCaptureDeviceDescriptor();
+  Microsoft::WRL::ComPtr<MockMFMediaSource> media_source =
+      new MockMFMediaSource();
+  Microsoft::WRL::ComPtr<MockMFCaptureEngine> engine =
+      new MockMFCaptureEngine();
+  std::unique_ptr<VideoCaptureDeviceMFWin> device =
+      std::make_unique<VideoCaptureDeviceMFWin>(descriptor, media_source,
+                                                engine);
+
+  EXPECT_CALL(*(engine.Get()), OnInitEventGuid).WillOnce([]() {
+    return MF_CAPTURE_ENGINE_INITIALIZED;
+  });
+
+  EXPECT_CALL(*(engine.Get()), OnCorrectInitializeQueued());
+
+  EXPECT_TRUE(device->Init());
+
+  // Force ~VideoCaptureDeviceMFWin() which will invalidate
+  // MFVideoCallback::observer_
+  device.reset();
+  // Send event to MFVideoCallback::OnEvent
+  engine->FireCaptureEvent(MF_CAPTURE_ENGINE_ERROR,
+                           MF_E_VIDEO_RECORDING_DEVICE_INVALIDATED);
+}
+
 // Allocates device with flaky methods failing with MF_E_INVALIDREQUEST and
 // expects the device to retry and start correctly
 TEST_F(VideoCaptureDeviceMFWinTest, AllocateAndStartWithFlakyInvalidRequest) {

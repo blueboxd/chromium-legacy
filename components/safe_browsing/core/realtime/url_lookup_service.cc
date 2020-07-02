@@ -231,9 +231,4 @@ RealTimeUrlLookupService::GetTrafficAnnotationTag() const {
         })");
 }
 
-GURL RealTimeUrlLookupService::GetRealTimeLookupUrl() const {
-  return GURL(
-      "https://safebrowsing.google.com/safebrowsing/clientreport/realtime");
-}
-
 }  // namespace safe_browsing

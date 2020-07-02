@@ -170,7 +170,7 @@ public class NavigationHandler {
     public boolean onScroll(
             float startX, float distanceX, float distanceY, float endX, float endY) {
         // onScroll needs handling only after the state moves away from |NONE|.
-        if (mState == GestureState.NONE || mActionDelegate == null) return true;
+        if (mState == GestureState.NONE) return true;
 
         if (mState == GestureState.STARTED) {
             if (shouldTriggerUi(startX, distanceX, distanceY)) {
@@ -342,17 +342,12 @@ public class NavigationHandler {
         // The animation view is attached/detached on-demand to minimize overlap
         // with composited SurfaceView content.
         cancelDetachLayoutRunnable();
-        if (isLayoutDetached()) mParentView.addView(mSideSlideLayout);
+        if (mSideSlideLayout.getParent() == null) mParentView.addView(mSideSlideLayout);
     }
 
     private void detachLayoutIfNecessary() {
         if (mSideSlideLayout == null) return;
         cancelDetachLayoutRunnable();
-        if (!isLayoutDetached()) mParentView.removeView(mSideSlideLayout);
-    }
-
-    @VisibleForTesting
-    boolean isLayoutDetached() {
-        return mSideSlideLayout == null || mSideSlideLayout.getParent() == null;
+        if (mSideSlideLayout.getParent() != null) mParentView.removeView(mSideSlideLayout);
     }
 }

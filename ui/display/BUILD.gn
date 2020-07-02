@@ -113,7 +113,7 @@ jumbo_component("display") {
   }
 
   if (is_mac) {
-    libs = [
+    frameworks = [
       "AppKit.framework",
       "CoreGraphics.framework",
       "QuartzCore.framework",

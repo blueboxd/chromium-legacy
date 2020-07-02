@@ -1,6 +1,8 @@
 include_rules = [
   "+components/lookalikes/core",
+  "+components/ukm/ios",
   "+components/url_formatter",
   "+ios/net",
   "+net/base",
+  "+services/metrics/public/cpp",
 ]

@@ -27,7 +27,7 @@ source_set("voice") {
     "//ios/web/public",
   ]
 
-  libs = [ "AVFoundation.framework" ]
+  frameworks = [ "AVFoundation.framework" ]
 }
 
 source_set("unit_tests") {

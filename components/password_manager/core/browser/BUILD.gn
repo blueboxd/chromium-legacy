@@ -166,6 +166,7 @@ jumbo_static_library("browser") {
     "password_manager_driver.h",
     "password_manager_features_util.cc",
     "password_manager_features_util.h",
+    "password_manager_interface.h",
     "password_manager_metrics_recorder.cc",
     "password_manager_metrics_recorder.h",
     "password_manager_metrics_util.cc",

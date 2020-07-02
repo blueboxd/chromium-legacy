@@ -5,6 +5,9 @@
 #ifndef ASH_AMBIENT_AMBIENT_PHOTO_CONTROLLER_H_
 #define ASH_AMBIENT_AMBIENT_PHOTO_CONTROLLER_H_
 
+#include <memory>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "ash/ambient/model/ambient_backend_model.h"
@@ -13,16 +16,48 @@
 #include "ash/public/cpp/ambient/ambient_backend_controller.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "base/timer/timer.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 namespace gfx {
 class ImageSkia;
 }  // namespace gfx
 
 namespace ash {
+
+// A wrapper class of SimpleURLLoader to download the photo raw data. In the
+// test, this will be used to provide fake data.
+class ASH_EXPORT AmbientURLLoader {
+ public:
+  AmbientURLLoader() = default;
+  AmbientURLLoader(const AmbientURLLoader&) = delete;
+  AmbientURLLoader& operator=(const AmbientURLLoader&) = delete;
+  virtual ~AmbientURLLoader() = default;
+
+  // Download data from the given |url|.
+  virtual void Download(
+      const std::string& url,
+      network::SimpleURLLoader::BodyAsStringCallback callback) = 0;
+};
+
+// A wrapper class of |data_decoder| to decode the photo raw data. In the test,
+// this will be used to provide fake data.
+class ASH_EXPORT AmbientImageDecoder {
+ public:
+  AmbientImageDecoder() = default;
+  AmbientImageDecoder(const AmbientImageDecoder&) = delete;
+  AmbientImageDecoder& operator=(const AmbientImageDecoder&) = delete;
+  virtual ~AmbientImageDecoder() = default;
+
+  // Decode |encoded_bytes| to ImageSkia.
+  virtual void Decode(
+      const std::vector<uint8_t>& encoded_bytes,
+      base::OnceCallback<void(const gfx::ImageSkia&)> callback) = 0;
+};
 
 // Class to handle photos in ambient mode.
 class ASH_EXPORT AmbientPhotoController : public AmbientBackendModelObserver {
@@ -75,19 +110,41 @@ class ASH_EXPORT AmbientPhotoController : public AmbientBackendModelObserver {
   // Return a topic to download the image.
   const AmbientModeTopic& GetNextTopic();
 
-  void GetNextImage();
-
   void OnScreenUpdateInfoFetched(const ash::ScreenUpdate& screen_update);
+
+  // Try to read photo raw data from disk.
+  void TryReadPhotoRawData();
+
+  // If photo raw data is read successfully, call OnPhotoRawDataAvailable() to
+  // decode data. Otherwise, download the raw data and save to disk.
+  void OnPhotoRawDataRead(const std::string& image_url,
+                          std::unique_ptr<std::string> data);
+
+  void OnPhotoRawDataAvailable(const std::string& image_url,
+                               bool need_to_save,
+                               std::unique_ptr<std::string> response_body);
+
+  void DecodePhotoRawData(std::unique_ptr<std::string> data);
+
+  void OnPhotoDecoded(const gfx::ImageSkia& image);
 
   void StartDownloadingWeatherConditionIcon(
       const ash::ScreenUpdate& screen_update);
-
-  void OnPhotoDownloaded(const gfx::ImageSkia& image);
 
   // Invoked upon completion of the weather icon download, |icon| can be a null
   // image if the download attempt from the url failed.
   void OnWeatherConditionIconDownloaded(base::Optional<float> temp_f,
                                         const gfx::ImageSkia& icon);
+
+  void set_url_loader_for_testing(
+      std::unique_ptr<AmbientURLLoader> url_loader) {
+    url_loader_ = std::move(url_loader);
+  }
+
+  void set_image_decoder_for_testing(
+      std::unique_ptr<AmbientImageDecoder> image_decoder) {
+    image_decoder_ = std::move(image_decoder);
+  }
 
   AmbientBackendModel ambient_backend_model_;
 
@@ -101,7 +158,15 @@ class ASH_EXPORT AmbientPhotoController : public AmbientBackendModelObserver {
   int topics_batch_fetched_ = 0;
 
   ScopedObserver<AmbientBackendModel, AmbientBackendModelObserver>
-      ambient_backedn_model_observer_{this};
+      ambient_backend_model_observer_{this};
+
+  base::FilePath root_path_;
+
+  std::unique_ptr<AmbientURLLoader> url_loader_;
+
+  std::unique_ptr<AmbientImageDecoder> image_decoder_;
+
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   base::WeakPtrFactory<AmbientPhotoController> weak_factory_{this};
 

@@ -18,7 +18,7 @@ source_set("device_check_eg2_tests") {
     "//ios/third_party/earl_grey2:test_lib",
     "//url",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("hooks") {
@@ -169,7 +169,7 @@ source_set("eg_app_support+eg2") {
     "//ui/base",
     "//ui/base:test_support",
   ]
-  libs = [ "IOKit.framework" ]
+  frameworks = [ "IOKit.framework" ]
 
   all_dependent_configs = [ "//third_party/protobuf:protobuf_config" ]
 }

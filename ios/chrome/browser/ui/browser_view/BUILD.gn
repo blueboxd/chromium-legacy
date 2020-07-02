@@ -189,7 +189,7 @@ source_set("browser_view") {
     # Fake dependencies to break cycles
     "//ios/chrome/browser/ui/settings",
   ]
-  libs = [
+  frameworks = [
     "MessageUI.framework",
     "Photos.framework",
     "UIKit.framework",
@@ -283,5 +283,5 @@ source_set("eg2_tests") {
     "//ui/base",
     "//url",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }

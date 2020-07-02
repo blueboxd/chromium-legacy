@@ -60,6 +60,8 @@ PARANOID_MODE = '$ParanoidMode CheckIntegrity\n'
 
 
 def PlatformMeetsHermeticXcodeRequirements(version):
+  if sys.platform != 'darwin':
+    return True
   needed = MAC_MINIMUM_OS_VERSION[version]
   major_version = map(int, platform.release().split('.')[:len(needed)])
   return major_version >= needed
@@ -130,6 +132,9 @@ def InstallXcodeBinaries(version, binaries_root=None):
     RequestCipdAuthentication()
     return 1
 
+  if sys.platform != 'darwin':
+    return 0
+
   # Accept the license for this version of Xcode if it's newer than the
   # currently accepted version.
   cipd_xcode_version_plist_path = os.path.join(
@@ -178,9 +183,6 @@ def InstallXcodeBinaries(version, binaries_root=None):
 
 
 def main():
-  if sys.platform != 'darwin':
-    return 0
-
   if not _UseHermeticToolchain():
     print('Skipping Mac toolchain installation for mac')
     return 0

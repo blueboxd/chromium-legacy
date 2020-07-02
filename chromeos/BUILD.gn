@@ -92,6 +92,8 @@ component("chromeos") {
 
   if (is_printing_ppd_provider_v3) {
     sources += [
+      "printing/ppd_metadata_manager.cc",
+      "printing/ppd_metadata_manager.h",
       "printing/ppd_metadata_parser.cc",
       "printing/ppd_metadata_parser.h",
       "printing/ppd_provider_v3.cc",
@@ -219,6 +221,8 @@ test("chromeos_unittests") {
     sources += [
       "printing/fake_printer_config_cache.cc",
       "printing/fake_printer_config_cache.h",
+      "printing/ppd_metadata_manager_unittest.cc",
+      "printing/ppd_metadata_matchers.h",
       "printing/ppd_metadata_parser_unittest.cc",
       "printing/printer_config_cache_unittest.cc",
     ]

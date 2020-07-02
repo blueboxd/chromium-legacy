@@ -113,7 +113,7 @@ source_set("eg_tests+eg2") {
     "//net:test_support",
   ]
 
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 ios_eg2_test_app_host("ios_web_shell_eg2tests") {

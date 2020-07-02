@@ -11,6 +11,7 @@ from core import platforms
 from telemetry.core import android_platform
 from telemetry.core import util as core_util
 from telemetry.internal.browser import browser_finder
+from telemetry.internal.platform import android_device
 from telemetry.timeline import chrome_trace_category_filter
 from telemetry.util import wpr_modes
 from telemetry.web_perf import timeline_based_measurement
@@ -91,7 +92,9 @@ class _MobileStartupSharedState(story_module.SharedState):
     self._finder_options.browser_options.AppendExtraBrowserArgs(
         '--skip-webapk-verification')
     self.platform.Initialize()
-    self.platform.SetFullPerformanceModeEnabled(True)
+    self.platform.SetPerformanceMode(finder_options.performance_mode)
+    self._perf_mode_set = (finder_options.performance_mode !=
+                           android_device.KEEP_PERFORMANCE_MODE)
     maps_webapk = core_util.FindLatestApkOnHost(
         finder_options.chrome_root, 'MapsWebApk.apk')
     if not maps_webapk:
@@ -122,7 +125,8 @@ class _MobileStartupSharedState(story_module.SharedState):
 
   def TearDownState(self):
     self.platform.network_controller.Close()
-    self.platform.SetFullPerformanceModeEnabled(False)
+    if self._perf_mode_set:
+      self.platform.SetPerformanceMode(android_device.NORMAL_PERFORMANCE_MODE)
 
   def LaunchBrowser(self, url, flush_caches):
     if flush_caches:

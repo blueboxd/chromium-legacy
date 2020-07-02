@@ -28,7 +28,15 @@ import mac_toolchain
 
 
 def _IsCorpMachine():
-  return os.path.isdir('/Library/GoogleCorpSupport/')
+  if sys.platform == 'darwin':
+    return os.path.isdir('/Library/GoogleCorpSupport/')
+  if sys.platform.startswith('linux'):
+    import subprocess
+    try:
+      return subprocess.check_output('lsb_release -sc').rstrip() == 'rodete'
+    except:
+      return False
+  return False
 
 
 def main():

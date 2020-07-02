@@ -209,22 +209,6 @@ CastRemotingConnector::~CastRemotingConnector() {
   }
 }
 
-void CastRemotingConnector::ConnectToService(
-    mojo::PendingReceiver<media::mojom::MirrorServiceRemotingSource>
-        source_receiver,
-    mojo::PendingRemote<media::mojom::MirrorServiceRemoter> remoter) {
-  DCHECK(!deprecated_remoter_);
-  DCHECK(remoter);
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  deprecated_receiver_.Bind(std::move(source_receiver));
-  deprecated_receiver_.set_disconnect_handler(base::BindOnce(
-      &CastRemotingConnector::OnMirrorServiceStopped, base::Unretained(this)));
-  deprecated_remoter_.Bind(std::move(remoter));
-  deprecated_remoter_.set_disconnect_handler(base::BindOnce(
-      &CastRemotingConnector::OnMirrorServiceStopped, base::Unretained(this)));
-}
-
 void CastRemotingConnector::ResetRemotingPermission() {
   remoting_allowed_.reset();
 }
@@ -249,8 +233,6 @@ void CastRemotingConnector::OnMirrorServiceStopped() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DVLOG(2) << __func__;
 
-  deprecated_receiver_.reset();
-  deprecated_remoter_.reset();
   receiver_.reset();
   remoter_.reset();
 
@@ -274,8 +256,7 @@ void CastRemotingConnector::RegisterBridge(RemotingBridge* bridge) {
   DCHECK(bridges_.find(bridge) == bridges_.end());
 
   bridges_.insert(bridge);
-  if ((deprecated_remoter_ || remoter_) && !active_bridge_ &&
-      remoting_allowed_.value_or(true))
+  if (remoter_ && !active_bridge_ && remoting_allowed_.value_or(true))
     bridge->OnSinkAvailable(sink_metadata_);
 }
 
@@ -295,7 +276,7 @@ void CastRemotingConnector::StartRemoting(RemotingBridge* bridge) {
 
   // Refuse to start if there is no remoting route available, or if remoting is
   // already active.
-  if (!deprecated_remoter_ && !remoter_) {
+  if (!remoter_) {
     DVLOG(2) << "Remoting start failed: Invalid ANSWER message.";
     bridge->OnStartFailed(RemotingStartFailReason::INVALID_ANSWER_MESSAGE);
     return;
@@ -345,20 +326,11 @@ void CastRemotingConnector::StartRemotingIfPermitted() {
     return;
 
   if (remoting_allowed_.value()) {
-    if (deprecated_remoter_) {
-      DCHECK(!remoter_);
-      deprecated_remoter_->Start();
-
-      // Assume the remoting session is always started successfully. If any
-      // failure occurs, OnError() will be called.
-      active_bridge_->OnStarted();
-    } else {
-      DCHECK(remoter_);
-      remoter_->Start();
-    }
+    DCHECK(remoter_);
+    remoter_->Start();
   } else {
-    // TODO(crbug.com/1015486): Add an extra reason for this failure.
-    active_bridge_->OnStartFailed(RemotingStartFailReason::ROUTE_TERMINATED);
+    active_bridge_->OnStartFailed(
+        RemotingStartFailReason::REMOTING_NOT_PERMITTED);
     active_bridge_->OnSinkGone();
     active_bridge_ = nullptr;
   }
@@ -375,7 +347,7 @@ void CastRemotingConnector::StartRemotingDataStreams(
 
   // Refuse to start if there is no remoting route available, or if remoting is
   // not active for this |bridge|.
-  if ((!deprecated_remoter_ && !remoter_) || active_bridge_ != bridge)
+  if (!remoter_ || active_bridge_ != bridge)
     return;
   // Also, if neither audio nor video pipe was provided, or if a receiver for a
   // RemotingDataStreamSender was not provided for a data pipe, error-out early.
@@ -386,52 +358,10 @@ void CastRemotingConnector::StartRemotingDataStreams(
     return;
   }
 
-  if (deprecated_remoter_) {
-    DCHECK(!remoter_);
-    const bool want_audio = audio_sender.is_valid();
-    const bool want_video = video_sender.is_valid();
-    deprecated_remoter_->StartDataStreams(
-        want_audio, want_video,
-        base::BindOnce(&CastRemotingConnector::OnDataStreamsStarted,
-                       weak_factory_.GetWeakPtr(), std::move(audio_pipe),
-                       std::move(video_pipe), std::move(audio_sender),
-                       std::move(video_sender)));
-  } else {
     DCHECK(remoter_);
     remoter_->StartDataStreams(std::move(audio_pipe), std::move(video_pipe),
                                std::move(audio_sender),
                                std::move(video_sender));
-  }
-}
-
-void CastRemotingConnector::OnDataStreamsStarted(
-    mojo::ScopedDataPipeConsumerHandle audio_pipe,
-    mojo::ScopedDataPipeConsumerHandle video_pipe,
-    mojo::PendingReceiver<media::mojom::RemotingDataStreamSender> audio_sender,
-    mojo::PendingReceiver<media::mojom::RemotingDataStreamSender> video_sender,
-    int32_t audio_stream_id,
-    int32_t video_stream_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(deprecated_remoter_);
-  DCHECK(!remoter_);
-
-  if (!active_bridge_) {
-    deprecated_remoter_->Stop(media::mojom::RemotingStopReason::SOURCE_GONE);
-    return;
-  }
-
-  if (audio_sender && audio_stream_id > -1) {
-    mirroring::CastRemotingSender::FindAndBind(
-        audio_stream_id, std::move(audio_pipe), std::move(audio_sender),
-        base::BindOnce(&CastRemotingConnector::OnDataSendFailed,
-                       weak_factory_.GetWeakPtr()));
-  }
-  if (video_sender && video_stream_id > -1) {
-    mirroring::CastRemotingSender::FindAndBind(
-        video_stream_id, std::move(video_pipe), std::move(video_sender),
-        base::BindOnce(&CastRemotingConnector::OnDataSendFailed,
-                       weak_factory_.GetWeakPtr()));
-  }
 }
 
 void CastRemotingConnector::StopRemoting(RemotingBridge* bridge,
@@ -469,12 +399,7 @@ void CastRemotingConnector::StopRemoting(RemotingBridge* bridge,
   bridge->OnSinkGone();
   // Note: At this point, all sources should think the sink is gone.
 
-  if (deprecated_remoter_) {
-    DCHECK(!remoter_);
-    deprecated_remoter_->Stop(reason);
-  }
   if (remoter_) {
-    DCHECK(!deprecated_remoter_);
     remoter_->Stop(reason);
   }
 
@@ -503,15 +428,9 @@ void CastRemotingConnector::SendMessageToSink(
 
   // During an active remoting session, simply pass all binary messages through
   // to the sink.
-  if ((!deprecated_remoter_ && !remoter_) || active_bridge_ != bridge)
+  if (!remoter_ || active_bridge_ != bridge)
     return;
-  if (deprecated_remoter_) {
-    DCHECK(!remoter_);
-    deprecated_remoter_->SendMessageToSink(message);
-  } else {
-    DCHECK(!deprecated_remoter_);
-    remoter_->SendMessageToSink(message);
-  }
+  remoter_->SendMessageToSink(message);
 }
 
 void CastRemotingConnector::OnMessageFromSink(
@@ -527,9 +446,6 @@ void CastRemotingConnector::OnMessageFromSink(
 
 void CastRemotingConnector::EstimateTransmissionCapacity(
     media::mojom::Remoter::EstimateTransmissionCapacityCallback callback) {
-  if (deprecated_remoter_)
-    deprecated_remoter_->EstimateTransmissionCapacity(std::move(callback));
-  else
     std::move(callback).Run(0);
 }
 
@@ -555,13 +471,6 @@ void CastRemotingConnector::OnSinkAvailable(
     for (RemotingBridge* notifyee : bridges_)
       notifyee->OnSinkAvailable(sink_metadata_);
   }
-}
-
-void CastRemotingConnector::OnError() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  if (active_bridge_)
-    StopRemoting(active_bridge_, RemotingStopReason::UNEXPECTED_FAILURE, false);
 }
 
 void CastRemotingConnector::OnSinkGone() {

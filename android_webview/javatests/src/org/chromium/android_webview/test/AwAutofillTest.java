@@ -950,9 +950,14 @@ public class AwAutofillTest {
         cnt = getCallbackCount();
         clearChangedValues();
         invokeAutofill(values);
+
+        // Autofilling the select control will move the focus on it, and triggers a value change
+        // callback, so we get additional AUTOFILL_VIEW_EXITED, AUTOFILL_VIEW_ENTERED and
+        // AUTOFILL_VALUE_CHANGED events at the end.
         waitForCallbackAndVerifyTypes(cnt,
                 new Integer[] {AUTOFILL_VALUE_CHANGED, AUTOFILL_VALUE_CHANGED,
-                        AUTOFILL_VALUE_CHANGED, AUTOFILL_VALUE_CHANGED});
+                        AUTOFILL_VALUE_CHANGED, AUTOFILL_VALUE_CHANGED, AUTOFILL_VIEW_EXITED,
+                        AUTOFILL_VIEW_ENTERED, AUTOFILL_VALUE_CHANGED});
 
         // Verify form filled by Javascript
         String value0 =

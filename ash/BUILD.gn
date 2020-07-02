@@ -2604,6 +2604,7 @@ static_library("test_support") {
     "//ui/events:test_support",
     "//ui/events/devices",
     "//ui/events/devices:test_support",
+    "//ui/gfx:test_support",
     "//ui/gl",
     "//ui/gl:test_support",
     "//ui/message_center",

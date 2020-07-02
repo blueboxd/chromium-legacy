@@ -38,4 +38,25 @@ TEST_F(ServiceImplTest, CreatesValidHashFromEmail) {
             "2c8fa87717fab622bb5cc4d18135fe30dae339efd274b450022d361be92b48c3");
 }
 
+class ServiceImplTestSignedInStatus
+    : public ServiceImplTest,
+      public testing::WithParamInterface<
+          std::pair<std::string, ClientContextProto::SignedIntoChromeStatus>> {
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    ParametrizedTests,
+    ServiceImplTestSignedInStatus,
+    testing::Values(std::make_pair("", ClientContextProto::NOT_SIGNED_IN),
+                    std::make_pair("bob@email.com",
+                                   ClientContextProto::SIGNED_IN)));
+
+TEST_P(ServiceImplTestSignedInStatus, SetsSignedInStatus) {
+  ON_CALL(mock_client_, GetChromeSignedInEmailAddress)
+      .WillByDefault(Return(GetParam().first));
+  service_impl_->UpdateMutableClientContextFields();
+  EXPECT_EQ(service_impl_->client_context_.signed_into_chrome_status(),
+            GetParam().second);
+}
+
 }  // namespace autofill_assistant

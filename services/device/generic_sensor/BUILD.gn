@@ -84,7 +84,7 @@ source_set("generic_sensor") {
 
   if (is_mac) {
     deps += [ "//third_party/sudden_motion_sensor" ]
-    libs = [
+    frameworks = [
       "CoreFoundation.framework",
       "IOKit.framework",
     ]

@@ -197,6 +197,8 @@ struct IsGarbageCollectedContainer<
 class PLATFORM_EXPORT ThreadHeap {
   USING_FAST_MALLOC(ThreadHeap);
 
+  using EphemeronProcessing = ThreadState::EphemeronProcessing;
+
  public:
   explicit ThreadHeap(ThreadState*);
   ~ThreadHeap();
@@ -279,12 +281,12 @@ class PLATFORM_EXPORT ThreadHeap {
 
   // Moves ephemeron pairs from |discovered_ephemeron_pairs_worklist_| to
   // |ephemeron_pairs_to_process_worklist_|
-  void FlushEphemeronPairs();
+  void FlushEphemeronPairs(EphemeronProcessing);
 
   // Marks not fully constructed objects.
   void MarkNotFullyConstructedObjects(MarkingVisitor*);
   // Marks the transitive closure including ephemerons.
-  bool AdvanceMarking(MarkingVisitor*, base::TimeTicks deadline);
+  bool AdvanceMarking(MarkingVisitor*, base::TimeTicks, EphemeronProcessing);
   void VerifyMarking();
 
   // Returns true if concurrent markers will have work to steal
@@ -383,7 +385,9 @@ class PLATFORM_EXPORT ThreadHeap {
   void DestroyMarkingWorklists(BlinkGC::StackState);
   void DestroyCompactionWorklists();
 
-  bool InvokeEphemeronCallbacks(MarkingVisitor*, base::TimeTicks);
+  bool InvokeEphemeronCallbacks(EphemeronProcessing,
+                                MarkingVisitor*,
+                                base::TimeTicks);
 
   bool FlushV8References(base::TimeTicks);
 
@@ -449,6 +453,11 @@ class PLATFORM_EXPORT ThreadHeap {
   BaseArena* arenas_[BlinkGC::kNumberOfArenas];
 
   static ThreadHeap* main_thread_heap_;
+
+  static constexpr size_t kStepsBeforeEphemeronPairsFlush = 8u;
+  size_t steps_since_last_ephemeron_pairs_flush_ = 0;
+  static constexpr size_t kStepsBeforeEphemeronProcessing = 16u;
+  size_t steps_since_last_ephemeron_processing_ = 0;
 
   friend class incremental_marking_test::IncrementalMarkingScopeBase;
   template <typename T>

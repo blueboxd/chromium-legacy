@@ -5,17 +5,57 @@
 #include "ash/ambient/test/ambient_ash_test_base.h"
 
 #include <memory>
+#include <utility>
+#include <vector>
 
 #include "ash/ambient/ambient_photo_controller.h"
 #include "ash/ambient/fake_ambient_backend_controller_impl.h"
 #include "ash/ambient/ui/ambient_container_view.h"
 #include "ash/ambient/ui/photo_view.h"
 #include "ash/shell.h"
+#include "base/callback.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_unittest_util.h"
 
 namespace ash {
+
+class TestAmbientURLLoaderImpl : public AmbientURLLoader {
+ public:
+  TestAmbientURLLoaderImpl() = default;
+  ~TestAmbientURLLoaderImpl() override = default;
+
+  // AmbientURLLoader:
+  void Download(
+      const std::string& url,
+      network::SimpleURLLoader::BodyAsStringCallback callback) override {
+    auto data = std::make_unique<std::string>();
+    *data = "test";
+    // Pretend to respond asynchronously.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), std::move(data)));
+  }
+};
+
+class TestAmbientImageDecoderImpl : public AmbientImageDecoder {
+ public:
+  TestAmbientImageDecoderImpl() = default;
+  ~TestAmbientImageDecoderImpl() override = default;
+
+  // AmbientImageDecoder:
+  void Decode(
+      const std::vector<uint8_t>& encoded_bytes,
+      base::OnceCallback<void(const gfx::ImageSkia&)> callback) override {
+    // Pretend to respond asynchronously.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback), gfx::test::CreateImageSkia(
+                                                /*width=*/10, /*height=*/10)));
+  }
+};
 
 AmbientAshTestBase::AmbientAshTestBase()
     : AshTestBase(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
@@ -32,10 +72,13 @@ void AmbientAshTestBase::SetUp() {
 
   // Need to reset first and then assign the TestPhotoClient because can only
   // have one instance of AmbientBackendController.
-  Shell::Get()->ambient_controller()->set_backend_controller_for_testing(
-      nullptr);
-  Shell::Get()->ambient_controller()->set_backend_controller_for_testing(
+  ambient_controller()->set_backend_controller_for_testing(nullptr);
+  ambient_controller()->set_backend_controller_for_testing(
       std::make_unique<FakeAmbientBackendControllerImpl>());
+  photo_controller()->set_url_loader_for_testing(
+      std::make_unique<TestAmbientURLLoaderImpl>());
+  photo_controller()->set_image_decoder_for_testing(
+      std::make_unique<TestAmbientImageDecoderImpl>());
 }
 
 void AmbientAshTestBase::TearDown() {
@@ -55,6 +98,11 @@ void AmbientAshTestBase::ShowAmbientScreen() {
 
 void AmbientAshTestBase::HideAmbientScreen() {
   ambient_controller()->HideContainerView();
+}
+
+void AmbientAshTestBase::CloseAmbientScreen() {
+  ambient_controller()->ambient_ui_model()->SetUiVisibility(
+      AmbientUiVisibility::kClosed);
 }
 
 void AmbientAshTestBase::LockScreen() {

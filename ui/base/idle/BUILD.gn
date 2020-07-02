@@ -77,7 +77,7 @@ component("idle") {
   }
 
   if (is_mac) {
-    libs = [
+    frameworks = [
       "AppKit.framework",
       "Carbon.framework",
       "Foundation.framework",

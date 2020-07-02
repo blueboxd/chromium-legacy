@@ -12,7 +12,7 @@ source_set("enterprise_info_popover_view_controller") {
     "enterprise_info_popover_view_controller.mm",
   ]
 
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 
   deps = [
     "//base:base",

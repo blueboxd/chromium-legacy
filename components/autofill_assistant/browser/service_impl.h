@@ -146,6 +146,8 @@ class ServiceImpl : public Service {
 
   base::WeakPtrFactory<ServiceImpl> weak_ptr_factory_;
 
+  FRIEND_TEST_ALL_PREFIXES(ServiceImplTestSignedInStatus, SetsSignedInStatus);
+
   DISALLOW_COPY_AND_ASSIGN(ServiceImpl);
 };
 

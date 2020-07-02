@@ -193,8 +193,14 @@
         "load:media:dailymotion:2019": {
             "DEFAULT": "system_health_desktop_fb04043fc0.wprgo"
         },
+        "load:media:facebook_feed:desktop:2020": {
+            "DEFAULT": "system_health_desktop_053fc8d414.wprgo"
+        },
         "load:media:facebook_photos:2018": {
             "DEFAULT": "system_health_desktop_eba368f102.wprgo"
+        },
+        "load:media:facebook_photos:desktop:2020": {
+            "DEFAULT": "system_health_desktop_3a819590eb.wprgo"
         },
         "load:media:flickr:2018": {
             "DEFAULT": "system_health_desktop_ae117f4f81.wprgo"

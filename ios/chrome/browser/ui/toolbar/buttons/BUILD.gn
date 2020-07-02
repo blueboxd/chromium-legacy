@@ -60,6 +60,6 @@ source_set("buttons") {
     "//ios/web/public",
     "//ui/base",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }

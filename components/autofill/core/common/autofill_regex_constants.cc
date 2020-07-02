@@ -321,7 +321,7 @@ const char kMiddleNameRe[] =
     "middle.*name|mname|middle$"
     "|apellido.?materno|lastlastname";  // es
 const char kLastNameRe[] =
-    "last.*name|lname|surname|last$|secondname|family.*name"
+    "last.*name|lname|surname(?!\\d)|last$|secondname|family.*name"
     "|nachname"                                               // de-DE
     "|apellidos?"                                             // es
     "|famille|^nom(?!bre)"                                    // fr-FR
@@ -334,7 +334,24 @@ const char kLastNameRe[] =
     "|മറുപേര്"                                                  // ml
     "|(\\b|_|\\*)(soyisim|soyad(i|ı|iniz|ınız)?)(\\b|_|\\*)"  // tr
     "|\\b성(?:[^명]|\\b)";                                    // ko-KR
-
+const char kNameLastFirstRe[] =
+    "(primer.*apellido)"           // es
+    "|(apellido.*paterno)"         // es
+    "|surname_?1|first_?surname";  // es
+const char kNameLastSecondRe[] =
+    "(segunda.*apellido)"           // es
+    "|(apellido.*materno)"          // es
+    "|surname_?2|second_?surname";  // es
+const char kHonorificPrefixRe[] =
+    "anrede|titel"                 // de-DE
+    "|tratamiento|encabezamiento"  // es
+    "|^title:?$"  // Matched only if there is no prefix or suffix.
+    "|(salutation(?! and given name))"  // en
+    "|titolo"                           // it-IT
+    "|titre"                            // fr-FR
+    "|обраще́ние|зва́ние"                 // ru
+    "|προσφώνηση"                       // el
+    "|hitap";                           // tr
 /////////////////////////////////////////////////////////////////////////////
 // phone_field.cc
 /////////////////////////////////////////////////////////////////////////////

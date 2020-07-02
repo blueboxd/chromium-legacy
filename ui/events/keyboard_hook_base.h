@@ -24,6 +24,8 @@ class KeyboardHookBase : public KeyboardHook {
   // KeyboardHook implementation.
   bool IsKeyLocked(DomCode dom_code) const override;
 
+  virtual bool RegisterHook();
+
  protected:
   // Indicates whether |dom_code| should be intercepted by the keyboard hook.
   bool ShouldCaptureKeyEvent(DomCode dom_code) const;

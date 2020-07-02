@@ -26,18 +26,14 @@ that do not work without the official Google signing identity.
 
 ## Chromium
 
-The signing scripts do not work out-of-the-box with a Chromium build. Until
-https://crbug.com/1021255 is fixed, in order to have a working (i.e.
-launch-able), signed Chromium:
+There are slight differences between the official Google Chrome signed build and
+a development-signed Chromium build. Specifically, the entitlements will vary
+because the default
+[chrome/app/app-entitlements.plist](../../../app/app-entitlements.plist) omits
+[specific entitlements](../../../app/app-entitlements-chrome.plist) that are
+tied to the official Google signing identity.
 
-1. Edit chrome/app/app-entitlements.plist and remove the following key/value
-   pairs:
-   - `com.apple.application-identifier`
-   - `keychain-access-groups`
-   - `com.apple.developer.associated-domains.applinks.read-write`
-2. Run `sign_chrome.py` as documented above.
-
-Note that the Chromium [code sign
+In addition, the Chromium [code sign
 config](https://cs.chromium.org/chromium/src/chrome/installer/mac/signing/chromium_config.py)
 only produces one Distribution to sign just the .app. An
 `is_chrome_build=true` build produces several Distributions for the official
@@ -45,7 +41,9 @@ release system.
 
 ## Running Tests
 
-Simply run the wrapper script at
+The `signing` module is thoroughly unit-tested. When making changes to the
+signing scripts, please be sure to add new tests too. To run the tests, simply
+run the wrapper script at
 `//chrome/installer/mac/signing/run_mac_signing_tests.py`.
 
 You can pass `--coverage` or `-c` to show coverage information. To generate a

@@ -419,7 +419,6 @@ void HttpCache::DumpMemoryStats(base::trace_event::ProcessMemoryDump* pmd,
   base::trace_event::MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(name);
   size_t size = base::trace_event::EstimateMemoryUsage(active_entries_) +
                 base::trace_event::EstimateMemoryUsage(doomed_entries_) +
-                base::trace_event::EstimateMemoryUsage(playback_cache_map_) +
                 base::trace_event::EstimateMemoryUsage(pending_ops_);
   if (disk_cache_)
     size += disk_cache_->DumpMemoryStats(pmd, name);

@@ -536,6 +536,6 @@ Polymer({
    * @private
    */
   computeHasDiscardedExceptions_() {
-    return !!this.sites.find(exception => exception.isDiscarded);
+    return this.sites.some(exception => exception.isDiscarded);
   },
 });

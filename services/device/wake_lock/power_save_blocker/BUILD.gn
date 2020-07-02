@@ -51,7 +51,7 @@ source_set("power_save_blocker") {
     }
   } else if (is_mac) {
     sources += [ "power_save_blocker_mac.cc" ]
-    libs = [
+    frameworks = [
       "CoreFoundation.framework",
       "IOKit.framework",
     ]

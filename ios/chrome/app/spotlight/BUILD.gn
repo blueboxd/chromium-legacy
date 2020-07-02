@@ -44,7 +44,7 @@ source_set("spotlight") {
     "//ui/base",
     "//url",
   ]
-  libs = [
+  frameworks = [
     "CoreSpotlight.framework",
     "UIKit.framework",
   ]
@@ -69,5 +69,5 @@ source_set("unit_tests") {
     "//net",
     "//testing/gtest",
   ]
-  libs = [ "CoreSpotlight.framework" ]
+  frameworks = [ "CoreSpotlight.framework" ]
 }

@@ -120,8 +120,7 @@ void RegisterComponentsForUpdate(bool is_off_the_record_profile,
                                  g_browser_process->floc_blocklist_service());
   RegisterOnDeviceHeadSuggestComponent(
       cus, g_browser_process->GetApplicationLocale());
-  RegisterOptimizationHintsComponent(cus, is_off_the_record_profile,
-                                     profile_prefs);
+  RegisterOptimizationHintsComponent(cus, is_off_the_record_profile);
 
   base::FilePath path;
   if (base::PathService::Get(chrome::DIR_USER_DATA, &path)) {

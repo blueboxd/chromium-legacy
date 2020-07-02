@@ -436,9 +436,9 @@ bool AVIFImageDecoder::ImageHasBothStillAndAnimatedSubImages() const {
 bool AVIFImageDecoder::MatchesAVIFSignature(
     const FastSharedBufferReader& fast_reader) {
   // avifPeekCompatibleFileType() clamps compatible brands at 32 when reading in
-  // the ftyp box in ISOBMFF for the 'av01' brand. So the maximum number of
-  // bytes read is 144 bytes (type 4 bytes, size 4 bytes, major brand 4 bytes,
-  // version 4 bytes, and 4 bytes * 32 compatible brands).
+  // the ftyp box in ISO BMFF for the 'avif' or 'avis' brand. So the maximum
+  // number of bytes read is 144 bytes (size 4 bytes, type 4 bytes, major brand
+  // 4 bytes, minor version 4 bytes, and 4 bytes * 32 compatible brands).
   char buffer[144];
   avifROData input;
   input.size = std::min(sizeof(buffer), fast_reader.size());

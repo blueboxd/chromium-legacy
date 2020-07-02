@@ -450,6 +450,11 @@ void ChromeAppListModelUpdater::UpdateAppItemFromSyncItem(
   }
 }
 
+void ChromeAppListModelUpdater::NotifyProcessSyncChangesFinished() {
+  if (app_list_controller_)
+    app_list_controller_->NotifyProcessSyncChangesFinished();
+}
+
 void ChromeAppListModelUpdater::AddObserver(
     AppListModelUpdaterObserver* observer) {
   observers_.AddObserver(observer);

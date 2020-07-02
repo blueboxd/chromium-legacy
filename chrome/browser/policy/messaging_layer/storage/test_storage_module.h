@@ -8,46 +8,40 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/optional.h"
 #include "chrome/browser/policy/messaging_layer/public/report_queue.h"
 #include "components/policy/proto/record.pb.h"
 #include "components/policy/proto/record_constants.pb.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace reporting {
 namespace test {
 
-// A |StorageModule| that stores the wrapped record and priority and calls the
-// callback with an OK status.
 class TestStorageModule : public StorageModule {
  public:
-  TestStorageModule() = default;
+  TestStorageModule();
 
-  void AddRecord(reporting::EncryptedRecord record,
-                 reporting::Priority priority,
-                 base::OnceCallback<void(Status)> callback) override;
+  MOCK_METHOD(void,
+              AddRecord,
+              (EncryptedRecord record,
+               Priority priority,
+               base::OnceCallback<void(Status)> callback),
+              (override));
 
-  reporting::WrappedRecord wrapped_record() { return wrapped_record_; }
-
-  reporting::Priority priority() { return priority_; }
+  WrappedRecord wrapped_record() const;
+  Priority priority() const;
 
  protected:
-  ~TestStorageModule() override = default;
+  ~TestStorageModule() override;
 
  private:
-  reporting::WrappedRecord wrapped_record_;
-  reporting::Priority priority_;
-};
+  void AddRecordSuccessfully(EncryptedRecord record,
+                             Priority priority,
+                             base::OnceCallback<void(Status)> callback);
 
-// A |TestStorageModule| that always fails on |AddRecord| calls.
-class AlwaysFailsStorageModule final : public TestStorageModule {
- public:
-  AlwaysFailsStorageModule() = default;
-
-  void AddRecord(reporting::EncryptedRecord record,
-                 reporting::Priority priority,
-                 base::OnceCallback<void(Status)> callback) override;
-
- protected:
-  ~AlwaysFailsStorageModule() override = default;
+  base::Optional<WrappedRecord> wrapped_record_;
+  base::Optional<Priority> priority_;
 };
 
 }  // namespace test

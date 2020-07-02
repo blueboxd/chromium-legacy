@@ -54,6 +54,7 @@ import io
 import os
 import re
 import sys
+from collections import OrderedDict
 
 _CWD = os.getcwd()
 _HERE_PATH = os.path.dirname(__file__)
@@ -78,14 +79,13 @@ _ignore_imports = []
 
 _migrated_imports = []
 
-_chrome_redirects = {
-    'chrome://resources/polymer/v1_0/': POLYMER_V1_DIR,
-    'chrome://resources/html/': 'ui/webui/resources/html/',
-    'chrome://resources/cr_elements/': 'ui/webui/resources/cr_elements/',
-    '//resources/polymer/v1_0/': POLYMER_V1_DIR,
-    '//resources/html/': 'ui/webui/resources/html/',
-    '//resources/cr_elements/': 'ui/webui/resources/cr_elements/',
-}
+# Use an OrderedDict, since the order these redirects are applied matters.
+_chrome_redirects = OrderedDict([
+    ('chrome://resources/polymer/v1_0/', POLYMER_V1_DIR),
+    ('chrome://resources/', 'ui/webui/resources/'),
+    ('//resources/polymer/v1_0/', POLYMER_V1_DIR),
+    ('//resources/', 'ui/webui/resources/'),
+])
 
 _chrome_reverse_redirects = {
     POLYMER_V3_DIR: '//resources/polymer/v3_0/',

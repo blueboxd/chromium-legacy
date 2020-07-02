@@ -50,11 +50,11 @@ class CORE_EXPORT ListMarker {
 
   // Compute inline margins for 'list-style-position: inside' and 'outside'.
   static std::pair<LayoutUnit, LayoutUnit> InlineMarginsForInside(
-      const ComputedStyle&,
-      bool is_image);
+      const ComputedStyle& marker_style,
+      const ComputedStyle& list_item_style);
   static std::pair<LayoutUnit, LayoutUnit> InlineMarginsForOutside(
-      const ComputedStyle&,
-      bool is_image,
+      const ComputedStyle& marker_style,
+      const ComputedStyle& list_item_style,
       LayoutUnit marker_inline_size);
 
   static LayoutRect RelativeSymbolMarkerRect(const ComputedStyle&, LayoutUnit);

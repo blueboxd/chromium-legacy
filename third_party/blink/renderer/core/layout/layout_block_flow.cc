@@ -2407,7 +2407,7 @@ void LayoutBlockFlow::AddVisualOverflowFromFloats(
   DCHECK(!PrePaintBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren));
   DCHECK(fragment.HasFloatingDescendantsForPaint());
 
-  for (const NGLink& child : fragment.Children()) {
+  for (const NGLink& child : fragment.PostLayoutChildren()) {
     if (child->HasSelfPaintingLayer())
       continue;
 

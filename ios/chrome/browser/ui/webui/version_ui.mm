@@ -39,6 +39,8 @@ web::WebUIIOSDataSource* CreateVersionUIDataSource() {
 
   // Localized and data strings.
   html_source->AddLocalizedString(version_ui::kTitle, IDS_VERSION_UI_TITLE);
+  html_source->AddLocalizedString(version_ui::kLogoAltText,
+                                  IDS_SHORT_PRODUCT_LOGO_ALT_TEXT);
   html_source->AddLocalizedString(version_ui::kApplicationLabel,
                                   IDS_IOS_PRODUCT_NAME);
   html_source->AddString(version_ui::kVersion,

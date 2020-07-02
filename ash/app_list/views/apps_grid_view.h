@@ -279,6 +279,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Returns the last app list item view in the selected page in the folder.
   AppListItemView* GetCurrentPageLastItemViewInFolder();
 
+  // Updates paged view structure and save it to meta data.
+  void UpdatePagedViewStructure();
+
   // Returns true if tablet mode is active.
   bool IsTabletMode() const;
 

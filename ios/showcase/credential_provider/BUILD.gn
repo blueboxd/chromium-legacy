@@ -12,7 +12,7 @@ source_set("credential_provider") {
     "//ios/chrome/credential_provider_extension/ui",
     "//ios/showcase/common",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
@@ -32,5 +32,5 @@ source_set("eg2_tests") {
     "//ios/third_party/earl_grey2:test_lib",
     "//ui/base",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }

@@ -85,7 +85,7 @@ source_set("ipc_common_sources") {
       "gpu_memory_buffer_impl_io_surface.cc",
       "gpu_memory_buffer_impl_io_surface.h",
     ]
-    libs = [ "IOSurface.framework" ]
+    frameworks = [ "IOSurface.framework" ]
   }
   if (is_win) {
     sources += [

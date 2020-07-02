@@ -18,7 +18,7 @@ class RunOnUIThreadBlocking {
   // Runs the provided runnable in the UI thread synchronously.
   // The runnable argument can be defined using base::Bind.
   template <typename Signature>
-  static void Run(base::Callback<Signature> runnable) {
+  static void Run(base::OnceCallback<Signature> runnable) {
     DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     base::WaitableEvent finished(
         base::WaitableEvent::ResetPolicy::AUTOMATIC,
@@ -26,16 +26,16 @@ class RunOnUIThreadBlocking {
     content::GetUIThreadTaskRunner({})->PostTask(
         FROM_HERE,
         base::BindOnce(&RunOnUIThreadBlocking::RunOnUIThread<Signature>,
-                       runnable, &finished));
+                       std::move(runnable), &finished));
     finished.Wait();
   }
 
  private:
   template <typename Signature>
-  static void RunOnUIThread(base::Callback<Signature> runnable,
+  static void RunOnUIThread(base::OnceCallback<Signature> runnable,
                             base::WaitableEvent* finished) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    runnable.Run();
+    std::move(runnable).Run();
     finished->Signal();
   }
 };

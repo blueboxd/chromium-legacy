@@ -29,7 +29,7 @@ source_set("init") {
     "//ui/gfx/geometry",
   ]
 
-  libs = [
+  frameworks = [
     "Foundation.framework",
     "UIKit.framework",
   ]

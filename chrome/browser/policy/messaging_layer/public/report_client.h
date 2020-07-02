@@ -47,7 +47,7 @@ class ReportingClient {
       std::unique_ptr<ReportQueueConfiguration> config);
 
  private:
-  ReportingClient();
+  explicit ReportingClient(scoped_refptr<StorageModule> storage);
 
   static StatusOr<ReportingClient*> GetInstance();
 

@@ -25,7 +25,7 @@ group("all_tests") {
 
 config("config") {
   defines = [ "CWV_IMPLEMENTATION" ]
-  libs = [
+  frameworks = [
     "CoreGraphics.framework",
     "Foundation.framework",
     "MobileCoreServices.framework",

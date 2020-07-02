@@ -159,7 +159,7 @@ template("google_apis_tmpl") {
       ]
       set_sources_assignment_filter(sources_assignment_filter)
 
-      libs = [ "Foundation.framework" ]
+      frameworks = [ "Foundation.framework" ]
     }
   }
 }

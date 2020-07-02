@@ -4,7 +4,9 @@
 
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_tab_helper.h"
 
+#include "components/lookalikes/core/lookalike_url_ui_util.h"
 #include "components/lookalikes/core/lookalike_url_util.h"
+#include "components/ukm/ios/ukm_url_recorder.h"
 #include "components/url_formatter/spoof_checks/top_domains/top_domain_util.h"
 #include "ios/components/security_interstitials/lookalikes/lookalike_url_container.h"
 #include "ios/components/security_interstitials/lookalikes/lookalike_url_error.h"
@@ -107,18 +109,23 @@ void LookalikeUrlTabHelper::ShouldAllowResponse(
   DCHECK(!matched_domain.empty());
 
   if (ShouldBlockLookalikeUrlNavigation(match_type, navigated_domain)) {
-    // TODO(crbug.com/1058898): Use the below information to generate the
-    // blocking page UI.
     const std::string suggested_domain = GetETLDPlusOne(matched_domain);
     DCHECK(!suggested_domain.empty());
     GURL::Replacements replace_host;
     replace_host.SetHostStr(suggested_domain);
     const GURL suggested_url =
         response_url.ReplaceComponents(replace_host).GetWithEmptyPath();
+    lookalike_container->SetLookalikeUrlInfo(suggested_url, response_url,
+                                             match_type);
 
     std::move(callback).Run(CreateLookalikeErrorDecision());
     return;
   }
+
+  // Interstitial normally records UKM, but still record when it's not shown.
+  RecordUkmForLookalikeUrlBlockingPage(
+      ukm::GetSourceIdForWebStateDocument(web_state()), match_type,
+      LookalikeUrlBlockingPageUserAction::kInterstitialNotShown);
 
   std::move(callback).Run(CreateAllowDecision());
 }

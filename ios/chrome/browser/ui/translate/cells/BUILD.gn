@@ -21,7 +21,7 @@ source_set("cells") {
     "//ios/chrome/browser/ui/table_view/cells",
     "//ios/chrome/common/ui/util",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 imageset("checkmark") {

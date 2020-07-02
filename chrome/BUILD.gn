@@ -602,6 +602,11 @@ if (is_win) {
 
   compile_entitlements("entitlements") {
     entitlements_templates = [ "app/app-entitlements.plist" ]
+    if (is_chrome_branded) {
+      # These entitlements are bound to the official Google Chrome signing
+      # certificate and will not necessarily work in any other build.
+      entitlements_templates += [ "app/app-entitlements-chrome.plist" ]
+    }
     output_name = "$target_gen_dir/app-entitlements.plist"
     substitutions = [
       "CHROMIUM_BUNDLE_ID=$chrome_mac_bundle_id",

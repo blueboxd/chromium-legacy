@@ -49,7 +49,7 @@ source_set("page_info") {
     "//url",
   ]
   public_deps = [ ":constants" ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("constants") {
@@ -113,7 +113,7 @@ source_set("coordinator") {
     "//ios/web/public/security",
     "//ui/base",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("eg2_tests") {
@@ -132,7 +132,7 @@ source_set("eg2_tests") {
     "//ios/third_party/earl_grey2:test_lib",
     "//ui/base",
   ]
-  libs = [
+  frameworks = [
     "UIKit.framework",
     "XCTest.framework",
   ]

@@ -20,6 +20,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/grit/components_resources.h"
+#include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/version_info/version_info.h"
 #include "components/version_ui/version_ui_constants.h"
@@ -59,6 +60,7 @@ WebUIDataSource* CreateVersionUIDataSource() {
   // These localized strings are used to label version details.
   static constexpr webui::LocalizedString kStrings[] = {
     {version_ui::kTitle, IDS_VERSION_UI_TITLE},
+    {version_ui::kLogoAltText, IDS_SHORT_PRODUCT_LOGO_ALT_TEXT},
     {version_ui::kApplicationLabel, IDS_PRODUCT_NAME},
     {version_ui::kCompany, IDS_ABOUT_VERSION_COMPANY_NAME},
     {version_ui::kRevision, IDS_VERSION_UI_REVISION},
@@ -164,7 +166,6 @@ void VersionUI::AddVersionDetailStrings(content::WebUIDataSource* html_source) {
   // VersionHandler::OnGotPlugins. The area is initially blank.
   html_source->AddString(version_ui::kFlashVersion, std::string());
 #endif  // OS_ANDROID
-
 
 #if defined(OS_WIN)
   html_source->AddString(

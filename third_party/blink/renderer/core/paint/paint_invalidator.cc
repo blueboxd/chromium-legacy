@@ -42,18 +42,18 @@ bool PaintInvalidatorContext::ShouldExcludeCompositedLayerSubpixelAccumulation(
     return false;
 
   // One of the following conditions happened in crbug.com/837226.
-  if (!paint_invalidation_container ||
-      !paint_invalidation_container->FirstFragment()
+  if (!directly_composited_container ||
+      !directly_composited_container->FirstFragment()
            .HasLocalBorderBoxProperties() ||
       !tree_builder_context_)
     return false;
 
-  if (!(paint_invalidation_container->Layer()->GetCompositingReasons() &
+  if (!(directly_composited_container->Layer()->GetCompositingReasons() &
         CompositingReason::kComboAllDirectReasons))
     return false;
 
-  if (object != paint_invalidation_container &&
-      &paint_invalidation_container->FirstFragment().PostScrollTranslation() !=
+  if (object != directly_composited_container &&
+      &directly_composited_container->FirstFragment().PostScrollTranslation() !=
           tree_builder_context_->current.transform) {
     // Subpixel accumulation doesn't propagate through non-translation
     // transforms. Also skip all transforms, to avoid the runtime cost of
@@ -96,7 +96,7 @@ IntRect PaintInvalidatorContext::MapLocalRectToVisualRect(
 
   rect.Move(fragment_data->PaintOffset());
   if (ShouldExcludeCompositedLayerSubpixelAccumulation(object))
-    rect.Move(-paint_invalidation_container->Layer()->SubpixelAccumulation());
+    rect.Move(-directly_composited_container->Layer()->SubpixelAccumulation());
   // Use EnclosingIntRect to ensure the final visual rect will cover the rect
   // in source coordinates no matter if the painting will snap to pixels.
   return EnclosingIntRect(rect);
@@ -118,7 +118,7 @@ IntRect PaintInvalidatorContext::MapLocalRectToVisualRectForSVGChild(
   auto rect = local_rect;
   if (ShouldExcludeCompositedLayerSubpixelAccumulation(object)) {
     rect.Move(FloatSize(
-        -paint_invalidation_container->Layer()->SubpixelAccumulation()));
+        -directly_composited_container->Layer()->SubpixelAccumulation()));
   }
   // Use EnclosingIntRect to ensure the final visual rect will cover the rect
   // in source coordinates no matter if the painting will snap to pixels.
@@ -193,17 +193,19 @@ void PaintInvalidator::UpdatePaintingLayer(const LayoutObject& object,
     context.painting_layer->SetNeedsPaintPhaseDescendantOutlines();
 }
 
-void PaintInvalidator::UpdatePaintInvalidationContainer(
+void PaintInvalidator::UpdateDirectlyCompositedContainer(
     const LayoutObject& object,
     PaintInvalidatorContext& context,
     bool is_ng_painting) {
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
-  if (object.IsPaintInvalidationContainer()) {
-    context.paint_invalidation_container = ToLayoutBoxModelObject(&object);
+  if (object.HasLayer() && ToLayoutBoxModelObject(object)
+                               .Layer()
+                               ->CanBeCompositedForDirectReasons()) {
+    context.directly_composited_container = ToLayoutBoxModelObject(&object);
     if (object.IsStackingContext() || object.IsSVGRoot())
-      context.paint_invalidation_container_for_stacked_contents =
+      context.directly_composited_container_for_stacked_contents =
           ToLayoutBoxModelObject(&object);
   } else if (IsA<LayoutView>(object)) {
     // paint_invalidation_container_for_stacked_contents is only for stacked
@@ -211,9 +213,9 @@ void PaintInvalidator::UpdatePaintInvalidationContainer(
     // context for stacked contents in sub-frames.
     // Contents stacked in the root stacking context in this frame should use
     // this frame's PaintInvalidationContainer.
-    context.paint_invalidation_container_for_stacked_contents =
-        context.paint_invalidation_container =
-            &object.ContainerForPaintInvalidation();
+    context.directly_composited_container_for_stacked_contents =
+        context.directly_composited_container =
+            &object.DirectlyCompositableContainer();
   } else if (!is_ng_painting &&
              (object.IsColumnSpanAll() ||
               object.IsFloatingWithNonContainingBlockParent())) {
@@ -221,8 +223,8 @@ void PaintInvalidator::UpdatePaintInvalidationContainer(
     // paint invalidation container, in paint order.
     // Post LayoutNG the |LayoutObject::IsFloatingWithNonContainingBlockParent|
     // check can be removed as floats will be painted by the correct layer.
-    context.paint_invalidation_container =
-        &object.ContainerForPaintInvalidation();
+    context.directly_composited_container =
+        &object.DirectlyCompositableContainer();
   } else if (object.IsStacked() &&
              // This is to exclude some objects (e.g. LayoutText) inheriting
              // stacked style from parent but aren't actually stacked.
@@ -230,13 +232,13 @@ void PaintInvalidator::UpdatePaintInvalidationContainer(
              !ToLayoutBoxModelObject(object)
                   .Layer()
                   ->IsReplacedNormalFlowStacking() &&
-             context.paint_invalidation_container !=
-                 context.paint_invalidation_container_for_stacked_contents) {
+             context.directly_composited_container !=
+                 context.directly_composited_container_for_stacked_contents) {
     // The current object is stacked, so we should use
-    // m_paintInvalidationContainerForStackedContents as its paint invalidation
-    // container on which the current object is painted.
-    context.paint_invalidation_container =
-        context.paint_invalidation_container_for_stacked_contents;
+    // directly_composited_container_for_stacked_contents as its paint
+    // invalidation container on which the current object is painted.
+    context.directly_composited_container =
+        context.directly_composited_container_for_stacked_contents;
     if (context.subtree_flags &
         PaintInvalidatorContext::kSubtreeFullInvalidationForStackedContents) {
       context.subtree_flags |=
@@ -244,12 +246,12 @@ void PaintInvalidator::UpdatePaintInvalidationContainer(
     }
   }
 
-  if (object == context.paint_invalidation_container) {
-    // When we hit a new paint invalidation container, we don't need to
+  if (object == context.directly_composited_container) {
+    // When we hit a new directly composited container, we don't need to
     // continue forcing a check for paint invalidation, since we're
     // descending into a different invalidation container. (For instance if
     // our parents were moved, the entire container will just move.)
-    if (object != context.paint_invalidation_container_for_stacked_contents) {
+    if (object != context.directly_composited_container_for_stacked_contents) {
       // However, we need to keep kSubtreeVisualRectUpdate and
       // kSubtreeFullInvalidationForStackedContents flags if the current
       // object isn't the paint invalidation container of stacked contents.
@@ -261,8 +263,8 @@ void PaintInvalidator::UpdatePaintInvalidationContainer(
     }
   }
 
-  DCHECK(context.paint_invalidation_container ==
-         object.ContainerForPaintInvalidation());
+  DCHECK(context.directly_composited_container ==
+         object.DirectlyCompositableContainer());
   DCHECK(context.painting_layer == object.PaintingLayer());
 }
 
@@ -307,16 +309,16 @@ void PaintInvalidator::UpdateVisualRect(const LayoutObject& object,
 void PaintInvalidator::UpdateEmptyVisualRectFlag(
     const LayoutObject& object,
     PaintInvalidatorContext& context) {
-  bool is_paint_invalidation_container =
-      object == context.paint_invalidation_container;
+  bool is_directly_composited_container =
+      object == context.directly_composited_container;
 
   // Content under transforms needs to invalidate, even if visual
   // rects before and after update were the same. This is because
   // we don't know whether this transform will end up composited in
   // CAP, so such transforms are painted even if not visible
   // due to ancestor clips. This does not apply in SPv1 mode when
-  // crossing paint invalidation container boundaries.
-  if (is_paint_invalidation_container) {
+  // crossing directly composited container boundaries.
+  if (is_directly_composited_container) {
     // Remove the flag when crossing paint invalidation container boundaries.
     context.subtree_flags &=
         ~PaintInvalidatorContext::kInvalidateEmptyVisualRect;
@@ -344,8 +346,8 @@ bool PaintInvalidator::InvalidatePaint(
   object.GetMutableForPainting().EnsureIsReadyForPaintInvalidation();
 
   UpdatePaintingLayer(object, context, /* is_ng_painting */ !!pre_paint_info);
-  UpdatePaintInvalidationContainer(object, context,
-                                   /* is_ng_painting */ !!pre_paint_info);
+  UpdateDirectlyCompositedContainer(object, context,
+                                    /* is_ng_painting */ !!pre_paint_info);
   UpdateEmptyVisualRectFlag(object, context);
 
   if (!object.ShouldCheckForPaintInvalidation() && !context.NeedsSubtreeWalk())

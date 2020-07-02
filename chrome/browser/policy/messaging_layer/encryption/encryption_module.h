@@ -15,7 +15,7 @@
 namespace reporting {
 
 // TODO(b/153659559) Temporary EncryptionModule until the real one is ready.
-class EncryptionModule : public base::RefCounted<EncryptionModule> {
+class EncryptionModule : public base::RefCountedThreadSafe<EncryptionModule> {
  public:
   EncryptionModule() = default;
 
@@ -30,7 +30,7 @@ class EncryptionModule : public base::RefCounted<EncryptionModule> {
   virtual ~EncryptionModule() = default;
 
  private:
-  friend base::RefCounted<EncryptionModule>;
+  friend base::RefCountedThreadSafe<EncryptionModule>;
 };
 
 }  // namespace reporting

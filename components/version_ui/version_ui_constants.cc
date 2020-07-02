@@ -56,6 +56,7 @@ const char kFlashVersion[] = "flash_version";
 const char kJSEngine[] = "js_engine";
 const char kJSVersion[] = "js_version";
 #endif
+const char kLogoAltText[] = "logo_alt_text";
 const char kOfficial[] = "official";
 #if !defined(OS_CHROMEOS)
 const char kOSName[] = "os_name";

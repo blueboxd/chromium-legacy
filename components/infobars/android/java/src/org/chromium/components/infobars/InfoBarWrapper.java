@@ -13,13 +13,13 @@ import android.widget.FrameLayout;
 /**
  * Layout that holds an infobar's contents and provides a background color and a top shadow.
  */
-public class InfoBarWrapper extends FrameLayout {
+class InfoBarWrapper extends FrameLayout {
     private final InfoBarUiItem mItem;
 
     /**
      * Constructor for inflating from Java.
      */
-    public InfoBarWrapper(Context context, InfoBarUiItem item) {
+    InfoBarWrapper(Context context, InfoBarUiItem item) {
         super(context);
         mItem = item;
         Resources res = context.getResources();
@@ -32,7 +32,7 @@ public class InfoBarWrapper extends FrameLayout {
         setPadding(0, shadowHeight, 0, 0);
     }
 
-    public InfoBarUiItem getItem() {
+    InfoBarUiItem getItem() {
         return mItem;
     }
 

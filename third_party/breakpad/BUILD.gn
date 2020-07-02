@@ -328,7 +328,7 @@ if (is_mac) {
       configs -= [ "//build/config/compiler:no_rtti" ]
       configs += [ "//build/config/compiler:rtti" ]
 
-      libs = [ "Foundation.framework" ]
+      frameworks = [ "Foundation.framework" ]
 
       if (!is_debug) {
         # dump_syms crashes when built at -O1, -O2, and -O3.  It does
@@ -348,7 +348,7 @@ if (is_mac) {
 
       include_dirs = [ "breakpad/src/common/mac" ]
 
-      libs = [ "Foundation.framework" ]
+      frameworks = [ "Foundation.framework" ]
 
       configs -= [ "//build/config/compiler:chromium_code" ]
       configs += [ "//build/config/compiler:no_chromium_code" ]
@@ -415,7 +415,7 @@ if (is_mac) {
       "breakpad/src/common/mac",
       "breakpad/src",
     ]
-    libs = [
+    frameworks = [
       "CoreServices.framework",
       "Foundation.framework",
     ]

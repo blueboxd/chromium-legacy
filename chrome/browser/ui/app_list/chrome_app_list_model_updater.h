@@ -93,6 +93,7 @@ class ChromeAppListModelUpdater : public AppListModelUpdater {
       app_list::AppListSyncableService::SyncItem* sync_item,
       bool update_name,
       bool update_folder) override;
+  void NotifyProcessSyncChangesFinished() override;
 
   // Methods to handle model update from ash:
   void OnFolderCreated(std::unique_ptr<ash::AppListItemMetadata> item) override;

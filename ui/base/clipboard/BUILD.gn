@@ -164,7 +164,7 @@ jumbo_component("clipboard") {
 
   if (is_mac) {
     deps += [ "//third_party/mozilla" ]
-    libs = [
+    frameworks = [
       "AppKit.framework",
       "CoreFoundation.framework",
     ]

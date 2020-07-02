@@ -19,6 +19,9 @@ constexpr base::TimeDelta kAnimationDuration =
 constexpr base::TimeDelta kPhotoRefreshInterval =
     base::TimeDelta::FromSeconds(5);
 
+// Directory name of ambient mode.
+constexpr char kAmbientModeDirectoryName[] = "ambient-mode";
+
 }  // namespace ash
 
 #endif  // ASH_AMBIENT_AMBIENT_CONSTANTS_H_

@@ -33,8 +33,6 @@
 #include "third_party/blink/renderer/modules/speech/speech_grammar_list.h"
 #include "third_party/blink/renderer/modules/speech/speech_recognition.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
-#include "third_party/blink/renderer/platform/scheduler/public/scheduling_policy.h"
 
 namespace blink {
 
@@ -53,11 +51,7 @@ SpeechRecognitionController* SpeechRecognitionController::From(
 }
 
 SpeechRecognitionController::SpeechRecognitionController(LocalDOMWindow& window)
-    : Supplement<LocalDOMWindow>(window),
-      speech_recognizer_(&window),
-      feature_handle_for_scheduler_(window.GetScheduler()->RegisterFeature(
-          SchedulingPolicy::Feature::kSpeechRecognizer,
-          {SchedulingPolicy::RecordMetricsForBackForwardCache()})) {}
+    : Supplement<LocalDOMWindow>(window), speech_recognizer_(&window) {}
 
 SpeechRecognitionController::~SpeechRecognitionController() {
   // FIXME: Call m_client->pageDestroyed(); once we have implemented a client.

@@ -6,6 +6,7 @@
 
 #include "chrome/browser/lite_video/lite_video_features.h"
 #include "chrome/browser/lite_video/lite_video_keyed_service.h"
+#include "chrome/browser/lite_video/lite_video_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
@@ -13,7 +14,7 @@
 // static
 LiteVideoKeyedService* LiteVideoKeyedServiceFactory::GetForProfile(
     Profile* profile) {
-  if (lite_video::features::IsLiteVideoEnabled()) {
+  if (IsLiteVideoAllowedForUser(profile)) {
     return static_cast<LiteVideoKeyedService*>(
         GetInstance()->GetServiceForBrowserContext(profile, true));
   }

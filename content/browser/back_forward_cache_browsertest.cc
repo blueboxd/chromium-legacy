@@ -6203,24 +6203,32 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
-                       DoesNotCacheIfUsingSpeechRecognition) {
+                       DoesNotCacheIfSpeechRecognitionIsStarted) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  GURL speech_url(
-      embedded_test_server()->GetURL("/speech/web_speech_recognition.html"));
-  GURL url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
 
-  // 1) Navigate to a page using SpeechRecognition.
-  EXPECT_TRUE(NavigateToURL(shell(), speech_url));
+  // 1) Navigate to url_a.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
   RenderFrameHostImpl* rfh_a = current_frame_host();
-  RenderFrameDeletedObserver deleted(rfh_a);
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
 
-  // 2) Navigate away.
-  EXPECT_TRUE(NavigateToURL(shell(), url));
+  // 2) Start SpeechRecognition.
+  EXPECT_TRUE(ExecJs(rfh_a, R"(
+    new Promise(async resolve => {
+    var r = new webkitSpeechRecognition();
+    r.start();
+    resolve();
+    });
+  )"));
 
-  // The page uses SpeechRecognition so it should be deleted.
-  deleted.WaitUntilDeleted();
+  // 3) Navigate away.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
 
-  // 3) Go back to the page with SpeechRecognition.
+  // 4) The page uses SpeechRecognition so it should be deleted.
+  delete_observer_rfh_a.WaitUntilDeleted();
+
+  // 5) Go back to the page with SpeechRecognition.
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   ExpectNotRestored(
@@ -6229,6 +6237,42 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   ExpectBlocklistedFeature(
       blink::scheduler::WebSchedulerTrackedFeature::kSpeechRecognizer,
       FROM_HERE);
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       CanCacheIfSpeechRecognitionIsNotStarted) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to url_a.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+
+  // 2) Initialise SpeechRecognition but don't start it yet.
+  EXPECT_TRUE(ExecJs(rfh_a, R"(
+    new Promise(async resolve => {
+    var r = new webkitSpeechRecognition();
+    resolve();
+    });
+  )"));
+
+  // 3) Navigate away.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+
+  // 4) The page didn't start using SpeechRecognition so it shouldn't be deleted
+  // and enter BackForwardCache.
+  EXPECT_FALSE(delete_observer_rfh_a.deleted());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+
+  // 5) Go back to the page with SpeechRecognition.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(rfh_a, current_frame_host());
+
+  ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kRestored,
+                FROM_HERE);
 }
 
 // This test is not important for Chrome OS if TTS is called in content. For

@@ -117,34 +117,6 @@ testcase.zipFileOpenDownloads = async () => {
 };
 
 /**
- * Tests that trying to mount a ZIP file fails.
- */
-testcase.zipFileCannotOpen = async () => {
-  // Open Files app on Downloads containing a zip file.
-  const appId = await setupAndWaitUntilReady(
-      RootPath.DOWNLOADS, [ENTRIES.zipArchive], []);
-
-  // Select the zip file.
-  chrome.test.assertTrue(
-      !!await remoteCall.callRemoteTestUtil(
-          'selectFile', appId, ['archive.zip']),
-      'selectFile failed');
-
-  // Press the Enter key.
-  const key = ['#file-list', 'Enter', false, false, false];
-  chrome.test.assertTrue(
-      !!await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key),
-      'fakeKeyDown failed');
-
-  // Check: an error message should appear.
-  const element =
-      await remoteCall.waitForElement(appId, ['#progress-panel', '#open-zip']);
-  chrome.test.assertEq(
-      'Cannot open zip file: Not implemented yet',
-      element.attributes['primary-text']);
-};
-
-/**
  * Tests zip file, with absolute paths, open (aka unzip) from Downloads.
  */
 testcase.zipFileOpenDownloadsWithAbsolutePaths = async () => {

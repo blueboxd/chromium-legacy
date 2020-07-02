@@ -9,7 +9,7 @@ source_set("spotlight") {
     "spotlight_provider.mm",
   ]
   deps = [ "//base" ]
-  libs = [ "Foundation.framework" ]
+  frameworks = [ "Foundation.framework" ]
 }
 
 source_set("test_support") {

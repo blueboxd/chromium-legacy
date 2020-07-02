@@ -23,5 +23,5 @@ source_set("cells") {
     "//ios/chrome/common",
     "//ios/chrome/common/ui/util",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }

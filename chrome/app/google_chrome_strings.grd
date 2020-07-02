@@ -214,9 +214,6 @@ chromium_strings.grd. -->
           Chrome OS
         </message>
       </if>
-      <message name="IDS_SHORT_PRODUCT_LOGO_ALT_TEXT" desc="Alt text for the Chrome logo image.">
-        Chrome logo
-      </message>
       <message name="IDS_PRODUCT_LOGO_ENTERPRISE_ALT_TEXT" desc="Alt text for the Chrome Enterprise logo image.">
         Chrome Enterprise logo
       </message>

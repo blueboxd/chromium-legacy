@@ -36,7 +36,7 @@ source_set("scanner") {
     "//ios/third_party/material_components_ios",
     "//ui/base",
   ]
-  libs = [
+  frameworks = [
     "AVFoundation.framework",
     "UIKit.framework",
   ]

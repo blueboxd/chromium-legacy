@@ -11,7 +11,7 @@ source_set("elements") {
     "highlight_button.mm",
   ]
 
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 
   deps = [ "//ios/chrome/common:timing" ]
 
@@ -24,7 +24,7 @@ source_set("popover_label_view_controller") {
     "popover_label_view_controller.mm",
   ]
 
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 
   deps = [
     "//ios/chrome/common/ui/colors",

@@ -82,7 +82,7 @@ source_set("privacy") {
     "//ios/chrome/browser/ui/table_view/cells",
     "//ui/base",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("unit_tests") {

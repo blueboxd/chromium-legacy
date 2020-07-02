@@ -67,6 +67,7 @@ class MockCloudPolicyClient : public CloudPolicyClient {
                     const enterprise_management::ChildStatusReportRequest*,
                     StatusCallback&));
   MOCK_METHOD0(CancelAppInstallReportUpload, void(void));
+  MOCK_METHOD0(CancelExtensionInstallReportUpload, void(void));
   void UpdateGcmId(const std::string& id, StatusCallback callback) override {
     UpdateGcmId_(id, callback);
   }
@@ -109,6 +110,12 @@ class MockCloudPolicyClient : public CloudPolicyClient {
     UploadAppInstallReport_(value, callback);
   }
   MOCK_METHOD2(UploadAppInstallReport_, void(base::Value&, StatusCallback&));
+  void UploadExtensionInstallReport(base::Value value,
+                                    StatusCallback callback) override {
+    UploadExtensionInstallReport_(value, callback);
+  }
+  MOCK_METHOD2(UploadExtensionInstallReport_,
+               void(base::Value&, StatusCallback&));
 
   MOCK_METHOD5(ClientCertProvisioningStartCsr,
                void(const std::string& cert_scope,

@@ -116,7 +116,7 @@ source_set("geolocation") {
   }
 
   if (is_mac) {
-    libs = [
+    frameworks = [
       "CoreWLAN.framework",
       "Foundation.framework",
       "CoreLocation.framework",

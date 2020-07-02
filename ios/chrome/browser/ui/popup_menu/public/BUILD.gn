@@ -9,7 +9,7 @@ source_set("public") {
     "popup_menu_ui_updating.h",
   ]
   deps = [ "//base" ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("popup_menu_ui") {
@@ -43,7 +43,7 @@ source_set("popup_menu_ui") {
     "//ios/chrome/common/ui/util",
     "//ui/base",
   ]
-  libs = [
+  frameworks = [
     "QuartzCore.framework",
     "UIKit.framework",
   ]

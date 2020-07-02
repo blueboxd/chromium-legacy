@@ -43,6 +43,7 @@ import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
+import org.chromium.chrome.test.util.RecentTabsPageTestUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -242,6 +243,52 @@ public class StatusIndicatorTest {
         onView(withId(R.id.status_indicator)).check(matches(withEffectiveVisibility(GONE)));
         onView(withId(R.id.control_container)).check(matches(withTopMargin(0)));
         onView(withId(viewId)).check(matches(withTopMargin(0)));
+    }
+
+    @Test
+    @MediumTest
+    public void testShowAndHideOnRecentTabsPage() {
+        mActivityTestRule.loadUrl(UrlConstants.RECENT_TABS_URL);
+        final Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        RecentTabsPageTestUtils.waitForRecentTabsPageLoaded(tab);
+
+        onView(withId(R.id.status_indicator)).check(matches(withEffectiveVisibility(GONE)));
+        onView(withId(R.id.control_container)).check(matches(withTopMargin(0)));
+        onView(withId(R.id.recent_tabs_root))
+                .check(matches(
+                        withTopMargin(mBrowserControlsStateProvider.getTopControlsHeight())));
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mStatusIndicatorCoordinator.show(
+                        "Status", null, Color.BLACK, Color.WHITE, Color.WHITE));
+
+        // The status indicator will be immediately visible.
+        onView(withId(R.id.status_indicator)).check(matches(withEffectiveVisibility(VISIBLE)));
+        onView(withId(R.id.control_container))
+                .check(matches(withTopMargin(mStatusIndicatorContainer.getHeight())));
+        onView(withId(R.id.recent_tabs_root))
+                .check(matches(
+                        withTopMargin(mBrowserControlsStateProvider.getTopControlsHeight())));
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mStatusIndicatorCoordinator.updateContent("Exit status", null,
+                        Color.WHITE, Color.BLACK, Color.BLACK, () -> {}));
+
+        // #updateContent shouldn't change the layout.
+        onView(withId(R.id.status_indicator)).check(matches(withEffectiveVisibility(VISIBLE)));
+        onView(withId(R.id.control_container))
+                .check(matches(withTopMargin(mStatusIndicatorContainer.getHeight())));
+        onView(withId(R.id.recent_tabs_root))
+                .check(matches(
+                        withTopMargin(mBrowserControlsStateProvider.getTopControlsHeight())));
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> mStatusIndicatorCoordinator.hide());
+
+        onView(withId(R.id.status_indicator)).check(matches(withEffectiveVisibility(GONE)));
+        onView(withId(R.id.control_container)).check(matches(withTopMargin(0)));
+        onView(withId(R.id.recent_tabs_root))
+                .check(matches(
+                        withTopMargin(mBrowserControlsStateProvider.getTopControlsHeight())));
     }
 
     private static Matcher<View> withTopMargin(final int expected) {

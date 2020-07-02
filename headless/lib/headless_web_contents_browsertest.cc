@@ -522,7 +522,7 @@ HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessWebContentsPDFPageSizeRoundingTest);
 const char kExpectedStructTreeJSON[] = R"({
    "type": "Document",
    "~children": [ {
-      "type": "H",
+      "type": "H1",
       "~children": [ {
          "type": "NonStruct"
       } ]
@@ -572,6 +572,11 @@ const char kExpectedStructTreeJSON[] = R"({
                "type": "NonStruct"
             } ]
          } ]
+      } ]
+   }, {
+      "type": "H2",
+      "~children": [ {
+         "type": "NonStruct"
       } ]
    }, {
       "type": "Div",

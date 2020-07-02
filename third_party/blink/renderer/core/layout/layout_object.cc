@@ -1501,6 +1501,42 @@ const LayoutBoxModelObject& LayoutObject::ContainerForPaintInvalidation()
   return *layout_view;
 }
 
+const LayoutBoxModelObject& LayoutObject::DirectlyCompositableContainer()
+    const {
+  CHECK(IsRooted());
+
+  if (const LayoutBoxModelObject* container =
+          EnclosingDirectlyCompositableContainer())
+    return *container;
+
+  // If the current frame is not composited, we send just return the main
+  // frame's LayoutView so that we generate invalidations on the window.
+  const LayoutView* layout_view = View();
+  while (const LayoutObject* owner_object =
+             layout_view->GetFrame()->OwnerLayoutObject())
+    layout_view = owner_object->View();
+
+  DCHECK(layout_view);
+  return *layout_view;
+}
+
+const LayoutBoxModelObject*
+LayoutObject::EnclosingDirectlyCompositableContainer() const {
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+  LayoutBoxModelObject* container = nullptr;
+  // FIXME: CompositingState is not necessarily up to date for many callers of
+  // this function.
+  DisableCompositingQueryAsserts disabler;
+
+  if (PaintLayer* painting_layer = PaintingLayer()) {
+    if (PaintLayer* compositing_layer =
+            painting_layer
+                ->EnclosingDirectlyCompositableLayerCrossingFrameBoundaries())
+      container = &compositing_layer->GetLayoutObject();
+  }
+  return container;
+}
+
 bool LayoutObject::RecalcLayoutOverflow() {
   if (!ChildNeedsLayoutOverflowRecalc())
     return false;

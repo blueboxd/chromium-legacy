@@ -103,6 +103,7 @@ class CastWebViewDefault : public CastWebView,
   const std::string session_id_;
   const std::string sdk_version_;
   const bool allow_media_access_;
+  const bool log_js_console_messages_;
   const std::string log_prefix_;
 
   std::unique_ptr<RendererPrelauncher> renderer_prelauncher_;

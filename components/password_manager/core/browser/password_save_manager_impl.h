@@ -48,7 +48,7 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
       bool is_http_auth,
       bool is_credential_api_save) override;
 
-  void ResetPendingCrednetials() override;
+  void ResetPendingCredentials() override;
 
   void Save(const autofill::FormData& observed_form,
             const autofill::PasswordForm& parsed_submitted_form) override;

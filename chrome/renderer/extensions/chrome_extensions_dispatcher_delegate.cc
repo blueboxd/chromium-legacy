@@ -216,9 +216,6 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
   source_map->RegisterSource("media/mojo/mojom/remoting_common.mojom",
                              IDR_REMOTING_COMMON_JS);
   source_map->RegisterSource(
-      "media/mojo/mojom/mirror_service_remoting.mojom",
-      IDR_MEDIA_REMOTING_JS);
-  source_map->RegisterSource(
       "components/mirroring/mojom/mirroring_service_host.mojom",
       IDR_MIRRORING_SERVICE_HOST_MOJOM_JS);
   source_map->RegisterSource(

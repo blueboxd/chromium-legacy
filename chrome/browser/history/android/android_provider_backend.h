@@ -149,7 +149,7 @@ class AndroidProviderBackend : public base::SupportsUserData::Data {
   FRIEND_TEST_ALL_PREFIXES(AndroidProviderBackendTest, UpdateTables);
   FRIEND_TEST_ALL_PREFIXES(AndroidProviderBackendTest, UpdateSearchTermTable);
 
-  typedef std::list<base::Closure> HistoryNotifications;
+  typedef std::list<base::OnceClosure> HistoryNotifications;
 
   // The scoped transaction for AndroidProviderBackend.
   //

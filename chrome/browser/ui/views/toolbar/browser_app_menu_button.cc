@@ -251,11 +251,6 @@ void BrowserAppMenuButton::ShowMenu(int run_types) {
       browser, run_types, alert_reopen_tab_items);
 }
 
-void BrowserAppMenuButton::OnThemeChanged() {
-  AppMenuButton::OnThemeChanged();
-  UpdateIcon();
-}
-
 void BrowserAppMenuButton::UpdateIcon() {
   bool touch_ui = ui::TouchUiController::Get()->touch_ui();
   if (base::FeatureList::IsEnabled(features::kUseTextForUpdateButton)) {
@@ -273,6 +268,11 @@ void BrowserAppMenuButton::UpdateIcon() {
     SetImage(state, toolbar_view_->app_menu_icon_controller()->GetIconImage(
                         touch_ui, GetForegroundColor(state)));
   }
+}
+
+void BrowserAppMenuButton::OnThemeChanged() {
+  AppMenuButton::OnThemeChanged();
+  UpdateIcon();
 }
 
 const char* BrowserAppMenuButton::GetClassName() const {

@@ -63,7 +63,7 @@ source_set("download") {
     "//ui/base",
     "//ui/gfx",
   ]
-  libs = [
+  frameworks = [
     "StoreKit.framework",
     "UIKit.framework",
   ]
@@ -106,7 +106,7 @@ source_set("unit_tests") {
     "//third_party/ocmock:ocmock",
     "//ui/base",
   ]
-  libs = [
+  frameworks = [
     "MobileCoreServices.framework",
     "PassKit.framework",
     "StoreKit.framework",
@@ -147,7 +147,7 @@ source_set("eg2_tests") {
     "//ui/base",
   ]
 
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("features") {

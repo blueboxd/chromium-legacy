@@ -175,7 +175,7 @@ jumbo_component("capture_lib") {
       "//services/video_capture/public/uma",
       "//third_party/decklink",
     ]
-    libs = [
+    frameworks = [
       "AVFoundation.framework",
       "CoreFoundation.framework",
       "CoreGraphics.framework",

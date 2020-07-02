@@ -272,11 +272,11 @@ Frame* CreateNewWindow(LocalFrame& opener_frame,
                     LocalFrame::HasTransientUserActivation(&opener_frame));
 
   // Sandboxed frames cannot open new auxiliary browsing contexts.
-  if (opener_frame.GetDocument()->IsSandboxed(
+  if (opener_frame.DomWindow()->IsSandboxed(
           network::mojom::blink::WebSandboxFlags::kPopups)) {
     // FIXME: This message should be moved off the console once a solution to
     // https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
-    opener_frame.GetDocument()->AddConsoleMessage(
+    opener_frame.DomWindow()->AddConsoleMessage(
         MakeGarbageCollected<ConsoleMessage>(
             mojom::ConsoleMessageSource::kSecurity,
             mojom::ConsoleMessageLevel::kError,
@@ -286,13 +286,13 @@ Frame* CreateNewWindow(LocalFrame& opener_frame,
     return nullptr;
   }
 
-  bool propagate_sandbox = opener_frame.GetDocument()->IsSandboxed(
+  bool propagate_sandbox = opener_frame.DomWindow()->IsSandboxed(
       network::mojom::blink::WebSandboxFlags::
           kPropagatesToAuxiliaryBrowsingContexts);
   network::mojom::blink::WebSandboxFlags sandbox_flags =
-      propagate_sandbox ? opener_frame.GetDocument()->GetSandboxFlags()
+      propagate_sandbox ? opener_frame.DomWindow()->GetSandboxFlags()
                         : network::mojom::blink::WebSandboxFlags::kNone;
-  bool not_sandboxed = opener_frame.GetDocument()->GetSandboxFlags() ==
+  bool not_sandboxed = opener_frame.DomWindow()->GetSandboxFlags() ==
                        network::mojom::blink::WebSandboxFlags::kNone;
   FeaturePolicy::FeatureState opener_feature_state =
       (not_sandboxed || propagate_sandbox) ? opener_frame.GetSecurityContext()

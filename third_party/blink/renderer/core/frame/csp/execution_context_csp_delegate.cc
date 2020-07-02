@@ -67,7 +67,7 @@ void ExecutionContextCSPDelegate::SetSandboxFlags(
   // and we should have already constructed the document with the correct
   // sandbox flags from CSP already.
   network::mojom::blink::WebSandboxFlags flags =
-      GetSecurityContext().GetSandboxFlags();
+      execution_context_->GetSandboxFlags();
   CHECK_EQ(flags | mask, flags);
 }
 

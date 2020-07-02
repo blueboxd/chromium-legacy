@@ -124,7 +124,7 @@ void DecodeProtoFields(
       continue;
 
     map->Set(access->policy_key, level, scope, source,
-             base::Value::ToUniquePtrValue(DecodeBooleanProto(proto)), nullptr);
+             DecodeBooleanProto(proto), nullptr);
   }
 
   for (const IntegerPolicyAccess* access = &kIntegerPolicyAccess[0];
@@ -138,8 +138,7 @@ void DecodeProtoFields(
 
     std::string error;
     map->Set(access->policy_key, level, scope, source,
-             base::Value::ToUniquePtrValue(DecodeIntegerProto(proto, &error)),
-             nullptr);
+             DecodeIntegerProto(proto, &error), nullptr);
     if (!error.empty())
       map->AddError(access->policy_key, error);
   }
@@ -164,8 +163,7 @@ void DecodeProtoFields(
                                                     access->policy_key)
             : nullptr;
 
-    map->Set(access->policy_key, level, scope, source,
-             base::Value::ToUniquePtrValue(std::move(value)),
+    map->Set(access->policy_key, level, scope, source, std::move(value),
              std::move(external_data_fetcher));
     if (!error.empty())
       map->AddError(access->policy_key, error);
@@ -181,8 +179,7 @@ void DecodeProtoFields(
       continue;
 
     map->Set(access->policy_key, level, scope, source,
-             base::Value::ToUniquePtrValue(DecodeStringListProto(proto)),
-             nullptr);
+             DecodeStringListProto(proto), nullptr);
   }
 }
 

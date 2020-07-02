@@ -167,6 +167,24 @@ class BASE_EXPORT PartitionAllocHooks {
 
 namespace internal {
 
+ALWAYS_INLINE void* PartitionFreePointerAdjust(void* ptr) {
+  ptr = PartitionTagFreePointerAdjust(ptr);
+  ptr = PartitionCookieFreePointerAdjust(ptr);
+  return ptr;
+}
+
+ALWAYS_INLINE size_t PartitionSizeAdjustAdd(size_t size) {
+  size = PartitionTagSizeAdjustAdd(size);
+  size = PartitionCookieSizeAdjustAdd(size);
+  return size;
+}
+
+ALWAYS_INLINE size_t PartitionSizeAdjustSubtract(size_t size) {
+  size = PartitionTagSizeAdjustSubtract(size);
+  size = PartitionCookieSizeAdjustSubtract(size);
+  return size;
+}
+
 template <bool thread_safe>
 class LOCKABLE MaybeSpinLock {
  public:
@@ -517,21 +535,22 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFromBucket(Bucket* bucket,
   //   c: new_slot_size
   // Note, empty space occurs if the slot size is larger than needed to
   // accommodate the request.
-  size_t size_with_no_extras = internal::PartitionTagSizeAdjustSubtract(
-      internal::PartitionCookieSizeAdjustSubtract(new_slot_size));
-  char* char_ret = static_cast<char*>(ret) + internal::kPartitionTagSize;
-  // The value given to the application is actually just after the cookie.
-  ret = char_ret + internal::kCookieSize;
+  char* char_ret = static_cast<char*>(ret);
+  size_t size_with_no_extras =
+      internal::PartitionSizeAdjustSubtract(new_slot_size);
+  // The value given to the application is just after the tag and cookie.
+  char_ret += internal::kPartitionTagSize + internal::kCookieSize;
+  ret = char_ret;
+  // Surround the region with 2 cookies.
+  internal::PartitionCookieWriteValue(char_ret - internal::kCookieSize);
+  internal::PartitionCookieWriteValue(char_ret + size_with_no_extras);
 
-  // Fill the region kUninitializedByte or 0, and surround it with 2 cookies.
-  internal::PartitionCookieWriteValue(char_ret);
+  // Fill the region kUninitializedByte or 0.
   if (!zero_fill) {
     memset(ret, kUninitializedByte, size_with_no_extras);
   } else if (!is_already_zeroed) {
     memset(ret, 0, size_with_no_extras);
   }
-  internal::PartitionCookieWriteValue(char_ret + internal::kCookieSize +
-                                      size_with_no_extras);
 #else
   if (!ret)
     return nullptr;
@@ -566,8 +585,7 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::Free(void* ptr) {
 
   // TODO(tasak): clear partition tag. Temporarily set the tag to be 0.
   internal::PartitionTagSetValue(ptr, 0);
-  ptr = internal::PartitionCookieFreePointerAdjust(ptr);
-  ptr = internal::PartitionTagFreePointerAdjust(ptr);
+  ptr = internal::PartitionFreePointerAdjust(ptr);
   Page* page = Page::FromPointer(ptr);
   // TODO(palmer): See if we can afford to make this a CHECK.
   PA_DCHECK(IsValidPage(page));
@@ -687,12 +705,9 @@ PartitionAllocGetPageForSize(void* ptr) {
 // partition page.
 template <bool thread_safe>
 ALWAYS_INLINE size_t PartitionAllocGetSize(void* ptr) {
-  ptr = internal::PartitionCookieFreePointerAdjust(ptr);
-  ptr = internal::PartitionTagFreePointerAdjust(ptr);
+  ptr = internal::PartitionFreePointerAdjust(ptr);
   auto* page = internal::PartitionAllocGetPageForSize<thread_safe>(ptr);
-  size_t size =
-      internal::PartitionCookieSizeAdjustSubtract(page->bucket->slot_size);
-  size = internal::PartitionTagSizeAdjustSubtract(size);
+  size_t size = internal::PartitionSizeAdjustSubtract(page->bucket->slot_size);
   return size;
 }
 
@@ -703,8 +718,7 @@ ALWAYS_INLINE size_t PartitionAllocGetSize(void* ptr) {
 template <bool thread_safe>
 ALWAYS_INLINE size_t PartitionAllocGetSlotOffset(void* ptr) {
   PA_DCHECK(IsManagedByPartitionAllocAndNotDirectMapped(ptr));
-  ptr = internal::PartitionCookieFreePointerAdjust(ptr);
-  ptr = internal::PartitionTagFreePointerAdjust(ptr);
+  ptr = internal::PartitionFreePointerAdjust(ptr);
   auto* page = internal::PartitionAllocGetPageForSize<thread_safe>(ptr);
   size_t slot_size = page->bucket->slot_size;
 
@@ -763,8 +777,7 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFlags(
     }
   }
   size_t requested_size = size;
-  size = internal::PartitionCookieSizeAdjustAdd(size);
-  size = internal::PartitionTagSizeAdjustAdd(size);
+  size = internal::PartitionSizeAdjustAdd(size);
 #if ENABLE_CHECKED_PTR
   PA_CHECK(size >= requested_size);
 #endif
@@ -810,8 +823,7 @@ ALWAYS_INLINE size_t PartitionRoot<thread_safe>::ActualSize(size_t size) {
   return size;
 #else
   PA_DCHECK(PartitionRoot<thread_safe>::initialized);
-  size = internal::PartitionCookieSizeAdjustAdd(size);
-  size = internal::PartitionTagSizeAdjustAdd(size);
+  size = internal::PartitionSizeAdjustAdd(size);
   auto* bucket = SizeToBucket(size);
   if (LIKELY(!bucket->is_direct_mapped())) {
     size = bucket->slot_size;
@@ -820,8 +832,7 @@ ALWAYS_INLINE size_t PartitionRoot<thread_safe>::ActualSize(size_t size) {
   } else {
     size = Bucket::get_direct_map_size(size);
   }
-  size = internal::PartitionCookieSizeAdjustSubtract(size);
-  size = internal::PartitionTagSizeAdjustSubtract(size);
+  size = internal::PartitionSizeAdjustSubtract(size);
   return size;
 #endif
 }
@@ -845,6 +856,7 @@ struct BASE_EXPORT PartitionAllocator {
  private:
   PartitionRoot<thread_safe> partition_root_;
 };
+
 }  // namespace internal
 
 using PartitionAllocator = internal::PartitionAllocator<internal::ThreadSafe>;

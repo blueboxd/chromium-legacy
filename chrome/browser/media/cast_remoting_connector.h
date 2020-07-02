@@ -13,7 +13,6 @@
 #include "base/supports_user_data.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sessions/core/session_id.h"
-#include "media/mojo/mojom/mirror_service_remoting.mojom.h"
 #include "media/mojo/mojom/remoting.mojom.h"
 #include "media/mojo/mojom/remoting_common.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -38,9 +37,8 @@ class MediaRouter;
 // service instance. The sink is represented by a MediaRemoter in the Cast Media
 // Router Provider that handles the communication with the remote device. The
 // CastRemotingConnector and the MediaRemoter can communicate with each other
-// through the media::mojom::MirrorServiceRemoter and
-// media::mojom::MirrorServiceRemotingSource interfaces when a sink that is
-// capable of remoting is available.
+// through the media::mojom::Remoter and media::mojom::RemotingSource interfaces
+// when a sink that is capable of remoting is available.
 //
 // Whenever a candidate media source is created in a render frame,
 // ChromeContentBrowserClient will call CreateMediaRemoter() to instantiate a
@@ -77,11 +75,7 @@ class MediaRouter;
 // Please see the unit tests in cast_remoting_connector_unittest.cc as a
 // reference for how CastRemotingConnector and a MediaRemoter interact to
 // start/execute/stop remoting sessions.
-//
-// TODO(crbug.com/1015486): Remove media::mojom::MirrorServiceRemotingSource
-// interface and implementation after Mirroring Service is launched.
 class CastRemotingConnector : public base::SupportsUserData::Data,
-                              public media::mojom::MirrorServiceRemotingSource,
                               public media::mojom::RemotingSource {
  public:
   ~CastRemotingConnector() final;
@@ -97,14 +91,6 @@ class CastRemotingConnector : public base::SupportsUserData::Data,
       content::RenderFrameHost* render_frame_host,
       mojo::PendingRemote<media::mojom::RemotingSource> source,
       mojo::PendingReceiver<media::mojom::Remoter> receiver);
-
-  // Called when a MediaRemoter is created and started in the Cast MRP. This
-  // call connects the CastRemotingConnector with the MediaRemoter. Remoting
-  // sessions can only be started after this is called.
-  void ConnectToService(
-      mojo::PendingReceiver<media::mojom::MirrorServiceRemotingSource>
-          source_receiver,
-      mojo::PendingRemote<media::mojom::MirrorServiceRemoter> remoter);
 
   // Called at the start of mirroring to reset the permission.
   void ResetRemotingPermission();
@@ -157,9 +143,6 @@ class CastRemotingConnector : public base::SupportsUserData::Data,
   void OnSinkAvailable(media::mojom::RemotingSinkMetadataPtr metadata) override;
   void OnMessageFromSink(const std::vector<uint8_t>& message) override;
   void OnStopped(media::mojom::RemotingStopReason reason) override;
-
-  // media::mojom::MirrorServiceRemotingSource implementation.
-  void OnError() override;
 
   // media::mojom::RemotingSource implementation.
   void OnSinkGone() override;
@@ -237,11 +220,6 @@ class CastRemotingConnector : public base::SupportsUserData::Data,
   // When non-null, an active remoting session is taking place, with this
   // pointing to the RemotingBridge being used to communicate with the source.
   RemotingBridge* active_bridge_;
-
-  // TODO(crbug.com/1015486): Remove these after Mirroring Service is launched.
-  mojo::Receiver<media::mojom::MirrorServiceRemotingSource>
-      deprecated_receiver_{this};
-  mojo::Remote<media::mojom::MirrorServiceRemoter> deprecated_remoter_;
 
   mojo::Receiver<media::mojom::RemotingSource> receiver_{this};
   mojo::Remote<media::mojom::Remoter> remoter_;

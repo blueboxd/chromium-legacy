@@ -509,16 +509,17 @@ void EnqueueAutofocus(Element& element) {
 
   // 2. Let target be the element's node document.
   Document& doc = element.GetDocument();
+  LocalDOMWindow* window = doc.domWindow();
 
   // 3. If target's browsing context is null, then return.
-  if (!doc.GetFrame())
+  if (!window)
     return;
 
   // 4. If target's active sandboxing flag set has the sandboxed automatic
   // features browsing context flag, then return.
-  if (doc.IsSandboxed(
+  if (window->IsSandboxed(
           network::mojom::blink::WebSandboxFlags::kAutomaticFeatures)) {
-    doc.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+    window->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kSecurity,
         mojom::ConsoleMessageLevel::kError,
         String::Format(
@@ -535,7 +536,7 @@ void EnqueueAutofocus(Element& element) {
   // then return.
   if (!doc.IsInMainFrame() &&
       !doc.TopFrameOrigin()->CanAccess(doc.GetSecurityOrigin())) {
-    doc.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+    window->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kSecurity,
         mojom::ConsoleMessageLevel::kError,
         String::Format("Blocked autofocusing on a <%s> element in a "

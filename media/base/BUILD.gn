@@ -388,7 +388,7 @@ jumbo_source_set("base") {
     ]
   } else if (is_mac) {
     sources += [ "user_input_monitor_mac.cc" ]
-    libs = [
+    frameworks = [
       "CoreVideo.framework",
       "CoreFoundation.framework",
       "CoreGraphics.framework",

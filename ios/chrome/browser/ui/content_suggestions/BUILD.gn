@@ -277,7 +277,7 @@ source_set("eg2_tests") {
     "//ui/base",
     "//ui/strings",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("eg_test_support+eg2") {

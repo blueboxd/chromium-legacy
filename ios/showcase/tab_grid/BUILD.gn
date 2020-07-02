@@ -22,6 +22,6 @@ source_set("tab_grid") {
     "//ios/chrome/browser/ui/tab_grid/grid:grid_ui",
     "//ios/showcase/common",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }

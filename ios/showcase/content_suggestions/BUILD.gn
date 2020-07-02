@@ -26,7 +26,7 @@ source_set("content_suggestions") {
     "//ios/showcase/common",
     "//ui/base",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
@@ -48,5 +48,5 @@ source_set("eg2_tests") {
     "//ios/third_party/earl_grey2:test_lib",
     "//ui/base",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }

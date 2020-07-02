@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chromeos/dbus/attestation/interface.pb.h"
 #include "chromeos/dbus/constants/attestation_constants.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -29,6 +30,7 @@ class AsyncMethodCaller;
 namespace chromeos {
 
 class CryptohomeClient;
+class AttestationClient;
 
 namespace attestation {
 
@@ -157,10 +159,11 @@ class COMPONENT_EXPORT(CHROMEOS_ATTESTATION) AttestationFlow {
   // Parameters
   //   end_time - Time after which preparation should time out.
   //   callback - Called with the success or failure of the enrollment.
-  //   result - Result of TpmAttestationIsPrepared().
-  void OnPreparedCheckComplete(base::TimeTicks end_time,
-                               base::OnceCallback<void(bool)> callback,
-                               base::Optional<bool> result);
+  //   reply - Reply from the attestation service.
+  void OnPreparedCheckComplete(
+      base::TimeTicks end_time,
+      base::OnceCallback<void(bool)> callback,
+      const ::attestation::GetEnrollmentPreparationsReply& reply);
 
   // Called when the attestation daemon has finished creating an enrollment
   // request for the Privacy CA.  The request is asynchronously forwarded as-is
@@ -302,6 +305,7 @@ class COMPONENT_EXPORT(CHROMEOS_ATTESTATION) AttestationFlow {
 
   cryptohome::AsyncMethodCaller* async_caller_;
   CryptohomeClient* cryptohome_client_;
+  AttestationClient* attestation_client_;
   std::unique_ptr<ServerProxy> server_proxy_;
 
   base::TimeDelta ready_timeout_;

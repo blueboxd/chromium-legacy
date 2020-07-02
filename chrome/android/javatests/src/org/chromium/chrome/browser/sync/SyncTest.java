@@ -170,6 +170,7 @@ public class SyncTest {
     @Test
     @LargeTest
     @Feature({"Sync"})
+    @DisabledTest(message = "Test is flaky crbug.com/1100890")
     public void testReenableMasterSyncFirst() {
         Account account = mSyncTestRule.setUpAccountAndSignInForTesting();
         String authority = AndroidSyncSettings.get().getContractAuthority();

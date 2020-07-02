@@ -14,6 +14,7 @@
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/apps_container_view.h"
+#include "ash/app_list/views/apps_grid_view.h"
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/assistant/assistant_controller_impl.h"
@@ -438,6 +439,27 @@ void AppListControllerImpl::ResolveOemFolderPosition(
     metadata = ash_oem_folder->CloneMetadata();
   }
   std::move(callback).Run(std::move(metadata));
+}
+
+void AppListControllerImpl::NotifyProcessSyncChangesFinished() {
+  // When there are incompatible apps on different devices under the same
+  // user account, it is possible that moving or adding an app on an empty
+  // spot on a page of a different type of device (e.g. Device 1) may cause app
+  // overflow on another device (e.g. Device 2) since it may have more apps on
+  // the same page. See details in http://crbug.com/1098174.
+  // When the change is synced to the Device 2, paged view structure may load
+  // meta data and detect a full page of apps without a page break item
+  // at the end of the overflowed page. Therefore, after the sync service has
+  // finished processing sync change, SaveToMetaData should be called to insert
+  // page break items if there are any missing at the end of full pages.
+  AppListView* const app_list_view = presenter_.GetView();
+  if (app_list_view) {
+    app_list_view->app_list_main_view()
+        ->contents_view()
+        ->apps_container_view()
+        ->apps_grid_view()
+        ->UpdatePagedViewStructure();
+  }
 }
 
 void AppListControllerImpl::DismissAppList() {

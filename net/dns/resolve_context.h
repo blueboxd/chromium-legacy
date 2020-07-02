@@ -6,6 +6,7 @@
 #define NET_DNS_RESOLVE_CONTEXT_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
@@ -92,9 +93,12 @@ class NET_EXPORT_PRIVATE ResolveContext : public base::CheckedObserver {
   // Record that server failed to respond (due to SRV_FAIL or timeout). If
   // |is_doh_server| and the number of failures has surpassed a threshold,
   // sets the DoH probe state to unavailable. Noop if |session| is not the
-  // current session.
+  // current session. Should only be called with with server failure |rv|s,
+  // not eg OK, ERR_NAME_NOT_RESOLVED (which at the transaction level is
+  // expected to be nxdomain), or ERR_IO_PENDING.
   void RecordServerFailure(size_t server_index,
                            bool is_doh_server,
+                           int rv,
                            const DnsSession* session);
 
   // Record that server responded successfully. Noop if |session| is not the
@@ -200,6 +204,12 @@ class NET_EXPORT_PRIVATE ResolveContext : public base::CheckedObserver {
                        base::TimeDelta rtt,
                        int rv,
                        const DnsSession* session);
+  std::string GetQueryTypeForUma(size_t server_index,
+                                 bool is_doh_server,
+                                 const DnsSession* session);
+  std::string GetDohProviderIdForUma(size_t server_index,
+                                     bool is_doh_server,
+                                     const DnsSession* session);
 
   void NotifyDohStatusObserversOfSessionChanged();
   void NotifyDohStatusObserversOfUnavailable(bool network_change);

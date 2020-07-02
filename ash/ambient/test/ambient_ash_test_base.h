@@ -42,6 +42,10 @@ class AmbientAshTestBase : public AshTestBase {
   // called.
   void HideAmbientScreen();
 
+  // Closes ambient screen. Can only be called after |ShowAmbientScreen| has
+  // been called.
+  void CloseAmbientScreen();
+
   // Simulates user locks/unlocks screen which will result in ambient widget
   // shown/closed.
   void LockScreen();

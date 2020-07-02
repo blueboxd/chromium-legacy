@@ -20,7 +20,7 @@ source_set("application_delegate") {
     "//ios/chrome/browser/crash_report",
     "//ios/chrome/browser/metrics",
   ]
-  libs = [ "Foundation.framework" ]
+  frameworks = [ "Foundation.framework" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }
@@ -95,7 +95,7 @@ source_set("unit_tests") {
     "//ui/base",
     "//url",
   ]
-  libs = [ "CoreSpotlight.framework" ]
+  frameworks = [ "CoreSpotlight.framework" ]
 }
 
 source_set("tab_opening") {
@@ -111,7 +111,7 @@ source_set("tab_opening") {
     "//ios/chrome/browser/main:public",
     "//ui/base",
   ]
-  libs = [
+  frameworks = [
     "CoreSpotlight.framework",
     "UIKit.framework",
   ]
@@ -134,7 +134,7 @@ source_set("metric_kit_subscriber") {
     "metric_kit_subscribing_util.h",
     "metric_kit_subscribing_util.mm",
   ]
-  libs = [ "MetricKit.framework" ]
+  frameworks = [ "MetricKit.framework" ]
   deps = [
     ":ios_enable_metrickit_buildflags",
     "//base",
@@ -214,7 +214,7 @@ source_set("application_delegate_internal") {
   if (ios_enable_metrickit) {
     deps += [ ":metric_kit_subscriber" ]
   }
-  libs = [
+  frameworks = [
     "CoreSpotlight.framework",
     "UIKit.framework",
   ]
@@ -249,5 +249,5 @@ source_set("test_support") {
     "//ui/base",
     "//url",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }

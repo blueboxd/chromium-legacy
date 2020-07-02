@@ -15,6 +15,7 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewStub;
 import android.widget.RadioButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -27,6 +28,11 @@ import java.util.List;
  * The radio button is designed to be contained in a group, with {@link
  * RadioButtonWithDescriptionLayout} as the parent view. By default, the object will be inflated
  * from {@link R.layout.radio_button_with_description).
+ * </p>
+ *
+ * <p>
+ * A child widget can replace the end_view_stub ViewStub with a customized view at the end of the
+ * widget, by overriding {@link RadioButtonWithDescription#getEndStubLayoutResourceId()}.
  * </p>
  *
  * <p>
@@ -65,6 +71,8 @@ public class RadioButtonWithDescription extends RelativeLayout implements OnClic
 
     private static final String SUPER_STATE_KEY = "superState";
     private static final String CHECKED_KEY = "isChecked";
+    // An id that indicates the layout doesn't exist.
+    private static final int NO_LAYOUT_ID = -1;
 
     /**
      * Constructor for inflating via XML.
@@ -111,6 +119,13 @@ public class RadioButtonWithDescription extends RelativeLayout implements OnClic
         mRadioButton = getRadioButtonView();
         mPrimary = getPrimaryTextView();
         mDescription = getDescriptionTextView();
+
+        int endStubLayoutResourceId = getEndStubLayoutResourceId();
+        if (endStubLayoutResourceId != NO_LAYOUT_ID) {
+            ViewStub endStub = findViewById(R.id.end_view_stub);
+            endStub.setLayoutResource(endStubLayoutResourceId);
+            endStub.inflate();
+        }
     }
 
     /**
@@ -139,6 +154,14 @@ public class RadioButtonWithDescription extends RelativeLayout implements OnClic
      */
     protected TextView getDescriptionTextView() {
         return (TextView) findViewById(R.id.description);
+    }
+
+    /**
+     * @return Resource id that is used to replace the end_view_stub inside this {@link
+     *         RadioButtonWithDescription}.
+     */
+    protected int getEndStubLayoutResourceId() {
+        return NO_LAYOUT_ID;
     }
 
     /**

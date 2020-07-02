@@ -52,6 +52,8 @@ class ArcImeBridgeImpl : public ArcImeBridge, public mojom::ImeHost {
                                               const gfx::Range& selection_range,
                                               bool screen_coordinates) override;
   void RequestHideImeDeprecated() override;
+  void ShouldEnableKeyEventForwarding(
+      ShouldEnableKeyEventForwardingCallback callback) override;
 
  private:
   Delegate* const delegate_;

@@ -162,9 +162,9 @@ class AddBookmarkTask : public BookmarkModelTask {
               const bool is_folder,
               const int64_t parent_id) {
     int64_t result = kInvalidBookmarkId;
-    RunOnUIThreadBlocking::Run(
-        base::Bind(&AddBookmarkTask::RunOnUIThread,
-                   model(), title, url, is_folder, parent_id, &result));
+    RunOnUIThreadBlocking::Run(base::BindOnce(&AddBookmarkTask::RunOnUIThread,
+                                              model(), title, url, is_folder,
+                                              parent_id, &result));
     return result;
   }
 
@@ -212,8 +212,8 @@ class RemoveBookmarkTask : public BookmarkModelTask {
 
   int Run(const int64_t id) {
     bool did_delete = false;
-    RunOnUIThreadBlocking::Run(base::Bind(&RemoveBookmarkTask::RunOnUIThread,
-                                          model(), id, &did_delete));
+    RunOnUIThreadBlocking::Run(base::BindOnce(
+        &RemoveBookmarkTask::RunOnUIThread, model(), id, &did_delete));
     return did_delete ? 1 : 0;
   }
 
@@ -248,9 +248,9 @@ class UpdateBookmarkTask : public BookmarkModelTask {
           const base::string16& url,
           const int64_t parent_id) {
     bool did_update = false;
-    RunOnUIThreadBlocking::Run(base::Bind(&UpdateBookmarkTask::RunOnUIThread,
-                                          model(), id, title, url, parent_id,
-                                          &did_update));
+    RunOnUIThreadBlocking::Run(
+        base::BindOnce(&UpdateBookmarkTask::RunOnUIThread, model(), id, title,
+                       url, parent_id, &did_update));
     return did_update ? 1 : 0;
   }
 
@@ -307,9 +307,8 @@ class IsInMobileBookmarksBranchTask : public BookmarkModelTask {
 
   bool Run(const int64_t id) {
     bool result = false;
-    RunOnUIThreadBlocking::Run(
-        base::Bind(&IsInMobileBookmarksBranchTask::RunOnUIThread,
-                   model(), id, &result));
+    RunOnUIThreadBlocking::Run(base::BindOnce(
+        &IsInMobileBookmarksBranchTask::RunOnUIThread, model(), id, &result));
     return result;
   }
 
@@ -383,12 +382,11 @@ class AddBookmarkFromAPITask : public HistoryProviderTask {
 
   history::URLID Run(const history::HistoryAndBookmarkRow& row) {
     RunAsyncRequestOnUIThreadBlocking(
-        base::Bind(&AndroidHistoryProviderService::InsertHistoryAndBookmark,
-                   base::Unretained(service()),
-                   row,
-                   base::Bind(&AddBookmarkFromAPITask::OnBookmarkInserted,
-                              base::Unretained(this)),
-                   cancelable_tracker()));
+        base::BindOnce(&AndroidHistoryProviderService::InsertHistoryAndBookmark,
+                       base::Unretained(service()), row,
+                       base::Bind(&AddBookmarkFromAPITask::OnBookmarkInserted,
+                                  base::Unretained(this)),
+                       cancelable_tracker()));
     return result_;
   }
 
@@ -417,16 +415,13 @@ class QueryBookmarksFromAPITask : public HistoryProviderTask {
       const std::string& selection,
       const std::vector<base::string16>& selection_args,
       const std::string& sort_order) {
-    RunAsyncRequestOnUIThreadBlocking(
-        base::Bind(&AndroidHistoryProviderService::QueryHistoryAndBookmarks,
-                   base::Unretained(service()),
-                   projections,
-                   selection,
-                   selection_args,
-                   sort_order,
-                   base::Bind(&QueryBookmarksFromAPITask::OnBookmarksQueried,
-                              base::Unretained(this)),
-                   cancelable_tracker()));
+    RunAsyncRequestOnUIThreadBlocking(base::BindOnce(
+        &AndroidHistoryProviderService::QueryHistoryAndBookmarks,
+        base::Unretained(service()), projections, selection, selection_args,
+        sort_order,
+        base::Bind(&QueryBookmarksFromAPITask::OnBookmarksQueried,
+                   base::Unretained(this)),
+        cancelable_tracker()));
     return result_;
   }
 
@@ -451,15 +446,12 @@ class UpdateBookmarksFromAPITask : public HistoryProviderTask {
   int Run(const history::HistoryAndBookmarkRow& row,
           const std::string& selection,
           const std::vector<base::string16>& selection_args) {
-    RunAsyncRequestOnUIThreadBlocking(
-        base::Bind(&AndroidHistoryProviderService::UpdateHistoryAndBookmarks,
-                   base::Unretained(service()),
-                   row,
-                   selection,
-                   selection_args,
-                   base::Bind(&UpdateBookmarksFromAPITask::OnBookmarksUpdated,
-                              base::Unretained(this)),
-                   cancelable_tracker()));
+    RunAsyncRequestOnUIThreadBlocking(base::BindOnce(
+        &AndroidHistoryProviderService::UpdateHistoryAndBookmarks,
+        base::Unretained(service()), row, selection, selection_args,
+        base::Bind(&UpdateBookmarksFromAPITask::OnBookmarksUpdated,
+                   base::Unretained(this)),
+        cancelable_tracker()));
     return result_;
   }
 
@@ -483,14 +475,12 @@ class RemoveBookmarksFromAPITask : public HistoryProviderTask {
 
   int Run(const std::string& selection,
           const std::vector<base::string16>& selection_args) {
-    RunAsyncRequestOnUIThreadBlocking(
-        base::Bind(&AndroidHistoryProviderService::DeleteHistoryAndBookmarks,
-                   base::Unretained(service()),
-                   selection,
-                   selection_args,
-                   base::Bind(&RemoveBookmarksFromAPITask::OnBookmarksRemoved,
-                              base::Unretained(this)),
-                   cancelable_tracker()));
+    RunAsyncRequestOnUIThreadBlocking(base::BindOnce(
+        &AndroidHistoryProviderService::DeleteHistoryAndBookmarks,
+        base::Unretained(service()), selection, selection_args,
+        base::Bind(&RemoveBookmarksFromAPITask::OnBookmarksRemoved,
+                   base::Unretained(this)),
+        cancelable_tracker()));
     return result_;
   }
 
@@ -515,13 +505,11 @@ class RemoveHistoryFromAPITask : public HistoryProviderTask {
   int Run(const std::string& selection,
           const std::vector<base::string16>& selection_args) {
     RunAsyncRequestOnUIThreadBlocking(
-        base::Bind(&AndroidHistoryProviderService::DeleteHistory,
-                   base::Unretained(service()),
-                   selection,
-                   selection_args,
-                   base::Bind(&RemoveHistoryFromAPITask::OnHistoryRemoved,
-                              base::Unretained(this)),
-                   cancelable_tracker()));
+        base::BindOnce(&AndroidHistoryProviderService::DeleteHistory,
+                       base::Unretained(service()), selection, selection_args,
+                       base::Bind(&RemoveHistoryFromAPITask::OnHistoryRemoved,
+                                  base::Unretained(this)),
+                       cancelable_tracker()));
     return result_;
   }
 
@@ -584,8 +572,8 @@ class AddSearchTermFromAPITask : public SearchTermTask {
 
   history::URLID Run(const history::SearchRow& row) {
     RunAsyncRequestOnUIThreadBlocking(
-        base::Bind(&AddSearchTermFromAPITask::MakeRequestOnUIThread,
-                   base::Unretained(this), row));
+        base::BindOnce(&AddSearchTermFromAPITask::MakeRequestOnUIThread,
+                       base::Unretained(this), row));
     return result_;
   }
 
@@ -626,12 +614,9 @@ class QuerySearchTermsFromAPITask : public SearchTermTask {
       const std::string& selection,
       const std::vector<base::string16>& selection_args,
       const std::string& sort_order) {
-    RunAsyncRequestOnUIThreadBlocking(base::Bind(
+    RunAsyncRequestOnUIThreadBlocking(base::BindOnce(
         &AndroidHistoryProviderService::QuerySearchTerms,
-        base::Unretained(service()),
-        projections,
-        selection,
-        selection_args,
+        base::Unretained(service()), projections, selection, selection_args,
         sort_order,
         base::Bind(&QuerySearchTermsFromAPITask::OnSearchTermsQueried,
                    base::Unretained(this)),
@@ -663,8 +648,8 @@ class UpdateSearchTermsFromAPITask : public SearchTermTask {
           const std::string& selection,
           const std::vector<base::string16>& selection_args) {
     RunAsyncRequestOnUIThreadBlocking(
-        base::Bind(&UpdateSearchTermsFromAPITask::MakeRequestOnUIThread,
-                   base::Unretained(this), row, selection, selection_args));
+        base::BindOnce(&UpdateSearchTermsFromAPITask::MakeRequestOnUIThread,
+                       base::Unretained(this), row, selection, selection_args));
     return result_;
   }
 
@@ -705,11 +690,9 @@ class RemoveSearchTermsFromAPITask : public SearchTermTask {
 
   int Run(const std::string& selection,
           const std::vector<base::string16>& selection_args) {
-    RunAsyncRequestOnUIThreadBlocking(base::Bind(
+    RunAsyncRequestOnUIThreadBlocking(base::BindOnce(
         &AndroidHistoryProviderService::DeleteSearchTerms,
-        base::Unretained(service()),
-        selection,
-        selection_args,
+        base::Unretained(service()), selection, selection_args,
         base::Bind(&RemoveSearchTermsFromAPITask::OnSearchTermsDeleted,
                    base::Unretained(this)),
         cancelable_tracker()));

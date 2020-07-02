@@ -78,5 +78,5 @@ source_set("cwt_chromedriver_tests") {
     "//net:test_support",
   ]
 
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }

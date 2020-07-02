@@ -8,5 +8,5 @@ executable("generate_localizable_strings") {
     "//base",
     "//ui/base:ui_data_pack",
   ]
-  libs = [ "Foundation.framework" ]
+  frameworks = [ "Foundation.framework" ]
 }

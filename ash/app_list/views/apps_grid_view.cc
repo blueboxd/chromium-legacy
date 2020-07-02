@@ -2259,6 +2259,11 @@ AppListItemView* AppsGridView::GetCurrentPageLastItemViewInFolder() {
   return view_model_.view_at(last_index);
 }
 
+void AppsGridView::UpdatePagedViewStructure() {
+  if (!folder_delegate_)
+    view_structure_.SaveToMetadata();
+}
+
 bool AppsGridView::IsTabletMode() const {
   return contents_view_->app_list_view()->is_tablet_mode();
 }

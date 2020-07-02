@@ -139,7 +139,8 @@ bool UnifiedHeapController::AdvanceTracing(double deadline_in_ms) {
     ThreadState::AtomicPauseScope atomic_pause_scope(thread_state_);
     ScriptForbiddenScope script_forbidden_scope;
     is_tracing_done_ = thread_state_->MarkPhaseAdvanceMarkingBasedOnSchedule(
-        base::TimeDelta::FromMillisecondsD(deadline_in_ms));
+        base::TimeDelta::FromMillisecondsD(deadline_in_ms),
+        ThreadState::EphemeronProcessing::kPartialProcessing);
     if (!is_tracing_done_) {
       if (base::FeatureList::IsEnabled(
               blink::features::kBlinkHeapConcurrentMarking)) {

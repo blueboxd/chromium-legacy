@@ -5,6 +5,7 @@
 module location.nearby.connections.mojom;
 
 import "chrome/services/sharing/public/mojom/nearby_connections_types.mojom";
+import "chrome/services/sharing/public/mojom/webrtc_signaling_messenger.mojom";
 import "device/bluetooth/public/mojom/adapter.mojom";
 
 // Main interface to control the NearbyConnections library. Implemented in a
@@ -31,4 +32,8 @@ interface NearbyConnectionsHost {
   // 3) If Bluetooth is supported by Chrome on the OS and there is valid adapter
   //    we return an adapter instance with the AdapterInfo.present=true.
   GetBluetoothAdapter() => (pending_remote<bluetooth.mojom.Adapter>? adapter);
+
+  // Gets the current webrtc signaling messenger from the host.
+  GetWebRtcSignalingMessenger()
+      => (pending_remote<sharing.mojom.WebRtcSignalingMessenger> messenger);
 };

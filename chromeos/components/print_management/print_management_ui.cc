@@ -86,7 +86,7 @@ void AddPrintManagementStrings(content::WebUIDataSource* html_source) {
        IDS_PRINT_MANAGEMENT_CANCEL_PRINT_JOB_BUTTON_LABEL},
       {"cancelledPrintJob",
        IDS_PRINT_MANAGEMENT_CANCELED_PRINT_JOB_ARIA_ANNOUNCEMENT},
-  };
+      {"collapsedPrintingText", IDS_PRINT_MANAGEMENT_COLLAPSE_PRINTING_STATUS}};
 
   for (const auto& str : kLocalizedStrings) {
     html_source->AddLocalizedString(str.name, str.id);

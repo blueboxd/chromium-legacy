@@ -207,7 +207,7 @@ void PasswordSaveManagerImpl::SetVotesAndRecordMetricsForPendingCredentials(
   }
 }
 
-void PasswordSaveManagerImpl::ResetPendingCrednetials() {
+void PasswordSaveManagerImpl::ResetPendingCredentials() {
   pending_credentials_ = PasswordForm();
   pending_credentials_state_ = PendingCredentialsState::NONE;
 }

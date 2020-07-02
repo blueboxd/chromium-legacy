@@ -17,6 +17,7 @@
 #include "pdf/test/test_utils.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/pdfium/public/fpdf_formfill.h"
 #include "ui/gfx/range/range.h"
 
 namespace chrome_pdf {
@@ -598,6 +599,88 @@ TEST_F(PDFiumPageChoiceFieldTest, TestPopulateChoiceFields) {
     CompareRect(kExpectedChoiceFields[i].bounding_rect,
                 page->choice_fields_[i].bounding_rect);
     EXPECT_EQ(kExpectedChoiceFields[i].flags, page->choice_fields_[i].flags);
+  }
+}
+
+using PDFiumPageButtonTest = PDFiumTestBase;
+
+TEST_F(PDFiumPageButtonTest, TestPopulateButtons) {
+  struct ExpectedButton {
+    const char* name;
+    const char* value;
+    int type;
+    int flags;
+    bool is_checked;
+    uint32_t control_count;
+    int control_index;
+    pp::Rect bounding_rect;
+  };
+
+  static const ExpectedButton kExpectedButtons[] = {{"readOnlyCheckbox",
+                                                     "Yes",
+                                                     FPDF_FORMFIELD_CHECKBOX,
+                                                     1,
+                                                     true,
+                                                     1,
+                                                     0,
+                                                     {185, 43, 28, 28}},
+                                                    {"checkbox",
+                                                     "Yes",
+                                                     FPDF_FORMFIELD_CHECKBOX,
+                                                     2,
+                                                     false,
+                                                     1,
+                                                     0,
+                                                     {185, 96, 28, 28}},
+                                                    {"RadioButton",
+                                                     "value1",
+                                                     FPDF_FORMFIELD_RADIOBUTTON,
+                                                     49154,
+                                                     false,
+                                                     2,
+                                                     0,
+                                                     {185, 243, 28, 28}},
+                                                    {"RadioButton",
+                                                     "value2",
+                                                     FPDF_FORMFIELD_RADIOBUTTON,
+                                                     49154,
+                                                     true,
+                                                     2,
+                                                     1,
+                                                     {252, 243, 27, 28}},
+                                                    {"PushButton",
+                                                     "",
+                                                     FPDF_FORMFIELD_PUSHBUTTON,
+                                                     65536,
+                                                     false,
+                                                     0,
+                                                     -1,
+                                                     {118, 270, 55, 67}}};
+
+  TestClient client;
+  std::unique_ptr<PDFiumEngine> engine =
+      InitializeEngine(&client, FILE_PATH_LITERAL("form_buttons.pdf"));
+  ASSERT_TRUE(engine);
+  ASSERT_EQ(1, engine->GetNumberOfPages());
+
+  PDFiumPage* page = GetPDFiumPageForTest(engine.get(), 0);
+  ASSERT_TRUE(page);
+  page->PopulateAnnotations();
+  size_t buttons_count = page->buttons_.size();
+  ASSERT_EQ(base::size(kExpectedButtons), buttons_count);
+
+  for (size_t i = 0; i < buttons_count; ++i) {
+    EXPECT_EQ(kExpectedButtons[i].name, page->buttons_[i].name);
+    EXPECT_EQ(kExpectedButtons[i].value, page->buttons_[i].value);
+    EXPECT_EQ(kExpectedButtons[i].type, page->buttons_[i].type);
+    EXPECT_EQ(kExpectedButtons[i].flags, page->buttons_[i].flags);
+    EXPECT_EQ(kExpectedButtons[i].is_checked, page->buttons_[i].is_checked);
+    EXPECT_EQ(kExpectedButtons[i].control_count,
+              page->buttons_[i].control_count);
+    EXPECT_EQ(kExpectedButtons[i].control_index,
+              page->buttons_[i].control_index);
+    CompareRect(kExpectedButtons[i].bounding_rect,
+                page->buttons_[i].bounding_rect);
   }
 }
 

@@ -38,10 +38,11 @@ struct CORE_EXPORT PaintInvalidatorContext {
   PaintInvalidatorContext(const ParentContextAccessor& parent_context_accessor)
       : parent_context_accessor_(parent_context_accessor),
         subtree_flags(ParentContext()->subtree_flags),
-        paint_invalidation_container(
-            ParentContext()->paint_invalidation_container),
-        paint_invalidation_container_for_stacked_contents(
-            ParentContext()->paint_invalidation_container_for_stacked_contents),
+        directly_composited_container(
+            ParentContext()->directly_composited_container),
+        directly_composited_container_for_stacked_contents(
+            ParentContext()
+                ->directly_composited_container_for_stacked_contents),
         painting_layer(ParentContext()->painting_layer) {}
 
   // Maps a rect in the object's local coordinates in flipped blocks direction
@@ -110,17 +111,17 @@ struct CORE_EXPORT PaintInvalidatorContext {
   // The following fields can be null only before
   // PaintInvalidator::updateContext().
 
-  // The current paint invalidation container for normal flow objects.
+  // The current directly composited  container for normal flow objects.
   // It is the enclosing composited object.
-  const LayoutBoxModelObject* paint_invalidation_container = nullptr;
+  const LayoutBoxModelObject* directly_composited_container = nullptr;
 
-  // The current paint invalidation container for stacked contents (stacking
+  // The current directly composited container for stacked contents (stacking
   // contexts or positioned objects).  It is the nearest ancestor composited
   // object which establishes a stacking context.  See
   // Source/core/paint/README.md ### PaintInvalidationState for details on how
   // stacked contents' paint invalidation containers differ.
   const LayoutBoxModelObject*
-      paint_invalidation_container_for_stacked_contents = nullptr;
+      directly_composited_container_for_stacked_contents = nullptr;
 
   PaintLayer* painting_layer = nullptr;
 
@@ -170,9 +171,9 @@ class PaintInvalidator {
   ALWAYS_INLINE void UpdatePaintingLayer(const LayoutObject&,
                                          PaintInvalidatorContext&,
                                          bool is_ng_painting);
-  ALWAYS_INLINE void UpdatePaintInvalidationContainer(const LayoutObject&,
-                                                      PaintInvalidatorContext&,
-                                                      bool is_ng_painting);
+  ALWAYS_INLINE void UpdateDirectlyCompositedContainer(const LayoutObject&,
+                                                       PaintInvalidatorContext&,
+                                                       bool is_ng_painting);
   ALWAYS_INLINE void UpdateEmptyVisualRectFlag(const LayoutObject&,
                                                PaintInvalidatorContext&);
   ALWAYS_INLINE void UpdateVisualRect(const LayoutObject&,

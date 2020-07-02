@@ -30,7 +30,7 @@ source_set("utils") {
     "//ui/base",
     "//ui/gfx",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("eg2_tests") {
@@ -56,5 +56,5 @@ source_set("eg2_tests") {
     "//ios/web/public/test/http_server",
   ]
 
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }

@@ -34,7 +34,7 @@ source_set("credit_card_scanner") {
     "//ios/chrome/browser/ui/util",
     "//ui/base",
   ]
-  libs = [
+  frameworks = [
     "UIKit.framework",
     "Vision.framework",
     "CoreMedia.framework",

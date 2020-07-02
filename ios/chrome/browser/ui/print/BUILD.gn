@@ -19,5 +19,5 @@ source_set("print") {
     "//net",
     "//ui/base",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }

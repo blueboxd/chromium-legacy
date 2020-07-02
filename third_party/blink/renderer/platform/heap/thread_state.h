@@ -179,6 +179,13 @@ class PLATFORM_EXPORT ThreadState final {
     kSweeping,
   };
 
+  enum class EphemeronProcessing {
+    kPartialProcessing,  // Perofrm one ephemeron processing iteration every
+                         // few step
+    kFullProcessing  // Perofrm full fixed-point ephemeron processing on each
+                     // step
+  };
+
   class AtomicPauseScope;
   class GCForbiddenScope;
   class LsanDisabledScope;
@@ -507,8 +514,9 @@ class PLATFORM_EXPORT ThreadState final {
   void MarkPhaseEpilogue(BlinkGC::MarkingType);
   void MarkPhaseVisitRoots();
   void MarkPhaseVisitNotFullyConstructedObjects();
-  bool MarkPhaseAdvanceMarkingBasedOnSchedule(base::TimeDelta max_deadline);
-  bool MarkPhaseAdvanceMarking(base::TimeTicks deadline);
+  bool MarkPhaseAdvanceMarkingBasedOnSchedule(base::TimeDelta,
+                                              EphemeronProcessing);
+  bool MarkPhaseAdvanceMarking(base::TimeTicks, EphemeronProcessing);
   void VerifyMarking(BlinkGC::MarkingType);
 
   // Visit the stack after pushing registers onto the stack.

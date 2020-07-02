@@ -22,6 +22,6 @@ source_set("omnibox_popup") {
     "//ios/showcase/common",
     "//url",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }

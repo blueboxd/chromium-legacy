@@ -57,7 +57,7 @@ ios_appex_bundle("share_extension") {
 
   assert_no_deps = ios_extension_assert_no_deps
 
-  libs = [
+  frameworks = [
     "Foundation.framework",
     "Social.framework",
     "CoreGraphics.framework",

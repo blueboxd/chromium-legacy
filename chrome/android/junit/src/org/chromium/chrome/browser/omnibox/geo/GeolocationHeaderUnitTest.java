@@ -258,8 +258,9 @@ public class GeolocationHeaderUnitTest {
 
     @Test
     public void testGetGeoHeaderOldLocationLocationOff() {
-        GeolocationHeader.setLocationSourceForTesting(GeolocationHeader.LocationSource.MASTER_OFF);
-        // If the master switch is off, networks should never be included (old location might).
+        GeolocationHeader.setLocationSourceForTesting(
+                GeolocationHeader.LocationSource.LOCATION_OFF);
+        // If the location switch is off, networks should never be included (old location might).
         checkOldLocation("X-Geo: w " + ENCODED_PROTO_LOCATION);
     }
 

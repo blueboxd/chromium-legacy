@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/memory/ptr_util.h"
+#include "base/time/time.h"
+#include "build/build_config.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/bluetooth/test/mock_bluetooth_advertisement.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,6 +23,12 @@ namespace {
 constexpr const char kNearbySharingFastInitiationServiceUuid[] =
     "0000fe2c-0000-1000-8000-00805f9b34fb";
 const uint8_t kNearbySharingFastPairId[] = {0xfc, 0x12, 0x8e};
+
+#if defined(CHROME_OS)
+const int64_t kFastInitAdvertisingInterval = 100;
+const int64_t kDefaultAdvertisingInterval = 0;
+#endif
+
 }  // namespace
 
 struct RegisterAdvertisementArgs {
@@ -46,6 +54,18 @@ class MockBluetoothAdapterWithAdvertisements
  public:
   MOCK_METHOD1(RegisterAdvertisementWithArgsStruct,
                void(RegisterAdvertisementArgs*));
+  MOCK_METHOD2(OnSetAdvertisingInterval, void(int64_t, int64_t));
+
+#if defined(CHROME_OS)
+  void SetAdvertisingInterval(
+      const base::TimeDelta& min,
+      const base::TimeDelta& max,
+      const base::Closure& callback,
+      const AdvertisementErrorCallback& error_callback) override {
+    callback.Run();
+    OnSetAdvertisingInterval(min.InMilliseconds(), max.InMilliseconds());
+  }
+#endif
 
   void RegisterAdvertisement(
       std::unique_ptr<device::BluetoothAdvertisement::Data> advertisement_data,
@@ -80,6 +100,10 @@ class NearbySharingFastInitiationManagerTest : public testing::Test {
     ON_CALL(*mock_adapter_, RegisterAdvertisementWithArgsStruct(_))
         .WillByDefault(Invoke(this, &NearbySharingFastInitiationManagerTest::
                                         OnAdapterRegisterAdvertisement));
+    ON_CALL(*mock_adapter_, OnSetAdvertisingInterval(_, _))
+        .WillByDefault(Invoke(
+            this,
+            &NearbySharingFastInitiationManagerTest::OnSetAdvertisingInterval));
 
     fast_initiation_manager_ =
         std::make_unique<FastInitiationManager>(mock_adapter_);
@@ -127,11 +151,27 @@ class NearbySharingFastInitiationManagerTest : public testing::Test {
 
   void OnStopAdvertising() { called_on_stop_advertising_ = true; }
 
+  void OnSetAdvertisingInterval(int64_t min, int64_t max) {
+    ++set_advertising_interval_call_count_;
+    last_advertising_interval_min_ = min;
+    last_advertising_interval_max_ = max;
+  }
+
   bool called_on_start_advertising() { return called_on_start_advertising_; }
   bool called_on_start_advertising_error() {
     return called_on_start_advertising_error_;
   }
   bool called_on_stop_advertising() { return called_on_stop_advertising_; }
+  size_t set_advertising_interval_call_count() {
+    return set_advertising_interval_call_count_;
+  }
+
+  int64_t last_advertising_interval_min() {
+    return last_advertising_interval_min_;
+  }
+  int64_t last_advertising_interval_max() {
+    return last_advertising_interval_max_;
+  }
 
   scoped_refptr<NiceMock<MockBluetoothAdapterWithAdvertisements>> mock_adapter_;
   std::unique_ptr<FastInitiationManager> fast_initiation_manager_;
@@ -139,27 +179,57 @@ class NearbySharingFastInitiationManagerTest : public testing::Test {
   bool called_on_start_advertising_;
   bool called_on_start_advertising_error_;
   bool called_on_stop_advertising_;
+  size_t set_advertising_interval_call_count_ = 0u;
+  int64_t last_advertising_interval_min_ = 0;
+  int64_t last_advertising_interval_max_ = 0;
 };
 
 TEST_F(NearbySharingFastInitiationManagerTest, TestStartAdvertising_Success) {
   StartAdvertising();
-
   register_args_->callback.Run(
       base::MakeRefCounted<device::MockBluetoothAdvertisement>());
   EXPECT_TRUE(called_on_start_advertising());
   EXPECT_FALSE(called_on_start_advertising_error());
+  EXPECT_FALSE(called_on_stop_advertising());
+#if defined(CHROME_OS)
+  EXPECT_EQ(1u, set_advertising_interval_call_count());
+  EXPECT_EQ(kFastInitAdvertisingInterval, last_advertising_interval_min());
+  EXPECT_EQ(kFastInitAdvertisingInterval, last_advertising_interval_max());
+#endif
 }
 
 TEST_F(NearbySharingFastInitiationManagerTest, TestStartAdvertising_Error) {
   StartAdvertising();
-
   register_args_->error_callback.Run(device::BluetoothAdvertisement::ErrorCode::
                                          INVALID_ADVERTISEMENT_ERROR_CODE);
   EXPECT_FALSE(called_on_start_advertising());
   EXPECT_TRUE(called_on_start_advertising_error());
+  EXPECT_FALSE(called_on_stop_advertising());
+#if defined(CHROME_OS)
+  EXPECT_EQ(1u, set_advertising_interval_call_count());
+  EXPECT_EQ(kFastInitAdvertisingInterval, last_advertising_interval_min());
+  EXPECT_EQ(kFastInitAdvertisingInterval, last_advertising_interval_max());
+#endif
 }
 
 TEST_F(NearbySharingFastInitiationManagerTest, TestStopAdvertising) {
+  StartAdvertising();
+  register_args_->callback.Run(
+      base::MakeRefCounted<device::MockBluetoothAdvertisement>());
+#if defined(CHROME_OS)
+  EXPECT_EQ(1u, set_advertising_interval_call_count());
+  EXPECT_EQ(kFastInitAdvertisingInterval, last_advertising_interval_min());
+  EXPECT_EQ(kFastInitAdvertisingInterval, last_advertising_interval_max());
+#endif
+
   StopAdvertising();
+
+  EXPECT_TRUE(called_on_start_advertising());
+  EXPECT_FALSE(called_on_start_advertising_error());
   EXPECT_TRUE(called_on_stop_advertising());
+#if defined(CHROME_OS)
+  EXPECT_EQ(2u, set_advertising_interval_call_count());
+  EXPECT_EQ(kDefaultAdvertisingInterval, last_advertising_interval_min());
+  EXPECT_EQ(kDefaultAdvertisingInterval, last_advertising_interval_max());
+#endif
 }

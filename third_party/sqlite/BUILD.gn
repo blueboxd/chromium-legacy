@@ -227,9 +227,9 @@ component("chromium_sqlite3") {
   ]
 
   if (is_mac || is_ios) {
-    libs = [ "CoreFoundation.framework" ]
+    frameworks = [ "CoreFoundation.framework" ]
     if (!is_ios) {
-      libs += [ "CoreServices.framework" ]
+      frameworks += [ "CoreServices.framework" ]
     }
   } else if (is_android) {
     defines += [
@@ -306,9 +306,9 @@ component("dev_sqlite3") {
   ]
 
   if (is_mac || is_ios) {
-    libs = [ "CoreFoundation.framework" ]
+    frameworks = [ "CoreFoundation.framework" ]
     if (!is_ios) {
-      libs += [ "CoreServices.framework" ]
+      frameworks += [ "CoreServices.framework" ]
     }
   } else if (is_android) {
     defines += [

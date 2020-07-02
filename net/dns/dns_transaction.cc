@@ -1410,7 +1410,7 @@ class DnsTransactionImpl : public DnsTransaction,
           if (result.attempt) {
             resolve_context_->RecordServerFailure(
                 result.attempt->server_index(), secure_ /* is_doh_server */,
-                session_.get());
+                result.rv, session_.get());
           }
           if (MoreAttemptsAllowed()) {
             result = MakeAttempt();
@@ -1428,12 +1428,20 @@ class DnsTransactionImpl : public DnsTransaction,
         default:
           // Server failure.
           DCHECK(result.attempt);
+
+          // If attempt is not the most recent attempt, means this error is for
+          // an attempt that already timed out and was treated as complete but
+          // allowed to continue attempting in parallel with new attempts (see
+          // the ERR_DNS_TIMED_OUT case above). As the failure was already
+          // recorded at timeout time and is no longer being waited on, ignore
+          // this failure.
           if (result.attempt != attempts_.back().get()) {
-            resolve_context_->RecordServerFailure(
-                result.attempt->server_index(), secure_ /* is_doh_server */,
-                session_.get());
             return AttemptResult(ERR_IO_PENDING, nullptr);
           }
+
+          resolve_context_->RecordServerFailure(result.attempt->server_index(),
+                                                secure_ /* is_doh_server */,
+                                                result.rv, session_.get());
           if (!MoreAttemptsAllowed()) {
             return result;
           }

@@ -45,9 +45,6 @@ class BrowserAppMenuButton : public AppMenuButton {
   // noticeable color, and the menu item appearance may be affected.
   void SetPromoFeature(base::Optional<InProductHelpFeature> promo_feature);
 
-  // views::MenuButton:
-  void OnThemeChanged() override;
-
   // Updates the presentation according to |severity_| and the theme provider.
   void UpdateIcon();
 
@@ -55,14 +52,8 @@ class BrowserAppMenuButton : public AppMenuButton {
   // Used only in testing.
   static bool g_open_app_immediately_for_testing;
 
- protected:
-  // If the button is being used as an anchor for a promo, returns the best
-  // promo color given the current background color. Otherwise, returns the
-  // standard ToolbarButton foreground color for the given |state|.
-  SkColor GetForegroundColor(ButtonState state) const override;
-
- private:
   // AppMenuButton:
+  void OnThemeChanged() override;
   const char* GetClassName() const override;
   bool GetDropFormats(int* formats,
                       std::set<ui::ClipboardFormatType>* format_types) override;
@@ -78,6 +69,13 @@ class BrowserAppMenuButton : public AppMenuButton {
   SkColor GetInkDropBaseColor() const override;
   base::string16 GetTooltipText(const gfx::Point& p) const override;
 
+ protected:
+  // If the button is being used as an anchor for a promo, returns the best
+  // promo color given the current background color. Otherwise, returns the
+  // standard ToolbarButton foreground color for the given |state|.
+  SkColor GetForegroundColor(ButtonState state) const override;
+
+ private:
   void OnTouchUiChanged();
 
   AppMenuIconController::TypeAndSeverity type_and_severity_{

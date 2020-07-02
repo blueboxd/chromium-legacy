@@ -150,7 +150,7 @@ if (is_mac || is_ios) {
       deps += [ "//components/gwp_asan/client" ]
     }
 
-    libs = [ "Foundation.framework" ]
+    frameworks = [ "Foundation.framework" ]
   }
 }
 

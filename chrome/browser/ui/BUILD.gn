@@ -2714,6 +2714,8 @@ static_library("ui") {
 
     if (enable_dice_support) {
       sources += [
+        "signin/dice_web_signin_interceptor_delegate.cc",
+        "signin/dice_web_signin_interceptor_delegate.h",
         "webui/signin/dice_turn_sync_on_helper.cc",
         "webui/signin/dice_turn_sync_on_helper.h",
         "webui/signin/dice_turn_sync_on_helper_delegate_impl.cc",

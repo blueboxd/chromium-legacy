@@ -387,6 +387,11 @@ void ArcImeService::OnCursorRectChangedWithSurroundingText(
     input_method->OnCaretBoundsChanged(this);
 }
 
+bool ArcImeService::ShouldEnableKeyEventForwarding() {
+  return base::FeatureList::IsEnabled(
+      chromeos::features::kArcPreImeKeyEventSupport);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Overridden from ash::KeyboardControllerObserver
 void ArcImeService::OnKeyboardAppearanceChanged(

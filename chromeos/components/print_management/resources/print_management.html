@@ -34,10 +34,6 @@
     margin-inline-end: 4px;
   }
 
-  #fileNameColumn {
-    width: 368px;
-  }
-
   #headerContainer {
     border-bottom: 1px solid rgba(0,0,0,0.14); /* 14% black */
     display: flex;
@@ -81,7 +77,7 @@
   }
 </style>
 
-<div class="main-container cr-centered-card-container">
+<div class="main-container margin-border">
   <div id="headerContainer">
     <h1 id="printJobTitle">[[i18n('printJobTitle')]]</h1>
     <div id="clearAllContainer">
@@ -106,19 +102,20 @@
 
   <div class="column-headers flex-center"
       aria-labeledby="fileNameColumn printerNameColumn dateColumn statusColumn">
-    <div id="fileNameColumn" class="overflow-ellipsis" aria-hidden="true">
+    <div id="fileNameColumn" class="file-name-header-column overflow-ellipsis"
+        aria-hidden="true">
       [[i18n('fileNameColumn')]]
     </div>
     <div id="printerNameColumn"
-        class="medium-text overflow-ellipsis padded-left"
+        class="printer-name-column overflow-ellipsis padded-left"
         aria-hidden="true">
       [[i18n('printerNameColumn')]]
     </div>
-    <div id="dateColumn" class="short-text overflow-ellipsis padded-left"
+    <div id="dateColumn" class="date-column overflow-ellipsis padded-left"
         aria-hidden="true">
       [[i18n('dateColumn')]]
     </div>
-    <div id="statusColumn" class="medium-text overflow-ellipsis padded-left"
+    <div id="statusColumn" class="status-column overflow-ellipsis padded-left"
         aria-hidden="true">
       [[i18n('statusColumn')]]
     </div>

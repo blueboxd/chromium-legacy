@@ -483,11 +483,19 @@ class MFVideoCallback final
   }
 
   IFACEMETHODIMP OnEvent(IMFMediaEvent* media_event) override {
+    base::AutoLock lock(lock_);
+    if (!observer_) {
+      return S_OK;
+    }
     observer_->OnEvent(media_event);
     return S_OK;
   }
 
   IFACEMETHODIMP OnSample(IMFSample* sample) override {
+    base::AutoLock lock(lock_);
+    if (!observer_) {
+      return S_OK;
+    }
     if (!sample) {
       observer_->OnFrameDropped(
           VideoCaptureFrameDropReason::kWinMediaFoundationReceivedSampleIsNull);
@@ -526,10 +534,18 @@ class MFVideoCallback final
     return S_OK;
   }
 
+  void Shutdown() {
+    base::AutoLock lock(lock_);
+    observer_ = nullptr;
+  }
+
  private:
   friend class base::RefCountedThreadSafe<MFVideoCallback>;
   ~MFVideoCallback() {}
-  VideoCaptureDeviceMFWin* observer_;
+
+  // Protects access to |observer_|.
+  base::Lock lock_;
+  VideoCaptureDeviceMFWin* observer_ GUARDED_BY(lock_);
 };
 
 // static
@@ -735,6 +751,9 @@ VideoCaptureDeviceMFWin::~VideoCaptureDeviceMFWin() {
               ? IsHighResolution(selected_video_capability_->supported_format)
               : false);
     }
+  }
+  if (video_callback_) {
+    video_callback_->Shutdown();
   }
 }
 

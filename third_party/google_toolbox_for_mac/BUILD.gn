@@ -31,7 +31,7 @@ component("google_toolbox_for_mac") {
       "src/DebugUtils/GTMTypeCasting.h",
     ]
 
-    libs = [
+    frameworks = [
       "AppKit.framework",
       "Carbon.framework",
       "Cocoa.framework",

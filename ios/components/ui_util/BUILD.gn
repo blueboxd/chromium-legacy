@@ -4,7 +4,7 @@ source_set("ui_util") {
     "dynamic_type_util.h",
     "dynamic_type_util.mm",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
   deps = [ "//base" ]
 }
 

@@ -92,7 +92,7 @@ jumbo_component("shell_dialogs") {
   }
 
   if (is_mac) {
-    libs = [
+    frameworks = [
       "CoreServices.framework",
       "Foundation.framework",
       "AppKit.framework",

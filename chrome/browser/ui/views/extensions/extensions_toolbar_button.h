@@ -24,7 +24,6 @@ class ExtensionsToolbarButton : public ToolbarButton,
 
   void UpdateIcon();
 
- private:
   // ToolbarButton:
   gfx::Size CalculatePreferredSize() const override;
   gfx::Size GetMinimumSize() const override;
@@ -37,6 +36,7 @@ class ExtensionsToolbarButton : public ToolbarButton,
   // views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
 
+ private:
   int GetIconSize() const;
 
   // A lock to keep the button pressed when a popup is visible.

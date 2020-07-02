@@ -35,7 +35,7 @@ source_set("bubble") {
     "//net",
     "//ui/base",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("unit_tests") {
@@ -53,5 +53,5 @@ source_set("unit_tests") {
     "//ios/chrome/browser/ui/util",
     "//testing/gtest",
   ]
-  libs = [ "CoreGraphics.framework" ]
+  frameworks = [ "CoreGraphics.framework" ]
 }

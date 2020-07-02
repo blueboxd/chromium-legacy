@@ -185,18 +185,6 @@ const char* AvatarToolbarButton::GetClassName() const {
   return kAvatarToolbarButtonClassName;
 }
 
-void AvatarToolbarButton::NotifyClick(const ui::Event& event) {
-  Button::NotifyClick(event);
-  delegate_->NotifyClick();
-  // TODO(bsep): Other toolbar buttons have ToolbarView as a listener and let it
-  // call ExecuteCommandWithDisposition on their behalf. Unfortunately, it's not
-  // possible to plumb IsKeyEvent through, so this has to be a special case.
-  browser_->window()->ShowAvatarBubbleFromAvatarButton(
-      BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT,
-      signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN,
-      event.IsKeyEvent());
-}
-
 void AvatarToolbarButton::OnMouseExited(const ui::MouseEvent& event) {
   delegate_->OnMouseExited();
   ToolbarButton::OnMouseExited(event);
@@ -216,6 +204,18 @@ void AvatarToolbarButton::OnThemeChanged() {
 void AvatarToolbarButton::OnHighlightChanged() {
   DCHECK(parent_);
   delegate_->OnHighlightChanged();
+}
+
+void AvatarToolbarButton::NotifyClick(const ui::Event& event) {
+  Button::NotifyClick(event);
+  delegate_->NotifyClick();
+  // TODO(bsep): Other toolbar buttons have ToolbarView as a listener and let it
+  // call ExecuteCommandWithDisposition on their behalf. Unfortunately, it's not
+  // possible to plumb IsKeyEvent through, so this has to be a special case.
+  browser_->window()->ShowAvatarBubbleFromAvatarButton(
+      BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT,
+      signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN,
+      event.IsKeyEvent());
 }
 
 base::string16 AvatarToolbarButton::GetAvatarTooltipText() const {

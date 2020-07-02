@@ -64,7 +64,7 @@ source_set("autofill") {
     "//ui/base",
   ]
   public_deps = [ "//ios/chrome/browser/ui/collection_view" ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("bridges") {
@@ -94,7 +94,7 @@ source_set("bridges") {
     "//ui/base",
   ]
   public_deps = [ "//ios/chrome/browser/ui/collection_view" ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("autofill_ui") {
@@ -131,7 +131,7 @@ source_set("autofill_ui") {
     "//ios/third_party/material_components_ios",
     "//ui/base",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("autofill_message") {
@@ -179,7 +179,7 @@ source_set("eg2_tests") {
     "//services/network/public/cpp",
     "//testing/gtest",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("eg_app_support+eg2") {

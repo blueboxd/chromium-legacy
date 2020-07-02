@@ -105,7 +105,7 @@ source_set("infobars_ui") {
     "//url",
   ]
   public_deps = [ ":constants" ]
-  libs = [
+  frameworks = [
     "CoreGraphics.framework",
     "QuartzCore.framework",
     "UIKit.framework",
@@ -181,7 +181,7 @@ source_set("eg2_tests") {
     "//ui/base",
     "//url",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("test_support") {

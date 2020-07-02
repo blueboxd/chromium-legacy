@@ -58,7 +58,8 @@ public class DownloadDateTimePickerDialogTest {
                              .with(DownloadDateTimePickerDialogProperties.STATE, State.DATE)
                              .with(DownloadDateTimePickerDialogProperties.INITIAL_TIME, now)
                              .with(DownloadDateTimePickerDialogProperties.MIN_TIME, now)
-                             .with(DownloadDateTimePickerDialogProperties.MAX_TIME, now + 100000000)
+                             .with(DownloadDateTimePickerDialogProperties.MAX_TIME,
+                                     now + DownloadDateTimePickerDialogCoordinator.MAX_TIME)
                              .build();
             mDialog = new DownloadDateTimePickerDialogCoordinator();
             Assert.assertNotNull(mController);

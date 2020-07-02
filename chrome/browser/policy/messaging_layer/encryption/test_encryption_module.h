@@ -9,6 +9,7 @@
 
 #include "chrome/browser/policy/messaging_layer/public/report_queue.h"
 #include "chrome/browser/policy/messaging_layer/util/statusor.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace reporting {
@@ -17,23 +18,15 @@ namespace test {
 // An |EncryptionModule| that does no encryption.
 class TestEncryptionModule : public EncryptionModule {
  public:
-  TestEncryptionModule() = default;
+  TestEncryptionModule();
 
-  StatusOr<std::string> EncryptRecord(base::StringPiece record) const override;
-
- protected:
-  ~TestEncryptionModule() override = default;
-};
-
-// A |TestEncryptionModule| that always fails on |EncryptRecord| calls.
-class AlwaysFailsEncryptionModule final : public TestEncryptionModule {
- public:
-  AlwaysFailsEncryptionModule() = default;
-
-  StatusOr<std::string> EncryptRecord(base::StringPiece record) const override;
+  MOCK_METHOD(StatusOr<std::string>,
+              EncryptRecord,
+              (base::StringPiece record),
+              (const override));
 
  protected:
-  ~AlwaysFailsEncryptionModule() override = default;
+  ~TestEncryptionModule() override;
 };
 
 }  // namespace test

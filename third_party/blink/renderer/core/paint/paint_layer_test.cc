@@ -2863,4 +2863,81 @@ TEST_P(PaintLayerTest, NestedFixedUsesExpandedBoundingBoxForOverlap) {
             PhysicalRect(-10, -10, 410, 410));
 }
 
+TEST_P(PaintLayerTest, DirectCompositingReasonsCrossingFrameBoundaries) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+  SetBodyInnerHTML(R"HTML(
+    <iframe></iframe>
+  )HTML");
+  SetChildFrameHTML(R"HTML(
+    <div id=target style="position: relative"></div>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+
+  PaintLayer* target =
+      ToLayoutBoxModelObject(
+          ChildDocument().getElementById("target")->GetLayoutObject())
+          ->Layer();
+
+  EXPECT_EQ(
+      GetDocument().View()->GetLayoutView()->Layer(),
+      target->EnclosingDirectlyCompositableLayerCrossingFrameBoundaries());
+}
+
+TEST_P(PaintLayerTest,
+       DirectCompositingReasonsCrossingFrameBoundariesCompositedIframe) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+  SetBodyInnerHTML(R"HTML(
+    <iframe id="iframe" style="will-change: transform";></iframe>
+  )HTML");
+  SetChildFrameHTML(R"HTML(
+    <div id=target style="position: relative"></div>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+
+  PaintLayer* target =
+      ToLayoutBoxModelObject(
+          ChildDocument().getElementById("target")->GetLayoutObject())
+          ->Layer();
+
+  PaintLayer* iframe =
+      ToLayoutBoxModelObject(
+          GetDocument().getElementById("iframe")->GetLayoutObject())
+          ->Layer();
+
+  EXPECT_EQ(
+      iframe,
+      target->EnclosingDirectlyCompositableLayerCrossingFrameBoundaries());
+}
+
+TEST_P(PaintLayerTest,
+       DirectCompositingReasonsCrossingFrameBoundariesCompositedParent) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+  SetBodyInnerHTML(R"HTML(
+    <iframe></iframe>
+  )HTML");
+  SetChildFrameHTML(R"HTML(
+    <div id="parent" style="will-change: transform">
+      <div id=target style="position: relative"></div>
+    </div>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+
+  PaintLayer* target =
+      ToLayoutBoxModelObject(
+          ChildDocument().getElementById("target")->GetLayoutObject())
+          ->Layer();
+
+  PaintLayer* parent =
+      ToLayoutBoxModelObject(
+          ChildDocument().getElementById("parent")->GetLayoutObject())
+          ->Layer();
+
+  EXPECT_EQ(
+      parent,
+      target->EnclosingDirectlyCompositableLayerCrossingFrameBoundaries());
+}
+
 }  // namespace blink

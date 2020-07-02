@@ -10,7 +10,7 @@ source_set("intents") {
     "SearchInChromeIntent.m",
   ]
   deps = [ ":resources" ]
-  libs = [ "Intents.framework" ]
+  frameworks = [ "Intents.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 

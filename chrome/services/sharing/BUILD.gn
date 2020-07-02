@@ -6,6 +6,8 @@ source_set("sharing") {
   sources = [
     "nearby/nearby_connections.cc",
     "nearby/nearby_connections.h",
+    "nearby/webrtc/incoming_messages_listener.cc",
+    "nearby/webrtc/incoming_messages_listener.h",
     "sharing_impl.cc",
     "sharing_impl.h",
     "webrtc/ipc_network_manager.cc",

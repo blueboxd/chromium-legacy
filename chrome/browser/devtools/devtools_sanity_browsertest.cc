@@ -762,8 +762,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
 
 // Tests that closing worker inspector window does not cause browser crash
 // @see http://crbug.com/323031
+// TODO(https://crbug.com/1100888): Disabled due to flakiness.
 IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
-                       TestWorkerWindowClosing) {
+                       DISABLED_TestWorkerWindowClosing) {
   ASSERT_TRUE(spawned_test_server()->Start());
   LoadTestPage(kDebuggerTestPage);
   DevToolsWindow* devtools_window = OpenDevToolWindowOnWebContents(

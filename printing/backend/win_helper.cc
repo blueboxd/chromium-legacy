@@ -439,7 +439,7 @@ std::unique_ptr<DEVMODE, base::FreeDeleter> XpsTicketToDevMode(
     return dev_mode;
 
   Microsoft::WRL::ComPtr<IStream> pt_stream;
-  HRESULT hr = StreamFromPrintTicket(print_ticket, pt_stream.GetAddressOf());
+  HRESULT hr = StreamFromPrintTicket(print_ticket, &pt_stream);
   if (FAILED(hr))
     return dev_mode;
 

@@ -156,7 +156,7 @@ jumbo_static_library("metrics") {
   }
 
   if (is_mac) {
-    libs = [
+    frameworks = [
       # The below are all needed for drive_metrics_provider_mac.mm.
       "CoreFoundation.framework",
       "DiskArbitration.framework",

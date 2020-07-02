@@ -113,6 +113,7 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
   void ResolveOemFolderPosition(
       const syncer::StringOrdinal& preferred_oem_position,
       ResolveOemFolderPositionCallback callback) override;
+  void NotifyProcessSyncChangesFinished() override;
   void DismissAppList() override;
   void GetAppInfoDialogBounds(GetAppInfoDialogBoundsCallback callback) override;
   void ShowAppList() override;

@@ -30,7 +30,7 @@ if (!is_ios) {
         "mac_init.mm",
       ]
 
-      libs = [ "Foundation.framework" ]
+      frameworks = [ "Foundation.framework" ]
     }
 
     deps = [

@@ -404,9 +404,13 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // Layer::paint*() methods.
   PaintLayer* EnclosingLayerForPaintInvalidation() const;
 
+  PaintLayer* EnclosingDirectlyCompositableLayer() const;
+
   // https://crbug.com/751768, this function can return nullptr sometimes.
   // Always check the result before using it, don't just DCHECK.
   PaintLayer* EnclosingLayerForPaintInvalidationCrossingFrameBoundaries() const;
+
+  PaintLayer* EnclosingDirectlyCompositableLayerCrossingFrameBoundaries() const;
 
   bool HasAncestorWithFilterThatMovesPixels() const;
 
@@ -740,6 +744,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
                   CompositingReason::kComboAllDirectReasons)
                : CompositingReason::kNone;
   }
+
+  bool CanBeCompositedForDirectReasons() const;
 
   CompositingReasons PotentialCompositingReasonsFromStyle() const {
     return rare_data_ ? rare_data_->potential_compositing_reasons_from_style

@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "components/lookalikes/core/lookalike_url_util.h"
 #include "ios/web/public/navigation/referrer.h"
 #import "ios/web/public/web_state_user_data.h"
 #include "url/gurl.h"
@@ -42,6 +43,19 @@ class LookalikeUrlContainer
     ~InterstitialParams();
   };
 
+  // Structure that contains information for the lookalike URL blocking page UI.
+  struct LookalikeUrlInfo {
+    const GURL safe_url;
+    const GURL request_url;
+    LookalikeUrlMatchType match_type;
+
+    LookalikeUrlInfo(const GURL& safe_url,
+                     const GURL& request_url,
+                     LookalikeUrlMatchType match_type);
+    LookalikeUrlInfo(const LookalikeUrlInfo& other);
+    ~LookalikeUrlInfo();
+  };
+
   // Stores parameters associated with a lookalike blocking page. Must be called
   // when a lookalike blocking page is shown.
   void RecordLookalikeBlockingPageParams(
@@ -49,9 +63,18 @@ class LookalikeUrlContainer
       const web::Referrer& referrer,
       const std::vector<GURL>& redirect_chain);
 
+  // Stores URL info associated with a lookalike blocking page.
+  void SetLookalikeUrlInfo(const GURL& safe_url,
+                           const GURL& request_url,
+                           LookalikeUrlMatchType match_type);
+
   // Returns currently stored parameters associated with a lookalike blocking
   // page, transferring ownership to the caller.
   std::unique_ptr<InterstitialParams> ReleaseInterstitialParams();
+
+  // Returns currently stored URL info associated with a lookalike blocking
+  // page, transferring ownership to the caller.
+  std::unique_ptr<LookalikeUrlInfo> ReleaseLookalikeUrlInfo();
 
  private:
   explicit LookalikeUrlContainer(web::WebState* web_state);
@@ -61,6 +84,10 @@ class LookalikeUrlContainer
   // Parameters associated with the currently displayed blocking page. These are
   // cleared immediately on next navigation.
   std::unique_ptr<InterstitialParams> interstitial_params_;
+
+  // Lookalike URL info associated with the currently displayed blocking page.
+  // These are cleared immediately on next navigation.
+  std::unique_ptr<LookalikeUrlInfo> lookalike_info_;
 };
 
 #endif  // IOS_COMPONENTS_SECURITY_INTERSTITIALS_LOOKALIKES_LOOKALIKE_URL_CONTAINER_H_

@@ -149,8 +149,7 @@ bool CreateOrUpdateShortcutLink(const FilePath& shortcut_path,
        ShortcutProperties::PROPERTIES_TOAST_ACTIVATOR_CLSID) != 0;
   if (has_app_id || has_dual_mode || has_toast_activator_clsid) {
     ComPtr<IPropertyStore> property_store;
-    if (FAILED(i_shell_link.CopyTo(property_store.GetAddressOf())) ||
-        !property_store.Get())
+    if (FAILED(i_shell_link.As(&property_store)) || !property_store.Get())
       return false;
 
     if (has_app_id && !SetAppIdForPropertyStore(property_store.Get(),
@@ -218,7 +217,7 @@ bool ResolveShortcutProperties(const FilePath& shortcut_path,
 
   ComPtr<IPersistFile> persist;
   // Query IShellLink for the IPersistFile interface.
-  if (FAILED(i_shell_link.CopyTo(persist.GetAddressOf())))
+  if (FAILED(i_shell_link.As(&persist)))
     return false;
 
   // Load the shell link.
@@ -268,7 +267,7 @@ bool ResolveShortcutProperties(const FilePath& shortcut_path,
                  ShortcutProperties::PROPERTIES_DUAL_MODE |
                  ShortcutProperties::PROPERTIES_TOAST_ACTIVATOR_CLSID)) {
     ComPtr<IPropertyStore> property_store;
-    if (FAILED(i_shell_link.CopyTo(property_store.GetAddressOf())))
+    if (FAILED(i_shell_link.As(&property_store)))
       return false;
 
     if (options & ShortcutProperties::PROPERTIES_APP_ID) {

@@ -3,23 +3,12 @@
 # found in the LICENSE file.
 
 import("//build/config/jumbo.gni")
-import("//build/config/sysroot.gni")
 import("//build/config/ui.gni")
 import("//ui/ozone/ozone.gni")
 
 assert(use_x11 || ozone_platform_x11)
 
-declare_args() {
-  xcbproto_path = ""
-}
-
-if (xcbproto_path == "") {
-  if (use_sysroot) {
-    xcbproto_path = "$sysroot/usr/share/xcb"
-  } else {
-    xcbproto_path = "/usr/share/xcb"
-  }
-}
+xcbproto_path = "//third_party/xcbproto/src"
 
 config("x11_private_config") {
   cflags = [
@@ -75,7 +64,7 @@ action("gen_xprotos") {
     "$target_gen_dir/extension_manager.cc",
   ]
   foreach(proto, protos) {
-    sources += [ "$xcbproto_path/${proto}.xml" ]
+    sources += [ "$xcbproto_path/src/${proto}.xml" ]
     outputs += [
       "$target_gen_dir/${proto}_undef.h",
       "$target_gen_dir/${proto}.h",
@@ -88,12 +77,6 @@ action("gen_xprotos") {
                        target_gen_dir,
                      ],
                      root_build_dir) + protos
-  if (use_sysroot) {
-    args += [
-      "--sysroot",
-      rebase_path(sysroot, root_build_dir),
-    ]
-  }
 }
 
 component("xprotos") {

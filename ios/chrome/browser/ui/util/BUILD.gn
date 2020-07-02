@@ -105,7 +105,7 @@ source_set("util") {
     "//ui/gfx",
     "//url",
   ]
-  libs = [
+  frameworks = [
     "Accelerate.framework",
     "CoreGraphics.framework",
     "QuartzCore.framework",

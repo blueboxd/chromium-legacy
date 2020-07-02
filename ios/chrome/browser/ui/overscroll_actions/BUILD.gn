@@ -40,7 +40,7 @@ source_set("overscroll_actions") {
     "//ui/base",
     "//ui/gfx",
   ]
-  libs = [
+  frameworks = [
     "QuartzCore.framework",
     "UIKit.framework",
   ]

@@ -995,14 +995,6 @@ ContentSecurityPolicy* Document::GetContentSecurityPolicy() const {
   return GetSecurityContext().GetContentSecurityPolicy();
 }
 
-network::mojom::blink::WebSandboxFlags Document::GetSandboxFlags() const {
-  return GetSecurityContext().GetSandboxFlags();
-}
-
-bool Document::IsSandboxed(network::mojom::blink::WebSandboxFlags mask) const {
-  return GetSecurityContext().IsSandboxed(mask);
-}
-
 SecureContextMode Document::GetSecureContextMode() const {
   return GetSecurityContext().GetSecureContextMode();
 }
@@ -4668,7 +4660,8 @@ void Document::MaybeHandleHttpRefresh(const String& content,
   }
 
   if (http_refresh_type == kHttpRefreshFromMetaTag &&
-      IsSandboxed(network::mojom::blink::WebSandboxFlags::kAutomaticFeatures)) {
+      dom_window_->IsSandboxed(
+          network::mojom::blink::WebSandboxFlags::kAutomaticFeatures)) {
     String message =
         "Refused to execute the redirect specified via '<meta "
         "http-equiv='refresh' content='...'>'. The document is sandboxed, and "
@@ -5763,65 +5756,61 @@ void Document::WillChangeFrameOwnerProperties(
 }
 
 String Document::cookie(ExceptionState& exception_state) const {
-  if (GetSettings() && !GetSettings()->GetCookieEnabled())
+  if (!dom_window_ || !GetSettings()->GetCookieEnabled())
     return String();
 
   CountUse(WebFeature::kCookieGet);
 
-  if (!GetSecurityOrigin()->CanAccessCookies()) {
-    if (IsSandboxed(network::mojom::blink::WebSandboxFlags::kOrigin))
+  if (!dom_window_->GetSecurityOrigin()->CanAccessCookies()) {
+    if (dom_window_->IsSandboxed(
+            network::mojom::blink::WebSandboxFlags::kOrigin)) {
       exception_state.ThrowSecurityError(
           "The document is sandboxed and lacks the 'allow-same-origin' flag.");
-    else if (Url().ProtocolIsData())
+    } else if (Url().ProtocolIsData()) {
       exception_state.ThrowSecurityError(
           "Cookies are disabled inside 'data:' URLs.");
-    else
+    } else {
       exception_state.ThrowSecurityError("Access is denied for this document.");
+    }
     return String();
   } else if (GetSecurityOrigin()->IsLocal()) {
     CountUse(WebFeature::kFileAccessedCookies);
   }
 
-  if (!cookie_jar_)
-    return String();
-
   return cookie_jar_->Cookies();
 }
 
 void Document::setCookie(const String& value, ExceptionState& exception_state) {
-  if (GetSettings() && !GetSettings()->GetCookieEnabled())
+  if (!dom_window_ || !GetSettings()->GetCookieEnabled())
     return;
 
   UseCounter::Count(*this, WebFeature::kCookieSet);
 
-  if (!GetSecurityOrigin()->CanAccessCookies()) {
-    if (IsSandboxed(network::mojom::blink::WebSandboxFlags::kOrigin))
+  if (!dom_window_->GetSecurityOrigin()->CanAccessCookies()) {
+    if (dom_window_->IsSandboxed(
+            network::mojom::blink::WebSandboxFlags::kOrigin)) {
       exception_state.ThrowSecurityError(
           "The document is sandboxed and lacks the 'allow-same-origin' flag.");
-    else if (Url().ProtocolIsData())
+    } else if (Url().ProtocolIsData()) {
       exception_state.ThrowSecurityError(
           "Cookies are disabled inside 'data:' URLs.");
-    else
+    } else {
       exception_state.ThrowSecurityError("Access is denied for this document.");
+    }
     return;
   } else if (GetSecurityOrigin()->IsLocal()) {
     UseCounter::Count(*this, WebFeature::kFileAccessedCookies);
   }
 
-  if (!cookie_jar_)
-    return;
-
   cookie_jar_->SetCookie(value);
 }
 
 bool Document::CookiesEnabled() const {
-  // Compatible behavior in contexts that don't have cookie access.
-  if (!GetSecurityOrigin()->CanAccessCookies())
-    return true;
-
-  if (!cookie_jar_)
+  if (!dom_window_)
     return false;
-
+  // Compatible behavior in contexts that don't have cookie access.
+  if (!dom_window_->GetSecurityOrigin()->CanAccessCookies())
+    return true;
   return cookie_jar_->CookiesEnabled();
 }
 
@@ -5847,14 +5836,15 @@ void Document::setDomain(const String& raw_domain,
 
   const String feature_policy_error =
       "Setting `document.domain` is disabled by Feature Policy.";
-  if (!GetExecutionContext()->IsFeatureEnabled(
+  if (!dom_window_->IsFeatureEnabled(
           mojom::blink::FeaturePolicyFeature::kDocumentDomain,
           ReportOptions::kReportOnFailure, feature_policy_error)) {
     exception_state.ThrowSecurityError(feature_policy_error);
     return;
   }
 
-  if (IsSandboxed(network::mojom::blink::WebSandboxFlags::kDocumentDomain)) {
+  if (dom_window_->IsSandboxed(
+          network::mojom::blink::WebSandboxFlags::kDocumentDomain)) {
     exception_state.ThrowSecurityError(
         "Assignment is forbidden for sandboxed iframes.");
     return;
@@ -6100,8 +6090,8 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
     return promise;
   }
 
-  if (IsSandboxed(network::mojom::blink::WebSandboxFlags::
-                      kStorageAccessByUserActivation)) {
+  if (dom_window_->IsSandboxed(network::mojom::blink::WebSandboxFlags::
+                                   kStorageAccessByUserActivation)) {
     AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::blink::ConsoleMessageSource::kSecurity,
         mojom::blink::ConsoleMessageLevel::kError,
@@ -7067,7 +7057,8 @@ const FeaturePolicy* Document::GetParentFeaturePolicy() const {
 void Document::ApplyPendingFramePolicyHeaders() {
   if (GetFrame()) {
     GetFrame()->Client()->DidSetFramePolicyHeaders(
-        GetSandboxFlags(), pending_fp_headers_, pending_dp_headers_);
+        dom_window_->GetSandboxFlags(), pending_fp_headers_,
+        pending_dp_headers_);
   }
   pending_fp_headers_.clear();
   pending_dp_headers_.clear();
@@ -8255,8 +8246,8 @@ bool Document::IsFocusAllowed() const {
   }
 
   WebFeature uma_type;
-  bool sandboxed =
-      IsSandboxed(network::mojom::blink::WebSandboxFlags::kNavigation);
+  bool sandboxed = dom_window_->IsSandboxed(
+      network::mojom::blink::WebSandboxFlags::kNavigation);
   bool ad = GetFrame()->IsAdSubframe();
   if (sandboxed) {
     uma_type = ad ? WebFeature::kFocusWithoutUserActivationSandboxedAdFrame

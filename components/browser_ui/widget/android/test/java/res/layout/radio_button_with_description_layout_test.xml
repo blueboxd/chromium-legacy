@@ -52,5 +52,13 @@
             android:hint="@string/test_uri"
             app:primaryText="@string/test_primary_4"
             app:descriptionText="@string/test_desc_4" />
+
+        <!-- RadioButtonWithDescriptionAndAuxButton - With primary and description. -->
+        <org.chromium.components.browser_ui.widget.RadioButtonWithDescriptionAndAuxButton
+            android:id="@+id/test_radio_description_and_aux_button_1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:primaryText="Test Primary 5"
+            app:descriptionText="Test Description 5" />
     </org.chromium.components.browser_ui.widget.RadioButtonWithDescriptionLayout>
 </FrameLayout>

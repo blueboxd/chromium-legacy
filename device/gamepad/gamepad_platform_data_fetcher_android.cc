@@ -69,7 +69,8 @@ static void JNI_GamepadList_SetGamepadData(
     const JavaParamRef<jstring>& devicename,
     jlong timestamp,
     const JavaParamRef<jfloatArray>& jaxes,
-    const JavaParamRef<jfloatArray>& jbuttons) {
+    const JavaParamRef<jfloatArray>& jbuttons,
+    jint buttons_length) {
   DCHECK(data_fetcher);
   GamepadPlatformDataFetcherAndroid* fetcher =
       reinterpret_cast<GamepadPlatformDataFetcherAndroid*>(data_fetcher);
@@ -107,9 +108,9 @@ static void JNI_GamepadList_SetGamepadData(
   std::vector<float> axes;
   base::android::JavaFloatArrayToFloatVector(env, jaxes, &axes);
 
-  // Set Gamepad axeslength to total number of axes on the gamepad device.
-  // Only return the first axesLengthCap if axeslength captured by GamepadList
-  // is larger than axesLengthCap.
+  // Set Gamepad::axes_length to the total number of axes on the gamepad device.
+  // Only return the first kAxesLengthCap if the axes size captured by
+  // GamepadList is larger than kAxesLengthCap.
   pad.axes_length = std::min(static_cast<int>(axes.size()),
                              static_cast<int>(Gamepad::kAxesLengthCap));
 
@@ -121,11 +122,12 @@ static void JNI_GamepadList_SetGamepadData(
   std::vector<float> buttons;
   base::android::JavaFloatArrayToFloatVector(env, jbuttons, &buttons);
 
-  // Set Gamepad buttonslength to total number of buttons on the gamepad
-  // device. Only return the first buttonsLengthCap if buttonslength captured by
-  // GamepadList is larger than buttonsLengthCap.
-  pad.buttons_length = std::min(static_cast<int>(buttons.size()),
-                                static_cast<int>(Gamepad::kButtonsLengthCap));
+  // Set Gamepad::buttons_length to the total number of buttons on the gamepad
+  // device. Only return the first kButtonsLengthCap if buttons_length captured
+  // by GamepadList is larger than kButtonsLengthCap.
+  pad.buttons_length =
+      std::min({static_cast<int>(buttons.size()), buttons_length,
+                static_cast<int>(Gamepad::kButtonsLengthCap)});
 
   // Copy buttons state to the Gamepad buttons[].
   for (unsigned int j = 0; j < pad.buttons_length; j++) {

@@ -14,6 +14,6 @@ source_set("widget") {
     "//ios/chrome/search_widget_extension:search_widget",
     "//ios/showcase/common",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }

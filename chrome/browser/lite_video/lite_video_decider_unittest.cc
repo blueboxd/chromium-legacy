@@ -20,8 +20,10 @@
 #include "components/blocklist/opt_out_blocklist/opt_out_blocklist.h"
 #include "components/blocklist/opt_out_blocklist/opt_out_blocklist_delegate.h"
 #include "components/blocklist/opt_out_blocklist/opt_out_store.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/test_renderer_host.h"
+#include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -80,6 +82,14 @@ class LiteVideoDeciderTest : public ChromeRenderViewHostTestHarness {
     scoped_feature_list_.InitAndEnableFeature({::features::kLiteVideo});
     lite_video_decider_ =
         std::make_unique<lite_video::LiteVideoDecider>(nullptr, &test_clock_);
+
+    lite_video_decider_->OnEffectiveConnectionTypeChanged(
+        net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G);
+    lite_video_decider_->OnConnectionChanged(
+        network::mojom::ConnectionType::CONNECTION_4G);
+
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        "enable-spdy-proxy-auth");
   }
 
   void DisableLiteVideo() {
@@ -129,7 +139,8 @@ class LiteVideoDeciderTest : public ChromeRenderViewHostTestHarness {
 
 TEST_F(LiteVideoDeciderTest, CanApplyOnNonHTTPOrHTTPSURL) {
   base::HistogramTester histogram_tester;
-  content::MockNavigationHandle navigation_handle;
+
+  content::MockNavigationHandle navigation_handle(web_contents());
   navigation_handle.set_url(GURL("chrome:://about"));
   base::Optional<lite_video::LiteVideoHint> hint =
       lite_video_decider()->CanApplyLiteVideo(&navigation_handle);
@@ -146,7 +157,7 @@ TEST_F(LiteVideoDeciderTest, CanApplyNoHintAndHostBlocklisted) {
   base::HistogramTester histogram_tester;
   SetBlocklistReason(
       lite_video::LiteVideoBlocklistReason::kNavigationBlocklisted);
-  content::MockNavigationHandle navigation_handle;
+  content::MockNavigationHandle navigation_handle(web_contents());
   navigation_handle.set_url(GURL("https://NoVideo.com"));
   base::Optional<lite_video::LiteVideoHint> hint =
       lite_video_decider()->CanApplyLiteVideo(&navigation_handle);
@@ -162,7 +173,7 @@ TEST_F(LiteVideoDeciderTest, CanApplyAllowedButNoHint) {
   base::HistogramTester histogram_tester;
   SetBlocklistReason(lite_video::LiteVideoBlocklistReason::kAllowed);
 
-  content::MockNavigationHandle navigation_handle;
+  content::MockNavigationHandle navigation_handle(web_contents());
   navigation_handle.set_url(GURL("https://NoVideo.com"));
   base::Optional<lite_video::LiteVideoHint> hint =
       lite_video_decider()->CanApplyLiteVideo(&navigation_handle);
@@ -180,7 +191,7 @@ TEST_F(LiteVideoDeciderTest, CanApplyLiteVideo) {
 
   SetBlocklistReason(lite_video::LiteVideoBlocklistReason::kAllowed);
   GURL url("https://LiteVideo.com");
-  content::MockNavigationHandle navigation_handle;
+  content::MockNavigationHandle navigation_handle(web_contents());
   navigation_handle.set_url(url);
   lite_video::LiteVideoHint seeded_hint(
       /*target_downlink_bandwidth_kbps=*/123,
@@ -212,7 +223,7 @@ TEST_F(LiteVideoDeciderTest, LiteVideoDisabled) {
   base::HistogramTester histogram_tester;
   SetBlocklistReason(lite_video::LiteVideoBlocklistReason::kAllowed);
   GURL url("https://LiteVideo.com");
-  content::MockNavigationHandle navigation_handle;
+  content::MockNavigationHandle navigation_handle(web_contents());
   navigation_handle.set_url(url);
   lite_video::LiteVideoHint seeded_hint(
       /*target_downlink_bandwidth_kbps=*/123,
@@ -236,7 +247,7 @@ TEST_F(LiteVideoDeciderTest, LiteVideoCanApplyOnSubframeNavigation) {
 
   SetBlocklistReason(lite_video::LiteVideoBlocklistReason::kAllowed);
   GURL url("https://LiteVideo.com");
-  content::MockNavigationHandle navigation_handle;
+  content::MockNavigationHandle navigation_handle(web_contents());
   navigation_handle.set_url(url);
   lite_video::LiteVideoHint seeded_hint(
       /*target_downlink_bandwidth_kbps=*/123,

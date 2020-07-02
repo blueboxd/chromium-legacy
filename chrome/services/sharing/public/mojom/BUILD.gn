@@ -8,6 +8,7 @@ mojom("mojom") {
     "nearby_decoder_types.mojom",
     "sharing.mojom",
     "webrtc.mojom",
+    "webrtc_signaling_messenger.mojom",
   ]
 
   public_deps = [

@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_INPUT_DEVICE_INFO_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_INPUT_DEVICE_INFO_H_
 
-#include "third_party/blink/public/platform/web_media_stream_source.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_source.h"
 #include "third_party/blink/renderer/modules/mediastream/media_device_info.h"
 
 namespace blink {

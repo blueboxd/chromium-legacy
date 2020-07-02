@@ -10,6 +10,6 @@ source_set("common") {
     "protocol_alerter.mm",
   ]
   deps = [ "//base" ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }

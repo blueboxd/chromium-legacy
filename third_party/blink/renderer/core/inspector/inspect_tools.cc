@@ -105,14 +105,12 @@ SearchingForNodeTool::SearchingForNodeTool(InspectorDOMAgent* dom_agent,
                                            bool ua_shadow,
                                            const std::vector<uint8_t>& config)
     : dom_agent_(dom_agent), ua_shadow_(ua_shadow) {
-  auto value = protocol::Value::parseBinary(config.data(), config.size());
-  if (!value)
-    return;
-  protocol::ErrorSupport errors;
-  std::unique_ptr<protocol::Overlay::HighlightConfig> highlight_config =
-      protocol::Overlay::HighlightConfig::fromValue(value.get(), &errors);
-  highlight_config_ =
-      InspectorOverlayAgent::ToHighlightConfig(highlight_config.get());
+  auto parsed_config = protocol::Overlay::HighlightConfig::FromBinary(
+      config.data(), config.size());
+  if (parsed_config) {
+    highlight_config_ =
+        InspectorOverlayAgent::ToHighlightConfig(parsed_config.get());
+  }
 }
 
 void SearchingForNodeTool::Trace(Visitor* visitor) const {
@@ -464,16 +462,10 @@ void ScreenshotTool::Dispatch(const String& message) {
             message.length()),
         &cbor);
   }
-  std::unique_ptr<protocol::Value> value =
-      protocol::Value::parseBinary(cbor.data(), cbor.size());
-  if (!value)
-    return;
-  protocol::ErrorSupport errors;
   std::unique_ptr<protocol::DOM::Rect> box =
-      protocol::DOM::Rect::fromValue(value.get(), &errors);
-  if (!errors.Errors().empty())
+      protocol::DOM::Rect::FromBinary(cbor.data(), cbor.size());
+  if (!box)
     return;
-
   float scale = 1.0f;
   // Capture values in the CSS pixels.
   IntPoint p1(box->getX(), box->getY());

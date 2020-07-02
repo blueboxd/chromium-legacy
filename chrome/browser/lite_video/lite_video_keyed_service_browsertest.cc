@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/lite_video/lite_video_keyed_service.h"
 
 #include "base/run_loop.h"
@@ -19,6 +20,9 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/network_connection_change_simulator.h"
+#include "net/nqe/effective_connection_type.h"
+#include "services/network/public/mojom/network_change_manager.mojom-shared.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -74,6 +78,23 @@ IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceDisabledBrowserTest,
             LiteVideoKeyedServiceFactory::GetForProfile(browser()->profile()));
 }
 
+class LiteVideoDataSaverDisabledBrowserTest : public InProcessBrowserTest {
+ public:
+  LiteVideoDataSaverDisabledBrowserTest() {
+    scoped_feature_list_.InitAndEnableFeature(::features::kLiteVideo);
+  }
+  ~LiteVideoDataSaverDisabledBrowserTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(LiteVideoDataSaverDisabledBrowserTest,
+                       LiteVideoEnabled_DataSaverOff) {
+  EXPECT_EQ(nullptr,
+            LiteVideoKeyedServiceFactory::GetForProfile(browser()->profile()));
+}
+
 class LiteVideoKeyedServiceBrowserTest
     : public LiteVideoKeyedServiceDisabledBrowserTest {
  public:
@@ -85,6 +106,16 @@ class LiteVideoKeyedServiceBrowserTest
         {::features::kLiteVideo},
         {{"lite_video_origin_hints", "{\"litevideo.com\": 123}"}});
     InProcessBrowserTest::SetUp();
+  }
+
+  void SetUpOnMainThread() override {
+    content::NetworkConnectionChangeSimulator().SetConnectionType(
+        network::mojom::ConnectionType::CONNECTION_4G);
+    InProcessBrowserTest::SetUpOnMainThread();
+  }
+
+  void SetUpCommandLine(base::CommandLine* cmd) override {
+    cmd->AppendSwitch("enable-spdy-proxy-auth");
   }
 
   lite_video::LiteVideoDecider* lite_video_decider() {
@@ -165,6 +196,58 @@ IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
   histogram_tester()->ExpectUniqueSample(
       "LiteVideo.CanApplyLiteVideo.UserBlocklist.MainFrame",
       lite_video::LiteVideoBlocklistReason::kAllowed, 1);
+  histogram_tester()->ExpectTotalCount(
+      "LiteVideo.CanApplyLiteVideo.UserBlocklist.SubFrame", 0);
+}
+
+IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
+                       LiteVideoCanApplyLiteVideo_NetworkNotCellular) {
+  WaitForBlocklistToBeLoaded();
+  EXPECT_TRUE(
+      LiteVideoKeyedServiceFactory::GetForProfile(browser()->profile()));
+
+  content::NetworkConnectionChangeSimulator().SetConnectionType(
+      network::mojom::ConnectionType::CONNECTION_WIFI);
+
+  GURL navigation_url("https://litevideo.com");
+
+  // Navigate metrics get recorded.
+  ui_test_utils::NavigateToURL(browser(), navigation_url);
+  EXPECT_GT(RetryForHistogramUntilCountReached(
+                *histogram_tester(), "LiteVideo.Navigation.HasHint", 1),
+            0);
+
+  histogram_tester()->ExpectUniqueSample("LiteVideo.Navigation.HasHint", false,
+                                         1);
+  histogram_tester()->ExpectTotalCount(
+      "LiteVideo.CanApplyLiteVideo.UserBlocklist.MainFrame", 0);
+  histogram_tester()->ExpectTotalCount(
+      "LiteVideo.CanApplyLiteVideo.UserBlocklist.SubFrame", 0);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    LiteVideoKeyedServiceBrowserTest,
+    LiteVideoCanApplyLiteVideo_NetworkConnectionBelowMinECT) {
+  WaitForBlocklistToBeLoaded();
+  EXPECT_TRUE(
+      LiteVideoKeyedServiceFactory::GetForProfile(browser()->profile()));
+
+  g_browser_process->network_quality_tracker()
+      ->ReportEffectiveConnectionTypeForTesting(
+          net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_2G);
+
+  GURL navigation_url("https://litevideo.com");
+
+  // Navigate metrics get recorded.
+  ui_test_utils::NavigateToURL(browser(), navigation_url);
+
+  EXPECT_GT(RetryForHistogramUntilCountReached(
+                *histogram_tester(), "LiteVideo.Navigation.HasHint", 1),
+            0);
+  histogram_tester()->ExpectUniqueSample("LiteVideo.Navigation.HasHint", false,
+                                         1);
+  histogram_tester()->ExpectTotalCount(
+      "LiteVideo.CanApplyLiteVideo.UserBlocklist.MainFrame", 0);
   histogram_tester()->ExpectTotalCount(
       "LiteVideo.CanApplyLiteVideo.UserBlocklist.SubFrame", 0);
 }

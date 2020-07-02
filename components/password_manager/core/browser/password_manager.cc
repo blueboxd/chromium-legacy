@@ -1215,16 +1215,24 @@ void PasswordManager::ShowManualFallbackForSavingImpl(
 }
 
 void PasswordManager::SetAutofillAssistantMode(AutofillAssistantMode mode) {
+  if (autofill_assistant_mode_ == mode) {
+    NOTREACHED()
+        << "Autofill Assistant tried to disable/enable prompts twice in a row.";
+    return;
+  }
   autofill_assistant_mode_ = mode;
 
   if (autofill_assistant_mode_ == AutofillAssistantMode::kRunning) {
-    DCHECK(!disable_prompts_timer_.IsRunning())
-        << "Autofill Assistant tried to disable prompts twice in a row.";
     disable_prompts_timer_.Start(FROM_HERE, GetTimeoutForDisablingPrompts(),
                                  this,
                                  &PasswordManager::ResetAutofillAssistantMode);
   } else {
     disable_prompts_timer_.Stop();
+    // Reset pending credentials as Autofill Assistant has handled the pending
+    // submission.
+    for (auto& form_manager : form_managers_)
+      form_manager->ResetState();
+    owned_submitted_form_manager_.reset();
   }
 }
 

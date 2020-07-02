@@ -137,7 +137,7 @@ source_set("ntp_internal") {
     "//ui/gfx",
     "//url",
   ]
-  libs = [
+  frameworks = [
     "CoreGraphics.framework",
     "QuartzCore.framework",
     "UIKit.framework",
@@ -214,7 +214,7 @@ source_set("eg2_tests") {
     "//ios/third_party/earl_grey2:test_lib",
     "//ui/base",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("perf_tests") {

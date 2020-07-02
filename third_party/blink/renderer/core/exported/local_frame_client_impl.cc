@@ -621,8 +621,7 @@ void LocalFrameClientImpl::BeginNavigation(
     navigation_info->is_opener_navigation =
         frame->Client()->Opener() == ToCoreFrame(web_frame_);
     navigation_info->initiator_frame_has_download_sandbox_flag =
-        frame->GetSecurityContext() &&
-        frame->GetSecurityContext()->IsSandboxed(
+        origin_window->IsSandboxed(
             network::mojom::blink::WebSandboxFlags::kDownloads);
     navigation_info->initiator_frame_is_ad = frame->IsAdSubframe();
   }

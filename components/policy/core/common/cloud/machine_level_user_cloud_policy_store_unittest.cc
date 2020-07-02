@@ -46,8 +46,8 @@ class MachineLevelUserCloudPolicyStoreTest : public ::testing::Test {
   void SetExpectedPolicyMap(PolicySource source) {
     expected_policy_map_.Clear();
     expected_policy_map_.Set("SearchSuggestEnabled", POLICY_LEVEL_MANDATORY,
-                             POLICY_SCOPE_MACHINE, source,
-                             std::make_unique<base::Value>(false), nullptr);
+                             POLICY_SCOPE_MACHINE, source, base::Value(false),
+                             nullptr);
   }
 
   std::unique_ptr<MachineLevelUserCloudPolicyStore> CreateStore(
@@ -255,7 +255,7 @@ TEST_F(MachineLevelUserCloudPolicyStoreTest, LoadRecentExternalPolicies) {
   PolicyMap expected_updater_policy_map;
   expected_updater_policy_map.Set(
       "SearchSuggestEnabled", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-      POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true), nullptr);
+      POLICY_SOURCE_CLOUD, base::Value(true), nullptr);
 
   ASSERT_TRUE(loader->policy());
   EXPECT_TRUE(expected_updater_policy_map.Equals(loader->policy_map()));
@@ -287,7 +287,7 @@ TEST_F(MachineLevelUserCloudPolicyStoreTest, LoadExternalOnlyPolicies) {
   PolicyMap expected_updater_policy_map;
   expected_updater_policy_map.Set(
       "SearchSuggestEnabled", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-      POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true), nullptr);
+      POLICY_SOURCE_CLOUD, base::Value(true), nullptr);
 
   ASSERT_TRUE(loader->policy());
   EXPECT_TRUE(expected_updater_policy_map.Equals(loader->policy_map()));

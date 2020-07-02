@@ -80,6 +80,13 @@ std::string GetWidgetName() {
   return "InSessionAmbientModeContainer";
 }
 
+// Returns true if the device is currently connected to a charger.
+bool IsChargerConnected() {
+  return (PowerStatus::Get()->IsBatteryCharging() ||
+          PowerStatus::Get()->IsBatteryFull()) &&
+         PowerStatus::Get()->IsLinePowerConnected();
+}
+
 }  // namespace
 
 // AmbientController::InactivityMonitor----------------------------------
@@ -168,9 +175,8 @@ void AmbientController::OnAmbientUiVisibilityChanged(
       // This will be no-op if the view is already visible.
       container_view_->SetVisible(true);
 
-      if (PowerStatus::Get()->IsBatteryCharging()) {
-        // Requires wake lock to prevent display from sleeping when the battery
-        // is charging.
+      if (IsChargerConnected()) {
+        // Requires wake lock to prevent display from sleeping.
         AcquireWakeLock();
       }
       // Observes the |PowerStatus| on the battery charging status change for
@@ -262,7 +268,7 @@ void AmbientController::OnPowerStatusChanged() {
     return;
   }
 
-  if (PowerStatus::Get()->IsBatteryCharging()) {
+  if (IsChargerConnected()) {
     AcquireWakeLock();
   } else {
     ReleaseWakeLock();

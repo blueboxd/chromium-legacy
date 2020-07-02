@@ -27,7 +27,7 @@ source_set("app") {
     "//url",
   ]
 
-  libs = [ "Foundation.framework" ]
+  frameworks = [ "Foundation.framework" ]
 }
 
 source_set("unit_tests") {
@@ -261,7 +261,7 @@ source_set("app_internal") {
     "//ui/strings:ui_strings",
   ]
 
-  libs = [
+  frameworks = [
     "CoreSpotlight.framework",
     "MediaPlayer.framework",
   ]

@@ -27,7 +27,7 @@ component("mozilla") {
     ldflags = [ "-Wl,-ObjC" ]
   }
 
-  libs = [
+  frameworks = [
     "AppKit.framework",
     "ApplicationServices.framework",
     "Carbon.framework",

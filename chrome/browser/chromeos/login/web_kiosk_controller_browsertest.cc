@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/public/cpp/keyboard/keyboard_controller.h"
 #include "chrome/browser/chromeos/app_mode/web_app/mock_web_kiosk_app_launcher.h"
 #include "chrome/browser/chromeos/login/web_kiosk_controller.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client_test_helper.h"
@@ -59,6 +60,23 @@ class WebKioskControllerTest : public InProcessBrowserTest {
     EXPECT_EQ(network_state, controller_->network_ui_state_);
   }
 
+  void ExpectKeyboardConfig() {
+    const keyboard::KeyboardConfig config =
+        ash::KeyboardController::Get()->GetKeyboardConfig();
+
+    // |auto_capitalize| is not controlled by the policy
+    // 'VirtualKeyboardFeatures', and its default value remains true.
+    EXPECT_TRUE(config.auto_capitalize);
+
+    // The other features are controlled by the policy
+    // 'VirtualKeyboardFeatures', and their default values should be false.
+    EXPECT_FALSE(config.auto_complete);
+    EXPECT_FALSE(config.auto_correct);
+    EXPECT_FALSE(config.handwriting);
+    EXPECT_FALSE(config.spell_check);
+    EXPECT_FALSE(config.voice_input);
+  }
+
   void FireSplashScreenTimer() { controller_->OnTimerFire(); }
 
   void SetOnline(bool online) {
@@ -100,6 +118,8 @@ IN_PROC_BROWSER_TEST_F(WebKioskControllerTest, RegularFlow) {
   launch_controls()->OnAppLaunched();
   ExpectState(AppState::LAUNCHED, NetworkUIState::NOT_SHOWING);
   EXPECT_TRUE(session_manager::SessionManager::Get()->IsSessionStarted());
+
+  ExpectKeyboardConfig();
 }
 
 IN_PROC_BROWSER_TEST_F(WebKioskControllerTest, AlreadyInstalled) {
@@ -118,6 +138,8 @@ IN_PROC_BROWSER_TEST_F(WebKioskControllerTest, AlreadyInstalled) {
   launch_controls()->OnAppLaunched();
   ExpectState(AppState::LAUNCHED, NetworkUIState::NOT_SHOWING);
   EXPECT_TRUE(session_manager::SessionManager::Get()->IsSessionStarted());
+
+  ExpectKeyboardConfig();
 }
 
 IN_PROC_BROWSER_TEST_F(WebKioskControllerTest, ConfigureNetworkBeforeProfile) {
@@ -147,6 +169,8 @@ IN_PROC_BROWSER_TEST_F(WebKioskControllerTest, ConfigureNetworkBeforeProfile) {
   launch_controls()->OnAppLaunched();
   ExpectState(AppState::LAUNCHED, NetworkUIState::NOT_SHOWING);
   EXPECT_TRUE(session_manager::SessionManager::Get()->IsSessionStarted());
+
+  ExpectKeyboardConfig();
 }
 
 IN_PROC_BROWSER_TEST_F(WebKioskControllerTest,
@@ -186,6 +210,8 @@ IN_PROC_BROWSER_TEST_F(WebKioskControllerTest,
   launch_controls()->OnAppLaunched();
   ExpectState(AppState::LAUNCHED, NetworkUIState::NOT_SHOWING);
   EXPECT_TRUE(session_manager::SessionManager::Get()->IsSessionStarted());
+
+  ExpectKeyboardConfig();
 }
 
 IN_PROC_BROWSER_TEST_F(WebKioskControllerTest,
@@ -224,6 +250,8 @@ IN_PROC_BROWSER_TEST_F(WebKioskControllerTest,
   launch_controls()->OnAppLaunched();
   ExpectState(AppState::LAUNCHED, NetworkUIState::NOT_SHOWING);
   EXPECT_TRUE(session_manager::SessionManager::Get()->IsSessionStarted());
+
+  ExpectKeyboardConfig();
 }
 
 }  // namespace chromeos

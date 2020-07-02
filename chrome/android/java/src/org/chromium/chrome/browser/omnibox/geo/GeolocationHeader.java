@@ -92,15 +92,15 @@ public class GeolocationHeader {
             UmaPermission.GPS_ONLY_APP_BLOCKED_DOMAIN_YES,
             UmaPermission.GPS_ONLY_APP_BLOCKED_DOMAIN_PROMPT,
             UmaPermission.GPS_ONLY_APP_BLOCKED_DOMAIN_BLOCKED,
-            UmaPermission.MASTER_OFF_APP_YES_DOMAIN_YES,
-            UmaPermission.MASTER_OFF_APP_YES_DOMAIN_PROMPT,
-            UmaPermission.MASTER_OFF_APP_YES_DOMAIN_BLOCKED,
-            UmaPermission.MASTER_OFF_APP_PROMPT_DOMAIN_YES,
-            UmaPermission.MASTER_OFF_APP_PROMPT_DOMAIN_PROMPT,
-            UmaPermission.MASTER_OFF_APP_PROMPT_DOMAIN_BLOCKED,
-            UmaPermission.MASTER_OFF_APP_BLOCKED_DOMAIN_YES,
-            UmaPermission.MASTER_OFF_APP_BLOCKED_DOMAIN_PROMPT,
-            UmaPermission.MASTER_OFF_APP_BLOCKED_DOMAIN_BLOCKED, UmaPermission.UNSUITABLE_URL,
+            UmaPermission.LOCATION_OFF_APP_YES_DOMAIN_YES,
+            UmaPermission.LOCATION_OFF_APP_YES_DOMAIN_PROMPT,
+            UmaPermission.LOCATION_OFF_APP_YES_DOMAIN_BLOCKED,
+            UmaPermission.LOCATION_OFF_APP_PROMPT_DOMAIN_YES,
+            UmaPermission.LOCATION_OFF_APP_PROMPT_DOMAIN_PROMPT,
+            UmaPermission.LOCATION_OFF_APP_PROMPT_DOMAIN_BLOCKED,
+            UmaPermission.LOCATION_OFF_APP_BLOCKED_DOMAIN_YES,
+            UmaPermission.LOCATION_OFF_APP_BLOCKED_DOMAIN_PROMPT,
+            UmaPermission.LOCATION_OFF_APP_BLOCKED_DOMAIN_BLOCKED, UmaPermission.UNSUITABLE_URL,
             UmaPermission.NOT_HTTPS})
     @Retention(RetentionPolicy.SOURCE)
     public @interface UmaPermission {
@@ -144,22 +144,22 @@ public class GeolocationHeader {
         int GPS_ONLY_APP_BLOCKED_DOMAIN_YES = 31;
         int GPS_ONLY_APP_BLOCKED_DOMAIN_PROMPT = 32;
         int GPS_ONLY_APP_BLOCKED_DOMAIN_BLOCKED = 33;
-        int MASTER_OFF_APP_YES_DOMAIN_YES = 34;
-        int MASTER_OFF_APP_YES_DOMAIN_PROMPT = 35;
-        int MASTER_OFF_APP_YES_DOMAIN_BLOCKED = 36;
-        int MASTER_OFF_APP_PROMPT_DOMAIN_YES = 37;
-        int MASTER_OFF_APP_PROMPT_DOMAIN_PROMPT = 38;
-        int MASTER_OFF_APP_PROMPT_DOMAIN_BLOCKED = 39;
-        int MASTER_OFF_APP_BLOCKED_DOMAIN_YES = 40;
-        int MASTER_OFF_APP_BLOCKED_DOMAIN_PROMPT = 41;
-        int MASTER_OFF_APP_BLOCKED_DOMAIN_BLOCKED = 42;
+        int LOCATION_OFF_APP_YES_DOMAIN_YES = 34;
+        int LOCATION_OFF_APP_YES_DOMAIN_PROMPT = 35;
+        int LOCATION_OFF_APP_YES_DOMAIN_BLOCKED = 36;
+        int LOCATION_OFF_APP_PROMPT_DOMAIN_YES = 37;
+        int LOCATION_OFF_APP_PROMPT_DOMAIN_PROMPT = 38;
+        int LOCATION_OFF_APP_PROMPT_DOMAIN_BLOCKED = 39;
+        int LOCATION_OFF_APP_BLOCKED_DOMAIN_YES = 40;
+        int LOCATION_OFF_APP_BLOCKED_DOMAIN_PROMPT = 41;
+        int LOCATION_OFF_APP_BLOCKED_DOMAIN_BLOCKED = 42;
         int UNSUITABLE_URL = 43;
         int NOT_HTTPS = 44;
         int NUM_ENTRIES = 45;
     }
 
     @IntDef({LocationSource.HIGH_ACCURACY, LocationSource.BATTERY_SAVING, LocationSource.GPS_ONLY,
-            LocationSource.MASTER_OFF})
+            LocationSource.LOCATION_OFF})
     @Retention(RetentionPolicy.SOURCE)
     public @interface LocationSource {
         @VisibleForTesting
@@ -169,7 +169,7 @@ public class GeolocationHeader {
         @VisibleForTesting
         int GPS_ONLY = 2;
         @VisibleForTesting
-        int MASTER_OFF = 3;
+        int LOCATION_OFF = 3;
     }
 
     @IntDef({Permission.GRANTED, Permission.PROMPT, Permission.BLOCKED})
@@ -325,7 +325,7 @@ public class GeolocationHeader {
         recordPermissionHistogram(locationSource, appPermission, domainPermission,
                 locationToAttach != null, headerState);
 
-        if (locationSource != LocationSource.MASTER_OFF && appPermission != Permission.BLOCKED
+        if (locationSource != LocationSource.LOCATION_OFF && appPermission != Permission.BLOCKED
                 && domainPermission != Permission.BLOCKED && !tab.isIncognito()) {
             // Record the Location Age with a histogram.
             recordLocationAgeHistogram(locationSource, locationAge);
@@ -449,7 +449,7 @@ public class GeolocationHeader {
                         Settings.Secure.LOCATION_MODE);
             } catch (Settings.SettingNotFoundException e) {
                 Log.e(TAG, "Error getting the LOCATION_MODE");
-                return LocationSource.MASTER_OFF;
+                return LocationSource.LOCATION_OFF;
             }
             if (locationMode == Settings.Secure.LOCATION_MODE_HIGH_ACCURACY) {
                 return LocationSource.HIGH_ACCURACY;
@@ -458,7 +458,7 @@ public class GeolocationHeader {
             } else if (locationMode == Settings.Secure.LOCATION_MODE_BATTERY_SAVING) {
                 return LocationSource.BATTERY_SAVING;
             } else {
-                return LocationSource.MASTER_OFF;
+                return LocationSource.LOCATION_OFF;
             }
     }
 
@@ -592,30 +592,30 @@ public class GeolocationHeader {
                     return UmaPermission.GPS_ONLY_APP_BLOCKED_DOMAIN_BLOCKED;
                 }
             }
-        } else if (locationSource == LocationSource.MASTER_OFF) {
+        } else if (locationSource == LocationSource.LOCATION_OFF) {
             if (appPermission == Permission.GRANTED) {
                 if (domainPermission == Permission.GRANTED) {
-                    return UmaPermission.MASTER_OFF_APP_YES_DOMAIN_YES;
+                    return UmaPermission.LOCATION_OFF_APP_YES_DOMAIN_YES;
                 } else if (domainPermission == Permission.PROMPT) {
-                    return UmaPermission.MASTER_OFF_APP_YES_DOMAIN_PROMPT;
+                    return UmaPermission.LOCATION_OFF_APP_YES_DOMAIN_PROMPT;
                 } else if (domainPermission == Permission.BLOCKED) {
-                    return UmaPermission.MASTER_OFF_APP_YES_DOMAIN_BLOCKED;
+                    return UmaPermission.LOCATION_OFF_APP_YES_DOMAIN_BLOCKED;
                 }
             } else if (appPermission == Permission.PROMPT) {
                 if (domainPermission == Permission.GRANTED) {
-                    return UmaPermission.MASTER_OFF_APP_PROMPT_DOMAIN_YES;
+                    return UmaPermission.LOCATION_OFF_APP_PROMPT_DOMAIN_YES;
                 } else if (domainPermission == Permission.PROMPT) {
-                    return UmaPermission.MASTER_OFF_APP_PROMPT_DOMAIN_PROMPT;
+                    return UmaPermission.LOCATION_OFF_APP_PROMPT_DOMAIN_PROMPT;
                 } else if (domainPermission == Permission.BLOCKED) {
-                    return UmaPermission.MASTER_OFF_APP_PROMPT_DOMAIN_BLOCKED;
+                    return UmaPermission.LOCATION_OFF_APP_PROMPT_DOMAIN_BLOCKED;
                 }
             } else if (appPermission == Permission.BLOCKED) {
                 if (domainPermission == Permission.GRANTED) {
-                    return UmaPermission.MASTER_OFF_APP_BLOCKED_DOMAIN_YES;
+                    return UmaPermission.LOCATION_OFF_APP_BLOCKED_DOMAIN_YES;
                 } else if (domainPermission == Permission.PROMPT) {
-                    return UmaPermission.MASTER_OFF_APP_BLOCKED_DOMAIN_PROMPT;
+                    return UmaPermission.LOCATION_OFF_APP_BLOCKED_DOMAIN_PROMPT;
                 } else if (domainPermission == Permission.BLOCKED) {
-                    return UmaPermission.MASTER_OFF_APP_BLOCKED_DOMAIN_BLOCKED;
+                    return UmaPermission.LOCATION_OFF_APP_BLOCKED_DOMAIN_BLOCKED;
                 }
             }
         }
@@ -636,7 +636,7 @@ public class GeolocationHeader {
 
     /**
      * Determines the name for a Time Listening Histogram. Returns empty string if the location
-     * source is MASTER_OFF as we do not record histograms for that case.
+     * source is LOCATION_OFF as we do not record histograms for that case.
      */
     private static String getTimeListeningHistogramEnum(
             int locationSource, boolean locationAttached) {

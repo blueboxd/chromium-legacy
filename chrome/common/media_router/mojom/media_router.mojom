@@ -8,7 +8,6 @@ import "chrome/common/media_router/mojom/logger.mojom";
 import "chrome/common/media_router/mojom/media_controller.mojom";
 import "chrome/common/media_router/mojom/media_status.mojom";
 import "components/mirroring/mojom/mirroring_service_host.mojom";
-import "media/mojo/mojom/mirror_service_remoting.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "services/network/public/mojom/ip_address.mojom";
 import "services/network/public/mojom/ip_endpoint.mojom";
@@ -585,16 +584,6 @@ interface MediaRouter {
   // |messages|: A non-empty list of messages received.
   OnRouteMessagesReceived(string route_id,
                           array<RouteMessage> messages);
-
-  // Called when a MediaRemoter for a tab with |tab_id| is started. |remoter|
-  // can be used to access the MediaRemoter to control a media remoting session
-  // and send RPC messages to the remote device. |remoting_source| is bound to
-  // receive the updates/messages from MediaRemoter.
-  OnMediaRemoterCreated(
-      int32 tab_id,
-      pending_remote<media.mojom.MirrorServiceRemoter> remoter,
-      pending_receiver<media.mojom.MirrorServiceRemotingSource>
-          remoting_source);
 
   // Returns current status of media sink service in JSON format.
   GetMediaSinkServiceStatus() => (string status);

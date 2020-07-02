@@ -118,6 +118,9 @@ class ASH_PUBLIC_EXPORT AppListController {
       const syncer::StringOrdinal& preferred_oem_position,
       ResolveOemFolderPositionCallback callback) = 0;
 
+  // Notifies sync service has finished processing sync changes.
+  virtual void NotifyProcessSyncChangesFinished() = 0;
+
   // Dismisses the app list.
   virtual void DismissAppList() = 0;
 

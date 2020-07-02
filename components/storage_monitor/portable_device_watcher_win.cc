@@ -215,14 +215,14 @@ bool GetObjectUniqueId(IPortableDevice* device,
   DCHECK(device);
   DCHECK(unique_id);
   Microsoft::WRL::ComPtr<IPortableDeviceContent> content;
-  HRESULT hr = device->Content(content.GetAddressOf());
+  HRESULT hr = device->Content(&content);
   if (FAILED(hr)) {
     DPLOG(ERROR) << "Failed to get IPortableDeviceContent interface";
     return false;
   }
 
   Microsoft::WRL::ComPtr<IPortableDeviceProperties> properties;
-  hr = content->Properties(properties.GetAddressOf());
+  hr = content->Properties(&properties);
   if (FAILED(hr)) {
     DPLOG(ERROR) << "Failed to get IPortableDeviceProperties interface";
     return false;
@@ -234,7 +234,7 @@ bool GetObjectUniqueId(IPortableDevice* device,
 
   Microsoft::WRL::ComPtr<IPortableDeviceValues> properties_values;
   if (FAILED(properties->GetValues(object_id.c_str(), properties_to_read.Get(),
-                                   properties_values.GetAddressOf()))) {
+                                   &properties_values))) {
     return false;
   }
 
@@ -265,7 +265,7 @@ bool GetRemovableStorageObjectIds(
   DCHECK(device);
   DCHECK(storage_object_ids);
   Microsoft::WRL::ComPtr<IPortableDeviceCapabilities> capabilities;
-  HRESULT hr = device->Capabilities(capabilities.GetAddressOf());
+  HRESULT hr = device->Capabilities(&capabilities);
   if (FAILED(hr)) {
     DPLOG(ERROR) << "Failed to get IPortableDeviceCapabilities interface";
     return false;
@@ -273,7 +273,7 @@ bool GetRemovableStorageObjectIds(
 
   Microsoft::WRL::ComPtr<IPortableDevicePropVariantCollection> storage_ids;
   hr = capabilities->GetFunctionalObjects(WPD_FUNCTIONAL_CATEGORY_STORAGE,
-                                          storage_ids.GetAddressOf());
+                                          &storage_ids);
   if (FAILED(hr)) {
     DPLOG(ERROR) << "Failed to get IPortableDevicePropVariantCollection";
     return false;

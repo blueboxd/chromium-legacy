@@ -27,6 +27,9 @@ TEST_F(AmbientContainerViewTest, WindowFullscreenSize) {
   gfx::Rect container_window_bounds =
       widget->GetNativeWindow()->GetBoundsInScreen();
   EXPECT_EQ(root_window_bounds, container_window_bounds);
+
+  // Clean up.
+  CloseAmbientScreen();
 }
 
 }  // namespace ash

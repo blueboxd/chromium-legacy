@@ -554,6 +554,8 @@ void MediaInternals::UpdateVideoCaptureDeviceCapabilities(
         new base::DictionaryValue());
     device_dict->SetString("id", descriptor.device_id);
     device_dict->SetString("name", descriptor.GetNameAndModel());
+    device_dict->SetBoolean("panTiltZoomSupported",
+                            descriptor.pan_tilt_zoom_supported());
     device_dict->Set("formats", std::move(format_list));
     device_dict->SetString("captureApi", descriptor.GetCaptureApiTypeString());
     video_capture_capabilities_cached_data_.Append(std::move(device_dict));

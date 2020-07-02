@@ -115,6 +115,8 @@ class NearbyProcessManager
 
   // location::nearby::connections::mojom::NearbyConnectionsHost:
   void GetBluetoothAdapter(GetBluetoothAdapterCallback callback) override;
+  void GetWebRtcSignalingMessenger(
+      GetWebRtcSignalingMessengerCallback callback) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(NearbyProcessManagerTest, AddRemoveObserver);

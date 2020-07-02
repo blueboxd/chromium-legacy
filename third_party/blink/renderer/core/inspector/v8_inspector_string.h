@@ -17,6 +17,8 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/inspector_protocol/crdtp/cbor.h"
+#include "third_party/inspector_protocol/crdtp/maybe.h"
+#include "third_party/inspector_protocol/crdtp/protocol_core.h"
 #include "third_party/inspector_protocol/crdtp/serializable.h"
 #include "third_party/inspector_protocol/crdtp/serializer_traits.h"
 #include "v8/include/v8-inspector.h"
@@ -129,6 +131,34 @@ struct SerializerTraits<WTF::String> {
         out);
   }
 };
+
+template <>
+struct ProtocolTypeTraits<WTF::String> {
+  static bool Deserialize(DeserializerState* state, String* value);
+  static void Serialize(const String& value, std::vector<uint8_t>* bytes);
+};
+
+template <>
+struct ProtocolTypeTraits<blink::protocol::Binary> {
+  static bool Deserialize(DeserializerState* state,
+                          blink::protocol::Binary* value);
+  static void Serialize(const blink::protocol::Binary& value,
+                        std::vector<uint8_t>* bytes);
+};
+
+namespace detail {
+template <>
+struct MaybeTypedef<WTF::String> {
+  typedef ValueMaybe<WTF::String> type;
+};
+
+template <>
+struct MaybeTypedef<blink::protocol::Binary> {
+  typedef ValueMaybe<blink::protocol::Binary> type;
+};
+
+}  // namespace detail
+
 }  // namespace crdtp
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_V8_INSPECTOR_STRING_H_

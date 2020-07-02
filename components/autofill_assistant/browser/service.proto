@@ -82,6 +82,17 @@ message ClientContextProto {
 
   // Whether a11y (talkback and touch exploration) is enabled or not.
   optional bool accessibility_enabled = 13;
+
+  enum SignedIntoChromeStatus {
+    UNDEFINED = 0;
+
+    // There is no account signed into Chrome.
+    NOT_SIGNED_IN = 1;
+
+    // An account is signed into Chrome.
+    SIGNED_IN = 2;
+  }
+  optional SignedIntoChromeStatus signed_into_chrome_status = 14;
 }
 
 // Get the list of scripts that can potentially be run on a url.

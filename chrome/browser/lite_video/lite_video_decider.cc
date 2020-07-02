@@ -7,12 +7,16 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_macros_local.h"
 #include "base/optional.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/lite_video/lite_video_features.h"
 #include "chrome/browser/lite_video/lite_video_hint.h"
 #include "chrome/browser/lite_video/lite_video_hint_cache.h"
 #include "chrome/browser/lite_video/lite_video_user_blocklist.h"
+#include "chrome/browser/lite_video/lite_video_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/blocklist/opt_out_blocklist/opt_out_store.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/web_contents.h"
 
 namespace {
@@ -62,18 +66,48 @@ LiteVideoDecider::LiteVideoDecider(
     : hint_cache_(std::make_unique<LiteVideoHintCache>()) {
   user_blocklist_ = std::make_unique<LiteVideoUserBlocklist>(
       std::move(opt_out_store), clock, this);
+
+  network::NetworkQualityTracker* nqe_tracker =
+      g_browser_process->network_quality_tracker();
+  if (nqe_tracker) {
+    nqe_tracker->AddEffectiveConnectionTypeObserver(this);
+    current_effective_connection_type_ =
+        nqe_tracker->GetEffectiveConnectionType();
+  }
+
+  network::NetworkConnectionTracker* network_connection_tracker =
+      content::GetNetworkConnectionTracker();
+  if (network_connection_tracker) {
+    network_connection_tracker->AddNetworkConnectionObserver(this);
+    network::mojom::ConnectionType connection_type =
+        network::mojom::ConnectionType::CONNECTION_UNKNOWN;
+    network_connection_tracker->GetConnectionType(&connection_type,
+                                                  base::DoNothing());
+    is_cellular_network_ =
+        network_connection_tracker->IsConnectionCellular(connection_type);
+  }
 }
 
-LiteVideoDecider::~LiteVideoDecider() = default;
+LiteVideoDecider::~LiteVideoDecider() {
+  g_browser_process->network_quality_tracker()
+      ->RemoveEffectiveConnectionTypeObserver(this);
+  content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(this);
+}
 
 base::Optional<LiteVideoHint> LiteVideoDecider::CanApplyLiteVideo(
     content::NavigationHandle* navigation_handle) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!features::IsLiteVideoEnabled())
+  if (!IsLiteVideoAllowedForUser(Profile::FromBrowserContext(
+          navigation_handle->GetWebContents()->GetBrowserContext()))) {
+    return base::nullopt;
+  }
+
+  if (!is_cellular_network_)
     return base::nullopt;
 
-  // TODO(crbug/1096193): Add checks for Lite mode and ECT.
+  if (current_effective_connection_type_ < features::MinLiteVideoECT())
+    return base::nullopt;
 
   // TODO(crbug/1096796): Add checks on the page transition and update
   // the blocklist if needed page transition.
@@ -107,6 +141,20 @@ void LiteVideoDecider::OnUserBlocklistedStatusChange(bool blocklisted) {
     // Local event used as a signal for testing.
     LOCAL_HISTOGRAM_BOOLEAN("LiteVideo.UserBlocklist.BlocklistLoaded", true);
   }
+}
+
+void LiteVideoDecider::OnEffectiveConnectionTypeChanged(
+    net::EffectiveConnectionType effective_connection_type) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  current_effective_connection_type_ = effective_connection_type;
+}
+
+void LiteVideoDecider::OnConnectionChanged(
+    network::mojom::ConnectionType type) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  is_cellular_network_ =
+      network::NetworkConnectionTracker::IsConnectionCellular(type);
 }
 
 }  // namespace lite_video

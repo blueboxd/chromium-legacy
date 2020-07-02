@@ -7,6 +7,7 @@
 
 #include "apps/test/app_window_waiter.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/keyboard/keyboard_controller.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
 #include "ash/public/cpp/wallpaper_controller_observer.h"
@@ -866,6 +867,24 @@ IN_PROC_BROWSER_TEST_F(KioskTest, InstallAndLaunchApp) {
   ASSERT_TRUE(KioskAppManager::Get()->GetApp(test_app_id(), &app));
   EXPECT_FALSE(app.was_auto_launched_with_zero_delay);
   EXPECT_EQ(extensions::Manifest::EXTERNAL_PREF, GetInstalledAppLocation());
+}
+
+IN_PROC_BROWSER_TEST_F(KioskTest, VirtualKeyboardFeaturesEnabledByDefault) {
+  StartAppLaunchFromLoginScreen(
+      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
+  WaitForAppLaunchSuccess();
+
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+  EXPECT_TRUE(user_manager->IsLoggedInAsKioskApp());
+
+  keyboard::KeyboardConfig config =
+      ash::KeyboardController::Get()->GetKeyboardConfig();
+  EXPECT_TRUE(config.auto_capitalize);
+  EXPECT_TRUE(config.auto_complete);
+  EXPECT_TRUE(config.auto_correct);
+  EXPECT_TRUE(config.handwriting);
+  EXPECT_TRUE(config.spell_check);
+  EXPECT_TRUE(config.voice_input);
 }
 
 IN_PROC_BROWSER_TEST_F(KioskTest, ZoomSupport) {

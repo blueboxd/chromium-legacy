@@ -23,7 +23,7 @@ import time
 
 # Matches a mangled symbol that has 'absl' in it, this should be a good
 # enough heuristic to select Abseil symbols to list in the .def file.
-ABSL_SYM_RE = re.compile(r'0* [BT] (?P<symbol>\?{1}[^\?].*absl.*)')
+ABSL_SYM_RE = re.compile(r'0* [BT] (?P<symbol>(\?+)[^\?].*absl.*)')
 
 
 def _DebugOrRelease(is_debug):

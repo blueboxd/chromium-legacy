@@ -731,15 +731,16 @@ bool HTMLPlugInElement::AllowedToLoadObject(const KURL& url,
 
 bool HTMLPlugInElement::AllowedToLoadPlugin(const KURL& url,
                                             const String& mime_type) {
-  if (GetDocument().IsSandboxed(
+  if (GetExecutionContext()->IsSandboxed(
           network::mojom::blink::WebSandboxFlags::kPlugins)) {
-    GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::ConsoleMessageSource::kSecurity,
-        mojom::ConsoleMessageLevel::kError,
-        "Failed to load '" + url.ElidedString() +
-            "' as a plugin, because the "
-            "frame into which the plugin "
-            "is loading is sandboxed."));
+    GetExecutionContext()->AddConsoleMessage(
+        MakeGarbageCollected<ConsoleMessage>(
+            mojom::blink::ConsoleMessageSource::kSecurity,
+            mojom::blink::ConsoleMessageLevel::kError,
+            "Failed to load '" + url.ElidedString() +
+                "' as a plugin, because the "
+                "frame into which the plugin "
+                "is loading is sandboxed."));
     return false;
   }
   return true;

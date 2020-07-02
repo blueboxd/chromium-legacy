@@ -44,7 +44,7 @@ source_set("time_zone_monitor") {
   }
 
   if (is_mac) {
-    libs = [ "Foundation.framework" ]
+    frameworks = [ "Foundation.framework" ]
   }
 
   if (is_fuchsia) {

@@ -45,7 +45,7 @@ source_set("eg2_tests") {
     "//ios/third_party/earl_grey2:test_lib",
     "//net:test_support",
   ]
-  libs = [
+  frameworks = [
     "UIKit.framework",
     "XCTest.framework",
   ]

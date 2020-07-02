@@ -5,6 +5,7 @@
 #include "base/util/ranges/algorithm.h"
 
 #include <algorithm>
+#include <functional>
 #include <utility>
 
 #include "base/util/ranges/functional.h"
@@ -19,6 +20,25 @@ namespace util {
 namespace {
 
 struct Int {
+  Int(int value) : value(value) {}
+
+  int value = 0;
+};
+
+bool operator==(Int lhs, Int rhs) {
+  return lhs.value == rhs.value;
+}
+
+// Move-only int that clears `value` when moving out.
+struct MoveOnlyInt {
+  MoveOnlyInt(int value) : value(value) {}
+  MoveOnlyInt(MoveOnlyInt&& other) : value(std::exchange(other.value, 0)) {}
+
+  MoveOnlyInt& operator=(MoveOnlyInt&& other) {
+    value = std::exchange(other.value, 0);
+    return *this;
+  }
+
   int value = 0;
 };
 
@@ -368,6 +388,90 @@ TEST(RangesTest, CopyBackward) {
   EXPECT_EQ(ints_out, ranges::copy_backward(ints_in, ints_out + 5));
   EXPECT_TRUE(std::equal(ints_in, ints_in + 5, ints_out, ints_out + 5,
                          [](Int i, Int j) { return i.value == j.value; }));
+}
+
+TEST(RangesTest, Move) {
+  MoveOnlyInt input[] = {6, 6, 6, 6, 6};
+  MoveOnlyInt output[] = {0, 0, 0, 0, 0};
+  auto equals_zero = [](const auto& i) { return i.value == 0; };
+  auto equals_six = [](const auto& i) { return i.value == 6; };
+
+  EXPECT_EQ(output + 3, ranges::move(input, input + 3, output));
+  EXPECT_TRUE(std::all_of(input, input + 3, equals_zero));
+  EXPECT_TRUE(std::all_of(input + 3, input + 5, equals_six));
+  EXPECT_TRUE(std::all_of(output, output + 3, equals_six));
+  EXPECT_TRUE(std::all_of(output + 3, output + 5, equals_zero));
+
+  for (auto& in : input)
+    in = 6;
+
+  EXPECT_EQ(output + 5, ranges::move(input, output));
+  EXPECT_TRUE(ranges::all_of(input, equals_zero));
+  EXPECT_TRUE(ranges::all_of(output, equals_six));
+}
+
+TEST(RangesTest, MoveBackward) {
+  MoveOnlyInt input[] = {6, 6, 6, 6, 6};
+  MoveOnlyInt output[] = {0, 0, 0, 0, 0};
+  auto equals_zero = [](const auto& i) { return i.value == 0; };
+  auto equals_six = [](const auto& i) { return i.value == 6; };
+
+  EXPECT_EQ(output + 2, ranges::move_backward(input, input + 3, output + 5));
+  EXPECT_TRUE(std::all_of(input, input + 3, equals_zero));
+  EXPECT_TRUE(std::all_of(input + 3, input + 5, equals_six));
+  EXPECT_TRUE(std::all_of(output, output + 2, equals_zero));
+  EXPECT_TRUE(std::all_of(output + 2, output + 5, equals_six));
+
+  for (auto& in : input)
+    in = 6;
+
+  EXPECT_EQ(output, ranges::move_backward(input, output + 5));
+  EXPECT_TRUE(ranges::all_of(input, equals_zero));
+  EXPECT_TRUE(ranges::all_of(output, equals_six));
+}
+
+TEST(RangesTest, SwapRanges) {
+  int ints1[] = {0, 0, 0, 0, 0};
+  int ints2[] = {6, 6, 6, 6, 6};
+
+  // Test that swap_ranges does not exceed `last2`.
+  EXPECT_EQ(ints2 + 3, ranges::swap_ranges(ints1, ints1 + 5, ints2, ints2 + 3));
+  EXPECT_THAT(ints1, ElementsAre(6, 6, 6, 0, 0));
+  EXPECT_THAT(ints2, ElementsAre(0, 0, 0, 6, 6));
+
+  // Test that swap_ranges does not exceed `last1`.
+  EXPECT_EQ(ints2 + 3, ranges::swap_ranges(ints1, ints1 + 3, ints2, ints2 + 5));
+  EXPECT_THAT(ints1, ElementsAre(0, 0, 0, 0, 0));
+  EXPECT_THAT(ints2, ElementsAre(6, 6, 6, 6, 6));
+
+  EXPECT_EQ(ints2 + 5,
+            ranges::swap_ranges(ints1 + 3, ints1 + 5, ints2 + 3, ints2 + 5));
+  EXPECT_THAT(ints1, ElementsAre(0, 0, 0, 6, 6));
+  EXPECT_THAT(ints2, ElementsAre(6, 6, 6, 0, 0));
+
+  EXPECT_EQ(ints2 + 5, ranges::swap_ranges(ints1, ints2));
+  EXPECT_THAT(ints1, ElementsAre(6, 6, 6, 0, 0));
+  EXPECT_THAT(ints2, ElementsAre(0, 0, 0, 6, 6));
+}
+
+TEST(RangesTest, Transform) {
+  int input[] = {1, 2, 3, 4, 5};
+  auto plus_1 = [](int i) { return i + 1; };
+  auto times_2 = [](int i) { return i * 2; };
+
+  EXPECT_EQ(input + 4,
+            ranges::transform(input + 1, input + 4, input + 1, plus_1));
+  EXPECT_THAT(input, ElementsAre(1, 3, 4, 5, 5));
+
+  int output[] = {0, 0, 0, 0, 0};
+  EXPECT_EQ(output + 3,
+            ranges::transform(input + 1, input + 4, output, times_2));
+  EXPECT_THAT(output, ElementsAre(6, 8, 10, 0, 0));
+
+  Int values[] = {{0}, {2}, {4}, {5}};
+  EXPECT_EQ(values + 4,
+            ranges::transform(values, values, times_2, &Int::value));
+  EXPECT_THAT(values, ElementsAre(Int{0}, Int{4}, Int{8}, Int{10}));
 }
 
 TEST(RangesTest, LowerBound) {

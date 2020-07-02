@@ -10,9 +10,11 @@ import android.text.TextUtils;
 
 import androidx.annotation.IntDef;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PackageManagerUtils;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
@@ -71,6 +73,10 @@ public class DefaultBrowserPromoUtils {
     public static boolean prepareLaunchPromoIfNeeded(Activity activity,
             ActivityLifecycleDispatcher dispatcher, WindowAndroid windowAndroid) {
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_DEFAULT_BROWSER_PROMO)) {
+            return false;
+        }
+
+        if (CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_DEFAULT_BROWSER_PROMO)) {
             return false;
         }
 

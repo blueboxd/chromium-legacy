@@ -15,6 +15,8 @@
 #include "base/timer/timer.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
+#include "chromeos/dbus/attestation/attestation_client.h"
+#include "chromeos/dbus/attestation/interface.pb.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "components/account_id/account_id.h"
 
@@ -31,6 +33,9 @@ constexpr uint16_t kReadyTimeoutInSeconds = 60;
 // attestation.
 constexpr uint16_t kRetryDelayInMilliseconds = 300;
 
+constexpr ::attestation::ACAType kDefaultAcaType =
+    ::attestation::ACAType::DEFAULT_ACA;
+
 void DBusCertificateMethodCallback(
     AttestationFlow::CertificateCallback callback,
     base::Optional<CryptohomeClient::TpmAttestationDataResult> result) {
@@ -44,6 +49,16 @@ void DBusCertificateMethodCallback(
         result->success ? ATTESTATION_SUCCESS : ATTESTATION_UNSPECIFIED_FAILURE,
         result->data);
   }
+}
+
+bool IsPreparedWith(const ::attestation::GetEnrollmentPreparationsReply& reply,
+                    ::attestation::ACAType aca_type) {
+  for (const auto& preparation : reply.enrollment_preparations()) {
+    if (preparation.first == aca_type) {
+      return preparation.second;
+    }
+  }
+  return false;
 }
 
 }  // namespace
@@ -84,6 +99,7 @@ AttestationFlow::AttestationFlow(cryptohome::AsyncMethodCaller* async_caller,
                                  std::unique_ptr<ServerProxy> server_proxy)
     : async_caller_(async_caller),
       cryptohome_client_(cryptohome_client),
+      attestation_client_(AttestationClient::Get()),
       server_proxy_(std::move(server_proxy)),
       ready_timeout_(base::TimeDelta::FromSeconds(kReadyTimeoutInSeconds)),
       retry_delay_(
@@ -136,22 +152,20 @@ void AttestationFlow::OnEnrollmentCheckComplete(
 void AttestationFlow::WaitForAttestationPrepared(
     base::TimeTicks end_time,
     base::OnceCallback<void(bool)> callback) {
-  cryptohome_client_->TpmAttestationIsPrepared(base::BindOnce(
-      &AttestationFlow::OnPreparedCheckComplete, weak_factory_.GetWeakPtr(),
-      end_time, std::move(callback)));
+  ::attestation::GetEnrollmentPreparationsRequest request;
+  request.set_aca_type(kDefaultAcaType);
+  attestation_client_->GetEnrollmentPreparations(
+      request, base::BindOnce(&AttestationFlow::OnPreparedCheckComplete,
+                              weak_factory_.GetWeakPtr(), end_time,
+                              std::move(callback)));
 }
 
 void AttestationFlow::OnPreparedCheckComplete(
     base::TimeTicks end_time,
     base::OnceCallback<void(bool)> callback,
-    base::Optional<bool> result) {
-  if (!result) {
-    LOG(ERROR) << "Attestation: Failed to check for attestation readiness";
-    std::move(callback).Run(false);
-    return;
-  }
-
-  if (*result) {
+    const ::attestation::GetEnrollmentPreparationsReply& reply) {
+  if (reply.status() == ::attestation::STATUS_SUCCESS &&
+      IsPreparedWith(reply, kDefaultAcaType)) {
     // Get the attestation service to create a Privacy CA enrollment request.
     async_caller_->AsyncTpmAttestationCreateEnrollRequest(
         server_proxy_->GetType(),

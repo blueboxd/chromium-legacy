@@ -3660,12 +3660,7 @@
   {
     "name": "passwords-account-storage",
     "owners": [ "mamir", "treib" ],
-    "expiry_milestone": 85
-  },
-  {
-    "name": "passwords-account-storage-saving-ui",
-    "owners": [ "mamir", "fhorschig" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 89
   },
   {
     "name": "pdf-form-save",

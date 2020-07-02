@@ -746,8 +746,11 @@ void TracingHandler::Start(Maybe<std::string> categories,
 
   trace_config_ = base::trace_event::TraceConfig();
   if (config.isJust()) {
-    std::unique_ptr<base::Value> value =
-        protocol::toBaseValue(config.fromJust()->toValue().get(), 1000);
+    std::unique_ptr<base::Value> value = protocol::toBaseValue(
+        protocol::ValueTypeConverter<Tracing::TraceConfig>::ToValue(
+            *config.fromJust())
+            .get(),
+        1000);
     if (value && value->is_dict()) {
       trace_config_ = GetTraceConfigFromDevToolsConfig(
           *static_cast<base::DictionaryValue*>(value.get()));

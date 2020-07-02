@@ -64,12 +64,11 @@ gfx::GpuMemoryBufferHandle GpuMemoryBufferFactoryDXGI::CreateGpuMemoryBuffer(
 
   Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture;
 
-  if (FAILED(d3d11_device->CreateTexture2D(&desc, nullptr,
-                                           d3d11_texture.GetAddressOf())))
+  if (FAILED(d3d11_device->CreateTexture2D(&desc, nullptr, &d3d11_texture)))
     return handle;
 
   Microsoft::WRL::ComPtr<IDXGIResource1> dxgi_resource;
-  if (FAILED(d3d11_texture.CopyTo(dxgi_resource.GetAddressOf())))
+  if (FAILED(d3d11_texture.As(&dxgi_resource)))
     return handle;
 
   HANDLE texture_handle;

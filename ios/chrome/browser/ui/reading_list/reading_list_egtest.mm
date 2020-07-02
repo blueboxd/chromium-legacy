@@ -15,6 +15,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#import "ios/chrome/browser/ui/page_info/features.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_app_interface.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_constants.h"
@@ -486,7 +487,9 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
   // Verify that the Page Info is about offline pages.
   id<GREYMatcher> pageInfoTitleMatcher =
       chrome_test_util::StaticTextWithAccessibilityLabelId(
-          IDS_IOS_PAGE_INFO_OFFLINE_TITLE);
+          base::FeatureList::IsEnabled(kPageInfoRefactoring)
+              ? IDS_IOS_PAGE_INFO_OFFLINE_PAGE_LABEL
+              : IDS_IOS_PAGE_INFO_OFFLINE_TITLE);
   [[EarlGrey selectElementWithMatcher:pageInfoTitleMatcher]
       assertWithMatcher:grey_notNil()];
 

@@ -69,7 +69,7 @@ ios_appex_bundle("credential_provider_extension") {
 
   assert_no_deps = ios_extension_assert_no_deps
 
-  libs = [
+  frameworks = [
     "AuthenticationServices.framework",
     "Foundation.framework",
     "UIKit.framework",
@@ -140,7 +140,7 @@ source_set("password_util") {
     "//base",
     "//ios/chrome/common/app_group",
   ]
-  libs = [
+  frameworks = [
     "Security.framework",
     "Foundation.framework",
   ]
@@ -156,7 +156,7 @@ source_set("metrics_util") {
     "//base",
     "//ios/chrome/common/app_group",
   ]
-  libs = [ "Foundation.framework" ]
+  frameworks = [ "Foundation.framework" ]
 }
 
 source_set("account_verification_provider") {
@@ -164,14 +164,14 @@ source_set("account_verification_provider") {
   deps = [ ios_account_verification_provider_target ]
   assert_no_deps = [ "//ios/chrome/browser/*" ]
   configs += [ "//build/config/compiler:enable_arc" ]
-  libs = [ "Foundation.framework" ]
+  frameworks = [ "Foundation.framework" ]
 }
 
 source_set("account_verification_provider_header") {
   sources = [ "account_verification_provider.h" ]
   assert_no_deps = [ "//ios/chrome/browser/*" ]
   configs += [ "//build/config/compiler:enable_arc" ]
-  libs = [ "Foundation.framework" ]
+  frameworks = [ "Foundation.framework" ]
 }
 
 source_set("account_verification_provider_implementation") {
@@ -179,5 +179,5 @@ source_set("account_verification_provider_implementation") {
   deps = [ ":account_verification_provider_header" ]
   assert_no_deps = [ "//ios/chrome/browser/*" ]
   configs += [ "//build/config/compiler:enable_arc" ]
-  libs = [ "Foundation.framework" ]
+  frameworks = [ "Foundation.framework" ]
 }

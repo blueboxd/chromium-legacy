@@ -2,33 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/events/keyboard_hook_base.h"
+#include "ui/events/ozone/keyboard_hook_ozone.h"
 
 #include <utility>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "build/build_config.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace ui {
-
-namespace {
-
-// A default implementation for Ozone platform.
-class KeyboardHookOzone : public KeyboardHookBase {
- public:
-  KeyboardHookOzone(base::Optional<base::flat_set<DomCode>> dom_codes,
-                    KeyEventCallback callback);
-  ~KeyboardHookOzone() override;
-
-  bool Register();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(KeyboardHookOzone);
-};
 
 KeyboardHookOzone::KeyboardHookOzone(
     base::Optional<base::flat_set<DomCode>> dom_codes,
@@ -37,14 +23,13 @@ KeyboardHookOzone::KeyboardHookOzone(
 
 KeyboardHookOzone::~KeyboardHookOzone() = default;
 
-bool KeyboardHookOzone::Register() {
+bool KeyboardHookOzone::RegisterHook() {
   // TODO(680809): Implement system-level keyboard lock feature for ozone.
   // Return true to enable browser-level keyboard lock for ozone platform.
   return true;
 }
 
-}  // namespace
-
+#if !defined(OS_LINUX)
 // static
 std::unique_ptr<KeyboardHook> KeyboardHook::CreateModifierKeyboardHook(
     base::Optional<base::flat_set<DomCode>> dom_codes,
@@ -54,7 +39,7 @@ std::unique_ptr<KeyboardHook> KeyboardHook::CreateModifierKeyboardHook(
       std::make_unique<KeyboardHookOzone>(std::move(dom_codes),
                                           std::move(callback));
 
-  if (!keyboard_hook->Register())
+  if (!keyboard_hook->RegisterHook())
     return nullptr;
 
   return keyboard_hook;
@@ -65,5 +50,6 @@ std::unique_ptr<KeyboardHook> KeyboardHook::CreateMediaKeyboardHook(
     KeyEventCallback callback) {
   return nullptr;
 }
+#endif
 
 }  // namespace ui

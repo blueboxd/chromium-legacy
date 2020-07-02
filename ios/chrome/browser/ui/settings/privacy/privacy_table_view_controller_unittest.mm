@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "components/content_settings/core/common/features.h"
 #include "components/handoff/pref_names_ios.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
@@ -92,9 +93,16 @@ TEST_F(PrivacyTableViewControllerTest, TestModel) {
   EXPECT_EQ(2, NumberOfSections());
 
   // Sections[0].
-  EXPECT_EQ(1, NumberOfItemsInSection(0));
-  CheckTextCellTextAndDetailText(
-      l10n_util::GetNSString(IDS_IOS_CLEAR_BROWSING_DATA_TITLE), nil, 0, 0);
+  if (base::FeatureList::IsEnabled(content_settings::kImprovedCookieControls)) {
+    EXPECT_EQ(2, NumberOfItemsInSection(0));
+    CheckTextCellTextAndDetailText(
+        l10n_util::GetNSString(IDS_IOS_OPTIONS_PRIVACY_COOKIES), nil, 0, 1);
+
+  } else {
+    EXPECT_EQ(1, NumberOfItemsInSection(0));
+    CheckTextCellTextAndDetailText(
+        l10n_util::GetNSString(IDS_IOS_CLEAR_BROWSING_DATA_TITLE), nil, 0, 0);
+  }
 
   // Sections[1].
   EXPECT_EQ(1, NumberOfItemsInSection(1));

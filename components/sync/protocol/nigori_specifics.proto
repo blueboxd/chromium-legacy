@@ -42,16 +42,26 @@ message NigoriSpecifics {
 
   // Obsolete encryption fields. These were deprecated due to legacy versions
   // that understand their usage but did not perform encryption properly.
-  // optional bool deprecated_encrypt_bookmarks = 3;
-  // optional bool deprecated_encrypt_preferences = 4;
-  // optional bool deprecated_encrypt_autofill_profile = 5;
-  // optional bool deprecated_encrypt_autofill = 6;
-  // optional bool deprecated_encrypt_themes = 7;
-  // optional bool deprecated_encrypt_typed_urls = 8;
-  // optional bool deprecated_encrypt_extensions = 9;
-  // optional bool deprecated_encrypt_sessions = 10;
-  // optional bool deprecated_encrypt_apps = 11;
-  // optional bool deprecated_encrypt_search_engines = 12;
+  reserved 3;
+  reserved "deprecated_encrypt_bookmarks";
+  reserved 4;
+  reserved "deprecated_encrypt_preferences";
+  reserved 5;
+  reserved "deprecated_encrypt_autofill_profile";
+  reserved 6;
+  reserved "deprecated_encrypt_autofill";
+  reserved 7;
+  reserved "deprecated_encrypt_themes";
+  reserved 8;
+  reserved "deprecated_encrypt_typed_urls";
+  reserved 9;
+  reserved "deprecated_encrypt_extensions";
+  reserved 10;
+  reserved "deprecated_encrypt_sessions";
+  reserved 11;
+  reserved "deprecated_encrypt_apps";
+  reserved 12;
+  reserved "deprecated_encrypt_search_engines";
 
   // Booleans corresponding to whether a datatype should be encrypted.
   // Passwords and Wi-Fi configurations are always encrypted, so we don't need
@@ -69,7 +79,8 @@ message NigoriSpecifics {
   optional bool encrypt_search_engines = 22;
 
   // Deprecated on clients where tab sync is enabled by default.
-  // optional bool sync_tabs = 23;
+  reserved 23;
+  reserved "sync_tabs";
 
   // If true, all current and future datatypes will be encrypted.
   optional bool encrypt_everything = 24;
@@ -83,7 +94,8 @@ message NigoriSpecifics {
   // User device information. Contains information about each device that has a
   // sync-enabled Chrome browser connected to the user account.
   // This has been moved to the DeviceInfo message.
-  // repeated DeviceInformation deprecated_device_information = 28;
+  reserved 28;
+  reserved "deprecated_device_information";
 
   // Enable syncing favicons as part of tab sync.
   optional bool sync_tab_favicons = 29;

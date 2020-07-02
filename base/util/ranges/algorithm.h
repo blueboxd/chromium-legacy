@@ -1070,7 +1070,7 @@ constexpr auto copy_if(Range&& range,
 //
 // Complexity: Exactly `N` assignments.
 //
-// Reference: https://wg21.link/alg.copy#:~:text=ranges::copy_backward(I
+// Reference: https://wg21.link/alg.copy#:~:text=ranges::copy_backward(I1
 template <typename BidirectionalIterator1,
           typename BidirectionalIterator2,
           typename = internal::iterator_category_t<BidirectionalIterator1>,
@@ -1093,7 +1093,7 @@ constexpr auto copy_backward(BidirectionalIterator1 first,
 //
 // Complexity: Exactly `N` assignments.
 //
-// Reference: https://wg21.link/alg.copy#:~:text=ranges::copy_backward(I
+// Reference: https://wg21.link/alg.copy#:~:text=ranges::copy_backward(R
 template <typename Range,
           typename BidirectionalIterator,
           typename = internal::iterator_category_t<BidirectionalIterator>>
@@ -1105,17 +1105,219 @@ constexpr auto copy_backward(Range&& range, BidirectionalIterator result) {
 // [alg.move] Move
 // Reference: https://wg21.link/alg.move
 
-// TODO(crbug.com/1071094): Implement.
+// Let `E(n)` be `std::move(*(first + n))`.
+//
+// Let `N` be `last - first`.
+//
+// Preconditions: `result` is not in the range `[first, last)`.
+//
+// Effects: Moves elements in the range `[first, last)` into the range `[result,
+// result + N)` starting from `first` and proceeding to `last`. For each
+// non-negative integer `n < N`, performs `*(result + n) = E(n)`.
+//
+// Returns: `result + N`
+//
+// Complexity: Exactly `N` assignments.
+//
+// Reference: https://wg21.link/alg.move#:~:text=ranges::move(I
+template <typename InputIterator,
+          typename OutputIterator,
+          typename = internal::iterator_category_t<InputIterator>,
+          typename = internal::iterator_category_t<OutputIterator>>
+constexpr auto move(InputIterator first,
+                    InputIterator last,
+                    OutputIterator result) {
+  return std::move(first, last, result);
+}
+
+// Let `E(n)` be `std::move(*(begin(range) + n))`.
+//
+// Let `N` be `size(range)`.
+//
+// Preconditions: `result` is not in `range`.
+//
+// Effects: Moves elements in `range` into the range `[result, result + N)`
+// starting from `begin(range)` and proceeding to `end(range)`. For each
+// non-negative integer `n < N`, performs `*(result + n) = E(n)`.
+//
+// Returns: `result + N`
+//
+// Complexity: Exactly `N` assignments.
+//
+// Reference: https://wg21.link/alg.move#:~:text=ranges::move(R
+template <typename Range,
+          typename OutputIterator,
+          typename = internal::iterator_category_t<OutputIterator>>
+constexpr auto move(Range&& range, OutputIterator result) {
+  return ranges::move(ranges::begin(range), ranges::end(range), result);
+}
+
+// Let `E(n)` be `std::move(*(last - n))`.
+//
+// Let `N` be `last - first`.
+//
+// Preconditions: `result` is not in the range `(first, last]`.
+//
+// Effects: Moves elements in the range `[first, last)` into the range
+// `[result - N, result)` starting from `last - 1` and proceeding to `first`.
+// For each positive integer `n ≤ N`, performs `*(result - n) = E(n)`.
+//
+// Returns: `result - N`
+//
+// Complexity: Exactly `N` assignments.
+//
+// Reference: https://wg21.link/alg.move#:~:text=ranges::move_backward(I1
+template <typename BidirectionalIterator1,
+          typename BidirectionalIterator2,
+          typename = internal::iterator_category_t<BidirectionalIterator1>,
+          typename = internal::iterator_category_t<BidirectionalIterator2>>
+constexpr auto move_backward(BidirectionalIterator1 first,
+                             BidirectionalIterator1 last,
+                             BidirectionalIterator2 result) {
+  return std::move_backward(first, last, result);
+}
+
+// Let `E(n)` be `std::move(*(end(range) - n))`.
+//
+// Let `N` be `size(range)`.
+//
+// Preconditions: `result` is not in the range `(begin(range), end(range)]`.
+//
+// Effects: Moves elements in `range` into the range `[result - N, result)`
+// starting from `end(range) - 1` and proceeding to `begin(range)`. For each
+// positive integer `n ≤ N`, performs `*(result - n) = E(n)`.
+//
+// Returns: `result - N`
+//
+// Complexity: Exactly `N` assignments.
+//
+// Reference: https://wg21.link/alg.move#:~:text=ranges::move_backward(R
+template <typename Range,
+          typename BidirectionalIterator,
+          typename = internal::iterator_category_t<BidirectionalIterator>>
+constexpr auto move_backward(Range&& range, BidirectionalIterator result) {
+  return ranges::move_backward(ranges::begin(range), ranges::end(range),
+                               result);
+}
 
 // [alg.swap] Swap
 // Reference: https://wg21.link/alg.swap
+
+// Let `M` be `min(last1 - first1, last2 - first2)`.
+//
+// Preconditions: The two ranges `[first1, last1)` and `[first2, last2)` do not
+// overlap. `*(first1 + n)` is swappable with `*(first2 + n)`.
+//
+// Effects: For each non-negative integer `n < M` performs
+// `swap(*(first1 + n), *(first2 + n))`
+//
+// Returns: `first2 + M`
+//
+// Complexity: Exactly `M` swaps.
+//
+// Reference: https://wg21.link/alg.swap#:~:text=ranges::swap_ranges(I1
+template <typename ForwardIterator1,
+          typename ForwardIterator2,
+          typename = internal::iterator_category_t<ForwardIterator1>,
+          typename = internal::iterator_category_t<ForwardIterator2>>
+constexpr auto swap_ranges(ForwardIterator1 first1,
+                           ForwardIterator1 last1,
+                           ForwardIterator2 first2,
+                           ForwardIterator2 last2) {
+  // std::swap_ranges does not have a `last2` overload. Thus we need to
+  // adjust `last1` to ensure to not read past `last2`.
+  last1 = std::next(first1, std::min(std::distance(first1, last1),
+                                     std::distance(first2, last2)));
+  return std::swap_ranges(first1, last1, first2);
+}
+
+// Let `M` be `min(size(range1), size(range2))`.
+//
+// Preconditions: The two ranges `range1` and `range2` do not overlap.
+// `*(begin(range1) + n)` is swappable with `*(begin(range2) + n)`.
+//
+// Effects: For each non-negative integer `n < M` performs
+// `swap(*(begin(range1) + n), *(begin(range2) + n))`
+//
+// Returns: `begin(range2) + M`
+//
+// Complexity: Exactly `M` swaps.
+//
+// Reference: https://wg21.link/alg.swap#:~:text=ranges::swap_ranges(R1
+template <typename Range1, typename Range2>
+constexpr auto swap_ranges(Range1&& range1, Range2&& range2) {
+  return ranges::swap_ranges(ranges::begin(range1), ranges::end(range1),
+                             ranges::begin(range2), ranges::end(range2));
+}
 
 // TODO(crbug.com/1071094): Implement.
 
 // [alg.transform] Transform
 // Reference: https://wg21.link/alg.transform
 
-// TODO(crbug.com/1071094): Implement.
+// Let `N` be `last1 - first1`,
+// `E(i)` be `invoke(op, invoke(proj, *(first1 + (i - result))))`.
+//
+// Preconditions: `op` does not invalidate iterators or subranges, nor modify
+// elements in the ranges `[first1, first1 + N]`, and `[result, result + N]`.
+//
+// Effects: Assigns through every iterator `i` in the range
+// `[result, result + N)` a new corresponding value equal to `E(i)`.
+//
+// Returns: `result + N`
+//
+// Complexity: Exactly `N` applications of `op` and any projections.
+//
+// Remarks: result may be equal to `first1`.
+//
+// Reference: https://wg21.link/alg.transform#:~:text=ranges::transform(I
+template <typename InputIterator,
+          typename OutputIterator,
+          typename UnaryOperation,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<InputIterator>,
+          typename = internal::iterator_category_t<OutputIterator>>
+constexpr auto transform(InputIterator first1,
+                         InputIterator last1,
+                         OutputIterator result,
+                         UnaryOperation op,
+                         Proj proj = {}) {
+  return std::transform(first1, last1, result, [&op, &proj](auto&& arg) {
+    return invoke(op, invoke(proj, std::forward<decltype(arg)>(arg)));
+  });
+}
+
+// Let `N` be `size(range)`,
+// `E(i)` be `invoke(op, invoke(proj, *(begin(range) + (i - result))))`.
+//
+// Preconditions: `op` does not invalidate iterators or subranges, nor modify
+// elements in the ranges `[begin(range), end(range)]`, and
+// `[result, result + N]`.
+//
+// Effects: Assigns through every iterator `i` in the range
+// `[result, result + N)` a new corresponding value equal to `E(i)`.
+//
+// Returns: `result + N`
+//
+// Complexity: Exactly `N` applications of `op` and any projections.
+//
+// Remarks: result may be equal to `begin(range)`.
+//
+// Reference: https://wg21.link/alg.transform#:~:text=ranges::transform(R
+template <typename Range,
+          typename OutputIterator,
+          typename UnaryOperation,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<OutputIterator>>
+constexpr auto transform(Range&& range,
+                         OutputIterator result,
+                         UnaryOperation op,
+                         Proj proj = {}) {
+  return ranges::transform(ranges::begin(range), ranges::end(range), result,
+                           std::move(op), std::move(proj));
+}
+
+// TODO(crbug.com/1071094): Implement binary transform.
 
 // [alg.replace] Replace
 // Reference: https://wg21.link/alg.replace

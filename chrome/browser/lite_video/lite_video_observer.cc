@@ -11,6 +11,7 @@
 #include "chrome/browser/lite_video/lite_video_hint.h"
 #include "chrome/browser/lite_video/lite_video_keyed_service.h"
 #include "chrome/browser/lite_video/lite_video_keyed_service_factory.h"
+#include "chrome/browser/lite_video/lite_video_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -41,8 +42,10 @@ lite_video::LiteVideoDecider* GetLiteVideoDeciderFromWebContents(
 // static
 void LiteVideoObserver::MaybeCreateForWebContents(
     content::WebContents* web_contents) {
-  if (lite_video::features::IsLiteVideoEnabled())
+  if (IsLiteVideoAllowedForUser(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()))) {
     LiteVideoObserver::CreateForWebContents(web_contents);
+  }
 }
 
 LiteVideoObserver::LiteVideoObserver(content::WebContents* web_contents)

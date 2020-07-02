@@ -88,7 +88,7 @@ static_library("browser") {
       "bookmark_pasteboard_helper_mac.h",
       "bookmark_pasteboard_helper_mac.mm",
     ]
-    libs = [
+    frameworks = [
       "AppKit.framework",
       "Foundation.framework",
     ]

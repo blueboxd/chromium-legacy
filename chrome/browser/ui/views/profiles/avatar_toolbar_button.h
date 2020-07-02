@@ -55,23 +55,24 @@ class AvatarToolbarButton : public ToolbarButton,
 
   void NotifyHighlightAnimationFinished();
 
-  // views::View:
-  const char* GetClassName() const override;
-
-  static const char kAvatarToolbarButtonClassName[];
-
- private:
-  FRIEND_TEST_ALL_PREFIXES(AvatarToolbarButtonTest,
-                           HighlightMeetsMinimumContrast);
-
   // ToolbarButton:
-  void NotifyClick(const ui::Event& event) override;
+  const char* GetClassName() const override;
   void OnMouseExited(const ui::MouseEvent& event) override;
   void OnBlur() override;
   void OnThemeChanged() override;
 
   // ToolbarIconContainerView::Observer:
   void OnHighlightChanged() override;
+
+  static const char kAvatarToolbarButtonClassName[];
+
+ protected:
+  // ToolbarButton:
+  void NotifyClick(const ui::Event& event) override;
+
+ private:
+  FRIEND_TEST_ALL_PREFIXES(AvatarToolbarButtonTest,
+                           HighlightMeetsMinimumContrast);
 
   base::string16 GetAvatarTooltipText() const;
   gfx::ImageSkia GetAvatarIcon(ButtonState state,

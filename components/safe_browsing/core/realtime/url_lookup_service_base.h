@@ -82,6 +82,8 @@ class RealTimeUrlLookupServiceBase : public KeyedService {
   // Note that |request_callback| is not called if there's a valid entry in the
   // cache for |url|.
   // This function is overridden in unit tests.
+  // TODO(crbug.com/1085261): To reduce code redundancy, make this function
+  // non-virtual and break it into several private virtual functions.
   virtual void StartLookup(const GURL& url,
                            RTLookupRequestCallback request_callback,
                            RTLookupResponseCallback response_callback) = 0;
@@ -96,12 +98,12 @@ class RealTimeUrlLookupServiceBase : public KeyedService {
   // sensitive.
   static GURL SanitizeURL(const GURL& url);
 
+  // Returns the endpoint that the URL lookup will be sent to.
+  static GURL GetRealTimeLookupUrl();
+
   // Returns the traffic annotation tag that is attached in the simple URL
   // loader.
   virtual net::NetworkTrafficAnnotationTag GetTrafficAnnotationTag() const = 0;
-
-  // Returns the endpoint that the URL lookup will be sent to.
-  virtual GURL GetRealTimeLookupUrl() const = 0;
 
   // Returns the duration of the next backoff. Starts at
   // |kMinBackOffResetDurationInSeconds| and increases exponentially until it

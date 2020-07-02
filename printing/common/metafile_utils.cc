@@ -4,6 +4,7 @@
 
 #include "printing/common/metafile_utils.h"
 
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "printing/buildflags/buildflags.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -20,6 +21,22 @@
 namespace {
 
 #if BUILDFLAG(ENABLE_TAGGED_PDF)
+
+// Table 333 in PDF 32000-1:2008 spec, section 14.8.4.2
+const char kPDFStructureTypeDocument[] = "Document";
+const char kPDFStructureTypeParagraph[] = "P";
+const char kPDFStructureTypeDiv[] = "Div";
+const char kPDFStructureTypeHeading[] = "H";
+const char kPDFStructureTypeList[] = "L";
+const char kPDFStructureTypeListItemLabel[] = "Lbl";
+const char kPDFStructureTypeListItemBody[] = "LI";
+const char kPDFStructureTypeTable[] = "Table";
+const char kPDFStructureTypeTableRow[] = "TR";
+const char kPDFStructureTypeTableHeader[] = "TH";
+const char kPDFStructureTypeTableCell[] = "TD";
+const char kPDFStructureTypeFigure[] = "Figure";
+const char kPDFStructureTypeNonStruct[] = "NonStruct";
+
 // Standard attribute owners from PDF 32000-1:2008 spec, section 14.8.5.2
 // (Attribute owners are kind of like "categories" for structure node
 // attributes.)
@@ -32,6 +49,17 @@ const char kPDFTableCellRowSpanAttribute[] = "RowSpan";
 const char kPDFTableHeaderScopeAttribute[] = "Scope";
 const char kPDFTableHeaderScopeColumn[] = "Column";
 const char kPDFTableHeaderScopeRow[] = "Row";
+
+SkString GetHeadingStructureType(int heading_level) {
+  // From Table 333 in PDF 32000-1:2008 spec, section 14.8.4.2,
+  // "H1"..."H6" are valid structure types.
+  if (heading_level >= 1 && heading_level <= 6)
+    return SkString(base::StringPrintf("H%d", heading_level).c_str());
+
+  // If we don't have a valid heading level, use the generic heading role.
+  return SkString(kPDFStructureTypeHeading);
+}
+
 #endif  // BUILDFLAG(ENABLE_TAGGED_PDF)
 
 SkTime::DateTime TimeToSkTime(base::Time time) {
@@ -69,47 +97,47 @@ bool RecursiveBuildStructureTree(const ui::AXNode* ax_node,
   tag->fNodeId = ax_node->GetIntAttribute(ax::mojom::IntAttribute::kDOMNodeId);
   switch (ax_node->data().role) {
     case ax::mojom::Role::kRootWebArea:
-      tag->fType = SkPDF::DocumentStructureType::kDocument;
+      tag->fTypeString = kPDFStructureTypeDocument;
       break;
     case ax::mojom::Role::kParagraph:
-      tag->fType = SkPDF::DocumentStructureType::kP;
+      tag->fTypeString = kPDFStructureTypeParagraph;
       break;
     case ax::mojom::Role::kGenericContainer:
-      tag->fType = SkPDF::DocumentStructureType::kDiv;
+      tag->fTypeString = kPDFStructureTypeDiv;
       break;
     case ax::mojom::Role::kHeading:
-      // TODO(dmazzoni): heading levels. https://crbug.com/1039816
-      tag->fType = SkPDF::DocumentStructureType::kH;
+      tag->fTypeString = GetHeadingStructureType(ax_node->GetIntAttribute(
+          ax::mojom::IntAttribute::kHierarchicalLevel));
       break;
     case ax::mojom::Role::kList:
-      tag->fType = SkPDF::DocumentStructureType::kL;
+      tag->fTypeString = kPDFStructureTypeList;
       break;
     case ax::mojom::Role::kListMarker:
-      tag->fType = SkPDF::DocumentStructureType::kLbl;
+      tag->fTypeString = kPDFStructureTypeListItemLabel;
       break;
     case ax::mojom::Role::kListItem:
-      tag->fType = SkPDF::DocumentStructureType::kLI;
+      tag->fTypeString = kPDFStructureTypeListItemBody;
       break;
     case ax::mojom::Role::kTable:
-      tag->fType = SkPDF::DocumentStructureType::kTable;
+      tag->fTypeString = kPDFStructureTypeTable;
       break;
     case ax::mojom::Role::kRow:
-      tag->fType = SkPDF::DocumentStructureType::kTR;
+      tag->fTypeString = kPDFStructureTypeTableRow;
       break;
     case ax::mojom::Role::kColumnHeader:
-      tag->fType = SkPDF::DocumentStructureType::kTH;
+      tag->fTypeString = kPDFStructureTypeTableHeader;
       tag->fAttributes.appendName(kPDFTableAttributeOwner,
                                   kPDFTableHeaderScopeAttribute,
                                   kPDFTableHeaderScopeColumn);
       break;
     case ax::mojom::Role::kRowHeader:
-      tag->fType = SkPDF::DocumentStructureType::kTH;
+      tag->fTypeString = kPDFStructureTypeTableHeader;
       tag->fAttributes.appendName(kPDFTableAttributeOwner,
                                   kPDFTableHeaderScopeAttribute,
                                   kPDFTableHeaderScopeRow);
       break;
     case ax::mojom::Role::kCell: {
-      tag->fType = SkPDF::DocumentStructureType::kTD;
+      tag->fTypeString = kPDFStructureTypeTableCell;
 
       // Append an attribute consisting of the string IDs of all of the
       // header cells that correspond to this table cell.
@@ -128,7 +156,7 @@ bool RecursiveBuildStructureTree(const ui::AXNode* ax_node,
     }
     case ax::mojom::Role::kFigure:
     case ax::mojom::Role::kImage: {
-      tag->fType = SkPDF::DocumentStructureType::kFigure;
+      tag->fTypeString = kPDFStructureTypeFigure;
       std::string alt =
           ax_node->GetStringAttribute(ax::mojom::StringAttribute::kName);
       tag->fAlt = SkString(alt.c_str());
@@ -138,11 +166,11 @@ bool RecursiveBuildStructureTree(const ui::AXNode* ax_node,
       // Currently we're only marking text content, so we can't generate
       // a nonempty structure tree unless we have at least one kStaticText
       // node in the tree.
-      tag->fType = SkPDF::DocumentStructureType::kNonStruct;
+      tag->fTypeString = kPDFStructureTypeNonStruct;
       valid = true;
       break;
     default:
-      tag->fType = SkPDF::DocumentStructureType::kNonStruct;
+      tag->fTypeString = kPDFStructureTypeNonStruct;
   }
 
   if (ui::IsCellOrTableHeader(ax_node->data().role)) {

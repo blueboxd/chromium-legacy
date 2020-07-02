@@ -4,6 +4,8 @@
 
 #include "chrome/services/sharing/nearby/test/mock_nearby_connections_host.h"
 
+#include "chrome/services/sharing/public/mojom/webrtc.mojom.h"
+
 namespace location {
 namespace nearby {
 namespace connections {
@@ -15,6 +17,11 @@ MockNearbyConnectionsHost::~MockNearbyConnectionsHost() = default;
 void MockNearbyConnectionsHost::GetBluetoothAdapter(
     GetBluetoothAdapterCallback callback) {
   std::move(callback).Run(/*adapter=*/mojo::NullRemote());
+}
+
+void MockNearbyConnectionsHost::GetWebRtcSignalingMessenger(
+    GetWebRtcSignalingMessengerCallback callback) {
+  std::move(callback).Run(mojo::NullRemote());
 }
 
 }  // namespace connections

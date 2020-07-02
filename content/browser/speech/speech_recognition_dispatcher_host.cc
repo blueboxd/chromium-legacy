@@ -88,6 +88,14 @@ void SpeechRecognitionDispatcherHost::StartRequestOnUI(
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(rfh));
 
+  // Disable BackForwardCache when using the SpeechRecognition feature, because
+  // currently we do not handle speech recognition after placing the page in
+  // BackForwardCache.
+  // TODO(sreejakshetty): Make SpeechRecognition compatible with
+  // BackForwardCache.
+  rfh->OnSchedulerTrackedFeatureUsed(
+      blink::scheduler::WebSchedulerTrackedFeature::kSpeechRecognizer);
+
   // If the speech API request was from an inner WebContents or a guest, save
   // the context of the outer WebContents or the embedder since we will use it
   // to decide permission.

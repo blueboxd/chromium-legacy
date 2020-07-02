@@ -209,7 +209,8 @@ var Manager = (function() {
       }
 
       // The keys of each device to be shown in order of appearance.
-      var videoCaptureDeviceKeys = ['name', 'formats', 'captureApi', 'id'];
+      var videoCaptureDeviceKeys =
+          ['name', 'formats', 'captureApi', 'panTiltZoomSupported', 'id'];
 
       this.clientRenderer_.redrawVideoCaptureCapabilities(
           videoCaptureCapabilities, videoCaptureDeviceKeys);

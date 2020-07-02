@@ -82,8 +82,6 @@ class RealTimeUrlLookupService : public RealTimeUrlLookupServiceBase {
   // RealTimeUrlLookupServiceBase:
   net::NetworkTrafficAnnotationTag GetTrafficAnnotationTag() const override;
 
-  GURL GetRealTimeLookupUrl() const override;
-
   // Called when the access token is obtained from |token_fetcher_|.
   void OnGetAccessToken(
       const GURL& url,

@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "base/values.h"
 #include "chrome/common/chrome_features.h"
+#include "net/nqe/effective_connection_type.h"
 
 namespace lite_video {
 namespace features {
@@ -66,6 +67,13 @@ int UserBlocklistOptOutHistoryThreshold() {
 
 int LiteVideoBlocklistVersion() {
   return GetFieldTrialParamByFeatureAsInt(::features::kLiteVideo, "version", 0);
+}
+
+net::EffectiveConnectionType MinLiteVideoECT() {
+  return net::GetEffectiveConnectionTypeForName(
+             base::GetFieldTrialParamValueByFeature(::features::kLiteVideo,
+                                                    "min_lite_video_ect"))
+      .value_or(net::EFFECTIVE_CONNECTION_TYPE_4G);
 }
 
 }  // namespace features

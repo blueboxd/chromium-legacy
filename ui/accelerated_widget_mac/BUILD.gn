@@ -39,7 +39,7 @@ component("accelerated_widget_mac") {
     "//ui/gl",
   ]
 
-  libs = [
+  frameworks = [
     "AVFoundation.framework",
     "CoreGraphics.framework",
     "Foundation.framework",
@@ -65,7 +65,7 @@ test("accelerated_widget_mac_unittests") {
     "//ui/gfx:test_support",
     "//ui/gl",
   ]
-  libs = [
+  frameworks = [
     "AVFoundation.framework",
     "QuartzCore.framework",
   ]

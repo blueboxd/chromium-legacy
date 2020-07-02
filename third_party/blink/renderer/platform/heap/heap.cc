@@ -266,7 +266,13 @@ void ThreadHeap::FlushNotFullyConstructedObjects() {
   DCHECK(view.IsLocalViewEmpty());
 }
 
-void ThreadHeap::FlushEphemeronPairs() {
+void ThreadHeap::FlushEphemeronPairs(EphemeronProcessing ephemeron_processing) {
+  if (ephemeron_processing == EphemeronProcessing::kPartialProcessing) {
+    if (++steps_since_last_ephemeron_pairs_flush_ !=
+        kStepsBeforeEphemeronPairsFlush)
+      return;
+  }
+
   EphemeronPairsWorklist::View view(discovered_ephemeron_pairs_worklist_.get(),
                                     WorklistTaskId::MutatorThread);
   if (!view.IsLocalViewEmpty()) {
@@ -274,6 +280,8 @@ void ThreadHeap::FlushEphemeronPairs() {
     ephemeron_pairs_to_process_worklist_->MergeGlobalPool(
         discovered_ephemeron_pairs_worklist_.get());
   }
+
+  steps_since_last_ephemeron_pairs_flush_ = 0;
 }
 
 void ThreadHeap::MarkNotFullyConstructedObjects(MarkingVisitor* visitor) {
@@ -317,9 +325,20 @@ bool DrainWorklistWithDeadline(base::TimeTicks deadline,
 
 }  // namespace
 
-bool ThreadHeap::InvokeEphemeronCallbacks(MarkingVisitor* visitor,
-                                          base::TimeTicks deadline) {
-  FlushEphemeronPairs();
+bool ThreadHeap::InvokeEphemeronCallbacks(
+    EphemeronProcessing ephemeron_processing,
+    MarkingVisitor* visitor,
+    base::TimeTicks deadline) {
+  if (ephemeron_processing == EphemeronProcessing::kPartialProcessing) {
+    if (++steps_since_last_ephemeron_processing_ !=
+        kStepsBeforeEphemeronProcessing) {
+      // Returning "no more work" to avoid excessive processing. The fixed
+      // point computation in the atomic pause takes care of correctness.
+      return true;
+    }
+  }
+
+  steps_since_last_ephemeron_processing_ = 0;
 
   // Mark any strong pointers that have now become reachable in ephemeron maps.
   ThreadHeapStatsCollector::Scope stats_scope(
@@ -341,10 +360,12 @@ bool ThreadHeap::InvokeEphemeronCallbacks(MarkingVisitor* visitor,
 }
 
 bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
-                                base::TimeTicks deadline) {
+                                base::TimeTicks deadline,
+                                EphemeronProcessing ephemeron_processing) {
   DCHECK_EQ(WorklistTaskId::MutatorThread, visitor->task_id());
 
   bool finished;
+  bool processed_ephemerons = false;
   // Ephemeron fixed point loop.
   do {
     {
@@ -412,9 +433,15 @@ bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
         break;
     }
 
-    finished = InvokeEphemeronCallbacks(visitor, deadline);
-    if (!finished)
-      break;
+    if ((ephemeron_processing == EphemeronProcessing::kFullProcessing) ||
+        !processed_ephemerons) {
+      processed_ephemerons = true;
+      FlushEphemeronPairs(ephemeron_processing);
+      finished =
+          InvokeEphemeronCallbacks(ephemeron_processing, visitor, deadline);
+      if (!finished)
+        break;
+    }
 
     // Rerun loop if ephemeron processing queued more objects for tracing.
   } while (!marking_worklist_->IsLocalViewEmpty(WorklistTaskId::MutatorThread));
@@ -425,7 +452,8 @@ bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
 bool ThreadHeap::HasWorkForConcurrentMarking() const {
   return !marking_worklist_->IsGlobalPoolEmpty() ||
          !write_barrier_worklist_->IsGlobalPoolEmpty() ||
-         !previously_not_fully_constructed_worklist_->IsGlobalPoolEmpty();
+         !previously_not_fully_constructed_worklist_->IsGlobalPoolEmpty() ||
+         !ephemeron_pairs_to_process_worklist_->IsGlobalPoolEmpty();
 }
 
 bool ThreadHeap::AdvanceConcurrentMarking(ConcurrentMarkingVisitor* visitor,
@@ -475,6 +503,27 @@ bool ThreadHeap::AdvanceConcurrentMarking(ConcurrentMarkingVisitor* visitor,
         visitor->task_id());
     if (!finished)
       break;
+
+    {
+      ThreadHeapStatsCollector::ConcurrentScope stats_scope(
+          stats_collector(),
+          ThreadHeapStatsCollector::kConcurrentMarkInvokeEphemeronCallbacks);
+
+      // Then we iterate over the new ephemerons found by the marking visitor.
+      // Callbacks found by the concurrent marking will be flushed eventually
+      // by the mutator thread and then invoked either concurrently or by the
+      // mutator thread (in the atomic pause at latest).
+      finished = DrainWorklistWithDeadline(
+          deadline, ephemeron_pairs_to_process_worklist_.get(),
+          [visitor](EphemeronPairItem& item) {
+            visitor->VisitEphemeron(item.key, item.value,
+                                    item.value_trace_callback);
+          },
+          visitor->task_id());
+      if (!finished)
+        break;
+    }
+
   } while (HasWorkForConcurrentMarking());
 
   return finished;

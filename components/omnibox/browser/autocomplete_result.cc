@@ -710,7 +710,7 @@ void AutocompleteResult::DeduplicateMatches(ACMatches* matches) {
       best_match.UpgradeMatchWithPropertiesFrom(duplicate_match);
 
       // This should be a copy, not a move, since we don't erase duplicate
-      // matches from the master list until the very end.
+      // matches from the source list until the very end.
       DCHECK(duplicate_match.duplicate_matches.empty());  // Should be cleared.
       best_match.duplicate_matches.push_back(duplicate_match);
     }

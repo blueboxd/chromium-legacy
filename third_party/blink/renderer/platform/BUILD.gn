@@ -495,6 +495,8 @@ jumbo_component("platform") {
     "exported/file_path_conversion.cc",
     "exported/interface_registry.cc",
     "exported/mediastream/web_media_element_source_utils.cc",
+    "exported/mediastream/web_media_stream.cc",
+    "exported/mediastream/web_media_stream_source.cc",
     "exported/mediastream/web_media_stream_track.cc",
     "exported/mediastream/web_platform_media_stream_source.cc",
     "exported/mediastream/web_platform_media_stream_track.cc",
@@ -528,9 +530,7 @@ jumbo_component("platform") {
     "exported/web_media_player_client.cc",
     "exported/web_media_player_encrypted_media_client.cc",
     "exported/web_media_player_source.cc",
-    "exported/web_media_stream.cc",
     "exported/web_media_stream_audio_sink.cc",
-    "exported/web_media_stream_source.cc",
     "exported/web_memory_pressure_listener.cc",
     "exported/web_mixed_content.cc",
     "exported/web_network_state_notifier.cc",
@@ -1640,7 +1640,7 @@ jumbo_component("platform") {
       "text/locale_icu.h",
     ]
 
-    libs = [
+    frameworks = [
       "AppKit.framework",
       "Accelerate.framework",
       "Carbon.framework",

@@ -66,7 +66,7 @@ source_set("manual_fill") {
     "//ios/web/public/js_messaging",
     "//ui/base",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
@@ -134,7 +134,7 @@ source_set("manual_fill_ui") {
     "//third_party/material_design_icons:ic_vpn_key",
     "//ui/base:base",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
@@ -204,7 +204,7 @@ source_set("requesters") {
     "//ios/web/public/js_messaging",
     "//ui/base",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
@@ -240,5 +240,5 @@ source_set("eg2_tests") {
     "//net:test_support",
     "//url",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }

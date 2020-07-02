@@ -288,7 +288,10 @@ int BrowserViewLayout::NonClientHitTest(const gfx::Point& point) {
   // caller will hit-test the window controls before finally falling back to
   // HTCAPTION.
   gfx::Rect tabstrip_background_bounds = browser_view_->bounds();
-  tabstrip_background_bounds.set_height(toolbar_->y());
+  gfx::Point toolbar_origin = toolbar_->origin();
+  views::View::ConvertPointToTarget(top_container_, browser_view_,
+                                    &toolbar_origin);
+  tabstrip_background_bounds.set_height(toolbar_origin.y());
   if (tabstrip_background_bounds.Contains(point))
     return HTNOWHERE;
 

@@ -47,7 +47,7 @@ component("system_services") {
     "system_services.cc",
     "system_services.h",
   ]
-  libs = [
+  frameworks = [
     "Carbon.framework",
     "CoreFoundation.framework",
   ]
@@ -63,7 +63,7 @@ test("sandbox_mac_unittests") {
     "seatbelt_extension_unittest.cc",
   ]
 
-  libs = [
+  frameworks = [
     "CoreFoundation.framework",
     "Foundation.framework",
   ]

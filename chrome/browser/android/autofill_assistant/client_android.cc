@@ -81,6 +81,19 @@ std::unique_ptr<TriggerContextImpl> CreateTriggerContext(
       base::android::ConvertJavaStringToUTF8(env, jexperiment_ids));
 }
 
+// Notifies Chrome's Password Manager that Autofill Assistant is running or
+// not. No-op if the script is not a password change script.
+void NotifyPasswordManagerIfApplicable(
+    ClientAndroid* client,
+    password_manager::AutofillAssistantMode mode) {
+  auto* password_manager_client = client->GetPasswordManagerClient();
+  if (password_manager_client &&
+      password_manager_client->WasCredentialLeakDialogShown()) {
+    password_manager_client->GetPasswordManager()->SetAutofillAssistantMode(
+        mode);
+  }
+}
+
 }  // namespace
 
 static base::android::ScopedJavaLocalRef<jobject>
@@ -185,8 +198,8 @@ void ClientAndroid::TransferUITo(
   // From this point on, the UIController, in ui_ptr, is either transferred or
   // deleted.
 
-  GetPasswordManagerClient()->GetPasswordManager()->SetAutofillAssistantMode(
-      password_manager::AutofillAssistantMode::kNotRunning);
+  NotifyPasswordManagerIfApplicable(
+      this, password_manager::AutofillAssistantMode::kNotRunning);
 
   if (!jother_web_contents)
     return;
@@ -423,12 +436,8 @@ void ClientAndroid::AttachUI(
 
     // Suppress password manager's prompts while running a password change
     // script.
-    auto* password_manager_client = GetPasswordManagerClient();
-    if (password_manager_client &&
-        password_manager_client->WasCredentialLeakDialogShown()) {
-      password_manager_client->GetPasswordManager()->SetAutofillAssistantMode(
-          password_manager::AutofillAssistantMode::kRunning);
-    }
+    NotifyPasswordManagerIfApplicable(
+        this, password_manager::AutofillAssistantMode::kRunning);
   }
 }
 
@@ -531,8 +540,8 @@ void ClientAndroid::Shutdown(Metrics::DropOutReason reason) {
   if (!controller_)
     return;
 
-  GetPasswordManagerClient()->GetPasswordManager()->SetAutofillAssistantMode(
-      password_manager::AutofillAssistantMode::kNotRunning);
+  NotifyPasswordManagerIfApplicable(
+      this, password_manager::AutofillAssistantMode::kNotRunning);
 
   if (ui_controller_android_ && ui_controller_android_->IsAttached())
     DestroyUI();

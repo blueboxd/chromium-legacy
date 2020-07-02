@@ -4,10 +4,14 @@
     this._dp = dp;
   }
 
+  _trimErrorMessage(error) {
+    return error.replace(/at position \d+/, "<somewhere>");
+  }
+
   async _logMessage(message, expectError, styleSheetId) {
     if (message.error && expectError) {
       this._testRunner.log('Expected protocol error: ' + message.error.message +
-          (message.error.data ? ' (' + message.error.data + ')' : ''));
+          (message.error.data ? ' (' + this._trimErrorMessage(message.error.data) + ')' : ''));
     } else if (message.error && !expectError) {
       this._testRunner.log('ERROR: ' + message.error.message);
     } else if (!message.error && expectError) {

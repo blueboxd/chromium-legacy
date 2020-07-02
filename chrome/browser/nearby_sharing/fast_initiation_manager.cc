@@ -11,10 +11,25 @@
 
 #include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "base/time/time.h"
+#include "build/build_config.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
 
 namespace {
+#if defined(CHROME_OS)
+constexpr base::TimeDelta kMinFastInitAdvertisingInterval =
+    base::TimeDelta::FromMilliseconds(100);
+constexpr base::TimeDelta kMaxFastInitAdvertisingInterval =
+    base::TimeDelta::FromMilliseconds(100);
+
+// A value of 0 will restore the interval to the system default.
+constexpr base::TimeDelta kMinDefaultAdvertisingInterval =
+    base::TimeDelta::FromMilliseconds(0);
+constexpr base::TimeDelta kMaxDefaultAdvertisingInterval =
+    base::TimeDelta::FromMilliseconds(0);
+#endif
+
 constexpr const char kNearbySharingFastInitiationServiceUuid[] =
     "0000fe2c-0000-1000-8000-00805f9b34fb";
 const uint8_t kNearbySharingFastPairId[] = {0xfc, 0x12, 0x8e};
@@ -55,16 +70,61 @@ void FastInitiationManager::StartAdvertising(
   DCHECK(adapter_->IsPresent() && adapter_->IsPowered());
   DCHECK(!advertisement_);
 
-  // These callbacks are instances of OnceCallback, but RegisterAdvertisement()
-  // expects RepeatingCallback. Passing these as arguments is possible using
-  // Passed(), but this is dangerous so we just store them.
+  // These callbacks are instances of OnceCallback, but BluetoothAdapter methods
+  // expect RepeatingCallbacks. Passing these as arguments is possible using
+  // Passed(), but this is dangerous so we just store them to run later.
   start_callback_ = std::move(callback);
   start_error_callback_ = std::move(error_callback);
 
-  // TODO(hansenmichael): Lower Bluetooth advertising interval to 100ms for
-  // faster discovery. Be sure to restore the interval when we stop
-  // broadcasting.
+#if defined(CHROME_OS)
+  adapter_->SetAdvertisingInterval(
+      kMinFastInitAdvertisingInterval, kMaxFastInitAdvertisingInterval,
+      base::Bind(&FastInitiationManager::OnSetAdvertisingInterval,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&FastInitiationManager::OnSetAdvertisingIntervalError,
+                 weak_ptr_factory_.GetWeakPtr()));
+#else
+  RegisterAdvertisement();
+#endif
+}
 
+void FastInitiationManager::StopAdvertising(
+    base::OnceCallback<void()> callback) {
+  stop_callback_ = std::move(callback);
+
+  if (!advertisement_) {
+    std::move(stop_callback_).Run();
+    return;
+  }
+
+#if defined(CHROME_OS)
+  adapter_->SetAdvertisingInterval(
+      kMinDefaultAdvertisingInterval, kMaxDefaultAdvertisingInterval,
+      base::Bind(&FastInitiationManager::OnRestoreAdvertisingInterval,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&FastInitiationManager::OnRestoreAdvertisingIntervalError,
+                 weak_ptr_factory_.GetWeakPtr()));
+#else
+  UnregisterAdvertisement();
+#endif
+}
+
+void FastInitiationManager::AdvertisementReleased(
+    device::BluetoothAdvertisement* advertisement) {
+  // TODO(hansenmichael): Handle advertisement released appropriately.
+}
+
+void FastInitiationManager::OnSetAdvertisingInterval() {
+  RegisterAdvertisement();
+}
+
+void FastInitiationManager::OnSetAdvertisingIntervalError(
+    device::BluetoothAdvertisement::ErrorCode code) {
+  LOG(WARNING) << "SetAdvertisingInterval() failed with error code = " << code;
+  RegisterAdvertisement();
+}
+
+void FastInitiationManager::RegisterAdvertisement() {
   auto advertisement_data =
       std::make_unique<device::BluetoothAdvertisement::Data>(
           device::BluetoothAdvertisement::ADVERTISEMENT_TYPE_BROADCAST);
@@ -84,35 +144,13 @@ void FastInitiationManager::StartAdvertising(
 
   adapter_->RegisterAdvertisement(
       std::move(advertisement_data),
-      base::Bind(&FastInitiationManager::OnAdvertisementRegistered,
+      base::Bind(&FastInitiationManager::OnRegisterAdvertisement,
                  weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&FastInitiationManager::OnErrorRegisteringAdvertisement,
+      base::Bind(&FastInitiationManager::OnRegisterAdvertisementError,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void FastInitiationManager::StopAdvertising(
-    base::OnceCallback<void()> callback) {
-  stop_callback_ = std::move(callback);
-
-  if (!advertisement_) {
-    std::move(stop_callback_).Run();
-    return;
-  }
-
-  advertisement_->RemoveObserver(this);
-  advertisement_->Unregister(
-      base::Bind(&FastInitiationManager::OnAdvertisementUnregistered,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&FastInitiationManager::OnErrorUnregisteringAdvertisement,
-                 weak_ptr_factory_.GetWeakPtr()));
-}
-
-void FastInitiationManager::AdvertisementReleased(
-    device::BluetoothAdvertisement* advertisement) {
-  // TODO(hansenmichael): Handle advertisement released appropriately.
-}
-
-void FastInitiationManager::OnAdvertisementRegistered(
+void FastInitiationManager::OnRegisterAdvertisement(
     scoped_refptr<device::BluetoothAdvertisement> advertisement) {
   advertisement_ = advertisement;
   advertisement_->AddObserver(this);
@@ -120,7 +158,7 @@ void FastInitiationManager::OnAdvertisementRegistered(
   start_error_callback_.Reset();
 }
 
-void FastInitiationManager::OnErrorRegisteringAdvertisement(
+void FastInitiationManager::OnRegisterAdvertisementError(
     device::BluetoothAdvertisement::ErrorCode error_code) {
   LOG(ERROR)
       << "FastInitiationManager::StartAdvertising() failed with error code = "
@@ -129,12 +167,31 @@ void FastInitiationManager::OnErrorRegisteringAdvertisement(
   start_callback_.Reset();
 }
 
-void FastInitiationManager::OnAdvertisementUnregistered() {
+void FastInitiationManager::OnRestoreAdvertisingInterval() {
+  UnregisterAdvertisement();
+}
+
+void FastInitiationManager::OnRestoreAdvertisingIntervalError(
+    device::BluetoothAdvertisement::ErrorCode code) {
+  LOG(WARNING) << "SetAdvertisingInterval() failed with error code = " << code;
+  UnregisterAdvertisement();
+}
+
+void FastInitiationManager::UnregisterAdvertisement() {
+  advertisement_->RemoveObserver(this);
+  advertisement_->Unregister(
+      base::Bind(&FastInitiationManager::OnUnregisterAdvertisement,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&FastInitiationManager::OnUnregisterAdvertisementError,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void FastInitiationManager::OnUnregisterAdvertisement() {
   advertisement_.reset();
   std::move(stop_callback_).Run();
 }
 
-void FastInitiationManager::OnErrorUnregisteringAdvertisement(
+void FastInitiationManager::OnUnregisterAdvertisementError(
     device::BluetoothAdvertisement::ErrorCode error_code) {
   LOG(WARNING)
       << "FastInitiationManager::StopAdvertising() failed with error code = "

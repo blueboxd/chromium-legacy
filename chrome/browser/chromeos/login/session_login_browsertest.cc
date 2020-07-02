@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/public/cpp/keyboard/keyboard_controller.h"
 #include "base/command_line.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
@@ -12,6 +13,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/session_manager/core/session_manager.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/focus/focus_manager.h"
@@ -68,6 +70,33 @@ IN_PROC_BROWSER_TEST_F(BrowserLoginTest, BrowserActive) {
   const views::View* focused_view = focus_manager->GetFocusedView();
   EXPECT_TRUE(focused_view != NULL);
   EXPECT_EQ(VIEW_ID_OMNIBOX, focused_view->GetID());
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserLoginTest,
+                       PRE_VirtualKeyboardFeaturesEnabledByDefault) {
+  RegisterUser(AccountId::FromUserEmailGaiaId(kTestUser, kTestUserGaiaId));
+  EXPECT_EQ(session_manager::SessionState::OOBE,
+            session_manager::SessionManager::Get()->session_state());
+  chromeos::StartupUtils::MarkOobeCompleted();
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserLoginTest,
+                       VirtualKeyboardFeaturesEnabledByDefault) {
+  base::HistogramTester histograms;
+  EXPECT_EQ(session_manager::SessionState::LOGIN_PRIMARY,
+            session_manager::SessionManager::Get()->session_state());
+  LoginUser(AccountId::FromUserEmailGaiaId(kTestUser, kTestUserGaiaId));
+  EXPECT_TRUE(
+      user_manager::UserManager::Get()->IsLoggedInAsUserWithGaiaAccount());
+
+  keyboard::KeyboardConfig config =
+      ash::KeyboardController::Get()->GetKeyboardConfig();
+  EXPECT_TRUE(config.auto_capitalize);
+  EXPECT_TRUE(config.auto_complete);
+  EXPECT_TRUE(config.auto_correct);
+  EXPECT_TRUE(config.handwriting);
+  EXPECT_TRUE(config.spell_check);
+  EXPECT_TRUE(config.voice_input);
 }
 
 }  // namespace chromeos

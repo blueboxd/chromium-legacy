@@ -91,17 +91,6 @@ class EasyUnlockService::PowerMonitor : public PowerManagerClient::Observer {
 
   ~PowerMonitor() override { PowerManagerClient::Get()->RemoveObserver(this); }
 
-  // Called when the remote device has been authenticated to record the time
-  // delta from waking up. No time will be recorded if the start-up time has
-  // already been recorded or if the system never went to sleep previously.
-  void RecordStartUpTime() {
-    if (wake_up_time_.is_null())
-      return;
-    UMA_HISTOGRAM_MEDIUM_TIMES("EasyUnlock.StartupTimeFromSuspend",
-                               base::Time::Now() - wake_up_time_);
-    wake_up_time_ = base::Time();
-  }
-
  private:
   // PowerManagerClient::Observer:
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override {
@@ -109,7 +98,6 @@ class EasyUnlockService::PowerMonitor : public PowerManagerClient::Observer {
   }
 
   void SuspendDone(const base::TimeDelta& sleep_duration) override {
-    wake_up_time_ = base::Time::Now();
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&PowerMonitor::ResetWakingUp,
@@ -125,7 +113,6 @@ class EasyUnlockService::PowerMonitor : public PowerManagerClient::Observer {
   }
 
   EasyUnlockService* service_;
-  base::Time wake_up_time_;
   base::WeakPtrFactory<PowerMonitor> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PowerMonitor);
@@ -262,10 +249,7 @@ bool EasyUnlockService::UpdateScreenlockState(ScreenlockState state) {
 
   handler->ChangeState(state);
 
-  if (state == ScreenlockState::AUTHENTICATED) {
-    if (power_monitor_)
-      power_monitor_->RecordStartUpTime();
-  } else if (auth_attempt_) {
+  if (state != ScreenlockState::AUTHENTICATED && auth_attempt_) {
     // Clean up existing auth attempt if we can no longer authenticate the
     // remote device.
     auth_attempt_.reset();

@@ -91,37 +91,35 @@ void TestHarness::InstallEmptyPolicy() {}
 void TestHarness::InstallStringPolicy(const std::string& policy_name,
                                       const std::string& policy_value) {
   store_.policy_map_.Set(policy_name, policy_level(), policy_scope(),
-                         POLICY_SOURCE_CLOUD,
-                         std::make_unique<base::Value>(policy_value), nullptr);
+                         POLICY_SOURCE_CLOUD, base::Value(policy_value),
+                         nullptr);
 }
 
 void TestHarness::InstallIntegerPolicy(const std::string& policy_name,
                                        int policy_value) {
   store_.policy_map_.Set(policy_name, policy_level(), policy_scope(),
-                         POLICY_SOURCE_CLOUD,
-                         std::make_unique<base::Value>(policy_value), nullptr);
+                         POLICY_SOURCE_CLOUD, base::Value(policy_value),
+                         nullptr);
 }
 
 void TestHarness::InstallBooleanPolicy(const std::string& policy_name,
                                        bool policy_value) {
   store_.policy_map_.Set(policy_name, policy_level(), policy_scope(),
-                         POLICY_SOURCE_CLOUD,
-                         std::make_unique<base::Value>(policy_value), nullptr);
+                         POLICY_SOURCE_CLOUD, base::Value(policy_value),
+                         nullptr);
 }
 
 void TestHarness::InstallStringListPolicy(const std::string& policy_name,
                                           const base::ListValue* policy_value) {
   store_.policy_map_.Set(policy_name, policy_level(), policy_scope(),
-                         POLICY_SOURCE_CLOUD, policy_value->CreateDeepCopy(),
-                         nullptr);
+                         POLICY_SOURCE_CLOUD, policy_value->Clone(), nullptr);
 }
 
 void TestHarness::InstallDictionaryPolicy(
     const std::string& policy_name,
     const base::DictionaryValue* policy_value) {
   store_.policy_map_.Set(policy_name, policy_level(), policy_scope(),
-                         POLICY_SOURCE_CLOUD, policy_value->CreateDeepCopy(),
-                         nullptr);
+                         POLICY_SOURCE_CLOUD, policy_value->Clone(), nullptr);
 }
 
 // static
@@ -175,8 +173,7 @@ class CloudPolicyManagerTest : public testing::Test {
   void SetUp() override {
     // Set up a policy map for testing.
     policy_map_.Set("key", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                    POLICY_SOURCE_CLOUD, std::make_unique<base::Value>("value"),
-                    nullptr);
+                    POLICY_SOURCE_CLOUD, base::Value("value"), nullptr);
     expected_bundle_.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
         .CopyFrom(policy_map_);
 

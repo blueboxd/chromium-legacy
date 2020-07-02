@@ -6,6 +6,11 @@
 
 namespace features {
 
+// Enables using the ClosedTabCache to instantly restore recently closed tabs
+// using the "Reopen Closed Tab" button.
+const base::Feature kClosedTabCache{"ClosedTabCache",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(OS_CHROMEOS)
 // Enables being able to zoom a web page by double tapping in Chrome OS tablet
 // mode.

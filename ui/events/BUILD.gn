@@ -180,7 +180,7 @@ jumbo_component("events_base") {
   }
 
   if (is_mac) {
-    libs = [
+    frameworks = [
       "AppKit.framework",
       "Carbon.framework",
     ]
@@ -274,6 +274,7 @@ jumbo_component("events") {
     ":gesture_detection",
     "//base/third_party/dynamic_annotations",
     "//skia",
+    "//ui/base:features",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
@@ -285,7 +286,10 @@ jumbo_component("events") {
   friend = [ ":*" ]
 
   if (use_x11) {
-    sources += [ "x/keyboard_hook_x11.cc" ]
+    sources += [
+      "x/keyboard_hook_x11.cc",
+      "x/keyboard_hook_x11.h",
+    ]
   }
 
   if (use_x11 || ozone_platform_x11) {
@@ -306,6 +310,12 @@ jumbo_component("events") {
 
   if (use_ozone || use_x11) {
     sources += [ "events_default.cc" ]
+
+    if (is_linux) {
+      # TODO(https://crbug.com/1099225): refactor X11 kbd hook and implement
+      # that for Ozone.
+      sources += [ "keyboard_hook_linux.cc" ]
+    }
   }
 
   if (is_win && use_ozone) {
@@ -313,7 +323,10 @@ jumbo_component("events") {
   }
 
   if (use_ozone) {
-    public += [ "ozone/events_ozone.h" ]
+    public += [
+      "ozone/events_ozone.h",
+      "ozone/keyboard_hook_ozone.h",
+    ]
     sources += [
       "ozone/events_ozone.cc",
       "ozone/keyboard_hook_ozone.cc",
@@ -367,7 +380,7 @@ jumbo_component("events") {
   }
 
   if (is_mac) {
-    libs = [ "AppKit.framework" ]
+    frameworks = [ "AppKit.framework" ]
   }
 
   if (is_fuchsia) {
@@ -499,7 +512,7 @@ jumbo_static_library("test_support") {
   ]
 
   if (is_mac) {
-    libs = [ "Carbon.framework" ]
+    frameworks = [ "Carbon.framework" ]
   }
 
   if (use_x11 || ozone_platform_x11) {

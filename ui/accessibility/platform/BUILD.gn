@@ -108,7 +108,7 @@ source_set("platform") {
         "ax_platform_node_mac.mm",
       ]
 
-      libs = [
+      frameworks = [
         "AppKit.framework",
         "Foundation.framework",
       ]

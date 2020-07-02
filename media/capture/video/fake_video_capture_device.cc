@@ -432,8 +432,14 @@ void PacmanFramePainter::DrawPacman(base::TimeDelta elapsed_time,
   SkCanvas canvas(bitmap);
 
   const SkScalar unscaled_zoom = fake_device_state_->zoom / 100.f;
+  const SkScalar translate_x =
+      (fake_device_state_->pan - kMinPan) * (width / (kMaxPan - kMinPan));
+  const SkScalar translate_y =
+      (fake_device_state_->tilt - kMinTilt) * (height / (kMaxTilt - kMinTilt));
   SkMatrix matrix;
   matrix.setScale(unscaled_zoom, unscaled_zoom, width / 2, height / 2);
+  matrix.setTranslateX(translate_x);
+  matrix.setTranslateY(translate_y);
   canvas.setMatrix(matrix);
 
   // For the SK_N32 case, match the green color tone produced by the

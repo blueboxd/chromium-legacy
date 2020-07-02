@@ -59,7 +59,7 @@ source_set("tracked") {
   ]
 
   if (is_mac) {
-    libs = [ "IOKit.framework" ]
+    frameworks = [ "IOKit.framework" ]
   }
 }
 

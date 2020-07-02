@@ -79,6 +79,7 @@ class Deque;
 // capacity as accessible. With concurrent marking enabled, annotating size
 // changes could conflict with marking the whole store as accessible, causing
 // a race.
+#if defined(ADDRESS_SANITIZER)
 #define MARKING_AWARE_ANNOTATE_CHANGE_SIZE(Allocator, buffer, capacity,      \
                                            old_size, new_size)               \
   if (Allocator::kIsGarbageCollected && Allocator::IsIncrementalMarking()) { \
@@ -86,6 +87,11 @@ class Deque;
   } else {                                                                   \
     ANNOTATE_CHANGE_SIZE(buffer, capacity, old_size, new_size)               \
   }
+#else
+#define MARKING_AWARE_ANNOTATE_CHANGE_SIZE(Allocator, buffer, capacity, \
+                                           old_size, new_size)          \
+  ANNOTATE_CHANGE_SIZE(buffer, capacity, old_size, new_size)
+#endif  // defined(ADDRESS_SANITIZER)
 
 template <bool needsDestruction, typename T>
 struct VectorDestructor;

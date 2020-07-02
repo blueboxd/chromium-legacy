@@ -557,7 +557,7 @@ TEST_P(PasswordSaveManagerImplTest, CreatePendingCredentialsEmptyName) {
 }
 
 // Tests creating pending credentials when the password store is empty.
-TEST_P(PasswordSaveManagerImplTest, ResetPendingCrednetials) {
+TEST_P(PasswordSaveManagerImplTest, ResetPendingCredentials) {
   fetcher()->NotifyFetchCompleted();
 
   password_save_manager_impl()->CreatePendingCredentials(
@@ -565,7 +565,7 @@ TEST_P(PasswordSaveManagerImplTest, ResetPendingCrednetials) {
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
-  password_save_manager_impl()->ResetPendingCrednetials();
+  password_save_manager_impl()->ResetPendingCredentials();
 
   // Check that save manager is in None state.
   EXPECT_FALSE(password_save_manager_impl()->IsNewLogin());

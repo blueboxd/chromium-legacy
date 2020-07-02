@@ -1640,10 +1640,8 @@ void NetworkHandler::NavigationRequestWillBeSent(
   const base::Optional<base::Value>& initiator_optional =
       nav_request.begin_params()->devtools_initiator;
   if (initiator_optional.has_value()) {
-    ErrorSupport ignored_errors;
-    initiator = Network::Initiator::fromValue(
-        toProtocolValue(&initiator_optional.value(), 1000).get(),
-        &ignored_errors);
+    initiator = protocol::ValueTypeConverter<Network::Initiator>::FromValue(
+        *toProtocolValue(&initiator_optional.value(), 1000));
   }
   if (!initiator) {
     initiator = Network::Initiator::Create()

@@ -69,7 +69,7 @@ if (is_mac) {
       "//ui/gl",
     ]
 
-    libs = [
+    frameworks = [
 #     "Metal.framework",
       "Foundation.framework",
     ]

@@ -23,7 +23,7 @@ source_set("browser") {
     "//ios/web/public",
     "//url",
   ]
-  libs = [ "CoreLocation.framework" ]
+  frameworks = [ "CoreLocation.framework" ]
 }
 
 source_set("test_support") {

@@ -20,7 +20,7 @@ bool IsNetworkBehindCaptivePortal(INetwork* network) {
     return false;
 
   Microsoft::WRL::ComPtr<IPropertyBag> property_bag;
-  if (FAILED(network->QueryInterface(property_bag.GetAddressOf())) ||
+  if (FAILED(network->QueryInterface(IID_PPV_ARGS(&property_bag))) ||
       !property_bag) {
     return false;
   }
@@ -71,7 +71,7 @@ bool IsBehindCaptivePortal() {
 
   Microsoft::WRL::ComPtr<IEnumNetworks> enum_networks;
   if (FAILED(network_list_manager->GetNetworks(NLM_ENUM_NETWORK_CONNECTED,
-                                               enum_networks.GetAddressOf()))) {
+                                               &enum_networks))) {
     return false;
   }
 
@@ -87,7 +87,7 @@ bool IsBehindCaptivePortal() {
     // says items_returned is set to NULL if the first parameter is 1, but this
     // seems incorrect. In this call, items_returned is 1 until there are no
     // networks. Then it becomes zero.
-    if (FAILED(enum_networks->Next(1, network.GetAddressOf(), &items_returned)))
+    if (FAILED(enum_networks->Next(1, &network, &items_returned)))
       return false;
 
     if (items_returned == 0)

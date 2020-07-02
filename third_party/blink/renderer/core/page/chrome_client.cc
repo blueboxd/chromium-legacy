@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
@@ -279,9 +280,9 @@ bool ChromeClient::Print(LocalFrame* frame) {
     return false;
   }
 
-  if (frame->GetDocument()->IsSandboxed(
+  if (frame->DomWindow()->IsSandboxed(
           network::mojom::blink::WebSandboxFlags::kModals)) {
-    UseCounter::Count(frame->GetDocument(),
+    UseCounter::Count(frame->DomWindow(),
                       WebFeature::kDialogInSandboxedContext);
     frame->Console().AddMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kSecurity,

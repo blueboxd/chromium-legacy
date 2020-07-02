@@ -34,7 +34,6 @@ class LocalFrame;
 class MediaStreamAudioSource;
 class MediaStreamVideoSource;
 class VideoCaptureSettings;
-class WebMediaStream;
 class WebMediaStreamDeviceObserver;
 class WebMediaStreamSource;
 class WebString;
@@ -101,7 +100,7 @@ class MODULES_EXPORT UserMediaProcessor
   // test requesting local media streams. The function notifies WebKit that the
   // |request| have completed.
   virtual void GetUserMediaRequestSucceeded(
-      const blink::WebMediaStream& stream,
+      MediaStreamDescriptor* descriptor,
       UserMediaRequest* user_media_request);
   virtual void GetUserMediaRequestFailed(
       blink::mojom::blink::MediaStreamRequestResult result,
@@ -157,7 +156,7 @@ class MODULES_EXPORT UserMediaProcessor
   bool IsCurrentRequestInfo(UserMediaRequest* user_media_request) const;
   void DelayedGetUserMediaRequestSucceeded(
       int request_id,
-      const blink::WebMediaStream& stream,
+      MediaStreamDescriptor* descriptor,
       UserMediaRequest* user_media_request);
   void DelayedGetUserMediaRequestFailed(
       int request_id,

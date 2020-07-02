@@ -79,7 +79,7 @@ jumbo_component("snapshot") {
   }
 
   if (is_mac) {
-    libs = [
+    frameworks = [
       "AppKit.framework",
       "CoreGraphics.framework",
     ]

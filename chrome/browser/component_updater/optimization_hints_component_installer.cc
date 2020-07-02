@@ -17,7 +17,6 @@
 #include "components/optimization_guide/optimization_guide_constants.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_service.h"
-#include "components/prefs/pref_service.h"
 
 using component_updater::ComponentUpdateService;
 
@@ -136,16 +135,15 @@ OptimizationHintsComponentInstallerPolicy::GetMimeTypes() const {
 }
 
 void RegisterOptimizationHintsComponent(ComponentUpdateService* cus,
-                                        bool is_off_the_record_profile,
-                                        PrefService* profile_prefs) {
+                                        bool is_off_the_record_profile) {
+  if (is_off_the_record_profile) {
+    return;
+  }
+
   if (!optimization_guide::features::IsOptimizationHintsEnabled()) {
     return;
   }
 
-  if (!data_reduction_proxy::DataReductionProxySettings::
-          IsDataSaverEnabledByUser(is_off_the_record_profile, profile_prefs)) {
-    return;
-  }
   auto installer = base::MakeRefCounted<ComponentInstaller>(
       std::make_unique<OptimizationHintsComponentInstallerPolicy>());
   installer->Register(cus, base::OnceClosure());

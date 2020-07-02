@@ -290,12 +290,6 @@ mojom("remoting_common") {
   sources = [ "remoting_common.mojom" ]
 }
 
-mojom("mirror_service_remoting") {
-  sources = [ "mirror_service_remoting.mojom" ]
-
-  public_deps = [ ":remoting_common" ]
-}
-
 mojom("remoting") {
   sources = [ "remoting.mojom" ]
 

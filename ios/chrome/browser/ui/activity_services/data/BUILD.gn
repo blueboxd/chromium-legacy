@@ -34,7 +34,7 @@ source_set("data") {
     "//net",
     "//url",
   ]
-  libs = [
+  frameworks = [
     "LinkPresentation.framework",
     "MobileCoreServices.framework",
     "UIKit.framework",

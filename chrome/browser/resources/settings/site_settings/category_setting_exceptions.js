@@ -72,22 +72,18 @@ Polymer({
     },
 
     /**
-     * Boolean which tells if the block list has any discarded content setting
+     * Whether the block list has any discarded content setting
      * pattern.
      * @private
      */
-    blockSiteListHasDiscardedExceptions_: {
-      type: Boolean,
-    },
+    blockSiteListHasDiscardedExceptions_: Boolean,
 
     /**
-     * Boolean which tells if the allow list has any discarded content setting
+     * Whether the allow list has any discarded content setting
      * pattern.
      * @private
      */
-    allowSiteListHasDiscardedExceptions_: {
-      type: Boolean,
-    },
+    allowSiteListHasDiscardedExceptions_: Boolean,
 
     /**
      * Boolean which keeps a track if any of the displayed lists has discarded

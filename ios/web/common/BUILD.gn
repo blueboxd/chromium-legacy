@@ -30,7 +30,7 @@ source_set("common") {
 
   public_deps = [ ":features" ]
 
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }
@@ -57,7 +57,7 @@ source_set("web_view_creation_util") {
     "//ios/web/web_state/ui:wk_web_view_configuration_provider",
   ]
 
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }

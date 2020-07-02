@@ -29,7 +29,7 @@ source_set("sad_tab") {
     "//ui/base",
     "//ui/gfx",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("coordinator") {
@@ -101,5 +101,5 @@ source_set("eg2_tests") {
     "//ui/base",
   ]
 
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }

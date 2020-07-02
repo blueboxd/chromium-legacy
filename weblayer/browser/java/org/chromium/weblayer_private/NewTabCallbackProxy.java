@@ -52,7 +52,7 @@ public final class NewTabCallbackProxy {
         // This class should only be created while the tab is attached to a fragment.
         assert mTab.getBrowser() != null;
         assert mTab.getBrowser().equals(tab.getBrowser());
-        mTab.getClient().onNewTab(tab.getId(), mode);
+        mTab.getClient().onNewTab(tab.getId(), implTypeToJavaType(mode));
     }
 
     @CalledByNative

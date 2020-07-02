@@ -28,7 +28,7 @@ source_set("common") {
 
   public_deps = [ ":timing" ]
 
-  libs = [ "QuartzCore.framework" ]
+  frameworks = [ "QuartzCore.framework" ]
 }
 
 source_set("timing") {
@@ -37,7 +37,7 @@ source_set("timing") {
     "material_timing.mm",
   ]
 
-  libs = [ "QuartzCore.framework" ]
+  frameworks = [ "QuartzCore.framework" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }

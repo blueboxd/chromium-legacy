@@ -493,6 +493,157 @@ testcase.transferFromDownloadsToDownloads = async () => {
 };
 
 /**
+ * Tests that the root html element .drag-drop-active class appears when drag
+ * drop operations are active, and is removed when the operations complete.
+ */
+testcase.transferDragDropActiveLeave = async () => {
+  const entries = [ENTRIES.hello, ENTRIES.photos];
+
+  // Open files app.
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, entries, []);
+
+  // The drag has to start in the file list column "name" text, otherwise it
+  // starts a drag-selection instead of a drag operation.
+  const source =
+      `#file-list li[file-name="${ENTRIES.hello.nameText}"] .entry-name`;
+
+  // Select the source file.
+  await remoteCall.waitAndClickElement(appId, source);
+
+  // Wait for the directory tree target.
+  const target = '#directory-tree [entry-label="My files"]';
+  await remoteCall.waitForElement(appId, target);
+
+  // Check: the html element should not have drag-drop-active class.
+  const htmlDragDropActive = ['html.drag-drop-active'];
+  await remoteCall.waitForElementLost(appId, htmlDragDropActive);
+
+  // Drag the source and hover it over the target.
+  const skipDrop = true;
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil(
+          'fakeDragAndDrop', appId, [source, target, skipDrop]),
+      'fakeDragAndDrop failed');
+
+  // Check: the html element should have drag-drop-active class.
+  await remoteCall.waitForElementsCount(appId, htmlDragDropActive, 1);
+
+  // Send a dragleave event to the target to end drag-drop operations.
+  const dragLeave = true;
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil(
+          'fakeDragLeaveOrDrop', appId, ['#file-list', target, dragLeave]),
+      'fakeDragLeaveOrDrop failed');
+
+  // Check: the html element should not have drag-drop-active class.
+  await remoteCall.waitForElementLost(appId, htmlDragDropActive);
+};
+
+/**
+ * Tests that the root html element .drag-drop-active class appears when drag
+ * drop operations are active, and is removed when the operations complete.
+ */
+testcase.transferDragDropActiveDrop = async () => {
+  const entries = [ENTRIES.hello, ENTRIES.photos];
+
+  // Open files app.
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, entries, []);
+
+  // Expand Downloads to display "photos" folder in the directory tree.
+  await expandTreeItem(appId, '#directory-tree [entry-label="Downloads"]');
+
+  // The drag has to start in the file list column "name" text, otherwise it
+  // starts a drag-selection instead of a drag operation.
+  const source =
+      `#file-list li[file-name="${ENTRIES.hello.nameText}"] .entry-name`;
+
+  // Select the source file.
+  await remoteCall.waitAndClickElement(appId, source);
+
+  // Wait for the directory tree target.
+  const target = '#directory-tree [entry-label="photos"]';
+  await remoteCall.waitForElement(appId, target);
+
+  // Check: the html element should not have drag-drop-active class.
+  const htmlDragDropActive = ['html.drag-drop-active'];
+  await remoteCall.waitForElementLost(appId, htmlDragDropActive);
+
+  // Drag the source and hover it over the target.
+  const skipDrop = true;
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil(
+          'fakeDragAndDrop', appId, [source, target, skipDrop]),
+      'fakeDragAndDrop failed');
+
+  // Check: the html element should have drag-drop-active class.
+  await remoteCall.waitForElementsCount(appId, htmlDragDropActive, 1);
+
+  // Send a drop event to the target to end drag-drop operations.
+  const dragLeave = false;
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil(
+          'fakeDragLeaveOrDrop', appId, ['#file-list', target, dragLeave]),
+      'fakeDragLeaveOrDrop failed');
+
+  // Check: the html element should not have drag-drop-active class.
+  await remoteCall.waitForElementLost(appId, htmlDragDropActive);
+};
+
+/**
+ * Tests that dragging a file over a directory tree item that can accept the
+ * drop changes the class of that tree item to 'accepts'.
+ */
+testcase.transferDragDropTreeItemAccepts = async () => {
+  const entries = [ENTRIES.hello, ENTRIES.photos];
+
+  // Open files app.
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, entries, []);
+
+  // The drag has to start in the file list column "name" text, otherwise it
+  // starts a drag-selection instead of a drag operation.
+  const source =
+      `#file-list li[file-name="${ENTRIES.photos.nameText}"] .entry-name`;
+
+  // Select the source file.
+  await remoteCall.waitAndClickElement(appId, source);
+
+  // Wait for the directory tree target.
+  const target = '#directory-tree [entry-label="My files"]';
+  await remoteCall.waitForElement(appId, target);
+
+  // Drag the source and hover it over the target.
+  const skipDrop = true;
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil(
+          'fakeDragAndDrop', appId, [source, target, skipDrop]),
+      'fakeDragAndDrop failed');
+
+  // Check: drag hovering should navigate the file list.
+  await remoteCall.waitUntilCurrentDirectoryIsChanged(appId, '/My files');
+
+  // Check: the target should have accepts class.
+  const willAcceptDrop = '#directory-tree [entry-label="My files"].accepts';
+  await remoteCall.waitForElement(appId, willAcceptDrop);
+
+  // Check: the target should not have denies class.
+  const willDenyDrop = '#directory-tree [entry-label="My files"].denies';
+  await remoteCall.waitForElementLost(appId, willDenyDrop);
+
+  // Send a dragleave event to the target to end drag-drop operations.
+  const dragLeave = true;
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil(
+          'fakeDragLeaveOrDrop', appId, ['#file-list', target, dragLeave]),
+      'fakeDragLeaveOrDrop failed');
+
+  // Check: the target should not have accepts class.
+  await remoteCall.waitForElementLost(appId, willAcceptDrop);
+
+  // Check: the target should not have denies class.
+  await remoteCall.waitForElementLost(appId, willDenyDrop);
+};
+
+/**
  * Tests that we can drag a file from #file-list to #directory-tree.
  * It copies the file from Downloads to Downloads/photos.
  */

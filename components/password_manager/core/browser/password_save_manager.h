@@ -59,7 +59,7 @@ class PasswordSaveManager {
       bool is_http_auth,
       bool is_credential_api_save) = 0;
 
-  virtual void ResetPendingCrednetials() = 0;
+  virtual void ResetPendingCredentials() = 0;
 
   virtual void Save(const autofill::FormData& observed_form,
                     const autofill::PasswordForm& parsed_submitted_form) = 0;

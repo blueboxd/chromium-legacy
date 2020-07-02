@@ -25,15 +25,15 @@ class BlockingUIThreadAsyncRequest {
   // Make sure that the response is also delivered to the UI thread.
   // The request argument can be defined using base::Bind.
   template <typename Signature>
-  void RunAsyncRequestOnUIThreadBlocking(base::Callback<Signature> request) {
+  void RunAsyncRequestOnUIThreadBlocking(
+      base::OnceCallback<Signature> request) {
     DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
     // Make the request in the UI thread.
     request_completed_.Reset();
-    RunOnUIThreadBlocking::Run(
-        base::Bind(
-            &BlockingUIThreadAsyncRequest::RunRequestOnUIThread<Signature>,
-            request));
+    RunOnUIThreadBlocking::Run(base::BindOnce(
+        &BlockingUIThreadAsyncRequest::RunRequestOnUIThread<Signature>,
+        std::move(request)));
 
     // Wait until the request callback invokes Finished.
     request_completed_.Wait();
@@ -44,8 +44,8 @@ class BlockingUIThreadAsyncRequest {
 
  private:
   template <typename Signature>
-  static void RunRequestOnUIThread(base::Callback<Signature> request) {
-    request.Run();
+  static void RunRequestOnUIThread(base::OnceCallback<Signature> request) {
+    std::move(request).Run();
   }
 
   base::WaitableEvent request_completed_;

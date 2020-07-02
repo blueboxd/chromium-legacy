@@ -6,16 +6,13 @@ package org.chromium.chrome.browser.download.dialogs;
 
 import android.content.Context;
 import android.graphics.Typeface;
-import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
-import android.text.method.LinkMovementMethod;
 import android.text.style.StyleSpan;
 import android.util.AttributeSet;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.RadioGroup;
-import android.widget.RadioGroup.OnCheckedChangeListener;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -32,7 +29,8 @@ import org.chromium.ui.text.SpanApplier.SpanInfo;
 /**
  * The custom view in the download later dialog.
  */
-public class DownloadLaterDialogView extends LinearLayout implements OnCheckedChangeListener {
+public class DownloadLaterDialogView
+        extends LinearLayout implements RadioGroup.OnCheckedChangeListener {
     private Controller mController;
 
     private RadioButtonWithDescription mDownloadNow;
@@ -41,6 +39,9 @@ public class DownloadLaterDialogView extends LinearLayout implements OnCheckedCh
     private RadioGroup mRadioGroup;
     private CheckBox mCheckBox;
     private TextView mEditText;
+
+    // The item that the user selected in the download later dialog UI.
+    private @DownloadLaterDialogChoice int mChoice = DownloadLaterDialogChoice.DOWNLOAD_NOW;
 
     /**
      * The view binder to propagate events from model to view.
@@ -71,12 +72,6 @@ public class DownloadLaterDialogView extends LinearLayout implements OnCheckedCh
          * Called when the edit location text is clicked.
          */
         void onEditLocationClicked();
-
-        /**
-         * Called when the choice radio buttons changed.
-         * @param choice The choice that the user selected.
-         */
-        void onCheckedChanged(@DownloadLaterDialogChoice int choice);
     }
 
     public DownloadLaterDialogView(Context context, @Nullable AttributeSet attrs) {
@@ -114,11 +109,17 @@ public class DownloadLaterDialogView extends LinearLayout implements OnCheckedCh
                 mDownloadLater.setChecked(true);
                 break;
         }
+
+        mChoice = choice;
+    }
+
+    public @DownloadLaterDialogChoice int getChoice() {
+        return mChoice;
     }
 
     void setCheckbox(@DownloadLaterPromptStatus int promptStatus) {
-        boolean checked = (promptStatus == DownloadLaterPromptStatus.SHOW_INITIAL)
-                || (promptStatus == DownloadLaterPromptStatus.DONT_SHOW);
+        boolean checked = promptStatus == DownloadLaterPromptStatus.SHOW_INITIAL
+                || promptStatus == DownloadLaterPromptStatus.SHOW_PREFERENCE;
         mCheckBox.setChecked(checked);
     }
 
@@ -128,32 +129,27 @@ public class DownloadLaterDialogView extends LinearLayout implements OnCheckedCh
                                      : DownloadLaterPromptStatus.SHOW_PREFERENCE;
     }
 
-    void setShowEditLocation(@Nullable String locationText) {
+    void setShowEditLocation(String locationText) {
         if (locationText == null) {
             mEditText.setVisibility(GONE);
             return;
         }
 
-        final SpannableString editText;
+        final CharSequence editText;
         final SpannableStringBuilder directorySpanBuilder = new SpannableStringBuilder();
         directorySpanBuilder.append(locationText);
         directorySpanBuilder.setSpan(new StyleSpan(Typeface.BOLD), 0, locationText.length(),
                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-        mEditText.setMovementMethod(LinkMovementMethod.getInstance());
-        NoUnderlineClickableSpan editSpan = new NoUnderlineClickableSpan(
-                getResources(), (view) -> { onEditLocationClicked(); });
+        NoUnderlineClickableSpan editSpan = new NoUnderlineClickableSpan(getResources(), (view) -> {
+            if (mController != null) mController.onEditLocationClicked();
+        });
         editText = SpanApplier.applySpans(
                 getResources().getString(R.string.download_later_edit_location, locationText),
                 new SpanInfo("<b>", "</b>", directorySpanBuilder),
                 new SpanInfo("<LINK2>", "</LINK2>", editSpan));
         mEditText.setText(editText);
         mEditText.setVisibility(VISIBLE);
-    }
-
-    private void onEditLocationClicked() {
-        assert mController != null : "Please bind the controller first.";
-        mController.onEditLocationClicked();
     }
 
     // RadioGroup.OnCheckedChangeListener overrides.
@@ -168,6 +164,6 @@ public class DownloadLaterDialogView extends LinearLayout implements OnCheckedCh
         } else if (mDownloadLater.isChecked()) {
             choice = DownloadLaterDialogChoice.DOWNLOAD_LATER;
         }
-        mController.onCheckedChanged(choice);
+        mChoice = choice;
     }
 }

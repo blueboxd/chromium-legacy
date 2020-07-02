@@ -227,7 +227,7 @@ component("core") {
   public_configs = [ ":core_include_dirs" ]
 
   if (is_mac) {
-    libs = [
+    frameworks = [
       "AppKit.framework",
       "Carbon.framework",
     ]

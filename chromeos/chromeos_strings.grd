@@ -406,6 +406,9 @@ Try tapping the mic to ask me anything.
       <message name="IDS_PRINT_MANAGEMENT_CANCELED_PRINT_JOB_ARIA_ANNOUNCEMENT" desc="The announcement said to notify ChromeVox that a print job was recently cancelled.">
         Cancelled print job <ph name="DOCUMENT_TITLE">$1<ex>my_essay.doc</ex></ph>
       </message>
+      <message name="IDS_PRINT_MANAGEMENT_COLLAPSE_PRINTING_STATUS" desc="A text that indicates to the user that the print job is currently printing. This text only appears if the width of the app's window is small and cannot display the entire ongoing printing status.">
+        Printing
+      </message>
     </messages>
   </release>
 </grit>

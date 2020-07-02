@@ -9,6 +9,7 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/page_info/features.h"
+#import "ios/chrome/browser/ui/page_info/page_info_constants.h"
 #import "ios/chrome/browser/ui/page_info/page_info_cookies_commands.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
@@ -78,6 +79,7 @@ float kPaddingCookiesHeader = 0.0f;
   self.title = l10n_util::GetNSString(IDS_IOS_PAGE_INFO_SITE_INFORMATION);
   self.navigationItem.prompt = self.pageInfoSecurityDescription.siteURL;
   self.navigationController.navigationBar.prefersLargeTitles = NO;
+  self.tableView.accessibilityIdentifier = kPageInfoViewAccessibilityIdentifier;
 
   UIBarButtonItem* dismissButton = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemDone

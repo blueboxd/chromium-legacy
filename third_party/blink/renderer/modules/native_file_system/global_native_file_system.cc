@@ -17,7 +17,6 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_file_picker_accept_type.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_open_file_picker_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_save_file_picker_options.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
@@ -117,8 +116,7 @@ ScriptPromise GetOriginPrivateDirectoryImpl(ScriptState* script_state,
                                             ExceptionState& exception_state) {
   ExecutionContext* context = ExecutionContext::From(script_state);
   if (!context->GetSecurityOrigin()->CanAccessNativeFileSystem()) {
-    if (context->GetSecurityContext().IsSandboxed(
-            network::mojom::blink::WebSandboxFlags::kOrigin)) {
+    if (context->IsSandboxed(network::mojom::blink::WebSandboxFlags::kOrigin)) {
       exception_state.ThrowSecurityError(
           "System directory access is denied because the context is "
           "sandboxed and lacks the 'allow-same-origin' flag.");
@@ -165,15 +163,8 @@ void VerifyIsAllowedToShowFilePicker(const LocalDOMWindow& window,
     return;
   }
 
-  Document* document = window.document();
-  if (!document) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kAbortError, "");
-    return;
-  }
-
-  if (!document->GetSecurityOrigin()->CanAccessNativeFileSystem()) {
-    if (document->IsSandboxed(
-            network::mojom::blink::WebSandboxFlags::kOrigin)) {
+  if (!window.GetSecurityOrigin()->CanAccessNativeFileSystem()) {
+    if (window.IsSandboxed(network::mojom::blink::WebSandboxFlags::kOrigin)) {
       exception_state.ThrowSecurityError(
           "Sandboxed documents aren't allowed to show a file picker.");
       return;

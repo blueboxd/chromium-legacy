@@ -27,6 +27,11 @@ bool KeyboardHookBase::IsKeyLocked(DomCode dom_code) const {
   return ShouldCaptureKeyEvent(dom_code);
 }
 
+bool KeyboardHookBase::RegisterHook() {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 bool KeyboardHookBase::ShouldCaptureKeyEvent(DomCode dom_code) const {
   if (dom_code == DomCode::NONE)
     return false;

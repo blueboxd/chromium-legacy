@@ -26,79 +26,92 @@
 #include "chrome/browser/policy/messaging_layer/util/statusor.h"
 #include "components/policy/core/common/cloud/dm_token.h"
 #include "components/policy/proto/record_constants.pb.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using ::policy::DMToken;
+
+using ::testing::_;
+using ::testing::Invoke;
+using ::testing::Return;
+using ::testing::WithArg;
+
+using ::reporting::test::TestEncryptionModule;
+using ::reporting::test::TestStorageModule;
 
 namespace reporting {
 namespace {
 
-using PolicyCheckCallback =
-    reporting::ReportQueueConfiguration::PolicyCheckCallback;
+// Usage (in tests only):
+//
+//   TestEvent<ResType> e;
+//   ... Do some async work passing e.cb() as a completion callback of
+//       base::OnceCallback<void(ResType* res)> type which also may perform
+//       some other action specified by |done| callback provided by the caller.
+//   ... = e.result();  // Will wait for e.cb() to be called and return the
+//                      // collected result.
+//
+// Or, when the callback is not expected to be invoked:
+//
+//   TestEvent<ResType> e(/*expected_to_complete=*/false);
+//   ... Start work passing e.cb() as a completion callback,
+//       which will not happen.
+//
+template <typename ResType>
+class TestEvent {
+ public:
+  explicit TestEvent(bool expected_to_complete = true)
+      : expected_to_complete_(expected_to_complete),
+        completed_(base::WaitableEvent::ResetPolicy::MANUAL,
+                   base::WaitableEvent::InitialState::NOT_SIGNALED) {}
+  ~TestEvent() {
+    if (expected_to_complete_) {
+      EXPECT_TRUE(completed_.IsSignaled()) << "Not responded";
+    } else {
+      EXPECT_FALSE(completed_.IsSignaled()) << "Responded";
+    }
+  }
+  TestEvent(const TestEvent& other) = delete;
+  TestEvent& operator=(const TestEvent& other) = delete;
+  ResType result() {
+    completed_.Wait();
+    return std::forward<ResType>(result_);
+  }
 
-using base::MakeRefCounted;
-using policy::DMToken;
-using reporting::test::AlwaysFailsEncryptionModule;
-using reporting::test::AlwaysFailsStorageModule;
-using reporting::test::TestEncryptionModule;
-using reporting::test::TestStorageModule;
+  // Completion callback to hand over to the processing method.
+  base::OnceCallback<void(ResType res)> cb() {
+    DCHECK(!completed_.IsSignaled());
+    return base::BindOnce(
+        [](base::WaitableEvent* completed, ResType* result, ResType res) {
+          *result = std::forward<ResType>(res);
+          completed->Signal();
+        },
+        base::Unretained(&completed_), base::Unretained(&result_));
+  }
+
+ private:
+  bool expected_to_complete_;
+  base::WaitableEvent completed_;
+  ResType result_;
+};
 
 // Creates a |ReportQueue| using |TestStorageModule| and |TestEncryptionModule|.
 // Allows access to the storage module for checking stored values.
 class ReportQueueTest : public testing::Test {
- public:
+ protected:
   ReportQueueTest()
-      : completed_(base::WaitableEvent::ResetPolicy::MANUAL,
-                   base::WaitableEvent::InitialState::NOT_SIGNALED),
-        result_(error::INTERNAL, "initialized with non-ok status"),
-        storage_module_(MakeRefCounted<TestStorageModule>()),
-        priority_(Priority::IMMEDIATE),
+      : priority_(Priority::IMMEDIATE),
         dm_token_(DMToken::CreateValidTokenForTesting("FAKE_DM_TOKEN")),
         destination_(Destination::UPLOAD_EVENTS),
-        encryption_module_(MakeRefCounted<TestEncryptionModule>()),
-        policy_check_callback_(base::BindRepeating(
-            []() -> Status { return Status::StatusOK(); })) {}
-
-  // Allows specifying an alternative |TestStorageModule| for testing different
-  // cases.
-  explicit ReportQueueTest(scoped_refptr<TestStorageModule> storage_module)
-      : completed_(base::WaitableEvent::ResetPolicy::MANUAL,
-                   base::WaitableEvent::InitialState::NOT_SIGNALED),
-        result_(error::INTERNAL, "initialized with non-ok status"),
-        storage_module_(storage_module),
-        priority_(Priority::IMMEDIATE),
-        dm_token_(DMToken::CreateValidTokenForTesting("FAKE_DM_TOKEN")),
-        destination_(Destination::UPLOAD_EVENTS),
-        encryption_module_(MakeRefCounted<TestEncryptionModule>()),
-        policy_check_callback_(base::BindRepeating(
-            []() -> Status { return Status::StatusOK(); })) {}
-
-  // Allows specifying an alternative |TestEncryptionModule| for testing
-  // different cases.
-  explicit ReportQueueTest(
-      scoped_refptr<TestEncryptionModule> encryption_module)
-      : completed_(base::WaitableEvent::ResetPolicy::MANUAL,
-                   base::WaitableEvent::InitialState::NOT_SIGNALED),
-        result_(error::INTERNAL, "initialized with non-ok status"),
-        storage_module_(MakeRefCounted<TestStorageModule>()),
-        priority_(Priority::IMMEDIATE),
-        dm_token_(DMToken::CreateValidTokenForTesting("FAKE_DM_TOKEN")),
-        destination_(Destination::UPLOAD_EVENTS),
-        encryption_module_(encryption_module),
-        policy_check_callback_(base::BindRepeating(
-            []() -> Status { return Status::StatusOK(); })) {}
-
-  explicit ReportQueueTest(
-      ReportQueueConfiguration::PolicyCheckCallback policy_check_callback)
-      : completed_(base::WaitableEvent::ResetPolicy::MANUAL,
-                   base::WaitableEvent::InitialState::NOT_SIGNALED),
-        result_(error::INTERNAL, "initialized with non-ok status"),
-        storage_module_(MakeRefCounted<TestStorageModule>()),
-        priority_(Priority::IMMEDIATE),
-        dm_token_(DMToken::CreateValidTokenForTesting("FAKE_DM_TOKEN")),
-        destination_(Destination::UPLOAD_EVENTS),
-        encryption_module_(MakeRefCounted<TestEncryptionModule>()),
-        policy_check_callback_(std::move(policy_check_callback)) {}
+        storage_module_(base::MakeRefCounted<TestStorageModule>()),
+        encryption_module_(base::MakeRefCounted<TestEncryptionModule>()),
+        policy_check_callback_(
+            base::BindRepeating(&ReportQueueTest::MockedPolicyCheck,
+                                base::Unretained(this))) {}
 
   void SetUp() override {
+    ON_CALL(*this, MockedPolicyCheck).WillByDefault(Return(Status::StatusOK()));
+
     StatusOr<std::unique_ptr<ReportQueueConfiguration>> config_result =
         ReportQueueConfiguration::Create(dm_token_, destination_, priority_,
                                          policy_check_callback_);
@@ -112,23 +125,28 @@ class ReportQueueTest : public testing::Test {
     ASSERT_TRUE(report_queue_result.ok());
 
     report_queue_ = std::move(report_queue_result.ValueOrDie());
-
-    callback_ = base::BindOnce(
-        [](base::WaitableEvent* completed, Status* result,
-           Status status) -> void {
-          *result = status;
-          completed->Signal();
-        },
-        &completed_, &result_);
   }
 
- protected:
-  base::WaitableEvent completed_;
-  Status result_;
+  TestStorageModule* test_storage_module() const {
+    TestStorageModule* test_storage_module =
+        google::protobuf::down_cast<TestStorageModule*>(storage_module_.get());
+    DCHECK(test_storage_module);
+    return test_storage_module;
+  }
+
+  TestEncryptionModule* test_encryption_module() const {
+    TestEncryptionModule* test_encryption_module =
+        google::protobuf::down_cast<TestEncryptionModule*>(
+            encryption_module_.get());
+    DCHECK(test_encryption_module);
+    return test_encryption_module;
+  }
+
+  MOCK_METHOD(Status, MockedPolicyCheck, (), ());
+
   base::test::TaskEnvironment task_envrionment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
-  scoped_refptr<TestStorageModule> storage_module_;
   const Priority priority_;
 
   std::unique_ptr<ReportQueue> report_queue_;
@@ -137,24 +155,24 @@ class ReportQueueTest : public testing::Test {
  private:
   const DMToken dm_token_;
   const Destination destination_;
-  scoped_refptr<TestEncryptionModule> encryption_module_;
-  PolicyCheckCallback policy_check_callback_;
+  scoped_refptr<StorageModule> storage_module_;
+  scoped_refptr<EncryptionModule> encryption_module_;
+  ReportQueueConfiguration::PolicyCheckCallback policy_check_callback_;
 };
 
 // Enqueues a random string and ensures that the string arrives unaltered in the
 // |StorageModule|.
 TEST_F(ReportQueueTest, SuccessfulStringRecord) {
   constexpr char kTestString[] = "El-Chupacabra";
-  Status status = report_queue_->Enqueue(kTestString, std::move(callback_));
-  ASSERT_TRUE(status.ok());
+  TestEvent<Status> a;
+  Status status = report_queue_->Enqueue(kTestString, a.cb());
+  ASSERT_OK(status);
+  EXPECT_OK(a.result());
 
-  completed_.Wait();
+  EXPECT_EQ(test_storage_module()->priority(), priority_);
 
-  EXPECT_TRUE(result_.ok());
-
-  EXPECT_EQ(storage_module_->priority(), priority_);
-
-  EXPECT_EQ(storage_module_->wrapped_record().record().data(), kTestString);
+  EXPECT_EQ(test_storage_module()->wrapped_record().record().data(),
+            kTestString);
 }
 
 // Enqueues a |base::Value| dictionary and ensures it arrives unaltered in the
@@ -164,17 +182,15 @@ TEST_F(ReportQueueTest, SuccessfulBaseValueRecord) {
   constexpr char kTestValue[] = "TEST_VALUE";
   base::Value test_dict(base::Value::Type::DICTIONARY);
   test_dict.SetStringKey(kTestKey, kTestValue);
-  Status status = report_queue_->Enqueue(test_dict, std::move(callback_));
-  ASSERT_TRUE(status.ok());
+  TestEvent<Status> a;
+  Status status = report_queue_->Enqueue(test_dict, a.cb());
+  ASSERT_OK(status);
+  EXPECT_OK(a.result());
 
-  completed_.Wait();
+  EXPECT_EQ(test_storage_module()->priority(), priority_);
 
-  EXPECT_TRUE(result_.ok());
-
-  EXPECT_EQ(storage_module_->priority(), priority_);
-
-  base::Optional<base::Value> value_result =
-      base::JSONReader::Read(storage_module_->wrapped_record().record().data());
+  base::Optional<base::Value> value_result = base::JSONReader::Read(
+      test_storage_module()->wrapped_record().record().data());
   ASSERT_TRUE(value_result);
   EXPECT_EQ(value_result.value(), test_dict);
 }
@@ -184,94 +200,85 @@ TEST_F(ReportQueueTest, SuccessfulBaseValueRecord) {
 TEST_F(ReportQueueTest, SuccessfulProtoRecord) {
   reporting::test::TestMessage test_message;
   test_message.set_test("TEST_MESSAGE");
-  Status status = report_queue_->Enqueue(&test_message, std::move(callback_));
-  ASSERT_TRUE(status.ok());
+  TestEvent<Status> a;
+  Status status = report_queue_->Enqueue(&test_message, a.cb());
+  ASSERT_OK(status);
+  EXPECT_OK(a.result());
 
-  completed_.Wait();
-
-  EXPECT_TRUE(result_.ok());
-
-  EXPECT_EQ(storage_module_->priority(), priority_);
+  EXPECT_EQ(test_storage_module()->priority(), priority_);
 
   reporting::test::TestMessage result_message;
   ASSERT_TRUE(result_message.ParseFromString(
-      storage_module_->wrapped_record().record().data()));
+      test_storage_module()->wrapped_record().record().data()));
   ASSERT_EQ(result_message.test(), test_message.test());
 }
-
-// A |ReportQueueTest| built with an |AlwaysFailsStorageModule|.
-class StorageFailsReportQueueTest : public ReportQueueTest {
- public:
-  StorageFailsReportQueueTest()
-      : ReportQueueTest(MakeRefCounted<AlwaysFailsStorageModule>()) {}
-};
 
 // The call to enqueue should succeed, indicating that the storage operation has
 // been scheduled. The callback should fail, indicating that storage was
 // unsuccessful.
-TEST_F(StorageFailsReportQueueTest, CallSuccessCallbackFailure) {
+TEST_F(ReportQueueTest, CallSuccessCallbackFailure) {
+  EXPECT_CALL(*test_storage_module(), AddRecord(_, _, _))
+      .WillOnce(
+          WithArg<2>(Invoke([](base::OnceCallback<void(Status)> callback) {
+            std::move(callback).Run(Status(error::UNKNOWN, "Failing for Test"));
+          })));
+
   reporting::test::TestMessage test_message;
   test_message.set_test("TEST_MESSAGE");
-  Status status = report_queue_->Enqueue(&test_message, std::move(callback_));
-  ASSERT_TRUE(status.ok());
-
-  completed_.Wait();
-
-  EXPECT_FALSE(result_.ok());
-  EXPECT_EQ(result_.error_code(), error::UNKNOWN);
+  TestEvent<Status> a;
+  Status status = report_queue_->Enqueue(&test_message, a.cb());
+  ASSERT_OK(status);
+  auto result = a.result();
+  EXPECT_FALSE(result.ok());
+  EXPECT_EQ(result.error_code(), error::UNKNOWN);
 }
-
-// A |ReportQueueTest| built with an |AlwaysFailsEncryptionModule|.
-class EncryptionFailsReportQueueTest : public ReportQueueTest {
- public:
-  EncryptionFailsReportQueueTest()
-      : ReportQueueTest(MakeRefCounted<AlwaysFailsEncryptionModule>()) {}
-};
 
 // The call to enqueue should succeed, indicating that the encryption operation
 // has been scheduled. The callback should fail, indicating that encryption was
 // unsuccessful.
-TEST_F(EncryptionFailsReportQueueTest, CallSuccessCallFailure) {
+TEST_F(ReportQueueTest, EnqueueSuccessEncryptFailure) {
+  EXPECT_CALL(*test_encryption_module(), EncryptRecord(_))
+      .WillOnce(Return(Status(error::UNKNOWN, "Failing for tests")));
   reporting::test::TestMessage test_message;
   test_message.set_test("TEST_MESSAGE");
-  Status status = report_queue_->Enqueue(&test_message, std::move(callback_));
-  ASSERT_TRUE(status.ok());
-
-  completed_.Wait();
-
-  EXPECT_FALSE(result_.ok());
-  EXPECT_EQ(result_.error_code(), error::UNKNOWN);
+  TestEvent<Status> a;
+  Status status = report_queue_->Enqueue(&test_message, a.cb());
+  ASSERT_OK(status);
+  auto result = a.result();
+  EXPECT_FALSE(result.ok());
+  EXPECT_EQ(result.error_code(), error::UNKNOWN);
 }
 
-class ReportQueueRespectsPolicyTest : public ReportQueueTest {
- public:
-  ReportQueueRespectsPolicyTest()
-      : ReportQueueTest(base::BindRepeating([]() -> Status {
-          return Status(error::UNAUTHENTICATED, "Failing for tests");
-        })) {}
-};
-
-TEST_F(ReportQueueRespectsPolicyTest, EnqueueStringFailsOnPolicy) {
+TEST_F(ReportQueueTest, EnqueueStringFailsOnPolicy) {
+  EXPECT_CALL(*this, MockedPolicyCheck)
+      .WillOnce(Return(Status(error::UNAUTHENTICATED, "Failing for tests")));
   constexpr char kTestString[] = "El-Chupacabra";
-  Status status = report_queue_->Enqueue(kTestString, std::move(callback_));
+  TestEvent<Status> a(/*expected_to_complete=*/false);
+  Status status = report_queue_->Enqueue(kTestString, a.cb());
   EXPECT_FALSE(status.ok());
   EXPECT_EQ(status.error_code(), error::UNAUTHENTICATED);
 }
 
-TEST_F(ReportQueueRespectsPolicyTest, EnqueueProtoFailsOnPolicy) {
+TEST_F(ReportQueueTest, EnqueueProtoFailsOnPolicy) {
+  EXPECT_CALL(*this, MockedPolicyCheck)
+      .WillOnce(Return(Status(error::UNAUTHENTICATED, "Failing for tests")));
   reporting::test::TestMessage test_message;
   test_message.set_test("TEST_MESSAGE");
-  Status status = report_queue_->Enqueue(&test_message, std::move(callback_));
+  TestEvent<Status> a(/*expected_to_complete=*/false);
+  Status status = report_queue_->Enqueue(&test_message, a.cb());
   EXPECT_FALSE(status.ok());
   EXPECT_EQ(status.error_code(), error::UNAUTHENTICATED);
 }
 
-TEST_F(ReportQueueRespectsPolicyTest, EnqueueValueFailsOnPolicy) {
+TEST_F(ReportQueueTest, EnqueueValueFailsOnPolicy) {
+  EXPECT_CALL(*this, MockedPolicyCheck)
+      .WillOnce(Return(Status(error::UNAUTHENTICATED, "Failing for tests")));
   constexpr char kTestKey[] = "TEST_KEY";
   constexpr char kTestValue[] = "TEST_VALUE";
   base::Value test_dict(base::Value::Type::DICTIONARY);
   test_dict.SetStringKey(kTestKey, kTestValue);
-  Status status = report_queue_->Enqueue(test_dict, std::move(callback_));
+  TestEvent<Status> a(/*expected_to_complete=*/false);
+  Status status = report_queue_->Enqueue(test_dict, a.cb());
   EXPECT_FALSE(status.ok());
   EXPECT_EQ(status.error_code(), error::UNAUTHENTICATED);
 }

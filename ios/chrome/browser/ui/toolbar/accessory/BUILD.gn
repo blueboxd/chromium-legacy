@@ -22,7 +22,7 @@ source_set("accessory") {
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("constants") {

@@ -1571,23 +1571,19 @@ class GenReadEvent(FileWriter):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('proto_dir', type=str)
+    parser.add_argument('xcbproto_dir', type=str)
     parser.add_argument('gen_dir', type=str)
     parser.add_argument('protos', type=str, nargs='*')
-    parser.add_argument('--sysroot')
     args = parser.parse_args()
 
-    if args.sysroot:
-        path = os.path.join(args.sysroot, 'usr', 'lib', 'python2.7',
-                            'dist-packages')
-        sys.path.insert(1, path)
-
+    sys.path.insert(1, args.xcbproto_dir)
     import xcbgen.xtypes
     import xcbgen.state
 
     all_types = {}
+    proto_src_dir = os.path.join(args.xcbproto_dir, 'src')
     genprotos = [
-        GenXproto(proto, args.proto_dir, args.gen_dir, xcbgen, all_types)
+        GenXproto(proto, proto_src_dir, args.gen_dir, xcbgen, all_types)
         for proto in args.protos
     ]
     for genproto in genprotos:

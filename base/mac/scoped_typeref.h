@@ -97,6 +97,10 @@ class ScopedTypeRef {
     return &object_;
   }
 
+  void reset(const ScopedTypeRef<T, Traits>& that) {
+    reset(that.get(), base::scoped_policy::RETAIN);
+  }
+
   void reset(element_type object = Traits::InvalidValue(),
              base::scoped_policy::OwnershipPolicy policy =
                  base::scoped_policy::ASSUME) {

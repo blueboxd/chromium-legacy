@@ -8,18 +8,18 @@
 
 #include "chrome/browser/policy/messaging_layer/util/statusor.h"
 
+using ::testing::Invoke;
+
 namespace reporting {
 namespace test {
 
-StatusOr<std::string> TestEncryptionModule::EncryptRecord(
-    base::StringPiece record) const {
-  return std::string(record);
+TestEncryptionModule::TestEncryptionModule() {
+  ON_CALL(*this, EncryptRecord)
+      .WillByDefault(
+          Invoke([](base::StringPiece record) { return std::string(record); }));
 }
 
-StatusOr<std::string> AlwaysFailsEncryptionModule::EncryptRecord(
-    base::StringPiece record) const {
-  return Status(error::UNKNOWN, "Failing for tests");
-}
+TestEncryptionModule::~TestEncryptionModule() = default;
 
 }  // namespace test
 }  // namespace reporting

@@ -7,6 +7,7 @@
 
 #include "base/feature_list.h"
 #include "base/optional.h"
+#include "net/nqe/effective_connection_type.h"
 
 namespace base {
 class Value;
@@ -44,6 +45,10 @@ int UserBlocklistOptOutHistoryThreshold();
 
 // The current version of the LiteVideo user blocklist.
 int LiteVideoBlocklistVersion();
+
+// The minimum effective connection type that LiteVideos should be attempted
+// on.
+net::EffectiveConnectionType MinLiteVideoECT();
 
 }  // namespace features
 }  // namespace lite_video

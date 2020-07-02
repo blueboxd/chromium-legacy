@@ -31,7 +31,7 @@ source_set("history") {
     "//ios/chrome/browser/ui/table_view:feature_flags",
     "//ios/chrome/browser/ui/util",
   ]
-  libs = [
+  frameworks = [
     "MobileCoreServices.framework",
     "QuartzCore.framework",
     "UIKit.framework",
@@ -166,5 +166,5 @@ source_set("eg2_tests") {
     "//ios/web/public/test/http_server",
     "//net:test_support",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }

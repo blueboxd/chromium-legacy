@@ -32,7 +32,7 @@ jumbo_component("wifi") {
   }
 
   if (is_mac) {
-    libs = [
+    frameworks = [
       "CoreWLAN.framework",
       "Foundation.framework",
       "SystemConfiguration.framework",

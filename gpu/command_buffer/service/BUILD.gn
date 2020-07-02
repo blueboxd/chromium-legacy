@@ -385,7 +385,7 @@ target(link_target_type, "gles2_sources") {
     ]
 
     # Required by gles2_cmd_decoder.cc on Mac.
-    libs = [
+    frameworks = [
       "Cocoa.framework",
       "IOSurface.framework",
       "Metal.framework",

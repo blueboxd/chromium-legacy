@@ -209,9 +209,6 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
           Chromium OS
         </message>
       </if>
-      <message name="IDS_SHORT_PRODUCT_LOGO_ALT_TEXT" desc="Alt text for the Chromium logo image.">
-        Chromium logo
-      </message>
       <!-- Chrome enterprise logo won't be used in Chromium -->
       <message name="IDS_PRODUCT_LOGO_ENTERPRISE_ALT_TEXT" desc="Alt text for the Chromium Enterprise logo image."/>
       <if expr="is_win">

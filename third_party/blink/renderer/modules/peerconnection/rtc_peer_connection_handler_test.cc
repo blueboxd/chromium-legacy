@@ -1335,7 +1335,7 @@ TEST_F(RTCPeerConnectionHandlerTest,
        ThermalStateUmaListenerCreatedWhenVideoStreamAdded) {
   base::HistogramTester histogram;
   EXPECT_FALSE(pc_handler_->HasThermalUmaListner());
-  blink::WebMediaStream local_stream(CreateLocalMediaStream("local_stream"));
+  MediaStreamDescriptor* local_stream = CreateLocalMediaStream("local_stream");
   EXPECT_TRUE(AddStream(local_stream));
   EXPECT_TRUE(pc_handler_->HasThermalUmaListner());
 }

@@ -23,7 +23,7 @@ source_set("credential_provider") {
     "//ios/chrome/common:ios_app_bundle_id_prefix_buildflags",
     "//ios/chrome/common/app_group",
   ]
-  libs = [
+  frameworks = [
     "AuthenticationServices.framework",
     "Foundation.framework",
   ]
@@ -35,7 +35,7 @@ source_set("ui") {
     "credential.h",
     "credential_store.h",
   ]
-  libs = [ "Foundation.framework" ]
+  frameworks = [ "Foundation.framework" ]
 }
 
 source_set("unit_tests") {

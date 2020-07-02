@@ -197,7 +197,6 @@ class GpuBenchmarkingContext {
   explicit GpuBenchmarkingContext(RenderFrameImpl* frame) {
     web_frame_ = frame->GetWebFrame();
     web_view_ = web_frame_->View();
-    render_view_impl_ = RenderViewImpl::FromWebView(web_view_);
     render_widget_ = frame->GetLocalRootRenderWidget();
     layer_tree_host_ = render_widget_->layer_tree_host();
   }
@@ -210,10 +209,6 @@ class GpuBenchmarkingContext {
     DCHECK(web_view_ != nullptr);
     return web_view_;
   }
-  RenderViewImpl* render_view_impl() const {
-    DCHECK(render_view_impl_ != nullptr);
-    return render_view_impl_;
-  }
   RenderWidget* render_widget() const { return render_widget_; }
   cc::LayerTreeHost* layer_tree_host() const {
     DCHECK(layer_tree_host_ != nullptr);
@@ -223,7 +218,6 @@ class GpuBenchmarkingContext {
  private:
   WebLocalFrame* web_frame_ = nullptr;
   WebView* web_view_ = nullptr;
-  RenderViewImpl* render_view_impl_ = nullptr;
   RenderWidget* render_widget_ = nullptr;
   cc::LayerTreeHost* layer_tree_host_ = nullptr;
 

@@ -32,7 +32,7 @@ executable("top_domain_generator") {
     "//url:url",
   ]
   if (is_ios) {
-    libs = [ "UIKit.framework" ]
+    frameworks = [ "UIKit.framework" ]
   }
 }
 
@@ -74,7 +74,7 @@ executable("make_top_domain_list_variables") {
     "//third_party/icu",
   ]
   if (is_ios) {
-    libs = [ "UIKit.framework" ]
+    frameworks = [ "UIKit.framework" ]
   }
 }
 

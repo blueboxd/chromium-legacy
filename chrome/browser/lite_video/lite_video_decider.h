@@ -12,6 +12,8 @@
 #include "chrome/browser/lite_video/lite_video_hint_cache.h"
 #include "chrome/browser/lite_video/lite_video_user_blocklist.h"
 #include "components/blocklist/opt_out_blocklist/opt_out_blocklist_delegate.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
+#include "services/network/public/cpp/network_quality_tracker.h"
 #include "url/gurl.h"
 
 namespace blocklist {
@@ -23,7 +25,10 @@ namespace lite_video {
 // The LiteVideoDecider makes the decision on whether LiteVideos should be
 // applied to a navigation and provides the parameters to use when
 // throttling media requests.
-class LiteVideoDecider : public blocklist::OptOutBlocklistDelegate {
+class LiteVideoDecider
+    : public blocklist::OptOutBlocklistDelegate,
+      public network::NetworkConnectionTracker::NetworkConnectionObserver,
+      public network::NetworkQualityTracker::EffectiveConnectionTypeObserver {
  public:
   LiteVideoDecider(std::unique_ptr<blocklist::OptOutStore> opt_out_store,
                    base::Clock* clock);
@@ -48,6 +53,13 @@ class LiteVideoDecider : public blocklist::OptOutBlocklistDelegate {
   // blocklist::OptOutBlocklistDelegate
   void OnUserBlocklistedStatusChange(bool blocklisted) override;
 
+  // network::NetworkConnectionTracker::NetworkConnectionObserver:
+  void OnConnectionChanged(network::mojom::ConnectionType type) override;
+
+  // network::NetworkQualityTracker::EffectiveConnectionTypeObserver:
+  void OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType type) override;
+
  private:
   // The hint cache that holds LiteVideoHints that specify the parameters
   // for throttling media requests for that navigation.
@@ -60,6 +72,13 @@ class LiteVideoDecider : public blocklist::OptOutBlocklistDelegate {
   // Whether the backing store used by the owned |user_blocklist_| is loaded
   // and available.
   bool blocklist_loaded_ = false;
+
+  // Whether the current network connection is cellular or not.
+  bool is_cellular_network_ = false;
+
+  // The current estimate of the EffectiveConnectionType.
+  net::EffectiveConnectionType current_effective_connection_type_ =
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
 
   SEQUENCE_CHECKER(sequence_checker_);
 };

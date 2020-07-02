@@ -87,12 +87,11 @@ void CertProvisioningCertsWithIdsGetter::CollectOneResult(
     return;
   }
 
-  if (!error_message.empty()) {
-    std::move(callback_).Run(/*existing_cert_ids=*/{}, error_message);
-    return;
+  if (error_message.empty()) {
+    // TODO(crbug.com/1101103): Currently results with errors are just ignored.
+    // Fix when PlatformKeysService API is changed.
+    certs_with_ids_[cert_id] = cert;
   }
-
-  certs_with_ids_[cert_id] = cert;
 
   --wait_counter_;
   if (wait_counter_ != 0) {

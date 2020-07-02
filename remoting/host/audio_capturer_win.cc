@@ -114,7 +114,7 @@ bool AudioCapturerWin::Initialize() {
 
   // Get the audio endpoint.
   hr = mm_device_enumerator->GetDefaultAudioEndpoint(eRender, eConsole,
-                                                     mm_device_.GetAddressOf());
+                                                     &mm_device_);
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to get IMMDevice. Error " << hr;
     return false;

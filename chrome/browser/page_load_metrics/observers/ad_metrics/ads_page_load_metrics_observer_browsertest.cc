@@ -457,19 +457,11 @@ IN_PROC_BROWSER_TEST_F(CreativeOriginAdsPageLoadMetricsObserverBrowserTest,
                            OriginStatusWithThrottling::kUnknownAndUnthrottled);
 }
 
-// Flakily fails on Windows only (crbug.com/1099758)
-#if defined(OS_WIN)
-#define MAYBE_CreativeOriginStatusWithThrottlingUnknown \
-  DISABLED_CreativeOriginStatusWithThrottlingUnknown
-#else
-#define MAYBE_CreativeOriginStatusWithThrottlingUnknown \
-  CreativeOriginStatusWithThrottlingUnknown
-#endif
-
+// Flakily fails (crbug.com/1099758)
 // Test that a throttled ad with a different origin as the main page is
 // marked as throttled, with indeterminate creative origin status.
 IN_PROC_BROWSER_TEST_F(CreativeOriginAdsPageLoadMetricsObserverBrowserTest,
-                       MAYBE_CreativeOriginStatusWithThrottlingUnknown) {
+                       DISABLED_CreativeOriginStatusWithThrottlingUnknown) {
   TestCreativeOriginStatus(
       MakeFrame("a",
                 MakeFrame("b", MakeFrame("c", nullptr), true /* has_text */,

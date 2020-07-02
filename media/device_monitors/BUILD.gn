@@ -34,7 +34,7 @@ source_set("device_monitors") {
   }
 
   if (is_mac) {
-    libs = [ "Foundation.framework" ]
+    frameworks = [ "Foundation.framework" ]
   }
 }
 

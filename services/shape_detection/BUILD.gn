@@ -32,7 +32,7 @@ source_set("lib") {
       "text_detection_impl_mac.h",
       "text_detection_impl_mac.mm",
     ]
-    libs = [ "QuartzCore.framework" ]
+    frameworks = [ "QuartzCore.framework" ]
   } else if (is_win) {
     sources += [
       "barcode_detection_provider_impl.cc",
@@ -122,7 +122,7 @@ source_set("tests") {
     "text_detection_impl_win_unittest.cc",
   ]
   if (is_mac) {
-    libs = [
+    frameworks = [
       "CoreFoundation.framework",
       "CoreGraphics.framework",
       "QuartzCore.framework",

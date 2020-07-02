@@ -61,7 +61,7 @@ if (!is_android) {
 
     if (is_mac) {
       sources -= [ "battery_status_manager_default.cc" ]
-      libs = [
+      frameworks = [
         "CoreFoundation.framework",
         "IOKit.framework",
       ]

@@ -417,3 +417,13 @@ TEST_F(NearbyProcessManagerTest, GetBluetoothAdapter) {
               pending_remote_adapter) { loop.Quit(); }));
   loop.Run();
 }
+
+TEST_F(NearbyProcessManagerTest, GetWebRtcSignalingMessenger) {
+  auto& manager = NearbyProcessManager::GetInstance();
+
+  base::RunLoop loop;
+  manager.GetWebRtcSignalingMessenger(base::BindLambdaForTesting(
+      [&](mojo::PendingRemote<sharing::mojom::WebRtcSignalingMessenger>
+              messenger) { loop.Quit(); }));
+  loop.Run();
+}

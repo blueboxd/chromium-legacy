@@ -1895,6 +1895,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // This is the container that should be passed to the '*forPaintInvalidation'
   // methods.
   const LayoutBoxModelObject& ContainerForPaintInvalidation() const;
+  const LayoutBoxModelObject& DirectlyCompositableContainer() const;
 
   bool IsPaintInvalidationContainer() const;
 
@@ -2876,6 +2877,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   inline void InvalidateContainerIntrinsicLogicalWidths();
 
   const LayoutBoxModelObject* EnclosingCompositedContainer() const;
+  const LayoutBoxModelObject* EnclosingDirectlyCompositableContainer() const;
 
   LayoutFlowThread* LocateFlowThreadContainingBlock() const;
   void RemoveFromLayoutFlowThreadRecursive(LayoutFlowThread*);

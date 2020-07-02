@@ -7,6 +7,7 @@ from page_sets.system_health import story_tags
 from page_sets.system_health import system_health_story
 
 from page_sets.login_helpers import dropbox_login
+from page_sets.login_helpers import facebook_login
 from page_sets.login_helpers import google_login
 
 from page_sets.helpers import override_online
@@ -351,6 +352,77 @@ class LoadFacebookPhotosDesktopStory2018(_LoadingStory):
     'https://www.facebook.com/rihanna/photos/pb.10092511675.-2207520000.1541795576./10155941787036676/?type=3&theater')
   TAGS = [story_tags.YEAR_2018]
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+
+
+class _FacebookDesktopStory(_LoadingStory):
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+
+  # Page event queries.
+  VISUAL_COMPLETION_EVENT = '''
+    (window.__telemetry_observed_page_events.has(
+        "telemetry:reported_by_page:viewable"))
+  '''
+
+  # the reported_by_page:* metric.
+  EVENTS_REPORTED_BY_PAGE = '''
+    window.__telemetry_reported_page_events = {
+      'VisuallyComplete(INITIAL_LOAD)': 'telemetry:reported_by_page:viewable',
+    };
+  '''
+
+  # Patch performance.measure to get notified about metrics
+  PERFORMANCE_MEASURE_PATCH = '''
+    window.__telemetry_observed_page_events = new Set();
+    (function () {
+      let reported = window.__telemetry_reported_page_events;
+      let observed = window.__telemetry_observed_page_events;
+      let performance_measure = window.performance.measure;
+
+      window.performance.measure = function (label, options) {
+        performance_measure.call(window.performance, label, options);
+        if (reported.hasOwnProperty(label)) {
+         performance_measure.call(window.performance, reported[label], options);
+         observed.add(reported[label]);
+        }
+      }
+
+    })();
+  '''
+
+  def __init__(self, story_set, take_memory_measurement):
+    super(_FacebookDesktopStory, self).__init__(story_set,
+                                                take_memory_measurement)
+    self.script_to_evaluate_on_commit += "\n"
+    self.script_to_evaluate_on_commit += js_template.Render(
+        '''{{@events_reported_by_page}}
+        {{@performance_measure}}''',
+        events_reported_by_page=self.EVENTS_REPORTED_BY_PAGE,
+        performance_measure=self.PERFORMANCE_MEASURE_PATCH)
+
+  def _DidLoadDocument(self, action_runner):
+    action_runner.WaitForJavaScriptCondition(self.VISUAL_COMPLETION_EVENT)
+
+
+class LoadFacebookPhotosDesktopStory2020(_FacebookDesktopStory):
+  """Load a page of rihanna's facebook with a photo."""
+  NAME = 'load:media:facebook_photos:desktop:2020'
+  URL = (
+      'https://www.facebook.com/rihanna/photos/pb.10092511675.-2207520000.1541795576./10155941787036676/?type=3&theater'
+  )
+  TAGS = [story_tags.YEAR_2020]
+
+  def _Login(self, action_runner):
+    facebook_login.LoginWithDesktopSite(action_runner, 'facebook4')
+
+
+class LoadFacebookFeedDesktopStory2020(_FacebookDesktopStory):
+  """Load facebook main page"""
+  NAME = 'load:media:facebook_feed:desktop:2020'
+  URL = 'https://www.facebook.com/'
+  TAGS = [story_tags.YEAR_2020]
+
+  def _Login(self, action_runner):
+    facebook_login.LoginWithDesktopSite(action_runner, 'facebook4')
 
 
 ################################################################################

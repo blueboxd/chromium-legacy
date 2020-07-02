@@ -24,6 +24,9 @@ class MockNearbyConnectionsHost : public mojom::NearbyConnectionsHost {
   // mojom::NearbyConnectionsHost
   void GetBluetoothAdapter(GetBluetoothAdapterCallback callback) override;
 
+  void GetWebRtcSignalingMessenger(
+      GetWebRtcSignalingMessengerCallback callback) override;
+
   mojo::Receiver<mojom::NearbyConnectionsHost> host{this};
 };
 

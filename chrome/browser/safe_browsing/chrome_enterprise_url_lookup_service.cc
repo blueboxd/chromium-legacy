@@ -5,9 +5,11 @@
 #include "chrome/browser/safe_browsing/chrome_enterprise_url_lookup_service.h"
 
 #include "base/callback.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/dm_token_utils.h"
 #include "components/policy/core/common/cloud/dm_token.h"
+#include "components/safe_browsing/core/common/thread_utils.h"
 #include "components/safe_browsing/core/proto/realtimeapi.pb.h"
 #include "components/safe_browsing/core/realtime/policy_engine.h"
 #include "components/safe_browsing/core/realtime/url_lookup_service_base.h"
@@ -33,7 +35,35 @@ void ChromeEnterpriseRealTimeUrlLookupService::StartLookup(
     const GURL& url,
     RTLookupRequestCallback request_callback,
     RTLookupResponseCallback response_callback) {
-  // TODO(crbug.com/1085261): Implement this method.
+  DCHECK(CurrentlyOnThread(ThreadID::UI));
+  DCHECK(url.is_valid());
+
+  // Check cache.
+  std::unique_ptr<RTLookupResponse> cache_response =
+      GetCachedRealTimeUrlVerdict(url);
+  if (cache_response) {
+    base::PostTask(FROM_HERE, CreateTaskTraits(ThreadID::IO),
+                   base::BindOnce(std::move(response_callback),
+                                  /* is_rt_lookup_successful */ true,
+                                  std::move(cache_response)));
+    return;
+  }
+
+  auto request = std::make_unique<RTLookupRequest>();
+  request->set_url(SanitizeURL(url).spec());
+  request->set_lookup_type(RTLookupRequest::NAVIGATION);
+  DCHECK(GetDMToken().is_valid());
+  request->set_dm_token(GetDMToken().value());
+
+  std::string req_data;
+  request->SerializeToString(&req_data);
+
+  SendRequestInternal(GetResourceRequest(), req_data, url,
+                      std::move(response_callback));
+
+  base::PostTask(FROM_HERE, CreateTaskTraits(ThreadID::IO),
+                 base::BindOnce(std::move(request_callback), std::move(request),
+                                /*access_token=*/""));
 }
 
 bool ChromeEnterpriseRealTimeUrlLookupService::CanPerformFullURLLookup() const {
@@ -56,14 +86,39 @@ policy::DMToken ChromeEnterpriseRealTimeUrlLookupService::GetDMToken() const {
 
 net::NetworkTrafficAnnotationTag
 ChromeEnterpriseRealTimeUrlLookupService::GetTrafficAnnotationTag() const {
-  // TODO(crbug.com/1085261): Implement this method.
-  return net::NetworkTrafficAnnotationTag::NotReached();
-}
-
-GURL ChromeEnterpriseRealTimeUrlLookupService::GetRealTimeLookupUrl() const {
-  // TODO(crbug.com/1085261): Implement this method.
-  NOTREACHED();
-  return GURL("");
+  // Safe Browsing Zwieback cookies are not sent for enterprise users, because
+  // DM tokens are sufficient for identification purposes.
+  return net::DefineNetworkTrafficAnnotation(
+      "enterprise_safe_browsing_realtime_url_lookup",
+      R"(
+        semantics {
+          sender: "Safe Browsing"
+          description:
+            "This is an enterprise-only feature. "
+            "When Safe Browsing can't detect that a URL is safe based on its "
+            "local database, it sends the top-level URL to Google to verify it "
+            "before showing a warning to the user."
+          trigger:
+            "When the enterprise policy EnterpriseRealTimeUrlCheckMode is set "
+            "and a main frame URL fails to match the local hash-prefix "
+            "database of known safe URLs and a valid result from a prior "
+            "lookup is not already cached, this will be sent."
+          data:
+            "The main frame URL that did not match the local safelist and "
+            "the DM token of the device."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: NO
+          setting:
+            "This is disabled by default and can only be enabled by policy "
+            "through the Google Admin console."
+          chrome_policy {
+            EnterpriseRealTimeUrlCheckMode {
+              EnterpriseRealTimeUrlCheckMode: 0
+            }
+          }
+        })");
 }
 
 }  // namespace safe_browsing

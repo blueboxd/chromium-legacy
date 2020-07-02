@@ -358,7 +358,7 @@ jumbo_component("gl") {
       "scoped_cgl.h",
     ]
 
-    libs = [
+    frameworks = [
       "CoreFoundation.framework",
       "IOSurface.framework",
       "OpenGL.framework",
@@ -563,7 +563,7 @@ test("gl_unittests") {
 
   if (is_mac) {
     sources += [ "gl_image_io_surface_unittest.cc" ]
-    libs = [ "IOSurface.framework" ]
+    frameworks = [ "IOSurface.framework" ]
   }
 
   if (is_win) {

@@ -54,12 +54,12 @@ class ChromeEnterpriseRealTimeUrlLookupService
   // RealTimeUrlLookupServiceBase:
   net::NetworkTrafficAnnotationTag GetTrafficAnnotationTag() const override;
 
-  GURL GetRealTimeLookupUrl() const override;
-
   policy::DMToken GetDMToken() const;
 
   // Unowned object used for checking profile based settings.
   Profile* profile_;
+
+  friend class ChromeEnterpriseRealTimeUrlLookupServiceTest;
 
   base::WeakPtrFactory<ChromeEnterpriseRealTimeUrlLookupService> weak_factory_{
       this};

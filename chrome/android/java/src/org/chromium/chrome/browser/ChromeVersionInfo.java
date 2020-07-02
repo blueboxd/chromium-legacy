@@ -111,7 +111,13 @@ public class ChromeVersionInfo {
                 "SDK=%s; Installed=%s; Access=%s", sdkVersion, installedGmsVersion, accessType);
     }
 
-    private static long getPlayServicesApkVersionNumber(Context context) {
+    /**
+     *
+     * @param context A Context with which to retrieve the PackageManager.
+     * @return The version code for the Google Play Services installed on the device or 0 if the
+     *         package is not found.
+     */
+    public static int getPlayServicesApkVersionNumber(Context context) {
         try {
             return context.getPackageManager()
                     .getPackageInfo(GoogleApiAvailability.GOOGLE_PLAY_SERVICES_PACKAGE, 0)

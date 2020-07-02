@@ -835,16 +835,8 @@ class FileTasks {
    */
   executeInternalTask_(taskId) {
     const actionId = taskId.split('|')[2];
-    if (actionId === 'mount-archive') {
+    if (actionId === 'mount-archive' || actionId === 'open-zip') {
       this.mountArchivesInternal_();
-      return;
-    }
-    if (actionId === 'open-zip') {
-      const item = new ProgressCenterItem();
-      item.id = 'open-zip';
-      item.message = 'Cannot open zip file: Not implemented yet';
-      item.state = ProgressItemState.ERROR;
-      this.progressCenter_.updateItem(item);
       return;
     }
     if (actionId === 'install-linux-package') {

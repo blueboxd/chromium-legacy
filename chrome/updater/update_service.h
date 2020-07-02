@@ -112,12 +112,17 @@ class UpdateService : public base::RefCountedThreadSafe<UpdateService> {
 
     std::string app_id;
     State state = State::kUnknown;
+
+    // The version is initialized only after an update check has completed, and
+    // an update is available.
     base::Version next_version;
 
     int64_t downloaded_bytes = -1;  // -1 means that the byte count is unknown.
     int64_t total_bytes = -1;
 
-    int install_progress = -1;  // -1 means that the progress is unknown.
+    // A value in the range [0, 100] if the install progress is known, or -1
+    // if the install progress is not available or it could not be computed.
+    int install_progress = -1;
 
     ErrorCategory error_category = ErrorCategory::kNone;
     int error_code = 0;

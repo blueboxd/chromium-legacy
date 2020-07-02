@@ -391,7 +391,7 @@ jumbo_component("gfx") {
   }
 
   if (is_mac) {
-    libs = [
+    frameworks = [
       "AppKit.framework",
       "CoreFoundation.framework",
       "CoreGraphics.framework",
@@ -443,7 +443,7 @@ jumbo_component("color_space") {
       "mac/display_icc_profiles.cc",
       "mac/display_icc_profiles.h",
     ]
-    libs = [
+    frameworks = [
       "CoreFoundation.framework",
       "CoreGraphics.framework",
     ]

@@ -45,6 +45,7 @@ class Storage : public base::RefCountedThreadSafe<Storage> {
     virtual void ProcessBlob(Priority priority,
                              StatusOr<base::span<const uint8_t>> data,
                              base::OnceCallback<void(bool)> processed_cb) = 0;
+
     // Finalizes the upload (e.g. sends the message to the server and gets
     // response).
     virtual void Completed(Priority priority, Status final_status) = 0;

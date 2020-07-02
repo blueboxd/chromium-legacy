@@ -20,9 +20,9 @@
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/mediastream/media_stream_controls.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_source.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_track.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
-#include "third_party/blink/public/platform/web_media_stream.h"
-#include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
@@ -54,16 +54,6 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 #include "ui/gfx/geometry/size.h"
-
-namespace WTF {
-
-template <>
-struct CrossThreadCopier<blink::WebMediaStream>
-    : public CrossThreadCopierPassThrough<blink::WebMediaStream> {
-  STATIC_ONLY(CrossThreadCopier);
-};
-
-}  // namespace WTF
 
 namespace blink {
 
@@ -394,9 +384,8 @@ class UserMediaProcessor::RequestInfo final
   void InitializeWebStream(const String& label,
                            const MediaStreamComponentVector& audios,
                            const MediaStreamComponentVector& videos) {
-    auto* media_stream_descriptor =
+    descriptor_ =
         MakeGarbageCollected<MediaStreamDescriptor>(label, audios, videos);
-    web_stream_ = WebMediaStream(media_stream_descriptor);
   }
 
   const Vector<MediaStreamDevice>& audio_devices() const {
@@ -410,9 +399,9 @@ class UserMediaProcessor::RequestInfo final
     return video_formats_map_.size() == video_devices_.size();
   }
 
-  blink::WebMediaStream* web_stream() {
-    DCHECK(!web_stream_.IsNull());
-    return &web_stream_;
+  MediaStreamDescriptor* descriptor() {
+    DCHECK(descriptor_);
+    return descriptor_;
   }
 
   StreamControls* stream_controls() { return &stream_controls_; }
@@ -426,7 +415,10 @@ class UserMediaProcessor::RequestInfo final
     pan_tilt_zoom_allowed_ = pan_tilt_zoom_allowed;
   }
 
-  void Trace(Visitor* visitor) const { visitor->Trace(request_); }
+  void Trace(Visitor* visitor) const {
+    visitor->Trace(request_);
+    visitor->Trace(descriptor_);
+  }
 
  private:
   void OnTrackStarted(blink::WebPlatformMediaStreamSource* source,
@@ -444,7 +436,7 @@ class UserMediaProcessor::RequestInfo final
   bool is_audio_content_capture_ = false;
   blink::VideoCaptureSettings video_capture_settings_;
   bool is_video_content_capture_ = false;
-  blink::WebMediaStream web_stream_;
+  Member<MediaStreamDescriptor> descriptor_;
   StreamControls stream_controls_;
   ResourcesReady ready_callback_;
   MediaStreamRequestResult request_result_ = MediaStreamRequestResult::OK;
@@ -967,8 +959,6 @@ void UserMediaProcessor::OnStreamGenerated(
     bool pan_tilt_zoom_allowed) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  // TODO(crbug.com/934063): Reject the request if the PTZ permission is denied
-  // and the request requires it.
   if (result != MediaStreamRequestResult::OK) {
     OnStreamGenerationFailed(request_id, result);
     return;
@@ -1482,22 +1472,22 @@ void UserMediaProcessor::OnCreateNativeTracksCompleted(
       "UMP::OnCreateNativeTracksCompleted({request_id = %d}, {label=%s})",
       request_info->request_id(), label.Utf8().c_str()));
   if (result == MediaStreamRequestResult::OK) {
-    GetUserMediaRequestSucceeded(*request_info->web_stream(),
+    GetUserMediaRequestSucceeded(request_info->descriptor(),
                                  request_info->request());
     GetMediaStreamDispatcherHost()->OnStreamStarted(label);
   } else {
     GetUserMediaRequestFailed(result, constraint_name);
 
-    for (auto& web_track : request_info->web_stream()->AudioTracks()) {
-      blink::WebPlatformMediaStreamTrack* track =
-          blink::WebPlatformMediaStreamTrack::GetTrack(web_track);
+    for (auto web_track : request_info->descriptor()->AudioComponents()) {
+      WebPlatformMediaStreamTrack* track =
+          WebPlatformMediaStreamTrack::GetTrack(WebMediaStreamTrack(web_track));
       if (track)
         track->Stop();
     }
 
-    for (auto& web_track : request_info->web_stream()->VideoTracks()) {
-      blink::WebPlatformMediaStreamTrack* track =
-          blink::WebPlatformMediaStreamTrack::GetTrack(web_track);
+    for (auto web_track : request_info->descriptor()->VideoComponents()) {
+      WebPlatformMediaStreamTrack* track =
+          WebPlatformMediaStreamTrack::GetTrack(WebMediaStreamTrack(web_track));
       if (track)
         track->Stop();
     }
@@ -1507,7 +1497,7 @@ void UserMediaProcessor::OnCreateNativeTracksCompleted(
 }
 
 void UserMediaProcessor::GetUserMediaRequestSucceeded(
-    const blink::WebMediaStream& stream,
+    MediaStreamDescriptor* descriptor,
     UserMediaRequest* user_media_request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(IsCurrentRequestInfo(user_media_request));
@@ -1523,12 +1513,13 @@ void UserMediaProcessor::GetUserMediaRequestSucceeded(
       FROM_HERE,
       WTF::Bind(&UserMediaProcessor::DelayedGetUserMediaRequestSucceeded,
                 WrapWeakPersistent(this), current_request_info_->request_id(),
-                stream, WrapPersistent(user_media_request)));
+                WrapPersistent(descriptor),
+                WrapPersistent(user_media_request)));
 }
 
 void UserMediaProcessor::DelayedGetUserMediaRequestSucceeded(
     int request_id,
-    const blink::WebMediaStream& stream,
+    MediaStreamDescriptor* component,
     UserMediaRequest* user_media_request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   SendLogMessage(base::StringPrintf(
@@ -1537,7 +1528,7 @@ void UserMediaProcessor::DelayedGetUserMediaRequestSucceeded(
       MediaStreamRequestResultToString(MediaStreamRequestResult::OK)));
   blink::LogUserMediaRequestResult(MediaStreamRequestResult::OK);
   DeleteUserMediaRequest(user_media_request);
-  user_media_request->Succeed(stream);
+  user_media_request->Succeed(component);
 }
 
 void UserMediaProcessor::GetUserMediaRequestFailed(

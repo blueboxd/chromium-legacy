@@ -36,6 +36,7 @@ import org.chromium.chrome.browser.xsurface.ProcessScope;
 import org.chromium.chrome.browser.xsurface.SurfaceActionsHandler;
 import org.chromium.chrome.browser.xsurface.SurfaceDependencyProvider;
 import org.chromium.chrome.browser.xsurface.SurfaceScope;
+import org.chromium.chrome.browser.xsurface.SurfaceScopeDependencyProvider;
 import org.chromium.chrome.feed.R;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
@@ -156,6 +157,29 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     }
 
     /**
+     * Provides activity and darkmode context for a single surface.
+     */
+    private static class FeedSurfaceScopeDependencyProvider
+            implements SurfaceScopeDependencyProvider {
+        final Context mActivityContext;
+        final boolean mDarkMode;
+        FeedSurfaceScopeDependencyProvider(Context activityContext, boolean darkMode) {
+            mActivityContext = activityContext;
+            mDarkMode = darkMode;
+        }
+
+        @Override
+        public Context getActivityContext() {
+            return mActivityContext;
+        }
+
+        @Override
+        public boolean isDarkModeEnabled() {
+            return mDarkMode;
+        }
+    }
+
+    /**
      * A {@link TabObserver} that observes navigation related events that originate from Feed
      * interactions. Calls reportPageLoaded when navigation completes.
      */
@@ -212,7 +236,9 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
 
         ProcessScope processScope = xSurfaceProcessScope();
         if (processScope != null) {
-            mSurfaceScope = processScope.obtainSurfaceScope(context);
+            mSurfaceScope = processScope.obtainSurfaceScope(
+                    new FeedSurfaceScopeDependencyProvider(context, isBackgroundDark));
+            ;
         } else {
             mSurfaceScope = null;
         }

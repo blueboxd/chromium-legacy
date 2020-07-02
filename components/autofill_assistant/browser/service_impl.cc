@@ -340,6 +340,10 @@ ClientContextProto ServiceImpl::CreateClientContext(
 
 void ServiceImpl::UpdateMutableClientContextFields() {
   client_context_.set_accessibility_enabled(client_->IsAccessibilityEnabled());
+  client_context_.set_signed_into_chrome_status(
+      client_->GetChromeSignedInEmailAddress().empty()
+          ? ClientContextProto::NOT_SIGNED_IN
+          : ClientContextProto::SIGNED_IN);
 }
 
 }  // namespace autofill_assistant

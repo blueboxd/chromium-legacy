@@ -495,13 +495,13 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
       if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
         if (property_changed >
             PaintPropertyChangeType::kChangedOnlyCompositedValues) {
-          const auto* paint_invalidation_layer =
-              paint_invalidator_context.paint_invalidation_container->Layer();
-          if (!paint_invalidation_layer->SelfNeedsRepaint()) {
+          const auto* directly_composited_layer =
+              paint_invalidator_context.directly_composited_container->Layer();
+          if (!directly_composited_layer->SelfNeedsRepaint()) {
             auto* mapping =
-                paint_invalidation_layer->GetCompositedLayerMapping();
+                directly_composited_layer->GetCompositedLayerMapping();
             if (!mapping)
-              mapping = paint_invalidation_layer->GroupedMapping();
+              mapping = directly_composited_layer->GroupedMapping();
             if (mapping)
               mapping->SetNeedsCheckRasterInvalidation();
           }
@@ -547,6 +547,10 @@ void PrePaintTreeWalk::WalkNGChildren(const LayoutObject* parent,
         continue;
       }
     } else if (!object) {
+      const NGPhysicalBoxFragment* box_fragment = (*iterator)->BoxFragment();
+      if (UNLIKELY(box_fragment->IsLayoutObjectDestroyedOrMoved()))
+        continue;
+
       // A fragmentainer doesn't paint anything itself. Just include its offset
       // and descend into children.
       DCHECK((*iterator)->BoxFragment()->IsFragmentainerBox());

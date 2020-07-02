@@ -38,14 +38,14 @@ about:version template page
         <picture>
           <source srcset="chrome://theme/IDR_PRODUCT_LOGO_WHITE" media="(prefers-color-scheme: dark)">
           <source srcset="chrome://theme/IDR_PRODUCT_LOGO" media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)">
-          <img src="chrome://theme/IDR_PRODUCT_LOGO">
+          <img alt="$i18n{logo_alt_text}" src="chrome://theme/IDR_PRODUCT_LOGO">
         </picture>
 </if>
 <if expr="is_ios or is_android">
         <picture>
           <source srcset="../../../components/resources/default_100_percent/%DISTRIBUTION%/product_logo_white.png" media="(prefers-color-scheme: dark)">
           <source srcset="../../../components/resources/default_100_percent/%DISTRIBUTION%/product_logo.png" media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)">
-          <img src="../../../components/resources/default_100_percent/%DISTRIBUTION%/product_logo.png">
+          <img alt="$i18n{logo_alt_text}" src="../../../components/resources/default_100_percent/%DISTRIBUTION%/product_logo.png">
         </picture>
 </if>
         <div id="company">$i18n{company}</div>

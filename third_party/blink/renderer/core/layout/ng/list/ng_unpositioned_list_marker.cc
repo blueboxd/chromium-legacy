@@ -22,12 +22,6 @@ NGUnpositionedListMarker::NGUnpositionedListMarker(const NGBlockNode& node)
     : NGUnpositionedListMarker(
           ToLayoutNGOutsideListMarker(node.GetLayoutBox())) {}
 
-// Returns true if this is an image marker.
-bool NGUnpositionedListMarker::IsImage() const {
-  DCHECK(marker_layout_object_);
-  return marker_layout_object_->Marker().IsMarkerImage(*marker_layout_object_);
-}
-
 // Compute the inline offset of the marker, relative to the list item.
 // The marker is relative to the border box of the list item and has nothing
 // to do with the content offset.
@@ -35,8 +29,11 @@ bool NGUnpositionedListMarker::IsImage() const {
 LayoutUnit NGUnpositionedListMarker::InlineOffset(
     const LayoutUnit marker_inline_size) const {
   DCHECK(marker_layout_object_);
+  LayoutObject* list_item =
+      marker_layout_object_->Marker().ListItem(*marker_layout_object_);
   auto margins = ListMarker::InlineMarginsForOutside(
-      marker_layout_object_->StyleRef(), IsImage(), marker_inline_size);
+      marker_layout_object_->StyleRef(), list_item->StyleRef(),
+      marker_inline_size);
   return margins.first;
 }
 

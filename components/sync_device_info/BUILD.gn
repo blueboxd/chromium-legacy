@@ -54,7 +54,7 @@ jumbo_static_library("sync_device_info") {
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   if (is_mac) {
-    libs = [
+    frameworks = [
       "CoreFoundation.framework",
       "SystemConfiguration.framework",  # For local_device_info_util_mac.mm.
     ]

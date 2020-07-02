@@ -260,12 +260,13 @@ void LayoutListMarker::UpdateMargins(LayoutUnit marker_inline_size) {
   LayoutUnit margin_start;
   LayoutUnit margin_end;
   const ComputedStyle& style = StyleRef();
+  const ComputedStyle& list_item_style = ListItem()->StyleRef();
   if (IsInside()) {
     std::tie(margin_start, margin_end) =
-        ListMarker::InlineMarginsForInside(style, IsImage());
+        ListMarker::InlineMarginsForInside(style, list_item_style);
   } else {
     std::tie(margin_start, margin_end) = ListMarker::InlineMarginsForOutside(
-        style, IsImage(), marker_inline_size);
+        style, list_item_style, marker_inline_size);
   }
 
   SetMarginStart(margin_start);

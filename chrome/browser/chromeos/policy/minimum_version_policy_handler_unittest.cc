@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/notifications/system_notification_helper.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -24,6 +25,7 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/tpm/stub_install_attributes.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -438,7 +440,7 @@ TEST_F(MinimumVersionPolicyHandlerTest, NoNetworkNotifications) {
       "update will download automatically when you connect to the internet.");
   auto notification_last_day =
       display_service()->GetNotification(kUpdateRequiredNotificationId);
-  ASSERT_TRUE(notification_long_waiting);
+  ASSERT_TRUE(notification_last_day);
   EXPECT_EQ(notification_last_day->title(), expected_title_last_day);
   EXPECT_EQ(notification_last_day->message(), expected_message_last_day);
 }
@@ -494,7 +496,7 @@ TEST_F(MinimumVersionPolicyHandlerTest, MeteredNetworkNotifications) {
       "update. Or, download from a metered connection (charges may apply).");
   auto notification_last_day =
       display_service()->GetNotification(kUpdateRequiredNotificationId);
-  ASSERT_TRUE(notification_long_waiting);
+  ASSERT_TRUE(notification_last_day);
   EXPECT_EQ(notification_last_day->title(), expected_title_last_day);
   EXPECT_EQ(notification_last_day->message(), expected_message_last_day);
 }
@@ -553,7 +555,48 @@ TEST_F(MinimumVersionPolicyHandlerTest, EolNotifications) {
       "today.");
   auto notification_last_day =
       display_service()->GetNotification(kUpdateRequiredNotificationId);
-  ASSERT_TRUE(notification_long_waiting);
+  ASSERT_TRUE(notification_last_day);
+  EXPECT_EQ(notification_last_day->title(), expected_title_last_day);
+  EXPECT_EQ(notification_last_day->message(), expected_message_last_day);
+}
+
+TEST_F(MinimumVersionPolicyHandlerTest, LastHourEolNotifications) {
+  // Set device state to end of life.
+  update_engine()->set_eol_date(base::DefaultClock::GetInstance()->Now() -
+                                base::TimeDelta::FromDays(kLongWarning));
+
+  // Set local state to simulate update required timer running and one hour to
+  // deadline.
+  PrefService* prefs = g_browser_process->local_state();
+  const base::TimeDelta delta =
+      base::TimeDelta::FromDays(kShortWarning) - base::TimeDelta::FromHours(1);
+  prefs->SetTime(prefs::kUpdateRequiredTimerStartTime,
+                 base::Time::Now() - delta);
+  prefs->SetTimeDelta(prefs::kUpdateRequiredWarningPeriod,
+                      base::TimeDelta::FromDays(kShortWarning));
+
+  // This is needed to wait till EOL status is fetched from the update_engine.
+  base::RunLoop run_loop;
+  GetMinimumVersionPolicyHandler()->set_fetch_eol_callback_for_testing(
+      run_loop.QuitClosure());
+
+  // Create and set pref value to invoke policy handler.
+  base::Value requirement_list(base::Value::Type::LIST);
+  requirement_list.Append(
+      CreateRequirement(kNewVersion, kShortWarning, kShortWarning));
+  SetPolicyPref(std::move(requirement_list));
+  run_loop.Run();
+  EXPECT_TRUE(
+      GetMinimumVersionPolicyHandler()->IsDeadlineTimerRunningForTesting());
+
+  base::string16 expected_title_last_day =
+      base::ASCIIToUTF16("Immediate return required");
+  base::string16 expected_message_last_day = base::ASCIIToUTF16(
+      "managed.com requires you to back up your data and return this device "
+      "today.");
+  auto notification_last_day =
+      display_service()->GetNotification(kUpdateRequiredNotificationId);
+  ASSERT_TRUE(notification_last_day);
   EXPECT_EQ(notification_last_day->title(), expected_title_last_day);
   EXPECT_EQ(notification_last_day->message(), expected_message_last_day);
 }

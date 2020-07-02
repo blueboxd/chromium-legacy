@@ -12,8 +12,6 @@
 #include "base/gtest_prod_util.h"
 #include "components/component_updater/component_installer.h"
 
-class PrefService;
-
 namespace base {
 class FilePath;
 class Version;
@@ -59,8 +57,7 @@ class OptimizationHintsComponentInstallerPolicy
 };
 
 void RegisterOptimizationHintsComponent(ComponentUpdateService* cus,
-                                        bool is_off_the_record_profile,
-                                        PrefService* profile_prefs);
+                                        bool is_off_the_record_profile);
 
 }  // namespace component_updater
 

@@ -5,6 +5,7 @@
 #include "chromeos/printing/ppd_metadata_parser.h"
 
 #include "base/strings/string_piece.h"
+#include "chromeos/printing/ppd_metadata_matchers.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -15,43 +16,11 @@ namespace {
 using ::testing::ElementsAre;
 using ::testing::ExplainMatchResult;
 using ::testing::Field;
-using ::testing::IsEmpty;
 using ::testing::Pair;
 using ::testing::StrEq;
 using ::testing::UnorderedElementsAre;
 
 constexpr base::StringPiece kInvalidJson = "blah blah invalid JSON";
-
-// Matches a ReverseIndexLeaf struct against its |manufacturer| and
-// |model| members.
-MATCHER_P2(ReverseIndexLeafLike,
-           manufacturer,
-           model,
-           "is a ReverseIndexLeaf with manufacturer ``" +
-               std::string(manufacturer) + "'' and model ``" +
-               std::string(model) + "''") {
-  return ExplainMatchResult(
-             Field(&ReverseIndexLeaf::manufacturer, StrEq(manufacturer)), arg,
-             result_listener) &&
-         ExplainMatchResult(Field(&ReverseIndexLeaf::model, StrEq(model)), arg,
-                            result_listener);
-}
-
-// Matches a ParsedPrinter struct against its
-// |user_visible_printer_name| and |effective_make_and_model| members.
-MATCHER_P2(ParsedPrinterLike,
-           name,
-           emm,
-           "is a ParsedPrinter with user_visible_printer_name``" +
-               std::string(name) + "'' and effective_make_and_model ``" +
-               std::string(emm) + "''") {
-  return ExplainMatchResult(
-             Field(&ParsedPrinter::user_visible_printer_name, StrEq(name)), arg,
-             result_listener) &&
-         ExplainMatchResult(
-             Field(&ParsedPrinter::effective_make_and_model, StrEq(emm)), arg,
-             result_listener);
-}
 
 // Verifies that ParseLocales() can parse locales metadata.
 TEST(PpdMetadataParserTest, CanParseLocales) {

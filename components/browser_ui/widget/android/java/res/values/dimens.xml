@@ -27,6 +27,9 @@
     <dimen name="radio_button_with_description_lateral_padding">16dp</dimen>
     <dimen name="radio_button_with_description_vertical_padding">10dp</dimen>
 
+    <!-- RadioButtonWithDescriptionAndAuxButton -->
+    <dimen name="radio_button_with_description_and_aux_button_spacing">10dp</dimen>
+
     <!-- RadioButton(WithDescription)Layout dimensions -->
     <dimen name="default_vertical_margin_between_items">8dp</dimen>
 

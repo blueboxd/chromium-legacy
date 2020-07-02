@@ -88,8 +88,11 @@ std::ostream& operator<<(std::ostream& os,
 
 bool operator==(const UpdateService::UpdateState& lhs,
                 const UpdateService::UpdateState& rhs) {
-  return lhs.app_id == rhs.app_id && lhs.state == rhs.state &&
-         lhs.next_version == rhs.next_version &&
+  const bool versions_equal =
+      (lhs.next_version.IsValid() && rhs.next_version.IsValid() &&
+       lhs.next_version == rhs.next_version) ||
+      (!lhs.next_version.IsValid() && !rhs.next_version.IsValid());
+  return versions_equal && lhs.app_id == rhs.app_id && lhs.state == rhs.state &&
          lhs.downloaded_bytes == rhs.downloaded_bytes &&
          lhs.total_bytes == rhs.total_bytes &&
          lhs.install_progress == rhs.total_bytes &&

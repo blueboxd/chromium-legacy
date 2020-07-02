@@ -67,7 +67,7 @@ if (is_win || (is_linux && use_udev) || is_mac) {
     }
 
     if (is_mac) {
-      libs = [
+      frameworks = [
         "Foundation.framework",
         "IOKit.framework",
       ]

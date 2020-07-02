@@ -122,7 +122,7 @@ jumbo_component("message_center") {
         "//ui/views",
       ]
       if (is_mac) {
-        libs = [ "Foundation.framework" ]
+        frameworks = [ "Foundation.framework" ]
       }
     }
   } else {

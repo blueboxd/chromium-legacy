@@ -65,7 +65,7 @@ source_set("shell") {
     "//ui/base",
   ]
 
-  libs = [
+  frameworks = [
     "CoreGraphics.framework",
     "CoreFoundation.framework",
     "Foundation.framework",

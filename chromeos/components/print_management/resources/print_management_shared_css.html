@@ -13,26 +13,130 @@
       display: flex;
     }
 
-    .long-text {
-      width: 320px;
-    }
-
-    .medium-text {
-      width: 200px;
-    }
-
     .overflow-ellipsis {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
-    .padded-left {
-      margin-inline-start: 48px;
+    @media (min-width:600px) and (max-width: 767px) {
+      .date-column {
+        width: 56px;
+      }
+
+      .file-name-column {
+        width: 176px;
+      }
+
+      .file-name-header-column {
+        width: 224px;
+      }
+
+      .margin-border {
+        margin: 0px 40px 0px 40px;
+      }
+
+      .padded-left {
+        margin-inline-start: 32px;
+      }
+
+      .printer-name-column {
+        width: 68px;
+      }
+
+      .status-column {
+        width: 124px;
+      }
     }
 
-    .short-text {
-      width: 100px;
+    @media (min-width:768px) and (max-width: 959px) {
+      .date-column {
+        width: 82px;
+      }
+
+      .file-name-column {
+        width: 216px;
+      }
+
+      .file-name-header-column {
+        width: 264px;
+      }
+
+      .margin-border {
+        margin: 0px 40px 0px 40px;
+      }
+
+      .padded-left {
+        margin-inline-start: 40px;
+      }
+
+      .printer-name-column {
+        width: 88px;
+      }
+
+      .status-column {
+        width: 182px;
+      }
+    }
+
+    @media (min-width:960px) and (max-width: 1279px) {
+      .date-column {
+        width: 82px;
+      }
+
+      .file-name-column {
+        width: 272px;
+      }
+
+      .file-name-header-column {
+        width: 320px;
+      }
+
+      .margin-border {
+        margin: 0px 64px 0px 64px;
+      }
+
+      .padded-left {
+        margin-inline-start: 48px;
+      }
+
+      .printer-name-column {
+        width: 152px;
+      }
+
+      .status-column {
+        width: 182px;
+      }
+    }
+
+    @media (min-width:1280px) {
+      .date-column {
+        width: 144px;
+      }
+
+      .file-name-column {
+        width: 308px;
+      }
+
+      .file-name-header-column {
+        width: 356px;
+      }
+
+      .margin-border {
+        margin: 0px 144px 0px 144px;
+      }
+
+      .padded-left {
+        margin-inline-start: 56px;
+      }
+
+      .printer-name-column {
+        width: 190px;
+      }
+
+      .status-column {
+        width: 182px;
+      }
     }
   </style>
 </template>

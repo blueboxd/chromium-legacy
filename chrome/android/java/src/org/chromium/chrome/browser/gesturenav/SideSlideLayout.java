@@ -155,19 +155,6 @@ public class SideSlideLayout extends ViewGroup {
 
         // The absolute offset has to take into account that the circle starts at an offset
         mTotalDragDistance = RAW_SWIPE_LIMIT_DP * getResources().getDisplayMetrics().density;
-
-        mAnimateToStartPosition.setAnimationListener(new AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {}
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {}
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                reset();
-            }
-        });
     }
 
     /**

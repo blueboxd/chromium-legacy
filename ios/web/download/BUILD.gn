@@ -24,7 +24,7 @@ source_set("download") {
     "download_task_impl.mm",
   ]
 
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }
@@ -43,7 +43,7 @@ source_set("download_cookies") {
     "download_session_cookie_storage.mm",
   ]
 
-  libs = [ "Foundation.framework" ]
+  frameworks = [ "Foundation.framework" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }

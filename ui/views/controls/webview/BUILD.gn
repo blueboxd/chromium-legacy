@@ -34,7 +34,7 @@ jumbo_component("webview") {
   defines = [ "WEBVIEW_IMPLEMENTATION" ]
 
   if (is_mac) {
-    libs = [ "CoreFoundation.framework" ]
+    frameworks = [ "CoreFoundation.framework" ]
   }
 
   deps = [

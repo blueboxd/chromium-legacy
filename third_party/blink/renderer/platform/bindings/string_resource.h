@@ -254,6 +254,13 @@ PLATFORM_EXPORT StringView ToBlinkStringView(v8::Local<v8::String>,
 
 PLATFORM_EXPORT String ToBlinkString(int value);
 
+// The returned StringView is guaranteed to be valid as long as `backing_store`
+// and `v8_string` are alive.
+PLATFORM_EXPORT StringView
+ToBlinkStringView(v8::Local<v8::String> v8_string,
+                  StringView::StackBackingStore& backing_store,
+                  ExternalMode external);
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_STRING_RESOURCE_H_

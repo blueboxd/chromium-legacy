@@ -10,15 +10,17 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/policy/messaging_layer/util/status.h"
+#include "chrome/browser/policy/messaging_layer/util/statusor.h"
 #include "components/policy/proto/record.pb.h"
 #include "components/policy/proto/record_constants.pb.h"
 
 namespace reporting {
 
 // TODO(b/153659559) Temporary StorageModule until the real one is ready.
-class StorageModule : public base::RefCounted<StorageModule> {
+class StorageModule : public base::RefCountedThreadSafe<StorageModule> {
  public:
-  StorageModule() = default;
+  // Factory method creates |StorageModule| object.
+  static StatusOr<scoped_refptr<StorageModule>> Create();
 
   StorageModule(const StorageModule& other) = delete;
   StorageModule& operator=(const StorageModule& other) = delete;
@@ -30,10 +32,14 @@ class StorageModule : public base::RefCounted<StorageModule> {
                          base::OnceCallback<void(Status)> callback);
 
  protected:
-  virtual ~StorageModule() = default;
+  // Constructor can only be called by |Create| factory method.
+  StorageModule();
+
+  // Refcounted object must have destructor declared protected or private.
+  virtual ~StorageModule();
 
  private:
-  friend base::RefCounted<StorageModule>;
+  friend base::RefCountedThreadSafe<StorageModule>;
 };
 
 }  // namespace reporting

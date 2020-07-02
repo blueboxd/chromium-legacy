@@ -102,16 +102,16 @@ base::FilePath GetTestDataFilePath(const std::string& name) {
 
 class BufferFeeder : public MediaPipelineBackend::Decoder::Delegate {
  public:
-  explicit BufferFeeder(const base::Closure& eos_cb);
+  explicit BufferFeeder(base::OnceClosure eos_cb);
   ~BufferFeeder() override {}
 
   static std::unique_ptr<BufferFeeder> LoadAudio(MediaPipelineBackend* backend,
                                                  const std::string& filename,
-                                                 const base::Closure& eos_cb);
+                                                 base::OnceClosure eos_cb);
   static std::unique_ptr<BufferFeeder> LoadVideo(MediaPipelineBackend* backend,
                                                  const std::string& filename,
                                                  bool raw_h264,
-                                                 const base::Closure& eos_cb);
+                                                 base::OnceClosure eos_cb);
 
   bool eos() const { return eos_; }
   MediaPipelineBackend::Decoder* decoder() const { return decoder_; }
@@ -148,7 +148,7 @@ class BufferFeeder : public MediaPipelineBackend::Decoder::Delegate {
   void FeedPcm();
   void TestConfigs();
 
-  base::Closure eos_cb_;
+  base::OnceClosure eos_cb_;
   bool within_push_buffer_call_;
   bool expecting_buffer_complete_;
   bool feeding_completed_;
@@ -269,8 +269,8 @@ class AudioVideoPipelineDeviceTest : public testing::Test {
 
 namespace {
 
-BufferFeeder::BufferFeeder(const base::Closure& eos_cb)
-    : eos_cb_(eos_cb),
+BufferFeeder::BufferFeeder(base::OnceClosure eos_cb)
+    : eos_cb_(std::move(eos_cb)),
       within_push_buffer_call_(false),
       expecting_buffer_complete_(false),
       feeding_completed_(false),
@@ -405,7 +405,7 @@ void BufferFeeder::OnEndOfStream() {
   EXPECT_FALSE(expecting_buffer_complete_)
       << "Got OnEndOfStream() before the EOS buffer completed";
   eos_ = true;
-  eos_cb_.Run();
+  std::move(eos_cb_).Run();
 }
 
 void BufferFeeder::OnPushBufferComplete(BufferStatus status) {
@@ -549,7 +549,7 @@ void BufferFeeder::TestVideoConfigs() {
 std::unique_ptr<BufferFeeder> BufferFeeder::LoadAudio(
     MediaPipelineBackend* backend,
     const std::string& filename,
-    const base::Closure& eos_cb) {
+    base::OnceClosure eos_cb) {
   CHECK(backend);
   base::FilePath file_path = GetTestDataFilePath(filename);
   DemuxResult demux_result = FFmpegDemuxForTest(file_path, true /* audio */);
@@ -562,7 +562,7 @@ std::unique_ptr<BufferFeeder> BufferFeeder::LoadAudio(
   CHECK(success);
 
   LOG(INFO) << "Got " << demux_result.frames.size() << " audio input frames";
-  std::unique_ptr<BufferFeeder> feeder(new BufferFeeder(eos_cb));
+  std::unique_ptr<BufferFeeder> feeder(new BufferFeeder(std::move(eos_cb)));
   feeder->audio_config_ = config;
   feeder->Initialize(backend, decoder, demux_result.frames);
   return feeder;
@@ -573,7 +573,7 @@ std::unique_ptr<BufferFeeder> BufferFeeder::LoadVideo(
     MediaPipelineBackend* backend,
     const std::string& filename,
     bool raw_h264,
-    const base::Closure& eos_cb) {
+    base::OnceClosure eos_cb) {
   CHECK(backend);
 
   VideoConfig video_config;
@@ -605,7 +605,7 @@ std::unique_ptr<BufferFeeder> BufferFeeder::LoadVideo(
   CHECK(success);
 
   LOG(INFO) << "Got " << buffers.size() << " video input frames";
-  std::unique_ptr<BufferFeeder> feeder(new BufferFeeder(eos_cb));
+  std::unique_ptr<BufferFeeder> feeder(new BufferFeeder(std::move(eos_cb)));
   feeder->video_config_ = video_config;
   feeder->Initialize(backend, decoder, buffers);
   return feeder;
@@ -668,7 +668,7 @@ void AudioVideoPipelineDeviceTest::AddEffectsStreams() {
     audio_decoder->SetConfig(DefaultAudioConfig());
 
     std::unique_ptr<BufferFeeder> feeder(
-        new BufferFeeder(base::Bind(&IgnoreEos)));
+        new BufferFeeder(base::BindOnce(&IgnoreEos)));
     feeder->FeedContinuousPcm();
     feeder->Initialize(effects_backend, audio_decoder, BufferList());
     feeder->SetAudioConfig(DefaultAudioConfig());
@@ -688,8 +688,8 @@ void AudioVideoPipelineDeviceTest::ConfigureForAudioOnly(
   Initialize();
   audio_feeder_ = BufferFeeder::LoadAudio(
       backend_.get(), filename,
-      base::Bind(&AudioVideoPipelineDeviceTest::OnEndOfStream,
-                 base::Unretained(this)));
+      base::BindOnce(&AudioVideoPipelineDeviceTest::OnEndOfStream,
+                     base::Unretained(this)));
   ASSERT_TRUE(backend_->Initialize());
 }
 
@@ -699,19 +699,23 @@ void AudioVideoPipelineDeviceTest::ConfigureForVideoOnly(
   Initialize();
   video_feeder_ = BufferFeeder::LoadVideo(
       backend_.get(), filename, raw_h264,
-      base::Bind(&AudioVideoPipelineDeviceTest::OnEndOfStream,
-                 base::Unretained(this)));
+      base::BindOnce(&AudioVideoPipelineDeviceTest::OnEndOfStream,
+                     base::Unretained(this)));
   ASSERT_TRUE(backend_->Initialize());
 }
 
 void AudioVideoPipelineDeviceTest::ConfigureForFile(
     const std::string& filename) {
   Initialize();
-  base::Closure eos_cb = base::Bind(
+  base::OnceClosure eos_video_cb = base::BindOnce(
       &AudioVideoPipelineDeviceTest::OnEndOfStream, base::Unretained(this));
-  video_feeder_ = BufferFeeder::LoadVideo(backend_.get(), filename,
-                                          false /* raw_h264 */, eos_cb);
-  audio_feeder_ = BufferFeeder::LoadAudio(backend_.get(), filename, eos_cb);
+  base::OnceClosure eos_audio_cb = base::BindOnce(
+      &AudioVideoPipelineDeviceTest::OnEndOfStream, base::Unretained(this));
+
+  video_feeder_ = BufferFeeder::LoadVideo(
+      backend_.get(), filename, false /* raw_h264 */, std::move(eos_video_cb));
+  audio_feeder_ = BufferFeeder::LoadAudio(backend_.get(), filename,
+                                          std::move(eos_audio_cb));
   ASSERT_TRUE(backend_->Initialize());
 }
 
@@ -1101,7 +1105,7 @@ TEST_F(AudioVideoPipelineDeviceTest, AudioBackendStates) {
 
   // Test setting config before Initialize().
   std::unique_ptr<BufferFeeder> feeder(
-      new BufferFeeder(base::Bind(&IgnoreEos)));
+      new BufferFeeder(base::BindOnce(&IgnoreEos)));
   feeder->Initialize(backend(), audio_decoder, BufferList());
   feeder->SetAudioConfig(DefaultAudioConfig());
   feeder->TestAudioConfigs();
@@ -1118,7 +1122,7 @@ TEST_F(AudioVideoPipelineDeviceTest, AudioEffectsBackendStates) {
       backend()->CreateAudioDecoder();
 
   std::unique_ptr<BufferFeeder> feeder(
-      new BufferFeeder(base::Bind(&IgnoreEos)));
+      new BufferFeeder(base::BindOnce(&IgnoreEos)));
   feeder->Initialize(backend(), audio_decoder, BufferList());
   feeder->SetAudioConfig(DefaultAudioConfig());
   ASSERT_TRUE(audio_decoder->SetConfig(DefaultAudioConfig()));
@@ -1134,7 +1138,7 @@ TEST_F(AudioVideoPipelineDeviceTest, VideoBackendStates) {
 
   // Test setting config before Initialize().
   std::unique_ptr<BufferFeeder> feeder(
-      new BufferFeeder(base::Bind(&IgnoreEos)));
+      new BufferFeeder(base::BindOnce(&IgnoreEos)));
   feeder->Initialize(backend(), video_decoder, BufferList());
   feeder->SetVideoConfig(DefaultVideoConfig());
   feeder->TestVideoConfigs();
@@ -1149,8 +1153,8 @@ TEST_F(AudioVideoPipelineDeviceTest, AudioImmediateEos) {
       backend()->CreateAudioDecoder();
 
   std::unique_ptr<BufferFeeder> feeder(new BufferFeeder(
-      base::Bind(&AudioVideoPipelineDeviceTest::EndImmediateEosTest,
-                 base::Unretained(this))));
+      base::BindOnce(&AudioVideoPipelineDeviceTest::EndImmediateEosTest,
+                     base::Unretained(this))));
   feeder->Initialize(backend(), audio_decoder, BufferList());
   feeder->SetAudioConfig(DefaultAudioConfig());
   SetAudioFeeder(std::move(feeder));
@@ -1165,8 +1169,8 @@ TEST_F(AudioVideoPipelineDeviceTest, VideoImmediateEos) {
   MediaPipelineBackend::VideoDecoder* video_decoder =
       backend()->CreateVideoDecoder();
   std::unique_ptr<BufferFeeder> video_feeder(new BufferFeeder(
-      base::Bind(&AudioVideoPipelineDeviceTest::EndImmediateEosTest,
-                 base::Unretained(this))));
+      base::BindOnce(&AudioVideoPipelineDeviceTest::EndImmediateEosTest,
+                     base::Unretained(this))));
   video_feeder->Initialize(backend(), video_decoder, BufferList());
   video_feeder->SetVideoConfig(DefaultVideoConfig());
   SetVideoFeeder(std::move(video_feeder));
@@ -1174,7 +1178,7 @@ TEST_F(AudioVideoPipelineDeviceTest, VideoImmediateEos) {
   MediaPipelineBackend::AudioDecoder* audio_decoder =
       backend()->CreateAudioDecoder();
   std::unique_ptr<BufferFeeder> audio_feeder(
-      new BufferFeeder(base::Bind(&IgnoreEos)));
+      new BufferFeeder(base::BindOnce(&IgnoreEos)));
   audio_feeder->Initialize(backend(), audio_decoder, BufferList());
   audio_feeder->SetAudioConfig(DefaultAudioConfig());
   SetAudioFeeder(std::move(audio_feeder));

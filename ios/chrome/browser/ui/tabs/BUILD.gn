@@ -69,7 +69,7 @@ source_set("tabs") {
     "//ui/base",
     "//ui/gfx",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("coordinator") {
@@ -128,5 +128,5 @@ source_set("eg2_tests") {
     "//ios/third_party/earl_grey2:test_lib",
     "//net:test_support",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }

@@ -244,10 +244,14 @@ crbug.com/1007134 external/wpt/intersection-observer/v2/delay-test.html [ Pass F
 crbug.com/1004547 external/wpt/intersection-observer/cross-origin-iframe.sub.html [ Pass Failure ]
 crbug.com/1007229 external/wpt/intersection-observer/same-origin-grand-child-iframe.sub.html [ Pass Failure ]
 
+# not implemented yet
+crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/block-aspect-ratio-020.tentative.html [ Failure ]
+
 # abspos is not implemented yet for aspect-ratio
 crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/abspos-003.tentative.html [ Failure ]
 crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/abspos-005.tentative.html [ Failure ]
 crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/abspos-006.tentative.html [ Failure ]
+crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/abspos-008.tentative.html [ Failure ]
 
 # It is not clear if this test is correct. https://github.com/w3c/csswg-drafts/issues/5151
 crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/abspos-004.tentative.html [ Failure ]
@@ -1857,6 +1861,14 @@ crbug.com/636239 [ Win7 ] media/video-zoom-controls.html [ Failure ]
 
 crbug.com/377696 printing/setPrinting.html [ Failure ]
 
+# No support for WPT print-reftests:
+crbug.com/1090628 external/wpt/infrastructure/reftest/reftest_match-print.html [ Failure ]
+crbug.com/1090628 external/wpt/infrastructure/reftest/reftest_match_fail-print.html [ Failure ]
+crbug.com/1090628 external/wpt/html/rendering/the-details-element/details-page-break-after-2-print.html [ Failure ]
+crbug.com/1090628 external/wpt/html/rendering/the-details-element/details-page-break-before-2-print.html [ Failure ]
+crbug.com/1090628 external/wpt/html/rendering/the-details-element/details-page-break-after-1-print.html [ Failure ]
+crbug.com/1090628 external/wpt/html/rendering/the-details-element/details-page-break-before-1-print.html [ Failure ]
+
 crbug.com/1051044 external/wpt/css/filter-effects/effect-reference-feimage-001.html [ Pass Failure ]
 crbug.com/1051044 external/wpt/css/filter-effects/effect-reference-feimage-003.html [ Pass Failure ]
 
@@ -2662,18 +2674,6 @@ crbug.com/1100119 [ Mac ] external/wpt/css/css-pseudo/active-selection-054.html 
 crbug.com/1018465 external/wpt/css/css-pseudo/active-selection-056.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 [ Linux ] external/wpt/html/rendering/the-details-element/details-page-break-after-2-print.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/html/rendering/the-details-element/details-page-break-after-2-print.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/html/rendering/the-details-element/details-page-break-after-2-print.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/html/rendering/the-details-element/details-page-break-before-2-print.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/html/rendering/the-details-element/details-page-break-before-2-print.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/html/rendering/the-details-element/details-page-break-before-2-print.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/html/rendering/the-details-element/details-page-break-after-1-print.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/html/rendering/the-details-element/details-page-break-after-1-print.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/html/rendering/the-details-element/details-page-break-after-1-print.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/html/rendering/the-details-element/details-page-break-before-1-print.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/html/rendering/the-details-element/details-page-break-before-1-print.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/html/rendering/the-details-element/details-page-break-before-1-print.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/wasm/jsapi/functions/incumbent.html [ Crash ]
 crbug.com/626703 [ Mac ] external/wpt/wasm/jsapi/functions/incumbent.html [ Crash ]
 crbug.com/626703 [ Win ] external/wpt/wasm/jsapi/functions/incumbent.html [ Crash ]
@@ -2741,12 +2741,6 @@ crbug.com/626703 [ Win ] external/wpt/mathml/presentation-markup/fractions/frac-
 crbug.com/626703 [ Linux ] external/wpt/mathml/presentation-markup/fractions/frac-invalid-2.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/mathml/presentation-markup/fractions/frac-invalid-2.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/mathml/presentation-markup/fractions/frac-invalid-2.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/infrastructure/reftest/reftest_match-print.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/infrastructure/reftest/reftest_match-print.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/infrastructure/reftest/reftest_match-print.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/infrastructure/reftest/reftest_match_fail-print.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/infrastructure/reftest/reftest_match_fail-print.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/infrastructure/reftest/reftest_match_fail-print.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/CSS2/normal-flow/min-height-applies-to-014.xht [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/CSS2/normal-flow/min-height-applies-to-014.xht [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/CSS2/normal-flow/min-height-applies-to-014.xht [ Failure ]

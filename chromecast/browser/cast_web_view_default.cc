@@ -90,6 +90,7 @@ CastWebViewDefault::CastWebViewDefault(
       session_id_(params.window_params.session_id),
       sdk_version_(params.sdk_version),
       allow_media_access_(params.allow_media_access),
+      log_js_console_messages_(params.log_js_console_messages),
       log_prefix_(params.log_prefix),
       renderer_prelauncher_(TakeOrCreatePrelauncher(prelaunch_url_,
                                                     renderer_pool_,
@@ -226,6 +227,8 @@ bool CastWebViewDefault::DidAddMessageToConsole(
     const base::string16& message,
     int32_t line_no,
     const base::string16& source_id) {
+  if (!log_js_console_messages_)
+    return true;
   base::string16 single_line_message;
   // Mult-line message is not friendly to dumpstate redact.
   base::ReplaceChars(message, base::ASCIIToUTF16("\n"),

@@ -178,7 +178,7 @@ int GetHttpStatusFromBitsError(HRESULT error) {
 HRESULT GetFilesInJob(const ComPtr<IBackgroundCopyJob>& job,
                       std::vector<ComPtr<IBackgroundCopyFile>>* files) {
   ComPtr<IEnumBackgroundCopyFiles> enum_files;
-  HRESULT hr = job->EnumFiles(enum_files.GetAddressOf());
+  HRESULT hr = job->EnumFiles(&enum_files);
   if (FAILED(hr))
     return hr;
 
@@ -189,7 +189,7 @@ HRESULT GetFilesInJob(const ComPtr<IBackgroundCopyJob>& job,
 
   for (ULONG i = 0; i != num_files; ++i) {
     ComPtr<IBackgroundCopyFile> file;
-    if (enum_files->Next(1, file.GetAddressOf(), nullptr) == S_OK && file.Get())
+    if (enum_files->Next(1, &file, nullptr) == S_OK && file.Get())
       files->push_back(file);
   }
 
@@ -280,7 +280,7 @@ HRESULT GetJobError(const ComPtr<IBackgroundCopyJob>& job,
                     HRESULT* error_code_out) {
   *error_code_out = S_OK;
   ComPtr<IBackgroundCopyError> copy_error;
-  HRESULT hr = job->GetError(copy_error.GetAddressOf());
+  HRESULT hr = job->GetError(&copy_error);
   if (FAILED(hr))
     return hr;
 
@@ -302,7 +302,7 @@ HRESULT FindBitsJobIf(Predicate pred,
                       const ComPtr<IBackgroundCopyManager>& bits_manager,
                       std::vector<ComPtr<IBackgroundCopyJob>>* jobs) {
   ComPtr<IEnumBackgroundCopyJobs> enum_jobs;
-  HRESULT hr = bits_manager->EnumJobs(0, enum_jobs.GetAddressOf());
+  HRESULT hr = bits_manager->EnumJobs(0, &enum_jobs);
   if (FAILED(hr))
     return hr;
 
@@ -315,7 +315,7 @@ HRESULT FindBitsJobIf(Predicate pred,
   // the job description matches the component updater jobs.
   for (ULONG i = 0; i != job_count; ++i) {
     ComPtr<IBackgroundCopyJob> current_job;
-    if (enum_jobs->Next(1, current_job.GetAddressOf(), nullptr) == S_OK &&
+    if (enum_jobs->Next(1, &current_job, nullptr) == S_OK &&
         pred(current_job)) {
       base::string16 job_name;
       hr = GetJobDisplayName(current_job, &job_name);
@@ -727,7 +727,7 @@ HRESULT BackgroundDownloader::CreateOrOpenJob(const GURL& url,
 
   GUID guid = {0};
   hr = bits_manager_->CreateJob(kJobName, BG_JOB_TYPE_DOWNLOAD, &guid,
-                                local_job.GetAddressOf());
+                                &local_job);
   if (FAILED(hr)) {
     CleanupJob(local_job);
     return hr;
@@ -825,12 +825,11 @@ HRESULT BackgroundDownloader::UpdateInterfacePointers() {
     return hr;
 
   hr = GetInterfaceFromGit(git, git_cookie_bits_manager_,
-                           IID_PPV_ARGS(bits_manager_.GetAddressOf()));
+                           IID_PPV_ARGS(&bits_manager_));
   if (FAILED(hr))
     return hr;
 
-  hr = GetInterfaceFromGit(git, git_cookie_job_,
-                           IID_PPV_ARGS(job_.GetAddressOf()));
+  hr = GetInterfaceFromGit(git, git_cookie_job_, IID_PPV_ARGS(&job_));
   if (FAILED(hr))
     return hr;
 

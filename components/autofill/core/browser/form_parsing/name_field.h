@@ -25,22 +25,20 @@ class NameField : public FormField {
   static std::unique_ptr<FormField> Parse(AutofillScanner* scanner,
                                           LogManager* log_manager);
 
+#ifdef UNIT_TEST
+  // Calls the protected method |AddClassification| for testing.
+  void AddClassificationsForTesting(
+      FieldCandidatesMap* field_candidates) const {
+    AddClassifications(field_candidates);
+  }
+#endif
+
  protected:
   NameField() {}
 
   void AddClassifications(FieldCandidatesMap* field_candidates) const override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(NameFieldTest, FirstMiddleLast);
-  FRIEND_TEST_ALL_PREFIXES(NameFieldTest, FirstMiddleLast2);
-  FRIEND_TEST_ALL_PREFIXES(NameFieldTest, FirstLast);
-  FRIEND_TEST_ALL_PREFIXES(NameFieldTest, FirstLast2);
-  FRIEND_TEST_ALL_PREFIXES(NameFieldTest, FirstLastMiddleWithSpaces);
-  FRIEND_TEST_ALL_PREFIXES(NameFieldTest, FirstLastEmpty);
-  FRIEND_TEST_ALL_PREFIXES(NameFieldTest, FirstMiddleLastEmpty);
-  FRIEND_TEST_ALL_PREFIXES(NameFieldTest, MiddleInitial);
-  FRIEND_TEST_ALL_PREFIXES(NameFieldTest, MiddleInitialAtEnd);
-
   DISALLOW_COPY_AND_ASSIGN(NameField);
 };
 

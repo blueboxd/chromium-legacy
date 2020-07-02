@@ -8,7 +8,7 @@ import("//build/config/mac/mac_sdk.gni")
 if (current_toolchain == host_toolchain) {
   executable("iossim") {
     sources = [ "iossim.mm" ]
-    libs = [ "Foundation.framework" ]
+    frameworks = [ "Foundation.framework" ]
   }
 } else if (current_toolchain == default_toolchain) {
   copy("iossim") {

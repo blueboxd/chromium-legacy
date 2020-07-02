@@ -4,8 +4,8 @@
 
 #include "third_party/blink/public/platform/modules/mediastream/web_media_element_source_utils.h"
 
+#include "third_party/blink/public/platform/modules/mediastream/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_player_source.h"
-#include "third_party/blink/public/platform/web_media_stream.h"
 
 namespace blink {
 

@@ -929,19 +929,6 @@ void MediaRouterMojoImpl::OnProviderConnectionError(
   media_route_providers_.erase(provider_id);
 }
 
-void MediaRouterMojoImpl::OnMediaRemoterCreated(
-    int32_t tab_id,
-    mojo::PendingRemote<media::mojom::MirrorServiceRemoter> remoter,
-    mojo::PendingReceiver<media::mojom::MirrorServiceRemotingSource>
-        source_receiver) {
-  auto it = remoting_sources_.find(SessionID::FromSerializedValue(tab_id));
-  if (it == remoting_sources_.end()) {
-    return;
-  }
-  CastRemotingConnector* connector = it->second;
-  connector->ConnectToService(std::move(source_receiver), std::move(remoter));
-}
-
 void MediaRouterMojoImpl::GetLogger(
     mojo::PendingReceiver<mojom::Logger> receiver) {
   logger_.Bind(std::move(receiver));

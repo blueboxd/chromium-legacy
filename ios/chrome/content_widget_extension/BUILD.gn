@@ -61,7 +61,7 @@ source_set("content_widget") {
     "//ios/chrome/common/ui/util",
   ]
 
-  libs = [
+  frameworks = [
     "Foundation.framework",
     "NotificationCenter.framework",
     "UIKit.framework",

@@ -71,7 +71,7 @@ source_set("authentication") {
   } else {
     deps += [ "resources:signin_promo_logo_chromium_color" ]
   }
-  libs = [
+  frameworks = [
     "CoreGraphics.framework",
     "QuartzCore.framework",
     "UIKit.framework",
@@ -84,7 +84,7 @@ source_set("authentication_constants") {
     "authentication_constants.h",
     "authentication_constants.mm",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("unit_tests") {

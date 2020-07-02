@@ -1202,8 +1202,17 @@ TEST_F(DnsTransactionTestWithMockTime, ServerFallbackAndRotate) {
   EXPECT_TRUE(helper1.Run(transaction_factory_.get()));
 
   size_t kOrder[] = {
-      0, 1, 2, 0, 1,  // The first transaction.
-      1, 2, 0,        // The second transaction starts from the next server.
+      // The first transaction.
+      0,
+      1,
+      2,
+      0,
+      1,
+      // The second transaction starts from the next server, and 0 is skipped
+      // because it already has 2 consecutive failures.
+      1,
+      2,
+      1,
   };
   CheckServerOrder(kOrder, base::size(kOrder));
 }
@@ -3103,8 +3112,9 @@ TEST_F(DnsTransactionTestWithMockTime, RestartFinishedProbe) {
 
   // Mark server unavailabe and restart runner.
   for (int i = 0; i < ResolveContext::kAutomaticModeFailureLimit; ++i) {
-    resolve_context_->RecordServerFailure(
-        0u /* server_index */, true /* is_doh_server */, session_.get());
+    resolve_context_->RecordServerFailure(0u /* server_index */,
+                                          true /* is_doh_server */, ERR_FAILED,
+                                          session_.get());
   }
   ASSERT_FALSE(resolve_context_->GetDohServerAvailability(
       0u /* doh_server_index */, session_.get()));
@@ -3152,8 +3162,9 @@ TEST_F(DnsTransactionTestWithMockTime, FastProbeRestart) {
   // becoming unavailable and might as well replecate real behavior for the
   // test.
   for (int i = 0; i < ResolveContext::kAutomaticModeFailureLimit; ++i) {
-    resolve_context_->RecordServerFailure(
-        0u /* server_index */, true /* is_doh_server */, session_.get());
+    resolve_context_->RecordServerFailure(0u /* server_index */,
+                                          true /* is_doh_server */, ERR_FAILED,
+                                          session_.get());
   }
   ASSERT_FALSE(resolve_context_->GetDohServerAvailability(
       0u /* doh_server_index */, session_.get()));

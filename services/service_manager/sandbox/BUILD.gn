@@ -90,7 +90,7 @@ component("sandbox") {
     ]
     deps += [ "//sandbox/mac:seatbelt" ]
     public_deps += [ "mac:packaged_sb_files" ]
-    libs = [
+    frameworks = [
       "AppKit.framework",
       "CoreFoundation.framework",
       "CoreGraphics.framework",

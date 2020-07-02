@@ -35,13 +35,15 @@ import java.util.List;
  *
  * <p>
  * To declare in XML, define a RadioButtonWithDescriptionLayout that contains
- * RadioButtonWithDescription and/or RadioButtonWithEditText children.
- * For example:
+ * RadioButtonWithDescription, RadioButtonWithDescriptionAndAuxButton and/or
+ * RadioButtonWithEditText children. For example:
  * <pre>{@code
  *  <org.chromium.components.browser_ui.widget.RadioButtonWithDescriptionLayout
  *       android:layout_width="match_parent"
  *       android:layout_height="match_parent" >
  *       <org.chromium.components.browser_ui.widget.RadioButtonWithDescription
+ *           ... />
+ *       <org.chromium.components.browser_ui.widget.RadioButtonWithDescriptionAndAuxButton
  *           ... />
  *       <org.chromium.components.browser_ui.widget.RadioButtonWithEditText
  *           ... />

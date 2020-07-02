@@ -17,7 +17,7 @@ source_set("eg2_tests") {
     "//net:test_support",
     "//ui/base",
   ]
-  libs = [
+  frameworks = [
     "UIKit.framework",
     "XCTest.framework",
   ]

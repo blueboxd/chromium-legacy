@@ -2208,6 +2208,8 @@ bool NGBoxFragmentPainter::HitTestBlockChildren(
   auto children = box_fragment_.Children();
   for (const NGLink& child : base::Reversed(children)) {
     const auto& block_child = To<NGPhysicalBoxFragment>(*child);
+    if (UNLIKELY(block_child.IsLayoutObjectDestroyedOrMoved()))
+      continue;
     if (block_child.HasSelfPaintingLayer() || block_child.IsFloating())
       continue;
 
@@ -2362,6 +2364,8 @@ bool NGBoxFragmentPainter::HitTestFloatingChildren(
   auto children = container.Children();
   for (const NGLink& child : base::Reversed(children)) {
     const NGPhysicalFragment& child_fragment = *child.fragment;
+    if (UNLIKELY(child_fragment.IsLayoutObjectDestroyedOrMoved()))
+      continue;
     if (child_fragment.HasSelfPaintingLayer())
       continue;
 

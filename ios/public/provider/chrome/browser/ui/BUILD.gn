@@ -13,5 +13,5 @@ source_set("ui") {
     "//base",
     "//ios/public/provider/chrome/browser/voice",
   ]
-  libs = [ "CoreGraphics.framework" ]
+  frameworks = [ "CoreGraphics.framework" ]
 }

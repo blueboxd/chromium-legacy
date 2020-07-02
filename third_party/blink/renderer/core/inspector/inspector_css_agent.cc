@@ -116,22 +116,22 @@ class FrontendOperationScope {
   ~FrontendOperationScope() { --g_frontend_operation_counter; }
 };
 
-String CreateShorthandValue(Document* document,
+String CreateShorthandValue(Document& document,
                             const String& shorthand,
                             const String& old_text,
                             const String& longhand,
                             const String& new_value) {
   auto* style_sheet_contents = MakeGarbageCollected<StyleSheetContents>(
-      StrictCSSParserContext(document->GetSecureContextMode()));
+      StrictCSSParserContext(document.GetSecureContextMode()));
   String text = " div { " + shorthand + ": " + old_text + "; }";
-  CSSParser::ParseSheet(MakeGarbageCollected<CSSParserContext>(*document),
+  CSSParser::ParseSheet(MakeGarbageCollected<CSSParserContext>(document),
                         style_sheet_contents, text);
 
   auto* style_sheet = MakeGarbageCollected<CSSStyleSheet>(style_sheet_contents);
   auto* rule = To<CSSStyleRule>(style_sheet->item(0));
   CSSStyleDeclaration* style = rule->style();
   DummyExceptionStateForTesting exception_state;
-  style->setProperty(document->GetExecutionContext(), longhand, new_value,
+  style->setProperty(document.GetExecutionContext(), longhand, new_value,
                      style->getPropertyPriority(longhand), exception_state);
   return style->getPropertyValue(shorthand);
 }
@@ -957,9 +957,9 @@ Response InspectorCSSAgent::getMatchedStylesForNode(
       return Response::ServerError("Pseudo element has no parent");
   }
 
-  Document* owner_document = element->ownerDocument();
+  Document& document = element->GetDocument();
   // A non-active document has no styles.
-  if (!owner_document->IsActive())
+  if (!document.IsActive())
     return Response::ServerError("Document is not active");
 
   // The source text of mutable stylesheets needs to be updated
@@ -969,14 +969,17 @@ Response InspectorCSSAgent::getMatchedStylesForNode(
     stylesheet->SyncTextIfNeeded();
   }
 
+  // Update style and layout tree because AnimationsForNode below requires that.
+  // It is done this early because it also does UpdateActiveStyle() which is
+  // necessary for collecting an up-to-date set of rules.
+  document.UpdateStyleAndLayoutTreeForNode(element);
+
   // FIXME: It's really gross for the inspector to reach in and access
   // StyleResolver directly here. We need to provide the Inspector better APIs
   // to get this information without grabbing at internal style classes!
+  StyleResolver& style_resolver = document.EnsureStyleResolver();
 
   // Matched rules.
-  StyleResolver& style_resolver = owner_document->EnsureStyleResolver();
-
-  element->UpdateDistributionForUnknownReasons();
   RuleIndexList* matched_rules = style_resolver.PseudoCSSRulesForElement(
       element, element_pseudo_id, StyleResolver::kAllCSSRules);
   *matched_css_rules = BuildArrayForMatchedRuleList(
@@ -1023,11 +1026,8 @@ Response InspectorCSSAgent::getMatchedStylesForNode(
       std::make_unique<protocol::Array<protocol::CSS::InheritedStyleEntry>>();
   Element* parent_element = element->ParentOrShadowHostElement();
   while (parent_element) {
-    StyleResolver& parent_style_resolver =
-        parent_element->ownerDocument()->EnsureStyleResolver();
-    RuleIndexList* parent_matched_rules =
-        parent_style_resolver.CssRulesForElement(parent_element,
-                                                 StyleResolver::kAllCSSRules);
+    RuleIndexList* parent_matched_rules = style_resolver.CssRulesForElement(
+        parent_element, StyleResolver::kAllCSSRules);
     std::unique_ptr<protocol::CSS::InheritedStyleEntry> entry =
         protocol::CSS::InheritedStyleEntry::create()
             .setMatchedCSSRules(BuildArrayForMatchedRuleList(
@@ -1071,14 +1071,14 @@ std::unique_ptr<protocol::Array<protocol::CSS::CSSKeyframesRule>>
 InspectorCSSAgent::AnimationsForNode(Element* element) {
   auto css_keyframes_rules =
       std::make_unique<protocol::Array<protocol::CSS::CSSKeyframesRule>>();
-  Document* owner_document = element->ownerDocument();
+  Document& document = element->GetDocument();
+  DCHECK(!document.NeedsLayoutTreeUpdateForNode(*element));
 
-  owner_document->UpdateStyleAndLayoutTreeForNode(element);
   const ComputedStyle* style = element->EnsureComputedStyle();
   if (!style)
     return css_keyframes_rules;
   const CSSAnimationData* animation_data = style->Animations();
-  StyleResolver& style_resolver = owner_document->EnsureStyleResolver();
+  StyleResolver& style_resolver = document.EnsureStyleResolver();
   for (wtf_size_t i = 0;
        animation_data && i < animation_data->NameList().size(); ++i) {
     AtomicString animation_name(animation_data->NameList()[i]);
@@ -1092,7 +1092,7 @@ InspectorCSSAgent::AnimationsForNode(Element* element) {
     // Find CSSOM wrapper.
     CSSKeyframesRule* css_keyframes_rule = nullptr;
     for (CSSStyleSheet* style_sheet :
-         *document_to_css_style_sheets_.at(owner_document)) {
+         *document_to_css_style_sheets_.at(&document)) {
       css_keyframes_rule = FindKeyframesRule(style_sheet, keyframes_rule);
       if (css_keyframes_rule)
         break;
@@ -1690,7 +1690,7 @@ Response InspectorCSSAgent::forcePseudoState(
     DecrementFocusedCountForAncestors(element);
   }
 
-  element->ownerDocument()->GetStyleEngine().MarkAllElementsForStyleRecalc(
+  element->GetDocument().GetStyleEngine().MarkAllElementsForStyleRecalc(
       StyleChangeReasonForTracing::Create(style_change_reason::kInspector));
   return Response::Success();
 }
@@ -2244,15 +2244,13 @@ void InspectorCSSAgent::StyleSheetChanged(
 void InspectorCSSAgent::ResetPseudoStates() {
   HeapHashSet<Member<Document>> documents_to_change;
   for (auto& state : node_id_to_forced_pseudo_state_) {
-    auto* element = To<Element>(dom_agent_->NodeForId(state.key));
-    if (element && element->ownerDocument())
-      documents_to_change.insert(element->ownerDocument());
+    if (auto* element = To<Element>(dom_agent_->NodeForId(state.key)))
+      documents_to_change.insert(&element->GetDocument());
   }
 
   for (auto& count : node_id_to_number_focused_children_) {
-    auto* element = To<Element>(dom_agent_->NodeForId(count.key));
-    if (element && element->ownerDocument())
-      documents_to_change.insert(element->ownerDocument());
+    if (auto* element = To<Element>(dom_agent_->NodeForId(count.key)))
+      documents_to_change.insert(&element->GetDocument());
   }
 
   node_id_to_forced_pseudo_state_.clear();
@@ -2268,8 +2266,8 @@ HeapVector<Member<CSSStyleDeclaration>> InspectorCSSAgent::MatchingStyles(
   PseudoId pseudo_id = element->GetPseudoId();
   if (pseudo_id)
     element = element->parentElement();
-  StyleResolver& style_resolver =
-      element->ownerDocument()->EnsureStyleResolver();
+  StyleResolver& style_resolver = element->GetDocument().EnsureStyleResolver();
+
   element->UpdateDistributionForUnknownReasons();
 
   HeapVector<Member<CSSStyleRule>> rules =
@@ -2320,7 +2318,7 @@ Response InspectorCSSAgent::setEffectivePropertyValueForNode(
   if (element->GetPseudoId())
     return Response::ServerError("Elements is pseudo");
 
-  if (!element->ownerDocument()->IsActive()) {
+  if (!element->GetDocument().IsActive()) {
     return Response::ServerError(
         "Can't edit a node from a non-active document");
   }
@@ -2401,11 +2399,12 @@ Response InspectorCSSAgent::setEffectivePropertyValueForNode(
   } else {
     CSSPropertySourceData declaration = properties[found_index];
     String new_value_text;
-    if (declaration.name == shorthand)
-      new_value_text = CreateShorthandValue(element->ownerDocument(), shorthand,
+    if (declaration.name == shorthand) {
+      new_value_text = CreateShorthandValue(element->GetDocument(), shorthand,
                                             declaration.value, longhand, value);
-    else
+    } else {
       new_value_text = value;
+    }
 
     String new_property_text =
         declaration.name + ": " + new_value_text +

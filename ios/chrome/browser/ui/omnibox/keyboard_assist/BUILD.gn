@@ -44,7 +44,7 @@ source_set("keyboard_assist") {
   ]
   allow_circular_includes_from =
       [ "//ios/chrome/browser/ui/omnibox:omnibox_internal" ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("unit_tests") {

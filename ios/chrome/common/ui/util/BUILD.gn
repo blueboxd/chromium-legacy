@@ -27,7 +27,7 @@ source_set("dynamic_type_util") {
     "dynamic_type_util.h",
     "dynamic_type_util.mm",
   ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("unit_tests") {

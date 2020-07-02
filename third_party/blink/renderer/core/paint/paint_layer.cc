@@ -1008,6 +1008,41 @@ PaintLayer* PaintLayer::EnclosingLayerForPaintInvalidation() const {
   return nullptr;
 }
 
+bool PaintLayer::CanBeCompositedForDirectReasons() const {
+  return DirectCompositingReasons() && IsSelfPaintingLayer();
+}
+
+PaintLayer*
+PaintLayer::EnclosingDirectlyCompositableLayerCrossingFrameBoundaries() const {
+  const PaintLayer* layer = this;
+  PaintLayer* composited_layer = nullptr;
+  while (!composited_layer) {
+    composited_layer = layer->EnclosingDirectlyCompositableLayer();
+    if (!composited_layer) {
+      CHECK(layer->GetLayoutObject().GetFrame());
+      auto* owner = layer->GetLayoutObject().GetFrame()->OwnerLayoutObject();
+      if (!owner)
+        break;
+      layer = owner->EnclosingLayer();
+    }
+  }
+  return composited_layer;
+}
+
+PaintLayer* PaintLayer::EnclosingDirectlyCompositableLayer() const {
+  DCHECK(IsAllowedToQueryCompositingState());
+  if (CanBeCompositedForDirectReasons())
+    return const_cast<PaintLayer*>(this);
+
+  for (PaintLayer* curr = CompositingContainer(); curr;
+       curr = curr->CompositingContainer()) {
+    if (curr->CanBeCompositedForDirectReasons())
+      return curr;
+  }
+
+  return nullptr;
+}
+
 void PaintLayer::SetNeedsCompositingInputsUpdate(bool mark_ancestor_flags) {
   SetNeedsCompositingInputsUpdateInternal();
 
@@ -1353,16 +1388,16 @@ void PaintLayer::InsertOnlyThisLayerAfterStyleChange() {
        curr = curr->NextSibling())
     curr->MoveLayers(parent_, this);
 
-  // If the previous paint invalidation container is not a stacking context and
+  // If the previous directly composited container is not a stacking context and
   // this object is stacked content, creating this layer may cause this object
   // and its descendants to change paint invalidation container.
   bool did_set_paint_invalidation = false;
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
       !IsA<LayoutView>(GetLayoutObject()) && GetLayoutObject().IsRooted() &&
       GetLayoutObject().IsStacked()) {
-    const LayoutBoxModelObject& previous_paint_invalidation_container =
-        GetLayoutObject().Parent()->ContainerForPaintInvalidation();
-    if (!previous_paint_invalidation_container.IsStackingContext()) {
+    const LayoutBoxModelObject& previous_directly_compositable_container =
+        GetLayoutObject().Parent()->DirectlyCompositableContainer();
+    if (!previous_directly_compositable_container.IsStackingContext()) {
       ObjectPaintInvalidator(GetLayoutObject())
           .InvalidatePaintIncludingNonSelfPaintingLayerDescendants();
       // Set needsRepaint along the original compositingContainer chain.

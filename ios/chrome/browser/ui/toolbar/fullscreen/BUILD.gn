@@ -16,7 +16,7 @@ source_set("fullscreen") {
     "//ios/web",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("fullscreen_broadcasting_util") {

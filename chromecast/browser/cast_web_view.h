@@ -95,6 +95,9 @@ class CastWebView {
     // Whether this CastWebView should be managed by web ui window manager.
     bool managed = true;
 
+    // Whether JS console logs should be appended to the device logs.
+    bool log_js_console_messages = false;
+
     // Prefix for JS console logs. This can be used to help identify the source
     // of console log messages.
     std::string log_prefix = "";

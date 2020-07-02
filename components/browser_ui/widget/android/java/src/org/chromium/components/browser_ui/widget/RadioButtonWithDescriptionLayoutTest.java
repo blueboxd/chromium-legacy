@@ -267,12 +267,15 @@ public class RadioButtonWithDescriptionLayoutTest {
         RadioButtonWithDescription b2 = content.findViewById(R.id.test_radio_description_2);
         RadioButtonWithEditText b3 = content.findViewById(R.id.test_radio_edit_text_1);
         RadioButtonWithEditText b4 = content.findViewById(R.id.test_radio_edit_text_2);
+        RadioButtonWithDescriptionAndAuxButton b5 =
+                content.findViewById(R.id.test_radio_description_and_aux_button_1);
 
         Assert.assertNotNull(layout);
         Assert.assertNotNull(b1);
         Assert.assertNotNull(b2);
         Assert.assertNotNull(b3);
         Assert.assertNotNull(b4);
+        Assert.assertNotNull(b5);
 
         layout.selectChildAtIndexForTesting(3);
 
@@ -284,6 +287,8 @@ public class RadioButtonWithDescriptionLayoutTest {
                 mContext.getResources().getString(R.string.test_primary_3));
         Assert.assertEquals(PRIMARY_MATCH_FROM_XML_ASSERT_MESSAGE, b4.getPrimaryText().toString(),
                 mContext.getResources().getString(R.string.test_primary_4));
+        Assert.assertEquals(PRIMARY_MATCH_FROM_XML_ASSERT_MESSAGE, b5.getPrimaryText().toString(),
+                mContext.getResources().getString(R.string.test_primary_5));
 
         Assert.assertTrue(
                 DESC_MATCH_FROM_XML_ASSERT_MESSAGE, TextUtils.isEmpty(b1.getDescriptionText()));
@@ -293,6 +298,8 @@ public class RadioButtonWithDescriptionLayoutTest {
                 DESC_MATCH_FROM_XML_ASSERT_MESSAGE, TextUtils.isEmpty(b3.getDescriptionText()));
         Assert.assertEquals(DESC_MATCH_FROM_XML_ASSERT_MESSAGE, b4.getDescriptionText().toString(),
                 mContext.getResources().getString(R.string.test_desc_4));
+        Assert.assertEquals(DESC_MATCH_FROM_XML_ASSERT_MESSAGE, b5.getDescriptionText().toString(),
+                mContext.getResources().getString(R.string.test_desc_5));
 
         Assert.assertEquals(HINT_MATCH_FROM_XML_ASSERT_MESSAGE,
                 ((EditText) b3.getPrimaryTextView()).getHint().toString(),
@@ -305,6 +312,7 @@ public class RadioButtonWithDescriptionLayoutTest {
         Assert.assertFalse(b2.isChecked());
         Assert.assertFalse(b3.isChecked());
         Assert.assertTrue(b4.isChecked());
+        Assert.assertFalse(b5.isChecked());
     }
 
     @Test

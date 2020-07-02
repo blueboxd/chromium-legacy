@@ -60,5 +60,5 @@ source_set("constants") {
     "unified_consent_constants.h",
     "unified_consent_constants.mm",
   ]
-  libs = [ "Foundation.framework" ]
+  frameworks = [ "Foundation.framework" ]
 }

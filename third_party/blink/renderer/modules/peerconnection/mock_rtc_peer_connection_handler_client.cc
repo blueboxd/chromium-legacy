@@ -4,7 +4,6 @@
 #include "third_party/blink/renderer/modules/peerconnection/mock_rtc_peer_connection_handler_client.h"
 
 #include "base/check_op.h"
-#include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_receiver_platform.h"
 

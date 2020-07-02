@@ -114,7 +114,8 @@ source_set("shell") {
     ios_web_view_shell_risk_data_loader,
   ]
 
-  libs = [
+  libs = [ "resolv" ]
+  frameworks = [
     "CFNetwork.framework",
     "CoreFoundation.framework",
     "CoreGraphics.framework",
@@ -125,7 +126,6 @@ source_set("shell") {
     "Security.framework",
     "SystemConfiguration.framework",
     "UIKit.framework",
-    "resolv",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]

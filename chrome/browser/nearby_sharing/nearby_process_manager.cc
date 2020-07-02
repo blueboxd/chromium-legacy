@@ -12,13 +12,17 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_prefs.h"
+#include "chrome/browser/nearby_sharing/webrtc_signaling_messenger.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sharing/webrtc/sharing_mojo_service.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/service_process_host.h"
+#include "content/public/browser/storage_partition.h"
 #include "device/bluetooth/adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -197,6 +201,28 @@ void NearbyProcessManager::GetBluetoothAdapter(
         << " Bluetooth is not supported on this device, returning NullRemote";
     std::move(callback).Run(/*adapter=*/mojo::NullRemote());
   }
+}
+
+void NearbyProcessManager::GetWebRtcSignalingMessenger(
+    location::nearby::connections::mojom::NearbyConnectionsHost::
+        GetWebRtcSignalingMessengerCallback callback) {
+  if (!IsAnyProfileActive()) {
+    std::move(callback).Run(/*messenger=*/mojo::NullRemote());
+    return;
+  }
+
+  auto url_loader_factory =
+      content::BrowserContext::GetDefaultStoragePartition(active_profile_)
+          ->GetURLLoaderFactoryForBrowserProcess();
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(active_profile_);
+
+  mojo::PendingRemote<sharing::mojom::WebRtcSignalingMessenger> messenger;
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<WebRtcSignalingMessenger>(identity_manager,
+                                                 std::move(url_loader_factory)),
+      messenger.InitWithNewPipeAndPassReceiver());
+  std::move(callback).Run(std::move(messenger));
 }
 
 NearbyProcessManager::NearbyProcessManager() {

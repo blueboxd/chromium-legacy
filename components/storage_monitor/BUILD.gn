@@ -45,7 +45,7 @@ static_library("storage_monitor") {
       "storage_monitor_mac.h",
       "storage_monitor_mac.mm",
     ]
-    libs = [
+    frameworks = [
       "DiskArbitration.framework",
       "Foundation.framework",
       "ImageCaptureCore.framework",

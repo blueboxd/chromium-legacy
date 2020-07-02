@@ -13,6 +13,7 @@ import android.view.MotionEvent;
 import androidx.annotation.VisibleForTesting;
 
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.List;
 
 /**
@@ -28,6 +29,16 @@ class GamepadDevice {
     // us to create cheap associative arrays.
     @VisibleForTesting
     static final int MAX_RAW_BUTTON_VALUES = 256;
+
+    /** Keycodes which might be mapped by {@link GamepadMappings}. */
+    private static final int RELEVANT_KEYCODES[] = {KeyEvent.KEYCODE_BUTTON_A,
+            KeyEvent.KEYCODE_BUTTON_B, KeyEvent.KEYCODE_BUTTON_C, KeyEvent.KEYCODE_BUTTON_X,
+            KeyEvent.KEYCODE_BUTTON_Y, KeyEvent.KEYCODE_BUTTON_Z, KeyEvent.KEYCODE_BUTTON_L1,
+            KeyEvent.KEYCODE_BUTTON_R1, KeyEvent.KEYCODE_BUTTON_L2, KeyEvent.KEYCODE_BUTTON_R2,
+            KeyEvent.KEYCODE_BUTTON_SELECT, KeyEvent.KEYCODE_BUTTON_START,
+            KeyEvent.KEYCODE_BUTTON_THUMBL, KeyEvent.KEYCODE_BUTTON_THUMBR,
+            KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_DOWN, KeyEvent.KEYCODE_DPAD_LEFT,
+            KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent.KEYCODE_BUTTON_MODE};
 
     // An id for the gamepad.
     private int mDeviceId;
@@ -76,7 +87,17 @@ class GamepadDevice {
                 mAxes[i++] = axis;
             }
         }
-        mMappings = GamepadMappings.getMappings(inputDevice, mAxes);
+
+        // Get the set of relevant buttons which exist on the gamepad.
+        BitSet buttons = new BitSet(KeyEvent.KEYCODE_BUTTON_MODE);
+        boolean[] presentKeys = inputDevice.hasKeys(RELEVANT_KEYCODES);
+        for (int j = 0; j < RELEVANT_KEYCODES.length; ++j) {
+            if (presentKeys[j]) {
+                buttons.set(RELEVANT_KEYCODES[j]);
+            }
+        }
+
+        mMappings = GamepadMappings.getMappings(inputDevice, mAxes, buttons);
     }
 
     /**
@@ -136,7 +157,14 @@ class GamepadDevice {
     }
 
     /**
-     * Reset the axes and buttons data of the gamepad device everytime gamepad data access is
+     * @return The number of mapped buttons.
+     */
+    public int getButtonsLength() {
+        return mMappings.getButtonsLength();
+    }
+
+    /**
+     * Reset the axes and buttons data of the gamepad device every time gamepad data access is
      * paused.
      */
     public void clearData() {

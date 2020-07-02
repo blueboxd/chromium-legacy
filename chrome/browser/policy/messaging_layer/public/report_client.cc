@@ -21,8 +21,8 @@ namespace reporting {
 
 using base::MakeRefCounted;
 
-ReportingClient::ReportingClient()
-    : storage_(MakeRefCounted<StorageModule>()),
+ReportingClient::ReportingClient(scoped_refptr<StorageModule> storage)
+    : storage_(std::move(storage)),
       encryption_(MakeRefCounted<EncryptionModule>()) {}
 
 ReportingClient::~ReportingClient() = default;
@@ -43,11 +43,13 @@ StatusOr<ReportingClient*> ReportingClient::GetInstance() {
   return instance->ValueOrDie().get();
 }
 
-// TODO(chromium:1078512) As part of completing the StorageModule and
-// EncryptionModule, this create function will need to be updated to check for
-// successful creation of the StorageModule and EncryptionModule.
+// TODO(chromium:1078512) As part of completing the EncryptionModule,
+// this create function will need to be updated to check for
+// successful creation of the EncryptionModule too.
 StatusOr<std::unique_ptr<ReportingClient>> ReportingClient::Create() {
-  auto client = base::WrapUnique<ReportingClient>(new ReportingClient);
+  ASSIGN_OR_RETURN(scoped_refptr<StorageModule> storage,
+                   StorageModule::Create());
+  auto client = base::WrapUnique<ReportingClient>(new ReportingClient(storage));
   return client;
 }
 

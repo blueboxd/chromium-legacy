@@ -333,11 +333,6 @@ class MediaRouterMojoImpl : public MediaRouterBase, public mojom::MediaRouter {
   void OnRouteMessagesReceived(
       const std::string& route_id,
       std::vector<mojom::RouteMessagePtr> messages) override;
-  void OnMediaRemoterCreated(
-      int32_t tab_id,
-      mojo::PendingRemote<media::mojom::MirrorServiceRemoter> remoter,
-      mojo::PendingReceiver<media::mojom::MirrorServiceRemotingSource>
-          source_receiver) override;
   void GetLogger(mojo::PendingReceiver<mojom::Logger> receiver) override;
   void GetLogsAsString(GetLogsAsStringCallback callback) override;
   void GetMediaSinkServiceStatus(

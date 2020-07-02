@@ -10,6 +10,7 @@ import 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-lite.js';
 import 'chrome://resources/mojo/mojo/public/mojom/base/time.mojom-lite.js';
 import 'chrome://resources/mojo/url/mojom/url.mojom-lite.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import 'chrome://resources/polymer/v3_0/iron-media-query/iron-media-query.js';
 import 'chrome://resources/polymer/v3_0/paper-progress/paper-progress.js';
 import './icons.js';
 import './print_management_fonts_css.js';
@@ -211,7 +212,13 @@ Polymer({
       computed: 'getJobEntryAriaLabel_(jobEntry, jobTitle_, printerName_, ' +
           'creationTime_, completionStatus_, ' +
           'jobEntry.activePrintJobinfo.printedPages, jobEntry.numberOfPages)',
-    }
+    },
+
+    /**
+     * This is only updated by media queries from window width changes.
+     * @private
+     */
+    showFullOngoingStatus_: Boolean,
   },
 
   /** @override */

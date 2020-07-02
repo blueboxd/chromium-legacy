@@ -154,7 +154,10 @@ FormStructureBrowserTest::FormStructureBrowserTest()
     : DataDrivenTest(GetTestDataDir()) {
   feature_list_.InitWithFeatures(
       // Enabled
-      {},
+      {
+          // TODO(crbug.com/1098943): Remove once experiment is over.
+          autofill::features::kAutofillEnableSupportForMoreStructureInNames,
+      },
       // Disabled
       {autofill::features::kAutofillEnforceMinRequiredFieldsForHeuristics,
        autofill::features::kAutofillEnforceMinRequiredFieldsForQuery,

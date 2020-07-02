@@ -47,5 +47,5 @@ source_set("fakes") {
     "//ios/web/public/download",
   ]
 
-  libs = [ "Foundation.framework" ]
+  frameworks = [ "Foundation.framework" ]
 }

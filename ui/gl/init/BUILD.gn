@@ -55,7 +55,7 @@ jumbo_component("init") {
       "gl_initializer_mac.cc",
     ]
 
-    libs = [ "OpenGL.framework" ]
+    frameworks = [ "OpenGL.framework" ]
   } else if (use_ozone) {
     sources += [
       "gl_display_egl_util_ozone.cc",

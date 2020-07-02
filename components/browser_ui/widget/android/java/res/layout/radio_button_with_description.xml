@@ -22,6 +22,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_toEndOf="@id/radio_button"
+        android:layout_toStartOf="@id/end_view"
         android:textAppearance="@style/TextAppearance.TextLarge.Primary" />
 
     <!-- This TextView is hidden if it has no text, so the initial visibility should be "gone". -->
@@ -30,7 +31,19 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignStart="@id/primary"
+        android:layout_toStartOf="@id/end_view"
         android:layout_below="@id/primary"
         android:textAppearance="@style/TextAppearance.TextMedium.Secondary"
         android:visibility="gone" />
+
+    <!-- A ViewStub placed at the end of the widget that can be replaced by a customized view  -->
+    <ViewStub
+        android:id="@+id/end_view_stub"
+        android:inflatedId="@+id/end_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/primary"
+        android:layout_alignBottom="@id/description"
+        android:layout_alignParentEnd="true"
+        android:background="@null" />
 </merge>

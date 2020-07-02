@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.download.dialogs;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.text.TextUtils;
@@ -52,20 +53,20 @@ public class DownloadLocationDialogCoordinator implements ModalDialogProperties.
 
     /**
      * Shows the download location dialog.
-     * @param context The {@link Context} for the dialog.
+     * @param activity The activity that provides android {@link Context} to the dialog.
      * @param modalDialogManager {@link ModalDialogManager} to control the dialog.
      * @param totalBytes The total download file size. May be 0 if not available.
      * @param dialogType The type of the location dialog.
      * @param suggestedPath The suggested file path used by the location dialog.
      */
-    public void showDialog(Context context, ModalDialogManager modalDialogManager, long totalBytes,
-            @DownloadLocationDialogType int dialogType, String suggestedPath) {
-        if (context == null || modalDialogManager == null) {
+    public void showDialog(Activity activity, ModalDialogManager modalDialogManager,
+            long totalBytes, @DownloadLocationDialogType int dialogType, String suggestedPath) {
+        if (activity == null || modalDialogManager == null) {
             onDismiss(null, DialogDismissalCause.ACTIVITY_DESTROYED);
             return;
         }
 
-        mContext = context;
+        mContext = activity;
         mModalDialogManager = modalDialogManager;
         mTotalBytes = totalBytes;
         mDialogType = dialogType;
@@ -139,13 +140,13 @@ public class DownloadLocationDialogCoordinator implements ModalDialogProperties.
         // Actually show the dialog.
         mCustomView = (DownloadLocationCustomView) LayoutInflater.from(mContext).inflate(
                 R.layout.download_location_dialog, null);
-        mCustomView.initialize(
-                mDialogType, new File(mSuggestedPath), mTotalBytes, getTitle(mDialogType));
+        mCustomView.initialize(mDialogType, new File(mSuggestedPath));
 
         Resources resources = mContext.getResources();
         mDialogModel =
                 new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
                         .with(ModalDialogProperties.CONTROLLER, this)
+                        .with(ModalDialogProperties.TITLE, getTitle(mTotalBytes, mDialogType))
                         .with(ModalDialogProperties.CUSTOM_VIEW, mCustomView)
                         .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, resources,
                                 R.string.duplicate_download_infobar_download_button)
@@ -156,7 +157,7 @@ public class DownloadLocationDialogCoordinator implements ModalDialogProperties.
         mModalDialogManager.showDialog(mDialogModel, ModalDialogManager.ModalDialogType.APP);
     }
 
-    private String getTitle(@DownloadLocationDialogType int dialogType) {
+    private String getTitle(long totalBytes, @DownloadLocationDialogType int dialogType) {
         switch (dialogType) {
             case DownloadLocationDialogType.LOCATION_FULL:
                 return mContext.getString(R.string.download_location_not_enough_space);
@@ -171,7 +172,16 @@ public class DownloadLocationDialogCoordinator implements ModalDialogProperties.
                 return mContext.getString(R.string.download_location_rename_file);
 
             case DownloadLocationDialogType.DEFAULT:
-                return mContext.getString(R.string.download_location_dialog_title);
+                String title = mContext.getString(R.string.download_location_dialog_title);
+                if (totalBytes > 0) {
+                    StringBuilder stringBuilder = new StringBuilder(title);
+                    stringBuilder.append(" ");
+                    stringBuilder.append(
+                            org.chromium.components.browser_ui.util.DownloadUtils.getStringForBytes(
+                                    mContext, totalBytes));
+                    title = stringBuilder.toString();
+                }
+                return title;
         }
         assert false;
         return null;

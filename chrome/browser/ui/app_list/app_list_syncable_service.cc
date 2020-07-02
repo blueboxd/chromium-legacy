@@ -1071,6 +1071,8 @@ base::Optional<syncer::ModelError> AppListSyncableService::ProcessSyncChanges(
 
   HandleUpdateFinished(false /* clean_up_after_init_sync */);
 
+  GetModelUpdater()->NotifyProcessSyncChangesFinished();
+
   return base::nullopt;
 }
 

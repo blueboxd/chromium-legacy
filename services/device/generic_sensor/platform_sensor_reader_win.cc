@@ -389,15 +389,15 @@ Microsoft::WRL::ComPtr<ISensor> PlatformSensorReaderWin32::GetSensorForType(
     Microsoft::WRL::ComPtr<ISensorManager> sensor_manager) {
   Microsoft::WRL::ComPtr<ISensor> sensor;
   Microsoft::WRL::ComPtr<ISensorCollection> sensor_collection;
-  HRESULT hr = sensor_manager->GetSensorsByType(
-      sensor_type, sensor_collection.GetAddressOf());
+  HRESULT hr =
+      sensor_manager->GetSensorsByType(sensor_type, &sensor_collection);
   if (FAILED(hr) || !sensor_collection)
     return sensor;
 
   ULONG count = 0;
   hr = sensor_collection->GetCount(&count);
   if (SUCCEEDED(hr) && count > 0)
-    sensor_collection->GetAt(0, sensor.GetAddressOf());
+    sensor_collection->GetAt(0, &sensor);
   return sensor;
 }
 
@@ -484,7 +484,7 @@ bool PlatformSensorReaderWin32::SetReportingInterval(
     return false;
 
   Microsoft::WRL::ComPtr<IPortableDeviceValues> return_props;
-  hr = sensor_->SetProperties(props.Get(), return_props.GetAddressOf());
+  hr = sensor_->SetProperties(props.Get(), &return_props);
   return SUCCEEDED(hr);
 }
 

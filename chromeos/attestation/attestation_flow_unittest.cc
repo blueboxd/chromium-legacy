@@ -16,6 +16,7 @@
 #include "chromeos/attestation/mock_attestation_flow.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/cryptohome/mock_async_method_caller.h"
+#include "chromeos/dbus/attestation/attestation_client.h"
 #include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "components/account_id/account_id.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -44,6 +45,8 @@ void AsyncCallbackFalse(cryptohome::AsyncMethodCaller::Callback callback) {
 
 class AttestationFlowTest : public testing::Test {
  public:
+  AttestationFlowTest() { chromeos::AttestationClient::InitializeFake(); }
+  ~AttestationFlowTest() override { chromeos::AttestationClient::Shutdown(); }
   void QuitRunLoopCertificateCallback(
       AttestationFlow::CertificateCallback callback,
       AttestationStatus status,
@@ -78,7 +81,9 @@ TEST_F(AttestationFlowTest, GetCertificate) {
   // Use DBusCallbackFalse so the full enrollment flow is triggered.
   chromeos::FakeCryptohomeClient client;
   client.set_tpm_attestation_is_enrolled(false);
-  client.set_tpm_attestation_is_prepared(true);
+  chromeos::AttestationClient::Get()
+      ->GetTestInterface()
+      ->ConfigureEnrollmentPreparations(true);
 
   // Use StrictMock when we want to verify invocation frequency.
   StrictMock<cryptohome::MockAsyncMethodCaller> async_caller;
@@ -152,21 +157,11 @@ TEST_F(AttestationFlowTest, GetCertificate_Attestation_Not_Prepared) {
   // Verify the order of calls in a sequence.
   Sequence flow_order;
 
-  // Custom FakeCryptohomeClient to emulate a situation where it takes a bit
-  // for attestation to be prepared.
-  class FakeCryptohomeClient : public chromeos::FakeCryptohomeClient {
-   public:
-    void TpmAttestationIsPrepared(DBusMethodCallback<bool> callback) override {
-      chromeos::FakeCryptohomeClient::TpmAttestationIsPrepared(
-          std::move(callback));
-      // Second call (and later), returns true.
-      set_tpm_attestation_is_prepared(true);
-    }
-  };
-
   FakeCryptohomeClient client;
   client.set_tpm_attestation_is_enrolled(false);
-  client.set_tpm_attestation_is_prepared(false);
+  chromeos::AttestationClient::Get()
+      ->GetTestInterface()
+      ->ConfigureEnrollmentPreparationsSequence({false, true});
 
   // Use StrictMock when we want to verify invocation frequency.
   StrictMock<cryptohome::MockAsyncMethodCaller> async_caller;
@@ -245,7 +240,9 @@ TEST_F(AttestationFlowTest, GetCertificate_Attestation_Never_Prepared) {
 
   chromeos::FakeCryptohomeClient client;
   client.set_tpm_attestation_is_enrolled(false);
-  client.set_tpm_attestation_is_prepared(false);
+  chromeos::AttestationClient::Get()
+      ->GetTestInterface()
+      ->ConfigureEnrollmentPreparations(false);
 
   // We're not expecting any server calls in this case; StrictMock will verify.
   std::unique_ptr<MockServerProxy> proxy(new StrictMock<MockServerProxy>());
@@ -280,7 +277,9 @@ TEST_F(AttestationFlowTest, GetCertificate_NoEK) {
 
   chromeos::FakeCryptohomeClient client;
   client.set_tpm_attestation_is_enrolled(false);
-  client.set_tpm_attestation_is_prepared(true);
+  chromeos::AttestationClient::Get()
+      ->GetTestInterface()
+      ->ConfigureEnrollmentPreparations(true);
 
   // We're not expecting any server calls in this case; StrictMock will verify.
   std::unique_ptr<MockServerProxy> proxy(new StrictMock<MockServerProxy>());
@@ -309,7 +308,9 @@ TEST_F(AttestationFlowTest, GetCertificate_EKRejected) {
 
   chromeos::FakeCryptohomeClient client;
   client.set_tpm_attestation_is_enrolled(false);
-  client.set_tpm_attestation_is_prepared(true);
+  chromeos::AttestationClient::Get()
+      ->GetTestInterface()
+      ->ConfigureEnrollmentPreparations(true);
 
   std::unique_ptr<MockServerProxy> proxy(new StrictMock<MockServerProxy>());
   proxy->DeferToFake(false);
@@ -349,7 +350,9 @@ TEST_F(AttestationFlowTest, GetCertificate_FailEnroll) {
 
   chromeos::FakeCryptohomeClient client;
   client.set_tpm_attestation_is_enrolled(false);
-  client.set_tpm_attestation_is_prepared(true);
+  chromeos::AttestationClient::Get()
+      ->GetTestInterface()
+      ->ConfigureEnrollmentPreparations(true);
 
   std::unique_ptr<MockServerProxy> proxy(new StrictMock<MockServerProxy>());
   proxy->DeferToFake(true);

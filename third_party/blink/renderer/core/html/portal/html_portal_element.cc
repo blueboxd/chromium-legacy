@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/event_type_names.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
@@ -170,7 +171,7 @@ HTMLPortalElement::GetGuestContentsEligibility() const {
 
   // TODO(crbug.com/1051639): We need to find a long term solution to when/how
   // portals should work in sandboxed documents.
-  if (GetDocument().GetSandboxFlags() !=
+  if (frame->DomWindow()->GetSandboxFlags() !=
       network::mojom::blink::WebSandboxFlags::kNone) {
     return GuestContentsEligibility::kSandboxed;
   }

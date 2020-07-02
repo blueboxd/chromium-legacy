@@ -264,6 +264,18 @@
     return;
   }
 
+  if (self.webStateImpl->GetVisibleURL().GetOrigin() !=
+          requestURL.GetOrigin() &&
+      frame.mainFrame) {
+    // Dialog was requested by web page's main frame, but visible URL has
+    // different origin. This could happen if the user has started a new
+    // browser initiated navigation. There is no value in showing dialogs
+    // requested by page, which this WebState is about to leave. But presenting
+    // the dialog can lead to phishing and other abusive behaviors.
+    completionHandler(NO, nil);
+    return;
+  }
+
   self.webStateImpl->RunJavaScriptDialog(
       requestURL, type, message, defaultText,
       base::BindOnce(^(bool success, NSString* input) {

@@ -73,7 +73,7 @@ jumbo_component("controller") {
       "memory_usage_monitor_mac.cc",
       "memory_usage_monitor_mac.h",
     ]
-    libs = [
+    frameworks = [
       "AppKit.framework",
       "Foundation.framework",
     ]

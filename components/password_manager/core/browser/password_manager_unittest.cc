@@ -3665,6 +3665,61 @@ TEST_P(PasswordManagerTest, NoPromptAutofillAssistantManuallyCuratedScript) {
   }
 }
 
+// Password Manager may store a pending credential that will cause a prompt when
+// Autofill Assistant has already handled the submission. This test ensures that
+// Password Manager forgots the pending credential and doesn't prompt to update
+// the password later (e.g., after navigation).
+TEST_P(PasswordManagerTest,
+       NoPromptAfterAutofillAssistantManuallyCuratedScript) {
+  EXPECT_CALL(*store_, GetLogins)
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms(store_.get())));
+
+  for (bool set_owned_form_manager : {false, true}) {
+    SCOPED_TRACE(testing::Message("set_owned_form_manager = ")
+                 << set_owned_form_manager);
+
+    EXPECT_CALL(client_, IsSavingAndFillingEnabled)
+        .WillRepeatedly(Return(true));
+    EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr).Times(0);
+    manager()->SetAutofillAssistantMode(AutofillAssistantMode::kRunning);
+
+    // Make several forms ready for saving.
+    PasswordForm form1(MakeFormWithOnlyNewPasswordField());
+    PasswordForm form2(MakeSimpleForm());
+    manager()->OnPasswordFormsParsed(&driver_,
+                                     {form1.form_data, form2.form_data});
+    manager()->ShowManualFallbackForSaving(&driver_, form1.form_data);
+    manager()->ShowManualFallbackForSaving(&driver_, form2.form_data);
+
+    // Simulate submission in different ways depending on whether
+    // |owned_submitted_form_manager_| should be set and |form_managers_| should
+    // be cleared OR the submitted form manager should be in |form_managers_|.
+    if (set_owned_form_manager)
+      manager()->DidNavigateMainFrame(true /* form_may_be_submitted */);
+    else
+      OnPasswordFormSubmitted(form2.form_data);
+
+    manager()->SetAutofillAssistantMode(AutofillAssistantMode::kNotRunning);
+
+    manager()->OnPasswordFormsRendered(&driver_, {} /* observed */,
+                                       true /* did stop loading */);
+    // No form manager is ready for saving.
+    EXPECT_FALSE(manager()->GetSubmittedManagerForTest());
+    Mock::VerifyAndClearExpectations(&client_);
+
+    // A form reappears again and a user submits it manually. Now expect a
+    // prompt.
+    EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr);
+    EXPECT_CALL(client_, IsSavingAndFillingEnabled)
+        .WillRepeatedly(Return(true));
+    manager()->OnPasswordFormsParsed(&driver_, {form2.form_data});
+    OnPasswordFormSubmitted(form2.form_data);
+    manager()->OnPasswordFormsRendered(&driver_, {} /* observed */,
+                                       true /* did stop loading */);
+    Mock::VerifyAndClearExpectations(&client_);
+  }
+}
+
 // Tests the following scenario:
 // 1. Password Manager's prompts are disabled by Autofill Assistant because it
 // runs a script.

@@ -5,7 +5,7 @@
 if (is_mac) {
   static_library("decklink") {
     sources = [ "mac/include/DeckLinkAPIDispatch.cpp" ]
-    libs = [
+    frameworks = [
       "CoreFoundation.framework",
       "IOKit.framework",
     ]

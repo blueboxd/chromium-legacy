@@ -243,7 +243,7 @@ viz_component("service") {
     ]
 
     deps += [ "//ui/accelerated_widget_mac" ]
-    libs = [ "IOSurface.framework" ]
+    frameworks = [ "IOSurface.framework" ]
   }
 
   if (is_android || use_ozone) {
@@ -545,7 +545,7 @@ viz_source_set("unit_tests") {
       "display/overlay_ca_unittest.cc",
       "display_embedder/software_output_device_mac_unittest.mm",
     ]
-    libs = [ "IOSurface.framework" ]
+    frameworks = [ "IOSurface.framework" ]
   }
 
   if (is_win) {

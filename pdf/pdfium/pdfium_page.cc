@@ -244,6 +244,11 @@ uint32_t CountInternalTextOverlaps(const std::vector<T>& text_objects) {
   return overlaps;
 }
 
+bool IsRadioButtonOrCheckBox(int button_type) {
+  return button_type == FPDF_FORMFIELD_CHECKBOX ||
+         button_type == FPDF_FORMFIELD_RADIOBUTTON;
+}
+
 }  // namespace
 
 PDFiumPage::LinkTarget::LinkTarget() : page(-1) {}
@@ -1268,12 +1273,45 @@ void PDFiumPage::PopulateChoiceField(FPDF_ANNOTATION annot) {
   choice_fields_.push_back(std::move(choice_field));
 }
 
+void PDFiumPage::PopulateButton(FPDF_ANNOTATION annot) {
+  DCHECK(annot);
+  FPDF_FORMHANDLE form_handle = engine_->form();
+  int button_type = FPDFAnnot_GetFormFieldType(form_handle, annot);
+  DCHECK(button_type == FPDF_FORMFIELD_PUSHBUTTON ||
+         IsRadioButtonOrCheckBox(button_type));
+
+  Button button;
+  if (!PopulateFormFieldProperties(annot, &button))
+    return;
+
+  button.type = button_type;
+  if (IsRadioButtonOrCheckBox(button_type)) {
+    button.control_count = FPDFAnnot_GetFormControlCount(form_handle, annot);
+    if (button.control_count <= 0)
+      return;
+
+    button.control_index = FPDFAnnot_GetFormControlIndex(form_handle, annot);
+    button.value = base::UTF16ToUTF8(CallPDFiumWideStringBufferApi(
+        base::BindRepeating(&FPDFAnnot_GetFormFieldExportValue, form_handle,
+                            annot),
+        /*check_expected_size=*/true));
+    button.is_checked = FPDFAnnot_IsChecked(form_handle, annot);
+  }
+  buttons_.push_back(std::move(button));
+}
+
 void PDFiumPage::PopulateFormField(FPDF_ANNOTATION annot) {
   DCHECK_EQ(FPDFAnnot_GetSubtype(annot), FPDF_ANNOT_WIDGET);
   int form_field_type = FPDFAnnot_GetFormFieldType(engine_->form(), annot);
 
   // TODO(crbug.com/1030242): Populate other types of form fields too.
   switch (form_field_type) {
+    case FPDF_FORMFIELD_PUSHBUTTON:
+    case FPDF_FORMFIELD_CHECKBOX:
+    case FPDF_FORMFIELD_RADIOBUTTON: {
+      PopulateButton(annot);
+      break;
+    }
     case FPDF_FORMFIELD_COMBOBOX:
     case FPDF_FORMFIELD_LISTBOX: {
       PopulateChoiceField(annot);
@@ -1460,6 +1498,12 @@ PDFiumPage::ChoiceField::ChoiceField() = default;
 PDFiumPage::ChoiceField::ChoiceField(const ChoiceField& that) = default;
 
 PDFiumPage::ChoiceField::~ChoiceField() = default;
+
+PDFiumPage::Button::Button() = default;
+
+PDFiumPage::Button::Button(const Button& that) = default;
+
+PDFiumPage::Button::~Button() = default;
 
 // static
 uint32_t PDFiumPage::CountLinkHighlightOverlaps(

@@ -21,7 +21,7 @@
 namespace local_search_service {
 
 std::vector<Token> ConsolidateToken(const std::vector<Token>& tokens) {
-  std::unordered_map<base::string16, std::vector<Position>> dictionary;
+  std::unordered_map<base::string16, std::vector<WeightedPosition>> dictionary;
   for (const auto& token : tokens) {
     dictionary[token.content].insert(dictionary[token.content].end(),
                                      token.positions.begin(),
@@ -37,6 +37,7 @@ std::vector<Token> ConsolidateToken(const std::vector<Token>& tokens) {
 
 std::vector<Token> ExtractContent(const std::string& content_id,
                                   const base::string16& text,
+                                  double weight,
                                   const std::string& locale) {
   // Use two different string tokenizing algorithms for Latin and non Latin
   // locale.
@@ -59,9 +60,11 @@ std::vector<Token> ExtractContent(const std::string& content_id,
     if (IsStopword(word, locale))
       continue;
     tokens.push_back(Token(
-        word, {Position(content_id, tokenized_string.mappings()[i].start(),
-                        tokenized_string.mappings()[i].end() -
-                            tokenized_string.mappings()[i].start())}));
+        word,
+        {WeightedPosition(
+            weight, Position(content_id, tokenized_string.mappings()[i].start(),
+                             tokenized_string.mappings()[i].end() -
+                                 tokenized_string.mappings()[i].start()))}));
   }
 
   return tokens;

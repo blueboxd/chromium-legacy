@@ -116,6 +116,47 @@ class ExpandOwnersTest(unittest.TestCase):
     expand_owners.ExpandHistogramsOWNERS(histograms)
     self.assertMultiLineEqual(histograms.toxml(), expected_histograms.toxml())
 
+  def testExpandOwnersWithLongFilePath(self):
+    """
+    Check that long file path which forces <owner> tags to separate lines is
+    supported.
+    """
+    absolute_path = _MakeOwnersFile('simple_OWNERS', self.temp_dir)
+    src_relative_path = _GetSrcRelativePath(absolute_path)
+
+    with open(absolute_path, 'w') as owners_file:
+      owners_file.write('\n'.join(['amy@chromium.org', _DEFAULT_COMPONENT]))
+
+    histograms = xml.dom.minidom.parseString("""
+<histograms>
+
+<histogram name="Caffeination" units="mg">
+  <owner>joe@chromium.org</owner>
+  <owner>
+    {path}
+  </owner>
+  <summary>I like coffee.</summary>
+</histogram>
+
+</histograms>
+""".format(path=src_relative_path))
+
+    expected_histograms = xml.dom.minidom.parseString("""
+<histograms>
+
+<histogram name="Caffeination" units="mg">
+  <owner>joe@chromium.org</owner>
+  <owner>amy@chromium.org</owner>
+  <summary>I like coffee.</summary>
+  <component>Default&gt;Component</component>
+</histogram>
+
+</histograms>
+""")
+
+    expand_owners.ExpandHistogramsOWNERS(histograms)
+    self.assertMultiLineEqual(histograms.toxml(), expected_histograms.toxml())
+
   def testExpandOwnersWithDuplicateOwners(self):
     """Checks that owners are unique."""
     absolute_path = _MakeOwnersFile('simple_OWNERS', self.temp_dir)
@@ -339,7 +380,10 @@ class ExpandOwnersTest(unittest.TestCase):
       expand_owners.ExpandHistogramsOWNERS(histograms_with_fake_file_path)
 
   def testExpandOwnersWithSameOwners(self):
-    """Checks that no error is raised when all owners in a file are already in <owner> elements."""
+    """
+    Checks that no error is raised when all owners in a file are already in
+    <owner> elements.
+    """
     absolute_path = _MakeOwnersFile('same_OWNERS', self.temp_dir)
     src_relative_path = _GetSrcRelativePath(absolute_path)
 

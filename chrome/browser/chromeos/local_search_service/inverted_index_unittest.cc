@@ -29,30 +29,44 @@ std::vector<float> GetScoresFromTfidfResult(
   return scores;
 }
 
+constexpr double kDefaultWeight = 1.0;
+
 }  // namespace
 
 class InvertedIndexTest : public ::testing::Test {
  public:
   InvertedIndexTest() = default;
   void SetUp() override {
+    // All content weights are initialized to |kDefaultWeight|.
     index_.doc_length_ =
         std::unordered_map<std::string, int>({{"doc1", 8}, {"doc2", 6}});
 
     index_.dictionary_[base::UTF8ToUTF16("A")] = PostingList(
-        {{"doc1", Posting({Position("header", 1, 1), Position("header", 3, 1),
-                           Position("body", 5, 1), Position("body", 7, 1)})},
+        {{"doc1",
+          Posting({WeightedPosition(kDefaultWeight, Position("header", 1, 1)),
+                   WeightedPosition(kDefaultWeight, Position("header", 3, 1)),
+                   WeightedPosition(kDefaultWeight, Position("body", 5, 1)),
+                   WeightedPosition(kDefaultWeight, Position("body", 7, 1))})},
          {"doc2",
-          Posting({Position("header", 2, 1), Position("header", 4, 1)})}});
+          Posting(
+              {WeightedPosition(kDefaultWeight, Position("header", 2, 1)),
+               WeightedPosition(kDefaultWeight, Position("header", 4, 1))})}});
 
     index_.dictionary_[base::UTF8ToUTF16("B")] = PostingList(
         {{"doc1",
-          Posting({Position("header", 2, 1), Position("body", 4, 1),
-                   Position("header", 6, 1), Position("body", 8, 1)})}});
+          Posting(
+              {WeightedPosition(kDefaultWeight, Position("header", 2, 1)),
+               WeightedPosition(kDefaultWeight, Position("body", 4, 1)),
+               WeightedPosition(kDefaultWeight, Position("header", 6, 1)),
+               WeightedPosition(kDefaultWeight, Position("body", 8, 1))})}});
 
     index_.dictionary_[base::UTF8ToUTF16("C")] = PostingList(
         {{"doc2",
-          Posting({Position("header", 1, 1), Position("body", 3, 1),
-                   Position("header", 5, 1), Position("body", 7, 1)})}});
+          Posting(
+              {WeightedPosition(kDefaultWeight, Position("header", 1, 1)),
+               WeightedPosition(kDefaultWeight, Position("body", 3, 1)),
+               WeightedPosition(kDefaultWeight, Position("header", 5, 1)),
+               WeightedPosition(kDefaultWeight, Position("body", 7, 1))})}});
     index_.terms_to_be_updated_.insert(base::UTF8ToUTF16("A"));
     index_.terms_to_be_updated_.insert(base::UTF8ToUTF16("B"));
     index_.terms_to_be_updated_.insert(base::UTF8ToUTF16("C"));
@@ -125,46 +139,65 @@ class InvertedIndexTest : public ::testing::Test {
 TEST_F(InvertedIndexTest, FindTermTest) {
   PostingList result = FindTerm(base::UTF8ToUTF16("A"));
   ASSERT_EQ(result.size(), 2u);
-  EXPECT_EQ(result["doc1"][0].start, 1u);
-  EXPECT_EQ(result["doc1"][1].start, 3u);
-  EXPECT_EQ(result["doc1"][2].start, 5u);
-  EXPECT_EQ(result["doc1"][3].start, 7u);
+  EXPECT_EQ(result["doc1"][0].weight, kDefaultWeight);
+  EXPECT_EQ(result["doc1"][0].position.start, 1u);
+  EXPECT_EQ(result["doc1"][1].weight, kDefaultWeight);
+  EXPECT_EQ(result["doc1"][1].position.start, 3u);
+  EXPECT_EQ(result["doc1"][2].weight, kDefaultWeight);
+  EXPECT_EQ(result["doc1"][2].position.start, 5u);
+  EXPECT_EQ(result["doc1"][3].weight, kDefaultWeight);
+  EXPECT_EQ(result["doc1"][3].position.start, 7u);
 
-  EXPECT_EQ(result["doc2"][0].start, 2u);
-  EXPECT_EQ(result["doc2"][1].start, 4u);
+  EXPECT_EQ(result["doc2"][0].weight, kDefaultWeight);
+  EXPECT_EQ(result["doc2"][0].position.start, 2u);
+  EXPECT_EQ(result["doc2"][1].weight, kDefaultWeight);
+  EXPECT_EQ(result["doc2"][1].position.start, 4u);
 }
 
 TEST_F(InvertedIndexTest, AddNewDocumentTest) {
   const base::string16 a_utf16(base::UTF8ToUTF16("A"));
   const base::string16 d_utf16(base::UTF8ToUTF16("D"));
 
-  AddDocument("doc3",
-              {{a_utf16, {{"header", 1, 1}, {"body", 2, 1}, {"header", 4, 1}}},
-               {d_utf16, {{"header", 3, 1}, {"body", 5, 1}}}});
+  AddDocument("doc3", {{a_utf16,
+                        {{kDefaultWeight, {"header", 1, 1}},
+                         {kDefaultWeight / 2, {"body", 2, 1}},
+                         {kDefaultWeight, {"header", 4, 1}}}},
+                       {d_utf16,
+                        {{kDefaultWeight, {"header", 3, 1}},
+                         {kDefaultWeight / 2, {"body", 5, 1}}}}});
 
   EXPECT_EQ(GetDocLength()["doc3"], 5);
 
   // Find "A"
   PostingList result = FindTerm(a_utf16);
   ASSERT_EQ(result.size(), 3u);
-  EXPECT_EQ(result["doc3"][0].start, 1u);
-  EXPECT_EQ(result["doc3"][1].start, 2u);
-  EXPECT_EQ(result["doc3"][2].start, 4u);
+  EXPECT_EQ(result["doc3"][0].weight, kDefaultWeight);
+  EXPECT_EQ(result["doc3"][0].position.start, 1u);
+  EXPECT_EQ(result["doc3"][1].weight, kDefaultWeight / 2);
+  EXPECT_EQ(result["doc3"][1].position.start, 2u);
+  EXPECT_EQ(result["doc3"][2].weight, kDefaultWeight);
+  EXPECT_EQ(result["doc3"][2].position.start, 4u);
 
   // Find "D"
   result = FindTerm(d_utf16);
   ASSERT_EQ(result.size(), 1u);
-  EXPECT_EQ(result["doc3"][0].start, 3u);
-  EXPECT_EQ(result["doc3"][1].start, 5u);
+  EXPECT_EQ(result["doc3"][0].weight, kDefaultWeight);
+  EXPECT_EQ(result["doc3"][0].position.start, 3u);
+  EXPECT_EQ(result["doc3"][1].weight, kDefaultWeight / 2);
+  EXPECT_EQ(result["doc3"][1].position.start, 5u);
 }
 
 TEST_F(InvertedIndexTest, ReplaceDocumentTest) {
   const base::string16 a_utf16(base::UTF8ToUTF16("A"));
   const base::string16 d_utf16(base::UTF8ToUTF16("D"));
 
-  AddDocument("doc1",
-              {{a_utf16, {{"header", 1, 1}, {"body", 2, 1}, {"header", 4, 1}}},
-               {d_utf16, {{"header", 3, 1}, {"body", 5, 1}}}});
+  AddDocument("doc1", {{a_utf16,
+                        {{kDefaultWeight, {"header", 1, 1}},
+                         {kDefaultWeight / 4, {"body", 2, 1}},
+                         {kDefaultWeight / 2, {"header", 4, 1}}}},
+                       {d_utf16,
+                        {{kDefaultWeight / 3, {"header", 3, 1}},
+                         {kDefaultWeight / 5, {"body", 5, 1}}}}});
 
   EXPECT_EQ(GetDocLength()["doc1"], 5);
   EXPECT_EQ(GetDocLength()["doc2"], 6);
@@ -172,9 +205,12 @@ TEST_F(InvertedIndexTest, ReplaceDocumentTest) {
   // Find "A"
   PostingList result = FindTerm(a_utf16);
   ASSERT_EQ(result.size(), 2u);
-  EXPECT_EQ(result["doc1"][0].start, 1u);
-  EXPECT_EQ(result["doc1"][1].start, 2u);
-  EXPECT_EQ(result["doc1"][2].start, 4u);
+  EXPECT_EQ(result["doc1"][0].weight, kDefaultWeight);
+  EXPECT_EQ(result["doc1"][0].position.start, 1u);
+  EXPECT_EQ(result["doc1"][1].weight, kDefaultWeight / 4);
+  EXPECT_EQ(result["doc1"][1].position.start, 2u);
+  EXPECT_EQ(result["doc1"][2].weight, kDefaultWeight / 2);
+  EXPECT_EQ(result["doc1"][2].position.start, 4u);
 
   // Find "B"
   result = FindTerm(base::UTF8ToUTF16("B"));
@@ -183,8 +219,10 @@ TEST_F(InvertedIndexTest, ReplaceDocumentTest) {
   // Find "D"
   result = FindTerm(d_utf16);
   ASSERT_EQ(result.size(), 1u);
-  EXPECT_EQ(result["doc1"][0].start, 3u);
-  EXPECT_EQ(result["doc1"][1].start, 5u);
+  EXPECT_EQ(result["doc1"][0].weight, kDefaultWeight / 3);
+  EXPECT_EQ(result["doc1"][0].position.start, 3u);
+  EXPECT_EQ(result["doc1"][1].weight, kDefaultWeight / 5);
+  EXPECT_EQ(result["doc1"][1].position.start, 5u);
 }
 
 TEST_F(InvertedIndexTest, RemoveDocumentTest) {
@@ -199,8 +237,10 @@ TEST_F(InvertedIndexTest, RemoveDocumentTest) {
   // Find "A"
   PostingList result = FindTerm(base::UTF8ToUTF16("A"));
   ASSERT_EQ(result.size(), 1u);
-  EXPECT_EQ(result["doc2"][0].start, 2u);
-  EXPECT_EQ(result["doc2"][1].start, 4u);
+  EXPECT_EQ(result["doc2"][0].weight, kDefaultWeight);
+  EXPECT_EQ(result["doc2"][0].position.start, 2u);
+  EXPECT_EQ(result["doc2"][1].weight, kDefaultWeight);
+  EXPECT_EQ(result["doc2"][1].position.start, 4u);
 
   // Find "B"
   result = FindTerm(base::UTF8ToUTF16("B"));
@@ -209,10 +249,14 @@ TEST_F(InvertedIndexTest, RemoveDocumentTest) {
   // Find "C"
   result = FindTerm(base::UTF8ToUTF16("C"));
   ASSERT_EQ(result.size(), 1u);
-  EXPECT_EQ(result["doc2"][0].start, 1u);
-  EXPECT_EQ(result["doc2"][1].start, 3u);
-  EXPECT_EQ(result["doc2"][2].start, 5u);
-  EXPECT_EQ(result["doc2"][3].start, 7u);
+  EXPECT_EQ(result["doc2"][0].weight, kDefaultWeight);
+  EXPECT_EQ(result["doc2"][0].position.start, 1u);
+  EXPECT_EQ(result["doc2"][1].weight, kDefaultWeight);
+  EXPECT_EQ(result["doc2"][1].position.start, 3u);
+  EXPECT_EQ(result["doc2"][2].weight, kDefaultWeight);
+  EXPECT_EQ(result["doc2"][2].position.start, 5u);
+  EXPECT_EQ(result["doc2"][3].weight, kDefaultWeight);
+  EXPECT_EQ(result["doc2"][3].position.start, 7u);
 }
 
 TEST_F(InvertedIndexTest, TfidfFromZeroTest) {
@@ -245,10 +289,13 @@ TEST_F(InvertedIndexTest, UpdateIndexTest) {
   EXPECT_EQ(GetTfidfCache().size(), 3u);
 
   // Replaces "doc1"
-  AddDocument("doc1",
-              {{base::UTF8ToUTF16("A"),
-                {{"header", 1, 1}, {"body", 2, 1}, {"header", 4, 1}}},
-               {base::UTF8ToUTF16("D"), {{"header", 3, 1}, {"body", 5, 1}}}});
+  AddDocument("doc1", {{base::UTF8ToUTF16("A"),
+                        {{kDefaultWeight / 2, {"header", 1, 1}},
+                         {kDefaultWeight / 4, {"body", 2, 1}},
+                         {kDefaultWeight / 2, {"header", 4, 1}}}},
+                       {base::UTF8ToUTF16("D"),
+                        {{kDefaultWeight, {"header", 3, 1}},
+                         {kDefaultWeight, {"body", 5, 1}}}}});
 
   EXPECT_FALSE(IsInvertedIndexBuilt());
   BuildInvertedIndex();
@@ -256,20 +303,55 @@ TEST_F(InvertedIndexTest, UpdateIndexTest) {
   EXPECT_EQ(GetTfidfCache().size(), 3u);
 
   std::vector<TfidfResult> results = GetTfidf(base::UTF8ToUTF16("A"));
+  const double expected_tfidf_A_doc1 =
+      std::roundf(
+          TfIdfScore(
+              /*num_docs=*/2,
+              /*num_docs_with_term=*/2,
+              /*weighted_num_term_occurrence_in_doc=*/kDefaultWeight / 2 +
+                  kDefaultWeight / 4 + kDefaultWeight / 2,
+              /*doc_length=*/5) *
+          100) /
+      100;
+  const double expected_tfidf_A_doc2 =
+      std::roundf(
+          TfIdfScore(/*num_docs=*/2,
+                     /*num_docs_with_term=*/2,
+                     /*weighted_num_term_occurrence_in_doc=*/kDefaultWeight * 2,
+                     /*doc_length=*/6) *
+          100) /
+      100;
   EXPECT_THAT(GetScoresFromTfidfResult(results),
-              testing::UnorderedElementsAre(0.6, 0.33));
+              testing::UnorderedElementsAre(expected_tfidf_A_doc1,
+                                            expected_tfidf_A_doc2));
 
   results = GetTfidf(base::UTF8ToUTF16("B"));
   EXPECT_THAT(GetScoresFromTfidfResult(results),
               testing::UnorderedElementsAre());
 
   results = GetTfidf(base::UTF8ToUTF16("C"));
+  const double expected_tfidf_C_doc2 =
+      std::roundf(
+          TfIdfScore(/*num_docs=*/2,
+                     /*num_docs_with_term=*/1,
+                     /*weighted_num_term_occurrence_in_doc=*/kDefaultWeight * 4,
+                     /*doc_length=*/6) *
+          100) /
+      100;
   EXPECT_THAT(GetScoresFromTfidfResult(results),
-              testing::UnorderedElementsAre(0.94));
+              testing::UnorderedElementsAre(expected_tfidf_C_doc2));
 
   results = GetTfidf(base::UTF8ToUTF16("D"));
+  const double expected_tfidf_D_doc1 =
+      std::roundf(
+          TfIdfScore(/*num_docs=*/2,
+                     /*num_docs_with_term=*/1,
+                     /*weighted_num_term_occurrence_in_doc=*/kDefaultWeight * 2,
+                     /*doc_length=*/5) *
+          100) /
+      100;
   EXPECT_THAT(GetScoresFromTfidfResult(results),
-              testing::UnorderedElementsAre(0.56));
+              testing::UnorderedElementsAre(expected_tfidf_D_doc1));
 }
 
 TEST_F(InvertedIndexTest, FindMatchingDocumentsApproximatelyTest) {
@@ -279,6 +361,18 @@ TEST_F(InvertedIndexTest, FindMatchingDocumentsApproximatelyTest) {
   const base::string16 b_utf16(base::UTF8ToUTF16("B"));
   const base::string16 c_utf16(base::UTF8ToUTF16("C"));
   const base::string16 d_utf16(base::UTF8ToUTF16("D"));
+
+  // Replace doc1, same occurrences, just different weights.
+  AddDocument("doc1", {{a_utf16,
+                        {{kDefaultWeight, {"header", 1, 1}},
+                         {kDefaultWeight, {"header", 3, 1}},
+                         {kDefaultWeight / 2, {"body", 5, 1}},
+                         {kDefaultWeight / 2, {"body", 7, 1}}}},
+                       {b_utf16,
+                        {{kDefaultWeight / 2, {"header", 2, 1}},
+                         {kDefaultWeight / 2, {"header", 6, 1}},
+                         {kDefaultWeight / 3, {"body", 4, 1}},
+                         {kDefaultWeight / 3, {"body", 5, 1}}}}});
 
   BuildInvertedIndex();
 

@@ -12,7 +12,6 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/util/values/values_util.h"
 #include "chrome/browser/banners/app_banner_manager.h"
@@ -166,18 +165,25 @@ void UpdateSiteEngagementToTrigger() {
 }
 
 // Reports whether |event| was recorded within the |period| up until |now|.
-bool WasEventWithinPeriod(AppBannerSettingsHelper::AppBannerEvent event,
-                          base::TimeDelta period,
-                          content::WebContents* web_contents,
-                          const GURL& origin_url,
-                          const std::string& package_name_or_start_url,
-                          base::Time now) {
-  base::Time event_time = AppBannerSettingsHelper::GetSingleBannerEvent(
-      web_contents, origin_url, package_name_or_start_url, event);
+// If we get nullopt, we cannot store any more values for |origin_url|.
+// Conservatively assume we did block a banner in this case.
+base::Optional<bool> WasEventWithinPeriod(
+    AppBannerSettingsHelper::AppBannerEvent event,
+    base::TimeDelta period,
+    content::WebContents* web_contents,
+    const GURL& origin_url,
+    const std::string& package_name_or_start_url,
+    base::Time now) {
+  base::Optional<base::Time> event_time =
+      AppBannerSettingsHelper::GetSingleBannerEvent(
+          web_contents, origin_url, package_name_or_start_url, event);
+
+  if (!event_time)
+    return base::nullopt;
 
   // Null times are in the distant past, so the delta between real times and
   // null events will always be greater than the limits.
-  return (now - event_time < period);
+  return (now - *event_time < period);
 }
 
 // Dictionary of time information for how long to wait before showing the
@@ -318,11 +324,11 @@ bool AppBannerSettingsHelper::HasBeenInstalled(
     content::WebContents* web_contents,
     const GURL& origin_url,
     const std::string& package_name_or_start_url) {
-  base::Time added_time =
+  base::Optional<base::Time> added_time =
       GetSingleBannerEvent(web_contents, origin_url, package_name_or_start_url,
                            APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN);
 
-  return !added_time.is_null();
+  return added_time && !added_time->is_null();
 }
 
 bool AppBannerSettingsHelper::WasBannerRecentlyBlocked(
@@ -332,10 +338,11 @@ bool AppBannerSettingsHelper::WasBannerRecentlyBlocked(
     base::Time now) {
   DCHECK(!package_name_or_start_url.empty());
 
-  return WasEventWithinPeriod(
+  base::Optional<bool> in_period = WasEventWithinPeriod(
       APP_BANNER_EVENT_DID_BLOCK,
       base::TimeDelta::FromDays(gDaysAfterDismissedToShow), web_contents,
       origin_url, package_name_or_start_url, now);
+  return in_period.value_or(true);
 }
 
 bool AppBannerSettingsHelper::WasBannerRecentlyIgnored(
@@ -345,13 +352,15 @@ bool AppBannerSettingsHelper::WasBannerRecentlyIgnored(
     base::Time now) {
   DCHECK(!package_name_or_start_url.empty());
 
-  return WasEventWithinPeriod(
+  base::Optional<bool> in_period = WasEventWithinPeriod(
       APP_BANNER_EVENT_DID_SHOW,
       base::TimeDelta::FromDays(gDaysAfterIgnoredToShow), web_contents,
       origin_url, package_name_or_start_url, now);
+
+  return in_period.value_or(true);
 }
 
-base::Time AppBannerSettingsHelper::GetSingleBannerEvent(
+base::Optional<base::Time> AppBannerSettingsHelper::GetSingleBannerEvent(
     content::WebContents* web_contents,
     const GURL& origin_url,
     const std::string& package_name_or_start_url,
@@ -360,7 +369,7 @@ base::Time AppBannerSettingsHelper::GetSingleBannerEvent(
 
   AppPrefs app_prefs(web_contents, origin_url, package_name_or_start_url);
   if (!app_prefs.dict())
-    return base::Time();
+    return base::nullopt;
 
   base::Value* internal_time = app_prefs.dict()->FindKeyOfType(
       kBannerEventKeys[event], base::Value::Type::DOUBLE);
@@ -381,13 +390,13 @@ void AppBannerSettingsHelper::RecordMinutesFromFirstVisitToShow(
     const GURL& origin_url,
     const std::string& package_name_or_start_url,
     base::Time time) {
-  base::Time could_show_time =
+  base::Optional<base::Time> could_show_time =
       GetSingleBannerEvent(web_contents, origin_url, package_name_or_start_url,
                            APP_BANNER_EVENT_COULD_SHOW);
 
   int minutes = 0;
-  if (!could_show_time.is_null())
-    minutes = (time - could_show_time).InMinutes();
+  if (could_show_time && !could_show_time->is_null())
+    minutes = (time - *could_show_time).InMinutes();
 
   banners::TrackMinutesFromFirstVisitToBannerShown(minutes);
 }

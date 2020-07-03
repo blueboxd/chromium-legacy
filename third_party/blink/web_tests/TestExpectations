@@ -3309,8 +3309,6 @@ crbug.com/366559 external/wpt/svg/text/reftests/textpath-side-001.svg [ Failure 
 crbug.com/366559 external/wpt/svg/text/reftests/textpath-shape-001.svg [ Failure ]
 crbug.com/626703 external/wpt/svg/rendering/order/z-index.svg [ Failure ]
 crbug.com/626703 external/wpt/web-animations/timing-model/timelines/update-and-send-events.html [ Failure ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/compat/webkit-text-fill-color-property-002.html [ Failure ]
-crbug.com/626703 [ Mac10.13 ] external/wpt/compat/webkit-text-fill-color-property-002.html [ Failure ]
 crbug.com/626703 external/wpt/svg/painting/reftests/paint-context-001.svg [ Failure ]
 crbug.com/626703 external/wpt/svg/painting/reftests/paint-context-002.svg [ Failure ]
 crbug.com/626703 external/wpt/css/css-scoping/shadow-directionality-002.tentative.html [ Failure ]

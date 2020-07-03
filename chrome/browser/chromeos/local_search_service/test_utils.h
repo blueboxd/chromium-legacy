@@ -23,6 +23,12 @@ std::vector<Data> CreateTestData(
     const std::map<std::string,
                    std::vector<std::pair<std::string, std::string>>>& input);
 
+// Similar to above, but takes a weight for each item.
+std::vector<Data> CreateTestData(
+    const std::map<std::string,
+                   std::vector<std::tuple<std::string, std::string, float>>>&
+        input);
+
 // Checks |result|'s id, score and number of matching positions are expected.
 void CheckResult(const Result& result,
                  const std::string& expected_id,
@@ -31,7 +37,7 @@ void CheckResult(const Result& result,
 
 float TfIdfScore(size_t num_docs,
                  size_t num_docs_with_term,
-                 size_t num_term_occurrence_in_doc,
+                 float weighted_num_term_occurrence_in_doc,
                  size_t doc_length);
 
 }  // namespace local_search_service

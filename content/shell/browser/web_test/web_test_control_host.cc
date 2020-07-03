@@ -70,7 +70,6 @@
 #include "content/shell/browser/web_test/web_test_content_browser_client.h"
 #include "content/shell/browser/web_test/web_test_devtools_bindings.h"
 #include "content/shell/browser/web_test/web_test_first_device_bluetooth_chooser.h"
-#include "content/shell/browser/web_test/web_test_javascript_dialog_manager.h"
 #include "content/shell/common/web_test/web_test_string_util.h"
 #include "content/shell/common/web_test/web_test_switches.h"
 #include "content/test/storage_partition_test_helpers.h"
@@ -672,28 +671,16 @@ bool WebTestControlHost::ResetBrowserAfterWebTest() {
   return true;
 }
 
-void WebTestControlHost::DidOpenNewWindowOrTab(WebContents* web_contents) {
+void WebTestControlHost::DidCreateOrAttachWebContents(
+    WebContents* web_contents) {
   auto result = test_opened_window_observers_.emplace(
       web_contents,
       std::make_unique<WebTestWindowObserver>(web_contents, this));
   CHECK(result.second);  // The WebContents should not already be in the map!
 }
 
-std::unique_ptr<JavaScriptDialogManager>
-WebTestControlHost::CreateJavaScriptDialogManager() {
-  return std::make_unique<WebTestJavaScriptDialogManager>();
-}
-
 void WebTestControlHost::SetTempPath(const base::FilePath& temp_path) {
   temp_path_ = temp_path;
-}
-
-void WebTestControlHost::RendererUnresponsive() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableHangMonitor)) {
-    LOG(WARNING) << "renderer unresponsive";
-  }
 }
 
 void WebTestControlHost::OverrideWebkitPrefs(WebPreferences* prefs) {

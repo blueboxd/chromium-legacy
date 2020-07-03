@@ -30,6 +30,11 @@ void ThroughputUkmReporter::ReportThroughputUkm(
     const base::Optional<int>& impl_throughput_percent,
     const base::Optional<int>& main_throughput_percent,
     FrameSequenceTrackerType type) {
+  // It is possible that when a tab shuts down, the ukm_manager_ owned by the
+  // LayerTreeHostImpl is cleared, and yet we try to report to UKM here. In this
+  // case, the |ukm_manager_| here is null.
+  if (!ukm_manager_)
+    return;
   if (samples_to_next_event_[static_cast<int>(type)] == 0) {
     // Sample every 100 events. Using the Universal tracker as an example
     // which reports UMA every 5s, then the system collects UKM once per

@@ -42,10 +42,6 @@
 #include "third_party/blink/public/common/peerconnection/webrtc_ip_handling_policy.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 
-#if !defined(OS_ANDROID)
-#include "content/shell/browser/web_test/web_test_control_host.h"  // nogncheck
-#endif
-
 namespace content {
 
 // Null until/unless the default main message loop is running.
@@ -130,7 +126,6 @@ Shell* Shell::CreateShell(std::unique_ptr<WebContents> web_contents,
   WebContents* raw_web_contents = web_contents.get();
   Shell* shell = new Shell(std::move(web_contents), should_set_delegate);
   g_platform->CreatePlatformWindow(shell, initial_size);
-  g_platform->SetContents(shell);
 
   // Note: Do not make RenderFrameHost or RenderViewHost specific state changes
   // here, because they will be forgotten after a cross-process navigation. Use
@@ -147,12 +142,8 @@ Shell* Shell::CreateShell(std::unique_ptr<WebContents> web_contents,
             switches::kForceWebRtcIPHandlingPolicy);
   }
 
-#if !defined(OS_ANDROID)
-  // TODO(danakj): Move this into WebTestShellPlatformDelegate.
-  WebTestControlHost* web_test_control_host = WebTestControlHost::Get();
-  if (web_test_control_host)
-    web_test_control_host->DidOpenNewWindowOrTab(shell->web_contents());
-#endif
+  g_platform->SetContents(shell);
+  g_platform->DidCreateOrAttachWebContents(shell, raw_web_contents);
 
   return shell;
 }
@@ -534,29 +525,17 @@ void Shell::NavigationStateChanged(WebContents* source,
 
 JavaScriptDialogManager* Shell::GetJavaScriptDialogManager(
     WebContents* source) {
-  if (!dialog_manager_) {
-#if !defined(OS_ANDROID)
-    // TODO(danakj): Move this into WebTestShellPlatformDelegate.
-    WebTestControlHost* web_test_control_host = WebTestControlHost::Get();
-    if (web_test_control_host)
-      dialog_manager_ = web_test_control_host->CreateJavaScriptDialogManager();
-    else
-#endif
-      dialog_manager_ = std::make_unique<ShellJavaScriptDialogManager>();
-  }
+  if (!dialog_manager_)
+    dialog_manager_ = g_platform->CreateJavaScriptDialogManager(this);
+  if (!dialog_manager_)
+    dialog_manager_ = std::make_unique<ShellJavaScriptDialogManager>();
   return dialog_manager_.get();
 }
 
 std::unique_ptr<BluetoothChooser> Shell::RunBluetoothChooser(
     RenderFrameHost* frame,
     const BluetoothChooser::EventHandler& event_handler) {
-#if !defined(OS_ANDROID)
-  // TODO(danakj): Move this into WebTestShellPlatformDelegate.
-  WebTestControlHost* web_test_control_host = WebTestControlHost::Get();
-  if (web_test_control_host)
-    return web_test_control_host->RunBluetoothChooser(frame, event_handler);
-#endif
-  return nullptr;
+  return g_platform->RunBluetoothChooser(this, frame, event_handler);
 }
 
 class AlwaysAllowBluetoothScanning : public BluetoothScanningPrompt {
@@ -573,6 +552,10 @@ std::unique_ptr<BluetoothScanningPrompt> Shell::ShowBluetoothScanningPrompt(
 }
 
 #if defined(OS_MACOSX)
+void Shell::DidNavigateMainFramePostCommit(WebContents* contents) {
+  g_platform->DidNavigateMainFramePostCommit(this, contents);
+}
+
 bool Shell::HandleKeyboardEvent(WebContents* source,
                                 const NativeWebKeyboardEvent& event) {
   return g_platform->HandleKeyboardEvent(this, source, event);
@@ -588,12 +571,7 @@ bool Shell::DidAddMessageToConsole(WebContents* source,
 }
 
 void Shell::PortalWebContentsCreated(WebContents* portal_web_contents) {
-#if !defined(OS_ANDROID)
-  // TODO(danakj): Move this into WebTestShellPlatformDelegate.
-  WebTestControlHost* web_test_control_host = WebTestControlHost::Get();
-  if (web_test_control_host)
-    web_test_control_host->DidOpenNewWindowOrTab(portal_web_contents);
-#endif
+  g_platform->DidCreateOrAttachWebContents(this, portal_web_contents);
 }
 
 void Shell::RendererUnresponsive(
@@ -601,10 +579,7 @@ void Shell::RendererUnresponsive(
     RenderWidgetHost* render_widget_host,
     base::RepeatingClosure hang_monitor_restarter) {
 #if !defined(OS_ANDROID)
-  // TODO(danakj): Move this into WebTestShellPlatformDelegate.
-  WebTestControlHost* web_test_control_host = WebTestControlHost::Get();
-  if (web_test_control_host)
-    web_test_control_host->RendererUnresponsive();
+  g_platform->RendererUnresponsive(this);
 #endif
 }
 
@@ -643,18 +618,10 @@ bool Shell::ShouldAllowRunningInsecureContent(WebContents* web_contents,
                                               bool allowed_per_prefs,
                                               const url::Origin& origin,
                                               const GURL& resource_url) {
-  bool allowed_by_test = false;
-#if !defined(OS_ANDROID)
-  // TODO(danakj): Move this into WebTestShellPlatformDelegate.
-  WebTestControlHost* web_test_control_host = WebTestControlHost::Get();
-  if (web_test_control_host) {
-    const base::DictionaryValue& test_flags =
-        web_test_control_host->accumulated_web_test_runtime_flags_changes();
-    test_flags.GetBoolean("running_insecure_content_allowed", &allowed_by_test);
-  }
-#endif
+  if (allowed_per_prefs)
+    return true;
 
-  return allowed_per_prefs || allowed_by_test;
+  return g_platform->ShouldAllowRunningInsecureContent(this);
 }
 
 PictureInPictureResult Shell::EnterPictureInPicture(

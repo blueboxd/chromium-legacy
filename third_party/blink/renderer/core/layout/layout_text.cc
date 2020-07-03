@@ -244,7 +244,6 @@ void LayoutText::RemoveAndDestroyTextBoxes() {
   } else if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
     if (FirstInlineFragmentItemIndex()) {
       DetachAbstractInlineTextBoxesIfNeeded();
-      NGFragmentItems::LayoutObjectWillBeDestroyed(*this);
       ClearFirstInlineFragmentItemIndex();
     }
   } else if (NGPaintFragment* first_inline_fragment = FirstInlineFragment()) {

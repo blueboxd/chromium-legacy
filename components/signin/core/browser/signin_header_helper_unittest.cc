@@ -19,8 +19,8 @@
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "net/http/http_request_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -28,12 +28,37 @@
 #include "components/signin/core/browser/dice_header_helper.h"
 #endif
 
+namespace signin {
 namespace {
 constexpr char kTestDeviceId[] = "DeviceID";
 constexpr char kTestSource[] = "TestSource";
-}
 
-namespace signin {
+class RequestAdapterWrapper {
+ public:
+  RequestAdapterWrapper(const GURL& url, const net::HttpRequestHeaders& headers)
+      : adapter_(url,
+                 headers,
+                 &modified_request_headers_,
+                 &to_be_removed_request_headers_),
+        original_headers_(headers) {}
+
+  RequestAdapter* adapter() { return &adapter_; }
+
+  net::HttpRequestHeaders GetFinalHeaders() {
+    net::HttpRequestHeaders final_headers(original_headers_);
+    final_headers.MergeFrom(modified_request_headers_);
+    for (const std::string& name : to_be_removed_request_headers_)
+      final_headers.RemoveHeader(name);
+    return final_headers;
+  }
+
+ private:
+  RequestAdapter adapter_;
+  const net::HttpRequestHeaders& original_headers_;
+  net::HttpRequestHeaders modified_request_headers_;
+  std::vector<std::string> to_be_removed_request_headers_;
+};
+}  // namespace
 
 class SigninHeaderHelperTest : public testing::Test {
  protected:
@@ -60,32 +85,27 @@ class SigninHeaderHelperTest : public testing::Test {
               expected_request);
   }
 
-  std::unique_ptr<net::URLRequest> CreateRequest(
-      const GURL& url,
-      const std::string& account_id) {
-    std::unique_ptr<net::URLRequest> url_request =
-        url_request_context_.CreateRequest(url, net::DEFAULT_PRIORITY, nullptr,
-                                           TRAFFIC_ANNOTATION_FOR_TESTS);
-    RequestAdapter request_adapter(url_request.get());
+  net::HttpRequestHeaders CreateRequest(const GURL& url,
+                                        const std::string& account_id) {
+    net::HttpRequestHeaders original_headers;
+    RequestAdapterWrapper request_adapter(url, original_headers);
     AppendOrRemoveMirrorRequestHeader(
-        &request_adapter, GURL(), account_id, account_consistency_,
+        request_adapter.adapter(), GURL(), account_id, account_consistency_,
         cookie_settings_.get(), PROFILE_MODE_DEFAULT, kTestSource,
         force_account_consistency_);
-    AppendOrRemoveDiceRequestHeader(&request_adapter, GURL(), account_id,
-                                    sync_enabled_, account_consistency_,
-                                    cookie_settings_.get(), device_id_);
-    return url_request;
+    AppendOrRemoveDiceRequestHeader(
+        request_adapter.adapter(), GURL(), account_id, sync_enabled_,
+        account_consistency_, cookie_settings_.get(), device_id_);
+    return request_adapter.GetFinalHeaders();
   }
 
   void CheckAccountConsistencyHeaderRequest(
-      net::URLRequest* url_request,
+      const net::HttpRequestHeaders& headers,
       const char* header_name,
       const std::string& expected_request) {
     bool expected_result = !expected_request.empty();
     std::string request;
-    EXPECT_EQ(
-        url_request->extra_request_headers().GetHeader(header_name, &request),
-        expected_result)
+    EXPECT_EQ(headers.GetHeader(header_name, &request), expected_result)
         << header_name << ": " << request;
     if (expected_result) {
       EXPECT_EQ(expected_request, request);
@@ -95,10 +115,9 @@ class SigninHeaderHelperTest : public testing::Test {
   void CheckMirrorHeaderRequest(const GURL& url,
                                 const std::string& account_id,
                                 const std::string& expected_request) {
-    std::unique_ptr<net::URLRequest> url_request =
-        CreateRequest(url, account_id);
-    CheckAccountConsistencyHeaderRequest(
-        url_request.get(), kChromeConnectedHeader, expected_request);
+    net::HttpRequestHeaders headers = CreateRequest(url, account_id);
+    CheckAccountConsistencyHeaderRequest(headers, kChromeConnectedHeader,
+                                         expected_request);
   }
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -106,11 +125,10 @@ class SigninHeaderHelperTest : public testing::Test {
                               const std::string& account_id,
                               const std::string& expected_mirror_request,
                               const std::string& expected_dice_request) {
-    std::unique_ptr<net::URLRequest> url_request =
-        CreateRequest(url, account_id);
-    CheckAccountConsistencyHeaderRequest(
-        url_request.get(), kChromeConnectedHeader, expected_mirror_request);
-    CheckAccountConsistencyHeaderRequest(url_request.get(), kDiceRequestHeader,
+    net::HttpRequestHeaders headers = CreateRequest(url, account_id);
+    CheckAccountConsistencyHeaderRequest(headers, kChromeConnectedHeader,
+                                         expected_mirror_request);
+    CheckAccountConsistencyHeaderRequest(headers, kDiceRequestHeader,
                                          expected_dice_request);
   }
 #endif
@@ -124,7 +142,6 @@ class SigninHeaderHelperTest : public testing::Test {
   bool force_account_consistency_ = false;
 
   sync_preferences::TestingPrefServiceSyncable prefs_;
-  net::TestURLRequestContext url_request_context_;
 
   scoped_refptr<HostContentSettingsMap> settings_map_;
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
@@ -227,33 +244,29 @@ TEST_F(SigninHeaderHelperTest, TestMirrorRequestGoogleCom) {
 
 // Tests that no header sent when mirror account consistency is nor requested.
 TEST_F(SigninHeaderHelperTest, TestMirrorRequestGoogleComNoProfileConsistency) {
-  std::unique_ptr<net::URLRequest> url_request =
-      url_request_context_.CreateRequest(GURL("https://www.google.com"),
-                                         net::DEFAULT_PRIORITY, nullptr,
-                                         TRAFFIC_ANNOTATION_FOR_TESTS);
-  RequestAdapter request_adapter(url_request.get());
+  net::HttpRequestHeaders original_headers;
+  RequestAdapterWrapper request_adapter(GURL("https://www.google.com"),
+                                        original_headers);
   AppendOrRemoveMirrorRequestHeader(
-      &request_adapter, GURL(), "0123456789", account_consistency_,
+      request_adapter.adapter(), GURL(), "0123456789", account_consistency_,
       cookie_settings_.get(), PROFILE_MODE_DEFAULT, kTestSource,
       false /* force_account_consistency */);
-  CheckAccountConsistencyHeaderRequest(url_request.get(),
+  CheckAccountConsistencyHeaderRequest(request_adapter.GetFinalHeaders(),
                                        kChromeConnectedHeader, "");
 }
 
 // Tests that header sent when mirror account consistency is requested.
 TEST_F(SigninHeaderHelperTest, TestMirrorRequestGoogleComProfileConsistency) {
   account_consistency_ = AccountConsistencyMethod::kMirror;
-  std::unique_ptr<net::URLRequest> url_request =
-      url_request_context_.CreateRequest(GURL("https://www.google.com"),
-                                         net::DEFAULT_PRIORITY, nullptr,
-                                         TRAFFIC_ANNOTATION_FOR_TESTS);
-  RequestAdapter request_adapter(url_request.get());
+  net::HttpRequestHeaders original_headers;
+  RequestAdapterWrapper request_adapter(GURL("https://www.google.com"),
+                                        original_headers);
   AppendOrRemoveMirrorRequestHeader(
-      &request_adapter, GURL(), "0123456789", account_consistency_,
+      request_adapter.adapter(), GURL(), "0123456789", account_consistency_,
       cookie_settings_.get(), PROFILE_MODE_DEFAULT, kTestSource,
       false /* force_account_consistency */);
   CheckAccountConsistencyHeaderRequest(
-      url_request.get(), kChromeConnectedHeader,
+      request_adapter.GetFinalHeaders(), kChromeConnectedHeader,
       "source=TestSource,mode=0,enable_account_consistency=true,"
       "consistency_enabled_by_default=false");
 }
@@ -510,16 +523,14 @@ TEST_F(SigninHeaderHelperTest, TestMirrorHeaderEligibleRedirectURL) {
   const GURL url("https://docs.google.com/document");
   const GURL redirect_url("https://www.google.com");
   const std::string account_id = "0123456789";
-  std::unique_ptr<net::URLRequest> url_request =
-      url_request_context_.CreateRequest(url, net::DEFAULT_PRIORITY, nullptr,
-                                         TRAFFIC_ANNOTATION_FOR_TESTS);
-  RequestAdapter request_adapter(url_request.get());
+  net::HttpRequestHeaders original_headers;
+  RequestAdapterWrapper request_adapter(url, original_headers);
   AppendOrRemoveMirrorRequestHeader(
-      &request_adapter, redirect_url, account_id, account_consistency_,
+      request_adapter.adapter(), redirect_url, account_id, account_consistency_,
       cookie_settings_.get(), PROFILE_MODE_DEFAULT, kTestSource,
       false /* force_account_consistency */);
   EXPECT_TRUE(
-      url_request->extra_request_headers().HasHeader(kChromeConnectedHeader));
+      request_adapter.GetFinalHeaders().HasHeader(kChromeConnectedHeader));
 }
 
 // Tests that the Mirror header request is stripped when the redirect URL is not
@@ -529,16 +540,15 @@ TEST_F(SigninHeaderHelperTest, TestMirrorHeaderNonEligibleRedirectURL) {
   const GURL url("https://docs.google.com/document");
   const GURL redirect_url("http://www.foo.com");
   const std::string account_id = "0123456789";
-  std::unique_ptr<net::URLRequest> url_request =
-      url_request_context_.CreateRequest(url, net::DEFAULT_PRIORITY, nullptr,
-                                         TRAFFIC_ANNOTATION_FOR_TESTS);
-  RequestAdapter request_adapter(url_request.get());
+  net::HttpRequestHeaders original_headers;
+  original_headers.SetHeader(kChromeConnectedHeader, "foo,bar");
+  RequestAdapterWrapper request_adapter(url, original_headers);
   AppendOrRemoveMirrorRequestHeader(
-      &request_adapter, redirect_url, account_id, account_consistency_,
+      request_adapter.adapter(), redirect_url, account_id, account_consistency_,
       cookie_settings_.get(), PROFILE_MODE_DEFAULT, kTestSource,
       false /* force_account_consistency */);
   EXPECT_FALSE(
-      url_request->extra_request_headers().HasHeader(kChromeConnectedHeader));
+      request_adapter.GetFinalHeaders().HasHeader(kChromeConnectedHeader));
 }
 
 // Tests that the Mirror header, whatever its value is, is untouched when both
@@ -549,18 +559,15 @@ TEST_F(SigninHeaderHelperTest, TestIgnoreMirrorHeaderNonEligibleURLs) {
   const GURL redirect_url("http://www.foo.com");
   const std::string account_id = "0123456789";
   const std::string fake_header = "foo,bar";
-  std::unique_ptr<net::URLRequest> url_request =
-      url_request_context_.CreateRequest(url, net::DEFAULT_PRIORITY, nullptr,
-                                         TRAFFIC_ANNOTATION_FOR_TESTS);
-  url_request->SetExtraRequestHeaderByName(kChromeConnectedHeader, fake_header,
-                                           false);
-  RequestAdapter request_adapter(url_request.get());
+  net::HttpRequestHeaders original_headers;
+  original_headers.SetHeader(kChromeConnectedHeader, fake_header);
+  RequestAdapterWrapper request_adapter(url, original_headers);
   AppendOrRemoveMirrorRequestHeader(
-      &request_adapter, redirect_url, account_id, account_consistency_,
+      request_adapter.adapter(), redirect_url, account_id, account_consistency_,
       cookie_settings_.get(), PROFILE_MODE_DEFAULT, kTestSource,
       false /* force_account_consistency */);
   std::string header;
-  EXPECT_TRUE(url_request->extra_request_headers().GetHeader(
+  EXPECT_TRUE(request_adapter.GetFinalHeaders().GetHeader(
       kChromeConnectedHeader, &header));
   EXPECT_EQ(fake_header, header);
 }

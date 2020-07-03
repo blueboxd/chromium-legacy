@@ -197,10 +197,6 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   PluginMetricsProvider* plugin_metrics_provider_ = nullptr;
 #endif
 
-  // Callback to determine whether or not a cellular network is currently being
-  // used.
-  base::Callback<void(bool*)> cellular_callback_;
-
   // Subscription for receiving callbacks that a URL was opened from the
   // omnibox.
   std::unique_ptr<base::CallbackList<void(OmniboxLog*)>::Subscription>

@@ -189,13 +189,12 @@ class ProxyingURLLoaderFactory::InProgressRequest::ProxyRequestAdapter
                       const net::HttpRequestHeaders& original_headers,
                       net::HttpRequestHeaders* modified_headers,
                       std::vector<std::string>* removed_headers)
-      : in_progress_request_(in_progress_request),
-        original_headers_(original_headers),
-        modified_headers_(modified_headers),
-        removed_headers_(removed_headers) {
+      : ChromeRequestAdapter(in_progress_request->request_url_,
+                             original_headers,
+                             modified_headers,
+                             removed_headers),
+        in_progress_request_(in_progress_request) {
     DCHECK(in_progress_request_);
-    DCHECK(modified_headers_);
-    DCHECK(removed_headers_);
   }
 
   ~ProxyRequestAdapter() override = default;
@@ -217,35 +216,8 @@ class ProxyingURLLoaderFactory::InProgressRequest::ProxyRequestAdapter
       in_progress_request_->destruction_callback_ = std::move(closure);
   }
 
-  // signin::RequestAdapter
-  const GURL& GetUrl() override { return in_progress_request_->request_url_; }
-
-  bool HasHeader(const std::string& name) override {
-    return (original_headers_.HasHeader(name) ||
-            modified_headers_->HasHeader(name)) &&
-           !base::Contains(*removed_headers_, name);
-  }
-
-  void RemoveRequestHeaderByName(const std::string& name) override {
-    if (!base::Contains(*removed_headers_, name))
-      removed_headers_->push_back(name);
-  }
-
-  void SetExtraHeaderByName(const std::string& name,
-                            const std::string& value) override {
-    modified_headers_->SetHeader(name, value);
-
-    auto it =
-        std::find(removed_headers_->begin(), removed_headers_->end(), name);
-    if (it != removed_headers_->end())
-      removed_headers_->erase(it);
-  }
-
  private:
   InProgressRequest* const in_progress_request_;
-  const net::HttpRequestHeaders& original_headers_;
-  net::HttpRequestHeaders* modified_headers_;
-  std::vector<std::string>* removed_headers_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyRequestAdapter);
 };

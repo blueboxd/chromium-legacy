@@ -10,23 +10,29 @@
 
 namespace local_search_service {
 
+namespace {
+constexpr double kDefaultWeight = 1.0;
+}  // namespace
+
 TEST(ContentExtractionUtilsTest, ConsolidateTokenTest) {
   {
     const base::string16 text(base::UTF8ToUTF16(
         "Check duplicate. Duplicate is #@$%^&@#$%#@$^@#$ bad"));
-    const auto tokens =
-        ConsolidateToken(ExtractContent("3rd test", text, "en"));
+    const auto tokens = ConsolidateToken(
+        ExtractContent("3rd test", text, kDefaultWeight, "en"));
     EXPECT_EQ(tokens.size(), 3u);
 
     bool found = false;
     for (const auto& token : tokens) {
       if (token.content == base::UTF8ToUTF16("duplicate")) {
         found = true;
-        EXPECT_EQ(token.positions[0].content_id, "3rd test");
-        EXPECT_EQ(token.positions[0].start, 6u);
-        EXPECT_EQ(token.positions[0].length, 9u);
-        EXPECT_EQ(token.positions[1].start, 17u);
-        EXPECT_EQ(token.positions[1].length, 9u);
+        EXPECT_EQ(token.positions[0].weight, kDefaultWeight);
+        EXPECT_EQ(token.positions[0].position.content_id, "3rd test");
+        EXPECT_EQ(token.positions[0].position.start, 6u);
+        EXPECT_EQ(token.positions[0].position.length, 9u);
+        EXPECT_EQ(token.positions[1].weight, kDefaultWeight);
+        EXPECT_EQ(token.positions[1].position.start, 17u);
+        EXPECT_EQ(token.positions[1].position.length, 9u);
       }
     }
     EXPECT_TRUE(found);
@@ -34,9 +40,13 @@ TEST(ContentExtractionUtilsTest, ConsolidateTokenTest) {
   {
     std::vector<Token> sources = {
         Token(base::UTF8ToUTF16("A"),
-              {Position("ID1", 1u, 1u), Position("ID1", 3u, 1u)}),
-        Token(base::UTF8ToUTF16("B"), {Position("ID1", 5, 1)}),
-        Token(base::UTF8ToUTF16("A"), {Position("ID2", 10, 1)})};
+              {WeightedPosition(kDefaultWeight, Position("ID1", 1u, 1u)),
+               WeightedPosition(kDefaultWeight, Position("ID1", 3u, 1u))}),
+        Token(base::UTF8ToUTF16("B"),
+              {WeightedPosition(kDefaultWeight, Position("ID1", 5, 1))}),
+        // A different weight for content "ID2".
+        Token(base::UTF8ToUTF16("A"),
+              {WeightedPosition(kDefaultWeight / 2, Position("ID2", 10, 1))})};
     const auto tokens = ConsolidateToken(sources);
     EXPECT_EQ(tokens.size(), 2u);
 
@@ -44,15 +54,18 @@ TEST(ContentExtractionUtilsTest, ConsolidateTokenTest) {
     for (const auto& token : tokens) {
       if (token.content == base::UTF8ToUTF16("A")) {
         found = true;
-        EXPECT_EQ(token.positions[0].content_id, "ID1");
-        EXPECT_EQ(token.positions[0].start, 1u);
-        EXPECT_EQ(token.positions[0].length, 1u);
-        EXPECT_EQ(token.positions[1].content_id, "ID1");
-        EXPECT_EQ(token.positions[1].start, 3u);
-        EXPECT_EQ(token.positions[1].length, 1u);
-        EXPECT_EQ(token.positions[2].content_id, "ID2");
-        EXPECT_EQ(token.positions[2].start, 10u);
-        EXPECT_EQ(token.positions[2].length, 1u);
+        EXPECT_EQ(token.positions[0].weight, kDefaultWeight);
+        EXPECT_EQ(token.positions[0].position.content_id, "ID1");
+        EXPECT_EQ(token.positions[0].position.start, 1u);
+        EXPECT_EQ(token.positions[0].position.length, 1u);
+        EXPECT_EQ(token.positions[1].weight, kDefaultWeight);
+        EXPECT_EQ(token.positions[1].position.content_id, "ID1");
+        EXPECT_EQ(token.positions[1].position.start, 3u);
+        EXPECT_EQ(token.positions[1].position.length, 1u);
+        EXPECT_EQ(token.positions[2].weight, kDefaultWeight / 2);
+        EXPECT_EQ(token.positions[2].position.content_id, "ID2");
+        EXPECT_EQ(token.positions[2].position.start, 10u);
+        EXPECT_EQ(token.positions[2].position.length, 1u);
       }
     }
     EXPECT_TRUE(found);
@@ -64,23 +77,26 @@ TEST(ContentExtractionUtilsTest, ExtractContentTest) {
     const base::string16 text(base::UTF8ToUTF16(
         "Normal... English!!! paragraph: email@gmail.com. Here is a link: "
         "https://google.com, ip=8.8.8.8"));
-    const auto tokens = ExtractContent("first test", text, "en");
+    const auto tokens =
+        ExtractContent("first test", text, kDefaultWeight / 2, "en");
     EXPECT_EQ(tokens.size(), 7u);
 
     EXPECT_EQ(tokens[1].content, base::UTF8ToUTF16("english"));
-    EXPECT_EQ(tokens[1].positions[0].content_id, "first test");
-    EXPECT_EQ(tokens[1].positions[0].start, 10u);
-    EXPECT_EQ(tokens[1].positions[0].length, 7u);
+    EXPECT_EQ(tokens[1].positions[0].weight, kDefaultWeight / 2);
+    EXPECT_EQ(tokens[1].positions[0].position.content_id, "first test");
+    EXPECT_EQ(tokens[1].positions[0].position.start, 10u);
+    EXPECT_EQ(tokens[1].positions[0].position.length, 7u);
   }
   {
     const base::string16 text(base::UTF8ToUTF16("@#$%@^你好!!!"));
-    const auto tokens = ExtractContent("2nd test", text, "zh");
+    const auto tokens = ExtractContent("2nd test", text, kDefaultWeight, "zh");
     EXPECT_EQ(tokens.size(), 1u);
 
     EXPECT_EQ(tokens[0].content, base::UTF8ToUTF16("你好"));
-    EXPECT_EQ(tokens[0].positions[0].content_id, "2nd test");
-    EXPECT_EQ(tokens[0].positions[0].start, 6u);
-    EXPECT_EQ(tokens[0].positions[0].length, 2u);
+    EXPECT_EQ(tokens[0].positions[0].weight, kDefaultWeight);
+    EXPECT_EQ(tokens[0].positions[0].position.content_id, "2nd test");
+    EXPECT_EQ(tokens[0].positions[0].position.start, 6u);
+    EXPECT_EQ(tokens[0].positions[0].position.length, 2u);
   }
 }
 

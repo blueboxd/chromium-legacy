@@ -13,6 +13,8 @@ namespace {
 
 const char kTestURL[] = "https://www.google.com";
 const char kSameOriginTestURL[] = "https://www.google.com/foo.html";
+const char kSameOriginTestURL1[] = "https://www.google.com/foo1.html";
+const char kSameOriginTestURL2[] = "https://www.google.com/foo2.html";
 const char kDifferentOriginTestURL[] = "https://www.example.com";
 const char kTestPackageName[] = "test.package";
 
@@ -51,10 +53,11 @@ TEST_F(AppBannerSettingsHelperTest, SingleEvents) {
   for (int event = AppBannerSettingsHelper::APP_BANNER_EVENT_COULD_SHOW;
        event < AppBannerSettingsHelper::APP_BANNER_EVENT_NUM_EVENTS; ++event) {
     // Check that by default, there is no event.
-    base::Time event_time = AppBannerSettingsHelper::GetSingleBannerEvent(
-        web_contents(), url, kTestPackageName,
-        AppBannerSettingsHelper::AppBannerEvent(event));
-    EXPECT_TRUE(event_time.is_null());
+    base::Optional<base::Time> event_time =
+        AppBannerSettingsHelper::GetSingleBannerEvent(
+            web_contents(), url, kTestPackageName,
+            AppBannerSettingsHelper::AppBannerEvent(event));
+    EXPECT_TRUE(event_time && event_time->is_null());
 
     // Check that a time can be recorded.
     AppBannerSettingsHelper::RecordBannerEvent(
@@ -64,7 +67,7 @@ TEST_F(AppBannerSettingsHelperTest, SingleEvents) {
     event_time = AppBannerSettingsHelper::GetSingleBannerEvent(
         web_contents(), url, kTestPackageName,
         AppBannerSettingsHelper::AppBannerEvent(event));
-    EXPECT_EQ(reference_time, event_time);
+    EXPECT_EQ(reference_time, *event_time);
 
     // Check that another time can be recorded.
     AppBannerSettingsHelper::RecordBannerEvent(
@@ -77,9 +80,9 @@ TEST_F(AppBannerSettingsHelperTest, SingleEvents) {
 
     // COULD_SHOW events are not overwritten, but other events are.
     if (event == AppBannerSettingsHelper::APP_BANNER_EVENT_COULD_SHOW)
-      EXPECT_EQ(reference_time, event_time);
+      EXPECT_EQ(reference_time, *event_time);
     else
-      EXPECT_EQ(other_time, event_time);
+      EXPECT_EQ(other_time, *event_time);
   }
 }
 
@@ -322,4 +325,43 @@ TEST_F(AppBannerSettingsHelperTest, WasLaunchedRecently) {
       AppBannerSettingsHelper::WasLaunchedRecently(profile(), url, tenth_day));
   EXPECT_TRUE(AppBannerSettingsHelper::WasLaunchedRecently(profile(), url,
                                                            eleventh_day));
+}
+
+TEST_F(AppBannerSettingsHelperTest, NulloptSingleBannerEvent) {
+  GURL url(kTestURL);
+  std::string url_same_origin1(kSameOriginTestURL);
+  std::string url_same_origin2(kSameOriginTestURL1);
+  std::string url_same_origin3(kSameOriginTestURL2);
+  NavigateAndCommit(url);
+
+  base::Time reference_time = GetReferenceTime();
+  base::Time one_day_ago = reference_time - base::TimeDelta::FromDays(1);
+
+  AppBannerSettingsHelper::RecordBannerEvent(
+      web_contents(), url, url.spec(),
+      AppBannerSettingsHelper::APP_BANNER_EVENT_DID_SHOW, one_day_ago);
+  AppBannerSettingsHelper::RecordBannerEvent(
+      web_contents(), url, url_same_origin1,
+      AppBannerSettingsHelper::APP_BANNER_EVENT_DID_SHOW, one_day_ago);
+  AppBannerSettingsHelper::RecordBannerEvent(
+      web_contents(), url, url_same_origin2,
+      AppBannerSettingsHelper::APP_BANNER_EVENT_DID_SHOW, one_day_ago);
+  base::Optional<base::Time> event_time =
+      AppBannerSettingsHelper::GetSingleBannerEvent(
+          web_contents(), url, url_same_origin2,
+          AppBannerSettingsHelper::APP_BANNER_EVENT_DID_SHOW);
+  EXPECT_TRUE(event_time.has_value());
+  EXPECT_FALSE(AppBannerSettingsHelper::WasBannerRecentlyBlocked(
+      web_contents(), url, url_same_origin2, reference_time));
+
+  AppBannerSettingsHelper::RecordBannerEvent(
+      web_contents(), url, url_same_origin3,
+      AppBannerSettingsHelper::APP_BANNER_EVENT_DID_SHOW, one_day_ago);
+  event_time = AppBannerSettingsHelper::GetSingleBannerEvent(
+      web_contents(), url, url_same_origin3,
+      AppBannerSettingsHelper::APP_BANNER_EVENT_DID_SHOW);
+  // if exceed kMaxAppsPerSite 3, we will ge nullopt
+  EXPECT_FALSE(event_time.has_value());
+  EXPECT_TRUE(AppBannerSettingsHelper::WasBannerRecentlyBlocked(
+      web_contents(), url, url_same_origin3, reference_time));
 }

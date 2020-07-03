@@ -22,8 +22,10 @@ std::vector<Token> ExtractDocumentTokens(const Data& data,
                                          const std::string& locale) {
   std::vector<Token> document_tokens;
   for (const Content& content : data.contents) {
+    DCHECK_GE(content.weight, 0);
+    DCHECK_LE(content.weight, 1);
     const std::vector<Token> content_tokens =
-        ExtractContent(content.id, content.content, locale);
+        ExtractContent(content.id, content.content, content.weight, locale);
     document_tokens.insert(document_tokens.end(), content_tokens.begin(),
                            content_tokens.end());
   }

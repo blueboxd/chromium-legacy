@@ -2468,7 +2468,10 @@ void TestRunner::RemoveLoadingFrame(blink::WebFrame* frame) {
   if (!base::Contains(loading_frames_, frame))
     return;
 
-  DCHECK(web_test_runtime_flags_.have_loading_frame());
+  // We had a DCHECK checking
+  // web_test_runtime_flags_.have_loading_frame() here, but that led to
+  // flakiness due to inconsistent state management across renderers.
+  // See https://crbug.com/1100223 for details.
 
   base::Erase(loading_frames_, frame);
   if (!loading_frames_.empty())

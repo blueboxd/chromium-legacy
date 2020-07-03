@@ -56,6 +56,7 @@ template("absl_source_set") {
     configs += [
       "//build/config/compiler:no_chromium_code",
       "//third_party/abseil-cpp:absl_default_cflags_cc",
+      "//third_party/abseil-cpp:absl_define_config",
     ]
 
     if (is_component_build) {

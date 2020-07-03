@@ -3879,10 +3879,6 @@ const char kPrintServerUiName[] = "Print Server UI";
 const char kPrintServerUiDescription[] =
     "Enables users to add their own print server in the printer settings page.";
 
-const char kRar2FsName[] = "Enable rar2fs";
-const char kRar2FsDescription[] =
-    "Enable Files App to mount RAR archives using rar2fs.";
-
 const char kReduceDisplayNotificationsName[] = "Reduce display notifications";
 const char kReduceDisplayNotificationsDescription[] =
     "If enabled, notifications for display rotation, display removed, display "

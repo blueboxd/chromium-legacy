@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/check.h"
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
@@ -130,10 +131,10 @@ bool ExtensionSpecialStoragePolicy::IsStorageSessionOnly(const GURL& origin) {
   return cookie_settings_->IsCookieSessionOnly(origin);
 }
 
-network::SessionCleanupCookieStore::DeleteCookiePredicate
+network::DeleteCookiePredicate
 ExtensionSpecialStoragePolicy::CreateDeleteCookieOnExitPredicate() {
   if (!cookie_settings_)
-    return network::SessionCleanupCookieStore::DeleteCookiePredicate();
+    return network::DeleteCookiePredicate();
   // Fetch the list of cookies related content_settings and bind it
   // to CookieSettings::ShouldDeleteCookieOnExit to avoid fetching it on
   // every call.

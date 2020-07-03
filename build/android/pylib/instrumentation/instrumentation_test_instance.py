@@ -151,7 +151,7 @@ def GenerateTestResults(result_code, result_bundle, statuses, duration_ms,
       # For the first result, duration will be set below to the difference
       # between the reported and actual durations to account for overhead like
       # starting instrumentation.
-      if len(results) > 1:
+      if results:
         current_duration = int(bundle.get(_BUNDLE_DURATION_ID, duration_ms))
         current_result.SetDuration(current_duration)
         cumulative_duration += current_duration
@@ -204,6 +204,8 @@ def GenerateTestResults(result_code, result_bundle, statuses, duration_ms,
     results.append(current_result)
 
   if results:
+    logging.info('Adding cumulative overhead to test %s: %dms',
+                 results[0].GetName(), duration_ms - cumulative_duration)
     results[0].SetDuration(duration_ms - cumulative_duration)
 
   return results

@@ -211,6 +211,8 @@ void NavigationBodyLoader::CodeCacheReceived(
     base::Time response_head_response_time,
     base::Time response_time,
     mojo_base::BigBuffer data) {
+  // Check that the times match to ensure that the code cache data is for this
+  // response. See https://crbug.com/1099587.
   if (response_head_response_time == response_time && client_) {
     base::WeakPtr<NavigationBodyLoader> weak_self = weak_factory_.GetWeakPtr();
     client_->BodyCodeCacheReceived(std::move(data));

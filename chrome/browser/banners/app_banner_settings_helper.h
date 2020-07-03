@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/installable/installable_logging.h"
 
@@ -122,9 +123,9 @@ class AppBannerSettingsHelper {
                                const GURL& origin_url,
                                const std::string& package_name_or_start_url);
 
-  // Get the time that |event| was recorded, or a null time if it has not yet
-  // been recorded. Exposed for testing.
-  static base::Time GetSingleBannerEvent(
+  // Get the time that |event| was recorded, or a nullopt if it no dict to
+  // record yet(such as exceed max num per site) . Exposed for testing.
+  static base::Optional<base::Time> GetSingleBannerEvent(
       content::WebContents* web_contents,
       const GURL& origin_url,
       const std::string& package_name_or_start_url,

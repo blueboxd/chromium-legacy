@@ -18,7 +18,7 @@ constexpr struct {
   EventMetrics::EventType metrics_event_type;
   ui::EventType ui_event_type;
   const char* name;
-} kWhitelistedEvents[] = {
+} kInterestingEvents[] = {
 #define EVENT_TYPE(name, ui_type) \
   { EventMetrics::EventType::k##name, ui_type, #name }
     EVENT_TYPE(MousePressed, ui::ET_MOUSE_PRESSED),
@@ -43,7 +43,7 @@ constexpr struct {
     EVENT_TYPE(GestureTwoFingerTap, ui::ET_GESTURE_TWO_FINGER_TAP),
 #undef EVENT_TYPE
 };
-static_assert(base::size(kWhitelistedEvents) ==
+static_assert(base::size(kInterestingEvents) ==
                   static_cast<int>(EventMetrics::EventType::kMaxValue) + 1,
               "EventMetrics::EventType has changed.");
 
@@ -64,13 +64,13 @@ static_assert(base::size(kScrollTypes) ==
                   static_cast<int>(EventMetrics::ScrollType::kMaxValue) + 1,
               "EventMetrics::ScrollType has changed.");
 
-base::Optional<EventMetrics::EventType> ToWhitelistedEventType(
+base::Optional<EventMetrics::EventType> ToInterestingEventType(
     ui::EventType ui_event_type) {
-  for (size_t i = 0; i < base::size(kWhitelistedEvents); i++) {
-    if (ui_event_type == kWhitelistedEvents[i].ui_event_type) {
+  for (size_t i = 0; i < base::size(kInterestingEvents); i++) {
+    if (ui_event_type == kInterestingEvents[i].ui_event_type) {
       EventMetrics::EventType metrics_event_type =
           static_cast<EventMetrics::EventType>(i);
-      DCHECK_EQ(metrics_event_type, kWhitelistedEvents[i].metrics_event_type);
+      DCHECK_EQ(metrics_event_type, kInterestingEvents[i].metrics_event_type);
       return metrics_event_type;
     }
   }
@@ -100,10 +100,10 @@ std::unique_ptr<EventMetrics> EventMetrics::Create(
     ui::EventType type,
     base::TimeTicks time_stamp,
     base::Optional<ui::ScrollInputType> scroll_input_type) {
-  base::Optional<EventType> whitelisted_type = ToWhitelistedEventType(type);
-  if (!whitelisted_type)
+  base::Optional<EventType> interesting_type = ToInterestingEventType(type);
+  if (!interesting_type)
     return nullptr;
-  return base::WrapUnique(new EventMetrics(*whitelisted_type, time_stamp,
+  return base::WrapUnique(new EventMetrics(*interesting_type, time_stamp,
                                            ToScrollType(scroll_input_type)));
 }
 
@@ -116,7 +116,7 @@ EventMetrics::EventMetrics(const EventMetrics&) = default;
 EventMetrics& EventMetrics::operator=(const EventMetrics&) = default;
 
 const char* EventMetrics::GetTypeName() const {
-  return kWhitelistedEvents[static_cast<int>(type_)].name;
+  return kInterestingEvents[static_cast<int>(type_)].name;
 }
 
 const char* EventMetrics::GetScrollTypeName() const {

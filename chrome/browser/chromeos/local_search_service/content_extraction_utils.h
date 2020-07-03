@@ -20,6 +20,7 @@ std::vector<Token> ConsolidateToken(const std::vector<Token>& tokens);
 // language-country@variant. Country and variant are optional.
 std::vector<Token> ExtractContent(const std::string& content_id,
                                   const base::string16& text,
+                                  double weight,
                                   const std::string& locale);
 
 // Checks if the locale is non Latin locales.

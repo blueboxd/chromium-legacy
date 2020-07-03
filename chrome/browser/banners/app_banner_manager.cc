@@ -796,10 +796,11 @@ void AppBannerManager::ShowBanner() {
 
   // If this is the first time that we are showing the banner for this site,
   // record how long it's been since the first visit.
-  if (AppBannerSettingsHelper::GetSingleBannerEvent(
+  base::Optional<base::Time> did_show_time =
+      AppBannerSettingsHelper::GetSingleBannerEvent(
           web_contents(), validated_url_, GetAppIdentifier(),
-          AppBannerSettingsHelper::APP_BANNER_EVENT_DID_SHOW)
-          .is_null()) {
+          AppBannerSettingsHelper::APP_BANNER_EVENT_DID_SHOW);
+  if (did_show_time && did_show_time->is_null()) {
     AppBannerSettingsHelper::RecordMinutesFromFirstVisitToShow(
         web_contents(), validated_url_, GetAppIdentifier(), GetCurrentTime());
   }

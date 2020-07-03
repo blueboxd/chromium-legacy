@@ -759,7 +759,7 @@ void LayerTreeHost::RecordGpuRasterizationHistogram(
   }
 
   // Record how widely gpu rasterization is enabled.
-  // This number takes device/gpu whitelisting/backlisting into account.
+  // This number takes device/gpu allowlist/denylist into account.
   // Note that we do not consider the forced gpu rasterization mode, which is
   // mostly used for debugging purposes.
   UMA_HISTOGRAM_BOOLEAN("Renderer4.GpuRasterizationEnabled",

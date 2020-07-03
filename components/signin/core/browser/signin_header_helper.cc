@@ -14,6 +14,7 @@
 #include "components/signin/core/browser/chrome_connected_header_helper.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "net/base/escape.h"
+#include "net/http/http_request_headers.h"
 #include "net/url_request/url_request.h"
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -23,6 +24,7 @@
 namespace signin {
 
 const char kChromeConnectedHeader[] = "X-Chrome-Connected";
+const char kChromeManageAccountsHeader[] = "X-Chrome-Manage-Accounts";
 const char kDiceRequestHeader[] = "X-Chrome-ID-Consistency-Request";
 const char kDiceResponseHeader[] = "X-Chrome-ID-Consistency-Response";
 
@@ -65,25 +67,43 @@ DiceResponseParams::EnableSyncInfo::~EnableSyncInfo() {}
 DiceResponseParams::EnableSyncInfo::EnableSyncInfo(const EnableSyncInfo&) =
     default;
 
-RequestAdapter::RequestAdapter(net::URLRequest* request) : request_(request) {}
+RequestAdapter::RequestAdapter(const GURL& url,
+                               const net::HttpRequestHeaders& original_headers,
+                               net::HttpRequestHeaders* modified_headers,
+                               std::vector<std::string>* headers_to_remove)
+    : url_(url),
+      original_headers_(original_headers),
+      modified_headers_(modified_headers),
+      headers_to_remove_(headers_to_remove) {
+  DCHECK(modified_headers_);
+  DCHECK(headers_to_remove_);
+}
 
 RequestAdapter::~RequestAdapter() = default;
 
 const GURL& RequestAdapter::GetUrl() {
-  return request_->url();
+  return url_;
 }
 
 bool RequestAdapter::HasHeader(const std::string& name) {
-  return request_->extra_request_headers().HasHeader(name);
+  return (original_headers_.HasHeader(name) ||
+          modified_headers_->HasHeader(name)) &&
+         !base::Contains(*headers_to_remove_, name);
 }
 
 void RequestAdapter::RemoveRequestHeaderByName(const std::string& name) {
-  return request_->RemoveRequestHeaderByName(name);
+  if (!base::Contains(*headers_to_remove_, name))
+    headers_to_remove_->push_back(name);
 }
 
 void RequestAdapter::SetExtraHeaderByName(const std::string& name,
                                           const std::string& value) {
-  return request_->SetExtraRequestHeaderByName(name, value, false);
+  modified_headers_->SetHeader(name, value);
+
+  auto it =
+      std::find(headers_to_remove_->begin(), headers_to_remove_->end(), name);
+  if (it != headers_to_remove_->end())
+    headers_to_remove_->erase(it);
 }
 
 std::string BuildMirrorRequestCookieIfPossible(

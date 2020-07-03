@@ -57,8 +57,8 @@ namespace media {
 // Use this action when using SetArgPointee with COM pointers.
 // e.g.
 // COM_EXPECT_CALL(device_mock_, QueryInterface(IID_ID3D11VideoDevice, _))
-//  .WillRepeatedly(DoAll(
-//     SetComPointee<1>(video_device_mock_.Get()), Return(S_OK)));
+//     .WillRepeatedly(DoAll(SetComPointee<1>(video_device_mock_.Get()),
+//                           Return(S_OK)));
 ACTION_TEMPLATE(SetComPointee,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(p)) {
@@ -69,7 +69,7 @@ ACTION_TEMPLATE(SetComPointee,
 // Same as above, but returns S_OK for convenience.
 // e.g.
 // COM_EXPECT_CALL(device_mock_, QueryInterface(IID_ID3D11VideoDevice, _))
-//  .WillRepeatedly(SetComPointeeAndReturnOk<1>(video_device_mock_.Get()));
+//     .WillRepeatedly(SetComPointeeAndReturnOk<1>(video_device_mock_.Get()));
 ACTION_TEMPLATE(SetComPointeeAndReturnOk,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(p)) {
@@ -78,11 +78,20 @@ ACTION_TEMPLATE(SetComPointeeAndReturnOk,
   return S_OK;
 }
 
+// Saves a COM raw pointer to a ComPtr. For example, for the method `Bar()`,
+// SaveComPtr can be used to store the input `foo` to a ComPtr.
+// HRESULT STDMETHODCALLTYPE Bar(/* [in] */ __RPC__in_opt IMFFoo* foo);
+// Microsoft::WRL::ComPtr<IMFFoo> mf_foo;
+// COM_EXPECT_CALL(..., Bar(_)).WillOnce(SaveComPtr<0>(&mf_foo));
 ACTION_TEMPLATE(SaveComPtr,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(p)) {
-  *p = std::get<k>(args);
-  (*p)->AddRef();
+  // ComPtr::operator& is overloaded. This to make sure we don't get const
+  // Details::ComPtrRef.
+  auto com_ptr_ref = p;
+  auto** ptr = com_ptr_ref.ReleaseAndGetAddressOf();
+  *ptr = std::get<k>(args);
+  (*ptr)->AddRef();
 }
 
 // Use this function to create a mock so that they are ref-counted correctly.

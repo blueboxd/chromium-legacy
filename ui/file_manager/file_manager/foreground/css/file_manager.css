@@ -2671,9 +2671,9 @@ body:not(.files-ng) #list-container li .detail-icon {
 body.files-ng #list-container list li .detail-icon {
   color: var(--google-grey-700);
   height: 40px;
-  margin-inline-end: 16px;
-  margin-inline-start: 12px;
-  width: 32px;
+  margin-inline-end: 8px;
+  margin-inline-start: 8px;
+  width: 40px;
 }
 
 #list-container li .detail-checkmark {
@@ -3078,6 +3078,10 @@ body.files-ng #empty-folder {
   padding-inline-start: 8px;
 }
 
+body.files-ng #list-container .table-header-cell:first-child {
+  padding-inline-start: 0;
+}
+
 body.files-ng .table-header {
   border-bottom: 1px solid var(--cr-separator-color, rgb(224, 224, 224));
   color: var(--google-grey-700);
@@ -3105,7 +3109,7 @@ body.files-ng .table-header-cell:active {
 
 body.files-ng #list-container .table-header-cell:first-child
 .table-header-label {
-  margin-inline-start: 12px;
+  margin-inline-start: 16px;
 }
 
 body.files-ng .table-header-label .sort-icon {
@@ -3161,7 +3165,7 @@ body.files-ng.check-select #list-container list li[selected] .detail-thumbnail
 body.files-ng #list-container list li .detail-thumbnail > .thumbnail {
   border-radius: 50%;
   height: 24px;
-  margin-inline-start: 4px;
+  margin-inline-start: 8px;
   margin-top: 4px;
   width: 24px;
 }
@@ -3225,7 +3229,11 @@ body.files-ng #list-container li .detail-checkmark {
   background-color: currentColor;
   background-image: none;
   height: 40px;
-  width: 32px;
+  width: 40px;
+}
+
+body.files-ng grid li .detail-checkmark {
+  width: 32px !important;
 }
 
 body.files-ng #list-container :focus li .detail-checkmark {

@@ -38,6 +38,7 @@ source_set("location_bar") {
     "//ios/chrome/browser",
     "//ios/chrome/browser/autocomplete",
     "//ios/chrome/browser/browser_state:browser_state",
+    "//ios/chrome/browser/drag_and_drop",
     "//ios/chrome/browser/geolocation:geolocation_internal",
     "//ios/chrome/browser/infobars:badge",
     "//ios/chrome/browser/infobars:public",

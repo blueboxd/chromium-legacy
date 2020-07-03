@@ -17,7 +17,6 @@ import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.metrics.RecordHistogram;
@@ -324,10 +323,6 @@ public class SplashController
             method.setAccessible(true);
             method.invoke(mActivity);
         } catch (ReflectiveOperationException e) {
-            // Method not found or threw an exception.
-            RecordHistogram.recordBooleanHistogram("Mobile.Splash.TranslucencyRemovalFailed", true);
-            assert false : "Failed to remove activity translucency reflectively";
-            Log.e(TAG, "Failed to remove activity translucency reflectively");
         }
 
         notifyTranslucencyRemoved();

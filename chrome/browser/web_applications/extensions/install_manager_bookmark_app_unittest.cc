@@ -335,11 +335,11 @@ TEST_F(InstallManagerBookmarkAppTest, CreateBookmarkApp) {
   EXPECT_FALSE(IconsInfo::GetIconResource(extension, kIconSizeSmall,
                                           ExtensionIconSet::MATCH_EXACTLY)
                    .empty());
-  EXPECT_FALSE(
+  base::Optional<base::Time> added_time =
       AppBannerSettingsHelper::GetSingleBannerEvent(
           web_contents(), AppUrl(), AppUrl().spec(),
-          AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN)
-          .is_null());
+          AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN);
+  EXPECT_FALSE(added_time && added_time->is_null());
 }
 
 TEST_F(InstallManagerBookmarkAppTest, CreateBookmarkAppDefaultApp) {
@@ -404,11 +404,11 @@ TEST_P(InstallManagerBookmarkAppInstallableSiteTest,
   EXPECT_EQ(kAppTitle, extension->name());
   EXPECT_EQ(AppUrl(), AppLaunchInfo::GetLaunchWebURL(extension));
   EXPECT_EQ(SK_ColorBLUE, AppThemeColorInfo::GetThemeColor(extension).value());
-  EXPECT_FALSE(
+  base::Optional<base::Time> added_time =
       AppBannerSettingsHelper::GetSingleBannerEvent(
           web_contents(), AppUrl(), AppUrl().spec(),
-          AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN)
-          .is_null());
+          AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN);
+  EXPECT_FALSE(added_time && added_time->is_null());
   EXPECT_EQ(GURL(AppScope()), GetScopeURLFromBookmarkApp(extension));
 }
 

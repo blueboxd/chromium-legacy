@@ -344,9 +344,6 @@ ChromeContentRendererClient::ChromeContentRendererClient()
   for (const char* origin : kPredefinedAllowedCameraDeviceOrigins)
     allowed_camera_device_origins_.insert(origin);
 #endif
-
-  blink::IdentifiabilityStudySettings::SetGlobalProvider(
-      std::make_unique<PrivacyBudgetSettingsProvider>());
 }
 
 ChromeContentRendererClient::~ChromeContentRendererClient() {}
@@ -471,6 +468,9 @@ void ChromeContentRendererClient::RenderThreadStarted() {
     thread->BindHostReceiver(collector.InitWithNewPipeAndPassReceiver());
     ThreadProfiler::SetCollectorForChildProcess(std::move(collector));
   }
+
+  blink::IdentifiabilityStudySettings::SetGlobalProvider(
+      std::make_unique<PrivacyBudgetSettingsProvider>());
 }
 
 void ChromeContentRendererClient::ExposeInterfacesToBrowser(

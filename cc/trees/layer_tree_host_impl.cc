@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <limits>
 #include <list>
+#include <string>
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
@@ -2670,7 +2671,7 @@ void LayerTreeHostImpl::GetGpuRasterizationCapabilities(
 
   *supports_disable_msaa = caps.multisample_compatibility;
   if (use_msaa) {
-    // Skia may blacklist MSAA independently of Chrome. Query Skia for its max
+    // Skia may block MSAA independently of Chrome. Query Skia for its max
     // supported sample count. Assume gpu compositing + gpu raster for this, as
     // that is what we are hoping to use.
     viz::ResourceFormat tile_format = TileRasterBufferFormat(

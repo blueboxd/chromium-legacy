@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/local_search_service/inverted_index.h"
 
+#include <numeric>
 #include <string>
 #include <vector>
 
@@ -68,8 +69,13 @@ std::vector<Result> InvertedIndex::FindMatchingDocumentsApproximately(
 
   std::vector<Result> sorted_matching_docs;
   for (const auto& kv : matching_docs) {
+    // We don't need to include weights in the search results.
+    std::vector<Position> positions;
+    for (const auto& weighted_position : kv.second.second) {
+      positions.emplace_back(weighted_position.position);
+    }
     sorted_matching_docs.emplace_back(
-        Result(kv.first, kv.second.first, kv.second.second));
+        Result(kv.first, kv.second.first, positions));
   }
   std::sort(sorted_matching_docs.begin(), sorted_matching_docs.end(),
             CompareResults);
@@ -149,12 +155,24 @@ void InvertedIndex::BuildInvertedIndex() {
 std::vector<TfidfResult> InvertedIndex::CalculateTfidf(
     const base::string16& term) {
   std::vector<TfidfResult> results;
+  // We don't apply weights to idf because the effect is likely small.
   const float idf =
       1.0 + log((1.0 + doc_length_.size()) / (1.0 + dictionary_[term].size()));
 
   for (const auto& item : dictionary_[term]) {
-    const float tf =
-        static_cast<float>(item.second.size()) / doc_length_[item.first];
+    // If a term has a very low content weight in a doc, its effective number of
+    // occurrences in the doc should be lower. Strictly speaking, the effective
+    // length of the doc should be smaller too. However, for performance
+    // reasons, we only apply the weight to the term occurrences but not doc
+    // length.
+    // TODO(jiameng): this is an expensive operation, we will need to monitor
+    // its performance and optimize it.
+    const double effective_term_occ = std::accumulate(
+        item.second.begin(), item.second.end(), 0.0,
+        [](double sum, const WeightedPosition& weighted_position) {
+          return sum + weighted_position.weight;
+        });
+    const float tf = effective_term_occ / doc_length_[item.first];
     results.push_back({item.first, item.second, tf * idf});
   }
   return results;

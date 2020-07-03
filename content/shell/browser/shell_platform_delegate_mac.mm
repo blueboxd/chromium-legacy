@@ -333,6 +333,10 @@ void ShellPlatformDelegate::ActivateContents(Shell* shell,
   [NSApp activateIgnoringOtherApps:YES];
 }
 
+void ShellPlatformDelegate::DidNavigateMainFramePostCommit(
+    Shell* shell,
+    WebContents* contents) {}
+
 bool ShellPlatformDelegate::HandleKeyboardEvent(
     Shell* shell,
     WebContents* source,

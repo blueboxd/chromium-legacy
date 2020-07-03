@@ -15,6 +15,9 @@ namespace {
 // (content-id, content).
 using ContentWithId = std::pair<std::string, std::string>;
 
+// (content-id, content, weight).
+using WeightedContentWithId = std::tuple<std::string, std::string, float>;
+
 // (document-id, number-of-occurrences).
 using TermOccurrence = std::vector<std::pair<std::string, uint32_t>>;
 
@@ -151,11 +154,11 @@ TEST_F(InvertedIndexSearchTest, Delete) {
 }
 
 TEST_F(InvertedIndexSearchTest, Find) {
-  const std::map<std::string, std::vector<ContentWithId>> data_to_register = {
-      {"id1",
-       {{"cid_1", "This is a help wi-fi article"},
-        {"cid_2", "Another help help wi-fi"}}},
-      {"id2", {{"cid_3", "help article on wi-fi"}}}};
+  const std::map<std::string, std::vector<WeightedContentWithId>>
+      data_to_register = {{"id1",
+                           {{"cid_1", "This is a help wi-fi article", 0.8},
+                            {"cid_2", "Another help help wi-fi", 0.6}}},
+                          {"id2", {{"cid_3", "help article on wi-fi", 0.6}}}};
   const std::vector<Data> data = CreateTestData(data_to_register);
 
   // Nothing has been added to the index.
@@ -199,10 +202,11 @@ TEST_F(InvertedIndexSearchTest, Find) {
     EXPECT_EQ(results.size(), 1u);
 
     // "another" only exists in "id1".
-    const float expected_score = TfIdfScore(/*num_docs=*/2,
-                                            /*num_docs_with_term=*/1,
-                                            /*num_term_occurrence_in_doc=*/1,
-                                            /*doc_length=*/7);
+    const float expected_score =
+        TfIdfScore(/*num_docs=*/2,
+                   /*num_docs_with_term=*/1,
+                   /*weighted_num_term_occurrence_in_doc=*/0.6,
+                   /*doc_length=*/7);
     CheckResult(results[0], "id1", expected_score,
                 /*expected_number_positions=*/1);
   }
@@ -218,17 +222,17 @@ TEST_F(InvertedIndexSearchTest, Find) {
     const float expected_score_id1 =
         TfIdfScore(/*num_docs=*/2,
                    /*num_docs_with_term=*/1,
-                   /*num_term_occurrence_in_doc=*/1,
+                   /*weighted_num_term_occurrence_in_doc=*/0.6,
                    /*doc_length=*/7) +
         TfIdfScore(/*num_docs=*/2,
                    /*num_docs_with_term=*/2,
-                   /*num_term_occurrence_in_doc=*/3,
+                   /*weighted_num_term_occurrence_in_doc=*/0.8 + 0.6 * 2,
                    /*doc_length=*/7);
     // "id2" score comes "help".
     const float expected_score_id2 =
         TfIdfScore(/*num_docs=*/2,
                    /*num_docs_with_term=*/2,
-                   /*num_term_occurrence_in_doc=*/1,
+                   /*weighted_num_term_occurrence_in_doc=*/0.6,
                    /*doc_length=*/3);
 
     EXPECT_GE(expected_score_id1, expected_score_id2);

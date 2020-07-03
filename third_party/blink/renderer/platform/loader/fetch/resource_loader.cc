@@ -193,10 +193,11 @@ SchedulingPolicy::Feature GetFeatureFromRequestContextType(
 // CodeCacheRequest handles the requests to fetch data from code cache.
 // This owns CodeCacheLoader that actually loads the data from the
 // code cache. This class performs the necessary checks of matching the
-// resource response time and the code cache response time before sending
-// the data to the resource. It caches the data returned from the code cache
-// if the response wasn't received.  One CodeCacheRequest handles only one
-// request. On a restart new CodeCacheRequest is created.
+// resource response time and the code cache response time before sending the
+// data to the resource (see https://crbug.com/1099587). It caches the data
+// returned from the code cache if the response wasn't received. One
+// CodeCacheRequest handles only one request. On a restart new CodeCacheRequest
+// is created.
 class ResourceLoader::CodeCacheRequest {
   USING_FAST_MALLOC(ResourceLoader::CodeCacheRequest);
 
@@ -368,8 +369,14 @@ void ResourceLoader::CodeCacheRequest::MaybeSendCachedCode(
   // If the resource was fetched for service worker script or was served from
   // CacheStorage via service worker then they maintain their own code cache.
   // We should not use the isolated cache.
-  if (!use_isolated_code_cache_ ||
-      resource_response_time_ != cached_code_response_time_) {
+  if (!use_isolated_code_cache_) {
+    resource_loader->ClearCachedCode();
+    return;
+  }
+
+  // If the timestamps don't match, the code cache data may be for a different
+  // response. See https://crbug.com/1099587.
+  if (resource_response_time_ != cached_code_response_time_) {
     resource_loader->ClearCachedCode();
     return;
   }

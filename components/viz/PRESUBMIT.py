@@ -12,5 +12,5 @@ def CheckChangeOnUpload(input_api, output_api):
     'components', 'viz')]
 
   import presubmit_checks as ps
-  white_list=(r'^components[\\/]viz[\\/].*\.(cc|h)$',)
-  return ps.RunAllChecks(input_api, output_api, white_list)
+  allowlist=(r'^components[\\/]viz[\\/].*\.(cc|h)$',)
+  return ps.RunAllChecks(input_api, output_api, allowlist)

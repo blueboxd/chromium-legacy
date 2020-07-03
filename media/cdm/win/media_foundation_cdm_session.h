@@ -21,11 +21,8 @@ namespace media {
 // A class wrapping IMFContentDecryptionModuleSession.
 class MEDIA_EXPORT MediaFoundationCdmSession {
  public:
-  MediaFoundationCdmSession(
-      const SessionMessageCB& session_message_cb,
-      const SessionClosedCB& session_closed_cb,
-      const SessionKeysChangeCB& session_keys_change_cb,
-      const SessionExpirationUpdateCB& session_expiration_update_cb);
+  MediaFoundationCdmSession(const SessionMessageCB& session_message_cb,
+                            const SessionKeysChangeCB& session_keys_change_cb);
   MediaFoundationCdmSession(const MediaFoundationCdmSession&) = delete;
   MediaFoundationCdmSession& operator=(const MediaFoundationCdmSession&) =
       delete;
@@ -64,11 +61,8 @@ class MEDIA_EXPORT MediaFoundationCdmSession {
   void SetSessionId();
 
   // Callbacks for firing session events.
-  // TODO(xhwang): Implement session expiration update.
   SessionMessageCB session_message_cb_;
-  SessionClosedCB session_closed_cb_;
   SessionKeysChangeCB session_keys_change_cb_;
-  SessionExpirationUpdateCB session_expiration_update_cb_;
 
   Microsoft::WRL::ComPtr<IMFContentDecryptionModuleSession> mf_cdm_session_;
 

@@ -17,6 +17,9 @@
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "components/sync_sessions/session_sync_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
+#import "ios/chrome/browser/drag_and_drop/drag_item_util.h"
+#import "ios/chrome/browser/drag_and_drop/table_view_url_drag_drop_handler.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #include "ios/chrome/browser/sessions/live_tab_context_browser_agent.h"
@@ -104,10 +107,11 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 
 }  // namespace
 
-@interface RecentTabsTableViewController ()<SigninPromoViewConsumer,
-                                            SigninPresenter,
-                                            SyncPresenter,
-                                            UIGestureRecognizerDelegate> {
+@interface RecentTabsTableViewController () <SigninPromoViewConsumer,
+                                             SigninPresenter,
+                                             SyncPresenter,
+                                             TableViewURLDragDataSource,
+                                             UIGestureRecognizerDelegate> {
   std::unique_ptr<synced_sessions::SyncedSessions> _syncedSessions;
 }
 // The service that manages the recently closed tabs
@@ -124,6 +128,8 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 @property(nonatomic, readonly, getter=isIncognito) BOOL incognito;
 // Convenience getter for |self.browser|'s WebStateList
 @property(nonatomic, readonly) WebStateList* webStateList;
+// Handler for URL drag interactions.
+@property(nonatomic, strong) TableViewURLDragDropHandler* dragDropHandler;
 @end
 
 @implementation RecentTabsTableViewController : ChromeTableViewController
@@ -156,6 +162,14 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   self.tableView.rowHeight = UITableViewAutomaticDimension;
   self.tableView.sectionFooterHeight = 0.0;
   self.title = l10n_util::GetNSString(IDS_IOS_CONTENT_SUGGESTIONS_RECENT_TABS);
+
+  if (DragAndDropIsEnabled()) {
+    self.dragDropHandler = [[TableViewURLDragDropHandler alloc] init];
+    self.dragDropHandler.origin = WindowActivityRecentTabsOrigin;
+    self.dragDropHandler.dragDataSource = self;
+    self.tableView.dragDelegate = self.dragDropHandler;
+    self.tableView.dragInteractionEnabled = YES;
+  }
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -739,6 +753,33 @@ const int kRecentlyClosedTabsSectionIndex = 0;
                                               action:@selector(handleTap:)];
   [header addGestureRecognizer:tapGesture];
   return header;
+}
+
+#pragma mark - TableViewURLDragDataSource
+
+- (URLInfo*)tableView:(UITableView*)tableView
+    URLInfoAtIndexPath:(NSIndexPath*)indexPath {
+  NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
+  switch (itemType) {
+    case ItemTypeRecentlyClosed:
+    case ItemTypeSessionTabData: {
+      TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
+      TableViewURLItem* URLItem =
+          base::mac::ObjCCastStrict<TableViewURLItem>(item);
+      return [[URLInfo alloc] initWithURL:URLItem.URL title:URLItem.title];
+    }
+
+    case ItemTypeRecentlyClosedHeader:
+    case ItemTypeOtherDevicesHeader:
+    case ItemTypeOtherDevicesSyncOff:
+    case ItemTypeOtherDevicesNoSessions:
+    case ItemTypeOtherDevicesSigninPromo:
+    case ItemTypeOtherDevicesSyncInProgressHeader:
+    case ItemTypeSessionHeader:
+    case ItemTypeShowFullHistory:
+      break;
+  }
+  return nil;
 }
 
 #pragma mark - Recently closed tab helpers

@@ -21,7 +21,7 @@ class CookieSettings;
 }
 
 namespace net {
-class URLRequest;
+class HttpRequestHeaders;
 }
 
 namespace signin {
@@ -36,6 +36,7 @@ enum ProfileMode {
 };
 
 extern const char kChromeConnectedHeader[];
+extern const char kChromeManageAccountsHeader[];
 extern const char kDiceRequestHeader[];
 extern const char kDiceResponseHeader[];
 
@@ -157,19 +158,23 @@ struct DiceResponseParams {
 
 class RequestAdapter {
  public:
-  explicit RequestAdapter(net::URLRequest* request);
+  RequestAdapter(const GURL& url,
+                 const net::HttpRequestHeaders& original_headers,
+                 net::HttpRequestHeaders* modified_headers,
+                 std::vector<std::string>* headers_to_remove);
   virtual ~RequestAdapter();
 
-  virtual const GURL& GetUrl();
-  virtual bool HasHeader(const std::string& name);
-  virtual void RemoveRequestHeaderByName(const std::string& name);
-  virtual void SetExtraHeaderByName(const std::string& name,
-                                    const std::string& value);
-
- protected:
-  net::URLRequest* const request_;
+  const GURL& GetUrl();
+  bool HasHeader(const std::string& name);
+  void RemoveRequestHeaderByName(const std::string& name);
+  void SetExtraHeaderByName(const std::string& name, const std::string& value);
 
  private:
+  const GURL url_;
+  const net::HttpRequestHeaders& original_headers_;
+  net::HttpRequestHeaders* const modified_headers_;
+  std::vector<std::string>* const headers_to_remove_;
+
   DISALLOW_COPY_AND_ASSIGN(RequestAdapter);
 };
 

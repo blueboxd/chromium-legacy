@@ -23,7 +23,6 @@
 #include "content/public/common/webplugininfo.h"
 #include "extensions/buildflags/buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "url/gurl.h"
@@ -234,8 +233,6 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
 // SearchBouncer doesn't exist on Android.
 #if !defined(OS_ANDROID)
 TEST_F(ChromeContentRendererClientTest, ShouldSuppressErrorPage) {
-  test::ScopedPrivacyBudgetConfig config(
-      test::ScopedPrivacyBudgetConfig::kDisable);
   ChromeContentRendererClient client;
   SearchBouncer::GetInstance()->SetNewTabPageURL(GURL("http://example.com/n"));
   EXPECT_FALSE(client.ShouldSuppressErrorPage(
@@ -246,8 +243,6 @@ TEST_F(ChromeContentRendererClientTest, ShouldSuppressErrorPage) {
 }
 
 TEST_F(ChromeContentRendererClientTest, ShouldTrackUseCounter) {
-  test::ScopedPrivacyBudgetConfig config(
-      test::ScopedPrivacyBudgetConfig::kDisable);
   ChromeContentRendererClient client;
   SearchBouncer::GetInstance()->SetNewTabPageURL(GURL("http://example.com/n"));
   EXPECT_TRUE(client.ShouldTrackUseCounter(GURL("http://example.com")));
@@ -255,19 +250,3 @@ TEST_F(ChromeContentRendererClientTest, ShouldTrackUseCounter) {
   SearchBouncer::GetInstance()->SetNewTabPageURL(GURL::EmptyGURL());
 }
 #endif
-
-TEST_F(ChromeContentRendererClientTest, IdentifiabilityStudySettingsDisabled) {
-  test::ScopedPrivacyBudgetConfig::Parameters parameters;
-  parameters.enabled = false;
-  test::ScopedPrivacyBudgetConfig config(parameters);
-  ChromeContentRendererClient client;
-  EXPECT_FALSE(blink::IdentifiabilityStudySettings::Get()->IsActive());
-}
-
-TEST_F(ChromeContentRendererClientTest, IdentifiabilityStudySettingsEnabled) {
-  test::ScopedPrivacyBudgetConfig::Parameters parameters;
-  parameters.enabled = true;
-  test::ScopedPrivacyBudgetConfig config(parameters);
-  ChromeContentRendererClient client;
-  EXPECT_TRUE(blink::IdentifiabilityStudySettings::Get()->IsActive());
-}

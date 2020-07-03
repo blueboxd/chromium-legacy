@@ -20,8 +20,8 @@ namespace cc {
 // latency metrics.
 class CC_EXPORT EventMetrics {
  public:
-  // Whitelisted event types. This list should be in the same order as values of
-  // EventLatencyEventType enum from enums.xml file.
+  // Event types we are interested in. This list should be in the same order as
+  // values of EventLatencyEventType enum from enums.xml file.
   enum class EventType {
     kMousePressed,
     kMouseReleased,
@@ -59,8 +59,8 @@ class CC_EXPORT EventMetrics {
     kMaxValue = kWheel,
   };
 
-  // Returns a new instance if |type| is a whitelisted event type. Otherwise,
-  // returns nullptr.
+  // Returns a new instance if |type| is an event type we are interested in.
+  // Otherwise, returns nullptr.
   static std::unique_ptr<EventMetrics> Create(
       ui::EventType type,
       base::TimeTicks time_stamp,

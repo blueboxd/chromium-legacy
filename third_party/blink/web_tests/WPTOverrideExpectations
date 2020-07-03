@@ -168,7 +168,6 @@ external/wpt/client-hints/accept-ch-stickiness/same-origin-iframe.https.html [ P
 external/wpt/client-hints/accept-ch-stickiness/same-origin-navigation.https.html [ Pass ] # wpt_subtest_failure
 external/wpt/client-hints/sec-ch-ua.https.html [ Pass ] # wpt_subtest_failure
 external/wpt/compat/webkit-box-rtl-flex.html [ Failure ]
-external/wpt/compat/webkit-text-fill-color-property-002.html [ Pass Failure ]
 external/wpt/contacts/contacts-select.https.window.html [ Failure ] # wpt_subtest_failure
 external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-same-url-allow.html [ Pass Failure ]
 external/wpt/content-security-policy/object-src/object-src-no-url-allowed.html [ Pass Failure ]

@@ -279,6 +279,7 @@ static_library("content_shell_lib") {
     "browser/shell_permission_manager.h",
     "browser/shell_platform_data_aura.cc",
     "browser/shell_platform_data_aura.h",
+    "browser/shell_platform_delegate.cc",
     "browser/shell_platform_delegate.h",
     "browser/shell_platform_delegate_android.cc",
     "browser/shell_platform_delegate_mac.mm",

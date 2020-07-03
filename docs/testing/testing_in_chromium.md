@@ -79,13 +79,15 @@ see [this thread](https://groups.google.com/a/chromium.org/forum/#!topic/blink-d
 *   Don't enable tests with external dependencies on CQ and main waterfall,
     e.g. tests against live sites.
     It is fine to check in those tests, but only run them on your own bots.
+*   Eventually, all tests should implement the
+    [Test Executable API](./test_executable_api.md) command line interface.
 
 ## What tests are needed for new features
 
 * **Unit Tests** are needed no matter where the code is for your feature.
   It is the best practice to add the unit tests
   when you add new code or update existing code in the same changelist,
-  check out [Code Coverage in Gerrit](/code_coverage_in_gerrit.md)
+  check out [Code Coverage in Gerrit](./code_coverage_in_gerrit.md)
   for the instruction about how to see the code coverage in Gerrit.
 * **Browser Tests** are recommended for integration tests and e2e tests.
   It will be great if you add browser tests to cover the major user

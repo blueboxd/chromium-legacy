@@ -11,8 +11,10 @@
 #include "base/test/task_environment.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
+#include "media/base/win/mf_helpers.h"
 #include "media/base/win/mf_mocks.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
 using ::testing::DoAll;
@@ -32,21 +34,6 @@ std::vector<uint8_t> StringToVector(const std::string& str) {
   return std::vector<uint8_t>(str.begin(), str.end());
 }
 
-HRESULT CopyCoTaskMemWideString(LPCWSTR in_string, LPWSTR* out_string) {
-  if (!in_string || !out_string) {
-    return E_INVALIDARG;
-  }
-
-  size_t size = (wcslen(in_string) + 1) * sizeof(wchar_t);
-  LPWSTR copy = reinterpret_cast<LPWSTR>(CoTaskMemAlloc(size));
-  if (!copy)
-    return E_OUTOFMEMORY;
-
-  wcscpy(copy, in_string);
-  *out_string = copy;
-  return S_OK;
-}
-
 }  // namespace
 
 using Microsoft::WRL::ComPtr;
@@ -56,24 +43,18 @@ class MediaFoundationCdmSessionTest : public testing::Test {
   MediaFoundationCdmSessionTest()
       : mf_cdm_(MakeComPtr<MockMFCdm>()),
         mf_cdm_session_(MakeComPtr<MockMFCdmSession>()),
-        cdm_session_(
-            base::BindRepeating(&MockCdmClient::OnSessionMessage,
-                                base::Unretained(&cdm_client_)),
-            base::BindRepeating(&MockCdmClient::OnSessionClosed,
-                                base::Unretained(&cdm_client_)),
-            base::BindRepeating(&MockCdmClient::OnSessionKeysChange,
-                                base::Unretained(&cdm_client_)),
-            base::BindRepeating(&MockCdmClient::OnSessionExpirationUpdate,
-                                base::Unretained(&cdm_client_))) {}
+        cdm_session_(base::BindRepeating(&MockCdmClient::OnSessionMessage,
+                                         base::Unretained(&cdm_client_)),
+                     base::BindRepeating(&MockCdmClient::OnSessionKeysChange,
+                                         base::Unretained(&cdm_client_))) {}
 
-  ~MediaFoundationCdmSessionTest() override {}
+  ~MediaFoundationCdmSessionTest() override = default;
 
   void Initialize() {
     COM_EXPECT_CALL(mf_cdm_,
                     CreateSession(MF_MEDIAKEYSESSION_TYPE_TEMPORARY, _, _))
-        .WillOnce(DoAll(
-            SaveComPtr<1>(mf_cdm_session_callbacks_.ReleaseAndGetAddressOf()),
-            SetComPointee<2>(mf_cdm_session_.Get()), Return(S_OK)));
+        .WillOnce(DoAll(SaveComPtr<1>(&mf_cdm_session_callbacks_),
+                        SetComPointee<2>(mf_cdm_session_.Get()), Return(S_OK)));
     ASSERT_SUCCESS(
         cdm_session_.Initialize(mf_cdm_.Get(), CdmSessionType::kTemporary));
   }
@@ -128,9 +109,8 @@ TEST_F(MediaFoundationCdmSessionTest, Initialize) {
 TEST_F(MediaFoundationCdmSessionTest, Initialize_Failure) {
   COM_EXPECT_CALL(mf_cdm_,
                   CreateSession(MF_MEDIAKEYSESSION_TYPE_TEMPORARY, _, _))
-      .WillOnce(DoAll(
-          SaveComPtr<1>(mf_cdm_session_callbacks_.ReleaseAndGetAddressOf()),
-          SetComPointee<2>(mf_cdm_session_.Get()), Return(E_FAIL)));
+      .WillOnce(DoAll(SaveComPtr<1>(&mf_cdm_session_callbacks_),
+                      SetComPointee<2>(mf_cdm_session_.Get()), Return(E_FAIL)));
   EXPECT_FAILED(
       cdm_session_.Initialize(mf_cdm_.Get(), CdmSessionType::kTemporary));
 }

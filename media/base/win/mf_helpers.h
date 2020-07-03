@@ -86,6 +86,10 @@ class MF_INITIALIZER_EXPORT DXGIDeviceScopedHandle {
   HANDLE device_handle_ = INVALID_HANDLE_VALUE;
 };
 
+// Copies |in_string| to |out_string| that is allocated with CoTaskMemAlloc().
+MF_INITIALIZER_EXPORT HRESULT CopyCoTaskMemWideString(LPCWSTR in_string,
+                                                      LPWSTR* out_string);
+
 }  // namespace media
 
 #endif  // MEDIA_BASE_WIN_MF_HELPERS_H_

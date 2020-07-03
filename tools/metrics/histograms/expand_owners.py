@@ -322,7 +322,7 @@ def ExpandHistogramsOWNERS(histograms):
       for component in iter_matches(histogram, 'component', 1)])
 
     for index, owner in enumerate(owners):
-      owner_text = owner.childNodes[0].data
+      owner_text = owner.childNodes[0].data.strip()
       name = histogram.getAttribute('name')
       if _IsEmailOrPlaceholder(index == 0, owner_text, name):
         continue

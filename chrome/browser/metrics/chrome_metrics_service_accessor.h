@@ -99,7 +99,7 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class extensions::FileManagerPrivateIsUMAEnabledFunction;
   friend void ChangeMetricsReportingStateWithReply(
       bool,
-      const OnMetricsReportingCallbackType&);
+      OnMetricsReportingCallbackType);
   friend void ApplyMetricsReportingPolicy();
   friend class heap_profiling::BackgroundProfilingTriggers;
   friend class settings::MetricsReportingHandler;

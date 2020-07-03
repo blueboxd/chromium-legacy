@@ -17,6 +17,9 @@
 #include "components/variations/net/variations_http_headers.h"
 #include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
+#import "ios/chrome/browser/drag_and_drop/drag_item_util.h"
+#import "ios/chrome/browser/drag_and_drop/url_drag_drop_handler.h"
 #import "ios/chrome/browser/geolocation/omnibox_geolocation_controller.h"
 #include "ios/chrome/browser/infobars/infobar_metrics_recorder.h"
 #import "ios/chrome/browser/main/browser.h"
@@ -74,7 +77,8 @@ const int kLocationAuthorizationStatusCount = 5;
 @interface LocationBarCoordinator () <LoadQueryCommands,
                                       LocationBarDelegate,
                                       LocationBarViewControllerDelegate,
-                                      LocationBarConsumer> {
+                                      LocationBarConsumer,
+                                      URLDragDataSource> {
   // API endpoint for omnibox.
   std::unique_ptr<WebOmniboxEditControllerImpl> _editController;
   // Observer that updates |viewController| for fullscreen events.
@@ -102,6 +106,8 @@ const int kLocationAuthorizationStatusCount = 5;
 // delegate call.
 @property(nonatomic, assign) BOOL isCancellingOmniboxEdit;
 
+// Handler for URL drag interactions.
+@property(nonatomic, strong) URLDragDropHandler* dragDropHandler;
 @end
 
 @implementation LocationBarCoordinator
@@ -214,6 +220,15 @@ const int kLocationAuthorizationStatusCount = 5;
       fullscreenController, self.viewController);
 
   self.started = YES;
+
+  if (DragAndDropIsEnabled()) {
+    self.dragDropHandler = [[URLDragDropHandler alloc] init];
+    self.dragDropHandler.origin = WindowActivityLocationBarSteadyViewOrigin;
+    self.dragDropHandler.dragDataSource = self;
+    [self.viewController.view
+        addInteraction:[[UIDragInteraction alloc]
+                           initWithDelegate:self.dragDropHandler]];
+  }
 }
 
 - (void)stop {
@@ -407,6 +422,19 @@ const int kLocationAuthorizationStatusCount = 5;
 
 - (void)updateSearchByImageSupported:(BOOL)searchByImageSupported {
   self.viewController.searchByImageEnabled = searchByImageSupported;
+}
+
+#pragma mark - URLDragDataSource
+
+- (URLInfo*)URLInfoForView:(UIView*)view {
+  return [[URLInfo alloc]
+      initWithURL:self.webState->GetVisibleURL()
+            title:base::SysUTF16ToNSString(self.webState->GetTitle())];
+}
+
+- (UIBezierPath*)visiblePathForView:(UIView*)view {
+  return [UIBezierPath bezierPathWithRoundedRect:view.bounds
+                                    cornerRadius:view.bounds.size.height / 2];
 }
 
 #pragma mark - private

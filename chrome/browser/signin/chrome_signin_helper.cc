@@ -75,8 +75,6 @@ const char kChromeMirrorHeaderSource[] = "Chrome";
 
 namespace {
 
-const char kChromeManageAccountsHeader[] = "X-Chrome-Manage-Accounts";
-
 // Key for RequestDestructionObserverUserData.
 const void* const kRequestDestructionObserverUserDataKey =
     &kRequestDestructionObserverUserDataKey;
@@ -476,7 +474,15 @@ void ProcessDiceResponseHeaderIfExists(ResponseAdapter* response,
 
 }  // namespace
 
-ChromeRequestAdapter::ChromeRequestAdapter() : RequestAdapter(nullptr) {}
+ChromeRequestAdapter::ChromeRequestAdapter(
+    const GURL& url,
+    const net::HttpRequestHeaders& original_headers,
+    net::HttpRequestHeaders* modified_headers,
+    std::vector<std::string>* headers_to_remove)
+    : RequestAdapter(url,
+                     original_headers,
+                     modified_headers,
+                     headers_to_remove) {}
 
 ChromeRequestAdapter::~ChromeRequestAdapter() = default;
 

@@ -95,17 +95,6 @@ struct Position {
   uint32_t length;
 };
 
-// Stores the token (after processed). |positions| represents the token's
-// positions in one document.
-struct Token {
-  Token();
-  Token(const Token& token);
-  Token(const base::string16& text, const std::vector<Position>& pos);
-  ~Token();
-  base::string16 content;
-  std::vector<Position> positions;
-};
-
 // Result is one item that matches a given query. It contains the id of the item
 // and its matching score.
 struct Result {
@@ -146,6 +135,29 @@ enum class ResponseStatus {
   // Index is empty (i.e. no data).
   kEmptyIndex = 3,
   kMaxValue = kEmptyIndex
+};
+
+// Similar to Position but also contains weight from Content.
+// This is used in ranking and is not meant to be returned as part of the search
+// results.
+struct WeightedPosition {
+  double weight;
+  Position position;
+  WeightedPosition();
+  WeightedPosition(const WeightedPosition& weighted_position);
+  WeightedPosition(double weight, const Position& position);
+  ~WeightedPosition();
+};
+
+// Stores the token (after processed). |positions| represents the token's
+// positions in one document.
+struct Token {
+  Token();
+  Token(const Token& token);
+  Token(const base::string16& text, const std::vector<WeightedPosition>& pos);
+  ~Token();
+  base::string16 content;
+  std::vector<WeightedPosition> positions;
 };
 
 }  // namespace local_search_service

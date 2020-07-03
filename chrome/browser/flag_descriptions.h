@@ -2272,9 +2272,6 @@ extern const char kMeteredShowToggleDescription[];
 extern const char kPrintServerUiName[];
 extern const char kPrintServerUiDescription[];
 
-extern const char kRar2FsName[];
-extern const char kRar2FsDescription[];
-
 extern const char kReduceDisplayNotificationsName[];
 extern const char kReduceDisplayNotificationsDescription[];
 

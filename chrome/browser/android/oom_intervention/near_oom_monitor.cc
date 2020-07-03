@@ -42,7 +42,7 @@ NearOomMonitor::NearOomMonitor(
     int64_t swapfree_threshold)
     : task_runner_(task_runner),
       check_callback_(
-          base::Bind(&NearOomMonitor::Check, base::Unretained(this))),
+          base::BindRepeating(&NearOomMonitor::Check, base::Unretained(this))),
       monitoring_interval_(kDefaultMonitoringDelta),
       cooldown_interval_(kDefaultCooldownDelta),
       swapfree_threshold_(swapfree_threshold),
@@ -57,7 +57,7 @@ NearOomMonitor::NearOomMonitor(
 NearOomMonitor::~NearOomMonitor() = default;
 
 std::unique_ptr<NearOomMonitor::Subscription> NearOomMonitor::RegisterCallback(
-    base::Closure callback) {
+    base::RepeatingClosure callback) {
   if (callbacks_.empty() && !ComponentCallbackIsEnabled())
     ScheduleCheck();
   return callbacks_.Add(std::move(callback));

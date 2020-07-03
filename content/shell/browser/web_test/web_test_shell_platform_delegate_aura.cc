@@ -4,6 +4,7 @@
 
 #include "content/shell/browser/web_test/web_test_shell_platform_delegate.h"
 
+#include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_platform_data_aura.h"
 
 namespace content {

@@ -146,6 +146,7 @@ class Shell : public WebContentsDelegate,
       RenderFrameHost* frame,
       const BluetoothScanningPrompt::EventHandler& event_handler) override;
 #if defined(OS_MACOSX)
+  void DidNavigateMainFramePostCommit(WebContents* contents) override;
   bool HandleKeyboardEvent(WebContents* source,
                            const NativeWebKeyboardEvent& event) override;
 #endif

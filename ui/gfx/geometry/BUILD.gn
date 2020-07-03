@@ -43,7 +43,6 @@ jumbo_component("geometry") {
     "rect_f.h",
     "rounded_corners_f.cc",
     "rounded_corners_f.h",
-    "safe_integer_conversions.h",
     "scroll_offset.cc",
     "scroll_offset.h",
     "size.cc",

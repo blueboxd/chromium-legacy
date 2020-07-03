@@ -90,13 +90,12 @@ static jboolean JNI_InstantAppsSettings_GetInstantAppDefault(
 
   std::string url(ConvertJavaStringToUTF8(env, jurl));
 
-  base::Time added_time = AppBannerSettingsHelper::GetSingleBannerEvent(
-      web_contents,
-      GURL(url),
-      AppBannerSettingsHelper::kInstantAppsKey,
-      AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN);
+  base::Optional<base::Time> added_time =
+      AppBannerSettingsHelper::GetSingleBannerEvent(
+          web_contents, GURL(url), AppBannerSettingsHelper::kInstantAppsKey,
+          AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN);
 
-  return !added_time.is_null();
+  return added_time && !added_time->is_null();
 }
 
 static jboolean JNI_InstantAppsSettings_ShouldShowBanner(

@@ -6,6 +6,7 @@
 # opts will be linked together, and in some cases headers compiled with and
 # without these options will be part of the same program.
 
+import("//build/config/c++/c++.gni")
 import("//build/toolchain/toolchain.gni")
 import("//build_overrides/build.gni")
 import("//testing/test.gni")
@@ -105,6 +106,14 @@ config("absl_include_config") {
 
 config("absl_define_config") {
   defines = [ "ABSL_ALLOCATOR_NOTHROW=1" ]
+
+  if (is_win && !use_custom_libcxx) {
+    defines += [
+      # See crbug.com/1101367: Acknowledge extended alignment when using
+      # MSVC's standard library.
+      "_ENABLE_EXTENDED_ALIGNED_STORAGE",
+    ]
+  }
 }
 
 config("absl_default_cflags_cc") {

@@ -349,10 +349,6 @@ const base::Feature kQuickAnswersSubToggle{"QuickAnswersSubToggle",
 const base::Feature kQuickAnswersTranslation{"QuickAnswersTranslation",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-// ChromeOS Files App mounts RAR archives via rar2fs instead of avfs.
-// https://crbug.com/996549
-const base::Feature kRar2Fs{"Rar2Fs", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables or disables Release Notes on Chrome OS.
 const base::Feature kReleaseNotes{"ReleaseNotes",
                                   base::FEATURE_ENABLED_BY_DEFAULT};

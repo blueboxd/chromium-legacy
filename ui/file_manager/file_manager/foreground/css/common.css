@@ -425,7 +425,6 @@ html[dir='rtl'] .entry-name {
   font-size: 16px;
   font-weight: 500;
   margin-bottom: 16px;
-  word-wrap: break-word;
 }
 
 .cr-dialog-container:not(.files-ng) .cr-dialog-text {
@@ -442,6 +441,11 @@ html[dir='rtl'] .entry-name {
   color: var(--cros-default-text-color);
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.cr-dialog-container.files-ng .cr-dialog-text,
+.cr-dialog-container.files-ng .cr-dialog-title {
+  overflow-wrap: break-word;
 }
 
 .cr-dialog-container.files-ng .cr-dialog-text {

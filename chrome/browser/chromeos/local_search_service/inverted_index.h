@@ -17,8 +17,8 @@
 
 namespace local_search_service {
 
-// A posting is a list of Position.
-using Posting = std::vector<Position>;
+// A posting is a list of WeightedPosition.
+using Posting = std::vector<WeightedPosition>;
 
 // A map from document id to posting.
 using PostingList = std::unordered_map<std::string, Posting>;

@@ -7,6 +7,7 @@
 #include <functional>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/strings/string_split.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "net/base/net_errors.h"
@@ -56,10 +57,10 @@ void CookieSettings::set_content_settings_for_legacy_cookie_access(
   AppendEmergencyLegacyCookieAccess(&settings_for_legacy_cookie_access_);
 }
 
-SessionCleanupCookieStore::DeleteCookiePredicate
-CookieSettings::CreateDeleteCookieOnExitPredicate() const {
+DeleteCookiePredicate CookieSettings::CreateDeleteCookieOnExitPredicate()
+    const {
   if (!HasSessionOnlyOrigins())
-    return SessionCleanupCookieStore::DeleteCookiePredicate();
+    return DeleteCookiePredicate();
   return base::BindRepeating(&CookieSettings::ShouldDeleteCookieOnExit,
                              base::Unretained(this),
                              std::cref(content_settings_));

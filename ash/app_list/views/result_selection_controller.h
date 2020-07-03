@@ -6,6 +6,7 @@
 #define ASH_APP_LIST_VIEWS_RESULT_SELECTION_CONTROLLER_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "ash/app_list/app_list_export.h"
@@ -137,6 +138,11 @@ class APP_LIST_EXPORT ResultSelectionController {
   SearchResultBaseView* GetResultAtLocation(
       const ResultLocationDetails& location);
 
+  // Returns the location of a result with the provided ID.
+  // Returns nullptr if the result cannot be found.
+  std::unique_ptr<ResultLocationDetails> FindResultWithId(
+      const std::string& id);
+
   // Updates a |ResultLocationDetails| to a new container, updating most
   // attributes based on |result_selection_model_|.
   void ChangeContainer(ResultLocationDetails* location_details,
@@ -155,8 +161,11 @@ class APP_LIST_EXPORT ResultSelectionController {
   // selected result is cleared).
   base::RepeatingClosure selection_change_callback_;
 
-  // The currently selected result view
+  // The currently selected result view.
   SearchResultBaseView* selected_result_ = nullptr;
+
+  // The currently selected result ID.
+  std::string selected_result_id_;
 
   // If set, any attempt to change current selection will be rejected.
   bool block_selection_changes_ = false;

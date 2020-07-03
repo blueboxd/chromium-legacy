@@ -11,7 +11,7 @@
 #include "base/component_export.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
-#include "services/network/session_cleanup_cookie_store.h"
+#include "services/network/public/cpp/session_cookie_delete_predicate.h"
 
 class GURL;
 
@@ -87,7 +87,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) SpecialStoragePolicy
   // It uses domain matching as described in section 5.1.3 of RFC 6265 to
   // identify content setting rules that could have influenced the cookie
   // when it was created.
-  virtual network::SessionCleanupCookieStore::DeleteCookiePredicate
+  virtual network::DeleteCookiePredicate
   CreateDeleteCookieOnExitPredicate() = 0;
 
   // Adds/removes an observer, the policy does not take

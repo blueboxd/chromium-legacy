@@ -114,8 +114,9 @@ void FirstRunDialog::Done() {
 bool FirstRunDialog::Accept() {
   GetWidget()->Hide();
 
-  ChangeMetricsReportingStateWithReply(report_crashes_->GetChecked(),
-                                       base::Bind(&InitCrashReporterIfEnabled));
+  ChangeMetricsReportingStateWithReply(
+      report_crashes_->GetChecked(),
+      base::BindRepeating(&InitCrashReporterIfEnabled));
 
   if (make_default_->GetChecked())
     shell_integration::SetAsDefaultBrowser();

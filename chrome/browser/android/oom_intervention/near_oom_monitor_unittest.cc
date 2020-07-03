@@ -56,7 +56,7 @@ class TestNearOomObserver {
  public:
   explicit TestNearOomObserver(NearOomMonitor* monitor) {
     DCHECK(monitor);
-    subscription_ = monitor->RegisterCallback(base::Bind(
+    subscription_ = monitor->RegisterCallback(base::BindRepeating(
         &TestNearOomObserver::OnNearOomDetected, base::Unretained(this)));
   }
 

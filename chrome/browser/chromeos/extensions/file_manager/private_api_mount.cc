@@ -62,19 +62,12 @@ ExtensionFunction::ResponseAction FileManagerPrivateAddMountFunction::Run() {
 
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // TODO(crbug.com/996549) Remove this once the old avfsd-based RAR mounter is
-  // removed.
-  std::string format = base::ToLowerASCII(path.Extension());
-  if (format == ".rar" &&
-      base::FeatureList::IsEnabled(chromeos::features::kRar2Fs)) {
-    format = ".rar2fs";
-  }
-
   // MountPath() takes a std::string.
   DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
   disk_mount_manager->MountPath(
-      path.AsUTF8Unsafe(), format, path.BaseName().AsUTF8Unsafe(), {},
-      chromeos::MOUNT_TYPE_ARCHIVE, chromeos::MOUNT_ACCESS_MODE_READ_WRITE);
+      path.AsUTF8Unsafe(), base::ToLowerASCII(path.Extension()),
+      path.BaseName().AsUTF8Unsafe(), {}, chromeos::MOUNT_TYPE_ARCHIVE,
+      chromeos::MOUNT_ACCESS_MODE_READ_WRITE);
 
   // Pass back the actual source path of the mount point.
   return RespondNow(

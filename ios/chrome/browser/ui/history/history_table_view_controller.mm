@@ -13,6 +13,9 @@
 #include "components/url_formatter/url_formatter.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
+#import "ios/chrome/browser/drag_and_drop/drag_item_util.h"
+#import "ios/chrome/browser/drag_and_drop/table_view_url_drag_drop_handler.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
@@ -76,13 +79,14 @@ const CGFloat kButtonDefaultFontSize = 15.0;
 const CGFloat kButtonHorizontalPadding = 30.0;
 }  // namespace
 
-@interface HistoryTableViewController ()<HistoryEntriesStatusItemDelegate,
-                                         HistoryEntryInserterDelegate,
-                                         HistoryEntryItemDelegate,
-                                         TableViewTextLinkCellDelegate,
-                                         UISearchControllerDelegate,
-                                         UISearchResultsUpdating,
-                                         UISearchBarDelegate> {
+@interface HistoryTableViewController () <HistoryEntriesStatusItemDelegate,
+                                          HistoryEntryInserterDelegate,
+                                          HistoryEntryItemDelegate,
+                                          TableViewTextLinkCellDelegate,
+                                          TableViewURLDragDataSource,
+                                          UISearchControllerDelegate,
+                                          UISearchResultsUpdating,
+                                          UISearchBarDelegate> {
   // Closure to request next page of history.
   base::OnceClosure _query_history_continuation;
 }
@@ -120,6 +124,8 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 @property(nonatomic, strong) UIBarButtonItem* editButton;
 // Scrim when search box in focused.
 @property(nonatomic, strong) UIControl* scrimView;
+// Handler for URL drag interactions.
+@property(nonatomic, strong) TableViewURLDragDropHandler* dragDropHandler;
 @end
 
 @implementation HistoryTableViewController
@@ -179,6 +185,14 @@ const CGFloat kButtonHorizontalPadding = 30.0;
                   action:@selector
                   (displayContextMenuInvokedByGestureRecognizer:)];
   [self.tableView addGestureRecognizer:longPressRecognizer];
+
+  if (DragAndDropIsEnabled()) {
+    self.dragDropHandler = [[TableViewURLDragDropHandler alloc] init];
+    self.dragDropHandler.origin = WindowActivityHistoryOrigin;
+    self.dragDropHandler.dragDataSource = self;
+    self.tableView.dragDelegate = self.dragDropHandler;
+    self.tableView.dragInteractionEnabled = YES;
+  }
 
   // NavigationController configuration.
   self.title = l10n_util::GetNSString(IDS_HISTORY_TITLE);
@@ -658,6 +672,28 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 
     [self fetchHistoryForQuery:_currentQuery continuation:true];
   }
+}
+
+#pragma mark - TableViewURLDragDataSource
+
+- (URLInfo*)tableView:(UITableView*)tableView
+    URLInfoAtIndexPath:(NSIndexPath*)indexPath {
+  if (self.tableView.isEditing)
+    return nil;
+
+  TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
+  switch (item.type) {
+    case ItemTypeHistoryEntry: {
+      HistoryEntryItem* URLItem =
+          base::mac::ObjCCastStrict<HistoryEntryItem>(item);
+      return [[URLInfo alloc] initWithURL:URLItem.URL title:URLItem.text];
+    }
+    case ItemTypeEntriesStatus:
+    case ItemTypeActivityIndicator:
+    case ItemTypeEntriesStatusWithLink:
+      break;
+  }
+  return nil;
 }
 
 #pragma mark - Private methods

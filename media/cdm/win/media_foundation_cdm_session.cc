@@ -145,13 +145,9 @@ class SessionCallbacks
 
 MediaFoundationCdmSession::MediaFoundationCdmSession(
     const SessionMessageCB& session_message_cb,
-    const SessionClosedCB& session_closed_cb,
-    const SessionKeysChangeCB& session_keys_change_cb,
-    const SessionExpirationUpdateCB& session_expiration_update_cb)
+    const SessionKeysChangeCB& session_keys_change_cb)
     : session_message_cb_(session_message_cb),
-      session_closed_cb_(session_closed_cb),
-      session_keys_change_cb_(session_keys_change_cb),
-      session_expiration_update_cb_(session_expiration_update_cb) {
+      session_keys_change_cb_(session_keys_change_cb) {
   DVLOG_FUNC(1);
 }
 

@@ -81,6 +81,7 @@ jumbo_component("cpp") {
     "request_mode.h",
     "resolve_host_client_base.cc",
     "resolve_host_client_base.h",
+    "session_cookie_delete_predicate.h",
     "shared_url_loader_factory.cc",
     "shared_url_loader_factory.h",
     "simple_url_loader.cc",

@@ -340,7 +340,7 @@ static bool TransformsToAncestorHaveNonAxisAlignedActiveAnimation(
     const TransformPaintPropertyNode& ancestor) {
   if (&descendant == &ancestor)
     return false;
-  for (const auto* n = &descendant; n != &ancestor; n = n->Parent()) {
+  for (const auto* n = &descendant; n != &ancestor; n = n->UnaliasedParent()) {
     if (n->HasActiveTransformAnimation() &&
         !n->TransformAnimationIsAxisAligned()) {
       return true;
@@ -358,7 +358,7 @@ bool TransformsMayBe2dAxisMisaligned(const TransformPaintPropertyNode& a,
   if (!translation_2d_or_matrix.IsIdentityOr2DTranslation() &&
       !translation_2d_or_matrix.Matrix().Preserves2dAxisAlignment())
     return true;
-  const auto& lca = LowestCommonAncestor(a, b);
+  const auto& lca = a.LowestCommonAncestor(b).Unalias();
   if (TransformsToAncestorHaveNonAxisAlignedActiveAnimation(a, lca) ||
       TransformsToAncestorHaveNonAxisAlignedActiveAnimation(b, lca))
     return true;
@@ -375,9 +375,7 @@ void PropertyTreeManager::SetCurrentEffectState(
       effect.IsRoot() ? nullptr : current_.transform;
   current_.effect_id = cc_effect_node.id;
   current_.effect_type = effect_type;
-  DCHECK(!effect.IsParentAlias() || !effect.Parent());
   current_.effect = &effect;
-  DCHECK(!clip.IsParentAlias() || !clip.Parent());
   current_.clip = &clip;
   current_.transform = &transform;
 
@@ -406,8 +404,7 @@ void PropertyTreeManager::SetCurrentEffectRenderSurfaceReason(
 }
 
 int PropertyTreeManager::EnsureCompositorTransformNode(
-    const TransformPaintPropertyNode& transform_node_arg) {
-  const auto& transform_node = transform_node_arg.Unalias();
+    const TransformPaintPropertyNode& transform_node) {
   int id = transform_node.CcNodeId(new_sequence_number_);
   if (id != kInvalidNodeId) {
     DCHECK(GetTransformTree().Node(id));
@@ -415,7 +412,8 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
   }
 
   DCHECK(transform_node.Parent());
-  int parent_id = EnsureCompositorTransformNode(*transform_node.Parent());
+  int parent_id =
+      EnsureCompositorTransformNode(transform_node.Parent()->Unalias());
   id = GetTransformTree().Insert(cc::TransformNode(), parent_id);
 
   cc::TransformNode& compositor_node = *GetTransformTree().Node(id);
@@ -487,11 +485,13 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
   auto* current_cc_effect = GetEffectTree().Node(current_.effect_id);
   if (current_cc_effect && !current_cc_effect->HasRenderSurface() &&
       current_cc_effect->transform_id == parent_id &&
-      transform_node.FlattensInheritedTransform() && transform_node.Parent() &&
-      transform_node.Parent()->RenderingContextId() &&
-      !transform_node.Parent()->FlattensInheritedTransform()) {
-    current_cc_effect->render_surface_reason =
-        cc::RenderSurfaceReason::k3dTransformFlattening;
+      transform_node.FlattensInheritedTransform()) {
+    const auto* parent = transform_node.UnaliasedParent();
+    if (parent && parent->RenderingContextId() &&
+        !parent->FlattensInheritedTransform()) {
+      current_cc_effect->render_surface_reason =
+          cc::RenderSurfaceReason::k3dTransformFlattening;
+    }
   }
 
   transform_node.SetCcNodeId(new_sequence_number_, id);
@@ -512,23 +512,22 @@ int PropertyTreeManager::EnsureCompositorPageScaleTransformNode(
 }
 
 int PropertyTreeManager::EnsureCompositorClipNode(
-    const ClipPaintPropertyNode& clip_node_arg) {
-  const auto& clip_node = clip_node_arg.Unalias();
+    const ClipPaintPropertyNode& clip_node) {
   int id = clip_node.CcNodeId(new_sequence_number_);
   if (id != kInvalidNodeId) {
     DCHECK(GetClipTree().Node(id));
     return id;
   }
 
-  DCHECK(clip_node.Parent());
-  int parent_id = EnsureCompositorClipNode(*clip_node.Parent());
+  DCHECK(clip_node.UnaliasedParent());
+  int parent_id = EnsureCompositorClipNode(*clip_node.UnaliasedParent());
   id = GetClipTree().Insert(cc::ClipNode(), parent_id);
 
   cc::ClipNode& compositor_node = *GetClipTree().Node(id);
 
   compositor_node.clip = clip_node.PixelSnappedClipRect().Rect();
   compositor_node.transform_id =
-      EnsureCompositorTransformNode(clip_node.LocalTransformSpace());
+      EnsureCompositorTransformNode(clip_node.LocalTransformSpace().Unalias());
   compositor_node.clip_type = cc::ClipNode::ClipType::APPLIES_LOCAL_CLIP;
 
   clip_node.SetCcNodeId(new_sequence_number_, id);
@@ -642,7 +641,7 @@ void PropertyTreeManager::EmitClipMaskLayer() {
 
   cc::PictureLayer* mask_layer = clip.Layer();
 
-  const auto& clip_space = current_.clip->LocalTransformSpace();
+  const auto& clip_space = current_.clip->LocalTransformSpace().Unalias();
   layer_list_builder_.Add(mask_layer);
   mask_layer->set_property_tree_sequence_number(
       root_layer_.property_tree_sequence_number());
@@ -749,7 +748,7 @@ int PropertyTreeManager::SwitchToEffectNodeWithSynthesizedClip(
   // effect. Another mask layer L2M is generated, along with its internal
   // effect node for blending.
   const auto& ancestor =
-      LowestCommonAncestor(*current_.effect, next_effect).Unalias();
+      current_.effect->LowestCommonAncestor(next_effect).Unalias();
   while (current_.effect != &ancestor)
     CloseCcEffect();
 
@@ -771,7 +770,8 @@ static bool IsNodeOnAncestorChain(const ClipPaintPropertyNode& find,
   // [current, ancestor). Returns false otherwise.
   DCHECK(ancestor.IsAncestorOf(current));
 
-  for (const auto* node = &current; node != &ancestor; node = node->Parent()) {
+  for (const auto* node = &current; node != &ancestor;
+       node = node->UnaliasedParent()) {
     if (node == &find)
       return true;
   }
@@ -816,7 +816,7 @@ PropertyTreeManager::CcEffectType PropertyTreeManager::SyntheticEffectType(
   // Cc requires that a rectangluar clip is 2d-axis-aligned with the render
   // surface to correctly apply the clip.
   if (CurrentEffectMayBe2dAxisMisalignedToRenderSurface() ||
-      TransformsMayBe2dAxisMisaligned(clip.LocalTransformSpace(),
+      TransformsMayBe2dAxisMisaligned(clip.LocalTransformSpace().Unalias(),
                                       *current_.transform))
     effect_type |= CcEffectType::kSyntheticFor2dAxisAlignment;
   return static_cast<CcEffectType>(effect_type);
@@ -875,9 +875,8 @@ bool PropertyTreeManager::SupportsShaderBasedRoundedCorner(
 }
 
 int PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
-    const ClipPaintPropertyNode& target_clip_arg,
+    const ClipPaintPropertyNode& target_clip,
     const EffectPaintPropertyNode* next_effect) {
-  const auto* target_clip = &target_clip_arg.Unalias();
   int backdrop_effect_clip_id = cc::ClipTree::kInvalidNodeId;
   bool should_realize_backdrop_effect = false;
   if (next_effect && next_effect->HasBackdropEffect()) {
@@ -892,12 +891,12 @@ int PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
     SetCurrentEffectRenderSurfaceReason(
         cc::RenderSurfaceReason::kBackdropScope);
     should_realize_backdrop_effect = true;
-    backdrop_effect_clip_id = EnsureCompositorClipNode(*target_clip);
+    backdrop_effect_clip_id = EnsureCompositorClipNode(target_clip);
   } else {
     // Exit synthetic effects until there are no more synthesized clips below
     // our lowest common ancestor.
     const auto& lca =
-        LowestCommonAncestor(*current_.clip, *target_clip).Unalias();
+        current_.clip->LowestCommonAncestor(target_clip).Unalias();
     while (current_.clip != &lca) {
       if (!IsCurrentCcEffectSynthetic()) {
         // This happens in pre-CompositeAfterPaint due to some clip-escaping
@@ -921,13 +920,13 @@ int PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
     CcEffectType type;
   };
   Vector<PendingClip> pending_clips;
-  for (; target_clip && target_clip != current_.clip;
-       target_clip = SafeUnalias(target_clip->Parent())) {
-    if (auto type = SyntheticEffectType(*target_clip))
-      pending_clips.emplace_back(PendingClip{target_clip, type});
+  const ClipPaintPropertyNode* clip = &target_clip;
+  for (; clip && clip != current_.clip; clip = clip->UnaliasedParent()) {
+    if (auto type = SyntheticEffectType(*clip))
+      pending_clips.emplace_back(PendingClip{clip, type});
   }
 
-  if (!target_clip) {
+  if (!clip) {
     // This means that current_.clip is not an ancestor of the target clip.
     // which happens in pre-CompositeAfterPaint due to some clip-escaping
     // corner cases that are very difficult to fix in legacy architecture.
@@ -991,8 +990,8 @@ int PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
               .GetStableId();
       // The clip of the synthetic effect is the parent of the clip, so that
       // the clip itself will be applied in the render surface.
-      DCHECK(pending_clip.clip->Parent());
-      clip_id = EnsureCompositorClipNode(*pending_clip.clip->Parent());
+      DCHECK(pending_clip.clip->UnaliasedParent());
+      clip_id = EnsureCompositorClipNode(*pending_clip.clip->UnaliasedParent());
     }
 
     if (pending_clip.type & CcEffectType::kSyntheticFor2dAxisAlignment) {
@@ -1008,12 +1007,12 @@ int PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
       DCHECK(next_effect);
       DCHECK_EQ(cc_effect_id_for_backdrop_effect,
                 cc::EffectTree::kInvalidNodeId);
-      transform = &next_effect->LocalTransformSpace();
+      transform = &next_effect->LocalTransformSpace().Unalias();
       PopulateCcEffectNode(synthetic_effect, *next_effect, clip_id);
       cc_effect_id_for_backdrop_effect = synthetic_effect.id;
       should_realize_backdrop_effect = false;
     } else {
-      transform = &pending_clip.clip->LocalTransformSpace();
+      transform = &pending_clip.clip->LocalTransformSpace().Unalias();
       synthetic_effect.clip_id = clip_id;
     }
 
@@ -1029,14 +1028,13 @@ int PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
 }
 
 void PropertyTreeManager::BuildEffectNodesRecursively(
-    const EffectPaintPropertyNode& next_effect_arg) {
-  const auto& next_effect = next_effect_arg.Unalias();
+    const EffectPaintPropertyNode& next_effect) {
   if (&next_effect == current_.effect)
     return;
 
-  DCHECK(next_effect.Parent());
-  BuildEffectNodesRecursively(*next_effect.Parent());
-  DCHECK_EQ(&next_effect.Parent()->Unalias(), current_.effect);
+  DCHECK(next_effect.UnaliasedParent());
+  BuildEffectNodesRecursively(*next_effect.UnaliasedParent());
+  DCHECK_EQ(next_effect.UnaliasedParent(), current_.effect);
 
   bool has_multiple_groups = false;
   if (GetEffectTree().Node(next_effect.CcNodeId(new_sequence_number_))) {
@@ -1055,8 +1053,9 @@ void PropertyTreeManager::BuildEffectNodesRecursively(
 
   int real_effect_node_id = cc::EffectTree::kInvalidNodeId;
   int output_clip_id = 0;
-  const auto* output_clip = SafeUnalias(next_effect.OutputClip());
-  if (output_clip) {
+  const ClipPaintPropertyNode* output_clip = nullptr;
+  if (next_effect.OutputClip()) {
+    output_clip = &next_effect.OutputClip()->Unalias();
     real_effect_node_id =
         SynthesizeCcEffectsForClipsIfNeeded(*output_clip, &next_effect);
     output_clip_id = EnsureCompositorClipNode(*output_clip);
@@ -1073,6 +1072,7 @@ void PropertyTreeManager::BuildEffectNodesRecursively(
     DCHECK_EQ(output_clip_id, EnsureCompositorClipNode(*output_clip));
   }
 
+  const auto& transform = next_effect.LocalTransformSpace().Unalias();
   auto& effect_node = *GetEffectTree().Node(
       GetEffectTree().Insert(cc::EffectNode(), current_.effect_id));
   if (real_effect_node_id == cc::EffectTree::kInvalidNodeId) {
@@ -1083,8 +1083,7 @@ void PropertyTreeManager::BuildEffectNodesRecursively(
     // SynthesizeCcEffectsForClipsIfNeeded(), so |effect_node| is just a dummy
     // node to mark the end of continuous synthetic effects for |next_effect|.
     effect_node.clip_id = output_clip_id;
-    effect_node.transform_id =
-        EnsureCompositorTransformNode(next_effect.LocalTransformSpace());
+    effect_node.transform_id = EnsureCompositorTransformNode(transform);
     effect_node.stable_id = next_effect.GetCompositorElementId().GetStableId();
   }
 
@@ -1102,7 +1101,7 @@ void PropertyTreeManager::BuildEffectNodesRecursively(
 
   effect_stack_.emplace_back(current_);
   SetCurrentEffectState(effect_node, CcEffectType::kEffect, next_effect,
-                        *output_clip, next_effect.LocalTransformSpace());
+                        *output_clip, transform);
 }
 
 static cc::RenderSurfaceReason RenderSurfaceReasonForEffect(
@@ -1133,6 +1132,7 @@ void PropertyTreeManager::PopulateCcEffectNode(
   effect_node.clip_id = output_clip_id;
   effect_node.render_surface_reason = RenderSurfaceReasonForEffect(effect);
   effect_node.opacity = effect.Opacity();
+  const auto& transform = effect.LocalTransformSpace().Unalias();
   if (effect.GetColorFilter() != kColorFilterNone) {
     // Currently color filter is only used by SVG masks.
     // We are cutting corner here by support only specific configuration.
@@ -1144,8 +1144,7 @@ void PropertyTreeManager::PopulateCcEffectNode(
                                            nullptr)));
     effect_node.blend_mode = SkBlendMode::kDstIn;
   } else {
-    effect_node.transform_id =
-        EnsureCompositorTransformNode(effect.LocalTransformSpace());
+    effect_node.transform_id = EnsureCompositorTransformNode(transform);
     if (effect.HasBackdropEffect()) {
       // We never have backdrop effect and filter on the same effect node.
       DCHECK(effect.Filter().IsEmpty());
@@ -1158,7 +1157,7 @@ void PropertyTreeManager::PopulateCcEffectNode(
       effect_node.filters = effect.Filter().AsCcFilterOperations();
     }
   }
-  effect_node.double_sided = !effect.LocalTransformSpace().IsBackfaceHidden();
+  effect_node.double_sided = !transform.IsBackfaceHidden();
   effect_node.effect_changed = effect.NodeChangeAffectsRaster();
 }
 

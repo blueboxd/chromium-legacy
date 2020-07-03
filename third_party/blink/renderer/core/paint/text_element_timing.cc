@@ -40,7 +40,7 @@ TextElementTiming::TextElementTiming(LocalDOMWindow& window)
 FloatRect TextElementTiming::ComputeIntersectionRect(
     const LayoutObject& object,
     const IntRect& aggregated_visual_rect,
-    const PropertyTreeState& property_tree_state,
+    const PropertyTreeStateOrAlias& property_tree_state,
     const LocalFrameView* frame_view) {
   Node* node = object.GetNode();
   DCHECK(node);

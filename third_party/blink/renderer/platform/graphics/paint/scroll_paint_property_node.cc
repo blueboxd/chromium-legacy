@@ -32,9 +32,7 @@ const ScrollPaintPropertyNode& ScrollPaintPropertyNode::Root() {
 }
 
 std::unique_ptr<JSONObject> ScrollPaintPropertyNode::ToJSON() const {
-  auto json = std::make_unique<JSONObject>();
-  if (Parent())
-    json->SetString("parent", String::Format("%p", Parent()));
+  auto json = ToJSONBase();
   if (state_.container_rect != IntRect())
     json->SetString("containerRect", state_.container_rect.ToString());
   if (!state_.contents_size.IsZero())

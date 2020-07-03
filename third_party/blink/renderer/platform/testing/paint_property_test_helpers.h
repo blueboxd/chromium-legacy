@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/effect_paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
 #include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
+#include "third_party/blink/renderer/platform/testing/paint_property_test_helpers.h"
 
 namespace blink {
 
@@ -28,9 +29,9 @@ constexpr int e0_id = 1;
 constexpr int t0_id = 1;
 
 inline scoped_refptr<EffectPaintPropertyNode> CreateOpacityEffect(
-    const EffectPaintPropertyNode& parent,
-    const TransformPaintPropertyNode& local_transform_space,
-    const ClipPaintPropertyNode* output_clip,
+    const EffectPaintPropertyNodeOrAlias& parent,
+    const TransformPaintPropertyNodeOrAlias& local_transform_space,
+    const ClipPaintPropertyNodeOrAlias* output_clip,
     float opacity,
     CompositingReasons compositing_reasons = CompositingReason::kNone) {
   EffectPaintPropertyNode::State state;
@@ -44,7 +45,7 @@ inline scoped_refptr<EffectPaintPropertyNode> CreateOpacityEffect(
 }
 
 inline scoped_refptr<EffectPaintPropertyNode> CreateOpacityEffect(
-    const EffectPaintPropertyNode& parent,
+    const EffectPaintPropertyNodeOrAlias& parent,
     float opacity,
     CompositingReasons compositing_reasons = CompositingReason::kNone) {
   return CreateOpacityEffect(parent, parent.Unalias().LocalTransformSpace(),
@@ -53,9 +54,9 @@ inline scoped_refptr<EffectPaintPropertyNode> CreateOpacityEffect(
 }
 
 inline scoped_refptr<EffectPaintPropertyNode> CreateAnimatingOpacityEffect(
-    const EffectPaintPropertyNode& parent,
+    const EffectPaintPropertyNodeOrAlias& parent,
     float opacity = 1.f,
-    const ClipPaintPropertyNode* output_clip = nullptr) {
+    const ClipPaintPropertyNodeOrAlias* output_clip = nullptr) {
   EffectPaintPropertyNode::State state;
   state.local_transform_space = &parent.Unalias().LocalTransformSpace();
   state.output_clip = output_clip;
@@ -68,9 +69,9 @@ inline scoped_refptr<EffectPaintPropertyNode> CreateAnimatingOpacityEffect(
 }
 
 inline scoped_refptr<EffectPaintPropertyNode> CreateFilterEffect(
-    const EffectPaintPropertyNode& parent,
-    const TransformPaintPropertyNode& local_transform_space,
-    const ClipPaintPropertyNode* output_clip,
+    const EffectPaintPropertyNodeOrAlias& parent,
+    const TransformPaintPropertyNodeOrAlias& local_transform_space,
+    const ClipPaintPropertyNodeOrAlias* output_clip,
     CompositorFilterOperations filter,
     CompositingReasons compositing_reasons = CompositingReason::kNone) {
   EffectPaintPropertyNode::State state;
@@ -84,7 +85,7 @@ inline scoped_refptr<EffectPaintPropertyNode> CreateFilterEffect(
 }
 
 inline scoped_refptr<EffectPaintPropertyNode> CreateFilterEffect(
-    const EffectPaintPropertyNode& parent,
+    const EffectPaintPropertyNodeOrAlias& parent,
     CompositorFilterOperations filter,
     CompositingReasons compositing_reasons = CompositingReason::kNone) {
   return CreateFilterEffect(parent, parent.Unalias().LocalTransformSpace(),
@@ -93,9 +94,9 @@ inline scoped_refptr<EffectPaintPropertyNode> CreateFilterEffect(
 }
 
 inline scoped_refptr<EffectPaintPropertyNode> CreateAnimatingFilterEffect(
-    const EffectPaintPropertyNode& parent,
+    const EffectPaintPropertyNodeOrAlias& parent,
     CompositorFilterOperations filter = CompositorFilterOperations(),
-    const ClipPaintPropertyNode* output_clip = nullptr) {
+    const ClipPaintPropertyNodeOrAlias* output_clip = nullptr) {
   EffectPaintPropertyNode::State state;
   state.local_transform_space = &parent.Unalias().LocalTransformSpace();
   state.output_clip = output_clip;
@@ -108,9 +109,9 @@ inline scoped_refptr<EffectPaintPropertyNode> CreateAnimatingFilterEffect(
 }
 
 inline scoped_refptr<EffectPaintPropertyNode> CreateBackdropFilterEffect(
-    const EffectPaintPropertyNode& parent,
-    const TransformPaintPropertyNode& local_transform_space,
-    const ClipPaintPropertyNode* output_clip,
+    const EffectPaintPropertyNodeOrAlias& parent,
+    const TransformPaintPropertyNodeOrAlias& local_transform_space,
+    const ClipPaintPropertyNodeOrAlias* output_clip,
     CompositorFilterOperations backdrop_filter) {
   EffectPaintPropertyNode::State state;
   state.local_transform_space = &local_transform_space;
@@ -123,7 +124,7 @@ inline scoped_refptr<EffectPaintPropertyNode> CreateBackdropFilterEffect(
 }
 
 inline scoped_refptr<EffectPaintPropertyNode> CreateBackdropFilterEffect(
-    const EffectPaintPropertyNode& parent,
+    const EffectPaintPropertyNodeOrAlias& parent,
     CompositorFilterOperations backdrop_filter) {
   return CreateBackdropFilterEffect(
       parent, parent.Unalias().LocalTransformSpace(),
@@ -132,9 +133,9 @@ inline scoped_refptr<EffectPaintPropertyNode> CreateBackdropFilterEffect(
 
 inline scoped_refptr<EffectPaintPropertyNode>
 CreateAnimatingBackdropFilterEffect(
-    const EffectPaintPropertyNode& parent,
+    const EffectPaintPropertyNodeOrAlias& parent,
     CompositorFilterOperations backdrop_filter = CompositorFilterOperations(),
-    const ClipPaintPropertyNode* output_clip = nullptr) {
+    const ClipPaintPropertyNodeOrAlias* output_clip = nullptr) {
   EffectPaintPropertyNode::State state;
   state.local_transform_space = &parent.Unalias().LocalTransformSpace();
   state.output_clip = output_clip;
@@ -148,16 +149,16 @@ CreateAnimatingBackdropFilterEffect(
 }
 
 inline scoped_refptr<ClipPaintPropertyNode> CreateClip(
-    const ClipPaintPropertyNode& parent,
-    const TransformPaintPropertyNode& local_transform_space,
+    const ClipPaintPropertyNodeOrAlias& parent,
+    const TransformPaintPropertyNodeOrAlias& local_transform_space,
     const FloatRoundedRect& clip_rect) {
   ClipPaintPropertyNode::State state(&local_transform_space, clip_rect);
   return ClipPaintPropertyNode::Create(parent, std::move(state));
 }
 
 inline scoped_refptr<ClipPaintPropertyNode> CreateClip(
-    const ClipPaintPropertyNode& parent,
-    const TransformPaintPropertyNode& local_transform_space,
+    const ClipPaintPropertyNodeOrAlias& parent,
+    const TransformPaintPropertyNodeOrAlias& local_transform_space,
     const FloatRoundedRect& clip_rect,
     const FloatRoundedRect& pixel_snapped_clip_rect) {
   ClipPaintPropertyNode::State state(&local_transform_space, clip_rect,
@@ -166,8 +167,8 @@ inline scoped_refptr<ClipPaintPropertyNode> CreateClip(
 }
 
 inline scoped_refptr<ClipPaintPropertyNode> CreateClipPathClip(
-    const ClipPaintPropertyNode& parent,
-    const TransformPaintPropertyNode& local_transform_space,
+    const ClipPaintPropertyNodeOrAlias& parent,
+    const TransformPaintPropertyNodeOrAlias& local_transform_space,
     const FloatRoundedRect& clip_rect) {
   ClipPaintPropertyNode::State state(&local_transform_space, clip_rect);
   state.clip_path = base::AdoptRef(new RefCountedPath);
@@ -175,7 +176,7 @@ inline scoped_refptr<ClipPaintPropertyNode> CreateClipPathClip(
 }
 
 inline scoped_refptr<TransformPaintPropertyNode> Create2DTranslation(
-    const TransformPaintPropertyNode& parent,
+    const TransformPaintPropertyNodeOrAlias& parent,
     float x,
     float y) {
   return TransformPaintPropertyNode::Create(
@@ -183,7 +184,7 @@ inline scoped_refptr<TransformPaintPropertyNode> Create2DTranslation(
 }
 
 inline scoped_refptr<TransformPaintPropertyNode> CreateTransform(
-    const TransformPaintPropertyNode& parent,
+    const TransformPaintPropertyNodeOrAlias& parent,
     const TransformationMatrix& matrix,
     const FloatPoint3D& origin = FloatPoint3D(),
     CompositingReasons compositing_reasons = CompositingReason::kNone) {
@@ -193,7 +194,7 @@ inline scoped_refptr<TransformPaintPropertyNode> CreateTransform(
 }
 
 inline scoped_refptr<TransformPaintPropertyNode> CreateAnimatingTransform(
-    const TransformPaintPropertyNode& parent,
+    const TransformPaintPropertyNodeOrAlias& parent,
     const TransformationMatrix& matrix = TransformationMatrix(),
     const FloatPoint3D& origin = FloatPoint3D()) {
   TransformPaintPropertyNode::State state{{matrix, origin}};
@@ -205,7 +206,7 @@ inline scoped_refptr<TransformPaintPropertyNode> CreateAnimatingTransform(
 }
 
 inline scoped_refptr<TransformPaintPropertyNode> CreateScrollTranslation(
-    const TransformPaintPropertyNode& parent,
+    const TransformPaintPropertyNodeOrAlias& parent,
     float offset_x,
     float offset_y,
     const ScrollPaintPropertyNode& scroll,
@@ -217,16 +218,35 @@ inline scoped_refptr<TransformPaintPropertyNode> CreateScrollTranslation(
 }
 
 inline scoped_refptr<TransformPaintPropertyNode>
-CreateCompositedScrollTranslation(const TransformPaintPropertyNode& parent,
-                                  float offset_x,
-                                  float offset_y,
-                                  const ScrollPaintPropertyNode& scroll) {
+CreateCompositedScrollTranslation(
+    const TransformPaintPropertyNodeOrAlias& parent,
+    float offset_x,
+    float offset_y,
+    const ScrollPaintPropertyNode& scroll) {
   return CreateScrollTranslation(parent, offset_x, offset_y, scroll,
                                  CompositingReason::kOverflowScrolling);
 }
 
 inline PropertyTreeState DefaultPaintChunkProperties() {
   return PropertyTreeState::Root();
+}
+
+// Checked downcast from *PaintPropertyNodeOrAlias to *PaintPropertyNode.
+// This is used in tests that expect the node to be an unaliased node.
+inline const ClipPaintPropertyNode& ToUnaliased(
+    const ClipPaintPropertyNodeOrAlias& node) {
+  DCHECK(!node.IsParentAlias());
+  return static_cast<const ClipPaintPropertyNode&>(node);
+}
+inline const EffectPaintPropertyNode& ToUnaliased(
+    const EffectPaintPropertyNodeOrAlias& node) {
+  DCHECK(!node.IsParentAlias());
+  return static_cast<const EffectPaintPropertyNode&>(node);
+}
+inline const TransformPaintPropertyNode& ToUnaliased(
+    const TransformPaintPropertyNodeOrAlias& node) {
+  DCHECK(!node.IsParentAlias());
+  return static_cast<const TransformPaintPropertyNode&>(node);
 }
 
 }  // namespace blink

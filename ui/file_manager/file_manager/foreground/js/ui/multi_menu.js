@@ -212,16 +212,35 @@ cr.define('cr.ui', () => {
       const viewportHeight = window.innerHeight;
       const childRect = subMenu.getBoundingClientRect();
       const style = subMenu.style;
+      const maxShift = itemRect.width / 2;
       // See if it fits on the right, if not position on the left
       // if there's more room on the left.
       style.left = style.right = style.top = style.bottom = 'auto';
       if ((itemRect.right + childRect.width) > viewportWidth &&
           ((viewportWidth - itemRect.right) < itemRect.left)) {
+        let leftPosition = itemRect.left - childRect.width;
+        // Allow some menu overlap if sub menu will be clipped off.
+        if (leftPosition < 0) {
+          if (leftPosition < -maxShift) {
+            leftPosition += maxShift;
+          } else {
+            leftPosition = 0;
+          }
+        }
         this.subMenuOnLeft = true;
-        style.left = (itemRect.left - childRect.width) + 'px';
+        style.left = leftPosition + 'px';
       } else {
+        let rightPosition = itemRect.right;
+        // Allow overlap on the right to reduce sub menu clip.
+        if ((rightPosition + childRect.width) > viewportWidth) {
+          if ((rightPosition + childRect.width - viewportWidth) > maxShift) {
+            rightPosition -= maxShift;
+          } else {
+            rightPosition = viewportWidth - childRect.width;
+          }
+        }
         this.subMenuOnLeft = false;
-        style.left = itemRect.right + 'px';
+        style.left = rightPosition + 'px';
       }
       style.top = itemRect.top + 'px';
       // Size the subMenu to fit inside the height of the viewport

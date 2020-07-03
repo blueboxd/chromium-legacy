@@ -173,8 +173,8 @@ void CloseCrostiniUpdateFilesystemView();
 void ShowCrostiniAnsibleSoftwareConfigView(Profile* profile);
 
 // Show the Crostini Recovery dialog when Crostini is still running after a
-// Chrome crash. Returns false if recovery terminal can be launched.
-bool ShowCrostiniRecoveryView(Profile* profile,
+// Chrome crash. The user must either restart the VM, or launch a terminal.
+void ShowCrostiniRecoveryView(Profile* profile,
                               CrostiniUISurface ui_surface,
                               const std::string& app_id,
                               int64_t display_id,

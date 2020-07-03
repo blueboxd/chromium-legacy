@@ -222,7 +222,7 @@ TEST_F(ChunkToLayerMapperTest, SwitchToSiblingEffect) {
   auto chunk2 = Chunk(PropertyTreeState(LayerState().Transform(),
                                         LayerState().Clip(), *effect2));
 
-  ChunkToLayerMapper mapper(chunk1.properties.GetPropertyTreeState(),
+  ChunkToLayerMapper mapper(chunk1.properties.GetPropertyTreeState().Unalias(),
                             gfx::Vector2dF(10, 20));
   mapper.SwitchToChunk(chunk2);
   EXPECT_FALSE(HasFilterThatMovesPixels(mapper));

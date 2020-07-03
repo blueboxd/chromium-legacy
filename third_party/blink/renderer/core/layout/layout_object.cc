@@ -1597,7 +1597,7 @@ bool LayoutObject::HasDistortingVisualEffects() const {
 
   // No filters, no blends, no opacity < 100%.
   for (const auto* effect = &paint_properties.Effect().Unalias(); effect;
-       effect = SafeUnalias(effect->Parent())) {
+       effect = effect->UnaliasedParent()) {
     if (!effect->Filter().IsEmpty() || !effect->BackdropFilter().IsEmpty() ||
         effect->GetColorFilter() != kColorFilterNone ||
         effect->BlendMode() != SkBlendMode::kSrcOver ||
@@ -1609,7 +1609,7 @@ bool LayoutObject::HasDistortingVisualEffects() const {
   auto& local_frame_root = GetDocument().GetFrame()->LocalFrameRoot();
   auto& root_fragment = local_frame_root.ContentLayoutObject()->FirstFragment();
   CHECK(root_fragment.HasLocalBorderBoxProperties());
-  PropertyTreeState root_properties = root_fragment.LocalBorderBoxProperties();
+  const auto& root_properties = root_fragment.LocalBorderBoxProperties();
 
   // The only allowed transforms are 2D translation and proportional up-scaling.
   const auto& translation_2d_or_matrix =
@@ -1634,10 +1634,10 @@ bool LayoutObject::HasNonZeroEffectiveOpacity() const {
   if (!fragment.HasLocalBorderBoxProperties())
     return true;
 
-  PropertyTreeState paint_properties = fragment.LocalBorderBoxProperties();
+  const auto& paint_properties = fragment.LocalBorderBoxProperties();
 
   for (const auto* effect = &paint_properties.Effect().Unalias(); effect;
-       effect = SafeUnalias(effect->Parent())) {
+       effect = effect->UnaliasedParent()) {
     if (effect->Opacity() == 0.0)
       return false;
   }
@@ -1860,7 +1860,7 @@ bool LayoutObject::MapToVisualRectInAncestorSpaceInternal(
 
 const LayoutObject* LayoutObject::GetPropertyContainer(
     AncestorSkipInfo* skip_info,
-    PropertyTreeState* container_properties) const {
+    PropertyTreeStateOrAlias* container_properties) const {
   const LayoutObject* property_container = this;
   while (!property_container->FirstFragment().HasLocalBorderBoxProperties()) {
     property_container = property_container->Container(skip_info);

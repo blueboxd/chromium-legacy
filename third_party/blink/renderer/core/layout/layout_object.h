@@ -1961,8 +1961,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // ancestor was skipped, returns nullptr. If PropertyTreeState* is non-null,
   // it will be populated with paint property nodes suitable for mapping upward
   // from the coordinate system of the property container.
-  const LayoutObject* GetPropertyContainer(AncestorSkipInfo*,
-                                           PropertyTreeState* = nullptr) const;
+  const LayoutObject* GetPropertyContainer(
+      AncestorSkipInfo*,
+      PropertyTreeStateOrAlias* = nullptr) const;
 
   // Do a rect-based hit test with this object as the stop node.
   HitTestResult HitTestForOcclusion(const PhysicalRect&) const;

@@ -32,11 +32,11 @@ class PLATFORM_EXPORT PaintChunker final {
   bool IsInInitialState() const;
 #endif
 
-  const PropertyTreeState& CurrentPaintChunkProperties() const {
+  const PropertyTreeStateOrAlias& CurrentPaintChunkProperties() const {
     return current_properties_;
   }
   void UpdateCurrentPaintChunkProperties(const PaintChunk::Id*,
-                                         const PropertyTreeState&);
+                                         const PropertyTreeStateOrAlias&);
 
   // Sets the forcing new chunk status on or off. If the status is on, even the
   // properties haven't change, we'll force a new paint chunk for the next
@@ -90,7 +90,7 @@ class PLATFORM_EXPORT PaintChunker final {
   // forced to create a new chunk).
   base::Optional<PaintChunk::Id> next_chunk_id_;
 
-  PropertyTreeState current_properties_;
+  PropertyTreeStateOrAlias current_properties_;
 
   Region last_chunk_known_to_be_opaque_region_;
 

@@ -318,7 +318,8 @@ void IntersectionGeometry::ComputeGeometry(const RootGeometry& root_geometry,
   // Map target_rect_ to absolute coordinates for target's document.
   // GeometryMapper is faster, so we use it when possible; otherwise, fall back
   // to LocalToAncestorRect.
-  PropertyTreeState container_properties = PropertyTreeState::Uninitialized();
+  PropertyTreeStateOrAlias container_properties =
+      PropertyTreeState::Uninitialized();
   const LayoutObject* property_container =
       CanUseGeometryMapper(target)
           ? target->GetPropertyContainer(nullptr, &container_properties)

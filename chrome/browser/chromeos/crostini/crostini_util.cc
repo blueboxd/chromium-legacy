@@ -351,10 +351,10 @@ void LaunchCrostiniAppImpl(
       auto* browser = LaunchTerminal(profile, display_id, container_id);
       if (browser == nullptr) {
         RecordAppLaunchResultHistogram(crostini::CrostiniResult::UNKNOWN_ERROR);
-      } else {
-        RecordAppLaunchResultHistogram(crostini::CrostiniResult::SUCCESS);
+        return std::move(callback).Run(false, "failed to launch terminal");
       }
-      return;
+      RecordAppLaunchResultHistogram(crostini::CrostiniResult::SUCCESS);
+      return std::move(callback).Run(true, "");
     }
 
     GURL vsh_in_crosh_url = GenerateVshInCroshUrl(profile, container_id,
@@ -422,11 +422,9 @@ void LaunchCrostiniApp(Profile* profile,
 
   if (crostini_manager->IsUncleanStartup()) {
     // Prompt for user-restart.
-    if (!ShowCrostiniRecoveryView(profile,
-                                  crostini::CrostiniUISurface::kAppList, app_id,
-                                  display_id, std::move(callback))) {
-      return;
-    }
+    return ShowCrostiniRecoveryView(profile,
+                                    crostini::CrostiniUISurface::kAppList,
+                                    app_id, display_id, std::move(callback));
   }
 
   if (crostini_manager->ShouldPromptContainerUpgrade(

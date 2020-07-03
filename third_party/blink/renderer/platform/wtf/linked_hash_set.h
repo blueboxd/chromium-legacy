@@ -937,6 +937,8 @@ inline void swap(LinkedHashSetNode<T>& a, LinkedHashSetNode<T>& b) {
 // iterating it yields values in the order in which they were inserted.
 // The linked list is implementing in a vector (with links being indexes instead
 // of pointers), to simplify the move of backing during GC compaction.
+//
+// Unlike ListHashSet, this container supports WeakMember<T>.
 
 // TODO(keinakashima): implement NewLinkedHashTraits (now we cannot insert
 // deleted/empty value) and add it to template parameter
@@ -1264,4 +1266,4 @@ NewLinkedHashSet<T, Allocator>::InsertOrMoveBefore(const_iterator position,
 using WTF::LinkedHashSet;
 using WTF::NewLinkedHashSet;
 
-#endif /* WTF_LinkedHashSet_h */
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_LINKED_HASH_SET_H_

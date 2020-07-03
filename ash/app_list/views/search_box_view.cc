@@ -401,20 +401,16 @@ void SearchBoxView::ProcessAutocomplete() {
   if (!ShouldProcessAutocomplete())
     return;
 
-  SearchResultBaseView* const first_result_view =
-      contents_view_->search_results_page_view()->first_result_view();
-  if (!first_result_view || !first_result_view->selected())
-    return;
+  SearchResult* const first_visible_result =
+      search_model_->GetFirstVisibleResult();
 
-  SearchResult* const first_visible_result = first_result_view->result();
-
-  if (first_result_view->is_default_result() &&
-      current_query_ != search_box()->GetText()) {
+  if (!search_box_has_query_) {
     // Search box text has been set to the previous selected result. Reset
     // it back to the current query. This could happen due to the racing
     // between results update and user press key to select a result.
     // See crbug.com/1065454.
     search_box()->SetText(current_query_);
+    search_box_has_query_ = true;
   }
 
   // Current non-autocompleted text.
@@ -500,8 +496,8 @@ void SearchBoxView::ContentsChanged(views::Textfield* sender,
     // User enters a new search query. Record the action.
     base::RecordAction(base::UserMetricsAction("AppList_SearchQueryStarted"));
   }
-
   current_query_ = new_contents;
+  search_box_has_query_ = true;
 
   // Update autocomplete text highlight range to track user typed text.
   if (ShouldProcessAutocomplete())
@@ -745,6 +741,7 @@ void SearchBoxView::UpdateSearchBoxTextForSelectedResult(
   } else {
     search_box()->SetText(selected_result->title());
   }
+  search_box_has_query_ = false;
 }
 
 void SearchBoxView::Update() {

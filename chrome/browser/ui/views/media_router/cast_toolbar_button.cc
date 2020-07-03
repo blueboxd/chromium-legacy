@@ -177,8 +177,9 @@ void CastToolbarButton::UpdateIcon() {
     icon_color = GetNativeTheme()->GetSystemColor(
         ui::NativeTheme::kColorId_AlertSeverityMedium);
   }
-  SetImageModel(ButtonState::STATE_NORMAL,
-                ui::ImageModel::FromVectorIcon(*icon, icon_color));
+
+  for (auto state : kButtonStates)
+    SetImageModel(state, ui::ImageModel::FromVectorIcon(*icon, icon_color));
   UpdateLayoutInsetDelta();
 }
 

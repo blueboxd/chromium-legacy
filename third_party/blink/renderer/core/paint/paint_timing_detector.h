@@ -23,7 +23,7 @@ class ImageResourceContent;
 class LargestContentfulPaintCalculator;
 class LayoutObject;
 class LocalFrameView;
-class PropertyTreeState;
+class PropertyTreeStateOrAlias;
 class StyleFetchedImage;
 class TextPaintTimingDetector;
 struct WebFloatRect;
@@ -125,13 +125,13 @@ class CORE_EXPORT PaintTimingDetector
       const Node*,
       const Image*,
       const StyleFetchedImage*,
-      const PropertyTreeState& current_paint_chunk_properties,
+      const PropertyTreeStateOrAlias& current_paint_chunk_properties,
       const IntRect& image_border);
   static void NotifyImagePaint(
       const LayoutObject&,
       const IntSize& intrinsic_size,
       const ImageResourceContent* cached_image,
-      const PropertyTreeState& current_paint_chunk_properties);
+      const PropertyTreeStateOrAlias& current_paint_chunk_properties);
   inline static void NotifyTextPaint(const IntRect& text_visual_rect);
 
   void NotifyImageFinished(const LayoutObject&, const ImageResourceContent*);
@@ -166,7 +166,7 @@ class CORE_EXPORT PaintTimingDetector
 
   void ConvertViewportToWindow(WebFloatRect* float_rect) const;
   FloatRect CalculateVisualRect(const IntRect& visual_rect,
-                                const PropertyTreeState&) const;
+                                const PropertyTreeStateOrAlias&) const;
 
   TextPaintTimingDetector* GetTextPaintTimingDetector() const {
     DCHECK(text_paint_timing_detector_);
@@ -268,7 +268,8 @@ class ScopedPaintTimingDetectorBlockPaintHook {
   // appropriate scope.
   ScopedPaintTimingDetectorBlockPaintHook() {}
 
-  void EmplaceIfNeeded(const LayoutBoxModelObject&, const PropertyTreeState&);
+  void EmplaceIfNeeded(const LayoutBoxModelObject&,
+                       const PropertyTreeStateOrAlias&);
   ~ScopedPaintTimingDetectorBlockPaintHook();
 
  private:
@@ -291,11 +292,11 @@ class ScopedPaintTimingDetectorBlockPaintHook {
 
    public:
     Data(const LayoutBoxModelObject& aggregator,
-         const PropertyTreeState&,
+         const PropertyTreeStateOrAlias&,
          TextPaintTimingDetector*);
 
     const LayoutBoxModelObject& aggregator_;
-    const PropertyTreeState& property_tree_state_;
+    const PropertyTreeStateOrAlias& property_tree_state_;
     TextPaintTimingDetector* detector_;
     IntRect aggregated_visual_rect_;
   };

@@ -128,7 +128,7 @@ inline bool CheckChunk(const PaintChunk& chunk,
                        wtf_size_t begin,
                        wtf_size_t end,
                        const PaintChunk::Id& id,
-                       const PropertyTreeState& properties,
+                       const PropertyTreeStateOrAlias& properties,
                        const HitTestData* hit_test_data = nullptr,
                        const IntRect* bounds = nullptr) {
   return chunk.begin_index == begin && chunk.end_index == end &&

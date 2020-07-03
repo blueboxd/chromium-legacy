@@ -95,7 +95,7 @@ class DataFetcher {
   }
 
   /**
-   * Outputs a single UInt8Array containing the entire input .size file.
+   * Outputs a single UInt8Array encompassing the entire input .size file.
    */
   async loadSizeBuffer() {
     if (!this._cache) {

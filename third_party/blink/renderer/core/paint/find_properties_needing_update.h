@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_builder.h"
@@ -52,8 +53,7 @@ class FindPropertiesNeedingUpdateScope {
 
     if (fragment_data_.HasLocalBorderBoxProperties()) {
       original_local_border_box_properties_ =
-          std::make_unique<PropertyTreeState>(
-              fragment_data_.LocalBorderBoxProperties());
+          fragment_data_.LocalBorderBoxProperties();
     }
   }
 
@@ -71,20 +71,20 @@ class FindPropertiesNeedingUpdateScope {
       DCHECK(!had_original_properties_);
     }
 
-    if (original_local_border_box_properties_ &&
+    if (!original_local_border_box_properties_.IsInitialized() &&
         fragment_data_.HasLocalBorderBoxProperties()) {
       const auto object_border_box = fragment_data_.LocalBorderBoxProperties();
-      DCHECK_EQ(&original_local_border_box_properties_->Transform(),
+      DCHECK_EQ(&original_local_border_box_properties_.Transform(),
                 &object_border_box.Transform())
           << object_.DebugName();
-      DCHECK_EQ(&original_local_border_box_properties_->Clip(),
+      DCHECK_EQ(&original_local_border_box_properties_.Clip(),
                 &object_border_box.Clip())
           << object_.DebugName();
-      DCHECK_EQ(&original_local_border_box_properties_->Effect(),
+      DCHECK_EQ(&original_local_border_box_properties_.Effect(),
                 &object_border_box.Effect())
           << object_.DebugName();
     } else {
-      DCHECK_EQ(!!original_local_border_box_properties_,
+      DCHECK_EQ(original_local_border_box_properties_.IsInitialized(),
                 fragment_data_.HasLocalBorderBoxProperties())
           << object_.DebugName();
     }
@@ -98,8 +98,8 @@ class FindPropertiesNeedingUpdateScope {
   const FragmentData& fragment_data_;
   bool needed_paint_property_update_ = false;
   bool needed_forced_subtree_update_ = false;
-  std::unique_ptr<const PropertyTreeState>
-      original_local_border_box_properties_;
+  PropertyTreeStateOrAlias original_local_border_box_properties_ =
+      PropertyTreeState::Uninitialized();
   bool had_original_properties_ = false;
 };
 

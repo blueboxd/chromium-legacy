@@ -92,11 +92,11 @@ void RecordForeignLayer(GraphicsContext& context,
                         DisplayItem::Type type,
                         scoped_refptr<cc::Layer> layer,
                         const FloatPoint& offset,
-                        const PropertyTreeState* properties) {
+                        const PropertyTreeStateOrAlias* properties) {
   PaintController& paint_controller = context.GetPaintController();
   // This is like ScopedPaintChunkProperties but uses null id because foreign
   // layer chunk doesn't need an id nor a client.
-  base::Optional<PropertyTreeState> previous_properties;
+  base::Optional<PropertyTreeStateOrAlias> previous_properties;
   if (properties) {
     previous_properties.emplace(paint_controller.CurrentPaintChunkProperties());
     paint_controller.UpdateCurrentPaintChunkProperties(nullptr, *properties);

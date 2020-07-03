@@ -42,7 +42,7 @@ void ViewPainter::PaintRootGroup(const PaintInfo& paint_info,
                                  const IntRect& pixel_snapped_background_rect,
                                  const Document& document,
                                  const DisplayItemClient& client,
-                                 const PropertyTreeState& state) {
+                                 const PropertyTreeStateOrAlias& state) {
   if (!document.IsInMainFrame())
     return;
   bool should_clear_canvas =
@@ -125,7 +125,7 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
 
   const Document& document = layout_view_.GetDocument();
 
-  PropertyTreeState root_element_background_painting_state =
+  auto root_element_background_painting_state =
       layout_view_.FirstFragment().ContentsProperties();
 
   base::Optional<ScopedPaintChunkProperties> scoped_properties;
@@ -161,7 +161,7 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
   // [2] https://drafts.fxtf.org/compositing/#rootgroup
   if (should_paint_background && painting_scrolling_background &&
       should_apply_root_background_behavior && root_object) {
-    const PropertyTreeState& document_element_state =
+    const auto& document_element_state =
         root_object->FirstFragment().LocalBorderBoxProperties();
 
     // As an optimization, only paint a separate PaintChunk for the
@@ -229,7 +229,7 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
 void ViewPainter::PaintRootElementGroup(
     const PaintInfo& paint_info,
     const IntRect& pixel_snapped_background_rect,
-    const PropertyTreeState& background_paint_state,
+    const PropertyTreeStateOrAlias& background_paint_state,
     const DisplayItemClient& background_client,
     bool painted_separate_backdrop,
     bool painted_separate_effect) {

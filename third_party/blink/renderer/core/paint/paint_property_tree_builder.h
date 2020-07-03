@@ -41,7 +41,7 @@ struct PaintPropertyTreeBuilderFragmentContext {
     // When a layout object recur to its children, the main context is expected
     // to refer the object's border box, then the callee will derive its own
     // border box by translating the space with its own layout location.
-    const TransformPaintPropertyNode* transform = nullptr;
+    const TransformPaintPropertyNodeOrAlias* transform = nullptr;
     // Corresponds to FragmentData::PaintOffset, which does not include
     // fragmentation offsets. See FragmentContext for the fragmented version.
     PhysicalOffset paint_offset;
@@ -61,7 +61,7 @@ struct PaintPropertyTreeBuilderFragmentContext {
     // node is independent from the transform and paint offset above. Also the
     // actual raster region may be affected by layerization and occlusion
     // tracking.
-    const ClipPaintPropertyNode* clip = nullptr;
+    const ClipPaintPropertyNodeOrAlias* clip = nullptr;
     // The scroll node contains information for scrolling such as the parent
     // scroll space, the extent that can be scrolled, etc. Because scroll nodes
     // reference a scroll offset transform, scroll nodes should be updated if
@@ -95,7 +95,7 @@ struct PaintPropertyTreeBuilderFragmentContext {
   // guaranteed that every DOM descendant is also a stacking context descendant.
   // Therefore, we don't need extra bookkeeping for effect nodes and can
   // generate the effect tree from a DOM-order traversal.
-  const EffectPaintPropertyNode* current_effect;
+  const EffectPaintPropertyNodeOrAlias* current_effect;
 
   // If the object is a flow thread, this records the clip rect for this
   // fragment.

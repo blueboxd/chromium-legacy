@@ -5,8 +5,10 @@
 #ifndef GPU_COMMAND_BUFFER_COMMON_SWAP_BUFFERS_COMPLETE_PARAMS_H_
 #define GPU_COMMAND_BUFFER_COMMON_SWAP_BUFFERS_COMPLETE_PARAMS_H_
 
+#include "base/optional.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "ui/gfx/ca_layer_params.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/swap_result.h"
 
 namespace gpu {
@@ -20,6 +22,12 @@ struct GPU_EXPORT SwapBuffersCompleteParams {
   ~SwapBuffersCompleteParams();
 
   gfx::SwapResponse swap_response;
+
+  // Damage area of the current backing buffer compare to the previous swapped
+  // buffer. The renderer can use it as hint for minimizing drawing area for the
+  // next frame.
+  base::Optional<gfx::Rect> frame_buffer_damage_area;
+
   // Used only on macOS, for coordinating IOSurface reuse with the system
   // WindowServer.
   gpu::TextureInUseResponses texture_in_use_responses;

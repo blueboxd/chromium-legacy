@@ -212,6 +212,50 @@ testcase.defaultTaskDialogDownloads = async () => {
   await defaultTaskDialog(appId, 'dummytaskid-2|open-with');
 };
 
+
+/**
+ * Tests that the Change Default Task dialog has a scrollable list.
+ */
+testcase.changeDefaultDialogScrollList = async () => {
+  const tasks = [
+    new FakeTask(true, 'dummytaskid|open-with', 'DummyTask1'),
+    new FakeTask(false, 'dummytaskid-2|open-with', 'DummyTask2'),
+    new FakeTask(false, 'dummytaskid-3|open-with', 'DummyTask3'),
+    new FakeTask(false, 'dummytaskid-3|open-with', 'DummyTask4'),
+    new FakeTask(false, 'dummytaskid-3|open-with', 'DummyTask5'),
+    new FakeTask(false, 'dummytaskid-3|open-with', 'DummyTask6'),
+    new FakeTask(false, 'dummytaskid-3|open-with', 'DummyTask7'),
+  ];
+
+  // Override tasks for the test.
+  const appId = await setupTaskTest(RootPath.DOWNLOADS, tasks);
+
+  // Select file.
+  await remoteCall.callRemoteTestUtil('selectFile', appId, ['hello.txt']);
+
+  // Click the change default task menu.
+  await remoteCall.waitForElement(appId, '#tasks[multiple]');
+  await remoteCall.waitForElement(appId, '#tasks-menu .change-default');
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'fakeEvent', appId,
+      ['#tasks', 'select', {item: {type: 'ChangeDefaultTask'}}]));
+
+  // Wait for Default Task Dialog with the scrollable list CSS class.
+  await remoteCall.waitForElement(
+      appId, '#default-task-dialog.scrollable-list');
+
+  // Check: The dialog should start with bottom-shadow CSS class.
+  await remoteCall.waitForElement(appId, '#default-task-dialog.bottom-shadow');
+
+  // Scroll down the list in the dialog.
+  await remoteCall.callRemoteTestUtil(
+      'setScrollTop', appId, ['#default-task-dialog list', 100]);
+
+  // Check: CSS class bottom-shadow should be removed.
+  await remoteCall.waitForElementLost(
+      appId, '#default-task-dialog.bottom-shadow');
+};
+
 testcase.genericTaskIsNotExecuted = async () => {
   const tasks = [new FakeTask(
       false, 'dummytaskid|open-with', 'DummyTask1',

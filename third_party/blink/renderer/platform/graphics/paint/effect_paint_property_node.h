@@ -24,8 +24,51 @@ class PropertyTreeState;
 //
 // The effect tree is rooted at a node with no parent. This root node should
 // not be modified.
+class EffectPaintPropertyNode;
+
+class PLATFORM_EXPORT EffectPaintPropertyNodeOrAlias
+    : public PaintPropertyNode<EffectPaintPropertyNodeOrAlias,
+                               EffectPaintPropertyNode> {
+ public:
+  // Checks if the accumulated effect from |this| to |relative_to_state
+  // .Effect()| has changed, at least significance of |change|, in the space of
+  // |relative_to_state.Transform()|. We check for changes of not only effect
+  // nodes, but also LocalTransformSpace relative to |relative_to_state
+  // .Transform()| of the effect nodes having filters that move pixels. Change
+  // of OutputClip is not checked and the caller should check in other ways.
+  // |transform_not_to_check| specifies the transform node that the caller has
+  // checked or will check its change in other ways and this function should
+  // treat it as unchanged.
+  bool Changed(
+      PaintPropertyChangeType change,
+      const PropertyTreeState& relative_to_state,
+      const TransformPaintPropertyNodeOrAlias* transform_not_to_check) const;
+
+ protected:
+  using PaintPropertyNode::PaintPropertyNode;
+};
+
+class EffectPaintPropertyNodeAlias : public EffectPaintPropertyNodeOrAlias {
+ public:
+  static scoped_refptr<EffectPaintPropertyNodeAlias> Create(
+      const EffectPaintPropertyNodeOrAlias& parent) {
+    return base::AdoptRef(new EffectPaintPropertyNodeAlias(parent));
+  }
+
+  PaintPropertyChangeType SetParent(
+      const EffectPaintPropertyNodeOrAlias& parent) {
+    DCHECK(IsParentAlias());
+    return PaintPropertyNode::SetParent(parent);
+  }
+
+ private:
+  explicit EffectPaintPropertyNodeAlias(
+      const EffectPaintPropertyNodeOrAlias& parent)
+      : EffectPaintPropertyNodeOrAlias(parent, kParentAlias) {}
+};
+
 class PLATFORM_EXPORT EffectPaintPropertyNode
-    : public PaintPropertyNode<EffectPaintPropertyNode> {
+    : public EffectPaintPropertyNodeOrAlias {
  public:
   struct AnimationState {
     AnimationState() {}
@@ -42,10 +85,11 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
     //    and effects under the same parent.
     // 2. Some effects are spatial (namely blur filter and reflection), the
     //    effect parameters will be specified in the local space.
-    scoped_refptr<const TransformPaintPropertyNode> local_transform_space;
+    scoped_refptr<const TransformPaintPropertyNodeOrAlias>
+        local_transform_space;
     // The output of the effect can be optionally clipped when composited onto
     // the current backdrop.
-    scoped_refptr<const ClipPaintPropertyNode> output_clip;
+    scoped_refptr<const ClipPaintPropertyNodeOrAlias> output_clip;
     // Optionally a number of effects can be applied to the composited output.
     // The chain of effects will be applied in the following order:
     // === Begin of effects ===
@@ -118,67 +162,45 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
   static const EffectPaintPropertyNode& Root();
 
   static scoped_refptr<EffectPaintPropertyNode> Create(
-      const EffectPaintPropertyNode& parent,
+      const EffectPaintPropertyNodeOrAlias& parent,
       State&& state) {
-    return base::AdoptRef(new EffectPaintPropertyNode(
-        &parent, std::move(state), false /* is_parent_alias */));
-  }
-  static scoped_refptr<EffectPaintPropertyNode> CreateAlias(
-      const EffectPaintPropertyNode& parent) {
-    return base::AdoptRef(new EffectPaintPropertyNode(
-        &parent, State{}, true /* is_parent_alias */));
+    return base::AdoptRef(
+        new EffectPaintPropertyNode(&parent, std::move(state)));
   }
 
   PaintPropertyChangeType Update(
-      const EffectPaintPropertyNode& parent,
+      const EffectPaintPropertyNodeOrAlias& parent,
       State&& state,
       const AnimationState& animation_state = AnimationState()) {
-    auto parent_changed = SetParent(&parent);
+    auto parent_changed = SetParent(parent);
     auto state_changed = state_.ComputeChange(state, animation_state);
     if (state_changed != PaintPropertyChangeType::kUnchanged) {
-      DCHECK(!IsParentAlias()) << "Changed the state of an alias node.";
       state_ = std::move(state);
       AddChanged(state_changed);
     }
     return std::max(parent_changed, state_changed);
   }
 
-  // Checks if the accumulated effect from |this| to |relative_to_state
-  // .Effect()| has changed, at least significance of |change|, in the space of
-  // |relative_to_state.Transform()|. We check for changes of not only effect
-  // nodes, but also LocalTransformSpace relative to |relative_to_state
-  // .Transform()| of the effect nodes having filters that move pixels. Change
-  // of OutputClip is not checked and the caller should check in other ways.
-  // |transform_not_to_check| specifies the transform node that the caller has
-  // checked or will check its change in other ways and this function should
-  // treat it as unchanged.
-  bool Changed(PaintPropertyChangeType change,
-               const PropertyTreeState& relative_to_state,
-               const TransformPaintPropertyNode* transform_not_to_check) const;
+  const EffectPaintPropertyNode& Unalias() const = delete;
+  bool IsParentAlias() const = delete;
 
-  const TransformPaintPropertyNode& LocalTransformSpace() const {
-    DCHECK(!Parent() || !IsParentAlias());
+  const TransformPaintPropertyNodeOrAlias& LocalTransformSpace() const {
     return *state_.local_transform_space;
   }
-  const ClipPaintPropertyNode* OutputClip() const {
-    DCHECK(!Parent() || !IsParentAlias());
+  const ClipPaintPropertyNodeOrAlias* OutputClip() const {
     return state_.output_clip.get();
   }
 
   SkBlendMode BlendMode() const {
-    DCHECK(!Parent() || !IsParentAlias());
     return state_.blend_mode;
   }
   float Opacity() const {
-    DCHECK(!Parent() || !IsParentAlias());
     return state_.opacity;
   }
   const CompositorFilterOperations& Filter() const {
-    DCHECK(!Parent() || !IsParentAlias());
     return state_.filter;
   }
   ColorFilter GetColorFilter() const {
-    DCHECK(!Parent() || !IsParentAlias());
     return state_.color_filter;
   }
 
@@ -195,7 +217,6 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
   }
 
   bool HasFilterThatMovesPixels() const {
-    DCHECK(!Parent() || !IsParentAlias());
     return state_.filter.HasFilterThatMovesPixels();
   }
 
@@ -253,23 +274,19 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
   }
 
   const CompositorElementId& GetCompositorElementId() const {
-    DCHECK(!Parent() || !IsParentAlias());
     return state_.compositor_element_id;
   }
 
   std::unique_ptr<JSONObject> ToJSON() const;
 
-  // Returns memory usage of this node plus ancestors.
-  size_t TreeMemoryUsageInBytes() const;
-
  private:
-  EffectPaintPropertyNode(const EffectPaintPropertyNode* parent,
-                          State&& state,
-                          bool is_parent_alias)
-      : PaintPropertyNode(parent, is_parent_alias), state_(std::move(state)) {}
+  EffectPaintPropertyNode(const EffectPaintPropertyNodeOrAlias* parent,
+                          State&& state)
+      : EffectPaintPropertyNodeOrAlias(parent), state_(std::move(state)) {}
+
+  using EffectPaintPropertyNodeOrAlias::SetParent;
 
   CompositingReasons DirectCompositingReasons() const {
-    DCHECK(!Parent() || !IsParentAlias());
     return state_.direct_compositing_reasons;
   }
 

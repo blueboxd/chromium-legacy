@@ -143,32 +143,32 @@ class PaintPropertyNodeTest : public testing::Test {
 
 TEST_F(PaintPropertyNodeTest, LowestCommonAncestor) {
   EXPECT_EQ(transform.ancestor,
-            &LowestCommonAncestor(*transform.ancestor, *transform.ancestor));
+            &transform.ancestor->LowestCommonAncestor(*transform.ancestor));
   EXPECT_EQ(transform.root,
-            &LowestCommonAncestor(*transform.root, *transform.root));
+            &transform.root->LowestCommonAncestor(*transform.root));
 
-  EXPECT_EQ(transform.ancestor, &LowestCommonAncestor(*transform.grandchild1,
-                                                      *transform.grandchild2));
+  EXPECT_EQ(transform.ancestor, &transform.grandchild1->LowestCommonAncestor(
+                                    *transform.grandchild2));
   EXPECT_EQ(transform.ancestor,
-            &LowestCommonAncestor(*transform.grandchild1, *transform.child2));
+            &transform.grandchild1->LowestCommonAncestor(*transform.child2));
   EXPECT_EQ(transform.root,
-            &LowestCommonAncestor(*transform.grandchild1, *transform.root));
+            &transform.grandchild1->LowestCommonAncestor(*transform.root));
   EXPECT_EQ(transform.child1,
-            &LowestCommonAncestor(*transform.grandchild1, *transform.child1));
+            &transform.grandchild1->LowestCommonAncestor(*transform.child1));
 
-  EXPECT_EQ(transform.ancestor, &LowestCommonAncestor(*transform.grandchild2,
-                                                      *transform.grandchild1));
+  EXPECT_EQ(transform.ancestor, &transform.grandchild2->LowestCommonAncestor(
+                                    *transform.grandchild1));
   EXPECT_EQ(transform.ancestor,
-            &LowestCommonAncestor(*transform.grandchild2, *transform.child1));
+            &transform.grandchild2->LowestCommonAncestor(*transform.child1));
   EXPECT_EQ(transform.root,
-            &LowestCommonAncestor(*transform.grandchild2, *transform.root));
+            &transform.grandchild2->LowestCommonAncestor(*transform.root));
   EXPECT_EQ(transform.child2,
-            &LowestCommonAncestor(*transform.grandchild2, *transform.child2));
+            &transform.grandchild2->LowestCommonAncestor(*transform.child2));
 
   EXPECT_EQ(transform.ancestor,
-            &LowestCommonAncestor(*transform.child1, *transform.child2));
+            &transform.child1->LowestCommonAncestor(*transform.child2));
   EXPECT_EQ(transform.ancestor,
-            &LowestCommonAncestor(*transform.child2, *transform.child1));
+            &transform.child2->LowestCommonAncestor(*transform.child1));
 }
 
 TEST_F(PaintPropertyNodeTest, InitialStateAndReset) {

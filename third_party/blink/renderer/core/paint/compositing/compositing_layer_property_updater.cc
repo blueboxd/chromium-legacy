@@ -62,7 +62,7 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
   }
 #endif
 
-  base::Optional<PropertyTreeState> container_layer_state;
+  base::Optional<PropertyTreeStateOrAlias> container_layer_state;
   auto SetContainerLayerState =
       [&fragment_data, &snapped_paint_offset,
        &container_layer_state](GraphicsLayer* graphics_layer) {
@@ -86,7 +86,7 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
                                ScrollbarOrCorner scrollbar_or_corner) {
         if (!graphics_layer)
           return;
-        PropertyTreeState scrollbar_layer_state =
+        PropertyTreeStateOrAlias scrollbar_layer_state =
             container_layer_state.value_or(
                 fragment_data.LocalBorderBoxProperties());
         // OverflowControlsClip should be applied within the scrollbar layers.

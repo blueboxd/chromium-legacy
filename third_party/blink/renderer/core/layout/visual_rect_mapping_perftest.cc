@@ -34,15 +34,9 @@ void VisualRectPerfTest::RunPerfTest(unsigned iteration_count,
              << (base::TimeTicks::Now() - start).InMilliseconds() << "ms";
 
   start = base::TimeTicks::Now();
-  size_t total_cache_bytes = 0;
   for (unsigned count = 0; count < iteration_count; count++) {
     object.MapToVisualRectInAncestorSpace(&ancestor, test_rect,
                                           kUseGeometryMapper);
-    if (count == 0) {
-      total_cache_bytes = object.FirstFragment()
-                              .LocalBorderBoxProperties()
-                              .CacheMemoryUsageInBytes();
-    }
     GeometryMapper::ClearCache();
   }
 
@@ -50,8 +44,6 @@ void VisualRectPerfTest::RunPerfTest(unsigned iteration_count,
       << "  Time to run MapToVisualRectInAncestorSpace w/GeometryMapper: "
 
       << (base::TimeTicks::Now() - start).InMilliseconds() << "ms";
-  LOG(ERROR) << "    GeometryMapper cache storage size: " << total_cache_bytes
-             << " bytes";
 }
 
 TEST_F(VisualRectPerfTest, GeometryMapper) {

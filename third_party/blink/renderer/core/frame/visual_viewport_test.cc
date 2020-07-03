@@ -56,6 +56,7 @@
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
+#include "third_party/blink/renderer/platform/testing/paint_property_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
@@ -2693,8 +2694,8 @@ TEST_P(VisualViewportTest, InSubtreeOfPageScale) {
   // The page scale is not in its own subtree.
   EXPECT_FALSE(page_scale->IsInSubtreeOfPageScale());
   // Ancestors of the page scale are not in the page scale's subtree.
-  for (const auto* ancestor = page_scale->Parent(); ancestor;
-       ancestor = ancestor->Parent()) {
+  for (const auto* ancestor = page_scale->UnaliasedParent(); ancestor;
+       ancestor = ancestor->UnaliasedParent()) {
     EXPECT_FALSE(ancestor->IsInSubtreeOfPageScale());
   }
 
@@ -2702,9 +2703,9 @@ TEST_P(VisualViewportTest, InSubtreeOfPageScale) {
   const auto& view_contents_transform =
       view->FirstFragment().ContentsProperties().Transform();
   // Descendants of the page scale node should have |IsInSubtreeOfPageScale|.
-  EXPECT_TRUE(view_contents_transform.IsInSubtreeOfPageScale());
-  for (const auto* ancestor = view_contents_transform.Parent();
-       ancestor != page_scale; ancestor = ancestor->Parent()) {
+  EXPECT_TRUE(ToUnaliased(view_contents_transform).IsInSubtreeOfPageScale());
+  for (const auto* ancestor = view_contents_transform.UnaliasedParent();
+       ancestor != page_scale; ancestor = ancestor->UnaliasedParent()) {
     EXPECT_TRUE(ancestor->IsInSubtreeOfPageScale());
   }
 }

@@ -56,7 +56,7 @@ size_t PaintArtifact::ApproximateUnsharedMemoryUsage() const {
 
 void PaintArtifact::AppendDebugDrawing(
     sk_sp<const PaintRecord> record,
-    const PropertyTreeState& property_tree_state) {
+    const PropertyTreeStateOrAlias& property_tree_state) {
   DEFINE_STATIC_LOCAL(DebugDrawingClient, debug_drawing_client, ());
 
   DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());

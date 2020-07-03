@@ -11220,6 +11220,99 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   EXPECT_EQ(data_url, entry->GetURL());
   EXPECT_EQ(base_url, EvalJs(shell(), "document.URL"));
 }
+
+// Navigate an iframe, then reload it. Check the navigation and the
+// FrameNavigationEntry are the same in both cases.
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest, ReloadFrame) {
+  GURL main_url = embedded_test_server()->GetURL(
+      "a.com", "/frame_tree/page_with_one_frame.html");
+  GURL iframe_url = embedded_test_server()->GetURL("b.com", "/title1.html");
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+
+  ASSERT_TRUE(NavigateToURL(shell(), main_url));
+  RenderFrameHostImpl* main_frame =
+      static_cast<WebContentsImpl*>(shell()->web_contents())->GetMainFrame();
+
+  // 1. Navigate the iframe using POST, initiated from the main frame.
+  TestNavigationManager observer_1(shell()->web_contents(), iframe_url);
+  EXPECT_TRUE(ExecJs(main_frame, JsReplace(R"(
+    var form = document.createElement('form');
+    form.method = 'POST';
+    form.action = $1;
+    form.target = "child-name-0";
+    document.body.appendChild(form);
+    form.submit();
+  )",
+                                           iframe_url)));
+
+  EXPECT_TRUE(observer_1.WaitForRequestStart());
+
+  // Check the navigation (initial navigation).
+  NavigationRequest* navigation_1 =
+      main_frame->child_at(0)->navigation_request();
+  ASSERT_TRUE(navigation_1);
+  EXPECT_EQ(main_url, navigation_1->GetReferrer().url);
+  EXPECT_EQ(network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade,
+            navigation_1->GetReferrer().policy);
+  EXPECT_TRUE(navigation_1->IsRendererInitiated());
+  EXPECT_TRUE(navigation_1->IsPost());
+
+  // Check the FrameNavigationEntry (initial navigation).
+  observer_1.WaitForNavigationFinished();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  NavigationEntryImpl* entry_1 = controller.GetLastCommittedEntry();
+  ASSERT_EQ(1U, entry_1->root_node()->children.size());
+  FrameNavigationEntry* frame_entry_1 =
+      entry_1->root_node()->children[0]->frame_entry.get();
+  base::Optional<url::Origin> origin_1 = frame_entry_1->initiator_origin();
+  ASSERT_TRUE(frame_entry_1->initiator_origin().has_value());
+  EXPECT_EQ(url::Origin::Create(main_url),
+            frame_entry_1->initiator_origin().value());
+  content::Referrer referrer_1 = frame_entry_1->referrer();
+  EXPECT_EQ(main_url, frame_entry_1->referrer().url);
+  EXPECT_EQ(network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade,
+            frame_entry_1->referrer().policy);
+  int item_sequence_number_1 = frame_entry_1->item_sequence_number();
+  int document_sequence_number_1 = frame_entry_1->document_sequence_number();
+
+  // 2. Reload the document.
+  TestNavigationManager observer_2(shell()->web_contents(), iframe_url);
+  main_frame->child_at(0)->current_frame_host()->Reload();
+
+  // Check the navigation (reload).
+  EXPECT_TRUE(observer_2.WaitForRequestStart());
+  NavigationRequest* navigation_2 =
+      main_frame->child_at(0)->navigation_request();
+  ASSERT_TRUE(navigation_2);
+  EXPECT_EQ(main_url, navigation_2->GetReferrer().url);
+  EXPECT_EQ(network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade,
+            navigation_2->GetReferrer().policy);
+  EXPECT_TRUE(navigation_2->IsRendererInitiated());
+  EXPECT_TRUE(navigation_2->IsPost());
+
+  // Check the FrameNavigationEntry (reload).
+  observer_2.WaitForNavigationFinished();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  NavigationEntryImpl* entry_2 = controller.GetLastCommittedEntry();
+  ASSERT_EQ(1U, entry_1->root_node()->children.size());
+  FrameNavigationEntry* frame_entry_2 =
+      entry_2->root_node()->children[0]->frame_entry.get();
+  base::Optional<url::Origin> origin_2 = frame_entry_2->initiator_origin();
+  ASSERT_TRUE(frame_entry_2->initiator_origin().has_value());
+  // TODO(https://crbug.com/995428): This must be the main_url instead.
+  EXPECT_EQ(url::Origin::Create(iframe_url),
+            frame_entry_2->initiator_origin().value());
+  content::Referrer referrer_2 = frame_entry_1->referrer();
+  EXPECT_EQ(main_url, frame_entry_2->referrer().url);
+  EXPECT_EQ(network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade,
+            frame_entry_2->referrer().policy);
+  int item_sequence_number_2 = frame_entry_1->item_sequence_number();
+  int document_sequence_number_2 = frame_entry_1->document_sequence_number();
+  EXPECT_EQ(item_sequence_number_1, item_sequence_number_2);
+  EXPECT_EQ(document_sequence_number_1, document_sequence_number_2);
+}
+
 INSTANTIATE_TEST_SUITE_P(All,
                          NavigationControllerAlertDialogBrowserTest,
                          testing::ValuesIn(RenderDocumentFeatureLevelValues()));

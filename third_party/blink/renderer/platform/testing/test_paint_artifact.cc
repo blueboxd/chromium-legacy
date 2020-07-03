@@ -62,7 +62,7 @@ TestPaintArtifact& TestPaintArtifact::Chunk(DummyRectClient& client,
 }
 
 TestPaintArtifact& TestPaintArtifact::Properties(
-    const PropertyTreeState& properties) {
+    const PropertyTreeStateOrAlias& properties) {
   paint_chunks_.back().properties = properties;
   return *this;
 }

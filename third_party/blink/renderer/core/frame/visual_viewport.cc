@@ -156,7 +156,7 @@ PaintPropertyChangeType VisualViewport::UpdatePaintPropertyNodesIfNeeded(
   }
 
   {
-    DCHECK(!transform_parent->IsInSubtreeOfPageScale());
+    DCHECK(!transform_parent->Unalias().IsInSubtreeOfPageScale());
 
     TransformPaintPropertyNode::State state;
     state.flags.in_subtree_of_page_scale = false;
@@ -323,7 +323,7 @@ PaintPropertyChangeType VisualViewport::UpdatePaintPropertyNodesIfNeeded(
   }
 
   parent_property_tree_state_ =
-      PropertyTreeState(*transform_parent, *clip_parent, *effect_parent);
+      PropertyTreeStateOrAlias(*transform_parent, *clip_parent, *effect_parent);
 
   if (change == PaintPropertyChangeType::kNodeAddedOrRemoved)
     MainFrame()->View()->SetVisualViewportNeedsRepaint();
@@ -1081,7 +1081,7 @@ void VisualViewport::Paint(GraphicsContext& context) const {
   // TODO(crbug.com/1015625): Avoid scroll_layer_.
   // For now disable scroll_layer_ for CAP to avoid updating unit tests.
   if (scroll_layer_ && !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    PropertyTreeState state = parent_property_tree_state_;
+    auto state = parent_property_tree_state_;
     state.SetTransform(*scroll_translation_node_);
     DEFINE_STATIC_LOCAL(LiteralDebugNameClient, debug_name_client,
                         ("Inner Viewport Scroll Layer"));
@@ -1091,7 +1091,7 @@ void VisualViewport::Paint(GraphicsContext& context) const {
   }
 
   if (scrollbar_layer_horizontal_) {
-    PropertyTreeState state = parent_property_tree_state_;
+    auto state = parent_property_tree_state_;
     state.SetEffect(*horizontal_scrollbar_effect_node_);
     DEFINE_STATIC_LOCAL(LiteralDebugNameClient, debug_name_client,
                         ("Inner Viewport Horizontal Scrollbar"));
@@ -1102,7 +1102,7 @@ void VisualViewport::Paint(GraphicsContext& context) const {
   }
 
   if (scrollbar_layer_vertical_) {
-    PropertyTreeState state = parent_property_tree_state_;
+    auto state = parent_property_tree_state_;
     state.SetEffect(*vertical_scrollbar_effect_node_);
     DEFINE_STATIC_LOCAL(LiteralDebugNameClient, debug_name_client,
                         ("Inner Viewport Vertical Scrollbar"));

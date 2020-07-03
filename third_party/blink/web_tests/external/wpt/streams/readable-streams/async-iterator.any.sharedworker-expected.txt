@@ -1,5 +1,4 @@
 This is a testharness.js-based test.
-PASS @@asyncIterator() method is === to values() method
 FAIL Async iterator instances should have the correct list of properties s.values is not a function
 FAIL Async-iterating a push source promise_test: Unhandled rejection with value: object "TypeError: s is not async iterable"
 FAIL Async-iterating a pull source promise_test: Unhandled rejection with value: object "TypeError: s is not async iterable"

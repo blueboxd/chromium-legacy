@@ -165,7 +165,7 @@ class CORE_EXPORT FragmentData {
   //   node. Even though the div has no transform, its local border box
   //   properties would have a transform node that points to the div's
   //   ancestor transform space.
-  PropertyTreeState LocalBorderBoxProperties() const {
+  PropertyTreeStateOrAlias LocalBorderBoxProperties() const {
     DCHECK(HasLocalBorderBoxProperties());
     return rare_data_->local_border_box_properties->GetPropertyTreeState();
   }
@@ -176,7 +176,7 @@ class CORE_EXPORT FragmentData {
     if (rare_data_)
       rare_data_->local_border_box_properties = nullptr;
   }
-  void SetLocalBorderBoxProperties(const PropertyTreeState& state) {
+  void SetLocalBorderBoxProperties(const PropertyTreeStateOrAlias& state) {
     EnsureRareData();
     if (!rare_data_->local_border_box_properties) {
       rare_data_->local_border_box_properties =
@@ -189,38 +189,39 @@ class CORE_EXPORT FragmentData {
   // This is the complete set of property nodes that is inherited
   // from the ancestor before applying any local CSS properties,
   // but includes paint offset transform.
-  PropertyTreeState PreEffectProperties() const {
-    return PropertyTreeState(PreTransform(), PreClip(), PreEffect());
+  PropertyTreeStateOrAlias PreEffectProperties() const {
+    return PropertyTreeStateOrAlias(PreTransform(), PreClip(), PreEffect());
   }
 
   // This is the complete set of property nodes that can be used to
   // paint the contents of this fragment. It is similar to
   // |local_border_box_properties_| but includes properties (e.g.,
   // overflow clip, scroll translation) that apply to contents.
-  PropertyTreeState ContentsProperties() const {
-    return PropertyTreeState(PostScrollTranslation(), PostOverflowClip(),
-                             PostIsolationEffect());
+  PropertyTreeStateOrAlias ContentsProperties() const {
+    return PropertyTreeStateOrAlias(PostScrollTranslation(), PostOverflowClip(),
+                                    PostIsolationEffect());
   }
 
   // This is the complete set of property nodes that can be used to
   // paint mask-based clip-path.
-  PropertyTreeState ClipPathProperties() const {
+  PropertyTreeStateOrAlias ClipPathProperties() const {
     DCHECK(rare_data_);
     const auto* properties = rare_data_->paint_properties.get();
     DCHECK(properties);
     DCHECK(properties->MaskClip());
     DCHECK(properties->ClipPath());
-    return PropertyTreeState(properties->MaskClip()->LocalTransformSpace(),
-                             *properties->MaskClip(), *properties->ClipPath());
+    return PropertyTreeStateOrAlias(
+        properties->MaskClip()->LocalTransformSpace(), *properties->MaskClip(),
+        *properties->ClipPath());
   }
 
-  const TransformPaintPropertyNode& PreTransform() const;
-  const TransformPaintPropertyNode& PostScrollTranslation() const;
-  const ClipPaintPropertyNode& PreClip() const;
-  const ClipPaintPropertyNode& PostOverflowClip() const;
-  const EffectPaintPropertyNode& PreEffect() const;
-  const EffectPaintPropertyNode& PreFilter() const;
-  const EffectPaintPropertyNode& PostIsolationEffect() const;
+  const TransformPaintPropertyNodeOrAlias& PreTransform() const;
+  const TransformPaintPropertyNodeOrAlias& PostScrollTranslation() const;
+  const ClipPaintPropertyNodeOrAlias& PreClip() const;
+  const ClipPaintPropertyNodeOrAlias& PostOverflowClip() const;
+  const EffectPaintPropertyNodeOrAlias& PreEffect() const;
+  const EffectPaintPropertyNodeOrAlias& PreFilter() const;
+  const EffectPaintPropertyNodeOrAlias& PostIsolationEffect() const;
 
   // Map a rect from |this|'s local border box space to |fragment|'s local
   // border box space. Both fragments must have local border box properties.

@@ -88,7 +88,7 @@ base::TimeTicks ImageElementTiming::GetBackgroundImageLoadTime(
 void ImageElementTiming::NotifyImagePainted(
     const LayoutObject* layout_object,
     const ImageResourceContent* cached_image,
-    const PropertyTreeState& current_paint_chunk_properties) {
+    const PropertyTreeStateOrAlias& current_paint_chunk_properties) {
   DCHECK(layout_object);
 
   if (!internal::IsExplicitlyRegisteredForTiming(layout_object))
@@ -109,7 +109,7 @@ void ImageElementTiming::NotifyImagePaintedInternal(
     Node* node,
     const LayoutObject& layout_object,
     const ImageResourceContent& cached_image,
-    const PropertyTreeState& current_paint_chunk_properties,
+    const PropertyTreeStateOrAlias& current_paint_chunk_properties,
     base::TimeTicks load_time,
     const IntRect* image_border) {
   LocalFrame* frame = GetSupplementable()->GetFrame();
@@ -208,7 +208,7 @@ void ImageElementTiming::NotifyImagePaintedInternal(
 void ImageElementTiming::NotifyBackgroundImagePainted(
     Node* node,
     const StyleFetchedImage* background_image,
-    const PropertyTreeState& current_paint_chunk_properties,
+    const PropertyTreeStateOrAlias& current_paint_chunk_properties,
     const IntRect& image_border) {
   DCHECK(node);
   DCHECK(background_image);

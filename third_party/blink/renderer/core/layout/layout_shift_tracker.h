@@ -20,7 +20,7 @@ namespace blink {
 class IntRect;
 class LayoutObject;
 class LocalFrameView;
-class PropertyTreeState;
+class PropertyTreeStateOrAlias;
 class TracedValue;
 class WebInputEvent;
 
@@ -43,7 +43,7 @@ class CORE_EXPORT LayoutShiftTracker final
   // composited layers. We can easily pass the paint offset diff across such
   // boundaries.
   void NotifyObjectPrePaint(const LayoutObject& object,
-                            const PropertyTreeState& property_tree_state,
+                            const PropertyTreeStateOrAlias& property_tree_state,
                             const IntRect& old_visual_rect,
                             const IntRect& new_visual_rect,
                             FloatSize paint_offset_delta);
@@ -89,7 +89,7 @@ class CORE_EXPORT LayoutShiftTracker final
 
  private:
   void ObjectShifted(const LayoutObject&,
-                     const PropertyTreeState&,
+                     const PropertyTreeStateOrAlias&,
                      FloatRect old_rect,
                      FloatRect new_rect,
                      FloatSize paint_offset_diff);

@@ -108,7 +108,7 @@ void PaintTimingDetector::NotifyBackgroundImagePaint(
     const Node* node,
     const Image* image,
     const StyleFetchedImage* style_image,
-    const PropertyTreeState& current_paint_chunk_properties,
+    const PropertyTreeStateOrAlias& current_paint_chunk_properties,
     const IntRect& image_border) {
   if (IgnorePaintTimingScope::ShouldIgnore())
     return;
@@ -138,7 +138,7 @@ void PaintTimingDetector::NotifyImagePaint(
     const LayoutObject& object,
     const IntSize& intrinsic_size,
     const ImageResourceContent* cached_image,
-    const PropertyTreeState& current_paint_chunk_properties) {
+    const PropertyTreeStateOrAlias& current_paint_chunk_properties) {
   if (IgnorePaintTimingScope::ShouldIgnore())
     return;
 
@@ -330,7 +330,7 @@ void PaintTimingDetector::ConvertViewportToWindow(
 
 FloatRect PaintTimingDetector::CalculateVisualRect(
     const IntRect& visual_rect,
-    const PropertyTreeState& current_paint_chunk_properties) const {
+    const PropertyTreeStateOrAlias& current_paint_chunk_properties) const {
   // This case should be dealt with outside the function.
   DCHECK(!visual_rect.IsEmpty());
 
@@ -389,7 +389,7 @@ ScopedPaintTimingDetectorBlockPaintHook*
 
 void ScopedPaintTimingDetectorBlockPaintHook::EmplaceIfNeeded(
     const LayoutBoxModelObject& aggregator,
-    const PropertyTreeState& property_tree_state) {
+    const PropertyTreeStateOrAlias& property_tree_state) {
   if (IgnorePaintTimingScope::ShouldIgnore())
     return;
 
@@ -411,7 +411,7 @@ void ScopedPaintTimingDetectorBlockPaintHook::EmplaceIfNeeded(
 
 ScopedPaintTimingDetectorBlockPaintHook::Data::Data(
     const LayoutBoxModelObject& aggregator,
-    const PropertyTreeState& property_tree_state,
+    const PropertyTreeStateOrAlias& property_tree_state,
     TextPaintTimingDetector* detector)
     : aggregator_(aggregator),
       property_tree_state_(property_tree_state),

@@ -11,59 +11,58 @@
 
 namespace blink {
 
+class PropertyTreeState;
+
 // A complete set of paint properties including those that are inherited from
 // other objects.
-class PLATFORM_EXPORT PropertyTreeState {
-  USING_FAST_MALLOC(PropertyTreeState);
+class PLATFORM_EXPORT PropertyTreeStateOrAlias {
+  USING_FAST_MALLOC(PropertyTreeStateOrAlias);
 
  public:
-  PropertyTreeState(const TransformPaintPropertyNode& transform,
-                    const ClipPaintPropertyNode& clip,
-                    const EffectPaintPropertyNode& effect)
+  PropertyTreeStateOrAlias(const TransformPaintPropertyNodeOrAlias& transform,
+                           const ClipPaintPropertyNodeOrAlias& clip,
+                           const EffectPaintPropertyNodeOrAlias& effect)
       : transform_(&transform), clip_(&clip), effect_(&effect) {
     DCHECK(transform_);
     DCHECK(clip_);
     DCHECK(effect_);
   }
 
-  static const PropertyTreeState& Root();
-
   // This is used as the initial value of uninitialized PropertyTreeState.
   // Access to the nodes are not allowed.
-  static const PropertyTreeState& Uninitialized();
+  static PropertyTreeStateOrAlias Uninitialized() {
+    return PropertyTreeStateOrAlias();
+  }
 
   // Returns true if all fields are initialized.
-  bool IsInitialized() const {
-    return transform_ != Uninitialized().transform_ &&
-           clip_ != Uninitialized().clip_ && effect_ != Uninitialized().effect_;
-  }
+  bool IsInitialized() const { return transform_ && clip_ && effect_; }
 
   // Returns an unaliased property tree state.
   PropertyTreeState Unalias() const;
 
-  const TransformPaintPropertyNode& Transform() const {
-    DCHECK_NE(transform_, Uninitialized().transform_);
+  const TransformPaintPropertyNodeOrAlias& Transform() const {
+    DCHECK(transform_);
     return *transform_;
   }
-  void SetTransform(const TransformPaintPropertyNode& node) {
+  void SetTransform(const TransformPaintPropertyNodeOrAlias& node) {
     transform_ = &node;
     DCHECK(transform_);
   }
 
-  const ClipPaintPropertyNode& Clip() const {
-    DCHECK_NE(clip_, Uninitialized().clip_);
+  const ClipPaintPropertyNodeOrAlias& Clip() const {
+    DCHECK(clip_);
     return *clip_;
   }
-  void SetClip(const ClipPaintPropertyNode& node) {
+  void SetClip(const ClipPaintPropertyNodeOrAlias& node) {
     clip_ = &node;
     DCHECK(clip_);
   }
 
-  const EffectPaintPropertyNode& Effect() const {
-    DCHECK_NE(effect_, Uninitialized().effect_);
+  const EffectPaintPropertyNodeOrAlias& Effect() const {
+    DCHECK(effect_);
     return *effect_;
   }
-  void SetEffect(const EffectPaintPropertyNode& node) {
+  void SetEffect(const EffectPaintPropertyNodeOrAlias& node) {
     effect_ = &node;
     DCHECK(effect_);
   }
@@ -81,29 +80,71 @@ class PLATFORM_EXPORT PropertyTreeState {
 #endif
   std::unique_ptr<JSONObject> ToJSON() const;
 
-  // Returns memory usage of the transform & clip caches of this state plus
-  // ancestors.
-  size_t CacheMemoryUsageInBytes() const;
-
-  bool operator==(const PropertyTreeState& other) const {
+  bool operator==(const PropertyTreeStateOrAlias& other) const {
     return transform_ == other.transform_ && clip_ == other.clip_ &&
            effect_ == other.effect_;
   }
-  bool operator!=(const PropertyTreeState& other) const {
+  bool operator!=(const PropertyTreeStateOrAlias& other) const {
     return !(*this == other);
   }
 
- private:
-  // For Uninitialized().
-  PropertyTreeState();
+ protected:
+  // For Uninitialized();
+  PropertyTreeStateOrAlias() = default;
 
-  const TransformPaintPropertyNode* transform_;
-  const ClipPaintPropertyNode* clip_;
-  const EffectPaintPropertyNode* effect_;
+ private:
+  const TransformPaintPropertyNodeOrAlias* transform_ = nullptr;
+  const ClipPaintPropertyNodeOrAlias* clip_ = nullptr;
+  const EffectPaintPropertyNodeOrAlias* effect_ = nullptr;
+};
+
+class PLATFORM_EXPORT PropertyTreeState : public PropertyTreeStateOrAlias {
+ public:
+  PropertyTreeState(const TransformPaintPropertyNode& transform,
+                    const ClipPaintPropertyNode& clip,
+                    const EffectPaintPropertyNode& effect)
+      : PropertyTreeStateOrAlias(transform, clip, effect) {}
+
+  static const PropertyTreeState& Root();
+
+  PropertyTreeState Unalias() const = delete;
+
+  // This is used as the initial value of uninitialized PropertyTreeState.
+  // Access to the nodes are not allowed.
+  static PropertyTreeState Uninitialized() { return PropertyTreeState(); }
+
+  const TransformPaintPropertyNode& Transform() const {
+    const auto& node = PropertyTreeStateOrAlias::Transform();
+    DCHECK(!node.IsParentAlias());
+    return static_cast<const TransformPaintPropertyNode&>(node);
+  }
+  void SetTransform(const TransformPaintPropertyNode& node) {
+    PropertyTreeStateOrAlias::SetTransform(node);
+  }
+  const ClipPaintPropertyNode& Clip() const {
+    const auto& node = PropertyTreeStateOrAlias::Clip();
+    DCHECK(!node.IsParentAlias());
+    return static_cast<const ClipPaintPropertyNode&>(node);
+  }
+  void SetClip(const ClipPaintPropertyNode& node) {
+    PropertyTreeStateOrAlias::SetClip(node);
+  }
+  const EffectPaintPropertyNode& Effect() const {
+    const auto& node = PropertyTreeStateOrAlias::Effect();
+    DCHECK(!node.IsParentAlias());
+    return static_cast<const EffectPaintPropertyNode&>(node);
+  }
+  void SetEffect(const EffectPaintPropertyNode& node) {
+    PropertyTreeStateOrAlias::SetEffect(node);
+  }
+
+ private:
+  // For Uninitialized();
+  PropertyTreeState() = default;
 };
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&,
-                                         const PropertyTreeState&);
+                                         const PropertyTreeStateOrAlias&);
 
 }  // namespace blink
 

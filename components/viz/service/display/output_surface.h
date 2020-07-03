@@ -102,6 +102,10 @@ class VIZ_SERVICE_EXPORT OutputSurface {
     bool android_surface_control_feature_enabled = false;
     // True if the buffer content will be preserved after presenting.
     bool preserve_buffer_content = false;
+    // True if the SkiaOutputDevice will set
+    // SwapBuffersCompleteParams::frame_buffer_damage_area for every
+    // SwapBuffers complete callback.
+    bool damage_area_from_skia_output_device = false;
     // The SkColorType and GrBackendFormat for non-HDR and HDR.
     // TODO(penghuang): remove SkColorType and GrBackendFormat when
     // OutputSurface uses the |format| passed to Reshape().

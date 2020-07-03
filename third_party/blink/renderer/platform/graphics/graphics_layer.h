@@ -203,15 +203,16 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
                                   JSONObject&) const override;
 
   bool HasLayerState() const { return layer_state_.get(); }
-  void SetLayerState(const PropertyTreeState&, const IntPoint& layer_offset);
-  const PropertyTreeState& GetPropertyTreeState() const {
+  void SetLayerState(const PropertyTreeStateOrAlias&,
+                     const IntPoint& layer_offset);
+  const PropertyTreeStateOrAlias& GetPropertyTreeState() const {
     return layer_state_->state;
   }
   IntPoint GetOffsetFromTransformNode() const { return layer_state_->offset; }
 
-  void SetContentsLayerState(const PropertyTreeState&,
+  void SetContentsLayerState(const PropertyTreeStateOrAlias&,
                              const IntPoint& layer_offset);
-  const PropertyTreeState& GetContentsPropertyTreeState() const {
+  const PropertyTreeStateOrAlias& GetContentsPropertyTreeState() const {
     return contents_layer_state_ ? contents_layer_state_->state
                                  : GetPropertyTreeState();
   }
@@ -304,7 +305,7 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
   IntRect previous_interest_rect_;
 
   struct LayerState {
-    PropertyTreeState state;
+    PropertyTreeStateOrAlias state;
     IntPoint offset;
   };
   std::unique_ptr<LayerState> layer_state_;

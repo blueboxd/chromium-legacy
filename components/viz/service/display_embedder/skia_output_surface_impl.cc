@@ -204,10 +204,14 @@ void SkiaOutputSurfaceImpl::Reshape(const gfx::Size& size,
   // SetDrawRectangle() will need to be called at the new size.
   has_set_draw_rectangle_for_frame_ = false;
 
-  // Reshape will damage all buffers.
-  current_buffer_ = 0u;
-  for (auto& damage : damage_of_buffers_)
-    damage = gfx::Rect(size);
+  if (use_damage_area_from_skia_output_device_) {
+    damage_of_current_buffer_ = gfx::Rect(size);
+  } else {
+    // Reshape will damage all buffers.
+    current_buffer_ = 0u;
+    for (auto& damage : damage_of_buffers_)
+      damage = gfx::Rect(size);
+  }
 
   // impl_on_gpu_ is released on the GPU thread by a posted task from
   // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
@@ -709,7 +713,16 @@ bool SkiaOutputSurfaceImpl::Initialize() {
       capabilities_.supports_post_sub_buffer) {
     capabilities_.only_invalidates_damage_rect = false;
     capabilities_.supports_target_damage = true;
-    damage_of_buffers_.resize(capabilities_.number_of_buffers);
+    // If there is only one pending frame, then we can use damage area hint from
+    // SkiaOutputDevice, otherwise we have to track damage area in
+    // SkiaOutputSurfaceImpl.
+    if (capabilities_.max_frames_pending == 1 &&
+        capabilities_.damage_area_from_skia_output_device) {
+      use_damage_area_from_skia_output_device_ = true;
+      damage_of_current_buffer_ = gfx::Rect();
+    } else {
+      damage_of_buffers_.resize(capabilities_.number_of_buffers);
+    }
   }
 
   return result;
@@ -838,6 +851,11 @@ void SkiaOutputSurfaceImpl::DidSwapBuffersComplete(
       gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS) {
     for (auto& damage : damage_of_buffers_)
       damage = gfx::Rect(size_);
+  }
+
+  if (use_damage_area_from_skia_output_device_) {
+    damage_of_current_buffer_ = params.frame_buffer_damage_area;
+    DCHECK(damage_of_current_buffer_);
   }
 
   if (!params.texture_in_use_responses.empty())
@@ -1026,6 +1044,11 @@ SkiaOutputSurfaceImpl::GetGpuTaskSchedulerHelper() {
 }
 
 gfx::Rect SkiaOutputSurfaceImpl::GetCurrentFramebufferDamage() const {
+  if (use_damage_area_from_skia_output_device_) {
+    DCHECK(damage_of_current_buffer_);
+    return *damage_of_current_buffer_;
+  }
+
   if (damage_of_buffers_.empty())
     return gfx::Rect();
 

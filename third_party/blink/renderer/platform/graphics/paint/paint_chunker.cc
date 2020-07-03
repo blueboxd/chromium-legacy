@@ -26,7 +26,7 @@ bool PaintChunker::IsInInitialState() const {
 
 void PaintChunker::UpdateCurrentPaintChunkProperties(
     const PaintChunk::Id* chunk_id,
-    const PropertyTreeState& properties) {
+    const PropertyTreeStateOrAlias& properties) {
   // If properties are the same, continue to use the previously set
   // |next_chunk_id_| because the id of the outer painting is likely to be
   // more stable to reduce invalidation because of chunk id changes.

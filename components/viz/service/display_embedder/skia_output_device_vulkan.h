@@ -74,7 +74,6 @@ class SkiaOutputDeviceVulkan final : public SkiaOutputDevice {
                          sk_sp<SkColorSpace> color_space,
                          gfx::OverlayTransform transform);
   void OnPostSubBufferFinished(std::vector<ui::LatencyInfo> latency_info,
-                               bool is_new_swapchain,
                                gfx::SwapResult result);
 
   VulkanContextProvider* const context_provider_;
@@ -92,7 +91,12 @@ class SkiaOutputDeviceVulkan final : public SkiaOutputDevice {
   std::vector<SkSurfaceSizePair> sk_surface_size_pairs_;
 
   sk_sp<SkColorSpace> color_space_;
-  bool is_new_swapchain_ = true;
+
+  // The swapchain is new created without a frame which convers the whole area
+  // of it.
+  bool is_new_swap_chain_ = true;
+
+  std::vector<gfx::Rect> damage_of_images_;
 
   base::WeakPtrFactory<SkiaOutputDeviceVulkan> weak_ptr_factory_{this};
 

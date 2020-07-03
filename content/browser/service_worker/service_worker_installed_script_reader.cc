@@ -174,7 +174,13 @@ void ServiceWorkerInstalledScriptReader::OnReadResponseHeadComplete(
                           AsWeakPtr()));
   body_watcher_.ArmOrNotify();
 
-  client_->OnStarted(std::move(response_head), std::move(metadata),
+  base::Optional<mojo_base::BigBuffer> metadata_buffer;
+  if (metadata) {
+    metadata_buffer =
+        base::as_bytes(base::make_span(metadata->data(), metadata->size()));
+  }
+
+  client_->OnStarted(std::move(response_head), std::move(metadata_buffer),
                      std::move(body_consumer_handle),
                      std::move(meta_data_consumer));
 }

@@ -26,7 +26,7 @@
 
 namespace {
 const char kDiffHeader[] = "# Created by //tools/binary_size\nDIFF\n";
-const char kSerializationVersion[] = "Size File Format v1";
+const char kSerializationVersionSingleContainer[] = "Size File Format v1";
 
 int ReadLoneInt(char** rest) {
   char* token = strsep(rest, "\n");
@@ -111,23 +111,23 @@ std::vector<std::vector<T>> ReadIntListForEachSection(
   return ret;
 }
 
-void ReadJsonBlob(char** rest, Json::Value* metadata) {
+void ReadJsonBlob(char** rest, Json::Value* fields) {
   // Metadata begins with its length in bytes, followed by a json blob.
-  int metadata_len = ReadLoneInt(rest);
-  if (metadata_len < 0) {
-    std::cerr << "Unexpected negative metadata length: " << metadata_len
+  int fields_len = ReadLoneInt(rest);
+  if (fields_len < 0) {
+    std::cerr << "Unexpected negative fields length: " << fields_len
               << std::endl;
     exit(1);
   }
   char* json_start = *rest;
-  *rest += metadata_len + 1;
+  *rest += fields_len + 1;
 
   std::unique_ptr<Json::CharReader> reader;
   reader.reset(Json::CharReaderBuilder().newCharReader());
   std::string json_errors;
-  if (!reader->parse(json_start, json_start + metadata_len, metadata,
+  if (!reader->parse(json_start, json_start + fields_len, fields,
                      &json_errors)) {
-    std::cerr << "Failed to parse JSON metadata:" << *rest << std::endl;
+    std::cerr << "Failed to parse JSON fields:" << *rest << std::endl;
     std::cerr << json_errors << std::endl;
     exit(1);
   }
@@ -216,16 +216,16 @@ void ParseSizeInfo(const char* gzipped, unsigned long len, SizeInfo* info) {
 
   // Serialization version
   line = strsep(&rest, "\n");
-  if (std::strcmp(line, kSerializationVersion)) {
+  if (std::strcmp(line, kSerializationVersionSingleContainer)) {
     std::cerr << "Serialization version: '" << line << "' not recognized."
               << std::endl;
     exit(1);
   }
 
-  ReadJsonBlob(&rest, &info->metadata);
+  ReadJsonBlob(&rest, &info->fields);
 
-  const bool has_components = info->metadata["has_components"].asBool();
-  const bool has_padding = info->metadata["has_padding"].asBool();
+  const bool has_components = info->fields["has_components"].asBool();
+  const bool has_padding = info->fields["has_padding"].asBool();
 
   // List of paths: (object_path, [source_path])
   int n_paths = ReadLoneInt(&rest);
@@ -407,17 +407,17 @@ void ParseDiffSizeInfo(char* file,
   // Skip "DIFF" header.
   char* rest = file;
   rest += strlen(kDiffHeader);
-  Json::Value metadata;
-  ReadJsonBlob(&rest, &metadata);
+  Json::Value fields;
+  ReadJsonBlob(&rest, &fields);
 
-  if (metadata["version"].asInt() != 1) {
+  if (fields["version"].asInt() != 1) {
     std::cerr << ".sizediff version mismatch, write some upgrade code. version="
-              << metadata["version"] << std::endl;
+              << fields["version"] << std::endl;
     exit(1);
   }
 
   unsigned long header_len = rest - file;
-  unsigned long before_len = metadata["before_length"].asUInt();
+  unsigned long before_len = fields["before_length"].asUInt();
   unsigned long after_len = len - header_len - before_len;
 
   ParseSizeInfo(rest, before_len, before);

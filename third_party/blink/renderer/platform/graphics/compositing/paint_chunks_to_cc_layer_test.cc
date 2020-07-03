@@ -162,9 +162,9 @@ struct TestChunks {
 
   // Add a paint chunk with a non-empty paint record and given property nodes.
   void AddChunk(
-      const TransformPaintPropertyNode& t,
-      const ClipPaintPropertyNode& c,
-      const EffectPaintPropertyNode& e,
+      const TransformPaintPropertyNodeOrAlias& t,
+      const ClipPaintPropertyNodeOrAlias& c,
+      const EffectPaintPropertyNodeOrAlias& e,
       const IntRect& bounds = IntRect(0, 0, 100, 100),
       const base::Optional<IntRect>& drawable_bounds = base::nullopt) {
     auto record = sk_make_sp<PaintRecord>();
@@ -176,9 +176,9 @@ struct TestChunks {
   // Add a paint chunk with a given paint record and property nodes.
   void AddChunk(
       sk_sp<PaintRecord> record,
-      const TransformPaintPropertyNode& t,
-      const ClipPaintPropertyNode& c,
-      const EffectPaintPropertyNode& e,
+      const TransformPaintPropertyNodeOrAlias& t,
+      const ClipPaintPropertyNodeOrAlias& c,
+      const EffectPaintPropertyNodeOrAlias& e,
       const IntRect& bounds = IntRect(0, 0, 100, 100),
       const base::Optional<IntRect>& drawable_bounds = base::nullopt) {
     auto i = items.size();
@@ -186,7 +186,8 @@ struct TestChunks {
         DefaultId().client, DefaultId().type, std::move(record));
     if (drawable_bounds)
       items.Last().SetVisualRectForTesting(*drawable_bounds);
-    chunks.emplace_back(i, i + 1, DefaultId(), PropertyTreeState(t, c, e));
+    chunks.emplace_back(i, i + 1, DefaultId(),
+                        PropertyTreeStateOrAlias(t, c, e));
     chunks.back().bounds = bounds;
     chunks.back().drawable_bounds = drawable_bounds ? *drawable_bounds : bounds;
   }
@@ -965,10 +966,10 @@ TEST_P(PaintChunksToCcLayerTest, NestedEffectsWithSameTransform) {
 
 TEST_P(PaintChunksToCcLayerTest, NoopTransformIsNotEmitted) {
   auto t1 = CreateTransform(t0(), TransformationMatrix().Scale(2.f));
-  auto noop_t2 = TransformPaintPropertyNode::CreateAlias(*t1);
-  auto noop_t3 = TransformPaintPropertyNode::CreateAlias(*noop_t2);
+  auto noop_t2 = TransformPaintPropertyNodeAlias::Create(*t1);
+  auto noop_t3 = TransformPaintPropertyNodeAlias::Create(*noop_t2);
   auto t4 = CreateTransform(*noop_t3, TransformationMatrix().Scale(2.f));
-  auto noop_t5 = TransformPaintPropertyNode::CreateAlias(*t4);
+  auto noop_t5 = TransformPaintPropertyNodeAlias::Create(*t4);
   TestChunks chunks;
   chunks.AddChunk(t0(), c0(), e0());
   chunks.AddChunk(*t1, c0(), e0());
@@ -1003,8 +1004,8 @@ TEST_P(PaintChunksToCcLayerTest, NoopTransformIsNotEmitted) {
 }
 
 TEST_P(PaintChunksToCcLayerTest, OnlyNoopTransformIsNotEmitted) {
-  auto noop_t1 = TransformPaintPropertyNode::CreateAlias(t0());
-  auto noop_t2 = TransformPaintPropertyNode::CreateAlias(*noop_t1);
+  auto noop_t1 = TransformPaintPropertyNodeAlias::Create(t0());
+  auto noop_t2 = TransformPaintPropertyNodeAlias::Create(*noop_t1);
 
   TestChunks chunks;
   chunks.AddChunk(t0(), c0(), e0());
@@ -1024,7 +1025,7 @@ TEST_P(PaintChunksToCcLayerTest, OnlyNoopTransformIsNotEmitted) {
 
 TEST_P(PaintChunksToCcLayerTest, NoopTransformFirstThenBackToParent) {
   auto t1 = CreateTransform(t0(), TransformationMatrix().Scale(2));
-  auto noop_t2 = TransformPaintPropertyNode::CreateAlias(*t1);
+  auto noop_t2 = TransformPaintPropertyNodeAlias::Create(*t1);
 
   TestChunks chunks;
   chunks.AddChunk(t0(), c0(), e0());
@@ -1049,7 +1050,7 @@ TEST_P(PaintChunksToCcLayerTest, NoopTransformFirstThenBackToParent) {
 
 TEST_P(PaintChunksToCcLayerTest, ClipUndoesNoopTransform) {
   auto t1 = CreateTransform(t0(), TransformationMatrix().Scale(2));
-  auto noop_t2 = TransformPaintPropertyNode::CreateAlias(*t1);
+  auto noop_t2 = TransformPaintPropertyNodeAlias::Create(*t1);
   auto c1 = CreateClip(c0(), *t1, FloatRoundedRect(0.f, 0.f, 1.f, 1.f));
 
   TestChunks chunks;
@@ -1078,7 +1079,7 @@ TEST_P(PaintChunksToCcLayerTest, ClipUndoesNoopTransform) {
 
 TEST_P(PaintChunksToCcLayerTest, EffectUndoesNoopTransform) {
   auto t1 = CreateTransform(t0(), TransformationMatrix().Scale(2));
-  auto noop_t2 = TransformPaintPropertyNode::CreateAlias(*t1);
+  auto noop_t2 = TransformPaintPropertyNodeAlias::Create(*t1);
   auto e1 = CreateOpacityEffect(e0(), *t1, &c0(), 0.5);
 
   TestChunks chunks;
@@ -1108,8 +1109,8 @@ TEST_P(PaintChunksToCcLayerTest, EffectUndoesNoopTransform) {
 TEST_P(PaintChunksToCcLayerTest, NoopClipDoesNotEmitItems) {
   FloatRoundedRect clip_rect(0.f, 0.f, 1.f, 1.f);
   auto c1 = CreateClip(c0(), t0(), clip_rect);
-  auto noop_c2 = ClipPaintPropertyNode::CreateAlias(*c1);
-  auto noop_c3 = ClipPaintPropertyNode::CreateAlias(*noop_c2);
+  auto noop_c2 = ClipPaintPropertyNodeAlias::Create(*c1);
+  auto noop_c3 = ClipPaintPropertyNodeAlias::Create(*noop_c2);
   auto c4 = CreateClip(*noop_c3, t0(), clip_rect);
 
   TestChunks chunks;
@@ -1146,7 +1147,7 @@ TEST_P(PaintChunksToCcLayerTest, NoopClipDoesNotEmitItems) {
 TEST_P(PaintChunksToCcLayerTest, EffectUndoesNoopClip) {
   FloatRoundedRect clip_rect(0.f, 0.f, 1.f, 1.f);
   auto c1 = CreateClip(c0(), t0(), clip_rect);
-  auto noop_c2 = ClipPaintPropertyNode::CreateAlias(*c1);
+  auto noop_c2 = ClipPaintPropertyNodeAlias::Create(*c1);
   auto e1 = CreateOpacityEffect(e0(), t0(), c1.get(), 0.5);
 
   TestChunks chunks;
@@ -1168,21 +1169,6 @@ TEST_P(PaintChunksToCcLayerTest, EffectUndoesNoopClip) {
                   cc::PaintOpType::Restore,         // end e1
                   cc::PaintOpType::Restore          // end noop_c2
               }));
-}
-
-TEST_P(PaintChunksToCcLayerTest, StartWithAliasClip) {
-  auto noop_c1 = ClipPaintPropertyNode::CreateAlias(c0());
-
-  TestChunks chunks;
-  chunks.AddChunk(t0(), *noop_c1, e0());
-
-  auto output = PaintChunksToCcLayer::Convert(
-                    chunks.chunks, PropertyTreeState(t0(), *noop_c1, e0()),
-                    gfx::Vector2dF(), chunks.items,
-                    cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
-                    ->ReleaseAsRecord();
-
-  EXPECT_THAT(*output, PaintRecordMatcher::Make({cc::PaintOpType::DrawRecord}));
 }
 
 // These tests are testing error recovery path that are only used in
@@ -1254,8 +1240,8 @@ TEST_P(PaintChunksToCcLayerTest, SPv1ChunkEscapeLayerClipDoubleFault) {
 
 TEST_P(PaintChunksToCcLayerTest, NoopEffectDoesNotEmitItems) {
   auto e1 = CreateOpacityEffect(e0(), 0.5f);
-  auto noop_e2 = EffectPaintPropertyNode::CreateAlias(*e1);
-  auto noop_e3 = EffectPaintPropertyNode::CreateAlias(*noop_e2);
+  auto noop_e2 = EffectPaintPropertyNodeAlias::Create(*e1);
+  auto noop_e3 = EffectPaintPropertyNodeAlias::Create(*noop_e2);
   auto e4 = CreateOpacityEffect(*noop_e3, 0.5f);
 
   TestChunks chunks;

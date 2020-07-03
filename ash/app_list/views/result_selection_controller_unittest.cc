@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "ash/app_list/test/app_list_test_view_delegate.h"
-#include "ash/app_list/test/test_search_result.h"
 #include "ash/app_list/views/search_result_actions_view.h"
 #include "ash/app_list/views/search_result_actions_view_delegate.h"
 #include "ash/app_list/views/search_result_container_view.h"
@@ -23,17 +22,11 @@
 namespace ash {
 namespace {
 
-int g_last_created_result_index = -1;
-
 class TestResultViewWithActions;
 
 class TestResultView : public SearchResultBaseView {
  public:
-  TestResultView() {
-    test_result_.set_result_id(
-        base::StringPrintf("result %d", ++g_last_created_result_index));
-    SetResult(&test_result_);
-  }
+  TestResultView() = default;
   ~TestResultView() override = default;
 
   virtual TestResultViewWithActions* AsResultViewWithActions() {
@@ -45,8 +38,6 @@ class TestResultView : public SearchResultBaseView {
   }
 
  private:
-  TestSearchResult test_result_;
-
   DISALLOW_COPY_AND_ASSIGN(TestResultView);
 };
 
@@ -179,8 +170,6 @@ class ResultSelectionTest : public testing::Test,
 
     testing::Test::SetUp();
   }
-
-  void TearDown() override { g_last_created_result_index = -1; }
 
  protected:
   std::vector<std::unique_ptr<SearchResultContainerView>> CreateContainerVector(
@@ -1231,10 +1220,10 @@ TEST_F(ResultSelectionTest, ResetWhileResultActionSelected) {
   // Reset selection.
   TestResultView* pre_reset_selection = GetCurrentSelection();
   result_selection_controller_->ResetSelection(nullptr, false);
-  EXPECT_EQ(0, GetAndResetSelectionChangeCount());
-  ASSERT_EQ(create_test_location(0, 1), GetCurrentLocation());
-  EXPECT_TRUE(CurrentResultActionSelected(0));
-  EXPECT_TRUE(pre_reset_selection->selected());
+  EXPECT_EQ(1, GetAndResetSelectionChangeCount());
+  ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
+  EXPECT_TRUE(CurrentResultActionNotSelected());
+  EXPECT_FALSE(pre_reset_selection->selected());
 }
 
 TEST_F(ResultSelectionTest, ActionRemovedWhileSelected) {
@@ -1360,9 +1349,9 @@ TEST_F(ResultSelectionTest, ResetSelectionWithSelectionChangesBlocked) {
   result_selection_controller_->set_block_selection_changes(false);
 
   result_selection_controller_->ResetSelection(nullptr, false);
-  EXPECT_EQ(0, GetAndResetSelectionChangeCount());
+  EXPECT_EQ(1, GetAndResetSelectionChangeCount());
 
-  ASSERT_EQ(create_test_location(0, 1), GetCurrentLocation());
+  ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
   EXPECT_TRUE(result_selection_controller_->selected_result());
 }
 

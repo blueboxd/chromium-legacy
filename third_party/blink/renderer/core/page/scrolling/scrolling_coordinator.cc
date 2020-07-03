@@ -190,7 +190,7 @@ static void UpdateLayerNonFastScrollableRegions(GraphicsLayer& layer) {
   PaintChunkSubset paint_chunks =
       PaintChunkSubset(layer.GetPaintController().PaintChunks());
   PaintArtifactCompositor::UpdateNonFastScrollableRegions(
-      layer.CcLayer(), layer_offset, layer.GetPropertyTreeState(),
+      layer.CcLayer(), layer_offset, layer.GetPropertyTreeState().Unalias(),
       paint_chunks);
 }
 
@@ -220,9 +220,9 @@ static void UpdateLayerTouchActionRects(GraphicsLayer& layer) {
   gfx::Vector2dF layer_offset = gfx::Vector2dF(offset.X(), offset.Y());
   PaintChunkSubset paint_chunks =
       PaintChunkSubset(layer.GetPaintController().PaintChunks());
-  PaintArtifactCompositor::UpdateTouchActionRects(layer.CcLayer(), layer_offset,
-                                                  layer.GetPropertyTreeState(),
-                                                  paint_chunks);
+  PaintArtifactCompositor::UpdateTouchActionRects(
+      layer.CcLayer(), layer_offset, layer.GetPropertyTreeState().Unalias(),
+      paint_chunks);
 }
 
 void ScrollingCoordinator::WillDestroyScrollableArea(

@@ -259,8 +259,8 @@ void PaintLayerPainter::AdjustForPaintProperties(
             cull_rect.Move(-scroll_translation->Translation2D());
         }
       }
-      cull_rect.ApplyTransforms(*source_transform, destination_transform,
-                                old_cull_rect);
+      cull_rect.ApplyTransforms(source_transform->Unalias(),
+                                destination_transform.Unalias(), old_cull_rect);
       // Convert cull_rect from the layer's transform space to the layer's local
       // space.
       cull_rect.MoveBy(-RoundedIntPoint(first_fragment.PaintOffset()));

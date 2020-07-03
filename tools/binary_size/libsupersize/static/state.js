@@ -10,7 +10,7 @@
  * Methods for manipulating the state and the DOM of the page
  */
 
-/** @type {HTMLFormElement} Form containing options and filters */
+/** @type {HTMLFormElement} Form with options and filters */
 const form = document.getElementById('options');
 
 /** @type {HTMLInputElement} */
@@ -171,7 +171,7 @@ function _startListeners() {
   const _SHOW_OPTIONS_STORAGE_KEY = 'show-options';
 
   /** @type {HTMLFieldSetElement} */
-  const typesFilterContainer = document.getElementById('types-filter');
+  const typesFilterElement = document.getElementById('types-filter');
   /** @type {HTMLFieldSetElement} */
   const byteunit = form.elements.namedItem('byteunit');
   /** @type {HTMLCollectionOf<HTMLInputElement>} */
@@ -201,11 +201,11 @@ function _startListeners() {
   function setMethodCountModeUI() {
     if (methodCountInput.checked) {
       byteunit.setAttribute('disabled', '');
-      typesFilterContainer.setAttribute('disabled', '');
+      typesFilterElement.setAttribute('disabled', '');
       sizeHeader.textContent = 'Methods';
     } else {
       byteunit.removeAttribute('disabled');
-      typesFilterContainer.removeAttribute('disabled');
+      typesFilterElement.removeAttribute('disabled');
       sizeHeader.textContent = 'Size';
     }
   }

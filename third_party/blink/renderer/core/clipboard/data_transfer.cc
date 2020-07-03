@@ -136,8 +136,10 @@ class DraggedNodeImageBuilder {
         DocumentLifecycle::kPaintClean);
 
     FloatPoint paint_offset = bounding_box.Location();
-    PropertyTreeState border_box_properties =
-        layer->GetLayoutObject().FirstFragment().LocalBorderBoxProperties();
+    PropertyTreeState border_box_properties = layer->GetLayoutObject()
+                                                  .FirstFragment()
+                                                  .LocalBorderBoxProperties()
+                                                  .Unalias();
     // We paint in the containing transform node's space. Add the offset from
     // the layer to this transform space.
     paint_offset +=

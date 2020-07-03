@@ -740,17 +740,6 @@ external/wpt/mathml/presentation-markup/mrow/legacy-mrow-like-elements-001.html 
 external/wpt/mathml/presentation-markup/operators/mo-axis-height-1.html [ Failure Pass ] # wpt_subtest_failure
 external/wpt/mathml/presentation-markup/operators/operator-dictionary-001.html [ Failure Pass ] # wpt_subtest_failure
 external/wpt/mathml/presentation-markup/operators/operator-dictionary-002.html [ Failure Pass ] # wpt_subtest_failure
-external/wpt/mathml/presentation-markup/scripts/subsup-1.html [ Failure Pass ] # wpt_subtest_failure
-external/wpt/mathml/presentation-markup/scripts/subsup-2.html [ Failure Pass ] # wpt_subtest_failure
-external/wpt/mathml/presentation-markup/scripts/subsup-3.html [ Failure Pass ] # wpt_subtest_failure
-external/wpt/mathml/presentation-markup/scripts/subsup-5.html [ Failure Pass ] # wpt_subtest_failure
-external/wpt/mathml/presentation-markup/scripts/subsup-parameters-1.html [ Failure Pass ] # wpt_subtest_failure
-external/wpt/mathml/presentation-markup/scripts/subsup-parameters-2.html [ Failure Pass ] # wpt_subtest_failure
-external/wpt/mathml/presentation-markup/scripts/underover-1.html [ Failure Pass ] # wpt_subtest_failure
-external/wpt/mathml/presentation-markup/scripts/underover-parameters-1.html [ Failure Pass ] # wpt_subtest_failure
-external/wpt/mathml/presentation-markup/scripts/underover-parameters-2.html [ Failure Pass ] # wpt_subtest_failure
-external/wpt/mathml/presentation-markup/scripts/underover-parameters-3.html [ Failure Pass ] # wpt_subtest_failure
-external/wpt/mathml/presentation-markup/scripts/underover-parameters-4.html [ Failure Pass ] # wpt_subtest_failure
 external/wpt/mathml/presentation-markup/spaces/space-1.html [ Failure Pass ] # wpt_subtest_failure
 external/wpt/mathml/presentation-markup/spaces/space-like-001.html [ Failure Pass ] # wpt_subtest_failure
 external/wpt/mathml/presentation-markup/spaces/space-like-002.html [ Failure Pass ] # wpt_subtest_failure

@@ -5,12 +5,11 @@
 package org.chromium.chrome.browser.download;
 
 import android.app.Activity;
+import android.content.Context;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.download.dialogs.DownloadDateTimePickerDialogCoordinator;
-import org.chromium.chrome.browser.download.dialogs.DownloadDateTimePickerDialogProperties;
-import org.chromium.chrome.browser.download.dialogs.DownloadDateTimePickerDialogProperties.State;
 import org.chromium.chrome.browser.download.dialogs.DownloadLaterDialogChoice;
 import org.chromium.chrome.browser.download.dialogs.DownloadLaterDialogController;
 import org.chromium.chrome.browser.download.dialogs.DownloadLaterDialogCoordinator;
@@ -36,49 +35,47 @@ import org.chromium.ui.modelutil.PropertyModel;
  * When {@link ChromeFeatureList#DOWNLOAD_LATER} is disabled, only the download location dialog will
  * be shown.
  */
-public class DownloadDialogBridge implements DownloadLocationDialogController,
-                                             DownloadLaterDialogController,
-                                             DownloadDateTimePickerDialogCoordinator.Controller {
+public class DownloadDialogBridge
+        implements DownloadLocationDialogController, DownloadLaterDialogController {
     private static final long INVALID_START_TIME = -1;
     private long mNativeDownloadDialogBridge;
 
     private final DownloadLocationDialogCoordinator mLocationDialog;
     private final DownloadLaterDialogCoordinator mDownloadLaterDialog;
-    private final DownloadDateTimePickerDialogCoordinator mDateTimePickerDialog;
 
-    private Activity mActivity;
+    private Context mContext;
     private ModalDialogManager mModalDialogManager;
     private long mTotalBytes;
     private @DownloadLocationDialogType int mLocationDialogType;
     private String mSuggestedPath;
     private PrefService mPrefService;
 
+    // Whether the user clicked the edit text to open download location dialog.
+    private boolean mEditLocation;
+
     @DownloadLaterDialogChoice
     private int mDownloadLaterChoice = DownloadLaterDialogChoice.DOWNLOAD_NOW;
-    @DownloadLaterPromptStatus
-    private int mDownloadLaterPromptStatus = DownloadLaterPromptStatus.SHOW_INITIAL;
     private long mDownloadLaterTime = INVALID_START_TIME;
 
     public DownloadDialogBridge(long nativeDownloadDialogBridge,
             DownloadLaterDialogCoordinator downloadLaterDialog,
-            DownloadDateTimePickerDialogCoordinator dateTimePickerDialog,
             DownloadLocationDialogCoordinator locationDialog) {
         mNativeDownloadDialogBridge = nativeDownloadDialogBridge;
         mDownloadLaterDialog = downloadLaterDialog;
-        mDateTimePickerDialog = dateTimePickerDialog;
         mLocationDialog = locationDialog;
     }
 
     @CalledByNative
     private static DownloadDialogBridge create(long nativeDownloadDialogBridge) {
         DownloadLocationDialogCoordinator locationDialog = new DownloadLocationDialogCoordinator();
-        DownloadLaterDialogCoordinator downloadLaterDialog = new DownloadLaterDialogCoordinator();
         DownloadDateTimePickerDialogCoordinator dateTimePickerDialog =
                 new DownloadDateTimePickerDialogCoordinator();
-        DownloadDialogBridge bridge = new DownloadDialogBridge(nativeDownloadDialogBridge,
-                downloadLaterDialog, dateTimePickerDialog, locationDialog);
+        DownloadLaterDialogCoordinator downloadLaterDialog =
+                new DownloadLaterDialogCoordinator(dateTimePickerDialog);
+        dateTimePickerDialog.initialize(downloadLaterDialog);
+        DownloadDialogBridge bridge = new DownloadDialogBridge(
+                nativeDownloadDialogBridge, downloadLaterDialog, locationDialog);
         downloadLaterDialog.initialize(bridge);
-        dateTimePickerDialog.initialize(bridge);
         locationDialog.initialize(bridge);
         return bridge;
     }
@@ -94,7 +91,6 @@ public class DownloadDialogBridge implements DownloadLocationDialogController,
     private void showDialog(WindowAndroid windowAndroid, long totalBytes,
             @DownloadLocationDialogType int dialogType, String suggestedPath,
             boolean supportsLaterDialog) {
-        if (mPrefService == null) mPrefService = getPrefService();
         Activity activity = windowAndroid.getActivity().get();
         if (activity == null) {
             onCancel();
@@ -103,15 +99,17 @@ public class DownloadDialogBridge implements DownloadLocationDialogController,
 
         ModalDialogManager modalDialogManager =
                 ((ModalDialogManagerHolder) activity).getModalDialogManager();
-        showDialog(activity, modalDialogManager, totalBytes, dialogType, suggestedPath,
-                supportsLaterDialog);
+        showDialog(activity, modalDialogManager, getPrefService(), totalBytes, dialogType,
+                suggestedPath, supportsLaterDialog);
     }
 
-    void showDialog(Activity activity, ModalDialogManager modalDialogManager, long totalBytes,
-            @DownloadLocationDialogType int dialogType, String suggestedPath,
+    void showDialog(Context context, ModalDialogManager modalDialogManager, PrefService prefService,
+            long totalBytes, @DownloadLocationDialogType int dialogType, String suggestedPath,
             boolean supportsLaterDialog) {
-        mActivity = activity;
+        mContext = context;
         mModalDialogManager = modalDialogManager;
+        mPrefService = prefService;
+
         mTotalBytes = totalBytes;
         mLocationDialogType = dialogType;
         mSuggestedPath = suggestedPath;
@@ -119,42 +117,23 @@ public class DownloadDialogBridge implements DownloadLocationDialogController,
         mDownloadLaterChoice = DownloadLaterDialogChoice.DOWNLOAD_NOW;
         mDownloadLaterTime = INVALID_START_TIME;
 
-        // Download later dialogs flow.
+        // Download later dialogs flow only when the network is cellular, where supportsLaterDialog
+        // is true.
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_LATER) && supportsLaterDialog) {
-            assert mPrefService != null;
-            @DownloadLaterPromptStatus
-            int promptStatus = mPrefService.getInteger(Pref.DOWNLOAD_LATER_PROMPT_STATUS);
-
-            PropertyModel model =
-                    new PropertyModel.Builder(DownloadLaterDialogProperties.ALL_KEYS)
-                            .with(DownloadLaterDialogProperties.CONTROLLER, mDownloadLaterDialog)
-                            .with(DownloadLaterDialogProperties.DOWNLOAD_TIME_INITIAL_SELECTION,
-                                    DownloadLaterDialogChoice.DOWNLOAD_NOW)
-                            .with(DownloadLaterDialogProperties.DONT_SHOW_AGAIN_SELECTION,
-                                    promptStatus)
-                            .with(DownloadLaterDialogProperties.LOCATION_TEXT,
-                                    activity.getResources().getString(R.string.menu_downloads))
-                            .build();
-            mDownloadLaterDialog.showDialog(mActivity, mModalDialogManager, model);
+            showDownloadLaterDialog();
             return;
         }
 
-        // Download location dialog flow.
         mLocationDialog.showDialog(
-                mActivity, mModalDialogManager, totalBytes, dialogType, suggestedPath);
+                mContext, mModalDialogManager, totalBytes, dialogType, suggestedPath);
     }
 
-    private void onComplete(String returnedPath, boolean onlyOnWifi, long startTime) {
+    private void onComplete() {
         if (mNativeDownloadDialogBridge == 0) return;
 
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_LATER)
-                && mDownloadLaterPromptStatus != DownloadLaterPromptStatus.SHOW_INITIAL) {
-            assert mPrefService != null;
-            mPrefService.setInteger(Pref.DOWNLOAD_LATER_PROMPT_STATUS, mDownloadLaterPromptStatus);
-        }
-
+        boolean onlyOnWifi = (mDownloadLaterChoice == DownloadLaterDialogChoice.ON_WIFI);
         DownloadDialogBridgeJni.get().onComplete(mNativeDownloadDialogBridge,
-                DownloadDialogBridge.this, returnedPath, onlyOnWifi, startTime);
+                DownloadDialogBridge.this, mSuggestedPath, onlyOnWifi, mDownloadLaterTime);
     }
 
     private void onCancel() {
@@ -163,37 +142,22 @@ public class DownloadDialogBridge implements DownloadLocationDialogController,
                 mNativeDownloadDialogBridge, DownloadDialogBridge.this);
     }
 
-    private void showLocationDialog() {
-        mLocationDialog.showDialog(
-                mActivity, mModalDialogManager, mTotalBytes, mLocationDialogType, mSuggestedPath);
-    }
-
     // DownloadLaterDialogController implementation.
     @Override
     public void onDownloadLaterDialogComplete(
-            @DownloadLaterDialogChoice int choice, @DownloadPromptStatus int promptStatus) {
-        // Cache the result from download later dialog.
+            @DownloadLaterDialogChoice int choice, long startTime) {
         mDownloadLaterChoice = choice;
-        mDownloadLaterPromptStatus = promptStatus;
+        mDownloadLaterTime = startTime;
 
-        mDownloadLaterDialog.dismissDialog(DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
-
-        // Let the user to pick date and time if they choose to download later.
-        if (mDownloadLaterChoice == DownloadLaterDialogChoice.DOWNLOAD_LATER) {
-            long now = System.currentTimeMillis();
-            // TODO(xingliu): Round up default time to next hour from now.
-            PropertyModel model =
-                    new PropertyModel.Builder(DownloadDateTimePickerDialogProperties.ALL_KEYS)
-                            .with(DownloadDateTimePickerDialogProperties.STATE, State.DATE)
-                            .with(DownloadDateTimePickerDialogProperties.INITIAL_TIME, now)
-                            .with(DownloadDateTimePickerDialogProperties.MIN_TIME, now)
-                            .build();
-            mDateTimePickerDialog.showDialog(mActivity, mModalDialogManager, model);
+        // When there is no error message, skip the location dialog.
+        if (mLocationDialogType == DownloadLocationDialogType.DEFAULT) {
+            onComplete();
             return;
         }
 
-        // For non download later options, show the next dialog.
-        showLocationDialog();
+        // The location dialog has error message text, show the location dialog after the download
+        // later dialog.
+        showLocationDialog(false /*editLocation*/);
     }
 
     @Override
@@ -203,34 +167,64 @@ public class DownloadDialogBridge implements DownloadLocationDialogController,
 
     @Override
     public void onEditLocationClicked() {
-        // TODO(xingliu): Trigger download location dialog. After it's done, come back to this flow.
+        mDownloadLaterDialog.dismissDialog(DialogDismissalCause.ACTION_ON_CONTENT);
+
+        // The user clicked the edit location text.
+        showLocationDialog(true /* editLocation */);
     }
 
-    // DownloadDateTimePickerDialogCoordinator.Controller.
-    @Override
-    public void onDateTimePicked(long time) {
-        mDownloadLaterTime = time;
+    private void showLocationDialog(boolean editLocation) {
+        mEditLocation = editLocation;
 
-        // Show the next dialog.
-        showLocationDialog();
+        mDownloadLaterChoice = mDownloadLaterDialog.getChoice();
+
+        mLocationDialog.showDialog(
+                mContext, mModalDialogManager, mTotalBytes, mLocationDialogType, mSuggestedPath);
     }
 
-    @Override
-    public void onDateTimePickerCanceled() {
-        onCancel();
+    private void showDownloadLaterDialog() {
+        assert mPrefService != null;
+        @DownloadLaterPromptStatus
+        int promptStatus = mPrefService.getInteger(Pref.DOWNLOAD_LATER_PROMPT_STATUS);
+        PropertyModel model =
+                new PropertyModel.Builder(DownloadLaterDialogProperties.ALL_KEYS)
+                        .with(DownloadLaterDialogProperties.CONTROLLER, mDownloadLaterDialog)
+                        .with(DownloadLaterDialogProperties.DOWNLOAD_TIME_INITIAL_SELECTION,
+                                mDownloadLaterChoice)
+                        .with(DownloadLaterDialogProperties.DONT_SHOW_AGAIN_SELECTION, promptStatus)
+                        .with(DownloadLaterDialogProperties.LOCATION_TEXT,
+                                mContext.getResources().getString(R.string.menu_downloads))
+                        .build();
+        mDownloadLaterDialog.showDialog(mContext, mModalDialogManager, mPrefService, model);
     }
 
     // DownloadLocationDialogController implementation.
     @Override
     public void onDownloadLocationDialogComplete(String returnedPath) {
-        boolean onlyOnWifi = false;
-        if (mDownloadLaterChoice == DownloadLaterDialogChoice.ON_WIFI) onlyOnWifi = true;
-        onComplete(returnedPath, onlyOnWifi, mDownloadLaterTime);
+        mSuggestedPath = returnedPath;
+        // The location dialog is triggered automatically, complete the flow.
+        if (!mEditLocation) {
+            onComplete();
+            return;
+        }
+
+        // The location dialog is triggered by the "Edit" text. Show the download later dialog
+        // again.
+        mEditLocation = false;
+        showDownloadLaterDialog();
     }
 
     @Override
     public void onDownloadLocationDialogCanceled() {
-        onCancel();
+        if (!mEditLocation) {
+            onCancel();
+            return;
+        }
+
+        // The location dialog is triggered by the "Edit" text. Show the download later dialog
+        // again.
+        mEditLocation = false;
+        showDownloadLaterDialog();
     }
 
     void setPrefServiceForTesting(PrefService prefService) {

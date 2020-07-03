@@ -65,6 +65,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
+#include "ui/webui/webui_allowlist.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
@@ -1876,6 +1877,133 @@ TEST_F(SiteSettingsHandlerTest, BlockAutoplay_Update) {
   EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(prefs::kBlockAutoplayEnabled));
 }
 
+TEST_F(SiteSettingsHandlerTest, ExcludeWebUISchemesInLists) {
+  const ContentSettingsType content_settings_type =
+      ContentSettingsType::NOTIFICATIONS;
+  // Register WebUIAllowlist auto-granted permissions.
+  const url::Origin kWebUIOrigins[] = {
+      url::Origin::Create(GURL("chrome://test")),
+      url::Origin::Create(GURL("chrome-untrusted://test")),
+      url::Origin::Create(GURL("devtools://devtools")),
+  };
+
+  WebUIAllowlist* allowlist = WebUIAllowlist::GetOrCreate(profile());
+  for (const url::Origin& origin : kWebUIOrigins)
+    allowlist->RegisterAutoGrantedPermission(origin, content_settings_type);
+
+  // Verify the auto-granted permissions are registered, and they are indeed
+  // provided by WebUIAllowlist.
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(profile());
+  content_settings::SettingInfo info;
+  std::unique_ptr<base::Value> value = map->GetWebsiteSetting(
+      kWebUIOrigins[0].GetURL(), kWebUIOrigins[0].GetURL(),
+      content_settings_type, std::string(), &info);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW, value->GetInt());
+  EXPECT_EQ(content_settings::SETTING_SOURCE_ALLOWLIST, info.source);
+
+  // Register an ordinary website permission.
+  const GURL kWebUrl = GURL("https://example.com");
+  map->SetContentSettingDefaultScope(kWebUrl, kWebUrl, content_settings_type,
+                                     std::string(), CONTENT_SETTING_ALLOW);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            map->GetContentSetting(kWebUrl, kWebUrl, content_settings_type,
+                                   std::string()));
+
+  // GetAllSites() only returns website exceptions.
+  {
+    base::ListValue get_all_sites_args;
+    get_all_sites_args.AppendString(kCallbackId);
+    base::Value category_list(base::Value::Type::LIST);
+    category_list.Append(kNotifications);
+    get_all_sites_args.Append(std::move(category_list));
+
+    handler()->HandleGetAllSites(&get_all_sites_args);
+
+    const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+    base::Value::ConstListView site_groups = data.arg3()->GetList();
+    EXPECT_EQ(1UL, site_groups.size());
+
+    const std::string etld_plus1_string =
+        site_groups[0].FindKey("etldPlus1")->GetString();
+    EXPECT_EQ("example.com", etld_plus1_string);
+    base::Value::ConstListView origin_list =
+        site_groups[0].FindKey("origins")->GetList();
+    EXPECT_EQ(1UL, origin_list.size());
+    EXPECT_EQ(kWebUrl.spec(), origin_list[0].FindKey("origin")->GetString());
+  }
+
+  // GetExceptionList() only returns website exceptions.
+  {
+    base::ListValue get_exception_list_args;
+    get_exception_list_args.AppendString(kCallbackId);
+    get_exception_list_args.AppendString(kNotifications);
+
+    handler()->HandleGetExceptionList(&get_exception_list_args);
+
+    const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+    base::Value::ConstListView exception_list = data.arg3()->GetList();
+    EXPECT_EQ(1UL, exception_list.size());
+    EXPECT_EQ("https://example.com:443",
+              exception_list[0].FindKey("origin")->GetString());
+  }
+
+  // GetRecentSitePermissions() only returns website exceptions.
+  {
+    base::ListValue get_recent_permissions_args;
+    get_recent_permissions_args.AppendString(kCallbackId);
+    base::Value category_list(base::Value::Type::LIST);
+    category_list.Append(kNotifications);
+    get_recent_permissions_args.Append(std::move(category_list));
+    get_recent_permissions_args.Append(3);
+
+    handler()->HandleGetRecentSitePermissions(&get_recent_permissions_args);
+
+    const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+    base::Value::ConstListView recent_permission_list = data.arg3()->GetList();
+    EXPECT_EQ(1UL, recent_permission_list.size());
+    EXPECT_EQ(kWebUrl.spec(),
+              recent_permission_list[0].FindKey("origin")->GetString());
+  }
+}
+
+// GetOriginPermissions() returns the allowlisted exception. We explicitly
+// return this, so developers can easily test things (e.g. by navigating to
+// chrome://settings/content/siteDetails?site=chrome://example).
+TEST_F(SiteSettingsHandlerTest, IncludeWebUISchemesInGetOriginPermissions) {
+  const ContentSettingsType content_settings_type =
+      ContentSettingsType::NOTIFICATIONS;
+
+  // Register WebUIAllowlist auto-granted permissions.
+  const url::Origin kWebUIOrigins[] = {
+      url::Origin::Create(GURL("chrome://test")),
+      url::Origin::Create(GURL("chrome-untrusted://test")),
+      url::Origin::Create(GURL("devtools://devtools")),
+  };
+
+  WebUIAllowlist* allowlist = WebUIAllowlist::GetOrCreate(profile());
+  for (const url::Origin& origin : kWebUIOrigins)
+    allowlist->RegisterAutoGrantedPermission(origin, content_settings_type);
+
+  for (const url::Origin& origin : kWebUIOrigins) {
+    base::ListValue get_origin_permissions_args;
+    get_origin_permissions_args.AppendString(kCallbackId);
+    get_origin_permissions_args.AppendString(origin.GetURL().spec());
+    auto category_list = std::make_unique<base::ListValue>();
+    category_list->AppendString(kNotifications);
+    get_origin_permissions_args.Append(std::move(category_list));
+
+    handler()->HandleGetOriginPermissions(&get_origin_permissions_args);
+    const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+    const base::Value::ConstListView exception_list = data.arg3()->GetList();
+    EXPECT_EQ(1UL, exception_list.size());
+
+    EXPECT_EQ(origin.GetURL().spec(),
+              exception_list[0].FindKey("origin")->GetString());
+    EXPECT_EQ("allowlist", exception_list[0].FindKey("source")->GetString());
+  }
+}
+
 namespace {
 
 constexpr char kUsbPolicySetting[] = R"(
@@ -1905,6 +2033,9 @@ GURL ChromiumUrl() {
 }
 GURL GoogleUrl() {
   return GURL("https://google.com");
+}
+GURL WebUIUrl() {
+  return GURL("chrome://test");
 }
 
 }  // namespace
@@ -1953,6 +2084,7 @@ class SiteSettingsHandlerChooserExceptionTest : public SiteSettingsHandlerTest {
     const auto kAndroidOrigin = url::Origin::Create(AndroidUrl());
     const auto kChromiumOrigin = url::Origin::Create(ChromiumUrl());
     const auto kGoogleOrigin = url::Origin::Create(GoogleUrl());
+    const auto kWebUIOrigin = url::Origin::Create(WebUIUrl());
 
     // Add the user granted permissions for testing.
     // These two persistent device permissions should be lumped together with
@@ -1962,6 +2094,8 @@ class SiteSettingsHandlerChooserExceptionTest : public SiteSettingsHandlerTest {
     chooser_context->GrantDevicePermission(kChromiumOrigin, kGoogleOrigin,
                                            *persistent_device_info_);
     chooser_context->GrantDevicePermission(kAndroidOrigin, kChromiumOrigin,
+                                           *persistent_device_info_);
+    chooser_context->GrantDevicePermission(kWebUIOrigin, kWebUIOrigin,
                                            *persistent_device_info_);
     chooser_context->GrantDevicePermission(kAndroidOrigin, kAndroidOrigin,
                                            *ephemeral_device_info_);
@@ -2117,6 +2251,11 @@ TEST_F(SiteSettingsHandlerChooserExceptionTest,
   const base::Value& exceptions = GetChooserExceptionListFromWebUiCallData(
       kUsbChooserGroupName, /*expected_total_calls=*/1u);
   EXPECT_EQ(exceptions.GetList().size(), 5u);
+
+  // Don't include WebUI schemes.
+  const std::string kWebUIOriginStr = WebUIUrl().GetOrigin().spec();
+  EXPECT_FALSE(ChooserExceptionContainsSiteException(
+      exceptions, "Gizmo", kWebUIOriginStr, kWebUIOriginStr));
 }
 
 TEST_F(SiteSettingsHandlerChooserExceptionTest,

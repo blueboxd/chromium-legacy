@@ -17,7 +17,7 @@ namespace blink {
 
 class IntRect;
 class LocalFrameView;
-class PropertyTreeState;
+class PropertyTreeStateOrAlias;
 class TextRecord;
 
 // TextElementTiming is responsible for tracking the paint timings for groups of
@@ -43,7 +43,7 @@ class CORE_EXPORT TextElementTiming final
   static FloatRect ComputeIntersectionRect(
       const LayoutObject&,
       const IntRect& aggregated_visual_rect,
-      const PropertyTreeState&,
+      const PropertyTreeStateOrAlias&,
       const LocalFrameView*);
 
   bool CanReportElements() const;

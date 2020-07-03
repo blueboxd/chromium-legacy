@@ -19,11 +19,15 @@ extern const BASE_EXPORT Feature kPartitionAllocGigaCage;
 
 ALWAYS_INLINE bool IsPartitionAllocGigaCageEnabled() {
   // The feature is not applicable to 32 bit architectures (not enough address
-  // space). It is also incompatible with PartitionAlloc as malloc(), as the
-  // base::Feature code allocates, leading to reentrancy in PartitionAlloc.
-#if !(defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)) || \
-    BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+  // space).
+  //
+  // It also cannot be enabled conditionally when PartitionAlloc is the default
+  // allocator, as base::Feature allocates. However as this is the intended use
+  // case, we enable it for all builds then.
+#if !(defined(ARCH_CPU_64_BITS) && !defined(OS_NACL))
   return false;
+#elif BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+  return true;
 #else
   return FeatureList::IsEnabled(kPartitionAllocGigaCage);
 #endif

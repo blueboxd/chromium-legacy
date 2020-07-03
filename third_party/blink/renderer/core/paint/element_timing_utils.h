@@ -11,7 +11,7 @@ namespace blink {
 
 class IntRect;
 class LocalFrame;
-class PropertyTreeState;
+class PropertyTreeStateOrAlias;
 
 // Class containing methods shared between ImageElementTiming and
 // TextElementTiming.
@@ -21,7 +21,7 @@ class ElementTimingUtils {
   // specified frame, and returns a result in DIPs.
   static FloatRect ComputeIntersectionRect(LocalFrame*,
                                            const IntRect&,
-                                           const PropertyTreeState&);
+                                           const PropertyTreeStateOrAlias&);
 };
 
 }  // namespace blink

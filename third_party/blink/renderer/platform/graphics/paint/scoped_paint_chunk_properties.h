@@ -20,7 +20,7 @@ class ScopedPaintChunkProperties {
  public:
   // Use new PropertyTreeState for the scope.
   ScopedPaintChunkProperties(PaintController& paint_controller,
-                             const PropertyTreeState& properties,
+                             const PropertyTreeStateOrAlias& properties,
                              const DisplayItemClient& client,
                              DisplayItem::Type type)
       : paint_controller_(paint_controller),
@@ -31,7 +31,7 @@ class ScopedPaintChunkProperties {
 
   // Use new transform state, and keep the current other properties.
   ScopedPaintChunkProperties(PaintController& paint_controller,
-                             const TransformPaintPropertyNode& transform,
+                             const TransformPaintPropertyNodeOrAlias& transform,
                              const DisplayItemClient& client,
                              DisplayItem::Type type)
       : ScopedPaintChunkProperties(
@@ -42,7 +42,7 @@ class ScopedPaintChunkProperties {
 
   // Use new clip state, and keep the current other properties.
   ScopedPaintChunkProperties(PaintController& paint_controller,
-                             const ClipPaintPropertyNode& clip,
+                             const ClipPaintPropertyNodeOrAlias& clip,
                              const DisplayItemClient& client,
                              DisplayItem::Type type)
       : ScopedPaintChunkProperties(
@@ -53,7 +53,7 @@ class ScopedPaintChunkProperties {
 
   // Use new effect state, and keep the current other properties.
   ScopedPaintChunkProperties(PaintController& paint_controller,
-                             const EffectPaintPropertyNode& effect,
+                             const EffectPaintPropertyNodeOrAlias& effect,
                              const DisplayItemClient& client,
                              DisplayItem::Type type)
       : ScopedPaintChunkProperties(
@@ -73,35 +73,35 @@ class ScopedPaintChunkProperties {
   }
 
  private:
-  static PropertyTreeState GetPaintChunkProperties(
-      const TransformPaintPropertyNode& transform,
+  static PropertyTreeStateOrAlias GetPaintChunkProperties(
+      const TransformPaintPropertyNodeOrAlias& transform,
       PaintController& paint_controller) {
-    PropertyTreeState properties(
+    PropertyTreeStateOrAlias properties(
         paint_controller.CurrentPaintChunkProperties());
     properties.SetTransform(transform);
     return properties;
   }
 
-  static PropertyTreeState GetPaintChunkProperties(
-      const ClipPaintPropertyNode& clip,
+  static PropertyTreeStateOrAlias GetPaintChunkProperties(
+      const ClipPaintPropertyNodeOrAlias& clip,
       PaintController& paint_controller) {
-    PropertyTreeState properties(
+    PropertyTreeStateOrAlias properties(
         paint_controller.CurrentPaintChunkProperties());
     properties.SetClip(clip);
     return properties;
   }
 
-  static PropertyTreeState GetPaintChunkProperties(
-      const EffectPaintPropertyNode& effect,
+  static PropertyTreeStateOrAlias GetPaintChunkProperties(
+      const EffectPaintPropertyNodeOrAlias& effect,
       PaintController& paint_controller) {
-    PropertyTreeState properties(
+    PropertyTreeStateOrAlias properties(
         paint_controller.CurrentPaintChunkProperties());
     properties.SetEffect(effect);
     return properties;
   }
 
   PaintController& paint_controller_;
-  PropertyTreeState previous_properties_;
+  PropertyTreeStateOrAlias previous_properties_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedPaintChunkProperties);
 };

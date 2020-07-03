@@ -326,6 +326,23 @@ suite('SiteDetailsPermission', function() {
     assertFalse(testElement.$.permission.disabled);
   });
 
+  test('info string correct for allowlisted source', function() {
+    const origin = 'chrome://test';
+    testElement.category = ContentSettingsTypes.NOTIFICATIONS;
+    testElement.$.details.hidden = false;
+    testElement.site = {
+      origin: origin,
+      embeddingOrigin: origin,
+      setting: ContentSetting.ALLOW,
+      source: SiteSettingSource.ALLOWLIST,
+    };
+    assertEquals(
+        'Allowlisted internally\nAllow\nBlock\nAsk',
+        testElement.$.permissionItem.innerText.trim());
+    assertTrue(testElement.$.permissionItem.classList.contains('two-line'));
+    assertTrue(testElement.$.permission.disabled);
+  });
+
   test('sound setting default string is correct', function() {
     const origin = 'https://www.example.com';
     browserProxy.setPrefs(prefs);

@@ -60,12 +60,10 @@ GeometryMapper::SourceToDestinationProjection(
 // [3] Flatten lemma: https://goo.gl/DNKyOc
 GeometryMapper::Translation2DOrMatrix
 GeometryMapper::SourceToDestinationProjectionInternal(
-    const TransformPaintPropertyNode& source_arg,
-    const TransformPaintPropertyNode& destination_arg,
+    const TransformPaintPropertyNode& source,
+    const TransformPaintPropertyNode& destination,
     bool& has_animation,
     bool& success) {
-  const auto& source = source_arg.Unalias();
-  const auto& destination = destination_arg.Unalias();
   has_animation = false;
   success = true;
 
@@ -177,7 +175,7 @@ bool GeometryMapper::LocalToAncestorVisualRectInternal(
     return true;
   }
 
-  if (&local_state.Effect().Unalias() != &ancestor_state.Effect().Unalias()) {
+  if (&local_state.Effect() != &ancestor_state.Effect()) {
     return SlowLocalToAncestorVisualRectWithEffects(
         local_state, ancestor_state, rect_to_map, clip_behavior,
         inclusive_behavior, expand_for_animation, success);
@@ -250,27 +248,28 @@ bool GeometryMapper::SlowLocalToAncestorVisualRectWithEffects(
       local_state.Transform(), local_state.Clip(),
       EffectPaintPropertyNode::Root());
 
-  const auto& ancestor_effect = ancestor_state.Effect().Unalias();
-  for (const auto* effect = &local_state.Effect().Unalias();
+  const auto& ancestor_effect = ancestor_state.Effect();
+  for (const auto* effect = &local_state.Effect();
        effect && effect != &ancestor_effect;
-       effect = SafeUnalias(effect->Parent())) {
+       effect = effect->UnaliasedParent()) {
     if (effect->HasActiveFilterAnimation() &&
         expand_for_animation == kExpandVisualRectForAnimation) {
       // Assume during the animation the filter can map |rect_to_map| to
       // anywhere. Ancestor clips will still apply.
       // TODO(crbug.com/1026653): Use animation bounds instead of infinite rect.
       mapping_rect = InfiniteLooseFloatClipRect();
-      last_transform_and_clip_state.SetTransform(effect->LocalTransformSpace());
-      last_transform_and_clip_state.SetClip(*effect->OutputClip());
+      last_transform_and_clip_state.SetTransform(
+          effect->LocalTransformSpace().Unalias());
+      last_transform_and_clip_state.SetClip(effect->OutputClip()->Unalias());
       continue;
     }
 
     if (!effect->HasFilterThatMovesPixels())
       continue;
 
-    PropertyTreeState transform_and_clip_state(effect->LocalTransformSpace(),
-                                               *effect->OutputClip(),
-                                               EffectPaintPropertyNode::Root());
+    PropertyTreeState transform_and_clip_state(
+        effect->LocalTransformSpace().Unalias(),
+        effect->OutputClip()->Unalias(), EffectPaintPropertyNode::Root());
     bool intersects = LocalToAncestorVisualRectInternal(
         last_transform_and_clip_state, transform_and_clip_state, mapping_rect,
         clip_behavior, inclusive_behavior, expand_for_animation, success);
@@ -301,8 +300,8 @@ FloatClipRect GeometryMapper::LocalToAncestorClipRect(
     const PropertyTreeState& local_state,
     const PropertyTreeState& ancestor_state,
     OverlayScrollbarClipBehavior clip_behavior) {
-  const auto& local_clip = local_state.Clip().Unalias();
-  const auto& ancestor_clip = ancestor_state.Clip().Unalias();
+  const auto& local_clip = local_state.Clip();
+  const auto& ancestor_clip = ancestor_state.Clip();
   if (&local_clip == &ancestor_clip)
     return FloatClipRect();
 
@@ -313,15 +312,14 @@ FloatClipRect GeometryMapper::LocalToAncestorClipRect(
   DCHECK(success);
 
   // Many effects (e.g. filters, clip-paths) can make a clip rect not tight.
-  if (&local_state.Effect().Unalias() != &ancestor_state.Effect().Unalias())
+  if (&local_state.Effect() != &ancestor_state.Effect())
     result.ClearIsTight();
 
   return result;
 }
 
-static FloatClipRect GetClipRect(const ClipPaintPropertyNode& clip_node_arg,
+static FloatClipRect GetClipRect(const ClipPaintPropertyNode& clip_node,
                                  OverlayScrollbarClipBehavior clip_behavior) {
-  const auto& clip_node = clip_node_arg.Unalias();
   FloatClipRect clip_rect(
       UNLIKELY(clip_behavior == kExcludeOverlayScrollbarSizeForHitTesting)
           ? clip_node.UnsnappedClipRectExcludingOverlayScrollbars()
@@ -332,22 +330,18 @@ static FloatClipRect GetClipRect(const ClipPaintPropertyNode& clip_node_arg,
 }
 
 FloatClipRect GeometryMapper::LocalToAncestorClipRectInternal(
-    const ClipPaintPropertyNode& descendant_clip_arg,
-    const ClipPaintPropertyNode& ancestor_clip_arg,
-    const TransformPaintPropertyNode& ancestor_transform_arg,
+    const ClipPaintPropertyNode& descendant_clip,
+    const ClipPaintPropertyNode& ancestor_clip,
+    const TransformPaintPropertyNode& ancestor_transform,
     OverlayScrollbarClipBehavior clip_behavior,
     InclusiveIntersectOrNot inclusive_behavior,
     ExpandVisualRectForAnimationOrNot expand_for_animation,
     bool& success) {
-  const auto& descendant_clip = descendant_clip_arg.Unalias();
-  const auto& ancestor_clip = ancestor_clip_arg.Unalias();
-
   if (&descendant_clip == &ancestor_clip) {
     success = true;
     return FloatClipRect();
   }
-  const auto& ancestor_transform = ancestor_transform_arg.Unalias();
-  if (SafeUnalias(descendant_clip.Parent()) == &ancestor_clip &&
+  if (descendant_clip.UnaliasedParent() == &ancestor_clip &&
       &descendant_clip.LocalTransformSpace() == &ancestor_transform) {
     success = true;
     return GetClipRect(descendant_clip, clip_behavior);
@@ -379,7 +373,7 @@ FloatClipRect GeometryMapper::LocalToAncestorClipRectInternal(
     }
 
     intermediate_nodes.push_back(clip_node);
-    clip_node = SafeUnalias(clip_node->Parent());
+    clip_node = clip_node->UnaliasedParent();
   }
   if (!clip_node) {
     success = false;
@@ -401,9 +395,9 @@ FloatClipRect GeometryMapper::LocalToAncestorClipRectInternal(
        ++it) {
     bool has_animation = false;
     const auto& translation_2d_or_matrix =
-        SourceToDestinationProjectionInternal((*it)->LocalTransformSpace(),
-                                              ancestor_transform, has_animation,
-                                              success);
+        SourceToDestinationProjectionInternal(
+            (*it)->LocalTransformSpace().Unalias(), ancestor_transform,
+            has_animation, success);
     if (!success) {
       success = true;
       return FloatClipRect(FloatRect());

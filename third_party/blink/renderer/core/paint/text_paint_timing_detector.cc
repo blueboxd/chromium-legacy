@@ -167,7 +167,7 @@ bool TextPaintTimingDetector::ShouldWalkObject(
 void TextPaintTimingDetector::RecordAggregatedText(
     const LayoutBoxModelObject& aggregator,
     const IntRect& aggregated_visual_rect,
-    const PropertyTreeState& property_tree_state) {
+    const PropertyTreeStateOrAlias& property_tree_state) {
   DCHECK(ShouldWalkObject(aggregator));
 
   // The caller should check this.

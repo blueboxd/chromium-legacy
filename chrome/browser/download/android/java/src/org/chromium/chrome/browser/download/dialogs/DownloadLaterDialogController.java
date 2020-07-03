@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.download.dialogs;
 
-import org.chromium.chrome.browser.download.DownloadLaterPromptStatus;
-
 /**
  * Receives events from download later dialog.
  */
@@ -13,10 +11,10 @@ public interface DownloadLaterDialogController {
     /**
      * Called when the selection changed in the download later dialog.
      * @param choice The selection of the download time in the download later dialog.
-     * @param promptStatus The prompt status about the "don't show again" checkbox.
+     * @param startTime The start time of the download, selected int the date time picker, or -1
+     *                  if the user didn't select the time.
      */
-    void onDownloadLaterDialogComplete(
-            @DownloadLaterDialogChoice int choice, @DownloadLaterPromptStatus int promptStatus);
+    void onDownloadLaterDialogComplete(@DownloadLaterDialogChoice int choice, long startTime);
 
     /**
      * Called when the user cancels or dismisses the download location dialog.

@@ -428,14 +428,15 @@ void SearchResultPageView::OnSearchResultContainerResultsChanged() {
 
   first_result_view_ = result_container_views_[0]->GetFirstResultView();
 
+  // Update SearchBoxView search box autocomplete as necessary based on new
+  // first result view.
+  AppListPage::contents_view()->GetSearchBoxView()->ProcessAutocomplete();
+
   // Reset selection to first when things change. The first result is set as
   // as the default result.
   result_selection_controller_->set_block_selection_changes(false);
   result_selection_controller_->ResetSelection(nullptr /*key_event*/,
                                                true /* default_selection */);
-  // Update SearchBoxView search box autocomplete as necessary based on new
-  // first result view.
-  AppListPage::contents_view()->GetSearchBoxView()->ProcessAutocomplete();
 }
 
 void SearchResultPageView::Update() {

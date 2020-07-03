@@ -103,6 +103,21 @@ void SkiaOutputDeviceVulkan::PostSubBuffer(
 
   StartSwapBuffers(std::move(feedback));
 
+  if (is_new_swap_chain_ && rect == gfx::Rect(vulkan_surface_->image_size())) {
+    is_new_swap_chain_ = false;
+  }
+
+  if (!is_new_swap_chain_) {
+    auto image_index = vulkan_surface_->swap_chain()->current_image_index();
+    for (size_t i = 0; i < damage_of_images_.size(); ++i) {
+      if (i == image_index) {
+        damage_of_images_[i] = gfx::Rect();
+      } else {
+        damage_of_images_[i].Union(rect);
+      }
+    }
+  }
+
   if (!rect.IsEmpty()) {
     // If the swapchain is new created, but rect doesn't cover the whole buffer,
     // we will still present it even it causes a artifact in this frame and
@@ -114,13 +129,10 @@ void SkiaOutputDeviceVulkan::PostSubBuffer(
     vulkan_surface_->PostSubBufferAsync(
         rect, base::BindOnce(&SkiaOutputDeviceVulkan::OnPostSubBufferFinished,
                              weak_ptr_factory_.GetWeakPtr(),
-                             std::move(latency_info), is_new_swapchain_));
+                             std::move(latency_info)));
   } else {
-    OnPostSubBufferFinished(std::move(latency_info), is_new_swapchain_,
-                            gfx::SwapResult::SWAP_ACK);
+    OnPostSubBufferFinished(std::move(latency_info), gfx::SwapResult::SWAP_ACK);
   }
-
-  is_new_swapchain_ = false;
 }
 
 SkSurface* SkiaOutputDeviceVulkan::BeginPaint(
@@ -254,6 +266,7 @@ bool SkiaOutputDeviceVulkan::Initialize() {
   capabilities_.output_surface_origin = gfx::SurfaceOrigin::kTopLeft;
   capabilities_.supports_post_sub_buffer = true;
   capabilities_.supports_pre_transform = true;
+  capabilities_.damage_area_from_skia_output_device = true;
 
   const auto surface_format = vulkan_surface_->surface_format().format;
   DCHECK(surface_format == VK_FORMAT_B8G8R8A8_UNORM ||
@@ -285,7 +298,10 @@ bool SkiaOutputDeviceVulkan::RecreateSwapChain(
     sk_surface_size_pairs_.clear();
     sk_surface_size_pairs_.resize(vulkan_surface_->swap_chain()->num_images());
     color_space_ = std::move(color_space);
-    is_new_swapchain_ = true;
+    damage_of_images_.resize(vulkan_surface_->image_count());
+    for (auto& damage : damage_of_images_)
+      damage = gfx::Rect(vulkan_surface_->image_size());
+    is_new_swap_chain_ = true;
   }
 
   return true;
@@ -293,12 +309,11 @@ bool SkiaOutputDeviceVulkan::RecreateSwapChain(
 
 void SkiaOutputDeviceVulkan::OnPostSubBufferFinished(
     std::vector<ui::LatencyInfo> latency_info,
-    bool is_new_swapchain,
     gfx::SwapResult result) {
-  if (is_new_swapchain)
-    result = gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS;
+  auto image_index = vulkan_surface_->swap_chain()->current_image_index();
   FinishSwapBuffers(gfx::SwapCompletionResult(result),
-                    vulkan_surface_->image_size(), std::move(latency_info));
+                    vulkan_surface_->image_size(), std::move(latency_info),
+                    damage_of_images_[image_index]);
 }
 
 SkiaOutputDeviceVulkan::SkSurfaceSizePair::SkSurfaceSizePair() = default;

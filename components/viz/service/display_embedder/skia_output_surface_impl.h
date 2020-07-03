@@ -272,6 +272,9 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   // to avoid the expense of posting a task and calling MakeCurrent.
   base::OnceCallback<bool()> deferred_framebuffer_draw_closure_;
 
+  bool use_damage_area_from_skia_output_device_ = false;
+  // Damage area of the current buffer. Differ to the last submit buffer.
+  base::Optional<gfx::Rect> damage_of_current_buffer_;
   // Current buffer index.
   size_t current_buffer_ = 0;
   // Damage area of the buffer. Differ to the last submit buffer.

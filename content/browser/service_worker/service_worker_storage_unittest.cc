@@ -126,46 +126,59 @@ void UserDataCallback(
   std::move(quit).Run();
 }
 
-int WriteResponse(ServiceWorkerStorage* storage,
-                  int64_t id,
-                  const std::string& headers,
-                  IOBuffer* body,
-                  int length) {
-  std::unique_ptr<ServiceWorkerResponseWriter> writer =
-      storage->CreateResponseWriter(id);
-
-  auto response_head = network::mojom::URLResponseHead::New();
-  response_head->request_time = base::Time::Now();
-  response_head->response_time = base::Time::Now();
-  response_head->headers = new net::HttpResponseHeaders(headers);
-  response_head->content_length = length;
+int WriteResponse(
+    mojo::Remote<storage::mojom::ServiceWorkerStorageControl>& storage,
+    int64_t id,
+    const std::string& headers,
+    mojo_base::BigBuffer body) {
+  mojo::Remote<storage::mojom::ServiceWorkerResourceWriter> writer;
+  storage->CreateResourceWriter(id, writer.BindNewPipeAndPassReceiver());
 
   int rv = 0;
   {
-    TestCompletionCallback cb;
-    writer->WriteResponseHead(*response_head, length, cb.callback());
-    rv = cb.WaitForResult();
+    auto response_head = network::mojom::URLResponseHead::New();
+    response_head->request_time = base::Time::Now();
+    response_head->response_time = base::Time::Now();
+    response_head->headers = new net::HttpResponseHeaders(headers);
+    response_head->content_length = body.size();
+
+    base::RunLoop loop;
+    writer->WriteResponseHead(std::move(response_head),
+                              base::BindLambdaForTesting([&](int result) {
+                                rv = result;
+                                loop.Quit();
+                              }));
+    loop.Run();
     if (rv < 0)
       return rv;
   }
+
   {
-    TestCompletionCallback cb;
-    writer->WriteData(body, length, cb.callback());
-    rv = cb.WaitForResult();
+    base::RunLoop loop;
+    writer->WriteData(std::move(body),
+                      base::BindLambdaForTesting([&](int result) {
+                        rv = result;
+                        loop.Quit();
+                      }));
+    loop.Run();
   }
+
   return rv;
 }
 
-int WriteStringResponse(ServiceWorkerStorage* storage,
-                        int64_t id,
-                        const std::string& headers,
-                        const std::string& body) {
-  scoped_refptr<IOBuffer> body_buffer =
-      base::MakeRefCounted<WrappedIOBuffer>(body.data());
-  return WriteResponse(storage, id, headers, body_buffer.get(), body.length());
+int WriteStringResponse(
+    mojo::Remote<storage::mojom::ServiceWorkerStorageControl>& storage,
+    int64_t id,
+    const std::string& headers,
+    const std::string& body) {
+  mojo_base::BigBuffer buffer(
+      base::as_bytes(base::make_span(body.data(), body.length())));
+  return WriteResponse(storage, id, headers, std::move(buffer));
 }
 
-int WriteBasicResponse(ServiceWorkerStorage* storage, int64_t id) {
+int WriteBasicResponse(
+    mojo::Remote<storage::mojom::ServiceWorkerStorageControl>& storage,
+    int64_t id) {
   const char kHttpHeaders[] = "HTTP/1.0 200 HONKYDORY\0Content-Length: 5\0\0";
   const char kHttpBody[] = "Hello";
   std::string headers(kHttpHeaders, base::size(kHttpHeaders));
@@ -295,6 +308,9 @@ class ServiceWorkerStorageTest : public testing::Test {
   ServiceWorkerContextCore* context() { return helper_->context(); }
   ServiceWorkerRegistry* registry() { return context()->registry(); }
   ServiceWorkerStorage* storage() { return context()->storage(); }
+  mojo::Remote<storage::mojom::ServiceWorkerStorageControl>& storage_control() {
+    return registry()->GetRemoteStorageControl();
+  }
   ServiceWorkerDatabase* database() { return storage()->database_.get(); }
 
  protected:
@@ -688,7 +704,8 @@ TEST_F(ServiceWorkerStorageTest, DisabledStorage) {
   // access the disk cache.
   ReadResponseHeadResult out = ReadResponseHead(storage(), kResourceId);
   EXPECT_EQ(net::ERR_CACHE_MISS, out.result);
-  EXPECT_EQ(net::ERR_FAILED, WriteBasicResponse(storage(), kResourceId));
+  EXPECT_EQ(net::ERR_FAILED,
+            WriteBasicResponse(storage_control(), kResourceId));
   EXPECT_EQ(net::ERR_FAILED,
             WriteResponseMetadata(storage(), kResourceId, "foo"));
 
@@ -1297,8 +1314,8 @@ class ServiceWorkerResourceStorageTest : public ServiceWorkerStorageTest {
     EXPECT_EQ(2u, verify_ids.size());
 
     // And dump something in the disk cache for them.
-    WriteBasicResponse(storage(), resource_id1_);
-    WriteBasicResponse(storage(), resource_id2_);
+    WriteBasicResponse(storage_control(), resource_id1_);
+    WriteBasicResponse(storage_control(), resource_id2_);
     EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id1_, true));
     EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id2_, true));
 
@@ -1500,7 +1517,7 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
                                          registration_->scope());
   verify_ids = GetUncommittedResourceIdsFromDB();
   EXPECT_EQ(1u, verify_ids.size());
-  WriteBasicResponse(storage(), kStaleUncommittedResourceId);
+  WriteBasicResponse(storage_control(), kStaleUncommittedResourceId);
   EXPECT_TRUE(
       VerifyBasicResponse(storage(), kStaleUncommittedResourceId, true));
 
@@ -1513,7 +1530,7 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
   base::RunLoop loop;
   storage()->SetPurgingCompleteCallbackForTest(loop.QuitClosure());
   int64_t kNewResourceId = GetNewResourceIdSync(storage());
-  WriteBasicResponse(storage(), kNewResourceId);
+  WriteBasicResponse(storage_control(), kNewResourceId);
   registry()->StoreUncommittedResourceId(kNewResourceId,
                                          registration_->scope());
   loop.Run();

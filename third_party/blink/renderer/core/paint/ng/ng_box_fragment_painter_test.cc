@@ -63,7 +63,7 @@ TEST_P(NGBoxFragmentPainterTest, ScrollHitTestOrder) {
                           IsSameId(&text_fragment, kForegroundType)));
   HitTestData scroll_hit_test;
   scroll_hit_test.scroll_translation =
-      &scroller.FirstFragment().ContentsProperties().Transform();
+      scroller.FirstFragment().PaintProperties()->ScrollTranslation();
   scroll_hit_test.scroll_hit_test_rect = IntRect(0, 0, 40, 40);
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     EXPECT_THAT(

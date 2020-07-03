@@ -48,7 +48,7 @@ class FindPaintOffsetNeedingUpdateScope {
     auto paint_offset = fragment_data_.PaintOffset();
     DCHECK_EQ(old_paint_offset_, paint_offset) << object_.DebugName();
 
-    const TransformPaintPropertyNode* new_parent = nullptr;
+    const TransformPaintPropertyNodeOrAlias* new_parent = nullptr;
     base::Optional<FloatSize> new_translation;
     if (const auto* properties = fragment_data_.PaintProperties()) {
       if (const auto* translation = properties->PaintOffsetTranslation()) {
@@ -67,7 +67,7 @@ class FindPaintOffsetNeedingUpdateScope {
   const FragmentData& fragment_data_;
   const bool& is_actually_needed_;
   PhysicalOffset old_paint_offset_;
-  const TransformPaintPropertyNode* old_parent_ = nullptr;
+  const TransformPaintPropertyNodeOrAlias* old_parent_ = nullptr;
   base::Optional<FloatSize> old_translation_;
 };
 

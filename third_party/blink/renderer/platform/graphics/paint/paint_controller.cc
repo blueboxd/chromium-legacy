@@ -370,7 +370,7 @@ bool PaintController::CacheIsAllInvalid() const {
 
 void PaintController::UpdateCurrentPaintChunkProperties(
     const PaintChunk::Id* id,
-    const PropertyTreeState& properties) {
+    const PropertyTreeStateOrAlias& properties) {
   if (id) {
     PaintChunk::Id id_with_fragment(*id, current_fragment_);
     new_paint_chunks_.UpdateCurrentPaintChunkProperties(&id_with_fragment,
@@ -656,7 +656,7 @@ void PaintController::FinishCycle() {
 }
 
 void PaintController::ClearPropertyTreeChangedStateTo(
-    const PropertyTreeState& to) {
+    const PropertyTreeStateOrAlias& to) {
   // Calling |ClearChangedTo| for every chunk is O(|property nodes|^2) and
   // could be optimized by caching which nodes that have already been cleared.
   for (const auto& chunk : current_paint_artifact_->PaintChunks()) {
@@ -693,7 +693,7 @@ size_t PaintController::ApproximateUnsharedMemoryUsage() const {
 
 void PaintController::AppendDebugDrawingAfterCommit(
     sk_sp<const PaintRecord> record,
-    const PropertyTreeState& property_tree_state) {
+    const PropertyTreeStateOrAlias& property_tree_state) {
   DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   DCHECK(new_display_item_list_.IsEmpty());
   current_paint_artifact_->AppendDebugDrawing(record, property_tree_state);

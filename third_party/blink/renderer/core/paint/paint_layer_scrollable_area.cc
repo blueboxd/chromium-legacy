@@ -3179,9 +3179,9 @@ PaintLayerScrollableArea::ScrollingBackgroundDisplayItemClient::VisualRect()
     if (const auto* document_element = document.documentElement()) {
       if (const auto* document_element_object =
               document_element->GetLayoutObject()) {
-        const PropertyTreeState& document_element_state =
+        const auto& document_element_state =
             document_element_object->FirstFragment().LocalBorderBoxProperties();
-        const PropertyTreeState& view_contents_state =
+        const auto& view_contents_state =
             box->FirstFragment().ContentsProperties();
         IntRect result_in_view = result;
         GeometryMapper::SourceToDestinationRect(

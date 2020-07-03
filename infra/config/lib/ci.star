@@ -549,6 +549,7 @@ def chromiumos_builder(*, name, **kwargs):
       name = name,
       mastername = 'chromium.chromiumos',
       goma_backend = builders.goma.backend.RBE_PROD,
+      tree_closing = True,
       **kwargs
   )
 

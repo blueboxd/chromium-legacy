@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/paint_controller_paint_test.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/testing/paint_property_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 using testing::ElementsAre;
@@ -214,7 +215,8 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceAndChunksWithoutBackgrounds) {
       container->FirstFragment().LocalBorderBoxProperties();
   auto content_properties = container->FirstFragment().ContentsProperties();
   HitTestData scroll_hit_test;
-  scroll_hit_test.scroll_translation = &content_properties.Transform();
+  scroll_hit_test.scroll_translation =
+      container->FirstFragment().PaintProperties()->ScrollTranslation();
   scroll_hit_test.scroll_hit_test_rect = IntRect(0, 0, 150, 150);
 
   EXPECT_THAT(
@@ -602,7 +604,7 @@ TEST_P(PaintLayerPainterTest, HintedPaintChunksWithBackgrounds) {
 
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     HitTestData scroll_hit_test;
-    scroll_hit_test.scroll_translation = &chunk_state.Transform();
+    scroll_hit_test.scroll_translation = &ToUnaliased(chunk_state.Transform());
     scroll_hit_test.scroll_hit_test_rect = IntRect(0, 0, 800, 600);
     EXPECT_THAT(
         RootPaintController().PaintChunks(),
@@ -700,7 +702,7 @@ TEST_P(PaintLayerPainterTest, HintedPaintChunksWithoutBackgrounds) {
                                    kDocumentBackgroundType)));
 
   HitTestData scroll_hit_test;
-  scroll_hit_test.scroll_translation = &chunk_state.Transform();
+  scroll_hit_test.scroll_translation = &ToUnaliased(chunk_state.Transform());
   scroll_hit_test.scroll_hit_test_rect = IntRect(0, 0, 800, 600);
   EXPECT_THAT(
       RootPaintController().PaintChunks(),

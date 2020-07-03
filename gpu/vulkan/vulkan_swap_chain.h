@@ -101,6 +101,12 @@ class COMPONENT_EXPORT(VULKAN) VulkanSwapChain {
     return use_protected_memory_;
   }
 
+  uint32_t current_image_index() const {
+    base::AutoLock auto_lock(lock_);
+    DCHECK(acquired_image_);
+    return *acquired_image_;
+  }
+
   VkResult state() const {
     base::AutoLock auto_lock(lock_);
     return state_;
@@ -154,9 +160,6 @@ class COMPONENT_EXPORT(VULKAN) VulkanSwapChain {
     VkSemaphore present_begin_semaphore = VK_NULL_HANDLE;
     // Semaphore signaled when present engine is done with the image.
     VkSemaphore present_end_semaphore = VK_NULL_HANDLE;
-    // True indicates the image is acquired from swapchain and haven't sent back
-    // to swapchain for presenting.
-    bool is_acquired = false;
   };
 
   // Images in the swap chain.
@@ -169,14 +172,14 @@ class COMPONENT_EXPORT(VULKAN) VulkanSwapChain {
   // Condition variable is signalled when a PostSubBufferAsync() is finished.
   base::ConditionVariable condition_variable_{&lock_};
 
-  // Count of pending unfinished PostSubBufferAsync() calls.
-  uint32_t pending_post_sub_buffer_ GUARDED_BY(lock_) = 0;
+  // True if there is pending post sub buffer in the fly.
+  bool has_pending_post_sub_buffer_ GUARDED_BY(lock_) = false;
 
   // The current swapchain state_.
   VkResult state_ GUARDED_BY(lock_) = VK_SUCCESS;
 
   // Acquired images queue.
-  base::circular_deque<uint32_t> acquired_images_ GUARDED_BY(lock_);
+  base::Optional<uint32_t> acquired_image_ GUARDED_BY(lock_);
 
   // For executing task on GPU main thread.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

@@ -567,9 +567,9 @@ void PaintLayer::MapPointInPaintInvalidationContainerToBacking(
       paint_invalidation_layer->GroupedMapping()->SquashingLayer(
           *paint_invalidation_layer);
 
-  PropertyTreeState source_state =
+  auto source_state =
       paint_invalidation_container.FirstFragment().LocalBorderBoxProperties();
-  PropertyTreeState dest_state = squashing_layer->GetPropertyTreeState();
+  auto dest_state = squashing_layer->GetPropertyTreeState();
 
   // Move the point into the source_state transform space, map to dest_state
   // transform space, then move into squashing layer state.

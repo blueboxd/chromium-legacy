@@ -175,7 +175,7 @@ TEST_P(PaintControllerPaintTestForCAP, FrameScrollingContents) {
           IsSameId(&div1, kBackgroundType), IsSameId(&div2, kBackgroundType)));
   HitTestData view_scroll_hit_test;
   view_scroll_hit_test.scroll_translation =
-      &GetLayoutView().FirstFragment().ContentsProperties().Transform();
+      GetLayoutView().FirstFragment().PaintProperties()->ScrollTranslation();
   view_scroll_hit_test.scroll_hit_test_rect = IntRect(0, 0, 800, 600);
   EXPECT_THAT(
       RootPaintController().PaintChunks(),
@@ -245,7 +245,7 @@ TEST_P(PaintControllerPaintTestForCAP, BlockScrollingNonLayeredContents) {
           IsSameId(&div1, kBackgroundType), IsSameId(&div2, kBackgroundType)));
   HitTestData container_scroll_hit_test;
   container_scroll_hit_test.scroll_translation =
-      &container.FirstFragment().ContentsProperties().Transform();
+      container.FirstFragment().PaintProperties()->ScrollTranslation();
   container_scroll_hit_test.scroll_hit_test_rect = IntRect(0, 0, 200, 200);
   EXPECT_THAT(
       RootPaintController().PaintChunks(),
@@ -328,11 +328,11 @@ TEST_P(PaintControllerPaintTestForCAP, ScrollHitTestOrder) {
           IsSameId(&child, kBackgroundType)));
   HitTestData view_scroll_hit_test;
   view_scroll_hit_test.scroll_translation =
-      &GetLayoutView().FirstFragment().ContentsProperties().Transform();
+      GetLayoutView().FirstFragment().PaintProperties()->ScrollTranslation();
   view_scroll_hit_test.scroll_hit_test_rect = IntRect(0, 0, 800, 600);
   HitTestData container_scroll_hit_test;
   container_scroll_hit_test.scroll_translation =
-      &container.FirstFragment().ContentsProperties().Transform();
+      container.FirstFragment().PaintProperties()->ScrollTranslation();
   container_scroll_hit_test.scroll_hit_test_rect = IntRect(0, 0, 200, 200);
   EXPECT_THAT(
       RootPaintController().PaintChunks(),
@@ -406,7 +406,7 @@ TEST_P(PaintControllerPaintTestForCAP, NonStackingScrollHitTestOrder) {
           IsSameId(&pos_z_child, kBackgroundType)));
   HitTestData container_scroll_hit_test;
   container_scroll_hit_test.scroll_translation =
-      &container.FirstFragment().ContentsProperties().Transform();
+      container.FirstFragment().PaintProperties()->ScrollTranslation();
   container_scroll_hit_test.scroll_hit_test_rect = IntRect(0, 0, 200, 200);
   EXPECT_THAT(
       RootPaintController().PaintChunks(),
@@ -482,7 +482,7 @@ TEST_P(PaintControllerPaintTestForCAP, StackingScrollHitTestOrder) {
           IsSameId(&pos_z_child, kBackgroundType)));
   HitTestData container_scroll_hit_test;
   container_scroll_hit_test.scroll_translation =
-      &container.FirstFragment().ContentsProperties().Transform();
+      container.FirstFragment().PaintProperties()->ScrollTranslation();
   container_scroll_hit_test.scroll_hit_test_rect = IntRect(0, 0, 200, 200);
   EXPECT_THAT(
       RootPaintController().PaintChunks(),
@@ -552,7 +552,7 @@ TEST_P(PaintControllerPaintTestForCAP,
                           IsSameId(&pos_z_child, kBackgroundType)));
   HitTestData container_scroll_hit_test;
   container_scroll_hit_test.scroll_translation =
-      &container.FirstFragment().ContentsProperties().Transform();
+      container.FirstFragment().PaintProperties()->ScrollTranslation();
   container_scroll_hit_test.scroll_hit_test_rect = IntRect(0, 0, 200, 200);
   EXPECT_THAT(
       RootPaintController().PaintChunks(),

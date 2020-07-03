@@ -8,23 +8,6 @@
 
 namespace blink {
 
-const PropertyTreeState& PropertyTreeState::Uninitialized() {
-  DEFINE_STATIC_REF(const TransformPaintPropertyNode, transform,
-                    TransformPaintPropertyNode::Create(
-                        TransformPaintPropertyNode::Root(), {}));
-  DEFINE_STATIC_REF(
-      const ClipPaintPropertyNode, clip,
-      ClipPaintPropertyNode::Create(
-          ClipPaintPropertyNode::Root(),
-          ClipPaintPropertyNode::State(transform, FloatRoundedRect())));
-  DEFINE_STATIC_REF(const EffectPaintPropertyNode, effect,
-                    EffectPaintPropertyNode::Create(
-                        EffectPaintPropertyNode::Root(), {transform}));
-  DEFINE_STATIC_LOCAL(const PropertyTreeState, uninitialized,
-                      (*transform, *clip, *effect));
-  return uninitialized;
-}
-
 const PropertyTreeState& PropertyTreeState::Root() {
   DEFINE_STATIC_LOCAL(
       const PropertyTreeState, root,
@@ -33,25 +16,25 @@ const PropertyTreeState& PropertyTreeState::Root() {
   return root;
 }
 
-PropertyTreeState PropertyTreeState::Unalias() const {
+PropertyTreeState PropertyTreeStateOrAlias::Unalias() const {
   return PropertyTreeState(Transform().Unalias(), Clip().Unalias(),
                            Effect().Unalias());
 }
 
-String PropertyTreeState::ToString() const {
+String PropertyTreeStateOrAlias::ToString() const {
   return String::Format("t:%p c:%p e:%p", transform_, clip_, effect_);
 }
 
 #if DCHECK_IS_ON()
 
-String PropertyTreeState::ToTreeString() const {
+String PropertyTreeStateOrAlias::ToTreeString() const {
   return "transform:\n" + Transform().ToTreeString() + "\nclip:\n" +
          Clip().ToTreeString() + "\neffect:\n" + Effect().ToTreeString();
 }
 
 #endif
 
-std::unique_ptr<JSONObject> PropertyTreeState::ToJSON() const {
+std::unique_ptr<JSONObject> PropertyTreeStateOrAlias::ToJSON() const {
   std::unique_ptr<JSONObject> result = std::make_unique<JSONObject>();
   result->SetObject("transform", transform_->ToJSON());
   result->SetObject("clip", clip_->ToJSON());
@@ -59,12 +42,8 @@ std::unique_ptr<JSONObject> PropertyTreeState::ToJSON() const {
   return result;
 }
 
-size_t PropertyTreeState::CacheMemoryUsageInBytes() const {
-  return Clip().CacheMemoryUsageInBytes() +
-         Transform().CacheMemoryUsageInBytes();
-}
-
-std::ostream& operator<<(std::ostream& os, const PropertyTreeState& state) {
+std::ostream& operator<<(std::ostream& os,
+                         const PropertyTreeStateOrAlias& state) {
   return os << state.ToString().Utf8();
 }
 

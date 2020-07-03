@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.download.dialogs;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.text.TextUtils;
@@ -53,20 +52,20 @@ public class DownloadLocationDialogCoordinator implements ModalDialogProperties.
 
     /**
      * Shows the download location dialog.
-     * @param activity The activity that provides android {@link Context} to the dialog.
+     * @param context The {@link Context} for the dialog.
      * @param modalDialogManager {@link ModalDialogManager} to control the dialog.
      * @param totalBytes The total download file size. May be 0 if not available.
      * @param dialogType The type of the location dialog.
      * @param suggestedPath The suggested file path used by the location dialog.
      */
-    public void showDialog(Activity activity, ModalDialogManager modalDialogManager,
-            long totalBytes, @DownloadLocationDialogType int dialogType, String suggestedPath) {
-        if (activity == null || modalDialogManager == null) {
+    public void showDialog(Context context, ModalDialogManager modalDialogManager, long totalBytes,
+            @DownloadLocationDialogType int dialogType, String suggestedPath) {
+        if (context == null || modalDialogManager == null) {
             onDismiss(null, DialogDismissalCause.ACTIVITY_DESTROYED);
             return;
         }
 
-        mContext = activity;
+        mContext = context;
         mModalDialogManager = modalDialogManager;
         mTotalBytes = totalBytes;
         mDialogType = dialogType;

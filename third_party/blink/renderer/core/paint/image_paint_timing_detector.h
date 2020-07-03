@@ -21,7 +21,7 @@ namespace blink {
 
 class LayoutObject;
 class LocalFrameView;
-class PropertyTreeState;
+class PropertyTreeStateOrAlias;
 class TracedValue;
 class Image;
 
@@ -238,7 +238,7 @@ class CORE_EXPORT ImagePaintTimingDetector final
   void RecordImage(const LayoutObject&,
                    const IntSize& intrinsic_size,
                    const ImageResourceContent&,
-                   const PropertyTreeState& current_paint_chunk_properties,
+                   const PropertyTreeStateOrAlias& current_paint_properties,
                    const StyleFetchedImage*,
                    const IntRect* image_border);
   void NotifyImageFinished(const LayoutObject&, const ImageResourceContent*);

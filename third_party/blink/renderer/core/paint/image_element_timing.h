@@ -20,7 +20,7 @@
 namespace blink {
 
 class ImageResourceContent;
-class PropertyTreeState;
+class PropertyTreeStateOrAlias;
 class StyleFetchedImage;
 
 // ImageElementTiming is responsible for tracking the paint timings for <img>
@@ -52,12 +52,12 @@ class CORE_EXPORT ImageElementTiming final
   void NotifyImagePainted(
       const LayoutObject*,
       const ImageResourceContent* cached_image,
-      const PropertyTreeState& current_paint_chunk_properties);
+      const PropertyTreeStateOrAlias& current_paint_chunk_properties);
 
   void NotifyBackgroundImagePainted(
       Node*,
       const StyleFetchedImage* background_image,
-      const PropertyTreeState& current_paint_chunk_properties,
+      const PropertyTreeStateOrAlias& current_paint_chunk_properties,
       const IntRect& image_border);
 
   void NotifyImageRemoved(const LayoutObject*,
@@ -72,7 +72,7 @@ class CORE_EXPORT ImageElementTiming final
       Node*,
       const LayoutObject&,
       const ImageResourceContent& cached_image,
-      const PropertyTreeState& current_paint_chunk_properties,
+      const PropertyTreeStateOrAlias& current_paint_chunk_properties,
       base::TimeTicks load_time,
       const IntRect* image_border);
 

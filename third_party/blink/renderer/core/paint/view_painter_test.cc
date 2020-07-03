@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/paint_controller_paint_test.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
+#include "third_party/blink/renderer/platform/testing/paint_property_test_helpers.h"
 
 using testing::ElementsAre;
 
@@ -126,7 +127,7 @@ TEST_P(ViewPainterTest, DocumentBackgroundWithScroll) {
                                      kDocumentBackgroundType)));
     HitTestData scroll_hit_test_data;
     scroll_hit_test_data.scroll_translation =
-        &scrolling_contents_properties.Transform();
+        GetLayoutView().FirstFragment().PaintProperties()->ScrollTranslation();
     scroll_hit_test_data.scroll_hit_test_rect = IntRect(0, 0, 800, 600);
     // The scroll hit test should be before the scrolled contents to ensure the
     // hit test does not prevent the background squashing with the scrolling
@@ -183,7 +184,7 @@ TEST_P(ViewPainterTest, FrameScrollHitTestProperties) {
       GetLayoutView().FirstFragment().ContentsProperties();
   HitTestData scroll_hit_test_data;
   scroll_hit_test_data.scroll_translation =
-      &view_contents_properties.Transform();
+      GetLayoutView().FirstFragment().PaintProperties()->ScrollTranslation();
   scroll_hit_test_data.scroll_hit_test_rect = IntRect(0, 0, 800, 600);
   // The scroll hit test should be before the scrolled contents to ensure the
   // hit test does not prevent the background squashing with the scrolling
@@ -204,19 +205,21 @@ TEST_P(ViewPainterTest, FrameScrollHitTestProperties) {
   // The scroll hit test should not be scrolled and should not be clipped.
   const auto& scroll_hit_test_chunk = RootPaintController().PaintChunks()[0];
   const auto& scroll_hit_test_transform =
-      scroll_hit_test_chunk.properties.Transform();
+      ToUnaliased(scroll_hit_test_chunk.properties.Transform());
   EXPECT_EQ(nullptr, scroll_hit_test_transform.ScrollNode());
-  const auto& scroll_hit_test_clip = scroll_hit_test_chunk.properties.Clip();
+  const auto& scroll_hit_test_clip =
+      ToUnaliased(scroll_hit_test_chunk.properties.Clip());
   EXPECT_EQ(FloatRect(LayoutRect::InfiniteIntRect()),
             scroll_hit_test_clip.UnsnappedClipRect().Rect());
 
   // The scrolled contents should be scrolled and clipped.
   const auto& contents_chunk = RootPaintController().PaintChunks()[1];
-  const auto& contents_transform = contents_chunk.properties.Transform();
+  const auto& contents_transform =
+      ToUnaliased(contents_chunk.properties.Transform());
   const auto* contents_scroll = contents_transform.ScrollNode();
   EXPECT_EQ(IntSize(800, 2000), contents_scroll->ContentsSize());
   EXPECT_EQ(IntRect(0, 0, 800, 600), contents_scroll->ContainerRect());
-  const auto& contents_clip = contents_chunk.properties.Clip();
+  const auto& contents_clip = ToUnaliased(contents_chunk.properties.Clip());
   EXPECT_EQ(FloatRect(0, 0, 800, 600),
             contents_clip.UnsnappedClipRect().Rect());
 
@@ -268,7 +271,8 @@ TEST_P(ViewPainterTouchActionRectTest, TouchActionRectScrollingContents) {
     non_scrolling_hit_test_data.touch_action_rects = {
         {IntRect(0, 0, 800, 600)}};
     HitTestData scroll_hit_test_data;
-    scroll_hit_test_data.scroll_translation = &scrolling_properties.Transform();
+    scroll_hit_test_data.scroll_translation =
+        GetLayoutView().FirstFragment().PaintProperties()->ScrollTranslation();
     scroll_hit_test_data.scroll_hit_test_rect = IntRect(0, 0, 800, 600);
     EXPECT_THAT(
         RootPaintController().PaintChunks(),
@@ -329,7 +333,8 @@ TEST_P(ViewPainterTouchActionRectTest, TouchActionRectNonScrollingContents) {
                                                 {IntRect(0, 0, 800, 3000)}};
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     HitTestData scroll_hit_test_data;
-    scroll_hit_test_data.scroll_translation = &scrolling_properties.Transform();
+    scroll_hit_test_data.scroll_translation =
+        GetLayoutView().FirstFragment().PaintProperties()->ScrollTranslation();
     scroll_hit_test_data.scroll_hit_test_rect = IntRect(0, 0, 800, 600);
     EXPECT_THAT(
         RootPaintController().PaintChunks(),

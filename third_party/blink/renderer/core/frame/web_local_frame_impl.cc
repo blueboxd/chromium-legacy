@@ -422,7 +422,7 @@ class ChromePrintContext : public PrintContext {
 
     auto* frame_view = GetFrame()->View();
     DCHECK(frame_view);
-    PropertyTreeState property_tree_state =
+    auto property_tree_state =
         frame_view->GetLayoutView()->FirstFragment().LocalBorderBoxProperties();
 
     PaintRecordBuilder builder(context.Canvas()->GetPrintingMetafile(),
@@ -443,7 +443,7 @@ class ChromePrintContext : public PrintContext {
       OutputLinkedDestinations(builder.Context(), page_rect);
     }
 
-    context.DrawRecord(builder.EndRecording(property_tree_state));
+    context.DrawRecord(builder.EndRecording(property_tree_state.Unalias()));
     context.Restore();
 
     return scale;
@@ -552,7 +552,7 @@ class PaintPreviewContext : public PrintContext {
 
     LocalFrameView* frame_view = GetFrame()->View();
     DCHECK(frame_view);
-    PropertyTreeState property_tree_state =
+    auto property_tree_state =
         frame_view->GetLayoutView()->FirstFragment().ContentsProperties();
 
     // This calls BeginRecording on |builder| with dimensions specified by the
@@ -572,7 +572,7 @@ class PaintPreviewContext : public PrintContext {
           DisplayItem::kPrintedContentDestinationLocations);
       OutputLinkedDestinations(builder.Context(), RoundedIntRect(bounds));
     }
-    canvas->drawPicture(builder.EndRecording(property_tree_state));
+    canvas->drawPicture(builder.EndRecording(property_tree_state.Unalias()));
     return true;
   }
 

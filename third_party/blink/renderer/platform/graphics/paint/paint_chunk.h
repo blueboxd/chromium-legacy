@@ -31,7 +31,7 @@ struct PLATFORM_EXPORT PaintChunk {
   PaintChunk(wtf_size_t begin,
              wtf_size_t end,
              const Id& id,
-             const PropertyTreeState& props)
+             const PropertyTreeStateOrAlias& props)
       : begin_index(begin),
         end_index(end),
         id(id),

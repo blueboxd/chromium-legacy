@@ -216,7 +216,7 @@ void ImagePaintTimingDetector::RecordImage(
     const LayoutObject& object,
     const IntSize& intrinsic_size,
     const ImageResourceContent& cached_image,
-    const PropertyTreeState& current_paint_chunk_properties,
+    const PropertyTreeStateOrAlias& current_paint_chunk_properties,
     const StyleFetchedImage* style_image,
     const IntRect* image_border) {
   Node* node = object.GetNode();

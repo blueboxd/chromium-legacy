@@ -53,7 +53,7 @@ ServiceWorkerInstalledScriptLoader::~ServiceWorkerInstalledScriptLoader() =
 
 void ServiceWorkerInstalledScriptLoader::OnStarted(
     network::mojom::URLResponseHeadPtr response_head,
-    scoped_refptr<net::IOBufferWithSize> metadata,
+    base::Optional<mojo_base::BigBuffer> metadata,
     mojo::ScopedDataPipeConsumerHandle body_handle,
     mojo::ScopedDataPipeConsumerHandle metadata_handle) {
   DCHECK(response_head);
@@ -77,9 +77,7 @@ void ServiceWorkerInstalledScriptLoader::OnStarted(
 
   client_->OnReceiveResponse(std::move(response_head));
   if (metadata) {
-    mojo_base::BigBuffer metadata_buffer(
-        base::as_bytes(base::make_span(metadata->data(), metadata->size())));
-    client_->OnReceiveCachedMetadata(std::move(metadata_buffer));
+    client_->OnReceiveCachedMetadata(std::move(*metadata));
   }
   client_->OnStartLoadingResponseBody(std::move(body_handle_));
   // We continue in OnFinished().

@@ -293,9 +293,10 @@ void PaintInvalidator::UpdateVisualRect(const LayoutObject& object,
 
   object.GetFrameView()->GetLayoutShiftTracker().NotifyObjectPrePaint(
       object,
-      PropertyTreeState(*context.tree_builder_context_->current.transform,
-                        *context.tree_builder_context_->current.clip,
-                        *context.tree_builder_context_->current_effect),
+      PropertyTreeStateOrAlias(
+          *context.tree_builder_context_->current.transform,
+          *context.tree_builder_context_->current.clip,
+          *context.tree_builder_context_->current_effect),
       context.old_visual_rect, fragment_data.VisualRect(),
       // Don't report a diff for a LayoutView. Any paint offset translation
       // it has was inherited from the parent frame, and movements of a

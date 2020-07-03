@@ -155,7 +155,9 @@ NGMathScriptsLayoutAlgorithm::GetVerticalMetrics(
   }
   LayoutUnit shift_up = parameters.superscript_shift_up;
   if (type == MathScriptType::kSuper || type == MathScriptType::kSubSup) {
-    // TODO(rbuis): test cramped for super/subSup.
+    if (Style().MathSuperscriptShiftStyle() ==
+        EMathSuperscriptShiftStyle::kInline)
+      shift_up = parameters.superscript_shift_up_cramped;
     metrics.sup_shift =
         std::max(shift_up, base_metrics.ascent -
                                parameters.superscript_baseline_drop_max);

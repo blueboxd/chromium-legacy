@@ -181,12 +181,6 @@ bool PartitionAllocHooks::ReallocOverrideHookIfEnabled(size_t* out,
 void PartitionAllocGlobalInit(OomFunction on_out_of_memory) {
   PA_DCHECK(on_out_of_memory);
   internal::g_oom_handling_function = on_out_of_memory;
-
-#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
-  // Reserve address space for partition alloc.
-  if (IsPartitionAllocGigaCageEnabled())
-    internal::PartitionAddressSpace::Init();
-#endif
 }
 
 void PartitionAllocGlobalUninitForTesting() {
@@ -203,6 +197,12 @@ void PartitionRoot<thread_safe>::InitSlowPath() {
 
   if (initialized.load(std::memory_order_relaxed))
     return;
+
+#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
+  // Reserve address space for partition alloc.
+  if (IsPartitionAllocGigaCageEnabled())
+    internal::PartitionAddressSpace::Init();
+#endif
 
   // We mark the sentinel bucket/page as free to make sure it is skipped by our
   // logic to find a new active page.

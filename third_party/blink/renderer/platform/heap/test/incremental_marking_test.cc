@@ -933,6 +933,28 @@ TEST_F(IncrementalMarkingTest, HeapLinkedHashSetSwap) {
   Swap<HeapLinkedHashSet<WeakMember<Object>>>();
 }
 
+// =============================================================================
+// HeapNewLinkedHashSet support. ===============================================
+// =============================================================================
+
+TEST_F(IncrementalMarkingTest, HeapNewLinkedHashSetInsert) {
+  Insert<HeapNewLinkedHashSet<Member<Object>>>();
+  // Weak references are strongified for the current cycle.
+  Insert<HeapNewLinkedHashSet<WeakMember<Object>>>();
+}
+
+TEST_F(IncrementalMarkingTest, HeapNewLinkedHashSetCopy) {
+  Copy<HeapNewLinkedHashSet<Member<Object>>>();
+  // Weak references are strongified for the current cycle.
+  Copy<HeapNewLinkedHashSet<WeakMember<Object>>>();
+}
+
+TEST_F(IncrementalMarkingTest, HeapNewLinkedHashSetMove) {
+  Move<HeapNewLinkedHashSet<Member<Object>>>();
+  // Weak references are strongified for the current cycle.
+  Move<HeapNewLinkedHashSet<WeakMember<Object>>>();
+}
+
 TEST_F(IncrementalMarkingTest, HeapNewLinkedHashSetSwap) {
   Swap<HeapNewLinkedHashSet<Member<Object>>>();
   // Weak references are strongified for the current cycle.

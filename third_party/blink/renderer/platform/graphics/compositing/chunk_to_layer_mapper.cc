@@ -13,7 +13,7 @@ ChunkToLayerMapper::ChunkToLayerMapper(
     const PropertyTreeState& layer_state,
     const gfx::Vector2dF& layer_offset,
     const FloatSize& visual_rect_subpixel_offset)
-    : layer_state_(layer_state.Unalias()),
+    : layer_state_(layer_state),
       layer_offset_(layer_offset),
       visual_rect_subpixel_offset_(visual_rect_subpixel_offset),
       chunk_state_(layer_state_),
@@ -49,7 +49,7 @@ void ChunkToLayerMapper::SwitchToChunk(const PaintChunk& chunk) {
     new_has_filter_that_moves_pixels = false;
     for (const auto* effect = &new_chunk_state.Effect();
          effect && effect != &layer_state_.Effect();
-         effect = SafeUnalias(effect->Parent())) {
+         effect = effect->UnaliasedParent()) {
       if (effect->HasFilterThatMovesPixels()) {
         new_has_filter_that_moves_pixels = true;
         break;

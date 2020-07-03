@@ -29,7 +29,7 @@ constexpr char kCrostiniRecoverySourceHistogram[] = "Crostini.RecoverySource";
 
 }  // namespace
 
-bool crostini::ShowCrostiniRecoveryView(
+void crostini::ShowCrostiniRecoveryView(
     Profile* profile,
     crostini::CrostiniUISurface ui_surface,
     const std::string& app_id,
@@ -43,7 +43,6 @@ bool crostini::ShowCrostiniRecoveryView(
     base::UmaHistogramEnumeration(kCrostiniRecoverySourceHistogram, ui_surface,
                                   crostini::CrostiniUISurface::kCount);
   }
-  return allow_app_launch;
 }
 
 bool CrostiniRecoveryView::Show(Profile* profile,
@@ -52,10 +51,10 @@ bool CrostiniRecoveryView::Show(Profile* profile,
                                 crostini::LaunchCrostiniAppCallback callback) {
   DCHECK(crostini::CrostiniFeatures::Get()->IsUIAllowed(profile));
   if (!g_crostini_recovery_view) {
-    g_crostini_recovery_view = new CrostiniRecoveryView(
-        profile, app_id, display_id, std::move(callback));
+    g_crostini_recovery_view = new CrostiniRecoveryView(profile);
     CreateDialogWidget(g_crostini_recovery_view, nullptr, nullptr);
   }
+  g_crostini_recovery_view->Reset(app_id, display_id, std::move(callback));
   g_crostini_recovery_view->GetWidget()->Show();
   return g_crostini_recovery_view->can_launch_apps_;
 }
@@ -80,41 +79,48 @@ bool CrostiniRecoveryView::Accept() {
   }
   crostini::CrostiniManager::GetForProfile(profile_)->StopVm(
       crostini::kCrostiniDefaultVmName,
-      base::BindOnce(
-          [](base::WeakPtr<CrostiniRecoveryView> weak_this,
-             crostini::CrostiniResult result) {
-            if (weak_this) {
-              weak_this->ScheduleAppLaunch();
-            }
-          },
-          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&CrostiniRecoveryView::ScheduleAppLaunch,
+                     weak_ptr_factory_.GetWeakPtr(), app_id_, display_id_,
+                     std::move(callback_)));
   DialogModelChanged();
   return false;
 }
 
-void CrostiniRecoveryView::ScheduleAppLaunch() {
-  VLOG(1) << "Scheduling app launch " << app_id_;
+void CrostiniRecoveryView::ScheduleAppLaunch(
+    const std::string app_id,
+    int64_t display_id,
+    crostini::LaunchCrostiniAppCallback callback,
+    crostini::CrostiniResult result) {
+  VLOG(1) << "Scheduling app launch " << app_id;
+  if (result != crostini::CrostiniResult::SUCCESS) {
+    LOG(ERROR) << "Error stopping VM for recovery: " << (int)result;
+  }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&CrostiniRecoveryView::CompleteAppLaunch,
-                                weak_ptr_factory_.GetWeakPtr()));
+                                weak_ptr_factory_.GetWeakPtr(), app_id,
+                                display_id, std::move(callback)));
 }
 
-void CrostiniRecoveryView::CompleteAppLaunch() {
+void CrostiniRecoveryView::CompleteAppLaunch(
+    const std::string app_id,
+    int64_t display_id,
+    crostini::LaunchCrostiniAppCallback callback) {
   can_launch_apps_ = true;
-  if (!app_id_.empty()) {
-    crostini::LaunchCrostiniApp(profile_, app_id_, display_id_, {},
-                                std::move(callback_));
-  }
+  crostini::LaunchCrostiniApp(profile_, app_id, display_id, {},
+                              std::move(callback));
   GetWidget()->CloseWithReason(closed_reason_);
 }
 
 bool CrostiniRecoveryView::Cancel() {
   closed_reason_ = views::Widget::ClosedReason::kCancelButtonClicked;
+  if (callback_) {
+    std::move(callback_).Run(false, "cancelled for recovery");
+  }
   if (can_launch_apps_) {
     return true;
   }
-  app_id_ = crostini::GetTerminalId();
-  ScheduleAppLaunch();
+  ScheduleAppLaunch(crostini::kCrostiniTerminalSystemAppId, display_id_,
+                    base::DoNothing(), crostini::CrostiniResult::SUCCESS);
   DialogModelChanged();
   return false;
 }
@@ -124,16 +130,8 @@ CrostiniRecoveryView* CrostiniRecoveryView::GetActiveViewForTesting() {
   return g_crostini_recovery_view;
 }
 
-CrostiniRecoveryView::CrostiniRecoveryView(
-    Profile* profile,
-    const std::string& app_id,
-    int64_t display_id,
-    crostini::LaunchCrostiniAppCallback callback)
-    : profile_(profile),
-      app_id_(app_id),
-      display_id_(display_id),
-      callback_(std::move(callback)),
-      weak_ptr_factory_(this) {
+CrostiniRecoveryView::CrostiniRecoveryView(Profile* profile)
+    : profile_(profile), weak_ptr_factory_(this) {
   SetButtons(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL);
   SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
@@ -158,6 +156,14 @@ CrostiniRecoveryView::CrostiniRecoveryView(
   AddChildView(message_label);
 
   chrome::RecordDialogCreation(chrome::DialogIdentifier::CROSTINI_RECOVERY);
+}
+
+void CrostiniRecoveryView::Reset(const std::string app_id,
+                                 int64_t display_id,
+                                 crostini::LaunchCrostiniAppCallback callback) {
+  app_id_ = app_id;
+  display_id_ = display_id;
+  callback_ = std::move(callback);
 }
 
 CrostiniRecoveryView::~CrostiniRecoveryView() {

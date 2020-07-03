@@ -30,7 +30,9 @@ pool_handle PartitionAddressSpace::direct_map_pool_ = 0;
 pool_handle PartitionAddressSpace::normal_bucket_pool_ = 0;
 
 void PartitionAddressSpace::Init() {
-  PA_DCHECK(kReservedAddressSpaceOffsetMask == reserved_base_address_);
+  if (IsInitialized())
+    return;
+
   reserved_base_address_ = reinterpret_cast<uintptr_t>(AllocPages(
       nullptr, kDesiredAddressSpaceSize, kReservedAddressSpaceAlignment,
       base::PageInaccessible, PageTag::kPartitionAlloc, false));

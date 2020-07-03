@@ -4,8 +4,17 @@
 
 package org.chromium.chrome.browser.download.dialogs;
 
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import androidx.test.filters.MediumTest;
 
@@ -18,17 +27,19 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.download.DownloadLaterPromptStatus;
 import org.chromium.chrome.browser.download.R;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.preferences.Pref;
+import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.components.browser_ui.widget.RadioButtonWithDescription;
+import org.chromium.components.prefs.PrefService;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
-import org.chromium.ui.modaldialog.ModalDialogProperties.ButtonType;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
@@ -37,14 +48,23 @@ import org.chromium.ui.modelutil.PropertyModel;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class DownloadLaterDialogTest {
+    private static final long INVALID_START_TIME = -1;
+
     @Rule
-    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
+            new ChromeActivityTestRule<>(ChromeActivity.class);
 
     private DownloadLaterDialogCoordinator mDialogCoordinator;
     private PropertyModel mModel;
 
     @Mock
     private DownloadLaterDialogController mController;
+
+    @Mock
+    DownloadDateTimePickerDialogCoordinator mDateTimePicker;
+
+    @Mock
+    PrefService mPrefService;
 
     private ModalDialogManager getModalDialogManager() {
         return mActivityTestRule.getActivity().getModalDialogManager();
@@ -58,62 +78,51 @@ public class DownloadLaterDialogTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        when(mPrefService.getInteger(Pref.DOWNLOAD_LATER_PROMPT_STATUS))
+                .thenReturn(DownloadLaterPromptStatus.SHOW_INITIAL);
+
         mActivityTestRule.startMainActivityOnBlankPage();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mModel = new PropertyModel.Builder(DownloadLaterDialogProperties.ALL_KEYS)
-                             .with(DownloadLaterDialogProperties.CONTROLLER, mDialogCoordinator)
-                             .with(DownloadLaterDialogProperties.DOWNLOAD_TIME_INITIAL_SELECTION,
-                                     DownloadLaterDialogChoice.ON_WIFI)
-                             .with(DownloadLaterDialogProperties.DONT_SHOW_AGAIN_SELECTION,
-                                     DownloadLaterPromptStatus.SHOW_INITIAL)
-                             .build();
-            mDialogCoordinator = new DownloadLaterDialogCoordinator();
-            Assert.assertNotNull(mController);
-            mDialogCoordinator.initialize(mController);
-        });
+
+        mDialogCoordinator = new DownloadLaterDialogCoordinator(mDateTimePicker);
+        mModel = new PropertyModel.Builder(DownloadLaterDialogProperties.ALL_KEYS)
+                         .with(DownloadLaterDialogProperties.CONTROLLER, mDialogCoordinator)
+                         .with(DownloadLaterDialogProperties.DOWNLOAD_TIME_INITIAL_SELECTION,
+                                 DownloadLaterDialogChoice.ON_WIFI)
+                         .with(DownloadLaterDialogProperties.DONT_SHOW_AGAIN_SELECTION,
+                                 DownloadLaterPromptStatus.SHOW_INITIAL)
+                         .build();
+        Assert.assertNotNull(mController);
+        mDialogCoordinator.initialize(mController);
     }
 
     private void showDialog() {
         mDialogCoordinator.showDialog(
-                mActivityTestRule.getActivity(), getModalDialogManager(), mModel);
+                mActivityTestRule.getActivity(), getModalDialogManager(), mPrefService, mModel);
     }
 
     private void clickPositiveButton() {
-        PropertyModel modalDialogModel = getModalDialogManager().getCurrentDialogForTest();
-        modalDialogModel.get(ModalDialogProperties.CONTROLLER)
-                .onClick(modalDialogModel, ButtonType.POSITIVE);
+        onView(withId(org.chromium.chrome.R.id.positive_button)).perform(click());
+    }
+
+    private void clickNegativeButton() {
+        onView(withId(org.chromium.chrome.R.id.negative_button)).perform(click());
     }
 
     @Test
     @MediumTest
+    @DisabledTest(message = "Crash on Android P bots without crashlog crbug.com/1101413")
     public void testShowDialogThenDismiss() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             showDialog();
-            Assert.assertTrue(mActivityTestRule.getActivity().getModalDialogManager().isShowing());
-            mDialogCoordinator.dismissDialog(DialogDismissalCause.UNKNOWN);
-            Assert.assertFalse(getModalDialogManager().isShowing());
-            verify(mController).onDownloadLaterDialogCanceled();
         });
+
+        clickNegativeButton();
+        verify(mController).onDownloadLaterDialogCanceled();
     }
 
     @Test
     @MediumTest
-    public void testShowDialogThenDestroy() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            showDialog();
-            Assert.assertTrue(getModalDialogManager().isShowing());
-            mDialogCoordinator.destroy();
-        });
-    }
-
-    @Test
-    @MediumTest
-    public void testDestroyWithoutShowDialog() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> { mDialogCoordinator.destroy(); });
-    }
-
-    @Test
-    @MediumTest
+    @DisabledTest(message = "Crash on Android P bots without crashlog crbug.com/1101413")
     public void testSelectRadioButton() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             showDialog();
@@ -132,10 +141,29 @@ public class DownloadLaterDialogTest {
             Assert.assertNotNull(downloadNowButton);
             downloadNowButton.setChecked(true);
             getDownloadLaterDialogView().onCheckedChanged(null, -1);
-            clickPositiveButton();
-            verify(mController)
-                    .onDownloadLaterDialogComplete(eq(DownloadLaterDialogChoice.DOWNLOAD_NOW),
-                            eq(DownloadLaterPromptStatus.DONT_SHOW));
         });
+
+        clickPositiveButton();
+        verify(mController)
+                .onDownloadLaterDialogComplete(
+                        eq(DownloadLaterDialogChoice.DOWNLOAD_NOW), eq(INVALID_START_TIME));
+    }
+
+    @Test
+    @MediumTest
+    public void testSelectDownloadLater() {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            showDialog();
+
+            RadioButtonWithDescription downloadLaterButton =
+                    getDownloadLaterDialogView().findViewById(R.id.choose_date_time);
+            Assert.assertNotNull(downloadLaterButton);
+            downloadLaterButton.setChecked(true);
+            getDownloadLaterDialogView().onCheckedChanged(null, -1);
+        });
+
+        clickPositiveButton();
+        verify(mController, times(0)).onDownloadLaterDialogComplete(anyInt(), anyLong());
+        verify(mDateTimePicker).showDialog(any(), any(), any());
     }
 }

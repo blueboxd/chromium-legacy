@@ -43,6 +43,16 @@ class BASE_EXPORT PartitionAddressSpace {
   static void Init();
   static void UninitForTesting();
 
+  static ALWAYS_INLINE bool IsInitialized() {
+    if (kReservedAddressSpaceOffsetMask != reserved_base_address_) {
+      PA_DCHECK(direct_map_pool_ != 0);
+      PA_DCHECK(normal_bucket_pool_ != 0);
+      return true;
+    }
+
+    return false;
+  }
+
   static ALWAYS_INLINE bool Contains(const void* address) {
     return (reinterpret_cast<uintptr_t>(address) &
             kReservedAddressSpaceBaseMask) == reserved_base_address_;

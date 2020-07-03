@@ -24,7 +24,7 @@
 
 namespace caspian {
 
-enum class ContainerType : char {
+enum class ArtifactType : char {
   kSymbol = '\0',
   kDirectory = 'D',
   kComponent = 'C',
@@ -251,7 +251,7 @@ struct BaseSizeInfo {
   virtual ~BaseSizeInfo();
   virtual bool IsSparse() const = 0;
 
-  Json::Value metadata;
+  Json::Value fields;
   std::deque<std::string> owned_strings;
   SectionId ShortSectionName(const char* section_name);
 };
@@ -352,7 +352,7 @@ struct TreeNode {
   int32_t flags = 0;
   int32_t short_name_index = 0;
 
-  ContainerType container_type = ContainerType::kSymbol;
+  ArtifactType artifact_type = ArtifactType::kSymbol;
 
   std::vector<TreeNode*> children;
   TreeNode* parent = nullptr;

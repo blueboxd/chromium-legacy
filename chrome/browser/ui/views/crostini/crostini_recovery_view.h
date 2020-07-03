@@ -32,14 +32,19 @@ class CrostiniRecoveryView : public views::BubbleDialogDelegateView {
   static CrostiniRecoveryView* GetActiveViewForTesting();
 
  private:
-  CrostiniRecoveryView(Profile* profile,
-                       const std::string& app_id,
-                       int64_t display_id,
-                       crostini::LaunchCrostiniAppCallback callback);
+  explicit CrostiniRecoveryView(Profile* profile);
   ~CrostiniRecoveryView() override;
 
-  void ScheduleAppLaunch();
-  void CompleteAppLaunch();
+  void Reset(const std::string app_id,
+             int64_t display_id,
+             crostini::LaunchCrostiniAppCallback callback);
+  void ScheduleAppLaunch(const std::string app_id,
+                         int64_t display_id,
+                         crostini::LaunchCrostiniAppCallback callback,
+                         crostini::CrostiniResult result);
+  void CompleteAppLaunch(const std::string app_id,
+                         int64_t display_id,
+                         crostini::LaunchCrostiniAppCallback callback);
 
   Profile* profile_;  // Not owned.
   std::string app_id_;

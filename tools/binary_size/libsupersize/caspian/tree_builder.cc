@@ -46,7 +46,7 @@ void TreeBuilder::Build(std::unique_ptr<BaseLens> lens,
   sep_ = separator;
 
   // Initialize tree root.
-  root_.container_type = ContainerType::kDirectory;
+  root_.artifact_type = ArtifactType::kDirectory;
   root_.id_path = GroupedPath{"", ""};
   _parents[root_.id_path] = &root_;
 
@@ -158,7 +158,7 @@ void TreeBuilder::AddFileEntry(GroupedPath grouped_path,
       continue;
     }
     TreeNode* symbol_node = new TreeNode();
-    symbol_node->container_type = ContainerType::kSymbol;
+    symbol_node->artifact_type = ArtifactType::kSymbol;
     symbol_node->id_path =
         GroupedPath{"", sym->IsDex() ? sym->TemplateName() : sym->FullName()};
     symbol_node->size = sym->Pss();
@@ -174,7 +174,7 @@ void TreeBuilder::AddFileEntry(GroupedPath grouped_path,
   TreeNode* file_node = _parents[grouped_path];
   if (file_node == nullptr || grouped_path.path.empty()) {
     file_node = new TreeNode();
-    file_node->container_type = ContainerType::kFile;
+    file_node->artifact_type = ArtifactType::kFile;
 
     file_node->id_path = grouped_path;
     if (file_node->id_path.path.empty()) {
@@ -208,7 +208,7 @@ TreeNode* TreeBuilder::GetOrMakeParentNode(TreeNode* child_node) {
     parent->id_path = parent_path;
     parent->short_name_index =
         parent->id_path.size() - parent->id_path.ShortName(sep_).size();
-    parent->container_type = ContainerTypeFromChild(child_node->id_path);
+    parent->artifact_type = ArtifactTypeFromChild(child_node->id_path);
   }
   if (child_node->parent != parent) {
     AttachToParent(child_node, parent);
@@ -237,14 +237,13 @@ void TreeBuilder::AttachToParent(TreeNode* child, TreeNode* parent) {
   }
 }
 
-ContainerType TreeBuilder::ContainerTypeFromChild(
-    GroupedPath child_path) const {
+ArtifactType TreeBuilder::ArtifactTypeFromChild(GroupedPath child_path) const {
   // When grouping by component, id paths use '>' separators for components and
   // '/' separators for the file tree - e.g. Blink>third_party/blink/common...
   // We know that Blink is a component because its children have the form
   // Blink>third_party rather than Blink/third_party.
-  return child_path.IsTopLevelPath() ? ContainerType::kComponent
-                                     : ContainerType::kDirectory;
+  return child_path.IsTopLevelPath() ? ArtifactType::kComponent
+                                     : ArtifactType::kDirectory;
 }
 
 bool TreeBuilder::ShouldIncludeSymbol(const GroupedPath& id_path,
@@ -258,7 +257,7 @@ bool TreeBuilder::ShouldIncludeSymbol(const GroupedPath& id_path,
 }
 
 void TreeBuilder::JoinDexMethodClasses(TreeNode* node) {
-  const bool is_file_node = node->container_type == ContainerType::kFile;
+  const bool is_file_node = node->artifact_type == ArtifactType::kFile;
   const bool has_dex =
       node->node_stats.child_stats.count(SectionId::kDex) ||
       node->node_stats.child_stats.count(SectionId::kDexMethod);
@@ -312,7 +311,7 @@ void TreeBuilder::JoinDexMethodClasses(TreeNode* node) {
             short_name_index + node->id_path.size() + 1;
         class_node->src_path = node->src_path;
         class_node->component = node->component;
-        class_node->container_type = ContainerType::kJavaClass;
+        class_node->artifact_type = ArtifactType::kJavaClass;
         _parents[class_node->id_path] = class_node;
       }
 

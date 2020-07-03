@@ -167,8 +167,8 @@ class PaintArtifactCompositorTest : public testing::Test,
   void CreateScrollableChunk(
       TestPaintArtifact& artifact,
       const TransformPaintPropertyNode& scroll_translation,
-      const ClipPaintPropertyNode& clip,
-      const EffectPaintPropertyNode& effect) {
+      const ClipPaintPropertyNodeOrAlias& clip,
+      const EffectPaintPropertyNodeOrAlias& effect) {
     if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
       artifact.Chunk(*scroll_translation.Parent(), clip, effect)
           .ScrollHitTest(&scroll_translation);
@@ -357,7 +357,7 @@ TEST_P(PaintArtifactCompositorTest, OneTransformWithAlias) {
   auto real_transform = CreateTransform(t0(), TransformationMatrix().Rotate(90),
                                         FloatPoint3D(100, 100, 0),
                                         CompositingReason::k3DTransform);
-  auto transform = TransformPaintPropertyNode::CreateAlias(*real_transform);
+  auto transform = TransformPaintPropertyNodeAlias::Create(*real_transform);
 
   TestPaintArtifact artifact;
   artifact.Chunk(*transform, c0(), e0())
@@ -532,17 +532,17 @@ TEST_P(PaintArtifactCompositorTest, FlattensInheritedTransformWithAlias) {
     // flattening determines whether content within the node's local transform
     // is flattened, while cc's notion applies in the parent's coordinate space.
     auto real_transform1 = CreateTransform(t0(), TransformationMatrix());
-    auto transform1 = TransformPaintPropertyNode::CreateAlias(*real_transform1);
+    auto transform1 = TransformPaintPropertyNodeAlias::Create(*real_transform1);
     auto real_transform2 =
         CreateTransform(*transform1, TransformationMatrix().Rotate3d(0, 45, 0));
-    auto transform2 = TransformPaintPropertyNode::CreateAlias(*real_transform2);
+    auto transform2 = TransformPaintPropertyNodeAlias::Create(*real_transform2);
     TransformPaintPropertyNode::State transform3_state{
         TransformationMatrix().Rotate3d(0, 45, 0)};
     transform3_state.flags.flattens_inherited_transform =
         transform_is_flattened;
     auto real_transform3 = TransformPaintPropertyNode::Create(
         *transform2, std::move(transform3_state));
-    auto transform3 = TransformPaintPropertyNode::CreateAlias(*real_transform3);
+    auto transform3 = TransformPaintPropertyNodeAlias::Create(*real_transform3);
 
     TestPaintArtifact artifact;
     artifact.Chunk(*transform3, c0(), e0())
@@ -679,7 +679,7 @@ TEST_P(PaintArtifactCompositorTest, OneClip) {
 
 TEST_P(PaintArtifactCompositorTest, OneClipWithAlias) {
   auto real_clip = CreateClip(c0(), t0(), FloatRoundedRect(100, 100, 300, 200));
-  auto clip = ClipPaintPropertyNode::CreateAlias(*real_clip);
+  auto clip = ClipPaintPropertyNodeAlias::Create(*real_clip);
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), *clip, e0())
@@ -773,13 +773,13 @@ TEST_P(PaintArtifactCompositorTest, NestedClipsWithAlias) {
                       CompositingReason::kWillChangeTransform);
   auto real_clip1 =
       CreateClip(c0(), *transform1, FloatRoundedRect(100, 100, 700, 700));
-  auto clip1 = ClipPaintPropertyNode::CreateAlias(*real_clip1);
+  auto clip1 = ClipPaintPropertyNodeAlias::Create(*real_clip1);
   auto transform2 =
       CreateTransform(*transform1, TransformationMatrix(), FloatPoint3D(),
                       CompositingReason::kWillChangeTransform);
   auto real_clip2 =
       CreateClip(*clip1, *transform2, FloatRoundedRect(200, 200, 700, 700));
-  auto clip2 = ClipPaintPropertyNode::CreateAlias(*real_clip2);
+  auto clip2 = ClipPaintPropertyNodeAlias::Create(*real_clip2);
 
   TestPaintArtifact artifact;
   artifact.Chunk(*transform1, *clip1, e0())
@@ -869,13 +869,13 @@ TEST_P(PaintArtifactCompositorTest, DeeplyNestedClips) {
 TEST_P(PaintArtifactCompositorTest, SiblingClipsWithAlias) {
   auto real_common_clip =
       CreateClip(c0(), t0(), FloatRoundedRect(0, 0, 800, 600));
-  auto common_clip = ClipPaintPropertyNode::CreateAlias(*real_common_clip);
+  auto common_clip = ClipPaintPropertyNodeAlias::Create(*real_common_clip);
   auto real_clip1 =
       CreateClip(*common_clip, t0(), FloatRoundedRect(0, 0, 300, 200));
-  auto clip1 = ClipPaintPropertyNode::CreateAlias(*real_clip1);
+  auto clip1 = ClipPaintPropertyNodeAlias::Create(*real_clip1);
   auto real_clip2 =
       CreateClip(*common_clip, t0(), FloatRoundedRect(400, 0, 400, 600));
-  auto clip2 = ClipPaintPropertyNode::CreateAlias(*real_clip2);
+  auto clip2 = ClipPaintPropertyNodeAlias::Create(*real_clip2);
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), *clip1, e0())
@@ -924,13 +924,13 @@ TEST_P(PaintArtifactCompositorTest, SiblingTransformsWithAlias) {
   auto real_common_transform =
       CreateTransform(t0(), TransformationMatrix().Translate(5, 6));
   auto common_transform =
-      TransformPaintPropertyNode::CreateAlias(*real_common_transform);
+      TransformPaintPropertyNodeAlias::Create(*real_common_transform);
   auto real_transform1 =
       CreateTransform(*common_transform, TransformationMatrix().Scale(2));
-  auto transform1 = TransformPaintPropertyNode::CreateAlias(*real_transform1);
+  auto transform1 = TransformPaintPropertyNodeAlias::Create(*real_transform1);
   auto real_transform2 =
       CreateTransform(*common_transform, TransformationMatrix().Scale(0.5));
-  auto transform2 = TransformPaintPropertyNode::CreateAlias(*real_transform2);
+  auto transform2 = TransformPaintPropertyNodeAlias::Create(*real_transform2);
 
   TestPaintArtifact artifact;
   artifact.Chunk(*transform1, c0(), e0())
@@ -997,12 +997,12 @@ TEST_P(PaintArtifactCompositorTest, EffectTreeConversionWithAlias) {
 
   auto real_effect1 =
       CreateOpacityEffect(e0(), t0(), &c0(), 0.5, CompositingReason::kAll);
-  auto effect1 = EffectPaintPropertyNode::CreateAlias(*real_effect1);
+  auto effect1 = EffectPaintPropertyNodeAlias::Create(*real_effect1);
   auto real_effect2 =
       CreateOpacityEffect(*effect1, 0.3, CompositingReason::kAll);
-  auto effect2 = EffectPaintPropertyNode::CreateAlias(*real_effect2);
+  auto effect2 = EffectPaintPropertyNodeAlias::Create(*real_effect2);
   auto real_effect3 = CreateOpacityEffect(e0(), 0.2, CompositingReason::kAll);
-  auto effect3 = EffectPaintPropertyNode::CreateAlias(*real_effect3);
+  auto effect3 = EffectPaintPropertyNodeAlias::Create(*real_effect3);
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), c0(), *effect2)
@@ -1604,7 +1604,7 @@ TEST_P(PaintArtifactCompositorTest, MergeOpacity) {
 TEST_P(PaintArtifactCompositorTest, MergeOpacityWithAlias) {
   float opacity = 2.0 / 255.0;
   auto real_effect = CreateOpacityEffect(e0(), opacity);
-  auto effect = EffectPaintPropertyNode::CreateAlias(*real_effect);
+  auto effect = EffectPaintPropertyNodeAlias::Create(*real_effect);
 
   TestPaintArtifact test_artifact;
   test_artifact.Chunk().RectDrawing(IntRect(0, 0, 100, 100), Color::kWhite);
@@ -1639,13 +1639,13 @@ TEST_P(PaintArtifactCompositorTest, MergeNestedWithAlias) {
   auto real_transform =
       CreateTransform(t0(), TransformationMatrix().Translate(50, 50),
                       FloatPoint3D(100, 100, 0));
-  auto transform = TransformPaintPropertyNode::CreateAlias(*real_transform);
+  auto transform = TransformPaintPropertyNodeAlias::Create(*real_transform);
   auto real_clip =
       CreateClip(c0(), *transform, FloatRoundedRect(10, 20, 50, 60));
-  auto clip = ClipPaintPropertyNode::CreateAlias(*real_clip);
+  auto clip = ClipPaintPropertyNodeAlias::Create(*real_clip);
   float opacity = 2.0 / 255.0;
   auto real_effect = CreateOpacityEffect(e0(), *transform, clip.get(), opacity);
-  auto effect = EffectPaintPropertyNode::CreateAlias(*real_effect);
+  auto effect = EffectPaintPropertyNodeAlias::Create(*real_effect);
 
   TestPaintArtifact test_artifact;
   test_artifact.Chunk().RectDrawing(IntRect(0, 0, 100, 100), Color::kWhite);
@@ -2259,7 +2259,7 @@ TEST_P(PaintArtifactCompositorTest, EffectWithElementId) {
 
 TEST_P(PaintArtifactCompositorTest, EffectWithElementIdWithAlias) {
   auto real_effect = CreateSampleEffectNodeWithElementId();
-  auto effect = EffectPaintPropertyNode::CreateAlias(*real_effect);
+  auto effect = EffectPaintPropertyNodeAlias::Create(*real_effect);
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), c0(), *effect)
       .RectDrawing(IntRect(100, 100, 200, 100), Color::kBlack);

@@ -64,11 +64,11 @@ class FrameViewPropertyTreePrinter
 };
 
 template <>
-class PropertyTreePrinterTraits<TransformPaintPropertyNode> {
+class PropertyTreePrinterTraits<TransformPaintPropertyNodeOrAlias> {
  public:
   static void AddVisualViewportProperties(
       const VisualViewport& visual_viewport,
-      PropertyTreePrinter<TransformPaintPropertyNode>& printer) {
+      PropertyTreePrinter<TransformPaintPropertyNodeOrAlias>& printer) {
     printer.AddNode(visual_viewport.GetDeviceEmulationTransformNode());
     printer.AddNode(visual_viewport.GetOverscrollElasticityTransformNode());
     printer.AddNode(visual_viewport.GetPageScaleNode());
@@ -76,7 +76,7 @@ class PropertyTreePrinterTraits<TransformPaintPropertyNode> {
   }
   static void AddObjectPaintProperties(
       const ObjectPaintProperties& properties,
-      PropertyTreePrinter<TransformPaintPropertyNode>& printer) {
+      PropertyTreePrinter<TransformPaintPropertyNodeOrAlias>& printer) {
     printer.AddNode(properties.PaintOffsetTranslation());
     printer.AddNode(properties.StickyTranslation());
     printer.AddNode(properties.Transform());
@@ -88,14 +88,14 @@ class PropertyTreePrinterTraits<TransformPaintPropertyNode> {
 };
 
 template <>
-class PropertyTreePrinterTraits<ClipPaintPropertyNode> {
+class PropertyTreePrinterTraits<ClipPaintPropertyNodeOrAlias> {
  public:
   static void AddVisualViewportProperties(
       const VisualViewport& visual_viewport,
-      PropertyTreePrinter<ClipPaintPropertyNode>& printer) {}
+      PropertyTreePrinter<ClipPaintPropertyNodeOrAlias>& printer) {}
   static void AddObjectPaintProperties(
       const ObjectPaintProperties& properties,
-      PropertyTreePrinter<ClipPaintPropertyNode>& printer) {
+      PropertyTreePrinter<ClipPaintPropertyNodeOrAlias>& printer) {
     printer.AddNode(properties.FragmentClip());
     printer.AddNode(properties.ClipPathClip());
     printer.AddNode(properties.MaskClip());
@@ -109,15 +109,15 @@ class PropertyTreePrinterTraits<ClipPaintPropertyNode> {
 };
 
 template <>
-class PropertyTreePrinterTraits<EffectPaintPropertyNode> {
+class PropertyTreePrinterTraits<EffectPaintPropertyNodeOrAlias> {
  public:
   static void AddVisualViewportProperties(
       const VisualViewport& visual_viewport,
-      PropertyTreePrinter<EffectPaintPropertyNode>& printer) {}
+      PropertyTreePrinter<EffectPaintPropertyNodeOrAlias>& printer) {}
 
   static void AddObjectPaintProperties(
       const ObjectPaintProperties& properties,
-      PropertyTreePrinter<EffectPaintPropertyNode>& printer) {
+      PropertyTreePrinter<EffectPaintPropertyNodeOrAlias>& printer) {
     printer.AddNode(properties.Effect());
     printer.AddNode(properties.Filter());
     printer.AddNode(properties.VerticalScrollbarEffect());
@@ -244,17 +244,19 @@ void showScrollPropertyTree(const blink::LocalFrameView& rootFrame) {
 
 String transformPropertyTreeAsString(const blink::LocalFrameView& rootFrame) {
   return blink::FrameViewPropertyTreePrinter<
-             blink::TransformPaintPropertyNode>()
+             blink::TransformPaintPropertyNodeOrAlias>()
       .TreeAsString(rootFrame);
 }
 
 String clipPropertyTreeAsString(const blink::LocalFrameView& rootFrame) {
-  return blink::FrameViewPropertyTreePrinter<blink::ClipPaintPropertyNode>()
+  return blink::FrameViewPropertyTreePrinter<
+             blink::ClipPaintPropertyNodeOrAlias>()
       .TreeAsString(rootFrame);
 }
 
 String effectPropertyTreeAsString(const blink::LocalFrameView& rootFrame) {
-  return blink::FrameViewPropertyTreePrinter<blink::EffectPaintPropertyNode>()
+  return blink::FrameViewPropertyTreePrinter<
+             blink::EffectPaintPropertyNodeOrAlias>()
       .TreeAsString(rootFrame);
 }
 

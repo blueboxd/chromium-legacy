@@ -34,7 +34,8 @@ using MainThreadScrollingReasons = uint32_t;
 // The scroll tree differs from the other trees because it does not affect
 // geometry directly.
 class PLATFORM_EXPORT ScrollPaintPropertyNode
-    : public PaintPropertyNode<ScrollPaintPropertyNode> {
+    : public PaintPropertyNode<ScrollPaintPropertyNode,
+                               ScrollPaintPropertyNode> {
  public:
   // To make it less verbose and more readable to construct and update a node,
   // a struct with default values is used to represent the state.
@@ -104,7 +105,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
   PaintPropertyChangeType Update(const ScrollPaintPropertyNode& parent,
                                  State&& state,
                                  const AnimationState& = AnimationState()) {
-    auto parent_changed = SetParent(&parent);
+    auto parent_changed = SetParent(parent);
     auto state_changed = state_.ComputeChange(state);
     if (state_changed != PaintPropertyChangeType::kUnchanged) {
       state_ = std::move(state);
@@ -113,6 +114,8 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
     }
     return std::max(parent_changed, state_changed);
   }
+
+  const ScrollPaintPropertyNode& Unalias() const = delete;
 
   cc::OverscrollBehavior::OverscrollBehaviorType OverscrollBehaviorX() const {
     return state_.overscroll_behavior.x;
@@ -176,6 +179,8 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
       : PaintPropertyNode(parent), state_(std::move(state)) {
     Validate();
   }
+
+  using PaintPropertyNode::SetParent;
 
   void Validate() const {
 #if DCHECK_IS_ON()

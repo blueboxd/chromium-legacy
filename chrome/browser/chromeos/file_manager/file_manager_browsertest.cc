@@ -624,6 +624,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("transferDragDropActiveDrop"),
         TestCase("transferDragDropTreeItemAccepts").FilesNg(),
         TestCase("transferDragDropTreeItemDenies").FilesNg(),
+        TestCase("transferDragAndHoverTreeItemEntryList"),
+        TestCase("transferDragAndHoverTreeItemFakeEntry"),
         TestCase("transferDragAndDrop"),
         TestCase("transferDragAndHover"),
         TestCase("transferFromDownloadsToDownloads"),
@@ -690,6 +692,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       TestCase("defaultTaskDialogDownloads"),
                       TestCase("defaultTaskDialogDownloads").InGuestMode(),
                       TestCase("defaultTaskDialogDrive"),
+                      TestCase("changeDefaultDialogScrollList"),
                       TestCase("genericTaskIsNotExecuted"),
                       TestCase("genericTaskAndNonGenericTask")));
 

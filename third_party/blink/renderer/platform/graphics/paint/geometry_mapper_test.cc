@@ -50,8 +50,8 @@ class GeometryMapperTest : public testing::Test,
 
   // Variables required by CheckMappings(). The tests should set these
   // variables with proper values before calling CheckMappings().
-  PropertyTreeState local_state = PropertyTreeState::Root();
-  PropertyTreeState ancestor_state = PropertyTreeState::Root();
+  PropertyTreeStateOrAlias local_state = PropertyTreeState::Root();
+  PropertyTreeStateOrAlias ancestor_state = PropertyTreeState::Root();
   FloatRect input_rect;
   FloatClipRect expected_visual_rect;
   base::Optional<FloatClipRect> expected_visual_rect_expanded_for_animation;
@@ -133,7 +133,7 @@ void GeometryMapperTest::CheckCachedClip() {
   if (&ancestor_state.Effect() != &local_state.Effect())
     return;
   const auto& local_clip = local_state.Clip().Unalias();
-  const auto* cached_clip = GetCachedClip(local_clip, ancestor_state);
+  const auto* cached_clip = GetCachedClip(local_clip, ancestor_state.Unalias());
   if (&ancestor_state.Clip() == &local_clip ||
       (&ancestor_state.Clip() == local_clip.Parent() &&
        &ancestor_state.Transform() == &local_clip.LocalTransformSpace())) {
@@ -199,7 +199,7 @@ TEST_P(GeometryMapperTest, TranslationTransform) {
 TEST_P(GeometryMapperTest, TranslationTransformWithAlias) {
   expected_translation_2d = FloatSize(20, 10);
   auto real_transform = Create2DTranslation(t0(), 20, 10);
-  auto transform = TransformPaintPropertyNode::CreateAlias(*real_transform);
+  auto transform = TransformPaintPropertyNodeAlias::Create(*real_transform);
   local_state.SetTransform(*transform);
 
   input_rect = FloatRect(0, 0, 100, 100);
@@ -228,7 +228,7 @@ TEST_P(GeometryMapperTest, RotationAndScaleTransform) {
 TEST_P(GeometryMapperTest, RotationAndScaleTransformWithAlias) {
   expected_transform = TransformationMatrix().Rotate(45).Scale(2);
   auto real_transform = CreateTransform(t0(), *expected_transform);
-  auto transform = TransformPaintPropertyNode::CreateAlias(*real_transform);
+  auto transform = TransformPaintPropertyNodeAlias::Create(*real_transform);
   local_state.SetTransform(*transform);
 
   input_rect = FloatRect(0, 0, 100, 100);
@@ -352,7 +352,7 @@ TEST_P(GeometryMapperTest, SimpleClipPixelSnapped) {
 
 TEST_P(GeometryMapperTest, SimpleClipWithAlias) {
   auto real_clip = CreateClip(c0(), t0(), FloatRoundedRect(10, 10, 50, 50));
-  auto clip = ClipPaintPropertyNode::CreateAlias(*real_clip);
+  auto clip = ClipPaintPropertyNodeAlias::Create(*real_clip);
   local_state.SetClip(*clip);
 
   input_rect = FloatRect(0, 0, 100, 100);
@@ -822,10 +822,10 @@ TEST_P(GeometryMapperTest, FilterWithClipsAndTransformsWithAlias) {
   filters.AppendBlurFilter(20);
   auto real_effect = CreateFilterEffect(e0(), *transform_above_effect,
                                         clip_above_effect.get(), filters);
-  auto effect = EffectPaintPropertyNode::CreateAlias(*real_effect);
+  auto effect = EffectPaintPropertyNodeAlias::Create(*real_effect);
 
-  local_state =
-      PropertyTreeState(*transform_below_effect, *clip_below_effect, *effect);
+  local_state = PropertyTreeStateOrAlias(*transform_below_effect,
+                                         *clip_below_effect, *effect);
 
   input_rect = FloatRect(0, 0, 100, 100);
   // 1. transformBelowEffect

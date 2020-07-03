@@ -26,7 +26,7 @@ namespace {
 
 VkSemaphore CreateSemaphore(VkDevice vk_device) {
   // Generic semaphore creation structure.
-  VkSemaphoreCreateInfo semaphore_create_info = {
+  constexpr VkSemaphoreCreateInfo semaphore_create_info = {
       VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
 
   VkSemaphore vk_semaphore;
@@ -93,6 +93,7 @@ void VulkanSwapChain::Destroy() {
 gfx::SwapResult VulkanSwapChain::PostSubBuffer(const gfx::Rect& rect) {
   base::AutoLock auto_lock(lock_);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(!has_pending_post_sub_buffer_);
 
   if (!PresentBuffer(rect))
     return gfx::SwapResult::SWAP_FAILED;
@@ -108,6 +109,7 @@ void VulkanSwapChain::PostSubBufferAsync(
     PostSubBufferCompletionCallback callback) {
   base::AutoLock auto_lock(lock_);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(!has_pending_post_sub_buffer_);
 
   if (!PresentBuffer(rect)) {
     task_runner_->PostTask(
@@ -118,19 +120,20 @@ void VulkanSwapChain::PostSubBufferAsync(
 
   DCHECK_EQ(state_, VK_SUCCESS);
 
-  ++pending_post_sub_buffer_;
+  has_pending_post_sub_buffer_ = true;
 
   post_sub_buffer_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
           [](VulkanSwapChain* self, PostSubBufferCompletionCallback callback) {
             base::AutoLock auto_lock(self->lock_);
+            DCHECK(self->has_pending_post_sub_buffer_);
             auto swap_result = self->AcquireNextImage()
                                    ? gfx::SwapResult::SWAP_ACK
                                    : gfx::SwapResult::SWAP_FAILED;
             self->task_runner_->PostTask(
                 FROM_HERE, base::BindOnce(std::move(callback), swap_result));
-            --self->pending_post_sub_buffer_;
+            self->has_pending_post_sub_buffer_ = false;
             self->condition_variable_.Signal();
           },
           base::Unretained(this), std::move(callback)));
@@ -149,28 +152,27 @@ bool VulkanSwapChain::InitializeSwapChain(
   VkDevice device = device_queue_->GetVulkanDevice();
   VkResult result = VK_SUCCESS;
 
-  VkSwapchainCreateInfoKHR swap_chain_create_info = {};
-  swap_chain_create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-  swap_chain_create_info.flags =
-      use_protected_memory ? VK_SWAPCHAIN_CREATE_PROTECTED_BIT_KHR : 0;
-  swap_chain_create_info.surface = surface;
-  swap_chain_create_info.minImageCount = min_image_count,
-  swap_chain_create_info.imageFormat = surface_format.format;
-  swap_chain_create_info.imageColorSpace = surface_format.colorSpace;
-  swap_chain_create_info.imageExtent.width = image_size.width();
-  swap_chain_create_info.imageExtent.height = image_size.height();
-  swap_chain_create_info.imageArrayLayers = 1;
-  swap_chain_create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-  swap_chain_create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-  swap_chain_create_info.preTransform = pre_transform;
-  swap_chain_create_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-  swap_chain_create_info.presentMode = VK_PRESENT_MODE_FIFO_KHR;
-  swap_chain_create_info.clipped = true;
+  VkSwapchainCreateInfoKHR swap_chain_create_info = {
+      .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
+      .flags = use_protected_memory ? VK_SWAPCHAIN_CREATE_PROTECTED_BIT_KHR : 0,
+      .surface = surface,
+      .minImageCount = min_image_count,
+      .imageFormat = surface_format.format,
+      .imageColorSpace = surface_format.colorSpace,
+      .imageExtent = {image_size.width(), image_size.height()},
+      .imageArrayLayers = 1,
+      .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+      .imageSharingMode = VK_SHARING_MODE_EXCLUSIVE,
+      .preTransform = pre_transform,
+      .compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
+      .presentMode = VK_PRESENT_MODE_FIFO_KHR,
+      .clipped = VK_TRUE,
+      .oldSwapchain = VK_NULL_HANDLE,
+  };
   if (old_swap_chain) {
     base::AutoLock auto_lock(old_swap_chain->lock_);
     old_swap_chain->WaitUntilPostSubBufferAsyncFinished();
-    swap_chain_create_info.oldSwapchain =
-        old_swap_chain ? old_swap_chain->swap_chain_ : VK_NULL_HANDLE;
+    swap_chain_create_info.oldSwapchain = old_swap_chain->swap_chain_;
     // Reuse |post_sub_buffer_task_runner_| from the |old_swap_chain|.
     post_sub_buffer_task_runner_ = old_swap_chain->post_sub_buffer_task_runner_;
   }
@@ -291,16 +293,13 @@ bool VulkanSwapChain::BeginWriteCurrentImage(VkImage* image,
   DCHECK(semaphore);
   DCHECK(!is_writing_);
 
-  while (state_ == VK_SUCCESS && acquired_images_.empty()) {
-    DCHECK(pending_post_sub_buffer_);
-    condition_variable_.Wait();
-  }
-
   if (state_ != VK_SUCCESS)
     return false;
 
-  DCHECK(!acquired_images_.empty());
-  auto& current_image_data = images_[acquired_images_.front()];
+  if (!acquired_image_)
+    return false;
+
+  auto& current_image_data = images_[*acquired_image_];
 
   VkSemaphore vk_semaphore = VK_NULL_HANDLE;
   if (current_image_data.present_end_semaphore != VK_NULL_HANDLE) {
@@ -317,7 +316,7 @@ bool VulkanSwapChain::BeginWriteCurrentImage(VkImage* image,
   }
 
   *image = current_image_data.image;
-  *image_index = acquired_images_.front();
+  *image_index = *acquired_image_;
   *image_layout = current_image_data.layout;
   *semaphore = vk_semaphore;
   is_writing_ = true;
@@ -330,10 +329,10 @@ void VulkanSwapChain::EndWriteCurrentImage(VkImageLayout image_layout,
   base::AutoLock auto_lock(lock_);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(is_writing_);
-  DCHECK(!acquired_images_.empty());
+  DCHECK(acquired_image_);
   DCHECK(end_write_semaphore_ == VK_NULL_HANDLE);
 
-  auto& current_image_data = images_[acquired_images_.front()];
+  auto& current_image_data = images_[*acquired_image_];
   current_image_data.layout = image_layout;
   end_write_semaphore_ = semaphore;
   is_writing_ = false;
@@ -342,7 +341,7 @@ void VulkanSwapChain::EndWriteCurrentImage(VkImageLayout image_layout,
 bool VulkanSwapChain::PresentBuffer(const gfx::Rect& rect) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_EQ(state_, VK_SUCCESS);
-  DCHECK(!acquired_images_.empty());
+  DCHECK(acquired_image_);
   DCHECK(end_write_semaphore_ != VK_NULL_HANDLE);
 
   VkResult result = VK_SUCCESS;
@@ -350,7 +349,7 @@ bool VulkanSwapChain::PresentBuffer(const gfx::Rect& rect) {
   VkQueue queue = device_queue_->GetVulkanQueue();
   auto* fence_helper = device_queue_->GetFenceHelper();
 
-  auto& current_image_data = images_[acquired_images_.front()];
+  auto& current_image_data = images_[*acquired_image_];
   if (current_image_data.layout != VK_IMAGE_LAYOUT_PRESENT_SRC_KHR) {
     {
       current_image_data.command_buffer->Clear();
@@ -380,7 +379,7 @@ bool VulkanSwapChain::PresentBuffer(const gfx::Rect& rect) {
   present_info.pWaitSemaphores = &end_write_semaphore_;
   present_info.swapchainCount = 1;
   present_info.pSwapchains = &swap_chain_;
-  present_info.pImageIndices = &acquired_images_.front();
+  present_info.pImageIndices = &acquired_image_.value();
 
   VkRectLayerKHR rect_layer;
   VkPresentRegionKHR present_region;
@@ -406,7 +405,6 @@ bool VulkanSwapChain::PresentBuffer(const gfx::Rect& rect) {
     return false;
   }
 
-  current_image_data.is_acquired = false;
   LOG_IF(ERROR, result == VK_SUBOPTIMAL_KHR) << "Swapchian is suboptimal.";
 
   if (current_image_data.present_begin_semaphore != VK_NULL_HANDLE) {
@@ -424,15 +422,14 @@ bool VulkanSwapChain::PresentBuffer(const gfx::Rect& rect) {
   current_image_data.present_begin_semaphore = end_write_semaphore_;
   end_write_semaphore_ = VK_NULL_HANDLE;
 
-  in_present_images_.emplace_back(acquired_images_.front());
-  acquired_images_.pop_front();
+  acquired_image_.reset();
 
   return true;
 }
 
 bool VulkanSwapChain::AcquireNextImage() {
   DCHECK_EQ(state_, VK_SUCCESS);
-  DCHECK_LT(acquired_images_.size(), images_.size());
+  DCHECK(!acquired_image_);
 
   // VulkanDeviceQueue is not threadsafe for now, but |device_queue_| will not
   // be released, and device_queue_->device will never be changed after
@@ -440,94 +437,62 @@ bool VulkanSwapChain::AcquireNextImage() {
   // TODO(penghuang): make VulkanDeviceQueue threadsafe.
   VkDevice device = device_queue_->GetVulkanDevice();
 
-  // The Vulkan spec doesn't require vkAcquireNextImageKHR() returns images in
-  // the present order for a vulkan swap chain. However for the best
-  // performance, the driver should return images in order. To avoid buggy
-  // drivers, we will call vkAcquireNextImageKHR() continually until the
-  // expected image is returned.
-  do {
-    bool all_images_are_tracked = in_present_images_.size() == images_.size();
-    if (all_images_are_tracked) {
-      // Only check the expected_next_image, when all images are tracked.
-      uint32_t expected_next_image = in_present_images_.front();
-      // If the expected next image has been acquired, use it and return true.
-      if (images_[expected_next_image].is_acquired) {
-        in_present_images_.pop_front();
-        acquired_images_.emplace_back(expected_next_image);
-        break;
-      }
-    }
+  VkSemaphore vk_semaphore = CreateSemaphore(device);
+  DCHECK(vk_semaphore != VK_NULL_HANDLE);
 
-    VkSemaphore vk_semaphore = CreateSemaphore(device);
-    DCHECK(vk_semaphore != VK_NULL_HANDLE);
-
-    uint64_t kTimeout = UINT64_MAX;
+  uint64_t kTimeout = UINT64_MAX;
 #if defined(USE_X11)
-    // The xserver should still composite windows with a 1Hz fake vblank when
-    // screen is off or the window is offscreen. However there is an xserver
-    // bug, the requested hardware vblanks are lost, when screen turns off, so
-    // FIFO swapchain will hang.
-    // Workaround the issue by using the 2 seconds timeout for
-    // vkAcquireNextImageKHR(). When timeout happens, we consider the swapchain
-    // hang happened, and then make the surface lost, so a new swapchain will
-    // be recreated.
-    //
-    // TODO(https://crbug.com/1098237): set correct timeout for ozone/x11.
-    if (!features::IsUsingOzonePlatform())
-      kTimeout = base::Time::kNanosecondsPerSecond * 2;
+  // The xserver should still composite windows with a 1Hz fake vblank when
+  // screen is off or the window is offscreen. However there is an xserver
+  // bug, the requested hardware vblanks are lost, when screen turns off, so
+  // FIFO swapchain will hang.
+  // Workaround the issue by using the 2 seconds timeout for
+  // vkAcquireNextImageKHR(). When timeout happens, we consider the swapchain
+  // hang happened, and then make the surface lost, so a new swapchain will
+  // be recreated.
+  //
+  // TODO(https://crbug.com/1098237): set correct timeout for ozone/x11.
+  if (!features::IsUsingOzonePlatform())
+    kTimeout = base::Time::kNanosecondsPerSecond * 2;
 #endif
-    // Acquire the next image.
-    uint32_t next_image;
-    auto result = ({
-      base::ScopedBlockingCall scoped_blocking_call(
-          FROM_HERE, base::BlockingType::WILL_BLOCK);
-      vkAcquireNextImageKHR(device, swap_chain_, kTimeout, vk_semaphore,
-                            VK_NULL_HANDLE, &next_image);
-    });
+  // Acquire the next image.
+  uint32_t next_image;
+  auto result = ({
+    base::ScopedBlockingCall scoped_blocking_call(
+        FROM_HERE, base::BlockingType::WILL_BLOCK);
+    vkAcquireNextImageKHR(device, swap_chain_, kTimeout, vk_semaphore,
+                          VK_NULL_HANDLE, &next_image);
+  });
 
-    if (result == VK_TIMEOUT) {
-      LOG(ERROR) << "vkAcquireNextImageKHR() hangs.";
-      vkDestroySemaphore(device, vk_semaphore, nullptr /* pAllocator */);
-      state_ = VK_ERROR_SURFACE_LOST_KHR;
-      return false;
-    }
+  if (result == VK_TIMEOUT) {
+    LOG(ERROR) << "vkAcquireNextImageKHR() hangs.";
+    vkDestroySemaphore(device, vk_semaphore, nullptr /* pAllocator */);
+    state_ = VK_ERROR_SURFACE_LOST_KHR;
+    return false;
+  }
 
-    if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-      LOG(DFATAL) << "vkAcquireNextImageKHR() failed: " << result;
-      vkDestroySemaphore(device, vk_semaphore, nullptr /* pAllocator */);
-      state_ = result;
-      return false;
-    }
+  if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+    LOG(DFATAL) << "vkAcquireNextImageKHR() failed: " << result;
+    vkDestroySemaphore(device, vk_semaphore, nullptr /* pAllocator */);
+    state_ = result;
+    return false;
+  }
 
-    DCHECK(!images_[next_image].is_acquired);
-    DCHECK(images_[next_image].present_end_semaphore == VK_NULL_HANDLE);
-    images_[next_image].is_acquired = true;
-    images_[next_image].present_end_semaphore = vk_semaphore;
-
-    auto it = std::find(in_present_images_.begin(), in_present_images_.end(),
-                        next_image);
-    if (it == in_present_images_.end()) {
-      DCHECK(!all_images_are_tracked);
-      // Got an image which is not in the present queue due to the new created
-      // swap chain. In this case, just use this image.
-      acquired_images_.emplace_back(next_image);
-      break;
-    }
-    LOG_IF(ERROR, it != in_present_images_.begin())
-        << "vkAcquireNextImageKHR() returned an unexpected image.";
-  } while (true);
+  DCHECK(images_[next_image].present_end_semaphore == VK_NULL_HANDLE);
+  images_[next_image].present_end_semaphore = vk_semaphore;
+  acquired_image_.emplace(next_image);
   return true;
 }
 
 void VulkanSwapChain::WaitUntilPostSubBufferAsyncFinished() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  while (pending_post_sub_buffer_) {
+  while (has_pending_post_sub_buffer_) {
     base::ScopedBlockingCall scoped_blocking_call(
         FROM_HERE, base::BlockingType::WILL_BLOCK);
     condition_variable_.Wait();
   }
-  DCHECK(!acquired_images_.empty() || state_ != VK_SUCCESS);
+  DCHECK(acquired_image_ || state_ != VK_SUCCESS);
 }
 
 VulkanSwapChain::ScopedWrite::ScopedWrite(VulkanSwapChain* swap_chain)

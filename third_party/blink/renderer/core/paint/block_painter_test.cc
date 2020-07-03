@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/paint/paint_controller_paint_test.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk.h"
+#include "third_party/blink/renderer/platform/testing/paint_property_test_helpers.h"
 
 using testing::ElementsAre;
 
@@ -466,11 +467,9 @@ TEST_F(BlockPainterTouchActionTest, ScrolledHitTestChunkProperties) {
   HitTestData scroller_touch_action_hit_test_data;
   scroller_touch_action_hit_test_data.touch_action_rects = {
       {IntRect(0, 0, 100, 100)}};
-  const auto& scrolling_contents_properties =
-      scroller->FirstFragment().ContentsProperties();
   HitTestData scroll_hit_test_data;
   scroll_hit_test_data.scroll_translation =
-      &scrolling_contents_properties.Transform();
+      scroller->FirstFragment().PaintProperties()->ScrollTranslation();
   scroll_hit_test_data.scroll_hit_test_rect = IntRect(0, 0, 100, 100);
   HitTestData scrolled_hit_test_data;
   scrolled_hit_test_data.touch_action_rects = {{IntRect(0, 0, 200, 50)}};
@@ -500,11 +499,13 @@ TEST_F(BlockPainterTouchActionTest, ScrolledHitTestChunkProperties) {
 
   const auto& scroller_paint_chunk = paint_chunks[1];
   // The hit test rect for the scroller itself should not be scrolled.
-  EXPECT_FALSE(scroller_paint_chunk.properties.Transform().ScrollNode());
+  EXPECT_FALSE(
+      ToUnaliased(scroller_paint_chunk.properties.Transform()).ScrollNode());
 
   const auto& scrolled_paint_chunk = paint_chunks[3];
   // The hit test rect for the scrolled contents should be scrolled.
-  EXPECT_TRUE(scrolled_paint_chunk.properties.Transform().ScrollNode());
+  EXPECT_TRUE(
+      ToUnaliased(scrolled_paint_chunk.properties.Transform()).ScrollNode());
 }
 
 }  // namespace blink

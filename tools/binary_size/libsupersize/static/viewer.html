@@ -222,7 +222,7 @@
       <button type="button" class="text-button" id="type-none">Select none</button>
     </fieldset>
 
-    <fieldset id="flag-container">
+    <fieldset id="flag-view">
       <legend class="subhead">Filter symbols</legend>
       <div class="radio-wrapper">
         <input type="radio" id="clearflag" name="flag_filter" value="clear" checked>
@@ -342,8 +342,8 @@
       </svg>
     </div>
     <!-- Template for trees and leaves -->
-    <template id="treenode-container">
-      <li role="treeitem" aria-expanded="false" aria-describedby="infocard-container">
+    <template id="treenode-template">
+      <li role="treeitem" aria-expanded="false" aria-describedby="infocard-artifact">
         <a class="node" href="#" tabindex="-1" role="presentation">
           <span class="symbol-name"></span>
           <span class="size"></span>
@@ -360,25 +360,25 @@
       </li>
     </template>
     <!-- Tree view -->
-    <main class="tree-container">
+    <main class="tree-view">
       <header class="tree-header">
         <span class="subtitle">Name</span>
         <span class="subtitle size-header" id="size-header">Size</span>
       </header>
       <ul id="symboltree" class="tree" role="tree" aria-labelledby="headline"></ul>
     </main>
-    <!-- Symbol and container breakdown cards -->
+    <!-- Symbol and artifact breakdown cards -->
     <link href="infocard.css" rel="stylesheet">
     <footer class="infocards">
-      <div class="infocard infocard-container open" id="infocard-container" hidden>
-        <div class="icon-info container-icon-info">
+      <div class="infocard infocard-artifact open" id="infocard-artifact" hidden>
+        <div class="icon-info artifact-icon-info">
           <canvas class="type-pie-info" height="80" width="80"></canvas>
           <div></div>
         </div>
         <header class="header-info">
           <h4 class="subhead size-info"></h4>
           <p class="body-2 path-info"></p>
-          <p class="caption type-info-container">
+          <p class="caption type-info-artifact">
             <span class="type-info"></span>
             <span class="flags-info"></span>
           </p>
@@ -560,7 +560,7 @@
           <h4 class="subhead size-info"></h4>
           <p class="body-2 path-info"></p>
         </header>
-        <p class="caption type-info-container">
+        <p class="caption type-info-artifact">
           <span class="type-info"></span>
           <span class="flags-info"></span>
         </p>

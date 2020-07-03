@@ -39,7 +39,7 @@ class TreeBuilder {
 
   void AttachToParent(TreeNode* child, TreeNode* parent);
 
-  ContainerType ContainerTypeFromChild(GroupedPath child_path) const;
+  ArtifactType ArtifactTypeFromChild(GroupedPath child_path) const;
 
   bool ShouldIncludeSymbol(const GroupedPath& id_path,
                            const BaseSymbol& symbol) const;

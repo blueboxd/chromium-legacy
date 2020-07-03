@@ -19,7 +19,7 @@ namespace blink {
 FloatRect ElementTimingUtils::ComputeIntersectionRect(
     LocalFrame* frame,
     const IntRect& int_visual_rect,
-    const PropertyTreeState& current_paint_chunk_properties) {
+    const PropertyTreeStateOrAlias& current_paint_chunk_properties) {
   // Compute the visible part of the image rect.
   FloatClipRect visual_rect = FloatClipRect(FloatRect(int_visual_rect));
   GeometryMapper::LocalToAncestorVisualRect(current_paint_chunk_properties,

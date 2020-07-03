@@ -11,23 +11,15 @@ namespace blink {
 const EffectPaintPropertyNode& EffectPaintPropertyNode::Root() {
   DEFINE_STATIC_REF(EffectPaintPropertyNode, root,
                     base::AdoptRef(new EffectPaintPropertyNode(
-                        nullptr,
-                        State{&TransformPaintPropertyNode::Root(),
-                              &ClipPaintPropertyNode::Root()},
-                        true /* is_parent_alias */)));
+                        nullptr, State{&TransformPaintPropertyNode::Root(),
+                                       &ClipPaintPropertyNode::Root()})));
   return *root;
 }
 
-FloatRect EffectPaintPropertyNode::MapRect(const FloatRect& rect) const {
-  if (state_.filter.IsEmpty())
-    return rect;
-  return state_.filter.MapRect(rect);
-}
-
-bool EffectPaintPropertyNode::Changed(
+bool EffectPaintPropertyNodeOrAlias::Changed(
     PaintPropertyChangeType change,
     const PropertyTreeState& relative_to_state,
-    const TransformPaintPropertyNode* transform_not_to_check) const {
+    const TransformPaintPropertyNodeOrAlias* transform_not_to_check) const {
   const auto& relative_effect = relative_to_state.Effect();
   const auto& relative_transform = relative_to_state.Transform();
 
@@ -43,8 +35,9 @@ bool EffectPaintPropertyNode::Changed(
     if (node->IsParentAlias())
       continue;
 
-    const auto& local_transform = node->LocalTransformSpace();
-    if (node->HasFilterThatMovesPixels() &&
+    const auto* unaliased = static_cast<const EffectPaintPropertyNode*>(node);
+    const auto& local_transform = unaliased->LocalTransformSpace();
+    if (unaliased->HasFilterThatMovesPixels() &&
         &local_transform != transform_not_to_check &&
         local_transform.Changed(change, relative_transform)) {
       return true;
@@ -56,12 +49,14 @@ bool EffectPaintPropertyNode::Changed(
   return false;
 }
 
+FloatRect EffectPaintPropertyNode::MapRect(const FloatRect& rect) const {
+  if (state_.filter.IsEmpty())
+    return rect;
+  return state_.filter.MapRect(rect);
+}
+
 std::unique_ptr<JSONObject> EffectPaintPropertyNode::ToJSON() const {
-  auto json = std::make_unique<JSONObject>();
-  if (Parent())
-    json->SetString("parent", String::Format("%p", Parent()));
-  if (NodeChanged() != PaintPropertyChangeType::kUnchanged)
-    json->SetString("changed", PaintPropertyChangeTypeToString(NodeChanged()));
+  auto json = ToJSONBase();
   json->SetString("localTransformSpace",
                   String::Format("%p", state_.local_transform_space.get()));
   json->SetString("outputClip", String::Format("%p", state_.output_clip.get()));

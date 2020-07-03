@@ -25,14 +25,14 @@ const int64_t kMaxImageSizeInBytes =
 // Note that this is always called on the thread which initiated the
 // corresponding data_decoder::DecodeImage request.
 void OnDecodeImageDone(
-    base::Callback<void(int)> fail_callback,
-    base::Callback<void(const SkBitmap&, int)> success_callback,
+    base::OnceCallback<void(int)> fail_callback,
+    base::OnceCallback<void(const SkBitmap&, int)> success_callback,
     int request_id,
     const SkBitmap& image) {
   if (!image.isNull() && !image.empty())
-    success_callback.Run(image, request_id);
+    std::move(success_callback).Run(image, request_id);
   else
-    fail_callback.Run(request_id);
+    std::move(fail_callback).Run(request_id);
 }
 
 void RunDecodeCallbackOnTaskRunner(
@@ -142,11 +142,13 @@ void ImageDecoder::StartWithOptionsImpl(
     codec = data_decoder::mojom::ImageCodec::ROBUST_PNG;
 #endif  // defined(OS_CHROMEOS)
 
-  auto callback = base::Bind(
-      &OnDecodeImageDone,
-      base::Bind(&ImageDecoder::OnDecodeImageFailed, base::Unretained(this)),
-      base::Bind(&ImageDecoder::OnDecodeImageSucceeded, base::Unretained(this)),
-      request_id);
+  auto callback =
+      base::BindOnce(&OnDecodeImageDone,
+                     base::BindOnce(&ImageDecoder::OnDecodeImageFailed,
+                                    base::Unretained(this)),
+                     base::BindOnce(&ImageDecoder::OnDecodeImageSucceeded,
+                                    base::Unretained(this)),
+                     request_id);
 
   // NOTE: There exist ImageDecoder consumers which implicitly rely on this
   // operation happening on a thread which always has a ThreadTaskRunnerHandle.
@@ -155,7 +157,7 @@ void ImageDecoder::StartWithOptionsImpl(
   content::GetIOThreadTaskRunner({})->PostTask(
       FROM_HERE,
       base::BindOnce(&DecodeImage, std::move(image_data), codec, shrink_to_fit,
-                     desired_image_frame_size, callback,
+                     desired_image_frame_size, std::move(callback),
                      base::WrapRefCounted(image_request->task_runner())));
 }
 

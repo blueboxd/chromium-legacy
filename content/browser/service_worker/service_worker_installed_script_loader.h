@@ -43,7 +43,7 @@ class CONTENT_EXPORT ServiceWorkerInstalledScriptLoader
 
   // ServiceWorkerInstalledScriptReader::Client overrides:
   void OnStarted(network::mojom::URLResponseHeadPtr response_head,
-                 scoped_refptr<net::IOBufferWithSize> metadata,
+                 base::Optional<mojo_base::BigBuffer> metadata,
                  mojo::ScopedDataPipeConsumerHandle body_handle,
                  mojo::ScopedDataPipeConsumerHandle meta_data_handle) override;
   void OnFinished(

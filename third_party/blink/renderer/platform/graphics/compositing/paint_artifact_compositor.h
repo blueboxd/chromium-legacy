@@ -307,9 +307,9 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
                      const EffectPaintPropertyNode&,
                      Vector<PaintChunk>::const_iterator& chunk_cursor);
   static bool MightOverlap(const PendingLayer&, const PendingLayer&);
-  bool DecompositeEffect(const EffectPaintPropertyNode& unaliased_parent_effect,
+  bool DecompositeEffect(const EffectPaintPropertyNode& parent_effect,
                          wtf_size_t first_layer_in_parent_group_index,
-                         const EffectPaintPropertyNode& unaliased_effect,
+                         const EffectPaintPropertyNode& effect,
                          wtf_size_t layer_index);
 
   // Builds a leaf layer that represents a single paint chunk.

@@ -327,7 +327,7 @@ bool GraphicsLayer::Paint() {
   EnsureRasterInvalidator().Generate(
       raster_invalidation_function_,
       GetPaintController().GetPaintArtifactShared(), layer_bounds,
-      layer_state_->state, VisualRectSubpixelOffset(), this);
+      layer_state_->state.Unalias(), VisualRectSubpixelOffset(), this);
 
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
       PaintsContentOrHitTest()) {
@@ -657,11 +657,11 @@ sk_sp<PaintRecord> GraphicsLayer::CapturePaintRecord() const {
   graphics_context.BeginRecording(bounds);
   DCHECK(layer_state_) << "No layer state for GraphicsLayer: " << DebugName();
   GetPaintController().GetPaintArtifact().Replay(
-      graphics_context, layer_state_->state, layer_state_->offset);
+      graphics_context, layer_state_->state.Unalias(), layer_state_->offset);
   return graphics_context.EndRecording();
 }
 
-void GraphicsLayer::SetLayerState(const PropertyTreeState& layer_state,
+void GraphicsLayer::SetLayerState(const PropertyTreeStateOrAlias& layer_state,
                                   const IntPoint& layer_offset) {
   if (layer_state_) {
     if (layer_state_->state == layer_state &&
@@ -679,8 +679,9 @@ void GraphicsLayer::SetLayerState(const PropertyTreeState& layer_state,
   client_.GraphicsLayersDidChange();
 }
 
-void GraphicsLayer::SetContentsLayerState(const PropertyTreeState& layer_state,
-                                          const IntPoint& layer_offset) {
+void GraphicsLayer::SetContentsLayerState(
+    const PropertyTreeStateOrAlias& layer_state,
+    const IntPoint& layer_offset) {
   DCHECK(ContentsLayer());
 
   if (contents_layer_state_) {
@@ -725,7 +726,7 @@ scoped_refptr<cc::DisplayItemList> GraphicsLayer::PaintContentsToDisplayList(
 
   DCHECK(layer_state_) << "No layer state for GraphicsLayer: " << DebugName();
   PaintChunksToCcLayer::ConvertInto(
-      GetPaintController().PaintChunks(), layer_state_->state,
+      GetPaintController().PaintChunks(), layer_state_->state.Unalias(),
       gfx::Vector2dF(layer_state_->offset.X(), layer_state_->offset.Y()),
       VisualRectSubpixelOffset(),
       paint_controller.GetPaintArtifact().GetDisplayItemList(), *display_list);

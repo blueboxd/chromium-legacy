@@ -20,7 +20,7 @@
 namespace blink {
 class LayoutBoxModelObject;
 class LocalFrameView;
-class PropertyTreeState;
+class PropertyTreeStateOrAlias;
 class TextElementTiming;
 class TracedValue;
 
@@ -202,7 +202,7 @@ class CORE_EXPORT TextPaintTimingDetector final
   bool ShouldWalkObject(const LayoutBoxModelObject&) const;
   void RecordAggregatedText(const LayoutBoxModelObject& aggregator,
                             const IntRect& aggregated_visual_rect,
-                            const PropertyTreeState&);
+                            const PropertyTreeStateOrAlias&);
   void OnPaintFinished();
   void LayoutObjectWillBeDestroyed(const LayoutObject&);
   void StopRecordingLargestTextPaint();

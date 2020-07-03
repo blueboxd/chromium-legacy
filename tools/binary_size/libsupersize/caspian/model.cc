@@ -354,8 +354,8 @@ void TreeNode::WriteIntoJson(
   }
   (*out)["shortNameIndex"] = short_name_index;
   std::string type;
-  if (container_type != ContainerType::kSymbol) {
-    type += static_cast<char>(container_type);
+  if (artifact_type != ArtifactType::kSymbol) {
+    type += static_cast<char>(artifact_type);
   }
   SectionId biggest_section = node_stats.ComputeBiggestSection();
   type += static_cast<char>(biggest_section);

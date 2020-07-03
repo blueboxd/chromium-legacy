@@ -11,6 +11,7 @@
 #include "base/containers/flat_map.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "services/network/public/cpp/net_adapters.h"
@@ -41,7 +42,7 @@ class ServiceWorkerInstalledScriptReader {
    public:
     virtual void OnStarted(
         network::mojom::URLResponseHeadPtr response_head,
-        scoped_refptr<net::IOBufferWithSize> metadata,
+        base::Optional<mojo_base::BigBuffer> metadata,
         mojo::ScopedDataPipeConsumerHandle body_handle,
         mojo::ScopedDataPipeConsumerHandle meta_data_handle) = 0;
     // Called after both body and metadata have finished being written to the

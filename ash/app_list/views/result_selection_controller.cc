@@ -70,46 +70,28 @@ void ResultSelectionController::ResetSelection(const ui::KeyEvent* key_event,
   if (block_selection_changes_)
     return;
 
-  // Clear selection if no search results exist (the first container will have
-  // at least one result if search results are available).
-  if (result_selection_model_->at(0)->num_results() == 0) {
-    ClearSelection();
-    return;
-  }
-
-  // If a non-default result is selected, i.e. if the current selection was a
-  // result of a user action, keep the selection at the same result (identified
-  // by the result ID). Note that this method gets called whenever the set of
-  // search results changes.
-  selected_location_details_ =
-      selected_result_ && !selected_result_->is_default_result()
-          ? FindResultWithId(selected_result_id_)
-          : nullptr;
-  const bool selected_id_preserved = selected_location_details_.get();
+  selected_location_details_ = std::make_unique<ResultLocationDetails>(
+      0 /* container_index */,
+      result_selection_model_->size() /* container_count */,
+      0 /* result_index */,
+      result_selection_model_->at(0)->num_results() /* result_count */,
+      result_selection_model_->at(0)
+          ->horizontally_traversable() /* container_is_horizontal */);
 
   const bool is_up_key = key_event && key_event->key_code() == ui::VKEY_UP;
   const bool is_shift_tab = key_event &&
                             key_event->key_code() == ui::VKEY_TAB &&
                             key_event->IsShiftDown();
+  // Note: left and right arrows are used primarily for traversal in horizontal
+  // containers, so treat "back" arrow as other non-traversal keys when deciding
+  // whether to reverse selection direction.
+  if (is_up_key || is_shift_tab)
+    ChangeContainer(selected_location_details_.get(), -1);
 
-  if (!selected_location_details_) {
-    selected_location_details_ = std::make_unique<ResultLocationDetails>(
-        0 /* container_index */,
-        result_selection_model_->size() /* container_count */,
-        0 /* result_index */,
-        result_selection_model_->at(0)->num_results() /* result_count */,
-        result_selection_model_->at(0)
-            ->horizontally_traversable() /* container_is_horizontal */);
+  auto* new_selection =
+      result_selection_model_->at(selected_location_details_->container_index)
+          ->GetResultViewAt(selected_location_details_->result_index);
 
-    // Note: left and right arrows are used primarily for traversal in
-    // horizontal containers, so treat "back" arrow as other non-traversal keys
-    // when deciding whether to reverse selection direction.
-    if (is_up_key || is_shift_tab)
-      ChangeContainer(selected_location_details_.get(), -1);
-  }
-
-  SearchResultBaseView* new_selection =
-      GetResultAtLocation(*selected_location_details_);
   if (new_selection && new_selection->selected())
     return;
 
@@ -121,11 +103,7 @@ void ResultSelectionController::ResetSelection(const ui::KeyEvent* key_event,
   // Set the state of the new selected result.
   if (selected_result_) {
     selected_result_->SetSelected(true, is_shift_tab);
-    selected_result_->set_is_default_result(default_selection &&
-                                            !selected_id_preserved);
-    selected_result_id_ = new_selection->result()->id();
-  } else {
-    selected_result_id_ = std::string();
+    selected_result_->set_is_default_result(default_selection);
   }
 
   selection_change_callback_.Run();
@@ -136,7 +114,6 @@ void ResultSelectionController::ClearSelection() {
   if (selected_result_) {
     // Reset the state of the previous selected result.
     selected_result_->SetSelected(false, base::nullopt);
-    selected_result_id_ = std::string();
     selected_result_->set_is_default_result(false);
   }
   selected_result_ = nullptr;
@@ -262,9 +239,6 @@ void ResultSelectionController::SetSelection(
   ClearSelection();
 
   selected_result_ = GetResultAtLocation(location);
-  if (selected_result_->result())
-    selected_result_id_ = selected_result_->result()->id();
-
   // SetSelection is only called by MoveSelection when user changes
   // selected result, therefore, the result selected by user is not
   // a default result.
@@ -280,24 +254,6 @@ SearchResultBaseView* ResultSelectionController::GetResultAtLocation(
   SearchResultContainerView* located_container =
       result_selection_model_->at(location.container_index);
   return located_container->GetResultViewAt(location.result_index);
-}
-
-std::unique_ptr<ResultLocationDetails>
-ResultSelectionController::FindResultWithId(const std::string& id) {
-  for (size_t container_index = 0;
-       container_index < result_selection_model_->size(); ++container_index) {
-    SearchResultContainerView* const container =
-        result_selection_model_->at(container_index);
-    for (int result_index = 0; result_index < container->num_results();
-         ++result_index) {
-      if (container->GetResultViewAt(result_index)->result()->id() == id) {
-        return std::make_unique<ResultLocationDetails>(
-            container_index, result_selection_model_->size(), result_index,
-            container->num_results(), container->horizontally_traversable());
-      }
-    }
-  }
-  return nullptr;
 }
 
 void ResultSelectionController::ChangeContainer(

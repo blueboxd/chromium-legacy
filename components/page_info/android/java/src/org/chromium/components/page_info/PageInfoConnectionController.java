@@ -11,13 +11,14 @@ import android.view.ViewGroup;
  * Class for controlling the page info connection section.
  */
 public class PageInfoConnectionController implements PageInfoSubpageController {
-    private PageInfoController mMainController;
-    private PageInfoViewV2 mView;
+    private PageInfoMainPageController mMainController;
+    private PageInfoRowView mRowView;
     private String mTitle;
 
-    public PageInfoConnectionController(PageInfoController mainController, PageInfoViewV2 view) {
+    public PageInfoConnectionController(
+            PageInfoMainPageController mainController, PageInfoRowView view) {
         mMainController = mainController;
-        mView = view;
+        mRowView = view;
     }
 
     private void launchSubpage() {
@@ -36,7 +37,10 @@ public class PageInfoConnectionController implements PageInfoSubpageController {
     }
 
     @Override
-    public void willRemoveSubpage() {}
+    public void onSubPageAttached() {}
+
+    @Override
+    public void onSubpageRemoved() {}
 
     public void setConnectionInfo(PageInfoView.ConnectionInfoParams params) {
         mTitle = params.summary != null ? params.summary.toString() : null;
@@ -45,6 +49,6 @@ public class PageInfoConnectionController implements PageInfoSubpageController {
         rowParams.subtitle = params.message != null ? params.message.toString() : null;
         rowParams.visible = rowParams.title != null || rowParams.subtitle != null;
         rowParams.clickCallback = this::launchSubpage;
-        mView.getConnectionRowView().setParams(rowParams);
+        mRowView.setParams(rowParams);
     }
 }

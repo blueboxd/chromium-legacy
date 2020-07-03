@@ -112,15 +112,20 @@ std::unique_ptr<net::test_server::HttpResponse> HandleReauthURL(
 
 class ReauthTestObserver : SigninReauthViewController::Observer {
  public:
-  explicit ReauthTestObserver(SigninReauthViewController* controller) {
-    controller->SetObserverForTesting(this);
+  explicit ReauthTestObserver(SigninReauthViewController* controller)
+      : controller_(controller) {
+    controller_->AddObserver(this);
   }
 
   void WaitUntilGaiaReauthPageIsShown() { run_loop_.Run(); }
 
-  void OnGaiaReauthPageShown() override { run_loop_.Quit(); }
+  void OnGaiaReauthPageShown() override {
+    controller_->RemoveObserver(this);
+    run_loop_.Quit();
+  }
 
  private:
+  SigninReauthViewController* controller_;
   base::RunLoop run_loop_;
 };
 

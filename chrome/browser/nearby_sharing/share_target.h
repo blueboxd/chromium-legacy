@@ -27,6 +27,8 @@ class ShareTarget {
               base::Optional<std::string> full_name,
               bool is_known);
   ~ShareTarget();
+  ShareTarget(const ShareTarget&);
+  ShareTarget& operator=(const ShareTarget&);
 
   int id() { return id_; }
   const std::string& device_name() { return device_name_; }

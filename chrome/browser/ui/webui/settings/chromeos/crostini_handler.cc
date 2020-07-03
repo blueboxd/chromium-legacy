@@ -504,7 +504,7 @@ void CrostiniHandler::OnCanDisableArcAdbSideloading(
 
 void CrostiniHandler::LaunchTerminal() {
   crostini::LaunchCrostiniApp(
-      profile_, crostini::GetTerminalId(),
+      profile_, crostini::kCrostiniTerminalSystemAppId,
       display::Screen::GetScreen()->GetPrimaryDisplay().id());
 }
 

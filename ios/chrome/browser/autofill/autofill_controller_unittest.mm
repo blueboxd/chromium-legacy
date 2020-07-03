@@ -452,7 +452,8 @@ TEST_F(AutofillControllerTest, ProfileSuggestions) {
 
 // Tests that the system is able to offer suggestions for an anonymous form when
 // there is another anonymous form on the page.
-TEST_F(AutofillControllerTest, ProfileSuggestionsTwoAnonymousForms) {
+// TODO(crbug.com/1101971): Reenable the test.
+TEST_F(AutofillControllerTest, DISABLED_ProfileSuggestionsTwoAnonymousForms) {
   SetUpForSuggestions(
       [NSString stringWithFormat:@"%@%@", kProfileFormHtml, kProfileFormHtml],
       1);

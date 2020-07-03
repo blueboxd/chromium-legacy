@@ -2130,9 +2130,6 @@ extern const char kEnableQuickAnswersRichUiDescription[];
 extern const char kEnableQuickAnswersTextAnnotatorName[];
 extern const char kEnableQuickAnswersTextAnnotatorDescription[];
 
-extern const char kTerminalSystemAppName[];
-extern const char kTerminalSystemAppDescription[];
-
 extern const char kTerminalSystemAppLegacySettingsName[];
 extern const char kTerminalSystemAppLegacySettingsDescription[];
 

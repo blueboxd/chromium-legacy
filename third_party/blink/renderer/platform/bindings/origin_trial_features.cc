@@ -68,4 +68,29 @@ void InstallPendingOriginTrialFeature(OriginTrialFeature feature,
   (*g_install_pending_origin_trial_feature_function)(feature, script_state);
 }
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE)
+
+namespace {
+
+InstallPropertiesPerFeatureFuncType g_install_properties_per_feature_func;
+
+}  // namespace
+
+void InstallPropertiesPerFeature(ScriptState* script_state,
+                                 OriginTrialFeature feature) {
+  return g_install_properties_per_feature_func(script_state, feature);
+}
+
+InstallPropertiesPerFeatureFuncType SetInstallPropertiesPerFeatureFunc(
+    InstallPropertiesPerFeatureFuncType func) {
+  DCHECK(func);
+
+  InstallPropertiesPerFeatureFuncType old_func =
+      g_install_properties_per_feature_func;
+  g_install_properties_per_feature_func = func;
+  return old_func;
+}
+
+#endif  // USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE
+
 }  // namespace blink

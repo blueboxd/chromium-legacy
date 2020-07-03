@@ -268,7 +268,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, RestoreMinimized) {
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, PRE_OmitTerminalApp) {
   const std::string terminal_app_name =
-      web_app::GenerateApplicationNameFromAppId(crostini::GetTerminalId());
+      web_app::GenerateApplicationNameFromAppId(
+          crostini::kCrostiniTerminalSystemAppId);
   CreateBrowserWithParams(CreateParamsForApp(test_app_name1, true));
   CreateBrowserWithParams(CreateParamsForApp(terminal_app_name, true));
   TurnOnSessionRestore();
@@ -276,7 +277,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, PRE_OmitTerminalApp) {
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, OmitTerminalApp) {
   const std::string terminal_app_name =
-      web_app::GenerateApplicationNameFromAppId(crostini::GetTerminalId());
+      web_app::GenerateApplicationNameFromAppId(
+          crostini::kCrostiniTerminalSystemAppId);
   size_t total_count = 0;
   for (auto* browser : *BrowserList::GetInstance()) {
     ++total_count;

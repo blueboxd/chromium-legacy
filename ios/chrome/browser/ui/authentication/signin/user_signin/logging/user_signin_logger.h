@@ -31,12 +31,6 @@
                         addedAccount:(BOOL)addedAccount
                advancedSettingsShown:(BOOL)advancedSettingsShown;
 
-// Logs sign-in cancellation when sign-in is in progress.
-// TODO(crbug.com/971989): Used temporarily to log when sign-in is interrupted,
-// |logSigninCompletedWithResult| should be used following the architecture
-// migration.
-- (void)logUndoSignin;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_AUTHENTICATION_SIGNIN_USER_SIGNIN_LOGGING_USER_SIGNIN_LOGGER_H_

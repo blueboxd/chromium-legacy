@@ -51,7 +51,30 @@ For maintainers:
 -   If the importer starts misbehaving, it can be disabled by landing a
     [CL to skip the update step](https://crrev.com/c/1961906/).
 
-### Failures caused by automatic imports.
+### WPT-NOTIFY
+
+Test owners can elect to have the importer automatically file bugs against a
+component when imported changes introduce failures. This includes new tests that
+fail in Chromium, as well as new failures introduced to an existing test. To
+opt-in to this functionality, create an `OWNERS` file in the appropriate
+`external/wpt/` subdirectory that contains the `WPT-NOTIFY` tag. For example,
+`external/wpt/css/css-grid/OWNERS` looks like:
+
+```
+# TEAM: layout-dev@chromium.org
+# COMPONENT: Blink>Layout>Grid
+# WPT-NOTIFY: true
+```
+
+When a test under `external/wpt/css/css-grid/` newly fails in a WPT import, the
+importer will automatically file a bug against the Blink>Layout>Grid component
+in [crbug.com][https://crbug.com], with details of which test failed and the
+output.
+
+Note that we are considering making WPT-NOTIFY opt-out instead of opt-in: see
+https://crbug.com/845232
+
+### Waterfall failures caused by automatic imports.
 
 If there are new test failures that start after an auto-import,
 there are several possible causes, including:

@@ -285,7 +285,7 @@ void CrostiniPackageNotification::Click(
     return;
 
   if (app_count_ == 0) {
-    LaunchCrostiniApp(profile_, GetTerminalId(),
+    LaunchCrostiniApp(profile_, kCrostiniTerminalSystemAppId,
                       display::Screen::GetScreen()->GetPrimaryDisplay().id());
   } else if (app_count_ == 1) {
     DCHECK(!app_id_.empty());

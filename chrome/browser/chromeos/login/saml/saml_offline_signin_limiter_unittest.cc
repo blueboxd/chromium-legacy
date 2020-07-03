@@ -13,6 +13,8 @@
 #include "base/test/simple_test_clock.h"
 #include "base/time/clock.h"
 #include "base/timer/mock_timer.h"
+#include "chrome/browser/chromeos/login/saml/in_session_password_sync_manager.h"
+#include "chrome/browser/chromeos/login/saml/in_session_password_sync_manager_factory.h"
 #include "chrome/browser/chromeos/login/saml/saml_offline_signin_limiter_factory.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -652,6 +654,9 @@ TEST_F(SAMLOfflineSigninLimiterTest, SAMLLogInOfflineWithExpiredLimit) {
   EXPECT_CALL(*user_manager_, SaveForceOnlineSignin(test_account_id_, true))
       .Times(1);
   limiter_->SignedIn(UserContext::AUTH_FLOW_OFFLINE);
+  InSessionPasswordSyncManager* password_sync_manager =
+      InSessionPasswordSyncManagerFactory::GetForProfile(profile_.get());
+  EXPECT_FALSE(password_sync_manager->IsLockReauthEnabled());
 
   const base::Time last_gaia_signin_time =
       prefs->GetTime(prefs::kSAMLLastGAIASignInTime);
@@ -684,6 +689,31 @@ TEST_F(SAMLOfflineSigninLimiterTest, SAMLLimitExpiredWhileSuspended) {
   EXPECT_CALL(*user_manager_, SaveForceOnlineSignin(test_account_id_, true))
       .Times(1);
   power_source_->GenerateResumeEvent();
+}
+
+TEST_F(SAMLOfflineSigninLimiterTest, SAMLLogInOfflineWithOnLockReauth) {
+  PrefService* prefs = profile_->GetPrefs();
+
+  // Set the time of last login with SAML and time limit.
+  prefs->SetTime(prefs::kSAMLLastGAIASignInTime, clock_.Now());
+  prefs->SetInteger(prefs::kSAMLOfflineSigninTimeLimit,
+                    base::TimeDelta::FromDays(1).InSeconds());  // 1 day.
+
+  // Enable re-authentication on the lock screen.
+  prefs->SetBoolean(prefs::kSamlLockScreenReauthenticationEnabled, true);
+
+  // Advance time by four weeks.
+  clock_.Advance(base::TimeDelta::FromDays(28));  // 4 weeks.
+
+  // Authenticate offline and check if InSessionPasswordSyncManager is created.
+  CreateLimiter();
+  limiter_->SignedIn(UserContext::AUTH_FLOW_OFFLINE);
+  InSessionPasswordSyncManager* password_sync_manager =
+      InSessionPasswordSyncManagerFactory::GetForProfile(profile_.get());
+  // Verify that we enter InSessionPasswordSyncManager::ForceReauthOnLockScreen.
+  EXPECT_TRUE(password_sync_manager->IsLockReauthEnabled());
+  // After changing the re-auth flag timer should be stopped.
+  EXPECT_FALSE(timer_->IsRunning());
 }
 
 }  //  namespace chromeos

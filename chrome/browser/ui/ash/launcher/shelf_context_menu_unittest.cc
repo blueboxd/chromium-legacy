@@ -616,7 +616,7 @@ TEST_P(ShelfContextMenuTest, InternalAppShelfContextMenuOptionsNumber) {
 // Checks some properties for crostini's terminal app's context menu,
 // specifically that every menu item has an icon.
 TEST_P(ShelfContextMenuTest, CrostiniTerminalApp) {
-  const std::string app_id = crostini::GetTerminalId();
+  const std::string app_id = crostini::kCrostiniTerminalSystemAppId;
   crostini::CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
       crostini::kCrostiniDefaultVmName);
 

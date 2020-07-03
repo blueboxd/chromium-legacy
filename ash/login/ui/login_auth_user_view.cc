@@ -862,9 +862,14 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
                       callbacks.on_easy_unlock_icon_hovered,
                       callbacks.on_easy_unlock_icon_tapped);
 
+  base::string16 button_message =
+      l10n_util::GetStringUTF16(IDS_ASH_LOGIN_SIGN_IN_REQUIRED_MESSAGE);
+  if (user.is_signed_in) {
+    button_message =
+        l10n_util::GetStringUTF16(IDS_ASH_LOCK_SCREEN_VERIFY_ACCOUNT_MESSAGE);
+  }
   auto online_sign_in_message = std::make_unique<SystemLabelButton>(
-      this, l10n_util::GetStringUTF16(IDS_ASH_LOGIN_SIGN_IN_REQUIRED_MESSAGE),
-      SystemLabelButton::DisplayType::ALERT_WITH_ICON);
+      this, button_message, SystemLabelButton::DisplayType::ALERT_WITH_ICON);
   online_sign_in_message_ = online_sign_in_message.get();
 
   auto disabled_auth_message = std::make_unique<DisabledAuthMessageView>();

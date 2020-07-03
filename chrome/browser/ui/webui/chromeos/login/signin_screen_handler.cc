@@ -223,9 +223,6 @@ SigninScreenHandler::SigninScreenHandler(
       network_state_informer_(network_state_informer),
       error_screen_(error_screen),
       core_oobe_view_(core_oobe_view),
-      caps_lock_enabled_(chromeos::input_method::InputMethodManager::Get()
-                             ->GetImeKeyboard()
-                             ->CapsLockIsEnabled()),
       proxy_auth_dialog_reload_times_(kMaxGaiaReloadForProxyAuthDialog),
       gaia_screen_handler_(gaia_screen_handler),
       histogram_helper_(new ErrorScreensHistogramHelper("Signin")) {
@@ -411,12 +408,9 @@ void SigninScreenHandler::RegisterMessages() {
   AddCallback("completeOfflineAuthentication",
               &SigninScreenHandler::HandleCompleteOfflineAuthentication);
   AddCallback("launchIncognito", &SigninScreenHandler::HandleLaunchIncognito);
-  AddCallback("launchPublicSession",
-              &SigninScreenHandler::HandleLaunchPublicSession);
   AddCallback("launchSAMLPublicSession",
               &SigninScreenHandler::HandleLaunchSAMLPublicSession);
   AddRawCallback("offlineLogin", &SigninScreenHandler::HandleOfflineLogin);
-  AddCallback("rebootSystem", &SigninScreenHandler::HandleRebootSystem);
   AddCallback("toggleEnrollmentScreen",
               &SigninScreenHandler::HandleToggleEnrollmentScreen);
   AddCallback("toggleEnableDebuggingScreen",
@@ -841,13 +835,6 @@ void SigninScreenHandler::PreloadPinKeyboard(bool should_preload) {
     CallJS("cr.ui.Oobe.preloadPinKeyboard");
 }
 
-void SigninScreenHandler::OnUserRemoved(const AccountId& account_id,
-                                        bool last_user_removed) {
-  CallJS("login.AccountPickerScreen.removeUser", account_id);
-  if (last_user_removed)
-    gaia_screen_handler_->OnShowAddUser();
-}
-
 void SigninScreenHandler::OnUserImageChanged(const user_manager::User& user) {
   if (page_is_ready()) {
     CallJS("login.AccountPickerScreen.updateUserImage", user.GetAccountId());
@@ -1053,22 +1040,13 @@ void SigninScreenHandler::HandleLaunchIncognito() {
 
 void SigninScreenHandler::HandleLaunchSAMLPublicSession(
     const std::string& email) {
-  const AccountId account_id = user_manager::known_user::GetAccountId(
-      email, std::string() /* id */, AccountType::UNKNOWN);
-  SigninScreenHandler::HandleLaunchPublicSession(account_id, std::string(),
-                                                 std::string());
-}
-
-void SigninScreenHandler::HandleLaunchPublicSession(
-    const AccountId& account_id,
-    const std::string& locale,
-    const std::string& input_method) {
   if (!delegate_)
     return;
 
+  const AccountId account_id = user_manager::known_user::GetAccountId(
+      email, std::string() /* id */, AccountType::UNKNOWN);
+
   UserContext context(user_manager::USER_TYPE_PUBLIC_ACCOUNT, account_id);
-  context.SetPublicSessionLocale(locale),
-  context.SetPublicSessionInputMethod(input_method);
   delegate_->Login(context, SigninSpecifics());
 }
 
@@ -1083,11 +1061,6 @@ void SigninScreenHandler::HandleOfflineLogin(const base::ListValue* args) {
   gaia_screen_handler_->set_populated_account(AccountId::FromUserEmail(email));
   gaia_screen_handler_->LoadAuthExtension(true /* force */, true /* offline */);
   UpdateUIState(UI_STATE_GAIA_SIGNIN);
-}
-
-void SigninScreenHandler::HandleRebootSystem() {
-  chromeos::PowerManagerClient::Get()->RequestRestart(
-      power_manager::REQUEST_RESTART_FOR_USER, "WebUI signin screen");
 }
 
 void SigninScreenHandler::HandleToggleEnrollmentScreen() {
@@ -1363,9 +1336,8 @@ net::Error SigninScreenHandler::FrameError() const {
 }
 
 void SigninScreenHandler::OnCapsLockChanged(bool enabled) {
-  caps_lock_enabled_ = enabled;
   if (page_is_ready())
-    CallJS("login.AccountPickerScreen.setCapsLockState", caps_lock_enabled_);
+    CallJS("login.AccountPickerScreen.setCapsLockState", enabled);
 }
 
 void SigninScreenHandler::OnFeedbackFinished() {

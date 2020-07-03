@@ -4,6 +4,8 @@
 
 #include "chrome/browser/nearby_sharing/share_target.h"
 
+#include <utility>
+
 #include "base/atomic_sequence_num.h"
 
 namespace {
@@ -32,3 +34,5 @@ ShareTarget::ShareTarget(std::string device_name,
       is_known_(is_known) {}
 
 ShareTarget::~ShareTarget() = default;
+ShareTarget::ShareTarget(const ShareTarget&) = default;
+ShareTarget& ShareTarget::operator=(const ShareTarget&) = default;

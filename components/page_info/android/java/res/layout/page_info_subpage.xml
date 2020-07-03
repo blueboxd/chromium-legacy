@@ -11,37 +11,35 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="8dp"
-    android:orientation="vertical"
-    android:background="@color/sheet_bg_color">
+    android:background="@color/sheet_bg_color"
+    android:orientation="vertical">
 
-    <RelativeLayout
+    <view
+        android:id="@+id/subpage_url"
+        class="org.chromium.components.page_info.PageInfoView$ElidedUrlTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingBottom="12dp"
-        android:paddingEnd="@dimen/page_info_popup_padding_sides"
-        android:paddingStart="@dimen/page_info_popup_padding_sides" >
+        android:ellipsize="end"
+        android:lineSpacingExtra="6dp"
+        android:paddingVertical="16dp"
+        android:textAlignment="center"
+        android:textAppearance="@style/TextAppearance.TextLarge.Primary" />
 
-        <view class="org.chromium.components.page_info.PageInfoView$ElidedUrlTextView"
-            android:id="@+id/subpage_url"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:lineSpacingExtra="6dp"
-            android:paddingTop="16dp"
-            android:paddingBottom="16dp"
-            android:textAlignment="center"
-            android:textAppearance="@style/TextAppearance.TextLarge.Primary" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="16dp">
 
-        <ImageView
+        <org.chromium.ui.widget.ChromeImageButton
             android:id="@+id/subpage_back_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/subpage_url"
-            tools:ignore="ContentDescription"
-            android:layout_marginEnd="16dp"
-            android:layout_centerVertical="true"
-            android:layout_alignParentStart="true"
+            android:padding="12dp"
+            android:layout_marginStart="-12dp"
+            android:layout_marginEnd="4dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_arrow_back_white_24dp"
             app:tint="@color/default_icon_color" />
 
@@ -49,19 +47,14 @@
             android:id="@+id/subpage_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/subpage_url"
-            android:layout_toEndOf="@id/subpage_back_button"
-            android:gravity="center_vertical"
-            android:paddingBottom="12dp"
-            app:chromeDrawableTint="@color/default_icon_color"
-            android:textAppearance="@style/TextAppearance.TextLarge.Primary"/>
-
-    </RelativeLayout>
+            android:layout_marginVertical="12dp"
+            android:textAppearance="@style/TextAppearance.TextLarge.Primary" />
+    </LinearLayout>
 
     <!-- Programmatically add page specific inner view here -->
     <FrameLayout
         android:id="@+id/placeholder"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent" />
 
 </LinearLayout>

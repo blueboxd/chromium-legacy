@@ -41,17 +41,23 @@ namespace {
 template <typename Set>
 class ListOrLinkedHashSetTest : public testing::Test {};
 
+// These custom traits affect only NewLinkedHashSet tests.
+struct CustomHashTraitsForInt : public HashTraits<int> {
+  static const bool kEmptyValueIsZero = false;
+  static int EmptyValue() { return INT_MAX; }
+
+  static void ConstructDeletedValue(int& slot, bool) { slot = INT_MIN; }
+  static bool IsDeletedValue(const int& value) { return value == INT_MIN; }
+};
+
 using SetTypes = testing::Types<ListHashSet<int>,
                                 ListHashSet<int, 1>,
                                 LinkedHashSet<int>,
-                                NewLinkedHashSet<int>>;
+                                NewLinkedHashSet<int, CustomHashTraitsForInt>>;
 TYPED_TEST_SUITE(ListOrLinkedHashSetTest, SetTypes);
 
 TYPED_TEST(ListOrLinkedHashSetTest, RemoveFirst) {
   using Set = TypeParam;
-  // TODO(bartekn): Make the test work. Fails due to empty value.
-  if (std::is_same<Set, NewLinkedHashSet<int>>::value)
-    return;
   Set list;
   list.insert(-1);
   list.insert(0);
@@ -202,9 +208,6 @@ TYPED_TEST(ListOrLinkedHashSetTest, PrependOrMoveToLastWithDuplicates) {
 
 TYPED_TEST(ListOrLinkedHashSetTest, Find) {
   using Set = TypeParam;
-  // TODO(bartekn): Make the test work. Fails due to empty value.
-  if (std::is_same<Set, NewLinkedHashSet<int>>::value)
-    return;
   Set set;
   set.insert(-1);
   set.insert(0);
@@ -236,11 +239,9 @@ TYPED_TEST(ListOrLinkedHashSetTest, Find) {
 
 TYPED_TEST(ListOrLinkedHashSetTest, InsertBefore) {
   using Set = TypeParam;
-  // TODO(bartekn): Make the test work. Fails due to empty value.
-  if (std::is_same<Set, NewLinkedHashSet<int>>::value)
-    return;
   bool can_modify_while_iterating =
-      !std::is_same<Set, LinkedHashSet<int>>::value;
+      !std::is_same<Set, LinkedHashSet<int>>::value &&
+      !std::is_same<Set, NewLinkedHashSet<int, CustomHashTraitsForInt>>::value;
   Set set;
   set.insert(-1);
   set.insert(0);
@@ -695,7 +696,7 @@ TYPED_TEST(ListOrLinkedHashSetMoveOnlyTest, MoveOnlyValue) {
 // A unit type which objects to its state being initialized wrong.
 struct InvalidZeroValue {
   InvalidZeroValue() = default;
-  InvalidZeroValue(WTF::HashTableDeletedValueType) : deleted_(true) {}
+  explicit InvalidZeroValue(WTF::HashTableDeletedValueType) : deleted_(true) {}
   ~InvalidZeroValue() { CHECK(ok_); }
   bool IsHashTableDeletedValue() const { return deleted_; }
 
@@ -721,7 +722,7 @@ struct DefaultHash<InvalidZeroValue> {
 template <typename Set>
 class ListOrLinkedHashSetInvalidZeroTest : public testing::Test {};
 
-// TODO(bartekn): Add NewLinkedHashSet once it supports custom hash traits.
+// NewLinkedHashSet is tested in NewLinkedHashSetEmptyTest.EmptyString
 using InvalidZeroValueSetTypes =
     testing::Types<ListHashSet<InvalidZeroValue>,
                    ListHashSet<InvalidZeroValue, 1>,

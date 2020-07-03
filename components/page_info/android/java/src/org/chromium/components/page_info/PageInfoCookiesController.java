@@ -11,20 +11,23 @@ import android.view.ViewGroup;
  * Class for controlling the page info cookies section.
  */
 public class PageInfoCookiesController implements PageInfoSubpageController {
-    private PageInfoController mMainController;
-    private PageInfoViewV2 mView;
+    private PageInfoMainPageController mMainController;
+    private PageInfoRowView mRowView;
+    private String mFullUrl;
     private String mTitle;
 
-    public PageInfoCookiesController(
-            PageInfoController mainController, PageInfoViewV2 view, boolean isVisible) {
+    public PageInfoCookiesController(PageInfoMainPageController mainController,
+            PageInfoRowView rowView, boolean isVisible, String fullUrl) {
         mMainController = mainController;
-        mView = view;
-        mTitle = mView.getContext().getResources().getString(R.string.cookies_title);
+        mRowView = rowView;
+        mFullUrl = fullUrl;
+        mTitle = mRowView.getContext().getResources().getString(R.string.cookies_title);
+
         PageInfoRowView.ViewParams rowParams = new PageInfoRowView.ViewParams();
         rowParams.visible = isVisible;
         rowParams.title = mTitle;
         rowParams.clickCallback = this::launchSubpage;
-        mView.getCookiesRowView().setParams(rowParams);
+        mRowView.setParams(rowParams);
     }
 
     private void launchSubpage() {
@@ -43,11 +46,14 @@ public class PageInfoCookiesController implements PageInfoSubpageController {
     }
 
     @Override
-    public void willRemoveSubpage() {}
+    public void onSubPageAttached() {}
+
+    @Override
+    public void onSubpageRemoved() {}
 
     public void onBlockedCookiesCountChanged(int blockedCookies) {
-        String subtitle = mView.getContext().getResources().getQuantityString(
+        String subtitle = mRowView.getContext().getResources().getQuantityString(
                 R.plurals.cookie_controls_blocked_cookies, blockedCookies, blockedCookies);
-        mView.getCookiesRowView().updateSubtitle(subtitle);
+        mRowView.updateSubtitle(subtitle);
     }
 }

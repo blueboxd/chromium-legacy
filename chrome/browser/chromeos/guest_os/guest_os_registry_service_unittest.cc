@@ -245,7 +245,7 @@ TEST_F(GuestOsRegistryServiceTest, NAppsInstalledHistogram) {
   *app_list.add_apps() = app5;
 
   // Force the registry to have a prefs entry for the Terminal.
-  service()->AppLaunched(crostini::GetTerminalId());
+  service()->AppLaunched(crostini::kCrostiniTerminalSystemAppId);
 
   // Update the list of apps so that they can be counted.
   service()->UpdateApplicationList(app_list);
@@ -344,9 +344,10 @@ TEST_F(GuestOsRegistryServiceTest, MultipleContainers) {
   std::string app_id_3 =
       crostini::CrostiniTestHelper::GenerateAppId("app", "vm 2", "container 1");
 
-  EXPECT_THAT(GetRegisteredAppIds(),
-              testing::UnorderedElementsAre(app_id_1, app_id_2, app_id_3,
-                                            crostini::GetTerminalId()));
+  EXPECT_THAT(
+      GetRegisteredAppIds(),
+      testing::UnorderedElementsAre(app_id_1, app_id_2, app_id_3,
+                                    crostini::kCrostiniTerminalSystemAppId));
 
   // Clobber app_id_2
   service()->UpdateApplicationList(crostini::CrostiniTestHelper::BasicAppList(
@@ -354,9 +355,10 @@ TEST_F(GuestOsRegistryServiceTest, MultipleContainers) {
   std::string new_app_id = crostini::CrostiniTestHelper::GenerateAppId(
       "app 2", "vm 1", "container 2");
 
-  EXPECT_THAT(GetRegisteredAppIds(),
-              testing::UnorderedElementsAre(app_id_1, app_id_3, new_app_id,
-                                            crostini::GetTerminalId()));
+  EXPECT_THAT(
+      GetRegisteredAppIds(),
+      testing::UnorderedElementsAre(app_id_1, app_id_3, new_app_id,
+                                    crostini::kCrostiniTerminalSystemAppId));
 }
 
 // Test that ClearApplicationList works, and only removes apps from the
@@ -379,17 +381,18 @@ TEST_F(GuestOsRegistryServiceTest, ClearApplicationList) {
   std::string app_id_4 = crostini::CrostiniTestHelper::GenerateAppId(
       "app 2", "vm 2", "container 1");
 
-  EXPECT_THAT(GetRegisteredAppIds(), testing::UnorderedElementsAre(
-                                         app_id_1, app_id_2, app_id_3, app_id_4,
-                                         crostini::GetTerminalId()));
+  EXPECT_THAT(
+      GetRegisteredAppIds(),
+      testing::UnorderedElementsAre(app_id_1, app_id_2, app_id_3, app_id_4,
+                                    crostini::kCrostiniTerminalSystemAppId));
 
   service()->ClearApplicationList(
       GuestOsRegistryService::VmType::ApplicationList_VmType_TERMINA, "vm 2",
       "");
 
   EXPECT_THAT(GetRegisteredAppIds(),
-              testing::UnorderedElementsAre(app_id_1, app_id_2,
-                                            crostini::GetTerminalId()));
+              testing::UnorderedElementsAre(
+                  app_id_1, app_id_2, crostini::kCrostiniTerminalSystemAppId));
 }
 
 TEST_F(GuestOsRegistryServiceTest, IsScaledReturnFalseWhenNotSet) {
@@ -501,20 +504,22 @@ TEST_F(GuestOsRegistryServiceTest, SetAndGetPackageId) {
 TEST_F(GuestOsRegistryServiceTest, MigrateTerminal) {
   // Add prefs entry for the deleted terminal.
   base::DictionaryValue registry;
-  registry.SetKey(crostini::GetDeletedTerminalId(), base::DictionaryValue());
+  registry.SetKey(crostini::kCrostiniDeletedTerminalId,
+                  base::DictionaryValue());
   profile()->GetPrefs()->Set(guest_os::prefs::kGuestOsRegistry,
                              std::move(registry));
 
   // Only current terminal returned.
   RecreateService();
-  EXPECT_THAT(GetRegisteredAppIds(),
-              testing::UnorderedElementsAre(crostini::GetTerminalId()));
+  EXPECT_THAT(
+      GetRegisteredAppIds(),
+      testing::UnorderedElementsAre(crostini::kCrostiniTerminalSystemAppId));
 
   // Deleted terminal removed from prefs.
   EXPECT_FALSE(profile()
                    ->GetPrefs()
                    ->GetDictionary(guest_os::prefs::kGuestOsRegistry)
-                   ->HasKey(crostini::GetDeletedTerminalId()));
+                   ->HasKey(crostini::kCrostiniDeletedTerminalId));
 }
 
 }  // namespace guest_os

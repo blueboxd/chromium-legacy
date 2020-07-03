@@ -40,6 +40,8 @@ class TransferMetadata {
                    bool is_original,
                    bool is_final_status);
   ~TransferMetadata();
+  TransferMetadata(const TransferMetadata&);
+  TransferMetadata& operator=(const TransferMetadata&);
 
   Status status() { return status_; }
   float progress() { return progress_; }

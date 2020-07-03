@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/feature_list.h"
 #include "base/location.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/apps/app_service/app_icon_source.h"
 #include "chrome/browser/apps/app_service/app_service_metrics.h"
@@ -489,25 +490,54 @@ void AppServiceProxy::UninstallForTesting(const std::string& app_id,
 #endif
 
 std::vector<std::string> AppServiceProxy::GetAppIdsForUrl(const GURL& url) {
-  return GetAppIdsForIntent(apps_util::CreateIntentFromUrl(url));
+  auto app_id_and_activities =
+      GetAppsForIntent(apps_util::CreateIntentFromUrl(url));
+  std::vector<std::string> app_ids;
+  for (auto& app_id_and_activity : app_id_and_activities) {
+    app_ids.push_back(std::move(app_id_and_activity.app_id));
+  }
+  return app_ids;
 }
 
-std::vector<std::string> AppServiceProxy::GetAppIdsForIntent(
-    apps::mojom::IntentPtr intent) {
-  std::vector<std::string> app_ids;
+std::vector<AppIdAndActivityName> AppServiceProxy::GetAppsForIntent(
+    const apps::mojom::IntentPtr& intent) {
+  std::vector<AppIdAndActivityName> app_id_and_activities;
   if (app_service_.is_bound()) {
-    cache_.ForEachApp([&app_ids, &intent](const apps::AppUpdate& update) {
+    cache_.ForEachApp([&app_id_and_activities,
+                       &intent](const apps::AppUpdate& update) {
       if (update.Readiness() == apps::mojom::Readiness::kUninstalledByUser) {
         return;
       }
+      std::set<std::string> existing_activities;
       for (const auto& filter : update.IntentFilters()) {
         if (apps_util::IntentMatchesFilter(intent, filter)) {
-          app_ids.push_back(update.AppId());
+          AppIdAndActivityName app_id_and_activity;
+          app_id_and_activity.app_id = update.AppId();
+          if (base::FeatureList::IsEnabled(features::kIntentHandlingSharing) &&
+              filter->activity_name.has_value()) {
+            std::string activity_name = filter->activity_name.value();
+            if (activity_name.empty()) {
+              activity_name = update.Name();
+            }
+            if (base::Contains(existing_activities, activity_name)) {
+              continue;
+            }
+            existing_activities.insert(activity_name);
+            app_id_and_activity.activity_name = activity_name;
+          }
+          app_id_and_activities.push_back(app_id_and_activity);
         }
       }
     });
   }
-  return app_ids;
+  return app_id_and_activities;
+}
+
+std::vector<AppIdAndActivityName> AppServiceProxy::GetAppsForFiles(
+    const std::vector<GURL>& filesystem_urls,
+    const std::vector<std::string>& mime_types) {
+  return GetAppsForIntent(
+      apps_util::CreateShareIntentFromFiles(filesystem_urls, mime_types));
 }
 
 void AppServiceProxy::SetArcIsRegistered() {

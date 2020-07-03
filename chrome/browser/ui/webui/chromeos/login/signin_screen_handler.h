@@ -63,8 +63,6 @@ class LoginDisplayWebUIHandler {
  public:
   virtual void ClearAndEnablePassword() = 0;
   virtual void ClearUserPodPassword() = 0;
-  virtual void OnUserRemoved(const AccountId& account_id,
-                             bool last_user_removed) = 0;
   virtual void OnUserImageChanged(const user_manager::User& user) = 0;
   virtual void OnPreferencesChanged() = 0;
   virtual void ResetSigninScreenHandlerDelegate() = 0;
@@ -122,18 +120,12 @@ class SigninScreenHandlerDelegate {
   // Let the delegate know about the handler it is supposed to be using.
   virtual void SetWebUIHandler(LoginDisplayWebUIHandler* webui_handler) = 0;
 
-  // Whether login as guest is available.
-  virtual bool IsShowGuest() const = 0;
-
   // Whether to show the user pods or only GAIA sign in.
   // Public sessions are always shown.
   virtual bool IsShowUsers() const = 0;
 
   // Whether the show user pods setting has changed.
   virtual bool ShowUsersHasChanged() const = 0;
-
-  // Whether the create new account option in GAIA is enabled by the setting.
-  virtual bool IsAllowNewUser() const = 0;
 
   // Whether the allow new user setting has changed.
   virtual bool AllowNewUserChanged() const = 0;
@@ -173,12 +165,6 @@ class SigninScreenHandler
   ~SigninScreenHandler() override;
 
   static std::string GetUserLastInputMethod(const std::string& username);
-
-  // Update current input method (namely keyboard layout) in the given IME state
-  // to last input method used by this user.
-  static void SetUserInputMethod(
-      const std::string& username,
-      input_method::InputMethodManager::State* ime_state);
 
   // Shows the sign in screen.
   void Show(bool oobe_ui);
@@ -250,8 +236,6 @@ class SigninScreenHandler
   // LoginDisplayWebUIHandler implementation:
   void ClearAndEnablePassword() override;
   void ClearUserPodPassword() override;
-  void OnUserRemoved(const AccountId& account_id,
-                     bool last_user_removed) override;
   void OnUserImageChanged(const user_manager::User& user) override;
   void OnPreferencesChanged() override;
   void ResetSigninScreenHandlerDelegate() override;
@@ -289,22 +273,15 @@ class SigninScreenHandler
   void PreloadPinKeyboard(bool should_preload);
 
   // WebUI message handlers.
-  void HandleGetUsers();
   void HandleAuthenticateUser(const AccountId& account_id,
                               const std::string& password,
                               bool authenticated_by_pin);
   void HandleCompleteOfflineAuthentication(const std::string& email,
                                            const std::string& password);
-  void HandleAttemptUnlock(const std::string& username);
   void HandleLaunchIncognito();
   void HandleLaunchSAMLPublicSession(const std::string& email);
-  void HandleLaunchPublicSession(const AccountId& account_id,
-                                 const std::string& locale,
-                                 const std::string& input_method);
   void HandleOfflineLogin(const base::ListValue* args);
-  void HandleRebootSystem();
   void HandleToggleEnrollmentScreen();
-  void HandleToggleEnrollmentAd();
   void HandleToggleEnableDebuggingScreen();
   void HandleToggleKioskEnableScreen();
   void HandleToggleResetScreen();
@@ -353,10 +330,6 @@ class SigninScreenHandler
   // (i)   log in is restricted to some user list,
   // (ii)  all users in the restricted list are present.
   bool AllAllowlistedUsersPresent();
-
-  // Cancels password changed flow - switches back to login screen.
-  // Called as a callback after cookies are cleared.
-  void CancelPasswordChangedFlowInternal();
 
   // Returns true if current visible screen is the Gaia sign-in page.
   bool IsGaiaVisible() const;
@@ -425,8 +398,6 @@ class SigninScreenHandler
   // Used for pending GAIA reloads.
   NetworkError::ErrorReason gaia_reload_reason_ =
       NetworkError::ERROR_REASON_NONE;
-
-  bool caps_lock_enabled_ = false;
 
   // If network has accidentally changed to the one that requires proxy
   // authentication, we will automatically reload gaia page that will bring

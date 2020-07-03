@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list_types.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
@@ -27,7 +28,7 @@ class WebContents;
 namespace signin {
 enum class ReauthResult;
 class ReauthTabHelper;
-}
+}  // namespace signin
 
 // A controller class for the Reauth UI flow.
 //
@@ -43,13 +44,20 @@ class SigninReauthViewController
     : public SigninViewControllerDelegate,
       public SigninViewControllerDelegate::Observer {
  public:
-  // An observer class currently used only for tests.
-  class Observer {
+  enum class GaiaReauthType;
+
+  class Observer : public base::CheckedObserver {
    public:
-    virtual ~Observer() = default;
+    // Called when the controller gets destroyed. The subclass must stop
+    // observing the controller when this is called.
+    virtual void OnReauthControllerDestroyed() {}
+    // Called when |reauth_type| is determined. Usually it happens when the
+    // Gaia Reauth page navigates.
+    // |reauth_type| cannot be |GaiaReauthType::kUnknown|.
+    virtual void OnGaiaReauthTypeDetermined(GaiaReauthType reauth_type) {}
     // Called when the WebContents displaying the reauth confirmation UI has
     // been swapped with Gaia reauth WebContents.
-    virtual void OnGaiaReauthPageShown() = 0;
+    virtual void OnGaiaReauthPageShown() {}
   };
 
   enum class GaiaReauthPageState {
@@ -59,6 +67,13 @@ class SigninReauthViewController
     kNavigated = 1,
     // The reauth has been completed and the result is available.
     kDone = 2
+  };
+
+  enum class GaiaReauthType {
+    kUnknown = 0,
+    kAutoApproved = 1,
+    kEmbeddedFlow = 2,
+    kSAMLFlow = 3
   };
 
   enum class UIState {
@@ -130,8 +145,10 @@ class SigninReauthViewController
   // Called when the Gaia reauth has been completed and the result is available.
   void OnGaiaReauthPageComplete(signin::ReauthResult result);
 
-  // Public for testing.
-  void SetObserverForTesting(Observer* test_observer);
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
+  GaiaReauthType gaia_reauth_type() { return gaia_reauth_type_; }
 
  private:
   // Calls |reauth_callback_| with |result| and closes all Reauth UIs.
@@ -140,6 +157,8 @@ class SigninReauthViewController
   // Notifies about a change in the reauth flow state. Must be called whenever
   // |user_confirmed_reauth_| or |gaia_reauth_page_state_| has changed.
   void OnStateChanged();
+
+  void OnGaiaReauthTypeDetermined(GaiaReauthType reauth_type);
 
   void RecordClickOnce(UserAction click_action);
   void RecordGaiaNavigationDuration();
@@ -156,6 +175,8 @@ class SigninReauthViewController
   const CoreAccountId account_id_;
   const signin_metrics::ReauthAccessPoint access_point_;
   base::OnceCallback<void(signin::ReauthResult)> reauth_callback_;
+
+  GaiaReauthType gaia_reauth_type_ = GaiaReauthType::kUnknown;
 
   // Dialog state useful for recording metrics.
   UIState ui_state_ = UIState::kNone;
@@ -181,7 +202,7 @@ class SigninReauthViewController
   GaiaReauthPageState gaia_reauth_page_state_ = GaiaReauthPageState::kStarted;
   base::Optional<signin::ReauthResult> gaia_reauth_page_result_;
 
-  Observer* test_observer_ = nullptr;
+  base::ObserverList<Observer, true> observer_list_;
 
   base::WeakPtrFactory<SigninReauthViewController> weak_ptr_factory_{this};
 };

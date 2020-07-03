@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "chrome/browser/nearby_sharing/transfer_metadata.h"
 
 TransferMetadata::TransferMetadata(Status status,
@@ -16,3 +18,8 @@ TransferMetadata::TransferMetadata(Status status,
       is_final_status_(is_final_status) {}
 
 TransferMetadata::~TransferMetadata() = default;
+
+TransferMetadata::TransferMetadata(const TransferMetadata&) = default;
+
+TransferMetadata& TransferMetadata::operator=(const TransferMetadata&) =
+    default;

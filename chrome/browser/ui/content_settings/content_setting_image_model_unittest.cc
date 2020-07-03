@@ -521,6 +521,27 @@ TEST_F(ContentSettingImageModelTest, NotificationsPromptAbusive) {
   EXPECT_EQ(0, content_setting_image_model->explanatory_string_id());
   manager_->Accept();
 }
+
+TEST_F(ContentSettingImageModelTest, NotificationsContentAbusive) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kQuietNotificationPrompts);
+
+  auto content_setting_image_model =
+      ContentSettingImageModel::CreateForContentType(
+          ContentSettingImageModel::ImageType::NOTIFICATIONS_QUIET_PROMPT);
+  EXPECT_FALSE(content_setting_image_model->is_visible());
+  manager_->set_notification_permission_ui_selector_for_testing(
+      std::make_unique<TestQuietNotificationPermissionUiSelector>(
+          permissions::NotificationPermissionUiSelector::QuietUiReason::
+              kTriggeredDueToAbusiveContent));
+  manager_->AddRequest(&request_);
+  WaitForBubbleToBeShown();
+  EXPECT_TRUE(manager_->ShouldCurrentRequestUseQuietUI());
+  content_setting_image_model->Update(web_contents());
+  EXPECT_TRUE(content_setting_image_model->is_visible());
+  EXPECT_EQ(0, content_setting_image_model->explanatory_string_id());
+  manager_->Accept();
+}
 #endif  // !defined(OS_ANDROID)
 
 }  // namespace

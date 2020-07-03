@@ -21139,6 +21139,17 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_Interrupt_Signin">
+  <owner>jlebel@chromium.org</owner>
+  <owner>fernandex@chromium.org</owner>
+  <owner>msarda@chromium.org</owner>
+  <description>
+    Recorded when the user chooses to interrupt the sign in process. It closes
+    the sign in page without signing the user in and opens the new flow, e.g.
+    when clicking 'Open in Chrome' from an app.
+  </description>
+</action>
+
 <action name="Signin_MoreButton_Shown">
   <owner>gogerald@chromium.org</owner>
   <owner>bzanotti@chromium.org</owner>

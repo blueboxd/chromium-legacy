@@ -64,10 +64,8 @@ class AppLaunchSigninScreen : public SigninScreenHandlerDelegate,
   void ShowKioskAutolaunchScreen() override;
   void ShowWrongHWIDScreen() override;
   void SetWebUIHandler(LoginDisplayWebUIHandler* webui_handler) override;
-  bool IsShowGuest() const override;
   bool IsShowUsers() const override;
   bool ShowUsersHasChanged() const override;
-  bool IsAllowNewUser() const override;
   bool AllowNewUserChanged() const override;
   bool IsSigninInProgress() const override;
   bool IsUserSigninCompleted() const override;

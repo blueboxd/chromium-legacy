@@ -67,7 +67,7 @@ FindAppIdResult FindAppId(const base::DictionaryValue* prefs,
                           bool ignore_space = false) {
   result->clear();
   for (const auto& item : prefs->DictItems()) {
-    if (item.first == GetTerminalId())
+    if (item.first == kCrostiniTerminalSystemAppId)
       continue;
 
     if (require_startup_notify &&
@@ -220,7 +220,7 @@ bool IsCrostiniShelfAppId(const Profile* profile,
   if (IsUnmatchedCrostiniShelfAppId(shelf_app_id)) {
     return true;
   }
-  if (shelf_app_id == GetTerminalId())
+  if (shelf_app_id == kCrostiniTerminalSystemAppId)
     return true;
   // TODO(timloh): We need to handle desktop files that have been removed.
   // For example, running windows with a no-longer-valid app id will try to

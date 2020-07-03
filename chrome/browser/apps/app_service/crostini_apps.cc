@@ -15,7 +15,6 @@
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -38,7 +37,7 @@ bool ShouldShowDisplayDensityMenuItem(const std::string& app_id,
   // The default terminal app is crosh in a Chrome window and it doesn't run in
   // the Crostini container so it doesn't support display density the same way.
   if (menu_type != apps::mojom::MenuType::kShelf ||
-      app_id == crostini::GetTerminalId()) {
+      app_id == crostini::kCrostiniTerminalSystemAppId) {
     return false;
   }
 
@@ -189,10 +188,8 @@ void CrostiniApps::GetMenuModel(const std::string& app_id,
     AddCommandItem(ash::UNINSTALL, IDS_APP_LIST_UNINSTALL_ITEM, &menu_items);
   }
 
-  if (app_id == crostini::GetTerminalId()) {
-    if (base::FeatureList::IsEnabled(features::kTerminalSystemApp)) {
-      AddCommandItem(ash::SETTINGS, IDS_INTERNAL_APP_SETTINGS, &menu_items);
-    }
+  if (app_id == crostini::kCrostiniTerminalSystemAppId) {
+    AddCommandItem(ash::SETTINGS, IDS_INTERNAL_APP_SETTINGS, &menu_items);
     if (crostini::IsCrostiniRunning(profile_)) {
       AddCommandItem(ash::SHUTDOWN_GUEST_OS,
                      IDS_CROSTINI_SHUT_DOWN_LINUX_MENU_ITEM, &menu_items);
@@ -255,7 +252,7 @@ void CrostiniApps::OnCrostiniEnabledChanged() {
   // point to installing other Crostini apps.
   apps::mojom::AppPtr app = apps::mojom::App::New();
   app->app_type = apps::mojom::AppType::kCrostini;
-  app->app_id = crostini::GetTerminalId();
+  app->app_id = crostini::kCrostiniTerminalSystemAppId;
   app->show_in_launcher = show;
   app->show_in_shelf = show;
   app->show_in_search = show;
@@ -358,7 +355,7 @@ apps::mojom::IconKeyPtr CrostiniApps::NewIconKey(const std::string& app_id) {
   // Crostini Terminal icon (the UI for enabling and installing Crostini apps)
   // should be showable even before the user has installed their first Crostini
   // app and before bringing up an Crostini VM for the first time.
-  if (app_id == crostini::GetTerminalId()) {
+  if (app_id == crostini::kCrostiniTerminalSystemAppId) {
     return apps::mojom::IconKey::New(
         apps::mojom::IconKey::kDoesNotChangeOverTime,
         IDR_LOGO_CROSTINI_TERMINAL, apps::IconEffects::kNone);

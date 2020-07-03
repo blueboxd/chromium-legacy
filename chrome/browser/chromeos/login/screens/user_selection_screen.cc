@@ -586,21 +586,6 @@ void UserSelectionScreen::Init(const user_manager::UserList& users) {
     ime_state_ = input_method::InputMethodManager::Get()->GetActiveIMEState();
 }
 
-void UserSelectionScreen::OnBeforeUserRemoved(const AccountId& account_id) {
-  for (auto it = users_.cbegin(); it != users_.cend(); ++it) {
-    if ((*it)->GetAccountId() == account_id) {
-      users_.erase(it);
-      break;
-    }
-  }
-}
-
-void UserSelectionScreen::OnUserRemoved(const AccountId& account_id) {
-  if (!handler_)
-    return;
-  handler_->OnUserRemoved(account_id, users_.empty());
-}
-
 void UserSelectionScreen::OnUserImageChanged(const user_manager::User& user) {
   if (!handler_)
     return;

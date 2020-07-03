@@ -254,22 +254,12 @@ void LoginDisplayMojo::SetWebUIHandler(
   webui_handler_ = webui_handler;
 }
 
-bool LoginDisplayMojo::IsShowGuest() const {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 bool LoginDisplayMojo::IsShowUsers() const {
   NOTIMPLEMENTED();
   return false;
 }
 
 bool LoginDisplayMojo::ShowUsersHasChanged() const {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-bool LoginDisplayMojo::IsAllowNewUser() const {
   NOTIMPLEMENTED();
   return false;
 }

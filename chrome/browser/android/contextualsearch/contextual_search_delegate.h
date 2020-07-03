@@ -37,10 +37,10 @@ class ContextualSearchDelegate
     : public base::SupportsWeakPtr<ContextualSearchDelegate> {
  public:
   // Provides the Resolved Search Term, called when the Resolve Request returns.
-  typedef base::Callback<void(const ResolvedSearchTerm&)>
+  typedef base::RepeatingCallback<void(const ResolvedSearchTerm&)>
       SearchTermResolutionCallback;
   // Provides text surrounding the selection to Java.
-  typedef base::Callback<
+  typedef base::RepeatingCallback<
       void(const std::string&, const base::string16&, size_t, size_t)>
       SurroundingTextCallback;
 
@@ -49,8 +49,8 @@ class ContextualSearchDelegate
   ContextualSearchDelegate(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       TemplateURLService* template_url_service,
-      const SearchTermResolutionCallback& search_term_callback,
-      const SurroundingTextCallback& surrounding_callback);
+      SearchTermResolutionCallback search_term_callback,
+      SurroundingTextCallback surrounding_callback);
   virtual ~ContextualSearchDelegate();
 
   // Gathers surrounding text and saves it locally in the given context.

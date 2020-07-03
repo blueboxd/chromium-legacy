@@ -5,6 +5,8 @@
 #ifndef BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_ADDRESS_SPACE_H_
 #define BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_ADDRESS_SPACE_H_
 
+#include <algorithm>
+
 #include "base/allocator/partition_allocator/address_pool_manager.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
@@ -44,20 +46,21 @@ class BASE_EXPORT PartitionAddressSpace {
   static void UninitForTesting();
 
   static ALWAYS_INLINE bool IsInitialized() {
-    if (kReservedAddressSpaceOffsetMask != reserved_base_address_) {
+    if (reserved_base_address_) {
       PA_DCHECK(direct_map_pool_ != 0);
       PA_DCHECK(normal_bucket_pool_ != 0);
       return true;
     }
 
+    PA_DCHECK(direct_map_pool_ == 0);
+    PA_DCHECK(normal_bucket_pool_ == 0);
     return false;
   }
 
-  static ALWAYS_INLINE bool Contains(const void* address) {
-    return (reinterpret_cast<uintptr_t>(address) &
-            kReservedAddressSpaceBaseMask) == reserved_base_address_;
+  static ALWAYS_INLINE bool IsInDirectMapPool(const void* address) {
+    return (reinterpret_cast<uintptr_t>(address) & kDirectMapPoolBaseMask) ==
+           direct_map_pool_base_address_;
   }
-
   static ALWAYS_INLINE bool IsInNormalBucketPool(const void* address) {
     return (reinterpret_cast<uintptr_t>(address) & kNormalBucketPoolBaseMask) ==
            normal_bucket_pool_base_address_;
@@ -71,59 +74,67 @@ class BASE_EXPORT PartitionAddressSpace {
 
  private:
   // Partition Alloc Address Space
-  // Reserves 32GiB address space for 1 direct map space(16GiB) and 1 normal
-  // bucket space(16GiB).
+  // Reserves 32GiB address space for one direct map pool and one normal bucket
+  // pool, 16GiB each.
   // TODO(bartekn): Look into devices with 39-bit address space that have 256GiB
   // user-mode space. Libraries loaded at random addresses may stand in the way
-  // of reserving a contiguous 64GiB region. (even though we're requesting only
-  // 32GiB, AllocPages may under the covers reserve 64GiB to satisfy the
-  // alignment requirements)
+  // of reserving a contiguous 48GiB region (even though we're requesting only
+  // 32GiB, AllocPages may under the covers reserve extra 16GiB to satisfy the
+  // alignment requirements).
   //
-  // +----------------+ reserved_base_address_(32GiB aligned)
-  // |  direct map    |
-  // |    space       |
+  // +----------------+ reserved_base_address_ (16GiB aligned)
+  // |   direct map   |     == direct_map_pool_base_address_
+  // |     space      |
   // +----------------+ reserved_base_address_ + 16GiB
-  // | normal buckets |
-  // |    space       |
+  // | normal bucket  |     == normal_bucket_pool_base_address_
+  // |     space      |
   // +----------------+ reserved_base_address_ + 32GiB
 
   static constexpr size_t kGigaBytes = 1024 * 1024 * 1024;
+
+  // Pool sizes are flexible, as long as each pool is aligned on its own size
+  // boundary and the size is a power of two. The entire region is aligned on
+  // the max pool size boundary, so the further pools only need to care about
+  // the shift from the beginning of the region (for clarity, the pool sizes are
+  // declared in the order the pools are allocated).
+  //
+  // For example, [16GiB,8GiB] would work, but [8GiB,16GiB] wouldn't (the 2nd
+  // pool is aligned on 8GiB but needs 16GiB), and [8GiB,8GiB,16GiB,1GiB] would.
   static constexpr size_t kDirectMapPoolSize = 16 * kGigaBytes;
   static constexpr size_t kNormalBucketPoolSize = 16 * kGigaBytes;
+
+  static constexpr size_t kDesiredAddressSpaceSize =
+      kDirectMapPoolSize + kNormalBucketPoolSize;
+  static constexpr size_t kReservedAddressSpaceAlignment =
+      std::max(kDirectMapPoolSize, kNormalBucketPoolSize);
+
+  static_assert(bits::IsPowerOfTwo(kDirectMapPoolSize) &&
+                    bits::IsPowerOfTwo(kNormalBucketPoolSize),
+                "Each pool size should be a power of two.");
+  static_assert(bits::IsPowerOfTwo(kReservedAddressSpaceAlignment),
+                "kReservedAddressSpaceAlignment should be a power of two.");
+  static_assert(kReservedAddressSpaceAlignment >= kDirectMapPoolSize &&
+                    kReservedAddressSpaceAlignment >= kNormalBucketPoolSize,
+                "kReservedAddressSpaceAlignment should be larger or equal to "
+                "each pool size.");
+  static_assert(kReservedAddressSpaceAlignment % kDirectMapPoolSize == 0 &&
+                    (kReservedAddressSpaceAlignment + kDirectMapPoolSize) %
+                            kNormalBucketPoolSize ==
+                        0,
+                "Each pool should be aligned to its own size");
+
+  // Masks used to easy determine belonging to a pool.
+  static constexpr uintptr_t kDirectMapPoolOffsetMask =
+      static_cast<uintptr_t>(kDirectMapPoolSize) - 1;
+  static constexpr uintptr_t kDirectMapPoolBaseMask = ~kDirectMapPoolOffsetMask;
   static constexpr uintptr_t kNormalBucketPoolOffsetMask =
       static_cast<uintptr_t>(kNormalBucketPoolSize) - 1;
   static constexpr uintptr_t kNormalBucketPoolBaseMask =
       ~kNormalBucketPoolOffsetMask;
 
-  // Reserves 32GiB aligned address space.
-  // We align on 32GiB as well, and since it's a power of two we can check a
-  // pointer with a single bitmask operation.
-  static constexpr size_t kDesiredAddressSpaceSize =
-      kDirectMapPoolSize + kNormalBucketPoolSize;
-  static constexpr size_t kReservedAddressSpaceAlignment =
-      kDesiredAddressSpaceSize;
-  static constexpr uintptr_t kReservedAddressSpaceOffsetMask =
-      static_cast<uintptr_t>(kReservedAddressSpaceAlignment) - 1;
-  static constexpr uintptr_t kReservedAddressSpaceBaseMask =
-      ~kReservedAddressSpaceOffsetMask;
-
-  static_assert(
-      bits::IsPowerOfTwo(PartitionAddressSpace::kReservedAddressSpaceAlignment),
-      "kReservedAddressSpaceALignment should be a power of two.");
-  static_assert(PartitionAddressSpace::kReservedAddressSpaceAlignment >=
-                    PartitionAddressSpace::kDesiredAddressSpaceSize,
-                "kReservedAddressSpaceAlignment should be larger or equal to "
-                "kDesiredAddressSpaceSize.");
-  static_assert(
-      PartitionAddressSpace::kReservedAddressSpaceAlignment / 2 <
-          PartitionAddressSpace::kDesiredAddressSpaceSize,
-      "kReservedAddressSpaceAlignment should be the smallest power of "
-      "two greater or equal to kDesiredAddressSpaceSize. So a half of "
-      "the alignment should be smaller than the desired size.");
-
   // See the comment describing the address layout above.
   static uintptr_t reserved_base_address_;
-
+  static uintptr_t direct_map_pool_base_address_;
   static uintptr_t normal_bucket_pool_base_address_;
 
   static internal::pool_handle direct_map_pool_;

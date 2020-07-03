@@ -55,15 +55,10 @@ using signin_metrics::PromoAction;
       break;
     }
     case SigninCoordinatorResultInterrupted: {
-      // TODO(crbug.com/951145): Add metric when the sign-in has been
-      // interrupted.
+      RecordAction(UserMetricsAction("Signin_Interrupt_Signin"));
       break;
     }
   }
-}
-
-- (void)logUndoSignin {
-  RecordAction(UserMetricsAction("Signin_Undo_Signin"));
 }
 
 @end

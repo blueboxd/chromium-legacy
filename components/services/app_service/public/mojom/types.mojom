@@ -296,6 +296,10 @@ struct Condition {
 // matches against an intent.
 struct IntentFilter {
   array<Condition> conditions;
+
+  // Activity which registered this filter. We only fill this field for ARC
+  // share intent filters.
+  string? activity_name;
 };
 
 // Action and resource handling request. This includes the scheme and URL at

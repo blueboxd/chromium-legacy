@@ -515,13 +515,14 @@ GuestOsRegistryService::GetAllRegisteredApps() const {
   std::map<std::string, GuestOsRegistryService::Registration> result;
   for (const auto& item : apps->DictItems()) {
     result.emplace(item.first,
-                   Registration(&item.second, /*is_terminal_app=*/item.first ==
-                                                  crostini::GetTerminalId()));
+                   Registration(&item.second,
+                                /*is_terminal_app=*/item.first ==
+                                    crostini::kCrostiniTerminalSystemAppId));
   }
   // TODO(crbug.com/1028898): Register Terminal as a System App rather than a
   // crostini app.
-  if (!apps->FindKey(crostini::GetTerminalId())) {
-    result.emplace(crostini::GetTerminalId(),
+  if (!apps->FindKey(crostini::kCrostiniTerminalSystemAppId)) {
+    result.emplace(crostini::kCrostiniTerminalSystemAppId,
                    Registration(nullptr, /*is_terminal_app=*/true));
   }
   return result;
@@ -547,7 +548,7 @@ GuestOsRegistryService::GetRegistration(const std::string& app_id) const {
   const base::Value* pref_registration =
       apps->FindKeyOfType(app_id, base::Value::Type::DICTIONARY);
 
-  if (app_id == crostini::GetTerminalId())
+  if (app_id == crostini::kCrostiniTerminalSystemAppId)
     return base::make_optional<Registration>(pref_registration, true);
 
   if (!pref_registration)
@@ -569,7 +570,7 @@ void GuestOsRegistryService::RecordStartupMetrics() {
   int num_plugin_vm_apps = 0;
 
   for (const auto& item : apps->DictItems()) {
-    if (item.first == crostini::GetTerminalId())
+    if (item.first == crostini::kCrostiniTerminalSystemAppId)
       continue;
 
     base::Optional<bool> no_display =
@@ -668,7 +669,7 @@ void GuestOsRegistryService::ClearApplicationList(
     base::DictionaryValue* apps = update.Get();
 
     for (const auto& item : apps->DictItems()) {
-      if (item.first == crostini::GetTerminalId())
+      if (item.first == crostini::kCrostiniTerminalSystemAppId)
         continue;
       Registration registration(&item.second, /*is_terminal_app=*/false);
       if (vm_type != registration.VmType())
@@ -772,7 +773,7 @@ void GuestOsRegistryService::UpdateApplicationList(
     }
 
     for (const auto& item : apps->DictItems()) {
-      if (item.first == crostini::GetTerminalId())
+      if (item.first == crostini::kCrostiniTerminalSystemAppId)
         continue;
       if (item.second.FindKey(guest_os::prefs::kAppVmNameKey)->GetString() ==
               app_list.vm_name() &&
@@ -833,7 +834,7 @@ void GuestOsRegistryService::AppLaunched(const std::string& app_id) {
 
   base::Value* app = apps->FindKey(app_id);
   if (!app) {
-    DCHECK_EQ(app_id, crostini::GetTerminalId());
+    DCHECK_EQ(app_id, crostini::kCrostiniTerminalSystemAppId);
     base::Value pref(base::Value::Type::DICTIONARY);
     SetCurrentTime(&pref, guest_os::prefs::kAppLastLaunchTimeKey);
     apps->SetKey(app_id, std::move(pref));
@@ -852,7 +853,7 @@ void GuestOsRegistryService::SetCurrentTime(base::Value* dictionary,
 
 void GuestOsRegistryService::SetAppScaled(const std::string& app_id,
                                           bool scaled) {
-  DCHECK_NE(app_id, crostini::GetTerminalId());
+  DCHECK_NE(app_id, crostini::kCrostiniTerminalSystemAppId);
 
   DictionaryPrefUpdate update(prefs_, guest_os::prefs::kGuestOsRegistry);
   base::DictionaryValue* apps = update.Get();
@@ -949,7 +950,7 @@ void GuestOsRegistryService::MigrateTerminal() const {
   DictionaryPrefUpdate update(profile_->GetPrefs(),
                               guest_os::prefs::kGuestOsRegistry);
   base::DictionaryValue* apps = update.Get();
-  apps->RemoveKey(crostini::GetDeletedTerminalId());
+  apps->RemoveKey(crostini::kCrostiniDeletedTerminalId);
 
   // Transfer item attributes from old terminal to new, and delete old terminal
   // once AppListSyncableService is initialized.
@@ -962,10 +963,11 @@ void GuestOsRegistryService::MigrateTerminal() const {
       FROM_HERE,
       base::BindOnce(
           [](app_list::AppListSyncableService* service) {
-            if (service->GetSyncItem(crostini::GetDeletedTerminalId())) {
-              service->TransferItemAttributes(crostini::GetDeletedTerminalId(),
-                                              crostini::GetTerminalId());
-              service->RemoveItem(crostini::GetDeletedTerminalId());
+            if (service->GetSyncItem(crostini::kCrostiniDeletedTerminalId)) {
+              service->TransferItemAttributes(
+                  crostini::kCrostiniDeletedTerminalId,
+                  crostini::kCrostiniTerminalSystemAppId);
+              service->RemoveItem(crostini::kCrostiniDeletedTerminalId);
             }
           },
           base::Unretained(app_list_syncable_service)));

@@ -22,12 +22,16 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
+#include "net/base/mock_network_change_notifier.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/idle/scoped_set_idle_state.h"
 
 using ::testing::_;
 using testing::NiceMock;
 using testing::Return;
+
+using NetConnectionType = net::NetworkChangeNotifier::ConnectionType;
 
 class FakeFastInitiationManager : public FastInitiationManager {
  public:
@@ -113,6 +117,15 @@ class FakeFastInitiationManagerFactory : public FastInitiationManager::Factory {
       this};
 };
 
+class FakeTransferUpdateCallback : public TransferUpdateCallback {
+ public:
+  void OnTransferUpdate(const ShareTarget& shareTarget,
+                        const TransferMetadata& transferMetadata) override {
+    // TODO(crbug/1085068): Test transfer update callback when incoming
+    // connection is handled.
+  }
+};
+
 namespace {
 
 class NearbySharingServiceImplTest : public testing::Test {
@@ -171,7 +184,7 @@ class NearbySharingServiceImplTest : public testing::Test {
     base::RunLoop run_loop;
     NearbySharingService::StatusCodes result;
     service_->RegisterSendSurface(
-        /*transferCallback=*/nullptr, /*discoveryCallback=*/nullptr,
+        /*transfer_callback=*/nullptr, /*discovery_callback=*/nullptr,
         base::BindOnce(
             [](base::OnceClosure quit_closure,
                NearbySharingService::StatusCodes* result,
@@ -188,7 +201,7 @@ class NearbySharingServiceImplTest : public testing::Test {
     base::RunLoop run_loop;
     NearbySharingService::StatusCodes result;
     service_->UnregisterSendSurface(
-        /*transferCallback=*/nullptr, /*discoveryCallback=*/nullptr,
+        /*transfer_callback=*/nullptr, /*discovery_callback=*/nullptr,
         base::BindOnce(
             [](base::OnceClosure quit_closure,
                NearbySharingService::StatusCodes* result,
@@ -209,6 +222,12 @@ class NearbySharingServiceImplTest : public testing::Test {
     adapter_observer_ = observer;
   }
 
+  void SetConnectionType(net::NetworkChangeNotifier::ConnectionType type) {
+    network_notifier_->SetConnectionType(type);
+    network_notifier_->NotifyObserversOfNetworkChangeForTests(
+        network_notifier_->GetConnectionType());
+  }
+
  protected:
   content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager profile_manager_{TestingBrowserProcess::GetGlobal()};
@@ -221,6 +240,8 @@ class NearbySharingServiceImplTest : public testing::Test {
   bool is_bluetooth_powered_ = true;
   device::BluetoothAdapter::Observer* adapter_observer_ = nullptr;
   scoped_refptr<NiceMock<device::MockBluetoothAdapter>> mock_bluetooth_adapter_;
+  std::unique_ptr<net::test::MockNetworkChangeNotifier> network_notifier_ =
+      net::test::MockNetworkChangeNotifier::Create();
 };
 
 }  // namespace
@@ -301,4 +322,378 @@ TEST_F(NearbySharingServiceImplTest,
                                            false);
   EXPECT_TRUE(fast_initiation_manager_factory_
                   ->StopAdvertisingCalledAndManagerDestroyed());
+}
+
+TEST_F(NearbySharingServiceImplTest,
+       ForegroundRegisterReceiveSurfaceIsAdvertising) {
+  ui::ScopedSetIdleState unlocked(ui::IDLE_STATE_IDLE);
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI);
+  FakeTransferUpdateCallback callback;
+  NearbySharingService::StatusCodes result = service_->RegisterReceiveSurface(
+      &callback, NearbySharingService::ReceiveSurfaceState::kForeground);
+  EXPECT_EQ(result, NearbySharingService::StatusCodes::kOk);
+  EXPECT_TRUE(fake_nearby_connections_manager_->IsAdvertising());
+  EXPECT_EQ(PowerLevel::kHighPower,
+            fake_nearby_connections_manager_->GetAdvertisingPowerLevel());
+}
+
+TEST_F(NearbySharingServiceImplTest,
+       BackgroundRegisterReceiveSurfaceIsAdvertising) {
+  ui::ScopedSetIdleState unlocked(ui::IDLE_STATE_IDLE);
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI);
+  prefs_.SetInteger(prefs::kNearbySharingBackgroundVisibilityName,
+                    static_cast<int>(Visibility::kSelectedContacts));
+  FakeTransferUpdateCallback callback;
+  NearbySharingService::StatusCodes result = service_->RegisterReceiveSurface(
+      &callback, NearbySharingService::ReceiveSurfaceState::kBackground);
+  EXPECT_EQ(result, NearbySharingService::StatusCodes::kOk);
+  EXPECT_TRUE(fake_nearby_connections_manager_->IsAdvertising());
+  EXPECT_EQ(PowerLevel::kLowPower,
+            fake_nearby_connections_manager_->GetAdvertisingPowerLevel());
+}
+
+TEST_F(NearbySharingServiceImplTest,
+       RegisterReceiveSurfaceTwiceSameCallbackKeepAdvertising) {
+  ui::ScopedSetIdleState unlocked(ui::IDLE_STATE_IDLE);
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI);
+  FakeTransferUpdateCallback callback;
+  NearbySharingService::StatusCodes result = service_->RegisterReceiveSurface(
+      &callback, NearbySharingService::ReceiveSurfaceState::kForeground);
+  EXPECT_EQ(result, NearbySharingService::StatusCodes::kOk);
+  EXPECT_TRUE(fake_nearby_connections_manager_->IsAdvertising());
+
+  NearbySharingService::StatusCodes result2 = service_->RegisterReceiveSurface(
+      &callback, NearbySharingService::ReceiveSurfaceState::kForeground);
+  EXPECT_EQ(result2, NearbySharingService::StatusCodes::kError);
+  EXPECT_TRUE(fake_nearby_connections_manager_->IsAdvertising());
+}
+
+TEST_F(NearbySharingServiceImplTest,
+       RegisterReceiveSurfaceTwiceKeepAdvertising) {
+  ui::ScopedSetIdleState unlocked(ui::IDLE_STATE_IDLE);
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI);
+  FakeTransferUpdateCallback callback;
+  NearbySharingService::StatusCodes result = service_->RegisterReceiveSurface(
+      &callback, NearbySharingService::ReceiveSurfaceState::kForeground);
+  EXPECT_EQ(result, NearbySharingService::StatusCodes::kOk);
+  EXPECT_TRUE(fake_nearby_connections_manager_->IsAdvertising());
+
+  FakeTransferUpdateCallback callback2;
+  NearbySharingService::StatusCodes result2 = service_->RegisterReceiveSurface(
+      &callback2, NearbySharingService::ReceiveSurfaceState::kForeground);
+  EXPECT_EQ(result2, NearbySharingService::StatusCodes::kOk);
+  EXPECT_TRUE(fake_nearby_connections_manager_->IsAdvertising());
+}
+
+TEST_F(NearbySharingServiceImplTest,
+       ScreenLockedRegisterReceiveSurfaceNotAdvertising) {
+  ui::ScopedSetIdleState locked(ui::IDLE_STATE_LOCKED);
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI);
+  FakeTransferUpdateCallback callback;
+  NearbySharingService::StatusCodes result = service_->RegisterReceiveSurface(
+      &callback, NearbySharingService::ReceiveSurfaceState::kForeground);
+  EXPECT_EQ(result, NearbySharingService::StatusCodes::kOk);
+  EXPECT_FALSE(fake_nearby_connections_manager_->IsAdvertising());
+  EXPECT_FALSE(fake_nearby_connections_manager_->IsShutdown());
+}
+
+TEST_F(NearbySharingServiceImplTest,
+       DataUsageChangedRegisterReceiveSurfaceRestartsAdvertising) {
+  ui::ScopedSetIdleState locked(ui::IDLE_STATE_IDLE);
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI);
+
+  prefs_.SetInteger(prefs::kNearbySharingDataUsageName,
+                    static_cast<int>(DataUsage::kOffline));
+  FakeTransferUpdateCallback callback;
+  NearbySharingService::StatusCodes result = service_->RegisterReceiveSurface(
+      &callback, NearbySharingService::ReceiveSurfaceState::kForeground);
+  EXPECT_EQ(result, NearbySharingService::StatusCodes::kOk);
+  EXPECT_TRUE(fake_nearby_connections_manager_->IsAdvertising());
+  EXPECT_EQ(DataUsage::kOffline,
+            fake_nearby_connections_manager_->GetAdvertisingDataUsage());
+
+  prefs_.SetInteger(prefs::kNearbySharingDataUsageName,
+                    static_cast<int>(DataUsage::kOnline));
+  EXPECT_TRUE(fake_nearby_connections_manager_->IsAdvertising());
+  EXPECT_EQ(DataUsage::kOnline,
+            fake_nearby_connections_manager_->GetAdvertisingDataUsage());
+}
+
+TEST_F(NearbySharingServiceImplTest,
+       NoNetworkRegisterReceiveSurfaceIsAdvertising) {
+  ui::ScopedSetIdleState unlocked(ui::IDLE_STATE_IDLE);
+  FakeTransferUpdateCallback callback;
+  NearbySharingService::StatusCodes result = service_->RegisterReceiveSurface(
+      &callback, NearbySharingService::ReceiveSurfaceState::kForeground);
+  EXPECT_EQ(result, NearbySharingService::StatusCodes::kOk);
+  // Succeeds since bluetooth is present.
+  EXPECT_TRUE(fake_nearby_connections_manager_->IsAdvertising());
+}
+
+TEST_F(NearbySharingServiceImplTest,
+       NoBluetoothNoNetworkRegisterReceiveSurfaceNotAdvertising) {
+  ui::ScopedSetIdleState unlocked(ui::IDLE_STATE_IDLE);
+  is_bluetooth_present_ = false;
+  FakeTransferUpdateCallback callback;
+  NearbySharingService::StatusCodes result = service_->RegisterReceiveSurface(
+      &callback, NearbySharingService::ReceiveSurfaceState::kForeground);
+  EXPECT_EQ(result, NearbySharingService::StatusCodes::kOk);
+  EXPECT_FALSE(fake_nearby_connections_manager_->IsAdvertising());
+  EXPECT_FALSE(fake_nearby_connections_manager_->IsShutdown());
+}
+
+TEST_F(NearbySharingServiceImplTest, WifiRegisterReceiveSurfaceIsAdvertising) {
+  ui::ScopedSetIdleState unlocked(ui::IDLE_STATE_IDLE);
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI);
+  FakeTransferUpdateCallback callback;
+  NearbySharingService::StatusCodes result = service_->RegisterReceiveSurface(
+      &callback, NearbySharingService::ReceiveSurfaceState::kForeground);
+  EXPECT_EQ(result, NearbySharingService::StatusCodes::kOk);
+  EXPECT_TRUE(fake_nearby_connections_manager_->IsAdvertising());
+}
+
+TEST_F(NearbySharingServiceImplTest,
+       EthernetRegisterReceiveSurfaceIsAdvertising) {
+  ui::ScopedSetIdleState unlocked(ui::IDLE_STATE_IDLE);
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  FakeTransferUpdateCallback callback;
+  NearbySharingService::StatusCodes result = service_->RegisterReceiveSurface(
+      &callback, NearbySharingService::ReceiveSurfaceState::kForeground);
+  EXPECT_EQ(result, NearbySharingService::StatusCodes::kOk);
+  EXPECT_TRUE(fake_nearby_connections_manager_->IsAdvertising());
+}
+
+TEST_F(NearbySharingServiceImplTest,
+       ThreeGRegisterReceiveSurfaceIsAdvertising) {
+  ui::ScopedSetIdleState unlocked(ui::IDLE_STATE_IDLE);
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_3G);
+  FakeTransferUpdateCallback callback;
+  NearbySharingService::StatusCodes result = service_->RegisterReceiveSurface(
+      &callback, NearbySharingService::ReceiveSurfaceState::kForeground);
+  EXPECT_EQ(result, NearbySharingService::StatusCodes::kOk);
+  // Since bluetooth is on, connection still succeeds.
+  EXPECT_TRUE(fake_nearby_connections_manager_->IsAdvertising());
+}
+
+TEST_F(NearbySharingServiceImplTest,
+       NoBluetoothWifiReceiveSurfaceIsAdvertising) {
+  ui::ScopedSetIdleState unlocked(ui::IDLE_STATE_IDLE);
+  is_bluetooth_present_ = false;
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI);
+  FakeTransferUpdateCallback callback;
+  NearbySharingService::StatusCodes result = service_->RegisterReceiveSurface(
+      &callback, NearbySharingService::ReceiveSurfaceState::kForeground);
+  EXPECT_EQ(result, NearbySharingService::StatusCodes::kOk);
+  EXPECT_TRUE(fake_nearby_connections_manager_->IsAdvertising());
+}
+
+TEST_F(NearbySharingServiceImplTest,
+       NoBluetoothEthernetReceiveSurfaceIsAdvertising) {
+  ui::ScopedSetIdleState unlocked(ui::IDLE_STATE_IDLE);
+  is_bluetooth_present_ = false;
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  FakeTransferUpdateCallback callback;
+  NearbySharingService::StatusCodes result = service_->RegisterReceiveSurface(
+      &callback, NearbySharingService::ReceiveSurfaceState::kForeground);
+  EXPECT_EQ(result, NearbySharingService::StatusCodes::kOk);
+  EXPECT_TRUE(fake_nearby_connections_manager_->IsAdvertising());
+}
+
+TEST_F(NearbySharingServiceImplTest,
+       NoBluetoothThreeGReceiveSurfaceNotAdvertising) {
+  ui::ScopedSetIdleState unlocked(ui::IDLE_STATE_IDLE);
+  is_bluetooth_present_ = false;
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_3G);
+  FakeTransferUpdateCallback callback;
+  NearbySharingService::StatusCodes result = service_->RegisterReceiveSurface(
+      &callback, NearbySharingService::ReceiveSurfaceState::kForeground);
+  EXPECT_EQ(result, NearbySharingService::StatusCodes::kOk);
+  EXPECT_FALSE(fake_nearby_connections_manager_->IsAdvertising());
+  EXPECT_FALSE(fake_nearby_connections_manager_->IsShutdown());
+}
+
+TEST_F(NearbySharingServiceImplTest,
+       DisableFeatureReceiveSurfaceNotAdvertising) {
+  ui::ScopedSetIdleState unlocked(ui::IDLE_STATE_IDLE);
+  prefs_.SetBoolean(prefs::kNearbySharingEnabledPrefName, false);
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI);
+  FakeTransferUpdateCallback callback;
+  NearbySharingService::StatusCodes result = service_->RegisterReceiveSurface(
+      &callback, NearbySharingService::ReceiveSurfaceState::kForeground);
+  EXPECT_EQ(result, NearbySharingService::StatusCodes::kOk);
+  EXPECT_FALSE(fake_nearby_connections_manager_->IsAdvertising());
+  EXPECT_TRUE(fake_nearby_connections_manager_->IsShutdown());
+}
+
+TEST_F(NearbySharingServiceImplTest,
+       DisableFeatureReceiveSurfaceStopsAdvertising) {
+  ui::ScopedSetIdleState unlocked(ui::IDLE_STATE_IDLE);
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI);
+  FakeTransferUpdateCallback callback;
+  NearbySharingService::StatusCodes result = service_->RegisterReceiveSurface(
+      &callback, NearbySharingService::ReceiveSurfaceState::kForeground);
+  EXPECT_EQ(result, NearbySharingService::StatusCodes::kOk);
+  EXPECT_TRUE(fake_nearby_connections_manager_->IsAdvertising());
+
+  prefs_.SetBoolean(prefs::kNearbySharingEnabledPrefName, false);
+  EXPECT_FALSE(fake_nearby_connections_manager_->IsAdvertising());
+  EXPECT_TRUE(fake_nearby_connections_manager_->IsShutdown());
+}
+
+TEST_F(NearbySharingServiceImplTest,
+       ForegroundReceiveSurfaceNoOneVisibilityIsAdvertising) {
+  ui::ScopedSetIdleState unlocked(ui::IDLE_STATE_IDLE);
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI);
+  prefs_.SetInteger(prefs::kNearbySharingBackgroundVisibilityName,
+                    static_cast<int>(Visibility::kNoOne));
+  FakeTransferUpdateCallback callback;
+  NearbySharingService::StatusCodes result = service_->RegisterReceiveSurface(
+      &callback, NearbySharingService::ReceiveSurfaceState::kForeground);
+  EXPECT_EQ(result, NearbySharingService::StatusCodes::kOk);
+  EXPECT_TRUE(fake_nearby_connections_manager_->IsAdvertising());
+}
+
+TEST_F(NearbySharingServiceImplTest,
+       BackgroundReceiveSurfaceNoOneVisibilityNotAdvertising) {
+  ui::ScopedSetIdleState unlocked(ui::IDLE_STATE_IDLE);
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI);
+  prefs_.SetInteger(prefs::kNearbySharingBackgroundVisibilityName,
+                    static_cast<int>(Visibility::kNoOne));
+  FakeTransferUpdateCallback callback;
+  NearbySharingService::StatusCodes result = service_->RegisterReceiveSurface(
+      &callback, NearbySharingService::ReceiveSurfaceState::kBackground);
+  EXPECT_EQ(result, NearbySharingService::StatusCodes::kOk);
+  EXPECT_FALSE(fake_nearby_connections_manager_->IsAdvertising());
+  EXPECT_FALSE(fake_nearby_connections_manager_->IsShutdown());
+}
+
+TEST_F(NearbySharingServiceImplTest,
+       BackgroundReceiveSurfaceVisibilityToNoOneStopsAdvertising) {
+  ui::ScopedSetIdleState unlocked(ui::IDLE_STATE_IDLE);
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI);
+  prefs_.SetInteger(prefs::kNearbySharingBackgroundVisibilityName,
+                    static_cast<int>(Visibility::kSelectedContacts));
+  FakeTransferUpdateCallback callback;
+  NearbySharingService::StatusCodes result = service_->RegisterReceiveSurface(
+      &callback, NearbySharingService::ReceiveSurfaceState::kBackground);
+  EXPECT_EQ(result, NearbySharingService::StatusCodes::kOk);
+  EXPECT_TRUE(fake_nearby_connections_manager_->IsAdvertising());
+
+  prefs_.SetInteger(prefs::kNearbySharingBackgroundVisibilityName,
+                    static_cast<int>(Visibility::kNoOne));
+  EXPECT_FALSE(fake_nearby_connections_manager_->IsAdvertising());
+  EXPECT_FALSE(fake_nearby_connections_manager_->IsShutdown());
+}
+
+TEST_F(NearbySharingServiceImplTest,
+       BackgroundReceiveSurfaceVisibilityToSelectedStartsAdvertising) {
+  ui::ScopedSetIdleState unlocked(ui::IDLE_STATE_IDLE);
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI);
+  prefs_.SetInteger(prefs::kNearbySharingBackgroundVisibilityName,
+                    static_cast<int>(Visibility::kNoOne));
+  FakeTransferUpdateCallback callback;
+  NearbySharingService::StatusCodes result = service_->RegisterReceiveSurface(
+      &callback, NearbySharingService::ReceiveSurfaceState::kBackground);
+  EXPECT_EQ(result, NearbySharingService::StatusCodes::kOk);
+  EXPECT_FALSE(fake_nearby_connections_manager_->IsAdvertising());
+  EXPECT_FALSE(fake_nearby_connections_manager_->IsShutdown());
+
+  prefs_.SetInteger(prefs::kNearbySharingBackgroundVisibilityName,
+                    static_cast<int>(Visibility::kSelectedContacts));
+  EXPECT_TRUE(fake_nearby_connections_manager_->IsAdvertising());
+}
+
+TEST_F(NearbySharingServiceImplTest,
+       ForegroundReceiveSurfaceSelectedContactsVisibilityIsAdvertising) {
+  ui::ScopedSetIdleState unlocked(ui::IDLE_STATE_IDLE);
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI);
+  prefs_.SetInteger(prefs::kNearbySharingBackgroundVisibilityName,
+                    static_cast<int>(Visibility::kSelectedContacts));
+  FakeTransferUpdateCallback callback;
+  NearbySharingService::StatusCodes result = service_->RegisterReceiveSurface(
+      &callback, NearbySharingService::ReceiveSurfaceState::kForeground);
+  EXPECT_EQ(result, NearbySharingService::StatusCodes::kOk);
+  EXPECT_TRUE(fake_nearby_connections_manager_->IsAdvertising());
+}
+
+TEST_F(NearbySharingServiceImplTest,
+       BackgroundReceiveSurfaceSelectedContactsVisibilityIsAdvertising) {
+  ui::ScopedSetIdleState unlocked(ui::IDLE_STATE_IDLE);
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI);
+  prefs_.SetInteger(prefs::kNearbySharingBackgroundVisibilityName,
+                    static_cast<int>(Visibility::kSelectedContacts));
+  FakeTransferUpdateCallback callback;
+  NearbySharingService::StatusCodes result = service_->RegisterReceiveSurface(
+      &callback, NearbySharingService::ReceiveSurfaceState::kBackground);
+  EXPECT_EQ(result, NearbySharingService::StatusCodes::kOk);
+  EXPECT_TRUE(fake_nearby_connections_manager_->IsAdvertising());
+}
+
+TEST_F(NearbySharingServiceImplTest,
+       ForegroundReceiveSurfaceAllContactsVisibilityIsAdvertising) {
+  ui::ScopedSetIdleState unlocked(ui::IDLE_STATE_IDLE);
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI);
+  prefs_.SetInteger(prefs::kNearbySharingBackgroundVisibilityName,
+                    static_cast<int>(Visibility::kAllContacts));
+  FakeTransferUpdateCallback callback;
+  NearbySharingService::StatusCodes result = service_->RegisterReceiveSurface(
+      &callback, NearbySharingService::ReceiveSurfaceState::kForeground);
+  EXPECT_EQ(result, NearbySharingService::StatusCodes::kOk);
+  EXPECT_TRUE(fake_nearby_connections_manager_->IsAdvertising());
+}
+
+TEST_F(NearbySharingServiceImplTest,
+       BackgroundReceiveSurfaceAllContactsVisibilityNotAdvertising) {
+  ui::ScopedSetIdleState unlocked(ui::IDLE_STATE_IDLE);
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI);
+  prefs_.SetInteger(prefs::kNearbySharingBackgroundVisibilityName,
+                    static_cast<int>(Visibility::kAllContacts));
+  FakeTransferUpdateCallback callback;
+  NearbySharingService::StatusCodes result = service_->RegisterReceiveSurface(
+      &callback, NearbySharingService::ReceiveSurfaceState::kBackground);
+  EXPECT_EQ(result, NearbySharingService::StatusCodes::kOk);
+  EXPECT_TRUE(fake_nearby_connections_manager_->IsAdvertising());
+}
+
+TEST_F(NearbySharingServiceImplTest, UnregisterReceiveSurfaceStopsAdvertising) {
+  ui::ScopedSetIdleState unlocked(ui::IDLE_STATE_IDLE);
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI);
+  FakeTransferUpdateCallback callback;
+  NearbySharingService::StatusCodes result = service_->RegisterReceiveSurface(
+      &callback, NearbySharingService::ReceiveSurfaceState::kForeground);
+  EXPECT_EQ(result, NearbySharingService::StatusCodes::kOk);
+  EXPECT_TRUE(fake_nearby_connections_manager_->IsAdvertising());
+
+  NearbySharingService::StatusCodes result2 =
+      service_->UnregisterReceiveSurface(&callback);
+  EXPECT_EQ(result2, NearbySharingService::StatusCodes::kOk);
+  EXPECT_FALSE(fake_nearby_connections_manager_->IsAdvertising());
+  EXPECT_FALSE(fake_nearby_connections_manager_->IsShutdown());
+}
+
+TEST_F(NearbySharingServiceImplTest,
+       UnregisterReceiveSurfaceDifferentCallbackKeepAdvertising) {
+  ui::ScopedSetIdleState unlocked(ui::IDLE_STATE_IDLE);
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI);
+  FakeTransferUpdateCallback callback;
+  NearbySharingService::StatusCodes result = service_->RegisterReceiveSurface(
+      &callback, NearbySharingService::ReceiveSurfaceState::kForeground);
+  EXPECT_EQ(result, NearbySharingService::StatusCodes::kOk);
+  EXPECT_TRUE(fake_nearby_connections_manager_->IsAdvertising());
+
+  FakeTransferUpdateCallback callback2;
+  NearbySharingService::StatusCodes result2 =
+      service_->UnregisterReceiveSurface(&callback2);
+  EXPECT_EQ(result2, NearbySharingService::StatusCodes::kError);
+  EXPECT_TRUE(fake_nearby_connections_manager_->IsAdvertising());
+}
+
+TEST_F(NearbySharingServiceImplTest, UnregisterReceiveSurfaceNeverRegistered) {
+  ui::ScopedSetIdleState unlocked(ui::IDLE_STATE_IDLE);
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI);
+  FakeTransferUpdateCallback callback;
+  NearbySharingService::StatusCodes result =
+      service_->UnregisterReceiveSurface(&callback);
+  EXPECT_EQ(result, NearbySharingService::StatusCodes::kError);
+  EXPECT_FALSE(fake_nearby_connections_manager_->IsAdvertising());
 }

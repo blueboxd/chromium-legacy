@@ -54,14 +54,16 @@ void FakeNearbyConnectionsManager::StartAdvertising(
     ConnectionsCallback callback) {
   is_shutdown_ = false;
   advertising_listener_ = listener;
-  // TODO(alexchau): Implement.
+  advertising_data_usage_ = data_usage;
+  advertising_power_level_ = power_level;
 }
 
 void FakeNearbyConnectionsManager::StopAdvertising() {
   DCHECK(IsAdvertising());
   DCHECK(!IsShutdown());
   advertising_listener_ = nullptr;
-  // TODO(alexchau): Implement.
+  advertising_data_usage_ = DataUsage::kUnknown;
+  advertising_power_level_ = PowerLevel::kUnknown;
 }
 
 void FakeNearbyConnectionsManager::StartDiscovery(
@@ -147,4 +149,12 @@ bool FakeNearbyConnectionsManager::IsDiscovering() {
 
 bool FakeNearbyConnectionsManager::IsShutdown() {
   return is_shutdown_;
+}
+
+DataUsage FakeNearbyConnectionsManager::GetAdvertisingDataUsage() {
+  return advertising_data_usage_;
+}
+
+PowerLevel FakeNearbyConnectionsManager::GetAdvertisingPowerLevel() {
+  return advertising_power_level_;
 }

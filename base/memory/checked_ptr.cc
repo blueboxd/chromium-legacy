@@ -22,7 +22,7 @@ BASE_EXPORT bool CheckedPtr2ImplPartitionAllocSupport::EnabledForPtr(
   // transitioned to Oilpan. PartitionAllocGetSlotOffset is expected to return
   // the same result regardless, anyway.
   // TODO(bartekn): Figure out the thread-safety mismatch.
-  return IsManagedByPartitionAllocAndNotDirectMapped(ptr) &&
+  return IsManagedByPartitionAllocNormalBuckets(ptr) &&
          PartitionAllocGetSlotOffset<ThreadSafe>(ptr) == 0;
 }
 

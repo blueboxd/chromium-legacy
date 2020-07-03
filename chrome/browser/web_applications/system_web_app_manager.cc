@@ -250,7 +250,7 @@ bool SystemWebAppManager::IsAppEnabled(SystemAppType type) {
       return base::FeatureList::IsEnabled(
           chromeos::features::kCameraSystemWebApp);
     case SystemAppType::TERMINAL:
-      return base::FeatureList::IsEnabled(features::kTerminalSystemApp);
+      return true;
     case SystemAppType::MEDIA:
       return base::FeatureList::IsEnabled(chromeos::features::kMediaApp);
     case SystemAppType::HELP:

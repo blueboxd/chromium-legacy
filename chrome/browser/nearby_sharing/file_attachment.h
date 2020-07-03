@@ -34,6 +34,8 @@ class FileAttachment : public Attachment {
                  base::Optional<base::FilePath> file_path,
                  std::string mime_type);
   ~FileAttachment() override;
+  FileAttachment(const FileAttachment&);
+  FileAttachment& operator=(const FileAttachment&);
 
   // Attachment:
   int64_t size() const override;

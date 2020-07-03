@@ -89,6 +89,7 @@ void InstallOriginTrialFeaturesForTesting(
     const ScriptState* script_state,
     v8::Local<v8::Object> prototype_object,
     v8::Local<v8::Function> interface_object) {
+#if !defined(USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE)
   (*s_original_install_origin_trial_features_function)(
       type, script_state, prototype_object, interface_object);
 
@@ -126,6 +127,7 @@ void InstallOriginTrialFeaturesForTesting(
           v8::Local<v8::Object>(), prototype_object, interface_object);
     }
   }
+#endif  // USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE
 }
 
 void ResetInternalsObject(v8::Local<v8::Context> context) {
@@ -149,6 +151,7 @@ void ResetInternalsObject(v8::Local<v8::Context> context) {
 void InstallPendingOriginTrialFeatureForTesting(
     OriginTrialFeature feature,
     const ScriptState* script_state) {
+#if !defined(USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE)
   (*s_original_install_pending_origin_trial_feature_function)(feature,
                                                               script_state);
   v8::Local<v8::Object> prototype_object;
@@ -212,6 +215,7 @@ void InstallPendingOriginTrialFeatureForTesting(
     default:
       break;
   }
+#endif  // USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE
 }
 
 void RegisterInstallOriginTrialFeaturesForTesting() {

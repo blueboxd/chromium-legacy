@@ -90,6 +90,18 @@ base::Optional<Decision> GetDecisionBasedOnSiteReputation(
       return Decision(QuietUiReason::kTriggeredDueToAbusiveRequests,
                       Decision::ShowNoWarning());
     }
+    case CrowdDenyPreloadData::SiteReputation::ABUSIVE_CONTENT: {
+      if (site_reputation->warning_only()) {
+        if (!Config::IsAbusiveContentTriggeredRequestWarningEnabled())
+          return Decision::UseNormalUiAndShowNoWarning();
+        return Decision(Decision::UseNormalUi(),
+                        WarningReason::kAbusiveContent);
+      }
+      if (!Config::IsAbusiveContentTriggeredRequestBlockingEnabled())
+        return base::nullopt;
+      return Decision(QuietUiReason::kTriggeredDueToAbusiveContent,
+                      Decision::ShowNoWarning());
+    }
     case CrowdDenyPreloadData::SiteReputation::UNKNOWN: {
       return base::nullopt;
     }

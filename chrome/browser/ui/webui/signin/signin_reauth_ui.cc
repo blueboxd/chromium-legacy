@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/reauth_util.h"
+#include "chrome/browser/ui/signin_reauth_view_controller.h"
 #include "chrome/browser/ui/webui/signin/signin_reauth_handler.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -118,6 +119,8 @@ SigninReauthUI::SigninReauthUI(content::WebUI* web_ui)
                              IDS_ACCOUNT_PASSWORDS_REAUTH_DESC);
   source->AddLocalizedString("signinReauthConfirmLabel",
                              GetReauthConfirmButtonLabelStringId(access_point));
+  source->AddLocalizedString("signinReauthNextLabel",
+                             IDS_ACCOUNT_PASSWORDS_REAUTH_NEXT_BUTTON_LABEL);
   source->AddLocalizedString("signinReauthCloseLabel",
                              IDS_ACCOUNT_PASSWORDS_REAUTH_CLOSE_BUTTON_LABEL);
 
@@ -126,6 +129,10 @@ SigninReauthUI::SigninReauthUI(content::WebUI* web_ui)
 
 SigninReauthUI::~SigninReauthUI() = default;
 
-void SigninReauthUI::InitializeMessageHandlerWithBrowser(Browser* browser) {
-  web_ui()->AddMessageHandler(std::make_unique<SigninReauthHandler>(browser));
+void SigninReauthUI::InitializeMessageHandlerWithReauthController(
+    SigninReauthViewController* controller) {
+  web_ui()->AddMessageHandler(
+      std::make_unique<SigninReauthHandler>(controller));
 }
+
+void SigninReauthUI::InitializeMessageHandlerWithBrowser(Browser* browser) {}

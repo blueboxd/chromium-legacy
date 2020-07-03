@@ -19,6 +19,7 @@ message SiteReputation {
     ACCEPTABLE = 1;
     UNSOLICITED_PROMPTS = 2;
     ABUSIVE_PROMPTS = 3;  // Supported as of M84.
+    ABUSIVE_CONTENT = 4;  // Supported as of M85.
   }
 
   // The quality of the experience users have with notifications on this site.

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_UI_ADB_SIDELOADING_POLICY_CHANGE_NOTIFICATION_H_
 
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 
 namespace chromeos {
 
@@ -42,7 +43,7 @@ class AdbSideloadingPolicyChangeNotification {
   virtual ~AdbSideloadingPolicyChangeNotification();
 
   virtual void Show(Type type);
-  void HandleNotificationClick();
+  void HandleNotificationClick(base::Optional<int> button_index);
 
  private:
   base::WeakPtrFactory<AdbSideloadingPolicyChangeNotification>

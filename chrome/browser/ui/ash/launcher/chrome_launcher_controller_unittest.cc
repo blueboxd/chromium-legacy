@@ -800,7 +800,7 @@ class ChromeLauncherControllerTest
             result += "Platform_App";
           } else if (app == arc_support_host_->id()) {
             result += "Play Store";
-          } else if (app == crostini::GetTerminalId()) {
+          } else if (app == crostini::kCrostiniTerminalSystemAppId) {
             result += "Terminal";
           } else {
             bool arc_app_found = false;
@@ -4749,7 +4749,7 @@ TEST_P(ChromeLauncherControllerTest, CrostiniTerminalPinUnpin) {
 
   // Load pinned Terminal from prefs without Crostini UI being allowed
   syncer::SyncChangeList sync_list;
-  InsertAddPinChange(&sync_list, 1, crostini::GetTerminalId());
+  InsertAddPinChange(&sync_list, 1, crostini::kCrostiniTerminalSystemAppId);
   SendPinChanges(sync_list, true);
   EXPECT_EQ("Chrome", GetPinnedAppStatus());
 
@@ -4762,11 +4762,11 @@ TEST_P(ChromeLauncherControllerTest, CrostiniTerminalPinUnpin) {
   EXPECT_EQ("Chrome, Terminal", GetPinnedAppStatus());
 
   // Unpin the Terminal
-  launcher_controller_->UnpinAppWithID(crostini::GetTerminalId());
+  launcher_controller_->UnpinAppWithID(crostini::kCrostiniTerminalSystemAppId);
   EXPECT_EQ("Chrome", GetPinnedAppStatus());
 
   // Pin Terminal again.
-  launcher_controller_->PinAppWithID(crostini::GetTerminalId());
+  launcher_controller_->PinAppWithID(crostini::kCrostiniTerminalSystemAppId);
   EXPECT_EQ("Chrome, Terminal", GetPinnedAppStatus());
 }
 

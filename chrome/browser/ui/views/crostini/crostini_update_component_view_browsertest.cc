@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/crostini/crostini_update_component_view.h"
 
-#include "base/feature_list.h"
 #include "base/metrics/histogram_base.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -16,7 +15,6 @@
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_concierge_client.h"
@@ -105,19 +103,17 @@ IN_PROC_BROWSER_TEST_F(CrostiniUpdateComponentViewBrowserTest,
   ExpectNoView();
 
   UnregisterTermina();
-  crostini::LaunchCrostiniApp(browser()->profile(), crostini::GetTerminalId(),
-                              0);
+  crostini::LaunchCrostiniApp(browser()->profile(),
+                              crostini::kCrostiniTerminalSystemAppId, 0);
   ExpectNoView();
 }
 
 IN_PROC_BROWSER_TEST_F(CrostiniUpdateComponentViewBrowserTest,
                        LaunchAppOffline_UpgradeNeeded) {
-  // Ensure Terminal System App is installed if enabled.
-  if (base::FeatureList::IsEnabled(features::kTerminalSystemApp)) {
-    web_app::WebAppProvider::Get(browser()->profile())
-        ->system_web_app_manager()
-        .InstallSystemAppsForTesting();
-  }
+  // Ensure Terminal System App is installed.
+  web_app::WebAppProvider::Get(browser()->profile())
+      ->system_web_app_manager()
+      .InstallSystemAppsForTesting();
 
   base::HistogramTester histogram_tester;
   SetConnectionType(network::mojom::ConnectionType::CONNECTION_NONE);
@@ -127,17 +123,14 @@ IN_PROC_BROWSER_TEST_F(CrostiniUpdateComponentViewBrowserTest,
   ExpectNoView();
 
   UnregisterTermina();
-  crostini::LaunchCrostiniApp(browser()->profile(), crostini::GetTerminalId(),
-                              0);
+  crostini::LaunchCrostiniApp(browser()->profile(),
+                              crostini::kCrostiniTerminalSystemAppId, 0);
 
   // For Terminal System App, we must wait for browser to load.
-  if (base::FeatureList::IsEnabled(features::kTerminalSystemApp)) {
-    Browser* terminal_browser = web_app::FindSystemWebAppBrowser(
-        browser()->profile(), web_app::SystemAppType::TERMINAL);
-    CHECK_NE(nullptr, terminal_browser);
-    WaitForLoadFinished(
-        terminal_browser->tab_strip_model()->GetWebContentsAt(0));
-  }
+  Browser* terminal_browser = web_app::FindSystemWebAppBrowser(
+      browser()->profile(), web_app::SystemAppType::TERMINAL);
+  CHECK_NE(nullptr, terminal_browser);
+  WaitForLoadFinished(terminal_browser->tab_strip_model()->GetWebContentsAt(0));
 
   ExpectView();
 

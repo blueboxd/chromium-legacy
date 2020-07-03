@@ -25,6 +25,15 @@ class NearbySharingService {
     kError,
   };
 
+  enum class ReceiveSurfaceState {
+    // Default, invalid state.
+    kUnknown,
+    // Background receive surface advertises only to contacts.
+    kBackground,
+    // Foreground receive surface advertises to everyone.
+    kForeground,
+  };
+
   using StatusCodesCallback =
       base::OnceCallback<void(StatusCodes status_codes)>;
 
@@ -33,25 +42,24 @@ class NearbySharingService {
   // Registers a send surface for handling payload transfer status and device
   // discovery.
   virtual void RegisterSendSurface(
-      TransferUpdateCallback* transferCallback,
-      ShareTargetDiscoveredCallback* discoveryCallback,
+      TransferUpdateCallback* transfer_callback,
+      ShareTargetDiscoveredCallback* discovery_callback,
       StatusCodesCallback status_codes_callback) = 0;
 
   // Unregisters the current send surface.
   virtual void UnregisterSendSurface(
-      TransferUpdateCallback* transferCallback,
-      ShareTargetDiscoveredCallback* discoveryCallback,
+      TransferUpdateCallback* transfer_callback,
+      ShareTargetDiscoveredCallback* discovery_callback,
       StatusCodesCallback status_codes_callback) = 0;
 
   // Registers a receiver surface for handling payload transfer status.
-  virtual void RegisterReceiveSurface(
-      TransferUpdateCallback* transferCallback,
-      StatusCodesCallback status_codes_callback) = 0;
+  virtual StatusCodes RegisterReceiveSurface(
+      TransferUpdateCallback* transfer_callback,
+      ReceiveSurfaceState state) = 0;
 
   // Unregistesrs the current receive surface.
-  virtual void UnregisterReceiveSurface(
-      TransferUpdateCallback* transferCallback,
-      StatusCodesCallback status_codes_callback) = 0;
+  virtual StatusCodes UnregisterReceiveSurface(
+      TransferUpdateCallback* transfer_callback) = 0;
 
   // Sends text to the remote |share_target|.
   virtual void SendText(const ShareTarget& share_target,

@@ -2119,6 +2119,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_LOGIN_SIGN_IN_REQUIRED_MESSAGE" desc="Message shown in the login screen when online sign-in is required.">
         Sign in required
       </message>
+      <message name="IDS_ASH_LOCK_SCREEN_VERIFY_ACCOUNT_MESSAGE" desc="Message shown in the lock screen when online sign-in is required.">
+        Verify account
+      </message>
       <message name="IDS_ASH_LOGIN_SMART_CARD_SIGN_IN_MESSAGE" desc="Label for the button shown in the user pod that starts signing in via a smart card.">
         Sign in with smart card
       </message>

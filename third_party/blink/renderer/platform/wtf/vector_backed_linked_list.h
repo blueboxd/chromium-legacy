@@ -263,7 +263,7 @@ class VectorBackedLinkedList {
   int64_t modifications_ = 0;
 #endif
 
-  template <typename T, typename U>
+  template <typename T, typename U, typename V>
   friend class NewLinkedHashSet;
 };
 

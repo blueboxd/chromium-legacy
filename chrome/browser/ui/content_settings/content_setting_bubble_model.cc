@@ -1685,6 +1685,7 @@ ContentSettingNotificationsBubbleModel::ContentSettingNotificationsBubbleModel(
           base::UserMetricsAction("Notifications.Quiet.StaticIconClicked"));
       break;
     case QuietUiReason::kTriggeredDueToAbusiveRequests:
+    case QuietUiReason::kTriggeredDueToAbusiveContent:
       set_message(l10n_util::GetStringUTF16(
           IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_ABUSIVE_DESCRIPTION));
       // TODO(crbug.com/1082738): It is rather confusing to have the `Cancel`
@@ -1735,6 +1736,7 @@ void ContentSettingNotificationsBubbleModel::OnDoneButtonClicked() {
           base::UserMetricsAction("Notifications.Quiet.ShowForSiteClicked"));
       break;
     case QuietUiReason::kTriggeredDueToAbusiveRequests:
+    case QuietUiReason::kTriggeredDueToAbusiveContent:
       manager->Deny();
       base::RecordAction(base::UserMetricsAction(
           "Notifications.Quiet.ContinueBlockingClicked"));
@@ -1752,6 +1754,7 @@ void ContentSettingNotificationsBubbleModel::OnCancelButtonClicked() {
       // No-op.
       break;
     case QuietUiReason::kTriggeredDueToAbusiveRequests:
+    case QuietUiReason::kTriggeredDueToAbusiveContent:
       manager->Accept();
       base::RecordAction(
           base::UserMetricsAction("Notifications.Quiet.ShowForSiteClicked"));

@@ -542,7 +542,7 @@ class CrostiniAppTest : public AppServiceAppModelBuilderTest {
     }
     for (const std::string& id : existing_item_ids) {
       if (id == crostini::kCrostiniFolderId ||
-          id == crostini::GetTerminalId()) {
+          id == crostini::kCrostiniTerminalSystemAppId) {
         continue;
       }
       sync_service_->RemoveItem(id);
@@ -598,9 +598,10 @@ TEST_P(CrostiniAppTest, EnableAndDisableCrostini) {
   EXPECT_EQ(0u, GetModelItemCount());
 
   CrostiniTestHelper::EnableCrostini(testing_profile());
-  EXPECT_THAT(GetAllApps(), testing::UnorderedElementsAre(IsChromeApp(
-                                crostini::GetTerminalId(), TerminalAppName(),
-                                crostini::kCrostiniFolderId)));
+  EXPECT_THAT(GetAllApps(),
+              testing::UnorderedElementsAre(
+                  IsChromeApp(crostini::kCrostiniTerminalSystemAppId,
+                              TerminalAppName(), crostini::kCrostiniFolderId)));
 
   CrostiniTestHelper::DisableCrostini(testing_profile());
   EXPECT_THAT(GetAllApps(), testing::IsEmpty());
@@ -614,8 +615,8 @@ TEST_P(CrostiniAppTest, AppInstallation) {
 
   EXPECT_THAT(GetAllApps(),
               testing::UnorderedElementsAre(
-                  IsChromeApp(crostini::GetTerminalId(), TerminalAppName(),
-                              crostini::kCrostiniFolderId),
+                  IsChromeApp(crostini::kCrostiniTerminalSystemAppId,
+                              TerminalAppName(), crostini::kCrostiniFolderId),
                   IsChromeApp(_, kDummyApp1Name, crostini::kCrostiniFolderId),
                   IsChromeApp(_, kDummyApp2Name, crostini::kCrostiniFolderId)));
 
@@ -623,8 +624,8 @@ TEST_P(CrostiniAppTest, AppInstallation) {
       CrostiniTestHelper::BasicApp(kBananaAppId, kBananaAppName));
   EXPECT_THAT(GetAllApps(),
               testing::UnorderedElementsAre(
-                  IsChromeApp(crostini::GetTerminalId(), TerminalAppName(),
-                              crostini::kCrostiniFolderId),
+                  IsChromeApp(crostini::kCrostiniTerminalSystemAppId,
+                              TerminalAppName(), crostini::kCrostiniFolderId),
                   IsChromeApp(_, kDummyApp1Name, crostini::kCrostiniFolderId),
                   IsChromeApp(_, kDummyApp2Name, crostini::kCrostiniFolderId),
                   IsChromeApp(_, kBananaAppName, crostini::kCrostiniFolderId)));
@@ -642,7 +643,7 @@ TEST_P(CrostiniAppTest, UpdateApps) {
   test_helper_->AddApp(dummy1);
   EXPECT_THAT(GetAllApps(),
               testing::UnorderedElementsAre(
-                  IsChromeApp(crostini::GetTerminalId(), _, _),
+                  IsChromeApp(crostini::kCrostiniTerminalSystemAppId, _, _),
                   IsChromeApp(CrostiniTestHelper::GenerateAppId(kDummyApp2Name),
                               _, _)));
 
@@ -652,7 +653,7 @@ TEST_P(CrostiniAppTest, UpdateApps) {
   EXPECT_THAT(
       GetAllApps(),
       testing::UnorderedElementsAre(
-          IsChromeApp(crostini::GetTerminalId(), _, _),
+          IsChromeApp(crostini::kCrostiniTerminalSystemAppId, _, _),
           IsChromeApp(CrostiniTestHelper::GenerateAppId(kDummyApp1Name), _, _),
           IsChromeApp(CrostiniTestHelper::GenerateAppId(kDummyApp2Name), _,
                       _)));
@@ -663,7 +664,7 @@ TEST_P(CrostiniAppTest, UpdateApps) {
   test_helper_->AddApp(dummy2);
   EXPECT_THAT(GetAllApps(),
               testing::UnorderedElementsAre(
-                  IsChromeApp(crostini::GetTerminalId(), _, _),
+                  IsChromeApp(crostini::kCrostiniTerminalSystemAppId, _, _),
                   IsChromeApp(CrostiniTestHelper::GenerateAppId(kDummyApp1Name),
                               kDummyApp1Name, _),
                   IsChromeApp(CrostiniTestHelper::GenerateAppId(kDummyApp2Name),
@@ -687,9 +688,10 @@ TEST_P(CrostiniAppTest, RemoveApps) {
 
 // Tests that the crostini folder is (re)created with the correct parameters.
 TEST_P(CrostiniAppTest, CreatesFolder) {
-  EXPECT_THAT(GetAllApps(), testing::UnorderedElementsAre(IsChromeApp(
-                                crostini::GetTerminalId(), TerminalAppName(),
-                                crostini::kCrostiniFolderId)));
+  EXPECT_THAT(GetAllApps(),
+              testing::UnorderedElementsAre(
+                  IsChromeApp(crostini::kCrostiniTerminalSystemAppId,
+                              TerminalAppName(), crostini::kCrostiniFolderId)));
 
   // We simulate ash creating the crostini folder and calling back into chrome
   // (rather than use a full browser test).
@@ -699,8 +701,8 @@ TEST_P(CrostiniAppTest, CreatesFolder) {
 
   EXPECT_THAT(GetAllApps(),
               testing::UnorderedElementsAre(
-                  IsChromeApp(crostini::GetTerminalId(), TerminalAppName(),
-                              crostini::kCrostiniFolderId),
+                  IsChromeApp(crostini::kCrostiniTerminalSystemAppId,
+                              TerminalAppName(), crostini::kCrostiniFolderId),
                   testing::AllOf(IsChromeApp(crostini::kCrostiniFolderId,
                                              kRootFolderName, ""),
                                  IsPersistentApp())));

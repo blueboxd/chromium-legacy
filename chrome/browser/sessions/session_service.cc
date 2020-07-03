@@ -910,7 +910,7 @@ bool SessionService::ShouldTrackBrowser(Browser* browser) const {
   // restarted on restore, and we don't want terminal to force the VM to start.
   if (crostini::CrostiniAppIdFromAppName(browser->app_name()) ||
       web_app::GetAppIdFromApplicationName(browser->app_name()) ==
-          crostini::GetTerminalId()) {
+          crostini::kCrostiniTerminalSystemAppId) {
     return false;
   }
 

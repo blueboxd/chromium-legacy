@@ -140,12 +140,19 @@ void ServiceWorkerStorageControlImpl::FindRegistrationForScope(
 
 void ServiceWorkerStorageControlImpl::FindRegistrationForId(
     int64_t registration_id,
-    const GURL& origin,
+    const base::Optional<GURL>& origin,
     FindRegistrationForClientUrlCallback callback) {
-  storage_->FindRegistrationForId(
-      registration_id, origin,
-      base::BindOnce(&ServiceWorkerStorageControlImpl::DidFindRegistration,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  if (origin.has_value()) {
+    storage_->FindRegistrationForId(
+        registration_id, *origin,
+        base::BindOnce(&ServiceWorkerStorageControlImpl::DidFindRegistration,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  } else {
+    storage_->FindRegistrationForIdOnly(
+        registration_id,
+        base::BindOnce(&ServiceWorkerStorageControlImpl::DidFindRegistration,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
 }
 
 void ServiceWorkerStorageControlImpl::GetRegistrationsForOrigin(

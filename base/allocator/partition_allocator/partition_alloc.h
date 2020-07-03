@@ -657,17 +657,16 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::RecommitSystemPages(
 BASE_EXPORT void PartitionAllocGlobalInit(OomFunction on_out_of_memory);
 BASE_EXPORT void PartitionAllocGlobalUninitForTesting();
 
-ALWAYS_INLINE bool IsManagedByPartitionAlloc(const void* address) {
+ALWAYS_INLINE bool IsManagedByPartitionAllocDirectMap(const void* address) {
 #if BUILDFLAG(USE_PARTITION_ALLOC) && defined(ARCH_CPU_64_BITS) && \
     !defined(OS_NACL)
-  return internal::PartitionAddressSpace::Contains(address);
+  return internal::PartitionAddressSpace::IsInDirectMapPool(address);
 #else
   return false;
 #endif
 }
 
-ALWAYS_INLINE bool IsManagedByPartitionAllocAndNotDirectMapped(
-    const void* address) {
+ALWAYS_INLINE bool IsManagedByPartitionAllocNormalBuckets(const void* address) {
 #if BUILDFLAG(USE_PARTITION_ALLOC) && defined(ARCH_CPU_64_BITS) && \
     !defined(OS_NACL)
   return internal::PartitionAddressSpace::IsInNormalBucketPool(address);
@@ -726,7 +725,7 @@ ALWAYS_INLINE size_t PartitionAllocGetSize(void* ptr) {
 // lead to undefined behavior.
 template <bool thread_safe>
 ALWAYS_INLINE size_t PartitionAllocGetSlotOffset(void* ptr) {
-  PA_DCHECK(IsManagedByPartitionAllocAndNotDirectMapped(ptr));
+  PA_DCHECK(IsManagedByPartitionAllocNormalBuckets(ptr));
   ptr = internal::PartitionFreePointerAdjust(ptr);
   auto* page = internal::PartitionAllocGetPageForSize<thread_safe>(ptr);
   size_t slot_size = page->bucket->slot_size;

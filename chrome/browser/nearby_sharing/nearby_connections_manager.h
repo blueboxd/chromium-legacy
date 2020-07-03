@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -25,11 +26,13 @@ class NearbyConnectionsManager {
 
   // A callback for handling incoming connections while advertising.
   class IncomingConnectionListener {
+   public:
     virtual ~IncomingConnectionListener() = default;
 
-    virtual void OnIncomingConnection(const std::string& endpoint_id,
-                                      const std::vector<uint8_t>& endpoint_info,
-                                      NearbyConnection connection) = 0;
+    virtual void OnIncomingConnection(
+        const std::string& endpoint_id,
+        const std::vector<uint8_t>& endpoint_info,
+        std::unique_ptr<NearbyConnection> connection) = 0;
   };
 
   // A callback for handling discovered devices while discovering.

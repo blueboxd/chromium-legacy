@@ -7,7 +7,12 @@ import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
 /** @implements {SigninReauthBrowserProxy} */
 export class TestSigninReauthBrowserProxy extends TestBrowserProxy {
   constructor() {
-    super(['confirm', 'cancel']);
+    super(['initialize', 'confirm', 'cancel']);
+  }
+
+  /** @override */
+  initialize() {
+    this.methodCalled('initialize');
   }
 
   /** @override */

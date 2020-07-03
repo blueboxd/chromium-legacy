@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "chrome/browser/nearby_sharing/file_attachment.h"
 
 FileAttachment::FileAttachment(std::string file_name,
@@ -16,6 +18,8 @@ FileAttachment::FileAttachment(std::string file_name,
       mime_type_(std::move(mime_type)) {}
 
 FileAttachment::~FileAttachment() = default;
+FileAttachment::FileAttachment(const FileAttachment&) = default;
+FileAttachment& FileAttachment::operator=(const FileAttachment&) = default;
 
 int64_t FileAttachment::size() const {
   return size_;

@@ -150,9 +150,11 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
   DCHECK(self.signinIntent != UserSigninIntentFirstRun);
 
   if (self.mediator.isAuthenticationInProgress) {
-    // TODO(crbug.com/971989): Rename this metric after the architecture
-    // migration.
-    [self.logger logUndoSignin];
+    [self.logger
+        logSigninCompletedWithResult:SigninCoordinatorResultInterrupted
+                        addedAccount:self.addAccountSigninCoordinator != nil
+               advancedSettingsShown:self.advancedSettingsSigninCoordinator !=
+                                     nil];
   }
 
   __weak UserSigninCoordinator* weakSelf = self;
@@ -337,9 +339,6 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
 // if the sign-in is not in progress.
 - (void)cancelSignin {
   [self.mediator cancelSignin];
-  // TODO(crbug.com/971989): Remove this metric after the architecture
-  // migration.
-  [self.logger logUndoSignin];
 }
 
 // Notifies the observers that the user is attempting sign-in.

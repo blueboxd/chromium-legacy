@@ -901,6 +901,7 @@ bool ContentSettingNotificationsImageModel::UpdateAndGetVisibility(
       break;
     case QuietUiReason::kTriggeredByCrowdDeny:
     case QuietUiReason::kTriggeredDueToAbusiveRequests:
+    case QuietUiReason::kTriggeredDueToAbusiveContent:
       set_explanatory_string_id(0);
       break;
   }

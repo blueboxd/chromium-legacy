@@ -353,7 +353,7 @@ class AppServiceDataSource : public AppSearchProvider::DataSource,
 
       // Until it's been installed, the Crostini Terminal is hidden and
       // requires a few characters before being shown in search results.
-      if (update.AppId() == crostini::GetTerminalId() &&
+      if (update.AppId() == crostini::kCrostiniTerminalSystemAppId &&
           !crostini::CrostiniFeatures::Get()->IsEnabled(profile())) {
         apps_vector->back()->set_recommendable(false);
         apps_vector->back()->set_relevance_threshold(

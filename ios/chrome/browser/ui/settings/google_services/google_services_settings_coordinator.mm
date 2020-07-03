@@ -233,7 +233,7 @@ using signin_metrics::PromoAction;
 }
 
 - (void)signinFinishedWithSuccess:(BOOL)success {
-  // TODO(crbug.com/971989): SigninCoordinatorResult should be received instead
+  // TODO(crbug.com/1101346): SigninCoordinatorResult should be received instead
   // of guessing if the sign-in has been interrupted.
   ChromeIdentity* primaryAccount =
       AuthenticationServiceFactory::GetForBrowserState(

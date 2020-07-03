@@ -1048,7 +1048,7 @@ class NotificationPlatformBridgeLinuxImpl
   std::string server_name_;
   base::Version server_version_;
 
-  base::Closure connected_signals_barrier_;
+  base::RepeatingClosure connected_signals_barrier_;
 
   // Whether ConnectToSignal() is in progress.
   bool connect_signals_in_progress_ = false;

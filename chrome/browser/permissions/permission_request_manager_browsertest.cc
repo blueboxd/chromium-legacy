@@ -789,6 +789,11 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerQuietUiBrowserTest,
        permissions::kAbusiveNotificationRequestsEnforcementMessage},
       {UiDecision::UseNormalUi(), WarningReason::kAbusiveRequests,
        permissions::kAbusiveNotificationRequestsWarningMessage},
+      {QuietUiReason::kTriggeredDueToAbusiveContent,
+       UiDecision::ShowNoWarning(),
+       permissions::kAbusiveNotificationContentEnforcementMessage},
+      {UiDecision::UseNormalUi(), WarningReason::kAbusiveContent,
+       permissions::kAbusiveNotificationContentWarningMessage},
   };
 
   constexpr char kCounterVerificationPattern[] = "NOTHING";

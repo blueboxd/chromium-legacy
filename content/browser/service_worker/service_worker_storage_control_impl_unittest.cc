@@ -216,8 +216,9 @@ class ServiceWorkerStorageControlImplTest : public testing::Test {
     return return_value;
   }
 
-  FindRegistrationResult FindRegistrationForId(int64_t registration_id,
-                                               const GURL& origin) {
+  FindRegistrationResult FindRegistrationForId(
+      int64_t registration_id,
+      const base::Optional<GURL>& origin) {
     FindRegistrationResult return_value;
     base::RunLoop loop;
     storage()->FindRegistrationForId(
@@ -687,6 +688,12 @@ TEST_F(ServiceWorkerStorageControlImplTest, FindRegistration_NoRegistration) {
         FindRegistrationForId(kRegistrationId, kScope.GetOrigin());
     EXPECT_EQ(result->status, DatabaseStatus::kErrorNotFound);
   }
+
+  {
+    FindRegistrationResult result =
+        FindRegistrationForId(kRegistrationId, base::nullopt);
+    EXPECT_EQ(result->status, DatabaseStatus::kErrorNotFound);
+  }
 }
 
 // Tests that storing/finding/deleting a registration work.
@@ -741,6 +748,8 @@ TEST_F(ServiceWorkerStorageControlImplTest, StoreAndDeleteRegistration) {
     result = FindRegistrationForScope(kScope);
     EXPECT_EQ(result->status, DatabaseStatus::kOk);
     result = FindRegistrationForId(kRegistrationId, kScope.GetOrigin());
+    EXPECT_EQ(result->status, DatabaseStatus::kOk);
+    result = FindRegistrationForId(kRegistrationId, base::nullopt);
     EXPECT_EQ(result->status, DatabaseStatus::kOk);
   }
 

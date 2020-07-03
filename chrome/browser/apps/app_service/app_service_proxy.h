@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/containers/unique_ptr_adapters.h"
@@ -54,6 +55,11 @@ struct PauseData {
   bool should_show_pause_dialog = false;
 };
 #endif
+
+struct AppIdAndActivityName {
+  std::string app_id;
+  std::string activity_name;
+};
 
 // Singleton (per Profile) proxy and cache of an App Service's apps.
 //
@@ -201,9 +207,16 @@ class AppServiceProxy : public KeyedService,
   // Returns a list of apps (represented by their ids) which can handle |url|.
   std::vector<std::string> GetAppIdsForUrl(const GURL& url);
 
-  // Returns a list of apps (represented by their ids) which can handle
-  // |intent|.
-  std::vector<std::string> GetAppIdsForIntent(apps::mojom::IntentPtr intent);
+  // Returns a list of apps (represented by their ids) and activities (if
+  // applied) which can handle |intent|.
+  std::vector<AppIdAndActivityName> GetAppsForIntent(
+      const apps::mojom::IntentPtr& intent);
+
+  // Returns a list of apps (represented by their ids) and activities (if
+  // applied) which can handle |filesystem_urls| and |mime_types|.
+  std::vector<AppIdAndActivityName> GetAppsForFiles(
+      const std::vector<GURL>& filesystem_urls,
+      const std::vector<std::string>& mime_types);
 
   // Sets |extension_apps_| and |web_apps_| to observe the ARC apps to set the
   // badge on the equivalent Chrome app's icon, when ARC is available.

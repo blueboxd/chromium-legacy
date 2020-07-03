@@ -11,13 +11,14 @@ import android.view.ViewGroup;
  * Class for controlling the page info permissions section.
  */
 public class PageInfoPermissionsController implements PageInfoSubpageController {
-    private PageInfoController mMainController;
-    private PageInfoViewV2 mView;
+    private PageInfoMainPageController mMainController;
+    private PageInfoRowView mRowView;
     private String mTitle;
 
-    public PageInfoPermissionsController(PageInfoController mainController, PageInfoViewV2 view) {
+    public PageInfoPermissionsController(
+            PageInfoMainPageController mainController, PageInfoRowView view) {
         mMainController = mainController;
-        mView = view;
+        mRowView = view;
     }
 
     private void launchSubpage() {
@@ -36,16 +37,20 @@ public class PageInfoPermissionsController implements PageInfoSubpageController 
     }
 
     @Override
-    public void willRemoveSubpage() {}
+    public void onSubPageAttached() {}
+
+    @Override
+    public void onSubpageRemoved() {}
 
     public void setPermissions(PageInfoView.PermissionParams params) {
-        mTitle = mView.getContext().getResources().getString(R.string.page_info_permissions_title);
+        mTitle = mRowView.getContext().getResources().getString(
+                R.string.page_info_permissions_title);
         PageInfoRowView.ViewParams rowParams = new PageInfoRowView.ViewParams();
         rowParams.visible = true;
         rowParams.title = mTitle;
         // TODO(crbug.com/1077766): Create a permissions subtitle string that represents
         // the state, using the PageInfoView.PermissionParams and potentially R.plurals.
         rowParams.clickCallback = this::launchSubpage;
-        mView.getPermissionsRowView().setParams(rowParams);
+        mRowView.setParams(rowParams);
     }
 }

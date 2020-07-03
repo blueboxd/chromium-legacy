@@ -56,7 +56,7 @@ class CONTENT_EXPORT ServiceWorkerStorageControlImpl
       const GURL& scope,
       FindRegistrationForScopeCallback callback) override;
   void FindRegistrationForId(int64_t registration_id,
-                             const GURL& origin,
+                             const base::Optional<GURL>& origin,
                              FindRegistrationForIdCallback callback) override;
   void GetRegistrationsForOrigin(
       const GURL& origin,

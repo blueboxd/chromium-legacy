@@ -117,20 +117,12 @@ const user_manager::UserList& AppLaunchSigninScreen::GetUsers() const {
   return owner_user_list_;
 }
 
-bool AppLaunchSigninScreen::IsShowGuest() const {
-  return false;
-}
-
 bool AppLaunchSigninScreen::IsShowUsers() const {
   return true;
 }
 
 bool AppLaunchSigninScreen::ShowUsersHasChanged() const {
   return false;
-}
-
-bool AppLaunchSigninScreen::IsAllowNewUser() const {
-  return true;
 }
 
 bool AppLaunchSigninScreen::AllowNewUserChanged() const {

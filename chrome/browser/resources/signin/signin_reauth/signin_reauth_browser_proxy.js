@@ -11,6 +11,11 @@ import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
 /** @interface */
 export class SigninReauthBrowserProxy {
   /**
+   * Called when the app has been initialized.
+   */
+  initialize() {}
+
+  /**
    * Called when the user confirms the signin reauth dialog.
    */
   confirm() {}
@@ -23,6 +28,11 @@ export class SigninReauthBrowserProxy {
 
 /** @implements {SigninReauthBrowserProxy} */
 export class SigninReauthBrowserProxyImpl {
+  /** @override */
+  initialize() {
+    chrome.send('initialize');
+  }
+
   /** @override */
   confirm() {
     chrome.send('confirm');

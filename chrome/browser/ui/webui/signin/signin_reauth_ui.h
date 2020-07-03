@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/webui/signin/signin_web_dialog_ui.h"
 
 class Browser;
+class SigninReauthViewController;
 
 namespace content {
 class WebUI;
@@ -34,7 +35,14 @@ class SigninReauthUI : public SigninWebDialogUI {
   SigninReauthUI(const SigninReauthUI&) = delete;
   SigninReauthUI& operator=(const SigninReauthUI&) = delete;
 
+  // Creates a WebUI message handler with the specified |controller| and adds it
+  // to the web UI.
+  void InitializeMessageHandlerWithReauthController(
+      SigninReauthViewController* controller);
+
   // SigninWebDialogUI:
+  // This class relies on InitializeMessageHandlerWithReauthController() so this
+  // method does nothing.
   void InitializeMessageHandlerWithBrowser(Browser* browser) override;
 };
 

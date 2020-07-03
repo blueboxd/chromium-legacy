@@ -52,7 +52,7 @@ namespace crostini {
 
 // We use an arbitrary well-formed extension id for the Terminal app, this
 // is equal to GenerateId("Terminal").
-const char kCrostiniTerminalId[] = "oajcgpnkmhaalajejhlfpacbiokdnnfe";
+const char kCrostiniDeletedTerminalId[] = "oajcgpnkmhaalajejhlfpacbiokdnnfe";
 // web_app::GenerateAppIdFromURL(
 //     GURL("chrome-untrusted://terminal/html/terminal.html"))
 const char kCrostiniTerminalSystemAppId[] = "fhicihalidkgcimdmhpohldehjmcabcf";
@@ -166,19 +166,6 @@ void OnSharePathForLaunchApplication(
       base::BindOnce(OnApplicationLaunched, std::move(callback), app_id));
 }
 
-void LaunchTerminalApp(Profile* profile,
-                       apps::AppLaunchParams launch_params,
-                       GURL vsh_in_crosh_url,
-                       Browser* browser,
-                       crostini::LaunchCrostiniAppCallback callback) {
-  crostini::ShowContainerTerminal(profile, launch_params, vsh_in_crosh_url,
-                                  browser);
-  RecordAppLaunchResultHistogram(crostini::CrostiniResult::SUCCESS);
-  if (callback) {
-    std::move(callback).Run(true, "");
-  }
-}
-
 void LaunchApplication(
     Profile* profile,
     const std::string& app_id,
@@ -263,7 +250,7 @@ ContainerId ContainerId::GetDefault() {
 
 bool IsUninstallable(Profile* profile, const std::string& app_id) {
   if (!CrostiniFeatures::Get()->IsEnabled(profile) ||
-      app_id == GetTerminalId()) {
+      app_id == kCrostiniTerminalSystemAppId) {
     return false;
   }
   auto* registry_service =
@@ -343,32 +330,17 @@ void LaunchCrostiniAppImpl(
 
   base::OnceClosure launch_closure;
   Browser* browser = nullptr;
-  if (app_id == GetTerminalId()) {
+  if (app_id == kCrostiniTerminalSystemAppId) {
     DCHECK(files.empty());
     RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kTerminal);
 
-    if (base::FeatureList::IsEnabled(features::kTerminalSystemApp)) {
-      auto* browser = LaunchTerminal(profile, display_id, container_id);
-      if (browser == nullptr) {
-        RecordAppLaunchResultHistogram(crostini::CrostiniResult::UNKNOWN_ERROR);
-        return std::move(callback).Run(false, "failed to launch terminal");
-      }
-      RecordAppLaunchResultHistogram(crostini::CrostiniResult::SUCCESS);
-      return std::move(callback).Run(true, "");
+    auto* browser = LaunchTerminal(profile, display_id, container_id);
+    if (browser == nullptr) {
+      RecordAppLaunchResultHistogram(crostini::CrostiniResult::UNKNOWN_ERROR);
+      return std::move(callback).Run(false, "failed to launch terminal");
     }
-
-    GURL vsh_in_crosh_url = GenerateVshInCroshUrl(profile, container_id,
-                                                  std::vector<std::string>());
-    apps::AppLaunchParams launch_params =
-        GenerateTerminalAppLaunchParams(display_id);
-    // Create the terminal here so it's created in the right display. If the
-    // browser creation is delayed into the callback the root window for new
-    // windows setting can be changed due to the launcher or shelf dismissal.
-    Browser* browser =
-        CreateContainerTerminal(profile, launch_params, vsh_in_crosh_url);
-    launch_closure =
-        base::BindOnce(&LaunchTerminalApp, profile, launch_params,
-                       vsh_in_crosh_url, browser, std::move(callback));
+    RecordAppLaunchResultHistogram(crostini::CrostiniResult::SUCCESS);
+    return std::move(callback).Run(true, "");
   } else {
     RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kRegisteredApp);
     launch_closure =
@@ -402,7 +374,7 @@ void LaunchCrostiniApp(Profile* profile,
   auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile);
 
   // At this point, we know that Crostini UI is allowed.
-  if (app_id == GetTerminalId() &&
+  if (app_id == kCrostiniTerminalSystemAppId &&
       (!crostini_manager->IsCrosTerminaInstalled() ||
        !CrostiniFeatures::Get()->IsEnabled(profile))) {
     crostini::CrostiniInstaller::GetForProfile(profile)->ShowDialog(
@@ -578,23 +550,6 @@ base::string16 GetTimeRemainingMessage(base::TimeTicks start, int percent) {
   }
 }
 
-const std::string& GetTerminalId() {
-  static const base::NoDestructor<std::string> app_id([] {
-    return base::FeatureList::IsEnabled(features::kTerminalSystemApp)
-               ? kCrostiniTerminalSystemAppId
-               : kCrostiniTerminalId;
-  }());
-  return *app_id;
-}
-
-const std::string& GetDeletedTerminalId() {
-  static const base::NoDestructor<std::string> app_id([] {
-    return base::FeatureList::IsEnabled(features::kTerminalSystemApp)
-               ? kCrostiniTerminalId
-               : kCrostiniTerminalSystemAppId;
-  }());
-  return *app_id;
-}
 
 std::vector<int64_t> GetTicksForDiskSize(int64_t min_size,
                                          int64_t available_space) {

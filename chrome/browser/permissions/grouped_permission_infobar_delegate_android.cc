@@ -93,6 +93,7 @@ base::string16 GroupedPermissionInfoBarDelegate::GetDescriptionText() const {
       return l10n_util::GetStringUTF16(
           IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_CROWD_DENY_DESCRIPTION);
     case QuietUiReason::kTriggeredDueToAbusiveRequests:
+    case QuietUiReason::kTriggeredDueToAbusiveContent:
       return l10n_util::GetStringUTF16(
           IDS_NOTIFICATION_QUIET_PERMISSION_INFOBAR_ABUSIVE_MESSAGE);
   }
@@ -111,6 +112,7 @@ bool GroupedPermissionInfoBarDelegate::ShouldSecondaryButtonOpenSettings()
     case QuietUiReason::kTriggeredByCrowdDeny:
       return true;
     case QuietUiReason::kTriggeredDueToAbusiveRequests:
+    case QuietUiReason::kTriggeredDueToAbusiveContent:
       return false;
   }
 
@@ -132,8 +134,12 @@ base::string16 GroupedPermissionInfoBarDelegate::GetLinkText() const {
     case QuietUiReason::kTriggeredByCrowdDeny:
       return base::string16();
     case QuietUiReason::kTriggeredDueToAbusiveRequests:
+    case QuietUiReason::kTriggeredDueToAbusiveContent:
       return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
   }
+
+  NOTREACHED();
+  return base::string16();
 }
 
 GURL GroupedPermissionInfoBarDelegate::GetLinkURL() const {
@@ -176,6 +182,7 @@ bool GroupedPermissionInfoBarDelegate::Accept() {
       permission_prompt_->Accept();
       break;
     case QuietUiReason::kTriggeredDueToAbusiveRequests:
+    case QuietUiReason::kTriggeredDueToAbusiveContent:
       permission_prompt_->Deny();
       break;
   }
@@ -194,6 +201,7 @@ bool GroupedPermissionInfoBarDelegate::Cancel() {
       // The infobar needs to be kept open after the "Manage" button is clicked.
       return false;
     case QuietUiReason::kTriggeredDueToAbusiveRequests:
+    case QuietUiReason::kTriggeredDueToAbusiveContent:
       permission_prompt_->Accept();
       return true;
   }
@@ -249,6 +257,7 @@ base::string16 GroupedPermissionInfoBarDelegate::GetButtonLabel(
               ? IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_ALLOW_BUTTON
               : IDS_NOTIFICATION_BUTTON_MANAGE);
     case QuietUiReason::kTriggeredDueToAbusiveRequests:
+    case QuietUiReason::kTriggeredDueToAbusiveContent:
       return l10n_util::GetStringUTF16(
           (button == BUTTON_OK)
               ? IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_CONTINUE_BLOCKING_BUTTON

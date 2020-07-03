@@ -2,12 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "chrome/browser/nearby_sharing/text_attachment.h"
 
 TextAttachment::TextAttachment(std::string text_body, Type type, int64_t size)
     : text_body_(std::move(text_body)), type_(type), size_(size) {}
 
 TextAttachment::~TextAttachment() = default;
+
+TextAttachment::TextAttachment(const TextAttachment&) = default;
+
+TextAttachment& TextAttachment::operator=(const TextAttachment&) = default;
 
 int64_t TextAttachment::size() const {
   return size_;

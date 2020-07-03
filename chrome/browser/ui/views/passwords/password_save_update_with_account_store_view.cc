@@ -357,11 +357,35 @@ PasswordSaveUpdateWithAccountStoreView::PasswordSaveUpdateWithAccountStoreView(
   DCHECK(controller_.state() == password_manager::ui::PENDING_PASSWORD_STATE ||
          controller_.state() ==
              password_manager::ui::PENDING_PASSWORD_UPDATE_STATE);
+  std::unique_ptr<views::Combobox> destination_dropdown;
+  if (controller_.ShouldShowPasswordStorePicker()) {
+    destination_dropdown = CreateDestinationCombobox(
+        controller_.GetPrimaryAccountEmail(),
+        controller_.GetPrimaryAccountAvatar(ComboboxIconSize()),
+        controller_.IsUsingAccountStore());
+    destination_dropdown->set_listener(this);
+    destination_dropdown_ = destination_dropdown.get();
+  }
   const autofill::PasswordForm& password_form = controller_.pending_password();
   if (password_form.IsFederatedCredential()) {
     // The credential to be saved doesn't contain password but just the identity
     // provider (e.g. "Sign in with Google"). Thus, the layout is different.
-    SetLayoutManager(std::make_unique<views::FillLayout>());
+    views::FlexLayout* flex_layout =
+        SetLayoutManager(std::make_unique<views::FlexLayout>());
+    flex_layout->SetOrientation(views::LayoutOrientation::kVertical)
+        .SetCrossAxisAlignment(views::LayoutAlignment::kStretch)
+        .SetIgnoreDefaultMainAxisMargins(true)
+        .SetCollapseMargins(true)
+        .SetDefault(
+            views::kMarginsKey,
+            gfx::Insets(
+                /*vertical=*/ChromeLayoutProvider::Get()->GetDistanceMetric(
+                    DISTANCE_CONTROL_LIST_VERTICAL),
+                /*horizontal=*/0));
+
+    if (destination_dropdown)
+      AddChildView(std::move(destination_dropdown));
+
     std::pair<base::string16, base::string16> titles =
         GetCredentialLabelsForAccountChooser(password_form);
     CredentialsItemView* credential_view = new CredentialsItemView(
@@ -373,14 +397,6 @@ PasswordSaveUpdateWithAccountStoreView::PasswordSaveUpdateWithAccountStoreView(
     credential_view->SetEnabled(false);
     AddChildView(credential_view);
   } else {
-    std::unique_ptr<views::Combobox> destination_dropdown;
-    if (controller_.ShouldShowPasswordStorePicker()) {
-      destination_dropdown = CreateDestinationCombobox(
-          controller_.GetPrimaryAccountEmail(),
-          controller_.GetPrimaryAccountAvatar(ComboboxIconSize()),
-          controller_.IsUsingAccountStore());
-      destination_dropdown->set_listener(this);
-    }
     std::unique_ptr<views::EditableCombobox> username_dropdown =
         CreateUsernameEditableCombobox(password_form);
     username_dropdown->set_listener(this);
@@ -414,7 +430,6 @@ PasswordSaveUpdateWithAccountStoreView::PasswordSaveUpdateWithAccountStoreView(
 
     username_dropdown_ = username_dropdown.get();
     password_dropdown_ = password_dropdown.get();
-    destination_dropdown_ = destination_dropdown.get();
     password_view_button_ = password_view_button.get();
     BuildCredentialRows(root_view, std::move(destination_dropdown),
                         std::move(username_dropdown),

@@ -30,7 +30,6 @@
 
 @implementation SceneState
 @synthesize window = _window;
-@synthesize windowID = _windowID;
 
 - (instancetype)initWithAppState:(AppState*)appState {
   self = [super init];
@@ -38,9 +37,6 @@
     _appState = appState;
     _observers = [SceneStateObserverList
         observersWithProtocol:@protocol(SceneStateObserver)];
-    if (@available(iOS 13, *)) {
-      _windowID = UIApplication.sharedApplication.connectedScenes.count - 1;
-    }
   }
   return self;
 }
@@ -56,14 +52,6 @@
 }
 
 #pragma mark - Setters & Getters.
-
-- (NSUInteger)windowID {
-  if (IsMultiwindowSupported()) {
-    return _windowID;
-  } else {
-    return 0;
-  }
-}
 
 - (void)setWindow:(UIWindow*)window {
   if (IsSceneStartupSupported()) {

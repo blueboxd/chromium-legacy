@@ -500,8 +500,9 @@ struct GCInfoTrait<HeapLinkedHashSet<T, U, V>>
     : public GCInfoTrait<LinkedHashSet<T, U, V, HeapAllocator>> {};
 
 // This class is still experimental. Do not use this class.
-template <typename ValueArg>
-class HeapNewLinkedHashSet : public NewLinkedHashSet<ValueArg, HeapAllocator> {
+template <typename ValueArg, typename TraitsArg = HashTraits<ValueArg>>
+class HeapNewLinkedHashSet
+    : public NewLinkedHashSet<ValueArg, TraitsArg, HeapAllocator> {
   IS_GARBAGE_COLLECTED_CONTAINER_TYPE();
   DISALLOW_NEW();
 
@@ -523,7 +524,8 @@ class HeapNewLinkedHashSet : public NewLinkedHashSet<ValueArg, HeapAllocator> {
  public:
   template <typename>
   static void* AllocateObject(size_t size) {
-    return ThreadHeap::Allocate<HeapNewLinkedHashSet<ValueArg>>(size);
+    return ThreadHeap::Allocate<HeapNewLinkedHashSet<ValueArg, TraitsArg>>(
+        size);
   }
 
   HeapNewLinkedHashSet() {
@@ -531,9 +533,9 @@ class HeapNewLinkedHashSet : public NewLinkedHashSet<ValueArg, HeapAllocator> {
   }
 };
 
-template <typename T>
-struct GCInfoTrait<HeapNewLinkedHashSet<T>>
-    : public GCInfoTrait<NewLinkedHashSet<T, HeapAllocator>> {};
+template <typename T, typename U>
+struct GCInfoTrait<HeapNewLinkedHashSet<T, U>>
+    : public GCInfoTrait<NewLinkedHashSet<T, U, HeapAllocator>> {};
 
 template <typename ValueArg,
           wtf_size_t inlineCapacity =

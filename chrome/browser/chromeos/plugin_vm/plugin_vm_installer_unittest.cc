@@ -14,6 +14,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/optional.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
@@ -39,7 +40,6 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
 #include "google_apis/drive/drive_api_error_codes.h"
-#include "google_apis/drive/test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -342,7 +342,12 @@ class PluginVmInstallerDriveTest : public PluginVmInstallerTestBase {
         "",  // parent_resource_id
         kPluginVmImageFile,
         true,  // shared_with_me
-        google_apis::test_util::CreateCopyResultCallback(&error, &entry));
+        base::BindLambdaForTesting(
+            [&](google_apis::DriveApiErrorCode drive_error,
+                std::unique_ptr<google_apis::FileResource> drive_entry) {
+              error = drive_error;
+              entry = std::move(drive_entry);
+            }));
     base::RunLoop().RunUntilIdle();
     ASSERT_EQ(google_apis::HTTP_CREATED, error);
     ASSERT_TRUE(entry);

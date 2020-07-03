@@ -14,6 +14,9 @@
 const char prefs::kNearbySharingEnabledPrefName[] = "nearby_sharing.enabled";
 const char prefs::kNearbySharingActiveProfilePrefName[] =
     "nearby_sharing.active_profile";
+const char prefs::kNearbySharingBackgroundVisibilityName[] =
+    "nearby_sharing.background_visibility";
+const char prefs::kNearbySharingDataUsageName[] = "nearby_sharing.data_usage";
 
 void RegisterNearbySharingPrefs(user_prefs::PrefRegistrySyncable* registry) {
   // This pref is not synced.
@@ -21,6 +24,14 @@ void RegisterNearbySharingPrefs(user_prefs::PrefRegistrySyncable* registry) {
   // available.
   registry->RegisterBooleanPref(
       prefs::kNearbySharingEnabledPrefName, true /* default_value */,
+      PrefRegistry::PrefRegistrationFlags::NO_REGISTRATION_FLAGS /* flags */);
+  registry->RegisterIntegerPref(
+      prefs::kNearbySharingBackgroundVisibilityName,
+      static_cast<int>(Visibility::kNoOne) /* default_value */,
+      PrefRegistry::PrefRegistrationFlags::NO_REGISTRATION_FLAGS /* flags */);
+  registry->RegisterIntegerPref(
+      prefs::kNearbySharingDataUsageName,
+      static_cast<int>(DataUsage::kWifiOnly) /* default_value */,
       PrefRegistry::PrefRegistrationFlags::NO_REGISTRATION_FLAGS /* flags */);
 }
 

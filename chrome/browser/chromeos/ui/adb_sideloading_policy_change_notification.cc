@@ -100,7 +100,15 @@ void AdbSideloadingPolicyChangeNotification::Show(Type type) {
   SystemNotificationHelper::GetInstance()->Display(*notification);
 }
 
-void AdbSideloadingPolicyChangeNotification::HandleNotificationClick() {
+void AdbSideloadingPolicyChangeNotification::HandleNotificationClick(
+    base::Optional<int> button_index) {
+  // Only request restart when the button is clicked, i.e. ignore the clicks
+  // on the body of the notification.
+  if (!button_index)
+    return;
+
+  DCHECK(*button_index == 0);
+
   chromeos::PowerManagerClient::Get()->RequestRestart(
       power_manager::REQUEST_RESTART_FOR_USER,
       "adb sideloading disable notification");

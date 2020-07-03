@@ -205,12 +205,6 @@ const base::Feature kPluginVm{"PluginVm", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kPrintServerUi{"PrintServerUi",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enable chrome://terminal.  Terminal System App will only run on
-// OS_CHROMEOS, but this flag must be defined for all platforms since
-// it is required for SystemWebApp tests.
-const base::Feature kTerminalSystemApp{"TerminalSystemApp",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Use the Terminal System App legacy settings page.
 const base::Feature kTerminalSystemAppLegacySettings{
     "TerminalSystemAppLegacySettings", base::FEATURE_DISABLED_BY_DEFAULT};

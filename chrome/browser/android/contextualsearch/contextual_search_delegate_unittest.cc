@@ -49,10 +49,10 @@ class ContextualSearchDelegateTest : public testing::Test {
     template_url_service_.reset(CreateTemplateURLService());
     delegate_.reset(new ContextualSearchDelegate(
         test_shared_url_loader_factory_, template_url_service_.get(),
-        base::Bind(
+        base::BindRepeating(
             &ContextualSearchDelegateTest::recordSearchTermResolutionResponse,
             base::Unretained(this)),
-        base::Bind(
+        base::BindRepeating(
             &ContextualSearchDelegateTest::recordSampleSelectionAvailable,
             base::Unretained(this))));
   }

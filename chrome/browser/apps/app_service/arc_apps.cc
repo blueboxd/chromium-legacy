@@ -306,6 +306,9 @@ apps::mojom::IntentFilterPtr ConvertArcIntentFilter(
                                    std::move(mime_type_condition_values));
       intent_filter->conditions.push_back(std::move(mime_type_condition));
     }
+    if (!arc_intent_filter.activity_name().empty()) {
+      intent_filter->activity_name = arc_intent_filter.activity_name();
+    }
   }
 
   return intent_filter;

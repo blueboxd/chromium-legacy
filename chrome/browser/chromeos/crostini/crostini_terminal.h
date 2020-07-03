@@ -13,7 +13,6 @@
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/point.h"
 
-class GURL;
 class Browser;
 class Profile;
 
@@ -99,39 +98,12 @@ enum class TerminalSetting {
   kMaxValue = kThemeVariations,
 };
 
-// Generate the URL for Crostini terminal application.
-GURL GenerateVshInCroshUrl(Profile* profile,
-                           const ContainerId& container_id,
-                           const std::vector<std::string>& terminal_args);
-
-// Generate AppLaunchParams for the Crostini terminal application.
-apps::AppLaunchParams GenerateTerminalAppLaunchParams(int64_t display_id);
-
-// Create the crosh-in-a-window that displays a shell in an container on a VM.
-Browser* CreateContainerTerminal(Profile* profile,
-                                 const apps::AppLaunchParams& launch_params,
-                                 const GURL& vsh_in_crosh_url);
-
-// Shows the already created crosh-in-a-window that displays a shell in an
-// already running container on a VM.
-void ShowContainerTerminal(Profile* profile,
-                           const apps::AppLaunchParams& launch_params,
-                           const GURL& vsh_in_crosh_url,
-                           Browser* browser);
-
-// Launches the crosh-in-a-window that displays a shell in an already running
-// container on a VM and passes |terminal_args| as parameters to that shell
-// which will cause them to be executed as program inside that shell.
-void LaunchContainerTerminal(Profile* profile,
-                             int64_t display_id,
-                             const ContainerId& container_id,
-                             const std::vector<std::string>& terminal_args);
-
 // Launches the terminal tabbed app.
 Browser* LaunchTerminal(
     Profile* profile,
     int64_t display_id = display::kInvalidDisplayId,
-    const ContainerId& container_id = ContainerId::GetDefault());
+    const ContainerId& container_id = ContainerId::GetDefault(),
+    const std::vector<std::string>& terminal_args = {});
 
 // Launches the terminal settings popup window.
 Browser* LaunchTerminalSettings(

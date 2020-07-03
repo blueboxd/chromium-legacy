@@ -28,9 +28,10 @@ class Profile;
 
 namespace crostini {
 
+// TODO(crbug.com/1092657): kCrostiniDeletedTerminalId can be removed after M86.
 // We use an arbitrary well-formed extension id for the Terminal app, this
 // is equal to GenerateId("Terminal").
-extern const char kCrostiniTerminalId[];
+extern const char kCrostiniDeletedTerminalId[];
 // web_app::GenerateAppIdFromURL(
 //     GURL("chrome-untrusted://terminal/html/terminal.html"))
 extern const char kCrostiniTerminalSystemAppId[];
@@ -179,15 +180,6 @@ void ShowCrostiniRecoveryView(Profile* profile,
                               const std::string& app_id,
                               int64_t display_id,
                               LaunchCrostiniAppCallback callback);
-
-// Returns App ID of the terminal app which is either the older crosh-based
-// terminal, or the new Terminal System App if the TerminalSystemApp feature
-// is enabled.
-const std::string& GetTerminalId();
-
-// Returns the alternative terminal ID to |GetTerminalId|.  This is used when
-// migrating terminals when TerminalSystemApp feature changes.
-const std::string& GetDeletedTerminalId();
 
 // Add a newly created LXD container to the kCrostiniContainers pref
 void AddNewLxdContainerToPrefs(Profile* profile,

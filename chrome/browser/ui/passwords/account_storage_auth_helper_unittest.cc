@@ -40,12 +40,10 @@ class MockSigninViewController : public SigninViewController {
                base::OnceCallback<void(signin::ReauthResult)>),
               (override));
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
   MOCK_METHOD(void,
               ShowDiceAddAccountTab,
               (signin_metrics::AccessPoint, const std::string&),
               (override));
-#endif
 };
 
 }  // namespace
@@ -115,7 +113,6 @@ TEST_F(AccountStorageAuthHelperTest, ShouldNotSetOptInOnFailedReauth) {
   auth_helper_.TriggerOptInReauth(kReauthAccessPoint, base::DoNothing());
 }
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 TEST_F(AccountStorageAuthHelperTest, ShouldTriggerSigninIfDiceEnabled) {
   const signin_metrics::AccessPoint kAcessPoint =
       signin_metrics::AccessPoint::ACCESS_POINT_AUTOFILL_DROPDOWN;
@@ -124,4 +121,3 @@ TEST_F(AccountStorageAuthHelperTest, ShouldTriggerSigninIfDiceEnabled) {
 
   auth_helper_.TriggerSignIn(kAcessPoint);
 }
-#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)

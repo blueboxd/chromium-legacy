@@ -5,6 +5,11 @@
 #ifndef CHROME_BROWSER_NEARBY_SHARING_FAKE_NEARBY_CONNECTIONS_MANAGER_H_
 #define CHROME_BROWSER_NEARBY_SHARING_FAKE_NEARBY_CONNECTIONS_MANAGER_H_
 
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "chrome/browser/nearby_sharing/nearby_connections_manager.h"
 
 // Fake NearbyConnectionsManager for testing.
@@ -65,11 +70,15 @@ class FakeNearbyConnectionsManager : public NearbyConnectionsManager {
   bool IsAdvertising();
   bool IsDiscovering();
   bool IsShutdown();
+  DataUsage GetAdvertisingDataUsage();
+  PowerLevel GetAdvertisingPowerLevel();
 
  private:
-  IncomingConnectionListener* advertising_listener_{nullptr};
-  DiscoveryListener* discovery_listener_{nullptr};
-  bool is_shutdown_{false};
+  IncomingConnectionListener* advertising_listener_ = nullptr;
+  DiscoveryListener* discovery_listener_ = nullptr;
+  bool is_shutdown_ = false;
+  DataUsage advertising_data_usage_ = DataUsage::kUnknown;
+  PowerLevel advertising_power_level_ = PowerLevel::kUnknown;
 };
 
 #endif  // CHROME_BROWSER_NEARBY_SHARING_FAKE_NEARBY_CONNECTIONS_MANAGER_H_

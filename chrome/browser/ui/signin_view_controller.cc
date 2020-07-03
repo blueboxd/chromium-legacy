@@ -12,7 +12,6 @@
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/signin_reauth_view_controller.h"
 #include "chrome/browser/ui/signin_view_controller_delegate.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -30,6 +29,7 @@
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/signin_reauth_view_controller.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/webui_url_constants.h"
@@ -178,29 +178,6 @@ void SigninViewController::ShowSignin(profiles::BubbleViewMode mode,
   ShowDiceSigninTab(signin_reason, access_point, promo_action, email,
                     redirect_url);
 }
-#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
-
-void SigninViewController::ShowModalSyncConfirmationDialog() {
-  CloseModalSignin();
-  // The delegate will delete itself on request of the UI code when the widget
-  // is closed.
-  delegate_ =
-      SigninViewControllerDelegate::CreateSyncConfirmationDelegate(browser_);
-  delegate_observer_.Add(delegate_);
-  DCHECK(!reauth_controller_);
-  chrome::RecordDialogCreation(
-      chrome::DialogIdentifier::SIGN_IN_SYNC_CONFIRMATION);
-}
-
-void SigninViewController::ShowModalSigninErrorDialog() {
-  CloseModalSignin();
-  // The delegate will delete itself on request of the UI code when the widget
-  // is closed.
-  delegate_ = SigninViewControllerDelegate::CreateSigninErrorDelegate(browser_);
-  delegate_observer_.Add(delegate_);
-  DCHECK(!reauth_controller_);
-  chrome::RecordDialogCreation(chrome::DialogIdentifier::SIGN_IN_ERROR);
-}
 
 std::unique_ptr<SigninViewController::ReauthAbortHandle>
 SigninViewController::ShowReauthPrompt(
@@ -240,12 +217,34 @@ SigninViewController::ShowReauthPrompt(
     return abort_handle;
   }
 
-  reauth_controller_ = std::make_unique<SigninReauthViewController>(
+  // The delegate will delete itself on request of the UI code when the widget
+  // is closed.
+  delegate_ = new SigninReauthViewController(
       browser_, account_id, access_point, std::move(wrapped_reauth_callback));
-  delegate_ = reauth_controller_.get();
   delegate_observer_.Add(delegate_);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::SIGNIN_REAUTH);
   return abort_handle;
+}
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
+
+void SigninViewController::ShowModalSyncConfirmationDialog() {
+  CloseModalSignin();
+  // The delegate will delete itself on request of the UI code when the widget
+  // is closed.
+  delegate_ =
+      SigninViewControllerDelegate::CreateSyncConfirmationDelegate(browser_);
+  delegate_observer_.Add(delegate_);
+  chrome::RecordDialogCreation(
+      chrome::DialogIdentifier::SIGN_IN_SYNC_CONFIRMATION);
+}
+
+void SigninViewController::ShowModalSigninErrorDialog() {
+  CloseModalSignin();
+  // The delegate will delete itself on request of the UI code when the widget
+  // is closed.
+  delegate_ = SigninViewControllerDelegate::CreateSigninErrorDelegate(browser_);
+  delegate_observer_.Add(delegate_);
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::SIGN_IN_ERROR);
 }
 
 bool SigninViewController::ShowsModalDialog() {
@@ -265,20 +264,8 @@ void SigninViewController::SetModalSigninHeight(int height) {
 }
 
 void SigninViewController::OnModalSigninClosed() {
-  DCHECK(!reauth_controller_ || reauth_controller_.get() == delegate_);
   delegate_observer_.Remove(delegate_);
   delegate_ = nullptr;
-  reauth_controller_.reset();
-}
-
-void SigninViewController::OnReauthConfirmed() {
-  if (reauth_controller_)
-    reauth_controller_->OnReauthConfirmed();
-}
-
-void SigninViewController::OnReauthDismissed() {
-  if (reauth_controller_)
-    reauth_controller_->OnReauthDismissed();
 }
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -433,7 +420,6 @@ void SigninViewController::ShowModalSigninEmailConfirmationDialog(
       active_contents, browser_->profile(), last_email, email,
       std::move(callback));
   delegate_observer_.Add(delegate_);
-  DCHECK(!reauth_controller_);
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::SIGN_IN_EMAIL_CONFIRMATION);
 }

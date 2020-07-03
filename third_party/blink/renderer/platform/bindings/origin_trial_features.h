@@ -6,12 +6,12 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_ORIGIN_TRIAL_FEATURES_H_
 
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8.h"
 
 namespace blink {
 
-enum class OriginTrialFeature;
 class ScriptState;
 struct WrapperTypeInfo;
 
@@ -54,6 +54,20 @@ PLATFORM_EXPORT void InstallOriginTrialFeatures(const WrapperTypeInfo*,
 // (avoids forcing the creation of objects prematurely).
 PLATFORM_EXPORT void InstallPendingOriginTrialFeature(OriginTrialFeature,
                                                       const ScriptState*);
+
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE)
+
+using InstallPropertiesPerFeatureFuncType = void (*)(ScriptState*,
+                                                     OriginTrialFeature);
+
+// Install ES properties associated with the given origin trial feature.
+PLATFORM_EXPORT void InstallPropertiesPerFeature(ScriptState* script_state,
+                                                 OriginTrialFeature feature);
+
+PLATFORM_EXPORT InstallPropertiesPerFeatureFuncType
+SetInstallPropertiesPerFeatureFunc(InstallPropertiesPerFeatureFuncType func);
+
+#endif  // USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE
 
 }  // namespace blink
 

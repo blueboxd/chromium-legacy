@@ -23,10 +23,12 @@ class NotificationPermissionUiSelector {
     kEnabledInPrefs,
     kTriggeredByCrowdDeny,
     kTriggeredDueToAbusiveRequests,
+    kTriggeredDueToAbusiveContent,
   };
 
   enum class WarningReason {
     kAbusiveRequests,
+    kAbusiveContent,
   };
 
   struct Decision {

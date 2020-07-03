@@ -1309,6 +1309,10 @@ void RenderViewContextMenu::AppendSmartSelectionActionItems() {
 
 void RenderViewContextMenu::AppendOpenInWebAppLinkItems() {
   Profile* const profile = Profile::FromBrowserContext(browser_context_);
+  // TODO(crbug.com/1100255): Check whether
+  // AppServiceProxy::BrowserAppLauncher() is nullptr instead to be more direct.
+  if (profile->IsOffTheRecord())
+    return;
 
   base::Optional<web_app::AppId> app_id =
       web_app::FindInstalledAppWithUrlInScope(profile, params_.link_url);

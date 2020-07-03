@@ -55,8 +55,6 @@ class UserSelectionScreen
 
   virtual void Init(const user_manager::UserList& users);
   void OnUserImageChanged(const user_manager::User& user);
-  void OnBeforeUserRemoved(const AccountId& account_id);
-  void OnUserRemoved(const AccountId& account_id);
 
   void OnPasswordClearTimerExpired();
 

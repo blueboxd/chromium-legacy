@@ -501,4 +501,58 @@ TEST(NewLinkedHashSetTest, Clear) {
   EXPECT_TRUE(it == set.end());
 }
 
+// A unit type that has empty std::string value.
+struct EmptyString {
+  EmptyString() = default;
+  explicit EmptyString(WTF::HashTableDeletedValueType) : deleted_(true) {}
+  ~EmptyString() { CHECK(ok_); }
+
+  bool operator==(const EmptyString& other) const {
+    return str_ == other.str_ && deleted_ == other.deleted_ &&
+           empty_ == other.empty_;
+  }
+
+  bool IsHashTableDeletedValue() const { return deleted_; }
+
+  std::string str_;
+  bool ok_ = true;
+  bool deleted_ = false;
+  bool empty_ = false;
+};
+
+template <>
+struct HashTraits<EmptyString> : SimpleClassHashTraits<EmptyString> {
+  static const bool kEmptyValueIsZero = false;
+
+  // This overrides SimpleClassHashTraits<EmptyString>::EmptyValue() which
+  // returns EmptyString().
+  static EmptyString EmptyValue() {
+    EmptyString empty;
+    empty.empty_ = true;
+    return empty;
+  }
+};
+
+template <>
+struct DefaultHash<EmptyString> {
+  struct Hash {
+    static unsigned GetHash(const EmptyString&) { return 0; }
+    static bool Equal(const EmptyString& value1, const EmptyString& value2) {
+      return value1 == value2;
+    }
+    static const bool safe_to_compare_to_empty_or_deleted = true;
+  };
+};
+
+// This ensures that NewLinkedHashSet can store a struct that needs
+// HashTraits<>::kEmptyValueIsZero set to false. The default EmptyValue() of
+// SimpleClassHashTraits<> returns a value created with the default constructor,
+// so a custom HashTraits that sets kEmptyValueIsZero to false and also
+// overrides EmptyValue() to provide another empty value is needed.
+TEST(NewLinkedHashSetEmptyTest, EmptyString) {
+  using Set = NewLinkedHashSet<EmptyString>;
+  Set set;
+  set.insert(EmptyString());
+}
+
 }  // namespace WTF

@@ -58,10 +58,8 @@ class LoginDisplayWebUI : public LoginDisplay,
   void ShowKioskAutolaunchScreen() override;
   void ShowWrongHWIDScreen() override;
   void SetWebUIHandler(LoginDisplayWebUIHandler* webui_handler) override;
-  bool IsShowGuest() const override;
   bool IsShowUsers() const override;
   bool ShowUsersHasChanged() const override;
-  bool IsAllowNewUser() const override;
   bool AllowNewUserChanged() const override;
   bool IsUserSigninCompleted() const override;
 
@@ -72,9 +70,6 @@ class LoginDisplayWebUI : public LoginDisplay,
   void OnUserActivity(const ui::Event* event) override;
 
  private:
-  // Whether to show guest login.
-  bool show_guest_ = false;
-
   // Whether to show the user pods or a GAIA sign in.
   // Public sessions are always shown.
   bool show_users_ = false;

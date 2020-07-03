@@ -1,4 +1,4 @@
-<style include="signin-dialog-shared">
+<style include="signin-dialog-shared cr-hidden-style">
   :host {
     color: var(--cr-primary-text-color);
     display: flex;
@@ -74,11 +74,14 @@
   </div>
 </div>
 <div class="action-container">
+  <paper-spinner-lite active hidden$="[[!confirmButtonHidden_]]">
+  </paper-spinner-lite>
   <cr-button id="confirmButton" class="action-button" on-click="onConfirm_"
-      autofocus>
-    $i18n{signinReauthConfirmLabel}
+      hidden="[[confirmButtonHidden_]]">
+    [[confirmButtonLabel_]]
   </cr-button>
-  <cr-button id="cancelButton" on-click="onCancel_">
+  <cr-button id="cancelButton" on-click="onCancel_"
+      hidden="[[cancelButtonHidden_]]">
     $i18n{signinReauthCloseLabel}
   </cr-button>
 </div>

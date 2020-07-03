@@ -22,7 +22,12 @@ public interface PageInfoSubpageController {
     View createViewForSubpage(ViewGroup parent);
 
     /**
-     * Called before the subpage closes in order to perform any necessary cleanup.
+     * Called when the subpage was added to the view hierarchy.
      */
-    void willRemoveSubpage();
+    void onSubPageAttached();
+
+    /**
+     * Called after the subpage closes in order to perform any necessary cleanup.
+     */
+    void onSubpageRemoved();
 }

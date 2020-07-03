@@ -29,6 +29,16 @@ const char QuietNotificationPermissionUiConfig::kEnableAbusiveRequestWarning[] =
     "enable_abusive_request_warning";
 
 // static
+const char QuietNotificationPermissionUiConfig::
+    kEnableAbusiveContentTriggeredRequestBlocking[] =
+        "enable_abusive_content_triggering";
+
+// static
+const char QuietNotificationPermissionUiConfig::
+    kEnableAbusiveContentTriggeredRequestWarning[] =
+        "enable_abusive_content_warning";
+
+// static
 const char QuietNotificationPermissionUiConfig::kMiniInfobarExpandLinkText[] =
     "mini_infobar_expand_link_text";
 
@@ -85,4 +95,26 @@ bool QuietNotificationPermissionUiConfig::IsAbusiveRequestWarningEnabled() {
   return base::GetFieldTrialParamByFeatureAsBool(
       features::kQuietNotificationPrompts, kEnableAbusiveRequestWarning,
       false /* default */);
+}
+
+// static
+bool QuietNotificationPermissionUiConfig::
+    IsAbusiveContentTriggeredRequestBlockingEnabled() {
+  if (!base::FeatureList::IsEnabled(features::kQuietNotificationPrompts))
+    return false;
+
+  return base::GetFieldTrialParamByFeatureAsBool(
+      features::kQuietNotificationPrompts,
+      kEnableAbusiveContentTriggeredRequestBlocking, false /* default */);
+}
+
+// static
+bool QuietNotificationPermissionUiConfig::
+    IsAbusiveContentTriggeredRequestWarningEnabled() {
+  if (!base::FeatureList::IsEnabled(features::kQuietNotificationPrompts))
+    return false;
+
+  return base::GetFieldTrialParamByFeatureAsBool(
+      features::kQuietNotificationPrompts,
+      kEnableAbusiveContentTriggeredRequestWarning, false /* default */);
 }

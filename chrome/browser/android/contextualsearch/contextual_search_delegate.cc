@@ -88,14 +88,12 @@ const int kResponseCodeUninitialized = -1;
 ContextualSearchDelegate::ContextualSearchDelegate(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     TemplateURLService* template_url_service,
-    const ContextualSearchDelegate::SearchTermResolutionCallback&
-        search_term_callback,
-    const ContextualSearchDelegate::SurroundingTextCallback&
-        surrounding_text_callback)
+    ContextualSearchDelegate::SearchTermResolutionCallback search_term_callback,
+    ContextualSearchDelegate::SurroundingTextCallback surrounding_text_callback)
     : url_loader_factory_(std::move(url_loader_factory)),
       template_url_service_(template_url_service),
-      search_term_callback_(search_term_callback),
-      surrounding_text_callback_(surrounding_text_callback) {
+      search_term_callback_(std::move(search_term_callback)),
+      surrounding_text_callback_(std::move(surrounding_text_callback)) {
   field_trial_.reset(new ContextualSearchFieldTrial());
 }
 

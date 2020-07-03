@@ -36,6 +36,14 @@ extern const char kAbusiveNotificationRequestsEnforcementMessage[];
 // the warning list for abusive permission request flows.
 extern const char kAbusiveNotificationRequestsWarningMessage[];
 
+// The message to be printed in the Developer Tools console when the site is on
+// the blocking list for showing abusive notification content.
+extern const char kAbusiveNotificationContentEnforcementMessage[];
+
+// The message to be printed in the Developer Tools console when the site is on
+// the warning list for showing abusive notification content.
+extern const char kAbusiveNotificationContentWarningMessage[];
+
 // Provides access to permissions bubbles. Allows clients to add a request
 // callback interface to the existing permission bubble configuration.
 // Depending on the situation and policy, that may add new UI to an existing

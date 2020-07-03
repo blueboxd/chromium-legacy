@@ -4366,6 +4366,7 @@ test("unit_tests") {
       "//components/sync:test_support",
       "//services/metrics/public/cpp:ukm_builders",
       "//third_party/libaddressinput",
+      "//ui/base/idle:test_support",
       "//ui/native_theme:test_support",
     ]
     if (is_win) {
@@ -4487,6 +4488,7 @@ test("unit_tests") {
     sources -= [
       "../browser/notifications/notification_ui_manager_unittest.cc",
       "../browser/signin/chrome_signin_status_metrics_provider_delegate_unittest.cc",
+      "../browser/ui/passwords/account_storage_auth_helper_unittest.cc",
       "../browser/ui/webui/settings/settings_manage_profile_handler_unittest.cc",
 
       # Chrome OS uses window_sizer_ash_unittest.cc

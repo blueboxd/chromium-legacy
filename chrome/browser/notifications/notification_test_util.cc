@@ -28,11 +28,6 @@ StubNotificationUIManager::GetNotificationAt(unsigned int index) const {
   return notifications_[index].first;
 }
 
-void StubNotificationUIManager::SetNotificationAddedCallback(
-    const base::Closure& callback) {
-  notification_added_callback_ = callback;
-}
-
 bool StubNotificationUIManager::SilentDismissById(
     const std::string& delegate_id,
     ProfileID profile_id) {
@@ -54,11 +49,6 @@ void StubNotificationUIManager::Add(
 
   notifications_.push_back(std::make_pair(
       notification, NotificationUIManager::GetProfileID(profile)));
-
-  if (!notification_added_callback_.is_null()) {
-    notification_added_callback_.Run();
-    notification_added_callback_.Reset();
-  }
 }
 
 bool StubNotificationUIManager::Update(

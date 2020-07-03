@@ -14,6 +14,7 @@ import org.chromium.base.Consumer;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.components.content_settings.CookieControlsBridge;
 import org.chromium.components.content_settings.CookieControlsObserver;
+import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 import org.chromium.components.omnibox.AutocompleteSchemeClassifier;
 import org.chromium.components.page_info.PageInfoView.PageInfoViewParams;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -161,7 +162,7 @@ public abstract class PageInfoControllerDelegate {
     /**
      * Initialize viewParams with Offline Page UI info, if any.
      * @param viewParams The PageInfoViewParams to set state on.
-     * @param consumer Used to set "open Online" button callback for offline page.
+     * @param runAfterDismiss Used to set "open Online" button callback for offline page.
      */
     public void initOfflinePageUiParams(
             PageInfoViewParams viewParams, Consumer<Runnable> runAfterDismiss) {
@@ -205,4 +206,10 @@ public abstract class PageInfoControllerDelegate {
     @NonNull
     public abstract CookieControlsBridge createCookieControlsBridge(
             CookieControlsObserver observer);
+
+    /**
+     * @return Returns the browser context associated with this dialog.
+     */
+    @NonNull
+    public abstract BrowserContextHandle getBrowserContext();
 }

@@ -426,8 +426,8 @@ class NotificationPlatformBridgeLinuxTest : public BrowserWithTestWindowTest {
   scoped_refptr<dbus::MockObjectProxy> mock_dbus_proxy_;
   scoped_refptr<dbus::MockObjectProxy> mock_notification_proxy_;
 
-  base::Callback<void(dbus::Signal*)> action_invoked_callback_;
-  base::Callback<void(dbus::Signal*)> notification_closed_callback_;
+  base::OnceCallback<void(dbus::Signal*)> action_invoked_callback_;
+  base::OnceCallback<void(dbus::Signal*)> notification_closed_callback_;
 
   std::unique_ptr<NotificationPlatformBridgeLinux> notification_bridge_linux_;
   std::unique_ptr<NotificationDisplayServiceTester> display_service_tester_;
@@ -441,7 +441,7 @@ class NotificationPlatformBridgeLinuxTest : public BrowserWithTestWindowTest {
     dbus::MessageWriter writer(&signal);
     writer.AppendUint32(dbus_id);
     writer.AppendString(action);
-    action_invoked_callback_.Run(&signal);
+    std::move(action_invoked_callback_).Run(&signal);
   }
 
   DISALLOW_COPY_AND_ASSIGN(NotificationPlatformBridgeLinuxTest);

@@ -16,13 +16,13 @@ namespace internal {
 
 #if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
 
+uintptr_t PartitionAddressSpace::reserved_base_address_ = 0;
 // Before PartitionAddressSpace::Init(), no allocation are allocated from a
-// reserved address space. So initially make reserved_base_address_ to
-// be kReservedAddressSpaceOffsetMask. So PartitionAddressSpace::Contains()
-// always returns false.
-// Do something similar for normal_bucket_pool_base_address_.
-uintptr_t PartitionAddressSpace::reserved_base_address_ =
-    kReservedAddressSpaceOffsetMask;
+// reserved address space. Therefore, set *_pool_base_address_ initially to
+// k*PoolOffsetMask, so that PartitionAddressSpace::IsIn*Pool() always returns
+// false.
+uintptr_t PartitionAddressSpace::direct_map_pool_base_address_ =
+    kDirectMapPoolOffsetMask;
 uintptr_t PartitionAddressSpace::normal_bucket_pool_base_address_ =
     kNormalBucketPoolOffsetMask;
 
@@ -37,28 +37,38 @@ void PartitionAddressSpace::Init() {
       nullptr, kDesiredAddressSpaceSize, kReservedAddressSpaceAlignment,
       base::PageInaccessible, PageTag::kPartitionAlloc, false));
   PA_CHECK(reserved_base_address_);
-  PA_DCHECK(!(reserved_base_address_ & kReservedAddressSpaceOffsetMask));
 
   uintptr_t current = reserved_base_address_;
 
+  direct_map_pool_base_address_ = current;
   direct_map_pool_ = internal::AddressPoolManager::GetInstance()->Add(
       current, kDirectMapPoolSize);
   PA_DCHECK(direct_map_pool_);
+  PA_DCHECK(!IsInDirectMapPool(reinterpret_cast<void*>(current - 1)));
+  PA_DCHECK(IsInDirectMapPool(reinterpret_cast<void*>(current)));
   current += kDirectMapPoolSize;
+  PA_DCHECK(IsInDirectMapPool(reinterpret_cast<void*>(current - 1)));
+  PA_DCHECK(!IsInDirectMapPool(reinterpret_cast<void*>(current)));
 
   normal_bucket_pool_base_address_ = current;
   normal_bucket_pool_ = internal::AddressPoolManager::GetInstance()->Add(
       current, kNormalBucketPoolSize);
   PA_DCHECK(normal_bucket_pool_);
+  PA_DCHECK(!IsInNormalBucketPool(reinterpret_cast<void*>(current - 1)));
+  PA_DCHECK(IsInNormalBucketPool(reinterpret_cast<void*>(current)));
   current += kNormalBucketPoolSize;
+  PA_DCHECK(IsInNormalBucketPool(reinterpret_cast<void*>(current - 1)));
+  PA_DCHECK(!IsInNormalBucketPool(reinterpret_cast<void*>(current)));
+
   PA_DCHECK(reserved_base_address_ + kDesiredAddressSpaceSize == current);
 }
 
 void PartitionAddressSpace::UninitForTesting() {
-  PA_DCHECK(kReservedAddressSpaceOffsetMask != reserved_base_address_);
   FreePages(reinterpret_cast<void*>(reserved_base_address_),
             kReservedAddressSpaceAlignment);
-  reserved_base_address_ = kReservedAddressSpaceOffsetMask;
+  reserved_base_address_ = 0;
+  direct_map_pool_base_address_ = kDirectMapPoolOffsetMask;
+  normal_bucket_pool_base_address_ = kNormalBucketPoolOffsetMask;
   direct_map_pool_ = 0;
   normal_bucket_pool_ = 0;
   internal::AddressPoolManager::GetInstance()->ResetForTesting();

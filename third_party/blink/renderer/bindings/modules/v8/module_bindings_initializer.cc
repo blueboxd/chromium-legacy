@@ -4,9 +4,16 @@
 
 #include "third_party/blink/renderer/bindings/modules/v8/module_bindings_initializer.h"
 
-#include "third_party/blink/renderer/bindings/modules/v8/origin_trial_features_for_modules.h"
 #include "third_party/blink/renderer/bindings/modules/v8/serialization/serialized_script_value_for_modules_factory.h"
-#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE)
+#include "third_party/blink/renderer/bindings/modules/v8/init_idl_interfaces.h"
+#include "third_party/blink/renderer/bindings/modules/v8/properties_per_feature_installer.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_context_snapshot_impl.h"
+#include "third_party/blink/renderer/platform/bindings/origin_trial_features.h"
+#else
+#include "third_party/blink/renderer/bindings/modules/v8/origin_trial_features_for_modules.h"
+#endif
 
 namespace blink {
 
@@ -15,8 +22,16 @@ namespace blink {
 void InitPartialInterfacesInModules();
 
 void ModuleBindingsInitializer::Init() {
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE)
+  bindings::InitIDLInterfaces();
+  auto* old_installer =
+      SetInstallPropertiesPerFeatureFunc(bindings::InstallPropertiesPerFeature);
+  CHECK(!old_installer);
+  V8ContextSnapshotImpl::Init();
+#else
   RegisterInstallOriginTrialFeaturesForModules();
   InitPartialInterfacesInModules();
+#endif
   SerializedScriptValueFactory::Initialize(
       new SerializedScriptValueForModulesFactory);
 }

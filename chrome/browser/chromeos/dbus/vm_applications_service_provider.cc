@@ -112,7 +112,7 @@ void VmApplicationsServiceProvider::LaunchTerminal(
   if (crostini::CrostiniFeatures::Get()->IsEnabled(profile) &&
       request.owner_id() == crostini::CryptohomeIdForProfile(profile)) {
     // kInvalidDisplayId will launch terminal on the current active display.
-    crostini::LaunchContainerTerminal(
+    crostini::LaunchTerminal(
         profile, display::kInvalidDisplayId,
         crostini::ContainerId(request.vm_name(), request.container_name()),
         std::vector<std::string>(request.params().begin(),

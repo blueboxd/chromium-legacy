@@ -55,7 +55,6 @@ void LoginDisplayWebUI::Init(const user_manager::UserList& users,
   // Testing that the delegate has been set.
   DCHECK(delegate_);
   SignInScreenController::Get()->Init(users);
-  show_guest_ = show_guest;
   show_users_changed_ = (show_users_ != show_users);
   show_users_ = show_users;
   allow_new_user_changed_ = (allow_new_user_ != allow_new_user);
@@ -218,20 +217,12 @@ void LoginDisplayWebUI::SetWebUIHandler(
   SignInScreenController::Get()->SetWebUIHandler(webui_handler_);
 }
 
-bool LoginDisplayWebUI::IsShowGuest() const {
-  return show_guest_;
-}
-
 bool LoginDisplayWebUI::IsShowUsers() const {
   return show_users_;
 }
 
 bool LoginDisplayWebUI::ShowUsersHasChanged() const {
   return show_users_changed_;
-}
-
-bool LoginDisplayWebUI::IsAllowNewUser() const {
-  return allow_new_user_;
 }
 
 bool LoginDisplayWebUI::AllowNewUserChanged() const {

@@ -12,8 +12,8 @@
 // Reports the transfer status for an ongoing transfer with a |ShareTarget|.
 class TransferUpdateCallback : public base::CheckedObserver {
  public:
-  virtual void OnTransferUpdate(ShareTarget shareTarget,
-                                TransferMetadata transferMetadata) = 0;
+  virtual void OnTransferUpdate(const ShareTarget& shareTarget,
+                                const TransferMetadata& transferMetadata) = 0;
 };
 
 #endif  // CHROME_BROWSER_NEARBY_SHARING_TRANSFER_UPDATE_CALLBACK_H_

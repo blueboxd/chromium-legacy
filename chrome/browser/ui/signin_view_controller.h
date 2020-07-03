@@ -13,7 +13,6 @@
 #include "base/scoped_observer.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
-#include "chrome/browser/ui/signin_reauth_view_controller.h"
 #include "chrome/browser/ui/signin_view_controller_delegate.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "url/gurl.h"
@@ -104,15 +103,6 @@ class SigninViewController : public SigninViewControllerDelegate::Observer {
       const std::string& last_email,
       const std::string& email,
       base::OnceCallback<void(SigninEmailConfirmationDialog::Action)> callback);
-#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
-
-  // Shows the modal sync confirmation dialog as a browser-modal dialog on top
-  // of the |browser_|'s window.
-  void ShowModalSyncConfirmationDialog();
-
-  // Shows the modal sign-in error dialog as a browser-modal dialog on top of
-  // the |browser_|'s window.
-  void ShowModalSigninErrorDialog();
 
   // Shows the reauth prompt for |account_id| as either:
   // - a tab-modal dialog on top of the currently active tab, or
@@ -128,6 +118,15 @@ class SigninViewController : public SigninViewControllerDelegate::Observer {
       const CoreAccountId& account_id,
       signin_metrics::ReauthAccessPoint access_point,
       base::OnceCallback<void(signin::ReauthResult)> reauth_callback);
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
+
+  // Shows the modal sync confirmation dialog as a browser-modal dialog on top
+  // of the |browser_|'s window.
+  void ShowModalSyncConfirmationDialog();
+
+  // Shows the modal sign-in error dialog as a browser-modal dialog on top of
+  // the |browser_|'s window.
+  void ShowModalSigninErrorDialog();
 
   // Returns true if the modal dialog is shown.
   bool ShowsModalDialog();
@@ -141,12 +140,6 @@ class SigninViewController : public SigninViewControllerDelegate::Observer {
 
   // SigninViewControllerDelegate::Observer:
   void OnModalSigninClosed() override;
-
-  // Notifies that the user confirmed the reauth dialog.
-  void OnReauthConfirmed();
-
-  // Notifies that the user dismissed the reauth dialog.
-  void OnReauthDismissed();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SignInViewControllerBrowserTest,
@@ -173,17 +166,12 @@ class SigninViewController : public SigninViewControllerDelegate::Observer {
   // Browser owning this controller.
   Browser* browser_;
 
-  // Usually |delegate_| owns itself, except if it's a
-  // SigninReauthViewController, in which case it's owned here by
-  // |reauth_controller_|.
+  // |delegate_| owns itself and calls OnModalSigninClosed() before being
+  // destroyed.
   SigninViewControllerDelegate* delegate_ = nullptr;
   ScopedObserver<SigninViewControllerDelegate,
                  SigninViewControllerDelegate::Observer>
       delegate_observer_{this};
-
-  // When |reauth_controller_| is not nullptr, |delegate_| points to the same
-  // object.
-  std::unique_ptr<SigninReauthViewController> reauth_controller_;
 
   base::WeakPtrFactory<SigninViewController> weak_ptr_factory_{this};
 

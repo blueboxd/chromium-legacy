@@ -11,6 +11,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
+#include "base/test/bind_test_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/test/base/testing_profile.h"
@@ -18,14 +19,10 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cicerone_client.h"
 #include "content/public/test/browser_task_environment.h"
-#include "google_apis/drive/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace file_manager {
 namespace {
-
-using google_apis::test_util::CreateQuitCallback;
-using google_apis::test_util::CreateCopyResultCallback;
 
 class FileManagerFileWatcherTest : public testing::Test {
  public:
@@ -141,15 +138,21 @@ TEST_F(FileManagerFileWatcherTest, WatchLocalFile) {
   bool on_change_error = false;
   base::FilePath changed_path;
   base::RunLoop change_run_loop;
-  base::FilePathWatcher::Callback change_callback = CreateQuitCallback(
-      &change_run_loop,
-      CreateCopyResultCallback(&changed_path, &on_change_error));
+  base::FilePathWatcher::Callback change_callback =
+      base::BindLambdaForTesting([&](const base::FilePath& path, bool error) {
+        changed_path = path;
+        on_change_error = error;
+        change_run_loop.Quit();
+      });
 
   // Create a callback that will run when the watcher is started.
   bool watcher_created = false;
   base::RunLoop start_run_loop;
-  FileWatcher::BoolCallback start_callback = CreateQuitCallback(
-      &start_run_loop, CreateCopyResultCallback(&watcher_created));
+  FileWatcher::BoolCallback start_callback =
+      base::BindLambdaForTesting([&](bool success) {
+        watcher_created = success;
+        start_run_loop.Quit();
+      });
 
   // Start watching changes in the temporary directory.
   FileWatcher file_watcher(kVirtualPath);
@@ -186,15 +189,21 @@ TEST_F(FileManagerFileWatcherTest, WatchCrostiniFile) {
   bool on_change_error = false;
   base::FilePath changed_path;
   base::RunLoop change_run_loop;
-  base::FilePathWatcher::Callback change_callback = CreateQuitCallback(
-      &change_run_loop,
-      CreateCopyResultCallback(&changed_path, &on_change_error));
+  base::FilePathWatcher::Callback change_callback =
+      base::BindLambdaForTesting([&](const base::FilePath& path, bool error) {
+        changed_path = path;
+        on_change_error = error;
+        change_run_loop.Quit();
+      });
 
   // Create a callback that will run when the watcher is started.
   bool watcher_created = false;
   base::RunLoop start_run_loop;
-  FileWatcher::BoolCallback start_callback = CreateQuitCallback(
-      &start_run_loop, CreateCopyResultCallback(&watcher_created));
+  FileWatcher::BoolCallback start_callback =
+      base::BindLambdaForTesting([&](bool success) {
+        watcher_created = success;
+        start_run_loop.Quit();
+      });
 
   // Start watching changes in the crostini directory.
   base::FilePath crostini_dir = util::GetCrostiniMountDirectory(profile());

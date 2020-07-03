@@ -1867,6 +1867,7 @@ crbug.com/1075869 http/tests/devtools/elements/styles-1/color-swatch.js [ Pass F
 crbug.com/1075869 http/tests/devtools/elements/styles-3/spectrum.js [ Pass Failure ]
 crbug.com/1075869 http/tests/devtools/elements/styles-4/styles-invalid-color-values.js [ Pass Failure ]
 crbug.com/1075869 http/tests/devtools/extensions/extensions-timeline-api.js [ Pass Failure Timeout ]
+crbug.com/829319 http/tests/devtools/a11y-axe-core/sources/source-navigator-overrides-a11y-test.js [ Pass Failure ]
 
 # On these platforms (all but Android) media tests don't currently use gpu-accelerated (proprietary) codecs, so no
 # benefit to running them again with gpu acceleration enabled.
@@ -2067,8 +2068,6 @@ crbug.com/521124 crbug.com/410145 [ Win7 ] fast/css/font-weight-1.html [ Pass Fa
 crbug.com/479533 accessibility/show-context-menu.html [ Skip ]
 crbug.com/479533 accessibility/show-context-menu-shadowdom.html [ Skip ]
 crbug.com/483653 accessibility/scroll-containers.html [ Skip ]
-
-crbug.com/491764 http/tests/devtools/service-workers/user-agent-override.js [ Pass Timeout ]
 
 # Temporarily disabled after chromium change
 crbug.com/492511 [ Mac ] virtual/text-antialias/atsui-negative-spacing-features.html [ Failure ]
@@ -2842,6 +2841,12 @@ crbug.com/626703 [ Linux ] external/wpt/mathml/presentation-markup/operators/mo-
 crbug.com/626703 [ Mac ] external/wpt/mathml/presentation-markup/operators/mo-lspace-rspace-dynamic.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/mathml/presentation-markup/operators/mo-lspace-rspace-dynamic.html [ Failure ]
 crbug.com/626703 [ Retina ] external/wpt/html/cross-origin-opener-policy/popup-coop-by-sw-from-coop.https.html [ Timeout ]
+crbug.com/1099208 external/wpt/html/cross-origin-opener-policy/reporting/navigation-reporting/report-only-four-reports.https.html [ Failure ]
+crbug.com/1099208 external/wpt/html/cross-origin-opener-policy/reporting/navigation-reporting/report-only-from-unsafe-none.https.html [ Failure ]
+crbug.com/1099208 external/wpt/html/cross-origin-opener-policy/reporting/navigation-reporting/report-only-same-origin-report-to.https.html [ Failure ]
+crbug.com/1099208 external/wpt/html/cross-origin-opener-policy/reporting/navigation-reporting/report-only-same-origin.https.html [ Failure ]
+crbug.com/1099208 external/wpt/html/cross-origin-opener-policy/reporting/navigation-reporting/reporting-popup-same-origin.https.html [ Crash Failure ]
+crbug.com/1099208 external/wpt/html/cross-origin-opener-policy/reporting/navigation-reporting/reporting-popup-same-origin-coep-report-to.https.html [ Crash Failure ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/webrtc/RTCRtpSender-replaceTrack.https.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/webrtc/RTCRtpSender-replaceTrack.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/preload/onload-event.html [ Timeout ]

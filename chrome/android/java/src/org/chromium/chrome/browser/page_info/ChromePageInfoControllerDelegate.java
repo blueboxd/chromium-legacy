@@ -31,10 +31,9 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.components.content_settings.CookieControlsBridge;
 import org.chromium.components.content_settings.CookieControlsObserver;
+import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.page_info.PageInfoControllerDelegate;
-import org.chromium.components.page_info.PageInfoControllerDelegate.OfflinePageState;
-import org.chromium.components.page_info.PageInfoControllerDelegate.PreviewPageState;
 import org.chromium.components.page_info.PageInfoView.PageInfoViewParams;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.components.security_state.SecurityStateModel;
@@ -54,6 +53,7 @@ import java.util.Date;
 public class ChromePageInfoControllerDelegate extends PageInfoControllerDelegate {
     private final WebContents mWebContents;
     private final Context mContext;
+    private final Profile mProfile;
     private String mOfflinePageCreationDate;
     private OfflinePageLoadUrlDelegate mOfflinePageLoadUrlDelegate;
 
@@ -69,14 +69,12 @@ public class ChromePageInfoControllerDelegate extends PageInfoControllerDelegate
                 CookieControlsBridge.isCookieControlsEnabled(Profile.fromWebContents(webContents)));
         mContext = context;
         mWebContents = webContents;
+        mProfile = Profile.fromWebContents(mWebContents);
+
         mPreviewPageState = getPreviewPageStateAndRecordUma();
         initOfflinePageParams();
         mOfflinePageLoadUrlDelegate = offlinePageLoadUrlDelegate;
         initHttpsImageCompressionStateAndRecordUMA();
-    }
-
-    private Profile profile() {
-        return Profile.fromWebContents(mWebContents);
     }
 
     /**
@@ -93,7 +91,7 @@ public class ChromePageInfoControllerDelegate extends PageInfoControllerDelegate
                     : PreviewPageState.INSECURE_PAGE_PREVIEW;
 
             PreviewsUma.recordPageInfoOpened(bridge.getPreviewsType(mWebContents));
-            TrackerFactory.getTrackerForProfile(profile()).notifyEvent(
+            TrackerFactory.getTrackerForProfile(mProfile).notifyEvent(
                     EventConstants.PREVIEWS_VERBOSE_STATUS_OPENED);
         }
         return previewPageState;
@@ -254,9 +252,17 @@ public class ChromePageInfoControllerDelegate extends PageInfoControllerDelegate
     @Override
     @NonNull
     public CookieControlsBridge createCookieControlsBridge(CookieControlsObserver observer) {
-        Profile profile = Profile.fromWebContents(mWebContents);
         return new CookieControlsBridge(observer, mWebContents,
-                profile.isOffTheRecord() ? profile.getOriginalProfile() : null);
+                mProfile.isOffTheRecord() ? mProfile.getOriginalProfile() : null);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @NonNull
+    public BrowserContextHandle getBrowserContext() {
+        return mProfile;
     }
 
     @VisibleForTesting

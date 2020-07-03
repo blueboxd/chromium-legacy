@@ -27,6 +27,8 @@ class TextAttachment : public Attachment {
 
   TextAttachment(std::string text_body, Type type, int64_t size);
   ~TextAttachment() override;
+  TextAttachment(const TextAttachment&);
+  TextAttachment& operator=(const TextAttachment&);
 
   // Attachment:
   int64_t size() const override;

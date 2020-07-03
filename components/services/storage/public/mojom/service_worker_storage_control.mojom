@@ -113,7 +113,7 @@ interface ServiceWorkerStorageControl {
   FindRegistrationForScope(url.mojom.Url scope) =>
       (ServiceWorkerFindRegistrationResult result);
   // Reads a stored registration for |registration_id|.
-  FindRegistrationForId(int64 registration_id, url.mojom.Url origin) =>
+  FindRegistrationForId(int64 registration_id, url.mojom.Url? origin) =>
       (ServiceWorkerFindRegistrationResult result);
 
   // Returns all stored registrations for a given origin.

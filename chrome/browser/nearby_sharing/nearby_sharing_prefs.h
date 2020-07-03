@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_NEARBY_SHARING_NEARBY_SHARING_PREFS_H_
 #define CHROME_BROWSER_NEARBY_SHARING_NEARBY_SHARING_PREFS_H_
 
+#include "chrome/browser/nearby_sharing/nearby_constants.h"
+
 namespace user_prefs {
 class PrefRegistrySyncable;
 }  // namespace user_prefs
@@ -14,6 +16,8 @@ class PrefRegistrySimple;
 namespace prefs {
 extern const char kNearbySharingEnabledPrefName[];
 extern const char kNearbySharingActiveProfilePrefName[];
+extern const char kNearbySharingBackgroundVisibilityName[];
+extern const char kNearbySharingDataUsageName[];
 }  // namespace prefs
 
 void RegisterNearbySharingPrefs(user_prefs::PrefRegistrySyncable* registry);

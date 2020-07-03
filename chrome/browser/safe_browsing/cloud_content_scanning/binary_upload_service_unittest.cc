@@ -116,7 +116,9 @@ class BinaryUploadServiceTest : public testing::Test {
     service_ = std::make_unique<BinaryUploadService>(nullptr, &profile_,
                                                      std::move(fcm_service));
   }
-  ~BinaryUploadServiceTest() override = default;
+  ~BinaryUploadServiceTest() override {
+    MultipartUploadRequest::RegisterFactoryForTests(nullptr);
+  }
 
   void ExpectNetworkResponse(bool should_succeed,
                              DeepScanningClientResponse response) {

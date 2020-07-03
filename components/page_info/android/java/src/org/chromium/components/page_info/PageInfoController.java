@@ -27,7 +27,6 @@ import androidx.annotation.VisibleForTesting;
 import androidx.core.view.ViewCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.Consumer;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordUserAction;
@@ -37,6 +36,7 @@ import org.chromium.components.content_settings.CookieControlsEnforcement;
 import org.chromium.components.content_settings.CookieControlsObserver;
 import org.chromium.components.content_settings.CookieControlsStatus;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
+import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.omnibox.AutocompleteSchemeClassifier;
 import org.chromium.components.omnibox.OmniboxUrlEmphasizer;
@@ -65,9 +65,9 @@ import java.net.URISyntaxException;
 /**
  * Java side of Android implementation of the page info UI.
  */
-public class PageInfoController implements ModalDialogProperties.Controller,
-                                           SystemSettingsActivityRequiredListener,
-                                           CookieControlsObserver {
+public class PageInfoController
+        implements PageInfoMainPageController, ModalDialogProperties.Controller,
+                   SystemSettingsActivityRequiredListener, CookieControlsObserver {
     @IntDef({OpenedFromSource.MENU, OpenedFromSource.TOOLBAR, OpenedFromSource.VR})
     @Retention(RetentionPolicy.SOURCE)
     public @interface OpenedFromSource {
@@ -117,8 +117,6 @@ public class PageInfoController implements ModalDialogProperties.Controller,
     // task is pending.
     private Runnable mPendingRunAfterDismissTask;
 
-    private Consumer<Runnable> mRunAfterDismissConsumer;
-
     // Reference to last created PageInfoController for testing.
     private static WeakReference<PageInfoController> sLastPageInfoControllerForTesting;
 
@@ -166,12 +164,6 @@ public class PageInfoController implements ModalDialogProperties.Controller,
         mDelegate = delegate;
         mIsV2Enabled = PageInfoFeatureList.isEnabled(PageInfoFeatureList.PAGE_INFO_V2);
         mPermissionParamsListBuilderDelegate = permissionParamsListBuilderDelegate;
-        mRunAfterDismissConsumer = new Consumer<Runnable>() {
-            @Override
-            public void accept(Runnable r) {
-                runAfterDismiss(r);
-            }
-        };
         PageInfoViewParams viewParams = new PageInfoViewParams();
 
         mWindowAndroid = webContents.getTopLevelNativeWindow();
@@ -249,8 +241,8 @@ public class PageInfoController implements ModalDialogProperties.Controller,
             if (mCookieBridge != null) mCookieBridge.onUiClosing();
         };
 
-        mDelegate.initPreviewUiParams(viewParams, mRunAfterDismissConsumer);
-        mDelegate.initOfflinePageUiParams(viewParams, mRunAfterDismissConsumer);
+        mDelegate.initPreviewUiParams(viewParams, this::runAfterDismiss);
+        mDelegate.initOfflinePageUiParams(viewParams, this::runAfterDismiss);
 
         if (!mIsInternalPage && !mDelegate.isShowingOfflinePage() && !mDelegate.isShowingPreview()
                 && mDelegate.isInstantAppAvailable(mFullUrl)) {
@@ -273,10 +265,12 @@ public class PageInfoController implements ModalDialogProperties.Controller,
         if (isSheet(mContext)) mView.setBackgroundColor(Color.WHITE);
         if (mIsV2Enabled) {
             PageInfoViewV2 view2 = (PageInfoViewV2) mView;
-            mConnectionController = new PageInfoConnectionController(this, view2);
-            mPermissionsController = new PageInfoPermissionsController(this, view2);
-            mCookiesController =
-                    new PageInfoCookiesController(this, view2, viewParams.cookieControlsShown);
+            mConnectionController =
+                    new PageInfoConnectionController(this, view2.getConnectionRowView());
+            mPermissionsController =
+                    new PageInfoPermissionsController(this, view2.getPermissionsRowView());
+            mCookiesController = new PageInfoCookiesController(
+                    this, view2.getCookiesRowView(), viewParams.cookieControlsShown, mFullUrl);
         } else {
             mView.showPerformanceInfo(mDelegate.shouldShowPerformanceBadge(mFullUrl));
             mView.showHttpsImageCompressionInfo(mDelegate.isHttpsImageCompressionApplied());
@@ -571,10 +565,16 @@ public class PageInfoController implements ModalDialogProperties.Controller,
         return mDelegate;
     }
 
+    @Override
+    public BrowserContextHandle getBrowserContext() {
+        return mDelegate.getBrowserContext();
+    }
+
     /**
      * Launches a subpage with the specified params.
      */
-    void launchSubpage(PageInfoSubpageController controller) {
+    @Override
+    public void launchSubpage(PageInfoSubpageController controller) {
         mSubpageController = controller;
         PageInfoSubpage.Params subpageParams = new PageInfoSubpage.Params();
         subpageParams.url = mDisplayUrlBuilder;
@@ -583,10 +583,12 @@ public class PageInfoController implements ModalDialogProperties.Controller,
         mSubpage = new PageInfoSubpage(mContext, subpageParams);
         mSubpage.setBackButtonOnClickListener(view -> exitSubpage());
         View subview = mSubpageController.createViewForSubpage(mSubpage);
+
         if (subview != null) {
             ((FrameLayout) mSubpage.findViewById(R.id.placeholder)).addView(subview);
         }
         replaceView(mView, mSubpage);
+        controller.onSubPageAttached();
     }
 
     private ViewGroup getParent(View view) {
@@ -615,8 +617,8 @@ public class PageInfoController implements ModalDialogProperties.Controller,
      * Switches back to the main page info view.
      */
     private void exitSubpage() {
-        mSubpageController.willRemoveSubpage();
         replaceView(mSubpage, mView);
+        mSubpageController.onSubpageRemoved();
         mSubpage = null;
         mSubpageController = null;
     }

@@ -31,10 +31,6 @@ class StubNotificationUIManager : public NotificationUIManager {
   const message_center::Notification& GetNotificationAt(
       unsigned int index) const;
 
-  // Sets a one-shot callback that will be invoked when a notification has been
-  // added to the Notification UI manager. Will be invoked on the UI thread.
-  void SetNotificationAddedCallback(const base::Closure& callback);
-
   // Emulates clearing a notification from the notification center
   // without running any of the delegates. This may happen when native
   // notification centers don't inform us about closed notifications,
@@ -61,8 +57,6 @@ class StubNotificationUIManager : public NotificationUIManager {
  private:
   using NotificationPair = std::pair<message_center::Notification, ProfileID>;
   std::vector<NotificationPair> notifications_;
-
-  base::Closure notification_added_callback_;
 
   bool is_shutdown_started_ = false;
   GURL last_canceled_source_;

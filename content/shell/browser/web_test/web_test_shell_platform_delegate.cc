@@ -5,8 +5,6 @@
 #include "content/shell/browser/web_test/web_test_shell_platform_delegate.h"
 
 #include "base/command_line.h"
-#include "base/logging.h"
-#include "content/public/common/content_switches.h"
 #include "content/shell/browser/web_test/web_test_control_host.h"
 #include "content/shell/browser/web_test/web_test_javascript_dialog_manager.h"
 #include "content/shell/common/web_test/web_test_switches.h"
@@ -41,13 +39,6 @@ WebTestShellPlatformDelegate::RunBluetoothChooser(
     RenderFrameHost* frame,
     const BluetoothChooser::EventHandler& event_handler) {
   return WebTestControlHost::Get()->RunBluetoothChooser(frame, event_handler);
-}
-
-void WebTestShellPlatformDelegate::RendererUnresponsive(Shell* shell) {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableHangMonitor)) {
-    LOG(WARNING) << "renderer unresponsive";
-  }
 }
 
 bool WebTestShellPlatformDelegate::ShouldAllowRunningInsecureContent(

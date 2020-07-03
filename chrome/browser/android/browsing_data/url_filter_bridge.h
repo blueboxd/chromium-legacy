@@ -15,7 +15,8 @@ class GURL;
 // on Android.
 class UrlFilterBridge {
  public:
-  explicit UrlFilterBridge(const base::Callback<bool(const GURL&)>& url_filter);
+  explicit UrlFilterBridge(
+      const base::RepeatingCallback<bool(const GURL&)>& url_filter);
   ~UrlFilterBridge();
 
   // Destroys this object.
@@ -33,7 +34,7 @@ class UrlFilterBridge {
 
  private:
   // The wrapped native filter.
-  base::Callback<bool(const GURL&)> url_filter_;
+  base::RepeatingCallback<bool(const GURL&)> url_filter_;
 
   // The Java counterpart of this C++ object.
   base::android::ScopedJavaGlobalRef<jobject> j_bridge_;

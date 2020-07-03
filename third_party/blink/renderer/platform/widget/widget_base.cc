@@ -21,6 +21,7 @@
 #include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/blink/renderer/platform/widget/compositing/layer_tree_settings.h"
 #include "third_party/blink/renderer/platform/widget/compositing/layer_tree_view.h"
 #include "third_party/blink/renderer/platform/widget/frame_widget.h"
 #include "third_party/blink/renderer/platform/widget/input/ime_event_guard.h"
@@ -100,8 +101,11 @@ void WidgetBase::InitializeCompositing(
     bool never_composited,
     scheduler::WebThreadScheduler* main_thread_scheduler,
     cc::TaskGraphRunner* task_graph_runner,
-    const cc::LayerTreeSettings& settings,
-    std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory) {
+    bool for_child_local_root_frame,
+    const gfx::Size& initial_screen_size,
+    float initial_device_scale_factor,
+    std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
+    const cc::LayerTreeSettings* settings) {
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner =
       main_thread_scheduler->CompositorTaskRunner();
   if (!main_thread_task_runner)
@@ -115,7 +119,15 @@ void WidgetBase::InitializeCompositing(
           ? compositing_thread_scheduler->DefaultTaskRunner()
           : nullptr,
       task_graph_runner, main_thread_scheduler);
-  layer_tree_view_->Initialize(settings, std::move(ukm_recorder_factory));
+
+  base::Optional<cc::LayerTreeSettings> default_settings;
+  if (!settings) {
+    default_settings = GenerateLayerTreeSettings(
+        compositing_thread_scheduler, for_child_local_root_frame,
+        initial_screen_size, initial_device_scale_factor);
+    settings = &default_settings.value();
+  }
+  layer_tree_view_->Initialize(*settings, std::move(ukm_recorder_factory));
 
   FrameWidget* frame_widget = client_->FrameWidget();
 

@@ -862,6 +862,7 @@
 
       このポリシーは Google 管理コンソールからのみ設定できます。</translation>
 <translation id="2358176879566587521">このポリシーは削除されました。このバージョンの <ph name="PRODUCT_NAME" /> には対応していません。詳しくは、https://support.google.com/chrome/a/answer/7643500 をご覧ください。</translation>
+<translation id="2364639863953745682">アシスタントのオンボーディング エクスペリエンスのモード</translation>
 <translation id="2386362615870139244">ウェイクアップ画面のロックを許可する</translation>
 <translation id="2399987589969059485">このポリシーを設定すると、<ph name="PRODUCT_NAME" /> への適用を許可するバリエーションを指定できます。
 
@@ -1330,6 +1331,7 @@
       この設定が無効になっているか未設定の場合は、すべてのリソースにデフォルトのセーフ ブラウジング保護が適用されます。
 
       このポリシーは、<ph name="MS_AD_NAME" /> ドメインに追加された Windows インスタンス、デバイスの管理対象として登録された Windows 10 Pro または Enterprise インスタンス、MDM を介して管理されるか MCX を介してドメインに追加された macOS インスタンスでのみ使用できます。</translation>
+<translation id="2985927503455169394">アシスタントのオンボーディング エクスペリエンスでデフォルトのモードを使用する</translation>
 <translation id="2987155890997901449">ARC を有効にする</translation>
 <translation id="2987227569419001736">Web Bluetooth API の使用を管理する</translation>
 <translation id="299519952839316970">このポリシーはサポートが終了しており、<ph name="PRODUCT_OS_NAME" /> バージョン 88 で削除されます。公開セッションのサポートは終了しました。代わりに <ph name="DEVICE_LOCAL_ACCOUNTS_POLICY_NAME" /> を使用して管理対象のゲスト セッションを設定してください。
@@ -1366,6 +1368,11 @@
       なお、標準のプロフィールでは常にアンビエント認証が許可されます。
 
       <ph name="PRODUCT_NAME" /> のバージョン 81 以降では、ポリシーを未設定のままにした場合、通常のセッションでのみアンビエント認証が有効になります。</translation>
+<translation id="3021288356473993647">このポリシーでは、安全でない URL を検出するリアルタイムの URL チェックを管理します。
+
+      このポリシーを未設定のままにするか [無効] に設定した場合は、一般ユーザー向けのセーフ ブラウジング チェックが行われます。一般ユーザー向けのセーフ ブラウジングでも、[検索とブラウジングを改善する] の設定の値と UrlKeyedAnonymizedDataCollectionEnabled ポリシーの値に基づいて、リアルタイムのチェックが行われる可能性があります。このポリシーを [有効] に設定した場合、URL は企業の利用規約に基づき、リアルタイムのチェックを行うため送信されます。URL は Google Cloud または指定された第三者に送信され、リアルタイムのチェックが行われます。一般ユーザー向けのセーフ ブラウジングによるリアルタイムのチェックはオフになります。
+
+      このポリシーは Google 管理コンソールからのみ設定できます。</translation>
 <translation id="3021562480854470924">ロールバックできるマイルストーンの数</translation>
 <translation id="3023572080620427845">代替ブラウザで読み込む URL のリストを含む XML ファイルの URL です。</translation>
 <translation id="3026740867910702435">ログイン画面で「大きいカーソル」ユーザー補助機能を有効にします。
@@ -1438,6 +1445,9 @@
       このポリシーは、<ph name="MS_AD_NAME" /> ドメインに追加した Windows インスタンス、またはデバイスの管理対象として登録した Windows 10 Pro あるいは Enterprise インスタンスでのみ使用できます。</translation>
 <translation id="3119125876909100625">パスワードで保護されているファイルのアップロードを許可する</translation>
 <translation id="3122082892722698079">安全でないコンテンツの例外の使用を管理する</translation>
+<translation id="3143265893557969814">このポリシーを設定した場合、指定したすべてのデータタイプが Google Sync とローミング プロファイルの同期から除外されます。これにより、ローミング プロファイルのサイズを抑えたり、Google Sync サーバーにアップロードされるデータのタイプを制限したりできます。
+
+      現在、このポリシーで指定できるデータタイプは次のとおりです。"bookmarks"、"preferences"、"passwords"、"autofill"、"themes"、"typedUrls"、"extensions"、"apps"、"tabs"、"wifiConfigurations"データタイプの名前では大文字と小文字が区別されます。</translation>
 <translation id="3148152738273574834">このポリシーでは、ユーザーに操作を求めずにサイレント インストールするウェブサイトのリストを指定します。ユーザーはこれらのウェブサイトをアンインストールすることもオフにすることもできません。
 
       このポリシーで指定するリストの個々の項目は、必須の <ph name="URL_LABEL" />（インストールするウェブアプリの URL）と 2 つの省略可能な <ph name="DEFAULT_LAUNCH_CONTAINER_LABEL" />（ウェブアプリを開く方法、デフォルトは新しいタブ）、<ph name="CREATE_DESKTOP_SHORTCUT_LABEL" />（<ph name="LINUX_OS_NAME" /> と Windows® のデスクトップ ショートカットを作成する場合は True）で構成されるオブジェクトとなります。
@@ -1993,6 +2003,7 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 <translation id="3950239119790560549">時間に関する制約を更新する</translation>
 <translation id="3956686688560604829">従来のブラウザのサポートで Internet Explorer の SiteList ポリシーを使用する。</translation>
 <translation id="3958586912393694012">Smart Lock の使用を許可する</translation>
+<translation id="3962445567482559878">アシスタントのオンボーディング エクスペリエンスで EDU モードを使用する</translation>
 <translation id="3963602271515417124">このポリシーを true に設定した場合は、このデバイスでのリモート認証が可能になり、証明書が自動的に生成されてデバイス管理サーバーにアップロードされます。
 
           このポリシーを false に設定するか未設定のままにした場合、証明書は生成されず、enterprise.platformKeys 拡張機能 API の呼び出しは失敗します。</translation>
@@ -2265,6 +2276,7 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 <translation id="4372704773119750918">マルチプロフィール（プライマリまたはセカンダリ）への参加を企業ユーザーに許可しない</translation>
 <translation id="4377599627073874279">すべてのサイトに対してすべての画像表示を許可する</translation>
 <translation id="437791893267799639">ポリシー未設定、データ移行と ARC を許可しない</translation>
+<translation id="4382413175336720282">リアルタイムの URL チェックが無効。</translation>
 <translation id="4389073105055031853">すべての証明書の管理をユーザーに許可する</translation>
 <translation id="4389091865841123886">TPM メカニズムを使用してリモート認証を設定します。</translation>
 <translation id="4401496838830169080"><ph name="PRODUCT_NAME" /> のセーフ ブラウジング機能を有効にするかどうかと、有効にする場合に使用するモードを管理できます。
@@ -3415,6 +3427,7 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 <translation id="6114416803310251055">廃止予定</translation>
 <translation id="6133088669883929098">すべてのサイトにキー生成の使用を許可する</translation>
 <translation id="6135398260575578389">セーフ ブラウジングを強化モードで有効にする。このモードではセキュリティが強化されますが、より多くの閲覧情報を Google に提供する必要があります。</translation>
+<translation id="6138636318340561140">URL のセーフ ブラウジング ステータスをリアルタイムでチェックする</translation>
 <translation id="6141402445226505817">常に IP のみに基づいてタイムゾーンを検出する</translation>
 <translation id="614616930188030377">このリストに指定されたパターンは、リクエスト元 URL のセキュリティ オリジンと照合されます。
       一致するものが見つかった場合、または chrome://flags/#enable-webrtc-hide-local-ips-with-mdns が無効に設定されている場合は、WebRTC ICE の候補にローカル IP アドレスが表示されます。
@@ -3889,6 +3902,7 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
       [U2F] を選択した場合は、統合 2 段階認証プロセスが FIDO U2F 仕様に沿って適用されます。
 
       [U2F_EXTENDED] を選択した場合は、統合 2 段階認証プロセスで U2F の機能と個人認証用の拡張機能を使用できます。</translation>
+<translation id="7002040773317582266">メインフレームの URL のリアルタイム チェックが有効。</translation>
 <translation id="7003334574344702284">このポリシーを有効にすると、以前の既定のブラウザで保存されたパスワードがインポートされます。有効にすると、このポリシーはインポート ダイアログにも影響します。無効にすると、保存されたパスワードはインポートされません。このポリシーが未設定の場合、インポートするかどうかをユーザーに尋ねるか、自動的にインポートされます。</translation>
 <translation id="7003746348783715221"><ph name="PRODUCT_NAME" /> の設定</translation>
 <translation id="7008308728445338159">DNS 傍受チェックを有効にする</translation>
@@ -4348,6 +4362,17 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 <translation id="7709537117200051035">ホストへのアクセスを許可する（true）かブロックする（false）かを示すブール値フラグに、ホスト名をマッピングする辞書。
 
           このポリシーは <ph name="PRODUCT_NAME" /> 自体が内部で使用するためのものです。</translation>
+<translation id="7710950688502974809"><ph name="ON_BULK_DATA_ENTRY_ENTERPRISE_CONNECTOR" /> Enterprise コネクタに適用する Chrome Enterprise コネクタ サービス設定のリストで、Chrome でクリップボードからデータが入力された場合、またはウェブ コンテンツがドラッグ＆ドロップされた場合に呼び出されます。
+
+      <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> のフィールドは、特定のページに入力されたデータをコネクタで分析のため送信すべきかどうかと、そのデータの分析リクエストにどのタグを含めるかを判別する際に使用されます。「有効」パターンに該当するタグは、ページの URL がそのタグに関連付けられているパターンと一致し、同じタグの「無効」パターンとは一致しない場合に分析リクエストに含められます。分析は、リクエストにタグが少なくとも 1 つ含まれる場合に行われます。
+
+      <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> では、この設定が対応している分析サービス プロバイダを指定します。
+
+      <ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" /> を 1 に設定した場合、Chrome では分析サービスからの応答を待ってから、ページにデータへのアクセスを許可します。その他の整数値を設定した場合、Chrome ではページにデータへのアクセスをただちに許可します。
+
+      <ph name="ENTERPRISE_CONNECTOR_MINIMUM_DATA_SIZE" /> フィールドは、Chrome に入力されたデータの最小サイズ（バイト数）がこの値以上でないとスキャンできないことを示します。このフィールドを未設定のままにした場合は、デフォルト値の 100 バイトが使用されます。
+
+      このポリシーは Google 管理コンソールからのみ設定できます。</translation>
 <translation id="7712109699186360774">カメラやマイクへのアクセスをサイトが要求するたびに確認する</translation>
 <translation id="7713608076604149344">ダウンロードの制限</translation>
 <translation id="7715711044277116530">プレゼンテーション モードで画面を暗くするまでの時間に掛ける倍率</translation>
@@ -5354,6 +5379,10 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 <translation id="9167719789236691545"><ph name="PRODUCT_OS_NAME" /> ファイルアプリでドライブを無効にする</translation>
 <translation id="9185107612228451403">拡張機能に関するポリシーを設定します。ユーザーは、ホワイトリストに登録されている場合を除き、ブラックリストに登録されている拡張機能をインストールできません。<ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" /> に拡張機能を指定して、<ph name="PRODUCT_NAME" /> がその拡張機能を自動的にインストールするよう設定することもできます。ここで指定した拡張機能は、ブラックリストへの登録の有無を問わず、インストールされます。</translation>
 <translation id="9187743794267626640">外部ストレージのマウントを無効にする</translation>
+<translation id="9190456586252617675">このポリシーでは、アシスタントのオンボーディング エクスペリエンスのモードを管理します。
+
+      このポリシーを未設定のままにするか <ph name="ASSISTANT_ONBOARDING_MODE_DEFAULT" /> に設定した場合、アシスタントのオンボーディング エクスペリエンスではデフォルトのモードが使用されます。
+      このポリシーを <ph name="ASSISTANT_ONBOARDING_MODE_EDUCATION" /> に設定した場合、アシスタントのオンボーディング エクスペリエンスでは EDU モードが使用されます。</translation>
 <translation id="9194447412184412480">外部 IdP を使用して SAML で認証されたユーザーの設定を管理します</translation>
 <translation id="9197740283131855199">画面が暗くなった後でユーザーが操作を行ったときに画面を暗くするまでの時間に掛ける倍率</translation>
 <translation id="9200828125069750521">POST を使用する画像 URL のパラメータ</translation>

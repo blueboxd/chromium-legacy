@@ -93,11 +93,11 @@ std::vector<base::FilePath> GetTestFiles() {
 
 std::string FormStructuresToString(
     const std::map<FormRendererId, std::unique_ptr<FormStructure>>& forms) {
-  std::map<base::TimeTicks, const FormStructure*> sorted_forms;
+  std::map<uint32_t, const FormStructure*> sorted_forms;
   for (const auto& form_kv : forms) {
     const auto* form = form_kv.second.get();
-    EXPECT_TRUE(
-        sorted_forms.emplace(form->form_parsed_timestamp(), form).second);
+    uint32_t renderer_id = form->unique_renderer_id().value();
+    EXPECT_TRUE(sorted_forms.emplace(renderer_id, form).second);
   }
 
   std::string forms_string;

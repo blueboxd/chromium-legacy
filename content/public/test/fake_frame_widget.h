@@ -6,9 +6,14 @@
 #define CONTENT_PUBLIC_TEST_FAKE_FRAME_WIDGET_H_
 
 #include "base/i18n/rtl.h"
+#include "build/build_config.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "third_party/blink/public/mojom/page/widget.mojom.h"
+
+#if defined(OS_MACOSX)
+#include "ui/base/mojom/attributed_string.mojom.h"
+#endif
 
 namespace content {
 
@@ -43,6 +48,10 @@ class FakeFrameWidget : public blink::mojom::FrameWidget {
       bool is_throttled,
       bool subtree_throttled) override {}
   void SetIsInertForSubFrame(bool inert) override {}
+#if defined(OS_MACOSX)
+  void GetStringAtPoint(const gfx::Point& point_in_local_root,
+                        GetStringAtPointCallback callback) override;
+#endif
 
   mojo::AssociatedReceiver<blink::mojom::FrameWidget> receiver_;
   base::i18n::TextDirection text_direction_ =

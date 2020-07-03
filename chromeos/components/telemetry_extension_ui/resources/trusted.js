@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Verifies that we don't crash.
-let probeService = chromeos.health.mojom.ProbeService.getRemote();
+const probeService = chromeos.health.mojom.ProbeService.getRemote();
 
-probeService
-    .probeTelemetryInfo([chromeos.health.mojom.ProbeCategoryEnum.kBattery])
-    .then(e => console.log(e))
-    .catch(e => console.log(e));
+const untrustedMessagePipe =
+    new MessagePipe('chrome-untrusted://telemetry-extension');
+
+untrustedMessagePipe.registerHandler(Message.PROBE_TELEMETRY_INFO, async () => {
+  const response = await probeService.probeTelemetryInfo(
+      [chromeos.health.mojom.ProbeCategoryEnum.kBattery]);
+  return {telemetryInfo: response.telemetryInfo};
+});

@@ -28,8 +28,8 @@ mojom::ParsedHeadersPtr PopulateParsedHeaders(
 
   parsed_headers->cross_origin_embedder_policy =
       ParseCrossOriginEmbedderPolicy(*headers);
-  parsed_headers->cross_origin_opener_policy =
-      ParseCrossOriginOpenerPolicy(*headers);
+  parsed_headers->cross_origin_opener_policy = ParseCrossOriginOpenerPolicy(
+      *headers, parsed_headers->cross_origin_embedder_policy);
 
   std::string origin_isolation;
   if (headers->GetNormalizedHeader("Origin-Isolation", &origin_isolation))

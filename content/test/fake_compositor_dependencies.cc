@@ -23,23 +23,7 @@ FakeCompositorDependencies::FakeCompositorDependencies() {
 FakeCompositorDependencies::~FakeCompositorDependencies() {
 }
 
-int FakeCompositorDependencies::GetGpuRasterizationMSAASampleCount() {
-  return 0;
-}
-
 bool FakeCompositorDependencies::IsLcdTextEnabled() {
-  return false;
-}
-
-bool FakeCompositorDependencies::IsZeroCopyEnabled() {
-  return true;
-}
-
-bool FakeCompositorDependencies::IsPartialRasterEnabled() {
-  return false;
-}
-
-bool FakeCompositorDependencies::IsGpuMemoryBufferCompositorResourcesEnabled() {
   return false;
 }
 
@@ -90,11 +74,5 @@ void FakeCompositorDependencies::RequestNewLayerTreeFrameSink(
   last_created_frame_sink_ = sink.get();
   std::move(callback).Run(std::move(sink), nullptr);
 }
-
-#ifdef OS_ANDROID
-bool FakeCompositorDependencies::UsingSynchronousCompositing() {
-  return false;
-}
-#endif
 
 }  // namespace content

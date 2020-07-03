@@ -5,9 +5,7 @@ Chrome on Android.
 [TOC]
 
 ## Library Packaging
- * Android J & K (ChromePublic.apk):
-   * `libchrome.so` is stored compressed and extracted by Android during installation.
- * Android L & M (ChromeModernPublic.apk):
+ * Android L & M (ChromePublic.apk):
    * `libchrome.so` is stored uncompressed within the apk (with the name `crazy.libchrome.so` to avoid extraction).
    * It is loaded directly from the apk (without extracting) by `mmap()`'ing it.
  * Android N, O & P (MonochromePublic.apk):
@@ -19,7 +17,7 @@ Chrome on Android.
 The packaging above extends to cover both 32-bit and 64-bit device
 configurations.
 
-Chrome and ChromeModern support 64-bit builds, but these do not ship to Stable.
+Chrome support 64-bit builds, but these do not ship to Stable.
 The system Webview APK that ships to those devices contains a 32-bit library,
 and for 64-bit devices, a 64-bit library as well (32-bit Webview client apps
 will use the 32-bit library, and vice-versa).
@@ -79,7 +77,7 @@ Builds on | Variant | Chrome | Library | Webview
  * Crashpad is a native library providing out-of-process crash dumping. When a
    dump is requested (e.g. after a crash), a Crashpad handler process is started
    to produce a dump.
- * Chrome and ChromeModern (Android J through M):
+ * Chrome (Android L through M):
    * libchrome_crashpad_handler.so is a standalone executable containing all of
      the crash dumping code. It is stored compressed and extracted automatically
      by the system, allowing it to be directly executed to produce a crash dump.
@@ -131,7 +129,7 @@ Builds on | Variant | Chrome | Library | Webview
  * To facilitate heap profiling, we ship unwind information to arm32 canary & dev channels as a separate file: `assets/unwind_cfi_32`
 
 ## JNI Native Methods Resolution
- * For ChromePublic.apk and ChromeModernPublic.apk:
+ * For ChromePublic.apk:
    * `JNI_OnLoad()` is the only exported symbol (enforced by a linker script).
    * Native methods registered explicitly during start-up by generated code.
      * Explicit generation is required because the Android runtime uses the system's `dlsym()`, which doesn't know about Crazy-Linker-opened libraries.

@@ -94,9 +94,6 @@ interface WebTestRenderFrame {
   // TODO(crbug.com/1039247): This message should be removed and the callback
   // should happen part of LayoutDump call on the host interface.
   LayoutDumpCompleted(string completed_layout_dump);
-
-  // Reply Bluetooth manual events to BlinkTestRunner.
-  ReplyBluetoothManualChooserEvents(array<string> events);
 };
 
 // Web test messages related runtime flags sent from the browser process to the
@@ -168,7 +165,7 @@ interface WebTestControlHost {
   SetBluetoothManualChooser(bool enable);
 
   // Returns the events recorded since the last call to this function.
-  GetBluetoothManualChooserEvents();
+  GetBluetoothManualChooserEvents() => (array<string> events);
 
   // Manages the popup blocking setting to used for web tests.
   SetPopupBlockingEnabled(bool block_popups);
@@ -179,6 +176,13 @@ interface WebTestControlHost {
   // Mark the orientation changed in the browser process for the layout tests
   // that request fullscreen on screen orientation change.
   SetScreenOrientationChanged();
+
+  // Sets the permission for |name| to |status| when queried or requested in
+  // |origin| from |embedding_origin|.
+  SetPermission(string name,
+               blink.mojom.PermissionStatus status,
+               url.mojom.Url origin,
+               url.mojom.Url embedding_origin);
 
   // Sets the cookie policy to:
   // - allow all cookies when |block| is false
@@ -219,23 +223,10 @@ interface WebTestClient {
   // Simulates a user deleting a content index entry.
   SimulateWebContentIndexDelete(string id);
 
-  // Reset all permissions of WebTestPermissionManager.
-  ResetPermissions();
-
-  // Sets the permission for |name| to |status| when queried or requested in
-  // |origin| from |embedding_origin|.
-  SetPermission(string name,
-               blink.mojom.PermissionStatus status,
-               url.mojom.Url origin,
-               url.mojom.Url embedding_origin);
-
   // Notifies the browser that one of renderers has changed web test runtime
   // flags (i.e. has set dump_as_text).
   WebTestRuntimeFlagsChanged(
       mojo_base.mojom.DictionaryValue changed_web_test_runtime_flags);
-
-  // Delete all cookies created in this associated storage context.
-  DeleteAllCookies();
 
   // Clears all WebSQL databases.
   ClearAllDatabases();

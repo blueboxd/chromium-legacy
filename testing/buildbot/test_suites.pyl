@@ -158,7 +158,6 @@
     'android_modern_smoke_tests': {
       'chrome_modern_public_bundle_fake_modules_smoke_test': {},
       'chrome_modern_public_bundle_smoke_test': {},
-      'chrome_modern_public_smoke_test': {},
     },
 
     'android_monochrome_smoke_tests': {
@@ -2586,10 +2585,12 @@
           '--dont-restore-color-profile-after-test',
           '--test-machine-name',
           '${buildername}',
-          '--extra-browser-args=--enable-features=UseSkiaRenderer,UiGpuRasterization,SkiaDawn --enable-gpu-rasterization --force-gpu-rasterization --enable-oop-rasterization',
+        ],
+        'win_args': [
+          '--extra-browser-args=--enable-features=UseSkiaRenderer,SkiaDawn',
         ],
         'linux_args': [
-          '--extra-browser-args=--use-vulkan=native',
+          '--extra-browser-args=--enable-features=UseSkiaRenderer,UiGpuRasterization,SkiaDawn --enable-gpu-rasterization --enable-oop-rasterization --use-vulkan=native',
         ],
         'mixins': [
           'chrome-gpu-gold-service-account',
@@ -2600,13 +2601,16 @@
       'screenshot_sync': {
         'args': [
           '--dont-restore-color-profile-after-test',
-          '--extra-browser-args=--enable-features=UseSkiaRenderer,UiGpuRasterization,SkiaDawn --enable-gpu-rasterization --force-gpu-rasterization --enable-oop-rasterization',
+        ],
+        'win_args': [
+          '--extra-browser-args=--enable-features=UseSkiaRenderer,SkiaDawn',
           # TODO(crbug.com/1021566): Enable the rest of these tests once Canvas
-          # and Software Raster are supported on Skia Dawn.
-          '--test-filter=ScreenshotSync_GPURasterWithDivs',
+          # is supported on Skia Dawn.
+          '--test-filter=ScreenshotSync_GPURasterWithDivs::ScreenshotSync_SWRasterWithDivs',
         ],
         'linux_args': [
-          '--extra-browser-args=--use-vulkan=native',
+          '--extra-browser-args=--enable-features=UseSkiaRenderer,UiGpuRasterization,SkiaDawn --enable-gpu-rasterization --enable-oop-rasterization --use-vulkan=native',
+          '--test-filter=ScreenshotSync_GPURasterWithDivs',
         ],
       },
     },

@@ -15,14 +15,14 @@
 
 namespace content {
 
-class BlinkTestRunner;
+class TestRunner;
 class WebTestRuntimeFlags;
 
 class MockContentSettingsClient : public blink::WebContentSettingsClient {
  public:
-  // Caller has to guarantee that |layout_test_runtime_flags| lives longer
-  // than the MockContentSettingsClient being constructed here.
-  MockContentSettingsClient(WebTestRuntimeFlags* layout_test_runtime_flags);
+  // The |test_runner| and |layout_test_runtime_flags| must outlive this class.
+  MockContentSettingsClient(TestRunner* test_runner,
+                            WebTestRuntimeFlags* layout_test_runtime_flags);
 
   ~MockContentSettingsClient() override;
 
@@ -36,12 +36,9 @@ class MockContentSettingsClient : public blink::WebContentSettingsClient {
   bool AllowRunningInsecureContent(bool enabled_per_settings,
                                    const blink::WebURL& url) override;
 
-  void SetDelegate(BlinkTestRunner* blink_test_runner);
-
  private:
-  BlinkTestRunner* blink_test_runner_;
-
-  WebTestRuntimeFlags* flags_;
+  TestRunner* const test_runner_;
+  WebTestRuntimeFlags* const flags_;
 
   DISALLOW_COPY_AND_ASSIGN(MockContentSettingsClient);
 };

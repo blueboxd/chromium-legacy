@@ -10,6 +10,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "net/http/http_response_headers.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/cross_origin_embedder_policy.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace network {
@@ -23,123 +24,150 @@ TEST(CrossOriginOpenerPolicyTest, Parse) {
   constexpr auto kSameOriginAllowPopups =
       CrossOriginOpenerPolicyValue::kSameOriginAllowPopups;
   constexpr auto kUnsafeNone = CrossOriginOpenerPolicyValue::kUnsafeNone;
+  constexpr auto kSameOriginPlusCoep =
+      CrossOriginOpenerPolicyValue::kSameOriginPlusCoep;
+  constexpr auto kCoepNone = mojom::CrossOriginEmbedderPolicyValue::kNone;
+  constexpr auto kCoepCorp =
+      mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
 
   const auto kNoHeader = base::Optional<std::string>();
   const auto kNoEndpoint = kNoHeader;
 
   const struct {
     base::Optional<std::string> raw_coop_string;
+    mojom::CrossOriginEmbedderPolicyValue coep_value;
     base::Optional<std::string> raw_coop_report_only_string;
+    mojom::CrossOriginEmbedderPolicyValue coep_report_only_value;
     base::Optional<std::string> expected_endpoint;
     CrossOriginOpenerPolicyValue expected_policy;
     base::Optional<std::string> expected_endpoit_report_only;
     CrossOriginOpenerPolicyValue expected_policy_report_only;
   } kTestCases[] = {
-      {"same-origin", kNoHeader, kNoEndpoint, kSameOrigin, kNoEndpoint,
-       kUnsafeNone},
-      {"same-origin-allow-popups", kNoHeader, kNoEndpoint,
-       kSameOriginAllowPopups, kNoEndpoint, kUnsafeNone},
-      {"unsafe-none", kNoHeader, kNoEndpoint, kUnsafeNone, kNoEndpoint,
-       kUnsafeNone},
-      // Leading whitespaces.
-      {"   same-origin", kNoHeader, kNoEndpoint, kSameOrigin, kNoEndpoint,
-       kUnsafeNone},
-      // Leading character tabulation.
-      {"\tsame-origin", kNoHeader, kNoEndpoint, kSameOrigin, kNoEndpoint,
-       kUnsafeNone},
-      // Trailing whitespaces.
-      {"same-origin-allow-popups   ", kNoHeader, kNoEndpoint,
-       kSameOriginAllowPopups, kNoEndpoint, kUnsafeNone},
-      // Empty string.
-      {"", kNoHeader, kNoEndpoint, kUnsafeNone, kNoEndpoint, kUnsafeNone},
-      // Only whitespaces.
-      {"   ", kNoHeader, kNoEndpoint, kUnsafeNone, kNoEndpoint, kUnsafeNone},
-      // Invalid same-site value
-      {"same-site", kNoHeader, kNoEndpoint, kUnsafeNone, kNoEndpoint,
-       kUnsafeNone},
-      // Misspelling.
-      {"some-origin", kNoHeader, kNoEndpoint, kUnsafeNone, kNoEndpoint,
-       kUnsafeNone},
-      // Trailing line-tab.
-      {"same-origin\x0B", kNoHeader, kNoEndpoint, kUnsafeNone, kNoEndpoint,
-       kUnsafeNone},
-      // Adding report endpoint.
-      {"same-origin; report-to=\"endpoint\"", kNoHeader, "endpoint",
-       kSameOrigin, kNoEndpoint, kUnsafeNone},
-      // Extraneous parameter, ignored.
-      {"same-origin; report-to=\"endpoint\"; foo=bar", kNoHeader, "endpoint",
-       kSameOrigin, kNoEndpoint, kUnsafeNone},
-      // Multiple endpoints
-      {"same-origin; report-to=\"endpoint\"; report-to=\"foo\"", kNoHeader,
-       "foo", kSameOrigin, kNoEndpoint, kUnsafeNone},
-      // Leading spaces in the reporting endpoint.
-      {"same-origin-allow-popups;    report-to=\"endpoint\"", kNoHeader,
-       "endpoint", kSameOriginAllowPopups, kNoEndpoint, kUnsafeNone},
-      // Unsafe-none with endpoint.
-      {"unsafe-none; report-to=\"endpoint\"", kNoHeader, "endpoint",
-       kUnsafeNone, kNoEndpoint, kUnsafeNone},
-      // Unknown parameters should just be ignored.
-      {"same-origin; invalidparameter=\"unknown\"", kNoHeader, kNoEndpoint,
-       kSameOrigin, kNoEndpoint, kUnsafeNone},
-      // Non-string report-to value.
-      {"same-origin; report-to=other-endpoint", kNoHeader, kNoEndpoint,
-       kSameOrigin, kNoEndpoint, kUnsafeNone},
-      // Malformated parameter value.
-      {"same-origin-allow-popups;   foo", kNoHeader, kNoEndpoint,
-       kSameOriginAllowPopups, kNoEndpoint, kUnsafeNone},
-      // Report to empty string endpoint.
-      {"same-origin; report-to=\"\"", kNoHeader, "", kSameOrigin, kNoEndpoint,
-       kUnsafeNone},
-      // Empty parameter value, parsing fails.
-      {"same-origin; report-to=", kNoHeader, kNoEndpoint, kUnsafeNone,
+      {"same-origin", kCoepNone, kNoHeader, kCoepNone, kNoEndpoint, kSameOrigin,
        kNoEndpoint, kUnsafeNone},
+      {"same-origin-allow-popups", kCoepNone, kNoHeader, kCoepNone, kNoEndpoint,
+       kSameOriginAllowPopups, kNoEndpoint, kUnsafeNone},
+      {"unsafe-none", kCoepNone, kNoHeader, kCoepNone, kNoEndpoint, kUnsafeNone,
+       kNoEndpoint, kUnsafeNone},
+      // Leading whitespaces.
+      {"   same-origin", kCoepNone, kNoHeader, kCoepNone, kNoEndpoint,
+       kSameOrigin, kNoEndpoint, kUnsafeNone},
+      // Leading character tabulation.
+      {"\tsame-origin", kCoepNone, kNoHeader, kCoepNone, kNoEndpoint,
+       kSameOrigin, kNoEndpoint, kUnsafeNone},
+      // Trailing whitespaces.
+      {"same-origin-allow-popups   ", kCoepNone, kNoHeader, kCoepNone,
+       kNoEndpoint, kSameOriginAllowPopups, kNoEndpoint, kUnsafeNone},
+      // Empty string.
+      {"", kCoepNone, kNoHeader, kCoepNone, kNoEndpoint, kUnsafeNone,
+       kNoEndpoint, kUnsafeNone},
+      // Only whitespaces.
+      {"   ", kCoepNone, kNoHeader, kCoepNone, kNoEndpoint, kUnsafeNone,
+       kNoEndpoint, kUnsafeNone},
+      // Invalid same-site value
+      {"same-site", kCoepNone, kNoHeader, kCoepNone, kNoEndpoint, kUnsafeNone,
+       kNoEndpoint, kUnsafeNone},
+      // Misspelling.
+      {"some-origin", kCoepNone, kNoHeader, kCoepNone, kNoEndpoint, kUnsafeNone,
+       kNoEndpoint, kUnsafeNone},
+      // Trailing line-tab.
+      {"same-origin\x0B", kCoepNone, kNoHeader, kCoepNone, kNoEndpoint,
+       kUnsafeNone, kNoEndpoint, kUnsafeNone},
+      // Adding report endpoint.
+      {"same-origin; report-to=\"endpoint\"", kCoepNone, kNoHeader, kCoepNone,
+       "endpoint", kSameOrigin, kNoEndpoint, kUnsafeNone},
+      // Extraneous parameter, ignored.
+      {"same-origin; report-to=\"endpoint\"; foo=bar", kCoepNone, kNoHeader,
+       kCoepNone, "endpoint", kSameOrigin, kNoEndpoint, kUnsafeNone},
+      // Multiple endpoints
+      {"same-origin; report-to=\"endpoint\"; report-to=\"foo\"", kCoepNone,
+       kNoHeader, kCoepNone, "foo", kSameOrigin, kNoEndpoint, kUnsafeNone},
+      // Leading spaces in the reporting endpoint.
+      {"same-origin-allow-popups;    report-to=\"endpoint\"", kCoepNone,
+       kNoHeader, kCoepNone, "endpoint", kSameOriginAllowPopups, kNoEndpoint,
+       kUnsafeNone},
+      // Unsafe-none with endpoint.
+      {"unsafe-none; report-to=\"endpoint\"", kCoepNone, kNoHeader, kCoepNone,
+       "endpoint", kUnsafeNone, kNoEndpoint, kUnsafeNone},
+      // Unknown parameters should just be ignored.
+      {"same-origin; invalidparameter=\"unknown\"", kCoepNone, kNoHeader,
+       kCoepNone, kNoEndpoint, kSameOrigin, kNoEndpoint, kUnsafeNone},
+      // Non-string report-to value.
+      {"same-origin; report-to=other-endpoint", kCoepNone, kNoHeader, kCoepNone,
+       kNoEndpoint, kSameOrigin, kNoEndpoint, kUnsafeNone},
+      // Malformated parameter value.
+      {"same-origin-allow-popups;   foo", kCoepNone, kNoHeader, kCoepNone,
+       kNoEndpoint, kSameOriginAllowPopups, kNoEndpoint, kUnsafeNone},
+      // Report to empty string endpoint.
+      {"same-origin; report-to=\"\"", kCoepNone, kNoHeader, kCoepNone, "",
+       kSameOrigin, kNoEndpoint, kUnsafeNone},
+      // Empty parameter value, parsing fails.
+      {"same-origin; report-to=", kCoepNone, kNoHeader, kCoepNone, kNoEndpoint,
+       kUnsafeNone, kNoEndpoint, kUnsafeNone},
       // Empty parameter key, parsing fails.
-      {"same-origin; =\"\"", kNoHeader, kNoEndpoint, kUnsafeNone, kNoEndpoint,
-       kUnsafeNone},
+      {"same-origin; =\"\"", kCoepNone, kNoHeader, kCoepNone, kNoEndpoint,
+       kUnsafeNone, kNoEndpoint, kUnsafeNone},
       // Report only same origin header.
-      {kNoHeader, "same-origin", kNoEndpoint, kUnsafeNone, kNoEndpoint,
-       kSameOrigin},
+      {kNoHeader, kCoepNone, "same-origin", kCoepNone, kNoEndpoint, kUnsafeNone,
+       kNoEndpoint, kSameOrigin},
       // Report only header.
-      {kNoHeader, "same-origin-allow-popups", kNoEndpoint, kUnsafeNone,
-       kNoEndpoint, kSameOriginAllowPopups},
+      {kNoHeader, kCoepNone, "same-origin-allow-popups", kCoepNone, kNoEndpoint,
+       kUnsafeNone, kNoEndpoint, kSameOriginAllowPopups},
       // Report only header.
-      {kNoHeader, "unsafe-none", kNoEndpoint, kUnsafeNone, kNoEndpoint,
-       kUnsafeNone},
+      {kNoHeader, kCoepNone, "unsafe-none", kCoepNone, kNoEndpoint, kUnsafeNone,
+       kNoEndpoint, kUnsafeNone},
       // Report only same origin header with endpoint.
-      {kNoHeader, "same-origin; report-to=\"endpoint\"", kNoEndpoint,
-       kUnsafeNone, "endpoint", kSameOrigin},
+      {kNoHeader, kCoepNone, "same-origin; report-to=\"endpoint\"", kCoepNone,
+       kNoEndpoint, kUnsafeNone, "endpoint", kSameOrigin},
       // Report only allow popups with endpoint.
-      {kNoHeader, "same-origin-allow-popups; report-to=\"endpoint\"",
-       kNoEndpoint, kUnsafeNone, "endpoint", kSameOriginAllowPopups},
+      {kNoHeader, kCoepNone, "same-origin-allow-popups; report-to=\"endpoint\"",
+       kCoepNone, kNoEndpoint, kUnsafeNone, "endpoint", kSameOriginAllowPopups},
       // Report only unsafe none with endpoint.
-      {kNoHeader, "unsafe-none; report-to=\"endpoint\" ", kNoEndpoint,
-       kUnsafeNone, "endpoint", kUnsafeNone},
+      {kNoHeader, kCoepNone, "unsafe-none; report-to=\"endpoint\" ", kCoepNone,
+       kNoEndpoint, kUnsafeNone, "endpoint", kUnsafeNone},
       // Invalid COOP header with valid COOP report only.
-      {"INVALID HEADER", "same-origin; report-to=\"endpoint\"", kNoEndpoint,
-       kUnsafeNone, "endpoint", kSameOrigin},
+      {"INVALID HEADER", kCoepNone, "same-origin; report-to=\"endpoint\"",
+       kCoepNone, kNoEndpoint, kUnsafeNone, "endpoint", kSameOrigin},
       // Unsafe none COOP and allow popups COOP report only.
-      {"unsafe-none", "same-origin-allow-popups; report-to=\"endpoint\"",
+      {"unsafe-none", kCoepNone,
+       "same-origin-allow-popups; report-to=\"endpoint\"", kCoepNone,
        kNoEndpoint, kUnsafeNone, "endpoint", kSameOriginAllowPopups},
       // Same-origin-allow-popups coop + same-origin report-only.
-      {"same-origin-allow-popups", "same-origin; report-to=\"endpoint\" ",
-       kNoEndpoint, kSameOriginAllowPopups, "endpoint", kSameOrigin},
+      {"same-origin-allow-popups", kCoepNone,
+       "same-origin; report-to=\"endpoint\" ", kCoepNone, kNoEndpoint,
+       kSameOriginAllowPopups, "endpoint", kSameOrigin},
       // Same-origin-allow-popups coop + same-origin report-only, with reporting
       // on both.
-      {"same-origin-allow-popups; report-to=\"endpointA\"",
-       "same-origin; report-to=\"endpointB\" ", "endpointA",
+      {"same-origin-allow-popups; report-to=\"endpointA\"", kCoepNone,
+       "same-origin; report-to=\"endpointB\" ", kCoepNone, "endpointA",
        kSameOriginAllowPopups, "endpointB", kSameOrigin},
       // Same-origin-allow-popups coop + same-origin report-only, with reporting
       // on both, same endpoint.
-      {"same-origin-allow-popups; report-to=\"endpoint\"",
-       "same-origin; report-to=\"endpoint\" ", "endpoint",
+      {"same-origin-allow-popups; report-to=\"endpoint\"", kCoepNone,
+       "same-origin; report-to=\"endpoint\" ", kCoepNone, "endpoint",
        kSameOriginAllowPopups, "endpoint", kSameOrigin},
       // Unsafe coop + same-origin report-only, with reporting on both.
-      {"unsafe-none; report-to=\"endpoint\"",
-       "same-origin; report-to=\"endpoint\" ", "endpoint", kUnsafeNone,
-       "endpoint", kSameOrigin},
+      {"unsafe-none; report-to=\"endpoint\"", kCoepNone,
+       "same-origin; report-to=\"endpoint\" ", kCoepNone, "endpoint",
+       kUnsafeNone, "endpoint", kSameOrigin},
       // Same-origin with reporting COOP, invalid COOP report-only.
-      {"same-origin; report-to=\"endpoint\"", "INVALID HEADER", "endpoint",
-       kSameOrigin, kNoEndpoint, kUnsafeNone},
+      {"same-origin; report-to=\"endpoint\"", kCoepNone, "INVALID HEADER",
+       kCoepNone, "endpoint", kSameOrigin, kNoEndpoint, kUnsafeNone},
+      // Same-origin with COEP
+      {"same-origin", kCoepCorp, kNoHeader, kCoepNone, kNoEndpoint,
+       kSameOriginPlusCoep, kNoEndpoint, kUnsafeNone},
+      // Same-origin-allow-popups with COEP
+      {"same-origin-allow-popups", kCoepCorp, kNoHeader, kCoepNone, kNoEndpoint,
+       kSameOriginAllowPopups, kNoEndpoint, kUnsafeNone},
+      // Same-origin with report only COEP
+      {"same-origin", kCoepNone, kNoHeader, kCoepCorp, kNoEndpoint, kSameOrigin,
+       kNoEndpoint, kUnsafeNone},
+      // reporting Same-origin with COEP
+      {kNoHeader, kCoepCorp, "same-origin", kCoepNone, kNoEndpoint, kUnsafeNone,
+       kNoEndpoint, kSameOriginPlusCoep},
+      // reporting Same-origin with reporting COEP
+      {kNoHeader, kCoepNone, "same-origin", kCoepCorp, kNoEndpoint, kUnsafeNone,
+       kNoEndpoint, kSameOriginPlusCoep},
   };
 
   for (const auto& test_case : kTestCases) {
@@ -164,7 +192,11 @@ TEST(CrossOriginOpenerPolicyTest, Parse) {
       headers->AddHeader("cross-origin-opener-policy-report-only",
                          *test_case.raw_coop_report_only_string);
     }
-    auto parsed_policy = ParseCrossOriginOpenerPolicy(*headers);
+    network::CrossOriginEmbedderPolicy coep;
+    coep.value = test_case.coep_value;
+    coep.report_only_value = test_case.coep_report_only_value;
+
+    auto parsed_policy = ParseCrossOriginOpenerPolicy(*headers, coep);
     EXPECT_EQ(test_case.expected_endpoint, parsed_policy.reporting_endpoint);
     EXPECT_EQ(test_case.expected_policy, parsed_policy.value);
     EXPECT_EQ(test_case.expected_endpoit_report_only,

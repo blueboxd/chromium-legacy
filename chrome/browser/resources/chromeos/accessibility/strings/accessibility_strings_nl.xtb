@@ -5,7 +5,7 @@
 <translation id="1011903154582639569">Zoek een toets en til je vinger op om te typen</translation>
 <translation id="1012173283529841972">Lijstitem</translation>
 <translation id="1013742170491673792">srched</translation>
-<translation id="1014370462248694370">Veeg met twee vingers naar rechts</translation>
+<translation id="1014370462248694370">Swipe met twee vingers naar rechts</translation>
 <translation id="1022586497894531524">Gebruik je de gesproken feedback van ChromeVox voor de eerste keer? In deze korte handleiding worden de basisprincipes uitgelegd, zodat je aan de slag kunt met ChromeVox.</translation>
 <translation id="1025074108959230262">Modus voor vastzetten uitgeschakeld</translation>
 <translation id="1031961866430398710">dan</translation>
@@ -19,7 +19,7 @@
 <translation id="1088402100970133699">Geen vorig lijstitem</translation>
 <translation id="1114836634143403764">Suggestie</translation>
 <translation id="1120743664840974483">{"a": "anna", "b": "bernard", "c": "cornelis", "d": "dirk", "e": "eduard", "f": "ferdinand", "g": "gerard", "h": "hendrik", "i": "izaak", "j": "johannes", "k": "karel", "l": "lodewijk", "m": "maria", "n": "nico", "o": "otto","p": "pieter", "q": "quirinus", "r": "rudolf", "s": "simon", "t": "tinus", "u": "utrecht", "v": "victor", "w": "willem","x": "xantippe", "y": "ypsilon", "z": "zaandam"}</translation>
-<translation id="1120938014254001895">Veeg met twee vingers omhoog</translation>
+<translation id="1120938014254001895">Swipe met twee vingers omhoog</translation>
 <translation id="1126928665165112660">Niet cursief</translation>
 <translation id="113582498867142724"><ph name="TAG" />-collectie met <ph name="NUM" /> items</translation>
 <translation id="1161762950103988776">Jump</translation>
@@ -108,7 +108,7 @@
 <translation id="1727806147743597030">footer</translation>
 <translation id="174268867904053074">Volgende afbeelding</translation>
 <translation id="1756785467854861272">Donkermagenta</translation>
-<translation id="1765245556747822181">Veeg met één vinger omhoog</translation>
+<translation id="1765245556747822181">Swipe met één vinger omhoog</translation>
 <translation id="1771761307086386028">Naar rechts scrollen</translation>
 <translation id="1781173782405573156">Overslatoets</translation>
 <translation id="1787176709638001873">Tekst voor bewerken wachtwoord</translation>
@@ -165,7 +165,7 @@
 <translation id="225732394367814946">Spreeksnelheid verhogen</translation>
 <translation id="2267538686624070261">Spelfout sluiten</translation>
 <translation id="2267945578749931355">Volgend teken</translation>
-<translation id="2278490101488436824">Veeg met drie vingers naar links</translation>
+<translation id="2278490101488436824">Swipe met drie vingers naar links</translation>
 <translation id="2305942658236913680">Geen volgende kop</translation>
 <translation id="2311237334957139798">Naar het vorige detailniveau</translation>
 <translation id="2314393392395134769">Geen subscript</translation>
@@ -239,14 +239,14 @@
 <translation id="2867808975387772810">Bibliografie</translation>
 <translation id="2873259058405069099">Naar het begin van de tabel gaan</translation>
 <translation id="287383510823843610">Donkeroranje</translation>
-<translation id="2879867157561757640">Veeg met drie vingers omlaag</translation>
+<translation id="2879867157561757640">Swipe met drie vingers omlaag</translation>
 <translation id="288178314850623291">Gebruik de springopdrachten om naar specifieke typen elementen te springen. Druk op Zoeken + H om naar de volgende kop te springen of druk op Zoeken + Shift + H om naar de vorige kop te springen.</translation>
 <translation id="2885764457467528513">{COUNT,plural, =1{minuut}other{minuten}}</translation>
 <translation id="2894654529758326923">Informatie</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{accolade links}other{# accolades links}}</translation>
 <translation id="2909584066358367921">Geen volgende knop</translation>
 <translation id="2911433807131383493">ChromeVox-handleiding openen</translation>
-<translation id="2912405967290226587">Veeg met drie vingers naar rechts</translation>
+<translation id="2912405967290226587">Swipe met drie vingers naar rechts</translation>
 <translation id="2937799153569150791">Geen volgende kop van niveau 3</translation>
 <translation id="2942710183375260152">Donker leisteenblauw</translation>
 <translation id="2943596527105977722">Donker guldenroedegeel</translation>
@@ -254,7 +254,7 @@
 <translation id="2968634799764242930">Zeegroen</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{tab}other{# tabs}}</translation>
 <translation id="2972205263822847197">Knopinfo</translation>
-<translation id="297825089465017871">Veeg met twee vingers naar links</translation>
+<translation id="297825089465017871">Swipe met twee vingers naar links</translation>
 <translation id="2998131015536248178">Vorig teken</translation>
 <translation id="2999559350546931576">Toonhoogte verlagen</translation>
 <translation id="3009352964623081324">Zoeken + O, dan S. Gebruik dit om stemmen te installeren, te beheren en aan te passen.</translation>
@@ -264,8 +264,8 @@
 <translation id="3040901448410802366">Voortgangsindicator</translation>
 <translation id="3046838483509668188">ChromeVox-opties</translation>
 <translation id="3060756054951570867">menu <ph name="TITLE" /> geopend</translation>
-<translation id="3060880924447482063">Veeg naar links of rechts om per item te navigeren</translation>
-<translation id="3070245424257836917">Veeg met drie vingers omhoog</translation>
+<translation id="3060880924447482063">Swipe naar links of rechts om per item te navigeren</translation>
+<translation id="3070245424257836917">Swipe met drie vingers omhoog</translation>
 <translation id="3078345202707391975">Volgende kop voor niveau 2</translation>
 <translation id="3078740164268491126">tabel</translation>
 <translation id="3082249673510793544">Terug scrollen</translation>
@@ -411,7 +411,7 @@
 <translation id="4161104397932142764">{COUNT,plural, =1{seconde}other{seconden}}</translation>
 <translation id="4161663686871496107">Gesproken ChromeVox-feedback is gereed</translation>
 <translation id="4176463684765177261">Uitgeschakeld</translation>
-<translation id="4187322598335821254">Veeg omhoog of omlaag om per regel te navigeren</translation>
+<translation id="4187322598335821254">Swipe omhoog of omlaag om per regel te navigeren</translation>
 <translation id="4188530942454211480">Vorige zin</translation>
 <translation id="4191918948604314587">Een knop</translation>
 <translation id="419265409837491189">Naar vorige kolom</translation>
@@ -473,7 +473,7 @@
 <translation id="4677535310137735442">Naar volgende kolom</translation>
 <translation id="4688873778442829762">raster</translation>
 <translation id="4693675773662933727">Vorig oriëntatiepunt</translation>
-<translation id="4710166929009737753">Veeg met één vinger naar rechts</translation>
+<translation id="4710166929009737753">Swipe met één vinger naar rechts</translation>
 <translation id="4712898966495541134">Einde selectie</translation>
 <translation id="4740661827607246557">Help-opdrachten</translation>
 <translation id="4755857887974653209">ChromeVox uitschakelen</translation>
@@ -726,11 +726,11 @@
 <translation id="6793101435925451627">keuzelijst</translation>
 <translation id="6815255864998354418">Citroencake</translation>
 <translation id="6816066673340002913">Licht guldenroedegeel</translation>
-<translation id="6826226459053491773">Veeg met twee vingers omlaag</translation>
+<translation id="6826226459053491773">Swipe met twee vingers omlaag</translation>
 <translation id="6833103209700200188">Voettekst</translation>
 <translation id="6837853484260746864">Een stem selecteren:</translation>
 <translation id="6858047746862060282">Proloog</translation>
-<translation id="6859876496651143278">Veeg met één vinger naar links</translation>
+<translation id="6859876496651143278">Swipe met één vinger naar links</translation>
 <translation id="6865519907510167493">Spelfout</translation>
 <translation id="6894148351896207544">De huidige datum en tijd uitspreken</translation>
 <translation id="6896758677409633944">Kopieer</translation>
@@ -1012,7 +1012,7 @@
 <translation id="923331726185079994">ChromeVox geüpdatet</translation>
 <translation id="93384979447910801">Donker zeegroen</translation>
 <translation id="948171205378458592">Spreeksnelheid verlagen</translation>
-<translation id="958854023026327378">Veeg met één vinger omlaag</translation>
+<translation id="958854023026327378">Swipe met één vinger omlaag</translation>
 <translation id="962913030769097253">Volgende kop voor niveau 1</translation>
 <translation id="966588271015727539">Een Bluetooth-brailleleesregel selecteren</translation>
 <translation id="973955474346881951">Modus voor vastzetten in-/uitschakelen</translation>

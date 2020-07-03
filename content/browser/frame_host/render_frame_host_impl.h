@@ -1427,6 +1427,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   CrossOriginOpenerPolicyReporter* coop_reporter() {
     return coop_reporter_.get();
   }
+  int virtual_browsing_context_group() const {
+    return virtual_browsing_context_group_;
+  }
 
   const network::mojom::ClientSecurityStatePtr&
   last_committed_client_security_state() const {
@@ -3027,6 +3030,15 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   std::unique_ptr<CrossOriginEmbedderPolicyReporter> coep_reporter_;
   std::unique_ptr<CrossOriginOpenerPolicyReporter> coop_reporter_;
+
+  // https://github.com/camillelamy/explainers/blob/master/coop_reporting.md#virtual-browsing-context-group-id
+  //
+  // Whenever we detect that the enforcement of a report-only COOP policy would
+  // have resulted in a BrowsingInstance switch, we assign a new virtual
+  // browsing context group ID to the RenderFrameHostImpl that has navigated.
+  //
+  // TODO(https://crbug.com/1101339): Implement this.
+  int virtual_browsing_context_group_ = -1;
 
   // Navigation ID for the last committed cross-document non-bfcached navigation
   // in this RenderFrameHost.

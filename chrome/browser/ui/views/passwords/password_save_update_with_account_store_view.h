@@ -97,7 +97,6 @@ class PasswordSaveUpdateWithAccountStoreView
   void TogglePasswordVisibility();
   void UpdateUsernameAndPasswordInModel();
   void UpdateBubbleUIElements();
-  std::unique_ptr<views::View> CreateFooterView();
 
   // Whether we should show the IPH informing the user about the destination
   // picker and that they can now select where to store the passwords. It

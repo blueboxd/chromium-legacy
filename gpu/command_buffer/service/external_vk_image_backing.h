@@ -91,7 +91,7 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
     }
 
     if (usage() & SHARED_IMAGE_USAGE_GLES2) {
-      return !use_separate_gl_texture();
+      return !use_separate_gl_texture() && (texture_ || texture_passthrough_);
     }
     return false;
   }

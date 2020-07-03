@@ -57,7 +57,6 @@
 #include "skia/ext/platform_canvas.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
-#include "third_party/blink/public/common/permissions/permission_utils.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
@@ -106,24 +105,6 @@ BlinkTestRunner::BlinkTestRunner(WebViewTestProxy* web_view_test_proxy)
 
 BlinkTestRunner::~BlinkTestRunner() = default;
 
-void BlinkTestRunner::PrintMessageToStderr(const std::string& message) {
-  GetWebTestControlHostRemote()->PrintMessageToStderr(message);
-}
-
-void BlinkTestRunner::PrintMessage(const std::string& message) {
-  GetWebTestControlHostRemote()->PrintMessage(message);
-}
-
-WebString BlinkTestRunner::RegisterIsolatedFileSystem(
-    const blink::WebVector<blink::WebString>& absolute_filenames) {
-  std::vector<base::FilePath> files;
-  for (auto& filename : absolute_filenames)
-    files.push_back(blink::WebStringToFilePath(filename));
-  std::string filesystem_id;
-  GetWebTestClientRemote()->RegisterIsolatedFileSystem(files, &filesystem_id);
-  return WebString::FromUTF8(filesystem_id);
-}
-
 WebString BlinkTestRunner::GetAbsoluteWebStringFromUTF8Path(
     const std::string& utf8_path) {
   base::FilePath path = base::FilePath::FromUTF8Unsafe(utf8_path);
@@ -136,92 +117,9 @@ WebString BlinkTestRunner::GetAbsoluteWebStringFromUTF8Path(
   return blink::FilePathToWebString(path);
 }
 
-void BlinkTestRunner::OverridePreferences(const WebPreferences& prefs) {
-  GetWebTestControlHostRemote()->OverridePreferences(prefs);
-}
-
-void BlinkTestRunner::SetPopupBlockingEnabled(bool block_popups) {
-  GetWebTestControlHostRemote()->SetPopupBlockingEnabled(block_popups);
-}
-
-void BlinkTestRunner::ClearAllDatabases() {
-  GetWebTestClientRemote()->ClearAllDatabases();
-}
-
-void BlinkTestRunner::SetDatabaseQuota(int quota) {
-  GetWebTestClientRemote()->SetDatabaseQuota(quota);
-}
-
-void BlinkTestRunner::SimulateWebNotificationClick(
-    const std::string& title,
-    const base::Optional<int>& action_index,
-    const base::Optional<base::string16>& reply) {
-  GetWebTestClientRemote()->SimulateWebNotificationClick(
-      title, action_index.value_or(std::numeric_limits<int32_t>::min()), reply);
-}
-
-void BlinkTestRunner::SimulateWebNotificationClose(const std::string& title,
-                                                   bool by_user) {
-  GetWebTestClientRemote()->SimulateWebNotificationClose(title, by_user);
-}
-
-void BlinkTestRunner::SimulateWebContentIndexDelete(const std::string& id) {
-  GetWebTestClientRemote()->SimulateWebContentIndexDelete(id);
-}
-
 void BlinkTestRunner::SetBluetoothFakeAdapter(const std::string& adapter_name,
                                               base::OnceClosure callback) {
   GetBluetoothFakeAdapterSetter().Set(adapter_name, std::move(callback));
-}
-
-void BlinkTestRunner::SetBluetoothManualChooser(bool enable) {
-  GetWebTestControlHostRemote()->SetBluetoothManualChooser(enable);
-}
-
-void BlinkTestRunner::GetBluetoothManualChooserEvents(
-    base::OnceCallback<void(const std::vector<std::string>&)> callback) {
-  get_bluetooth_events_callbacks_.push_back(std::move(callback));
-  GetWebTestControlHostRemote()->GetBluetoothManualChooserEvents();
-}
-
-void BlinkTestRunner::SendBluetoothManualChooserEvent(
-    const std::string& event,
-    const std::string& argument) {
-  GetWebTestControlHostRemote()->SendBluetoothManualChooserEvent(event,
-                                                                 argument);
-}
-
-void BlinkTestRunner::SetBlockThirdPartyCookies(bool block) {
-  GetWebTestControlHostRemote()->BlockThirdPartyCookies(block);
-}
-
-void BlinkTestRunner::SetLocale(const std::string& locale) {
-  setlocale(LC_ALL, locale.c_str());
-  // Number to string conversions require C locale, regardless of what
-  // all the other subsystems are set to.
-  setlocale(LC_NUMERIC, "C");
-}
-
-base::FilePath BlinkTestRunner::GetWritableDirectory() {
-  base::FilePath result;
-  GetWebTestControlHostRemote()->GetWritableDirectory(&result);
-  return result;
-}
-
-void BlinkTestRunner::SetFilePathForMockFileDialog(const base::FilePath& path) {
-  GetWebTestControlHostRemote()->SetFilePathForMockFileDialog(path);
-}
-
-void BlinkTestRunner::OnWebTestRuntimeFlagsChanged(
-    const base::DictionaryValue& changed_values) {
-  // Ignore changes that happen before we got the initial, accumulated
-  // web flag changes in either OnReplicateTestConfiguration or
-  // OnSetTestConfiguration.
-  TestInterfaces* interfaces = web_view_test_proxy_->test_interfaces();
-  if (!interfaces->TestIsRunning())
-    return;
-
-  GetWebTestClientRemote()->WebTestRuntimeFlagsChanged(changed_values.Clone());
 }
 
 void BlinkTestRunner::TestFinished() {
@@ -374,68 +272,12 @@ void BlinkTestRunner::CaptureDumpComplete() {
   std::move(dump_callback_).Run(std::move(dump_result_));
 }
 
-void BlinkTestRunner::DeleteAllCookies() {
-  GetWebTestClientRemote()->DeleteAllCookies();
-}
-
 int BlinkTestRunner::NavigationEntryCount() {
   return web_view_test_proxy_->GetLocalSessionHistoryLengthForTesting();
 }
 
-void BlinkTestRunner::GoToOffset(int offset) {
-  GetWebTestControlHostRemote()->GoToOffset(offset);
-}
-
-void BlinkTestRunner::Reload() {
-  GetWebTestControlHostRemote()->Reload();
-}
-
-void BlinkTestRunner::LoadURLForFrame(const WebURL& url,
-                                      const std::string& frame_name) {
-  GetWebTestControlHostRemote()->LoadURLForFrame(url, frame_name);
-}
-
 bool BlinkTestRunner::AllowExternalPages() {
   return test_config_->allow_external_pages;
-}
-
-void BlinkTestRunner::SetPermission(const std::string& name,
-                                    const std::string& value,
-                                    const GURL& origin,
-                                    const GURL& embedding_origin) {
-  GetWebTestClientRemote()->SetPermission(
-      name, blink::ToPermissionStatus(value), origin, embedding_origin);
-}
-
-void BlinkTestRunner::ResetPermissions() {
-  GetWebTestClientRemote()->ResetPermissions();
-}
-
-void BlinkTestRunner::SetMainWindowHidden(bool hidden) {
-  GetWebTestControlHostRemote()->SetMainWindowHidden(hidden);
-}
-
-void BlinkTestRunner::CheckForLeakedWindows() {
-  GetWebTestControlHostRemote()->CheckForLeakedWindows();
-}
-
-void BlinkTestRunner::SetScreenOrientationChanged() {
-  GetWebTestControlHostRemote()->SetScreenOrientationChanged();
-}
-
-void BlinkTestRunner::FocusDevtoolsSecondaryWindow() {
-  GetWebTestControlHostRemote()->FocusDevtoolsSecondaryWindow();
-}
-
-void BlinkTestRunner::SetTrustTokenKeyCommitments(
-    const std::string& raw_commitments,
-    base::OnceClosure callback) {
-  GetWebTestClientRemote()->SetTrustTokenKeyCommitments(raw_commitments,
-                                                        std::move(callback));
-}
-
-void BlinkTestRunner::ClearTrustTokenState(base::OnceClosure callback) {
-  GetWebTestClientRemote()->ClearTrustTokenState(std::move(callback));
 }
 
 void BlinkTestRunner::CaptureDump(
@@ -480,34 +322,16 @@ BlinkTestRunner::GetBluetoothFakeAdapterSetter() {
 
 mojo::AssociatedRemote<mojom::WebTestControlHost>&
 BlinkTestRunner::GetWebTestControlHostRemote() {
-  if (!web_test_control_host_remote_) {
-    RenderThread::Get()->GetChannel()->GetRemoteAssociatedInterface(
-        &web_test_control_host_remote_);
-    web_test_control_host_remote_.set_disconnect_handler(
-        base::BindOnce(&BlinkTestRunner::HandleWebTestControlHostDisconnected,
-                       base::Unretained(this)));
-  }
-  return web_test_control_host_remote_;
-}
-
-void BlinkTestRunner::HandleWebTestControlHostDisconnected() {
-  web_test_control_host_remote_.reset();
+  TestInterfaces* interfaces = web_view_test_proxy_->test_interfaces();
+  TestRunner* test_runner = interfaces->GetTestRunner();
+  return test_runner->GetWebTestControlHostRemote();
 }
 
 mojo::AssociatedRemote<mojom::WebTestClient>&
 BlinkTestRunner::GetWebTestClientRemote() {
-  if (!web_test_client_remote_) {
-    RenderThread::Get()->GetChannel()->GetRemoteAssociatedInterface(
-        &web_test_client_remote_);
-    web_test_client_remote_.set_disconnect_handler(
-        base::BindOnce(&BlinkTestRunner::HandleWebTestClientDisconnected,
-                       base::Unretained(this)));
-  }
-  return web_test_client_remote_;
-}
-
-void BlinkTestRunner::HandleWebTestClientDisconnected() {
-  web_test_client_remote_.reset();
+  TestInterfaces* interfaces = web_view_test_proxy_->test_interfaces();
+  TestRunner* test_runner = interfaces->GetTestRunner();
+  return test_runner->GetWebTestClientRemote();
 }
 
 void BlinkTestRunner::OnSetupRendererProcessForNonTestWindow() {
@@ -582,15 +406,6 @@ void BlinkTestRunner::OnFinishTestInMainWindow() {
     return;
 
   TestFinished();
-}
-
-void BlinkTestRunner::OnReplyBluetoothManualChooserEvents(
-    const std::vector<std::string>& events) {
-  DCHECK(!get_bluetooth_events_callbacks_.empty());
-  base::OnceCallback<void(const std::vector<std::string>&)> callback =
-      std::move(get_bluetooth_events_callbacks_.front());
-  get_bluetooth_events_callbacks_.pop_front();
-  std::move(callback).Run(events);
 }
 
 }  // namespace content

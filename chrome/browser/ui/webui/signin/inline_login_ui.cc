@@ -129,6 +129,7 @@ content::WebUIDataSource* CreateWebUIDataSource() {
     {"edu_login_parent_signin.js", IDR_EDU_LOGIN_EDU_LOGIN_PARENT_SIGNIN_JS},
     {"edu_login_parent_info.js", IDR_EDU_LOGIN_EDU_LOGIN_PARENT_INFO_JS},
     {"edu_login_signin.js", IDR_EDU_LOGIN_EDU_LOGIN_SIGNIN_JS},
+    {"edu_login_error.js", IDR_EDU_LOGIN_EDU_LOGIN_ERROR_JS},
     {"test_loader.js", IDR_WEBUI_JS_TEST_LOADER},
     {"test_loader.html", IDR_WEBUI_HTML_TEST_LOADER},
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -154,6 +155,17 @@ content::WebUIDataSource* CreateWebUIDataSource() {
       "accessibleCloseButtonLabel", IDS_SIGNIN_ACCESSIBLE_CLOSE_BUTTON);
   source->AddLocalizedString(
       "accessibleBackButtonLabel", IDS_SIGNIN_ACCESSIBLE_BACK_BUTTON);
+#if defined(OS_CHROMEOS)
+  source->AddLocalizedString("accountManagerErrorNoInternetTitle",
+                             IDS_ACCOUNT_MANAGER_ERROR_NO_INTERNET_TITLE);
+  source->AddLocalizedString("accountManagerErrorNoInternetBody",
+                             IDS_ACCOUNT_MANAGER_ERROR_NO_INTERNET_BODY);
+  source->AddLocalizedString(
+      "accountManagerErrorCannotAddAccountTitle",
+      IDS_ACCOUNT_MANAGER_ERROR_CANNOT_ADD_ACCOUNT_TITLE);
+  source->AddLocalizedString("accountManagerErrorCannotAddAccountBody",
+                             IDS_ACCOUNT_MANAGER_ERROR_CANNOT_ADD_ACCOUNT_BODY);
+#endif
   return source;
 }
 

@@ -40,9 +40,9 @@ class TpmChallengeKeySubtleFactory final {
   // pair will ever happen.
   static std::unique_ptr<TpmChallengeKeySubtle> CreateForPreparedKey(
       AttestationKeyType key_type,
+      bool will_register_key,
       const std::string& key_name,
-      Profile* profile,
-      const std::string& key_name_for_spkac);
+      Profile* profile);
 
   static void SetForTesting(std::unique_ptr<TpmChallengeKeySubtle> next_result);
   static bool WillReturnTestingInstance();
@@ -79,20 +79,18 @@ class TpmChallengeKeySubtle {
   // Checks that it is allowed to generate a VA challenge response and generates
   // a new key pair if necessary. Returns result via |callback|. In case of
   // success |TpmChallengeKeyResult::public_key| will be filled. If
-  // key_name_for_spkac was specified, will return the public key for the key
-  // included in SPKAC. Otherwise will return the public key for the challenged
-  // key.
+  // |will_register_key| is true, challenge response will contain SPKAC and the
+  // key can be registered using StartRegisterKeyStep method.
   virtual void StartPrepareKeyStep(AttestationKeyType key_type,
+                                   bool will_register_key,
                                    const std::string& key_name,
                                    Profile* profile,
-                                   const std::string& key_name_for_spkac,
                                    TpmChallengeKeyCallback callback) = 0;
 
   // Generates a VA challenge response using the key pair prepared by
   // |PrepareKey| method. Returns VA challenge response via |callback|. In case
   // of success |TpmChallengeKeyResult::challenge_response| will be filled.
   virtual void StartSignChallengeStep(const std::string& challenge,
-                                      bool include_signed_public_key,
                                       TpmChallengeKeyCallback callback) = 0;
 
   // Registers the key that makes it available for general purpose cryptographic
@@ -108,11 +106,10 @@ class TpmChallengeKeySubtle {
 
   // Restores internal state of the object as if it would be after
   // |StartPrepareKeyStep|.
-  virtual void RestorePreparedKeyState(
-      AttestationKeyType key_type,
-      const std::string& key_name,
-      Profile* profile,
-      const std::string& key_name_for_spkac) = 0;
+  virtual void RestorePreparedKeyState(AttestationKeyType key_type,
+                                       bool will_register_key,
+                                       const std::string& key_name,
+                                       Profile* profile) = 0;
 };
 
 //================= TpmChallengeKeySubtleImpl ==================================
@@ -132,21 +129,20 @@ class TpmChallengeKeySubtleImpl final : public TpmChallengeKeySubtle {
 
   // TpmChallengeKeySubtle
   void StartPrepareKeyStep(AttestationKeyType key_type,
+                           bool will_register_key,
                            const std::string& key_name,
                            Profile* profile,
-                           const std::string& key_name_for_spkac,
                            TpmChallengeKeyCallback callback) override;
   void StartSignChallengeStep(const std::string& challenge,
-                              bool include_signed_public_key,
                               TpmChallengeKeyCallback callback) override;
   void StartRegisterKeyStep(TpmChallengeKeyCallback callback) override;
 
  private:
   // TpmChallengeKeySubtle
   void RestorePreparedKeyState(AttestationKeyType key_type,
+                               bool will_register_key,
                                const std::string& key_name,
-                               Profile* profile,
-                               const std::string& key_name_for_spkac) override;
+                               Profile* profile) override;
 
   void PrepareUserKey();
   void PrepareMachineKey();
@@ -160,7 +156,6 @@ class TpmChallengeKeySubtleImpl final : public TpmChallengeKeySubtle {
   // Returns the enterprise domain the device is enrolled to or user email.
   std::string GetEmail() const;
   AttestationCertificateProfile GetCertificateProfile() const;
-  std::string GetKeyNameForRegister() const;
   const user_manager::User* GetUser() const;
   AccountId GetAccountId() const;
 
@@ -202,9 +197,10 @@ class TpmChallengeKeySubtleImpl final : public TpmChallengeKeySubtle {
   Profile* profile_ = nullptr;
 
   AttestationKeyType key_type_ = AttestationKeyType::KEY_DEVICE;
-
+  bool will_register_key_ = false;
+  // See the comment for TpmChallengeKey::BuildResponse for more context about
+  // different cases of using this variable.
   std::string key_name_;
-  std::string key_name_for_spkac_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

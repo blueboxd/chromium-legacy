@@ -26,7 +26,7 @@ enum ContextMenuImageFormat {
 // Performs context menu-related actions.
 class ChromeContextMenuPopulator {
  protected:
-  using ImageRetrieveCallback = base::Callback<void(
+  using ImageRetrieveCallback = base::OnceCallback<void(
       mojo::AssociatedRemote<chrome::mojom::ChromeRenderFrame>
           chrome_render_frame_ptr,
       const base::android::JavaRef<jobject>& jcallback,
@@ -66,7 +66,7 @@ class ChromeContextMenuPopulator {
  private:
   void RetrieveImageInternal(
       JNIEnv* env,
-      const ImageRetrieveCallback& retrieve_callback,
+      ImageRetrieveCallback retrieve_callback,
       const base::android::JavaParamRef<jobject>& jrender_frame_host,
       const base::android::JavaParamRef<jobject>& jcallback,
       jint max_width_px,

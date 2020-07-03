@@ -601,8 +601,7 @@ TEST_F(BasicInteractionsTest, ComputeValueCreateLoginOptionResponse) {
   // LoginOptionResponseProto is allowed to extract the payload from
   // client-only values.
   ValueProto expected_response_value;
-  expected_response_value.mutable_login_option_response()->set_payload(
-      "payload");
+  expected_response_value.set_server_payload("payload");
   expected_response_value.set_is_client_side_only(false);
   EXPECT_EQ(user_model_.GetValue("result"), expected_response_value);
 }

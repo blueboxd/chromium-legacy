@@ -846,7 +846,9 @@ VisualProperties RenderViewTest::InitialVisualProperties() {
 
 std::unique_ptr<CompositorDependencies>
 RenderViewTest::CreateCompositorDependencies() {
-  return std::make_unique<FakeCompositorDependencies>();
+  auto deps = std::make_unique<FakeCompositorDependencies>();
+  deps->set_use_zoom_for_dsf_enabled(render_thread_->IsUseZoomForDSF());
+  return deps;
 }
 
 void RenderViewTest::GoToOffset(int offset,

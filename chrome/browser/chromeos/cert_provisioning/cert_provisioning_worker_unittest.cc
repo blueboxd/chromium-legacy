@@ -121,7 +121,7 @@ const std::string& GetPublicKey() {
             kChallengeResponse);                                              \
     EXPECT_CALL((MOCK_TPM_CHALLENGE_KEY), SIGN_CHALLENGE_FUNC)                \
         .Times(1)                                                             \
-        .WillOnce(RunOnceCallback<2>(sign_challenge_result));                 \
+        .WillOnce(RunOnceCallback<1>(sign_challenge_result));                 \
   }
 
 #define EXPECT_REGISTER_KEY_OK(MOCK_TPM_CHALLENGE_KEY, REGISTER_KEY_FUNC) \
@@ -418,8 +418,9 @@ TEST_F(CertProvisioningWorkerTest, Success) {
     EXPECT_PREPARE_KEY_OK(
         *mock_tpm_challenge_key,
         StartPrepareKeyStep(attestation::AttestationKeyType::KEY_USER,
+                            /*will_register_key=*/true,
                             GetKeyName(kCertProfileId),
-                            /*profile=*/_, /*key_name_for_spkac=*/"",
+                            /*profile=*/_,
                             /*callback=*/_));
 
     EXPECT_START_CSR_OK(ClientCertProvisioningStartCsr(
@@ -428,10 +429,9 @@ TEST_F(CertProvisioningWorkerTest, Success) {
 
     EXPECT_CALL(*mock_invalidator, Register(kInvalidationTopic, _)).Times(1);
 
-    EXPECT_SIGN_CHALLENGE_OK(
-        *mock_tpm_challenge_key,
-        StartSignChallengeStep(kChallenge, /*include_signed_public_key=*/true,
-                               /*callback=*/_));
+    EXPECT_SIGN_CHALLENGE_OK(*mock_tpm_challenge_key,
+                             StartSignChallengeStep(kChallenge,
+                                                    /*callback=*/_));
 
     EXPECT_REGISTER_KEY_OK(*mock_tpm_challenge_key, StartRegisterKeyStep);
 
@@ -544,10 +544,11 @@ TEST_F(CertProvisioningWorkerTest, TryLaterManualRetry) {
 
     EXPECT_PREPARE_KEY_OK(
         *mock_tpm_challenge_key,
-        StartPrepareKeyStep(
-            attestation::AttestationKeyType::KEY_DEVICE, /*key_name=*/"",
-            /*profile=*/_, /*key_name_for_spkac=*/GetKeyName(kCertProfileId),
-            /*callback=*/_));
+        StartPrepareKeyStep(attestation::AttestationKeyType::KEY_DEVICE,
+                            /*will_register_key=*/true,
+                            /*key_name=*/GetKeyName(kCertProfileId),
+                            /*profile=*/_,
+                            /*callback=*/_));
 
     EXPECT_START_CSR_TRY_LATER(
         ClientCertProvisioningStartCsr(kCertScopeStrDevice, kCertProfileId,
@@ -568,10 +569,9 @@ TEST_F(CertProvisioningWorkerTest, TryLaterManualRetry) {
                                        kCertProfileVersion, GetPublicKey(),
                                        /*callback=*/_));
 
-    EXPECT_SIGN_CHALLENGE_OK(
-        *mock_tpm_challenge_key,
-        StartSignChallengeStep(kChallenge, /*include_signed_public_key=*/true,
-                               /*callback=*/_));
+    EXPECT_SIGN_CHALLENGE_OK(*mock_tpm_challenge_key,
+                             StartSignChallengeStep(kChallenge,
+                                                    /*callback=*/_));
 
     EXPECT_REGISTER_KEY_OK(*mock_tpm_challenge_key, StartRegisterKeyStep);
 
@@ -652,8 +652,9 @@ TEST_F(CertProvisioningWorkerTest, TryLaterWait) {
     EXPECT_PREPARE_KEY_OK(
         *mock_tpm_challenge_key,
         StartPrepareKeyStep(attestation::AttestationKeyType::KEY_USER,
+                            /*will_register_key=*/true,
                             GetKeyName(kCertProfileId),
-                            /*profile=*/_, /*key_name_for_spkac=*/"",
+                            /*profile=*/_,
                             /*callback=*/_));
 
     EXPECT_START_CSR_TRY_LATER(
@@ -674,10 +675,9 @@ TEST_F(CertProvisioningWorkerTest, TryLaterWait) {
         kCertScopeStrUser, kCertProfileId, kCertProfileVersion, GetPublicKey(),
         /*callback=*/_));
 
-    EXPECT_SIGN_CHALLENGE_OK(
-        *mock_tpm_challenge_key,
-        StartSignChallengeStep(kChallenge, /*include_signed_public_key=*/true,
-                               /*callback=*/_));
+    EXPECT_SIGN_CHALLENGE_OK(*mock_tpm_challenge_key,
+                             StartSignChallengeStep(kChallenge,
+                                                    /*callback=*/_));
 
     EXPECT_REGISTER_KEY_OK(*mock_tpm_challenge_key, StartRegisterKeyStep);
 
@@ -756,8 +756,9 @@ TEST_F(CertProvisioningWorkerTest, StatusErrorHandling) {
     EXPECT_PREPARE_KEY_OK(
         *mock_tpm_challenge_key,
         StartPrepareKeyStep(attestation::AttestationKeyType::KEY_USER,
+                            /*will_register_key=*/true,
                             GetKeyName(kCertProfileId),
-                            /*profile=*/_, /*key_name_for_spkac=*/"",
+                            /*profile=*/_,
                             /*callback=*/_));
 
     EXPECT_START_CSR_INVALID_REQUEST(ClientCertProvisioningStartCsr(
@@ -797,8 +798,9 @@ TEST_F(CertProvisioningWorkerTest, ResponseErrorHandling) {
     EXPECT_PREPARE_KEY_OK(
         *mock_tpm_challenge_key,
         StartPrepareKeyStep(attestation::AttestationKeyType::KEY_USER,
+                            /*will_register_key=*/true,
                             GetKeyName(kCertProfileId),
-                            /*profile=*/_, /*key_name_for_spkac=*/"",
+                            /*profile=*/_,
                             /*callback=*/_));
 
     EXPECT_START_CSR_CA_ERROR(ClientCertProvisioningStartCsr);
@@ -839,8 +841,9 @@ TEST_F(CertProvisioningWorkerTest, InconsistentDataErrorHandling) {
     EXPECT_PREPARE_KEY_OK(
         *mock_tpm_challenge_key,
         StartPrepareKeyStep(attestation::AttestationKeyType::KEY_USER,
+                            /*will_register_key=*/true,
                             GetKeyName(kCertProfileId),
-                            /*profile=*/_, /*key_name_for_spkac=*/"",
+                            /*profile=*/_,
                             /*callback=*/_));
 
     EXPECT_START_CSR_INCONSISTENT_DATA(ClientCertProvisioningStartCsr);
@@ -880,8 +883,9 @@ TEST_F(CertProvisioningWorkerTest, BackoffStrategy) {
     EXPECT_PREPARE_KEY_OK(
         *mock_tpm_challenge_key,
         StartPrepareKeyStep(attestation::AttestationKeyType::KEY_USER,
+                            /*will_register_key=*/true,
                             GetKeyName(kCertProfileId),
-                            /*profile=*/_, /*key_name_for_spkac=*/"",
+                            /*profile=*/_,
                             /*callback=*/_));
 
     EXPECT_START_CSR_TEMPORARY_UNAVAILABLE(ClientCertProvisioningStartCsr(
@@ -939,8 +943,9 @@ TEST_F(CertProvisioningWorkerTest, RemoveRegisteredKey) {
     EXPECT_PREPARE_KEY_OK(
         *mock_tpm_challenge_key,
         StartPrepareKeyStep(attestation::AttestationKeyType::KEY_USER,
+                            /*will_register_key=*/true,
                             GetKeyName(kCertProfileId),
-                            /*profile=*/_, /*key_name_for_spkac=*/"",
+                            /*profile=*/_,
                             /*callback=*/_));
 
     EXPECT_START_CSR_OK(ClientCertProvisioningStartCsr(
@@ -949,10 +954,9 @@ TEST_F(CertProvisioningWorkerTest, RemoveRegisteredKey) {
 
     EXPECT_CALL(*mock_invalidator, Register(kInvalidationTopic, _)).Times(1);
 
-    EXPECT_SIGN_CHALLENGE_OK(
-        *mock_tpm_challenge_key,
-        StartSignChallengeStep(kChallenge, /*include_signed_public_key=*/true,
-                               /*callback=*/_));
+    EXPECT_SIGN_CHALLENGE_OK(*mock_tpm_challenge_key,
+                             StartSignChallengeStep(kChallenge,
+                                                    /*callback=*/_));
 
     EXPECT_REGISTER_KEY_OK(*mock_tpm_challenge_key, StartRegisterKeyStep);
 
@@ -1036,8 +1040,9 @@ TEST_F(CertProvisioningWorkerTest, SerializationSuccess) {
     EXPECT_PREPARE_KEY_OK(
         *mock_tpm_challenge_key,
         StartPrepareKeyStep(attestation::AttestationKeyType::KEY_USER,
+                            /*will_register_key=*/true,
                             GetKeyName(kCertProfileId),
-                            /*profile=*/_, /*key_name_for_spkac=*/"",
+                            /*profile=*/_,
                             /*callback=*/_));
 
     pref_val = ParseJson(base::StringPrintf(
@@ -1073,7 +1078,8 @@ TEST_F(CertProvisioningWorkerTest, SerializationSuccess) {
     EXPECT_CALL(
         *mock_tpm_challenge_key,
         RestorePreparedKeyState(attestation::AttestationKeyType::KEY_USER,
-                                GetKeyName(kCertProfileId), _, ""))
+                                /*will_register_key=*/true,
+                                GetKeyName(kCertProfileId), /*profile=*/_))
         .Times(1);
 
     worker = CertProvisioningWorkerFactory::Get()->Deserialize(
@@ -1096,10 +1102,9 @@ TEST_F(CertProvisioningWorkerTest, SerializationSuccess) {
 
     EXPECT_CALL(*mock_invalidator, Register(kInvalidationTopic, _)).Times(1);
 
-    EXPECT_SIGN_CHALLENGE_OK(
-        *mock_tpm_challenge_key,
-        StartSignChallengeStep(kChallenge, /*include_signed_public_key=*/true,
-                               /*callback=*/_));
+    EXPECT_SIGN_CHALLENGE_OK(*mock_tpm_challenge_key,
+                             StartSignChallengeStep(kChallenge,
+                                                    /*callback=*/_));
 
     EXPECT_REGISTER_KEY_OK(*mock_tpm_challenge_key, StartRegisterKeyStep);
 
@@ -1151,7 +1156,8 @@ TEST_F(CertProvisioningWorkerTest, SerializationSuccess) {
     EXPECT_CALL(
         *mock_tpm_challenge_key,
         RestorePreparedKeyState(attestation::AttestationKeyType::KEY_USER,
-                                GetKeyName(kCertProfileId), _, ""))
+                                /*will_register_key=*/true,
+                                GetKeyName(kCertProfileId), /*profile=*/_))
         .Times(1);
 
     worker = CertProvisioningWorkerFactory::Get()->Deserialize(
@@ -1201,8 +1207,9 @@ TEST_F(CertProvisioningWorkerTest, SerializationOnFailure) {
     EXPECT_PREPARE_KEY_OK(
         *mock_tpm_challenge_key,
         StartPrepareKeyStep(attestation::AttestationKeyType::KEY_USER,
+                            /*will_register_key=*/true,
                             GetKeyName(kCertProfileId),
-                            /*profile=*/_, /*key_name_for_spkac=*/"",
+                            /*profile=*/_,
                             /*callback=*/_));
 
     pref_val = ParseJson(base::StringPrintf(
@@ -1316,9 +1323,9 @@ TEST_F(CertProvisioningWorkerTest, CancelDeviceWorker) {
     EXPECT_PREPARE_KEY_OK(
         *mock_tpm_challenge_key,
         StartPrepareKeyStep(attestation::AttestationKeyType::KEY_DEVICE,
-                            /*key_name=*/"",
+                            /*will_register_key=*/true,
+                            /*key_name=*/GetKeyName(kCertProfileId),
                             /*profile=*/_,
-                            /*key_name_for_spkac=*/GetKeyName(kCertProfileId),
                             /*callback=*/_));
 
     pref_val = ParseJson(base::StringPrintf(

@@ -36,7 +36,6 @@ class WebTestShellPlatformDelegate : public ShellPlatformDelegate {
       Shell* shell,
       RenderFrameHost* frame,
       const BluetoothChooser::EventHandler& event_handler) override;
-  void RendererUnresponsive(Shell* shell) override;
   bool ShouldAllowRunningInsecureContent(Shell* shell) override;
   bool DestroyShell(Shell* shell) override;
   void ResizeWebContent(Shell* shell, const gfx::Size& content_size) override;

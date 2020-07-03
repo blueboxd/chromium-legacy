@@ -49,7 +49,6 @@ using ::testing::Return;
 // Declaration to conformance to SavePasswordsConsumerDelegate and keep tests in
 // this file working.
 @interface PasswordsTableViewController (Test) <UISearchBarDelegate,
-                                                SavePasswordsConsumerDelegate,
                                                 PasswordsConsumer>
 - (void)updateExportPasswordsButton;
 @end
@@ -147,12 +146,17 @@ class PasswordsTableViewControllerTest
 
   // Adds a form to PasswordsTableViewController.
   void AddPasswordForm(std::unique_ptr<autofill::PasswordForm> form) {
-    PasswordsTableViewController* passwords_controller =
-        static_cast<PasswordsTableViewController*>(controller());
-    GetTestStore().AddLogin(*form);
-    std::vector<std::unique_ptr<autofill::PasswordForm>> passwords;
-    passwords.push_back(std::move(form));
-    [passwords_controller onGetPasswordStoreResults:std::move(passwords)];
+    if (GetParam().password_check_enabled) {
+      GetTestStore().AddLogin(*form);
+      RunUntilIdle();
+    } else {
+      PasswordsTableViewController* passwords_controller =
+          static_cast<PasswordsTableViewController*>(controller());
+      GetTestStore().AddLogin(*form);
+      std::vector<std::unique_ptr<autofill::PasswordForm>> passwords;
+      passwords.push_back(std::move(form));
+      [passwords_controller setPasswordsForms:std::move(passwords)];
+    }
   }
 
   // Creates and adds a saved password form.
@@ -472,8 +476,16 @@ TEST_P(PasswordsTableViewControllerTest, PropagateDeletionToStore) {
 
   AddPasswordForm(std::make_unique<autofill::PasswordForm>(form));
 
-  [passwords_controller passwordDetailsTableViewController:nil
-                                            deletePassword:form];
+  if (GetParam().password_check_enabled) {
+    autofill::PasswordForm formFromStore =
+        GetTestStore().stored_passwords().at("http://www.example.com/")[0];
+    [passwords_controller passwordDetailsTableViewController:nil
+                                              deletePassword:formFromStore];
+    RunUntilIdle();
+  } else {
+    [passwords_controller passwordDetailsTableViewController:nil
+                                              deletePassword:form];
+  }
 }
 
 // Tests filtering of items.
@@ -636,6 +648,17 @@ TEST_P(PasswordsTableViewControllerTest, StopPasswordCheck) {
                                       indexPathForItem:1
                                              inSection:GetSectionIndex(
                                                            PasswordCheck)]];
+}
+
+// Test verifies changes to the password store are reflected on UI.
+TEST_P(PasswordsTableViewControllerTest, PasswordStoreListener) {
+  if (!GetParam().password_check_enabled)
+    return;
+
+  AddSavedForm1();
+  EXPECT_EQ(1, NumberOfItemsInSection(GetSectionIndex(SavedPasswords)));
+  AddSavedForm2();
+  EXPECT_EQ(2, NumberOfItemsInSection(GetSectionIndex(SavedPasswords)));
 }
 
 const std::vector<PasswordCheckFeatureStatus> kPasswordCheckFeatureStatusCases{

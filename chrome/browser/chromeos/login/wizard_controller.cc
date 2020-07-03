@@ -467,6 +467,11 @@ std::vector<std::unique_ptr<BaseScreen>> WizardController::CreateScreens() {
         oobe_ui->GetView<WelcomeScreenHandler>(),
         base::BindRepeating(&WizardController::OnWelcomeScreenExit,
                             weak_factory_.GetWeakPtr())));
+
+    append(std::make_unique<chromeos::DemoPreferencesScreen>(
+        oobe_ui->GetView<DemoPreferencesScreenHandler>(),
+        base::BindRepeating(&WizardController::OnDemoPreferencesScreenExit,
+                            weak_factory_.GetWeakPtr())));
   }
 
   append(std::make_unique<NetworkScreen>(
@@ -492,10 +497,6 @@ std::vector<std::unique_ptr<BaseScreen>> WizardController::CreateScreens() {
   append(std::make_unique<chromeos::DemoSetupScreen>(
       oobe_ui->GetView<DemoSetupScreenHandler>(),
       base::BindRepeating(&WizardController::OnDemoSetupScreenExit,
-                          weak_factory_.GetWeakPtr())));
-  append(std::make_unique<chromeos::DemoPreferencesScreen>(
-      oobe_ui->GetView<DemoPreferencesScreenHandler>(),
-      base::BindRepeating(&WizardController::OnDemoPreferencesScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<EnableAdbSideloadingScreen>(
       oobe_ui->GetView<EnableAdbSideloadingScreenHandler>(),

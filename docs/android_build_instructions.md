@@ -184,24 +184,20 @@ depending on the version of Android running on a device. Chrome uses this
 feature to target 4 different versions using 4 different ninja targets:
 
 1. `chrome_public_apk` (ChromePublic.apk)
-   * `minSdkVersion=19` (KitKat).
-   * Stores libchrome.so compressed within the APK.
-   * Uses [Crazy Linker](https://cs.chromium.org/chromium/src/base/android/linker/BUILD.gn?rcl=6bb29391a86f2be58c626170156cbfaa2cbc5c91&l=9).
-   * Shipped only for Android < 21, but still works fine on Android >= 21.
-2. `chrome_modern_public_apk` (ChromeModernPublic.apk)
    * `minSdkVersion=21` (Lollipop).
    * Uses [Crazy Linker](https://cs.chromium.org/chromium/src/base/android/linker/BUILD.gn?rcl=6bb29391a86f2be58c626170156cbfaa2cbc5c91&l=9).
    * Stores libchrome.so uncompressed within the APK.
      * This APK is bigger, but the installation size is smaller since there is
        no need to extract the .so file.
-3. `monochrome_public_apk` (MonochromePublic.apk)
+   * Historically known as "chrome_modern_public_apk".
+2. `monochrome_public_apk` (MonochromePublic.apk)
    * `minSdkVersion=24` (Nougat).
    * Contains both WebView and Chrome within the same APK.
      * This APK is even bigger, but much smaller than SystemWebView.apk + ChromePublic.apk.
    * Stores libmonochrome.so uncompressed within the APK.
    * Does not use Crazy Linker (WebView requires system linker).
      * But system linker supports crazy linker features now anyways.
-4. `trichrome_chrome_bundle` and `trichrome_library_apk` (TrichromeChrome.aab and TrichromeLibrary.apk)
+3. `trichrome_chrome_bundle` and `trichrome_library_apk` (TrichromeChrome.aab and TrichromeLibrary.apk)
    * `minSdkVersion=Q` (Q).
    * TrichromeChrome contains only the Chrome code that is not shared with WebView.
    * TrichromeLibrary contains the shared code and is a "static shared library APK", which must be installed prior to TrichromeChrome.

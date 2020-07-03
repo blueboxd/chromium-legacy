@@ -171,16 +171,16 @@ void ExtensionAppsChromeOs::Initialize() {
   profile_pref_change_registrar_.Init(profile()->GetPrefs());
   profile_pref_change_registrar_.Add(
       prefs::kHideWebStoreIcon,
-      base::Bind(&ExtensionAppsBase::OnHideWebStoreIconPrefChanged,
-                 GetWeakPtr()));
+      base::BindRepeating(&ExtensionAppsBase::OnHideWebStoreIconPrefChanged,
+                          GetWeakPtr()));
 
   auto* local_state = g_browser_process->local_state();
   if (local_state) {
     local_state_pref_change_registrar_.Init(local_state);
     local_state_pref_change_registrar_.Add(
         policy::policy_prefs::kSystemFeaturesDisableList,
-        base::Bind(&ExtensionAppsBase::OnSystemFeaturesPrefChanged,
-                   GetWeakPtr()));
+        base::BindRepeating(&ExtensionAppsBase::OnSystemFeaturesPrefChanged,
+                            GetWeakPtr()));
     OnSystemFeaturesPrefChanged();
   }
 }

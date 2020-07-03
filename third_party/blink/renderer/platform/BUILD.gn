@@ -630,6 +630,8 @@ jumbo_component("platform") {
     "fonts/linux/font_cache_linux.cc",
     "fonts/linux/font_unique_name_lookup_linux.cc",
     "fonts/linux/font_unique_name_lookup_linux.h",
+    "fonts/mac/attributed_string_type_converter.h",
+    "fonts/mac/attributed_string_type_converter.mm",
     "fonts/mac/core_text_font_format_support.cc",
     "fonts/mac/core_text_font_format_support.h",
     "fonts/mac/font_cache_mac.mm",
@@ -1461,6 +1463,8 @@ jumbo_component("platform") {
     "webrtc/webrtc_video_frame_adapter.h",
     "webrtc/webrtc_video_utils.cc",
     "webrtc/webrtc_video_utils.h",
+    "widget/compositing/layer_tree_settings.cc",
+    "widget/compositing/layer_tree_settings.h",
     "widget/compositing/layer_tree_view.cc",
     "widget/compositing/layer_tree_view.h",
     "widget/compositing/layer_tree_view_delegate.h",
@@ -1589,6 +1593,7 @@ jumbo_component("platform") {
     "//ui/gfx",
   ]
   deps = [
+    "//base:base_static",
     "//base/allocator:buildflags",
     "//cc/ipc",
     "//components/paint_preview/common",
@@ -1628,6 +1633,7 @@ jumbo_component("platform") {
     "//ui/events/ipc",
     "//ui/gfx/geometry",
     "//ui/gfx/mojom",
+    "//ui/native_theme",
   ]
 
   if (is_mac) {
@@ -1639,6 +1645,8 @@ jumbo_component("platform") {
       "text/locale_icu.cc",
       "text/locale_icu.h",
     ]
+
+    deps += [ "//ui/base/mojom" ]
 
     frameworks = [
       "AppKit.framework",
@@ -2031,6 +2039,7 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "weborigin/security_origin_test.cc",
     "weborigin/security_policy_test.cc",
     "webrtc/webrtc_video_frame_adapter_test.cc",
+    "widget/compositing/layer_tree_settings_unittest.cc",
     "widget/compositing/layer_tree_view_unittest.cc",
     "widget/compositing/test/stub_layer_tree_view_delegate.h",
     "widget/input/input_event_prediction_unittest.cc",

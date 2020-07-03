@@ -48,6 +48,7 @@
 #include "ppapi/thunk/enter.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/blink/public/common/switches.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -199,7 +200,10 @@ PepperGraphics2DHost::PepperGraphics2DHost(RendererPpapiHost* host,
       offscreen_flush_pending_(false),
       is_always_opaque_(false),
       scale_(1.0f),
-      is_running_in_process_(host->IsRunningInProcess()) {}
+      is_running_in_process_(host->IsRunningInProcess()),
+      enable_gpu_memory_buffer_(
+          base::CommandLine::ForCurrentProcess()->HasSwitch(
+              blink::switches::kEnableGpuMemoryBufferCompositorResources)) {}
 
 PepperGraphics2DHost::~PepperGraphics2DHost() {
   // Delete textures owned by PepperGraphics2DHost, but not those sent to the
@@ -650,9 +654,8 @@ bool PepperGraphics2DHost::PrepareTransferableResource(
     const viz::ResourceFormat format =
         upload_bgra ? viz::BGRA_8888 : viz::RGBA_8888;
 
-    RenderThreadImpl* rti = RenderThreadImpl::current();
     bool overlays_supported =
-        rti->IsGpuMemoryBufferCompositorResourcesEnabled() &&
+        enable_gpu_memory_buffer_ &&
         main_thread_context_->ContextCapabilities().texture_storage_image;
     uint32_t texture_target = GL_TEXTURE_2D;
     if (overlays_supported) {

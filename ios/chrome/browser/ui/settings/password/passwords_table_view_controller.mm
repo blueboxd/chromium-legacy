@@ -175,7 +175,6 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     PasswordExportActivityViewControllerDelegate,
     PasswordsConsumer,
     PasswordIssuesCoordinatorDelegate,
-    SavePasswordsConsumerDelegate,
     UISearchControllerDelegate,
     UISearchBarDelegate,
     SuccessfulReauthTimeAccessor> {
@@ -200,9 +199,6 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   scoped_refptr<IOSChromePasswordCheckManager> _passwordCheck;
   // The interface for getting and manipulating a user's saved passwords.
   scoped_refptr<password_manager::PasswordStore> _passwordStore;
-  // A helper object for passing data about saved passwords from a finished
-  // password store request to the PasswordsTableViewController.
-  std::unique_ptr<ios::SavePasswordsConsumer> _savedPasswordsConsumer;
   // The list of the user's saved passwords.
   std::vector<std::unique_ptr<autofill::PasswordForm>> _savedForms;
   // The list of the user's blocked sites.
@@ -232,9 +228,6 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   // Coordinator for passwords issues screen.
   PasswordIssuesCoordinator* _passwordIssuesCoordinator;
 }
-
-// Kick off async request to get logins from password store.
-- (void)getLoginsFromPasswordStore;
 
 // Object handling passwords export operations.
 @property(nonatomic, strong) PasswordExporter* passwordExporter;
@@ -276,13 +269,13 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     _passwordCheck =
         IOSChromePasswordCheckManagerFactory::GetForBrowserState(_browserState);
     _mediator =
-        [[PasswordsMediator alloc] initWithConsumer:self
-                               passwordCheckManager:_passwordCheck.get()];
+        [[PasswordsMediator alloc] initWithPasswordStore:_passwordStore
+                                    passwordCheckManager:_passwordCheck.get()];
+    _mediator.consumer = self;
     _passwordManagerEnabled = [[PrefBackedBoolean alloc]
         initWithPrefService:_browserState->GetPrefs()
                    prefName:password_manager::prefs::kCredentialsEnableService];
     [_passwordManagerEnabled setObserver:self];
-    [self getLoginsFromPasswordStore];
     [self updateUIForEditState];
     [self updateExportPasswordsButton];
   }
@@ -641,10 +634,15 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   [self updatePasswordCheckStatusLabelWithState:state];
 }
 
-#pragma mark - SavePasswordsConsumerDelegate
-
-- (void)onGetPasswordStoreResults:
+- (void)setPasswordsForms:
     (std::vector<std::unique_ptr<autofill::PasswordForm>>)results {
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordCheck)) {
+    _blockedForms.clear();
+    _savedForms.clear();
+    _savedPasswordDuplicates.clear();
+    _blockedPasswordDuplicates.clear();
+  }
   if (results.empty()) {
     return;
   }
@@ -873,12 +871,6 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
           toSectionWithIdentifier:SectionIdentifierBlocked];
     }
   }
-}
-
-// Starts requests for saved and blocked passwords to the store.
-- (void)getLoginsFromPasswordStore {
-  _savedPasswordsConsumer.reset(new ios::SavePasswordsConsumer(self));
-  _passwordStore->GetAllLogins(_savedPasswordsConsumer.get());
 }
 
 // Updates password check button according to provided state.

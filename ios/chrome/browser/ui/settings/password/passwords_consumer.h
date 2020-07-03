@@ -27,6 +27,10 @@ typedef NS_ENUM(NSInteger, PasswordCheckUIState) {
 // Displays current password check UI state on screen.
 - (void)setPasswordCheckUIState:(PasswordCheckUIState)state;
 
+// Displays password and blocked forms.
+- (void)setPasswordsForms:
+    (std::vector<std::unique_ptr<autofill::PasswordForm>>)forms;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_PASSWORD_PASSWORDS_CONSUMER_H_

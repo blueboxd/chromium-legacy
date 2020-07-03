@@ -11,7 +11,6 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/global_routing_id.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
-#include "services/network/public/mojom/cross_origin_embedder_policy.mojom.h"
 #include "services/network/public/mojom/cross_origin_opener_policy.mojom.h"
 #include "url/gurl.h"
 
@@ -32,12 +31,10 @@ class RenderFrameHostImpl;
 class CONTENT_EXPORT CrossOriginOpenerPolicyReporter final
     : public network::mojom::CrossOriginOpenerPolicyReporter {
  public:
-  CrossOriginOpenerPolicyReporter(
-      StoragePartition* storage_partition,
-      RenderFrameHostImpl* current_frame_host,
-      const GURL& context_url,
-      const network::CrossOriginOpenerPolicy& coop,
-      const network::CrossOriginEmbedderPolicy& coep);
+  CrossOriginOpenerPolicyReporter(StoragePartition* storage_partition,
+                                  RenderFrameHostImpl* current_frame_host,
+                                  const GURL& context_url,
+                                  const network::CrossOriginOpenerPolicy& coop);
   ~CrossOriginOpenerPolicyReporter() override;
   CrossOriginOpenerPolicyReporter(const CrossOriginOpenerPolicyReporter&) =
       delete;
@@ -76,13 +73,11 @@ class CONTENT_EXPORT CrossOriginOpenerPolicyReporter final
   friend class CrossOriginOpenerPolicyReporterTest;
 
   // Used in unit_tests that do not have access to a RenderFrameHost.
-  CrossOriginOpenerPolicyReporter(
-      StoragePartition* storage_partition,
-      const GURL& source_url,
-      const GlobalFrameRoutingId source_routing_id,
-      const GURL& context_url,
-      const network::CrossOriginOpenerPolicy& coop,
-      const network::CrossOriginEmbedderPolicy& coep);
+  CrossOriginOpenerPolicyReporter(StoragePartition* storage_partition,
+                                  const GURL& source_url,
+                                  const GlobalFrameRoutingId source_routing_id,
+                                  const GURL& context_url,
+                                  const network::CrossOriginOpenerPolicy& coop);
 
   // Install the CoopAccessMonitors monitoring accesses from |accessing_node|
   // toward |accessed_node|.
@@ -95,7 +90,6 @@ class CONTENT_EXPORT CrossOriginOpenerPolicyReporter final
   GlobalFrameRoutingId source_routing_id_;
   const GURL context_url_;
   network::CrossOriginOpenerPolicy coop_;
-  network::CrossOriginEmbedderPolicy coep_;
 
   mojo::ReceiverSet<network::mojom::CrossOriginOpenerPolicyReporter>
       receiver_set_;

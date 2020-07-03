@@ -23,4 +23,5 @@ include_rules = [
     "+third_party/blink/renderer/platform/text",
     "+third_party/blink/renderer/platform/web_test_support.h",
     "+third_party/blink/renderer/platform/wtf",
+    "+ui/base/mojom/attributed_string.mojom-blink.h",
 ]

@@ -7,6 +7,7 @@ import './edu_login_parents.js';
 import './edu_login_parent_signin.js';
 import './edu_login_parent_info.js';
 import './edu_login_signin.js';
+import './edu_login_error.js';
 import 'chrome://resources/cr_elements/cr_view_manager/cr_view_manager.m.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
@@ -69,6 +70,15 @@ Polymer({
      * @private {?EduLoginParams}
      */
     loginParams_: Object,
+
+    /**
+     * Whether the error screen should be shown.
+     * @private {boolean}
+     */
+    isErrorShown_: {
+      type: Boolean,
+      value: false,
+    }
   },
 
   listeners: {

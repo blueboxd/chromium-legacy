@@ -36,8 +36,6 @@ class CONTENT_EXPORT TextInputClientMessageFilter
 
  private:
   // IPC Message handlers:
-  void OnGotStringAtPoint(const ui::mojom::AttributedString& attributed_string,
-                          const gfx::Point& point);
   void OnGotStringFromRange(
       const ui::mojom::AttributedString& attributed_string,
       const gfx::Point& point);

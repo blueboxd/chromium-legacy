@@ -85,6 +85,8 @@ source_set("scene") {
     "//ios/public/provider/chrome/browser/user_feedback",
   ]
 
+  allow_circular_includes_from = [ ":main" ]
+
   frameworks = [ "UIKit.framework" ]
 }
 
@@ -96,6 +98,8 @@ source_set("main") {
     "browser_view_wrangler.mm",
     "bvc_container_view_controller.h",
     "bvc_container_view_controller.mm",
+    "scene_state_browser_agent.h",
+    "scene_state_browser_agent.mm",
   ]
   deps = [
     "//base",
@@ -156,6 +160,7 @@ source_set("unit_tests") {
   sources = [
     "browser_view_wrangler_unittest.mm",
     "scene_controller_unittest.mm",
+    "scene_state_browser_agent_unittest.mm",
   ]
   deps = [
     ":main",

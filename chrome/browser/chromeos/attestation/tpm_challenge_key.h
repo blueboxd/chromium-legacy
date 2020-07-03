@@ -54,15 +54,21 @@ class TpmChallengeKey {
   // Should be called only once for every instance. |TpmChallengeKey| object
   // should live as long as response from |BuildResponse| function via
   // |callback| is expected. On destruction it stops challenge process and
-  // silently discards callback. |key_name_for_spkac| the name of the key used
-  // for SignedPublicKeyAndChallenge when sending a challenge machine key
-  // request with |registerKey|=true.
+  // silently discards callback.
+  // The response consists of up to two parts: 1) a response to the challenge
+  // and optionally 2) an SPKAC. They can be generated using different keys:
+  // A) KEY_DEVICE && !register_key => 1) Stable device key + 2) Empty
+  // B) KEY_DEVICE &&  register_key => 1) Stable device key + 2) Key(key_name)
+  // C) KEY_USER   && !register_key => 1) Key(key_name)     + 2) Empty
+  // D) KEY_USER   &&  register_key => 1) Key(key_name)     + 2) Key(key_name)
+  // In case B) |key_name| cannot be empty. In case C), D) some default name
+  // will be used if |key_name| is empty.
   virtual void BuildResponse(AttestationKeyType key_type,
                              Profile* profile,
                              TpmChallengeKeyCallback callback,
                              const std::string& challenge,
                              bool register_key,
-                             const std::string& key_name_for_spkac) = 0;
+                             const std::string& key_name) = 0;
 
  protected:
   // Use TpmChallengeKeyFactory for creation.
@@ -87,7 +93,7 @@ class TpmChallengeKeyImpl final : public TpmChallengeKey {
                      TpmChallengeKeyCallback callback,
                      const std::string& challenge,
                      bool register_key,
-                     const std::string& key_name_for_spkac) override;
+                     const std::string& key_name) override;
 
  private:
   void OnPrepareKeyDone(const TpmChallengeKeyResult& prepare_key_result);

@@ -6,7 +6,7 @@
 
 #include "content/public/common/origin_util.h"
 #include "content/shell/common/web_test/web_test_string_util.h"
-#include "content/shell/renderer/web_test/blink_test_runner.h"
+#include "content/shell/renderer/web_test/test_runner.h"
 #include "content/shell/renderer/web_test/web_test_runtime_flags.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
@@ -16,18 +16,17 @@
 namespace content {
 
 MockContentSettingsClient::MockContentSettingsClient(
+    TestRunner* test_runner,
     WebTestRuntimeFlags* web_test_runtime_flags)
-    : blink_test_runner_(nullptr), flags_(web_test_runtime_flags) {
-}
+    : test_runner_(test_runner), flags_(web_test_runtime_flags) {}
 
 MockContentSettingsClient::~MockContentSettingsClient() {}
 
 bool MockContentSettingsClient::AllowImage(bool enabled_per_settings,
                                            const blink::WebURL& image_url) {
   bool allowed = enabled_per_settings && flags_->images_allowed();
-  if (flags_->dump_web_content_settings_client_callbacks() &&
-      blink_test_runner_) {
-    blink_test_runner_->PrintMessage(
+  if (flags_->dump_web_content_settings_client_callbacks()) {
+    test_runner_->PrintMessage(
         std::string("MockContentSettingsClient: allowImage(") +
         web_test_string_util::NormalizeWebTestURL(
             image_url.GetString().Utf8()) +
@@ -44,9 +43,8 @@ bool MockContentSettingsClient::AllowScriptFromSource(
     bool enabled_per_settings,
     const blink::WebURL& script_url) {
   bool allowed = enabled_per_settings && flags_->scripts_allowed();
-  if (flags_->dump_web_content_settings_client_callbacks() &&
-      blink_test_runner_) {
-    blink_test_runner_->PrintMessage(
+  if (flags_->dump_web_content_settings_client_callbacks()) {
+    test_runner_->PrintMessage(
         std::string("MockContentSettingsClient: allowScriptFromSource(") +
         web_test_string_util::NormalizeWebTestURL(
             script_url.GetString().Utf8()) +
@@ -63,11 +61,6 @@ bool MockContentSettingsClient::AllowRunningInsecureContent(
     bool enabled_per_settings,
     const blink::WebURL& url) {
   return enabled_per_settings || flags_->running_insecure_content_allowed();
-}
-
-void MockContentSettingsClient::SetDelegate(
-    BlinkTestRunner* blink_test_runner) {
-  blink_test_runner_ = blink_test_runner;
 }
 
 }  // namespace content

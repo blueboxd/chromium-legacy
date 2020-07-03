@@ -65,8 +65,8 @@ bool operator==(const ValueProto& value_a, const ValueProto& value_b) {
              value_b.login_options().values();
     case ValueProto::kCreditCardResponse:
       return value_a.credit_card_response() == value_b.credit_card_response();
-    case ValueProto::kLoginOptionResponse:
-      return value_a.login_option_response() == value_b.login_option_response();
+    case ValueProto::kServerPayload:
+      return value_a.server_payload() == value_b.server_payload();
     case ValueProto::KIND_NOT_SET:
       return true;
   }
@@ -100,7 +100,7 @@ bool operator<(const ValueProto& value_a, const ValueProto& value_b) {
     case ValueProto::kProfiles:
     case ValueProto::kLoginOptions:
     case ValueProto::kCreditCardResponse:
-    case ValueProto::kLoginOptionResponse:
+    case ValueProto::kServerPayload:
     case ValueProto::KIND_NOT_SET:
       NOTREACHED();
       return false;
@@ -183,11 +183,6 @@ bool operator==(const CreditCardResponseProto& value_a,
   return value_a.network() == value_b.network();
 }
 
-bool operator==(const LoginOptionResponseProto& value_a,
-                const LoginOptionResponseProto& value_b) {
-  return value_a.payload() == value_b.payload();
-}
-
 // Intended for debugging. Writes a string representation of |values| to |out|.
 template <typename T>
 std::ostream& WriteRepeatedField(std::ostream& out, const T& values) {
@@ -247,12 +242,6 @@ std::ostream& operator<<(std::ostream& out,
   return out;
 }
 
-std::ostream& operator<<(std::ostream& out,
-                         const LoginOptionResponseProto& value) {
-  out << value.payload();
-  return out;
-}
-
 // Intended for debugging.  Writes a string representation of |value| to |out|.
 std::ostream& operator<<(std::ostream& out, const ValueProto& value) {
   switch (value.kind_case()) {
@@ -283,8 +272,8 @@ std::ostream& operator<<(std::ostream& out, const ValueProto& value) {
     case ValueProto::kCreditCardResponse:
       out << value.credit_card_response();
       break;
-    case ValueProto::kLoginOptionResponse:
-      out << value.login_option_response();
+    case ValueProto::kServerPayload:
+      out << value.server_payload();
       break;
     case ValueProto::KIND_NOT_SET:
       break;
@@ -413,7 +402,7 @@ int GetValueSize(const ValueProto& value) {
       return value.login_options().values().size();
     case ValueProto::kCreditCardResponse:
       return 1;
-    case ValueProto::kLoginOptionResponse:
+    case ValueProto::kServerPayload:
       return 1;
     case ValueProto::KIND_NOT_SET:
       return 0;
@@ -464,12 +453,10 @@ base::Optional<ValueProto> GetNthValue(const ValueProto& value, int index) {
       return nth_value;
     case ValueProto::kCreditCardResponse:
       DCHECK(index == 0);
-      nth_value = value;
-      return nth_value;
-    case ValueProto::kLoginOptionResponse:
+      return value;
+    case ValueProto::kServerPayload:
       DCHECK(index == 0);
-      nth_value = value;
-      return nth_value;
+      return value;
     case ValueProto::KIND_NOT_SET:
       return base::nullopt;
   }

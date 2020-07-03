@@ -38,6 +38,8 @@ source_set("passwords") {
     "password_form_filler.h",
     "password_manager_log_router_factory.cc",
     "password_manager_log_router_factory.h",
+    "password_store_observer_bridge.h",
+    "password_store_observer_bridge.mm",
     "password_tab_helper.h",
     "password_tab_helper.mm",
     "save_passwords_consumer.h",

@@ -78,23 +78,9 @@ TextInputClientMac* TextInputClientMac::GetInstance() {
 void TextInputClientMac::GetStringAtPoint(RenderWidgetHost* rwh,
                                           const gfx::Point& point,
                                           GetStringCallback callback) {
-  // TODO(ekaramad): In principle, we are using the same handler regardless of
-  // the |rwh| which requested this. We should track the callbacks for each
-  // |rwh| individually so that one slow RWH will not end up clearing the
-  // callback for another (https://crbug.com/643233).
-  DCHECK(!replyForPointHandler_);
-  replyForPointHandler_ = std::move(callback);
   RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(rwh);
-  SendMessageToRenderWidget(
-      rwhi, new TextInputClientMsg_StringAtPoint(rwhi->GetRoutingID(), point));
-}
-
-void TextInputClientMac::GetStringAtPointReply(
-    ui::mojom::AttributedStringPtr string,
-    const gfx::Point& point) {
-  if (replyForPointHandler_) {
-    std::move(replyForPointHandler_).Run(std::move(string), point);
-  }
+  rwhi->GetAssociatedFrameWidget()->GetStringAtPoint(point,
+                                                     std::move(callback));
 }
 
 void TextInputClientMac::GetStringFromRange(RenderWidgetHost* rwh,

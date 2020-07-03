@@ -112,6 +112,14 @@ void ResizeCrostiniDisk(Profile* profile,
 void OnResize(
     base::OnceCallback<void(bool)> callback,
     base::Optional<vm_tools::concierge::ResizeDiskImageResponse> response);
+
+// Splits the range between |min_size| and |available_space| into enough
+// evenly-spaced intervals you can use them as ticks on a slider. Will return an
+// empty set if the range is invalid (e.g. any numbers are negative).
+// The number of ticks will fit in a signed integer.
+std::vector<int64_t> GetTicksForDiskSize(int64_t min_size,
+                                         int64_t available_space);
+
 }  // namespace disk
 }  // namespace crostini
 #endif  // CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_DISK_H_

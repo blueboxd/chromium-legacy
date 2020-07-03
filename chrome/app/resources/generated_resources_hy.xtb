@@ -281,6 +281,7 @@
 <translation id="1340527397989195812">Պահուստավորել սարքի վրայի մեդիա ֆայլերը Ֆայլեր հավելվածի միջոցով:</translation>
 <translation id="1341988552785875222">Այս պաստառը դրել է «<ph name="APP_NAME" />» հավելվածը: Այլ պաստառ ընտրելու համար անհրաժեշտ է հեռացնել «<ph name="APP_NAME" />» հավելվածը:</translation>
 <translation id="1343865611738742294">Լինուքսի հավելվածներին հասանելի դարձրեք USB սարքերը: Երբ USB սարքը հեռացվի, Լինուքսը չի պահի այն:</translation>
+<translation id="1344143111673240412">Տեսախցիկի կարգավորման փոփոխության համար անհրաժեշտ է վերագործարկել Parallels Desktop-ը</translation>
 <translation id="1347256498747320987">Թարմացումների ու հավելվածների տեղադրում։ Շարունակելով՝ դուք համաձայնում եք, որ սարքը կարող է ավտոմատ ներբեռնել և տեղադրել թարմացումներ ու հավելվածներ Google-ից, ձեր օպերատորից և սարքի արտադրողից (հնարավոր է բջջային ինտերնետի միջոցով): Որոշ հավելվածներում կառաջարկվի վճարովի բովանդակություն: <ph name="BEGIN_LINK1" />Իմանալ ավելին<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">Թարմացումը կսկսվի, երբ մարտկոցը լիցքավորված լինի <ph name="BATTERY_LEVEL" />%:</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />, <ph name="NETWORK_NAME" /></translation>
@@ -936,6 +937,7 @@
 <translation id="2151576029659734873">Ներդիրի սխալ ցուցիչ եք մուտքագրել:</translation>
 <translation id="2152281589789213846">Ավելացնել տպիչներ պրոֆիլում</translation>
 <translation id="2154484045852737596">Քարտի փոփոխություն</translation>
+<translation id="2154697841132053118">Խոսքի հայտնաբերում…</translation>
 <translation id="2154710561487035718">Պատճենել URL-ը</translation>
 <translation id="2155772377859296191"><ph name="WIDTH" />x<ph name="HEIGHT" /></translation>
 <translation id="2156294658807918600">Service Worker՝ <ph name="SCRIPT_URL" /></translation>
@@ -1372,6 +1374,7 @@
 <translation id="2682498795777673382">Ծնողը փոխել է կարգավորումները</translation>
 <translation id="2683638487103917598">Պանակի պարունակությունը տեսակավորվել է</translation>
 <translation id="2684004000387153598">Շարունակելու համար սեղմեք «OK» կոճակը, այնուհետև «Ավելացնել օգտատեր»՝ ձեր էլեկտրոնային հասցեով նոր պրոֆիլ ստեղծելու համար:</translation>
+<translation id="2686222346846590368">Սա ծրագրային և անվտանգության կարգավորումների վերջին ավտոմատ թարմացումն է <ph name="DEVICE_TYPE" /> սարքի համար։ Հետագա թարմացումները ստանալու համար անցեք ավելի նոր մոդելի։ &lt;a target="_blank" href="<ph name="URL" />"&gt;Իմանալ ավելին<ph name="LINK_END" /></translation>
 <translation id="2687403674020088961">Արգելափակել բոլոր քուքիները (խորհուրդ չի տրվում)</translation>
 <translation id="2687407218262674387">Google-ի օգտագործման պայմաններ</translation>
 <translation id="2688196195245426394">Սարքը սերվերում գրանցելիս սխալ առաջացավ` <ph name="CLIENT_ERROR" />:</translation>
@@ -1394,6 +1397,7 @@
 <translation id="2712173769900027643">Թույլտվություն խնդրել</translation>
 <translation id="2713444072780614174">Սպիտակ</translation>
 <translation id="2714393097308983682">Google Play Խանութ</translation>
+<translation id="2714997332747470971">Անձնական տեղեկությունների հուշումներն օգնում են ավելի արագ գրել՝ առաջարկելով ձեր անունը, հասցեն կամ հեռախոսահամարը։ Միայն դուք կարող եք տեսնել ձեր անձնական, անհատականացված հուշումները հաշվի համար։</translation>
 <translation id="2715751256863167692">Այս թարմացումը կվերակայի ձեր Chromebook-ը և կհեռացնի ընթացիկ օգտատիրոջ տվյալները։</translation>
 <translation id="2716986496990888774">Այս կարգավորումը կառավարվում է ծնողի կողմից:</translation>
 <translation id="2718395828230677721">Գիշերային ռեժիմ</translation>
@@ -2315,6 +2319,7 @@
 <translation id="3839516600093027468">Միշտ արգելափակել <ph name="HOST" /> կայքի մուտքը սեղմատախտակին</translation>
 <translation id="3841964634449506551">Գաղտնաբառը սխալ է</translation>
 <translation id="3842552989725514455">Serif տառատեսակ</translation>
+<translation id="3843058644024807390">Խոսափողի կարգավորման փոփոխության համար անհրաժեշտ է վերագործարկել Parallels Desktop-ը</translation>
 <translation id="3846116211488856547">Ստացեք գործիքներ, որոնցով կարող եք մշակել կայքեր, Android հավելվածներ և այլն: Linux-ի տեղադրման դեպքում կներբեռնվեն <ph name="DOWNLOAD_SIZE" /> ծավալով տվյալներ:</translation>
 <translation id="3847319713229060696">Օգնեք բարելավել համացանցից օգտվողների անվտանգությունը</translation>
 <translation id="385051799172605136">Հետ</translation>
@@ -2446,6 +2451,7 @@
 <translation id="3983769721878416534">Հապաղումը սեղմելուց առաջ</translation>
 <translation id="3984159763196946143">Չհաջողվեց գործարկել ցուցադրական ռեժիմը</translation>
 <translation id="3984431586879874039">Թույլատրե՞լ, որ այս կայքը տեսնի անվտանգության բանալին</translation>
+<translation id="3986705137476756801">Անջատել Կենդանի ենթագրերը</translation>
 <translation id="3987938432087324095">Ներեցեք, չի լսվում:</translation>
 <translation id="3988996860813292272">Ընտրեք ժամային գոտին</translation>
 <translation id="399179161741278232">Ներմուծված</translation>
@@ -2890,6 +2896,7 @@
 <translation id="4608520674724523647">«Գրանցումը հաջողվեց» պատկեր</translation>
 <translation id="4608703838363792434">«<ph name="FILE_NAME" />» ֆայլը պարունակում է խիստ անձնական բովանդակություն</translation>
 <translation id="4610162781778310380"><ph name="PLUGIN_NAME" /> փլագինում սխալ է առաջացել</translation>
+<translation id="4610178114344604329">Ցուցադրել անձնական տեղեկությունների հուշումները</translation>
 <translation id="4610637590575890427">Արդյո՞ք ուզում էիք այցելել <ph name="SITE" /> կայքը:</translation>
 <translation id="4611114513649582138">Հասանելի է բջջային ինտերնետ</translation>
 <translation id="4613144866899789710">Linux-ի տեղադրումը չեղարկվում է...</translation>
@@ -3168,6 +3175,7 @@
 <translation id="4977942889532008999">Մուտքի հաստատում</translation>
 <translation id="4980805016576257426">Այս ընդլայնումը վնասաբեր ծրագիր է պարունակում:</translation>
 <translation id="4981449534399733132">Այցելությունների պատմությունը բոլոր համաժամացված սարքերից և Google հաշվից ջնջելու համար <ph name="BEGIN_LINK" />մտեք հաշիվ<ph name="END_LINK" />:</translation>
+<translation id="4982236238228587209">Սարքի ծրագրեր</translation>
 <translation id="4986728572522335985">Անվտանգության բանալու վրա պահված բոլոր տվյալները, այդ թվում՝ դրա PIN կոդերը կջնջվեն:</translation>
 <translation id="4988526792673242964">Էջեր</translation>
 <translation id="49896407730300355">Պտտել ժամացույցի &amp;սլաքին հակառակ</translation>
@@ -4690,6 +4698,7 @@
 <translation id="6938381444925658529"><ph name="DOMAIN" /> կայքին անհրաժեշտ է, որ ներբեռնեք թարմացումը մինչև ժամկետի ավարտը։ Թարմացումն ավտոմատ կներբեռնվի, երբ դուք միանաք ինտերնետին։</translation>
 <translation id="6938386202199793006">Դուք ունեք 1 պահված տպիչ։</translation>
 <translation id="6938789263968032501">Մարդիկ</translation>
+<translation id="6939815295902433669">Դիտել սարքի ծրագրերը</translation>
 <translation id="6941937518557314510">Մուտք գործեք, <ph name="TOKEN_NAME" />, որպեսզի իսկորոշվեք <ph name="HOST_NAME" />-ում ձեր վկայագրի միջոցով:</translation>
 <translation id="6943060957016121200">Միացնել մուտքի ակնթարթային կետը</translation>
 <translation id="6943176775188458830">Չեղարկել տպումը</translation>
@@ -5161,6 +5170,7 @@
 <translation id="7522255036471229694">Ասեք «Ok Google»</translation>
 <translation id="7525067979554623046">Ստեղծել</translation>
 <translation id="7526658513669652747">{NUM_DOWNLOADS,plural, =1{Եվս 1}one{Եվս {NUM_DOWNLOADS}}other{Եվս {NUM_DOWNLOADS}}}</translation>
+<translation id="7526989658317409655">Տեղապահ</translation>
 <translation id="7529411698175791732">Ստուգեք ձեր ինտերնետ կապը։ Եթե խնդիրը չվերանա, դուրս եկեք հաշվից ու նորից մտեք։</translation>
 <translation id="7530016656428373557">Լիցքաթափման արագությունը վատտերով</translation>
 <translation id="7531779363494549572">Անցեք Կարգավորումներ &gt; Հավելվածներ և ծանուցումներ &gt; Ծանուցումներ։</translation>
@@ -6200,6 +6210,7 @@
 <translation id="8798441408945964110">Մատակարարի անունը</translation>
 <translation id="8800004011501252845">Ցուցադրվում են նպատակակետերը հետևյալի համար</translation>
 <translation id="8800034312320686233">Կայքը չի՞ աշխատում</translation>
+<translation id="880069872639153240">Ստացեք զմայլիկների առաջարկներ՝ ձեր մուտքագրած տեքստի հիման վրա</translation>
 <translation id="8803953437405899238">Բացեք նոր ներդիր մեկ սեղմումով</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Բացել ներդիրն այլ պատուհանում}one{Բացել ներդիրներն այլ պատուհանում}other{Բացել ներդիրներն այլ պատուհանում}}</translation>
 <translation id="8805140816472474147">Հաստատեք կարգավորումները՝ համաժամացումը սկսելու համար։</translation>

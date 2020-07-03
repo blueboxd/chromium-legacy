@@ -46,17 +46,31 @@ public class AccountManagerTestRule implements TestRule {
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                AccountManagerFacadeProvider.setInstanceForTests(mFakeAccountManagerFacade);
+                setUpRule();
                 try {
                     statement.evaluate();
                 } finally {
-                    if (mIsSignedIn) {
-                        signOut();
-                    }
-                    AccountManagerFacadeProvider.resetInstanceForTests();
+                    tearDownRule();
                 }
             }
         };
+    }
+
+    /**
+     * Sets up the AccountManagerFacade mock.
+     */
+    public void setUpRule() {
+        AccountManagerFacadeProvider.setInstanceForTests(mFakeAccountManagerFacade);
+    }
+
+    /**
+     * Tears down the AccountManagerFacade mock and signs out if user is signed in.
+     */
+    public void tearDownRule() {
+        if (mIsSignedIn) {
+            signOut();
+        }
+        AccountManagerFacadeProvider.resetInstanceForTests();
     }
 
     /**

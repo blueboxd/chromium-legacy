@@ -134,7 +134,8 @@ GREYElementInteraction* CellWithID(NSString* ID) {
 }
 
 // Tests that tapping the "Learn More" item opens the help center.
-- (void)testTapLearnMore {
+// TODO(crbug.com/1100819): Re-enable this test.
+- (void)FLAKY_testTapLearnMore {
   showcase_utils::Open(@"ContentSuggestionsViewController");
   [CellWithID(kContentSuggestionsLearnMoreIdentifier) performAction:grey_tap()];
 

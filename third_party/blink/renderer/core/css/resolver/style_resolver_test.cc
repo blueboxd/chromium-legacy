@@ -298,6 +298,54 @@ TEST_F(StyleResolverTest, CachedExplicitInheritanceFlags) {
   EXPECT_TRUE(outer->ComputedStyleRef().ChildHasExplicitInheritance());
 }
 
+TEST_F(StyleResolverTest,
+       TransitionRetargetRelativeFontSizeOnParentlessElement) {
+  GetDocument().documentElement()->setInnerHTML(R"HTML(
+    <style>
+      html {
+        font-size: 20px;
+        transition: font-size 100ms;
+      }
+      .adjust { font-size: 50%; }
+    </style>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+
+  Element* element = GetDocument().documentElement();
+  element->setAttribute(html_names::kIdAttr, "target");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ("20px", ComputedValue("font-size", *StyleForId("target")));
+  ElementAnimations* element_animations = element->GetElementAnimations();
+  EXPECT_FALSE(element_animations);
+
+  // Trigger a transition with a dependency on the parent style.
+  element->setAttribute(html_names::kClassAttr, "adjust");
+  UpdateAllLifecyclePhasesForTest();
+  element_animations = element->GetElementAnimations();
+  EXPECT_TRUE(element_animations);
+  Animation* transition = (*element_animations->Animations().begin()).key;
+  EXPECT_TRUE(transition);
+  EXPECT_EQ("20px", ComputedValue("font-size", *StyleForId("target")));
+
+  // Bump the animation time to ensure a transition reversal.
+  transition->setCurrentTime(50);
+  transition->pause();
+  UpdateAllLifecyclePhasesForTest();
+  const String before_reversal_font_size =
+      ComputedValue("font-size", *StyleForId("target"));
+
+  // Verify there is no discontinuity in the font-size on transition reversal.
+  element->setAttribute(html_names::kClassAttr, "");
+  UpdateAllLifecyclePhasesForTest();
+  element_animations = element->GetElementAnimations();
+  EXPECT_TRUE(element_animations);
+  Animation* reverse_transition =
+      (*element_animations->Animations().begin()).key;
+  EXPECT_TRUE(reverse_transition);
+  EXPECT_EQ(before_reversal_font_size,
+            ComputedValue("font-size", *StyleForId("target")));
+}
+
 class StyleResolverFontRelativeUnitTest
     : public testing::WithParamInterface<const char*>,
       public StyleResolverTest {};

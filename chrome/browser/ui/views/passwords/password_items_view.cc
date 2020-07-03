@@ -38,6 +38,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
+#include "ui/views/controls/separator.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/style/typography.h"
@@ -52,7 +53,8 @@ constexpr int kUndoButtonTag = 2;
 enum PasswordItemsViewColumnSetType {
   // Contains three columns for credential pair and a delete button.
   PASSWORD_COLUMN_SET,
-  // Like PASSWORD_COLUMN_SET plus a column for an icon indicating the store.
+  // Like PASSWORD_COLUMN_SET plus a column for an icon indicating the store,
+  // and a vertical bar before the delete button.
   MULTI_STORE_PASSWORD_COLUMN_SET,
   // Contains two columns for text and an undo button.
   UNDO_COLUMN_SET
@@ -98,6 +100,12 @@ void BuildColumnSet(views::GridLayout* layout,
     column_set->AddPaddingColumn(views::GridLayout::kFixedSize,
                                  between_column_padding);
     column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
+                          views::GridLayout::kFixedSize,
+                          views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
+    // Add a column for the vertical bar.
+    column_set->AddPaddingColumn(views::GridLayout::kFixedSize,
+                                 between_column_padding);
+    column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
                           views::GridLayout::kFixedSize,
                           views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   }
@@ -173,6 +181,16 @@ std::unique_ptr<views::ImageView> CreateStoreIndicator(
   image_view->SetAccessibleName(l10n_util::GetStringUTF16(
       IDS_MANAGE_PASSWORDS_ACCOUNT_STORE_ICON_DESCRIPTION));
   return image_view;
+}
+
+std::unique_ptr<views::Separator> CreateSeparator() {
+  auto separator = std::make_unique<views::Separator>();
+  separator->SetFocusBehavior(
+      LocationBarBubbleDelegateView::FocusBehavior::NEVER);
+  separator->SetPreferredHeight(views::style::GetLineHeight(
+      views::style::CONTEXT_MENU, views::style::STYLE_SECONDARY));
+  separator->set_can_process_events_within_subtree(false);
+  return separator;
 }
 
 std::unique_ptr<views::Label> CreatePasswordLabel(
@@ -270,6 +288,7 @@ void PasswordItemsView::PasswordRow::AddPasswordRow(
     } else {
       layout->SkipColumns(1);
     }
+    layout->AddView(CreateSeparator());
   }
   layout->AddView(std::move(delete_button));
 }

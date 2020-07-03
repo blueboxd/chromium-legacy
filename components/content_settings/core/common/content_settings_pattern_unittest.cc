@@ -810,18 +810,20 @@ TEST(ContentSettingsPatternTest, FileSchemeHasPath) {
 }
 
 TEST(ContentSettingsPatternTest, PatternHasWildcards) {
-  // scheme wildcard
-  EXPECT_TRUE(Pattern("mail.google.com:443/home").HasWildcards());
+  // scheme wildcard are allowed
+  EXPECT_FALSE(Pattern("mail.google.com:443/home").HasHostWildcards());
+  EXPECT_FALSE(Pattern("*://mail.google.com:443/home").HasHostWildcards());
   // domain wildcard
-  EXPECT_TRUE(Pattern("https://[*.]google.com:443/home").HasWildcards());
-  // path wildcard
-  EXPECT_TRUE(Pattern("https://mail.google.com:443/*").HasWildcards());
-  // port wildcard
-  EXPECT_TRUE(Pattern("https://mail.google.com/home").HasWildcards());
+  EXPECT_TRUE(Pattern("https://[*.]google.com:443/home").HasHostWildcards());
+  // path wildcard are allowed
+  EXPECT_FALSE(Pattern("https://mail.google.com:443/*").HasHostWildcards());
+  // port wildcards are allowed
+  EXPECT_FALSE(Pattern("https://mail.google.com/home").HasHostWildcards());
+  EXPECT_FALSE(Pattern("https://mail.google.com:*/home").HasHostWildcards());
   // full wildcard pattern
-  EXPECT_TRUE(Pattern("*").HasWildcards());
+  EXPECT_TRUE(Pattern("*").HasHostWildcards());
   // full wildcard pattern
-  EXPECT_TRUE(ContentSettingsPattern::Wildcard().HasWildcards());
+  EXPECT_TRUE(ContentSettingsPattern::Wildcard().HasHostWildcards());
   // no wildcards
-  EXPECT_FALSE(Pattern("https://mail.google.com:443/home").HasWildcards());
+  EXPECT_FALSE(Pattern("https://mail.google.com:443/home").HasHostWildcards());
 }

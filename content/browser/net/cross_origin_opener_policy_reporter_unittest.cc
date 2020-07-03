@@ -53,8 +53,8 @@ class CrossOriginOpenerPolicyReporterTest : public testing::Test {
   using Report = TestNetworkContext::Report;
   CrossOriginOpenerPolicyReporterTest() {
     storage_partition_.set_network_context(&network_context_);
-    coop_.value = network::mojom::CrossOriginOpenerPolicyValue::kSameOrigin;
-    coep_.value = network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
+    coop_.value =
+        network::mojom::CrossOriginOpenerPolicyValue::kSameOriginPlusCoep;
     coop_.reporting_endpoint = "e1";
     context_url_ = GURL("https://www1.example.com/x");
   }
@@ -63,14 +63,13 @@ class CrossOriginOpenerPolicyReporterTest : public testing::Test {
   const TestNetworkContext& network_context() const { return network_context_; }
   const GURL& context_url() const { return context_url_; }
   const network::CrossOriginOpenerPolicy& coop() const { return coop_; }
-  const network::CrossOriginEmbedderPolicy& coep() const { return coep_; }
 
  protected:
   std::unique_ptr<CrossOriginOpenerPolicyReporter> GetReporter() {
     return std::unique_ptr<CrossOriginOpenerPolicyReporter>(
         new CrossOriginOpenerPolicyReporter(storage_partition(), GURL(),
                                             GlobalFrameRoutingId(123, 456),
-                                            context_url(), coop(), coep()));
+                                            context_url(), coop()));
   }
 
  private:
@@ -79,7 +78,6 @@ class CrossOriginOpenerPolicyReporterTest : public testing::Test {
   TestStoragePartition storage_partition_;
   GURL context_url_;
   network::CrossOriginOpenerPolicy coop_;
-  network::CrossOriginEmbedderPolicy coep_;
 };
 
 TEST_F(CrossOriginOpenerPolicyReporterTest, Basic) {

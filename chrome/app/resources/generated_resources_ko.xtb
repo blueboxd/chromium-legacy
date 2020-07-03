@@ -281,6 +281,7 @@
 <translation id="1340527397989195812">파일 앱을 사용하여 기기의 미디어를 백업합니다.</translation>
 <translation id="1341988552785875222">현재 배경화면은 '<ph name="APP_NAME" />'에서 설정했습니다. 다른 배경화면을 선택하려면 '<ph name="APP_NAME" />'을(를) 제거해야 할 수도 있습니다.</translation>
 <translation id="1343865611738742294">Linux 앱에 USB 기기 액세스 권한을 부여합니다. Linux는 삭제된 USB 기기를 기억하지 않습니다.</translation>
+<translation id="1344143111673240412">카메라 설정을 변경하려면 Parallels Desktop을 다시 실행해야 합니다.</translation>
 <translation id="1347256498747320987">업데이트 및 앱을 설치합니다. 계속하면 이 기기에서 Google, 이동통신사, 기기 제조업체로부터 업데이트와 앱을 자동으로 다운로드하고 설치하는 데에도 동의하는 것으로 간주됩니다(이때 모바일 데이터가 사용될 수 있음). 일부 앱에서는 인앱 구매가 제공될 수도 있습니다. <ph name="BEGIN_LINK1" />자세히 알아보기<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">배터리 잔량이 <ph name="BATTERY_LEVEL" />%가 되면 업데이트가 시작됩니다.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -936,6 +937,7 @@
 <translation id="2151576029659734873">잘못된 탭 색인을 입력했습니다.</translation>
 <translation id="2152281589789213846">프로필에 프린터 추가</translation>
 <translation id="2154484045852737596">카드 수정</translation>
+<translation id="2154697841132053118">음성 감지 중...</translation>
 <translation id="2154710561487035718">URL 복사</translation>
 <translation id="2155772377859296191"><ph name="WIDTH" />x<ph name="HEIGHT" />처럼 보입니다.</translation>
 <translation id="2156294658807918600">서비스 워커: <ph name="SCRIPT_URL" /></translation>
@@ -1372,6 +1374,7 @@
 <translation id="2682498795777673382">보호자가 업데이트한 내용</translation>
 <translation id="2683638487103917598">폴더가 정렬됨</translation>
 <translation id="2684004000387153598">계속하려면 확인을 클릭한 다음 사용자 추가를 클릭하여 이메일 주소로 새로운 프로필을 만드세요.</translation>
+<translation id="2686222346846590368"><ph name="DEVICE_TYPE" /> 기기에 대한 마지막 자동 소프트웨어 및 보안 업데이트입니다. 향후 업데이트를 받으려면 최신 모델로 업그레이드하세요. &lt;a target="_blank" href="<ph name="URL" />"&gt;자세히 알아보기<ph name="LINK_END" /></translation>
 <translation id="2687403674020088961">모든 쿠키 차단(권장되지 않음)</translation>
 <translation id="2687407218262674387">Google 서비스 약관</translation>
 <translation id="2688196195245426394">기기를 서버에 등록하는 중에 오류 발생: <ph name="CLIENT_ERROR" />.</translation>
@@ -1394,6 +1397,7 @@
 <translation id="2712173769900027643">권한 요청</translation>
 <translation id="2713444072780614174">흰색</translation>
 <translation id="2714393097308983682">Google Play 스토어</translation>
+<translation id="2714997332747470971">개인 정보를 기반으로 한 추천 기능을 사용하면 이름, 주소, 전화번호와 같은 항목을 추천해 주므로 더 빠르게 작성할 수 있습니다. 이러한 추천 항목은 내 계정을 기반으로 맞춤설정되며 나만 볼 수 있습니다.</translation>
 <translation id="2715751256863167692">이 업그레이드를 설치하면 Chromebook이 재설정되며, 현재 사용자 데이터가 삭제됩니다.</translation>
 <translation id="2716986496990888774">보호자가 관리하는 설정입니다.</translation>
 <translation id="2718395828230677721">야간 조명</translation>
@@ -2315,6 +2319,7 @@
 <translation id="3839516600093027468"><ph name="HOST" />에서 클립보드를 볼 수 없도록 항상 차단</translation>
 <translation id="3841964634449506551">잘못된 비밀번호입니다.</translation>
 <translation id="3842552989725514455">Serif</translation>
+<translation id="3843058644024807390">마이크 설정을 변경하려면 Parallels Desktop을 다시 실행해야 합니다.</translation>
 <translation id="3846116211488856547">웹사이트, Android 앱 등을 개발할 수 있는 도구를 이용해 보세요. Linux를 설치하면 <ph name="DOWNLOAD_SIZE" />의 데이터가 다운로드됩니다.</translation>
 <translation id="3847319713229060696">모든 웹 사용자를 위한 보안 개선에 참여</translation>
 <translation id="385051799172605136">뒤로</translation>
@@ -2446,6 +2451,7 @@
 <translation id="3983769721878416534">지연 후 클릭</translation>
 <translation id="3984159763196946143">데모 모드를 시작할 수 없음</translation>
 <translation id="3984431586879874039">이 사이트에서 보안 키를 보도록 허용할까요?</translation>
+<translation id="3986705137476756801">지금 실시간 자막 사용 중지하기</translation>
 <translation id="3987938432087324095">죄송합니다. 인식하지 못했습니다.</translation>
 <translation id="3988996860813292272">시간대 선택</translation>
 <translation id="399179161741278232">가져온 북마크</translation>
@@ -2888,6 +2894,7 @@
 <translation id="4608520674724523647">등록 성공 그림</translation>
 <translation id="4608703838363792434"><ph name="FILE_NAME" />에 민감한 콘텐츠가 있습니다.</translation>
 <translation id="4610162781778310380"><ph name="PLUGIN_NAME" />에 오류가 발생했습니다</translation>
+<translation id="4610178114344604329">개인 정보 기반 추천 표시</translation>
 <translation id="4610637590575890427"><ph name="SITE" />(으)로 이동하려고 하셨나요?</translation>
 <translation id="4611114513649582138">데이터 연결을 사용할 수 있습니다.</translation>
 <translation id="4613144866899789710">Linux 설치를 취소하는 중...</translation>
@@ -3165,6 +3172,7 @@
 <translation id="4977942889532008999">액세스 확인</translation>
 <translation id="4980805016576257426">확장 프로그램에 멀웨어가 포함되어 있습니다.</translation>
 <translation id="4981449534399733132">동기화된 모든 기기 및 Google 계정에서 인터넷 사용 기록을 삭제하려면 <ph name="BEGIN_LINK" />로그인<ph name="END_LINK" />하세요.</translation>
+<translation id="4982236238228587209">기기 소프트웨어</translation>
 <translation id="4986728572522335985">PIN을 비롯하여 보안 키에 저장된 모든 데이터가 삭제됩니다</translation>
 <translation id="4988526792673242964">페이지</translation>
 <translation id="49896407730300355">반시계 방향으로 회전(&amp;O)</translation>
@@ -4604,7 +4612,7 @@
 <translation id="6831043979455480757">번역</translation>
 <translation id="683373380308365518">편리하고 안전한 브라우저로 전환</translation>
 <translation id="6835762382653651563"><ph name="DEVICE_TYPE" />을(를) 업데이트하려면 인터넷에 연결하세요.</translation>
-<translation id="6838034009068684089">사이트에서 화면에 창을 열고 배치하려고 할 때 확인(권장)</translation>
+<translation id="6838034009068684089">사이트에서 창을 열고 화면에 배치하려고 할 때 확인(권장)</translation>
 <translation id="6839225236531462745">인증서 삭제 오류</translation>
 <translation id="6839916869147598086">로그인 변경됨</translation>
 <translation id="6840155290835956714">보내기 전에 확인</translation>
@@ -4685,6 +4693,7 @@
 <translation id="6938381444925658529"><ph name="DOMAIN" />에서 기한 전에 업데이트를 다운로드할 것을 요구합니다. 인터넷에 연결되면 업데이트가 자동으로 다운로드됩니다.</translation>
 <translation id="6938386202199793006">저장된 프린터가 1대 있습니다.</translation>
 <translation id="6938789263968032501">사용자</translation>
+<translation id="6939815295902433669">기기 소프트웨어 검토</translation>
 <translation id="6941937518557314510"><ph name="TOKEN_NAME" />에 로그인하여 인증서로 <ph name="HOST_NAME" />에서 인증을 받으세요.</translation>
 <translation id="6943060957016121200">인스턴트 테더링 사용</translation>
 <translation id="6943176775188458830">인쇄 취소</translation>
@@ -5048,7 +5057,7 @@
 <translation id="7388044238629873883">거의 완료되었습니다.</translation>
 <translation id="7392118418926456391">바이러스 검사 실패</translation>
 <translation id="7392915005464253525">닫은 탭 다시 열기(&amp;E)</translation>
-<translation id="7393472013449507620">'*' 와일드 카드가 포함된 설정은 더 이상 지원되지 않습니다. <ph name="BEGIN_LINK" />이 설정을 변경<ph name="END_LINK" />하려면 확장 프로그램 개발자 또는 관리자에게 문의하세요.</translation>
+<translation id="7393472013449507620">와일드 카드 '*'가 포함된 설정은 더 이상 지원되지 않습니다. <ph name="BEGIN_LINK" />이 설정을 변경<ph name="END_LINK" />하려면 확장 프로그램 개발자 또는 관리자에게 문의하세요.</translation>
 <translation id="7396017167185131589">공유 폴더가 여기에 표시됩니다.</translation>
 <translation id="7396845648024431313">시스템이 시작할 때 <ph name="APP_NAME" />이(가) 실행되며 다른 모든 <ph name="PRODUCT_NAME" /> 창을 종료한 후에도 백그라운드에서 계속 실행됩니다.</translation>
 <translation id="7399045143794278225">동기화 맞춤설정</translation>
@@ -5156,6 +5165,7 @@
 <translation id="7522255036471229694">"Ok Google"이라고 말하세요.</translation>
 <translation id="7525067979554623046">만들기</translation>
 <translation id="7526658513669652747">{NUM_DOWNLOADS,plural, =1{외 1개}other{외 {NUM_DOWNLOADS}개}}</translation>
+<translation id="7526989658317409655">자리표시자</translation>
 <translation id="7529411698175791732">인터넷 연결 상태를 확인하세요. 문제가 계속되면 로그아웃한 뒤 다시 로그인해보세요.</translation>
 <translation id="7530016656428373557">방전율(와트)</translation>
 <translation id="7531779363494549572">설정 &gt; 앱 및 알림 &gt; 알림으로 이동합니다.</translation>
@@ -6197,6 +6207,7 @@
 <translation id="8798441408945964110">공급자 이름</translation>
 <translation id="8800004011501252845">해당 목적지 사용자 표시</translation>
 <translation id="8800034312320686233">사이트가 작동하지 않나요?</translation>
+<translation id="880069872639153240">입력 내용을 기반으로 이모티콘 추천 받기</translation>
 <translation id="8803953437405899238">클릭 한 번으로 새 탭을 열 수 있습니다.</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{탭을 다른 창으로 이동}other{탭을 다른 창으로 이동}}</translation>
 <translation id="8805140816472474147">동기화를 시작하려면 동기화 설정을 확인하세요.</translation>

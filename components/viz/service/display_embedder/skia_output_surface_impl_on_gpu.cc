@@ -845,8 +845,6 @@ SkiaOutputSurfaceImplOnGpu::~SkiaOutputSurfaceImplOnGpu() {
   // |context_provider_| and clients want either the context to be lost or made
   // current on destruction.
   if (context_state_ && MakeCurrent(false /* need_fbo0 */)) {
-    gl::ScopedProgressReporter scoped_progress_reporter(
-        context_state_->progress_reporter());
     // This ensures any outstanding callbacks for promise images are performed.
     gr_context()->flushAndSubmit();
     release_current_last_.emplace(gl_surface_, context_state_);
@@ -981,13 +979,7 @@ bool SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
     if (on_finished)
       gpu::AddCleanupTaskForSkiaFlush(std::move(on_finished), &flush_info);
 
-    GrSemaphoresSubmitted result;
-    {
-      gl::ScopedProgressReporter scoped_progress_reporter(
-          context_state_->progress_reporter());
-      result = output_sk_surface()->flush(
-          SkSurface::BackendSurfaceAccess::kPresent, flush_info);
-    }
+    auto result = output_sk_surface()->flush(flush_info);
 
     if (result != GrSemaphoresSubmitted::kYes &&
         !(begin_semaphores.empty() && end_semaphores.empty())) {
@@ -1017,75 +1009,14 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(
   if (!post_task_timestamp.is_null()) {
     output_device_->SetDrawTimings(post_task_timestamp, base::TimeTicks::Now());
   }
-  if (deferred_framebuffer_draw_closure) {
-    // Returns false if context not set to current, i.e lost
-    if (!std::move(deferred_framebuffer_draw_closure).Run())
-      return;
-    DCHECK(context_state_->IsCurrent(nullptr /* surface */));
-  } else {
-    if (!MakeCurrent(!dependency_->IsOffscreen() /* need_fbo0 */))
-      return;
-  }
-  DCHECK(output_device_);
 
-  ResetStateOfImages();
-  gr_context()->submit();
-  promise_image_access_helper_.EndAccess();
-  scoped_output_device_paint_.reset();
-
-  if (output_surface_plane_)
-    DCHECK(output_device_->IsPrimaryPlaneOverlay());
-  output_device_->SchedulePrimaryPlane(output_surface_plane_);
-  output_surface_plane_.reset();
-
-  if (frame.sub_buffer_rect) {
-    if (capabilities().supports_post_sub_buffer) {
-      if (capabilities().output_surface_origin ==
-          gfx::SurfaceOrigin::kBottomLeft) {
-        frame.sub_buffer_rect->set_y(size_.height() -
-                                     frame.sub_buffer_rect->y() -
-                                     frame.sub_buffer_rect->height());
-      }
-      output_device_->PostSubBuffer(*frame.sub_buffer_rect,
-                                    buffer_presented_callback_,
-                                    std::move(frame.latency_info));
-
-    } else if (capabilities().supports_commit_overlay_planes) {
-      // CommitOverlayPlanes() can only be used for empty swap.
-      DCHECK(frame.sub_buffer_rect->IsEmpty());
-      output_device_->CommitOverlayPlanes(buffer_presented_callback_,
-                                          std::move(frame.latency_info));
-    } else {
-      NOTREACHED();
-    }
-  } else {
-    output_device_->SwapBuffers(buffer_presented_callback_,
-                                std::move(frame.latency_info));
-  }
-  context_state_->UpdateSkiaOwnedMemorySize();
-  destroy_after_swap_.clear();
-#if BUILDFLAG(ENABLE_VULKAN)
-  if (is_using_vulkan())
-    gpu::ReportQueueSubmitPerSwapBuffers();
-#endif
+  SwapBuffersInternal(std::move(deferred_framebuffer_draw_closure), &frame);
 }
 
 void SkiaOutputSurfaceImplOnGpu::SwapBuffersSkipped(
     base::OnceCallback<bool()> deferred_framebuffer_draw_closure) {
-  if (deferred_framebuffer_draw_closure)
-    std::move(deferred_framebuffer_draw_closure).Run();
-  ResetStateOfImages();
-  gr_context()->submit();
-  promise_image_access_helper_.EndAccess();
-  // Perform cleanup that would have otherwise happened in SwapBuffers().
-  scoped_output_device_paint_.reset();
-  context_state_->UpdateSkiaOwnedMemorySize();
-  destroy_after_swap_.clear();
-
-#if BUILDFLAG(ENABLE_VULKAN)
-  if (is_using_vulkan())
-    gpu::ReportQueueSubmitPerSwapBuffers();
-#endif
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  SwapBuffersInternal(std::move(deferred_framebuffer_draw_closure));
 }
 
 void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
@@ -1252,8 +1183,6 @@ bool SkiaOutputSurfaceImplOnGpu::CopyOutput(
     paint.setColor(SK_ColorBLACK);
     paint.setBlendMode(SkBlendMode::kDstATop);
     surface->getCanvas()->drawPaint(paint);
-    gl::ScopedProgressReporter scoped_progress_reporter(
-        context_state_->progress_reporter());
     surface->flush();
   }
 
@@ -1763,6 +1692,68 @@ void SkiaOutputSurfaceImplOnGpu::ReleaseFenceSyncAndPushTextureUpdates(
     dependency_->GetMailboxManager()->PushTextureUpdates(sync_token);
   }
   sync_point_client_state_->ReleaseFenceSync(sync_fence_release);
+}
+
+void SkiaOutputSurfaceImplOnGpu::SwapBuffersInternal(
+    base::OnceCallback<bool()> deferred_framebuffer_draw_closure,
+    OutputSurfaceFrame* frame) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(output_device_);
+
+  if (deferred_framebuffer_draw_closure) {
+    // Returns false if context not set to current, i.e lost
+    if (!std::move(deferred_framebuffer_draw_closure).Run())
+      return;
+    DCHECK(context_state_->IsCurrent(nullptr /* surface */));
+  } else {
+    if (!MakeCurrent(!dependency_->IsOffscreen() /* need_fbo0 */))
+      return;
+  }
+
+  ResetStateOfImages();
+  output_device_->PreGrContextSubmit();
+  gr_context()->submit();
+  promise_image_access_helper_.EndAccess();
+  scoped_output_device_paint_.reset();
+
+  if (frame) {
+    if (output_surface_plane_)
+      DCHECK(output_device_->IsPrimaryPlaneOverlay());
+    output_device_->SchedulePrimaryPlane(output_surface_plane_);
+    output_surface_plane_.reset();
+
+    if (frame->sub_buffer_rect) {
+      if (capabilities().supports_post_sub_buffer) {
+        if (capabilities().output_surface_origin ==
+            gfx::SurfaceOrigin::kBottomLeft) {
+          frame->sub_buffer_rect->set_y(size_.height() -
+                                        frame->sub_buffer_rect->y() -
+                                        frame->sub_buffer_rect->height());
+        }
+        output_device_->PostSubBuffer(*frame->sub_buffer_rect,
+                                      buffer_presented_callback_,
+                                      std::move(frame->latency_info));
+
+      } else if (capabilities().supports_commit_overlay_planes) {
+        // CommitOverlayPlanes() can only be used for empty swap.
+        DCHECK(frame->sub_buffer_rect->IsEmpty());
+        output_device_->CommitOverlayPlanes(buffer_presented_callback_,
+                                            std::move(frame->latency_info));
+      } else {
+        NOTREACHED();
+      }
+    } else {
+      output_device_->SwapBuffers(buffer_presented_callback_,
+                                  std::move(frame->latency_info));
+    }
+  }
+
+  destroy_after_swap_.clear();
+  context_state_->UpdateSkiaOwnedMemorySize();
+#if BUILDFLAG(ENABLE_VULKAN)
+  if (is_using_vulkan())
+    gpu::ReportQueueSubmitPerSwapBuffers();
+#endif
 }
 
 bool SkiaOutputSurfaceImplOnGpu::IsDisplayedAsOverlay() {

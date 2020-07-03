@@ -33,13 +33,15 @@ message ValueProto {
     ProfileList profiles = 8;
     LoginOptionList login_options = 9;
     CreditCardResponseProto credit_card_response = 10;
-    LoginOptionResponseProto login_option_response = 11;
+    bytes server_payload = 12;
   }
   // If set to true, this value will not be sent to the backend. This flag is
   // mostly used internally, to prevent certain values from leaving the device.
   // Note that values derived from client_side_only values will inherit this
   // property.
   optional bool is_client_side_only = 6;
+
+  reserved 11;
 }
 
 message ValueReferenceProto {
@@ -340,8 +342,4 @@ message LoginOptionProto {
   optional string label = 1;
   optional string sublabel = 2;
   optional bytes payload = 3;
-}
-
-message LoginOptionResponseProto {
-  optional bytes payload = 1;
 }

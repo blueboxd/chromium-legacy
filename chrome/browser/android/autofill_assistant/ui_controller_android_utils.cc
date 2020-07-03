@@ -208,7 +208,7 @@ base::android::ScopedJavaLocalRef<jobject> ToJavaValue(
     case ValueProto::kProfiles:
     case ValueProto::kLoginOptions:
     case ValueProto::kCreditCardResponse:
-    case ValueProto::kLoginOptionResponse:
+    case ValueProto::kServerPayload:
     case ValueProto::kUserActions:
       // Unused.
       NOTREACHED();

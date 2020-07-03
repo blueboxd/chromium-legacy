@@ -281,6 +281,7 @@
 <translation id="1340527397989195812">Створити резервну копію медіа-вмісту з пристрою за допомогою додатка Файли.</translation>
 <translation id="1341988552785875222">Поточний фоновий малюнок установив додаток <ph name="APP_NAME" />. Щоб змінити фоновий малюнок, можливо, потрібно видалити додаток <ph name="APP_NAME" />.</translation>
 <translation id="1343865611738742294">Надайте додаткам Linux доступ до пристроїв USB. Linux не зберігатиме дані про пристрій USB після його вилучення.</translation>
+<translation id="1344143111673240412">Щоб зміни в налаштуваннях камери почали діяти, перезапустіть додаток Parallels Desktop</translation>
 <translation id="1347256498747320987">Встановлення оновлень і додатків. Продовжуючи, ви дозволяєте цьому пристрою автоматично завантажувати та встановлювати оновлення й додатки від Google, вашого оператора чи виробника пристрою, зокрема через мобільний трафік. У деяких додатках можуть пропонуватися покупки. <ph name="BEGIN_LINK1" />Докладніше<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">Оновлення почнеться, коли рівень заряду акумулятора сягне <ph name="BATTERY_LEVEL" />%.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -936,6 +937,7 @@
 <translation id="2151576029659734873">Введено недійсний індекс вкладки.</translation>
 <translation id="2152281589789213846">Додати принтери в профіль</translation>
 <translation id="2154484045852737596">Редагувати картку</translation>
+<translation id="2154697841132053118">Розпізнавання мовлення…</translation>
 <translation id="2154710561487035718">Копіювати URL-адресу</translation>
 <translation id="2155772377859296191"><ph name="WIDTH" />x<ph name="HEIGHT" /></translation>
 <translation id="2156294658807918600">Синтаксис Service Worker: <ph name="SCRIPT_URL" /></translation>
@@ -1372,6 +1374,7 @@
 <translation id="2682498795777673382">Батьки змінили налаштування</translation>
 <translation id="2683638487103917598">Папку відсортовано</translation>
 <translation id="2684004000387153598">Натисніть OK і виберіть "Додати користувача", щоб створити новий профіль для своєї електронної адреси.</translation>
+<translation id="2686222346846590368">Це останнє автоматичне оновлення програмного забезпечення й системи безпеки на пристрої <ph name="DEVICE_TYPE" />. Щоб отримувати оновлення надалі, придбайте новішу модель. &lt;a target="_blank" href="<ph name="URL" />"&gt;Докладніше<ph name="LINK_END" /></translation>
 <translation id="2687403674020088961">Блокувати всі файли cookie (не рекомендовано)</translation>
 <translation id="2687407218262674387">Загальні положення та умови Google</translation>
 <translation id="2688196195245426394">Помилка під час реєстрації пристрою на сервері: <ph name="CLIENT_ERROR" />.</translation>
@@ -1394,6 +1397,7 @@
 <translation id="2712173769900027643">Запитувати дозвіл</translation>
 <translation id="2713444072780614174">Білий</translation>
 <translation id="2714393097308983682">Магазин Google Play</translation>
+<translation id="2714997332747470971">Завдяки підказкам з особистою інформацією (наприклад, іменем, адресою чи номером телефону) ви можете писати швидше. Підказки є приватними й персоналізованими, тож їх бачите лише ви у своєму обліковому записі.</translation>
 <translation id="2715751256863167692">Це оновлення скидає налаштування Chromebook і вилучає дані поточного користувача.</translation>
 <translation id="2716986496990888774">Цим налаштуванням керують батьки.</translation>
 <translation id="2718395828230677721">Нічний екран</translation>
@@ -2315,6 +2319,7 @@
 <translation id="3839516600093027468">Завжди забороняти сайту <ph name="HOST" /> переглядати буфер обміну</translation>
 <translation id="3841964634449506551">Пароль недійсний</translation>
 <translation id="3842552989725514455">Шрифт Serif</translation>
+<translation id="3843058644024807390">Щоб зміни в налаштуваннях мікрофона почали діяти, перезапустіть додаток Parallels Desktop</translation>
 <translation id="3846116211488856547">Отримайте інструменти для розробки веб-сайтів, додатків Android тощо. Під час встановлення Linux завантажиться <ph name="DOWNLOAD_SIZE" /> даних.</translation>
 <translation id="3847319713229060696">Допоможіть підвищити безпеку в Інтернеті для кожного</translation>
 <translation id="385051799172605136">Назад</translation>
@@ -2446,6 +2451,7 @@
 <translation id="3983769721878416534">Затримка перед кліком</translation>
 <translation id="3984159763196946143">Не вдалося запустити демонстраційний режим</translation>
 <translation id="3984431586879874039">Показувати цьому сайту ваш ключ безпеки?</translation>
+<translation id="3986705137476756801">Наразі вимкнути живі субтитри</translation>
 <translation id="3987938432087324095">Незрозуміло.</translation>
 <translation id="3988996860813292272">Вибір часового поясу</translation>
 <translation id="399179161741278232">Імпортовано</translation>
@@ -2890,6 +2896,7 @@
 <translation id="4608520674724523647">Ілюстрація успішної реєстрації</translation>
 <translation id="4608703838363792434">Файл "<ph name="FILE_NAME" />" містить конфіденційний контент</translation>
 <translation id="4610162781778310380">У плагіні <ph name="PLUGIN_NAME" /> сталася помилка</translation>
+<translation id="4610178114344604329">Показувати підказки з особистою інформацією</translation>
 <translation id="4610637590575890427">Ви мали на увазі перейти до <ph name="SITE" />?</translation>
 <translation id="4611114513649582138">Доступне передавання даних</translation>
 <translation id="4613144866899789710">Скасовується встановлення Linux…</translation>
@@ -3167,6 +3174,7 @@
 <translation id="4977942889532008999">Підтвердити доступ</translation>
 <translation id="4980805016576257426">Це розширення містить зловмисне програмне забезпечення.</translation>
 <translation id="4981449534399733132">Щоб очистити дані веб-перегляду на всіх синхронізованих пристроях і в обліковому записі Google, <ph name="BEGIN_LINK" />увійдіть в обліковий запис<ph name="END_LINK" />.</translation>
+<translation id="4982236238228587209">Програмне забезпечення на пристрої</translation>
 <translation id="4986728572522335985">Усі дані на ключі безпеки (зокрема, PIN-код) буде видалено</translation>
 <translation id="4988526792673242964">Сторінки</translation>
 <translation id="49896407730300355">Повернути п&amp;роти годинникової стрілки</translation>
@@ -4687,6 +4695,7 @@
 <translation id="6938381444925658529"><ph name="DOMAIN" /> вимагає, щоб ви завантажили оновлення до кінцевого терміну. Воно завантажиться автоматично після підключення до Інтернету.</translation>
 <translation id="6938386202199793006">У вас є 1 збережений принтер.</translation>
 <translation id="6938789263968032501">Люди</translation>
+<translation id="6939815295902433669">Перевірити програмне забезпечення на пристрої</translation>
 <translation id="6941937518557314510">Увійдіть у <ph name="TOKEN_NAME" />, щоб пройти автентифікацію на <ph name="HOST_NAME" />, використовуючи свій сертифікат.</translation>
 <translation id="6943060957016121200">Увімкнути миттєву точку доступу</translation>
 <translation id="6943176775188458830">Скасувати друк</translation>
@@ -5158,6 +5167,7 @@
 <translation id="7522255036471229694">Скажіть "Ok Google"</translation>
 <translation id="7525067979554623046">Створити</translation>
 <translation id="7526658513669652747">{NUM_DOWNLOADS,plural, =1{і ще 1}one{і ще {NUM_DOWNLOADS}}few{і ще {NUM_DOWNLOADS}}many{і ще {NUM_DOWNLOADS}}other{і ще {NUM_DOWNLOADS}}}</translation>
+<translation id="7526989658317409655">Заповнювач</translation>
 <translation id="7529411698175791732">Перевірте з’єднання з Інтернетом. Якщо проблема не зникне, вийдіть з облікового запису та знову ввійдіть.</translation>
 <translation id="7530016656428373557">Швидкість розряджання акумулятора у ватах</translation>
 <translation id="7531779363494549572">Перейдіть у меню "Налаштування" &gt; "Додатки та сповіщення" &gt; "Сповіщення".</translation>
@@ -6199,6 +6209,7 @@
 <translation id="8798441408945964110">Назва постачальника</translation>
 <translation id="8800004011501252845">Показано місця призначення для</translation>
 <translation id="8800034312320686233">Сайт не працює?</translation>
+<translation id="880069872639153240">Отримувати підказки смайлів на основі введених слів</translation>
 <translation id="8803953437405899238">Відкривайте нову вкладку одним кліком</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Перемістити вкладку в інше вікно}one{Перемістити вкладки в інше вікно}few{Перемістити вкладки в інше вікно}many{Перемістити вкладки в інше вікно}other{Перемістити вкладки в інше вікно}}</translation>
 <translation id="8805140816472474147">Щоб почати синхронізацію, підтвердьте її налаштування.</translation>

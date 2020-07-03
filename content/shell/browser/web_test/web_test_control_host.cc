@@ -67,9 +67,11 @@
 #include "content/shell/browser/web_test/fake_bluetooth_chooser.h"
 #include "content/shell/browser/web_test/test_info_extractor.h"
 #include "content/shell/browser/web_test/web_test_bluetooth_chooser_factory.h"
+#include "content/shell/browser/web_test/web_test_browser_context.h"
 #include "content/shell/browser/web_test/web_test_content_browser_client.h"
 #include "content/shell/browser/web_test/web_test_devtools_bindings.h"
 #include "content/shell/browser/web_test/web_test_first_device_bluetooth_chooser.h"
+#include "content/shell/browser/web_test/web_test_permission_manager.h"
 #include "content/shell/common/web_test/web_test_string_util.h"
 #include "content/shell/common/web_test/web_test_switches.h"
 #include "content/test/storage_partition_test_helpers.h"
@@ -648,6 +650,10 @@ bool WebTestControlHost::ResetBrowserAfterWebTest() {
   WebTestContentBrowserClient::Get()->ResetMockClipboardHosts();
   WebTestContentBrowserClient::Get()->SetScreenOrientationChanged(false);
   WebTestContentBrowserClient::Get()->ResetFakeBluetoothDelegate();
+  WebTestContentBrowserClient::Get()
+      ->GetWebTestBrowserContext()
+      ->GetWebTestPermissionManager()
+      ->ResetPermissions();
   navigation_history_dump_ = "";
   pixel_dump_.reset();
   blink_test_client_receivers_.Clear();
@@ -658,6 +664,23 @@ bool WebTestControlHost::ResetBrowserAfterWebTest() {
   waiting_for_main_frame_dump_ = false;
   composite_all_frames_node_queue_ = std::queue<Node*>();
   composite_all_frames_node_storage_.clear();
+
+  BlockThirdPartyCookies(false);
+  SetBluetoothManualChooser(false);
+
+  // Delete all cookies.
+  {
+    BrowserContext* browser_context =
+        ShellContentBrowserClient::Get()->browser_context();
+    StoragePartition* storage_partition =
+        BrowserContext::GetStoragePartition(browser_context, nullptr);
+    mojo::Remote<network::mojom::CookieManager> cookie_manager;
+    storage_partition->GetNetworkContext()->GetCookieManager(
+        cookie_manager.BindNewPipeAndPassReceiver());
+    cookie_manager->DeleteCookies(network::mojom::CookieDeletionFilter::New(),
+                                  base::BindOnce([](uint32_t) {}));
+  }
+
   ui::SelectFileDialog::SetFactory(nullptr);
   {
     base::ScopedAllowBlockingForTesting allow_blocking;
@@ -666,6 +689,7 @@ bool WebTestControlHost::ResetBrowserAfterWebTest() {
         LOG(ERROR) << "Failed to delete temporary directory";
     }
   }
+
   weak_factory_.InvalidateWeakPtrs();
 
   return true;
@@ -1371,8 +1395,59 @@ void WebTestControlHost::SetScreenOrientationChanged() {
   WebTestContentBrowserClient::Get()->SetScreenOrientationChanged(true);
 }
 
+void WebTestControlHost::SetPermission(const std::string& name,
+                                       blink::mojom::PermissionStatus status,
+                                       const GURL& origin,
+                                       const GURL& embedding_origin) {
+  content::PermissionType type;
+  if (name == "midi") {
+    type = PermissionType::MIDI;
+  } else if (name == "midi-sysex") {
+    type = PermissionType::MIDI_SYSEX;
+  } else if (name == "push-messaging" || name == "notifications") {
+    type = PermissionType::NOTIFICATIONS;
+  } else if (name == "geolocation") {
+    type = PermissionType::GEOLOCATION;
+  } else if (name == "protected-media-identifier") {
+    type = PermissionType::PROTECTED_MEDIA_IDENTIFIER;
+  } else if (name == "background-sync") {
+    type = PermissionType::BACKGROUND_SYNC;
+  } else if (name == "accessibility-events") {
+    type = PermissionType::ACCESSIBILITY_EVENTS;
+  } else if (name == "clipboard-read-write") {
+    type = PermissionType::CLIPBOARD_READ_WRITE;
+  } else if (name == "clipboard-sanitized-write") {
+    type = PermissionType::CLIPBOARD_SANITIZED_WRITE;
+  } else if (name == "payment-handler") {
+    type = PermissionType::PAYMENT_HANDLER;
+  } else if (name == "accelerometer" || name == "gyroscope" ||
+             name == "magnetometer" || name == "ambient-light-sensor") {
+    type = PermissionType::SENSORS;
+  } else if (name == "background-fetch") {
+    type = PermissionType::BACKGROUND_FETCH;
+  } else if (name == "periodic-background-sync") {
+    type = PermissionType::PERIODIC_BACKGROUND_SYNC;
+  } else if (name == "wake-lock-screen") {
+    type = PermissionType::WAKE_LOCK_SCREEN;
+  } else if (name == "wake-lock-system") {
+    type = PermissionType::WAKE_LOCK_SYSTEM;
+  } else if (name == "nfc") {
+    type = PermissionType::NFC;
+  } else if (name == "storage-access") {
+    type = PermissionType::STORAGE_ACCESS_GRANT;
+  } else {
+    NOTREACHED();
+    type = PermissionType::NOTIFICATIONS;
+  }
+
+  WebTestContentBrowserClient::Get()
+      ->GetWebTestBrowserContext()
+      ->GetWebTestPermissionManager()
+      ->SetPermission(type, status, origin, embedding_origin);
+}
+
 void WebTestControlHost::GetWritableDirectory(
-    GetWritableDirectoryCallback reply_callback) {
+    GetWritableDirectoryCallback reply) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   if (!writable_directory_for_tests_.IsValid()) {
     if (!writable_directory_for_tests_.CreateUniqueTempDir()) {
@@ -1380,7 +1455,7 @@ void WebTestControlHost::GetWritableDirectory(
                     "correctly";
     }
   }
-  std::move(reply_callback).Run(writable_directory_for_tests_.GetPath());
+  std::move(reply).Run(writable_directory_for_tests_.GetPath());
 }
 
 namespace {
@@ -1531,17 +1606,16 @@ void WebTestControlHost::SetBluetoothManualChooser(bool enable) {
   }
 }
 
-void WebTestControlHost::GetBluetoothManualChooserEvents() {
+void WebTestControlHost::GetBluetoothManualChooserEvents(
+    GetBluetoothManualChooserEventsCallback reply) {
   if (!bluetooth_chooser_factory_) {
     printer_->AddErrorMessage(
         "FAIL: Must call setBluetoothManualChooser before "
         "getBluetoothManualChooserEvents.");
+    std::move(reply).Run({});
     return;
   }
-  GetWebTestRenderFrameRemote(
-      main_window_->web_contents()->GetRenderViewHost()->GetMainFrame())
-      ->ReplyBluetoothManualChooserEvents(
-          bluetooth_chooser_factory_->GetAndResetEvents());
+  std::move(reply).Run(bluetooth_chooser_factory_->GetAndResetEvents());
 }
 
 void WebTestControlHost::SendBluetoothManualChooserEvent(

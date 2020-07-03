@@ -94,12 +94,12 @@ class ImportEndedObserver : public importer::ImporterProgressObserver {
   void ImportItemEnded(importer::ImportItem item) override {}
   void ImportEnded() override {
     ended_ = true;
-    if (!callback_for_import_end_.is_null())
-      callback_for_import_end_.Run();
+    if (callback_for_import_end_)
+      std::move(callback_for_import_end_).Run();
   }
 
-  void set_callback_for_import_end(const base::Closure& callback) {
-    callback_for_import_end_ = callback;
+  void set_callback_for_import_end(base::OnceClosure callback) {
+    callback_for_import_end_ = std::move(callback);
   }
 
   bool ended() const {
@@ -110,7 +110,7 @@ class ImportEndedObserver : public importer::ImporterProgressObserver {
   // Set if the import has ended.
   bool ended_;
 
-  base::Closure callback_for_import_end_;
+  base::OnceClosure callback_for_import_end_;
 
   DISALLOW_COPY_AND_ASSIGN(ImportEndedObserver);
 };
@@ -139,7 +139,6 @@ void ImportFromSourceProfile(const importer::SourceProfile& source_profile,
     base::RunLoop loop;
     observer.set_callback_for_import_end(loop.QuitClosure());
     loop.Run();
-    observer.set_callback_for_import_end(base::Closure());
   }
 }
 

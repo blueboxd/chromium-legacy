@@ -45,8 +45,6 @@ _add_unwind_tables_in_chrome_32bit_apk =
 #     the final target (e.g. [ ":libchrome" ]).
 #   add_unwind_tables_in_apk: Optional. If true, add the unwind tables to the
 #     final APK or bundle.
-#   is_modern: If true, indicates this corresponds to a chrome_modern_XXX
-#     target that can only run on Android L-M.
 #   is_monochrome: Indicates that this target contains chrome and webview
 #     packaged together and can only run on Android N+.
 #   is_trichrome: Indicates this target relies on a trichrome static library
@@ -69,15 +67,11 @@ template("chrome_public_common_apk_or_module_tmpl") {
           invoker.target_type == "instrumentation_test_apk",
       "Invalid target_type definition, should be 'android_apk' or 'android_app_bundle_module'")
 
-  _is_modern = defined(invoker.is_modern) && invoker.is_modern
   _is_monochrome = defined(invoker.is_monochrome) && invoker.is_monochrome
   _is_trichrome = defined(invoker.is_trichrome) && invoker.is_trichrome
   _is_64_bit_browser =
       defined(invoker.is_64_bit_browser) && invoker.is_64_bit_browser
-  not_needed([
-               "_is_modern",
-               "_is_64_bit_browser",
-             ])
+  not_needed([ "_is_64_bit_browser" ])
   assert(!(_is_monochrome && _is_trichrome),
          "Cannot be both trichrome and monochrome!")
   assert(_is_trichrome == defined(invoker.static_library_provider),
@@ -141,9 +135,7 @@ template("chrome_public_common_apk_or_module_tmpl") {
   }
 
   target(_target_type, target_name) {
-    # TODO(crbug.com/1076896): remove "disable_library_rename" after
-    # chrome_public_apk is removed
-    forward_variables_from(invoker, "*", [ "disable_library_rename" ])
+    forward_variables_from(invoker, "*")
     if (defined(shared_resources_whitelist_target)) {
       shared_resources_allowlist_target = shared_resources_whitelist_target
       shared_resources_allowlist_locales = shared_resources_whitelist_locales
@@ -153,8 +145,6 @@ template("chrome_public_common_apk_or_module_tmpl") {
       min_sdk_version = 29
     } else if (_is_monochrome) {
       min_sdk_version = 24
-    } else if (_is_modern) {
-      min_sdk_version = 21
     } else {
       min_sdk_version = 21
     }
@@ -286,18 +276,11 @@ template("chrome_public_common_apk_or_module_tmpl") {
         "libchromium_android_linker.so",
       ]
 
-      # TODO(crbug.com/1076896): remove disable_library_rename check after
-      # chrome_public_apk is removed.
-      if (!(defined(invoker.disable_library_rename) &&
-            invoker.disable_library_rename) &&
-          (_is_modern || android_64bit_target_cpu)) {
-        # This adds the "crazy." prefix to avoid the file being extracted upon
-        # install.
-        library_renames = [
-          "libchrome.so",
-          "libchromefortest.so",
-        ]
-      }
+      # Adds "crazy." prefix to avoid libraries being extracted when installed.
+      library_renames = [
+        "libchrome.so",
+        "libchromefortest.so",
+      ]
     }
 
     if (_enable_multidex) {
@@ -366,12 +349,7 @@ template("chrome_public_common_apk_or_module_tmpl") {
       }
 
       if (!defined(load_library_from_apk)) {
-        # Whether native libraries should be loaded from within the apk.
-        # Only attempt loading the library from the APK for 64 bit devices
-        # until the number of 32 bit devices which don't support this
-        # approach falls to a minimal level -  http://crbug.com/390618.
-        load_library_from_apk = chromium_linker_supported &&
-                                (current_cpu == "arm64" || current_cpu == "x64")
+        load_library_from_apk = chromium_linker_supported
       }
     }
     if (_target_type == "android_apk") {
@@ -394,6 +372,7 @@ template("chrome_public_common_apk_or_module_tmpl") {
       } else if (_is_monochrome) {
         version_code = monochrome_version_code
       } else {
+        # TODO(agrieve): Merge chrome_modern_version_code with chrome_version_code.
         version_code = chrome_modern_version_code
       }
     }

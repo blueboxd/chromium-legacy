@@ -364,8 +364,8 @@ void CertProvisioningWorkerImpl::GenerateKeyForVa() {
       attestation::TpmChallengeKeySubtleFactory::Create();
   tpm_challenge_key_subtle_impl_->StartPrepareKeyStep(
       GetVaKeyType(cert_scope_),
-      GetVaKeyName(cert_scope_, cert_profile_.profile_id), profile_,
-      GetVaKeyNameForSpkac(cert_scope_, cert_profile_.profile_id),
+      /*will_register_key=*/true, GetKeyName(cert_profile_.profile_id),
+      profile_,
       base::BindOnce(&CertProvisioningWorkerImpl::OnGenerateKeyForVaDone,
                      weak_factory_.GetWeakPtr(), base::TimeTicks::Now()));
 }
@@ -457,7 +457,7 @@ void CertProvisioningWorkerImpl::BuildVaChallengeResponse() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   tpm_challenge_key_subtle_impl_->StartSignChallengeStep(
-      va_challenge_, /*include_signed_public_key=*/true,
+      va_challenge_,
       base::BindOnce(
           &CertProvisioningWorkerImpl::OnBuildVaChallengeResponseDone,
           weak_factory_.GetWeakPtr(), base::TimeTicks::Now()));
@@ -858,8 +858,8 @@ void CertProvisioningWorkerImpl::InitAfterDeserialization() {
   tpm_challenge_key_subtle_impl_ =
       attestation::TpmChallengeKeySubtleFactory::CreateForPreparedKey(
           GetVaKeyType(cert_scope_),
-          GetVaKeyName(cert_scope_, cert_profile_.profile_id), profile_,
-          GetVaKeyNameForSpkac(cert_scope_, cert_profile_.profile_id));
+          /*will_register_key=*/true, GetKeyName(cert_profile_.profile_id),
+          profile_);
 }
 
 void CertProvisioningWorkerImpl::RegisterForInvalidationTopic() {

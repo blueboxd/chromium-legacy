@@ -281,6 +281,7 @@
 <translation id="1340527397989195812">Realizar una copia de seguridad del contenido multimedia desde el dispositivo mediante la aplicación Archivos</translation>
 <translation id="1341988552785875222">"<ph name="APP_NAME" />" estableció el fondo de pantalla actual. Es posible que tengas que desinstalar "<ph name="APP_NAME" />" antes de seleccionar un fondo de pantalla diferente.</translation>
 <translation id="1343865611738742294">Concédeles a las apps de Linux acceso a dispositivos USB. Linux no recuerda los dispositivos USB después de quitarlos.</translation>
+<translation id="1344143111673240412">Es necesario que reinicies Parallels Desktop para aplicar los cambios en la configuración de la cámara</translation>
 <translation id="1347256498747320987">Instala actualizaciones y apps. Al continuar, aceptas que este dispositivo también descargue e instale automáticamente actualizaciones y apps de Google, tu administrador y el fabricante del dispositivo, posiblemente a través de datos móviles. Es posible que algunas de estas apps ofrezcan compras directas desde la aplicación. <ph name="BEGIN_LINK1" />Más información<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">La actualización comenzará cuando el nivel de la batería alcance el <ph name="BATTERY_LEVEL" />%.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -933,6 +934,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2151576029659734873">Se ingresó un índice de pestaña no válido.</translation>
 <translation id="2152281589789213846">Agrega impresoras a tu perfil</translation>
 <translation id="2154484045852737596">Editar tarjeta</translation>
+<translation id="2154697841132053118">Detectando voz…</translation>
 <translation id="2154710561487035718">Copiar URL</translation>
 <translation id="2155772377859296191">Resolución: <ph name="WIDTH" /> × <ph name="HEIGHT" /></translation>
 <translation id="2156294658807918600">Service Worker: <ph name="SCRIPT_URL" /></translation>
@@ -1261,7 +1263,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2540449034743108469">Presiona "Comenzar" para escuchar las actividades de la extensión</translation>
 <translation id="2541002089857695151">¿Quieres optimizar la transmisión en pantalla completa?</translation>
 <translation id="2541706104884128042">Se estableció una nueva hora de dormir</translation>
-<translation id="2542050502251273923">Establece el nivel de depuración del administrador de conexiones de redes y otros servicios mediante ff_debug.</translation>
+<translation id="2542050502251273923">Establece el nivel de depuración del administrador de conexiones de red y otros servicios mediante ff_debug.</translation>
 <translation id="2544853746127077729">Certificado de autenticación rechazado por la red</translation>
 <translation id="2546229857744484369">Tienes 1 contraseña guardada en este dispositivo</translation>
 <translation id="2546283357679194313">Datos de sitios y cookies</translation>
@@ -1369,6 +1371,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2682498795777673382">Actualización por parte de uno de tus padres</translation>
 <translation id="2683638487103917598">Se ordenó la carpeta</translation>
 <translation id="2684004000387153598">Para continuar, haz clic en Aceptar y, luego, en Agregar un usuario para crear un nuevo perfil para tu dirección de correo electrónico.</translation>
+<translation id="2686222346846590368">Esta es la última actualización automática de software y seguridad para el dispositivo <ph name="DEVICE_TYPE" />. Para recibir futuras actualizaciones, obtén un modelo más nuevo. &lt;a target="_blank" href="<ph name="URL" />"&gt;Más información<ph name="LINK_END" /></translation>
 <translation id="2687403674020088961">Bloquear todas las cookies (opción no recomendada)</translation>
 <translation id="2687407218262674387">Condiciones del Servicio de Google</translation>
 <translation id="2688196195245426394">Se produjo un error al registrar el dispositivo en el servidor: <ph name="CLIENT_ERROR" />.</translation>
@@ -1391,6 +1394,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2712173769900027643">Solicitar permiso</translation>
 <translation id="2713444072780614174">Blanco</translation>
 <translation id="2714393097308983682">Google Play Store</translation>
+<translation id="2714997332747470971">Las sugerencias de información personal te brindan propuestas, como tu nombre, dirección o número de teléfono, para que puedas escribir más rápido. Solo tú verás las sugerencias privadas y personalizadas para tu cuenta.</translation>
 <translation id="2715751256863167692">Esta actualización restablece tu Chromebook y quita los datos del usuario actual.</translation>
 <translation id="2716986496990888774">Esta configuración la administra uno de tus padres.</translation>
 <translation id="2718395828230677721">Luz nocturna</translation>
@@ -2312,6 +2316,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3839516600093027468">Nunca permitir que <ph name="HOST" /> vea el portapapeles</translation>
 <translation id="3841964634449506551">La contraseña no es válida</translation>
 <translation id="3842552989725514455">Fuente Serif</translation>
+<translation id="3843058644024807390">Es necesario que reinicies Parallels Desktop para aplicar los cambios en la configuración del micrófono</translation>
 <translation id="3846116211488856547">Obtén herramientas para desarrollar sitios web, apps de Android y mucho más. Si instalas Linux, se descargarán <ph name="DOWNLOAD_SIZE" /> de datos.</translation>
 <translation id="3847319713229060696">Ayudar a mejorar la seguridad en la Web para todos los usuarios</translation>
 <translation id="385051799172605136">Atrás</translation>
@@ -2443,6 +2448,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3983769721878416534">Tiempo de espera antes del clic</translation>
 <translation id="3984159763196946143">No se pudo iniciar el modo de demostración</translation>
 <translation id="3984431586879874039">¿Quieres permitir que este sitio vea tu llave de seguridad?</translation>
+<translation id="3986705137476756801">Desactivar el Subtitulado instantáneo por el momento</translation>
 <translation id="3987938432087324095">No entendí.</translation>
 <translation id="3988996860813292272">Seleccionar zona horaria</translation>
 <translation id="399179161741278232">Importado</translation>
@@ -2873,7 +2879,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4582563038311694664">Restablecer toda la configuración</translation>
 <translation id="4585793705637313973">Editar página</translation>
 <translation id="4586275095964870617">No se pudo abrir <ph name="URL" /> en otro navegador. Comunícate con tu administrador del sistema.</translation>
-<translation id="4589713469967853491">Se escribieron correctamente los registros en el directorio de descargas.</translation>
+<translation id="4589713469967853491">Se escribieron correctamente los registros en el directorio Descargas.</translation>
 <translation id="4590324241397107707">Almacenamiento en bases de datos</translation>
 <translation id="4592891116925567110">App de dibujo con la pluma stylus</translation>
 <translation id="4593021220803146968">&amp;Ir a <ph name="URL" /></translation>
@@ -2887,6 +2893,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4608520674724523647">Ilustración de inscripción correcta</translation>
 <translation id="4608703838363792434"><ph name="FILE_NAME" /> incluye contenido sensible</translation>
 <translation id="4610162781778310380"><ph name="PLUGIN_NAME" /> detectó un error</translation>
+<translation id="4610178114344604329">Mostrar sugerencias de información personal</translation>
 <translation id="4610637590575890427">¿Tal vez quieres ir a <ph name="SITE" />?</translation>
 <translation id="4611114513649582138">Conexión de datos disponible</translation>
 <translation id="4613144866899789710">Cancelando la instalación de Linux…</translation>
@@ -3164,6 +3171,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4977942889532008999">Confirmar acceso</translation>
 <translation id="4980805016576257426">Esta extensión contiene software malicioso.</translation>
 <translation id="4981449534399733132">Para borrar los datos de navegación de todos los dispositivos sincronizados y de tu Cuenta de Google, <ph name="BEGIN_LINK" />accede a ella<ph name="END_LINK" />.</translation>
+<translation id="4982236238228587209">Software del dispositivo</translation>
 <translation id="4986728572522335985">Esta acción borrará todos los datos de la llave de seguridad, incluido su PIN</translation>
 <translation id="4988526792673242964">Páginas</translation>
 <translation id="49896407730300355">Girar &amp;a la izquierda</translation>
@@ -4220,7 +4228,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6317318380444133405">Ya no es compatible.</translation>
 <translation id="6317369057005134371">Esperando ventana de la aplicación…</translation>
 <translation id="6317608858038767920">Nameserver personalizado <ph name="INPUT_INDEX" /></translation>
-<translation id="6318125393809743217">Incluye un archivo policies.json en la configuración de la política.</translation>
+<translation id="6318125393809743217">Incluye un archivo policies.json con la configuración de las políticas.</translation>
 <translation id="6318407754858604988">Comenzó la descarga</translation>
 <translation id="6318944945640833942">No se detectó ninguna impresora. Vuelve a ingresar la dirección de una impresora.</translation>
 <translation id="6322653941595359182">Enviar y recibir mensajes de texto en tu Chromebook</translation>
@@ -4401,7 +4409,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6557290421156335491">Mis accesos directos</translation>
 <translation id="6561560012278703671">Usar un tipo de aviso más discreto (bloquear las notificaciones emergentes para evitar interrupciones)</translation>
 <translation id="6561726789132298588">ingresar</translation>
-<translation id="6562117348069327379">Almacena los registros del sistema en el directorio de descargas.</translation>
+<translation id="6562117348069327379">Almacena los registros del sistema en el directorio Descargas.</translation>
 <translation id="656293578423618167">La ruta de acceso o el nombre del archivo es demasiado largo. Guarda con un nombre más corto o en otra ubicación.</translation>
 <translation id="6563469144985748109">Tu administrador aún no lo aprobó</translation>
 <translation id="6569934958368283244">Otras personas</translation>
@@ -4603,7 +4611,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6831043979455480757">Traducir</translation>
 <translation id="683373380308365518">Cambia a un navegador inteligente y seguro</translation>
 <translation id="6835762382653651563">Conéctate a Internet para actualizar tu <ph name="DEVICE_TYPE" />.</translation>
-<translation id="6838034009068684089">Preguntar si deseas que un sitio abra y ubique ventanas en tus pantallas (recomendado)</translation>
+<translation id="6838034009068684089">Preguntar cuando un sitio web quiera abrir y colocar ventanas en tus pantallas (recomendado)</translation>
 <translation id="6839225236531462745">Error en la eliminación del certificado</translation>
 <translation id="6839916869147598086">Se modificó el acceso</translation>
 <translation id="6840155290835956714">Preguntar antes de enviar</translation>
@@ -4684,6 +4692,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6938381444925658529"><ph name="DOMAIN" /> requiere que descargues una actualización antes de la fecha límite. Cuando te conectes a Internet, se descargará automáticamente.</translation>
 <translation id="6938386202199793006">Tienes 1 impresora guardada.</translation>
 <translation id="6938789263968032501">Personas</translation>
+<translation id="6939815295902433669">Revisar el software del dispositivo</translation>
 <translation id="6941937518557314510">Accede a <ph name="TOKEN_NAME" /> para autenticarte en <ph name="HOST_NAME" /> con tu certificado.</translation>
 <translation id="6943060957016121200">Habilitar la Conexión instantánea mediante dispositivo móvil</translation>
 <translation id="6943176775188458830">Cancelar impresión</translation>
@@ -5047,7 +5056,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="7388044238629873883">Falta muy poco</translation>
 <translation id="7392118418926456391">Error en el análisis antivirus</translation>
 <translation id="7392915005464253525">Volver a abrir una ventana cerrada</translation>
-<translation id="7393472013449507620">Ya no se admiten las opciones de configuración con los comodines "*". Para <ph name="BEGIN_LINK" />cambiarlas<ph name="END_LINK" />, comunícate con el desarrollador de extensiones o tu administrador.</translation>
+<translation id="7393472013449507620">Ya no se admiten las opciones de configuración con los comodines "*". Para <ph name="BEGIN_LINK" />cambiarlas<ph name="END_LINK" />, comunícate con el desarrollador de la extensión o tu administrador.</translation>
 <translation id="7396017167185131589">Aquí aparecerán las carpetas compartidas</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> empezará a ejecutarse cuando se inicie el sistema y seguirá ejecutándose en segundo plano aunque cierres todas las demás ventanas de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7399045143794278225">Personalizar la sincronización</translation>
@@ -5155,6 +5164,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="7522255036471229694">Di "OK Google".</translation>
 <translation id="7525067979554623046">Crear</translation>
 <translation id="7526658513669652747">{NUM_DOWNLOADS,plural, =1{1 más}other{{NUM_DOWNLOADS} más}}</translation>
+<translation id="7526989658317409655">Marcador de posición</translation>
 <translation id="7529411698175791732">Comprueba tu conexión a Internet. Si el problema persiste, intenta salir de tu cuenta y acceder de nuevo.</translation>
 <translation id="7530016656428373557">Tasa de descarga en vatios</translation>
 <translation id="7531779363494549572">Ve a Configuración &gt; Apps y notificaciones &gt; Notificaciones.</translation>
@@ -6196,6 +6206,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8798441408945964110">Nombre del proveedor</translation>
 <translation id="8800004011501252845">Mostrando destinos para</translation>
 <translation id="8800034312320686233">¿No funciona el sitio?</translation>
+<translation id="880069872639153240">Obtén sugerencias de emojis basadas en lo que escribes</translation>
 <translation id="8803953437405899238">Abre una pestaña nueva con un solo clic</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Mover la pestaña a otra ventana}other{Mover las pestañas a otra ventana}}</translation>
 <translation id="8805140816472474147">Confirma la configuración para comenzar la sincronización.</translation>
@@ -6570,7 +6581,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="975893173032473675">Idioma de destino de la traducción</translation>
 <translation id="978146274692397928">El ancho de la puntuación inicial está completo</translation>
 <translation id="97905529126098460">Cuando se complete la cancelación, se cerrará esta ventana.</translation>
-<translation id="980731642137034229">Botón de menú de Acción</translation>
+<translation id="980731642137034229">Botón del menú de Acción</translation>
 <translation id="981121421437150478">Sin conexión</translation>
 <translation id="983511809958454316">Esta función no es compatible con RV</translation>
 <translation id="984275831282074731">Formas de pago</translation>

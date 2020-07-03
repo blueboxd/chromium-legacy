@@ -1,4 +1,4 @@
-<cr-view-manager id="viewManager">
+<cr-view-manager id="viewManager" hidden$="[[isErrorShown_]]">
   <edu-login-parents id="[[Steps.PARENTS]]" slot="view"
       selected-parent="{{selectedParent_}}">
   </edu-login-parents>
@@ -13,3 +13,4 @@
       login-params="[[loginParams_]]">
   </edu-login-signin>
 </cr-view-manager>
+<edu-login-error hidden$="[[!isErrorShown_]]"></edu-login-error>

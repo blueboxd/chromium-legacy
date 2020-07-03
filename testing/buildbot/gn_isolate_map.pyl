@@ -433,10 +433,6 @@
     "label": "//chrome/android:chrome_junit_tests",
     "type": "junit_test",
   },
-  "chrome_modern_public_smoke_test": {
-    "label": "//chrome/android:chrome_modern_public_smoke_test",
-    "type": "console_test_launcher",
-  },
   "chrome_modern_public_bundle_smoke_test": {
     "label": "//chrome/android:chrome_modern_public_bundle_smoke_test",
     "type": "console_test_launcher",
@@ -1243,9 +1239,9 @@
       "--script",
       "../../chrome/android/monochrome/scripts/monochrome_apk_checker.py",
       "--chrome-apk",
-      "apks/ChromeModernPublic.apk",
+      "apks/ChromePublic.apk",
       "--chrome-pathmap",
-      "apks/ChromeModernPublic.apk.pathmap.txt",
+      "apks/ChromePublic.apk.pathmap.txt",
       "--system-webview-apk",
       "apks/SystemWebView.apk",
       "--system-webview-pathmap",

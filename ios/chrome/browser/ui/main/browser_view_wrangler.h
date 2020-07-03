@@ -13,6 +13,7 @@
 @protocol ApplicationCommands;
 @protocol BrowsingDataCommands;
 class ChromeBrowserState;
+@class SceneState;
 
 namespace {
 
@@ -22,19 +23,19 @@ NSString* kIncognitoCurrentKey = @"IncognitoActive";
 }  // namespace
 
 // Wrangler (a class in need of further refactoring) for handling the creation
-// and ownership of BrowserViewController instances and their associated
-// TabModels, and a few related methods.
+// and ownership of Browser instances and their associated
+// BrowserViewControllers.
 @interface BrowserViewWrangler : NSObject <BrowserInterfaceProvider>
 
 // Initialize a new instance of this class using |browserState| as the primary
-// browser state for the tab models and BVCs, and setting
-// |WebStateListObserving|, if not nil, as the webStateListObsever for any
-// WebStateLists that are created. |applicationCommandEndpoint| is the object
-// that methods in the ApplicationCommands protocol should be dispatched to by
-// any BVCs that are created. |storageSwitcher| is used to manage changing any
-// storage associated with the interfaces when the current interface changes;
-// this is handled in the implementation of -setCurrentInterface:.
+// browser state for the tab models and BVCs.
+// |sceneState| is the scene state that will be associated with any Browsers
+// created.
+// |applicationCommandEndpoint| and |browsingDataCommandEndpoint| are the
+// objects that methods in the ApplicationCommands and BrowsingDataCommands
+// protocol should be dispatched to.
 - (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState
+                          sceneState:(SceneState*)sceneState
           applicationCommandEndpoint:
               (id<ApplicationCommands>)applicationCommandEndpoint
          browsingDataCommandEndpoint:
@@ -43,24 +44,25 @@ NSString* kIncognitoCurrentKey = @"IncognitoActive";
 
 - (instancetype)init NS_UNAVAILABLE;
 
-@property(nonatomic, assign) NSString* sessionID;
-
 // Creates the main Browser used by the receiver, using the browser state
-// and tab model observer it was configured with. The main interface is then
-// created; until this method is called, the main and incognito interfaces will
-// be nil. This should be done before the main interface is accessed, usually
-// immediately after initialization.
+// it was configured with. The main interface is then created; until this
+// method is called, the main and incognito interfaces will be nil. This should
+// be done before the main interface is accessed, usually immediately after
+// initialization.
 - (void)createMainBrowser;
 
-// Invoked before the incognito BrowserState is destroyed. Needs to clean up
-// all the state that is tied to the BrowserState.
+// Tells the receiver to clean up all the state that is tied to the incognito
+// BrowserState. This method should be called before the incognito BrowserState
+// is destroyed.
 - (void)willDestroyIncognitoBrowserState;
 
-// Invoked after the incognito BrowserState has been created. Needs to create
-// all the state that is tied to the BrowserState.
+// Tells the receiver to create all state that is tied to the incognito
+// BrowserState. This method should be called after the incognito BrowserState
+// has been created.
 - (void)incognitoBrowserStateCreated;
 
-// Called before the instance is deallocated.
+// Tells the receiver to clean up prior to deallocation. It is an error for an
+// instance of this class to deallocate without a call to this method first.
 - (void)shutdown;
 
 // Switch all global states for the given mode (normal or incognito).

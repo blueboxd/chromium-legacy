@@ -97,12 +97,6 @@
 				</dict>
 				<dict>
 					<key>input</key>
-					<string>IDS_IOS_PHOTO_LIBRARY_USAGE_DESCRIPTION</string>
-					<key>output</key>
-					<string>NSPhotoLibraryUsageDescription</string>
-				</dict>
-				<dict>
-					<key>input</key>
 					<string>IDS_IOS_PHOTO_LIBRARY_ADD_USAGE_DESCRIPTION</string>
 					<key>output</key>
 					<string>NSPhotoLibraryAddUsageDescription</string>

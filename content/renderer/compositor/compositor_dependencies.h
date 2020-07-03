@@ -40,11 +40,7 @@ class RenderWidget;
 
 class CONTENT_EXPORT CompositorDependencies {
  public:
-  virtual int GetGpuRasterizationMSAASampleCount() = 0;
   virtual bool IsLcdTextEnabled() = 0;
-  virtual bool IsZeroCopyEnabled() = 0;
-  virtual bool IsPartialRasterEnabled() = 0;
-  virtual bool IsGpuMemoryBufferCompositorResourcesEnabled() = 0;
   virtual bool IsElasticOverscrollEnabled() = 0;
   virtual bool IsUseZoomForDSFEnabled() = 0;
   virtual bool IsSingleThreaded() = 0;
@@ -65,10 +61,6 @@ class CONTENT_EXPORT CompositorDependencies {
       const GURL& url,
       LayerTreeFrameSinkCallback callback,
       const char* client_name) = 0;
-
-#ifdef OS_ANDROID
-  virtual bool UsingSynchronousCompositing() = 0;
-#endif
 
   virtual ~CompositorDependencies() {}
 };

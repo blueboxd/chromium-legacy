@@ -155,7 +155,7 @@ SyncFileSystemRequestFileSystemFunction::Run() {
                           url::Origin::Create(source_url().GetOrigin()),
                           storage::kFileSystemTypeSyncable,
                           storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
-                          base::Bind(&self::DidOpenFileSystem, this)));
+                          base::BindOnce(&self::DidOpenFileSystem, this)));
   return RespondLater();
 }
 

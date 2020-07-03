@@ -543,7 +543,10 @@ jumbo_static_library("test_support") {
   }
 
   if (is_mac) {
-    deps += [ "//ui/views:test_support" ]
+    deps += [
+      "//ui/base/mojom",
+      "//ui/views:test_support",
+    ]
   }
 
   if (use_ozone) {

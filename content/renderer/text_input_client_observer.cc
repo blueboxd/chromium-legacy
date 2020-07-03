@@ -31,8 +31,6 @@ TextInputClientObserver::~TextInputClientObserver() = default;
 bool TextInputClientObserver::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(TextInputClientObserver, message)
-    IPC_MESSAGE_HANDLER(TextInputClientMsg_StringAtPoint,
-                        OnStringAtPoint)
     IPC_MESSAGE_HANDLER(TextInputClientMsg_StringForRange, OnStringForRange)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -57,21 +55,6 @@ blink::WebLocalFrame* TextInputClientObserver::GetFocusedFrame() const {
     return focused->LocalRoot() == local_root ? focused : nullptr;
   }
   return nullptr;
-}
-
-void TextInputClientObserver::OnStringAtPoint(gfx::Point point) {
-  gfx::Point baseline_point;
-  NSAttributedString* string = nil;
-
-  if (auto* frame_widget = GetWebFrameWidget()) {
-    string = blink::WebSubstringUtil::AttributedWordAtPoint(frame_widget, point,
-                                                            baseline_point);
-  }
-
-  ui::mojom::AttributedStringPtr attributed_string =
-      ui::mojom::AttributedString::From(string);
-  Send(new TextInputClientReplyMsg_GotStringAtPoint(
-      MSG_ROUTING_NONE, *attributed_string, baseline_point));
 }
 
 void TextInputClientObserver::OnStringForRange(gfx::Range range) {

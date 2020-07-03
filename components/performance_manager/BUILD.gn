@@ -114,6 +114,7 @@ static_library("performance_manager") {
     "public/performance_manager_owned.h",
     "public/performance_manager_registered.h",
     "public/render_frame_host_proxy.h",
+    "public/render_process_host_id.h",
     "public/render_process_host_proxy.h",
     "public/web_contents_proxy.h",
     "registered_objects.h",

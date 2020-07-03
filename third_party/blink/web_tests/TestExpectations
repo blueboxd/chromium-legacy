@@ -2659,6 +2659,9 @@ crbug.com/1100119 [ Mac ] external/wpt/css/css-pseudo/active-selection-054.html 
 crbug.com/1018465 external/wpt/css/css-pseudo/active-selection-056.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/css/mediaqueries/mq-range-001.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/mediaqueries/mq-range-001.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/mediaqueries/mq-range-001.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/wasm/jsapi/functions/incumbent.html [ Crash ]
 crbug.com/626703 [ Mac ] external/wpt/wasm/jsapi/functions/incumbent.html [ Crash ]
 crbug.com/626703 [ Win ] external/wpt/wasm/jsapi/functions/incumbent.html [ Crash ]

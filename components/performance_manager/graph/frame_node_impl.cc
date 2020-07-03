@@ -38,7 +38,9 @@ FrameNodeImpl::FrameNodeImpl(ProcessNodeImpl* process_node,
       browsing_instance_id_(browsing_instance_id),
       site_instance_id_(site_instance_id),
       render_frame_host_proxy_(content::GlobalFrameRoutingId(
-          process_node->render_process_host_proxy().render_process_host_id(),
+          process_node->render_process_host_proxy()
+              .render_process_host_id()
+              .value(),
           render_frame_id)),
       weak_factory_(this) {
   DETACH_FROM_SEQUENCE(sequence_checker_);

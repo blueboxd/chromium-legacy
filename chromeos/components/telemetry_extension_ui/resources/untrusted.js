@@ -1,64 +1,17 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-var header = document.getElementById('untrusted-title');
-header.textContent = 'Untrusted Telemetry Extension';
+
+/** A pipe through which we can send messages to the parent frame. */
+const parentMessagePipe =
+    new MessagePipe('chrome://telemetry-extension', window.parent);
 
 /**
- * This is used to create TrustedScriptURL.
- * @type {!TrustedTypePolicy}
+ * Requests probe telemetry info.
+ * @return {!Promise<ProbeTelemetryInfoResponse>}
  */
-const workerUrlPolicy = trustedTypes.createPolicy(
-    'telemetry-extension-static',
-    {createScriptURL: () => 'untrusted_worker.js'});
-
-// For testing purposes: notify the parent window the iframe has been embedded
-// successfully.
-window.addEventListener('message', event => {
-  if (event.origin.startsWith('chrome://telemetry-extension')) {
-    let data = /** @type {string} */ (event.data);
-    if (data === 'runWebWorker') {
-      runWebWorker();
-    } else if (data === 'hello') {
-      window.parent.postMessage(
-          {'success': true}, 'chrome://telemetry-extension');
-    }
-  }
-});
-
-/**
- * Starts dedicated worker.
- */
-function runWebWorker() {
-  if (!window.Worker) {
-    console.error('Error: Worker is not supported!');
-    return;
-  }
-
-  // createScriptURL() always returns a 'untrusted_workjer.js' TrustedScriptURL,
-  // so pass an empty string. In the future we might be able to avoid the empty
-  // string if https://github.com/w3c/webappsec-trusted-types/issues/278 gets
-  // fixed.
-  /**
-   * Closure Compiler only support string type as an argument to Worker
-   * @suppress {checkTypes}
-   */
-  let worker = new Worker(workerUrlPolicy.createScriptURL(''));
-
-  console.debug('Starting Worker...', worker);
-
-  /**
-   * Registers onmessage event handler.
-   * @param {MessageEvent} event Incoming message event.
-   */
-  worker.onmessage = function(event) {
-    let data = /** @type {string} */ (event.data);
-
-    console.debug('Message received from worker:', data);
-
-    window.parent.postMessage(
-        {'message': data}, 'chrome://telemetry-extension');
-  };
-
-  worker.postMessage('WebWorker');
+async function requestTelemetryInfo() {
+  const response = /** @type {!ProbeTelemetryInfoResponse} */ (
+      await parentMessagePipe.sendMessage(Message.PROBE_TELEMETRY_INFO));
+  return response;
 }

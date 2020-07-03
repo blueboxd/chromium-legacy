@@ -2051,7 +2051,7 @@ void RenderWidgetHostViewMac::OnGotStringForDictionaryOverlay(
     int32_t target_widget_routing_id,
     ui::mojom::AttributedStringPtr attributed_string,
     const gfx::Point& baseline_point) {
-  if (attributed_string->string.empty()) {
+  if (!attributed_string || attributed_string->string.empty()) {
     // The PDF plugin does not support getting the attributed string at point.
     // Until it does, use NSPerformService(), which opens Dictionary.app.
     // TODO(shuchen): Support GetStringAtPoint() & GetStringFromRange() for PDF.

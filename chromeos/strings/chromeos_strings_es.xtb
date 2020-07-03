@@ -39,8 +39,10 @@
 <translation id="428217921675623177">Los trabajos de impresión con más 90 días de antigüedad se eliminarán</translation>
 <translation id="4429881212383817840">El ticket de Kerberos caducará pronto</translation>
 <translation id="445059817448385655">Contraseña antigua</translation>
+<translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> de <ph name="TOTAL_PAGE_NUMBER" />. Pulsa Intro para cancelar el trabajo de impresión.</translation>
 <translation id="467510802200863975">Las contraseñas no coinciden</translation>
 <translation id="4731797938093519117">Acceso parental</translation>
+<translation id="4808449224298348341">Trabajo de impresión <ph name="DOCUMENT_TITLE" /> cancelado</translation>
 <translation id="4890353053343094602">Selecciona otra inmediatamente</translation>
 <translation id="4932733599132424254">Fecha</translation>
 <translation id="5212543919916444558">No encuentro nada en la pantalla con lo que pueda ayudarte. Toca el micrófono para pedirme algo.</translation>

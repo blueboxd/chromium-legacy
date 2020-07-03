@@ -86,10 +86,6 @@ class ShellPlatformDelegate {
       RenderFrameHost* frame,
       const BluetoothChooser::EventHandler& event_handler);
 
-  // Called when the a renderer attached to the shell window is reported as
-  // unresponsive.
-  virtual void RendererUnresponsive(Shell* shell) {}
-
   // Allows platforms to prevent running insecure content. By default returns
   // false, only allowing what Shell allows on its own.
   virtual bool ShouldAllowRunningInsecureContent(Shell* shell);

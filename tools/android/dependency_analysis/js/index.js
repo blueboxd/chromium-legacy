@@ -6,7 +6,6 @@ import {parseGraphModelFromJson} from './process_graph_json.js';
 import {PageModel} from './page_model.js';
 import {PageController} from './page_controller.js';
 import {GraphView} from './graph_view.js';
-import {shortenPackageName, restorePackageName} from './chrome_hooks.js';
 
 // For ease of development, we currently serve all our JSON and other assets
 // through a simple Python server at localhost:8888. This should be changed

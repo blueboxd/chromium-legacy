@@ -223,8 +223,8 @@ class ContentSettingsPattern {
   // |Relation| of the two patterns.
   Relation Compare(const ContentSettingsPattern& other) const;
 
-  // True if either scheme, domain, path or port in the pattern has a wildcard
-  bool HasWildcards() const;
+  // True if the host in the pattern has a wildcard.
+  bool HasHostWildcards() const;
 
   // Returns true if the pattern and the |other| pattern are identical.
   bool operator==(const ContentSettingsPattern& other) const;

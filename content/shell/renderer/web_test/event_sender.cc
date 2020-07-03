@@ -26,9 +26,9 @@
 #include "content/renderer/compositor/compositor_dependencies.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_widget.h"
-#include "content/shell/renderer/web_test/blink_test_runner.h"
 #include "content/shell/renderer/web_test/mock_spell_check.h"
 #include "content/shell/renderer/web_test/test_interfaces.h"
+#include "content/shell/renderer/web_test/test_runner.h"
 #include "content/shell/renderer/web_test/web_view_test_proxy.h"
 #include "content/shell/renderer/web_test/web_widget_test_proxy.h"
 #include "gin/handle.h"
@@ -41,6 +41,7 @@
 #include "third_party/blink/public/common/input/web_pointer_properties.h"
 #include "third_party/blink/public/common/input/web_touch_event.h"
 #include "third_party/blink/public/mojom/input/pointer_lock_result.mojom.h"
+#include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
@@ -2023,9 +2024,8 @@ void EventSender::DumpFilenameBeingDragged() {
 #else
       filename = filename.ReplaceExtension(filename_extension.Utf8());
 #endif
-      blink_test_runner()->PrintMessage(
-          std::string("Filename being dragged: ") + filename.AsUTF8Unsafe() +
-          "\n");
+      test_runner()->PrintMessage(std::string("Filename being dragged: ") +
+                                  filename.AsUTF8Unsafe() + "\n");
       return;
     }
   }
@@ -2085,15 +2085,15 @@ void EventSender::BeginDragWithItems(
   }
 
   current_drag_data_ = blink::WebDragData();
-  WebVector<WebString> absolute_filenames;
-  for (size_t i = 0; i < items.size(); ++i) {
-    current_drag_data_->AddItem(items[i]);
-    if (items[i].storage_type == WebDragData::Item::kStorageTypeFilename)
-      absolute_filenames.emplace_back(items[i].filename_data);
+  std::vector<base::FilePath> file_paths;
+  for (const WebDragData::Item& item : items) {
+    current_drag_data_->AddItem(item);
+    if (item.storage_type == WebDragData::Item::kStorageTypeFilename)
+      file_paths.push_back(blink::WebStringToFilePath(item.filename_data));
   }
-  if (!absolute_filenames.empty()) {
+  if (!file_paths.empty()) {
     current_drag_data_->SetFilesystemId(
-        blink_test_runner()->RegisterIsolatedFileSystem(absolute_filenames));
+        test_runner()->RegisterIsolatedFileSystem(file_paths));
   }
   current_drag_effects_allowed_ = blink::kWebDragOperationCopy;
 
@@ -2118,11 +2118,12 @@ void EventSender::BeginDragWithItems(
 
 void EventSender::BeginDragWithFiles(const std::vector<std::string>& files) {
   WebVector<WebDragData::Item> items;
-  for (size_t i = 0; i < files.size(); ++i) {
+
+  for (const std::string& file_path : files) {
     WebDragData::Item item;
     item.storage_type = WebDragData::Item::kStorageTypeFilename;
     item.filename_data =
-        blink_test_runner()->GetAbsoluteWebStringFromUTF8Path(files[i]);
+        blink_test_runner()->GetAbsoluteWebStringFromUTF8Path(file_path);
     items.emplace_back(item);
   }
 
@@ -2974,6 +2975,10 @@ void EventSender::SendGesturesForMouseWheelEvent(
 
 TestInterfaces* EventSender::interfaces() {
   return web_widget_test_proxy_->GetWebViewTestProxy()->test_interfaces();
+}
+
+TestRunner* EventSender::test_runner() {
+  return interfaces()->GetTestRunner();
 }
 
 BlinkTestRunner* EventSender::blink_test_runner() {

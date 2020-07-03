@@ -250,6 +250,8 @@ base::Optional<std::pair<std::unique_ptr<Crypter>,
                          base::Optional<std::unique_ptr<CableDiscoveryData>>>>
 HandshakeInitiator::ProcessResponse(base::span<const uint8_t> response) {
   if (response.size() < kP256X962Length) {
+    FIDO_LOG(DEBUG) << "Handshake response truncated (" << response.size()
+                    << " bytes)";
     return base::nullopt;
   }
   auto peer_point_bytes = response.subspan(0, kP256X962Length);
@@ -277,6 +279,7 @@ HandshakeInitiator::ProcessResponse(base::span<const uint8_t> response) {
     if (ECDH_compute_key(shared_key_se, sizeof(shared_key_se), peer_point.get(),
                          local_identity_.get(),
                          /*kdf=*/nullptr) != sizeof(shared_key_se)) {
+      FIDO_LOG(DEBUG) << "ECDH_compute_key failed";
       return base::nullopt;
     }
     noise_.MixKey(shared_key_se);

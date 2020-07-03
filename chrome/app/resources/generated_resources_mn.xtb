@@ -281,6 +281,7 @@
 <translation id="1340527397989195812">Files app ашиглан төхөөрөмжөөс мэдээллийг хуулан авч хадгалах.</translation>
 <translation id="1341988552785875222">Одоогийн ханын зургийг '<ph name="APP_NAME" />'-с тохируулсан. Та өөр ханын зураг сонгохдоо '<ph name="APP_NAME" />'-г идэвхгүй болгох шаардлагатай.</translation>
 <translation id="1343865611738742294">Linux аппад USB төхөөрөмжид хандах зөвшөөрөл өгнө үү. USB төхөөрөмжийг салгасны дараа Linux үүнийг санахгүй.</translation>
+<translation id="1344143111673240412">Камерын тохиргоон дахь өөрчлөлт нь Parallels Desktop-г дахин ачаалахыг шаарддаг</translation>
 <translation id="1347256498747320987">Шинэчлэлтүүд болон аппуудыг суулгах. Үргэлжлүүлснээр та энэ төхөөрөмж нь Google, таны оператор компани, таны төхөөрөмжийн үйлдвэрлэгчээс шинэчлэлтүүд болон аппуудыг мөн адил автоматаар татаж, суулгаж (мобайл дата ашиглаж болзошгүй) болохыг зөвшөөрч байна. Эдгээр аппын зарим нь аппын худалдан авалтыг санал болгож болзошгүй. <ph name="BEGIN_LINK1" />Нэмэлт мэдээлэл авах<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">Батерейны түвшин <ph name="BATTERY_LEVEL" />% болох үед шинэчлэлтийг эхлүүлнэ.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -932,6 +933,7 @@
 <translation id="2151576029659734873">Цонхийн хүчингүй индекс оруулсан байна.</translation>
 <translation id="2152281589789213846">Профайлдаа хэвлэгч нэмэх</translation>
 <translation id="2154484045852737596">Картыг засах</translation>
+<translation id="2154697841132053118">Яриаг илрүүлж байна...</translation>
 <translation id="2154710561487035718">URL-ийг хуул</translation>
 <translation id="2155772377859296191"><ph name="WIDTH" /> x <ph name="HEIGHT" /> юм шиг харагдаж байна</translation>
 <translation id="2156294658807918600">Үйлчилгээний ажилтан: <ph name="SCRIPT_URL" /></translation>
@@ -1367,6 +1369,7 @@
 <translation id="2682498795777673382">Таны эцэг эхийн хийсэн шинэчлэлт</translation>
 <translation id="2683638487103917598">Эрэмбэлсэн фолдер</translation>
 <translation id="2684004000387153598">Үргэлжлүүлэхийн тулд OK сонголтыг дараад имэйл хаягаараа шинэ профайл үүсгэхийн тулд Хүн нэмэх гэсэн сонголтыг дарна уу.</translation>
+<translation id="2686222346846590368">Энэ бол энэ <ph name="DEVICE_TYPE" />-н программ хангамж болон аюулгүй байдлын сүүлийн автомат шинэчлэлт юм. Цаашид шинэчлэлт авахын тулд шинэ загвар луу сайжруулна уу. &lt;a target="_blank" href="<ph name="URL" />"&gt;Нэмэлт мэдээлэл авах<ph name="LINK_END" /></translation>
 <translation id="2687403674020088961">Бүх күүкиг блоклох (зөвлөдөггүй)</translation>
 <translation id="2687407218262674387">Google-н үйлчилгээний нөхцөл</translation>
 <translation id="2688196195245426394">Төхөөрөмжийг серверт бүртгүүлэх үед алдаа гарлаа: <ph name="CLIENT_ERROR" /> .</translation>
@@ -1389,6 +1392,7 @@
 <translation id="2712173769900027643">Зөвшөөрөл авах</translation>
 <translation id="2713444072780614174">Цагаан</translation>
 <translation id="2714393097308983682">Google Play Store</translation>
+<translation id="2714997332747470971">Хувийн мэдээллийн зөвлөмж нь таныг нэр, хаяг эсвэл утасны дугаар зэрэг зөвлөмжүүдийн тусламжтайгаар илүү хурдан бичихэд тусална. Зөвхөн та бүртгэлдээ зориулсан хувийн бөгөөд хувийн болгосон зөвлөмжүүдийг харах боломжтой.</translation>
 <translation id="2715751256863167692">Энэ сайжруулалт таны Chromebook-г шинэчилж хэрэглэгчийн одоогийн өгөгдлийг устгадаг.</translation>
 <translation id="2716986496990888774">Энэ тохиргоог эцэг эх удирддаг.</translation>
 <translation id="2718395828230677721">Шөнийн гэрэл</translation>
@@ -2310,6 +2314,7 @@
 <translation id="3839516600093027468"><ph name="HOST" />-г түр санах ой харахыг тогтмол хориглох</translation>
 <translation id="3841964634449506551">Нууц үг буруу байна</translation>
 <translation id="3842552989725514455">Шовх үзүүртэй үгсийн фонт</translation>
+<translation id="3843058644024807390">Микрофоны тохиргоон дахь өөрчлөлт нь Parallels Desktop-г дахин ачаалахыг шаарддаг</translation>
 <translation id="3846116211488856547">Вэб сайт, Android апп болон бусад зүйлийг хөгжүүлэхэд зориулсан хэрэгслийг аваарай. Linux-г суулгаснаар <ph name="DOWNLOAD_SIZE" /> өгөгдөл татаж авах болно.</translation>
 <translation id="3847319713229060696">Хүн бүрийн төлөө вэбийн аюулгүй байдлыг сайжруулахад туслах</translation>
 <translation id="385051799172605136">Буцах</translation>
@@ -2440,6 +2445,7 @@
 <translation id="3983769721878416534">Товшихоос өмнөх сааталт</translation>
 <translation id="3984159763196946143">Туршилтын горимыг эхлүүлж чадсангүй</translation>
 <translation id="3984431586879874039">Энэ сайтад аюулгүй байдлын түлхүүрээ харуулахыг зөвшөөрөх үү?</translation>
+<translation id="3986705137476756801">Одоохондоо Шууд тайлбарыг унтраах</translation>
 <translation id="3987938432087324095">Уучлаарай, сонсож чадсангүй.</translation>
 <translation id="3988996860813292272">Цагийн бүс сонгох</translation>
 <translation id="399179161741278232">Импортолж авсан</translation>
@@ -2884,6 +2890,7 @@
 <translation id="4608520674724523647">Амжилттай элсэлтийн зурагт тайлбар</translation>
 <translation id="4608703838363792434"><ph name="FILE_NAME" /> эмзэг контенттой байна</translation>
 <translation id="4610162781778310380"><ph name="PLUGIN_NAME" />-д алдаа гарлаа</translation>
+<translation id="4610178114344604329">Хувийн мэдээллийн зөвлөмжийг харуулах</translation>
 <translation id="4610637590575890427">Та энэ <ph name="SITE" /> руу орох гэж байсан уу?</translation>
 <translation id="4611114513649582138">Дата холболт боломжтой байна</translation>
 <translation id="4613144866899789710">Linux суулгахыг цуцалж байна...</translation>
@@ -3161,6 +3168,7 @@
 <translation id="4977942889532008999">Нэвтрэлтийг баталгаажуулах</translation>
 <translation id="4980805016576257426">Энэ өргөтгөл нь хортой код агуулсан байна.</translation>
 <translation id="4981449534399733132">Хөтчийн өгөгдлийг синк хийсэн бүх төхөөрөмж болон Google Бүртгэлээсээ устгахын тулд <ph name="BEGIN_LINK" />нэвтэрнэ үү<ph name="END_LINK" />.</translation>
+<translation id="4982236238228587209">Төхөөрөмжийн программ хангамж</translation>
 <translation id="4986728572522335985">Энэ нь аюулгүй байдлын түлхүүрийн ПИН зэрэг бүх өгөгдлийг устгана</translation>
 <translation id="4988526792673242964">Хуудас</translation>
 <translation id="49896407730300355">Цагийн зүүний эсрэг эргүүлэх</translation>
@@ -4681,6 +4689,7 @@
 <translation id="6938381444925658529"><ph name="DOMAIN" /> танаас шинэчлэлтийг эцсийн хугацаанаас өмнө татаж авахыг шаардаж байна. Шинэчлэлтийг таныг интернэтэд холбогдох үед автоматаар татна.</translation>
 <translation id="6938386202199793006">Танд хадгалсан 1 хэвлэгч байна.</translation>
 <translation id="6938789263968032501">Хүмүүс</translation>
+<translation id="6939815295902433669">Төхөөрөмжийн программ хангамжийг шалгах</translation>
 <translation id="6941937518557314510"><ph name="HOST_NAME" />-д гэрчилгээтэйгээ баталгаажуулахын тулд <ph name="TOKEN_NAME" />-д нэвтэрнэ үү.</translation>
 <translation id="6943060957016121200">Шуурхай модем болгохыг идэвхжүүлэх</translation>
 <translation id="6943176775188458830">Хэвлэхийг цуцлах</translation>
@@ -5152,6 +5161,7 @@
 <translation id="7522255036471229694">"Oк Google" гэж хэлнэ үү</translation>
 <translation id="7525067979554623046">Үүсгэх</translation>
 <translation id="7526658513669652747">{NUM_DOWNLOADS,plural, =1{Өөр 1}other{Бусад {NUM_DOWNLOADS}}}</translation>
+<translation id="7526989658317409655">Oрлуулагч</translation>
 <translation id="7529411698175791732">Интернет холболтоо шалгана уу. Асуудал үргэлжилсээр байвал гараад, дахин нэвтэрнэ үү.</translation>
 <translation id="7530016656428373557">Ватт хэмжигдэхүүнээр цэнэггүй болгох</translation>
 <translation id="7531779363494549572">Toхиргоо &gt; Апп, мэдэгдэл &gt; Мэдэгдэл рүү очно уу.</translation>
@@ -6187,6 +6197,7 @@
 <translation id="8798441408945964110">Үйлчилгээ үзүүлэгчийн нэр</translation>
 <translation id="8800004011501252845">Товлосон чиглэлийг харуулах</translation>
 <translation id="8800034312320686233">Сайт ажиллахгүй байна уу?</translation>
+<translation id="880069872639153240">Бичиж буй зүйл дээрээ тулгуурлан эможиний санал аваарай</translation>
 <translation id="8803953437405899238">Нэг товшилтоор шинэ чихтэй хуудас үүсгэх</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Табыг өөр цонх руу зөөх}other{Табуудыг өөр цонх руу зөөх}}</translation>
 <translation id="8805140816472474147">Синкийг эхлүүлэхийн тулд синкийн тохиргоог баталгаажуулна уу.</translation>

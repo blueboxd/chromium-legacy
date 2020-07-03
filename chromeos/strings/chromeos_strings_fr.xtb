@@ -39,8 +39,10 @@
 <translation id="428217921675623177">Les tâches d'impression datant de plus de 90 jours seront supprimées</translation>
 <translation id="4429881212383817840">Le ticket Kerberos arrive bientôt à expiration</translation>
 <translation id="445059817448385655">Ancien mot de passe</translation>
+<translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> sur <ph name="TOTAL_PAGE_NUMBER" />. Appuyez sur Entrée pour annuler la tâche d'impression.</translation>
 <translation id="467510802200863975">Les mots de passe sont différents</translation>
 <translation id="4731797938093519117">Accès parental</translation>
+<translation id="4808449224298348341">Tâche d'impression annulée pour <ph name="DOCUMENT_TITLE" /></translation>
 <translation id="4890353053343094602">Choisissez-en un nouveau immédiatement</translation>
 <translation id="4932733599132424254">Date</translation>
 <translation id="5212543919916444558">Je ne parviens pas à détecter d'éléments sur votre écran pour lesquels je peux vous aider.

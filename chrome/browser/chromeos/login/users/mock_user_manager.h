@@ -110,8 +110,6 @@ class MockUserManager : public ChromeUserManager {
                      bool(const AccountId&));
   MOCK_METHOD0(DemoAccountLoggedIn, void(void));
   MOCK_METHOD1(KioskAppLoggedIn, void(user_manager::User*));
-  MOCK_METHOD1(ArcKioskAppLoggedIn, void(user_manager::User*));
-  MOCK_METHOD1(WebKioskAppLoggedIn, void(user_manager::User*));
   MOCK_METHOD1(PublicAccountUserLoggedIn, void(user_manager::User*));
   MOCK_METHOD1(SupervisedUserLoggedIn, void(const AccountId&));
   MOCK_METHOD1(OnUserRemoved, void(const AccountId&));

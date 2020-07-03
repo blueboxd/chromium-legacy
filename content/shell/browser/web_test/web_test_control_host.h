@@ -189,12 +189,17 @@ class WebTestControlHost : public WebContentsObserver,
   void SendBluetoothManualChooserEvent(const std::string& event,
                                        const std::string& argument) override;
   void SetBluetoothManualChooser(bool enable) override;
-  void GetBluetoothManualChooserEvents() override;
+  void GetBluetoothManualChooserEvents(
+      GetBluetoothManualChooserEventsCallback reply) override;
   void SetPopupBlockingEnabled(bool block_popups) override;
   void LoadURLForFrame(const GURL& url, const std::string& frame_name) override;
   void SetScreenOrientationChanged() override;
+  void SetPermission(const std::string& name,
+                     blink::mojom::PermissionStatus status,
+                     const GURL& origin,
+                     const GURL& embedding_origin) override;
   void BlockThirdPartyCookies(bool block) override;
-  void GetWritableDirectory(GetWritableDirectoryCallback callback) override;
+  void GetWritableDirectory(GetWritableDirectoryCallback reply) override;
   void SetFilePathForMockFileDialog(const base::FilePath& path) override;
   void FocusDevtoolsSecondaryWindow() override;
 

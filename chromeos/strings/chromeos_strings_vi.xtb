@@ -39,8 +39,10 @@
 <translation id="428217921675623177">Các lệnh in quá 90 ngày sẽ bị xóa</translation>
 <translation id="4429881212383817840">Phiếu Kerberos sẽ sớm hết hạn</translation>
 <translation id="445059817448385655">Mật khẩu cũ</translation>
+<translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" />/<ph name="TOTAL_PAGE_NUMBER" />. Hãy nhấn để hủy lệnh in.</translation>
 <translation id="467510802200863975">Mật khẩu không khớp</translation>
 <translation id="4731797938093519117">Quyền truy cập của cha mẹ</translation>
+<translation id="4808449224298348341">Đã hủy lệnh in <ph name="DOCUMENT_TITLE" /></translation>
 <translation id="4890353053343094602">Chọn ngay một mật khẩu mới</translation>
 <translation id="4932733599132424254">Ngày Tháng</translation>
 <translation id="5212543919916444558">Tôi không tìm thấy nội dung nào trên màn hình để có thể trợ giúp cho bạn.

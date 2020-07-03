@@ -2210,6 +2210,20 @@ StyleResolver::BeforeChangeStyleForTransitionUpdate(
   StyleResolverState state(GetDocument(), element);
   STACK_UNINITIALIZED StyleCascade cascade(state);
   state.SetStyle(ComputedStyle::Clone(base_style));
+
+  // Various property values may depend on the parent style. A valid parent
+  // style is required, even if animating the root element, in order to
+  // handle these dependencies. The root element inherits from initial
+  // styles.
+  if (!state.ParentStyle()) {
+    if (element != GetDocument().documentElement()) {
+      // Do not apply interpolations to a detached element.
+      return state.TakeStyle();
+    }
+    state.SetParentStyle(InitialStyleForElement(GetDocument()));
+    state.SetLayoutParentStyle(state.ParentStyle());
+  }
+
   // TODO(crbug.com/1098937): Include active CSS animations in a separate
   // interpolations map and add each map at the appropriate CascadeOrigin.
   ApplyInterpolations(state, cascade, transition_interpolations);

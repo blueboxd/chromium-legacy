@@ -423,6 +423,26 @@ bool RendererBlinkPlatformImpl::IsSynchronousCompositingEnabled() {
 }
 #endif
 
+bool RendererBlinkPlatformImpl::IsUseZoomForDSFEnabled() {
+  RenderThread* thread = RenderThread::Get();
+  return thread ? thread->IsUseZoomForDSF() : true;
+}
+
+bool RendererBlinkPlatformImpl::IsLcdTextEnabled() {
+  RenderThreadImpl* thread = RenderThreadImpl::current();
+  return thread ? thread->IsLcdTextEnabled() : false;
+}
+
+bool RendererBlinkPlatformImpl::IsElasticOverscrollEnabled() {
+  RenderThreadImpl* thread = RenderThreadImpl::current();
+  return thread ? thread->IsElasticOverscrollEnabled() : false;
+}
+
+bool RendererBlinkPlatformImpl::IsScrollAnimatorEnabled() {
+  RenderThreadImpl* thread = RenderThreadImpl::current();
+  return thread ? thread->IsScrollAnimatorEnabled() : false;
+}
+
 bool RendererBlinkPlatformImpl::IsThreadedAnimationEnabled() {
   RenderThreadImpl* thread = RenderThreadImpl::current();
   return thread ? thread->IsThreadedAnimationEnabled() : true;

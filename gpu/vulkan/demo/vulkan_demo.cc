@@ -202,14 +202,18 @@ void VulkanDemo::RenderFrame() {
       .fNumSemaphores = 1,
       .fSignalSemaphores = &semaphore,
   };
-  sk_surface_->flush(SkSurface::BackendSurfaceAccess::kPresent, flush_info);
+  auto queue_index =
+      vulkan_context_provider_->GetDeviceQueue()->GetVulkanQueueIndex();
+  GrBackendSurfaceMutableState state(VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                                     queue_index);
+  sk_surface_->flush(flush_info, &state);
   sk_surface_->getContext()->submit();
   auto backend = sk_surface_->getBackendRenderTarget(
       SkSurface::kFlushRead_BackendHandleAccess);
   GrVkImageInfo vk_image_info;
   if (!backend.getVkImageInfo(&vk_image_info))
     NOTREACHED() << "Failed to get image info";
-  scoped_write_->set_image_layout(vk_image_info.fImageLayout);
+  DCHECK_EQ(vk_image_info.fImageLayout, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
   scoped_write_.reset();
   vulkan_surface_->SwapBuffers();
 

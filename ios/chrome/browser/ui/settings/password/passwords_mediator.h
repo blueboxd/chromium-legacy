@@ -7,17 +7,27 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/memory/scoped_refptr.h"
+
 class IOSChromePasswordCheckManager;
 @protocol PasswordsConsumer;
+
+namespace password_manager {
+class PasswordStore;
+}
 
 // This mediator fetches and organises the passwords for its consumer.
 @interface PasswordsMediator : NSObject
 
-- (instancetype)initWithConsumer:(id<PasswordsConsumer>)consumer
-            passwordCheckManager:(IOSChromePasswordCheckManager*)manager
+- (instancetype)initWithPasswordStore:
+                    (scoped_refptr<password_manager::PasswordStore>)
+                        passwordStore
+                 passwordCheckManager:(IOSChromePasswordCheckManager*)manager
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
+
+@property(nonatomic, weak) id<PasswordsConsumer> consumer;
 
 @end
 

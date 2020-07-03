@@ -8,21 +8,46 @@ assert(is_chromeos, "Telemetry Extension is Chrome OS only")
 assert(!is_official_build,
        "Telemetry Extension is only built for unofficial builds")
 
-js_type_check("closure_compile") {
+group("closure_compile") {
   deps = [
-    ":trusted",
-    ":untrusted",
-    ":untrusted_worker",
+    ":trusted_closure_compile",
+    ":untrusted_closure_compile",
+    ":untrusted_worker_closure_compile",
   ]
 }
 
+js_type_check("trusted_closure_compile") {
+  deps = [
+    ":message_pipe",
+    ":message_types",
+    ":trusted",
+  ]
+}
+
+js_type_check("untrusted_closure_compile") {
+  deps = [
+    ":message_pipe",
+    ":message_types",
+    ":untrusted",
+  ]
+}
+
+js_type_check("untrusted_worker_closure_compile") {
+  deps = [ ":untrusted_worker" ]
+}
+
+js_library("message_pipe") {
+}
+
+js_library("message_types") {
+  deps = [ "../mojom:mojom_js_library_for_compile" ]
+}
+
 js_library("trusted") {
-  sources = [ "trusted.js" ]
   deps = [ "../mojom:mojom_js_library_for_compile" ]
 }
 
 js_library("untrusted") {
-  sources = [ "untrusted.js" ]
 }
 
 js_library("untrusted_worker") {

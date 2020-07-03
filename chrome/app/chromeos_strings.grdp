@@ -5190,7 +5190,7 @@
     Adding G Suite for Education account in Android apps is not supported.
   </message>
 
-  <!-- Strings for Account Manager welcome screen -->
+  <!-- Strings for Account Manager screens -->
   <message name="IDS_ACCOUNT_MANAGER_WELCOME_TITLE" desc="Title for the Chrome OS Account Manager Welcome screen.">
     Sign-in has changed
   </message>
@@ -5199,6 +5199,23 @@
   </message>
   <message name="IDS_ACCOUNT_MANAGER_WELCOME_BUTTON" desc="Label for the button to view accounts on the Chrome OS Account Manager Welcome screen.">
     View accounts
+  </message>
+  <message name="IDS_ACCOUNT_MANAGER_ERROR_NO_INTERNET_TITLE" desc="Title for the network error screen.">
+    No Internet
+  </message>
+  <message name="IDS_ACCOUNT_MANAGER_ERROR_NO_INTERNET_BODY" desc="Text body for the network error screen with list of suggestions for the user.">
+    Try:
+    <ph name="BEGIN_LIST">&lt;ul&gt;</ph>
+      <ph name="LIST_ITEM">&lt;li&gt;</ph>Checking the network cables, modem, and router
+      <ph name="LIST_ITEM">&lt;li&gt;</ph>Reconnecting to Wi-Fi
+      <ph name="LIST_ITEM">&lt;li&gt;</ph>Running Chrome Connectivity Diagnostics
+    <ph name="END_LIST">&lt;/ul&gt;</ph>
+  </message>
+  <message name="IDS_ACCOUNT_MANAGER_ERROR_CANNOT_ADD_ACCOUNT_TITLE" desc="Title for the error screen which tells user that account addition resulted in an error.">
+    There was an error adding an account
+  </message>
+  <message name="IDS_ACCOUNT_MANAGER_ERROR_CANNOT_ADD_ACCOUNT_BODY" desc="Text body for the error screen which tells user to try again later.">
+    Please try again later.
   </message>
 
   <!-- Strings for per-account Migration welcome screen -->

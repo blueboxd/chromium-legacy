@@ -1,3 +1,4 @@
+#include "base/debug/stack_trace.h"
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -47,6 +48,7 @@
 #include "mojo/public/mojom/base/text_direction.mojom-forward.h"
 #include "services/network/public/mojom/cors.mojom.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
+#include "third_party/blink/public/common/permissions/permission_utils.h"
 #include "third_party/blink/public/mojom/app_banner/app_banner.mojom.h"
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
@@ -361,7 +363,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
       const std::string& script);
   bool FindString(const std::string& search_text,
                   const std::vector<std::string>& options_array);
-  bool IsChooserShown();
 
   bool IsCommandEnabled(const std::string& command);
   std::string PathToLocalResource(const std::string& path);
@@ -509,8 +510,13 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("addWebPageOverlay", &TestRunnerBindings::AddWebPageOverlay)
       .SetMethod("capturePrintingPixelsThen",
                  &TestRunnerBindings::CapturePrintingPixelsThen)
+      // If the test will be closing its windows explicitly, and wants to look
+      // for leaks due to those windows closing incorrectly, it can specify this
+      // to avoid having them closed at the end of the test before the leak
+      // checker.
       .SetMethod("checkForLeakedWindows",
                  &TestRunnerBindings::CheckForLeakedWindows)
+      // Clears WebSQL databases.
       .SetMethod("clearAllDatabases", &TestRunnerBindings::ClearAllDatabases)
       .SetMethod("clearBackForwardList", &TestRunnerBindings::NotImplemented)
       // Clears persistent Trust Tokens state in the browser. See
@@ -569,6 +575,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("triggerTestInspectorIssue",
                  &TestRunnerBindings::TriggerTestInspectorIssue)
       .SetMethod("findString", &TestRunnerBindings::FindString)
+      // Moves focus and active state to the secondary devtools window, which
+      // exists only in devtools JS tests.
       .SetMethod("focusDevtoolsSecondaryWindow",
                  &TestRunnerBindings::FocusDevtoolsSecondaryWindow)
       // Sets a flag causing the next call to WebGLRenderingContext::Create() to
@@ -581,13 +589,18 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
 
       // The Bluetooth functions are specified at
       // https://webbluetoothcg.github.io/web-bluetooth/tests/.
+      //
+      // Returns the events recorded since the last call to this function.
       .SetMethod("getBluetoothManualChooserEvents",
                  &TestRunnerBindings::GetBluetoothManualChooserEvents)
       .SetMethod("getManifestThen", &TestRunnerBindings::GetManifestThen)
+      // Returns the absolute path to a directory this test can write data in.
+      // This returns the path to a fresh empty directory every time this method
+      // is called. Additionally when this method is called any previously
+      // created directories will be deleted.
       .SetMethod("getWritableDirectory",
                  &TestRunnerBindings::GetWritableDirectory)
       .SetMethod("insertStyleSheet", &TestRunnerBindings::InsertStyleSheet)
-      .SetMethod("isChooserShown", &TestRunnerBindings::IsChooserShown)
       // Checks if an internal editing command is currently available for the
       // frame's document.
       .SetMethod("isCommandEnabled", &TestRunnerBindings::IsCommandEnabled)
@@ -644,6 +657,10 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::SetAllowFileAccessFromFileURLs)
       .SetMethod("setAllowRunningOfInsecureContent",
                  &TestRunnerBindings::SetAllowRunningOfInsecureContent)
+      // Controls whether all cookies should be accepted or writing cookies in a
+      // third-party context is blocked:
+      // - Allows all cookies when |block| is false
+      // - Blocks only third-party cookies when |block| is true
       .SetMethod("setBlockThirdPartyCookies",
                  &TestRunnerBindings::SetBlockThirdPartyCookies)
       .SetMethod("setAudioData", &TestRunnerBindings::SetAudioData)
@@ -664,6 +681,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::SetCustomPolicyDelegate)
       .SetMethod("setCustomTextOutput",
                  &TestRunnerBindings::SetCustomTextOutput)
+      // Setting quota to kDefaultDatabaseQuota will reset it to the default
+      // value.
       .SetMethod("setDatabaseQuota", &TestRunnerBindings::SetDatabaseQuota)
       .SetMethod("setDomainRelaxationForbiddenForURLScheme",
                  &TestRunnerBindings::SetDomainRelaxationForbiddenForURLScheme)
@@ -673,6 +692,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::SetDumpJavaScriptDialogs)
       .SetMethod("setEffectiveConnectionType",
                  &TestRunnerBindings::SetEffectiveConnectionType)
+      // Sets the path that should be returned when the test shows a file
+      // dialog.
       .SetMethod("setFilePathForMockFileDialog",
                  &TestRunnerBindings::SetFilePathForMockFileDialog)
       .SetMethod("setHighlightAds", &TestRunnerBindings::SetHighlightAds)
@@ -688,9 +709,15 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::NotImplemented)
       .SetMethod("setMockScreenOrientation",
                  &TestRunnerBindings::SetMockScreenOrientation)
+      // Calls setlocale(LC_ALL, ...) for a specified locale.
       .SetMethod("setPOSIXLocale", &TestRunnerBindings::SetPOSIXLocale)
+      // Hide or show the main window. Watch for the |document.visibilityState|
+      // to change in order to wait for the side effects of calling this.
       .SetMethod("setMainWindowHidden",
                  &TestRunnerBindings::SetMainWindowHidden)
+      // Sets the permission's |name| to |value| for a given {origin, embedder}
+      // tuple. Sends a message to the WebTestPermissionManager in order for it
+      // to update its database.
       .SetMethod("setPermission", &TestRunnerBindings::SetPermission)
       .SetMethod("setPluginsAllowed", &TestRunnerBindings::SetPluginsAllowed)
       .SetMethod("setPluginsEnabled", &TestRunnerBindings::SetPluginsEnabled)
@@ -730,10 +757,13 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::SetWillSendRequestClearReferrer)
       .SetMethod("setWindowFocus",
                  &TestRunnerBindings::SimulateBrowserWindowFocus)
+      // Simulates a click on a Web Notification.
       .SetMethod("simulateWebNotificationClick",
                  &TestRunnerBindings::SimulateWebNotificationClick)
+      // Simulates closing a Web Notification.
       .SetMethod("simulateWebNotificationClose",
                  &TestRunnerBindings::SimulateWebNotificationClose)
+      // Simulates a user deleting a content index entry.
       .SetMethod("simulateWebContentIndexDelete",
                  &TestRunnerBindings::SimulateWebContentIndexDelete)
       .SetMethod("textZoomIn", &TestRunnerBindings::TextZoomIn)
@@ -979,14 +1009,17 @@ void TestRunnerBindings::SetEffectiveConnectionType(
 base::FilePath::StringType TestRunnerBindings::GetWritableDirectory() {
   if (invalid_)
     return {};
-  return runner_->GetWritableDirectory().value();
+  base::FilePath result;
+  runner_->GetWebTestControlHostRemote()->GetWritableDirectory(&result);
+  return result.value();
 }
 
 void TestRunnerBindings::SetFilePathForMockFileDialog(
     const base::FilePath::StringType& path) {
   if (invalid_)
     return;
-  runner_->SetFilePathForMockFileDialog(base::FilePath(path));
+  runner_->GetWebTestControlHostRemote()->SetFilePathForMockFileDialog(
+      base::FilePath(path));
 }
 
 void TestRunnerBindings::SetMockSpellCheckerEnabled(bool enabled) {
@@ -1145,14 +1178,14 @@ void TestRunnerBindings::SetTrustTokenKeyCommitments(
   if (invalid_)
     return;
 
-  runner_->blink_test_runner_->SetTrustTokenKeyCommitments(
+  runner_->GetWebTestClientRemote()->SetTrustTokenKeyCommitments(
       raw_commitments, WrapV8Closure(std::move(v8_callback)));
 }
 
 void TestRunnerBindings::SetMainWindowHidden(bool hidden) {
   if (invalid_)
     return;
-  runner_->blink_test_runner_->SetMainWindowHidden(hidden);
+  runner_->GetWebTestControlHostRemote()->SetMainWindowHidden(hidden);
 }
 
 void TestRunnerBindings::SetTextDirection(const std::string& direction_name) {
@@ -1241,7 +1274,7 @@ void TestRunnerBindings::SetDisallowedSubresourcePathSuffixes(
 void TestRunnerBindings::SetPopupBlockingEnabled(bool block_popups) {
   if (invalid_)
     return;
-  runner_->SetPopupBlockingEnabled(block_popups);
+  runner_->GetWebTestControlHostRemote()->SetPopupBlockingEnabled(block_popups);
 }
 
 void TestRunnerBindings::SetJavaScriptCanAccessClipboard(bool can_access) {
@@ -1505,7 +1538,7 @@ void TestRunnerBindings::ClearTrustTokenState(
     v8::Local<v8::Function> v8_callback) {
   if (invalid_)
     return;
-  runner_->blink_test_runner_->ClearTrustTokenState(
+  runner_->GetWebTestClientRemote()->ClearTrustTokenState(
       WrapV8Closure(std::move(v8_callback)));
 }
 
@@ -1553,28 +1586,22 @@ void TestRunnerBindings::DumpNavigationPolicy() {
   runner_->DumpNavigationPolicy();
 }
 
-bool TestRunnerBindings::IsChooserShown() {
-  if (invalid_)
-    return false;
-  return runner_->IsChooserShown();
-}
-
 void TestRunnerBindings::ClearAllDatabases() {
   if (invalid_)
     return;
-  runner_->ClearAllDatabases();
+  runner_->GetWebTestClientRemote()->ClearAllDatabases();
 }
 
 void TestRunnerBindings::SetDatabaseQuota(int quota) {
   if (invalid_)
     return;
-  runner_->SetDatabaseQuota(quota);
+  runner_->GetWebTestClientRemote()->SetDatabaseQuota(quota);
 }
 
 void TestRunnerBindings::SetBlockThirdPartyCookies(bool block) {
   if (invalid_)
     return;
-  runner_->SetBlockThirdPartyCookies(block);
+  runner_->GetWebTestControlHostRemote()->BlockThirdPartyCookies(block);
 }
 
 void TestRunnerBindings::SimulateBrowserWindowFocus(bool value) {
@@ -1665,7 +1692,7 @@ void TestRunnerBindings::SetBluetoothFakeAdapter(
 void TestRunnerBindings::SetBluetoothManualChooser(bool enable) {
   if (invalid_)
     return;
-  runner_->blink_test_runner_->SetBluetoothManualChooser(enable);
+  runner_->GetWebTestControlHostRemote()->SetBluetoothManualChooser(enable);
 }
 
 static void GetBluetoothManualChooserEventsReply(
@@ -1697,7 +1724,7 @@ void TestRunnerBindings::GetBluetoothManualChooserEvents(
     v8::Local<v8::Function> callback) {
   if (invalid_)
     return;
-  return runner_->blink_test_runner_->GetBluetoothManualChooserEvents(
+  runner_->GetWebTestControlHostRemote()->GetBluetoothManualChooserEvents(
       base::BindOnce(&GetBluetoothManualChooserEventsReply,
                      weak_ptr_factory_.GetWeakPtr(), GetWebFrame(),
                      WrapV8Callback(std::move(callback))));
@@ -1708,13 +1735,17 @@ void TestRunnerBindings::SendBluetoothManualChooserEvent(
     const std::string& argument) {
   if (invalid_)
     return;
-  runner_->blink_test_runner_->SendBluetoothManualChooserEvent(event, argument);
+  runner_->GetWebTestControlHostRemote()->SendBluetoothManualChooserEvent(
+      event, argument);
 }
 
 void TestRunnerBindings::SetPOSIXLocale(const std::string& locale) {
   if (invalid_)
     return;
-  runner_->SetPOSIXLocale(locale);
+  setlocale(LC_ALL, locale.c_str());
+  // Number to string conversions require C locale, regardless of what
+  // all the other subsystems are set to.
+  setlocale(LC_NUMERIC, "C");
 }
 
 void TestRunnerBindings::SimulateWebNotificationClick(gin::Arguments* args) {
@@ -1724,7 +1755,7 @@ void TestRunnerBindings::SimulateWebNotificationClick(gin::Arguments* args) {
   DCHECK_GE(args->Length(), 1);
 
   std::string title;
-  base::Optional<int> action_index;
+  int action_index = std::numeric_limits<int32_t>::min();
   base::Optional<base::string16> reply;
 
   if (!args->GetNext(&title)) {
@@ -1734,13 +1765,10 @@ void TestRunnerBindings::SimulateWebNotificationClick(gin::Arguments* args) {
 
   // Optional |action_index| argument.
   if (args->Length() >= 2) {
-    int action_index_int;
-    if (!args->GetNext(&action_index_int)) {
+    if (!args->GetNext(&action_index)) {
       args->ThrowError();
       return;
     }
-
-    action_index = action_index_int;
   }
 
   // Optional |reply| argument.
@@ -1754,20 +1782,22 @@ void TestRunnerBindings::SimulateWebNotificationClick(gin::Arguments* args) {
     reply = base::UTF8ToUTF16(reply_string);
   }
 
-  runner_->SimulateWebNotificationClick(title, action_index, reply);
+  runner_->GetWebTestClientRemote()->SimulateWebNotificationClick(
+      title, action_index, reply);
 }
 
 void TestRunnerBindings::SimulateWebNotificationClose(const std::string& title,
                                                       bool by_user) {
   if (invalid_)
     return;
-  runner_->SimulateWebNotificationClose(title, by_user);
+  runner_->GetWebTestClientRemote()->SimulateWebNotificationClose(title,
+                                                                  by_user);
 }
 
 void TestRunnerBindings::SimulateWebContentIndexDelete(const std::string& id) {
   if (invalid_)
     return;
-  runner_->SimulateWebContentIndexDelete(id);
+  runner_->GetWebTestClientRemote()->SimulateWebContentIndexDelete(id);
 }
 
 void TestRunnerBindings::SetHighlightAds() {
@@ -1869,7 +1899,7 @@ void TestRunnerBindings::CapturePrintingPixelsThen(
 void TestRunnerBindings::CheckForLeakedWindows() {
   if (invalid_)
     return;
-  runner_->blink_test_runner_->CheckForLeakedWindows();
+  runner_->GetWebTestControlHostRemote()->CheckForLeakedWindows();
 }
 
 void TestRunnerBindings::CopyImageThen(int x,
@@ -1915,7 +1945,9 @@ void TestRunnerBindings::SetPermission(const std::string& name,
                                        const std::string& embedding_origin) {
   if (invalid_)
     return;
-  runner_->SetPermission(name, value, GURL(origin), GURL(embedding_origin));
+  runner_->GetWebTestControlHostRemote()->SetPermission(
+      name, blink::ToPermissionStatus(value), GURL(origin),
+      GURL(embedding_origin));
 }
 
 static void DispatchBeforeInstallPromptEventReply(BoundV8Callback callback,
@@ -2083,7 +2115,7 @@ void TestRunnerBindings::ForceNextWebGLContextCreationToFail() {
 void TestRunnerBindings::FocusDevtoolsSecondaryWindow() {
   if (invalid_)
     return;
-  runner_->blink_test_runner_->FocusDevtoolsSecondaryWindow();
+  runner_->GetWebTestControlHostRemote()->FocusDevtoolsSecondaryWindow();
 }
 
 void TestRunnerBindings::ForceNextDrawingBufferCreationToFail() {
@@ -2133,8 +2165,8 @@ void TestRunner::WorkQueue::ProcessWork() {
 
   while (!queue_.empty()) {
     finished_loading_ = false;  // Watch for loading finishing inside Run().
-    bool started_load = queue_.front()->Run(controller_->blink_test_runner_,
-                                            controller_->main_view_);
+    bool started_load =
+        queue_.front()->Run(controller_, controller_->main_view_);
     delete queue_.front();
     queue_.pop_front();
 
@@ -2165,6 +2197,7 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
     : work_queue_(this),
       test_interfaces_(interfaces),
       mock_content_settings_client_(std::make_unique<MockContentSettingsClient>(
+          this,
           &web_test_runtime_flags_)) {}
 
 TestRunner::~TestRunner() = default;
@@ -2181,7 +2214,6 @@ void TestRunner::Install(WebFrameTestProxy* frame,
 
 void TestRunner::SetDelegate(BlinkTestRunner* blink_test_runner) {
   blink_test_runner_ = blink_test_runner;
-  mock_content_settings_client_->SetDelegate(blink_test_runner);
 }
 
 void TestRunner::SetMainView(blink::WebView* web_view) {
@@ -2202,15 +2234,15 @@ void TestRunner::Reset() {
 #endif
   blink::ResetDomainRelaxationForTest();
 
-  if (blink_test_runner_) {
-    // Reset the default quota for each origin.
-    blink_test_runner_->SetDatabaseQuota(content::kDefaultDatabaseQuota);
-    blink_test_runner_->SetBlockThirdPartyCookies(false);
-    blink_test_runner_->SetLocale("");
-    blink_test_runner_->DeleteAllCookies();
-    blink_test_runner_->SetBluetoothManualChooser(false);
-    blink_test_runner_->ResetPermissions();
+  // Avoid resetting state in the browser on process startup, since we Reset
+  // when the TestInterfaces (and TestRunner) is created.
+  if (main_view_) {
+    // TODO(danakj): The browser could reset this on its own.
+    GetWebTestClientRemote()->SetDatabaseQuota(content::kDefaultDatabaseQuota);
   }
+
+  setlocale(LC_ALL, "");
+  setlocale(LC_NUMERIC, "C");
 
   dump_as_audio_ = false;
   dump_back_forward_list_ = false;
@@ -2585,8 +2617,8 @@ class WorkItemBackForward : public TestRunner::WorkItem {
  public:
   explicit WorkItemBackForward(int distance) : distance_(distance) {}
 
-  bool Run(BlinkTestRunner* blink_test_runner, blink::WebView*) override {
-    blink_test_runner->GoToOffset(distance_);
+  bool Run(TestRunner* test_runner, blink::WebView*) override {
+    test_runner->GoToOffset(distance_);
     return true;  // FIXME: Did it really start a navigation?
   }
 
@@ -2609,8 +2641,8 @@ void TestRunner::QueueForwardNavigation(int how_far_forward) {
 
 class WorkItemReload : public TestRunner::WorkItem {
  public:
-  bool Run(BlinkTestRunner* blink_test_runner, blink::WebView*) override {
-    blink_test_runner->Reload();
+  bool Run(TestRunner* test_runner, blink::WebView*) override {
+    test_runner->Reload();
     return true;
   }
 };
@@ -2623,7 +2655,7 @@ class WorkItemLoadingScript : public TestRunner::WorkItem {
  public:
   explicit WorkItemLoadingScript(const std::string& script) : script_(script) {}
 
-  bool Run(BlinkTestRunner*, blink::WebView* web_view) override {
+  bool Run(TestRunner*, blink::WebView* web_view) override {
     blink::WebFrame* main_frame = web_view->MainFrame();
     if (!main_frame->IsWebLocalFrame()) {
       CHECK(false) << "This function cannot be called if the main frame is not "
@@ -2648,7 +2680,7 @@ class WorkItemNonLoadingScript : public TestRunner::WorkItem {
   explicit WorkItemNonLoadingScript(const std::string& script)
       : script_(script) {}
 
-  bool Run(BlinkTestRunner*, blink::WebView* web_view) override {
+  bool Run(TestRunner*, blink::WebView* web_view) override {
     blink::WebFrame* main_frame = web_view->MainFrame();
     if (!main_frame->IsWebLocalFrame()) {
       CHECK(false) << "This function cannot be called if the main frame is not "
@@ -2670,16 +2702,16 @@ void TestRunner::QueueNonLoadingScript(const std::string& script) {
 
 class WorkItemLoad : public TestRunner::WorkItem {
  public:
-  WorkItemLoad(const blink::WebURL& url, const std::string& target)
+  WorkItemLoad(const GURL& url, const std::string& target)
       : url_(url), target_(target) {}
 
-  bool Run(BlinkTestRunner* blink_test_runner, blink::WebView*) override {
-    blink_test_runner->LoadURLForFrame(url_, target_);
+  bool Run(TestRunner* test_runner, blink::WebView*) override {
+    test_runner->LoadURLForFrame(url_, target_);
     return true;  // FIXME: Did it really start a navigation?
   }
 
  private:
-  blink::WebURL url_;
+  GURL url_;
   std::string target_;
 };
 
@@ -2695,7 +2727,6 @@ void TestRunner::QueueLoad(const std::string& url, const std::string& target) {
       << "This function cannot be called if the main frame is not "
          "a local frame.";
 
-  // FIXME: Implement blink::WebURL::resolve() and avoid GURL.
   GURL current_url =
       main_view_->MainFrame()->ToWebLocalFrame()->GetDocument().Url();
   GURL full_url = current_url.Resolve(url);
@@ -2712,8 +2743,7 @@ void TestRunner::OnTestPreferencesChanged(const TestPreferences& test_prefs,
 
   render_view->SetWebkitPreferences(web_prefs);
 
-  auto* view_proxy = static_cast<WebViewTestProxy*>(render_view);
-  view_proxy->blink_test_runner()->OverridePreferences(web_prefs);
+  GetWebTestControlHostRemote()->OverridePreferences(web_prefs);
 }
 
 void TestRunner::SetCustomPolicyDelegate(gin::Arguments* args) {
@@ -2812,17 +2842,13 @@ void TestRunner::SetMockScreenOrientation(const std::string& orientation_str) {
           mock_screen_orientation_client_.UpdateDeviceOrientation(
               main_frame->ToWebLocalFrame(), orientation);
       if (screen_orientation_changed)
-        blink_test_runner_->SetScreenOrientationChanged();
+        GetWebTestControlHostRemote()->SetScreenOrientationChanged();
     }
   }
 }
 
 void TestRunner::DisableMockScreenOrientation() {
   mock_screen_orientation_client_.SetDisabled(true);
-}
-
-void TestRunner::SetPopupBlockingEnabled(bool block_popups) {
-  blink_test_runner_->SetPopupBlockingEnabled(block_popups);
 }
 
 std::string TestRunner::GetAcceptLanguages() const {
@@ -3051,20 +3077,33 @@ bool TestRunner::ShouldDumpJavaScriptDialogs() const {
   return web_test_runtime_flags_.dump_javascript_dialogs();
 }
 
-bool TestRunner::IsChooserShown() {
-  return 0 < chooser_count_;
+void TestRunner::GoToOffset(int offset) {
+  GetWebTestControlHostRemote()->GoToOffset(offset);
 }
 
-void TestRunner::ClearAllDatabases() {
-  blink_test_runner_->ClearAllDatabases();
+void TestRunner::Reload() {
+  GetWebTestControlHostRemote()->Reload();
 }
 
-void TestRunner::SetDatabaseQuota(int quota) {
-  blink_test_runner_->SetDatabaseQuota(quota);
+void TestRunner::LoadURLForFrame(const GURL& url,
+                                 const std::string& frame_name) {
+  GetWebTestControlHostRemote()->LoadURLForFrame(url, frame_name);
 }
 
-void TestRunner::SetBlockThirdPartyCookies(bool block) {
-  blink_test_runner_->SetBlockThirdPartyCookies(block);
+void TestRunner::PrintMessage(const std::string& message) {
+  GetWebTestControlHostRemote()->PrintMessage(message);
+}
+
+void TestRunner::PrintMessageToStderr(const std::string& message) {
+  GetWebTestControlHostRemote()->PrintMessageToStderr(message);
+}
+
+blink::WebString TestRunner::RegisterIsolatedFileSystem(
+    const std::vector<base::FilePath>& file_paths) {
+  std::string filesystem_id;
+  GetWebTestClientRemote()->RegisterIsolatedFileSystem(file_paths,
+                                                       &filesystem_id);
+  return blink::WebString::FromUTF8(filesystem_id);
 }
 
 void TestRunner::FocusWindow(RenderFrame* main_frame, bool focus) {
@@ -3108,53 +3147,22 @@ void TestRunner::FocusWindow(RenderFrame* main_frame, bool focus) {
   }
 }
 
-void TestRunner::SetPermission(const std::string& name,
-                               const std::string& value,
-                               const GURL& origin,
-                               const GURL& embedding_origin) {
-  blink_test_runner_->SetPermission(name, value, origin, embedding_origin);
-}
-
-void TestRunner::SetPOSIXLocale(const std::string& locale) {
-  blink_test_runner_->SetLocale(locale);
-}
-
-void TestRunner::SimulateWebNotificationClick(
-    const std::string& title,
-    const base::Optional<int>& action_index,
-    const base::Optional<base::string16>& reply) {
-  blink_test_runner_->SimulateWebNotificationClick(title, action_index, reply);
-}
-
-void TestRunner::SimulateWebNotificationClose(const std::string& title,
-                                              bool by_user) {
-  blink_test_runner_->SimulateWebNotificationClose(title, by_user);
-}
-
-void TestRunner::SimulateWebContentIndexDelete(const std::string& id) {
-  blink_test_runner_->SimulateWebContentIndexDelete(id);
-}
-
-base::FilePath TestRunner::GetWritableDirectory() {
-  return blink_test_runner_->GetWritableDirectory();
-}
-
-void TestRunner::SetFilePathForMockFileDialog(const base::FilePath& path) {
-  blink_test_runner_->SetFilePathForMockFileDialog(path);
-}
-
 void TestRunner::SetAnimationRequiresRaster(bool do_raster) {
   animation_requires_raster_ = do_raster;
 }
 
 void TestRunner::OnWebTestRuntimeFlagsChanged() {
-  if (web_test_runtime_flags_.tracked_dictionary().changed_values().empty())
-    return;
+  // Ignore changes that happen before we got the initial, accumulated
+  // web flag changes in either ReplicateTestConfiguration() or
+  // SetTestConfiguration().
   if (!test_is_running_)
     return;
+  if (web_test_runtime_flags_.tracked_dictionary().changed_values().empty())
+    return;
 
-  blink_test_runner_->OnWebTestRuntimeFlagsChanged(
-      web_test_runtime_flags_.tracked_dictionary().changed_values());
+  GetWebTestClientRemote()->WebTestRuntimeFlagsChanged(
+      web_test_runtime_flags_.tracked_dictionary().changed_values().Clone());
+
   web_test_runtime_flags_.tracked_dictionary().ResetChangeTracking();
 }
 
@@ -3192,6 +3200,37 @@ void TestRunner::NotifyDone() {
   web_test_runtime_flags_.set_wait_until_done(false);
   did_notify_done_ = true;
   OnWebTestRuntimeFlagsChanged();
+}
+
+mojo::AssociatedRemote<mojom::WebTestControlHost>&
+TestRunner::GetWebTestControlHostRemote() {
+  if (!web_test_control_host_remote_) {
+    RenderThread::Get()->GetChannel()->GetRemoteAssociatedInterface(
+        &web_test_control_host_remote_);
+    web_test_control_host_remote_.set_disconnect_handler(
+        base::BindOnce(&TestRunner::HandleWebTestControlHostDisconnected,
+                       base::Unretained(this)));
+  }
+  return web_test_control_host_remote_;
+}
+
+void TestRunner::HandleWebTestControlHostDisconnected() {
+  web_test_control_host_remote_.reset();
+}
+
+mojo::AssociatedRemote<mojom::WebTestClient>&
+TestRunner::GetWebTestClientRemote() {
+  if (!web_test_client_remote_) {
+    RenderThread::Get()->GetChannel()->GetRemoteAssociatedInterface(
+        &web_test_client_remote_);
+    web_test_client_remote_.set_disconnect_handler(base::BindOnce(
+        &TestRunner::HandleWebTestClientDisconnected, base::Unretained(this)));
+  }
+  return web_test_client_remote_;
+}
+
+void TestRunner::HandleWebTestClientDisconnected() {
+  web_test_client_remote_.reset();
 }
 
 }  // namespace content

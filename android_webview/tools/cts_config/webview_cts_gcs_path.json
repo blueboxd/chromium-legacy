@@ -87,6 +87,10 @@
           {
             "match": "android.webkit.cts.WebSettingsTest#testIframesWhenAccessFromFileURLsEnabled",
             "_bug_id": "crbug.com/1096140"
+          },
+          {
+            "match": "android.webkit.cts.WebSettingsTest#testAccessCacheMode",
+            "_bug_id": "crbug.com/1102041"
           }
         ]
       },
@@ -188,6 +192,10 @@
           {
             "match": "android.webkit.cts.WebSettingsTest#testIframesWhenAccessFromFileURLsEnabled",
             "_bug_id": "crbug.com/1096140"
+          },
+          {
+            "match": "android.webkit.cts.WebSettingsTest#testAccessCacheMode",
+            "_bug_id": "crbug.com/1102041"
           }
         ]
       },

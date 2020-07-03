@@ -168,6 +168,7 @@
 <translation id="2353636109065292463">កំពុងពិនិត្យមើល​ការតភ្ជាប់អ៊ីនធឺណិត​របស់អ្នក</translation>
 <translation id="2359808026110333948">បន្ត</translation>
 <translation id="2369533728426058518">បើកផ្ទាំង</translation>
+<translation id="2377295302146152376">Chrome មិនអាច​ពិនិត្យរក​កំណែថ្មីបានទេ</translation>
 <translation id="2387895666653383613">ការសម្រួលមាត្រដ្ឋានអត្ថបទ</translation>
 <translation id="2394602618534698961">ឯកសារ​ដែលអ្នកទាញយក​បង្ហាញ​នៅទីនេះ</translation>
 <translation id="2407481962792080328">នៅពេលអ្នក​ចូលគណនី Google របស់អ្នក មុខងារនេះ​ត្រូវបានបើក</translation>
@@ -546,6 +547,7 @@
 <translation id="5441522332038954058">លោតទៅរបារអាសយដ្ឋាន</translation>
 <translation id="5447201525962359567">ទំហំផ្ទុកគេហទំព័រទាំងអស់ ដោយរាប់បញ្ចូលទាំងខុកឃី និងទិន្នន័យផ្សេងទៀតដែលបានផ្ទុកជាមូលដ្ឋាន</translation>
 <translation id="545042621069398927">កំពុង​បង្កើនល្បឿន​នៃការទាញយក​របស់អ្នក។</translation>
+<translation id="5454513945794364671">អ្នកគ្រប់គ្រង​របស់អ្នកបានបិទ​ការរុករក​ដោយសុវត្ថិភាព</translation>
 <translation id="5456381639095306749">ទាញយកទំព័រ</translation>
 <translation id="548278423535722844">បើកនៅក្នុងកម្មវិធីផែនទី</translation>
 <translation id="5487521232677179737">ជម្រះទិន្នន័យ</translation>
@@ -585,6 +587,7 @@
 <translation id="5732819098735351888">ការទាញយក​នឹងចាប់ផ្ដើមពេលមាន Wi-Fi។</translation>
 <translation id="5748802427693696783">បានប្តូរទៅផ្ទាំងស្តង់ដារ</translation>
 <translation id="5749068826913805084">Chrome ត្រូវការលទ្ធភាពចូលប្រើទំហំផ្ទុកដើម្បីដោនឡូតឯកសារ</translation>
+<translation id="5754350196967618083">មិនអាចផ្ទុក Discover ឡើងវិញបានទេ</translation>
 <translation id="5763382633136178763">ផ្ទាំងអនាមិក</translation>
 <translation id="5763514718066511291">ចុច​ដើម្បី​ចម្លង URL សម្រាប់​កម្មវិធី​នេះ</translation>
 <translation id="5765780083710877561">ការពិពណ៌នា៖</translation>
@@ -712,6 +715,7 @@
 <translation id="6656545060687952787">Chrome ត្រូវការចូលប្រើទីតាំងដើម្បីស្កេនរកឧបករណ៍។ <ph name="BEGIN_LINK" />អាប់ដេតសិទ្ធិអនុញ្ញាត<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">ពាក្យសម្ងាត់</translation>
 <translation id="6659594942844771486">ផ្ទាំង</translation>
+<translation id="666573598175432848">មានកំណែ Chrome ថ្មី​ជាងនេះហើយ។ ចុច​ធាតុនេះ ដើម្បីចូលទៅកាន់ Play Store។</translation>
 <translation id="666731172850799929">បើកក្នុង <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">ការជូនដំណឹងឯកជនភាព Chrome</translation>
 <translation id="6671495933530132209">ចម្លងរូបភាព</translation>
@@ -842,6 +846,7 @@
 <translation id="7772032839648071052">អះអាងឃ្លាសម្ងាត់</translation>
 <translation id="7772375229873196092">បិទ <ph name="APP_NAME" /></translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 និង <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ទៀត}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 និង <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ទៀត}}</translation>
+<translation id="7778840695157240389">សូមពិនិត្យមើល​ម្ដងទៀត​នៅពេលក្រោយ ដើម្បីទទួលបាន​អត្ថបទថ្មីៗ</translation>
 <translation id="7791543448312431591">បន្ថែម</translation>
 <translation id="780301667611848630">ទេ អរគុណ</translation>
 <translation id="7810647596859435254">បើក​ដោយ​ប្រើ…</translation>
@@ -923,6 +928,7 @@
 <translation id="8427875596167638501">ផ្ទាំងមើលសាកល្បងបានបើក​ពាក់កណ្ដាល</translation>
 <translation id="8428213095426709021">ការកំណត់</translation>
 <translation id="8438566539970814960">ធ្វើ​ឱ្យ​ការស្វែងរក និងការរុករក​ប្រសើរ​ជាងមុន</translation>
+<translation id="8442258441309440798">មិនមានអត្ថបទទេ</translation>
 <translation id="8443209985646068659">Chrome មិន​អាចដំឡើងជំនាន់​បានទេ</translation>
 <translation id="8445448999790540984">មិន​អាច​នាំ​ពាក្យសម្ងាត់​ចេញ​បាន​ទេ</translation>
 <translation id="8461694314515752532">អ៊ីនគ្រីប​ទិន្នន័យ​ដែលបាន​ធ្វើ​សមកាលកម្ម​ ដោយប្រើឃ្លា​សម្ងាត់​សមកាលកម្មផ្ទាល់​ខ្លួន​របស់​អ្នក</translation>
@@ -974,6 +980,7 @@
 <translation id="8853345339104747198"><ph name="TAB_TITLE" /> ផ្ទាំង</translation>
 <translation id="8854223127042600341">មើល​ឯកសារ​ពេលគ្មានអ៊ីនធឺណិត​របស់អ្នក</translation>
 <translation id="889338405075704026">ចូលទៅកាន់​ការកំណត់ Chrome</translation>
+<translation id="8893398027601469503">អ្នកកំពុងដំណើរការ​កំណែចុងក្រោយ​បំផុតរបស់ Chrome</translation>
 <translation id="8909135823018751308">ចែករំលែក…</translation>
 <translation id="8912362522468806198">គណនី Google</translation>
 <translation id="8920114477895755567">កំពុងរង់ចាំព័ត៌មានលំអិតអំពីឪពុកម្តាយ។</translation>

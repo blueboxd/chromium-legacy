@@ -55,7 +55,6 @@ class TextInputClientObserver : public IPC::Listener, public IPC::Sender {
 #endif
 
   // IPC Message handlers:
-  void OnStringAtPoint(gfx::Point point);
   void OnStringForRange(gfx::Range range);
 
   // The RenderWidget owning this instance of the observer.

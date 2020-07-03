@@ -168,6 +168,7 @@
 <translation id="2353636109065292463">인터넷 연결 상태를 확인하세요.</translation>
 <translation id="2359808026110333948">계속</translation>
 <translation id="2369533728426058518">열린 탭</translation>
+<translation id="2377295302146152376">Chrome에서 업데이트를 확인할 수 없습니다.</translation>
 <translation id="2387895666653383613">텍스트 크기 조정</translation>
 <translation id="2394602618534698961">다운로드한 파일이 여기 표시됩니다.</translation>
 <translation id="2407481962792080328">Google 계정에 로그인하면 이 기능이 사용 설정됩니다.</translation>
@@ -546,6 +547,7 @@
 <translation id="5441522332038954058">검색주소창으로 이동</translation>
 <translation id="5447201525962359567">쿠키 및 기타 로컬에 저장된 데이터 등 모든 사이트 저장공간</translation>
 <translation id="545042621069398927">다운로드 속도 향상</translation>
+<translation id="5454513945794364671">관리자가 세이프 브라우징을 사용 중지했습니다.</translation>
 <translation id="5456381639095306749">다운로드 페이지</translation>
 <translation id="548278423535722844">지도 앱에서 열기</translation>
 <translation id="5487521232677179737">인터넷 사용 기록 삭제</translation>
@@ -585,6 +587,7 @@
 <translation id="5732819098735351888">Wi-Fi에 연결되면 다운로드가 시작됩니다.</translation>
 <translation id="5748802427693696783">일반 탭으로 전환됨</translation>
 <translation id="5749068826913805084">Chrome에서 파일을 다운로드하려면 저장소 액세스 권한이 있어야 합니다.</translation>
+<translation id="5754350196967618083">디스커버를 새로고침할 수 없음</translation>
 <translation id="5763382633136178763">시크릿 탭</translation>
 <translation id="5763514718066511291">탭하여 이 앱의 URL 복사하기</translation>
 <translation id="5765780083710877561">설명:</translation>
@@ -712,6 +715,7 @@
 <translation id="6656545060687952787">기기를 스캔하려면 Chrome에서 위치 정보에 액세스해야 합니다. <ph name="BEGIN_LINK" />권한 업데이트<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">비밀번호</translation>
 <translation id="6659594942844771486">탭</translation>
+<translation id="666573598175432848">Chrome의 최신 버전을 사용할 수 있습니다. 이 요소를 탭하여 Play 스토어로 이동하세요.</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" />에서 열기</translation>
 <translation id="666981079809192359">Chrome 개인정보처리방침</translation>
 <translation id="6671495933530132209">이미지 복사</translation>
@@ -842,6 +846,7 @@
 <translation id="7772032839648071052">암호 확인</translation>
 <translation id="7772375229873196092"><ph name="APP_NAME" /> 닫기</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" /> 외 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />개}other{<ph name="PAYMENT_METHOD_PREVIEW" /> 외 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />개}}</translation>
+<translation id="7778840695157240389">나중에 다시 새 스토리 확인하기</translation>
 <translation id="7791543448312431591">추가</translation>
 <translation id="780301667611848630">아니요, 괜찮습니다.</translation>
 <translation id="7810647596859435254">연결 프로그램...</translation>
@@ -923,6 +928,7 @@
 <translation id="8427875596167638501">미리보기 탭이 절반 높이로 열림</translation>
 <translation id="8428213095426709021">설정</translation>
 <translation id="8438566539970814960">검색 및 탐색 기능 개선</translation>
+<translation id="8442258441309440798">사용할 수 있는 스토리 없음</translation>
 <translation id="8443209985646068659">Chrome을 업데이트할 수 없습니다.</translation>
 <translation id="8445448999790540984">비밀번호를 내보낼 수 없음</translation>
 <translation id="8461694314515752532">나만의 동기화 암호로 동기화된 데이터 암호화</translation>
@@ -974,6 +980,7 @@
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, 탭</translation>
 <translation id="8854223127042600341">오프라인 파일 보기</translation>
 <translation id="889338405075704026">Chrome 설정으로 이동</translation>
+<translation id="8893398027601469503">최신 버전의 Chrome을 실행 중임</translation>
 <translation id="8909135823018751308">공유…</translation>
 <translation id="8912362522468806198">Google 계정</translation>
 <translation id="8920114477895755567">부모님의 세부정보를 기다리는 중</translation>

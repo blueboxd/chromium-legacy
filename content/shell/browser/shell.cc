@@ -578,9 +578,7 @@ void Shell::RendererUnresponsive(
     WebContents* source,
     RenderWidgetHost* render_widget_host,
     base::RepeatingClosure hang_monitor_restarter) {
-#if !defined(OS_ANDROID)
-  g_platform->RendererUnresponsive(this);
-#endif
+  LOG(WARNING) << "renderer unresponsive";
 }
 
 void Shell::ActivateContents(WebContents* contents) {

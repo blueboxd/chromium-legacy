@@ -599,9 +599,9 @@ class WebViewImeInteractiveTest : public WebViewInteractiveTest {
    public:
     explicit CompositionRangeUpdateObserver(content::WebContents* web_contents)
         : tester_(web_contents) {
-      tester_.SetOnImeCompositionRangeChangedCallback(
-          base::Bind(&CompositionRangeUpdateObserver::OnCompositionRangeUpdated,
-                     base::Unretained(this)));
+      tester_.SetOnImeCompositionRangeChangedCallback(base::BindRepeating(
+          &CompositionRangeUpdateObserver::OnCompositionRangeUpdated,
+          base::Unretained(this)));
     }
     ~CompositionRangeUpdateObserver() {}
 

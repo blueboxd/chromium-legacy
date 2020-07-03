@@ -46,10 +46,13 @@ jumbo_component("modules") {
   sources += get_target_outputs(":module_names")
 
   sources += bindings_modules_v8_files
-  sources += rebase_path(
-          [ bindings_generated_v8_context_snapshot_external_references_file ],
-          ".",
-          "//")
+
+  if (!use_blink_v8_binding_new_idl_interface) {
+    sources += rebase_path(
+            [ bindings_generated_v8_context_snapshot_external_references_file ],
+            ".",
+            "//")
+  }
 
   configs += [
     ":modules_implementation",

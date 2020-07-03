@@ -54,13 +54,6 @@ class TestCrostiniBrowserProxy extends TestBrowserProxy {
   }
 
   async resolvePromises(name, ...args) {
-    await this.whenCalled(name);
-    console.log(
-        name + ' has been called ' + this.getCallCount(name) +
-        ' times during this test');
-    console.log(
-        'Resolving :\'' + name + '\', ' + this.methodCalls_[name].length +
-        ' times.');
     for (const o of this.methodCalls_[name]) {
       await o.resolve(...args);
     }
@@ -72,22 +65,6 @@ class TestCrostiniBrowserProxy extends TestBrowserProxy {
       await o.reject(...args);
     }
     this.methodCalls_[name] = [];
-  }
-
-  async rejectAllPromises(names) {
-    for (name of names) {
-      if (this.methodCalls_[name] == null) {
-        console.log('\'' + name + '\' wasn\'t called during this test.');
-        continue;
-      }
-      console.log(
-          'Rejecting ' + this.methodCalls_[name].length + ' \'' + name +
-          '\' promises.');
-      for (const o of this.methodCalls_[name]) {
-        await o.reject();
-      }
-      this.methodCalls_[name] = [];
-    }
   }
 
   /** @override */

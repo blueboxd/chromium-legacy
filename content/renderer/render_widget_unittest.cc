@@ -617,31 +617,6 @@ TEST_F(RenderWidgetUnittest, ActivePinchGestureUpdatesLayerTreeHostSubFrame) {
   EXPECT_FALSE(layer_tree_host->is_external_pinch_gesture_active_for_testing());
 }
 
-// Verify desktop memory limit calculations.
-#if !defined(OS_ANDROID)
-TEST(RenderWidgetTest, IgnoreGivenMemoryPolicy) {
-  auto policy = RenderWidget::GetGpuMemoryPolicy(cc::ManagedMemoryPolicy(256),
-                                                 gfx::Size(), 1.f);
-  EXPECT_EQ(512u * 1024u * 1024u, policy.bytes_limit_when_visible);
-  EXPECT_EQ(gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE,
-            policy.priority_cutoff_when_visible);
-}
-
-TEST(RenderWidgetTest, LargeScreensUseMoreMemory) {
-  auto policy = RenderWidget::GetGpuMemoryPolicy(cc::ManagedMemoryPolicy(256),
-                                                 gfx::Size(4096, 2160), 1.f);
-  EXPECT_EQ(2u * 512u * 1024u * 1024u, policy.bytes_limit_when_visible);
-  EXPECT_EQ(gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE,
-            policy.priority_cutoff_when_visible);
-
-  policy = RenderWidget::GetGpuMemoryPolicy(cc::ManagedMemoryPolicy(256),
-                                            gfx::Size(2048, 1080), 2.f);
-  EXPECT_EQ(2u * 512u * 1024u * 1024u, policy.bytes_limit_when_visible);
-  EXPECT_EQ(gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE,
-            policy.priority_cutoff_when_visible);
-}
-#endif
-
 #if defined(OS_ANDROID)
 TEST_F(RenderWidgetUnittest, ForceSendMetadataOnInput) {
   cc::LayerTreeHost* layer_tree_host = widget()->layer_tree_host();

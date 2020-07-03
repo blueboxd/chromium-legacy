@@ -569,7 +569,6 @@ RenderThreadImpl::RenderThreadImpl(
                           .Build()),
       main_thread_scheduler_(std::move(scheduler)),
       categorized_worker_pool_(new CategorizedWorkerPool()),
-      is_scroll_animator_enabled_(false),
       client_id_(GetClientIdFromCommandLine()) {
   TRACE_EVENT0("startup", "RenderThreadImpl::Create");
   Init();
@@ -654,13 +653,6 @@ void RenderThreadImpl::Init() {
   is_threaded_animation_enabled_ =
       !command_line.HasSwitch(cc::switches::kDisableThreadedAnimation);
 
-  is_zero_copy_enabled_ =
-      command_line.HasSwitch(blink::switches::kEnableZeroCopy);
-  is_partial_raster_enabled_ =
-      !command_line.HasSwitch(blink::switches::kDisablePartialRaster);
-  is_gpu_memory_buffer_compositor_resources_enabled_ = command_line.HasSwitch(
-      blink::switches::kEnableGpuMemoryBufferCompositorResources);
-
 // On macOS this value is adjusted in `UpdateScrollbarTheme()`,
 // but the system default is true.
 #if defined(OS_MACOSX)
@@ -693,18 +685,6 @@ void RenderThreadImpl::Init() {
 
   if (command_line.HasSwitch(switches::kDisableGpuCompositing))
     is_gpu_compositing_disabled_ = true;
-
-  if (command_line.HasSwitch(
-          blink::switches::kGpuRasterizationMSAASampleCount)) {
-    std::string string_value = command_line.GetSwitchValueASCII(
-        blink::switches::kGpuRasterizationMSAASampleCount);
-    bool parsed_msaa_sample_count =
-        base::StringToInt(string_value, &gpu_rasterization_msaa_sample_count_);
-    DCHECK(parsed_msaa_sample_count) << string_value;
-    DCHECK_GE(gpu_rasterization_msaa_sample_count_, 0);
-  } else {
-    gpu_rasterization_msaa_sample_count_ = -1;
-  }
 
   // Note that under Linux, the media library will normally already have
   // been initialized by the Zygote before this instance became a Renderer.
@@ -1338,24 +1318,8 @@ RenderThreadImpl::GetIOTaskRunner() {
   return ChildProcess::current()->io_task_runner();
 }
 
-int RenderThreadImpl::GetGpuRasterizationMSAASampleCount() {
-  return gpu_rasterization_msaa_sample_count_;
-}
-
 bool RenderThreadImpl::IsLcdTextEnabled() {
   return is_lcd_text_enabled_;
-}
-
-bool RenderThreadImpl::IsZeroCopyEnabled() {
-  return is_zero_copy_enabled_;
-}
-
-bool RenderThreadImpl::IsPartialRasterEnabled() {
-  return is_partial_raster_enabled_;
-}
-
-bool RenderThreadImpl::IsGpuMemoryBufferCompositorResourcesEnabled() {
-  return is_gpu_memory_buffer_compositor_resources_enabled_;
 }
 
 bool RenderThreadImpl::IsElasticOverscrollEnabled() {
@@ -1417,12 +1381,6 @@ std::unique_ptr<cc::UkmRecorderFactory>
 RenderThreadImpl::CreateUkmRecorderFactory() {
   return std::make_unique<UkmRecorderFactoryImpl>(child_process_host());
 }
-
-#ifdef OS_ANDROID
-bool RenderThreadImpl::UsingSynchronousCompositing() {
-  return GetContentClient()->UsingSynchronousCompositing();
-}
-#endif
 
 bool RenderThreadImpl::IsMainThread() {
   return !!current();

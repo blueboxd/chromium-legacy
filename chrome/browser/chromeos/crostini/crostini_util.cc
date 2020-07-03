@@ -551,21 +551,6 @@ base::string16 GetTimeRemainingMessage(base::TimeTicks start, int percent) {
 }
 
 
-std::vector<int64_t> GetTicksForDiskSize(int64_t min_size,
-                                         int64_t available_space) {
-  if (min_size < 0 || available_space < 0 || min_size > available_space) {
-    return {};
-  }
-  std::vector<int64_t> ticks;
-  int64_t range = available_space - min_size;
-  for (int n = 0; n <= 100; n++) {
-    // These are disk sizes so we're not worried about overflow, 2^60 == 1024
-    // PiB.
-    ticks.emplace_back(min_size + n * range / 100);
-  }
-  return ticks;
-}
-
 const ContainerId& DefaultContainerId() {
   static const base::NoDestructor<ContainerId> container_id(
       kCrostiniDefaultVmName, kCrostiniDefaultContainerName);

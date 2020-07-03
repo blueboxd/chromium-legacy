@@ -59,13 +59,18 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
       CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase> widget);
   ~WidgetBase() override;
 
-  // Initialize the compositor.
+  // Initialize the compositor. |settings| is typically null. When |settings| is
+  // null the default settings will be used, tests may provide a |settings|
+  // object to override the defaults.
   void InitializeCompositing(
       bool never_composited,
       scheduler::WebThreadScheduler* main_thread_scheduler,
       cc::TaskGraphRunner* task_graph_runner,
-      const cc::LayerTreeSettings& settings,
-      std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory);
+      bool for_child_local_root_frame,
+      const gfx::Size& initial_screen_size,
+      float initial_device_scale_factor,
+      std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
+      const cc::LayerTreeSettings* settings);
 
   // Shutdown the compositor.
   void Shutdown(scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner);

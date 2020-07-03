@@ -17,6 +17,7 @@
 #include "gpu/vulkan/vma_wrapper.h"
 #include "gpu/vulkan/vulkan_command_buffer.h"
 #include "gpu/vulkan/vulkan_command_pool.h"
+#include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_fence_helper.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_image.h"
@@ -338,6 +339,38 @@ bool ExternalVkImageBacking::BeginAccess(
 
   if (!is_gl)
     return true;
+
+  if (need_synchronization() && semaphore_handles->empty() && IsCleared()) {
+    DLOG(ERROR) << "semaphore_handles is empty.";
+    // For the first time GL BeginAccess(), semaphore_handles could be empty,
+    // since the Vulkan usage will not provide semaphore for EndAccess() call,
+    // if ProduceGL*() is never called.
+    VkSemaphore semaphore =
+        vulkan_implementation()->CreateExternalSemaphore(device());
+    GrBackendSemaphore backend_semaphore;
+    backend_semaphore.initVulkan(semaphore);
+    GrFlushInfo flush_info = {
+        .fNumSemaphores = 1,
+        .fSignalSemaphores = &backend_semaphore,
+    };
+    gpu::AddVulkanCleanupTaskForSkiaFlush(
+        context_state()->vk_context_provider(), &flush_info);
+    auto* gr_context = context_state()->gr_context();
+    auto flush_result = gr_context->flush(flush_info);
+    DCHECK_EQ(flush_result, GrSemaphoresSubmitted::kYes);
+    gr_context->submit();
+
+    auto handle =
+        vulkan_implementation()->GetSemaphoreHandle(device(), semaphore);
+    semaphore_handles->push_back(std::move(handle));
+    DCHECK(handle.is_valid());
+    // We're done with the semaphore, enqueue deferred cleanup.
+    context_state()
+        ->vk_context_provider()
+        ->GetDeviceQueue()
+        ->GetFenceHelper()
+        ->EnqueueSemaphoreCleanupForSubmittedWork(semaphore);
+  }
 
   if (readonly) {
     DCHECK(!gl_reads_in_progress_);

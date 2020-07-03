@@ -340,7 +340,7 @@ void PolicyProvider::GetContentSettingsFromPreferences(
               content_settings::kDisallowWildcardsInPluginContentSettings) &&
           kPrefsForManagedContentSettingsMap[i].wildcards_in_primary_pattern ==
               WildcardsInPrimaryPattern::NOT_ALLOWED &&
-          pattern_pair.first.HasWildcards()) {
+          pattern_pair.first.HasHostWildcards()) {
         discarded_rules_value_map_[content_type].push_back(
             Rule(pattern_pair.first, secondary_pattern,
                  base::Value(kPrefsForManagedContentSettingsMap[i].setting),

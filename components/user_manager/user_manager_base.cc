@@ -203,15 +203,9 @@ void UserManagerBase::UserLoggedIn(const AccountId& account_id,
         break;
 
       case USER_TYPE_KIOSK_APP:
-        KioskAppLoggedIn(user);
-        break;
-
       case USER_TYPE_ARC_KIOSK_APP:
-        ArcKioskAppLoggedIn(user);
-        break;
-
       case USER_TYPE_WEB_KIOSK_APP:
-        WebKioskAppLoggedIn(user);
+        KioskAppLoggedIn(user);
         break;
 
       default:

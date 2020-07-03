@@ -233,12 +233,6 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   // Indicates that a kiosk app robot just logged in.
   virtual void KioskAppLoggedIn(User* user) = 0;
 
-  // Indicates that an ARC kiosk app robot just logged in.
-  virtual void ArcKioskAppLoggedIn(User* user) = 0;
-
-  // Indicates that an web kiosk app robot just logged in.
-  virtual void WebKioskAppLoggedIn(User* user) = 0;
-
   // Indicates that a user just logged into a public session.
   virtual void PublicAccountUserLoggedIn(User* user) = 0;
 

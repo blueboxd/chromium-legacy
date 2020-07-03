@@ -223,4 +223,8 @@ blink_core_sources("frame") {
     "//ui/base/cursor:cursor_base",
     "//ui/base/cursor/mojom:cursor_type_blink",
   ]
+
+  if (is_mac) {
+    deps += [ "//ui/base/mojom" ]
+  }
 }

@@ -20,4 +20,11 @@ void FakeFrameWidget::SetTextDirection(base::i18n::TextDirection direction) {
   text_direction_ = direction;
 }
 
+#if defined(OS_MACOSX)
+void FakeFrameWidget::GetStringAtPoint(const gfx::Point& point_in_local_root,
+                                       GetStringAtPointCallback callback) {
+  std::move(callback).Run(nullptr, gfx::Point());
+}
+#endif
+
 }  // namespace content

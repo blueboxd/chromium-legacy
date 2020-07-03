@@ -68,6 +68,8 @@ SkiaOutputDevice::~SkiaOutputDevice() {
     latency_tracker_runner_->DeleteSoon(FROM_HERE, std::move(latency_tracker_));
 }
 
+void SkiaOutputDevice::PreGrContextSubmit() {}
+
 void SkiaOutputDevice::CommitOverlayPlanes(
     BufferPresentedCallback feedback,
     std::vector<ui::LatencyInfo> latency_info) {

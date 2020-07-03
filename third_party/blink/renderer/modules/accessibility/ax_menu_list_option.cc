@@ -113,21 +113,6 @@ bool AXMenuListOption::IsOffScreen() const {
   return !IsVisible();
 }
 
-int AXMenuListOption::PosInSet() const {
-  // Value should be 1-based. 0 means not supported.
-  return SetSize() ? element_->index() + 1 : 0;
-}
-
-int AXMenuListOption::SetSize() const {
-  // Return 0 if not supported.
-  if (!element_)
-    return 0;
-  HTMLSelectElement* select = element_->OwnerSelectElement();
-  if (!select)
-    return 0;
-  return select->length();
-}
-
 AccessibilitySelectedState AXMenuListOption::IsSelected() const {
   if (!GetNode() || !CanSetSelectedAttribute())
     return kSelectedStateUndefined;
@@ -167,6 +152,13 @@ bool AXMenuListOption::OnNativeSetSelectedAction(bool b) {
 
 bool AXMenuListOption::ComputeAccessibilityIsIgnored(
     IgnoredReasons* ignored_reasons) const {
+  if (IsInertOrAriaHidden())
+    return true;
+
+  if (DynamicTo<HTMLOptionElement>(GetNode())->FastHasAttribute(
+          html_names::kHiddenAttr))
+    return true;
+
   return AccessibilityIsIgnoredByDefault(ignored_reasons);
 }
 

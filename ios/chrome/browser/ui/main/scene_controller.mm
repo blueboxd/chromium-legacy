@@ -534,15 +534,9 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 
   self.browserViewWrangler = [[BrowserViewWrangler alloc]
              initWithBrowserState:self.mainController.mainBrowserState
+                       sceneState:self.sceneState
        applicationCommandEndpoint:self
       browsingDataCommandEndpoint:self.mainController];
-
-  if (IsMultiwindowSupported()) {
-    if (@available(iOS 13, *)) {
-      self.browserViewWrangler.sessionID =
-          self.sceneState.scene.session.persistentIdentifier;
-    }
-  }
 
   // Ensure the main browser is created. This also creates the BVC.
   [self.browserViewWrangler createMainBrowser];

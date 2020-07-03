@@ -527,6 +527,21 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual bool IsSynchronousCompositingEnabled() { return false; }
 #endif
 
+  // Whether zoom for dsf is enabled. When true, inputs to blink would all be
+  // scaled by the device scale factor so that layout is done in device pixel
+  // space.
+  virtual bool IsUseZoomForDSFEnabled() { return false; }
+
+  // Whether LCD text is enabled.
+  virtual bool IsLcdTextEnabled() { return false; }
+
+  // Whether rubberbanding/elatic on overscrolling is enabled. This usually
+  // varies between each OS and can be configured via user settings in the OS.
+  virtual bool IsElasticOverscrollEnabled() { return false; }
+
+  // Whether the scroll animator that produces smooth scrolling is enabled.
+  virtual bool IsScrollAnimatorEnabled() { return true; }
+
   // Media stream ----------------------------------------------------
   virtual scoped_refptr<media::AudioCapturerSource> NewAudioCapturerSource(
       blink::WebLocalFrame* web_frame,

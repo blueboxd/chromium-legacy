@@ -72,7 +72,7 @@ PaintLayerCompositor::~PaintLayerCompositor() = default;
 
 void PaintLayerCompositor::CleanUp() {
   if (InCompositingMode())
-    SetOwnerNeedsCompositingInputsUpdate();
+    SetOwnerNeedsCompositingUpdate();
 }
 
 bool PaintLayerCompositor::InCompositingMode() const {
@@ -97,87 +97,8 @@ void PaintLayerCompositor::UpdateAcceleratedCompositingSettings() {
     root_layer->SetNeedsCompositingInputsUpdate();
 }
 
-void PaintLayerCompositor::UpdateCompositingInputsIfNeededRecursive(
-    DocumentLifecycle::LifecycleState target_state) {
-  DCHECK_GE(target_state, DocumentLifecycle::kCompositingInputsClean);
-  TRACE_EVENT0(
-      "blink,benchmark",
-      "PaintLayerCompositor::UpdateCompositingInputsIfNeededRecursive");
-  UpdateCompositingInputsIfNeededRecursiveInternal(target_state);
-}
-
-void PaintLayerCompositor::UpdateCompositingInputsIfNeededRecursiveInternal(
-    DocumentLifecycle::LifecycleState target_state) {
-  if (layout_view_.GetFrameView()->ShouldThrottleRendering())
-    return;
-
-  for (Frame* child =
-           layout_view_.GetFrameView()->GetFrame().Tree().FirstChild();
-       child; child = child->Tree().NextSibling()) {
-    auto* local_frame = DynamicTo<LocalFrame>(child);
-    if (!local_frame)
-      continue;
-    // It's possible for trusted Pepper plugins to force hit testing in
-    // situations where the frame tree is in an inconsistent state, such as in
-    // the middle of frame detach.
-    // TODO(bbudge) Remove this check when trusted Pepper plugins are gone.
-    if (local_frame->GetDocument()->IsActive() &&
-        local_frame->ContentLayoutObject()) {
-      local_frame->ContentLayoutObject()
-          ->Compositor()
-          ->UpdateCompositingInputsIfNeededRecursiveInternal(target_state);
-    }
-  }
-
-  ScriptForbiddenScope forbid_script;
-
-#if DCHECK_IS_ON()
-  LocalFrameView* view = layout_view_.GetFrameView();
-  view->SetIsUpdatingDescendantDependentFlags(true);
-#endif
-  {
-    TRACE_EVENT0("blink", "PaintLayer::UpdateDescendantDependentFlags");
-    RootLayer()->UpdateDescendantDependentFlags();
-  }
-#if DCHECK_IS_ON()
-  view->SetIsUpdatingDescendantDependentFlags(false);
-#endif
-
-  layout_view_.CommitPendingSelection();
-
-  Lifecycle().AdvanceTo(DocumentLifecycle::kInCompositingInputsUpdate);
-
-  if (pending_update_type_ >= kCompositingUpdateAfterCompositingInputChange) {
-    CompositingInputsUpdater updater(RootLayer(), GetCompositingInputsRoot());
-    updater.Update();
-    // TODO(chrishtr): we should only need to do this if compositing state
-    // changed, but
-    // compositing/iframe-graphics-tree-changes-parents-does-not.html
-    // breaks otherwise.
-    if (updater.LayerOrDescendantShouldBeComposited(RootLayer()))
-      SetOwnerNeedsCompositingInputsUpdate();
-  }
-
-  Lifecycle().AdvanceTo(DocumentLifecycle::kCompositingInputsClean);
-
-#if DCHECK_IS_ON()
-  if (!layout_view_.GetDocument()
-           .GetSettings()
-           ->GetAcceleratedCompositingEnabled()) {
-    DCHECK(!layout_view_.GetDocument()
-                .GetSettings()
-                ->GetAcceleratedCompositingEnabled());
-  }
-
-  CompositingInputsUpdater::AssertNeedsCompositingInputsUpdateBitsCleared(
-      RootLayer());
-#endif
-}
-
 void PaintLayerCompositor::UpdateIfNeededRecursive(
     DocumentLifecycle::LifecycleState target_state) {
-  DCHECK_GE(target_state, DocumentLifecycle::kCompositingInputsClean);
-  UpdateCompositingInputsIfNeededRecursiveInternal(target_state);
   CompositingReasonsStats compositing_reasons_stats;
   UpdateIfNeededRecursiveInternal(target_state, compositing_reasons_stats);
   UMA_HISTOGRAM_CUSTOM_COUNTS("Blink.Compositing.LayerPromotionCount.Overlap",
@@ -200,10 +121,9 @@ void PaintLayerCompositor::UpdateIfNeededRecursive(
 void PaintLayerCompositor::UpdateIfNeededRecursiveInternal(
     DocumentLifecycle::LifecycleState target_state,
     CompositingReasonsStats& compositing_reasons_stats) {
-  if (layout_view_.GetFrameView()->ShouldThrottleRendering())
-    return;
+  DCHECK(target_state >= DocumentLifecycle::kCompositingInputsClean);
 
-  if (target_state == DocumentLifecycle::kCompositingInputsClean)
+  if (layout_view_.GetFrameView()->ShouldThrottleRendering())
     return;
 
   LocalFrameView* view = layout_view_.GetFrameView();
@@ -235,7 +155,24 @@ void PaintLayerCompositor::UpdateIfNeededRecursiveInternal(
 
   ScriptForbiddenScope forbid_script;
 
+#if DCHECK_IS_ON()
+  view->SetIsUpdatingDescendantDependentFlags(true);
+#endif
+  {
+    TRACE_EVENT0("blink", "PaintLayer::UpdateDescendantDependentFlags");
+    RootLayer()->UpdateDescendantDependentFlags();
+  }
+#if DCHECK_IS_ON()
+  view->SetIsUpdatingDescendantDependentFlags(false);
+#endif
+
+  layout_view_.CommitPendingSelection();
+
   UpdateIfNeeded(target_state, compositing_reasons_stats);
+  DCHECK(Lifecycle().GetState() == DocumentLifecycle::kCompositingInputsClean ||
+         Lifecycle().GetState() == DocumentLifecycle::kCompositingClean);
+  if (target_state == DocumentLifecycle::kCompositingInputsClean)
+    return;
 
 #if DCHECK_IS_ON()
   DCHECK_EQ(Lifecycle().GetState(), DocumentLifecycle::kCompositingClean);
@@ -275,6 +212,22 @@ void PaintLayerCompositor::SetNeedsCompositingUpdate(
   Lifecycle().EnsureStateAtMost(DocumentLifecycle::kLayoutClean);
 }
 
+void PaintLayerCompositor::UpdateWithoutAcceleratedCompositing(
+    CompositingUpdateType update_type) {
+  DCHECK(!layout_view_.GetDocument()
+              .GetSettings()
+              ->GetAcceleratedCompositingEnabled());
+
+  if (update_type >= kCompositingUpdateAfterCompositingInputChange) {
+    CompositingInputsUpdater(RootLayer(), GetCompositingInputsRoot()).Update();
+  }
+
+#if DCHECK_IS_ON()
+  CompositingInputsUpdater::AssertNeedsCompositingInputsUpdateBitsCleared(
+      RootLayer());
+#endif
+}
+
 void PaintLayerCompositor::
     ForceRecomputeVisualRectsIncludingNonCompositingDescendants(
         LayoutObject& layout_object) {
@@ -305,18 +258,34 @@ static void AssertWholeTreeNotComposited(const PaintLayer& paint_layer) {
 void PaintLayerCompositor::UpdateIfNeeded(
     DocumentLifecycle::LifecycleState target_state,
     CompositingReasonsStats& compositing_reasons_stats) {
-  DCHECK(target_state >= DocumentLifecycle::kCompositingClean);
+  DCHECK(target_state >= DocumentLifecycle::kCompositingInputsClean);
 
   Lifecycle().AdvanceTo(DocumentLifecycle::kInCompositingUpdate);
+
+  if (pending_update_type_ < kCompositingUpdateAfterCompositingInputChange &&
+      target_state == DocumentLifecycle::kCompositingInputsClean) {
+    // The compositing inputs are already clean and that is our target state.
+    // Early-exit here without clearing the pending update type since we haven't
+    // handled e.g. geometry updates.
+    Lifecycle().AdvanceTo(DocumentLifecycle::kCompositingInputsClean);
+    return;
+  }
 
   CompositingUpdateType update_type = pending_update_type_;
   pending_update_type_ = kCompositingUpdateNone;
 
   if (!layout_view_.GetDocument()
            .GetSettings()
-           ->GetAcceleratedCompositingEnabled() ||
-      update_type == kCompositingUpdateNone) {
-    Lifecycle().AdvanceTo(DocumentLifecycle::kCompositingClean);
+           ->GetAcceleratedCompositingEnabled()) {
+    UpdateWithoutAcceleratedCompositing(update_type);
+    Lifecycle().AdvanceTo(
+        std::min(DocumentLifecycle::kCompositingClean, target_state));
+    return;
+  }
+
+  if (update_type == kCompositingUpdateNone) {
+    Lifecycle().AdvanceTo(
+        std::min(DocumentLifecycle::kCompositingClean, target_state));
     return;
   }
 
@@ -324,18 +293,38 @@ void PaintLayerCompositor::UpdateIfNeeded(
 
   Vector<PaintLayer*> layers_needing_paint_invalidation;
 
-  CompositingRequirementsUpdater(layout_view_)
-      .Update(update_root, compositing_reasons_stats);
+  if (update_type >= kCompositingUpdateAfterCompositingInputChange) {
+    CompositingInputsUpdater(RootLayer(), GetCompositingInputsRoot()).Update();
 
-  CompositingLayerAssigner layer_assigner(this);
-  layer_assigner.Assign(update_root, layers_needing_paint_invalidation);
+#if DCHECK_IS_ON()
+    // FIXME: Move this check to the end of the compositing update.
+    CompositingInputsUpdater::AssertNeedsCompositingInputsUpdateBitsCleared(
+        update_root);
+#endif
 
-  if (layer_assigner.LayersChanged()) {
-    update_type = std::max(update_type, kCompositingUpdateRebuildTree);
-    if (ScrollingCoordinator* scrolling_coordinator =
-            GetScrollingCoordinator()) {
-      LocalFrameView* frame_view = layout_view_.GetFrameView();
-      scrolling_coordinator->NotifyGeometryChanged(frame_view);
+    // In the case where we only want to make compositing inputs clean, we
+    // early-exit here. Because we have not handled the other implications of
+    // |pending_update_type_| > kCompositingUpdateNone, we must restore the
+    // pending update type for a future call.
+    if (target_state == DocumentLifecycle::kCompositingInputsClean) {
+      pending_update_type_ = update_type;
+      Lifecycle().AdvanceTo(DocumentLifecycle::kCompositingInputsClean);
+      return;
+    }
+
+    CompositingRequirementsUpdater(layout_view_)
+        .Update(update_root, compositing_reasons_stats);
+
+    CompositingLayerAssigner layer_assigner(this);
+    layer_assigner.Assign(update_root, layers_needing_paint_invalidation);
+
+    if (layer_assigner.LayersChanged()) {
+      update_type = std::max(update_type, kCompositingUpdateRebuildTree);
+      if (ScrollingCoordinator* scrolling_coordinator =
+              GetScrollingCoordinator()) {
+        LocalFrameView* frame_view = layout_view_.GetFrameView();
+        scrolling_coordinator->NotifyGeometryChanged(frame_view);
+      }
     }
   }
 
@@ -375,6 +364,9 @@ void PaintLayerCompositor::UpdateIfNeeded(
     if (!child_list.IsEmpty()) {
       CHECK(compositing_);
       DCHECK_EQ(1u, child_list.size());
+      // Schedule an update in the parent frame so the <iframe>'s layer in the
+      // owner document matches the compositing state here.
+      SetOwnerNeedsCompositingUpdate();
       root_layer_attachment_dirty_ = true;
     }
   }
@@ -554,15 +546,10 @@ bool PaintLayerCompositor::CanBeComposited(const PaintLayer* layer) const {
   const bool has_compositor_animation =
       CompositingReasonFinder::CompositingReasonsForAnimation(
           layer->GetLayoutObject()) != CompositingReason::kNone;
-
-  // Throttled frames have stale visibility state.
-  bool frame_is_visible =
-      !frame_view->ShouldThrottleRendering() && !layer->SubtreeIsInvisible();
-
   return layout_view_.GetDocument()
              .GetSettings()
              ->GetAcceleratedCompositingEnabled() &&
-         (has_compositor_animation || frame_is_visible) &&
+         (has_compositor_animation || !layer->SubtreeIsInvisible()) &&
          layer->IsSelfPaintingLayer() &&
          !layer->GetLayoutObject().IsLayoutFlowThread() &&
          // Don't composite <foreignObject> for the moment, to reduce
@@ -601,14 +588,10 @@ void PaintLayerCompositor::UpdateTrackingRasterInvalidations() {
     UpdateTrackingRasterInvalidationsRecursive(root_layer);
 }
 
-void PaintLayerCompositor::SetOwnerNeedsCompositingInputsUpdate() {
+void PaintLayerCompositor::SetOwnerNeedsCompositingUpdate() {
   if (HTMLFrameOwnerElement* owner_element =
           layout_view_.GetDocument().LocalOwner()) {
-    LayoutBoxModelObject* layout_object =
-        owner_element->GetLayoutBoxModelObject();
-    if (!layout_object || !layout_object->HasLayer())
-      return;
-    layout_object->Layer()->SetNeedsCompositingInputsUpdate();
+    owner_element->SetNeedsCompositingUpdate();
   }
 }
 

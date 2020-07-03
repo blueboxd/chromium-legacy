@@ -35,22 +35,16 @@ constexpr char kViolationTypeToDocument[] = "navigation-to-document";
 constexpr char kEffectivePolicy[] = "effective-policy";
 
 std::string CoopValueToString(
-    network::mojom::CrossOriginOpenerPolicyValue coop_value,
-    network::mojom::CrossOriginEmbedderPolicyValue coep_value,
-    network::mojom::CrossOriginEmbedderPolicyValue report_only_coep_value) {
+    network::mojom::CrossOriginOpenerPolicyValue coop_value) {
   switch (coop_value) {
     case network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone:
       return kUnsafeNone;
     case network::mojom::CrossOriginOpenerPolicyValue::kSameOrigin:
-      if ((coep_value ==
-           network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp) ||
-          (report_only_coep_value ==
-           network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp)) {
-        return kSameOriginPlusCoep;
-      }
       return kSameOrigin;
     case network::mojom::CrossOriginOpenerPolicyValue::kSameOriginAllowPopups:
       return kSameOriginAllowPopups;
+    case network::mojom::CrossOriginOpenerPolicyValue::kSameOriginPlusCoep:
+      return kSameOriginPlusCoep;
   }
 }
 
@@ -115,12 +109,10 @@ CrossOriginOpenerPolicyReporter::CrossOriginOpenerPolicyReporter(
     StoragePartition* storage_partition,
     RenderFrameHostImpl* current_rfh,
     const GURL& context_url,
-    const network::CrossOriginOpenerPolicy& coop,
-    const network::CrossOriginEmbedderPolicy& coep)
+    const network::CrossOriginOpenerPolicy& coop)
     : storage_partition_(storage_partition),
       context_url_(context_url),
-      coop_(coop),
-      coep_(coep) {
+      coop_(coop) {
   DCHECK(storage_partition_);
   RenderFrameHostImpl* source_rfh = GetSourceRfhForCoopReporting(current_rfh);
   source_url_ = source_rfh->GetLastCommittedURL();
@@ -132,14 +124,12 @@ CrossOriginOpenerPolicyReporter::CrossOriginOpenerPolicyReporter(
     const GURL& source_url,
     const GlobalFrameRoutingId source_routing_id,
     const GURL& context_url,
-    const network::CrossOriginOpenerPolicy& coop,
-    const network::CrossOriginEmbedderPolicy& coep)
+    const network::CrossOriginOpenerPolicy& coop)
     : storage_partition_(storage_partition),
       source_url_(source_url),
       source_routing_id_(source_routing_id),
       context_url_(context_url),
-      coop_(coop),
-      coep_(coep) {
+      coop_(coop) {
   DCHECK(storage_partition_);
 }
 
@@ -169,10 +159,9 @@ void CrossOriginOpenerPolicyReporter::QueueOpenerBreakageReport(
   body.SetString(kViolationType, is_reported_from_document
                                      ? kViolationTypeFromDocument
                                      : kViolationTypeToDocument);
-  body.SetString(
-      kEffectivePolicy,
-      CoopValueToString(is_report_only ? coop_.report_only_value : coop_.value,
-                        coep_.value, coep_.report_only_value));
+  body.SetString(kEffectivePolicy,
+                 CoopValueToString(is_report_only ? coop_.report_only_value
+                                                  : coop_.value));
   storage_partition_->GetNetworkContext()->QueueReport(
       "coop", *endpoint, context_url_, /*user_agent=*/base::nullopt,
       std::move(body));

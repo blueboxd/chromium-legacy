@@ -102,6 +102,7 @@ public class ChromeActivitySessionTracker {
         mIsInitialized = true;
         assert !mIsStarted;
 
+        mVariationsSession.initializeWithNative();
         ApplicationStatus.registerApplicationStateListener(createApplicationStateListener());
     }
 

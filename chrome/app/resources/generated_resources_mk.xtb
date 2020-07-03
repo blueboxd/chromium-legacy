@@ -849,7 +849,7 @@
 Инсталирајте ја апликацијата Family Link на уредот за да може да управувате со поставките на сметкава.  Ви испративме упатства по е-пошта.</translation>
 <translation id="2040460856718599782">Ах! Нешто тргна наопаку кога се обидовме да ве автентицираме. Проверете ја убаво акредитацијата и обидете се повторно.</translation>
 <translation id="2040859730880153754">{COUNT,plural, =1{Имате 1 компромитирана лозинка}one{Имате # компромитирана лозинка}other{Имате # компромитирани лозинки}}</translation>
-<translation id="2040863272941698761">Поставете Linux</translation>
+<translation id="2040863272941698761">Поставете го Linux</translation>
 <translation id="204497730941176055">Име на шаблон на сертификат на Microsoft</translation>
 <translation id="2045117674524495717">Помош за кратенка од тастатурата</translation>
 <translation id="2045969484888636535">Продолжи да блокираш колачиња</translation>
@@ -1056,7 +1056,7 @@
 <translation id="2295864384543949385"><ph name="NUM_RESULTS" /> резултати</translation>
 <translation id="2297705863329999812">Барај печатачи</translation>
 <translation id="2299734369537008228">Лизгач: <ph name="MIN_LABEL" /> до <ph name="MAX_LABEL" /></translation>
-<translation id="2299941608784654630">Вклучи ги сите датотеки за евиденција собрани при отстранување грешки како посебна архива.</translation>
+<translation id="2299941608784654630">Вклучи ги сите датотеки за евиденција прибрани од debugd како посебна архива.</translation>
 <translation id="2300383962156589922">Приспособете ја и контролирајте ја апликацијата <ph name="APP_NAME" /></translation>
 <translation id="2301382460326681002">Неважечки основен директориум на наставка.</translation>
 <translation id="23030561267973084">„<ph name="EXTENSION_NAME" />“ побара дополнителни дозволи.</translation>
@@ -3308,7 +3308,7 @@
 <translation id="5154702632169343078">Субјект</translation>
 <translation id="5157635116769074044">Прикачи ја оваа страница на Почетен екран...</translation>
 <translation id="5158983316805876233">Користи ист прокси за сите протоколи</translation>
-<translation id="5159094275429367735">Поставете Crostini</translation>
+<translation id="5159094275429367735">Поставете го Crostini</translation>
 <translation id="5159419673777902220">Родителот ги оневозможил дозволите за екстензиите</translation>
 <translation id="5160634252433617617">Физичка тастатура</translation>
 <translation id="5160857336552977725">Најавете се на <ph name="DEVICE_TYPE" /></translation>
@@ -4620,7 +4620,7 @@
 <translation id="6840155290835956714">Прашај пред да испратиш</translation>
 <translation id="6840184929775541289">Не е орган за сертифицирање</translation>
 <translation id="6841186874966388268">Грешки</translation>
-<translation id="6843264316370513305">Мрежно отстранување грешки</translation>
+<translation id="6843264316370513305">Отстранување грешки на мрежата</translation>
 <translation id="6843423766595476978">„Ok Google“ е поставен</translation>
 <translation id="6845038076637626672">Отвори максимизирано</translation>
 <translation id="6845325883481699275">Помогнете да се подобри безбедноста на Chrome</translation>
@@ -5652,7 +5652,7 @@
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> користи поставки за прокси од екстензија</translation>
 <translation id="8097959162767603171">Вашиот администратор прво мора да ги прифати „Условите за користење“ во списокот со уреди со Chrome во администраторската конзола.</translation>
 <translation id="8101987792947961127">Потребно е фабричко ресетирање на следното рестартирање</translation>
-<translation id="8102139037507939978">Отстранете ги податоците за лична идентификација од system_logs.txt.</translation>
+<translation id="8102139037507939978">Отстрани ги податоците што откриваат идентитет од датотеката system_logs.txt.</translation>
 <translation id="8102159139658438129">Одете во <ph name="LINK_BEGIN" />„Поставки“<ph name="LINK_END" /> за да видите опции за поврзаниот телефон</translation>
 <translation id="8104696615244072556">Фабрички ресетирајте го вашиот уред со <ph name="IDS_SHORT_PRODUCT_NAME" /> и вратете се на претходната верзија.</translation>
 <translation id="8107015733319732394">Google Play Store се инсталира на вашиот <ph name="DEVICE_TYPE" />. Ова може да потрае неколку минути.</translation>
@@ -6388,7 +6388,7 @@
 <translation id="9009369504041480176">Се поставува (<ph name="PROGRESS_PERCENT" />%)...</translation>
 <translation id="9009708085379296446">Дали мислевте да ја промените страницава?</translation>
 <translation id="9011163749350026987">Секогаш прикажувај ја иконата</translation>
-<translation id="9011393886518328654">Белешки за изданието</translation>
+<translation id="9011393886518328654">Белешки за верзијата</translation>
 <translation id="9013037634206938463">Потребни се <ph name="INSTALL_SIZE" /> слободен простор за инсталирање на Linux. За да го зголемите слободниот простор, избришете датотеки од уредот.</translation>
 <translation id="9013707997379828817">Администраторот го врати уредов на фабричките поставки. Зачувајте ги важните датотеки, а потоа рестартирајте. Ќе се избришат сите податоци на уредот.</translation>
 <translation id="901668144954885282">Направете бекап на Google Drive</translation>
@@ -6586,7 +6586,7 @@
 <translation id="975893173032473675">Јазик на кој треба да се преведе</translation>
 <translation id="978146274692397928">Почетната ширина на интерпункцијата е Полна</translation>
 <translation id="97905529126098460">Прозорецов ќе се затвори откако ќе заврши откажувањето.</translation>
-<translation id="980731642137034229">Копче на менито за дејства</translation>
+<translation id="980731642137034229">Копче за менито со дејства</translation>
 <translation id="981121421437150478">Без мрежа</translation>
 <translation id="983511809958454316">Функцијава не е поддржана во VR</translation>
 <translation id="984275831282074731">Начини на плаќање</translation>

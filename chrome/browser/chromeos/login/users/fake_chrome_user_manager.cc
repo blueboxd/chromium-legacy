@@ -715,10 +715,6 @@ void FakeChromeUserManager::DemoAccountLoggedIn() {
 
 void FakeChromeUserManager::KioskAppLoggedIn(user_manager::User* user) {}
 
-void FakeChromeUserManager::ArcKioskAppLoggedIn(user_manager::User* user) {}
-
-void FakeChromeUserManager::WebKioskAppLoggedIn(user_manager::User* user) {}
-
 void FakeChromeUserManager::PublicAccountUserLoggedIn(
     user_manager::User* user) {
   NOTREACHED();

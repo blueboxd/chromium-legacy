@@ -59,9 +59,9 @@
 
 namespace cc {
 class LayerTreeHost;
+class LayerTreeSettings;
 class TaskGraphRunner;
 class UkmRecorderFactory;
-class LayerTreeSettings;
 }
 
 namespace ui {
@@ -82,13 +82,18 @@ class WebWidget {
  public:
   // Initialize compositing. This will create a LayerTreeHost but will not
   // allocate a frame sink or begin producing frames until SetCompositorVisible
-  // is called.
+  // is called. |settings| is typically null. When |settings| is null
+  // the default settings will be used, tests may provide a |settings| object to
+  // override the defaults.
   virtual cc::LayerTreeHost* InitializeCompositing(
       bool never_composited,
       scheduler::WebThreadScheduler* main_thread_scheduler,
       cc::TaskGraphRunner* task_graph_runner,
-      const cc::LayerTreeSettings& settings,
-      std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory) = 0;
+      bool for_child_local_root_frame,
+      const gfx::Size& initial_screen_size,
+      float initial_device_scale_factor,
+      std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
+      const cc::LayerTreeSettings* settings) = 0;
 
   // This method closes and deletes the WebWidget. If a |cleanup_task| is
   // provided it should run on the |cleanup_runner| after the WebWidget has

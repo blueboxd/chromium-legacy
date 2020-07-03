@@ -374,13 +374,17 @@ cc::LayerTreeHost* WebPagePopupImpl::InitializeCompositing(
     bool never_composited,
     scheduler::WebThreadScheduler* main_thread_scheduler,
     cc::TaskGraphRunner* task_graph_runner,
-    const cc::LayerTreeSettings& settings,
-    std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory) {
+    bool for_child_local_root_frame,
+    const gfx::Size& initial_screen_size,
+    float initial_device_scale_factor,
+    std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
+    const cc::LayerTreeSettings* settings) {
   // Careful Initialize() is called after InitializeCompositing, so don't do
   // much work here.
-  widget_base_->InitializeCompositing(never_composited, main_thread_scheduler,
-                                      task_graph_runner, settings,
-                                      std::move(ukm_recorder_factory));
+  widget_base_->InitializeCompositing(
+      never_composited, main_thread_scheduler, task_graph_runner,
+      for_child_local_root_frame, initial_screen_size,
+      initial_device_scale_factor, std::move(ukm_recorder_factory), settings);
   return widget_base_->LayerTreeHost();
 }
 

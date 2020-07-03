@@ -13,6 +13,9 @@ import "ui/base/ime/mojom/text_input_state.mojom";
 import "ui/base/cursor/mojom/cursor.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 
+[EnableIf=is_mac]
+import "ui/base/mojom/attributed_string.mojom";
+
 // "Verb" of a drag-and-drop operation as negotiated between the source and
 // destination. It's typemapped to blink::WebDragOperation.
 enum DragOperation {
@@ -85,6 +88,12 @@ interface FrameWidget {
   // When a widget is inert, it is unable to process input events.
   // https://html.spec.whatwg.org/multipage/interaction.html#inert
   SetIsInertForSubFrame(bool inert);
+
+  // Requests the word under the given point relative to the origin of the
+  // widget and its baseline point.
+  [EnableIf=is_mac]
+  GetStringAtPoint(gfx.mojom.Point point_in_local_root)
+      => (ui.mojom.AttributedString? string, gfx.mojom.Point baseline_point);
 };
 
 // Implemented in Browser, this interface defines frame-widget-specific methods that

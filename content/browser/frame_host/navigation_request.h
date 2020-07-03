@@ -1023,8 +1023,7 @@ class CONTENT_EXPORT NavigationRequest
 
   // Updates the internal coop_status assuming the page navigated to has
   // cross-origin-opener-policy |coop| and cross-origin-embedder-policy |coep|.
-  void UpdateCoopStatus(network::mojom::CrossOriginOpenerPolicyValue coop,
-                        network::mojom::CrossOriginEmbedderPolicyValue coep);
+  void UpdateCoopStatus(network::mojom::CrossOriginOpenerPolicyValue coop);
 
   FrameTreeNode* const frame_tree_node_;
 

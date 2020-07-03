@@ -234,6 +234,10 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
 
   void ReleaseFenceSyncAndPushTextureUpdates(uint64_t sync_fence_release);
 
+  void SwapBuffersInternal(
+      base::OnceCallback<bool()> deferred_framebuffer_draw_closure,
+      OutputSurfaceFrame* frame = nullptr);
+
   GrContext* gr_context() { return context_state_->gr_context(); }
   gpu::DecoderContext* decoder();
 

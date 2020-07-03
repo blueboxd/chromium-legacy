@@ -54,10 +54,6 @@ bool operator==(const LoginOptionProto& value_a,
 bool operator==(const CreditCardResponseProto& value_a,
                 const CreditCardResponseProto& value_b);
 
-// Custom comparison operator for |LoginOptionResponseProto|.
-bool operator==(const LoginOptionResponseProto& value_a,
-                const LoginOptionResponseProto& value_b);
-
 // Intended for debugging.
 std::ostream& operator<<(std::ostream& out, const ValueProto& value);
 std::ostream& operator<<(std::ostream& out,
@@ -72,8 +68,6 @@ std::ostream& operator<<(std::ostream& out, const AutofillProfileProto& value);
 std::ostream& operator<<(std::ostream& out, const LoginOptionProto& value);
 std::ostream& operator<<(std::ostream& out,
                          const CreditCardResponseProto& value);
-std::ostream& operator<<(std::ostream& out,
-                         const LoginOptionResponseProto& value);
 
 // Convenience constructors.
 ValueProto SimpleValue(bool value, bool is_client_side_only = false);

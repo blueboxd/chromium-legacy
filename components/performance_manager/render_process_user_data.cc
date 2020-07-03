@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "components/performance_manager/graph/process_node_impl.h"
 #include "components/performance_manager/performance_manager_impl.h"
+#include "components/performance_manager/public/render_process_host_id.h"
 #include "components/performance_manager/public/render_process_host_proxy.h"
 #include "content/public/browser/child_process_termination_info.h"
 #include "content/public/browser/render_process_host.h"
@@ -31,7 +32,8 @@ RenderProcessUserData::RenderProcessUserData(
     : host_(render_process_host) {
   host_->AddObserver(this);
   process_node_ = PerformanceManagerImpl::CreateProcessNode(
-      content::PROCESS_TYPE_RENDERER, RenderProcessHostProxy(host_->GetID()));
+      content::PROCESS_TYPE_RENDERER,
+      RenderProcessHostProxy(RenderProcessHostId(host_->GetID())));
 }
 
 RenderProcessUserData::~RenderProcessUserData() {

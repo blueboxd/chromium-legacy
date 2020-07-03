@@ -19,13 +19,14 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
+#include "content/shell/common/web_test/web_test.mojom.h"
 #include "content/shell/renderer/web_test/mock_screen_orientation_client.h"
 #include "content/shell/renderer/web_test/web_test_runtime_flags.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
+#include "third_party/blink/public/platform/web_url.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "v8/include/v8.h"
 
-class GURL;
 class SkBitmap;
 
 namespace base {
@@ -223,6 +224,25 @@ class TestRunner {
 
   bool ShouldDumpJavaScriptDialogs() const;
 
+  // The following trigger navigations on the main WebView.
+  void GoToOffset(int offset);
+  void Reload();
+  void LoadURLForFrame(const GURL& url, const std::string& frame_name);
+
+  // Add a message to the text dump for the web test.
+  void PrintMessage(const std::string& message);
+  // Add a message to stderr (not saved to expected output files, for debugging
+  // only).
+  void PrintMessageToStderr(const std::string& message);
+
+  // Register a new isolated filesystem with the given files, and return the
+  // new filesystem id.
+  blink::WebString RegisterIsolatedFileSystem(
+      const std::vector<base::FilePath>& file_paths);
+
+  // Convert the provided relative path into an absolute path.
+  blink::WebString GetAbsoluteWebStringFromUTF8Path(const std::string& path);
+
   blink::WebEffectiveConnectionType effective_connection_type() const {
     return effective_connection_type_;
   }
@@ -233,12 +253,13 @@ class TestRunner {
     virtual ~WorkItem() {}
 
     // Returns true if this started a load.
-    virtual bool Run(BlinkTestRunner*, blink::WebView*) = 0;
+    virtual bool Run(TestRunner*, blink::WebView*) = 0;
   };
 
  private:
   friend class TestRunnerBindings;
   friend class WorkQueue;
+  friend class BlinkTestRunner;  // For the mojom::WebTestControlHost.
 
   // Helper class for managing events queued by methods like QueueLoad or
   // QueueScript.
@@ -329,8 +350,6 @@ class TestRunner {
 
   void SetMockScreenOrientation(const std::string& orientation);
   void DisableMockScreenOrientation();
-
-  void SetPopupBlockingEnabled(bool block_popups);
 
   // Modify accept_languages in blink::mojom::RendererPreferences.
   void SetAcceptLanguages(const std::string& accept_languages);
@@ -472,63 +491,7 @@ class TestRunner {
   void SetEffectiveConnectionType(
       blink::WebEffectiveConnectionType connection_type);
 
-  ///////////////////////////////////////////////////////////////////////////
-  // Methods forwarding to the BlinkTestRunner.
-
-  // Shows DevTools window.
-  void ShowWebInspector(const std::string& str,
-                        const std::string& frontend_url);
-  void CloseWebInspector();
-
-  // Inspect chooser state
-  bool IsChooserShown();
-
-  // Allows web tests to exec scripts at WebInspector side.
-  void EvaluateInWebInspector(int call_id, const std::string& script);
-
-  // Clears all databases.
-  void ClearAllDatabases();
-  // Sets the default quota for all origins
-  void SetDatabaseQuota(int quota);
-
-  // Sets the cookie policy to:
-  // - allow all cookies when |block| is false
-  // - block only third-party cookies when |block| is true
-  void SetBlockThirdPartyCookies(bool block);
-
-  // Sets the permission's |name| to |value| for a given {origin, embedder}
-  // tuple.
-  void SetPermission(const std::string& name,
-                     const std::string& value,
-                     const GURL& origin,
-                     const GURL& embedding_origin);
-
-  // Calls setlocale(LC_ALL, ...) for a specified locale.
-  // Resets between tests.
-  void SetPOSIXLocale(const std::string& locale);
-
-  // Simulates a click on a Web Notification.
-  void SimulateWebNotificationClick(
-      const std::string& title,
-      const base::Optional<int>& action_index,
-      const base::Optional<base::string16>& reply);
-
-  // Simulates closing a Web Notification.
-  void SimulateWebNotificationClose(const std::string& title, bool by_user);
-
-  // Simulates a user deleting a content index entry.
-  void SimulateWebContentIndexDelete(const std::string& id);
-
-  // Returns the absolute path to a directory this test can write data in. This
-  // returns the path to a fresh empty directory every time this method is
-  // called. Additionally when this method is called any previously created
-  // directories will be deleted.
-  base::FilePath GetWritableDirectory();
-
-  // Sets the path that should be returned when the test shows a file dialog.
-  void SetFilePathForMockFileDialog(const base::FilePath& path);
-
-  // Takes care of notifying the delegate after a change to web test runtime
+  // Takes care of notifying the browser after a change to web test runtime
   // flags.
   void OnWebTestRuntimeFlagsChanged();
 
@@ -538,6 +501,16 @@ class TestRunner {
   bool IsFramePartOfMainTestWindow(blink::WebFrame*) const;
 
   void CheckResponseMimeType();
+
+  mojo::AssociatedRemote<mojom::WebTestControlHost>&
+  GetWebTestControlHostRemote();
+  void HandleWebTestControlHostDisconnected();
+  mojo::AssociatedRemote<mojom::WebTestControlHost>
+      web_test_control_host_remote_;
+
+  mojo::AssociatedRemote<mojom::WebTestClient>& GetWebTestClientRemote();
+  void HandleWebTestClientDisconnected();
+  mojo::AssociatedRemote<mojom::WebTestClient> web_test_client_remote_;
 
   bool test_is_running_ = false;
 
@@ -595,9 +568,6 @@ class TestRunner {
   bool use_mock_theme_ = false;
 
   MockScreenOrientationClient mock_screen_orientation_client_;
-
-  // Number of currently active color choosers.
-  int chooser_count_ = 0;
 
   // Captured drag image.
   SkBitmap drag_image_;

@@ -41,3 +41,13 @@ export const EduCoexistenceFlowResult = {
   EDU_ACCOUNT_LOGIN_SCREEN: 4,
   FLOW_COMPLETED: 5,
 };
+
+/**
+ * Type of the error screen.
+ * @enum {string}
+ */
+export const EduLoginErrorType = {
+  NO_INTERNET: 'NO_INTERNET',
+  // All other errors
+  CANNOT_ADD_ACCOUNT: 'CANNOT_ADD_ACCOUNT',
+};

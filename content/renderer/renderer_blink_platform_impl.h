@@ -115,6 +115,10 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 #if defined(OS_ANDROID)
   bool IsSynchronousCompositingEnabled() override;
 #endif
+  bool IsUseZoomForDSFEnabled() override;
+  bool IsLcdTextEnabled() override;
+  bool IsElasticOverscrollEnabled() override;
+  bool IsScrollAnimatorEnabled() override;
   double AudioHardwareSampleRate() override;
   size_t AudioHardwareBufferSize() override;
   unsigned AudioHardwareOutputChannels() override;

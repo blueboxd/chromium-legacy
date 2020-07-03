@@ -64,6 +64,7 @@ class COMPONENT_EXPORT(VULKAN) VulkanSurface {
   VulkanSwapChain* swap_chain() const { return swap_chain_.get(); }
   uint32_t swap_chain_generation() const { return swap_chain_generation_; }
   const gfx::Size& image_size() const { return image_size_; }
+  VkImageUsageFlags image_usage_flags() const { return image_usage_flags_; }
   gfx::OverlayTransform transform() const { return transform_; }
   uint32_t image_count() const { return image_count_; }
   VkSurfaceFormatKHR surface_format() const { return surface_format_; }
@@ -80,12 +81,14 @@ class COMPONENT_EXPORT(VULKAN) VulkanSurface {
 
   const bool enforce_protected_memory_;
 
-  // The generation of |swap_chain_|, it will be increasted if a new
-  // |swap_chain_| is created due to resizing, etec.
+  // The generation of |swap_chain_|, it will be increased if a new
+  // |swap_chain_| is created due to resizing, etc.
   uint32_t swap_chain_generation_ = 0u;
 
   // Swap chain image size.
   gfx::Size image_size_;
+
+  VkImageUsageFlags image_usage_flags_ = 0;
 
   // Swap chain pre-transform.
   gfx::OverlayTransform transform_ = gfx::OVERLAY_TRANSFORM_INVALID;

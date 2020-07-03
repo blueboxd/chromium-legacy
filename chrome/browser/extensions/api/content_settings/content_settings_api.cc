@@ -315,7 +315,7 @@ ContentSettingsContentSettingSetFunction::Run() {
   if (base::FeatureList::IsEnabled(
           content_settings::kDisallowWildcardsInPluginContentSettings) &&
       content_type == ContentSettingsType::PLUGINS &&
-      primary_pattern.HasWildcards()) {
+      primary_pattern.HasHostWildcards()) {
     WriteToConsole(
         blink::mojom::ConsoleMessageLevel::kError,
         content_settings_api_constants::kWildcardPatternsForPluginsDisallowed);

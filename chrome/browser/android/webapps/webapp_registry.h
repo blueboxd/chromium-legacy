@@ -22,12 +22,12 @@ class WebappRegistry {
 
   // Cleans up data stored by web apps on URLs matching |url_filter|.
   virtual void UnregisterWebappsForUrls(
-      const base::Callback<bool(const GURL&)>& url_filter);
+      const base::RepeatingCallback<bool(const GURL&)>& url_filter);
 
   // Removes history data (last used time and URLs) stored by web apps with
   // URLs matching |url_filter|, whilst leaving other data intact.
   virtual void ClearWebappHistoryForUrls(
-      const base::Callback<bool(const GURL&)>& url_filter);
+      const base::RepeatingCallback<bool(const GURL&)>& url_filter);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebappRegistry);

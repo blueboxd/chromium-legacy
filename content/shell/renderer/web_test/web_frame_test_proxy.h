@@ -93,8 +93,6 @@ class WebFrameTestProxy : public RenderFrameImpl,
   void ResetRendererAfterWebTest() override;
   void FinishTestInMainWindow() override;
   void LayoutDumpCompleted(const std::string& completed_layout_dump) override;
-  void ReplyBluetoothManualChooserEvents(
-      const std::vector<std::string>& events) override;
 
   void BindReceiver(
       mojo::PendingAssociatedReceiver<mojom::WebTestRenderFrame> receiver);

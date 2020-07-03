@@ -59,23 +59,20 @@ TEST_F(ValueUtilTest, DifferentTypesComparison) {
   ValueProto value_c = CreateIntValue();
   ValueProto value_d = CreateBoolValue();
   ValueProto value_e = SimpleValue(CreateDateProto(2020, 8, 30));
+  ValueProto value_f;
+  value_f.set_server_payload("payload");
 
-  EXPECT_FALSE(value_a == value_b);
-  EXPECT_FALSE(value_a == value_c);
-  EXPECT_FALSE(value_a == value_d);
-  EXPECT_FALSE(value_a == value_e);
-  EXPECT_FALSE(value_b == value_c);
-  EXPECT_FALSE(value_b == value_d);
-  EXPECT_FALSE(value_b == value_e);
-  EXPECT_FALSE(value_c == value_d);
-  EXPECT_FALSE(value_c == value_e);
-  EXPECT_FALSE(value_d == value_e);
-
-  EXPECT_TRUE(value_a == value_a);
-  EXPECT_TRUE(value_b == value_b);
-  EXPECT_TRUE(value_c == value_c);
-  EXPECT_TRUE(value_d == value_d);
-  EXPECT_TRUE(value_e == value_e);
+  std::vector<ValueProto> values = {value_a, value_b, value_c,
+                                    value_d, value_e, value_f};
+  for (size_t i = 0; i < values.size(); ++i) {
+    for (size_t j = 0; j < values.size(); ++j) {
+      if (j == i) {
+        EXPECT_TRUE(values[i] == values[j]);
+        continue;
+      }
+      EXPECT_FALSE(values[i] == values[j]);
+    }
+  }
 }
 
 TEST_F(ValueUtilTest, EmptyValueComparison) {
@@ -222,13 +219,13 @@ TEST_F(ValueUtilTest, CreditCardResponseComparison) {
   EXPECT_FALSE(value_a == value_b);
 }
 
-TEST_F(ValueUtilTest, LoginOptionResponseComparison) {
+TEST_F(ValueUtilTest, ServerPayloadComparison) {
   ValueProto value_a;
-  value_a.mutable_login_option_response()->set_payload("payload");
+  value_a.set_server_payload("payload");
   ValueProto value_b = value_a;
   EXPECT_TRUE(value_a == value_b);
 
-  value_b.mutable_login_option_response()->set_payload("different");
+  value_b.set_server_payload("different");
   EXPECT_FALSE(value_a == value_b);
 }
 

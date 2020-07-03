@@ -141,9 +141,10 @@ void ChromeContextMenuPopulator::RetrieveImageForShare(
     jint max_width_px,
     jint max_height_px,
     jint j_image_format) {
-  RetrieveImageInternal(
-      env, base::Bind(&OnRetrieveImageForShare), jrender_frame_host, jcallback,
-      max_width_px, max_height_px, ToChromeMojomImageFormat(j_image_format));
+  RetrieveImageInternal(env, base::BindOnce(&OnRetrieveImageForShare),
+                        jrender_frame_host, jcallback, max_width_px,
+                        max_height_px,
+                        ToChromeMojomImageFormat(j_image_format));
 }
 
 void ChromeContextMenuPopulator::RetrieveImageForContextMenu(
@@ -154,14 +155,14 @@ void ChromeContextMenuPopulator::RetrieveImageForContextMenu(
     jint max_width_px,
     jint max_height_px) {
   // For context menu, Image needs to be PNG for receiving transparency pixels.
-  RetrieveImageInternal(env, base::Bind(&OnRetrieveImageForContextMenu),
+  RetrieveImageInternal(env, base::BindOnce(&OnRetrieveImageForContextMenu),
                         jrender_frame_host, jcallback, max_width_px,
                         max_height_px, chrome::mojom::ImageFormat::PNG);
 }
 
 void ChromeContextMenuPopulator::RetrieveImageInternal(
     JNIEnv* env,
-    const ImageRetrieveCallback& retrieve_callback,
+    ImageRetrieveCallback retrieve_callback,
     const JavaParamRef<jobject>& jrender_frame_host,
     const JavaParamRef<jobject>& jcallback,
     jint max_width_px,
@@ -182,7 +183,7 @@ void ChromeContextMenuPopulator::RetrieveImageInternal(
       max_width_px * max_height_px, gfx::Size(max_width_px, max_height_px),
       image_format,
       base::BindOnce(
-          retrieve_callback, base::Passed(&chrome_render_frame),
+          std::move(retrieve_callback), base::Passed(&chrome_render_frame),
           base::android::ScopedJavaGlobalRef<jobject>(env, jcallback)));
 }
 

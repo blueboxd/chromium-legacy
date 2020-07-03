@@ -54,6 +54,13 @@
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
+#if defined(OS_MACOSX)
+#include "third_party/blink/public/web/mac/web_substring_util.h"
+#include "third_party/blink/renderer/platform/fonts/mac/attributed_string_type_converter.h"
+#include "ui/base/mojom/attributed_string.mojom-blink.h"
+#include "ui/gfx/geometry/point.h"
+#endif
+
 namespace WTF {
 template <>
 struct CrossThreadCopier<blink::WebReportTimeCallback>
@@ -296,6 +303,20 @@ void WebFrameWidgetBase::SetTextDirection(base::i18n::TextDirection direction) {
   if (focusedFrame)
     focusedFrame->SetTextDirection(direction);
 }
+
+#if defined(OS_MACOSX)
+void WebFrameWidgetBase::GetStringAtPoint(const gfx::Point& point_in_local_root,
+                                          GetStringAtPointCallback callback) {
+  gfx::Point baseline_point;
+  ui::mojom::blink::AttributedStringPtr attributed_string = nullptr;
+  NSAttributedString* string = blink::WebSubstringUtil::AttributedWordAtPoint(
+      this, point_in_local_root, baseline_point);
+  if (string)
+    attributed_string = ui::mojom::blink::AttributedString::From(string);
+
+  std::move(callback).Run(std::move(attributed_string), baseline_point);
+}
+#endif
 
 void WebFrameWidgetBase::CancelDrag() {
   // It's possible for this to be called while we're not doing a drag if
@@ -710,11 +731,15 @@ cc::LayerTreeHost* WebFrameWidgetBase::InitializeCompositing(
     bool never_composited,
     scheduler::WebThreadScheduler* main_thread_scheduler,
     cc::TaskGraphRunner* task_graph_runner,
-    const cc::LayerTreeSettings& settings,
-    std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory) {
-  widget_base_->InitializeCompositing(never_composited, main_thread_scheduler,
-                                      task_graph_runner, settings,
-                                      std::move(ukm_recorder_factory));
+    bool for_child_local_root_frame,
+    const gfx::Size& initial_screen_size,
+    float initial_device_scale_factor,
+    std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
+    const cc::LayerTreeSettings* settings) {
+  widget_base_->InitializeCompositing(
+      never_composited, main_thread_scheduler, task_graph_runner,
+      for_child_local_root_frame, initial_screen_size,
+      initial_device_scale_factor, std::move(ukm_recorder_factory), settings);
   GetPage()->AnimationHostInitialized(*AnimationHost(),
                                       GetLocalFrameViewForAnimationScrolling());
   return widget_base_->LayerTreeHost();

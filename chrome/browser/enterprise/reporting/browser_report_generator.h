@@ -6,16 +6,10 @@
 #define CHROME_BROWSER_ENTERPRISE_REPORTING_BROWSER_REPORT_GENERATOR_H_
 
 #include <memory>
-#include <vector>
 
 #include "base/callback.h"
-#include "base/memory/weak_ptr.h"
 #include "components/policy/proto/device_management_backend.pb.h"
-#include "ppapi/buildflags/buildflags.h"
-
-namespace content {
-struct WebPluginInfo;
-}
+#include "components/version_info/channel.h"
 
 namespace enterprise_reporting {
 
@@ -25,7 +19,22 @@ class BrowserReportGenerator {
   using ReportCallback = base::OnceCallback<void(
       std::unique_ptr<enterprise_management::BrowserReport>)>;
 
-  BrowserReportGenerator();
+  class Delegate {
+   public:
+    virtual ~Delegate() = default;
+
+    virtual std::string GetExecutablePath() = 0;
+    virtual version_info::Channel GetChannel() = 0;
+    virtual void GenerateBuildStateInfo(
+        enterprise_management::BrowserReport* report) = 0;
+    virtual void GenerateProfileInfo(
+        enterprise_management::BrowserReport* report) = 0;
+    virtual void GeneratePluginsIfNeeded(
+        ReportCallback callback,
+        std::unique_ptr<enterprise_management::BrowserReport> report) = 0;
+  };
+
+  explicit BrowserReportGenerator(std::unique_ptr<Delegate> delegate);
   ~BrowserReportGenerator();
 
   // Generates a BrowserReport with the following fields:
@@ -35,23 +44,11 @@ class BrowserReportGenerator {
   void Generate(ReportCallback callback);
 
  private:
-  // Generates plugin info in the given report instance, if needed. Passes
-  // |report| to |callback| either asynchronously when the plugin info is
-  // available, or synchronously otherwise.
-  void GeneratePluginsIfNeeded(
-      ReportCallback callback,
-      std::unique_ptr<enterprise_management::BrowserReport> report);
+  std::unique_ptr<Delegate> delegate_;
 
-#if BUILDFLAG(ENABLE_PLUGINS)
-  // Populates |report| with the plugin info in |plugins|, then passes the
-  // report to |callback|.
-  void OnPluginsReady(
-      ReportCallback callback,
-      std::unique_ptr<enterprise_management::BrowserReport> report,
-      const std::vector<content::WebPluginInfo>& plugins);
-#endif
-
-  base::WeakPtrFactory<BrowserReportGenerator> weak_ptr_factory_{this};
+  // Generates browser_version, channel, executable_path info in the given
+  // report instance.
+  void GenerateBasicInfo(enterprise_management::BrowserReport* report);
 
   DISALLOW_COPY_AND_ASSIGN(BrowserReportGenerator);
 };

@@ -2466,6 +2466,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunLanguageDetectionTest(FILE_PATH_LITERAL("dynamic-reparenting.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, ComboboxItemVisibility) {
+  RunHtmlTest(FILE_PATH_LITERAL("combobox-item-visibility.html"));
+}
+
 //
 // These tests cover features of the testing infrastructure itself.
 //

@@ -109,7 +109,8 @@ void ContentSettingsStore::SetExtensionContentSetting(
     ExtensionPrefsScope scope) {
   if (base::FeatureList::IsEnabled(
           content_settings::kDisallowWildcardsInPluginContentSettings) &&
-      type == ContentSettingsType::PLUGINS && primary_pattern.HasWildcards()) {
+      type == ContentSettingsType::PLUGINS &&
+      primary_pattern.HasHostWildcards()) {
     return;
   }
   {

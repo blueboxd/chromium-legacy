@@ -202,7 +202,6 @@ that crashed was built. When building locally, these are found in:
 
 ```shell
 out/Default/apks/ChromePublic.apk.mapping
-out/Default/apks/ChromeModernPublic.apk.mapping
 etc.
 ```
 

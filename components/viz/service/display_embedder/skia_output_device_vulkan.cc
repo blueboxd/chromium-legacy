@@ -82,6 +82,19 @@ bool SkiaOutputDeviceVulkan::Reshape(const gfx::Size& size,
   return RecreateSwapChain(size, color_space.ToSkColorSpace(), transform);
 }
 
+void SkiaOutputDeviceVulkan::PreGrContextSubmit() {
+  if (scoped_write_) {
+    auto& sk_surface =
+        sk_surface_size_pairs_[scoped_write_->image_index()].sk_surface;
+    DCHECK(sk_surface);
+    auto queue_index =
+        context_provider_->GetDeviceQueue()->GetVulkanQueueIndex();
+    GrBackendSurfaceMutableState state(VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                                       queue_index);
+    sk_surface->flush({}, &state);
+  }
+}
+
 void SkiaOutputDeviceVulkan::SwapBuffers(
     BufferPresentedCallback feedback,
     std::vector<ui::LatencyInfo> latency_info) {
@@ -225,7 +238,7 @@ void SkiaOutputDeviceVulkan::EndPaint() {
   GrVkImageInfo vk_image_info;
   if (!backend.getVkImageInfo(&vk_image_info))
     NOTREACHED() << "Failed to get the image info.";
-  scoped_write_->set_image_layout(vk_image_info.fImageLayout);
+  DCHECK_EQ(vk_image_info.fImageLayout, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
   scoped_write_.reset();
 #if DCHECK_IS_ON()
   image_modified_ = true;

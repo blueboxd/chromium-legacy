@@ -114,7 +114,8 @@ PlatformAppNavigationRedirector::MaybeCreateThrottleFor(
                << "):" << handler->id;
       return std::make_unique<
           navigation_interception::InterceptNavigationThrottle>(
-          handle, base::Bind(&LaunchAppWithUrl, extension_ref, handler->id),
+          handle,
+          base::BindRepeating(&LaunchAppWithUrl, extension_ref, handler->id),
           navigation_interception::SynchronyMode::kSync);
     }
   }

@@ -17,6 +17,7 @@
 <translation id="137466361146087520">Google Chrome (бэта-версія)</translation>
 <translation id="1399397803214730675">На гэтым камп'ютары ўжо ўсталявана навейшая версія Google Chrome. Калі праграма не працуе, выдаліце Google Chrome і паўтарыце спробу.</translation>
 <translation id="1434626383986940139">Праграмы Chrome Canary</translation>
+<translation id="1514913130539345610">Адміністратар адключыў у браўзеры Chrome функцыю праверкі наяўнасці шкоднага праграмнага забеспячэння</translation>
 <translation id="1553358976309200471">Абнавіць Chrome</translation>
 <translation id="1587223624401073077">Google Chrome выкарыстоўвае камеру.</translation>
 <translation id="1587325591171447154">Файл <ph name="FILE_NAME" /> небяспечны, таму Chrome заблакіраваў яго.</translation>
@@ -125,6 +126,7 @@
 <translation id="4458462641685292929">У Google Chrome выконваецца іншая аперацыя. Паўтарыце спробу пазней.</translation>
 <translation id="4480040274068703980">Сістэма Chrome OS не змагла сінхранізаваць даныя з-за памылкі ўваходу.</translation>
 <translation id="4521185804071812304">Дапамагаць паляпшаць функцыі і прадукцыйнасць Chrome OS шляхам аўтаматычнай адпраўкі ў Google даных пра выкарыстанне і дыягностыку (неабавязкова).</translation>
+<translation id="4552702433620284371">Браўзеру Chrome не ўдаецца праверыць праграмнае забеспячэнне прылады. Паспрабуйце праверыць падключэнне да інтэрнэту.</translation>
 <translation id="4561051373932531560">Google Chrome дазваляе націснуць на нумар тэлефона з вэб-старонкі і выклікаць яго праз Skype!</translation>
 <translation id="4567424176335768812">Вы ўвайшлі як <ph name="USER_EMAIL_ADDRESS" /> і цяпер маеце доступ да закладак, гісторыі і іншых налад на ўсіх прыладах, дзе выкананы ўваход.</translation>
 <translation id="4571503333518166079">Перайсці ў налады апавяшчэнняў Chrome</translation>
@@ -250,6 +252,7 @@
 <translation id="8641606876632989680">Chrome адправіць вам апавяшчэнне, калі вы ўвойдзеце ва ўліковы запіс, выкарыстаўшы раскрыты пароль</translation>
 <translation id="8669527147644353129">Памочнік Google Chrome</translation>
 <translation id="8679801911857917785">Таксама вызначае, якая старонка паказваецца пры запуску Chrome.</translation>
+<translation id="8681614230122836773">Chrome знайшоў шкоднае праграмнае забеспячэнне на вашым камп'ютары</translation>
 <translation id="870251953148363156">Абнавіць &amp;Google Chrome</translation>
 <translation id="873133009373065397">Google Chrome не можа вызначыць або задаць стандартны браўзер</translation>
 <translation id="8823341990149967727">Ваша версія Chrome састарэла</translation>

@@ -39,8 +39,10 @@
 <translation id="428217921675623177">Utskriftsjobb som är äldre än 90 dagar tas bort</translation>
 <translation id="4429881212383817840">Kerberos-biljetten upphör snart att gälla</translation>
 <translation id="445059817448385655">Gammalt lösenord</translation>
+<translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> av <ph name="TOTAL_PAGE_NUMBER" />. Tryck på retur för att avbryta utskriftsjobbet.</translation>
 <translation id="467510802200863975">Lösenorden matchar inte</translation>
 <translation id="4731797938093519117">Föräldraåtkomst</translation>
+<translation id="4808449224298348341">Utskriftsjobbet <ph name="DOCUMENT_TITLE" /> har avbrutits</translation>
 <translation id="4890353053343094602">Välj ett nytt omedelbart</translation>
 <translation id="4932733599132424254">Datum</translation>
 <translation id="5212543919916444558">Det finns inget på skärmen som jag kan hjälpa till med.

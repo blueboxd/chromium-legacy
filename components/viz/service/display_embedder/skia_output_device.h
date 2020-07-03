@@ -87,6 +87,10 @@ class SkiaOutputDevice {
                        gfx::BufferFormat format,
                        gfx::OverlayTransform transform) = 0;
 
+  // Call before GrContext::submit() for the current frame. The implementation
+  // can use this opportunity to insert some work into the GrContext.
+  virtual void PreGrContextSubmit();
+
   // Presents the back buffer.
   virtual void SwapBuffers(BufferPresentedCallback feedback,
                            std::vector<ui::LatencyInfo> latency_info) = 0;

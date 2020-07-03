@@ -83,8 +83,140 @@ static_library("web_test_common") {
   deps = [
     "//base",
     "//third_party/blink/public:blink_headers",
+    "//url",
     "//v8",
   ]
+}
+
+static_library("web_test_browser") {
+  testonly = true
+
+  # This is to support our dependency on //content/browser.
+  # See comment at the top of //content/BUILD.gn for why this is disabled in
+  # component builds.
+  if (is_component_build) {
+    check_includes = false
+  }
+
+  sources = [
+    "browser/web_test/devtools_protocol_test_bindings.cc",
+    "browser/web_test/devtools_protocol_test_bindings.h",
+    "browser/web_test/fake_bluetooth_chooser.cc",
+    "browser/web_test/fake_bluetooth_chooser.h",
+    "browser/web_test/fake_bluetooth_chooser_factory.cc",
+    "browser/web_test/fake_bluetooth_chooser_factory.h",
+    "browser/web_test/fake_bluetooth_delegate.cc",
+    "browser/web_test/fake_bluetooth_delegate.h",
+    "browser/web_test/leak_detector.cc",
+    "browser/web_test/leak_detector.h",
+    "browser/web_test/mojo_web_test_helper.cc",
+    "browser/web_test/mojo_web_test_helper.h",
+    "browser/web_test/test_info_extractor.cc",
+    "browser/web_test/test_info_extractor.h",
+    "browser/web_test/web_test_background_fetch_delegate.cc",
+    "browser/web_test/web_test_background_fetch_delegate.h",
+    "browser/web_test/web_test_bluetooth_adapter_provider.cc",
+    "browser/web_test/web_test_bluetooth_adapter_provider.h",
+    "browser/web_test/web_test_bluetooth_chooser_factory.cc",
+    "browser/web_test/web_test_bluetooth_chooser_factory.h",
+    "browser/web_test/web_test_bluetooth_fake_adapter_setter_impl.cc",
+    "browser/web_test/web_test_bluetooth_fake_adapter_setter_impl.h",
+    "browser/web_test/web_test_browser_context.cc",
+    "browser/web_test/web_test_browser_context.h",
+    "browser/web_test/web_test_browser_main_parts.cc",
+    "browser/web_test/web_test_browser_main_parts.h",
+    "browser/web_test/web_test_browser_main_platform_support.h",
+    "browser/web_test/web_test_browser_main_platform_support_linux.cc",
+    "browser/web_test/web_test_browser_main_platform_support_mac.mm",
+    "browser/web_test/web_test_browser_main_platform_support_win.cc",
+    "browser/web_test/web_test_browser_main_runner.cc",
+    "browser/web_test/web_test_browser_main_runner.h",
+    "browser/web_test/web_test_client_impl.cc",
+    "browser/web_test/web_test_client_impl.h",
+    "browser/web_test/web_test_content_browser_client.cc",
+    "browser/web_test/web_test_content_browser_client.h",
+    "browser/web_test/web_test_control_host.cc",
+    "browser/web_test/web_test_control_host.h",
+    "browser/web_test/web_test_devtools_bindings.cc",
+    "browser/web_test/web_test_devtools_bindings.h",
+    "browser/web_test/web_test_download_manager_delegate.cc",
+    "browser/web_test/web_test_download_manager_delegate.h",
+    "browser/web_test/web_test_first_device_bluetooth_chooser.cc",
+    "browser/web_test/web_test_first_device_bluetooth_chooser.h",
+    "browser/web_test/web_test_javascript_dialog_manager.cc",
+    "browser/web_test/web_test_javascript_dialog_manager.h",
+    "browser/web_test/web_test_permission_manager.cc",
+    "browser/web_test/web_test_permission_manager.h",
+    "browser/web_test/web_test_push_messaging_service.cc",
+    "browser/web_test/web_test_push_messaging_service.h",
+    "browser/web_test/web_test_shell_platform_delegate.cc",
+    "browser/web_test/web_test_shell_platform_delegate.h",
+    "browser/web_test/web_test_tts_platform.cc",
+    "browser/web_test/web_test_tts_platform.h",
+  ]
+
+  if (is_mac) {
+    sources += [ "browser/web_test/web_test_shell_platform_delegate_mac.mm" ]
+  } else if (toolkit_views && !is_chromecast) {
+    sources += [ "browser/web_test/web_test_shell_platform_delegate_views.cc" ]
+  } else {
+    sources += [ "browser/web_test/web_test_shell_platform_delegate_aura.cc" ]
+  }
+
+  deps = [
+    ":content_shell_lib",
+    ":web_test_common",
+    "//base",
+    "//cc/base",
+    "//cc/paint",
+    "//components/download/content/factory",
+    "//components/download/public/background_service:public",
+    "//components/download/public/common:public",
+    "//components/network_session_configurator/common",
+    "//content/browser:for_content_tests",  # For non-component builds.
+    "//content/public/browser",  # For component builds.
+    "//content/test:blink_test_browser_support",
+    "//content/test:mojo_web_test_bindings",
+    "//content/test:test_support",
+    "//content/test:web_test_support_browser",
+    "//device/bluetooth:fake_bluetooth",
+    "//device/bluetooth:mocks",
+    "//device/bluetooth/public/mojom:fake_bluetooth_interfaces",
+    "//gpu",
+    "//media",
+    "//net",
+    "//net:net_resources",
+    "//net:test_support",
+    "//ppapi/buildflags",
+    "//sandbox",
+    "//services/device/public/cpp:test_support",
+    "//services/network/public/cpp",
+    "//services/service_manager/public/cpp",
+    "//storage/browser",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/blink/public:blink",
+    "//ui/base",
+    "//ui/base/ime/init",
+    "//ui/display",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/gl",
+    "//ui/shell_dialogs:shell_dialogs",
+    "//url",
+  ]
+
+  if (enable_plugins) {
+    deps += [
+      "//content/ppapi_plugin",
+      "//ppapi:blink_deprecated_test_plugin",
+      "//ppapi:blink_test_plugin",
+    ]
+  }
+
+  if (use_x11) {
+    deps += [ "//ui/events/devices/x11" ]
+  }
 }
 
 static_library("web_test_renderer") {
@@ -179,11 +311,13 @@ static_library("web_test_renderer") {
     "//printing",
     "//printing/mojom",
     "//services/device/public/mojom",
+    "//services/service_manager/public/cpp",
     "//skia",
     "//skia:test_fonts",
     "//third_party/blink/public:blink_headers",
     "//third_party/blink/public:test_headers",
     "//ui/accessibility:ax_base",
+    "//ui/base/ime:ime_types",
     "//ui/display",
     "//ui/events:dom_keycode_converter",
     "//ui/events:events_base",
@@ -191,6 +325,7 @@ static_library("web_test_renderer") {
     "//ui/gfx",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
+    "//url",
     "//v8",
   ]
 }
@@ -221,11 +356,13 @@ static_library("content_shell_app") {
   ]
   deps = [
     ":content_shell_lib",
+    "//components/crash/core/common:crash_key",
     "//content/public/app",
     "//v8",
   ]
   if (!is_android) {
     deps += [
+      ":web_test_browser",
       ":web_test_common",
       ":web_test_renderer",
     ]
@@ -283,8 +420,6 @@ static_library("content_shell_lib") {
     "browser/shell_platform_delegate.h",
     "browser/shell_platform_delegate_android.cc",
     "browser/shell_platform_delegate_mac.mm",
-    "browser/shell_plugin_service_filter.cc",
-    "browser/shell_plugin_service_filter.h",
     "browser/shell_quota_permission_context.cc",
     "browser/shell_quota_permission_context.h",
     "browser/shell_speech_recognition_manager_delegate.cc",
@@ -351,182 +486,59 @@ static_library("content_shell_lib") {
     "//base",
     "//base:base_static",
     "//base/third_party/dynamic_annotations",
-    "//cc",
-    "//cc/paint",
+    "//cc/base",
     "//components/cdm/renderer",
-    "//components/crash/content/browser",
-    "//components/crash/core/app",
-    "//components/crash/core/app:test_support",
-    "//components/crash/core/common:crash_key",
-    "//components/download/content/factory",
-    "//components/download/public/background_service:public",
-    "//components/download/public/common:public",
     "//components/keyed_service/content",
-    "//components/network_session_configurator/browser",
+    "//components/network_session_configurator/common",
     "//components/services/storage/test_api",
     "//components/url_formatter",
     "//components/web_cache/renderer",
     "//content:content_resources",
     "//content:dev_ui_content_resources",
     "//content/app/resources",
-    "//content/browser:for_content_tests",  # For non-component builds.
-    "//content/gpu",
-    "//content/public/browser",  # For component builds.
     "//content/public/common",
     "//content/public/common:service_names",
-    "//content/test:blink_test_browser_support",
     "//content/test:content_test_mojo_bindings",
     "//content/test:test_support",
     "//device/bluetooth",
-    "//device/bluetooth:fake_bluetooth",
-    "//device/bluetooth:mocks",
-    "//device/bluetooth/public/mojom:fake_bluetooth_interfaces",
-    "//gin",
-    "//gpu",
     "//media",
     "//media/mojo:buildflags",
     "//net",
     "//net:net_resources",
-    "//net:test_support",
     "//ppapi/buildflags",
-    "//sandbox",
-    "//services/device/public/cpp:test_support",
-    "//services/device/public/mojom",
     "//services/network/public/cpp",
     "//services/service_manager/embedder:embedder_result_codes",
-    "//services/service_manager/public/cpp",
     "//services/test/echo:lib",
     "//services/test/echo/public/mojom",
-    "//skia",
-    "//storage/browser",
-    "//testing/gmock",
-    "//testing/gtest",
     "//third_party/blink/public:blink",
-    "//third_party/blink/public:buildflags",
     "//third_party/blink/public:image_resources",
     "//third_party/blink/public:resources",
-    "//third_party/blink/public:test_support",
     "//third_party/blink/public/strings",
-    "//third_party/icu",
     "//ui/base",
     "//ui/base/clipboard",
     "//ui/base/ime/init",
-    "//ui/display",
-    "//ui/events:events_base",
     "//ui/gfx",
     "//ui/gfx/geometry",
-    "//ui/gfx/ipc",
-    "//ui/gfx/ipc/geometry",
-    "//ui/gfx/ipc/skia",
-    "//ui/gl",
     "//ui/platform_window",
-    "//ui/shell_dialogs:shell_dialogs",
     "//url",
     "//v8",
   ]
 
-  # Web test support not built on android, but is everywhere else.
-  support_web_tests = !is_android
-
-  # TODO(danakj): Move this stuff into a :web_test_browser library that
-  # only :content_shell_app depends on.
-  if (support_web_tests) {
-    sources += [
-      "browser/web_test/devtools_protocol_test_bindings.cc",
-      "browser/web_test/devtools_protocol_test_bindings.h",
-      "browser/web_test/fake_bluetooth_chooser.cc",
-      "browser/web_test/fake_bluetooth_chooser.h",
-      "browser/web_test/fake_bluetooth_chooser_factory.cc",
-      "browser/web_test/fake_bluetooth_chooser_factory.h",
-      "browser/web_test/fake_bluetooth_delegate.cc",
-      "browser/web_test/fake_bluetooth_delegate.h",
-      "browser/web_test/leak_detector.cc",
-      "browser/web_test/leak_detector.h",
-      "browser/web_test/mojo_web_test_helper.cc",
-      "browser/web_test/mojo_web_test_helper.h",
-      "browser/web_test/test_info_extractor.cc",
-      "browser/web_test/test_info_extractor.h",
-      "browser/web_test/web_test_background_fetch_delegate.cc",
-      "browser/web_test/web_test_background_fetch_delegate.h",
-      "browser/web_test/web_test_bluetooth_adapter_provider.cc",
-      "browser/web_test/web_test_bluetooth_adapter_provider.h",
-      "browser/web_test/web_test_bluetooth_chooser_factory.cc",
-      "browser/web_test/web_test_bluetooth_chooser_factory.h",
-      "browser/web_test/web_test_bluetooth_fake_adapter_setter_impl.cc",
-      "browser/web_test/web_test_bluetooth_fake_adapter_setter_impl.h",
-      "browser/web_test/web_test_browser_context.cc",
-      "browser/web_test/web_test_browser_context.h",
-      "browser/web_test/web_test_browser_main_parts.cc",
-      "browser/web_test/web_test_browser_main_parts.h",
-      "browser/web_test/web_test_browser_main_platform_support.h",
-      "browser/web_test/web_test_browser_main_platform_support_linux.cc",
-      "browser/web_test/web_test_browser_main_platform_support_mac.mm",
-      "browser/web_test/web_test_browser_main_platform_support_win.cc",
-      "browser/web_test/web_test_browser_main_runner.cc",
-      "browser/web_test/web_test_browser_main_runner.h",
-      "browser/web_test/web_test_client_impl.cc",
-      "browser/web_test/web_test_client_impl.h",
-      "browser/web_test/web_test_content_browser_client.cc",
-      "browser/web_test/web_test_content_browser_client.h",
-      "browser/web_test/web_test_control_host.cc",
-      "browser/web_test/web_test_control_host.h",
-      "browser/web_test/web_test_devtools_bindings.cc",
-      "browser/web_test/web_test_devtools_bindings.h",
-      "browser/web_test/web_test_download_manager_delegate.cc",
-      "browser/web_test/web_test_download_manager_delegate.h",
-      "browser/web_test/web_test_first_device_bluetooth_chooser.cc",
-      "browser/web_test/web_test_first_device_bluetooth_chooser.h",
-      "browser/web_test/web_test_javascript_dialog_manager.cc",
-      "browser/web_test/web_test_javascript_dialog_manager.h",
-      "browser/web_test/web_test_permission_manager.cc",
-      "browser/web_test/web_test_permission_manager.h",
-      "browser/web_test/web_test_push_messaging_service.cc",
-      "browser/web_test/web_test_push_messaging_service.h",
-      "browser/web_test/web_test_shell_platform_delegate.cc",
-      "browser/web_test/web_test_shell_platform_delegate.h",
-      "browser/web_test/web_test_tts_platform.cc",
-      "browser/web_test/web_test_tts_platform.h",
-    ]
-
-    deps += [
-      ":web_test_common",
-      "//content/test:mojo_web_test_bindings",
-      "//content/test:web_test_support_browser",
-    ]
-
-    if (is_mac) {
-      sources += [ "browser/web_test/web_test_shell_platform_delegate_mac.mm" ]
-    } else if (toolkit_views && !is_chromecast) {
-      sources +=
-          [ "browser/web_test/web_test_shell_platform_delegate_views.cc" ]
-    } else {
-      sources += [ "browser/web_test/web_test_shell_platform_delegate_aura.cc" ]
-    }
-  }
-
   if (is_fuchsia) {
-    deps -= [
+    deps += [ "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.policy" ]
+  } else {
+    deps += [
       "//components/crash/content/browser",
       "//components/crash/core/app",
-      "//components/crash/core/app:test_support",
     ]
-    deps += [ "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.policy" ]
   }
 
   if (enable_plugins) {
-    deps += [
-      "//cc/paint",
-      "//content/ppapi_plugin",
-      "//ppapi:blink_deprecated_test_plugin",
-      "//ppapi:blink_test_plugin",
-      "//ppapi/shared_impl",
+    sources += [
+      "browser/shell_plugin_service_filter.cc",
+      "browser/shell_plugin_service_filter.h",
     ]
-  }
-  if (enable_vulkan) {
-    deps += [
-      "//gpu/vulkan:test_support",
-      "//gpu/vulkan/init",
-    ]
+    deps += [ "//ppapi/shared_impl" ]
   }
   if (enable_cast_renderer) {
     deps += [ "//media/mojo/services" ]
@@ -537,14 +549,11 @@ static_library("content_shell_lib") {
       "common/v8_crashpad_support_win.cc",
       "common/v8_crashpad_support_win.h",
     ]
+    deps += [ "//gin" ]
   }
 
   if (is_linux) {
-    deps += [
-      "//services/service_manager/tests:sandbox_status_service",
-      "//third_party/fontconfig",
-      "//ui/gfx:test_support",
-    ]
+    deps += [ "//services/service_manager/tests:sandbox_status_service" ]
   }
 
   if (use_gtk) {
@@ -558,17 +567,13 @@ static_library("content_shell_lib") {
   }
 
   if (use_x11) {
-    # Some tests rely on this tool at runtime. Note: it might be better if
-    # the tests that needed it had this as a dep instead of adding it here.
     deps += [ "//ui/events/devices/x11" ]
   }
 
   if (is_android) {
     deps += [
-      "//base/test:test_support",
       "//components/embedder_support/android:view",
       "//content/shell/android:content_shell_jni_headers",
-      "//content/test:android_test_message_pump_support",
       "//mojo/public/java/system:test_support",
       "//ui/android",
     ]
@@ -584,7 +589,6 @@ static_library("content_shell_lib") {
       "//ui/aura",
       "//ui/aura:test_support",
       "//ui/events",
-      "//ui/strings",
       "//ui/wm",
     ]
 
@@ -614,10 +618,7 @@ static_library("content_shell_lib") {
   }
 
   if (is_chromeos) {
-    deps += [
-      "//chromeos/dbus",
-      "//ui/wm:test_support",
-    ]
+    deps += [ "//chromeos/dbus" ]
   }
 
   if (is_linux) {
@@ -626,13 +627,6 @@ static_library("content_shell_lib") {
 
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
-  }
-
-  if (!enable_plugins) {
-    sources -= [
-      "browser/shell_plugin_service_filter.cc",
-      "browser/shell_plugin_service_filter.h",
-    ]
   }
 }
 
@@ -740,6 +734,7 @@ if (is_android) {
     deps = [
       ":content_shell_framework_bundle_data",
       ":content_shell_resources_bundle_data",
+      "//sandbox",
     ]
     info_plist_target = ":content_shell_plist"
     data_deps = [ ":content_shell_app" ]
@@ -761,6 +756,7 @@ if (is_android) {
       ":pak",
       "//build/win:default_exe_manifest",
       "//content/public/app",
+      "//sandbox",
     ]
 
     data_deps = [

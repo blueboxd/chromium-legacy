@@ -23,8 +23,6 @@ bool TextInputClientMessageFilter::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(TextInputClientMessageFilter, message)
-    IPC_MESSAGE_HANDLER(TextInputClientReplyMsg_GotStringAtPoint,
-                        OnGotStringAtPoint)
     IPC_MESSAGE_HANDLER(TextInputClientReplyMsg_GotStringForRange,
                         OnGotStringFromRange)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -36,7 +34,6 @@ void TextInputClientMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message,
     BrowserThread::ID* thread) {
   switch (message.type()) {
-    case TextInputClientReplyMsg_GotStringAtPoint::ID:
     case TextInputClientReplyMsg_GotStringForRange::ID:
       *thread = BrowserThread::UI;
       break;
@@ -44,13 +41,6 @@ void TextInputClientMessageFilter::OverrideThreadForMessage(
 }
 
 TextInputClientMessageFilter::~TextInputClientMessageFilter() {}
-
-void TextInputClientMessageFilter::OnGotStringAtPoint(
-    const ui::mojom::AttributedString& attributed_string,
-    const gfx::Point& point) {
-  TextInputClientMac* service = TextInputClientMac::GetInstance();
-  service->GetStringAtPointReply(attributed_string.Clone(), point);
-}
 
 void TextInputClientMessageFilter::OnGotStringFromRange(
     const ui::mojom::AttributedString& attributed_string,

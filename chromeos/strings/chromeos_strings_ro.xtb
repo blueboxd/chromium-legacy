@@ -39,8 +39,10 @@
 <translation id="428217921675623177">Sarcinile de printare mai vechi de 90 de zile vor fi eliminate</translation>
 <translation id="4429881212383817840">Tichetul Kerberos expiră în curând</translation>
 <translation id="445059817448385655">Parolă veche</translation>
+<translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> din <ph name="TOTAL_PAGE_NUMBER" />. Apasă pe Enter pentru a anula sarcina de printare.</translation>
 <translation id="467510802200863975">Parolele nu se potrivesc</translation>
 <translation id="4731797938093519117">Acces pentru părinți</translation>
+<translation id="4808449224298348341">S-a anulat sarcina de printare <ph name="DOCUMENT_TITLE" /></translation>
 <translation id="4890353053343094602">Alege imediat una nouă</translation>
 <translation id="4932733599132424254">Data</translation>
 <translation id="5212543919916444558">Nu găsesc conținut pe ecran în privința căruia te-aș putea ajuta.

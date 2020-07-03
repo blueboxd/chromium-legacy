@@ -288,16 +288,18 @@ class DisallowWildcardPolicyTest : public PolicyTest {
 
 IN_PROC_BROWSER_TEST_F(DisallowWildcardPolicyTest, PluginTest) {
   PolicyMap policies;
-  constexpr char kFullUrl[] = "http://mail.google.com:443";
-  constexpr char kWildcardUrl[] = "http://[*.]google.com";
   auto policy_value = std::make_unique<base::ListValue>();
-  policy_value->Append(kFullUrl);
-  policy_value->Append(kWildcardUrl);
+  policy_value->AppendString("[*.]google.com");
+  policy_value->AppendString("http://drive.google.com:443/home");
+  policy_value->AppendString("www.foo.com:*/*");
+  policy_value->AppendString("*://[*.]bar.com:*/*");
   SetPolicy(&policies, key::kPluginsAllowedForUrls, std::move(policy_value));
   UpdateProviderPolicy(policies);
 
   constexpr char kGoogleMailUrl[] = "http://mail.google.com:443";
   constexpr char kGoogleDriveUrl[] = "http://drive.google.com:443";
+  constexpr char kFooUrl[] = "https://www.foo.com:443/home";
+  constexpr char kBarUrl[] = "https://foobar.com:443/";
 
   permissions::PermissionManager* permission_manager =
       PermissionManagerFactory::GetForProfile(browser()->profile());
@@ -306,14 +308,26 @@ IN_PROC_BROWSER_TEST_F(DisallowWildcardPolicyTest, PluginTest) {
           ->GetPermissionStatus(ContentSettingsType::PLUGINS,
                                 GURL(kGoogleMailUrl), GURL(kGoogleMailUrl))
           .content_setting,
-      ContentSetting::CONTENT_SETTING_ALLOW);
+      ContentSetting::CONTENT_SETTING_BLOCK);
 
   EXPECT_EQ(
       permission_manager
           ->GetPermissionStatus(ContentSettingsType::PLUGINS,
                                 GURL(kGoogleDriveUrl), GURL(kGoogleDriveUrl))
           .content_setting,
-      ContentSetting::CONTENT_SETTING_BLOCK);
+      ContentSetting::CONTENT_SETTING_ALLOW);
+
+  EXPECT_EQ(permission_manager
+                ->GetPermissionStatus(ContentSettingsType::PLUGINS,
+                                      GURL(kFooUrl), GURL(kFooUrl))
+                .content_setting,
+            ContentSetting::CONTENT_SETTING_ALLOW);
+
+  EXPECT_EQ(permission_manager
+                ->GetPermissionStatus(ContentSettingsType::PLUGINS,
+                                      GURL(kBarUrl), GURL(kBarUrl))
+                .content_setting,
+            ContentSetting::CONTENT_SETTING_BLOCK);
 }
 
 class ScrollToTextFragmentPolicyTest

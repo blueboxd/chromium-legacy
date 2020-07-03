@@ -18,13 +18,13 @@
         <include name="IDR_TELEMETRY_EXTENSION_PWA_HTML" file="pwa.html" type="BINDATA" />
         <include name="IDR_TELEMETRY_EXTENSION_MANIFEST" file="manifest.json" type="BINDATA" compress="gzip" />
         <include name="IDR_TELEMETRY_EXTENSION_ICON_96" file="app_icon_96.png" type="BINDATA" compress="gzip" />
-        <include name="IDR_TELEMETRY_EXTENSION_TRUSTED_JS" file="trusted.js" type="BINDATA" />
+        <include name="IDR_TELEMETRY_EXTENSION_TRUSTED_SCRIPTS_JS" file="trusted_scripts.js" flattenhtml="true" type="BINDATA" compress="gzip" />
         <include name="IDR_TELEMETRY_EXTENSION_PROBE_SERVICE_MOJO_LITE_JS" file="${root_gen_dir}/chromeos/components/telemetry_extension_ui/mojom/probe_service.mojom-lite.js" compress="gzip" use_base_dir="false" type="BINDATA" />
 
         <!-- Untrusted app contents. -->
-        <include name="IDR_TELEMETRY_EXTENSION_UNTRUSTED_HTML" file="untrusted.html" type="BINDATA" />
-        <include name="IDR_TELEMETRY_EXTENSION_UNTRUSTED_JS" file="untrusted.js" type="BINDATA" />
-        <include name="IDR_TELEMETRY_EXTENSION_UNTRUSTED_WORKER_JS" file="untrusted_worker.js" type="BINDATA" />
+        <include name="IDR_TELEMETRY_EXTENSION_UNTRUSTED_HTML" file="untrusted.html" type="BINDATA" compress="gzip" />
+        <include name="IDR_TELEMETRY_EXTENSION_UNTRUSTED_SCRIPTS_JS" file="untrusted_scripts.js" flattenhtml="true" type="BINDATA" compress="gzip" />
+        <include name="IDR_TELEMETRY_EXTENSION_UNTRUSTED_WORKER_JS" file="untrusted_worker.js" type="BINDATA" compress="gzip" />
       </if>
     </includes>
   </release>

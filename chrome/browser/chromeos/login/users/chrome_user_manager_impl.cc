@@ -946,7 +946,9 @@ void ChromeUserManagerImpl::KioskAppLoggedIn(user_manager::User* user) {
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitch(::switches::kForceAppMode);
-  command_line->AppendSwitchASCII(::switches::kAppId, kiosk_app_id);
+  // This happens in Web and Arc kiosks.
+  if (!kiosk_app_id.empty())
+    command_line->AppendSwitchASCII(::switches::kAppId, kiosk_app_id);
 
   // Disable window animation since kiosk app runs in a single full screen
   // window and window animation causes start-up janks.
@@ -955,49 +957,10 @@ void ChromeUserManagerImpl::KioskAppLoggedIn(user_manager::User* user) {
   // If restoring auto-launched kiosk session, make sure the app is marked
   // as auto-launched.
   if (command_line->HasSwitch(switches::kLoginUser) &&
-      command_line->HasSwitch(switches::kAppAutoLaunched)) {
+      command_line->HasSwitch(switches::kAppAutoLaunched) &&
+      !kiosk_app_id.empty()) {
     KioskAppManager::Get()->SetAppWasAutoLaunchedWithZeroDelay(kiosk_app_id);
   }
-}
-
-void ChromeUserManagerImpl::ArcKioskAppLoggedIn(user_manager::User* user) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(arc::IsArcKioskAvailable());
-
-  active_user_ = user;
-  active_user_->SetStubImage(
-      std::make_unique<user_manager::UserImage>(
-          *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-              IDR_LOGIN_DEFAULT_USER)),
-      user_manager::User::USER_IMAGE_INVALID, false);
-
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(::switches::kForceAppMode);
-  command_line->AppendSwitch(::switches::kSilentLaunch);
-
-  // Disable window animation since kiosk app runs in a single full screen
-  // window and window animation causes start-up janks.
-  command_line->AppendSwitch(wm::switches::kWindowAnimationsDisabled);
-}
-
-void ChromeUserManagerImpl::WebKioskAppLoggedIn(user_manager::User* user) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  active_user_ = user;
-  active_user_->SetStubImage(
-      std::make_unique<user_manager::UserImage>(
-          *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-              IDR_LOGIN_DEFAULT_USER)),
-      user_manager::User::USER_IMAGE_INVALID, false);
-
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(::switches::kForceAppMode);
-  command_line->AppendSwitch(
-      ::switches::kSilentLaunch);  // To open no extra windows.
-
-  // Disable window animation since kiosk app runs in a single full screen
-  // window and window animation causes start-up janks.
-  command_line->AppendSwitch(wm::switches::kWindowAnimationsDisabled);
 }
 
 void ChromeUserManagerImpl::DemoAccountLoggedIn() {

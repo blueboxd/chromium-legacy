@@ -254,6 +254,9 @@ class CONTENT_EXPORT PepperGraphics2DHost
   scoped_refptr<cc::CrossThreadSharedBitmap> cached_bitmap_;
   cc::SharedBitmapIdRegistration cached_bitmap_registration_;
 
+  // Whether to use gpu memory for compositor resources.
+  const bool enable_gpu_memory_buffer_;
+
   friend class PepperGraphics2DHostTest;
   DISALLOW_COPY_AND_ASSIGN(PepperGraphics2DHost);
 };

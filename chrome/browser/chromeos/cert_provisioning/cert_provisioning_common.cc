@@ -131,24 +131,6 @@ attestation::AttestationKeyType GetVaKeyType(CertScope scope) {
   }
 }
 
-std::string GetVaKeyName(CertScope scope, CertProfileId profile_id) {
-  switch (scope) {
-    case CertScope::kUser:
-      return GetKeyName(profile_id);
-    case CertScope::kDevice:
-      return std::string();
-  }
-}
-
-std::string GetVaKeyNameForSpkac(CertScope scope, CertProfileId profile_id) {
-  switch (scope) {
-    case CertScope::kUser:
-      return std::string();
-    case CertScope::kDevice:
-      return GetKeyName(profile_id);
-  }
-}
-
 platform_keys::TokenId GetPlatformKeysTokenId(CertScope scope) {
   switch (scope) {
     case CertScope::kUser:

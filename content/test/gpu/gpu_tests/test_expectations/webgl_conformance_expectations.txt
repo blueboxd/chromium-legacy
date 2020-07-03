@@ -50,6 +50,7 @@
 [ mac no-swiftshader-gl opengl ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
 [ mac no-swiftshader-gl no-angle ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
 crbug.com/808744 [ android no-swiftshader-gl no-angle ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
+crbug.com/808744 [ android no-swiftshader-gl opengles ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
 crbug.com/808744 [ fuchsia no-swiftshader-gl no-passthrough ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
 crbug.com/849576 [ no-passthrough ] WebglExtension_KHR_parallel_shader_compile [ Skip ]
 crbug.com/776222 [ android ] WebglExtension_WEBGL_video_texture [ Skip ]
@@ -73,8 +74,10 @@ crbug.com/867718 [ win d3d9 no-swiftshader-gl ] WebglExtension_EXT_disjoint_time
 [ android nvidia no-swiftshader-gl no-angle ] WebglExtension_EXT_shader_texture_lod [ Failure ]
 [ android qualcomm ] WebglExtension_EXT_float_blend [ Failure ]
 [ android qualcomm no-swiftshader-gl no-angle ] WebglExtension_EXT_shader_texture_lod [ Failure ]
+[ android qualcomm no-swiftshader-gl opengles ] WebglExtension_EXT_shader_texture_lod [ Failure ]
 [ android qualcomm ] WebglExtension_WEBGL_draw_buffers [ Failure ]
 [ android qualcomm no-swiftshader-gl no-angle ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
+[ android qualcomm no-swiftshader-gl opengles ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
 [ android qualcomm no-swiftshader-gl ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
 [ android qualcomm-adreno-(tm)-330 no-passthrough ] WebglExtension_OES_texture_float_linear [ Failure ]
 [ android qualcomm-adreno-(tm)-330 ] WebglExtension_WEBGL_depth_texture [ Failure ]
@@ -469,6 +472,7 @@ crbug.com/1060632 [ linux amd opengl passthrough ] conformance/more/functions/bi
 ####################
 
 crbug.com/1081973 [ android no-swiftshader-gl no-angle ] conformance/textures/misc/compressed-tex-image.html [ Failure ]
+crbug.com/1081973 [ android no-swiftshader-gl opengles ] conformance/textures/misc/compressed-tex-image.html [ Failure ]
 
 crbug.com/903903 [ android qualcomm ] conformance/glsl/bugs/sampler-array-struct-function-arg.html [ Failure ]
 crbug.com/478572 [ android qualcomm ] conformance/glsl/bugs/sequence-operator-evaluation-order.html [ Failure ]

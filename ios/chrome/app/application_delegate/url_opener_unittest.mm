@@ -263,7 +263,15 @@ TEST_F(URLOpenerTest, VerifyLaunchOptionsNil) {
 
 // Tests that -handleApplication set startup parameters as expected with no
 // source application.
-TEST_F(URLOpenerTest, VerifyLaunchOptionsWithNoSourceApplication) {
+// TODO(crbug.com/1102032): Fails on device.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_VerifyLaunchOptionsWithNoSourceApplication \
+  VerifyLaunchOptionsWithNoSourceApplication
+#else
+#define MAYBE_VerifyLaunchOptionsWithNoSourceApplication \
+  DISABLED_VerifyLaunchOptionsWithNoSourceApplication
+#endif
+TEST_F(URLOpenerTest, MAYBE_VerifyLaunchOptionsWithNoSourceApplication) {
   // Setup.
   NSURL* url = [NSURL URLWithString:@"chromium://www.google.com"];
   NSDictionary* launchOptions = @{

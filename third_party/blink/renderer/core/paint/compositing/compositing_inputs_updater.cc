@@ -192,13 +192,9 @@ void CompositingInputsUpdater::UpdateSelfAndDescendantsRecursively(
   }
   if (!descendant_has_direct_compositing_reason &&
       layer->GetLayoutObject().IsLayoutEmbeddedContent()) {
-    if (LayoutView* root_of_child =
-            ToLayoutEmbeddedContent(layer->GetLayoutObject())
-                .ChildLayoutView()) {
-      if (CompositingInputsUpdater(root_of_child->Layer(),
-                                   root_of_child->Layer())
-              .LayerOrDescendantShouldBeComposited(root_of_child->Layer()))
-        descendant_has_direct_compositing_reason = true;
+    if (ToLayoutEmbeddedContent(layer->GetLayoutObject())
+            .ContentDocumentIsCompositing()) {
+      descendant_has_direct_compositing_reason = true;
     }
   }
   layer->SetDescendantHasDirectOrScrollingCompositingReason(
@@ -230,7 +226,6 @@ void CompositingInputsUpdater::UpdateSelfAndDescendantsRecursively(
 
   compositor->ClearCompositingInputsRoot();
 
-  DisableCompositingQueryAsserts disabler;
   bool previously_needed_paint_offset_translation =
       layer->NeedsPaintOffsetTranslationForCompositing();
 
@@ -280,8 +275,6 @@ void CompositingInputsUpdater::UpdateAncestorInfo(PaintLayer* const layer,
   PaintLayer* enclosing_squashing_composited_layer =
       info.enclosing_squashing_composited_layer;
 
-  DisableCompositingQueryAsserts disabler;
-
   if (layer->NeedsCompositingInputsUpdate()) {
     if (enclosing_stacking_composited_layer) {
       enclosing_stacking_composited_layer->GetCompositedLayerMapping()
@@ -295,6 +288,7 @@ void CompositingInputsUpdater::UpdateAncestorInfo(PaintLayer* const layer,
 
     update_type = kForceUpdate;
   }
+
 
   switch (layer->GetCompositingState()) {
     case kNotComposited:

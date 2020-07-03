@@ -51,10 +51,6 @@ class SaveUpdateWithAccountStoreBubbleController
   // creation. This method returns true iff the current state is "update".
   bool IsCurrentStateUpdate() const;
 
-  // Returns true iff the bubble is supposed to show the footer about syncing
-  // to Google account.
-  bool ShouldShowFooter() const;
-
   // Returns true if passwords revealing is not locked or re-authentication is
   // not available on the given platform. Otherwise, the method schedules
   // re-authentication and bubble reopen (the current bubble will be destroyed),

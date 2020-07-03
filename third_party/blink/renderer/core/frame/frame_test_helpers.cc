@@ -280,11 +280,12 @@ WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
         std::move(widget_receiver));
     widget_client->SetFrameWidget(frame_widget, std::move(widget_remote));
     // The WebWidget requires the compositor to be set before it is used.
+    cc::LayerTreeSettings layer_tree_settings =
+        GetSynchronousSingleThreadLayerTreeSettings();
     widget_client->set_layer_tree_host(frame_widget->InitializeCompositing(
         false, widget_client->main_thread_scheduler(),
-        widget_client->task_graph_runner(),
-        GetSynchronousSingleThreadLayerTreeSettings(),
-        std::make_unique<cc::TestUkmRecorderFactory>()));
+        widget_client->task_graph_runner(), true, gfx::Size(), 1.0f,
+        std::make_unique<cc::TestUkmRecorderFactory>(), &layer_tree_settings));
     frame_widget->SetCompositorVisible(true);
   } else if (frame->Parent()->IsWebRemoteFrame()) {
     widget_client = std::make_unique<TestWebWidgetClient>();
@@ -295,11 +296,12 @@ WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
         std::move(widget_receiver));
     widget_client->SetFrameWidget(frame_widget, std::move(widget_remote));
     // The WebWidget requires the compositor to be set before it is used.
+    cc::LayerTreeSettings layer_tree_settings =
+        GetSynchronousSingleThreadLayerTreeSettings();
     widget_client->set_layer_tree_host(frame_widget->InitializeCompositing(
         false, widget_client->main_thread_scheduler(),
-        widget_client->task_graph_runner(),
-        GetSynchronousSingleThreadLayerTreeSettings(),
-        std::make_unique<cc::TestUkmRecorderFactory>()));
+        widget_client->task_graph_runner(), true, gfx::Size(), 1.0f,
+        std::make_unique<cc::TestUkmRecorderFactory>(), &layer_tree_settings));
     frame_widget->SetCompositorVisible(true);
     frame_widget->Resize(WebSize());
   }
@@ -360,11 +362,12 @@ WebLocalFrameImpl* CreateLocalChild(WebRemoteFrame& parent,
       std::move(widget_receiver));
   // The WebWidget requires the compositor to be set before it is used.
   widget_client->SetFrameWidget(frame_widget, std::move(widget_remote));
+  cc::LayerTreeSettings layer_tree_settings =
+      GetSynchronousSingleThreadLayerTreeSettings();
   widget_client->set_layer_tree_host(frame_widget->InitializeCompositing(
       false, widget_client->main_thread_scheduler(),
-      widget_client->task_graph_runner(),
-      GetSynchronousSingleThreadLayerTreeSettings(),
-      std::make_unique<cc::TestUkmRecorderFactory>()));
+      widget_client->task_graph_runner(), true, gfx::Size(), 1.0f,
+      std::make_unique<cc::TestUkmRecorderFactory>(), &layer_tree_settings));
   frame_widget->SetCompositorVisible(true);
   // Set an initial size for subframes.
   if (frame->Parent())
@@ -447,11 +450,12 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
       test_web_widget_client_->BindNewWidgetHost(), std::move(widget_receiver));
   // The WebWidget requires the compositor to be set before it is used.
   test_web_widget_client_->SetFrameWidget(widget, std::move(widget_remote));
+  cc::LayerTreeSettings layer_tree_settings =
+      GetSynchronousSingleThreadLayerTreeSettings();
   test_web_widget_client_->set_layer_tree_host(widget->InitializeCompositing(
       false, test_web_widget_client_->main_thread_scheduler(),
-      test_web_widget_client_->task_graph_runner(),
-      GetSynchronousSingleThreadLayerTreeSettings(),
-      std::make_unique<cc::TestUkmRecorderFactory>()));
+      test_web_widget_client_->task_graph_runner(), true, gfx::Size(), 1.0f,
+      std::make_unique<cc::TestUkmRecorderFactory>(), &layer_tree_settings));
   widget->SetCompositorVisible(true);
 
   // We inform the WebView when it has a local main frame attached once the

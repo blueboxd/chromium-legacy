@@ -46,7 +46,7 @@
 <translation id="1399648040768741453">Keyboard Telugu (Fonetik)</translation>
 <translation id="1430915738399379752">Cetak</translation>
 <translation id="1433600251059882049">Folder ini dibagikan ke Linux dan Windows</translation>
-<translation id="1435838927755162558">Bagikan folder ke Desktop Paralel</translation>
+<translation id="1435838927755162558">Bagikan folder ke Parallels Desktop</translation>
 <translation id="1439494416798956626">Dipindahkan ke <ph name="FOLDER_NAME" />.</translation>
 <translation id="1441841714100794440">Keyboard Vietnam (Telex)</translation>
 <translation id="1455548678241328678">Keyboard untuk bahasa Norsk</translation>
@@ -266,7 +266,7 @@
 <translation id="3943857333388298514">Sisipkan</translation>
 <translation id="3958548648197196644">Burung Kiwi</translation>
 <translation id="3966388904776714213">Pemutar Audio</translation>
-<translation id="3984317463833596033">Beri Desktop Paralel izin untuk mengubah file di folder <ph name="FOLDER_NAME" /></translation>
+<translation id="3984317463833596033">Beri Parallels Desktop izin untuk mengubah file di folder <ph name="FOLDER_NAME" /></translation>
 <translation id="4002066346123236978">Judul</translation>
 <translation id="4070370845051020638">Metode masukan Kanton</translation>
 <translation id="4072248638558688893">Keyboard Tamil (Fonetik)</translation>
@@ -341,12 +341,12 @@
 <translation id="4881695831933465202">Buka</translation>
 <translation id="4886021172213954916">Keyboard Tamil (Mesin ketik)</translation>
 <translation id="4892969127351273348">Tidak dapat membuka dengan <ph name="APP_NAME" /></translation>
-<translation id="4900532980794411603">Bagikan ke Desktop Paralel</translation>
+<translation id="4900532980794411603">Bagikan ke Parallels Desktop</translation>
 <translation id="4905417359854579806">Siap untuk mencadangkan <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Telah Diperbaiki</translation>
 <translation id="4935975195727477204">Bunga Gazania</translation>
 <translation id="4943368462779413526">Sepak bola</translation>
-<translation id="4961158930123534723">1 folder dibagikan ke Desktop Paralel</translation>
+<translation id="4961158930123534723">1 folder dibagikan ke Parallels Desktop</translation>
 <translation id="4969785127455456148">Album</translation>
 <translation id="497244430928947428">Keyboard Malayalam (Fonetik)</translation>
 <translation id="4973523518332075481">Gunakan nama yang terdiri dari <ph name="MAX_LENGTH" /> karakter atau kurang</translation>
@@ -358,7 +358,7 @@
 <translation id="5010406651457630570">Komputer</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5024856940085636730">Operasi berlangsung lebih lama dari biasanya. Ingin membatalkannya?</translation>
-<translation id="5036159836254554629">Kelola berbagi Desktop Paralel</translation>
+<translation id="5036159836254554629">Kelola berbagi Parallels Desktop</translation>
 <translation id="5038625366300922036">Lihat lebih banyak...</translation>
 <translation id="5061708541166515394">Kontras</translation>
 <translation id="5068919226082848014">Pizza</translation>
@@ -508,7 +508,7 @@
 <translation id="656398493051028875">Menghapus "<ph name="FILENAME" />"...</translation>
 <translation id="6581162200855843583">Tautan Google Drive</translation>
 <translation id="6607272825297743757">Info file</translation>
-<translation id="6609332149380188670"><ph name="NUMBER_OF_ITEMS" /> folder dibagikan ke Desktop Paralel</translation>
+<translation id="6609332149380188670"><ph name="NUMBER_OF_ITEMS" /> folder dibagikan ke Parallels Desktop</translation>
 <translation id="6629841649550503054">Semua dicadangkan ke <ph name="BEGIN_LINK" />Google Drive!<ph name="END_LINK" /></translation>
 <translation id="6643016212128521049">Hapus</translation>
 <translation id="6650726141019353908">Kupu-kupu merah muda</translation>
@@ -690,7 +690,7 @@
 <translation id="8475647382427415476">Saat ini Google Drive tidak dapat menyinkronkan "<ph name="FILENAME" />". Google Drive akan mencoba lagi nanti.</translation>
 <translation id="8477649328507734757">Putaran</translation>
 <translation id="8487700953926739672">Tersedia secara offline</translation>
-<translation id="8490342535582768689">Beri Desktop Paralel izin aplikasi untuk mengubah file di Google Drive Anda. Perubahan akan disinkronkan ke perangkat Anda lainnya.</translation>
+<translation id="8490342535582768689">Beri Parallels Desktop izin aplikasi untuk mengubah file di Google Drive Anda. Perubahan akan disinkronkan ke perangkat Anda lainnya.</translation>
 <translation id="8521441079177373948">Inggris</translation>
 <translation id="8525306231823319788">Layar penuh</translation>
 <translation id="8551494947769799688">Latvia</translation>

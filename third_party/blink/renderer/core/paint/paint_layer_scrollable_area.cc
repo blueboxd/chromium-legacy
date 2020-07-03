@@ -2481,17 +2481,10 @@ static bool LayerNodeMayNeedCompositedScrolling(const PaintLayer* layer) {
 
 bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
     bool force_prefer_compositing_to_lcd_text) {
-#if DCHECK_IS_ON()
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    DCHECK_EQ(DocumentLifecycle::kInPrePaint,
-              GetDocument()->Lifecycle().GetState());
-  } else {
-    DCHECK(GetDocument()->Lifecycle().GetState() ==
-               DocumentLifecycle::kInCompositingInputsUpdate ||
-           GetDocument()->Lifecycle().GetState() ==
-               DocumentLifecycle::kInCompositingUpdate);
-  }
-#endif
+  DCHECK_EQ(RuntimeEnabledFeatures::CompositeAfterPaintEnabled()
+                ? DocumentLifecycle::kInPrePaint
+                : DocumentLifecycle::kInCompositingUpdate,
+            GetDocument()->Lifecycle().GetState());
 
   const auto* box = GetLayoutBox();
   auto old_background_paint_location = box->GetBackgroundPaintLocation();

@@ -39,8 +39,10 @@
 <translation id="428217921675623177">90 日より前の印刷ジョブは削除されます</translation>
 <translation id="4429881212383817840">Kerberos チケットはまもなく有効期限が切れます</translation>
 <translation id="445059817448385655">古いパスワード</translation>
+<translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />、<ph name="PRINTER_NAME" />、<ph name="CREATION_TIME" />、<ph name="PRINTED_PAGE_NUMBER" />/<ph name="TOTAL_PAGE_NUMBER" />。印刷ジョブをキャンセルするには、Enter キーを押します。</translation>
 <translation id="467510802200863975">パスワードが一致しません</translation>
 <translation id="4731797938093519117">保護者によるアクセス</translation>
+<translation id="4808449224298348341">キャンセルされた印刷ジョブ <ph name="DOCUMENT_TITLE" /></translation>
 <translation id="4890353053343094602">新しいパスワードを今すぐ選択してください</translation>
 <translation id="4932733599132424254">日付</translation>
 <translation id="5212543919916444558">画面からはサポートできる内容が見つかりませんでした。

@@ -39,8 +39,10 @@
 <translation id="428217921675623177">系统会自动移除存在时长已超过 90 天的打印任务</translation>
 <translation id="4429881212383817840">Kerberos 票据即将过期</translation>
 <translation id="445059817448385655">旧密码</translation>
+<translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />，<ph name="PRINTER_NAME" />，<ph name="CREATION_TIME" />，已打印 <ph name="PRINTED_PAGE_NUMBER" /> 页，共 <ph name="TOTAL_PAGE_NUMBER" /> 页。按 Enter 键即可取消这项打印任务。</translation>
 <translation id="467510802200863975">输入的两个密码不相同</translation>
 <translation id="4731797938093519117">家长访问</translation>
+<translation id="4808449224298348341">已取消打印任务“<ph name="DOCUMENT_TITLE" />”</translation>
 <translation id="4890353053343094602">请立即设置一个新密码</translation>
 <translation id="4932733599132424254">日期</translation>
 <translation id="5212543919916444558">无法提供与您的屏幕上可以找到的任何内容相关的帮助。

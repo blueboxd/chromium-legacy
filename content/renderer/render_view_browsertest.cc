@@ -502,11 +502,10 @@ class RenderViewImplBlinkSettingsTest : public RenderViewImplTest {
 // This test class enables UseZoomForDSF based on the platform default value.
 class RenderViewImplScaleFactorTest : public RenderViewImplTest {
  protected:
-  std::unique_ptr<CompositorDependencies> CreateCompositorDependencies()
-      override {
-    auto deps = std::make_unique<FakeCompositorDependencies>();
-    deps->set_use_zoom_for_dsf_enabled(content::IsUseZoomForDSFEnabled());
-    return deps;
+  void SetUp() override {
+    render_thread_ = std::make_unique<MockRenderThread>();
+    SetUseZoomForDSFEnabled(content::IsUseZoomForDSFEnabled());
+    RenderViewImplTest::SetUp();
   }
 
   void SetDeviceScaleFactor(float dsf) {
@@ -571,11 +570,10 @@ class RenderViewImplScaleFactorTest : public RenderViewImplTest {
 class RenderViewImplEnableZoomForDSFTest
     : public RenderViewImplScaleFactorTest {
  protected:
-  std::unique_ptr<CompositorDependencies> CreateCompositorDependencies()
-      override {
-    auto deps = std::make_unique<FakeCompositorDependencies>();
-    deps->set_use_zoom_for_dsf_enabled(true);
-    return deps;
+  void SetUp() override {
+    render_thread_ = std::make_unique<MockRenderThread>();
+    SetUseZoomForDSFEnabled(true);
+    RenderViewImplTest::SetUp();
   }
 };
 
@@ -583,11 +581,10 @@ class RenderViewImplEnableZoomForDSFTest
 class RenderViewImplDisableZoomForDSFTest
     : public RenderViewImplScaleFactorTest {
  protected:
-  std::unique_ptr<CompositorDependencies> CreateCompositorDependencies()
-      override {
-    auto deps = std::make_unique<FakeCompositorDependencies>();
-    deps->set_use_zoom_for_dsf_enabled(false);
-    return deps;
+  void SetUp() override {
+    render_thread_ = std::make_unique<MockRenderThread>();
+    SetUseZoomForDSFEnabled(false);
+    RenderViewImplTest::SetUp();
   }
 };
 

@@ -38,7 +38,7 @@ blink::WebView* WebViewTestProxy::CreateView(
     const blink::FeaturePolicy::FeatureState& opener_feature_state,
     const blink::SessionStorageNamespaceId& session_storage_namespace_id) {
   if (GetTestRunner()->ShouldDumpNavigationPolicy()) {
-    blink_test_runner()->PrintMessage(
+    GetTestRunner()->PrintMessage(
         "Default policy for createView for '" +
         web_test_string_util::URLDescription(request.Url()) + "' is '" +
         web_test_string_util::WebNavigationPolicyToString(policy) + "'\n");
@@ -48,7 +48,7 @@ blink::WebView* WebViewTestProxy::CreateView(
     return nullptr;
 
   if (GetTestRunner()->ShouldDumpCreateView()) {
-    blink_test_runner()->PrintMessage(
+    GetTestRunner()->PrintMessage(
         std::string("createView(") +
         web_test_string_util::URLDescription(request.Url()) + ")\n");
   }

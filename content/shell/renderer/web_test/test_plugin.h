@@ -43,7 +43,7 @@ struct TransferableResource;
 }
 
 namespace content {
-class BlinkTestRunner;
+class TestRunner;
 
 // A fake implementation of blink::WebPlugin for testing purposes.
 //
@@ -60,7 +60,7 @@ class BlinkTestRunner;
 class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
  public:
   static TestPlugin* Create(const blink::WebPluginParams& params,
-                            BlinkTestRunner* blink_test_runner,
+                            TestRunner* test_runner,
                             blink::WebLocalFrame* frame);
   ~TestPlugin() override;
 
@@ -105,7 +105,7 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
 
  private:
   TestPlugin(const blink::WebPluginParams& params,
-             BlinkTestRunner* blink_test_runner,
+             TestRunner* test_runner,
              blink::WebLocalFrame* frame);
 
   enum Primitive { PrimitiveNone, PrimitiveTriangle };
@@ -167,7 +167,7 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
       const gpu::SyncToken& sync_token,
       bool lost);
 
-  BlinkTestRunner* blink_test_runner_;
+  TestRunner* test_runner_;
   blink::WebPluginContainer* container_;
   blink::WebLocalFrame* web_local_frame_;
 

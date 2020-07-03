@@ -123,10 +123,13 @@ def generate_global_constructors_list(interface_name, extended_attributes):
         for name in ['RuntimeEnabled', 'ContextEnabled', 'SecureContext']
         if name in extended_attributes
     ]
-    if extended_attributes_list:
-        extended_string = '[%s] ' % ', '.join(extended_attributes_list)
-    else:
-        extended_string = ''
+
+    # Getters for these Constructors are auto-generated and considered
+    # side-effect free w.r.t to V8. That is, executing the getter has no
+    # JavaScript observable effect.
+    extended_attributes_list.append('Affects=Nothing')
+
+    extended_string = '[%s] ' % ', '.join(extended_attributes_list)
 
     attribute_string = 'attribute {interface_name}Constructor {interface_name}'.format(
         interface_name=interface_name)

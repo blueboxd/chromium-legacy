@@ -39,8 +39,10 @@
 <translation id="428217921675623177">Завдання друку, старіші за 90 днів, буде видалено</translation>
 <translation id="4429881212383817840">Термін дії квитка Kerberos незабаром минає</translation>
 <translation id="445059817448385655">Старий пароль</translation>
+<translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> з <ph name="TOTAL_PAGE_NUMBER" />. Натисніть Enter, щоб скасувати завдання друку.</translation>
 <translation id="467510802200863975">Паролі не збігаються</translation>
 <translation id="4731797938093519117">Батьківський доступ</translation>
+<translation id="4808449224298348341">Завдання друку "<ph name="DOCUMENT_TITLE" />" скасовано</translation>
 <translation id="4890353053343094602">Негайно виберіть новий</translation>
 <translation id="4932733599132424254">Дата</translation>
 <translation id="5212543919916444558">На екрані не знайдено елементів, проблеми з якими я можу вирішити.

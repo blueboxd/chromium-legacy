@@ -39,8 +39,10 @@
 <translation id="428217921675623177">90 kundan eski bosma vazifalar avtomatik tozalanadi</translation>
 <translation id="4429881212383817840">Kerberos chiptasi amal qilish muddati tezda tugaydi</translation>
 <translation id="445059817448385655">Eski parol</translation>
+<translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" />/<ph name="TOTAL_PAGE_NUMBER" />. Chop etilishini bekor qilish uchun Enter tugmasini bosing.</translation>
 <translation id="467510802200863975">Parollaringiz mos kelmadi</translation>
 <translation id="4731797938093519117">Ota-ona kirishi</translation>
+<translation id="4808449224298348341">Chop etilishi bekor qilindi: <ph name="DOCUMENT_TITLE" /></translation>
 <translation id="4890353053343094602">Tezda yangi parol tanlang</translation>
 <translation id="4932733599132424254">Sana</translation>
 <translation id="5212543919916444558">Ekranda men yordam bera oladigan hech narsa topilmadi.

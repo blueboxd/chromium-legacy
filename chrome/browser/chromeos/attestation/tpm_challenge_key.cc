@@ -77,17 +77,14 @@ void TpmChallengeKeyImpl::BuildResponse(AttestationKeyType key_type,
                                         TpmChallengeKeyCallback callback,
                                         const std::string& challenge,
                                         bool register_key,
-                                        const std::string& key_name_for_spkac) {
+                                        const std::string& key_name) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(callback_.is_null());
   DCHECK(!callback.is_null());
 
-  // For device key: if |register_key| is true, |key_name_for_spkac| should not
-  // be empty; if |register_key| is false, |key_name_for_spkac| is not used.
-  DCHECK((key_type != KEY_DEVICE) ||
-         (register_key == !key_name_for_spkac.empty()))
-      << "Invalid arguments: " << register_key << " "
-      << !key_name_for_spkac.empty();
+  // For device key: if |register_key| is true, |key_name| should not be empty.
+  DCHECK((key_type != KEY_DEVICE) || (register_key == !key_name.empty()))
+      << "Invalid arguments: " << register_key << " " << !key_name.empty();
 
   register_key_ = register_key;
   challenge_ = challenge;
@@ -95,7 +92,7 @@ void TpmChallengeKeyImpl::BuildResponse(AttestationKeyType key_type,
 
   // Empty |key_name| means that some default name will be used.
   tpm_challenge_key_subtle_->StartPrepareKeyStep(
-      key_type, /*key_name=*/std::string(), profile, key_name_for_spkac,
+      key_type, /*will_register_key=*/register_key_, key_name, profile,
       base::BindOnce(&TpmChallengeKeyImpl::OnPrepareKeyDone,
                      weak_factory_.GetWeakPtr()));
 }
@@ -110,9 +107,8 @@ void TpmChallengeKeyImpl::OnPrepareKeyDone(
   }
 
   tpm_challenge_key_subtle_->StartSignChallengeStep(
-      challenge_, /*include_signed_public_key=*/register_key_,
-      base::BindOnce(&TpmChallengeKeyImpl::OnSignChallengeDone,
-                     weak_factory_.GetWeakPtr()));
+      challenge_, base::BindOnce(&TpmChallengeKeyImpl::OnSignChallengeDone,
+                                 weak_factory_.GetWeakPtr()));
 }
 
 void TpmChallengeKeyImpl::OnSignChallengeDone(

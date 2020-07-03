@@ -28,6 +28,13 @@ network::CrossOriginOpenerPolicy CoopSameOrigin() {
   return coop;
 }
 
+network::CrossOriginOpenerPolicy CoopSameOriginPlusCoep() {
+  network::CrossOriginOpenerPolicy coop;
+  coop.value =
+      network::mojom::CrossOriginOpenerPolicyValue::kSameOriginPlusCoep;
+  return coop;
+}
+
 network::CrossOriginOpenerPolicy CoopSameOriginAllowPopups() {
   network::CrossOriginOpenerPolicy coop;
   coop.value =
@@ -81,13 +88,21 @@ class CrossOriginOpenerPolicyBrowserTest
   }
 
   RenderFrameHostImpl* current_frame_host() {
-    return web_contents()->GetFrameTree()->root()->current_frame_host();
+    return web_contents()->GetMainFrame();
   }
 
   base::test::ScopedFeatureList feature_list_;
   base::test::ScopedFeatureList feature_list_for_render_document_;
   net::EmbeddedTestServer https_server_;
 };
+
+int VirtualBrowsingContextGroup(WebContents* wc) {
+  return static_cast<WebContentsImpl*>(wc)
+      ->GetMainFrame()
+      ->virtual_browsing_context_group();
+}
+
+}  // namespace
 
 IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
                        NewPopupCOOP_InheritsSameOrigin) {
@@ -292,7 +307,7 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
   CrossOriginPolicyHeadersObserver obs(
       web_contents(),
       network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp,
-      CoopSameOrigin());
+      CoopSameOriginPlusCoep());
 
   EXPECT_TRUE(
       NavigateToURL(shell(), redirect_initial_page, redirect_final_page));
@@ -875,8 +890,9 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
 
     EXPECT_FALSE(current_frame_host()->GetSiteInstance()->IsRelatedSiteInstance(
         initial_site_instance.get()));
-    EXPECT_EQ(current_frame_host()->cross_origin_opener_policy().value,
-              network::mojom::CrossOriginOpenerPolicyValue::kSameOrigin);
+    EXPECT_EQ(
+        current_frame_host()->cross_origin_opener_policy().value,
+        network::mojom::CrossOriginOpenerPolicyValue::kSameOriginPlusCoep);
   }
 
   // COOP into non-COOP.
@@ -933,14 +949,360 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
 
     EXPECT_TRUE(current_frame_host()->GetSiteInstance()->IsRelatedSiteInstance(
         initial_site_instance.get()));
-    EXPECT_EQ(current_frame_host()->cross_origin_opener_policy().value,
-              network::mojom::CrossOriginOpenerPolicyValue::kSameOrigin);
+    EXPECT_EQ(
+        current_frame_host()->cross_origin_opener_policy().value,
+        network::mojom::CrossOriginOpenerPolicyValue::kSameOriginPlusCoep);
   }
+}
+
+// Navigate in between two documents. Check the virtual browsing context group
+// is properly updated.
+IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
+                       VirtualBrowsingContextGroup_Navigation) {
+  const struct {
+    GURL url_a;
+    GURL url_b;
+    bool expect_different_virtual_browsing_context_group;
+  } kTestCases[] = {
+      // non-coop <-> non-coop
+      {
+          // same-origin => keep.
+          https_server()->GetURL("a.com", "/title1.html"),
+          https_server()->GetURL("a.com", "/title2.html"),
+          false,
+      },
+      {
+          // different-origin => keep.
+          https_server()->GetURL("a.a.com", "/title1.html"),
+          https_server()->GetURL("b.a.com", "/title2.html"),
+          false,
+      },
+      {
+          // different-site => keep.
+          https_server()->GetURL("a.com", "/title1.html"),
+          https_server()->GetURL("b.com", "/title2.html"),
+          false,
+      },
+
+      // non-coop <-> coop.
+      {
+          // same-origin => change.
+          https_server()->GetURL("a.com", "/title1.html"),
+          https_server()->GetURL("a.com", "/page_with_coop_and_coep.html"),
+          false,  // TODO(https://crbug.com/1101339): Replace by true.
+      },
+      {
+          // different-origin => change.
+          https_server()->GetURL("a.a.com", "/title1.html"),
+          https_server()->GetURL("b.a.com", "/page_with_coop_and_coep.html"),
+          false,  // TODO(https://crbug.com/1101339): Replace by true.
+      },
+      {
+          // different-site => change.
+          https_server()->GetURL("a.com", "/title1.html"),
+          https_server()->GetURL("b.com", "/page_with_coop_and_coep.html"),
+          false,  // TODO(https://crbug.com/1101339): Replace by true.
+      },
+
+      // coop <-> coop.
+      {
+          // same-origin => keep.
+          https_server()->GetURL("a.com", "/page_with_coop_and_coep.html"),
+          https_server()->GetURL("a.com", "/page_with_coop_and_coep.html"),
+          false,
+      },
+      {
+          // different-origin => change.
+          https_server()->GetURL("a.a.com", "/page_with_coop_and_coep.html"),
+          https_server()->GetURL("b.a.com", "/page_with_coop_and_coep.html"),
+          false,  // TODO(https://crbug.com/1101339): Replace by true.
+      },
+      {
+          // different-site => keep.
+          https_server()->GetURL("a.com", "/page_with_coop_and_coep.html"),
+          https_server()->GetURL("b.com", "/page_with_coop_and_coep.html"),
+          false,  // TODO(https://crbug.com/1101339): Replace by true.
+      },
+
+      // non-coop <-> coop-ro.
+      {
+          // same-origin => change.
+          https_server()->GetURL("a.com", "/title1.html"),
+          https_server()->GetURL("a.com", "/page_with_coop_ro_and_coep.html"),
+          false,  // TODO(https://crbug.com/1101339): Replace by true.
+      },
+      {
+          // different-origin => change.
+          https_server()->GetURL("a.a.com", "/title1.html"),
+          https_server()->GetURL("b.a.com", "/page_with_coop_ro_and_coep.html"),
+          false,  // TODO(https://crbug.com/1101339): Replace by true.
+      },
+      {
+          // different-site => change.
+          https_server()->GetURL("a.com", "/title1.html"),
+          https_server()->GetURL("b.com", "/page_with_coop_ro_and_coep.html"),
+          false,  // TODO(https://crbug.com/1101339): Replace by true.
+      },
+
+      // coop-ro <-> coop-ro.
+      {
+          // same-origin => keep.
+          https_server()->GetURL("a.com", "/page_with_coop_ro_and_coep.html"),
+          https_server()->GetURL("a.com", "/page_with_coop_ro_and_coep.html"),
+          false,
+      },
+      {
+          // different-origin => change.
+          https_server()->GetURL("a.a.com", "/page_with_coop_ro_and_coep.html"),
+          https_server()->GetURL("b.a.com", "/page_with_coop_ro_and_coep.html"),
+          false,  // TODO(https://crbug.com/1101339): Replace by true.
+      },
+      {
+          // different-site => keep.
+          https_server()->GetURL("a.com", "/page_with_coop_ro_and_coep.html"),
+          https_server()->GetURL("b.com", "/page_with_coop_ro_and_coep.html"),
+          false,  // TODO(https://crbug.com/1101339): Replace by true.
+      },
+
+      // coop <-> coop-ro.
+      {
+          // same-origin => change.
+          https_server()->GetURL("a.com", "/page_with_coop_and_coep.html"),
+          https_server()->GetURL("a.com", "/page_with_coop_ro_and_coep.html"),
+          false,  // TODO(https://crbug.com/1101339): Replace by true.
+      },
+      {
+          // different-origin => change.
+          https_server()->GetURL("a.a.com", "/page_with_coop_and_coep.html"),
+          https_server()->GetURL("b.a.com", "/page_with_coop_ro_and_coep.html"),
+          false,  // TODO(https://crbug.com/1101339): Replace by true.
+      },
+      {
+          // different-site => change
+          https_server()->GetURL("a.com", "/page_with_coop_and_coep.html"),
+          https_server()->GetURL("b.com", "/page_with_coop_ro_and_coep.html"),
+          false,  // TODO(https://crbug.com/1101339): Replace by true.
+      },
+      // TODO(https://crbug.com/1101339). Test with COEP-RO.
+      // TODO(https://crbug.com/1101339). Test with COOP-RO+COOP.
+      // TODO(https://crbug.com/1101339). Test with COOP-same-origin-allow-popup
+  };
+
+  for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(testing::Message()
+                 << std::endl
+                 << "url_a = " << test_case.url_a << std::endl
+                 << "url_b = " << test_case.url_b << std::endl);
+    ASSERT_TRUE(NavigateToURL(shell(), test_case.url_a));
+    int group_1 = VirtualBrowsingContextGroup(web_contents());
+
+    ASSERT_TRUE(NavigateToURL(shell(), test_case.url_b));
+    int group_2 = VirtualBrowsingContextGroup(web_contents());
+
+    ASSERT_TRUE(NavigateToURL(shell(), test_case.url_a));
+    int group_3 = VirtualBrowsingContextGroup(web_contents());
+
+    // Note: Navigating from A to B and navigating from B to A must lead to the
+    // same decision. We check both to avoid adding all the symmetric test
+    // cases.
+    //
+    if (test_case.expect_different_virtual_browsing_context_group) {
+      EXPECT_NE(group_1, group_2);  // url_a -> url_b.
+      EXPECT_NE(group_2, group_3);  // url_a <- url_b.
+    } else {
+      EXPECT_EQ(group_1, group_2);  // url_a -> url_b.
+      EXPECT_EQ(group_2, group_3);  // url_b <- url_b.
+    }
+  }
+}
+
+// Use window.open(url). Check the virtual browsing context group of the two
+// window.
+IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
+                       VirtualBrowsingContextGroup_WindowOpen) {
+  const struct {
+    GURL url_opener;
+    GURL url_openee;
+    bool expect_different_virtual_browsing_context_group;
+  } kTestCases[] = {
+      // Open with no URL => Always keep.
+      {
+          // From non-coop.
+          https_server()->GetURL("a.com", "/title1.html"),
+          GURL(),
+          false,
+      },
+      {
+          // From coop-ro.
+          https_server()->GetURL("a.com", "/page_with_coop_ro_and_coep.html"),
+          GURL(),
+          false,
+      },
+      {
+          // From coop.
+          https_server()->GetURL("a.com", "/page_with_coop_and_coep.html"),
+          GURL(),
+          false,
+      },
+
+      // From here, we open a new window with an URL. This is equivalent to:
+      // 1. opening a new window
+      // 2. navigating the new window.
+      //
+      // (1) is tested by the 3 test cases above.
+      // (2) is tested by the test VirtualBrowsingContextGroup.
+      //
+      // Here we are only providing a few test cases to test the sequence 1 & 2.
+
+      // non-coop opens non-coop.
+      {
+          https_server()->GetURL("a.com", "/title1.html"),
+          https_server()->GetURL("a.com", "/title1.html"),
+          false,
+      },
+
+      // non-coop opens coop-ro.
+      {
+          https_server()->GetURL("a.com", "/title1.html"),
+          https_server()->GetURL("a.com", "/page_with_coop_ro_and_coep.html"),
+          false,  // TODO(https://crbug.com/11001339): Replace by true.
+      },
+
+      // non-coop opens coop.
+      {
+          https_server()->GetURL("a.com", "/title1.html"),
+          https_server()->GetURL("a.com", "/page_with_coop_and_coep.html"),
+          false,  // TODO(https://crbug.com/11001339): Replace by true.
+      },
+
+      // coop opens non-coop.
+      {
+          https_server()->GetURL("a.com", "/page_with_coop_and_coep.html"),
+          https_server()->GetURL("a.com", "/title1.html"),
+          false,  // TODO(https://crbug.com/11001339): Replace by true.
+      },
+
+      // coop-ro opens coop-ro (same-origin).
+      {
+          https_server()->GetURL("a.com", "/page_with_coop_ro_and_coep.html"),
+          https_server()->GetURL("a.com", "/page_with_coop_ro_and_coep.html"),
+          false,
+      },
+
+      // coop-ro opens coop-ro (different-origin).
+      {
+          https_server()->GetURL("a.com", "/page_with_coop_ro_and_coep.html"),
+          https_server()->GetURL("b.com", "/page_with_coop_ro_and_coep.html"),
+          false,  // TODO(https://crbug.com/11001339): Replace by true.
+      },
+
+      // TODO(https://crbug.com/1101339). Test with COEP-RO.
+      // TODO(https://crbug.com/1101339). Test with COOP-RO+COOP
+      // TODO(https://crbug.com/1101339). Test with COOP-same-origin-allow-popup
+  };
+
+  for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(testing::Message()
+                 << std::endl
+                 << "url_opener = " << test_case.url_opener << std::endl
+                 << "url_openee = " << test_case.url_openee << std::endl);
+
+    ASSERT_TRUE(NavigateToURL(shell(), test_case.url_opener));
+    int group_opener = VirtualBrowsingContextGroup(web_contents());
+
+    ShellAddedObserver shell_observer;
+    EXPECT_TRUE(ExecJs(current_frame_host(),
+                       JsReplace("window.open($1)", test_case.url_openee)));
+    WebContents* popup = shell_observer.GetShell()->web_contents();
+    // The virtual browser context group will change, only after the popup has
+    // navigated.
+    WaitForLoadStop(popup);
+    int group_openee = VirtualBrowsingContextGroup(popup);
+
+    if (test_case.expect_different_virtual_browsing_context_group)
+      EXPECT_NE(group_opener, group_openee);
+    else
+      EXPECT_EQ(group_opener, group_openee);
+
+    popup->Close();
+  }
+}
+
+// Navigates in between two pages from a different browsing context group. Then
+// use the history API to navigate back and forth. Check their virtual browsing
+// context group isn't restored.
+// The goal is to spot differences when the BackForwardCache is enabled.
+IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
+                       VirtualBrowsingContextGroup_HistoryNavigation) {
+  GURL url_a =
+      https_server()->GetURL("a.com", "/page_with_coop_ro_and_coep.html");
+  GURL url_b =
+      https_server()->GetURL("b.com", "/page_with_coop_ro_and_coep.html");
+
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  int group_1 = VirtualBrowsingContextGroup(web_contents());
+
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  int group_2 = VirtualBrowsingContextGroup(web_contents());
+
+  EXPECT_TRUE(ExecJs(web_contents(), "history.back()"));
+  WaitForLoadStop(web_contents());
+  int group_3 = VirtualBrowsingContextGroup(web_contents());
+
+  EXPECT_TRUE(ExecJs(web_contents(), "history.forward()"));
+  WaitForLoadStop(web_contents());
+  int group_4 = VirtualBrowsingContextGroup(web_contents());
+
+  EXPECT_EQ(group_1, group_2);  // TODO(https://crbug.com/1101339) Use EXPECT_NE
+  EXPECT_EQ(group_1, group_3);  // TODO(https://crbug.com/1101339) Use EXPECT_NE
+  EXPECT_EQ(group_1, group_4);  // TODO(https://crbug.com/1101339) Use EXPECT_NE
+  EXPECT_EQ(group_2, group_3);  // TODO(https://crbug.com/1101339) Use EXPECT_NE
+  EXPECT_EQ(group_2, group_4);  // TODO(https://crbug.com/1101339) Use EXPECT_NE
+  EXPECT_EQ(group_3, group_4);  // TODO(https://crbug.com/1101339) Use EXPECT_NE
+}
+
+// 1. A1 opens B2 (same virtual browsing context group).
+// 2. B2 navigates to C3 (different virtual browsing context group).
+// 3. C3 navigates back to B4 using the history (different virtual browsing
+//    context group).
+//
+// A1 and B4 must not be in the same browsing context group.
+IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
+                       VirtualBrowsingContextGroup_HistoryNavigationWithPopup) {
+  GURL url_a = https_server()->GetURL("a.com", "/title1.html");
+  GURL url_b = https_server()->GetURL("b.com", "/title1.html");
+  GURL url_c =
+      https_server()->GetURL("c.com", "/page_with_coop_ro_and_coep.html");
+
+  // Navigate to A1.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  int group_1 = VirtualBrowsingContextGroup(web_contents());
+
+  // A1 opens B2.
+  ShellAddedObserver shell_observer;
+  EXPECT_TRUE(
+      ExecJs(current_frame_host(), JsReplace("window.open($1)", url_b)));
+  WebContents* popup = shell_observer.GetShell()->web_contents();
+  WaitForLoadStop(popup);
+  int group_2 = VirtualBrowsingContextGroup(popup);
+
+  // B2 navigates to C3.
+  EXPECT_TRUE(ExecJs(popup, JsReplace("location.href = $1;", url_c)));
+  WaitForLoadStop(popup);
+  int group_3 = VirtualBrowsingContextGroup(popup);
+
+  // C3 navigates back to B4.
+  EXPECT_TRUE(ExecJs(popup, JsReplace("history.back()")));
+  WaitForLoadStop(popup);
+  int group_4 = VirtualBrowsingContextGroup(popup);
+
+  EXPECT_EQ(group_1, group_2);
+  EXPECT_EQ(group_2, group_3);  // TODO(https://crbug.com/1101339) Use EXPECT_NE
+  EXPECT_EQ(group_3, group_4);  // TODO(https://crbug.com/1101339) Use EXPECT_NE
+  EXPECT_EQ(group_4, group_1);  // TODO(https://crbug.com/1101339) Use EXPECT_NE
 }
 
 INSTANTIATE_TEST_SUITE_P(All,
                          CrossOriginOpenerPolicyBrowserTest,
                          testing::ValuesIn(RenderDocumentFeatureLevelValues()));
-}  // namespace
-
 }  // namespace content

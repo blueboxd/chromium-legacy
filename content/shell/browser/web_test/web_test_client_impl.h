@@ -57,14 +57,8 @@ class WebTestClientImpl : public mojom::WebTestClient {
   void SimulateWebNotificationClose(const std::string& title,
                                     bool by_user) override;
   void SimulateWebContentIndexDelete(const std::string& id) override;
-  void ResetPermissions() override;
-  void SetPermission(const std::string& name,
-                     blink::mojom::PermissionStatus status,
-                     const GURL& origin,
-                     const GURL& embedding_origin) override;
   void WebTestRuntimeFlagsChanged(
       base::Value changed_web_test_runtime_flags) override;
-  void DeleteAllCookies() override;
   void ClearAllDatabases() override;
   void SetDatabaseQuota(int32_t quota) override;
   void RegisterIsolatedFileSystem(

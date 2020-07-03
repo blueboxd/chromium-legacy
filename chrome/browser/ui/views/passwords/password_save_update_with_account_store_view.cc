@@ -467,7 +467,6 @@ PasswordSaveUpdateWithAccountStoreView::PasswordSaveUpdateWithAccountStoreView(
                           : &Controller::OnNeverForThisSiteClicked));
   }
 
-  SetFootnoteView(CreateFooterView());
   UpdateBubbleUIElements();
 }
 
@@ -676,19 +675,6 @@ void PasswordSaveUpdateWithAccountStoreView::UpdateBubbleUIElements() {
     CloseIPHBubbleIfOpen();
 
   destination_dropdown_->SetVisible(!controller_.IsCurrentStateUpdate());
-}
-
-std::unique_ptr<views::View>
-PasswordSaveUpdateWithAccountStoreView::CreateFooterView() {
-  if (!controller_.ShouldShowFooter())
-    return nullptr;
-  auto label = std::make_unique<views::Label>(
-      l10n_util::GetStringUTF16(IDS_SAVE_PASSWORD_FOOTER),
-      ChromeTextContext::CONTEXT_BODY_TEXT_SMALL,
-      views::style::STYLE_SECONDARY);
-  label->SetMultiLine(true);
-  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  return label;
 }
 
 bool PasswordSaveUpdateWithAccountStoreView::ShouldShowRegularIPH() {

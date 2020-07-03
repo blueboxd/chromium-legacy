@@ -191,11 +191,7 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() override;
 
   // CompositorDependencies implementation.
-  int GetGpuRasterizationMSAASampleCount() override;
   bool IsLcdTextEnabled() override;
-  bool IsZeroCopyEnabled() override;
-  bool IsPartialRasterEnabled() override;
-  bool IsGpuMemoryBufferCompositorResourcesEnabled() override;
   bool IsElasticOverscrollEnabled() override;
   bool IsUseZoomForDSFEnabled() override;
   bool IsSingleThreaded() override;
@@ -210,9 +206,6 @@ class CONTENT_EXPORT RenderThreadImpl
       const GURL& url,
       LayerTreeFrameSinkCallback callback,
       const char* client_name) override;
-#ifdef OS_ANDROID
-  bool UsingSynchronousCompositing() override;
-#endif
 
   bool IsThreadedAnimationEnabled();
   scoped_refptr<base::SingleThreadTaskRunner>

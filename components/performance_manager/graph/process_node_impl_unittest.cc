@@ -7,6 +7,8 @@
 #include "base/process/process.h"
 #include "base/test/bind_test_util.h"
 #include "components/performance_manager/graph/frame_node_impl.h"
+#include "components/performance_manager/public/render_process_host_id.h"
+#include "components/performance_manager/public/render_process_host_proxy.h"
 #include "components/performance_manager/test_support/graph_test_harness.h"
 #include "components/performance_manager/test_support/mock_graphs.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -190,7 +192,8 @@ TEST_F(ProcessNodeImplTest, ObserverWorks) {
 }
 
 TEST_F(ProcessNodeImplTest, ConstructionArguments) {
-  constexpr int kRenderProcessHostId = 0xF0B;
+  constexpr RenderProcessHostId kRenderProcessHostId =
+      RenderProcessHostId(0xF0B);
   auto process_node = CreateNode<ProcessNodeImpl>(
       content::PROCESS_TYPE_GPU,
       RenderProcessHostProxy::CreateForTesting(kRenderProcessHostId));

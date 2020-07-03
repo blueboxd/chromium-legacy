@@ -24,8 +24,8 @@ content::WebUIDataSource* CreateUntrustedTelemetryExtensionDataSource() {
       content::WebUIDataSource::Create(kChromeUIUntrustedTelemetryExtensionURL);
   untrusted_source->AddResourcePath("untrusted.html",
                                     IDR_TELEMETRY_EXTENSION_UNTRUSTED_HTML);
-  untrusted_source->AddResourcePath("untrusted.js",
-                                    IDR_TELEMETRY_EXTENSION_UNTRUSTED_JS);
+  untrusted_source->AddResourcePath(
+      "untrusted_scripts.js", IDR_TELEMETRY_EXTENSION_UNTRUSTED_SCRIPTS_JS);
   untrusted_source->AddResourcePath(
       "untrusted_worker.js", IDR_TELEMETRY_EXTENSION_UNTRUSTED_WORKER_JS);
   untrusted_source->AddFrameAncestor(GURL(kChromeUITelemetryExtensionURL));
@@ -53,8 +53,8 @@ TelemetryExtensionUI::TelemetryExtensionUI(content::WebUI* web_ui)
                                   IDR_TELEMETRY_EXTENSION_MANIFEST);
   trusted_source->AddResourcePath("app_icon_96.png",
                                   IDR_TELEMETRY_EXTENSION_ICON_96);
-  trusted_source->AddResourcePath("trusted.js",
-                                  IDR_TELEMETRY_EXTENSION_TRUSTED_JS);
+  trusted_source->AddResourcePath("trusted_scripts.js",
+                                  IDR_TELEMETRY_EXTENSION_TRUSTED_SCRIPTS_JS);
   trusted_source->AddResourcePath(
       "probe_service.mojom-lite.js",
       IDR_TELEMETRY_EXTENSION_PROBE_SERVICE_MOJO_LITE_JS);

@@ -14,6 +14,7 @@
 #include "base/metrics/sample_vector.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/engagement/site_engagement_score.h"
@@ -33,6 +34,10 @@
 #include "content/public/browser/web_contents.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+// TODO(crbug.com/1039517): Disabled all tests because they lead the flakiness
+// dashboard. The root cause is documented in the bug.
+#if !defined(OS_ANDROID)
 
 namespace {
 using BookmarkModel = bookmarks::BookmarkModel;
@@ -477,3 +482,5 @@ TEST_F(ImportantSitesUtilTest, DialogBlacklisting) {
   // Dialog should be blacklisted.
   EXPECT_TRUE(ImportantSitesUtil::IsDialogDisabled(profile()));
 }
+
+#endif  // !defined(OS_ANDROID)

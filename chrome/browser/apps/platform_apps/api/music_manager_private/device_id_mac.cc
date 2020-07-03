@@ -33,7 +33,7 @@ namespace {
 
 const char kRootDirectory[] = "/";
 
-typedef base::Callback<bool(const void* bytes, size_t size)>
+typedef base::RepeatingCallback<bool(const void* bytes, size_t size)>
     IsValidMacAddressCallback;
 
 // Return the BSD name (e.g. '/dev/disk1') of the root directory by enumerating
@@ -119,8 +119,8 @@ std::string GetVolumeUUID() {
 
 class MacAddressProcessor {
  public:
-  MacAddressProcessor(const IsValidMacAddressCallback& is_valid_mac_address)
-      : is_valid_mac_address_(is_valid_mac_address) {}
+  MacAddressProcessor(IsValidMacAddressCallback is_valid_mac_address)
+      : is_valid_mac_address_(std::move(is_valid_mac_address)) {}
 
   bool ProcessNetworkController(io_object_t network_controller) {
     // Use the MAC address of the first network interface.
@@ -161,12 +161,11 @@ class MacAddressProcessor {
   std::string mac_address() const { return found_mac_address_; }
 
  private:
-  const IsValidMacAddressCallback& is_valid_mac_address_;
+  IsValidMacAddressCallback is_valid_mac_address_;
   std::string found_mac_address_;
 };
 
-std::string GetMacAddress(
-    const IsValidMacAddressCallback& is_valid_mac_address) {
+std::string GetMacAddress(IsValidMacAddressCallback is_valid_mac_address) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
 
@@ -192,7 +191,7 @@ std::string GetMacAddress(
   }
   base::mac::ScopedIOObject<io_iterator_t> iterator(iterator_ref);
 
-  MacAddressProcessor processor(is_valid_mac_address);
+  MacAddressProcessor processor(std::move(is_valid_mac_address));
   while (true) {
     // Note: interface_service should not be released.
     io_object_t interface_service = IOIteratorNext(iterator);
@@ -216,28 +215,29 @@ std::string GetMacAddress(
   return processor.mac_address();
 }
 
-void GetRawDeviceIdImpl(const IsValidMacAddressCallback& is_valid_mac_address,
-                        const DeviceId::IdCallback& callback) {
+void GetRawDeviceIdImpl(IsValidMacAddressCallback is_valid_mac_address,
+                        DeviceId::IdCallback callback) {
   std::string raw_device_id;
-  std::string mac_address = GetMacAddress(is_valid_mac_address);
+  std::string mac_address = GetMacAddress(std::move(is_valid_mac_address));
   std::string disk_id = GetVolumeUUID();
   if (!mac_address.empty() && !disk_id.empty()) {
     raw_device_id = mac_address + disk_id;
   }
   content::GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE, base::BindOnce(callback, raw_device_id));
+      FROM_HERE, base::BindOnce(std::move(callback), raw_device_id));
 }
 
 }  // namespace
 
 // static
-void DeviceId::GetRawDeviceId(const IdCallback& callback) {
+void DeviceId::GetRawDeviceId(IdCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   base::ThreadPool::PostTask(
       FROM_HERE, traits(),
-      base::Bind(&GetRawDeviceIdImpl, base::Bind(&DeviceId::IsValidMacAddress),
-                 callback));
+      base::BindOnce(&GetRawDeviceIdImpl,
+                     base::BindRepeating(&DeviceId::IsValidMacAddress),
+                     std::move(callback)));
 }
 
 }  // namespace api

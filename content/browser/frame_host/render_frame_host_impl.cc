@@ -682,10 +682,8 @@ void RecordCrossOriginIsolationMetrics(RenderFrameHostImpl* rfh) {
         rfh, blink::mojom::WebFeature::kCrossOriginEmbedderPolicyRequireCorp);
   }
 
-  if ((rfh->cross_origin_opener_policy().value ==
-       network::mojom::CrossOriginOpenerPolicyValue::kSameOrigin) &&
-      (rfh->cross_origin_embedder_policy().value ==
-       network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp)) {
+  if (rfh->cross_origin_opener_policy().value ==
+      network::mojom::CrossOriginOpenerPolicyValue::kSameOriginPlusCoep) {
     client->LogWebFeatureForCurrentPage(
         rfh, blink::mojom::WebFeature::kCoopAndCoepIsolated);
   }
@@ -4915,7 +4913,7 @@ void RenderFrameHostImpl::CreateNewWindow(
     main_frame->set_coop_reporter(
         std::make_unique<CrossOriginOpenerPolicyReporter>(
             GetProcess()->GetStoragePartition(), this, GetLastCommittedURL(),
-            popup_coop, popup_coep));
+            popup_coop));
   }
 
   if (main_frame->waiting_for_init_) {
@@ -9096,17 +9094,7 @@ void RenderFrameHostImpl::CheckSandboxFlags() {
   if (active_sandbox_flags_ == *active_sandbox_flags_control_)
     return;
 
-  base::debug::ScopedCrashKeyString scoped_url(
-      base::debug::AllocateCrashKeyString("url",
-                                          base::debug::CrashKeySize::Size256),
-      GetLastCommittedURL().possibly_invalid_spec());
-  base::debug::ScopedCrashKeyString scoped_sandbox(
-      base::debug::AllocateCrashKeyString("sandbox",
-                                          base::debug::CrashKeySize::Size256),
-      base::StringPrintf("%u, %u", uint32_t(active_sandbox_flags_),
-                         uint32_t(*active_sandbox_flags_control_)));
   DCHECK(false);
-  base::debug::DumpWithoutCrashing();
 }
 
 void RenderFrameHostImpl::SetEmbeddingToken(

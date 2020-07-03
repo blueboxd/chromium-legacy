@@ -12,7 +12,12 @@ function expect(expected, message) {
 
 chrome.test.runTests([function setAndCheckContentSettings() {
   cs['plugins'].set({
-    'primaryPattern': 'http://drive.google.com:443/*',
+    'primaryPattern': 'http://drive.google.com/*',
+    'secondaryPattern': '<all_urls>',
+    'setting': 'allow'
+  });
+  cs['plugins'].set({
+    'primaryPattern': 'http://docs.google.com:*/*',
     'secondaryPattern': '<all_urls>',
     'setting': 'allow'
   });
@@ -40,18 +45,18 @@ chrome.test.runTests([function setAndCheckContentSettings() {
       {'primaryUrl': 'http://drive.google.com:443/'},
       expect({'setting': 'allow'}, 'Flash should be allowed on this page'));
   cs['plugins'].get(
+      {'primaryUrl': 'http://docs.google.com:100/'},
+      expect({'setting': 'allow'}, 'Flash should be allowed on this page'));
+  cs['plugins'].get(
       {'primaryUrl': 'https://drive.google.com:443/'},
-      expect({'setting': 'block'}, 'Flash should be allowed on this page'));
+      expect({'setting': 'block'}, 'Flash should be blocked on this page'));
   cs['plugins'].get(
       {'primaryUrl': 'http://maps.google.com:443/'},
-      expect({'setting': 'block'}, 'Flash should be allowed on this page'));
+      expect({'setting': 'block'}, 'Flash should be blocked on this page'));
   cs['plugins'].get(
       {'primaryUrl': 'http://example.com:443/'},
-      expect({'setting': 'block'}, 'Flash should be allowed on this page'));
+      expect({'setting': 'block'}, 'Flash should be blocked on this page'));
   cs['plugins'].get(
       {'primaryUrl': 'http://mail.google.com:443/'},
-      expect(
-          {'setting': 'block'},
-          'Flash should be blocked on this page' +
-              ' because wildcards are not allowed'));
+      expect({'setting': 'block'}, 'Flash should be blocked on this page'));
 }]);

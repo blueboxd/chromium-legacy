@@ -28,8 +28,6 @@ class SingleThreadTaskRunner;
 
 namespace gpu {
 
-class VulkanCommandBuffer;
-class VulkanCommandPool;
 class VulkanDeviceQueue;
 
 class COMPONENT_EXPORT(VULKAN) VulkanSwapChain {
@@ -43,7 +41,6 @@ class COMPONENT_EXPORT(VULKAN) VulkanSwapChain {
     VkImage image() const { return image_; }
     uint32_t image_index() const { return image_index_; }
     VkImageLayout image_layout() const { return image_layout_; }
-    void set_image_layout(VkImageLayout layout) { image_layout_ = layout; }
 
     // Take the begin write semaphore. The ownership of the semaphore will be
     // transferred to the caller.
@@ -73,6 +70,7 @@ class COMPONENT_EXPORT(VULKAN) VulkanSwapChain {
                   const VkSurfaceFormatKHR& surface_format,
                   const gfx::Size& image_size,
                   uint32_t min_image_count,
+                  VkImageUsageFlags image_usage_flags,
                   VkSurfaceTransformFlagBitsKHR pre_transform,
                   bool use_protected_memory,
                   std::unique_ptr<VulkanSwapChain> old_swap_chain);
@@ -117,6 +115,7 @@ class COMPONENT_EXPORT(VULKAN) VulkanSwapChain {
                            const VkSurfaceFormatKHR& surface_format,
                            const gfx::Size& image_size,
                            uint32_t min_image_count,
+                           VkImageUsageFlags image_usage_flags,
                            VkSurfaceTransformFlagBitsKHR pre_transform,
                            bool use_protected_memory,
                            std::unique_ptr<VulkanSwapChain> old_swap_chain)
@@ -131,7 +130,8 @@ class COMPONENT_EXPORT(VULKAN) VulkanSwapChain {
                               uint32_t* image_index,
                               VkImageLayout* layout,
                               VkSemaphore* semaphore);
-  void EndWriteCurrentImage(VkImageLayout layout, VkSemaphore semaphore);
+  void EndWriteCurrentImage(VkSemaphore semaphore);
+
   bool PresentBuffer(const gfx::Rect& rect) EXCLUSIVE_LOCKS_REQUIRED(lock_);
   bool AcquireNextImage() EXCLUSIVE_LOCKS_REQUIRED(lock_);
   // Wait until PostSubBufferAsync() is finished on ThreadPool.
@@ -143,7 +143,6 @@ class COMPONENT_EXPORT(VULKAN) VulkanSwapChain {
   VulkanDeviceQueue* device_queue_ = nullptr;
   bool is_incremental_present_supported_ = false;
   VkSwapchainKHR swap_chain_ GUARDED_BY(lock_) = VK_NULL_HANDLE;
-  std::unique_ptr<VulkanCommandPool> command_pool_;
   gfx::Size size_;
 
   struct ImageData {
@@ -154,8 +153,7 @@ class COMPONENT_EXPORT(VULKAN) VulkanSwapChain {
     ImageData& operator=(ImageData&& other);
 
     VkImage image = VK_NULL_HANDLE;
-    VkImageLayout layout = VK_IMAGE_LAYOUT_UNDEFINED;
-    std::unique_ptr<VulkanCommandBuffer> command_buffer;
+    VkImageLayout image_layout = VK_IMAGE_LAYOUT_UNDEFINED;
     // Semaphore passed to vkQueuePresentKHR to wait on.
     VkSemaphore present_begin_semaphore = VK_NULL_HANDLE;
     // Semaphore signaled when present engine is done with the image.

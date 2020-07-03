@@ -12,6 +12,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/browser/enterprise/reporting/browser_report_generator.h"
+#include "chrome/browser/enterprise/reporting/browser_report_generator_desktop.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -43,7 +44,9 @@ class ReportRequestQueueGeneratorTest : public ::testing::Test {
   using ReportRequest = definition::ReportRequest;
 
   ReportRequestQueueGeneratorTest()
-      : profile_manager_(TestingBrowserProcess::GetGlobal()) {}
+      : profile_manager_(TestingBrowserProcess::GetGlobal()),
+        browser_report_generator_(
+            std::make_unique<BrowserReportGeneratorDesktop>()) {}
 
   ~ReportRequestQueueGeneratorTest() override = default;
 

@@ -39,8 +39,10 @@
 <translation id="428217921675623177">Tugas cetak yang melebihi 90 hari akan dialih keluar</translation>
 <translation id="4429881212383817840">Tiket Kerberos akan tamat tempoh tidak lama lagi</translation>
 <translation id="445059817448385655">Kata laluan lama</translation>
+<translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> daripada <ph name="TOTAL_PAGE_NUMBER" />. Tekan enter untuk membatalkan tugas cetak.</translation>
 <translation id="467510802200863975">Kata laluan tidak sepadan</translation>
 <translation id="4731797938093519117">Akses ibu bapa</translation>
+<translation id="4808449224298348341">Tugas cetak <ph name="DOCUMENT_TITLE" /> dibatalkan</translation>
 <translation id="4890353053343094602">Pilih kata laluan baharu secepat mungkin</translation>
 <translation id="4932733599132424254">Tarikh</translation>
 <translation id="5212543919916444558">Saya tidak menemui apa-apa pada skrin anda yang boleh saya bantu.

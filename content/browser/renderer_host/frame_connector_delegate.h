@@ -76,7 +76,7 @@ class CONTENT_EXPORT FrameConnectorDelegate {
   // Sends the given intrinsic sizing information from a sub-frame to
   // its corresponding remote frame in the parent frame's renderer.
   virtual void SendIntrinsicSizingInfoToParent(
-      blink::mojom::IntrinsicSizingInfoPtr) {}
+      blink::mojom::IntrinsicSizingInfoPtr);
 
   // Sends new resize parameters to the sub-frame's renderer.
   void SynchronizeVisualProperties(

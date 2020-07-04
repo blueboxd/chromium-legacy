@@ -33,6 +33,7 @@
 #include "base/unguessable_token.h"
 #include "mojo/public/mojom/base/text_direction.mojom-blink-forward.h"
 #include "third_party/blink/public/common/feature_policy/document_policy.h"
+#include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/user_activation_state.h"
 #include "third_party/blink/public/common/frame/user_activation_update_source.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink.h"

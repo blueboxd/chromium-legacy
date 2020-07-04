@@ -208,6 +208,23 @@ class RenderWidgetHostInputEventRouterTest : public testing::Test {
         &delegate_, process_host_root_.get(),
         process_host_root_->GetNextRoutingID(),
         /*hidden=*/false, std::make_unique<FrameTokenMessageQueue>());
+
+    mojo::AssociatedRemote<blink::mojom::WidgetHost> blink_widget_host;
+    mojo::AssociatedRemote<blink::mojom::Widget> blink_widget;
+    auto blink_widget_receiver =
+        blink_widget.BindNewEndpointAndPassDedicatedReceiverForTesting();
+    widget_host_root_->BindWidgetInterfaces(
+        blink_widget_host.BindNewEndpointAndPassDedicatedReceiverForTesting(),
+        blink_widget.Unbind());
+
+    mojo::AssociatedRemote<blink::mojom::FrameWidgetHost> frame_widget_host;
+    mojo::AssociatedRemote<blink::mojom::FrameWidget> frame_widget;
+    auto frame_widget_receiver =
+        frame_widget.BindNewEndpointAndPassDedicatedReceiverForTesting();
+    widget_host_root_->BindFrameWidgetInterfaces(
+        frame_widget_host.BindNewEndpointAndPassDedicatedReceiverForTesting(),
+        frame_widget.Unbind());
+
     view_root_ =
         std::make_unique<MockRootRenderWidgetHostView>(widget_host_root_.get());
 

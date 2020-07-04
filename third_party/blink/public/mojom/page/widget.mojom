@@ -9,6 +9,7 @@ import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/text_direction.mojom";
 import "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom";
 import "third_party/blink/public/mojom/input/input_handler.mojom";
+import "ui/base/mojom/ui_base_types.mojom";
 import "ui/base/ime/mojom/text_input_state.mojom";
 import "ui/base/cursor/mojom/cursor.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
@@ -94,6 +95,11 @@ interface FrameWidget {
   [EnableIf=is_mac]
   GetStringAtPoint(gfx.mojom.Point point_in_local_root)
       => (ui.mojom.AttributedString? string, gfx.mojom.Point baseline_point);
+
+  // Sent to inform the renderer to invoke a context menu.
+  // The parameter specifies the location in the render widget's coordinates.
+  ShowContextMenu(
+      ui.mojom.MenuSourceType source_type, gfx.mojom.Point location);
 };
 
 // Implemented in Browser, this interface defines frame-widget-specific methods that

@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/platform/widget/frame_widget.h"
 #include "third_party/blink/renderer/platform/widget/widget_base_client.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
 
 namespace gfx {
 class Point;
@@ -275,7 +276,6 @@ class CORE_EXPORT WebFrameWidgetBase
   void DidAcquirePointerLock() override;
   void DidNotAcquirePointerLock() override;
   void DidLosePointerLock() override;
-  void ShowContextMenu(WebMenuSourceType) override;
   void SetCompositorVisible(bool visible) override;
   void SetDisplayMode(mojom::blink::DisplayMode) override;
   void SetWindowSegments(WebVector<WebRect> window_segments) override;
@@ -363,6 +363,9 @@ class CORE_EXPORT WebFrameWidgetBase
   void UpdateRenderThrottlingStatusForSubFrame(
       bool is_throttled,
       bool subtree_throttled) override {}
+  void ShowContextMenu(ui::mojom::MenuSourceType source_type,
+                       const gfx::Point& location) override;
+
   // Sets the inert bit on an out-of-process iframe, causing it to ignore
   // input.
   void SetIsInertForSubFrame(bool inert) override {}
@@ -370,6 +373,8 @@ class CORE_EXPORT WebFrameWidgetBase
   void GetStringAtPoint(const gfx::Point& point_in_local_root,
                         GetStringAtPointCallback callback) override;
 #endif
+
+  base::Optional<gfx::Point> GetAndResetContextMenuLocation();
 
   // Called when the FrameView for this Widget's local root is created.
   virtual void DidCreateLocalRootView() {}
@@ -569,6 +574,8 @@ class CORE_EXPORT WebFrameWidgetBase
   base::Optional<bool> has_touch_handlers_;
 
   Vector<mojom::blink::EditCommandPtr> edit_commands_;
+
+  base::Optional<gfx::Point> host_context_menu_location_;
 
   friend class WebViewImpl;
   friend class ReportTimeSwapPromise;

@@ -403,11 +403,12 @@ WebFrameTestProxy::GetEffectiveConnectionType() {
 }
 
 void WebFrameTestProxy::ShowContextMenu(
-    const blink::WebContextMenuData& context_menu_data) {
+    const blink::WebContextMenuData& context_menu_data,
+    const base::Optional<gfx::Point>& location) {
   WebWidgetTestProxy* widget_proxy = GetLocalRootWebWidgetTestProxy();
   widget_proxy->event_sender()->SetContextMenuData(context_menu_data);
 
-  RenderFrameImpl::ShowContextMenu(context_menu_data);
+  RenderFrameImpl::ShowContextMenu(context_menu_data, location);
 }
 
 void WebFrameTestProxy::DidDispatchPingLoader(const blink::WebURL& url) {

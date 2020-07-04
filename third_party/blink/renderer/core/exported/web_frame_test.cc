@@ -192,6 +192,7 @@
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "ui/base/ime/mojom/text_input_state.mojom-blink.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "v8/include/v8.h"
 
@@ -12626,7 +12627,8 @@ class ContextMenuWebFrameClient
   ~ContextMenuWebFrameClient() override = default;
 
   // WebLocalFrameClient:
-  void ShowContextMenu(const WebContextMenuData& data) override {
+  void ShowContextMenu(const WebContextMenuData& data,
+                       const base::Optional<gfx::Point>&) override {
     menu_data_ = data;
   }
 
@@ -12761,7 +12763,9 @@ TEST_F(WebFrameTest, ContextMenuDataNonLocatedMenu) {
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(mouse_event, ui::LatencyInfo()));
 
-  web_view->MainFrameWidget()->ShowContextMenu(kMenuSourceTouch);
+  web_view->MainFrameImpl()->LocalRootFrameWidget()->ShowContextMenu(
+      ui::mojom::MenuSourceType::TOUCH,
+      web_view->MainFrameImpl()->GetPositionInViewportForTesting());
 
   RunPendingTasks();
   web_view_helper.Reset();

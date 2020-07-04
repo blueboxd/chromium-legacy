@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/security_context/insecure_request_policy.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_init.h"

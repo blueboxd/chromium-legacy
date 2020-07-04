@@ -27,6 +27,10 @@ mojom("mojom") {
           cpp = "::ui::DialogButton"
         },
         {
+          mojom = "ui.mojom.MenuSourceType"
+          cpp = "::ui::MenuSourceType"
+        },
+        {
           mojom = "ui.mojom.ModalType"
           cpp = "::ui::ModalType"
         },

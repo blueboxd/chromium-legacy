@@ -684,7 +684,9 @@ class CONTENT_EXPORT RenderFrameImpl
   base::UnguessableToken GetDevToolsFrameToken() override;
   void AbortClientNavigation() override;
   void DidChangeSelection(bool is_empty_selection) override;
-  void ShowContextMenu(const blink::WebContextMenuData& data) override;
+  void ShowContextMenu(
+      const blink::WebContextMenuData& data,
+      const base::Optional<gfx::Point>& host_context_menu_location) override;
   void FrameRectsChanged(const blink::WebRect& frame_rect) override;
   void FocusedElementChanged(const blink::WebElement& element) override;
   void OnMainFrameDocumentIntersectionChanged(

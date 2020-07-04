@@ -26,6 +26,9 @@ FrameConnectorDelegate::GetRootRenderWidgetHostView() {
   return nullptr;
 }
 
+void FrameConnectorDelegate::SendIntrinsicSizingInfoToParent(
+    blink::mojom::IntrinsicSizingInfoPtr) {}
+
 void FrameConnectorDelegate::SynchronizeVisualProperties(
     const viz::FrameSinkId& frame_sink_id,
     const FrameVisualProperties& visual_properties) {

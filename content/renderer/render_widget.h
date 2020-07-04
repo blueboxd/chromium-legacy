@@ -231,12 +231,6 @@ class CONTENT_EXPORT RenderWidget
   const gfx::Size& size() const { return size_; }
   bool is_fullscreen_granted() const { return is_fullscreen_granted_; }
   bool is_hidden() const { return is_hidden_; }
-  bool has_host_context_menu_location() const {
-    return has_host_context_menu_location_;
-  }
-  gfx::Point host_context_menu_location() const {
-    return host_context_menu_location_;
-  }
   const gfx::Size& visible_viewport_size() const {
     return visible_viewport_size_;
   }
@@ -482,8 +476,6 @@ class CONTENT_EXPORT RenderWidget
   void OnCreateVideoAck(int32_t video_id);
   void OnUpdateVideoAck(int32_t video_id);
   void OnRequestSetBoundsAck();
-  void OnShowContextMenu(ui::MenuSourceType source_type,
-                         const gfx::Point& location);
 
   void OnGetFPS();
   void OnUpdateScreenRects(const gfx::Rect& widget_screen_rect,
@@ -706,9 +698,6 @@ class CONTENT_EXPORT RenderWidget
   // are sent to each frame in the list for events such as changing
   // visibility state for example.
   base::ObserverList<RenderFrameImpl>::Unchecked render_frames_;
-
-  bool has_host_context_menu_location_ = false;
-  gfx::Point host_context_menu_location_;
 
   // Mouse Lock dispatcher attached to this view.
   std::unique_ptr<RenderWidgetMouseLockDispatcher> mouse_lock_dispatcher_;

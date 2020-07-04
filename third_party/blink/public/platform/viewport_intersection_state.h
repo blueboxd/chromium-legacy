@@ -5,8 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_VIEWPORT_INTERSECTION_STATE_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_VIEWPORT_INTERSECTION_STATE_H_
 
-#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_rect.h"
+#include "third_party/blink/public/platform/web_size.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace blink {

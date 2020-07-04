@@ -4511,14 +4511,16 @@ void RenderFrameImpl::DidChangeSelection(bool is_empty_selection) {
   SyncSelectionIfRequired();
 }
 
-void RenderFrameImpl::ShowContextMenu(const blink::WebContextMenuData& data) {
+void RenderFrameImpl::ShowContextMenu(
+    const blink::WebContextMenuData& data,
+    const base::Optional<gfx::Point>& host_context_menu_location) {
   UntrustworthyContextMenuParams params = ContextMenuParamsBuilder::Build(data);
-  if (GetLocalRootRenderWidget()->has_host_context_menu_location()) {
+  if (host_context_menu_location.has_value()) {
     // If the context menu request came from the browser, it came with a
-    // position that was stored on RenderWidget and is relative to the
-    // WindowScreenRect.
-    params.x = GetLocalRootRenderWidget()->host_context_menu_location().x();
-    params.y = GetLocalRootRenderWidget()->host_context_menu_location().y();
+    // position that was stored on blink::WebFrameWidgetBase and is relative to
+    // the WindowScreenRect.
+    params.x = host_context_menu_location.value().x();
+    params.y = host_context_menu_location.value().y();
   } else {
     // If the context menu request came from the renderer, the position in
     // |params| is real, but they come in blink viewport coordiates, which

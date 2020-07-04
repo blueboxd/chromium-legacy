@@ -428,8 +428,9 @@ class BLINK_EXPORT WebLocalFrameClient {
   // UI ------------------------------------------------------------------
 
   // Shows a context menu with commands relevant to a specific element on
-  // the given frame. Additional context data is supplied.
-  virtual void ShowContextMenu(const WebContextMenuData&) {}
+  // the given frame. Additional context data and location are supplied.
+  virtual void ShowContextMenu(const WebContextMenuData&,
+                               const base::Optional<gfx::Point>&) {}
 
   // Called when the frame rects changed.
   virtual void FrameRectsChanged(const WebRect&) {}

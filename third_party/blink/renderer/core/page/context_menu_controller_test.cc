@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/page/context_menu_controller.h"
 
+#include "base/optional.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/context_menu_data/edit_flags.h"
 #include "third_party/blink/public/common/input/web_menu_source_type.h"
@@ -12,6 +13,7 @@
 #include "third_party/blink/renderer/core/dom/xml_document.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
+#include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
@@ -45,7 +47,8 @@ class MockWebMediaPlayerForContextMenu : public EmptyWebMediaPlayer {
 
 class TestWebFrameClientImpl : public frame_test_helpers::TestWebFrameClient {
  public:
-  void ShowContextMenu(const WebContextMenuData& data) override {
+  void ShowContextMenu(const WebContextMenuData& data,
+                       const base::Optional<gfx::Point>&) override {
     context_menu_data_ = data;
   }
 
@@ -574,11 +577,11 @@ TEST_F(ContextMenuControllerTest, ShowNonLocatedContextMenuEvent) {
   EXPECT_EQ(context_menu_data.selected_text, "Sample");
 
   // Adjust the selection from the start of |input| to the middle.
-  LayoutPoint middle_point((rect->left() + rect->right()) / 2,
-                           (rect->top() + rect->bottom()) / 2);
-  LocalMainFrame()->MoveRangeSelectionExtent(
-      gfx::Point(middle_point.X().ToInt(), middle_point.Y().ToInt()));
-  GetWebView()->MainFrameWidget()->ShowContextMenu(kMenuSourceTouchHandle);
+  gfx::Point middle_point((rect->left() + rect->right()) / 2,
+                          (rect->top() + rect->bottom()) / 2);
+  LocalMainFrame()->MoveRangeSelectionExtent(middle_point);
+  LocalMainFrame()->LocalRootFrameWidget()->ShowContextMenu(
+      ui::mojom::MenuSourceType::TOUCH_HANDLE, middle_point);
 
   context_menu_data = GetWebFrameClient().GetContextMenuData();
   EXPECT_NE(context_menu_data.selected_text, "");
@@ -590,7 +593,9 @@ TEST_F(ContextMenuControllerTest, ShowNonLocatedContextMenuEvent) {
   // invisible.
   LocalMainFrame()->MoveRangeSelectionExtent(
       gfx::Point(rect->right(), rect->bottom()));
-  GetWebView()->MainFrameWidget()->ShowContextMenu(kMenuSourceTouchHandle);
+  LocalMainFrame()->LocalRootFrameWidget()->ShowContextMenu(
+      ui::mojom::MenuSourceType::TOUCH_HANDLE,
+      gfx::Point(rect->right() / 2, rect->bottom() / 2));
 
   context_menu_data = GetWebFrameClient().GetContextMenuData();
   EXPECT_EQ(context_menu_data.selected_text, "Sample Input Text");

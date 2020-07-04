@@ -693,19 +693,27 @@ void WebFrameWidgetBase::PointerLockMouseEvent(
   }
 }
 
-void WebFrameWidgetBase::ShowContextMenu(WebMenuSourceType source_type) {
+void WebFrameWidgetBase::ShowContextMenu(
+    ui::mojom::blink::MenuSourceType source_type,
+    const gfx::Point& location) {
+  host_context_menu_location_ = location;
+
   if (!GetPage())
     return;
-
   GetPage()->GetContextMenuController().ClearContextMenu();
   {
     ContextMenuAllowedScope scope;
     if (LocalFrame* focused_frame =
             GetPage()->GetFocusController().FocusedFrame()) {
-      focused_frame->GetEventHandler().ShowNonLocatedContextMenu(nullptr,
-                                                                 source_type);
+      focused_frame->GetEventHandler().ShowNonLocatedContextMenu(
+          nullptr, static_cast<blink::WebMenuSourceType>(source_type));
     }
   }
+}
+
+base::Optional<gfx::Point>
+WebFrameWidgetBase::GetAndResetContextMenuLocation() {
+  return std::move(host_context_menu_location_);
 }
 
 LocalFrame* WebFrameWidgetBase::FocusedLocalFrameInWidget() const {

@@ -35,6 +35,7 @@
 #include <string>
 
 #include "base/bind_helpers.h"
+#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/time.h"
@@ -149,6 +150,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-blink.h"
+#include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "v8/include/v8.h"
 
@@ -3174,7 +3176,10 @@ TEST_F(WebViewTest, BlinkCaretOnClosingContextMenu) {
   EXPECT_TRUE(main_frame->GetFrame()->Selection().IsCaretBlinkingSuspended());
 
   // Caret blinking is still suspended after showing context menu.
-  web_view->MainFrameWidget()->ShowContextMenu(kMenuSourceMouse);
+  web_view->MainFrameImpl()->LocalRootFrameWidget()->ShowContextMenu(
+      ui::mojom::MenuSourceType::MOUSE,
+      web_view->MainFrameImpl()->GetPositionInViewportForTesting());
+
   EXPECT_TRUE(main_frame->GetFrame()->Selection().IsCaretBlinkingSuspended());
 
   // Caret blinking will be resumed only after context menu is closed.

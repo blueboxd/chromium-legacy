@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DOM_WINDOW_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DOM_WINDOW_H_
 
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/cross_origin_opener_policy.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/transferables.h"
 #include "third_party/blink/renderer/core/core_export.h"

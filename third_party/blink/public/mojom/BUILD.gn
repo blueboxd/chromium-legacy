@@ -216,6 +216,7 @@ mojom("mojom_platform") {
     "//third_party/blink/public/mojom/usb",
     "//ui/base/cursor/mojom",
     "//ui/base/ime/mojom",
+    "//ui/base/mojom/",
     "//ui/display/mojom",
     "//ui/events/mojom",
     "//ui/gfx/geometry/mojom",

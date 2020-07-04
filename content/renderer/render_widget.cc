@@ -513,7 +513,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(RenderWidget, message)
     IPC_MESSAGE_HANDLER(WidgetMsg_DisableDeviceEmulation,
                         OnDisableDeviceEmulation)
-    IPC_MESSAGE_HANDLER(WidgetMsg_ShowContextMenu, OnShowContextMenu)
     IPC_MESSAGE_HANDLER(WidgetMsg_Close, OnClose)
     IPC_MESSAGE_HANDLER(WidgetMsg_UpdateVisualProperties,
                         OnUpdateVisualProperties)
@@ -1562,15 +1561,6 @@ void RenderWidget::SetPendingWindowRect(const WebRect& rect) {
     window_screen_rect_ = rect;
     widget_screen_rect_ = rect;
   }
-}
-
-void RenderWidget::OnShowContextMenu(ui::MenuSourceType source_type,
-                                     const gfx::Point& location) {
-  has_host_context_menu_location_ = true;
-  host_context_menu_location_ = location;
-  GetWebWidget()->ShowContextMenu(
-      static_cast<blink::WebMenuSourceType>(source_type));
-  has_host_context_menu_location_ = false;
 }
 
 void RenderWidget::ImeSetCompositionForPepper(

@@ -17,4 +17,7 @@ specific_include_rules = {
   "web_frame_widget_base.cc": [
     "+cc/trees/swap_promise.h",
   ],
+  "web_frame_widget_base.h": [
+    "+ui/base/mojom/ui_base_types.mojom-shared.h",
+  ],
 }

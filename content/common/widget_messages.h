@@ -60,12 +60,6 @@ IPC_STRUCT_TRAITS_END()
 // Browser -> Renderer Messages.
 //
 
-// Sent to inform the renderer to invoke a context menu.
-// The parameter specifies the location in the render widget's coordinates.
-IPC_MESSAGE_ROUTED2(WidgetMsg_ShowContextMenu,
-                    ui::MenuSourceType,
-                    gfx::Point /* location where menu should be shown */)
-
 // Tells the render widget to close.
 // Expects a Close_ACK message when finished.
 IPC_MESSAGE_ROUTED0(WidgetMsg_Close)

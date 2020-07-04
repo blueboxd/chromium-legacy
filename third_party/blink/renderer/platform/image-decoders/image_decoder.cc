@@ -27,6 +27,7 @@
 #include "build/build_config.h"
 #include "media/media_buildflags.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/image-decoders/bmp/bmp_image_decoder.h"
 #include "third_party/blink/renderer/platform/image-decoders/fast_shared_buffer_reader.h"
 #include "third_party/blink/renderer/platform/image-decoders/gif/gif_image_decoder.h"
@@ -152,7 +153,8 @@ String SniffMimeTypeInternal(scoped_refptr<SegmentReader> reader) {
 
 }  // namespace
 
-const size_t ImageDecoder::kNoDecodedImageByteLimit;
+const size_t ImageDecoder::kNoDecodedImageByteLimit =
+    Platform::kNoDecodedImageByteLimit;
 
 std::unique_ptr<ImageDecoder> ImageDecoder::Create(
     scoped_refptr<SegmentReader> data,

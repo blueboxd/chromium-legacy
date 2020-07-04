@@ -199,9 +199,8 @@ void TouchSelectionControllerClientChildFrame::RunContextMenu() {
   gfx::PointF origin = rwhv_->TransformPointToRootCoordSpaceF(gfx::PointF());
   anchor_point.Offset(-origin.x(), -origin.y());
   RenderWidgetHostImpl* host = rwhv_->host();
-  host->Send(new WidgetMsg_ShowContextMenu(host->GetRoutingID(),
-                                           ui::MENU_SOURCE_TOUCH_EDIT_MENU,
-                                           gfx::ToRoundedPoint(anchor_point)));
+  host->GetAssociatedFrameWidget()->ShowContextMenu(
+      ui::MENU_SOURCE_TOUCH_EDIT_MENU, gfx::ToRoundedPoint(anchor_point));
 
   // Hide selection handles after getting rect-between-bounds from touch
   // selection controller; otherwise, rect would be empty and the above

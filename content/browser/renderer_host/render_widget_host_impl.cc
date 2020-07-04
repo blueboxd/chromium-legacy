@@ -1844,7 +1844,7 @@ void RenderWidgetHostImpl::SetCursor(const ui::Cursor& cursor) {
 void RenderWidgetHostImpl::ShowContextMenuAtPoint(
     const gfx::Point& point,
     const ui::MenuSourceType source_type) {
-  Send(new WidgetMsg_ShowContextMenu(GetRoutingID(), source_type, point));
+  GetAssociatedFrameWidget()->ShowContextMenu(source_type, point);
 }
 
 RenderProcessHost::Priority RenderWidgetHostImpl::GetPriority() {

@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/picture_in_picture_controller.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
@@ -465,12 +466,22 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
   if (from_touch && !ShouldShowContextMenuFromTouch(data))
     return false;
 
+  base::Optional<gfx::Point> host_context_menu_location;
+  auto* main_frame =
+      WebLocalFrameImpl::FromFrame(DynamicTo<LocalFrame>(page_->MainFrame()));
+  if (main_frame) {
+    host_context_menu_location =
+        main_frame->FrameWidgetImpl()->GetAndResetContextMenuLocation();
+  }
+
   WebLocalFrameImpl* selected_web_frame =
       WebLocalFrameImpl::FromFrame(selected_frame);
   if (!selected_web_frame || !selected_web_frame->Client())
     return false;
 
-  selected_web_frame->Client()->ShowContextMenu(data);
+  selected_web_frame->Client()->ShowContextMenu(data,
+                                                host_context_menu_location);
+
   return true;
 }
 

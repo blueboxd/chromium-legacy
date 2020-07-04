@@ -189,9 +189,6 @@ class WebWidget {
   // reasons such as the user exiting lock, window focus changing, etc.
   virtual void DidLosePointerLock() {}
 
-  // Called by client to request showing the context menu.
-  virtual void ShowContextMenu(WebMenuSourceType) {}
-
   // Accessor to the WebWidget scheduing state.
   virtual scheduler::WebRenderWidgetSchedulingState*
   RendererWidgetSchedulingState() = 0;

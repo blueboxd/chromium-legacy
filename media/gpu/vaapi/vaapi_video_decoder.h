@@ -139,9 +139,6 @@ class VaapiVideoDecoder : public DecoderInterface,
   // Color space of the video frame.
   VideoColorSpace color_space_;
 
-  // The video coded size.
-  gfx::Size pic_size_;
-
   // Ratio of natural size to |visible_rect_| of the output frames.
   double pixel_aspect_ratio_ = 0.0;
 

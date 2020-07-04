@@ -2806,10 +2806,13 @@
 
   <!-- Apps > Manage your apps > Parallels -->
   <message name="IDS_SETTINGS_APPS_PLUGIN_VM_PERMISSION_DIALOG_CAMERA_LABEL" desc="Label for the Parallels permissions dialog when camera permissions are being adjusted">
-    The change in camera setting requires Parallels Desktop to relaunch
+    The change in camera setting requires Parallels Desktop to relaunch. Relaunch Parallels Desktop to proceed.
   </message>
   <message name="IDS_SETTINGS_APPS_PLUGIN_VM_PERMISSION_DIALOG_MICROPHONE_LABEL" desc="Label for the Parallels permissions dialog when microphone permissions are being adjusted">
-    The change in microphone setting requires Parallels Desktop to relaunch
+    The change in microphone setting requires Parallels Desktop to relaunch. Relaunch Parallels Desktop to proceed.
+  </message>
+  <message name="IDS_SETTINGS_APPS_PLUGIN_VM_PERMISSION_DIALOG_RELAUNCH_BUTTON" desc="Label for the relaunch button in the Plugin Vm permissions dialog">
+    Relaunch
   </message>
 
   <!-- Apps > Manage your apps > Parallels > Shared folders -->

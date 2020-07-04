@@ -46,14 +46,15 @@ Polymer({
   },
 
   /** @private */
-  onOkTap_() {
+  onRelaunchTap_() {
+    const proxy = settings.PluginVmBrowserProxyImpl.getInstance();
     // Reinitializing PermissionSetting Object to keep the closure compiler
     // happy.
-    settings.PluginVmBrowserProxyImpl.getInstance().setPluginVmPermission({
+    proxy.setPluginVmPermission({
       permissionType: this.pendingPermissionChange.permissionType,
       proposedValue: this.pendingPermissionChange.proposedValue
     });
-    // TODO(1071872): Restart Plugin Vm.
+    proxy.relaunchPluginVm();
     this.$.dialog.close();
   },
 

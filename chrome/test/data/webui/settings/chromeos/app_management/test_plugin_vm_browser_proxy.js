@@ -10,6 +10,7 @@ class TestPluginVmBrowserProxy extends TestBrowserProxy {
       'removePluginVmSharedPath',
       'wouldPermissionChangeRequireRelaunch',
       'setPluginVmPermission',
+      'relaunchPluginVm',
     ]);
     this.pluginVmRunning = false;
     this.permissions = [true, true];  // [0]Camera, [1]Microphone
@@ -41,5 +42,10 @@ class TestPluginVmBrowserProxy extends TestBrowserProxy {
     this.methodCalled('setPluginVmPermission', permissionSetting);
     this.permissions[permissionSetting.permissionType] =
         permissionSetting.proposedValue;
+  }
+
+  /** @override */
+  relaunchPluginVm() {
+    this.methodCalled('relaunchPluginVm');
   }
 }

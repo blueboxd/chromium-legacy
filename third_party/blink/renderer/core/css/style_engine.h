@@ -387,6 +387,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   }
   bool NeedsFullStyleUpdate() const;
 
+  void UpdateViewport();
   void UpdateViewportStyle();
   void UpdateStyleAndLayoutTree();
   void RecalcStyle();
@@ -486,7 +487,6 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
       InvalidationScope invalidation_scope);
   void InvalidateInitialData();
 
-  void UpdateViewport();
   void UpdateActiveUserStyleSheets();
   void UpdateActiveStyleSheets();
   void UpdateGlobalRuleSet() {

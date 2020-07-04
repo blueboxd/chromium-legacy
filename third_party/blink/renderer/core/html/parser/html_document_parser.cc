@@ -36,7 +36,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/css/media_values_cached.h"
-#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -1020,10 +1020,10 @@ void HTMLDocumentParser::StartBackgroundParser() {
   DCHECK(GetDocument());
   have_background_parser_ = true;
 
-  // Make sure that a resolver is set up, so that the correct viewport
+  // Make sure that the viewport is up-to-date, so that the correct viewport
   // dimensions will be fed to the background parser and preload scanner.
   if (GetDocument()->Loader())
-    GetDocument()->EnsureStyleResolver();
+    GetDocument()->GetStyleEngine().UpdateViewport();
 
   std::unique_ptr<BackgroundHTMLParser::Configuration> config =
       std::make_unique<BackgroundHTMLParser::Configuration>();

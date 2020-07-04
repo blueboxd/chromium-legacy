@@ -337,7 +337,7 @@ suite('<app-management-plugin-vm-detail-view>', function() {
         !!pluginVmDetailView.$$('app-management-plugin-vm-permission-dialog'));
   });
 
-  test('ok camera permission dialog', async function() {
+  test('Relaunch camera permission dialog', async function() {
     const camera_toggle = pluginVmDetailView.$$('#camera-permission')
                               .$$('#toggle-row')
                               .$$('#toggle');
@@ -350,6 +350,7 @@ suite('<app-management-plugin-vm-detail-view>', function() {
         0,
         pluginVmBrowserProxy.getCallCount(
             'wouldPermissionChangeRequireRelaunch'));
+    assertEquals(0, pluginVmBrowserProxy.getCallCount('relaunchPluginVm'));
     assertEquals(0, pluginVmBrowserProxy.getCallCount('setPluginVmPermission'));
     pluginVmBrowserProxy.pluginVmRunning = true;
 
@@ -368,7 +369,7 @@ suite('<app-management-plugin-vm-detail-view>', function() {
     assertPermissions(
         /*expectedCameraState=*/ true, /*expectedMicrophoneState=*/ true);
     const dialogClosedPromise = test_util.eventToPromise('close', dialog);
-    dialog.$$('#dialogOkButton').click();
+    dialog.$$('#dialogRelaunchButton').click();
     await Promise.all(
         [dialogClosedPromise, fakeHandler.flushPipesForTesting()]);
     syncPermissions();
@@ -377,6 +378,7 @@ suite('<app-management-plugin-vm-detail-view>', function() {
         1,
         pluginVmBrowserProxy.getCallCount(
             'wouldPermissionChangeRequireRelaunch'));
+    assertEquals(1, pluginVmBrowserProxy.getCallCount('relaunchPluginVm'));
     assertEquals(1, pluginVmBrowserProxy.getCallCount('setPluginVmPermission'));
     assertFalse(camera_toggle.checked);
     assertPermissions(
@@ -385,7 +387,7 @@ suite('<app-management-plugin-vm-detail-view>', function() {
         !!pluginVmDetailView.$$('app-management-plugin-vm-permission-dialog'));
   });
 
-  test('ok microphone permission dialog', async function() {
+  test('Relaunch microphone permission dialog', async function() {
     const microphone_toggle = pluginVmDetailView.$$('#microphone-permission')
                                   .$$('#toggle-row')
                                   .$$('#toggle');
@@ -398,6 +400,7 @@ suite('<app-management-plugin-vm-detail-view>', function() {
         0,
         pluginVmBrowserProxy.getCallCount(
             'wouldPermissionChangeRequireRelaunch'));
+    assertEquals(0, pluginVmBrowserProxy.getCallCount('relaunchPluginVm'));
     assertEquals(0, pluginVmBrowserProxy.getCallCount('setPluginVmPermission'));
     pluginVmBrowserProxy.pluginVmRunning = true;
 
@@ -416,7 +419,7 @@ suite('<app-management-plugin-vm-detail-view>', function() {
     assertPermissions(
         /*expectedCameraState=*/ true, /*expectedMicrophoneState=*/ true);
     const dialogClosedPromise = test_util.eventToPromise('close', dialog);
-    dialog.$$('#dialogOkButton').click();
+    dialog.$$('#dialogRelaunchButton').click();
     await Promise.all(
         [dialogClosedPromise, fakeHandler.flushPipesForTesting()]);
     syncPermissions();
@@ -425,6 +428,7 @@ suite('<app-management-plugin-vm-detail-view>', function() {
         1,
         pluginVmBrowserProxy.getCallCount(
             'wouldPermissionChangeRequireRelaunch'));
+    assertEquals(1, pluginVmBrowserProxy.getCallCount('relaunchPluginVm'));
     assertEquals(1, pluginVmBrowserProxy.getCallCount('setPluginVmPermission'));
     assertFalse(microphone_toggle.checked);
     assertPermissions(

@@ -393,15 +393,16 @@ void VaapiVideoDecoder::ApplyResolutionChange() {
   VLOGF(2);
 
   const gfx::Rect visible_rect = decoder_->GetVisibleRect();
-  gfx::Size natural_size = GetNaturalSize(visible_rect, pixel_aspect_ratio_);
-  pic_size_ = decoder_->GetPicSize();
+  const gfx::Size natural_size =
+      GetNaturalSize(visible_rect, pixel_aspect_ratio_);
+  const gfx::Size pic_size = decoder_->GetPicSize();
   const base::Optional<VideoPixelFormat> format =
       GfxBufferFormatToVideoPixelFormat(
           GetBufferFormat(decoder_->GetProfile()));
   CHECK(format);
   auto format_fourcc = Fourcc::FromVideoPixelFormat(*format);
   CHECK(format_fourcc);
-  if (!frame_pool_->Initialize(*format_fourcc, pic_size_, visible_rect,
+  if (!frame_pool_->Initialize(*format_fourcc, pic_size, visible_rect,
                                natural_size,
                                decoder_->GetRequiredNumOfPictures())) {
     DLOG(WARNING) << "Failed Initialize()ing the frame pool.";
@@ -427,7 +428,7 @@ void VaapiVideoDecoder::ApplyResolutionChange() {
     vaapi_wrapper_->DestroyContext();
   }
 
-  vaapi_wrapper_->CreateContext(pic_size_);
+  vaapi_wrapper_->CreateContext(pic_size);
 
   // If we reset during resolution change, then there is no decode tasks. In
   // this case we do nothing and wait for next input. Otherwise, continue
@@ -535,8 +536,6 @@ void VaapiVideoDecoder::Reset(base::OnceClosure reset_cb) {
 bool VaapiVideoDecoder::CreateAcceleratedVideoDecoder() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3);
-
-  pic_size_ = gfx::Size();
 
   if (profile_ >= H264PROFILE_MIN && profile_ <= H264PROFILE_MAX) {
     auto accelerator =

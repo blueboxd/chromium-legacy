@@ -206,7 +206,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'd38c75c5ea103067d9751d085de47c3c6774dd93',
+  'angle_revision': '07193df66c664ecb79b1ec8897018d6db99b7541',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -1220,7 +1220,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'f5fe9513c1e0ac193bd94c9eb59af438cebf9b8a',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '2cce2e5cc0ec629c44c8abe4a17e0860435da176',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1317,7 +1317,7 @@ deps = {
   },
 
   'src/third_party/re2/src':
-    Var('chromium_git') + '/external/github.com/google/re2.git' + '@' + '14d3193228e3b3cfd21094474d64434a4840bae9',
+    Var('chromium_git') + '/external/github.com/google/re2.git' + '@' + 'a65cf8adc4eb975683f1db54ff788caa7a9b4f01',
 
   'src/third_party/r8': {
       'packages': [
@@ -1520,7 +1520,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@f1c56e16607344a1cf7d77923361506ee0f966d8',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@11c598c92843cf8cfb4b20ff63a0130df0771705',
     'condition': 'checkout_src_internal',
   },
 

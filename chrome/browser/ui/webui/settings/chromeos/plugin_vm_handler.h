@@ -39,6 +39,8 @@ class PluginVmHandler : public ::settings::SettingsPageUIHandler {
   void HandleWouldPermissionChangeRequireRelaunch(const base::ListValue* args);
   // Sets the specified permission to the value proposed.
   void HandleSetPluginVmPermission(const base::ListValue* args);
+  // Relaunches Plugin VM.
+  void HandleRelaunchPluginVm(const base::ListValue* args);
 
   Profile* profile_;
 

@@ -37,6 +37,7 @@ class PluginVmManagerImpl
   // TODO(juwa): Don't allow launch/stop/uninstall to run simultaneously.
   // |callback| is called either when VM tools are ready or if an error occurs.
   void LaunchPluginVm(LaunchPluginVmCallback callback) override;
+  void RelaunchPluginVm() override;
   void StopPluginVm(const std::string& name, bool force) override;
   void UninstallPluginVm() override;
 
@@ -54,6 +55,8 @@ class PluginVmManagerImpl
       base::OnceClosure error_callback) override;
 
   vm_tools::plugin_dispatcher::VmState vm_state() const override;
+
+  bool IsRelaunchNeededForNewPermissions() const override;
 
   void AddVmStartingObserver(chromeos::VmStartingObserver* observer) override;
   void RemoveVmStartingObserver(
@@ -101,6 +104,11 @@ class PluginVmManagerImpl
   // Called when LaunchPluginVm() is unsuccessful.
   void LaunchFailed(PluginVmLaunchResult result = PluginVmLaunchResult::kError);
 
+  // The flow to relaunch Plugin Vm.
+  void OnSuspendVmForRelaunch(
+      base::Optional<vm_tools::plugin_dispatcher::SuspendVmResponse> reply);
+  void OnRelaunchVmComplete(bool success);
+
   // The flow to uninstall Plugin Vm.
   void OnListVmsForUninstall(bool default_vm_exists);
   void StopVmForUninstall();
@@ -125,9 +133,23 @@ class PluginVmManagerImpl
   vm_tools::plugin_dispatcher::VmState vm_state_ =
       vm_tools::plugin_dispatcher::VmState::VM_STATE_UNKNOWN;
 
+  // Indicates that we are attempting to start the VM. This fact may not yet
+  // be reflected in VM state as the dispatcher may not have had a chance
+  // to update it, or maybe it even is not yet aware that we issued StartVm
+  // request.
+  bool vm_is_starting_ = false;
+
+  // Indicates that we are executing VM relaunch.
+  bool relaunch_in_progress_ = false;
+
   // We can't immediately start the VM when it is in states like suspending, so
   // delay until an in progress operation finishes.
   bool pending_start_vm_ = false;
+
+  // If we receive second or third relaunch request while already in the middle
+  // of relaunch, we need to repeat it to ensure that privileges are set up
+  // according to the latest settings.
+  bool pending_relaunch_vm_ = false;
 
   // We can't immediately destroy the VM when it is in states like
   // suspending, so delay until an in progress operation finishes.

@@ -318,6 +318,8 @@ void AppsSection::AddPluginVmLoadTimeData(
        IDS_SETTINGS_APPS_PLUGIN_VM_PERMISSION_DIALOG_CAMERA_LABEL},
       {"pluginVmPermissionDialogMicrophoneLabel",
        IDS_SETTINGS_APPS_PLUGIN_VM_PERMISSION_DIALOG_MICROPHONE_LABEL},
+      {"pluginVmPermissionDialogRelaunchButton",
+       IDS_SETTINGS_APPS_PLUGIN_VM_PERMISSION_DIALOG_RELAUNCH_BUTTON},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 

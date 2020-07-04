@@ -337,6 +337,29 @@ TEST_F(PluginVmManagerImplTest, LaunchPluginVmInvalidLicense) {
       kPluginVmLaunchResultHistogram, PluginVmLaunchResult::kInvalidLicense, 1);
 }
 
+TEST_F(PluginVmManagerImplTest, RelaunchPluginVm) {
+  test_helper_->AllowPluginVm();
+  EXPECT_TRUE(IsPluginVmAllowedForProfile(testing_profile_.get()));
+
+  // The PluginVmManagerImpl calls StartVm when the VM is not yet running.
+  SetListVmsResponse(vm_tools::plugin_dispatcher::VmState::VM_STATE_STOPPED);
+
+  plugin_vm_manager_->RelaunchPluginVm();
+  task_environment_.RunUntilIdle();
+  EXPECT_TRUE(VmPluginDispatcherClient().list_vms_called());
+  EXPECT_TRUE(VmPluginDispatcherClient().start_vm_called());
+  EXPECT_TRUE(VmPluginDispatcherClient().show_vm_called());
+  EXPECT_FALSE(ConciergeClient().get_vm_info_called());
+  EXPECT_FALSE(SeneschalClient().share_path_called());
+  EXPECT_EQ(plugin_vm_manager_->seneschal_server_handle(), 0ul);
+
+  histogram_tester_->ExpectUniqueSample(kPluginVmLaunchResultHistogram,
+                                        PluginVmLaunchResult::kSuccess, 1);
+
+  NotifyVmToolsStateChanged(
+      vm_tools::plugin_dispatcher::VmToolsState::VM_TOOLS_STATE_INSTALLED);
+}
+
 TEST_F(PluginVmManagerImplTest, UninstallRunningPluginVm) {
   test_helper_->AllowPluginVm();
   EXPECT_TRUE(IsPluginVmAllowedForProfile(testing_profile_.get()));

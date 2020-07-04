@@ -35,6 +35,7 @@ class PluginVmManager : public KeyedService {
   ~PluginVmManager() override;
 
   virtual void LaunchPluginVm(LaunchPluginVmCallback callback) = 0;
+  virtual void RelaunchPluginVm() = 0;
   virtual void StopPluginVm(const std::string& name, bool force) = 0;
   virtual void UninstallPluginVm() = 0;
 
@@ -67,6 +68,10 @@ class PluginVmManager : public KeyedService {
   virtual vm_tools::plugin_dispatcher::VmState vm_state() const = 0;
   bool GetPermission(PermissionType permission_type);
   void SetPermission(PermissionType permission_type, bool value);
+
+  // Indicates whether relaunch (suspend + start) is needed for the new
+  // permissions to go into effect.
+  virtual bool IsRelaunchNeededForNewPermissions() const = 0;
 
  protected:
   PluginVmManager();

@@ -160,6 +160,48 @@ void PluginVmManagerImpl::StopPluginVm(const std::string& name, bool force) {
       std::move(request), base::DoNothing());
 }
 
+void PluginVmManagerImpl::RelaunchPluginVm() {
+  if (relaunch_in_progress_) {
+    pending_relaunch_vm_ = true;
+    return;
+  }
+
+  relaunch_in_progress_ = true;
+
+  vm_tools::plugin_dispatcher::SuspendVmRequest request;
+  request.set_owner_id(owner_id_);
+  request.set_vm_name_uuid(kPluginVmName);
+
+  // TODO(dtor): This may not work if the vm is STARTING|CONTINUING|RESUMING.
+  chromeos::DBusThreadManager::Get()->GetVmPluginDispatcherClient()->SuspendVm(
+      std::move(request),
+      base::BindOnce(&PluginVmManagerImpl::OnSuspendVmForRelaunch,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void PluginVmManagerImpl::OnSuspendVmForRelaunch(
+    base::Optional<vm_tools::plugin_dispatcher::SuspendVmResponse> reply) {
+  if (reply &&
+      reply->error() == vm_tools::plugin_dispatcher::VmErrorCode::VM_SUCCESS) {
+    LaunchPluginVm(base::BindOnce(&PluginVmManagerImpl::OnRelaunchVmComplete,
+                                  weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
+
+  LOG(ERROR) << "Failed to suspend Plugin VM for relaunch";
+}
+
+void PluginVmManagerImpl::OnRelaunchVmComplete(bool success) {
+  relaunch_in_progress_ = false;
+
+  if (!success) {
+    LOG(ERROR) << "Failed to relaunch Plugin VM";
+  } else if (pending_relaunch_vm_) {
+    pending_relaunch_vm_ = false;
+    RelaunchPluginVm();
+  }
+}
+
 void PluginVmManagerImpl::UninstallPluginVm() {
   if (uninstaller_notification_) {
     uninstaller_notification_->ForceRedisplay();
@@ -265,6 +307,11 @@ vm_tools::plugin_dispatcher::VmState PluginVmManagerImpl::vm_state() const {
   return vm_state_;
 }
 
+bool PluginVmManagerImpl::IsRelaunchNeededForNewPermissions() const {
+  return vm_is_starting_ ||
+         vm_state_ == vm_tools::plugin_dispatcher::VmState::VM_STATE_RUNNING;
+}
+
 void PluginVmManagerImpl::InstallDlcAndUpdateVmState(
     base::OnceCallback<void(bool default_vm_exists)> success_callback,
     base::OnceClosure error_callback) {
@@ -338,7 +385,6 @@ void PluginVmManagerImpl::OnListVms(
   }
 }
 
-
 void PluginVmManagerImpl::OnListVmsForLaunch(bool default_vm_exists) {
   if (!default_vm_exists) {
     LOG(WARNING) << "Default VM is missing, it may have been manually removed.";
@@ -378,6 +424,7 @@ void PluginVmManagerImpl::StartVm() {
   RemoveDriveDownloadDirectoryIfExists();
 
   pending_start_vm_ = false;
+  vm_is_starting_ = true;
 
   vm_tools::plugin_dispatcher::StartVmRequest request;
   request.set_owner_id(owner_id_);
@@ -413,6 +460,8 @@ void PluginVmManagerImpl::OnStartVm(
   } else {
     result = PluginVmLaunchResult::kError;
   }
+
+  vm_is_starting_ = false;
 
   if (result != PluginVmLaunchResult::kSuccess) {
     ShowStartVmFailedDialog(result);

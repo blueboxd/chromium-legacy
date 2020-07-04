@@ -50,6 +50,11 @@ cr.define('settings', function() {
      *     permissions
      */
     setPluginVmPermission(permissionSetting) {}
+
+    /**
+     * Relaunches Plugin VM.
+     */
+    relaunchPluginVm() {}
   }
 
   /** @implements {settings.PluginVmBrowserProxy} */
@@ -76,6 +81,11 @@ cr.define('settings', function() {
       chrome.send(
           'setPluginVmPermission',
           [permissionSetting.permissionType, permissionSetting.proposedValue]);
+    }
+
+    /** @override */
+    relaunchPluginVm() {
+      chrome.send('relaunchPluginVm');
     }
   }
 

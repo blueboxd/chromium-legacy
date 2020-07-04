@@ -618,7 +618,8 @@ TEST_F(CheckedPtrTest, AssignmentFromNullptr) {
 
 }  // namespace
 
-#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL) && ENABLE_CHECKED_PTR
+#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL) && \
+    ENABLE_TAG_FOR_CHECKED_PTR2
 
 namespace base {
 namespace internal {
@@ -716,4 +717,5 @@ TEST(CheckedPtr2Impl, SafelyUnwrapDisabled) {
 }  // namespace internal
 }  // namespace base
 
-#endif  // defined(ARCH_CPU_64_BITS) && !defined(OS_NACL) && ENABLE_CHECKED_PTR
+#endif  // defined(ARCH_CPU_64_BITS) && !defined(OS_NACL) &&
+        // ENABLE_TAG_FOR_CHECKED_PTR2

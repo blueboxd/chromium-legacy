@@ -2385,7 +2385,7 @@ TEST_F(PartitionAllocTest, Alignment) {
     // rounded up to the nearest bucket size, then have an address of the form:
     //
     // (page-aligned address) + i * bucket_size.
-#if DCHECK_IS_ON() || ENABLE_CHECKED_PTR
+#if DCHECK_IS_ON() || ENABLE_TAG_FOR_CHECKED_PTR2
     // When DCHECK_IS_ON(), a kCookieSize (16) cookie is added on both sides
     // before rounding up the allocation size. The returned pointer points after
     // the cookie.
@@ -2458,7 +2458,7 @@ TEST_F(PartitionAllocTest, AlignedAllocations) {
 }
 #endif  // !ENABLE_PARTITION_ALLOC_COOKIES
 
-#if ENABLE_CHECKED_PTR
+#if ENABLE_TAG_FOR_CHECKED_PTR2
 
 TEST_F(PartitionAllocTest, TagBasic) {
   size_t alloc_size = 64 - kExtraAllocSize;

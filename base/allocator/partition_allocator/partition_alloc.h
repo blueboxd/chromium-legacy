@@ -786,7 +786,7 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFlags(
   }
   size_t requested_size = size;
   size = internal::PartitionSizeAdjustAdd(size);
-#if ENABLE_CHECKED_PTR
+#if ENABLE_TAG_FOR_CHECKED_PTR2
   PA_CHECK(size >= requested_size);
 #endif
   auto* bucket = SizeToBucket(size);

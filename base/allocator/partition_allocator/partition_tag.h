@@ -10,7 +10,7 @@
 #include "base/notreached.h"
 #include "build/build_config.h"
 
-#define ENABLE_CHECKED_PTR 0
+#define ENABLE_TAG_FOR_CHECKED_PTR2 0
 
 namespace base {
 namespace internal {
@@ -21,7 +21,7 @@ using PartitionTag = uint16_t;
 
 static constexpr PartitionTag kTagTemporaryInitialValue = 0x0BAD;
 
-#if ENABLE_CHECKED_PTR
+#if ENABLE_TAG_FOR_CHECKED_PTR2
 
 // Allocate extra 16 bytes for the partition tag. 14 bytes are unused
 // (reserved).
@@ -63,7 +63,7 @@ ALWAYS_INLINE PartitionTag PartitionTagGetValue(void* ptr) {
   return *PartitionTagPointer(ptr);
 }
 
-#else  // !ENABLE_CHECKED_PTR
+#else  // !ENABLE_TAG_FOR_CHECKED_PTR2
 
 // No tag added.
 static constexpr size_t kPartitionTagSize = 0;
@@ -91,7 +91,7 @@ ALWAYS_INLINE PartitionTag PartitionTagGetValue(void*) {
   return 0;
 }
 
-#endif  // !ENABLE_CHECKED_PTR
+#endif  // !ENABLE_TAG_FOR_CHECKED_PTR2
 
 }  // namespace internal
 }  // namespace base

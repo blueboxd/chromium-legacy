@@ -328,7 +328,8 @@ struct DereferencedPointerType<void> {};
 //    we aren't striving to maximize compatibility with raw pointers, merely
 //    adding support for cases encountered so far).
 template <typename T,
-#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL) && ENABLE_CHECKED_PTR
+#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL) && \
+    ENABLE_TAG_FOR_CHECKED_PTR2
           typename Impl = internal::CheckedPtr2Impl<>>
 #else
           typename Impl = internal::CheckedPtrNoOpImpl>

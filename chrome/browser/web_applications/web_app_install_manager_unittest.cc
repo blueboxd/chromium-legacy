@@ -286,6 +286,23 @@ class WebAppInstallManagerTest : public WebAppTest {
     InstallResultCode code;
   };
 
+  InstallResult InstallWebAppFromManifestWithFallback() {
+    InstallResult result;
+    base::RunLoop run_loop;
+    install_manager().InstallWebAppFromManifestWithFallback(
+        web_contents(), /*force_shortcut_app=*/false,
+        WebappInstallSource::OMNIBOX_INSTALL_ICON,
+        base::BindOnce(TestAcceptDialogCallback),
+        base::BindLambdaForTesting(
+            [&](const AppId& installed_app_id, InstallResultCode code) {
+              result.app_id = installed_app_id;
+              result.code = code;
+              run_loop.Quit();
+            }));
+    run_loop.Run();
+    return result;
+  }
+
   InstallResult InstallWebAppsAfterSync(std::vector<WebApp*> web_apps) {
     InstallResult result;
     base::RunLoop run_loop;
@@ -650,13 +667,19 @@ TEST_F(WebAppInstallManagerTest, InstallWebAppsAfterSync_Success) {
   const std::string url_path{"https://example.com/path"};
   const GURL url{url_path};
 
+#if defined(OS_CHROMEOS)
+  bool expect_locally_installed = true;
+#else  // !defined(OS_CHROMEOS)
+  bool expect_locally_installed = false;
+#endif
+
   const std::unique_ptr<WebApp> expected_app =
       CreateWebApp(url, Source::kSync,
                    /*user_display_mode=*/DisplayMode::kStandalone);
   expected_app->SetIsInSyncInstall(false);
   expected_app->SetScope(url);
   expected_app->SetName("Name");
-  expected_app->SetIsLocallyInstalled(false);
+  expected_app->SetIsLocallyInstalled(expect_locally_installed);
   expected_app->SetDescription("Description");
   expected_app->SetThemeColor(SK_ColorCYAN);
   expected_app->SetDisplayMode(DisplayMode::kBrowser);
@@ -720,6 +743,12 @@ TEST_F(WebAppInstallManagerTest, InstallWebAppsAfterSync_Success) {
 TEST_F(WebAppInstallManagerTest, InstallWebAppsAfterSync_Fallback) {
   const GURL url{"https://example.com/path"};
 
+#if defined(OS_CHROMEOS)
+  bool expect_locally_installed = true;
+#else  // !defined(OS_CHROMEOS)
+  bool expect_locally_installed = false;
+#endif
+
   const std::unique_ptr<WebApp> expected_app =
       CreateWebApp(url, Source::kSync,
                    /*user_display_mode=*/DisplayMode::kBrowser);
@@ -727,7 +756,7 @@ TEST_F(WebAppInstallManagerTest, InstallWebAppsAfterSync_Fallback) {
   expected_app->SetName("Name from sync");
   expected_app->SetScope(url);
   expected_app->SetDisplayMode(DisplayMode::kBrowser);
-  expected_app->SetIsLocallyInstalled(false);
+  expected_app->SetIsLocallyInstalled(expect_locally_installed);
   expected_app->SetThemeColor(SK_ColorRED);
   // |scope| and |description| are empty here. |display_mode| is |kUndefined|.
 
@@ -981,12 +1010,15 @@ TEST_F(WebAppInstallManagerTest, InstallBookmarkAppFromSync_LoadSuccess) {
   install_manager().SetDataRetrieverFactoryForTesting(
       base::BindLambdaForTesting([&]() {
         auto data_retriever = std::make_unique<TestDataRetriever>();
-        data_retriever->BuildDefaultDataToRetrieve(url1, url1);
-        auto web_site_application_info = std::make_unique<WebApplicationInfo>();
-        web_site_application_info->open_as_window = false;
-        web_site_application_info->display_mode = DisplayMode::kBrowser;
-        data_retriever->SetRendererWebApplicationInfo(
-            std::move(web_site_application_info));
+        data_retriever->SetEmptyRendererWebApplicationInfo();
+
+        auto manifest = std::make_unique<blink::Manifest>();
+        manifest->start_url = url1;
+        manifest->scope = url1;
+        manifest->display = DisplayMode::kBrowser;
+        data_retriever->SetManifest(std::move(manifest),
+                                    /*is_installable=*/true);
+
         return std::unique_ptr<WebAppDataRetriever>(std::move(data_retriever));
       }));
   const AppId app_id1 =
@@ -997,12 +1029,15 @@ TEST_F(WebAppInstallManagerTest, InstallBookmarkAppFromSync_LoadSuccess) {
   install_manager().SetDataRetrieverFactoryForTesting(
       base::BindLambdaForTesting([&]() {
         auto data_retriever = std::make_unique<TestDataRetriever>();
-        data_retriever->BuildDefaultDataToRetrieve(url2, url2);
-        auto web_site_application_info = std::make_unique<WebApplicationInfo>();
-        web_site_application_info->open_as_window = false;
-        web_site_application_info->display_mode = DisplayMode::kStandalone;
-        data_retriever->SetRendererWebApplicationInfo(
-            std::move(web_site_application_info));
+        data_retriever->SetEmptyRendererWebApplicationInfo();
+
+        auto manifest = std::make_unique<blink::Manifest>();
+        manifest->start_url = url2;
+        manifest->scope = url2;
+        manifest->display = DisplayMode::kStandalone;
+        data_retriever->SetManifest(std::move(manifest),
+                                    /*is_installable=*/true);
+
         return std::unique_ptr<WebAppDataRetriever>(std::move(data_retriever));
       }));
   const AppId app_id2 =
@@ -1576,6 +1611,37 @@ TEST_F(WebAppInstallManagerTest, TaskQueueWebContentsReadyRace) {
   // Task C should not start before B has started.
   EXPECT_FALSE(task_b_started);
   EXPECT_FALSE(task_c_started);
+}
+
+TEST_F(WebAppInstallManagerTest,
+       InstallWebAppFromManifestWithFallback_OverwriteIsLocallyInstalled) {
+  const GURL launch_url{"https://example.com/path"};
+  const AppId app_id = GenerateAppIdFromURL(launch_url);
+
+  {
+    std::unique_ptr<WebApp> app_in_sync_install = CreateWebAppInSyncInstall(
+        launch_url, "Name from sync",
+        /*user_display_mode=*/DisplayMode::kStandalone, SK_ColorRED,
+        /*is_locally_installed=*/false, /*scope=*/GURL(), /*icon_infos=*/{});
+
+    InitRegistrarWithApp(std::move(app_in_sync_install));
+  }
+
+  EXPECT_FALSE(registrar().IsLocallyInstalled(app_id));
+  EXPECT_EQ(DisplayMode::kBrowser,
+            registrar().GetAppEffectiveDisplayMode(app_id));
+
+  // DefaultDataRetriever returns DisplayMode::kStandalone app's display mode.
+  UseDefaultDataRetriever(launch_url);
+
+  InstallResult result = InstallWebAppFromManifestWithFallback();
+  EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
+  EXPECT_EQ(app_id, result.app_id);
+
+  EXPECT_TRUE(registrar().IsInstalled(app_id));
+  EXPECT_TRUE(registrar().IsLocallyInstalled(app_id));
+  EXPECT_EQ(DisplayMode::kStandalone,
+            registrar().GetAppEffectiveDisplayMode(app_id));
 }
 
 }  // namespace web_app

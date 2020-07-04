@@ -400,4 +400,131 @@ TEST(AXPlatformNodeBaseTest, TestSelectedChildrenMixed) {
   EXPECT_EQ(fourth_child, fourth_selected_node->GetNativeViewAccessible());
 }
 
+TEST(AXPlatformNodeBaseTest, CompareTo) {
+  // Compare the nodes' logical orders for the following tree. Node name is
+  // denoted according to its id (i.e. "n#" is id#). Nodes that have smaller ids
+  // are always logically less than nodes with bigger ids.
+  //
+  //        n1
+  //        |
+  //      __ n2 ___
+  //    /      \    \
+  //   n3 _     n8   n9
+  //  / \   \         \
+  // n4  n5  n6       n10
+  //         /
+  //        n7
+  AXPlatformNode::NotifyAddAXModeFlags(kAXModeComplete);
+  AXNodeData node1;
+  node1.id = 1;
+  node1.role = ax::mojom::Role::kWebArea;
+  node1.child_ids = {2};
+
+  AXNodeData node2;
+  node2.id = 2;
+  node2.role = ax::mojom::Role::kStaticText;
+  node2.child_ids = {3, 8, 9};
+
+  AXNodeData node3;
+  node3.id = 3;
+  node3.role = ax::mojom::Role::kStaticText;
+  node3.child_ids = {4, 5, 6};
+
+  AXNodeData node4;
+  node4.id = 4;
+  node4.role = ax::mojom::Role::kStaticText;
+
+  AXNodeData node5;
+  node5.id = 5;
+  node5.role = ax::mojom::Role::kStaticText;
+
+  AXNodeData node6;
+  node6.id = 6;
+  node6.role = ax::mojom::Role::kStaticText;
+  node6.child_ids = {7};
+
+  AXNodeData node7;
+  node7.id = 7;
+  node7.role = ax::mojom::Role::kStaticText;
+
+  AXNodeData node8;
+  node8.id = 8;
+  node8.role = ax::mojom::Role::kStaticText;
+
+  AXNodeData node9;
+  node9.id = 9;
+  node9.role = ax::mojom::Role::kStaticText;
+  node9.child_ids = {10};
+
+  AXNodeData node10;
+  node10.id = 10;
+  node10.role = ax::mojom::Role::kStaticText;
+
+  AXTreeUpdate update;
+  update.root_id = 1;
+  update.nodes = {node1, node2, node3, node4, node5,
+                  node6, node7, node8, node9, node10};
+
+  AXTree tree(update);
+
+  // Retrieve the nodes in a level-order traversal way.
+  auto* n1 = static_cast<AXPlatformNodeBase*>(
+      TestAXNodeWrapper::GetOrCreate(&tree, tree.root())->ax_platform_node());
+  auto* n2 = static_cast<AXPlatformNodeBase*>(
+      AXPlatformNode::FromNativeViewAccessible(n1->ChildAtIndex(0)));
+  auto* n3 = static_cast<AXPlatformNodeBase*>(
+      AXPlatformNode::FromNativeViewAccessible(n2->ChildAtIndex(0)));
+  auto* n8 = static_cast<AXPlatformNodeBase*>(
+      AXPlatformNode::FromNativeViewAccessible(n2->ChildAtIndex(1)));
+  auto* n9 = static_cast<AXPlatformNodeBase*>(
+      AXPlatformNode::FromNativeViewAccessible(n2->ChildAtIndex(2)));
+  auto* n4 = static_cast<AXPlatformNodeBase*>(
+      AXPlatformNode::FromNativeViewAccessible(n3->ChildAtIndex(0)));
+  auto* n5 = static_cast<AXPlatformNodeBase*>(
+      AXPlatformNode::FromNativeViewAccessible(n3->ChildAtIndex(1)));
+  auto* n6 = static_cast<AXPlatformNodeBase*>(
+      AXPlatformNode::FromNativeViewAccessible(n3->ChildAtIndex(2)));
+  auto* n10 = static_cast<AXPlatformNodeBase*>(
+      AXPlatformNode::FromNativeViewAccessible(n9->ChildAtIndex(0)));
+  auto* n7 = static_cast<AXPlatformNodeBase*>(
+      AXPlatformNode::FromNativeViewAccessible(n6->ChildAtIndex(0)));
+
+  // Test for two nodes that do not share the same root. They should not be
+  // comparable.
+  AXPlatformNodeBase detached_node;
+  EXPECT_EQ(base::nullopt, n1->CompareTo(detached_node));
+
+  // Create a test vector of all the tree nodes arranged in a pre-order
+  // traversal way. The node that has a smaller index in the vector should also
+  // be logically less (comes before) the nodes with bigger index.
+  std::vector<AXPlatformNodeBase*> preorder_tree_nodes = {n1, n2, n3, n4, n5,
+                                                          n6, n7, n8, n9, n10};
+  // Test through all permutations of lhs/rhs comparisons of nodes from
+  // |preorder_tree_nodes|.
+  for (auto* lhs : preorder_tree_nodes) {
+    for (auto* rhs : preorder_tree_nodes) {
+      int expected_result = 0;
+      if (lhs->GetData().id < rhs->GetData().id)
+        expected_result = -1;
+      else if (lhs->GetData().id > rhs->GetData().id)
+        expected_result = 1;
+
+      EXPECT_NE(base::nullopt, lhs->CompareTo(*rhs));
+      int actual_result = 0;
+      if (lhs->CompareTo(*rhs) < 0)
+        actual_result = -1;
+      else if (lhs->CompareTo(*rhs) > 0)
+        actual_result = 1;
+
+      SCOPED_TRACE(testing::Message()
+                   << "lhs.id=" << base::NumberToString(lhs->GetData().id)
+                   << ", rhs.id=" << base::NumberToString(rhs->GetData().id)
+                   << ", lhs->CompareTo(*rhs)={actual:"
+                   << base::NumberToString(actual_result) << ", expected:"
+                   << base::NumberToString(expected_result) << "}");
+
+      EXPECT_EQ(expected_result, actual_result);
+    }
+  }
+}
 }  // namespace ui

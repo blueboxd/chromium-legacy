@@ -71,9 +71,11 @@ scoped_refptr<BitmapCursorOzone> BitmapCursorFactoryOzone::GetBitmapCursor(
   return base::WrapRefCounted(ToBitmapCursorOzone(platform_cursor));
 }
 
-PlatformCursor BitmapCursorFactoryOzone::GetDefaultCursor(
+base::Optional<PlatformCursor> BitmapCursorFactoryOzone::GetDefaultCursor(
     mojom::CursorType type) {
-  return ToPlatformCursor(nullptr);
+  if (type == mojom::CursorType::kNone)
+    return nullptr;  // nullptr is used for the hidden cursor.
+  return base::nullopt;
 }
 
 PlatformCursor BitmapCursorFactoryOzone::CreateImageCursor(

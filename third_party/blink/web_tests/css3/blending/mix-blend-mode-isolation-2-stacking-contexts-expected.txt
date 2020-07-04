@@ -6,17 +6,17 @@
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV class='stacking-context'",
-      "position": [8, 8],
       "contentsOpaque": true,
       "drawsContent": false,
-      "backgroundColor": "#FF0000"
+      "backgroundColor": "#FF0000",
+      "transform": 1
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV class='stacking-context'",
-      "position": [8, 8],
       "bounds": [160, 90],
       "contentsOpaque": true,
-      "backgroundColor": "#008000"
+      "backgroundColor": "#008000",
+      "transform": 1
     },
     {
       "name": "LayoutImage IMG class='accelerated blended'",
@@ -25,8 +25,8 @@
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV class='stacking-context' (foreground) Layer",
-      "position": [8, 8],
-      "drawsContent": false
+      "drawsContent": false,
+      "transform": 1
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV class='accelerated stacking-context'",

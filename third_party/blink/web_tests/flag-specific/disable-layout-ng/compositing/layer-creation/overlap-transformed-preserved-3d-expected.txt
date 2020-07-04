@@ -15,9 +15,9 @@ Before:
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='green-box' class='center box-container'",
-      "position": [108, 108],
       "contentsOpaque": true,
-      "drawsContent": false
+      "drawsContent": false,
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow DIV id='camera' class='rotate-3d-start'",
@@ -68,10 +68,9 @@ Before:
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
-        [0, 0, 1, -0.005],
-        [0, 0, 0, 1]
-      ],
-      "origin": [158, 158]
+        [0, 0, 1, 0],
+        [108, 108, 0, 1]
+      ]
     },
     {
       "id": 2,
@@ -79,10 +78,10 @@ Before:
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [108, 108, 0, 1]
+        [0, 0, 1, -0.005],
+        [0, 0, 0, 1]
       ],
-      "flattenInheritedTransform": false
+      "origin": [50, 50]
     },
     {
       "id": 3,
@@ -224,9 +223,9 @@ After:
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='green-box' class='center box-container'",
-      "position": [108, 108],
       "contentsOpaque": true,
-      "drawsContent": false
+      "drawsContent": false,
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow DIV id='camera' class='rotate-3d-start rotate-3d-end'",
@@ -289,10 +288,9 @@ After:
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
-        [0, 0, 1, -0.005],
-        [0, 0, 0, 1]
-      ],
-      "origin": [158, 158]
+        [0, 0, 1, 0],
+        [108, 108, 0, 1]
+      ]
     },
     {
       "id": 2,
@@ -300,10 +298,10 @@ After:
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [108, 108, 0, 1]
+        [0, 0, 1, -0.005],
+        [0, 0, 0, 1]
       ],
-      "flattenInheritedTransform": false
+      "origin": [50, 50]
     },
     {
       "id": 3,

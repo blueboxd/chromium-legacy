@@ -225,43 +225,6 @@ void CompositingInputsUpdater::UpdateSelfAndDescendantsRecursively(
   }
 
   compositor->ClearCompositingInputsRoot();
-
-  bool previously_needed_paint_offset_translation =
-      layer->NeedsPaintOffsetTranslationForCompositing();
-
-  layer->SetNeedsPaintOffsetTranslationForCompositing(
-      NeedsPaintOffsetTranslationForCompositing(layer));
-
-  // Invalidate if needed to affect NeedsPaintOffsetTranslation().
-  if (previously_needed_paint_offset_translation !=
-      layer->NeedsPaintOffsetTranslationForCompositing())
-    layout_object.SetNeedsPaintPropertyUpdate();
-}
-
-bool CompositingInputsUpdater::NeedsPaintOffsetTranslationForCompositing(
-    PaintLayer* layer) {
-  PaintLayerCompositor* compositor =
-      layer->GetLayoutObject().View()->Compositor();
-
-  /// Allocate when the developer indicated compositing via a direct
-  // method.
-  if ((compositor->CanBeComposited(layer) &&
-       layer->DirectCompositingReasons()) ||
-      layer->NeedsCompositedScrolling())
-    return true;
-
-  // Allocate when there is a need for a cc effect that applies to
-  // descendants.
-  // TODO(chrishtr): this should not be necessary, but currently at least
-  // cc mask layers don't apply correctly otherwise.
-  // compositing/clip-path-with-composited-descendants.html is one test
-  // that demonstrates this.
-  if ((layer->PotentialCompositingReasonsFromStyle() &
-       CompositingReason::kComboCompositedDescendants) &&
-      layer->DescendantHasDirectOrScrollingCompositingReason())
-    return true;
-
-  return false;
 }
 
 void CompositingInputsUpdater::UpdateAncestorInfo(PaintLayer* const layer,

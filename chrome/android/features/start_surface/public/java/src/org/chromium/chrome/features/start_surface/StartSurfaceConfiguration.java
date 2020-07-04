@@ -15,8 +15,9 @@ import org.chromium.chrome.browser.flags.StringCachedFieldTrialParameter;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.components.user_prefs.UserPrefs;
 
 /**
  * Flag configuration for Start Surface. Source of truth for whether it should be enabled and
@@ -91,7 +92,8 @@ public class StartSurfaceConfiguration {
     private static void updateFeedVisibility() {
         SharedPreferencesManager.getInstance().writeBoolean(
                 ChromePreferenceKeys.FEED_ARTICLES_LIST_VISIBLE,
-                PrefServiceBridge.getInstance().getBoolean(Pref.ARTICLES_LIST_VISIBLE));
+                UserPrefs.get(Profile.getLastUsedRegularProfile())
+                        .getBoolean(Pref.ARTICLES_LIST_VISIBLE));
     }
 
     /**

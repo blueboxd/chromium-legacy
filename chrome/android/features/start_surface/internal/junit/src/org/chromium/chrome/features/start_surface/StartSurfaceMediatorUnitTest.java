@@ -74,6 +74,7 @@ import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher.OverviewMode
 import org.chromium.chrome.features.start_surface.StartSurfaceMediator.SecondaryTasksSurfaceInitializer;
 import org.chromium.chrome.features.start_surface.StartSurfaceMediator.SurfaceMode;
 import org.chromium.chrome.start_surface.R;
+import org.chromium.components.prefs.PrefService;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -111,6 +112,8 @@ public class StartSurfaceMediatorUnitTest {
     private SecondaryTasksSurfaceInitializer mSecondaryTasksSurfaceInitializer;
     @Mock
     private TabSwitcher.Controller mSecondaryTasksSurfaceController;
+    @Mock
+    private PrefService mPrefService;
     @Captor
     private ArgumentCaptor<EmptyTabModelSelectorObserver> mTabModelSelectorObserverCaptor;
     @Captor
@@ -1526,7 +1529,7 @@ public class StartSurfaceMediatorUnitTest {
         verify(mMainTabGridController).showOverview(eq(false));
 
         when(mMainTabGridController.overviewVisible()).thenReturn(true);
-        mediator.initWithNative(mFakeBoxDelegate, mFeedSurfaceCreator);
+        mediator.initWithNative(mFakeBoxDelegate, mFeedSurfaceCreator, mPrefService);
         assertThat(mPropertyModel.get(IS_EXPLORE_SURFACE_VISIBLE), equalTo(true));
     }
 
@@ -1566,7 +1569,8 @@ public class StartSurfaceMediatorUnitTest {
         mediator.initWithNative(mFakeBoxDelegate,
                 (mode == SurfaceMode.SINGLE_PANE || mode == SurfaceMode.TWO_PANES)
                         ? mFeedSurfaceCreator
-                        : null);
+                        : null,
+                mPrefService);
         return mediator;
     }
 

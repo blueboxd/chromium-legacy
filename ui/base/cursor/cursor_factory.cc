@@ -33,9 +33,10 @@ CursorFactory* CursorFactory::GetInstance() {
   return g_instance;
 }
 
-PlatformCursor CursorFactory::GetDefaultCursor(mojom::CursorType type) {
+base::Optional<PlatformCursor> CursorFactory::GetDefaultCursor(
+    mojom::CursorType type) {
   NOTIMPLEMENTED();
-  return 0;
+  return base::nullopt;
 }
 
 PlatformCursor CursorFactory::CreateImageCursor(const SkBitmap& bitmap,

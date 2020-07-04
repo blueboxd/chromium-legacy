@@ -86,8 +86,6 @@ class CompositingInputsUpdater {
   // Combine all reasons for compositing a layer into a single boolean value
   bool LayerOrDescendantShouldBeComposited(PaintLayer*);
 
-  bool NeedsPaintOffsetTranslationForCompositing(PaintLayer*);
-
   LayoutGeometryMap geometry_map_;
   PaintLayer* root_layer_;
   PaintLayer* compositing_inputs_root_;

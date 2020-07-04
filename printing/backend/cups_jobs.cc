@@ -430,7 +430,10 @@ void ParsePrinterStatus(ipp_t* response, PrinterStatus* printer_status) {
         printer_status->reasons.push_back(ToPrinterReason(reason));
       }
     } else if (name == kPrinterStateMessage) {
-      printer_status->message = ippGetString(attr, 0, nullptr);
+      const char* message_string = ippGetString(attr, 0, nullptr);
+      if (message_string) {
+        printer_status->message = message_string;
+      }
     }
   }
 }

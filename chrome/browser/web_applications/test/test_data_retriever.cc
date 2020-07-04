@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/check.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/common/web_application_info.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 
@@ -98,6 +99,7 @@ void TestDataRetriever::BuildDefaultDataToRetrieve(const GURL& url,
   auto manifest = std::make_unique<blink::Manifest>();
   manifest->start_url = url;
   manifest->scope = scope;
+  manifest->display = DisplayMode::kStandalone;
 
   SetManifest(std::move(manifest), /*is_installable=*/true);
 

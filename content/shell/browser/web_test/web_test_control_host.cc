@@ -41,10 +41,12 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/child_process_termination_info.h"
 #include "content/public/browser/client_hints_controller_delegate.h"
+#include "content/public/browser/content_index_context.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
@@ -62,6 +64,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_content_browser_client.h"
+#include "content/shell/browser/shell_content_index_provider.h"
 #include "content/shell/browser/shell_devtools_frontend.h"
 #include "content/shell/browser/web_test/devtools_protocol_test_bindings.h"
 #include "content/shell/browser/web_test/fake_bluetooth_chooser.h"
@@ -72,12 +75,17 @@
 #include "content/shell/browser/web_test/web_test_devtools_bindings.h"
 #include "content/shell/browser/web_test/web_test_first_device_bluetooth_chooser.h"
 #include "content/shell/browser/web_test/web_test_permission_manager.h"
+#include "content/shell/common/web_test/web_test_constants.h"
 #include "content/shell/common/web_test/web_test_string_util.h"
 #include "content/shell/common/web_test/web_test_switches.h"
+#include "content/test/mock_platform_notification_service.h"
 #include "content/test/storage_partition_test_helpers.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
+#include "storage/browser/database/database_tracker.h"
+#include "storage/browser/quota/quota_manager.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "ui/base/ui_base_switches.h"
@@ -667,6 +675,7 @@ bool WebTestControlHost::ResetBrowserAfterWebTest() {
 
   BlockThirdPartyCookies(false);
   SetBluetoothManualChooser(false);
+  SetDatabaseQuota(content::kDefaultDatabaseQuota);
 
   // Delete all cookies.
   {
@@ -674,11 +683,9 @@ bool WebTestControlHost::ResetBrowserAfterWebTest() {
         ShellContentBrowserClient::Get()->browser_context();
     StoragePartition* storage_partition =
         BrowserContext::GetStoragePartition(browser_context, nullptr);
-    mojo::Remote<network::mojom::CookieManager> cookie_manager;
-    storage_partition->GetNetworkContext()->GetCookieManager(
-        cookie_manager.BindNewPipeAndPassReceiver());
-    cookie_manager->DeleteCookies(network::mojom::CookieDeletionFilter::New(),
-                                  base::BindOnce([](uint32_t) {}));
+    storage_partition->GetCookieManagerForBrowserProcess()->DeleteCookies(
+        network::mojom::CookieDeletionFilter::New(),
+        base::BindOnce([](uint32_t) {}));
   }
 
   ui::SelectFileDialog::SetFactory(nullptr);
@@ -1526,6 +1533,112 @@ void WebTestControlHost::FocusDevtoolsSecondaryWindow() {
   secondary_window_->ActivateContents(secondary_window_->web_contents());
 }
 
+void WebTestControlHost::SetTrustTokenKeyCommitments(
+    const std::string& raw_commitments,
+    base::OnceClosure callback) {
+  GetNetworkService()->SetTrustTokenKeyCommitments(raw_commitments,
+                                                   std::move(callback));
+}
+
+void WebTestControlHost::ClearTrustTokenState(base::OnceClosure callback) {
+  BrowserContext* browser_context =
+      ShellContentBrowserClient::Get()->browser_context();
+  StoragePartition* storage_partition =
+      BrowserContext::GetStoragePartition(browser_context, nullptr);
+  storage_partition->GetNetworkContext()->ClearTrustTokenData(
+      nullptr,  // A wildcard filter.
+      std::move(callback));
+}
+
+void WebTestControlHost::SetDatabaseQuota(int32_t quota) {
+  auto run_on_io_thread = [](scoped_refptr<storage::QuotaManager> quota_manager,
+                             int32_t quota) {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    if (quota == kDefaultDatabaseQuota) {
+      // Reset quota to settings with a zero refresh interval to force
+      // QuotaManager to refresh settings immediately.
+      storage::QuotaSettings default_settings;
+      default_settings.refresh_interval = base::TimeDelta();
+      quota_manager->SetQuotaSettings(default_settings);
+    } else {
+      DCHECK_GE(quota, 0);
+      quota_manager->SetQuotaSettings(storage::GetHardCodedSettings(quota));
+    }
+  };
+
+  BrowserContext* browser_context =
+      ShellContentBrowserClient::Get()->browser_context();
+  StoragePartition* storage_partition =
+      BrowserContext::GetStoragePartition(browser_context, nullptr);
+  scoped_refptr<storage::QuotaManager> quota_manager =
+      base::WrapRefCounted(storage_partition->GetQuotaManager());
+
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(run_on_io_thread, std::move(quota_manager), quota));
+}
+
+void WebTestControlHost::ClearAllDatabases() {
+  auto run_on_database_sequence =
+      [](scoped_refptr<storage::DatabaseTracker> db_tracker) {
+        DCHECK(db_tracker->task_runner()->RunsTasksInCurrentSequence());
+        db_tracker->DeleteDataModifiedSince(base::Time(),
+                                            net::CompletionOnceCallback());
+      };
+
+  BrowserContext* browser_context =
+      ShellContentBrowserClient::Get()->browser_context();
+  StoragePartition* storage_partition =
+      BrowserContext::GetStoragePartition(browser_context, nullptr);
+  scoped_refptr<storage::DatabaseTracker> db_tracker =
+      base::WrapRefCounted(storage_partition->GetDatabaseTracker());
+
+  db_tracker->task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(run_on_database_sequence, std::move(db_tracker)));
+}
+
+void WebTestControlHost::SimulateWebNotificationClick(
+    const std::string& title,
+    int32_t action_index,
+    const base::Optional<base::string16>& reply) {
+  auto* client = WebTestContentBrowserClient::Get();
+  auto* context = client->GetWebTestBrowserContext();
+  auto* service = client->GetPlatformNotificationService(context);
+  static_cast<MockPlatformNotificationService*>(service)->SimulateClick(
+      title,
+      action_index == std::numeric_limits<int32_t>::min()
+          ? base::Optional<int>()
+          : base::Optional<int>(action_index),
+      reply);
+}
+
+void WebTestControlHost::SimulateWebNotificationClose(const std::string& title,
+                                                      bool by_user) {
+  auto* client = WebTestContentBrowserClient::Get();
+  auto* context = client->GetWebTestBrowserContext();
+  auto* service = client->GetPlatformNotificationService(context);
+  static_cast<MockPlatformNotificationService*>(service)->SimulateClose(
+      title, by_user);
+}
+
+void WebTestControlHost::SimulateWebContentIndexDelete(const std::string& id) {
+  BrowserContext* browser_context =
+      ShellContentBrowserClient::Get()->browser_context();
+  auto* content_index_provider = static_cast<ShellContentIndexProvider*>(
+      browser_context->GetContentIndexProvider());
+
+  std::pair<int64_t, url::Origin> registration_data =
+      content_index_provider->GetRegistrationDataFromId(id);
+
+  StoragePartition* storage_partition =
+      BrowserContext::GetStoragePartitionForSite(
+          browser_context, registration_data.second.GetURL(),
+          /*can_create=*/false);
+  storage_partition->GetContentIndexContext()->OnUserDeletedItem(
+      registration_data.first, registration_data.second, id);
+}
+
 void WebTestControlHost::GoToOffset(int offset) {
   main_window_->GoBackOrForward(offset);
 }
@@ -1646,8 +1759,9 @@ void WebTestControlHost::SendBluetoothManualChooserEvent(
 void WebTestControlHost::BlockThirdPartyCookies(bool block) {
   ShellBrowserContext* browser_context =
       ShellContentBrowserClient::Get()->browser_context();
-  browser_context->GetDefaultStoragePartition(browser_context)
-      ->GetCookieManagerForBrowserProcess()
+  StoragePartition* storage_partition =
+      BrowserContext::GetStoragePartition(browser_context, nullptr);
+  storage_partition->GetCookieManagerForBrowserProcess()
       ->BlockThirdPartyCookies(block);
 }
 

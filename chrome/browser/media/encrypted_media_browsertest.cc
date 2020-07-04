@@ -115,14 +115,7 @@ enum class ConfigChangeType {
 enum class PlayCount { ONCE, TWICE };
 
 // Base class for encrypted media tests.
-#if defined(OS_ANDROID)
-// Flaky on Android: https://crbug.com/1099384
-#define MAYBE_EncryptedMediaTestBase DISABLED_EncryptedMediaTestBase
-#else
-#define MAYBE_EncryptedMediaTestBase EncryptedMediaTestBase
-#endif
-
-class MAYBE_EncryptedMediaTestBase : public MediaBrowserTest {
+class EncryptedMediaTestBase : public MediaBrowserTest {
  public:
   bool IsExternalClearKey(const std::string& key_system) {
     if (key_system == kExternalClearKeyKeySystem)

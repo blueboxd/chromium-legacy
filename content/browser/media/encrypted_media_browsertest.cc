@@ -337,7 +337,15 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_AV1_10bit) {
 
 // Strictly speaking this is not an "encrypted" media test. Keep it here for
 // completeness.
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, ConfigChangeVideo_ClearToClear) {
+#if defined(OS_ANDROID)
+// Flaky on Android: https://crbug.com/1099384
+#define MAYBE_ConfigChangeVideo_ClearToClear \
+  DISABLED_ConfigChangeVideo_ClearToClear
+#else
+#define MAYBE_ConfigChangeVideo_ClearToClear ConfigChangeVideo_ClearToClear
+#endif
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
+                       MAYBE_ConfigChangeVideo_ClearToClear) {
   TestConfigChange(ConfigChangeType::CLEAR_TO_CLEAR);
 }
 
@@ -354,12 +362,29 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
   TestConfigChange(ConfigChangeType::CLEAR_TO_ENCRYPTED);
 }
 
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, ConfigChangeVideo_EncryptedToClear) {
+#if defined(OS_ANDROID)
+// Flaky on Android: https://crbug.com/1099384
+#define MAYBE_ConfigChangeVideo_EncryptedToClear \
+  DISABLED_ConfigChangeVideo_EncryptedToClear
+#else
+#define MAYBE_ConfigChangeVideo_EncryptedToClear \
+  ConfigChangeVideo_EncryptedToClear
+#endif
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
+                       MAYBE_ConfigChangeVideo_EncryptedToClear) {
   TestConfigChange(ConfigChangeType::ENCRYPTED_TO_CLEAR);
 }
 
+#if defined(OS_ANDROID)
+// Flaky on Android: https://crbug.com/1099384
+#define MAYBE_ConfigChangeVideo_EncryptedToEncrypted \
+  DISABLED_ConfigChangeVideo_EncryptedToEncrypted
+#else
+#define MAYBE_ConfigChangeVideo_EncryptedToEncrypted \
+  ConfigChangeVideo_EncryptedToEncrypted
+#endif
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
-                       ConfigChangeVideo_EncryptedToEncrypted) {
+                       MAYBE_ConfigChangeVideo_EncryptedToEncrypted) {
   TestConfigChange(ConfigChangeType::ENCRYPTED_TO_ENCRYPTED);
 }
 

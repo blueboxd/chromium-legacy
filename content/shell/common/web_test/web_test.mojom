@@ -203,10 +203,23 @@ interface WebTestControlHost {
   // Moves focus and active state to the secondary devtools window, which exists
   // only in devtools JS tests.
   FocusDevtoolsSecondaryWindow();
-};
 
-// Web test messages sent from the renderer process to the browser.
-interface WebTestClient {
+  // Sets the network service-global Trust Tokens key commitments.
+  // |raw_commitments| should be JSON-encoded according to the format expected
+  // by NetworkService::SetTrustTokenKeyCommitments.
+  SetTrustTokenKeyCommitments(string raw_commitments) => ();
+
+  // Clears all persistent Trust Tokens state.
+  ClearTrustTokenState() => ();
+
+  // Sets WebSQL quota size. If |quota| is the same to kDefaultDatabaseQuota,
+  // this resets quota to settings with a zero refresh interval to force
+  // QuotaManager to refresh settings immediately.
+  SetDatabaseQuota(int32 quota);
+
+  // Clears all WebSQL databases.
+  ClearAllDatabases();
+
   // Simulates a click on the notification.
   //   - |title|: the title of the notification.
   //   - |action_index|: indicates which action was clicked.
@@ -222,32 +235,18 @@ interface WebTestClient {
 
   // Simulates a user deleting a content index entry.
   SimulateWebContentIndexDelete(string id);
+};
 
+// Web test messages sent from the renderer process to the browser.
+interface WebTestClient {
   // Notifies the browser that one of renderers has changed web test runtime
   // flags (i.e. has set dump_as_text).
   WebTestRuntimeFlagsChanged(
       mojo_base.mojom.DictionaryValue changed_web_test_runtime_flags);
 
-  // Clears all WebSQL databases.
-  ClearAllDatabases();
-
-  // Sets WebSQL quota size. If |quota| is the same to kDefaultDatabaseQuota,
-  // this resets quota to settings with a zero refresh interval to force
-  // QuotaManager to refresh settings immediately.
-  SetDatabaseQuota(int32 quota);
-
   // Registers a new isolated filesystem with the given files, and returns the
   // new filesystem id.
   [Sync]
   RegisterIsolatedFileSystem(
-      array<mojo_base.mojom.FilePath> absolute_filenames)
-          => (string filesystem_id);
-
-  // Sets the network service-global Trust Tokens key commitments.
-  // |raw_commitments| should be JSON-encoded according to the format expected
-  // by NetworkService::SetTrustTokenKeyCommitments.
-  SetTrustTokenKeyCommitments(string raw_commitments) => ();
-
-  // Clears all persistent Trust Tokens state.
-  ClearTrustTokenState() => ();
+      array<mojo_base.mojom.FilePath> file_paths) => (string filesystem_id);
 };

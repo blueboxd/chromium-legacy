@@ -66,7 +66,7 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.chrome.browser.ntp.cards.SignInPromo;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tab.TabStateFileManager;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
@@ -88,6 +88,7 @@ import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.ViewUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -719,9 +720,9 @@ public class InstantStartTest {
         startMainActivityFromLauncher();
         mActivityTestRule.waitForActivityNativeInitializationComplete();
         // FEED_ARTICLES_LIST_VISIBLE should equal to ARTICLES_LIST_VISIBLE.
-        CriteriaHelper.pollUiThread(
-                ()
-                        -> PrefServiceBridge.getInstance().getBoolean(Pref.ARTICLES_LIST_VISIBLE)
+        CriteriaHelper.pollUiThread(()
+                                            -> UserPrefs.get(Profile.getLastUsedRegularProfile())
+                                                       .getBoolean(Pref.ARTICLES_LIST_VISIBLE)
                         == StartSurfaceConfiguration.getFeedArticlesVisibility());
 
         // Hide articles and verify that FEED_ARTICLES_LIST_VISIBLE and ARTICLES_LIST_VISIBLE are
@@ -730,8 +731,8 @@ public class InstantStartTest {
         CriteriaHelper.pollUiThread(() -> !StartSurfaceConfiguration.getFeedArticlesVisibility());
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
-                        -> Assert.assertEquals(PrefServiceBridge.getInstance().getBoolean(
-                                                       Pref.ARTICLES_LIST_VISIBLE),
+                        -> Assert.assertEquals(UserPrefs.get(Profile.getLastUsedRegularProfile())
+                                                       .getBoolean(Pref.ARTICLES_LIST_VISIBLE),
                                 StartSurfaceConfiguration.getFeedArticlesVisibility()));
 
         // Show articles and verify that FEED_ARTICLES_LIST_VISIBLE and ARTICLES_LIST_VISIBLE are
@@ -740,8 +741,8 @@ public class InstantStartTest {
         CriteriaHelper.pollUiThread(StartSurfaceConfiguration::getFeedArticlesVisibility);
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
-                        -> Assert.assertEquals(PrefServiceBridge.getInstance().getBoolean(
-                                                       Pref.ARTICLES_LIST_VISIBLE),
+                        -> Assert.assertEquals(UserPrefs.get(Profile.getLastUsedRegularProfile())
+                                                       .getBoolean(Pref.ARTICLES_LIST_VISIBLE),
                                 StartSurfaceConfiguration.getFeedArticlesVisibility()));
     }
 

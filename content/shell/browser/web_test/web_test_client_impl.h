@@ -7,22 +7,8 @@
 
 #include <vector>
 
-#include "base/macros.h"
 #include "content/shell/common/web_test/web_test.mojom.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
-#include "services/network/public/mojom/cookie_manager.mojom.h"
-
-namespace network {
-namespace mojom {
-class NetworkContext;
-}  // namespace mojom
-}  // namespace network
-
-namespace storage {
-class DatabaseTracker;
-class QuotaManager;
-}  // namespace storage
 
 namespace content {
 
@@ -34,15 +20,9 @@ class WebTestClientImpl : public mojom::WebTestClient {
  public:
   static void Create(
       int render_process_id,
-      storage::QuotaManager* quota_manager,
-      storage::DatabaseTracker* database_tracker,
-      network::mojom::NetworkContext* network_context,
       mojo::PendingAssociatedReceiver<mojom::WebTestClient> receiver);
 
-  WebTestClientImpl(int render_process_id,
-                    storage::QuotaManager* quota_manager,
-                    storage::DatabaseTracker* database_tracker,
-                    network::mojom::NetworkContext* network_context);
+  explicit WebTestClientImpl(int render_process_id);
   ~WebTestClientImpl() override;
 
   WebTestClientImpl(const WebTestClientImpl&) = delete;
@@ -50,31 +30,13 @@ class WebTestClientImpl : public mojom::WebTestClient {
 
  private:
   // WebTestClient implementation.
-  void SimulateWebNotificationClick(
-      const std::string& title,
-      int32_t action_index,
-      const base::Optional<base::string16>& reply) override;
-  void SimulateWebNotificationClose(const std::string& title,
-                                    bool by_user) override;
-  void SimulateWebContentIndexDelete(const std::string& id) override;
   void WebTestRuntimeFlagsChanged(
       base::Value changed_web_test_runtime_flags) override;
-  void ClearAllDatabases() override;
-  void SetDatabaseQuota(int32_t quota) override;
   void RegisterIsolatedFileSystem(
-      const std::vector<base::FilePath>& absolute_filenames,
+      const std::vector<base::FilePath>& file_paths,
       RegisterIsolatedFileSystemCallback callback) override;
-  void SetTrustTokenKeyCommitments(const std::string& raw_commitments,
-                                   base::OnceClosure callback) override;
-  void ClearTrustTokenState(base::OnceClosure callback) override;
 
-  int render_process_id_;
-
-  scoped_refptr<storage::QuotaManager> quota_manager_;
-  scoped_refptr<storage::DatabaseTracker> database_tracker_;
-
-  mojo::Remote<network::mojom::CookieManager> cookie_manager_;
-  network::mojom::NetworkContext* const network_context_;
+  const int render_process_id_;
 };
 
 }  // namespace content

@@ -1178,7 +1178,7 @@ void TestRunnerBindings::SetTrustTokenKeyCommitments(
   if (invalid_)
     return;
 
-  runner_->GetWebTestClientRemote()->SetTrustTokenKeyCommitments(
+  runner_->GetWebTestControlHostRemote()->SetTrustTokenKeyCommitments(
       raw_commitments, WrapV8Closure(std::move(v8_callback)));
 }
 
@@ -1538,7 +1538,7 @@ void TestRunnerBindings::ClearTrustTokenState(
     v8::Local<v8::Function> v8_callback) {
   if (invalid_)
     return;
-  runner_->GetWebTestClientRemote()->ClearTrustTokenState(
+  runner_->GetWebTestControlHostRemote()->ClearTrustTokenState(
       WrapV8Closure(std::move(v8_callback)));
 }
 
@@ -1589,13 +1589,13 @@ void TestRunnerBindings::DumpNavigationPolicy() {
 void TestRunnerBindings::ClearAllDatabases() {
   if (invalid_)
     return;
-  runner_->GetWebTestClientRemote()->ClearAllDatabases();
+  runner_->GetWebTestControlHostRemote()->ClearAllDatabases();
 }
 
 void TestRunnerBindings::SetDatabaseQuota(int quota) {
   if (invalid_)
     return;
-  runner_->GetWebTestClientRemote()->SetDatabaseQuota(quota);
+  runner_->GetWebTestControlHostRemote()->SetDatabaseQuota(quota);
 }
 
 void TestRunnerBindings::SetBlockThirdPartyCookies(bool block) {
@@ -1782,7 +1782,7 @@ void TestRunnerBindings::SimulateWebNotificationClick(gin::Arguments* args) {
     reply = base::UTF8ToUTF16(reply_string);
   }
 
-  runner_->GetWebTestClientRemote()->SimulateWebNotificationClick(
+  runner_->GetWebTestControlHostRemote()->SimulateWebNotificationClick(
       title, action_index, reply);
 }
 
@@ -1790,14 +1790,14 @@ void TestRunnerBindings::SimulateWebNotificationClose(const std::string& title,
                                                       bool by_user) {
   if (invalid_)
     return;
-  runner_->GetWebTestClientRemote()->SimulateWebNotificationClose(title,
-                                                                  by_user);
+  runner_->GetWebTestControlHostRemote()->SimulateWebNotificationClose(title,
+                                                                       by_user);
 }
 
 void TestRunnerBindings::SimulateWebContentIndexDelete(const std::string& id) {
   if (invalid_)
     return;
-  runner_->GetWebTestClientRemote()->SimulateWebContentIndexDelete(id);
+  runner_->GetWebTestControlHostRemote()->SimulateWebContentIndexDelete(id);
 }
 
 void TestRunnerBindings::SetHighlightAds() {
@@ -2233,13 +2233,6 @@ void TestRunner::Reset() {
   blink::WebFontRenderStyle::SetSubpixelPositioning(false);
 #endif
   blink::ResetDomainRelaxationForTest();
-
-  // Avoid resetting state in the browser on process startup, since we Reset
-  // when the TestInterfaces (and TestRunner) is created.
-  if (main_view_) {
-    // TODO(danakj): The browser could reset this on its own.
-    GetWebTestClientRemote()->SetDatabaseQuota(content::kDefaultDatabaseQuota);
-  }
 
   setlocale(LC_ALL, "");
   setlocale(LC_NUMERIC, "C");

@@ -202,6 +202,18 @@ class WebTestControlHost : public WebContentsObserver,
   void GetWritableDirectory(GetWritableDirectoryCallback reply) override;
   void SetFilePathForMockFileDialog(const base::FilePath& path) override;
   void FocusDevtoolsSecondaryWindow() override;
+  void SetTrustTokenKeyCommitments(const std::string& raw_commitments,
+                                   base::OnceClosure callback) override;
+  void ClearTrustTokenState(base::OnceClosure callback) override;
+  void SetDatabaseQuota(int32_t quota) override;
+  void ClearAllDatabases() override;
+  void SimulateWebNotificationClick(
+      const std::string& title,
+      int32_t action_index,
+      const base::Optional<base::string16>& reply) override;
+  void SimulateWebNotificationClose(const std::string& title,
+                                    bool by_user) override;
+  void SimulateWebContentIndexDelete(const std::string& id) override;
 
  private:
   enum TestPhase { BETWEEN_TESTS, DURING_TEST, CLEAN_UP };

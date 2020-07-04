@@ -187,6 +187,95 @@ base::Optional<int> AXPlatformNodeBase::GetIndexInParent() {
   return base::nullopt;
 }
 
+base::stack<gfx::NativeViewAccessible> AXPlatformNodeBase::GetAncestors() {
+  base::stack<gfx::NativeViewAccessible> ancestors;
+  gfx::NativeViewAccessible current_node = GetNativeViewAccessible();
+  while (current_node) {
+    ancestors.push(current_node);
+    current_node = FromNativeViewAccessible(current_node)->GetParent();
+  }
+
+  return ancestors;
+}
+
+base::Optional<int> AXPlatformNodeBase::CompareTo(AXPlatformNodeBase& other) {
+  // We define two node's relative positions in the following way:
+  // 1. this->CompareTo(other) == 0:
+  //  - |this| and |other| are the same node.
+  // 2. this->CompareTo(other) < 0:
+  //  - |this| is an ancestor of |other|.
+  //  - |this|'s first uncommon ancestor comes before |other|'s first uncommon
+  //    ancestor. The first uncommon ancestor is defined as the immediate child
+  //    of the lowest common anestor of the two nodes. The first uncommon
+  //    ancestor of |this| and |other| share the same parent (i.e. lowest common
+  //    ancestor), so we can just compare the first uncommon ancestors' child
+  //    indices to determine their relative positions.
+  // 3. this->CompareTo(other) == nullopt:
+  //  - |this| and |other| are not comparable. E.g. they do not have a common
+  //    ancestor.
+  //
+  // Another way to look at the nodes' relative positions/logical orders is that
+  // they are equivalent to pre-order traversal of the tree. If we pre-order
+  // traverse from the root, the node that we visited earlier is always going to
+  // be before (logically less) the node we visit later.
+
+  if (this == &other)
+    return base::Optional<int>(0);
+
+  // Compute the ancestor stacks of both positions and traverse them from the
+  // top most ancestor down, so we can discover the first uncommon ancestors.
+  // The first uncommon ancestor is the immediate child of the lowest common
+  // ancestor.
+  gfx::NativeViewAccessible common_ancestor = nullptr;
+  base::stack<gfx::NativeViewAccessible> our_ancestors = GetAncestors();
+  base::stack<gfx::NativeViewAccessible> other_ancestors = other.GetAncestors();
+
+  // Start at the root and traverse down. Keep going until the |this|'s ancestor
+  // chain and |other|'s ancestor chain disagree. The last node before they
+  // disagree is the lowest common ancestor.
+  while (!our_ancestors.empty() && !other_ancestors.empty() &&
+         our_ancestors.top() == other_ancestors.top()) {
+    common_ancestor = our_ancestors.top();
+    our_ancestors.pop();
+    other_ancestors.pop();
+  }
+
+  // Nodes do not have a common ancestor, they are not comparable.
+  if (!common_ancestor)
+    return base::nullopt;
+
+  // Compute the logical order when the common ancestor is |this| or |other|.
+  auto* common_ancestor_platform_node =
+      FromNativeViewAccessible(common_ancestor);
+  if (common_ancestor_platform_node == this)
+    return base::Optional<int>(-1);
+  if (common_ancestor_platform_node == &other)
+    return base::Optional<int>(1);
+
+  // Compute the logical order of |this| and |other| by using their first
+  // uncommon ancestors.
+  if (!our_ancestors.empty() && !other_ancestors.empty()) {
+    base::Optional<int> this_index_in_parent =
+        FromNativeViewAccessible(our_ancestors.top())->GetIndexInParent();
+    base::Optional<int> other_index_in_parent =
+        FromNativeViewAccessible(other_ancestors.top())->GetIndexInParent();
+
+    if (!this_index_in_parent || !other_index_in_parent)
+      return base::nullopt;
+
+    int this_uncommon_ancestor_index = this_index_in_parent.value();
+    int other_uncommon_ancestor_index = other_index_in_parent.value();
+    DCHECK_NE(this_uncommon_ancestor_index, other_uncommon_ancestor_index)
+        << "Deepest uncommon ancestors should truly be uncommon, i.e. not "
+           "the same.";
+
+    return base::Optional<int>(this_uncommon_ancestor_index -
+                               other_uncommon_ancestor_index);
+  }
+
+  return base::nullopt;
+}
+
 // AXPlatformNode overrides.
 
 void AXPlatformNodeBase::Destroy() {

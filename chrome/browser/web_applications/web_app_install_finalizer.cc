@@ -189,10 +189,16 @@ void WebAppInstallFinalizer::FinalizeInstall(
 
   if (existing_web_app) {
     // There is an existing app from other source(s). Preserve
-    // |is_locally_installed| and |user_display_mode| fields here, do not modify
+    // |user_display_mode| and any user-controllable fields here, do not modify
     // them. Prepare copy-on-write:
     DCHECK_EQ(web_app_info.app_url, existing_web_app->launch_url());
     web_app = std::make_unique<WebApp>(*existing_web_app);
+
+    // The UI may initiate a full install to overwrite the existing
+    // non-locally-installed app. Therefore, |is_locally_installed| can be
+    // promoted to |true|, but not vice versa.
+    if (!web_app->is_locally_installed())
+      web_app->SetIsLocallyInstalled(options.locally_installed);
   } else {
     // New app.
     web_app = std::make_unique<WebApp>(app_id);

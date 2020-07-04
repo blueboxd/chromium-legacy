@@ -69,18 +69,20 @@ PlatformCursor CursorLoaderOzone::CursorFromType(mojom::CursorType type) {
     return image_cursors_[type];
 
   // Check if there's a default platform cursor available.
-  PlatformCursor platform = factory_->GetDefaultCursor(type);
-  if (!platform) {
-    // Loads the default Aura cursor bitmap for the cursor type. Falls back on
-    // pointer cursor if this fails.
-    platform = CreateFallbackCursor(type);
-    if (!platform && type != mojom::CursorType::kPointer) {
-      platform = CursorFromType(mojom::CursorType::kPointer);
-      factory_->RefImageCursor(platform);
-      image_cursors_[type] = platform;
-    }
-    DCHECK(platform) << "Failed to load a fallback bitmap for cursor " << type;
+  base::Optional<PlatformCursor> default_cursor =
+      factory_->GetDefaultCursor(type);
+  if (default_cursor)
+    return *default_cursor;
+
+  // Loads the default Aura cursor bitmap for the cursor type. Falls back on
+  // pointer cursor if this fails.
+  PlatformCursor platform = CreateFallbackCursor(type);
+  if (!platform && type != mojom::CursorType::kPointer) {
+    platform = CursorFromType(mojom::CursorType::kPointer);
+    factory_->RefImageCursor(platform);
+    image_cursors_[type] = platform;
   }
+  DCHECK(platform) << "Failed to load a fallback bitmap for cursor " << type;
   return platform;
 }
 

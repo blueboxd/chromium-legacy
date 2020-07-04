@@ -39,6 +39,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeState;
@@ -48,6 +49,8 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.ntp.FakeboxDelegate;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -57,6 +60,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.start_surface.R;
+import org.chromium.components.prefs.PrefService;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.lang.annotation.Retention;
@@ -107,6 +111,13 @@ class StartSurfaceMediator
     private final SecondaryTasksSurfaceInitializer mSecondaryTasksSurfaceInitializer;
     @SurfaceMode
     private final int mSurfaceMode;
+
+    // Boolean histogram used to record whether cached
+    // ChromePreferenceKeys.FEED_ARTICLES_LIST_VISIBLE is consistent with
+    // Pref.ARTICLES_LIST_VISIBLE.
+    @VisibleForTesting
+    static final String FEED_VISIBILITY_CONSISTENCY =
+            "Startup.Android.CachedFeedVisibilityConsistency";
     @Nullable
     private ExploreSurfaceCoordinator.FeedSurfaceCreator mFeedSurfaceCreator;
     @Nullable
@@ -137,6 +148,18 @@ class StartSurfaceMediator
     private ActivityStateChecker mActivityStateChecker;
     private boolean mExcludeMVTiles;
     private boolean mShowStackTabSwitcher;
+    /**
+     * The value of {@link Pref.ARTICLES_LIST_VISIBLE} on Startup. Getting this value for recording
+     * the consistency of {@link ChromePreferenceKeys.FEED_ARTICLES_LIST_VISIBLE} with {@link
+     * Pref.ARTICLES_LIST_VISIBLE}.
+     */
+    private Boolean mFeedVisibilityPrefOnStartUp;
+    /**
+     * The value of {@link ChromePreferenceKeys.FEED_ARTICLES_LIST_VISIBLE} on Startup. Getting this
+     * value for recording the consistency with {@link Pref.ARTICLES_LIST_VISIBLE}.
+     */
+    @Nullable
+    private Boolean mFeedVisibilityInSharedPreferenceOnStartUp;
 
     StartSurfaceMediator(TabSwitcher.Controller controller, TabModelSelector tabModelSelector,
             @Nullable PropertyModel propertyModel,
@@ -283,7 +306,8 @@ class StartSurfaceMediator
     }
 
     void initWithNative(@Nullable FakeboxDelegate fakeboxDelegate,
-            @Nullable ExploreSurfaceCoordinator.FeedSurfaceCreator feedSurfaceCreator) {
+            @Nullable ExploreSurfaceCoordinator.FeedSurfaceCreator feedSurfaceCreator,
+            PrefService prefService) {
         mFakeboxDelegate = fakeboxDelegate;
         mFeedSurfaceCreator = feedSurfaceCreator;
         if (mPropertyModel != null) {
@@ -302,6 +326,8 @@ class StartSurfaceMediator
                 }
             }
         }
+
+        mFeedVisibilityPrefOnStartUp = prefService.getBoolean(Pref.ARTICLES_LIST_VISIBLE);
     }
 
     boolean isShowingTabSwitcher() {
@@ -562,6 +588,13 @@ class StartSurfaceMediator
                 feedSurfaceCoordinator.onOverviewShownAtLaunch(activityCreationTimeMs);
             }
         }
+
+        assert mFeedVisibilityInSharedPreferenceOnStartUp != null;
+        if (mFeedVisibilityPrefOnStartUp != null) {
+            RecordHistogram.recordBooleanHistogram(FEED_VISIBILITY_CONSISTENCY,
+                    mFeedVisibilityPrefOnStartUp.equals(
+                            mFeedVisibilityInSharedPreferenceOnStartUp));
+        }
     }
 
     // Implements TabSwitcher.OverviewModeObserver.
@@ -635,6 +668,11 @@ class StartSurfaceMediator
     }
 
     public boolean shouldShowFeedPlaceholder() {
+        if (mFeedVisibilityInSharedPreferenceOnStartUp == null) {
+            mFeedVisibilityInSharedPreferenceOnStartUp =
+                    StartSurfaceConfiguration.getFeedArticlesVisibility();
+        }
+
         return mSurfaceMode == SurfaceMode.SINGLE_PANE
                 && CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START)
                 && StartSurfaceConfiguration.getFeedArticlesVisibility();

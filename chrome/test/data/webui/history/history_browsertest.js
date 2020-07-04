@@ -181,7 +181,8 @@ var HistoryMetricsTest = class extends HistoryBrowserTest {
   }
 };
 
-TEST_F('HistoryMetricsTest', 'All', function() {
+// TODO(https://crbug.com/1000573): Re-enable once flakiness is fixed.
+TEST_F('HistoryMetricsTest', 'DISABLED_All', function() {
   mocha.run();
 });
 

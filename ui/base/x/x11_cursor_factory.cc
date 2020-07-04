@@ -30,8 +30,12 @@ X11CursorFactory::X11CursorFactory()
 
 X11CursorFactory::~X11CursorFactory() = default;
 
-PlatformCursor X11CursorFactory::GetDefaultCursor(mojom::CursorType type) {
-  return ToPlatformCursor(GetDefaultCursorInternal(type).get());
+base::Optional<PlatformCursor> X11CursorFactory::GetDefaultCursor(
+    mojom::CursorType type) {
+  auto cursor = GetDefaultCursorInternal(type);
+  if (!cursor)
+    return base::nullopt;
+  return ToPlatformCursor(cursor.get());
 }
 
 PlatformCursor X11CursorFactory::CreateImageCursor(const SkBitmap& bitmap,

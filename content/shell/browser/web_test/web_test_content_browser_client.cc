@@ -506,10 +506,7 @@ void WebTestContentBrowserClient::BindWebTestClient(
     int render_process_id,
     StoragePartition* partition,
     mojo::PendingAssociatedReceiver<mojom::WebTestClient> receiver) {
-  WebTestClientImpl::Create(render_process_id, partition->GetQuotaManager(),
-                            partition->GetDatabaseTracker(),
-                            partition->GetNetworkContext(),
-                            std::move(receiver));
+  WebTestClientImpl::Create(render_process_id, std::move(receiver));
 }
 
 #if defined(OS_WIN)

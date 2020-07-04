@@ -74,6 +74,18 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // the list of its parent's children, or its parent doesn't have children.
   virtual base::Optional<int> GetIndexInParent();
 
+  // Returns a stack of ancestors of this node. The node at the top of the stack
+  // is the top most ancestor.
+  base::stack<gfx::NativeViewAccessible> GetAncestors();
+
+  // Returns an optional integer indicating the logical order of this node
+  // compared to another node or returns an empty optional if the nodes
+  // are not comparable.
+  //    0: if this position is logically equivalent to the other node
+  //   <0: if this position is logically less than (before) the other node
+  //   >0: if this position is logically greater than (after) the other node
+  base::Optional<int> CompareTo(AXPlatformNodeBase& other);
+
   // AXPlatformNode.
   void Destroy() override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;

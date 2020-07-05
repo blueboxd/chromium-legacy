@@ -40,6 +40,14 @@ struct RectData {
   FloatRect rect;
   FloatRect expect;
   NGInkOverflow::Type type;
+
+  NGInkOverflow::Type ExpectedTypeForContents() const {
+    if (type == NGInkOverflow::kSelf)
+      return NGInkOverflow::kContents;
+    if (type == NGInkOverflow::kSmallSelf)
+      return NGInkOverflow::kSmallContents;
+    return type;
+  }
 } rect_data[] = {
     {{20, 10}, {0, 0, 0, 0}, {0, 0, 20, 10}, NGInkOverflow::kNone},
     {{20, 10}, {0, 0, 20, 10}, {0, 0, 20, 10}, NGInkOverflow::kNone},
@@ -110,15 +118,9 @@ TEST_P(RectDataTest, Contents) {
   NGInkOverflow ink_overflow;
   NGInkOverflow::Type type = ink_overflow.Set(
       NGInkOverflow::kNotSet, {}, FromFloatRound(data.rect), data.size);
+  EXPECT_EQ(type, data.ExpectedTypeForContents());
   PhysicalRect result = ink_overflow.SelfAndContents(type, data.size);
-  // TODO(kojii): When empty is set, the visual overflow becomes empty rather
-  // than LocalRect. This is likely not needed and should be revisited, but keep
-  // the behavior for now to keep test results the same.
-  EXPECT_EQ(type, NGInkOverflow::kSelfAndContents);
-  if (data.rect.IsEmpty())
-    EXPECT_EQ(result, PhysicalRect());
-  else
-    EXPECT_EQ(result, FromFloatRound(data.expect));
+  EXPECT_EQ(result, FromFloatRound(data.expect));
   ink_overflow.Reset(type);
 }
 
@@ -131,6 +133,39 @@ TEST_P(RectDataTest, Copy) {
   EXPECT_EQ(copy.Self(type, data.size), original.Self(type, data.size));
   original.Reset(type);
   copy.Reset(type);
+}
+
+struct SelfAndContentsData {
+  PhysicalSize size;
+  PhysicalRect self;
+  PhysicalRect contents;
+  NGInkOverflow::Type type;
+} self_and_contents_data[] = {
+    {{10, 10}, {0, 0, 10, 10}, {0, 0, 10, 10}, NGInkOverflow::kNone},
+    {{10, 10},
+     {-1, -1, 12, 12},
+     {0, 0, 20, 20},
+     NGInkOverflow::kSelfAndContents},
+};
+
+class SelfAndContentsDataTest
+    : public NGInkOverflowTest,
+      public testing::WithParamInterface<SelfAndContentsData> {};
+
+INSTANTIATE_TEST_SUITE_P(NGInkOverflowTest,
+                         SelfAndContentsDataTest,
+                         testing::ValuesIn(self_and_contents_data));
+
+TEST_P(SelfAndContentsDataTest, SelfAndContents) {
+  const SelfAndContentsData data = GetParam();
+  NGInkOverflow ink_overflow;
+  NGInkOverflow::Type type = ink_overflow.Set(NGInkOverflow::kNotSet, data.self,
+                                              data.contents, data.size);
+  EXPECT_EQ(type, data.type);
+  EXPECT_EQ(ink_overflow.Self(type, data.size), data.self);
+  EXPECT_EQ(ink_overflow.SelfAndContents(type, data.size),
+            UnionRect(data.self, data.contents));
+  ink_overflow.Reset(type);
 }
 
 }  // namespace

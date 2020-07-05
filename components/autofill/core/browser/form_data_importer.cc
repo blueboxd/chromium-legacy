@@ -540,7 +540,12 @@ bool FormDataImporter::ImportAddressProfileForSection(
     // If we don't know the type of the field, or the user hasn't entered any
     // information into the field, or the field is non-focusable (hidden), then
     // skip it.
-    if (!field->IsFieldFillable() || !field->is_focusable || value.empty())
+    // TODO(crbug.com/1101280): Remove |skip_unfocussable_field|
+    bool skip_unfocussable_field =
+        !field->is_focusable &&
+        !base::FeatureList::IsEnabled(
+            features::kAutofillProfileImportFromUnfocusableFields);
+    if (!field->IsFieldFillable() || skip_unfocussable_field || value.empty())
       continue;
 
     AutofillType field_type = field->Type();

@@ -139,13 +139,13 @@ public class DownloadLocationDialogCoordinator implements ModalDialogProperties.
         // Actually show the dialog.
         mCustomView = (DownloadLocationCustomView) LayoutInflater.from(mContext).inflate(
                 R.layout.download_location_dialog, null);
-        mCustomView.initialize(mDialogType, new File(mSuggestedPath));
+        mCustomView.initialize(
+                mDialogType, new File(mSuggestedPath), mTotalBytes, getTitle(mDialogType));
 
         Resources resources = mContext.getResources();
         mDialogModel =
                 new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
                         .with(ModalDialogProperties.CONTROLLER, this)
-                        .with(ModalDialogProperties.TITLE, getTitle(mTotalBytes, mDialogType))
                         .with(ModalDialogProperties.CUSTOM_VIEW, mCustomView)
                         .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, resources,
                                 R.string.duplicate_download_infobar_download_button)
@@ -156,7 +156,7 @@ public class DownloadLocationDialogCoordinator implements ModalDialogProperties.
         mModalDialogManager.showDialog(mDialogModel, ModalDialogManager.ModalDialogType.APP);
     }
 
-    private String getTitle(long totalBytes, @DownloadLocationDialogType int dialogType) {
+    private String getTitle(@DownloadLocationDialogType int dialogType) {
         switch (dialogType) {
             case DownloadLocationDialogType.LOCATION_FULL:
                 return mContext.getString(R.string.download_location_not_enough_space);
@@ -171,16 +171,7 @@ public class DownloadLocationDialogCoordinator implements ModalDialogProperties.
                 return mContext.getString(R.string.download_location_rename_file);
 
             case DownloadLocationDialogType.DEFAULT:
-                String title = mContext.getString(R.string.download_location_dialog_title);
-                if (totalBytes > 0) {
-                    StringBuilder stringBuilder = new StringBuilder(title);
-                    stringBuilder.append(" ");
-                    stringBuilder.append(
-                            org.chromium.components.browser_ui.util.DownloadUtils.getStringForBytes(
-                                    mContext, totalBytes));
-                    title = stringBuilder.toString();
-                }
-                return title;
+                return mContext.getString(R.string.download_location_dialog_title);
         }
         assert false;
         return null;

@@ -517,7 +517,7 @@ PhysicalRect NGPaintFragment::SelfInkOverflow() const {
 
   if (!ink_overflow_)
     return fragment.LocalRect();
-  return ink_overflow_->self_ink_overflow;
+  return ink_overflow_->ink_overflow;
 }
 
 PhysicalRect NGPaintFragment::InkOverflow() const {
@@ -534,9 +534,9 @@ PhysicalRect NGPaintFragment::InkOverflow() const {
     return fragment.LocalRect();
 
   if (HasOverflowClip())
-    return ink_overflow_->self_ink_overflow;
+    return ink_overflow_->ink_overflow;
 
-  PhysicalRect rect = ink_overflow_->self_ink_overflow;
+  PhysicalRect rect = ink_overflow_->ink_overflow;
   rect.Unite(ink_overflow_->contents_ink_overflow);
   return rect;
 }
@@ -608,7 +608,7 @@ PhysicalRect NGPaintFragment::RecalcInkOverflow() {
     ink_overflow_ =
         std::make_unique<NGContainerInkOverflow>(self_rect, contents_rect);
   } else {
-    ink_overflow_->self_ink_overflow = self_rect;
+    ink_overflow_->ink_overflow = self_rect;
     ink_overflow_->contents_ink_overflow = contents_rect;
   }
   return self_and_contents_rect;

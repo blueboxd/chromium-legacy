@@ -190,7 +190,7 @@ PhysicalRect NGPhysicalTextFragment::SelfInkOverflow() const {
   if (!ink_overflow_computed_or_mathml_paint_info_)
     ComputeSelfInkOverflow();
   if (ink_overflow_)
-    return ink_overflow_->self_ink_overflow;
+    return ink_overflow_->ink_overflow;
   return LocalRect();
 }
 
@@ -209,9 +209,9 @@ void NGPhysicalTextFragment::ComputeSelfInkOverflow() const {
     return;
   }
   if (ink_overflow_)
-    ink_overflow_->self_ink_overflow = *ink_overflow;
+    ink_overflow_->ink_overflow = *ink_overflow;
   else
-    ink_overflow_ = std::make_unique<NGSelfInkOverflow>(*ink_overflow);
+    ink_overflow_ = std::make_unique<NGSingleInkOverflow>(*ink_overflow);
 }
 
 scoped_refptr<const NGPhysicalTextFragment>

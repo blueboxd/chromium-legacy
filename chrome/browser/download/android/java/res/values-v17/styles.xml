@@ -83,8 +83,8 @@
         <item name="android:tint">@color/modern_grey_800</item>
     </style>
 
-    <!-- Download Later Styles -->
-    <style name="TextAppearance.DownloadLaterTitle" parent="TextAppearance.AlertDialogTitleStyle">
+    <!-- Download Dialogs Styles -->
+    <style name="TextAppearance.DownloadDialogTitle" parent="TextAppearance.AlertDialogTitleStyle">
         <item name="android:textSize">20sp</item>
     </style>
 </resources>

@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.download.DownloadLocationDialogType;
 import org.chromium.chrome.browser.download.DownloadPromptStatus;
 import org.chromium.chrome.browser.download.R;
 import org.chromium.chrome.browser.download.settings.DownloadDirectoryAdapter;
+import org.chromium.components.browser_ui.util.DownloadUtils;
 import org.chromium.components.browser_ui.widget.text.AlertDialogEditText;
 
 import java.io.File;
@@ -35,6 +36,7 @@ public class DownloadLocationCustomView
         extends ScrollView implements OnCheckedChangeListener, DownloadDirectoryAdapter.Delegate {
     private DownloadDirectoryAdapter mDirectoryAdapter;
 
+    private TextView mTitle;
     private TextView mSubtitleView;
     private AlertDialogEditText mFileName;
     private Spinner mFileLocation;
@@ -50,13 +52,15 @@ public class DownloadLocationCustomView
     protected void onFinishInflate() {
         super.onFinishInflate();
 
+        mTitle = findViewById(R.id.title);
         mSubtitleView = findViewById(R.id.subtitle);
         mFileName = findViewById(R.id.file_name);
         mFileLocation = findViewById(R.id.file_location);
         mDontShowAgain = findViewById(R.id.show_again_checkbox);
     }
 
-    void initialize(@DownloadLocationDialogType int dialogType, File suggestedPath) {
+    void initialize(@DownloadLocationDialogType int dialogType, File suggestedPath, long totalBytes,
+            CharSequence title) {
         mDialogType = dialogType;
 
         // Automatically check "don't show again" the first time the user is seeing the dialog.
@@ -66,9 +70,23 @@ public class DownloadLocationCustomView
         mDontShowAgain.setOnCheckedChangeListener(this);
 
         mFileName.setText(suggestedPath.getName());
-        mSubtitleView.setVisibility(
-                dialogType == DownloadLocationDialogType.DEFAULT ? View.GONE : View.VISIBLE);
+        mTitle.setText(title);
         switch (dialogType) {
+            case DownloadLocationDialogType.DEFAULT:
+                // Show a file size subtitle if file size is available.
+                if (totalBytes > 0) {
+                    mSubtitleView.setText(
+                            DownloadUtils.getStringForBytes(getContext(), totalBytes));
+                } else {
+                    // Hide the subtitle and adjust the bottom margin.
+                    mSubtitleView.setVisibility(View.GONE);
+                    MarginLayoutParams titleMargin = (MarginLayoutParams) mTitle.getLayoutParams();
+                    titleMargin.bottomMargin = getResources().getDimensionPixelSize(
+                            R.dimen.download_dialog_subtitle_margin_bottom);
+                    setLayoutParams(titleMargin);
+                }
+                break;
+
             case DownloadLocationDialogType.LOCATION_FULL:
                 mSubtitleView.setText(R.string.download_location_download_to_default_folder);
                 break;

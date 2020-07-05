@@ -139,7 +139,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   // Fragments are immutable but allow certain expensive data, specifically ink
   // overflow, to be cached as long as it is guaranteed to always recompute to
   // the same value.
-  mutable std::unique_ptr<NGSelfInkOverflow> ink_overflow_;
+  mutable std::unique_ptr<NGSingleInkOverflow> ink_overflow_;
 
   friend class NGTextFragmentBuilder;
 };

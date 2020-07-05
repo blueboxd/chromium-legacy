@@ -1163,6 +1163,7 @@ virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/normal-flow/min-heigh
 virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/normal-flow/min-width-applies-to-012.xht [ Pass ]
 virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/normal-flow/width-applies-to-012.xht [ Pass ]
 
+crbug.com/982194 [ Win ] virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/linebox/empty-inline-002.xht [ Failure ]
 crbug.com/982194 [ Mac ] virtual/layout_ng_fragment_traversal/fast/table/027-vertical.html [ Failure ]
 crbug.com/982194 [ Mac ] virtual/layout_ng_fragment_traversal/fast/table/border-collapsing/003-vertical.html [ Failure ]
 

@@ -1,4 +1,3 @@
-#include "base/debug/stack_trace.h"
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -175,7 +174,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
 
   static void Install(TestRunner* test_runner,
                       WebFrameTestProxy* frame,
-                      SpellCheckClient* spell_check,
                       bool is_wpt_reftest,
                       bool is_frame_part_of_main_test_window);
 
@@ -213,8 +211,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   };
 
   explicit TestRunnerBindings(TestRunner* test_runner,
-                              WebFrameTestProxy* frame,
-                              SpellCheckClient* spell_check);
+                              WebFrameTestProxy* frame);
   ~TestRunnerBindings() override;
 
   // gin::Wrappable overrides.
@@ -400,7 +397,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
 
   TestRunner* runner_;
   WebFrameTestProxy* const frame_;
-  SpellCheckClient* const spell_check_;
+  SpellCheckClient spell_check_;
   TestPreferences prefs_;
   std::unique_ptr<AppBannerService> app_banner_service_;
 
@@ -414,7 +411,6 @@ gin::WrapperInfo TestRunnerBindings::kWrapperInfo = {gin::kEmbedderNativeGin};
 // static
 void TestRunnerBindings::Install(TestRunner* test_runner,
                                  WebFrameTestProxy* frame,
-                                 SpellCheckClient* spell_check,
                                  bool is_wpt_test,
                                  bool is_frame_part_of_main_test_window) {
   v8::Isolate* isolate = blink::MainThreadIsolate();
@@ -425,8 +421,7 @@ void TestRunnerBindings::Install(TestRunner* test_runner,
 
   v8::Context::Scope context_scope(context);
 
-  TestRunnerBindings* wrapped =
-      new TestRunnerBindings(test_runner, frame, spell_check);
+  TestRunnerBindings* wrapped = new TestRunnerBindings(test_runner, frame);
   gin::Handle<TestRunnerBindings> bindings =
       gin::CreateHandle(isolate, wrapped);
   CHECK(!bindings.IsEmpty());
@@ -489,12 +484,13 @@ void TestRunnerBindings::Install(TestRunner* test_runner,
 }
 
 TestRunnerBindings::TestRunnerBindings(TestRunner* runner,
-                                       WebFrameTestProxy* frame,
-                                       SpellCheckClient* spell_check)
+                                       WebFrameTestProxy* frame)
     : frame_observer_(this, frame),
       runner_(runner),
       frame_(frame),
-      spell_check_(spell_check) {}
+      spell_check_(frame->GetWebFrame()) {
+  frame->GetWebFrame()->SetTextCheckClient(&spell_check_);
+}
 
 TestRunnerBindings::~TestRunnerBindings() = default;
 
@@ -1025,20 +1021,20 @@ void TestRunnerBindings::SetFilePathForMockFileDialog(
 void TestRunnerBindings::SetMockSpellCheckerEnabled(bool enabled) {
   if (invalid_)
     return;
-  spell_check_->SetEnabled(enabled);
+  spell_check_.SetEnabled(enabled);
 }
 
 void TestRunnerBindings::SetSpellCheckResolvedCallback(
     v8::Local<v8::Function> callback) {
   if (invalid_)
     return;
-  spell_check_->SetSpellCheckResolvedCallback(callback);
+  spell_check_.SetSpellCheckResolvedCallback(callback);
 }
 
 void TestRunnerBindings::RemoveSpellCheckResolvedCallback() {
   if (invalid_)
     return;
-  spell_check_->RemoveSpellCheckResolvedCallback();
+  spell_check_.RemoveSpellCheckResolvedCallback();
 }
 
 v8::Local<v8::Value>
@@ -2202,11 +2198,10 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
 
 TestRunner::~TestRunner() = default;
 
-void TestRunner::Install(WebFrameTestProxy* frame,
-                         SpellCheckClient* spell_check) {
+void TestRunner::Install(WebFrameTestProxy* frame) {
   // In WPT, only reftests generate pixel results.
   TestRunnerBindings::Install(
-      this, frame, spell_check, IsWebPlatformTestsMode(),
+      this, frame, IsWebPlatformTestsMode(),
       IsFramePartOfMainTestWindow(frame->GetWebFrame()));
   mock_screen_orientation_client_.OverrideAssociatedInterfaceProviderForFrame(
       frame->GetWebFrame());

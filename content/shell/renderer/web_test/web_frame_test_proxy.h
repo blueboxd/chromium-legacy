@@ -24,7 +24,6 @@
 
 namespace content {
 class BlinkTestRunner;
-class SpellCheckClient;
 class TestRunner;
 class WebViewTestProxy;
 class WebWidgetTestProxy;
@@ -106,8 +105,6 @@ class WebFrameTestProxy : public RenderFrameImpl,
   BlinkTestRunner* blink_test_runner();
 
   WebViewTestProxy* const web_view_test_proxy_;
-
-  std::unique_ptr<SpellCheckClient> spell_check_;
 
   mojo::AssociatedReceiver<mojom::WebTestRenderFrame>
       web_test_render_frame_receiver_{this};

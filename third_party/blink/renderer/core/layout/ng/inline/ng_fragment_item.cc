@@ -530,30 +530,25 @@ void NGFragmentItem::RecalcInkOverflow(
   // relative to |this|.
   contents_rect.offset -= OffsetInContainerBlock();
 
-  // Compute the self ink overflow.
-  PhysicalRect self_rect;
   if (Type() == kLine) {
     // Line boxes don't have self overflow. Compute content overflow only.
     *self_and_contents_rect_out = contents_rect;
-  } else if (Type() == kBox) {
-    if (const NGPhysicalBoxFragment* box_fragment = BoxFragment()) {
-      DCHECK(box_fragment->IsInlineBox());
-      self_rect = box_fragment->ComputeSelfInkOverflow();
-    } else {
-      NOTREACHED();
-    }
-    *self_and_contents_rect_out = UnionRect(self_rect, contents_rect);
-  } else {
-    NOTREACHED();
-  }
-
-  DCHECK(IsContainer());
-  if (LocalRect().Contains(*self_and_contents_rect_out)) {
-    ink_overflow_type_ = ink_overflow_.Reset(InkOverflowType());
+    ink_overflow_type_ =
+        ink_overflow_.SetContents(InkOverflowType(), contents_rect, Size());
     return;
   }
-  ink_overflow_type_ =
-      ink_overflow_.Set(InkOverflowType(), self_rect, contents_rect, Size());
+
+  if (const NGPhysicalBoxFragment* box_fragment = BoxFragment()) {
+    DCHECK(box_fragment->IsInlineBox());
+    // Compute the self ink overflow.
+    PhysicalRect self_rect = box_fragment->ComputeSelfInkOverflow();
+    *self_and_contents_rect_out = UnionRect(self_rect, contents_rect);
+    ink_overflow_type_ =
+        ink_overflow_.Set(InkOverflowType(), self_rect, contents_rect, Size());
+    return;
+  }
+
+  NOTREACHED();
 }
 
 void NGFragmentItem::SetDeltaToNextForSameLayoutObject(wtf_size_t delta) const {

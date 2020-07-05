@@ -59,13 +59,6 @@ AssistantSuggestion& AssistantSuggestion::operator=(AssistantSuggestion&&) =
     default;
 AssistantSuggestion::~AssistantSuggestion() = default;
 
-AndroidAppInfo::AndroidAppInfo() = default;
-AndroidAppInfo::AndroidAppInfo(const AndroidAppInfo& suggestion) = default;
-AndroidAppInfo& AndroidAppInfo::operator=(const AndroidAppInfo&) = default;
-AndroidAppInfo::AndroidAppInfo(AndroidAppInfo&& suggestion) = default;
-AndroidAppInfo& AndroidAppInfo::operator=(AndroidAppInfo&&) = default;
-AndroidAppInfo::~AndroidAppInfo() = default;
-
 bool AssistantInteractionSubscriber::OnOpenAppResponse(
     const AndroidAppInfo& app_info) {
   return false;

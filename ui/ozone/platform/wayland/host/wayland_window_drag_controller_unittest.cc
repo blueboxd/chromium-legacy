@@ -133,6 +133,17 @@ class WaylandWindowDragControllerTest : public WaylandTest,
     EXPECT_EQ(window, window_manager()->GetCurrentFocusedWindow());
   }
 
+  void SendPointerLeave(WaylandWindow* window,
+                        MockPlatformWindowDelegate* delegate) {
+    auto* surface = server_.GetObject<wl::MockSurface>(window->GetWidget());
+    wl_pointer_send_leave(pointer_->resource(), NextSerial(),
+                          surface->resource());
+    EXPECT_CALL(*delegate, DispatchEvent(_)).Times(1);
+    Sync();
+
+    EXPECT_EQ(nullptr, window_manager()->GetCurrentFocusedWindow());
+  }
+
   void SendPointerPress(WaylandWindow* window,
                         MockPlatformWindowDelegate* delegate,
                         int button) {
@@ -479,19 +490,21 @@ TEST_P(WaylandWindowDragControllerTest, DragToOtherWindowSnapDragDrop) {
   EXPECT_EQ(target_window->GetWidget(),
             screen_->GetLocalProcessWidgetAtPoint({50, 50}, {}));
 
+  // Emulates a pointer::leave event being sent before data_source::cancelled,
+  // what happens with some compositors, e.g: Exosphere. Even in these cases,
+  // WaylandWindowDragController must guarantee the mouse button release event
+  // (aka: drop) is delivered to the upper layer listeners.
+  SendPointerLeave(target_window, &delegate_);
+
   SendDndDrop();
-  EXPECT_CALL(delegate_, DispatchEvent(_)).WillRepeatedly([&](Event* event) {
+  EXPECT_CALL(delegate_, DispatchEvent(_)).WillOnce([&](Event* event) {
     EXPECT_TRUE(event->IsMouseEvent());
     switch (test_step) {
       case kSnapped:
         EXPECT_EQ(ET_MOUSE_RELEASED, event->type());
         EXPECT_EQ(State::kDropped, drag_controller()->state());
+        EXPECT_EQ(target_window, window_manager()->GetCurrentFocusedWindow());
         test_step = kDone;
-        break;
-      case kDone:
-        EXPECT_EQ(ET_MOUSE_EXITED, event->type());
-        EXPECT_EQ(target_window->GetWidget(),
-                  screen_->GetLocalProcessWidgetAtPoint({30, 42}, {}));
         break;
       default:
         FAIL() << " event=" << event->GetName()

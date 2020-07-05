@@ -91,9 +91,11 @@ void WaylandWindowDragController::StopDragging() {
   VLOG(1) << "End drag loop requested. state=" << state_;
 
   // This function is supposed to be called to indicate that the window was just
-  // snapped into a tab strip. So switch to |kAttached| state and ask to quit
-  // the nested loop.
+  // snapped into a tab strip. So switch to |kAttached| state, store the focused
+  // window as the pointer grabber and ask to quit the nested loop.
   state_ = State::kAttached;
+  pointer_grab_owner_ = window_manager_->GetCurrentFocusedWindow();
+  DCHECK(pointer_grab_owner_);
   QuitLoop();
 }
 
@@ -167,10 +169,22 @@ void WaylandWindowDragController::OnDragLeave() {
 }
 
 void WaylandWindowDragController::OnDragDrop() {
-  // Not used for window dragging sessions. Handling of drop events is fully
-  // done at OnDataSourceFinish function, i.e: wl_data_source::{cancel,finish}.
+  DCHECK_GE(state_, State::kAttached);
+  VLOG(1) << "Dropped. state=" << state_;
+
+  // Some compositors, e.g: Exo, may delay the wl_data_source::cancelled event
+  // delivery for some seconds, when the drop happens within a toplevel surface.
+  // Such event is handled by OnDataSourceFinish() function below, which is the
+  // single entry point for the drop event in window drag controller. In order
+  // to prevent such delay, the current data offer must be destroyed here.
+  DCHECK(data_offer_);
+  data_offer_.reset();
 }
 
+// This function is called when either 'cancelled' or 'finished' data source
+// events is received during a window dragging session. It is used to detect
+// when drop happens, since it is the only event sent by the server regardless
+// where it happens, inside or outside toplevel surfaces.
 void WaylandWindowDragController::OnDataSourceFinish(bool completed) {
   DCHECK_GE(state_, State::kAttached);
   DCHECK(data_source_);
@@ -255,6 +269,8 @@ bool WaylandWindowDragController::OfferWindow() {
     data_device_->StartDrag(*data_source_, *origin_window_, icon_surface_.get(),
                             this);
   }
+
+  pointer_grab_owner_ = origin_window_;
   return true;
 }
 
@@ -286,14 +302,15 @@ void WaylandWindowDragController::HandleMotionEvent(MouseEvent* event) {
 // about to finish.
 void WaylandWindowDragController::HandleDropAndResetState() {
   DCHECK_EQ(state_, State::kDropped);
-  DCHECK(window_manager_->GetCurrentFocusedWindow());
-  VLOG(1) << "Notifying drop. window="
-          << window_manager_->GetCurrentFocusedWindow();
+  DCHECK(pointer_grab_owner_);
+  VLOG(1) << "Notifying drop. window=" << pointer_grab_owner_;
 
   EventFlags pointer_button = EF_LEFT_MOUSE_BUTTON;
   DCHECK(connection_->event_source()->IsPointerButtonPressed(pointer_button));
-  pointer_delegate_->OnPointerButtonEvent(ET_MOUSE_RELEASED, pointer_button);
+  pointer_delegate_->OnPointerButtonEvent(ET_MOUSE_RELEASED, pointer_button,
+                                          pointer_grab_owner_);
 
+  pointer_grab_owner_ = nullptr;
   state_ = State::kIdle;
 }
 

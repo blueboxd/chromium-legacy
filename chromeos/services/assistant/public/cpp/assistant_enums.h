@@ -93,15 +93,6 @@ enum class AssistantSuggestionType {
   kBetterOnboarding,
 };
 
-// Models status of an app.
-enum class AppStatus {
-  kUnknown,
-  kAvailable,
-  kUnavailable,
-  kVersionMismatch,
-  kDisabled,
-};
-
 // Enumeration of Assistant entry points. These values are persisted to logs.
 // Entries should not be renumbered and numeric values should never be reused.
 // Only append to this enum is allowed if the possible entry source grows.

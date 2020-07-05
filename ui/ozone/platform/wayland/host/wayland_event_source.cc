@@ -161,12 +161,17 @@ void WaylandEventSource::OnPointerFocusChanged(WaylandWindow* window,
 }
 
 void WaylandEventSource::OnPointerButtonEvent(EventType type,
-                                              int changed_button) {
+                                              int changed_button,
+                                              WaylandWindow* window) {
   DCHECK(type == ET_MOUSE_PRESSED || type == ET_MOUSE_RELEASED);
   DCHECK(HasAnyPointerButtonFlag(changed_button));
 
   if (!pointer_)
     return;
+
+  auto* prev_focused_window = window_with_pointer_focus_;
+  if (window)
+    HandlePointerFocusChange(window);
 
   pointer_flags_ = type == ET_MOUSE_PRESSED
                        ? (pointer_flags_ | changed_button)
@@ -177,6 +182,9 @@ void WaylandEventSource::OnPointerButtonEvent(EventType type,
   MouseEvent event(type, pointer_location_, pointer_location_,
                    EventTimeForNow(), flags, changed_button);
   DispatchEvent(&event);
+
+  if (window)
+    HandlePointerFocusChange(prev_focused_window);
 }
 
 void WaylandEventSource::OnPointerMotionEvent(const gfx::PointF& location) {

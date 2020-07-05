@@ -92,7 +92,9 @@ class WaylandEventSource : public PlatformEventSource,
   void OnPointerDestroyed(WaylandPointer* pointer) override;
   void OnPointerFocusChanged(WaylandWindow* window,
                              const gfx::PointF& location) override;
-  void OnPointerButtonEvent(EventType evtype, int changed_button) override;
+  void OnPointerButtonEvent(EventType evtype,
+                            int changed_button,
+                            WaylandWindow* window = nullptr) override;
   void OnPointerMotionEvent(const gfx::PointF& location) override;
   void OnPointerAxisEvent(const gfx::Vector2d& offset) override;
 

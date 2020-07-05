@@ -118,6 +118,10 @@ class WaylandWindowDragController : public WaylandDataDevice::DragDelegate,
   // The current toplevel window being dragged, when in detached mode.
   WaylandToplevelWindow* dragged_window_ = nullptr;
 
+  // Keeps track of the window that holds the pointer grab. i.e: the owner of
+  // the surface that must receive the mouse release event upon drop.
+  WaylandWindow* pointer_grab_owner_ = nullptr;
+
   // The window where the DND session originated from. i.e: which had the
   // pointer focus when the session was initiated.
   WaylandWindow* origin_window_ = nullptr;

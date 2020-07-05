@@ -11,7 +11,11 @@ component("shared") {
 
   defines = [ "IS_ASSISTANT_SERVICE_SHARED_IMPL" ]
 
-  sources = [ "constants.h" ]
+  sources = [
+    "constants.h",
+    "utils.cc",
+    "utils.h",
+  ]
 
   if (enable_cros_libassistant) {
     sources += [ "//chromeos/assistant/internal/constants.cc" ]

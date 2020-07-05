@@ -13,6 +13,7 @@
 #include "base/scoped_observer.h"
 #include "chromeos/services/assistant/public/cpp/assistant_enums.h"
 #include "chromeos/services/assistant/public/cpp/assistant_notification.h"
+#include "chromeos/services/assistant/public/shared/utils.h"
 #include "ui/accessibility/mojom/ax_assistant_structure.mojom.h"
 
 namespace chromeos {
@@ -62,34 +63,6 @@ struct COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) AssistantSuggestion {
   // Optional URL for action. e.g.
   // "https://www.google.com/search?query=action".
   GURL action_url;
-};
-
-// Models an Android app.
-struct COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) AndroidAppInfo {
-  AndroidAppInfo();
-  AndroidAppInfo(const AndroidAppInfo& suggestion);
-  AndroidAppInfo& operator=(const AndroidAppInfo&);
-  AndroidAppInfo(AndroidAppInfo&& suggestion);
-  AndroidAppInfo& operator=(AndroidAppInfo&&);
-  ~AndroidAppInfo();
-
-  // Unique name to identify a specific app.
-  std::string package_name;
-
-  // Version number of the app.
-  int version{0};
-
-  // Localized app name.
-  std::string localized_app_name;
-
-  // Intent data to operate on.
-  std::string intent;
-
-  // Status of the app.
-  AppStatus status{AppStatus::kUnknown};
-
-  // The general action to be performed, such as ACTION_VIEW, ACTION_MAIN, etc.
-  std::string action;
 };
 
 // Subscribes to Assistant's interaction event. These events are server driven

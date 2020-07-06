@@ -13,6 +13,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/stl_util.h"
 #include "chrome/browser/flags/jni_headers/ChromeFeatureList_jni.h"
+#include "chrome/browser/performance_hints/performance_hints_features.h"
 #include "chrome/browser/share/features.h"
 #include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
 #include "chrome/common/chrome_features.h"
@@ -137,7 +138,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kContentIndexingNTP,
     &kContentSuggestionsScrollToLoad,
     &kContextMenuCopyImage,
-    &kContextMenuPerformanceInfo,
     &kContextMenuSearchWithGoogleLens,
     &kContextMenuShopWithGoogleLens,
     &kContextMenuSearchAndShopWithGoogleLens,
@@ -391,9 +391,6 @@ const base::Feature kContentSuggestionsScrollToLoad{
 const base::Feature kContextMenuCopyImage{"ContextMenuCopyImage",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kContextMenuPerformanceInfo{
-    "ContextMenuPerformanceInfo", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kContextMenuSearchWithGoogleLens{
     "ContextMenuSearchWithGoogleLens", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -517,9 +514,6 @@ const base::Feature kOmniboxSpareRenderer{"OmniboxSpareRenderer",
 
 const base::Feature kOverlayNewLayout{"OverlayNewLayout",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kPageInfoPerformanceHints{
-    "PageInfoPerformanceHints", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // TODO(rouslan): Remove this. (Currently used in
 // GooglePayPaymentAppFactory.java)

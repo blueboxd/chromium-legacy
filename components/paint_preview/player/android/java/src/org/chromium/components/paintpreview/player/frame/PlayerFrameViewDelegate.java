@@ -4,8 +4,6 @@
 
 package org.chromium.components.paintpreview.player.frame;
 
-import android.graphics.Matrix;
-
 /**
  * Used by {@link PlayerFrameView} to delegate view events to {@link PlayerFrameMediator}.
  */
@@ -14,16 +12,6 @@ interface PlayerFrameViewDelegate {
      * Called on layout with the attributed width and height.
      */
     void setLayoutDimensions(int width, int height);
-
-    /**
-     * Called to set the bitmap scale matrix for this frame.
-     */
-    void setBitmapScaleMatrix(Matrix matrix, float scaleFactor);
-
-    /**
-     * Triggers a redraw if one is needed.
-     */
-    void forceRedraw();
 
     /**
      * Called when a scroll gesture is performed.

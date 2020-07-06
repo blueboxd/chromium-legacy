@@ -17,7 +17,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * This class is used by the {@link FakeAccountManagerDelegate} to hold information about a given
+ * This class is used by the {@link FakeAccountManagerDelegate} and
+ * {@link FakeAccountManagerFacade} to hold information about a given
  * account, such as its password and set of granted auth tokens.
  */
 public class AccountHolder {
@@ -45,16 +46,17 @@ public class AccountHolder {
         return mAccount;
     }
 
-    public boolean hasAuthTokenRegistered(String authTokenType) {
+    boolean hasAuthTokenRegistered(String authTokenType) {
         return mAuthTokens.containsKey(authTokenType);
     }
 
-    public @Nullable AccessTokenData getAuthToken(String authTokenType) {
+    @Nullable
+    AccessTokenData getAuthToken(String authTokenType) {
         String authTokenString = mAuthTokens.get(authTokenType);
         return authTokenString == null ? null : new AccessTokenData(authTokenString);
     }
 
-    public boolean hasBeenAccepted(String authTokenType) {
+    boolean hasBeenAccepted(String authTokenType) {
         return mAlwaysAccept
                 || mHasBeenAccepted.containsKey(authTokenType)
                 && mHasBeenAccepted.get(authTokenType);
@@ -66,7 +68,7 @@ public class AccountHolder {
      * @param authToken the auth token to remove
      * @return true if the auth token was found
      */
-    public boolean removeAuthToken(String authToken) {
+    boolean removeAuthToken(String authToken) {
         String foundKey = null;
         for (Map.Entry<String, String> tokenEntry : mAuthTokens.entrySet()) {
             if (authToken.equals(tokenEntry.getValue())) {
@@ -101,20 +103,8 @@ public class AccountHolder {
         return new Builder(account);
     }
 
-    public AccountHolder withAuthTokens(Map<String, String> authTokens) {
-        return copy().authTokens(authTokens).build();
-    }
-
-    public AccountHolder withAuthToken(String authTokenType, String authToken) {
+    AccountHolder withAuthToken(String authTokenType, String authToken) {
         return copy().authToken(authTokenType, authToken).build();
-    }
-
-    public AccountHolder withHasBeenAccepted(String authTokenType, boolean hasBeenAccepted) {
-        return copy().hasBeenAccepted(authTokenType, hasBeenAccepted).build();
-    }
-
-    public AccountHolder withAlwaysAccept(boolean alwaysAccept) {
-        return copy().alwaysAccept(alwaysAccept).build();
     }
 
     private Builder copy() {
@@ -134,42 +124,27 @@ public class AccountHolder {
         private boolean mAlwaysAccept;
         private Set<String> mFeatures = new HashSet<>();
 
-        public Builder(@NonNull Account account) {
+        Builder(@NonNull Account account) {
             mAccount = account;
         }
 
-        public Builder account(@NonNull Account account) {
-            mAccount = account;
-            return this;
-        }
-
-        public Builder authToken(String authTokenType, String authToken) {
+        Builder authToken(String authTokenType, String authToken) {
             mAuthTokens.put(authTokenType, authToken);
             return this;
         }
 
-        public Builder authTokens(@NonNull Map<String, String> authTokens) {
+        Builder authTokens(@NonNull Map<String, String> authTokens) {
             mAuthTokens = authTokens;
             return this;
         }
 
-        public Builder hasBeenAccepted(String authTokenType, boolean hasBeenAccepted) {
-            mHasBeenAccepted.put(authTokenType, hasBeenAccepted);
-            return this;
-        }
-
-        public Builder hasBeenAcceptedMap(@NonNull Map<String, Boolean> hasBeenAcceptedMap) {
+        Builder hasBeenAcceptedMap(@NonNull Map<String, Boolean> hasBeenAcceptedMap) {
             mHasBeenAccepted = hasBeenAcceptedMap;
             return this;
         }
 
         public Builder alwaysAccept(boolean alwaysAccept) {
             mAlwaysAccept = alwaysAccept;
-            return this;
-        }
-
-        public Builder addFeature(String feature) {
-            mFeatures.add(feature);
             return this;
         }
 

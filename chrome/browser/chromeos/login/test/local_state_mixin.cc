@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/test/local_state_mixin.h"
 
+#include <memory>
+
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
@@ -37,7 +39,7 @@ void LocalStateMixin::CreatedBrowserMainParts(
     content::BrowserMainParts* browser_main_parts) {
   // |browser_main_parts| take ownership of TestUserRegistrationMainExtra.
   static_cast<ChromeBrowserMainParts*>(browser_main_parts)
-      ->AddParts(new TestMainExtraPart(delegate_));
+      ->AddParts(std::make_unique<TestMainExtraPart>(delegate_));
 }
 
 }  // namespace chromeos

@@ -11,17 +11,19 @@ goog.provide('Panel');
 goog.require('AnnotationsUI');
 goog.require('BackgroundKeyboardHandler');
 goog.require('BrailleCommandData');
+goog.require('ChromeVoxKbHandler');
 goog.require('ChromeVoxState');
+goog.require('CommandStore');
 goog.require('EventSourceType');
 goog.require('GestureCommandData');
 goog.require('ISearchUI');
+goog.require('LocaleOutputHelper');
 goog.require('Msgs');
 goog.require('PanelCommand');
 goog.require('PanelMenu');
 goog.require('PanelMenuItem');
 goog.require('Tutorial');
-goog.require('ChromeVoxKbHandler');
-goog.require('CommandStore');
+goog.require('UserAnnotationHandler');
 
 /**
  * Class to manage the panel.
@@ -59,6 +61,7 @@ Panel = class {
     // part of |Background| construction).
     new ChromeVoxState();
     UserAnnotationHandler.init();
+    LocaleOutputHelper.init();
 
     /** @type {Element} @private */
     Panel.speechContainer_ = $('speech-container');

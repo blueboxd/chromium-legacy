@@ -24,6 +24,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if !defined(OS_CHROMEOS)
+#include "components/enterprise/browser/controller/fake_browser_dm_token_storage.h"
+#endif  // !defined(OS_CHROMEOS)
+
 #if defined(OS_WIN)
 #include "chrome/install_static/install_modes.h"
 #include "chrome/install_static/test/scoped_install_details.h"
@@ -161,6 +165,10 @@ class UpgradeDetectorImplTest : public ::testing::Test {
   content::BrowserTaskEnvironment task_environment_;
   ScopedTestingLocalState scoped_local_state_;
   InstalledVersionPoller::ScopedDisableForTesting scoped_poller_disabler_;
+
+#if !defined(OS_CHROMEOS)
+  policy::FakeBrowserDMTokenStorage dm_token_storage_;
+#endif  // !defined(OS_CHROMEOS)
 
   DISALLOW_COPY_AND_ASSIGN(UpgradeDetectorImplTest);
 };
@@ -400,6 +408,10 @@ class UpgradeDetectorImplTimerTest : public UpgradeDetectorImplTest,
   }
 
  private:
+#if !defined(OS_CHROMEOS)
+  policy::FakeBrowserDMTokenStorage dm_token_storage_;
+#endif  // !defined(OS_CHROMEOS)
+
   DISALLOW_COPY_AND_ASSIGN(UpgradeDetectorImplTimerTest);
 };
 

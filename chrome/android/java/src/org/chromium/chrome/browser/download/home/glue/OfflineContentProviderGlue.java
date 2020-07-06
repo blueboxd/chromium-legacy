@@ -14,6 +14,7 @@ import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
+import org.chromium.components.offline_items_collection.OfflineItemSchedule;
 import org.chromium.components.offline_items_collection.OpenParams;
 import org.chromium.components.offline_items_collection.ShareCallback;
 import org.chromium.components.offline_items_collection.UpdateDelta;
@@ -110,6 +111,15 @@ public class OfflineContentProviderGlue implements OfflineContentProvider.Observ
             mLegacyProvider.resumeDownload(item, hasUserGesture);
         } else {
             mProvider.resumeDownload(item.id, hasUserGesture);
+        }
+    }
+
+    /** @see OfflineContentProvider#changeSchedule */
+    public void changeSchedule(final OfflineItem item, final OfflineItemSchedule schedule) {
+        if (mLegacyProvider != null && LegacyHelpers.isLegacyDownload(item.id)) {
+            mLegacyProvider.changeSchedule(item, schedule);
+        } else {
+            mProvider.changeSchedule(item.id, schedule);
         }
     }
 

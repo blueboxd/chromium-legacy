@@ -35,7 +35,6 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.payments.intent.IsReadyToPayServiceHelper;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 /**
@@ -189,12 +188,7 @@ public class IsReadyToPayServiceHelperTest {
                     }
                 });
         helper.query();
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mErrorReceived;
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(() -> mErrorReceived);
     }
 
     @Test
@@ -219,12 +213,7 @@ public class IsReadyToPayServiceHelperTest {
                     });
             helper.query();
         });
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mResponseReceived;
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(() -> mResponseReceived);
     }
 
     @Test
@@ -249,12 +238,7 @@ public class IsReadyToPayServiceHelperTest {
                     });
             helper.query();
         });
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mErrorReceived;
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(() -> mErrorReceived);
     }
 
     @Test
@@ -279,12 +263,7 @@ public class IsReadyToPayServiceHelperTest {
                     });
             helper.query();
         });
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mErrorReceived;
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(() -> mErrorReceived);
     }
 
     @Test
@@ -311,11 +290,6 @@ public class IsReadyToPayServiceHelperTest {
         });
         // Assuming CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL >
         // IsReadyToPayServiceHelper.SERVICE_CONNECTION_TIMEOUT_MS.
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mErrorReceived;
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(() -> mErrorReceived);
     }
 }

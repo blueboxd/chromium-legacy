@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.contextmenu;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Mockito.when;
 
 import android.app.Activity;
 
@@ -14,13 +15,17 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.JniMocker;
 import org.chromium.blink_public.common.ContextMenuDataMediaType;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.performance_hints.PerformanceHintsObserver;
 import org.chromium.chrome.browser.performance_hints.PerformanceHintsObserver.PerformanceClass;
+import org.chromium.chrome.browser.performance_hints.PerformanceHintsObserverJni;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.embedder_support.contextmenu.ContextMenuParams;
@@ -33,6 +38,11 @@ import org.chromium.ui.modelutil.PropertyModel;
 public class RevampedContextMenuHeaderMediatorTest {
     @Rule
     public TestRule mProcessor = new Features.JUnitProcessor();
+    @Rule
+    public JniMocker mocker = new JniMocker();
+
+    @Mock
+    PerformanceHintsObserver.Natives mNativeMock;
 
     private Activity mActivity;
     private final Profile mProfile = Mockito.mock(Profile.class);
@@ -40,11 +50,13 @@ public class RevampedContextMenuHeaderMediatorTest {
     @Before
     public void setUpTest() {
         mActivity = Robolectric.setupActivity(Activity.class);
+        MockitoAnnotations.initMocks(this);
+        mocker.mock(PerformanceHintsObserverJni.TEST_HOOKS, mNativeMock);
     }
 
     @Test
-    @Features.EnableFeatures(ChromeFeatureList.CONTEXT_MENU_PERFORMANCE_INFO)
     public void testPerformanceInfoEnabled() {
+        when(mNativeMock.isContextMenuPerformanceInfoEnabled()).thenReturn(true);
         PropertyModel model =
                 new PropertyModel.Builder(RevampedContextMenuHeaderProperties.ALL_KEYS)
                         .with(RevampedContextMenuHeaderProperties.URL_PERFORMANCE_CLASS,
@@ -60,8 +72,8 @@ public class RevampedContextMenuHeaderMediatorTest {
     }
 
     @Test
-    @Features.DisableFeatures(ChromeFeatureList.CONTEXT_MENU_PERFORMANCE_INFO)
     public void testPerformanceInfoDisabled() {
+        when(mNativeMock.isContextMenuPerformanceInfoEnabled()).thenReturn(false);
         PropertyModel model =
                 new PropertyModel.Builder(RevampedContextMenuHeaderProperties.ALL_KEYS)
                         .with(RevampedContextMenuHeaderProperties.URL_PERFORMANCE_CLASS,
@@ -77,8 +89,8 @@ public class RevampedContextMenuHeaderMediatorTest {
     }
 
     @Test
-    @Features.EnableFeatures(ChromeFeatureList.CONTEXT_MENU_PERFORMANCE_INFO)
     public void testNoPerformanceInfoOnNonAnchor() {
+        when(mNativeMock.isContextMenuPerformanceInfoEnabled()).thenReturn(true);
         PropertyModel model =
                 new PropertyModel.Builder(RevampedContextMenuHeaderProperties.ALL_KEYS)
                         .with(RevampedContextMenuHeaderProperties.URL_PERFORMANCE_CLASS,

@@ -41,7 +41,7 @@ using offline_items_collection::ContentId;
 using offline_items_collection::LaunchLocation;
 using offline_items_collection::OfflineItem;
 using offline_items_collection::OfflineItemFilter;
-
+using offline_items_collection::OfflineItemSchedule;
 
 namespace {
 
@@ -393,6 +393,12 @@ void ContentIndexProviderImpl::GetShareInfoForItem(const ContentId& id,
 void ContentIndexProviderImpl::RenameItem(const ContentId& id,
                                           const std::string& name,
                                           RenameCallback callback) {
+  NOTREACHED();
+}
+
+void ContentIndexProviderImpl::ChangeSchedule(
+    const ContentId& id,
+    base::Optional<OfflineItemSchedule> schedule) {
   NOTREACHED();
 }
 

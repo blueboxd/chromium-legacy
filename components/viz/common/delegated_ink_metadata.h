@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_VIZ_COMMON_DELEGATED_INK_METADATA_H_
 #define COMPONENTS_VIZ_COMMON_DELEGATED_INK_METADATA_H_
 
+#include <string>
+
 #include "base/time/time.h"
 #include "components/viz/common/viz_common_export.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -39,6 +41,8 @@ class VIZ_COMMON_EXPORT DelegatedInkMetadata {
   SkColor color() const { return color_; }
   base::TimeTicks timestamp() const { return timestamp_; }
   const gfx::RectF& presentation_area() const { return presentation_area_; }
+
+  std::string ToString() const;
 
  private:
   // Location of the pointerevent relative to the root frame.

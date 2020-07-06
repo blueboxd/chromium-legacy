@@ -34,7 +34,6 @@ import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.WebContentsUtils;
@@ -112,12 +111,8 @@ public class WarmupManagerTest {
             webContents.addObserver(observer);
             webContentsReference.set(webContents);
         });
-        CriteriaHelper.pollUiThread(new Criteria("Spare renderer is not initialized") {
-            @Override
-            public boolean isSatisfied() {
-                return isRenderViewReady.get();
-            }
-        });
+        CriteriaHelper.pollUiThread(
+                () -> isRenderViewReady.get(), "Spare renderer is not initialized");
         PostTask.runOrPostTask(
                 UiThreadTaskTraits.DEFAULT, () -> webContentsReference.get().destroy());
     }

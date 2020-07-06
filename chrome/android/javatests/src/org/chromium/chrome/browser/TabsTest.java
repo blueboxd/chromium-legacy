@@ -23,6 +23,7 @@ import androidx.test.filters.LargeTest;
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -204,11 +205,13 @@ public class TabsTest {
                                         + "})()",
                                 null));
 
-        CriteriaHelper.pollUiThread(Criteria.equals(2,
-                () -> mActivityTestRule.getActivity()
+        CriteriaHelper.pollUiThread(() -> {
+            int tabCount = mActivityTestRule.getActivity()
                                    .getTabModelSelector()
                                    .getModel(false)
-                                   .getCount()));
+                                   .getCount();
+            Criteria.checkThat(tabCount, Matchers.is(2));
+        });
     }
 
     @Test
@@ -226,25 +229,17 @@ public class TabsTest {
 
         final AtomicReference<JavascriptTabModalDialog> dialog = new AtomicReference<>();
 
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                dialog.set(getCurrentAlertDialog());
-
-                return dialog.get() != null;
-            }
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            dialog.set(getCurrentAlertDialog());
+            Criteria.checkThat(dialog.get(), Matchers.notNullValue());
         });
 
         onView(withId(R.id.positive_button)).perform(click());
 
         dialog.set(null);
 
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return getCurrentAlertDialog() == null;
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(
+                () -> Criteria.checkThat(getCurrentAlertDialog(), Matchers.nullValue()));
 
         Assert.assertTrue("Incognito model was not selected",
                 mActivityTestRule.getActivity().getTabModelSelector().isIncognitoSelected());
@@ -285,14 +280,11 @@ public class TabsTest {
                 () -> Assert.assertEquals("The tab count is wrong", tabCount + 1,
                                 mActivityTestRule.getActivity().getCurrentTabModel().getCount()));
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                Tab tab = mActivityTestRule.getActivity().getCurrentTabModel().getTabAt(1);
-                String title = tab.getTitle().toLowerCase(Locale.US);
-                String expectedTitle = "new tab";
-                return title.startsWith(expectedTitle);
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Tab tab = mActivityTestRule.getActivity().getCurrentTabModel().getTabAt(1);
+            String title = tab.getTitle().toLowerCase(Locale.US);
+            String expectedTitle = "new tab";
+            Criteria.checkThat(title, Matchers.startsWith(expectedTitle));
         });
 
         ChromeTabUtils.closeCurrentTab(
@@ -303,15 +295,10 @@ public class TabsTest {
     }
 
     private void assertWaitForKeyboardStatus(final boolean show) {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                updateFailureReason("expected keyboard show: " + show);
-                return show
-                        == mActivityTestRule.getKeyboardDelegate().isKeyboardShowing(
-                                   mActivityTestRule.getActivity(),
-                                   mActivityTestRule.getActivity().getTabsView());
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            boolean isKeyboardShowing = mActivityTestRule.getKeyboardDelegate().isKeyboardShowing(
+                    mActivityTestRule.getActivity(), mActivityTestRule.getActivity().getTabsView());
+            Criteria.checkThat(isKeyboardShowing, Matchers.is(show));
         });
     }
 
@@ -379,17 +366,12 @@ public class TabsTest {
     }
 
     private void assertWaitForSelectedText(final String text) {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                WebContents webContents = mActivityTestRule.getWebContents();
-                SelectionPopupController controller =
-                        SelectionPopupController.fromWebContents(webContents);
-                final String actualText = controller.getSelectedText();
-                updateFailureReason(
-                        "expected selected text: [" + text + "], but got: [" + actualText + "]");
-                return text.equals(actualText);
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            WebContents webContents = mActivityTestRule.getWebContents();
+            SelectionPopupController controller =
+                    SelectionPopupController.fromWebContents(webContents);
+            final String actualText = controller.getSelectedText();
+            Criteria.checkThat(actualText, Matchers.is(text));
         });
     }
 
@@ -1104,14 +1086,12 @@ public class TabsTest {
                     }
                 });
 
-        CriteriaHelper.pollUiThread(new Criteria("Did not finish animation") {
-            @Override
-            public boolean isSatisfied() {
-                Layout layout =
-                        mActivityTestRule.getActivity().getLayoutManager().getActiveLayout();
-                return !layout.isLayoutAnimating();
-            }
-        });
+        CriteriaHelper.pollUiThread(() -> {
+            return !mActivityTestRule.getActivity()
+                            .getLayoutManager()
+                            .getActiveLayout()
+                            .isLayoutAnimating();
+        }, "Did not finish animation");
     }
 
     private void swipeToCloseNTabs(
@@ -1409,12 +1389,8 @@ public class TabsTest {
         Assert.assertEquals("Tab count is expected to increment by 1 after clicking new tab button",
                 initialTabCount + 1, newTabCount);
         UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
-        CriteriaHelper.pollInstrumentationThread(new Criteria("Should not be in overview mode") {
-            @Override
-            public boolean isSatisfied() {
-                return !mActivityTestRule.getActivity().isInOverviewMode();
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(
+                () -> !mActivityTestRule.getActivity().isInOverviewMode());
     }
 
     @Test
@@ -1628,14 +1604,12 @@ public class TabsTest {
                     swipeXChange, 0.f, swipeXChange, 0.f, swipeXChange, 0.f);
         });
 
-        CriteriaHelper.pollUiThread(
-                new Criteria("Layout still requesting Tab Android view be attached") {
-                    @Override
-                    public boolean isSatisfied() {
-                        LayoutManager driver = mActivityTestRule.getActivity().getLayoutManager();
-                        return !driver.getActiveLayout().shouldDisplayContentOverlay();
-                    }
-                });
+        CriteriaHelper.pollUiThread(() -> {
+            return !mActivityTestRule.getActivity()
+                            .getLayoutManager()
+                            .getActiveLayout()
+                            .shouldDisplayContentOverlay();
+        });
 
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
             Assert.assertFalse("Keyboard should be hidden while swiping",
@@ -1644,14 +1618,10 @@ public class TabsTest {
             edgeSwipeHandler.swipeFinished();
         });
 
-        CriteriaHelper.pollUiThread(
-                new Criteria("Layout not requesting Tab Android view be attached") {
-                    @Override
-                    public boolean isSatisfied() {
-                        LayoutManager driver = mActivityTestRule.getActivity().getLayoutManager();
-                        return driver.getActiveLayout().shouldDisplayContentOverlay();
-                    }
-                });
+        CriteriaHelper.pollUiThread(() -> {
+            LayoutManager driver = mActivityTestRule.getActivity().getLayoutManager();
+            return driver.getActiveLayout().shouldDisplayContentOverlay();
+        }, "Layout not requesting Tab Android view be attached");
 
         Assert.assertFalse("Keyboard should not be shown",
                 mActivityTestRule.getKeyboardDelegate().isKeyboardShowing(
@@ -1857,7 +1827,7 @@ public class TabsTest {
 
     private void assertFileExists(final File fileToCheck, final boolean expected) {
         CriteriaHelper.pollInstrumentationThread(
-                Criteria.equals(expected, () -> fileToCheck.exists()));
+                () -> Criteria.checkThat(fileToCheck.exists(), Matchers.is(expected)));
     }
 
     /**

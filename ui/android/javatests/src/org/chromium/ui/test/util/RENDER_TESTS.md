@@ -78,9 +78,13 @@ To write a new test, start with the example in the javadoc for
 [RenderTestRule](https://cs.chromium.org/chromium/src/ui/android/javatests/src/org/chromium/ui/test/util/RenderTestRule.java)
 or [ChromeRenderTestRule](https://cs.chromium.org/chromium/src/chrome/test/android/javatests/src/org/chromium/chrome/test/util/ChromeRenderTestRule.java).
 
-If you want to separate your baselines from the default `android-render-tests`
-corpus in Gold, you can call `setCorpus()` on your
-`SkiaGoldBuilder` instance before calling `build()`.
+You will need to decide whether you want your test results to be public
+(viewable by anyone) or internal (only viewable by Googlers) and call
+`setCorpus()` accordingly. Public results should use the
+`Corpus.ANDROID_RENDER_TESTS_PUBLIC` corpus, while internal results should use
+the `Corpus.ANDROID_RENDER_TESTS_INTERNAL` corpus. Alternatively, you can use
+`Builder.withPublicCorpus()` as shorthand for creating a builder with the
+default public corpus.
 
 **Note:** Each instance/corpus/description combination results in needing to
 create a new Gold session under the hood, which adds ~250 ms due to extra

@@ -331,6 +331,8 @@ void LoadingPredictorTabHelper::OnOptimizationGuideDecision(
   }
 
   last_optimization_guide_prediction_->decision = decision;
+  last_optimization_guide_prediction_->optimization_guide_prediction_arrived =
+      base::TimeTicks::Now();
 
   if (decision != optimization_guide::OptimizationGuideDecision::kTrue)
     return;

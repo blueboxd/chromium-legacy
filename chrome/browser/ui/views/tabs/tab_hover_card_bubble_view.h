@@ -93,8 +93,6 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
 
   void RecordTimeSinceLastSeenMetric(base::TimeDelta elapsed_time);
 
-  base::OneShotTimer delayed_show_timer_;
-
   // Fade animations interfere with browser tests so we disable them in tests.
   static bool disable_animations_for_testing_;
   std::unique_ptr<WidgetFadeAnimationDelegate> fade_animation_delegate_;
@@ -111,7 +109,6 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
   // the mouse reenters within a given amount of time.
   base::TimeTicks last_mouse_exit_timestamp_;
 
-  views::Widget* widget_ = nullptr;
   views::Label* title_label_ = nullptr;
   FadeLabel* title_fade_label_ = nullptr;
   base::Optional<TabAlertState> alert_state_;
@@ -123,6 +120,8 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
   // tab is selected by mouse press.
   size_t hover_cards_seen_count_ = 0;
   bool waiting_for_decompress_ = false;
+
+  base::OneShotTimer delayed_show_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(TabHoverCardBubbleView);
 };

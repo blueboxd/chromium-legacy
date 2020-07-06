@@ -845,7 +845,8 @@ const CSSParserContext* StyleCascade::GetParserContext(
   // CSSParserContext. (CSSUnparsedValue violates this).
   if (value.ParserContext())
     return value.ParserContext();
-  return StrictCSSParserContext(state_.GetDocument().GetSecureContextMode());
+  return StrictCSSParserContext(
+      state_.GetDocument().GetExecutionContext()->GetSecureContextMode());
 }
 
 bool StyleCascade::HasFontSizeDependency(const CustomProperty& property,
@@ -863,7 +864,8 @@ bool StyleCascade::ValidateFallback(const CustomProperty& property,
                                     CSSParserTokenRange range) const {
   if (!property.IsRegistered())
     return true;
-  auto context_mode = state_.GetDocument().GetSecureContextMode();
+  auto context_mode =
+      state_.GetDocument().GetExecutionContext()->GetSecureContextMode();
   auto var_mode = CSSParserLocalContext::VariableMode::kTyped;
   auto* context = StrictCSSParserContext(context_mode);
   auto local_context = CSSParserLocalContext().WithVariableMode(var_mode);

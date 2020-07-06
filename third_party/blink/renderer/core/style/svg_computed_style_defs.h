@@ -33,7 +33,6 @@
 #include "third_party/blink/renderer/core/css/style_color.h"
 #include "third_party/blink/renderer/core/style/style_path.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
-#include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -45,12 +44,10 @@ class StyleSVGResource;
 typedef base::RefCountedData<WTF::Vector<Length>> SVGDashArray;
 
 enum SVGPaintType {
-  SVG_PAINTTYPE_RGBCOLOR,
+  SVG_PAINTTYPE_COLOR,
   SVG_PAINTTYPE_NONE,
-  SVG_PAINTTYPE_CURRENTCOLOR,
   SVG_PAINTTYPE_URI_NONE,
-  SVG_PAINTTYPE_URI_CURRENTCOLOR,
-  SVG_PAINTTYPE_URI_RGBCOLOR,
+  SVG_PAINTTYPE_URI_COLOR,
   SVG_PAINTTYPE_URI
 };
 
@@ -132,32 +129,24 @@ struct SVGPaint {
   bool operator!=(const SVGPaint& other) const { return !(*this == other); }
 
   bool IsNone() const { return type == SVG_PAINTTYPE_NONE; }
-  bool IsColor() const {
-    return type == SVG_PAINTTYPE_RGBCOLOR || type == SVG_PAINTTYPE_CURRENTCOLOR;
-  }
+  bool IsColor() const { return type == SVG_PAINTTYPE_COLOR; }
   // Used by CSSPropertyEquality::PropertiesEqual.
   bool EqualTypeOrColor(const SVGPaint& other) const {
     return type == other.type &&
-           (type != SVG_PAINTTYPE_RGBCOLOR || color == other.color);
+           (type != SVG_PAINTTYPE_COLOR || color == other.color);
   }
-  bool HasFallbackColor() const {
-    return type == SVG_PAINTTYPE_URI_CURRENTCOLOR ||
-           type == SVG_PAINTTYPE_URI_RGBCOLOR;
-  }
+  bool HasFallbackColor() const { return type == SVG_PAINTTYPE_URI_COLOR; }
   bool HasColor() const { return IsColor() || HasFallbackColor(); }
   bool HasUrl() const { return type >= SVG_PAINTTYPE_URI_NONE; }
-  bool HasCurrentColor() const {
-    return type == SVG_PAINTTYPE_CURRENTCOLOR ||
-           type == SVG_PAINTTYPE_URI_CURRENTCOLOR;
-  }
+  bool HasCurrentColor() const { return HasColor() && color.IsCurrentColor(); }
   StyleSVGResource* Resource() const { return resource.get(); }
 
-  const Color& GetColor() const { return color; }
+  const StyleColor& GetColor() const { return color; }
   const AtomicString& GetUrl() const;
 
   scoped_refptr<StyleSVGResource> resource;
-  Color color;
-  SVGPaintType type;
+  StyleColor color;
+  SVGPaintType type{SVG_PAINTTYPE_NONE};
 };
 
 // Inherited/Non-Inherited Style Datastructures

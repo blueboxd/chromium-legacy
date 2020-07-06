@@ -27,7 +27,6 @@
 
 #include <memory>
 #include "base/macros.h"
-#include "third_party/blink/renderer/core/paint/clip_path_clipper.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/svg_mask_painter.h"
@@ -40,6 +39,7 @@ namespace blink {
 class FilterData;
 class GraphicsContext;
 class LayoutObject;
+class ObjectPaintProperties;
 class PaintController;
 class SVGResources;
 
@@ -123,7 +123,7 @@ class ScopedSVGPaintState {
   bool ApplyEffects();
 
  private:
-  void ApplyPaintPropertyState();
+  void ApplyPaintPropertyState(const ObjectPaintProperties&);
   void ApplyClipIfNecessary();
   void ApplyMaskIfNecessary(SVGResources*);
 
@@ -135,12 +135,12 @@ class ScopedSVGPaintState {
   PaintInfo paint_info_;
   const DisplayItemClient& display_item_client_;
   FilterData* filter_data_;
-  base::Optional<ClipPathClipper> clip_path_clipper_;
   std::unique_ptr<SVGFilterRecordingContext> filter_recording_context_;
   base::Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties_;
   base::Optional<SVGMaskPainter> mask_painter_;
+  bool should_paint_clip_path_as_mask_image_ = false;
 #if DCHECK_IS_ON()
-  bool apply_clip_mask_and_filter_if_necessary_called_ = false;
+  bool apply_effects_called_ = false;
 #endif
 };
 

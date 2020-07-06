@@ -183,7 +183,7 @@
 namespace chrome {
 
 void AddProfilesExtraParts(ChromeBrowserMainParts* main_parts) {
-  main_parts->AddParts(new ChromeBrowserMainExtraPartsProfiles());
+  main_parts->AddParts(std::make_unique<ChromeBrowserMainExtraPartsProfiles>());
 }
 
 }  // namespace chrome

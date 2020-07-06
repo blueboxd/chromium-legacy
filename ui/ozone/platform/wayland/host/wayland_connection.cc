@@ -163,26 +163,33 @@ void WaylandConnection::UpdateInputDevices(wl_seat* seat,
     pointer_.reset();
     cursor_.reset();
     wayland_cursor_position_.reset();
-  } else if (wl_pointer* pointer = wl_seat_get_pointer(seat)) {
-    pointer_ = std::make_unique<WaylandPointer>(pointer, this, event_source());
-    cursor_ = std::make_unique<WaylandCursor>(pointer_.get(), this);
-    wayland_cursor_position_ = std::make_unique<WaylandCursorPosition>();
-  } else {
-    LOG(ERROR) << "Failed to get wl_pointer from seat";
+  } else if (!pointer_) {
+    if (wl_pointer* pointer = wl_seat_get_pointer(seat)) {
+      pointer_ =
+          std::make_unique<WaylandPointer>(pointer, this, event_source());
+      cursor_ = std::make_unique<WaylandCursor>(pointer_.get(), this);
+      wayland_cursor_position_ = std::make_unique<WaylandCursorPosition>();
+    } else {
+      LOG(ERROR) << "Failed to get wl_pointer from seat";
+    }
   }
 
   if (!has_keyboard) {
     keyboard_.reset();
-  } else if (!CreateKeyboard()) {
-    LOG(ERROR) << "Failed to create WaylandKeyboard";
+  } else if (!keyboard_) {
+    if (!CreateKeyboard()) {
+      LOG(ERROR) << "Failed to create WaylandKeyboard";
+    }
   }
 
   if (!has_touch) {
     touch_.reset();
-  } else if (wl_touch* touch = wl_seat_get_touch(seat)) {
-    touch_ = std::make_unique<WaylandTouch>(touch, this, event_source());
-  } else {
-    LOG(ERROR) << "Failed to get wl_touch from seat";
+  } else if (!touch_) {
+    if (wl_touch* touch = wl_seat_get_touch(seat)) {
+      touch_ = std::make_unique<WaylandTouch>(touch, this, event_source());
+    } else {
+      LOG(ERROR) << "Failed to get wl_touch from seat";
+    }
   }
 }
 

@@ -44,7 +44,8 @@ public final class FeedNewTabPageCardInstrumentationTest {
             new ChromeActivityTestRule<>(ChromeActivity.class);
 
     @Rule
-    public ChromeRenderTestRule mRenderTestRule = new ChromeRenderTestRule();
+    public ChromeRenderTestRule mRenderTestRule =
+            ChromeRenderTestRule.Builder.withPublicCorpus().build();
 
     @Before
     public void setUp() {

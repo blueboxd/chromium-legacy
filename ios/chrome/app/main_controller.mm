@@ -71,6 +71,7 @@
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
 #import "ios/chrome/browser/omaha/omaha_service.h"
 #include "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/screenshot/screenshot_metrics_recorder.h"
 #import "ios/chrome/browser/search_engines/extension_search_engine_data_updater.h"
 #include "ios/chrome/browser/search_engines/search_engines_util.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
@@ -268,6 +269,10 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 // The ChromeBrowserState associated with the main (non-OTR) browsing mode.
 @property(nonatomic, assign) ChromeBrowserState* mainBrowserState;  // Weak.
+
+// Handles collecting metrics on user triggered screenshots
+@property(nonatomic, strong)
+    ScreenshotMetricsRecorder* screenshotMetricsRecorder;
 
 // Returns whether the restore infobar should be displayed.
 - (bool)mustShowRestoreInfobar;
@@ -563,6 +568,9 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
   // Now that everything is properly set up, run the tests.
   tests_hook::RunTestsIfPresent();
+
+  self.screenshotMetricsRecorder = [[ScreenshotMetricsRecorder alloc] init];
+  [self.screenshotMetricsRecorder startRecordingMetrics];
 }
 
 - (void)startUpBrowserForegroundInitialization {

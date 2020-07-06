@@ -407,8 +407,6 @@ cc::LayerTreeSettings GenerateLayerTreeSettings(
     settings.enable_early_damage_check =
         cmd.HasSwitch(cc::switches::kCheckDamageEarly);
   }
-  // Android WebView handles root layer flings itself.
-  settings.ignore_root_layer_flings = using_synchronous_compositor;
   // Memory policy on Android WebView does not depend on whether device is
   // low end, so always use default policy.
   if (using_low_memory_policy && !using_synchronous_compositor) {

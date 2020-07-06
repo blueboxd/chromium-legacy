@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef REMOTING_HOST_DISCONNECT_WINDOW_MAC_H_
+#define REMOTING_HOST_DISCONNECT_WINDOW_MAC_H_
+
 #import <Cocoa/Cocoa.h>
 
 #include <string>
@@ -14,11 +17,11 @@
 // quickly disconnect a session.
 @interface DisconnectWindowController : NSWindowController {
  @private
-  base::Closure _disconnect_callback;
+  base::OnceClosure _disconnect_callback;
   base::string16 _username;
 }
 
-- (id)initWithCallback:(const base::Closure&)disconnect_callback
+- (id)initWithCallback:(base::OnceClosure)disconnect_callback
               username:(const std::string&)username
                 window:(NSWindow*)window;
 - (void)initializeWindow;
@@ -35,3 +38,5 @@
 // it can be instantiated via a xib.
 @interface DisconnectView : NSView
 @end
+
+#endif  // REMOTING_HOST_DISCONNECT_WINDOW_MAC_H_

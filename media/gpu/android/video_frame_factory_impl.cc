@@ -113,6 +113,10 @@ void VideoFrameFactoryImpl::SetSurfaceBundle(
   // changing the TextureOwner.  This is temporary.  See ImageSpec.
   image_spec_.generation_id++;
 
+  // Reset cached visible size as we might switched between overlay and texture
+  // owner mode.
+  visible_size_ = gfx::Size();
+
   if (!surface_bundle) {
     // Clear everything, just so we're not holding a reference.
     codec_buffer_wait_coordinator_ = nullptr;

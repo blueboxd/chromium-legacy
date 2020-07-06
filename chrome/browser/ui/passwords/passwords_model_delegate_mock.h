@@ -20,55 +20,88 @@ class PasswordsModelDelegateMock
   PasswordsModelDelegateMock();
   ~PasswordsModelDelegateMock() override;
 
-  MOCK_CONST_METHOD0(GetWebContents, content::WebContents*());
-  MOCK_METHOD0(GetPasswordFormMetricsRecorder,
-               password_manager::PasswordFormMetricsRecorder*());
-  MOCK_METHOD0(GetPasswordFeatureManager,
-               password_manager::PasswordFeatureManager*());
-  MOCK_CONST_METHOD0(GetOrigin, url::Origin());
-  MOCK_CONST_METHOD0(GetState, password_manager::ui::State());
-  MOCK_CONST_METHOD0(GetPendingPassword, const autofill::PasswordForm&());
-  MOCK_CONST_METHOD0(GetUnsyncedCredentials,
-                     const std::vector<autofill::PasswordForm>&());
-  MOCK_CONST_METHOD0(GetCredentialSource,
-                     password_manager::metrics_util::CredentialSourceType());
-  MOCK_CONST_METHOD0(
-      GetCurrentForms,
-      const std::vector<std::unique_ptr<autofill::PasswordForm>>&());
-  MOCK_CONST_METHOD0(GetCurrentInteractionStats,
-                     password_manager::InteractionsStats*());
-  MOCK_CONST_METHOD0(GetTotalNumberCompromisedPasswords, size_t());
-  MOCK_CONST_METHOD0(DidAuthForAccountStoreOptInFail, bool());
-  MOCK_CONST_METHOD0(BubbleIsManualFallbackForSaving, bool());
-  MOCK_METHOD0(OnBubbleShown, void());
-  MOCK_METHOD0(OnBubbleHidden, void());
-  MOCK_METHOD0(OnNoInteraction, void());
-  MOCK_METHOD0(OnNopeUpdateClicked, void());
-  MOCK_METHOD0(NeverSavePassword, void());
-  MOCK_METHOD1(UpdatePassword, void(const autofill::PasswordForm&));
-  MOCK_METHOD0(OnPasswordsRevealed, void());
-  MOCK_METHOD2(SavePassword,
-               void(const base::string16&, const base::string16&));
-  MOCK_METHOD0(SaveUnsyncedCredentialsInProfileStore, void());
-  MOCK_METHOD0(DiscardUnsyncedCredentials, void());
-  MOCK_METHOD0(MovePasswordToAccountStore, void());
-  MOCK_METHOD0(BlockMovingPasswordToAccountStore, void());
-  MOCK_METHOD2(ChooseCredential,
-               void(const autofill::PasswordForm&,
-                    password_manager::CredentialType));
-  MOCK_METHOD1(NavigateToPasswordManagerAccountDashboard,
-               void(password_manager::ManagePasswordsReferrer));
-  MOCK_METHOD1(NavigateToPasswordManagerSettingsPage,
-               void(password_manager::ManagePasswordsReferrer));
-  MOCK_METHOD0(NavigateToPasswordCheckup, void());
-  MOCK_METHOD2(EnableSync,
-               void(const AccountInfo& account, bool is_default_promo_account));
-  MOCK_METHOD0(OnDialogHidden, void());
-  MOCK_METHOD0(AuthenticateUser, bool());
-  MOCK_METHOD2(AuthenticateUserForAccountStoreOptInAndSavePassword,
-               void(const base::string16&, const base::string16&));
-  MOCK_METHOD0(AuthenticateUserForAccountStoreOptInAndMovePassword, void());
-  MOCK_CONST_METHOD0(ArePasswordsRevealedWhenBubbleIsOpened, bool());
+  MOCK_METHOD(content::WebContents*, GetWebContents, (), (const override));
+  MOCK_METHOD(password_manager::PasswordFormMetricsRecorder*,
+              GetPasswordFormMetricsRecorder,
+              (),
+              (override));
+  MOCK_METHOD(password_manager::PasswordFeatureManager*,
+              GetPasswordFeatureManager,
+              (),
+              (override));
+  MOCK_METHOD(url::Origin, GetOrigin, (), (const override));
+  MOCK_METHOD(password_manager::ui::State, GetState, (), (const override));
+  MOCK_METHOD(const autofill::PasswordForm&,
+              GetPendingPassword,
+              (),
+              (const override));
+  MOCK_METHOD(const std::vector<autofill::PasswordForm>&,
+              GetUnsyncedCredentials,
+              (),
+              (const override));
+  MOCK_METHOD(password_manager::metrics_util::CredentialSourceType,
+              GetCredentialSource,
+              (),
+              (const override));
+  MOCK_METHOD(const std::vector<std::unique_ptr<autofill::PasswordForm>>&,
+              GetCurrentForms,
+              (),
+              (const override));
+  MOCK_METHOD(password_manager::InteractionsStats*,
+              GetCurrentInteractionStats,
+              (),
+              (const override));
+  MOCK_METHOD(size_t, GetTotalNumberCompromisedPasswords, (), (const override));
+  MOCK_METHOD(bool, DidAuthForAccountStoreOptInFail, (), (const override));
+  MOCK_METHOD(bool, BubbleIsManualFallbackForSaving, (), (const override));
+  MOCK_METHOD(void, OnBubbleShown, (), (override));
+  MOCK_METHOD(void, OnBubbleHidden, (), (override));
+  MOCK_METHOD(void, OnNoInteraction, (), (override));
+  MOCK_METHOD(void, OnNopeUpdateClicked, (), (override));
+  MOCK_METHOD(void, NeverSavePassword, (), (override));
+  MOCK_METHOD(void, OnPasswordsRevealed, (), (override));
+  MOCK_METHOD(void,
+              SavePassword,
+              (const base::string16&, const base::string16&),
+              (override));
+  MOCK_METHOD(void, SaveUnsyncedCredentialsInProfileStore, (), (override));
+  MOCK_METHOD(void, DiscardUnsyncedCredentials, (), (override));
+  MOCK_METHOD(void, MovePasswordToAccountStore, (), (override));
+  MOCK_METHOD(void, BlockMovingPasswordToAccountStore, (), (override));
+  MOCK_METHOD(void,
+              ChooseCredential,
+              (const autofill::PasswordForm&, password_manager::CredentialType),
+              (override));
+  MOCK_METHOD(void,
+              NavigateToPasswordManagerAccountDashboard,
+              (password_manager::ManagePasswordsReferrer),
+              (override));
+  MOCK_METHOD(void,
+              NavigateToPasswordManagerSettingsPage,
+              (password_manager::ManagePasswordsReferrer),
+              (override));
+  MOCK_METHOD(void,
+              NavigateToPasswordCheckup,
+              (password_manager::PasswordCheckReferrer),
+              (override));
+  MOCK_METHOD(void,
+              EnableSync,
+              (const AccountInfo& account, bool is_default_promo_account),
+              (override));
+  MOCK_METHOD(void, OnDialogHidden, (), (override));
+  MOCK_METHOD(bool, AuthenticateUser, (), (override));
+  MOCK_METHOD(void,
+              AuthenticateUserForAccountStoreOptInAndSavePassword,
+              (const base::string16&, const base::string16&),
+              (override));
+  MOCK_METHOD(void,
+              AuthenticateUserForAccountStoreOptInAndMovePassword,
+              (),
+              (override));
+  MOCK_METHOD(bool,
+              ArePasswordsRevealedWhenBubbleIsOpened,
+              (),
+              (const override));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordsModelDelegateMock);

@@ -93,14 +93,6 @@ class PlayerFrameView extends FrameLayout {
         layoutSubframes();
     }
 
-    void updateDelegateScaleMatrix(Matrix matrix, float scaleFactor) {
-        mDelegate.setBitmapScaleMatrix(matrix, scaleFactor);
-    }
-
-    void forceRedraw() {
-        mDelegate.forceRedraw();
-    }
-
     @Override
     protected void onDraw(Canvas canvas) {
         canvas.save();

@@ -29,9 +29,9 @@ def main(argv):
   ])
 
   if el.find_element_by_css_selector("cr-toggle").get_attribute("checked"):
-    print "TRUE"
+    print("TRUE")
   else:
-    print "FALSE"
+    print("FALSE")
 
   driver.quit()
 

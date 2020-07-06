@@ -148,6 +148,9 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
   // Returns the page language.
   std::string GetLanguage();
 
+  // Access the UKM recorder.
+  ukm::MojoUkmRecorder* ukm_recorder() const { return ukm_recorder_.get(); }
+
  protected:
   // Send queued events from the renderer to the browser.
   void SendPendingAccessibilityEvents();

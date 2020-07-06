@@ -38,7 +38,7 @@ class X11MenuRegistrar : public ui::XEventDispatcher {
 
   // Called when |window| has been created or destroyed. |window| may not be
   // managed by Chrome.
-  void OnWindowCreatedOrDestroyed(int event_type, x11::Window window);
+  void OnWindowCreatedOrDestroyed(bool created, x11::Window window);
 
   // The display and the native X window hosting the root window.
   XDisplay* xdisplay_;

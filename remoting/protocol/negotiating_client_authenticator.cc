@@ -135,15 +135,15 @@ void NegotiatingClientAuthenticator::CreateAuthenticatorForCurrentMethod(
 
     case Method::THIRD_PARTY_SPAKE2_P224:
       current_authenticator_.reset(new ThirdPartyClientAuthenticator(
-          base::Bind(&V2Authenticator::CreateForClient),
+          base::BindRepeating(&V2Authenticator::CreateForClient),
           config_.fetch_third_party_token_callback));
       std::move(resume_callback).Run();
       break;
 
     case Method::THIRD_PARTY_SPAKE2_CURVE25519:
       current_authenticator_.reset(new ThirdPartyClientAuthenticator(
-          base::Bind(&Spake2Authenticator::CreateForClient, local_id_,
-                     remote_id_),
+          base::BindRepeating(&Spake2Authenticator::CreateForClient, local_id_,
+                              remote_id_),
           config_.fetch_third_party_token_callback));
       std::move(resume_callback).Run();
       break;
@@ -151,7 +151,7 @@ void NegotiatingClientAuthenticator::CreateAuthenticatorForCurrentMethod(
     case Method::PAIRED_SPAKE2_P224: {
       PairingClientAuthenticator* pairing_authenticator =
           new PairingClientAuthenticator(
-              config_, base::Bind(&V2Authenticator::CreateForClient));
+              config_, base::BindRepeating(&V2Authenticator::CreateForClient));
       current_authenticator_ = base::WrapUnique(pairing_authenticator);
       pairing_authenticator->Start(preferred_initial_state,
                                    std::move(resume_callback));
@@ -161,7 +161,8 @@ void NegotiatingClientAuthenticator::CreateAuthenticatorForCurrentMethod(
     case Method::PAIRED_SPAKE2_CURVE25519: {
       PairingClientAuthenticator* pairing_authenticator =
           new PairingClientAuthenticator(
-              config_, base::Bind(&Spake2Authenticator::CreateForClient,
+              config_,
+              base::BindRepeating(&Spake2Authenticator::CreateForClient,
                                   local_id_, remote_id_));
       current_authenticator_ = base::WrapUnique(pairing_authenticator);
       pairing_authenticator->Start(preferred_initial_state,
@@ -174,7 +175,7 @@ void NegotiatingClientAuthenticator::CreateAuthenticatorForCurrentMethod(
     case Method::SHARED_SECRET_SPAKE2_CURVE25519:
       config_.fetch_secret_callback.Run(
           false,
-          base::Bind(
+          base::BindRepeating(
               &NegotiatingClientAuthenticator::CreateSharedSecretAuthenticator,
               weak_factory_.GetWeakPtr(), preferred_initial_state,
               base::Passed(std::move(resume_callback))));
@@ -188,7 +189,7 @@ void NegotiatingClientAuthenticator::CreatePreferredAuthenticator() {
           methods_.end()) {
     PairingClientAuthenticator* pairing_authenticator =
         new PairingClientAuthenticator(
-            config_, base::Bind(&V2Authenticator::CreateForClient));
+            config_, base::BindRepeating(&V2Authenticator::CreateForClient));
     current_authenticator_ = base::WrapUnique(pairing_authenticator);
     pairing_authenticator->StartPaired(MESSAGE_READY);
     current_method_ = Method::PAIRED_SPAKE2_P224;

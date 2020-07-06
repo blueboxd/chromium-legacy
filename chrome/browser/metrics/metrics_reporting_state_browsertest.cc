@@ -4,6 +4,7 @@
 
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
@@ -80,7 +81,7 @@ class MetricsReportingStateTest : public InProcessBrowserTest,
     ChromeMetricsServiceAccessor::SetForceIsMetricsReportingEnabledPrefLookup(
         true);
     static_cast<ChromeBrowserMainParts*>(parts)->AddParts(
-        new ChromeBrowserMainExtraPartsChecker(
+        std::make_unique<ChromeBrowserMainExtraPartsChecker>(
             is_metrics_reporting_enabled_initial_value()));
   }
 

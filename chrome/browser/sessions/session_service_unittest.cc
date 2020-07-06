@@ -1117,8 +1117,8 @@ TEST_F(SessionServiceTest, RestoreActivation2) {
   EXPECT_EQ(window2_id, active_window_id);
 }
 
-// Makes sure we don't track blacklisted URLs.
-TEST_F(SessionServiceTest, IgnoreBlacklistedUrls) {
+// Makes sure sessions doesn't track certain urls.
+TEST_F(SessionServiceTest, IgnoreBlockedUrls) {
   SessionID tab_id = SessionID::NewUnique();
 
   SerializedNavigationEntry nav1 =

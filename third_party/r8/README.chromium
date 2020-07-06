@@ -1,7 +1,7 @@
 Name: R8
 URL: https://r8.googlesource.com/r8
 Revision: 924f28bdb1f32b7504d6813ee911ba1949be6130
-Version: 2.2.1-dev
+Version: 2.2.4-dev
 License: BSD 3-Clause
 License File: NOT_SHIPPED
 Security Critical: no
@@ -38,7 +38,7 @@ cp r8.jar $CHROMIUM_SRC/third_party/r8/lib/r8.jar
 
 # Create patches if conflicts / new patches. Change number if expecting
 # different amount of patches:
-git format-patch -6 -o $CHROMIUM_SRC/third_party/r8/patches
+git format-patch -3 -o $CHROMIUM_SRC/third_party/r8/patches
 
 # Copy over desugar config:
 cp src/library_desugar/desugar_jdk_libs.json $CHROMIUM_SRC/third_party/r8

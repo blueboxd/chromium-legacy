@@ -26,13 +26,14 @@ namespace {
 template <typename ResultType>
 class AndroidProviderTask : public history::HistoryDBTask {
  public:
-  typedef base::Callback<ResultType(history::AndroidProviderBackend*)>
+  typedef base::OnceCallback<ResultType(history::AndroidProviderBackend*)>
       RequestCallback;
-  typedef base::Callback<void(ResultType)> ResultCallback;
+  typedef base::OnceCallback<void(ResultType)> ResultCallback;
 
-  AndroidProviderTask(const RequestCallback& request_cb,
-                      const ResultCallback& result_cb)
-      : request_cb_(request_cb), result_cb_(result_cb), result_(0) {
+  AndroidProviderTask(RequestCallback request_cb, ResultCallback result_cb)
+      : request_cb_(std::move(request_cb)),
+        result_cb_(std::move(result_cb)),
+        result_(0) {
     DCHECK(!request_cb_.is_null());
     DCHECK(!result_cb_.is_null());
   }
@@ -46,11 +47,11 @@ class AndroidProviderTask : public history::HistoryDBTask {
     history::AndroidProviderBackend* android_provider_backend =
       history::AndroidProviderBackend::FromHistoryBackend(history_backend);
     if (android_provider_backend)
-      result_ = request_cb_.Run(android_provider_backend);
+      result_ = std::move(request_cb_).Run(android_provider_backend);
     return true;
   }
 
-  void DoneRunOnMainThread() override { result_cb_.Run(result_); }
+  void DoneRunOnMainThread() override { std::move(result_cb_).Run(result_); }
 
   RequestCallback request_cb_;
   ResultCallback result_cb_;
@@ -61,11 +62,11 @@ class AndroidProviderTask : public history::HistoryDBTask {
 // type deduction.
 template <typename ResultType>
 std::unique_ptr<history::HistoryDBTask> CreateAndroidProviderTask(
-    const base::Callback<ResultType(history::AndroidProviderBackend*)>&
-        request_cb,
-    const base::Callback<void(ResultType)>& result_cb) {
+    base::OnceCallback<ResultType(history::AndroidProviderBackend*)> request_cb,
+    base::OnceCallback<void(ResultType)> result_cb) {
   return std::unique_ptr<history::HistoryDBTask>(
-      new AndroidProviderTask<ResultType>(request_cb, result_cb));
+      new AndroidProviderTask<ResultType>(std::move(request_cb),
+                                          std::move(result_cb)));
 }
 
 // History and bookmarks ----------------------------------------------------
@@ -255,20 +256,20 @@ AndroidHistoryProviderService::QueryHistoryAndBookmarks(
     const std::string& selection,
     const std::vector<base::string16>& selection_args,
     const std::string& sort_order,
-    const QueryCallback& callback,
+    QueryCallback callback,
     base::CancelableTaskTracker* tracker) {
   history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (!hs) {
-    callback.Run(nullptr);
+    std::move(callback).Run(nullptr);
     return base::CancelableTaskTracker::kBadTaskId;
   }
   return hs->ScheduleDBTask(
       FROM_HERE,
       CreateAndroidProviderTask(
-          base::Bind(&QueryHistoryAndBookmarksAdapter, projections, selection,
-                     selection_args, sort_order),
-          callback),
+          base::BindOnce(&QueryHistoryAndBookmarksAdapter, projections,
+                         selection, selection_args, sort_order),
+          std::move(callback)),
       tracker);
 }
 
@@ -277,19 +278,20 @@ AndroidHistoryProviderService::UpdateHistoryAndBookmarks(
     const history::HistoryAndBookmarkRow& row,
     const std::string& selection,
     const std::vector<base::string16>& selection_args,
-    const UpdateCallback& callback,
+    UpdateCallback callback,
     base::CancelableTaskTracker* tracker) {
   history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (!hs) {
-    callback.Run(0);
+    std::move(callback).Run(0);
     return base::CancelableTaskTracker::kBadTaskId;
   }
   return hs->ScheduleDBTask(
       FROM_HERE,
-      CreateAndroidProviderTask(base::Bind(&UpdateHistoryAndBookmarksAdapter,
-                                           row, selection, selection_args),
-                                callback),
+      CreateAndroidProviderTask(
+          base::BindOnce(&UpdateHistoryAndBookmarksAdapter, row, selection,
+                         selection_args),
+          std::move(callback)),
       tracker);
 }
 
@@ -297,37 +299,39 @@ base::CancelableTaskTracker::TaskId
 AndroidHistoryProviderService::DeleteHistoryAndBookmarks(
     const std::string& selection,
     const std::vector<base::string16>& selection_args,
-    const DeleteCallback& callback,
+    DeleteCallback callback,
     base::CancelableTaskTracker* tracker) {
   history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (!hs) {
-    callback.Run(0);
+    std::move(callback).Run(0);
     return base::CancelableTaskTracker::kBadTaskId;
   }
   return hs->ScheduleDBTask(
       FROM_HERE,
-      CreateAndroidProviderTask(base::Bind(&DeleteHistoryAndBookmarksAdapter,
-                                           selection, selection_args),
-                                callback),
+      CreateAndroidProviderTask(
+          base::BindOnce(&DeleteHistoryAndBookmarksAdapter, selection,
+                         selection_args),
+          std::move(callback)),
       tracker);
 }
 
 base::CancelableTaskTracker::TaskId
 AndroidHistoryProviderService::InsertHistoryAndBookmark(
     const history::HistoryAndBookmarkRow& values,
-    const InsertCallback& callback,
+    InsertCallback callback,
     base::CancelableTaskTracker* tracker) {
   history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (!hs) {
-    callback.Run(0);
+    std::move(callback).Run(0);
     return base::CancelableTaskTracker::kBadTaskId;
   }
   return hs->ScheduleDBTask(
       FROM_HERE,
       CreateAndroidProviderTask(
-          base::Bind(&InsertHistoryAndBookmarkAdapter, values), callback),
+          base::BindOnce(&InsertHistoryAndBookmarkAdapter, values),
+          std::move(callback)),
       tracker);
 }
 
@@ -335,19 +339,19 @@ base::CancelableTaskTracker::TaskId
 AndroidHistoryProviderService::DeleteHistory(
     const std::string& selection,
     const std::vector<base::string16>& selection_args,
-    const DeleteCallback& callback,
+    DeleteCallback callback,
     base::CancelableTaskTracker* tracker) {
   history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (!hs) {
-    callback.Run(0);
+    std::move(callback).Run(0);
     return base::CancelableTaskTracker::kBadTaskId;
   }
   return hs->ScheduleDBTask(
       FROM_HERE,
       CreateAndroidProviderTask(
-          base::Bind(&DeleteHistoryAdapter, selection, selection_args),
-          callback),
+          base::BindOnce(&DeleteHistoryAdapter, selection, selection_args),
+          std::move(callback)),
       tracker);
 }
 
@@ -356,19 +360,19 @@ AndroidHistoryProviderService::MoveStatement(
     history::AndroidStatement* statement,
     int current_pos,
     int destination,
-    const MoveStatementCallback& callback,
+    MoveStatementCallback callback,
     base::CancelableTaskTracker* tracker) {
   history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (!hs) {
-    callback.Run(current_pos);
+    std::move(callback).Run(current_pos);
     return base::CancelableTaskTracker::kBadTaskId;
   }
   return hs->ScheduleDBTask(
       FROM_HERE,
-      CreateAndroidProviderTask(base::Bind(&MoveStatementAdapter, statement,
-                                           current_pos, destination),
-                                callback),
+      CreateAndroidProviderTask(base::BindOnce(&MoveStatementAdapter, statement,
+                                               current_pos, destination),
+                                std::move(callback)),
       tracker);
 }
 
@@ -388,18 +392,18 @@ void AndroidHistoryProviderService::CloseStatement(
 base::CancelableTaskTracker::TaskId
 AndroidHistoryProviderService::InsertSearchTerm(
     const history::SearchRow& row,
-    const InsertCallback& callback,
+    InsertCallback callback,
     base::CancelableTaskTracker* tracker) {
   history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (!hs) {
-    callback.Run(0);
+    std::move(callback).Run(0);
     return base::CancelableTaskTracker::kBadTaskId;
   }
   return hs->ScheduleDBTask(
       FROM_HERE,
-      CreateAndroidProviderTask(base::Bind(&InsertSearchTermAdapter, row),
-                                callback),
+      CreateAndroidProviderTask(base::BindOnce(&InsertSearchTermAdapter, row),
+                                std::move(callback)),
       tracker);
 }
 
@@ -408,19 +412,19 @@ AndroidHistoryProviderService::UpdateSearchTerms(
     const history::SearchRow& row,
     const std::string& selection,
     const std::vector<base::string16>& selection_args,
-    const UpdateCallback& callback,
+    UpdateCallback callback,
     base::CancelableTaskTracker* tracker) {
   history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (!hs) {
-    callback.Run(0);
+    std::move(callback).Run(0);
     return base::CancelableTaskTracker::kBadTaskId;
   }
   return hs->ScheduleDBTask(
       FROM_HERE,
-      CreateAndroidProviderTask(
-          base::Bind(&UpdateSearchTermsAdapter, row, selection, selection_args),
-          callback),
+      CreateAndroidProviderTask(base::BindOnce(&UpdateSearchTermsAdapter, row,
+                                               selection, selection_args),
+                                std::move(callback)),
       tracker);
 }
 
@@ -428,19 +432,19 @@ base::CancelableTaskTracker::TaskId
 AndroidHistoryProviderService::DeleteSearchTerms(
     const std::string& selection,
     const std::vector<base::string16>& selection_args,
-    const DeleteCallback& callback,
+    DeleteCallback callback,
     base::CancelableTaskTracker* tracker) {
   history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (!hs) {
-    callback.Run(0);
+    std::move(callback).Run(0);
     return base::CancelableTaskTracker::kBadTaskId;
   }
   return hs->ScheduleDBTask(
       FROM_HERE,
       CreateAndroidProviderTask(
-          base::Bind(&DeleteSearchTermsAdapter, selection, selection_args),
-          callback),
+          base::BindOnce(&DeleteSearchTermsAdapter, selection, selection_args),
+          std::move(callback)),
       tracker);
 }
 
@@ -450,20 +454,20 @@ AndroidHistoryProviderService::QuerySearchTerms(
     const std::string& selection,
     const std::vector<base::string16>& selection_args,
     const std::string& sort_order,
-    const QueryCallback& callback,
+    QueryCallback callback,
     base::CancelableTaskTracker* tracker) {
   history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (!hs) {
-    callback.Run(nullptr);
+    std::move(callback).Run(nullptr);
     return base::CancelableTaskTracker::kBadTaskId;
   }
   return hs->ScheduleDBTask(
       FROM_HERE,
       CreateAndroidProviderTask(
-          base::Bind(&QuerySearchTermsAdapter, projections, selection,
-                     selection_args, sort_order),
-          callback),
+          base::BindOnce(&QuerySearchTermsAdapter, projections, selection,
+                         selection_args, sort_order),
+          std::move(callback)),
       tracker);
 }
 

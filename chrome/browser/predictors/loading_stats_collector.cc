@@ -192,6 +192,13 @@ void LoadingStatsCollector::RecordPageRequestSummary(
   if (optimization_guide_prediction) {
     builder.SetOptimizationGuidePredictionDecision(
         static_cast<int64_t>(optimization_guide_prediction->decision));
+    if (optimization_guide_prediction->optimization_guide_prediction_arrived) {
+      builder.SetNavigationStartToOptimizationGuidePredictionArrived(
+          (optimization_guide_prediction->optimization_guide_prediction_arrived
+               .value() -
+           summary.navigation_started)
+              .InMilliseconds());
+    }
     if (!optimization_guide_prediction->preconnect_prediction.requests
              .empty()) {
       size_t correctly_predicted_origins = ReportPreconnectPredictionAccuracy(
@@ -227,8 +234,15 @@ void LoadingStatsCollector::RecordPageRequestSummary(
     preconnect_stats_.erase(it);
   }
 
-  if (recorded_ukm)
+  if (recorded_ukm) {
+    // Only record nav start to commit if we had any predictions.
+    if (summary.navigation_committed != base::TimeTicks::Max()) {
+      builder.SetNavigationStartToNavigationCommit(
+          (summary.navigation_committed - summary.navigation_started)
+              .InMilliseconds());
+    }
     builder.Record(ukm::UkmRecorder::Get());
+  }
 }
 
 void LoadingStatsCollector::CleanupAbandonedStats() {

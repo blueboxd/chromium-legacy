@@ -13,6 +13,7 @@
 #include "ui/events/x/x11_window_event_manager.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
+#include "ui/gfx/x/xproto.h"
 
 namespace ui {
 
@@ -48,11 +49,9 @@ bool X11PropertyChangeWaiter::ShouldKeepOnWaiting(x11::Event* event) {
 }
 
 bool X11PropertyChangeWaiter::DispatchXEvent(x11::Event* x11_event) {
-  XEvent* xev = &x11_event->xlib_event();
-  if (!xev || !wait_ || xev->type != PropertyNotify ||
-      xev->xproperty.window != static_cast<uint32_t>(x_window_) ||
-      static_cast<x11::Atom>(xev->xproperty.atom) != gfx::GetAtom(property_) ||
-      ShouldKeepOnWaiting(x11_event)) {
+  auto* prop = x11_event->As<x11::PropertyNotifyEvent>();
+  if (!wait_ || !prop || prop->window != x_window_ ||
+      prop->atom != gfx::GetAtom(property_) || ShouldKeepOnWaiting(x11_event)) {
     return false;
   }
 

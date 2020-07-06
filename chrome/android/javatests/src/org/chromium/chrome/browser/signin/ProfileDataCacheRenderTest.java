@@ -60,7 +60,8 @@ public class ProfileDataCacheRenderTest extends DummyUiActivityTestCase {
     }
 
     @Rule
-    public ChromeRenderTestRule mRenderTestRule = new ChromeRenderTestRule();
+    public ChromeRenderTestRule mRenderTestRule =
+            ChromeRenderTestRule.Builder.withPublicCorpus().build();
 
     private FrameLayout mContentView;
     private ImageView mImageView;

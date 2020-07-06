@@ -31,6 +31,7 @@
 #include "ash/media/media_controller_impl.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/login_accelerators.h"
 #include "ash/public/cpp/login_types.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shelf/shelf.h"
@@ -2098,25 +2099,29 @@ bool LockContentsView::OnKeyPressed(const ui::KeyEvent& event) {
 }
 
 void LockContentsView::RegisterAccelerators() {
-  // Applies on login and lock:
-  accel_map_[ui::Accelerator(ui::VKEY_V, ui::EF_ALT_DOWN)] =
-      AcceleratorAction::kToggleSystemInfo;
-
-  // Login-only accelerators:
-  if (screen_type_ == LockScreen::ScreenType::kLogin) {
-    accel_map_[ui::Accelerator(ui::VKEY_I,
-                               ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN)] =
-        AcceleratorAction::kShowFeedback;
-
+  for (size_t i = 0; i < kLoginAcceleratorDataLength; ++i) {
+    if (!kLoginAcceleratorData[i].global)
+      continue;
+    if ((screen_type_ == LockScreen::ScreenType::kLogin) &&
+        !(kLoginAcceleratorData[i].scope & kScopeLogin)) {
+      continue;
+    }
+    if ((screen_type_ == LockScreen::ScreenType::kLock) &&
+        !(kLoginAcceleratorData[i].scope & kScopeLock)) {
+      continue;
+    }
     // Show reset conflicts with rotate screen when --ash-dev-shortcuts is
     // passed. Favor --ash-dev-shortcuts since that is explicitly added.
-    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+    if (kLoginAcceleratorData[i].action ==
+            LoginAcceleratorAction::kShowResetScreen &&
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kAshDeveloperShortcuts)) {
-      accel_map_[ui::Accelerator(ui::VKEY_R, ui::EF_CONTROL_DOWN |
-                                                 ui::EF_SHIFT_DOWN |
-                                                 ui::EF_ALT_DOWN)] =
-          AcceleratorAction::kShowResetScreen;
+      continue;
     }
+
+    accel_map_[ui::Accelerator(kLoginAcceleratorData[i].keycode,
+                               kLoginAcceleratorData[i].modifiers)] =
+        kLoginAcceleratorData[i].action;
   }
 
   // Register the accelerators.
@@ -2126,15 +2131,15 @@ void LockContentsView::RegisterAccelerators() {
     controller->Register({item.first}, this);
 }
 
-void LockContentsView::PerformAction(AcceleratorAction action) {
+void LockContentsView::PerformAction(LoginAcceleratorAction action) {
   switch (action) {
-    case AcceleratorAction::kToggleSystemInfo:
+    case LoginAcceleratorAction::kToggleSystemInfo:
       ToggleSystemInfo();
       break;
-    case AcceleratorAction::kShowFeedback:
+    case LoginAcceleratorAction::kShowFeedback:
       Shell::Get()->login_screen_controller()->ShowFeedback();
       break;
-    case AcceleratorAction::kShowResetScreen:
+    case LoginAcceleratorAction::kShowResetScreen:
       Shell::Get()->login_screen_controller()->ShowResetScreen();
       break;
     default:

@@ -243,6 +243,12 @@ LocalDOMWindow::LocalDOMWindow(LocalFrame& frame, WindowAgent* agent)
           MakeGarbageCollected<
               HeapHashMap<int, Member<ContentSecurityPolicy>>>()) {}
 
+void LocalDOMWindow::BindContentSecurityPolicy() {
+  DCHECK(!GetContentSecurityPolicy()->IsBound());
+  GetContentSecurityPolicy()->BindToDelegate(
+      GetContentSecurityPolicyDelegate());
+}
+
 void LocalDOMWindow::AcceptLanguagesChanged() {
   if (navigator_)
     navigator_->SetLanguagesDirty();
@@ -1034,11 +1040,11 @@ void LocalDOMWindow::DispatchMessageEventWithOriginCheck(
   }
 
   KURL sender(event->origin());
-  if (!document()->GetContentSecurityPolicy()->AllowConnectToSource(
+  if (!GetContentSecurityPolicy()->AllowConnectToSource(
           sender, sender, RedirectStatus::kNoRedirect,
           ReportingDisposition::kSuppressReporting)) {
     UseCounter::Count(
-        document(), WebFeature::kPostMessageIncomingWouldBeBlockedByConnectSrc);
+        this, WebFeature::kPostMessageIncomingWouldBeBlockedByConnectSrc);
   }
 
   if (event->IsOriginCheckRequiredToAccessData()) {

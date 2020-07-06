@@ -72,9 +72,10 @@ bool ShouldReportForInteraction(FrameSequenceMetrics* metrics,
                                 FrameSequenceMetrics::ThreadType thread_type) {
   const auto sequence_type = metrics->type();
 
-  // For touch/wheel scroll, the slower thread is the one we want to report. For
-  // pinch-zoom, it's the compositor-thread.
-  if (sequence_type == FrameSequenceTrackerType::kTouchScroll ||
+  // For scrollbar/touch/wheel scroll, the slower thread is the one we want to
+  // report. For pinch-zoom, it's the compositor-thread.
+  if (sequence_type == FrameSequenceTrackerType::kScrollbarScroll ||
+      sequence_type == FrameSequenceTrackerType::kTouchScroll ||
       sequence_type == FrameSequenceTrackerType::kWheelScroll)
     return thread_type == metrics->GetEffectiveThread();
 
@@ -85,7 +86,8 @@ bool ShouldReportForInteraction(FrameSequenceMetrics* metrics,
 }
 
 bool IsInteractionType(FrameSequenceTrackerType sequence_type) {
-  return sequence_type == FrameSequenceTrackerType::kTouchScroll ||
+  return sequence_type == FrameSequenceTrackerType::kScrollbarScroll ||
+         sequence_type == FrameSequenceTrackerType::kTouchScroll ||
          sequence_type == FrameSequenceTrackerType::kWheelScroll ||
          sequence_type == FrameSequenceTrackerType::kPinchZoom;
 }

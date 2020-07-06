@@ -88,9 +88,12 @@ PerformanceTracker::PerformanceTracker()
       video_decode_ms_(kLatencySampleSize),
       video_paint_ms_(kLatencySampleSize),
       round_trip_ms_(kLatencySampleSize) {
-  uma_custom_counts_updater_ = base::Bind(&UpdateUmaCustomHistogramStub);
-  uma_custom_times_updater_ = base::Bind(&UpdateUmaCustomHistogramStub);
-  uma_enum_histogram_updater_ = base::Bind(&UpdateUmaEnumHistogramStub);
+  uma_custom_counts_updater_ =
+      base::BindRepeating(&UpdateUmaCustomHistogramStub);
+  uma_custom_times_updater_ =
+      base::BindRepeating(&UpdateUmaCustomHistogramStub);
+  uma_enum_histogram_updater_ =
+      base::BindRepeating(&UpdateUmaEnumHistogramStub);
 }
 
 PerformanceTracker::~PerformanceTracker() = default;
@@ -112,8 +115,8 @@ void PerformanceTracker::OnVideoFrameStats(const FrameStats& stats) {
   if (!is_paused_ && !upload_uma_stats_timer_.IsRunning()) {
     upload_uma_stats_timer_.Start(
         FROM_HERE, base::TimeDelta::FromSeconds(kStatsUpdatePeriodSeconds),
-        base::Bind(&PerformanceTracker::UploadRateStatsToUma,
-                   base::Unretained(this)));
+        base::BindRepeating(&PerformanceTracker::UploadRateStatsToUma,
+                            base::Unretained(this)));
   }
 
   // Record this received packet, even if it is empty.

@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -739,6 +740,29 @@ void DownloadManagerService::RenameDownload(
           &RenameItemCallback,
           base::android::ScopedJavaGlobalRef<jobject>(env, j_callback));
   item->Rename(base::FilePath(target_name), std::move(callback));
+}
+
+void DownloadManagerService::ChangeSchedule(JNIEnv* env,
+                                            const JavaParamRef<jobject>& obj,
+                                            const JavaParamRef<jstring>& id,
+                                            jboolean only_on_wifi,
+                                            jlong start_time,
+                                            jboolean is_off_the_record) {
+  std::string download_guid = ConvertJavaStringToUTF8(id);
+  download::DownloadItem* item = GetDownload(download_guid, is_off_the_record);
+  if (!item)
+    return;
+
+  base::Optional<DownloadSchedule> download_schedule;
+  if (only_on_wifi) {
+    download_schedule = base::make_optional<DownloadSchedule>(
+        true /*only_on_wifi*/, base::nullopt);
+  } else if (start_time > 0) {
+    download_schedule = base::make_optional<DownloadSchedule>(
+        false /*only_on_wifi*/, base::Time::FromJavaTime(start_time));
+  }
+
+  item->OnDownloadScheduleChanged(std::move(download_schedule));
 }
 
 void DownloadManagerService::CreateInterruptedDownloadForTest(

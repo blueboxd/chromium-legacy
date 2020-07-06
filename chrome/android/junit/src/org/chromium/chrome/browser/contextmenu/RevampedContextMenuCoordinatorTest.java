@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.contextmenu;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Mockito.when;
 
 import android.app.Activity;
 import android.util.Pair;
@@ -16,16 +17,20 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.JniMocker;
 import org.chromium.blink_public.common.ContextMenuDataMediaType;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuItem.Item;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator.ContextMenuGroup;
 import org.chromium.chrome.browser.contextmenu.RevampedContextMenuCoordinator.ListItemType;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.performance_hints.PerformanceHintsObserver;
+import org.chromium.chrome.browser.performance_hints.PerformanceHintsObserverJni;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.embedder_support.contextmenu.ContextMenuParams;
@@ -40,10 +45,14 @@ import java.util.List;
  * Unit tests for the Revamped context menu.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Features.DisableFeatures(ChromeFeatureList.CONTEXT_MENU_PERFORMANCE_INFO)
 public class RevampedContextMenuCoordinatorTest {
     @Rule
     public TestRule mProcessor = new Features.JUnitProcessor();
+    @Rule
+    public JniMocker mocker = new JniMocker();
+
+    @Mock
+    PerformanceHintsObserver.Natives mNativeMock;
 
     private RevampedContextMenuCoordinator mCoordinator;
     private Activity mActivity;
@@ -55,6 +64,9 @@ public class RevampedContextMenuCoordinatorTest {
         mActivity = Robolectric.setupActivity(Activity.class);
         mWindow = new ActivityWindowAndroid(mActivity, false);
         mCoordinator = new RevampedContextMenuCoordinator(0, null);
+        MockitoAnnotations.initMocks(this);
+        mocker.mock(PerformanceHintsObserverJni.TEST_HOOKS, mNativeMock);
+        when(mNativeMock.isContextMenuPerformanceInfoEnabled()).thenReturn(false);
     }
 
     @After

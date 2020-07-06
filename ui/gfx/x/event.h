@@ -6,6 +6,7 @@
 #define UI_GFX_X_EVENT_H_
 
 #include <X11/Xlib.h>
+#include <X11/extensions/XInput2.h>
 #include <xcb/xcb.h>
 
 #include <cstdint>
@@ -14,6 +15,7 @@
 #include "base/component_export.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_refptr.h"
+#include "ui/gfx/x/xproto.h"
 
 namespace x11 {
 
@@ -35,7 +37,9 @@ class COMPONENT_EXPORT(X11) Event {
     xlib_event_ = *xlib_event;
     type_id_ = T::type_id;
     deleter_ = [](void* event) { delete reinterpret_cast<T*>(event); };
-    event_ = new T(std::forward<T>(xproto_event));
+    T* event = new T(std::forward<T>(xproto_event));
+    event_ = event;
+    window_ = event->GetWindow();
   }
 
   Event();
@@ -74,6 +78,8 @@ class COMPONENT_EXPORT(X11) Event {
   const XEvent& xlib_event() const { return xlib_event_; }
   XEvent& xlib_event() { return xlib_event_; }
 
+  x11::Window window() const { return window_ ? *window_ : x11::Window::None; }
+
  private:
   friend void ReadEvent(Event* event,
                         Connection* connection,
@@ -93,6 +99,10 @@ class COMPONENT_EXPORT(X11) Event {
   int type_id_ = 0;
   void (*deleter_)(void*) = nullptr;
   void* event_ = nullptr;
+
+  // This member points to a field in |event_|, or may be nullptr if there's no
+  // associated window for the event.  It's owned by |event_|, not us.
+  x11::Window* window_ = nullptr;
 };
 
 }  // namespace x11

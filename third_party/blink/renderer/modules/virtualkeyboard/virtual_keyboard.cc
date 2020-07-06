@@ -19,14 +19,6 @@
 
 namespace blink {
 
-namespace {
-
-String FormatPx(int value) {
-  return String::Format("%dpx", value);
-}
-
-}  // namespace
-
 VirtualKeyboard::VirtualKeyboard(LocalFrame* frame)
     : ExecutionContextClient(frame ? frame->DomWindow()->GetExecutionContext()
                                    : nullptr),
@@ -76,13 +68,15 @@ void VirtualKeyboard::VirtualKeyboardOverlayChanged(
     DocumentStyleEnvironmentVariables& vars =
         frame->GetDocument()->GetStyleEngine().EnsureEnvironmentVariables();
     vars.SetVariable(UADefinedVariable::kKeyboardInsetTop,
-                     FormatPx(keyboard_rect.y()));
+                     StyleEnvironmentVariables::FormatPx(keyboard_rect.y()));
     vars.SetVariable(UADefinedVariable::kKeyboardInsetLeft,
-                     FormatPx(keyboard_rect.x()));
-    vars.SetVariable(UADefinedVariable::kKeyboardInsetBottom,
-                     FormatPx(keyboard_rect.bottom()));
-    vars.SetVariable(UADefinedVariable::kKeyboardInsetRight,
-                     FormatPx(keyboard_rect.right()));
+                     StyleEnvironmentVariables::FormatPx(keyboard_rect.x()));
+    vars.SetVariable(
+        UADefinedVariable::kKeyboardInsetBottom,
+        StyleEnvironmentVariables::FormatPx(keyboard_rect.bottom()));
+    vars.SetVariable(
+        UADefinedVariable::kKeyboardInsetRight,
+        StyleEnvironmentVariables::FormatPx(keyboard_rect.right()));
   }
   DispatchEvent(*(MakeGarbageCollected<VirtualKeyboardGeometryChangeEvent>(
       event_type_names::kGeometrychange, bounding_rect_)));

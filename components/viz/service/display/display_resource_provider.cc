@@ -182,47 +182,6 @@ bool DisplayResourceProvider::OnMemoryDump(
   return true;
 }
 
-void DisplayResourceProvider::SendPromotionHints(
-    const std::map<ResourceId, gfx::RectF>& promotion_hints,
-    const ResourceIdSet& requestor_set) {
-#if defined(OS_ANDROID)
-  GLES2Interface* gl = ContextGL();
-  if (!gl)
-    return;
-
-  for (const auto& id : requestor_set) {
-    auto it = resources_.find(id);
-    if (it == resources_.end())
-      continue;
-
-    if (it->second.marked_for_deletion)
-      continue;
-
-    const ChildResource* resource = LockForRead(id, false /* overlay_only */);
-    // TODO(ericrk): We should never fail LockForRead, but we appear to be
-    // doing so on Android in rare cases. Handle this gracefully until a better
-    // solution can be found. https://crbug.com/811858
-    if (!resource)
-      return;
-
-    DCHECK(resource->transferable.wants_promotion_hint);
-
-    // Insist that this is backed by a GPU texture.
-    if (resource->is_gpu_resource_type()) {
-      DCHECK(resource->gl_id);
-      auto iter = promotion_hints.find(id);
-      bool promotable = iter != promotion_hints.end();
-      gl->OverlayPromotionHintCHROMIUM(resource->gl_id, promotable,
-                                       promotable ? iter->second.x() : 0,
-                                       promotable ? iter->second.y() : 0,
-                                       promotable ? iter->second.width() : 0,
-                                       promotable ? iter->second.height() : 0);
-    }
-    UnlockForRead(id);
-  }
-#endif
-}
-
 #if defined(OS_ANDROID)
 bool DisplayResourceProvider::IsBackedBySurfaceTexture(ResourceId id) {
   ChildResource* resource = GetResource(id);

@@ -27,8 +27,9 @@ using OfflineContentProvider = offline_items_collection::OfflineContentProvider;
 using OfflineContentAggregator =
     offline_items_collection::OfflineContentAggregator;
 using OfflineItem = offline_items_collection::OfflineItem;
-using UpdateDelta = offline_items_collection::UpdateDelta;
+using OfflineItemSchedule = offline_items_collection::OfflineItemSchedule;
 using OfflineItemShareInfo = offline_items_collection::OfflineItemShareInfo;
+using UpdateDelta = offline_items_collection::UpdateDelta;
 
 namespace offline_pages {
 class VisualsDecoder;
@@ -108,6 +109,8 @@ class DownloadUIAdapter : public OfflineContentProvider,
   void RenameItem(const ContentId& id,
                   const std::string& name,
                   RenameCallback callback) override;
+  void ChangeSchedule(const ContentId& id,
+                      base::Optional<OfflineItemSchedule> schedule) override;
   void AddObserver(OfflineContentProvider::Observer* observer) override;
   void RemoveObserver(OfflineContentProvider::Observer* observer) override;
 

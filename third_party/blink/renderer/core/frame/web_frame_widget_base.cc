@@ -826,8 +826,11 @@ void WebFrameWidgetBase::SetDisplayMode(mojom::blink::DisplayMode mode) {
 }
 
 void WebFrameWidgetBase::SetWindowSegments(WebVector<WebRect> window_segments) {
-  if (!window_segments_.Equals(window_segments))
+  if (!window_segments_.Equals(window_segments)) {
     window_segments_ = std::move(window_segments);
+    LocalFrame* frame = LocalRootImpl()->GetFrame();
+    frame->WindowSegmentsChanged(window_segments_);
+  }
 }
 
 void WebFrameWidgetBase::SetCursor(const ui::Cursor& cursor) {

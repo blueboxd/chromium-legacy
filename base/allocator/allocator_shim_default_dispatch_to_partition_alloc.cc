@@ -12,7 +12,13 @@ namespace {
 
 base::ThreadSafePartitionRoot& Allocator() {
   static base::NoDestructor<base::ThreadSafePartitionRoot> allocator;
-  allocator->Init();
+  allocator->Init(true /* enable_tag_pointers */);
+  return *allocator;
+}
+
+base::ThreadSafePartitionRoot& AlignedAllocator() {
+  static base::NoDestructor<base::ThreadSafePartitionRoot> allocator;
+  allocator->Init(false /* enable_tag_pointers */);
   return *allocator;
 }
 
@@ -33,7 +39,7 @@ void* PartitionMemalign(const AllocatorDispatch*,
                         size_t alignment,
                         size_t size,
                         void* context) {
-  return Allocator().AlignedAlloc(alignment, size);
+  return AlignedAllocator().AlignedAlloc(alignment, size);
 }
 
 void* PartitionRealloc(const AllocatorDispatch*,
@@ -44,14 +50,14 @@ void* PartitionRealloc(const AllocatorDispatch*,
 }
 
 void PartitionFree(const AllocatorDispatch*, void* address, void* context) {
-  Allocator().Free(address);
+  base::ThreadSafePartitionRoot::Free(address);
 }
 
 size_t PartitionGetSizeEstimate(const AllocatorDispatch*,
                                 void* address,
                                 void* context) {
   // TODO(lizeb): Returns incorrect values for aligned allocations.
-  return base::PartitionAllocGetSize<base::internal::ThreadSafe>(address);
+  return base::ThreadSafePartitionRoot::GetSizeFromPointer(address);
 }
 
 }  // namespace

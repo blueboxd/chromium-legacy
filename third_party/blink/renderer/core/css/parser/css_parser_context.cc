@@ -129,7 +129,9 @@ CSSParserContext::CSSParserContext(
               ? document.GetSettings()
                     ->GetUseLegacyBackgroundSizeShorthandBehavior()
               : false,
-          document.GetSecureContextMode(),
+          document.GetExecutionContext()
+              ? document.GetExecutionContext()->GetSecureContextMode()
+              : SecureContextMode::kInsecureContext,
           ContentSecurityPolicy::ShouldBypassMainWorld(
               document.GetExecutionContext())
               ? network::mojom::CSPDisposition::DO_NOT_CHECK

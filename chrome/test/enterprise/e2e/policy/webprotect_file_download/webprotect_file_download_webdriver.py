@@ -30,9 +30,9 @@ def download_file_from_url(driver, url, regex, wait, type, message):
     app.connect(title_re='.*Chrome|.*Chromium')
     app.top_window() \
         .child_window(title_re=regex, control_type=type)
-    print message
+    print(message)
   except ElementNotFoundError as error:
-    print error
+    print(error)
 
 
 def main(argv):

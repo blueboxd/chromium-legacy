@@ -2557,8 +2557,8 @@ void GLRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
                quad->uv_bottom_right.y() - quad->uv_top_left.y());
   matrix.Translate(quad->uv_top_left.x(), quad->uv_top_left.y());
   ToGLMatrix(&gl_matrix[0], matrix);
-  gl_->UniformMatrix4fvStreamTextureMatrixCHROMIUM(
-      current_program_->tex_matrix_location(), false, gl_matrix);
+  gl_->UniformMatrix4fv(current_program_->tex_matrix_location(), 1, false,
+                        gl_matrix);
 
   SetShaderOpacity(quad->shared_quad_state->opacity);
   if (current_program_->rounded_corner_rect_location() != -1) {

@@ -5,13 +5,28 @@ Chrome on Android.
 [TOC]
 
 ## Library Packaging
- * Android L & M (ChromePublic.apk):
-   * `libchrome.so` is stored uncompressed within the apk (with the name `crazy.libchrome.so` to avoid extraction).
-   * It is loaded directly from the apk (without extracting) by `mmap()`'ing it.
- * Android N, O & P (MonochromePublic.apk):
-   * `libmonochrome.so` is stored uncompressed (AndroidManifest.xml attribute disables extraction) and loaded directly from the apk (functionality now supported by the system linker).
- * Android Q (TrichromeChrome.aab+TrichromeLibrary.apk):
-   * `libmonochrome.so` is stored in the shared library apk (TrichromeLibrary.apk) instead of in the Chrome apk, so that it can be shared with TrichromeWebView. It's stored uncompressed and loaded directly from the apk the same way as on N-P. Trichrome uses the same native library as Monochrome, so it's still called `libmonochrome.so`.
+ * Android L & M (ChromeModernPublic.aab):
+   * `libchrome.so` is stored uncompressed within the apk (with the name
+     `crazy.libchrome.so` to avoid extraction).
+   * It is loaded directly from the apk via `libchromium_android_linker.so`.
+   * Only JNI_OnLoad is exported, since manual JNI registration is required
+     (see [//base/android/jni_generator/README.md]).
+ * Android N, O & P (MonochromePublic.aab):
+   * `libmonochrome.so` is stored uncompressed within the apk (an
+     AndroidManifest.xml attribute disables extraction).
+   * It is loaded directly from the apk by the system linker.
+   * It exports all JNI symbols and does not use explicit JNI registration.
+   * It is not loaded by `libchromium_android_linker.so` and relies on the
+     system's webview zygote for RELRO sharing.
+ * Android Q (TrichromeChrome.aab + TrichromeLibrary.apk):
+   * Trichrome uses the exact same native library as Monochrome:
+     `libmonochrome.so`.
+   * `libmonochrome.so` is stored in the shared library (TrichromeLibrary.apk)
+     so that it can be shared with TrichromeWebView.
+   * It is loaded by `libchromium_android_linker.so` using
+     `android_dlopen_ext()` to enable RELRO sharing.
+
+[//base/android/jni_generator/README.md]: /base/android/jni_generator/README.md
 
 ## Build Variants (eg. monochrome_64_32_apk)
 The packaging above extends to cover both 32-bit and 64-bit device
@@ -180,10 +195,15 @@ Builds on | Variant | Chrome | Library | Webview
    * For renderer processes, the OS starts all Monochrome renderer processes by `fork()`ing the WebView zygote rather than the normal application zygote.
      * In this case, RELRO sharing would be redundant since the entire process' memory is shared with the zygote with copy-on-write semantics.
  * For Android Q+ (Trichrome):
-   * For non-renderer processes, TrichromeChrome no longer shares its RELRO data with WebView and no RELRO sharing occurs. TrichromeWebView works the same way as on Android N-P.
-   * For renderer processes, TrichromeChrome `fork()`s from a chrome-specific app zygote. `libmonochrome.so` is loaded in the zygote before `fork()`.
-     * Similar to O-P, app zygote provides copy-on-write memory semantics so RELRO sharing is redundant.
-   * For renderer processes, TrichromeWebView works the same way as on Android N-P.
+   * TrichromeWebView works the same way as on Android N-P.
+   * TrichromeChrome uses `android_dlopen_ext()` and `ASharedMemory_create()` to
+     perform RELRO sharing, and then relies on a subsequent call to
+     `System.loadLibrary()` to enable JNI method resolution without loading the
+     library a second time.
+   * For renderer processes, TrichromeChrome `fork()`s from a chrome-specific
+     app zygote. `libmonochrome.so` is loaded in the zygote before `fork()`.
+     * Similar to O-P, app zygote provides copy-on-write memory semantics so
+       RELRO sharing is redundant.
 
 ## Partitioned libraries
 Some Chrome code is placed in feature-specific libraries and delivered via

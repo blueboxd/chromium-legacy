@@ -69,7 +69,7 @@
 
 // TODO(gfalcon): We want raw-logging to work on as many platforms as possible.
 // Explicitly #error out when not ABSL_LOW_LEVEL_WRITE_SUPPORTED, except for a
-// whitelisted set of platforms for which we expect not to be able to raw log.
+// selected set of platforms for which we expect not to be able to raw log.
 
 ABSL_INTERNAL_ATOMIC_HOOK_ATTRIBUTES static absl::base_internal::AtomicHook<
     absl::raw_logging_internal::LogPrefixHook>

@@ -960,6 +960,12 @@
       custom_compare: true,
     },
     {
+      name: "IsFlexOrGridItem",
+      field_template: "monotonic_flag",
+      default_value: "false",
+      custom_compare: true,
+    },
+    {
       name: "ListStyleType",
       inherited: true,
       field_template: "keyword",

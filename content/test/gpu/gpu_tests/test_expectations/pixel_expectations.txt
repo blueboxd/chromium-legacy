@@ -158,7 +158,8 @@ crbug.com/927901 [ mac ] Pixel_Video_VP9_DXVA [ Skip ]
 crbug.com/927901 [ chromeos ] Pixel_Video_VP9_DXVA [ Skip ]
 
 # Complex overlays test is flaky on Nvidia probably due to its small size.
-crbug.com/929425 [ win nvidia no-use-skia-dawn ] Pixel_DirectComposition_ComplexOverlays [ RetryOnFailure ]
+# TODO(cblume): Commented out until a more broad suppression can be reverted / fixed.
+# crbug.com/929425 [ win nvidia no-use-skia-dawn ] Pixel_DirectComposition_ComplexOverlays [ RetryOnFailure ]
 
 # Mark all webview tests as RetryOnFailure due to Nexus 5x driver bug.
 crbug.com/950932 [ android-webview-instrumentation qualcomm-adreno-(tm)-418 ] * [ RetryOnFailure ]
@@ -336,3 +337,14 @@ crbug.com/1086690 [ chromeos ] Pixel_WebGLSadCanvas [ Skip ]
 
 # Likely produces a Dawn validation errors that makes rendering skipped.
 crbug.com/1097735 [ use-skia-dawn ] Pixel_PaintWorkletTransform [ Failure ]
+
+# TODO(cblume): temporarily suppress these test until reverted / fixed.
+crbug.com/1102086 [ win nvidia no-use-skia-dawn ] Pixel_DirectComposition_ComplexOverlays [ Skip ]
+crbug.com/1102086 [ win7 amd no-use-skia-dawn no-skia-renderer ] Pixel_Video_MP4_FourColors_Aspect_4x3 [ Skip ]
+crbug.com/1102086 [ mac intel ] Pixel_Video_Context_Loss_MP4 [ Skip ]
+crbug.com/1102086 [ mac intel no-use-skia-dawn no-skia-renderer ] Pixel_Video_MP4 [ Skip ]
+crbug.com/1102086 [ mac intel no-use-skia-dawn no-skia-renderer ] Pixel_Video_MP4_FourColors_Aspect_4x3 [ Skip ]
+crbug.com/1102086 [ mac intel no-use-skia-dawn no-skia-renderer ] Pixel_Video_MP4_FourColors_Rot_180 [ Skip ]
+crbug.com/1102086 [ mac intel no-use-skia-dawn no-skia-renderer ] Pixel_Video_MP4_FourColors_Rot_270 [ Skip ]
+crbug.com/1102086 [ mac intel no-use-skia-dawn no-skia-renderer ] Pixel_Video_MP4_FourColors_Rot_90 [ Skip ]
+crbug.com/1102086 [ mac intel ] Pixel_Video_MP4_Rounded_Corner [ Skip ]

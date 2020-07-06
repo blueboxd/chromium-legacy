@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/css/css_test_helpers.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_compositor.h"
@@ -59,8 +60,7 @@ TEST_F(AnimationSimTest, CustomPropertyBaseComputedStyle) {
 
   // target.animate({'--x': '100%'}, 1000);
   auto* keyframe = MakeGarbageCollected<StringKeyframe>();
-  keyframe->SetCSSPropertyValue("--x", "100%",
-                                GetDocument().GetSecureContextMode(),
+  keyframe->SetCSSPropertyValue("--x", "100%", Window().GetSecureContextMode(),
                                 GetDocument().ElementSheet().Contents());
   StringKeyframeVector keyframes;
   keyframes.push_back(keyframe);
@@ -83,8 +83,7 @@ TEST_F(AnimationSimTest, CustomPropertyBaseComputedStyle) {
 
   // target.animate({'--x': '100%'}, 1000);
   keyframe = MakeGarbageCollected<StringKeyframe>();
-  keyframe->SetCSSPropertyValue("--x", "100%",
-                                GetDocument().GetSecureContextMode(),
+  keyframe->SetCSSPropertyValue("--x", "100%", Window().GetSecureContextMode(),
                                 GetDocument().ElementSheet().Contents());
   keyframes.clear();
   keyframes.push_back(std::move(keyframe));

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <vector>
 
 #include "base/command_line.h"
@@ -148,7 +149,7 @@ class StartupPageTest : public InProcessBrowserTest {
     ChromeBrowserMainParts* chrome_browser_main_parts =
         static_cast<ChromeBrowserMainParts*>(browser_main_parts);
     chrome_browser_main_parts->AddParts(
-        new StartupPagePrefSetterMainExtraParts(urls));
+        std::make_unique<StartupPagePrefSetterMainExtraParts>(urls));
   }
 
  private:

@@ -62,6 +62,7 @@ public class DeprecatedChromePreferenceKeys {
                 "physical_web",
                 "physical_web_sharing",
                 "sole_integration_enabled",
+                "start_surface_single_pane_enabled",
                 "tab_persistent_store_task_runner_enabled",
                 "webapk_number_of_uninstalls",
                 "website_settings_filter"

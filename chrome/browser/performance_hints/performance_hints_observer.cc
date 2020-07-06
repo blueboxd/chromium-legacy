@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/optimization_guide/optimization_guide_permissions_util.h"
+#include "chrome/browser/performance_hints/performance_hints_features.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/optimization_guide/optimization_guide_decider.h"
 #include "components/optimization_guide/url_pattern_with_wildcards.h"
@@ -91,19 +91,12 @@ static jint JNI_PerformanceHintsObserver_GetPerformanceClassForURL(
       web_contents, GURL(base::android::ConvertJavaStringToUTF8(url)),
       /*record_metrics=*/false);
 }
-#endif  // OS_ANDROID
 
-const base::Feature kPerformanceHintsObserver{
-    "PerformanceHintsObserver", base::FEATURE_DISABLED_BY_DEFAULT};
-constexpr base::FeatureParam<bool> kUseFastHostHints{
-    &kPerformanceHintsObserver, "use_fast_host_hints", true};
-const base::Feature kPerformanceHintsTreatUnknownAsFast{
-    "PerformanceHintsTreatUnknownAsFast", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kPerformanceHintsHandleRewrites{
-    "PerformanceHintsHandleRewrites", base::FEATURE_ENABLED_BY_DEFAULT};
-constexpr base::FeatureParam<std::string> kRewriteConfig{
-    &kPerformanceHintsHandleRewrites, "rewrite_config",
-    "www.google.com/url?url"};
+static jboolean
+JNI_PerformanceHintsObserver_IsContextMenuPerformanceInfoEnabled(JNIEnv* env) {
+  return IsContextMenuPerformanceInfoEnabled();
+}
+#endif  // OS_ANDROID
 
 PerformanceHintsObserver::PerformanceHintsObserver(
     content::WebContents* web_contents)
@@ -113,15 +106,15 @@ PerformanceHintsObserver::PerformanceHintsObserver(
           Profile::FromBrowserContext(web_contents->GetBrowserContext()));
   std::vector<optimization_guide::proto::OptimizationType> opts;
   opts.push_back(optimization_guide::proto::PERFORMANCE_HINTS);
-  if (kUseFastHostHints.Get()) {
+  if (AreFastHostHintsEnabled()) {
     opts.push_back(optimization_guide::proto::FAST_HOST_HINTS);
   }
   if (optimization_guide_decider_) {
     optimization_guide_decider_->RegisterOptimizationTypes(opts);
   }
 
-  rewrite_handler_ =
-      PerformanceHintsRewriteHandler::FromConfigString(kRewriteConfig.Get());
+  rewrite_handler_ = PerformanceHintsRewriteHandler::FromConfigString(
+      GetRewriteConfigString());
 }
 
 PerformanceHintsObserver::~PerformanceHintsObserver() {
@@ -186,7 +179,7 @@ PerformanceClass PerformanceHintsObserver::PerformanceClassForURL(
   }
 
   if (performance_class == PerformanceClass::PERFORMANCE_UNKNOWN &&
-      base::FeatureList::IsEnabled(kPerformanceHintsTreatUnknownAsFast)) {
+      ShouldTreatUnknownAsFast()) {
     // If we couldn't get the hint or we didn't expect it on this page, give it
     // the benefit of the doubt.
     return PerformanceClass::PERFORMANCE_FAST;
@@ -220,7 +213,7 @@ PerformanceHintsObserver::HintForURLResult PerformanceHintsObserver::HintForURL(
   }
 
   base::Optional<GURL> maybe_rewritten;
-  if (base::FeatureList::IsEnabled(kPerformanceHintsHandleRewrites)) {
+  if (ShouldHandleRewrites()) {
     maybe_rewritten = rewrite_handler_.HandleRewriteIfNecessary(url);
     result.rewritten = maybe_rewritten.has_value();
     if (maybe_rewritten && (!maybe_rewritten->is_valid() ||
@@ -247,7 +240,7 @@ PerformanceHintsObserver::HintForURLResult PerformanceHintsObserver::HintForURL(
   sources.emplace_back(HintLookupSource::kPageHint,
                        base::BindOnce(&PerformanceHintsObserver::PageHintForURL,
                                       base::Unretained(this)));
-  if (kUseFastHostHints.Get()) {
+  if (AreFastHostHintsEnabled()) {
     sources.emplace_back(
         HintLookupSource::kFastHostHint,
         base::BindOnce(&PerformanceHintsObserver::FastHostHintForURL,

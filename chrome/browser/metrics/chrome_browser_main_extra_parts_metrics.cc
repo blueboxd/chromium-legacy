@@ -655,7 +655,7 @@ void ChromeBrowserMainExtraPartsMetrics::EmitDisplaysChangedMetric() {
 namespace chrome {
 
 void AddMetricsExtraParts(ChromeBrowserMainParts* main_parts) {
-  main_parts->AddParts(new ChromeBrowserMainExtraPartsMetrics());
+  main_parts->AddParts(std::make_unique<ChromeBrowserMainExtraPartsMetrics>());
 }
 
 }  // namespace chrome

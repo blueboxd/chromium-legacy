@@ -127,7 +127,10 @@ TEST_F(CredentialLeakDialogControllerTest, CredentialLeakDialogCheckPasswords) {
   EXPECT_CALL(leak_prompt(), ShowCredentialLeakPrompt());
   controller().ShowCredentialLeakPrompt(&leak_prompt());
 
-  EXPECT_CALL(ui_controller_mock(), NavigateToPasswordCheckup());
+  EXPECT_CALL(
+      ui_controller_mock(),
+      NavigateToPasswordCheckup(
+          password_manager::PasswordCheckReferrer::kPasswordBreachDialog));
   EXPECT_CALL(ui_controller_mock(), OnLeakDialogHidden());
   controller().OnAcceptDialog();
 

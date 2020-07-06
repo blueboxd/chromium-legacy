@@ -49,8 +49,8 @@ CSSVariableResolver::Fallback CSSVariableResolver::ResolveFallback(
     CSSParserTokenRange resolved_range(result.tokens);
     resolved_range = resolved_range.MakeSubRange(
         &resolved_range.Peek(first_fallback_token), resolved_range.end());
-    const CSSParserContext* context =
-        StrictCSSParserContext(state_.GetDocument().GetSecureContextMode());
+    const CSSParserContext* context = StrictCSSParserContext(
+        state_.GetDocument().GetExecutionContext()->GetSecureContextMode());
     const bool is_animation_tainted = false;
     if (!registration->Syntax().Parse(resolved_range, *context,
                                       is_animation_tainted))
@@ -110,7 +110,8 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ValueForCustomProperty(
   // may already have a CSSValue. If not, we must produce that value now.
   if (!resolved_value && resolved_data) {
     resolved_value = resolved_data->ParseForSyntax(
-        registration->Syntax(), state_.GetDocument().GetSecureContextMode());
+        registration->Syntax(),
+        state_.GetDocument().GetExecutionContext()->GetSecureContextMode());
     if (!resolved_value) {
       // Parsing failed. Set resolved_data to nullptr to indicate that we
       // currently don't have a token stream matching the registered syntax.
@@ -273,7 +274,8 @@ const CSSParserContext* CSSVariableResolver::GetParserContext(
   // a CSSParserContext.
   if (value.ParserContext())
     return value.ParserContext();
-  return StrictCSSParserContext(state_.GetDocument().GetSecureContextMode());
+  return StrictCSSParserContext(
+      state_.GetDocument().GetExecutionContext()->GetSecureContextMode());
 }
 
 bool CSSVariableResolver::ResolveVariableReference(CSSParserTokenRange range,

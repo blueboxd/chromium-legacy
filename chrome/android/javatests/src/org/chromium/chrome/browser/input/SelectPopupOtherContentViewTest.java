@@ -23,7 +23,6 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -56,17 +55,6 @@ public class SelectPopupOtherContentViewTest {
             + "</select>"
             + "</body></html>");
 
-    private class PopupShowingCriteria extends Criteria {
-        public PopupShowingCriteria() {
-            super("The select popup did not show up on click.");
-        }
-
-        @Override
-        public boolean isSatisfied() {
-            return isSelectPopupVisibleOnUiThread();
-        }
-    }
-
     private boolean isSelectPopupVisibleOnUiThread() {
         try {
             // clang-format off
@@ -92,7 +80,8 @@ public class SelectPopupOtherContentViewTest {
 
         // Once clicked, the popup should show up.
         DOMUtils.clickNode(mActivityTestRule.getWebContents(), "select");
-        CriteriaHelper.pollInstrumentationThread(new PopupShowingCriteria());
+        CriteriaHelper.pollInstrumentationThread(
+                this::isSelectPopupVisibleOnUiThread, "The select popup did not show up on click.");
 
         // Now create and destroy a different WebContents.
         TestThreadUtils.runOnUiThreadBlocking(() -> {

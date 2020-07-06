@@ -1613,7 +1613,8 @@ void BrowserAccessibilityManager::CollectChangedNodesAndParentsForAtomicUpdate(
     if (!parent)
       continue;
 
-    if (ui::IsTextOrLineBreak(changed_node->data().role)) {
+    if (changed_node->IsText() &&
+        changed_node->data().role != ax::mojom::Role::kInlineTextBox) {
       BrowserAccessibility* parent_obj = GetFromAXNode(parent);
       if (parent_obj)
         nodes_needing_update->insert(parent_obj->GetAXPlatformNode());

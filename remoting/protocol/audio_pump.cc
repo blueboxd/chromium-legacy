@@ -148,7 +148,7 @@ void AudioPump::Core::Start() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   audio_source_->Start(
-      base::Bind(&Core::EncodeAudioPacket, base::Unretained(this)));
+      base::BindRepeating(&Core::EncodeAudioPacket, base::Unretained(this)));
 }
 
 void AudioPump::Core::Pause(bool pause) {

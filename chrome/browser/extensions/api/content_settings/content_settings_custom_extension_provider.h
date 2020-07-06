@@ -30,6 +30,11 @@ class CustomExtensionProvider : public ObservableProvider,
       const ResourceIdentifier& resource_identifier,
       bool incognito) const override;
 
+  std::unique_ptr<RuleIterator> GetDiscardedRuleIterator(
+      ContentSettingsType content_type,
+      const ResourceIdentifier& resource_identifier,
+      bool incognito) const override;
+
   bool SetWebsiteSetting(
       const ContentSettingsPattern& primary_pattern,
       const ContentSettingsPattern& secondary_pattern,

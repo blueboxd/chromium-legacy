@@ -51,8 +51,15 @@ public class PlayerFrameCoordinator {
      * @param clipRect The {@link Rect} in which this sub-frame should be shown in.
      */
     public void addSubFrame(PlayerFrameCoordinator subFrame, Rect clipRect) {
-        mMediator.addSubFrame(subFrame.getView(), clipRect);
+        mMediator.addSubFrame(subFrame.mView, clipRect, subFrame.getMediator());
         subFrame.mView.getGestureDetector().setParentGestureDetector(mView.getGestureDetector());
+    }
+
+    /**
+     * @return The mediator associated with this component.
+     */
+    public PlayerFrameMediator getMediator() {
+        return mMediator;
     }
 
     /**

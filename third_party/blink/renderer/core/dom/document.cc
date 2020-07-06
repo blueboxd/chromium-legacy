@@ -988,18 +988,6 @@ const SecurityOrigin* Document::GetSecurityOrigin() const {
   return GetSecurityContext().GetSecurityOrigin();
 }
 
-ContentSecurityPolicy* Document::GetContentSecurityPolicy() const {
-  return GetSecurityContext().GetContentSecurityPolicy();
-}
-
-SecureContextMode Document::GetSecureContextMode() const {
-  return GetSecurityContext().GetSecureContextMode();
-}
-
-void Document::SetSecureContextModeForTesting(SecureContextMode mode) {
-  GetSecurityContext().SetSecureContextModeForTesting(mode);
-}
-
 String Document::addressSpaceForBindings(ScriptState* script_state) const {
   // "public" is the lowest-privilege value.
   if (!script_state->ContextIsValid())
@@ -3461,7 +3449,7 @@ void Document::open(LocalDOMWindow* entered_window,
     // the ones contained in the CSP.
     GetSecurityContext().ApplySandboxFlags(csp->GetSandboxMask());
     GetSecurityContext().SetContentSecurityPolicy(csp);
-    GetContentSecurityPolicy()->BindToDelegate(
+    GetExecutionContext()->GetContentSecurityPolicy()->BindToDelegate(
         GetExecutionContext()->GetContentSecurityPolicyDelegate());
     // Clear the hash fragment from the inherited URL to prevent a
     // scroll-into-view for any document.open()'d frame.
@@ -4523,7 +4511,8 @@ void Document::ProcessBaseElement() {
       if (!value.IsNull())
         target = &value;
     }
-    if (GetContentSecurityPolicy()->IsActive()) {
+    if (GetExecutionContext() &&
+        GetExecutionContext()->GetContentSecurityPolicy()->IsActive()) {
       UseCounter::Count(*this,
                         WebFeature::kContentSecurityPolicyWithBaseElement);
     }
@@ -4554,8 +4543,9 @@ void Document::ProcessBaseElement() {
 
   if (base_element_url != base_element_url_ &&
       !base_element_url.ProtocolIsData() &&
-      !base_element_url.ProtocolIsJavaScript() &&
-      GetContentSecurityPolicy()->AllowBaseURI(base_element_url)) {
+      !base_element_url.ProtocolIsJavaScript() && GetExecutionContext() &&
+      GetExecutionContext()->GetContentSecurityPolicy()->AllowBaseURI(
+          base_element_url)) {
     base_element_url_ = base_element_url;
     UpdateBaseURL();
   }
@@ -7136,12 +7126,6 @@ void Document::InitSecurityContext(const DocumentInit& initializer) {
   cookie_url_ = initializer.GetCookieUrl();
 
   GetSecurityContext().SetAddressSpace(initializer.GetIPAddressSpace());
-}
-
-void Document::BindContentSecurityPolicy() {
-  DCHECK(!GetContentSecurityPolicy()->IsBound());
-  GetContentSecurityPolicy()->BindToDelegate(
-      GetExecutionContext()->GetContentSecurityPolicyDelegate());
 }
 
 bool Document::AllowInlineEventHandler(Node* node,

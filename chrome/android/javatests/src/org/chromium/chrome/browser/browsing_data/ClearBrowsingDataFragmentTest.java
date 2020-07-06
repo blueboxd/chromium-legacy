@@ -127,11 +127,8 @@ public class ClearBrowsingDataFragmentTest {
                 ? 10000L
                 : CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL;
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return preferences.getProgressDialog() == null;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(preferences.getProgressDialog(), Matchers.nullValue());
         }, kDelay, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 
@@ -309,7 +306,7 @@ public class ClearBrowsingDataFragmentTest {
      * A criterion that is satisfied when a ClearBrowsingDataFragment fragment in the given
      * Settings activity is closed.
      */
-    static class PreferenceScreenClosedCriterion extends Criteria {
+    static class PreferenceScreenClosedCriterion implements Runnable {
         final SettingsActivity mSettingsActivity;
 
         /**
@@ -322,10 +319,11 @@ public class ClearBrowsingDataFragmentTest {
         }
 
         @Override
-        public boolean isSatisfied() {
+        public void run() {
             ClearBrowsingDataFragment fragment =
                     (ClearBrowsingDataFragment) mSettingsActivity.getMainFragment();
-            return fragment == null || !fragment.isVisible();
+            if (fragment == null) return;
+            Criteria.checkThat(fragment.isVisible(), Matchers.is(false));
         }
     }
 
@@ -360,15 +358,13 @@ public class ClearBrowsingDataFragmentTest {
                 new OpenPreferencesEnableDialogAndClickClearRunnable(settingsActivity2));
 
         // The dialog about other forms of history should now be shown.
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                ClearBrowsingDataFragment fragment =
-                        (ClearBrowsingDataFragment) settingsActivity2.getMainFragment();
-                OtherFormsOfHistoryDialogFragment dialog =
-                        fragment.getDialogAboutOtherFormsOfBrowsingHistory();
-                return dialog != null && dialog.getActivity() != null;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            ClearBrowsingDataFragment fragment =
+                    (ClearBrowsingDataFragment) settingsActivity2.getMainFragment();
+            OtherFormsOfHistoryDialogFragment dialog =
+                    fragment.getDialogAboutOtherFormsOfBrowsingHistory();
+            Criteria.checkThat(dialog, Matchers.notNullValue());
+            Criteria.checkThat(dialog.getActivity(), Matchers.notNullValue());
         });
 
         // Close that dialog.
@@ -437,14 +433,16 @@ public class ClearBrowsingDataFragmentTest {
     private void waitForImportantDialogToShow(
             final ClearBrowsingDataFragment preferences, final int numImportantSites) {
         CriteriaHelper.pollUiThread(() -> {
-            Assert.assertNotNull(preferences);
-            Assert.assertNotNull(preferences.getImportantSitesDialogFragment());
-            Assert.assertTrue(
-                    preferences.getImportantSitesDialogFragment().getDialog().isShowing());
+            Criteria.checkThat(preferences, Matchers.notNullValue());
+            Criteria.checkThat(
+                    preferences.getImportantSitesDialogFragment(), Matchers.notNullValue());
+            Criteria.checkThat(
+                    preferences.getImportantSitesDialogFragment().getDialog().isShowing(),
+                    Matchers.is(true));
 
             ListView sitesList = preferences.getImportantSitesDialogFragment().getSitesList();
-            Assert.assertEquals(numImportantSites, sitesList.getAdapter().getCount());
-            Assert.assertThat(
+            Criteria.checkThat(sitesList.getAdapter().getCount(), Matchers.is(numImportantSites));
+            Criteria.checkThat(
                     sitesList.getChildCount(), Matchers.greaterThanOrEqualTo(numImportantSites));
         });
     }
@@ -565,13 +563,9 @@ public class ClearBrowsingDataFragmentTest {
         });
 
         // Check that our server origin is in the set of deselected domains.
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                ConfirmImportantSitesDialogFragment dialog =
-                        fragment.getImportantSitesDialogFragment();
-                return dialog.getDeselectedDomains().contains(kKeepDomain);
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            ConfirmImportantSitesDialogFragment dialog = fragment.getImportantSitesDialogFragment();
+            Criteria.checkThat(dialog.getDeselectedDomains(), Matchers.hasItem(kKeepDomain));
         });
 
         // Click the clear button.

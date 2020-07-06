@@ -457,6 +457,7 @@ void SpdyHttpStream::OnDataSent() {
     ReadAndSendRequestBodyData();
   } else {
     CHECK(spdy_session_->GreasedFramesEnabled());
+    MaybePostRequestCallback(OK);
   }
 }
 

@@ -38,7 +38,7 @@ class MessageReader {
  public:
   typedef base::RepeatingCallback<void(std::unique_ptr<CompoundBuffer> message)>
       MessageReceivedCallback;
-  typedef base::RepeatingCallback<void(int)> ReadFailedCallback;
+  typedef base::OnceCallback<void(int)> ReadFailedCallback;
 
   MessageReader();
   virtual ~MessageReader();
@@ -46,14 +46,17 @@ class MessageReader {
   // Starts reading from |socket|.
   void StartReading(P2PStreamSocket* socket,
                     const MessageReceivedCallback& message_received_callback,
-                    const ReadFailedCallback& read_failed_callback);
+                    ReadFailedCallback read_failed_callback);
 
  private:
   void DoRead();
   void OnRead(int result);
-  void HandleReadResult(int result, bool* read_succeeded);
+  // Returns true on success, or runs |read_failed_callback_| and returns false
+  // on failure. When false is returned, |this| may be deleted.
+  bool HandleReadResult(int result);
   void OnDataReceived(net::IOBuffer* data, int data_size);
   void RunCallback(std::unique_ptr<CompoundBuffer> message);
+  bool DidReadFail();
 
   ReadFailedCallback read_failed_callback_;
 

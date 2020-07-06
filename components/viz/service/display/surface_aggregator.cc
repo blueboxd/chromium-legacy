@@ -1859,6 +1859,11 @@ void SurfaceAggregator::TransformAndStoreDelegatedInkMetadata(
   delegated_ink_metadata_ = std::make_unique<DelegatedInkMetadata>(
       point, metadata->diameter(), metadata->color(), metadata->timestamp(),
       area);
+
+  TRACE_EVENT_INSTANT2(
+      "viz", "SurfaceAggregator::TransformAndStoreDelegatedInkMetadata",
+      TRACE_EVENT_SCOPE_THREAD, "original metadata", metadata->ToString(),
+      "transformed metadata", delegated_ink_metadata_->ToString());
 }
 
 void SurfaceAggregator::HandleDeJelly(Surface* surface) {

@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/login_accelerators.h"
 #include "ash/public/cpp/login_screen.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
 #include "chrome/browser/chromeos/login/ui/login_display_webui.h"
 #include "chrome/browser/chromeos/login/ui/web_contents_forced_title.h"
+#include "chrome/browser/chromeos/login/ui/webui_accelerator_mapping.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
@@ -64,22 +66,6 @@ using web_modal::WebContentsModalDialogManager;
 
 namespace {
 
-// These strings must be kept in sync with handleAccelerator()
-// in display_manager.js.
-const char kAccelNameCancel[] = "cancel";
-const char kAccelNameEnableDebugging[] = "debugging";
-const char kAccelNameEnrollment[] = "enrollment";
-const char kAccelNameKioskEnable[] = "kiosk_enable";
-const char kAccelNameVersion[] = "version";
-const char kAccelNameReset[] = "reset";
-const char kAccelNameDeviceRequisition[] = "device_requisition";
-const char kAccelNameDeviceRequisitionRemora[] = "device_requisition_remora";
-const char kAccelNameAppLaunchBailout[] = "app_launch_bailout";
-const char kAccelNameAppLaunchNetworkConfig[] = "app_launch_network_config";
-const char kAccelNameBootstrappingSlave[] = "bootstrapping_slave";
-const char kAccelNameDemoMode[] = "demo_mode";
-const char kAccelSendFeedback[] = "send_feedback";
-
 // A class to change arrow key traversal behavior when it's alive.
 class ScopedArrowKeyTraversal {
  public:
@@ -120,48 +106,19 @@ WebUILoginView::WebUILoginView(const WebViewSettings& settings)
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
 
-  accel_map_[ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE)] = kAccelNameCancel;
-  accel_map_[ui::Accelerator(ui::VKEY_E,
-                             ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] =
-      kAccelNameEnrollment;
-  if (KioskAppManager::IsConsumerKioskEnabled()) {
-    accel_map_[ui::Accelerator(ui::VKEY_K,
-                               ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] =
-        kAccelNameKioskEnable;
+  for (size_t i = 0; i < ash::kLoginAcceleratorDataLength; ++i) {
+    ui::Accelerator accelerator(ash::kLoginAcceleratorData[i].keycode,
+                                ash::kLoginAcceleratorData[i].modifiers);
+    // Show reset conflicts with rotate screen when --ash-dev-shortcuts is
+    // passed. Favor --ash-dev-shortcuts since that is explicitly added.
+    if (ash::kLoginAcceleratorData[i].action ==
+            ash::LoginAcceleratorAction::kEnableConsumerKiosk &&
+        !KioskAppManager::IsConsumerKioskEnabled()) {
+      continue;
+    }
+
+    accel_map_[accelerator] = ash::kLoginAcceleratorData[i].action;
   }
-  accel_map_[ui::Accelerator(ui::VKEY_V, ui::EF_ALT_DOWN)] =
-      kAccelNameVersion;
-  accel_map_[ui::Accelerator(
-      ui::VKEY_R, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN)] =
-      kAccelNameReset;
-  accel_map_[ui::Accelerator(ui::VKEY_X,
-      ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN)] =
-      kAccelNameEnableDebugging;
-
-  accel_map_[ui::Accelerator(
-      ui::VKEY_D, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN)] =
-      kAccelNameDeviceRequisition;
-  accel_map_[
-      ui::Accelerator(ui::VKEY_H, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] =
-      kAccelNameDeviceRequisitionRemora;
-
-  accel_map_[ui::Accelerator(ui::VKEY_S,
-                             ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] =
-      kAccelNameAppLaunchBailout;
-
-  accel_map_[ui::Accelerator(ui::VKEY_N,
-                             ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] =
-      kAccelNameAppLaunchNetworkConfig;
-
-  accel_map_[ui::Accelerator(
-      ui::VKEY_S, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN)] =
-      kAccelNameBootstrappingSlave;
-
-  accel_map_[ui::Accelerator(
-      ui::VKEY_D, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] = kAccelNameDemoMode;
-
-  accel_map_[ui::Accelerator(ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN)] =
-      kAccelSendFeedback;
 
   for (AccelMap::iterator i(accel_map_.begin()); i != accel_map_.end(); ++i) {
     AddAccelerator(i->first);
@@ -286,7 +243,7 @@ bool WebUILoginView::AcceleratorPressed(const ui::Accelerator& accelerator) {
 
   content::WebUI* web_ui = GetWebUI();
   if (web_ui) {
-    base::Value accel_name(entry->second);
+    base::Value accel_name(MapToWebUIAccelerator(entry->second));
     web_ui->CallJavascriptFunctionUnsafe("cr.ui.Oobe.handleAccelerator",
                                          accel_name);
   }

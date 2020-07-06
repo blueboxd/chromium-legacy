@@ -121,8 +121,9 @@ String CreateShorthandValue(Document& document,
                             const String& old_text,
                             const String& longhand,
                             const String& new_value) {
-  auto* style_sheet_contents = MakeGarbageCollected<StyleSheetContents>(
-      StrictCSSParserContext(document.GetSecureContextMode()));
+  auto* style_sheet_contents =
+      MakeGarbageCollected<StyleSheetContents>(StrictCSSParserContext(
+          document.GetExecutionContext()->GetSecureContextMode()));
   String text = " div { " + shorthand + ": " + old_text + "; }";
   CSSParser::ParseSheet(MakeGarbageCollected<CSSParserContext>(document),
                         style_sheet_contents, text);

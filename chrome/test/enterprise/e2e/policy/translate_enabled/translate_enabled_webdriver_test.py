@@ -47,9 +47,9 @@ def main(argv):
     os.system('taskkill /f /im chrome.exe')
 
   if translatePopupVisible:
-    print "TRUE"
+    print("TRUE")
   else:
-    print "FALSE"
+    print("FALSE")
 
 
 if __name__ == '__main__':

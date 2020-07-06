@@ -15,15 +15,11 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.permissions.PermissionTestRule.DialogShownCriteria;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
 import org.chromium.content_public.browser.NavigationHandle;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.ui.modaldialog.ModalDialogManager;
 
 /**
  * Test suite for interaction between permissions requests and navigation.
@@ -60,11 +56,7 @@ public class PermissionNavigationTest {
     public void testNavigationDismissesModalPermissionPrompt() throws Exception {
         mPermissionRule.setUpUrl(TEST_FILE);
         mPermissionRule.runJavaScriptCodeInCurrentTab("requestGeolocationPermission()");
-        ModalDialogManager dialogManager = TestThreadUtils.runOnUiThreadBlockingNoException(
-                mPermissionRule.getActivity()::getModalDialogManager);
-        DialogShownCriteria criteriaShown =
-                new DialogShownCriteria(dialogManager, "Dialog not shown", true);
-        CriteriaHelper.pollUiThread(criteriaShown);
+        mPermissionRule.waitForDialogShownState(true);
 
         mPermissionRule.runJavaScriptCodeInCurrentTab("navigate()");
 
@@ -80,8 +72,6 @@ public class PermissionNavigationTest {
         callbackHelper.waitForCallback(0);
         tab.removeObserver(navigationWaiter);
 
-        DialogShownCriteria criteriaNotShown =
-                new DialogShownCriteria(dialogManager, "Dialog shown", false);
-        CriteriaHelper.pollUiThread(criteriaNotShown);
+        mPermissionRule.waitForDialogShownState(false);
     }
 }

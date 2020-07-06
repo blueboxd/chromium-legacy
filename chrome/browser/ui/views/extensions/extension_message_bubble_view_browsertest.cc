@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/extensions/extension_message_bubble_browsertest.h"
 #include "chrome/browser/ui/extensions/settings_api_bubble_helpers.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_actions_bar_bubble_views.h"
 #include "content/public/test/browser_test.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -180,16 +181,28 @@ IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
 // TODO(devlin): No they're not. We should enable all of these on Mac.
 #if defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
-                       TestControlledNewTabPageMessageBubble) {
-  TestControlledNewTabPageBubbleShown(false);
-}
-
-IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
                        TestControlledHomeMessageBubble) {
   TestControlledHomeBubbleShown();
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
+class ControlledSearchMessageBubbleViewBrowserTest
+    : public ExtensionMessageBubbleViewBrowserTest {
+ public:
+  ControlledSearchMessageBubbleViewBrowserTest() = default;
+  ~ControlledSearchMessageBubbleViewBrowserTest() override = default;
+
+  std::vector<base::Feature> GetFeaturesToDisable() override {
+    std::vector<base::Feature> features_to_disable =
+        ExtensionMessageBubbleViewBrowserTest::GetFeaturesToDisable();
+    // The kExtensionSettingsOverriddenDialogs introduces a new UI for the
+    // controlled search confirmation. Disable it to test the old UI.
+    features_to_disable.push_back(
+        features::kExtensionSettingsOverriddenDialogs);
+    return features_to_disable;
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(ControlledSearchMessageBubbleViewBrowserTest,
                        TestControlledSearchMessageBubble) {
   TestControlledSearchBubbleShown();
 }
@@ -212,13 +225,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
 IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
                        TestControlledStartupNotShownOnRestart) {
   TestControlledStartupNotShownOnRestart();
-}
-
-// BrowserUiTest for the warning bubble that appears when opening a new tab and
-// an extension is controlling it. Only shown on Windows.
-IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
-                       InvokeUi_ntp_override) {
-  ShowAndVerifyUi();
 }
 
 #endif  // defined(OS_WIN)
@@ -253,6 +259,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
 class NtpExtensionBubbleViewBrowserTest
     : public ExtensionMessageBubbleViewBrowserTest {
  public:
+  std::vector<base::Feature> GetFeaturesToDisable() override {
+    std::vector<base::Feature> features_to_disable =
+        ExtensionMessageBubbleViewBrowserTest::GetFeaturesToDisable();
+    features_to_disable.push_back(
+        features::kExtensionSettingsOverriddenDialogs);
+    return features_to_disable;
+  }
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionMessageBubbleViewBrowserTest::SetUpCommandLine(command_line);
 // The NTP bubble is only enabled by default on Mac, Windows, and CrOS.
@@ -285,4 +299,16 @@ IN_PROC_BROWSER_TEST_F(NtpExtensionBubbleViewBrowserTest,
 IN_PROC_BROWSER_TEST_F(NtpExtensionBubbleViewBrowserTest,
                        MAYBE_TestBubbleClosedAfterExtensionUninstall) {
   TestBubbleClosedAfterExtensionUninstall();
+}
+
+IN_PROC_BROWSER_TEST_F(NtpExtensionBubbleViewBrowserTest,
+                       TestControlledNewTabPageMessageBubble) {
+  TestControlledNewTabPageBubbleShown(false);
+}
+
+// BrowserUiTest for the warning bubble that appears when opening a new tab and
+// an extension is controlling it.
+IN_PROC_BROWSER_TEST_F(NtpExtensionBubbleViewBrowserTest,
+                       InvokeUi_ntp_override) {
+  ShowAndVerifyUi();
 }

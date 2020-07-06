@@ -205,6 +205,10 @@ TEST_F(LoadingDataCollectorTest, SimpleNavigation) {
   collector_->RecordFinishNavigation(navigation_id, navigation_id,
                                      /* is_error_page */ false);
   EXPECT_EQ(1U, collector_->inflight_navigations_.size());
+  // Ensure that the finish time of the navigation is recorded.
+  EXPECT_NE(
+      collector_->inflight_navigations_.begin()->second->navigation_committed,
+      base::TimeTicks::Max());
 
   std::vector<blink::mojom::ResourceLoadInfoPtr> resources;
   resources.push_back(CreateResourceLoadInfo("http://www.google.com"));

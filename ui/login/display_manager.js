@@ -42,7 +42,9 @@
 /** @const */ var SCREEN_DISCOVER = 'discover';
 /** @const */ var SCREEN_MARKETING_OPT_IN = 'marketing-opt-in';
 
-/* Accelerator identifiers. Must be kept in sync with webui_login_view.cc. */
+/* Accelerator identifiers.
+ * Must be kept in sync with webui_accelerator_mapping.cc.
+ */
 /** @const */ var ACCELERATOR_CANCEL = 'cancel';
 /** @const */ var ACCELERATOR_ENABLE_DEBBUGING = 'debugging';
 /** @const */ var ACCELERATOR_ENROLLMENT = 'enrollment';

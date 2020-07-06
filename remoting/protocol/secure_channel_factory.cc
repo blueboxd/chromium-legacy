@@ -60,9 +60,9 @@ void SecureChannelFactory::OnBaseChannelCreated(
   channel_authenticators_[name] = channel_authenticator;
   channel_authenticator->SecureAndAuthenticate(
       std::move(socket),
-      base::Bind(&SecureChannelFactory::OnSecureChannelCreated,
-                 base::Unretained(this), name,
-                 base::Passed(std::move(callback))));
+      base::BindOnce(&SecureChannelFactory::OnSecureChannelCreated,
+                     base::Unretained(this), name,
+                     base::Passed(std::move(callback))));
 }
 
 void SecureChannelFactory::OnSecureChannelCreated(

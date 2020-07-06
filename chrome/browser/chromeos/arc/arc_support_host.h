@@ -104,7 +104,8 @@ class ArcSupportHost : public arc::ArcSupportMessageHost::Observer,
     virtual ~ErrorDelegate() = default;
   };
 
-  using RequestOpenAppCallback = base::Callback<void(Profile* profile)>;
+  using RequestOpenAppCallback =
+      base::RepeatingCallback<void(Profile* profile)>;
 
   explicit ArcSupportHost(Profile* profile);
   ~ArcSupportHost() override;

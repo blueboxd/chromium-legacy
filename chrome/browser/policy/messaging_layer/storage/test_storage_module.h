@@ -20,6 +20,8 @@ namespace test {
 
 class TestStorageModule : public StorageModule {
  public:
+  // As opposed to the production |StorageModule|, test module does not need to
+  // call factory method - it is created directly by constructor.
   TestStorageModule();
 
   MOCK_METHOD(void,

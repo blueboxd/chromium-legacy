@@ -158,7 +158,7 @@ static bool IsSpecialHTMLElement(const Node& n) {
       layout_object->Style()->Display() == EDisplay::kInlineTable)
     return true;
 
-  if (layout_object->Style()->IsFloating())
+  if (layout_object->IsFloating())
     return true;
 
   return false;

@@ -64,7 +64,6 @@ class ContentSecurityPolicyResponseHeaders;
 class ConsoleMessage;
 class CSPDirectiveList;
 class CSPSource;
-class Document;
 class DOMWrapperWorld;
 class Element;
 class ExecutionContext;
@@ -255,15 +254,6 @@ class CORE_EXPORT ContentSecurityPolicy final
                      ExceptionStatus,
                      const String& script_content) const;
   bool AllowPluginType(
-      const String& type,
-      const String& type_attribute,
-      const KURL&,
-      ReportingDisposition = ReportingDisposition::kReport) const;
-  // Checks whether the plugin type should be allowed in the given
-  // document; enforces the CSP rule that PluginDocuments inherit
-  // plugin-types directives from the parent document.
-  bool AllowPluginTypeForDocument(
-      const Document&,
       const String& type,
       const String& type_attribute,
       const KURL&,

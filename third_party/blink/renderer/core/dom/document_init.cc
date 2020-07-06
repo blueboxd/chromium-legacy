@@ -93,7 +93,6 @@ DocumentInit& DocumentInit::ForTest() {
   DCHECK(!for_test_);
   for_test_ = true;
 #endif
-  content_security_policy_ = MakeGarbageCollected<ContentSecurityPolicy>();
   return *this;
 }
 
@@ -126,9 +125,9 @@ DocumentLoader* DocumentInit::TreeRootDocumentLoader() const {
 }
 
 network::mojom::blink::WebSandboxFlags DocumentInit::GetSandboxFlags() const {
-  DCHECK(content_security_policy_);
-  network::mojom::blink::WebSandboxFlags flags =
-      sandbox_flags_ | content_security_policy_->GetSandboxMask();
+  network::mojom::blink::WebSandboxFlags flags = sandbox_flags_;
+  if (content_security_policy_)
+    flags |= content_security_policy_->GetSandboxMask();
   if (DocumentLoader* loader = TreeRootDocumentLoader())
     flags |= loader->GetFrame()->Loader().EffectiveSandboxFlags();
   return flags;
@@ -279,9 +278,6 @@ DocumentInit& DocumentInit::WithExecutionContext(
   DCHECK(!for_test_);
 #endif
   execution_context_ = execution_context;
-  content_security_policy_ = MakeGarbageCollected<ContentSecurityPolicy>();
-  content_security_policy_->CopyStateFrom(
-      execution_context_->GetContentSecurityPolicy());
   return *this;
 }
 
@@ -496,7 +492,6 @@ DocumentInit& DocumentInit::WithSandboxFlags(
 }
 
 ContentSecurityPolicy* DocumentInit::GetContentSecurityPolicy() const {
-  DCHECK(content_security_policy_);
   return content_security_policy_;
 }
 

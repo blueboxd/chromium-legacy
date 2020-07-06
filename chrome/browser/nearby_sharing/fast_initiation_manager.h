@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_NEARBY_SHARING_FAST_INITIATION_MANAGER_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -15,8 +16,13 @@
 // 0xFC128E along with 2 additional bytes of metadata at the end. Some remote
 // devices background scan for Fast Initiation advertisements, as a signal to
 // begin advertising via Nearby Connections.
-class FastInitiationManager : device::BluetoothAdvertisement::Observer {
+class FastInitiationManager : public device::BluetoothAdvertisement::Observer {
  public:
+  enum class FastInitType : uint8_t {
+    kNotify = 0,
+    kSilent = 1,
+  };
+
   class Factory {
    public:
     Factory() = default;
@@ -44,7 +50,8 @@ class FastInitiationManager : device::BluetoothAdvertisement::Observer {
   FastInitiationManager& operator=(const FastInitiationManager&) = delete;
 
   // Begin broadcasting Fast Initiation advertisement.
-  virtual void StartAdvertising(base::OnceCallback<void()> callback,
+  virtual void StartAdvertising(FastInitType type,
+                                base::OnceCallback<void()> callback,
                                 base::OnceCallback<void()> error_callback);
 
   // Stop broadcasting Fast Initiation advertisement.
@@ -55,10 +62,11 @@ class FastInitiationManager : device::BluetoothAdvertisement::Observer {
   void AdvertisementReleased(
       device::BluetoothAdvertisement* advertisement) override;
 
-  void OnSetAdvertisingInterval();
+  void OnSetAdvertisingInterval(FastInitType type);
   void OnSetAdvertisingIntervalError(
+      FastInitType type,
       device::BluetoothAdvertisement::ErrorCode code);
-  void RegisterAdvertisement();
+  void RegisterAdvertisement(FastInitType type);
   void OnRegisterAdvertisement(
       scoped_refptr<device::BluetoothAdvertisement> advertisement);
   void OnRegisterAdvertisementError(
@@ -70,7 +78,11 @@ class FastInitiationManager : device::BluetoothAdvertisement::Observer {
   void OnUnregisterAdvertisement();
   void OnUnregisterAdvertisementError(
       device::BluetoothAdvertisement::ErrorCode error_code);
-  uint8_t GenerateFastInitV1Metadata();
+
+  // Fast Init V1 metadata has 2 bytes, in format
+  // [ version (3 bits) | type (3 bits) | uwb_enable (1 bit) | reserved (1 bit),
+  // adjusted_tx_power (1 byte) ].
+  std::vector<uint8_t> GenerateFastInitV1Metadata(FastInitType type);
 
   scoped_refptr<device::BluetoothAdapter> adapter_;
   scoped_refptr<device::BluetoothAdvertisement> advertisement_;

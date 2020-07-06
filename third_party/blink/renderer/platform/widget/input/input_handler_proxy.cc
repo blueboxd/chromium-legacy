@@ -177,6 +177,9 @@ cc::ScrollBeginThreadState RecordScrollingThread(
     UMA_HISTOGRAM_ENUMERATION(kTouchHistogramName, status);
   } else if (device == WebGestureDevice::kTouchpad) {
     UMA_HISTOGRAM_ENUMERATION(kWheelHistogramName, status);
+  } else if (device == WebGestureDevice::kScrollbar) {
+    // TODO(crbug.com/1101502): Add support for
+    // Renderer4.ScrollingThread.Scrollbar
   } else {
     NOTREACHED();
   }
@@ -831,6 +834,7 @@ void InputHandlerProxy::RecordMainThreadScrollingReasons(
       "Renderer4.MainThreadWheelScrollReason";
 
   if (device != WebGestureDevice::kTouchpad &&
+      device != WebGestureDevice::kScrollbar &&
       device != WebGestureDevice::kTouchscreen) {
     return;
   }

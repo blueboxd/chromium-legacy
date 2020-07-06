@@ -816,6 +816,12 @@ void BackgroundFetchDelegateImpl::RenameItem(
   NOTIMPLEMENTED();
 }
 
+void BackgroundFetchDelegateImpl::ChangeSchedule(
+    const offline_items_collection::ContentId& id,
+    base::Optional<offline_items_collection::OfflineItemSchedule> schedule) {
+  NOTIMPLEMENTED();
+}
+
 void BackgroundFetchDelegateImpl::AddObserver(Observer* observer) {
   DCHECK(!observers_.count(observer));
 

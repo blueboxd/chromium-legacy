@@ -16,6 +16,7 @@ import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemFilter;
+import org.chromium.components.offline_items_collection.OfflineItemSchedule;
 import org.chromium.components.offline_items_collection.OfflineItemState;
 import org.chromium.components.offline_items_collection.OpenParams;
 import org.chromium.components.offline_items_collection.RenameResult;
@@ -79,6 +80,10 @@ public class StubbedProvider {
         public void pauseDownload(ContentId id) {}
         @Override
         public void resumeDownload(ContentId id, boolean hasUserGesture) {}
+
+        @Override
+        public void changeSchedule(final ContentId id, final OfflineItemSchedule schedule) {}
+
         @Override
         public void cancelDownload(ContentId id) {}
 

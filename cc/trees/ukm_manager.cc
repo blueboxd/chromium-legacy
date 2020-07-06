@@ -112,6 +112,7 @@ void UkmManager::RecordThroughputUKM(
         CASE_FOR_MAIN_THREAD_TRACKER(MainThreadAnimation);
         CASE_FOR_MAIN_THREAD_TRACKER(PinchZoom);
         CASE_FOR_MAIN_THREAD_TRACKER(RAF);
+        CASE_FOR_MAIN_THREAD_TRACKER(ScrollbarScroll);
         CASE_FOR_MAIN_THREAD_TRACKER(TouchScroll);
         CASE_FOR_MAIN_THREAD_TRACKER(Universal);
         CASE_FOR_MAIN_THREAD_TRACKER(Video);
@@ -135,6 +136,7 @@ void UkmManager::RecordThroughputUKM(
         CASE_FOR_COMPOSITOR_THREAD_TRACKER(MainThreadAnimation);
         CASE_FOR_COMPOSITOR_THREAD_TRACKER(PinchZoom);
         CASE_FOR_COMPOSITOR_THREAD_TRACKER(RAF);
+        CASE_FOR_COMPOSITOR_THREAD_TRACKER(ScrollbarScroll);
         CASE_FOR_COMPOSITOR_THREAD_TRACKER(TouchScroll);
         CASE_FOR_COMPOSITOR_THREAD_TRACKER(Universal);
         CASE_FOR_COMPOSITOR_THREAD_TRACKER(Video);
@@ -157,6 +159,7 @@ void UkmManager::RecordThroughputUKM(
         CASE_FOR_SLOWER_THREAD_TRACKER(MainThreadAnimation);
         CASE_FOR_SLOWER_THREAD_TRACKER(PinchZoom);
         CASE_FOR_SLOWER_THREAD_TRACKER(RAF);
+        CASE_FOR_SLOWER_THREAD_TRACKER(ScrollbarScroll);
         CASE_FOR_SLOWER_THREAD_TRACKER(TouchScroll);
         CASE_FOR_SLOWER_THREAD_TRACKER(Universal);
         CASE_FOR_SLOWER_THREAD_TRACKER(Video);
@@ -280,6 +283,7 @@ void UkmManager::RecordCompositorLatencyUKM(
       CASE_FOR_TRACKER(MainThreadAnimation);
       CASE_FOR_TRACKER(PinchZoom);
       CASE_FOR_TRACKER(RAF);
+      CASE_FOR_TRACKER(ScrollbarScroll);
       CASE_FOR_TRACKER(TouchScroll);
       CASE_FOR_TRACKER(Video);
       CASE_FOR_TRACKER(WheelScroll);

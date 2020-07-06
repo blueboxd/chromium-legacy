@@ -205,7 +205,7 @@ TEST_F(VideoFramePumpTest, NullFrame) {
   base::RunLoop run_loop;
 
   // Set up the capturer to return null frames.
-  capturer->set_frame_generator(base::Bind(&CreateNullFrame));
+  capturer->set_frame_generator(base::BindRepeating(&CreateNullFrame));
 
   // Expect that the VideoEncoder::Encode() method is never called.
   EXPECT_CALL(*encoder, EncodePtr(_)).Times(0);
@@ -232,7 +232,7 @@ TEST_F(VideoFramePumpTest, UnchangedFrame) {
   base::RunLoop run_loop;
 
   // Set up the capturer to return unchanged frames.
-  capturer->set_frame_generator(base::Bind(&CreateUnchangedFrame));
+  capturer->set_frame_generator(base::BindRepeating(&CreateUnchangedFrame));
 
   // Expect that the VideoEncoder::Encode() method is called.
   EXPECT_CALL(*encoder, EncodePtr(_)).WillRepeatedly(Return(nullptr));

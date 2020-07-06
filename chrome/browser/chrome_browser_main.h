@@ -49,7 +49,7 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   ~ChromeBrowserMainParts() override;
 
   // Add additional ChromeBrowserMainExtraParts.
-  virtual void AddParts(ChromeBrowserMainExtraParts* parts);
+  void AddParts(std::unique_ptr<ChromeBrowserMainExtraParts> parts);
 
 #if !defined(OS_ANDROID)
   // Returns the RunLoop that would be run by MainMessageLoopRun. This is used
@@ -153,7 +153,7 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 
   // Vector of additional ChromeBrowserMainExtraParts.
   // Parts are deleted in the inverse order they are added.
-  std::vector<ChromeBrowserMainExtraParts*> chrome_extra_parts_;
+  std::vector<std::unique_ptr<ChromeBrowserMainExtraParts>> chrome_extra_parts_;
 
   // The system monitor instance, used by some subsystems to collect the system
   // metrics they need.

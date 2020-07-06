@@ -192,7 +192,7 @@ void PartitionAllocGlobalUninitForTesting() {
 }
 
 template <bool thread_safe>
-void PartitionRoot<thread_safe>::InitSlowPath() {
+void PartitionRoot<thread_safe>::InitSlowPath(bool enable_tag_pointers) {
   ScopedGuard guard{lock_};
 
   if (initialized.load(std::memory_order_relaxed))
@@ -203,6 +203,8 @@ void PartitionRoot<thread_safe>::InitSlowPath() {
   if (IsPartitionAllocGigaCageEnabled())
     internal::PartitionAddressSpace::Init();
 #endif
+
+  tag_pointers = enable_tag_pointers;
 
   // We mark the sentinel bucket/page as free to make sure it is skipped by our
   // logic to find a new active page.
@@ -302,8 +304,7 @@ bool PartitionRoot<thread_safe>::ReallocDirectMappedInPlace(
     size_t raw_size) {
   PA_DCHECK(page->bucket->is_direct_mapped());
 
-  raw_size = internal::PartitionSizeAdjustAdd(raw_size);
-
+  raw_size = internal::PartitionSizeAdjustAdd(tag_pointers, raw_size);
   // Note that the new size might be a bucketed size; this function is called
   // whenever we're reallocating a direct mapped allocation.
   size_t new_size = Bucket::get_direct_map_size(raw_size);
@@ -388,8 +389,8 @@ void* PartitionRoot<thread_safe>::ReallocFlags(int flags,
         &actual_old_size, ptr);
   }
   if (LIKELY(!overridden)) {
-    auto* page =
-        Page::FromPointer(internal::PartitionPointerAdjustSubtract(ptr));
+    auto* page = Page::FromPointer(
+        internal::PartitionPointerAdjustSubtract(tag_pointers, ptr));
     bool success = false;
     {
       internal::ScopedGuard<thread_safe> guard{lock_};
@@ -412,7 +413,7 @@ void* PartitionRoot<thread_safe>::ReallocFlags(int flags,
     }
 
     const size_t actual_new_size = ActualSize(new_size);
-    actual_old_size = PartitionAllocGetSize<thread_safe>(ptr);
+    actual_old_size = GetSize(ptr);
 
     // TODO: note that tcmalloc will "ignore" a downsizing realloc() unless the
     // new size is a significant percentage smaller. We could do the same if we
@@ -421,7 +422,8 @@ void* PartitionRoot<thread_safe>::ReallocFlags(int flags,
       // Trying to allocate a block of size |new_size| would give us a block of
       // the same size as the one we've already got, so re-use the allocation
       // after updating statistics (and cookies, if present).
-      size_t new_raw_size = internal::PartitionSizeAdjustAdd(new_size);
+      size_t new_raw_size =
+          internal::PartitionSizeAdjustAdd(tag_pointers, new_size);
       page->set_raw_size(new_raw_size);
 #if DCHECK_IS_ON()
       // Write a new trailing cookie when it is possible to keep track of

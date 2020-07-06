@@ -202,19 +202,6 @@ class CORE_EXPORT FragmentData {
                                     PostIsolationEffect());
   }
 
-  // This is the complete set of property nodes that can be used to
-  // paint mask-based clip-path.
-  PropertyTreeStateOrAlias ClipPathProperties() const {
-    DCHECK(rare_data_);
-    const auto* properties = rare_data_->paint_properties.get();
-    DCHECK(properties);
-    DCHECK(properties->MaskClip());
-    DCHECK(properties->ClipPath());
-    return PropertyTreeStateOrAlias(
-        properties->MaskClip()->LocalTransformSpace(), *properties->MaskClip(),
-        *properties->ClipPath());
-  }
-
   const TransformPaintPropertyNodeOrAlias& PreTransform() const;
   const TransformPaintPropertyNodeOrAlias& PostScrollTranslation() const;
   const ClipPaintPropertyNodeOrAlias& PreClip() const;

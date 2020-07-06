@@ -661,11 +661,10 @@ bool Display::DrawAndSwap(base::TimeTicks expected_display_time) {
                                 : TypeOfVideoInFrame::kNoVideo);
 
   if (frame.metadata.delegated_ink_metadata) {
-    TRACE_EVENT_INSTANT2(
+    TRACE_EVENT_INSTANT1(
         "viz", "Delegated Ink Metadata was aggregated for DrawAndSwap.",
-        TRACE_EVENT_SCOPE_THREAD, "point",
-        frame.metadata.delegated_ink_metadata->point().ToString(), "area",
-        frame.metadata.delegated_ink_metadata->presentation_area().ToString());
+        TRACE_EVENT_SCOPE_THREAD, "ink metadata",
+        frame.metadata.delegated_ink_metadata->ToString());
     // TODO(1052145): This metadata will be stored here and used to determine
     // which points should be drawn onto the back buffer (via Skia or OS APIs)
     // before being swapped onto the screen.

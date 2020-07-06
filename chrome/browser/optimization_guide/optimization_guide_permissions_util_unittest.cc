@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/performance_hints/performance_hints_features.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
@@ -189,12 +190,27 @@ TEST_F(OptimizationGuidePermissionsUtilTest,
 }
 
 TEST_F(OptimizationGuidePermissionsUtilTest,
+       IsUserPermittedToFetchHintsPerformanceInfoFlagExplicitlyAllows) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {optimization_guide::features::kRemoteOptimizationGuideFetching,
+       kContextMenuPerformanceInfoAndRemoteHintFetching},
+      {});
+  SetDataSaverEnabled(false);
+  SetSyncServiceEnabled(false);
+
+  EXPECT_FALSE(profile()->IsOffTheRecord());
+  EXPECT_TRUE(IsUserPermittedToFetchFromRemoteOptimizationGuide(profile()));
+}
+
+TEST_F(OptimizationGuidePermissionsUtilTest,
        IsUserPermittedToFetchHintsAllConsentsEnabledIncognitoProfile) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {optimization_guide::features::kRemoteOptimizationGuideFetching,
        optimization_guide::features::
-           kRemoteOptimizationGuideFetchingAnonymousDataConsent},
+           kRemoteOptimizationGuideFetchingAnonymousDataConsent,
+       kContextMenuPerformanceInfoAndRemoteHintFetching},
       {});
   SetDataSaverEnabled(true);
   SetInfobarSeen(true);

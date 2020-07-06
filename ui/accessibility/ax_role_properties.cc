@@ -675,16 +675,6 @@ bool IsTableRow(ax::mojom::Role role) {
   }
 }
 
-bool IsTextOrLineBreak(ax::mojom::Role role) {
-  switch (role) {
-    case ax::mojom::Role::kLineBreak:
-    case ax::mojom::Role::kStaticText:
-      return true;
-    default:
-      return false;
-  }
-}
-
 bool IsText(ax::mojom::Role role) {
   switch (role) {
     case ax::mojom::Role::kInlineTextBox:

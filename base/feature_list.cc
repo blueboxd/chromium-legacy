@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/base_switches.h"
 #include "base/debug/alias.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -16,6 +17,7 @@
 #include "base/pickle.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 
 namespace base {
@@ -88,6 +90,82 @@ bool IsValidFeatureOrFieldTrialName(const std::string& name) {
   return IsStringASCII(name) && name.find_first_of(",<*") == std::string::npos;
 }
 
+// Splits |first| into two parts by the |separator| where the first part will be
+// returned updated in |first| and the second part will be returned as |second|.
+// This function returns false if there is more than one |separator| in |first|.
+// If there is no |separator| presented in |first|, this function will not
+// modify |first| and |second|. It's used for splitting the |enable_features|
+// flag into feature name, field trial name and feature parameters.
+bool SplitIntoTwo(const std::string& separator,
+                  StringPiece* first,
+                  std::string* second) {
+  std::vector<StringPiece> parts =
+      SplitStringPiece(*first, separator, TRIM_WHITESPACE, SPLIT_WANT_ALL);
+  if (parts.size() == 2) {
+    *second = parts[1].as_string();
+  } else if (parts.size() > 2) {
+    DLOG(ERROR) << "Only one '" << separator
+                << "' is allowed but got: " << first->as_string();
+    return false;
+  }
+  *first = parts[0];
+  return true;
+}
+
+// Checks and parses the |enable_features| flag and sets
+// |parsed_enable_features| to be a comma-separated list of features,
+// |force_fieldtrials| to be a comma-separated list of field trials that each
+// feature want to associate with and |force_fieldtrial_params| to be the field
+// trial parameters for each field trial.
+// Returns true if |enable_features| is parsable, otherwise false.
+bool ParseEnableFeatures(const std::string& enable_features,
+                         std::string* parsed_enable_features,
+                         std::string* force_fieldtrials,
+                         std::string* force_fieldtrial_params) {
+  std::vector<std::string> enable_features_list;
+  std::vector<std::string> force_fieldtrials_list;
+  std::vector<std::string> force_fieldtrial_params_list;
+  for (auto& enable_feature :
+       FeatureList::SplitFeatureListString(enable_features)) {
+    // First, check whether ":" is present. If true, feature parameters were
+    // set for this feature.
+    std::string feature_params;
+    if (!SplitIntoTwo(":", &enable_feature, &feature_params))
+      return false;
+    // Then, check whether "." is present. If true, a group was specified for
+    // this feature.
+    std::string group;
+    if (!SplitIntoTwo(".", &enable_feature, &group))
+      return false;
+    // Finally, check whether "<" is present. If true, a study was specified for
+    // this feature.
+    std::string study;
+    if (!SplitIntoTwo("<", &enable_feature, &study))
+      return false;
+
+    const std::string feature_name = enable_feature.as_string();
+    // If feature params were set but group and study weren't, associate the
+    // feature and its feature params to a synthetic field trial as the
+    // feature params only make sense when it's combined with a field trial.
+    if (!feature_params.empty()) {
+      study = study.empty() ? "Study" + feature_name : study;
+      group = group.empty() ? "Group" + feature_name : group;
+      force_fieldtrials_list.push_back(study + "/" + group);
+      force_fieldtrial_params_list.push_back(study + "." + group + ":" +
+                                             feature_params);
+    }
+    enable_features_list.push_back(
+        study.empty() ? feature_name : (feature_name + "<" + study));
+  }
+
+  *parsed_enable_features = JoinString(enable_features_list, ",");
+  // Field trial separator is currently a slash. See
+  // |kPersistentStringSeparator| in base/metrics/field_trial.cc.
+  *force_fieldtrials = JoinString(force_fieldtrials_list, "/");
+  *force_fieldtrial_params = JoinString(force_fieldtrial_params_list, ",");
+  return true;
+}
+
 }  // namespace
 
 #if defined(DCHECK_IS_CONFIGURABLE)
@@ -127,6 +205,37 @@ void FeatureList::InitializeFromCommandLine(
   RegisterOverridesFromCommandLine(enable_features, OVERRIDE_ENABLE_FEATURE);
 
   initialized_from_command_line_ = true;
+}
+
+void FeatureList::InitializeFromCommandLineWithFeatureParams(
+    const std::string& enable_features,
+    const std::string& disable_features,
+    FieldTrialParamsDecodeStringFunc decode_data_func) {
+  DCHECK(!initialized_);
+
+  std::string parsed_enable_features;
+  std::string force_fieldtrials;
+  std::string force_fieldtrial_params;
+  bool parse_enable_features_result =
+      ParseEnableFeatures(enable_features, &parsed_enable_features,
+                          &force_fieldtrials, &force_fieldtrial_params);
+  DCHECK(parse_enable_features_result) << StringPrintf(
+      "The --%s list is unparsable or invalid, please check the format.",
+      ::switches::kEnableFeatures);
+  bool associate_params_result = AssociateFieldTrialParamsFromString(
+      force_fieldtrial_params, decode_data_func);
+  DCHECK(associate_params_result) << StringPrintf(
+      "The field trial parameters part of the --%s list is invalid. Make sure "
+      "you %%-encode the following characters in param values: %%:/.,",
+      ::switches::kEnableFeatures);
+
+  bool create_trials_result =
+      FieldTrialList::CreateTrialsFromString(force_fieldtrials);
+  DCHECK(create_trials_result)
+      << StringPrintf("Invalid field trials are specified in --%s.",
+                      ::switches::kEnableFeatures);
+
+  InitializeFromCommandLine(parsed_enable_features, disable_features);
 }
 
 void FeatureList::InitializeFromSharedMemory(
@@ -350,6 +459,11 @@ void FeatureList::RestoreInstanceForTesting(
   DCHECK(!g_feature_list_instance);
   // Note: Intentional leak of global singleton.
   g_feature_list_instance = instance.release();
+}
+
+// static
+std::string FeatureList::NoOpDecodeFunc(const std::string& str) {
+  return str;
 }
 
 void FeatureList::FinalizeInitialization() {

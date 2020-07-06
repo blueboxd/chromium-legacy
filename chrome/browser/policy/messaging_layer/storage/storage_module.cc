@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
-#include "base/no_destructor.h"
+#include "base/memory/ptr_util.h"
+#include "chrome/browser/policy/messaging_layer/storage/storage.h"
 #include "chrome/browser/policy/messaging_layer/storage/storage_module.h"
 #include "chrome/browser/policy/messaging_layer/util/status.h"
 #include "chrome/browser/policy/messaging_layer/util/statusor.h"
@@ -26,11 +29,28 @@ void StorageModule::AddRecord(reporting::EncryptedRecord record,
 }
 
 // static
-StatusOr<scoped_refptr<StorageModule>> StorageModule::Create() {
+void StorageModule::Create(
+    const Storage::Options& options,
+    Storage::StartUploadCb start_upload_cb,
+    base::OnceCallback<void(StatusOr<scoped_refptr<StorageModule>>)> callback) {
   scoped_refptr<StorageModule> instance =
       // Cannot base::MakeRefCounted, since constructor is protected.
       base::WrapRefCounted(new StorageModule());
-  return instance;
+  Storage::Create(
+      options, start_upload_cb,
+      base::BindOnce(
+          [](scoped_refptr<StorageModule> instance,
+             base::OnceCallback<void(StatusOr<scoped_refptr<StorageModule>>)>
+                 callback,
+             StatusOr<scoped_refptr<Storage>> storage) {
+            if (!storage.ok()) {
+              std::move(callback).Run(storage.status());
+              return;
+            }
+            instance->storage_ = std::move(storage.ValueOrDie());
+            std::move(callback).Run(std::move(instance));
+          },
+          std::move(instance), std::move(callback)));
 }
 
 }  // namespace reporting

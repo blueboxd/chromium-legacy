@@ -136,8 +136,9 @@ bool JingleSessionManager::OnSignalStrategyIncomingStanza(
 
   it->second->OnIncomingMessage(
       stanza->Attr(jingle_xmpp::QN_ID), std::move(message),
-      base::Bind(&JingleSessionManager::SendReply, base::Unretained(this),
-                 base::Passed(std::move(stanza_copy))));
+      base::BindRepeating(&JingleSessionManager::SendReply,
+                          base::Unretained(this),
+                          base::Passed(std::move(stanza_copy))));
   return true;
 }
 

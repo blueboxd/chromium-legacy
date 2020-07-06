@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_browser_main.h"
@@ -100,7 +101,7 @@ void CrostiniDialogBrowserTest::CreatedBrowserMainParts(
       static_cast<ChromeBrowserMainParts*>(browser_main_parts);
   extra_parts_ =
       new CrostiniBrowserTestChromeBrowserMainExtraParts(register_termina_);
-  chrome_browser_main_parts->AddParts(extra_parts_);
+  chrome_browser_main_parts->AddParts(base::WrapUnique(extra_parts_));
 }
 
 void CrostiniDialogBrowserTest::SetUp() {

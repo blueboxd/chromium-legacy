@@ -72,7 +72,8 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
             new ChromeActivityTestRule<>(ChromeActivity.class);
 
     @Rule
-    public ChromeRenderTestRule mRenderTestRule = new ChromeRenderTestRule();
+    public ChromeRenderTestRule mRenderTestRule =
+            ChromeRenderTestRule.Builder.withPublicCorpus().build();
 
     // The dialog we are testing.
     private PhotoPickerDialog mDialog;

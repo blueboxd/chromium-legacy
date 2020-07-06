@@ -143,8 +143,8 @@ class TestAudioSource : public AudioSource {
   bool Start(const PacketCapturedCallback& callback) override {
     callback_ = callback;
     timer_.Start(FROM_HERE, kAudioPacketDuration,
-                 base::Bind(&TestAudioSource::GenerateAudioSamples,
-                            base::Unretained(this)));
+                 base::BindRepeating(&TestAudioSource::GenerateAudioSamples,
+                                     base::Unretained(this)));
     return true;
   }
 
@@ -392,10 +392,12 @@ class ConnectionTest : public testing::Test,
     // VideoStub otherwise.
     if (is_using_webrtc()) {
       client_video_renderer_.GetFrameConsumer()->set_on_frame_callback(
-          base::Bind(&base::RunLoop::Quit, base::Unretained(&run_loop)));
+          base::BindRepeating(&base::RunLoop::Quit,
+                              base::Unretained(&run_loop)));
     } else {
       client_video_renderer_.GetVideoStub()->set_on_frame_callback(
-          base::Bind(&base::RunLoop::Quit, base::Unretained(&run_loop)));
+          base::BindRepeating(&base::RunLoop::Quit,
+                              base::Unretained(&run_loop)));
     }
 
     run_loop.Run();
@@ -427,7 +429,7 @@ class ConnectionTest : public testing::Test,
 
     base::RunLoop run_loop;
     client_video_renderer_.GetFrameStatsConsumer()->set_on_stats_callback(
-        base::Bind(&base::RunLoop::Quit, base::Unretained(&run_loop)));
+        base::BindRepeating(&base::RunLoop::Quit, base::Unretained(&run_loop)));
     run_loop.Run();
     client_video_renderer_.GetFrameStatsConsumer()->set_on_stats_callback({});
 

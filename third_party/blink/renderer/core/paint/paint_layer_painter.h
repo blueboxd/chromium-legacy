@@ -17,7 +17,6 @@ namespace blink {
 class CullRect;
 class ClipRect;
 class ComputedStyle;
-class DisplayItemClient;
 class GraphicsContext;
 struct PhysicalOffset;
 
@@ -100,10 +99,6 @@ class CORE_EXPORT PaintLayerPainter {
                              GraphicsContext&,
                              const PaintLayerPaintingInfo&,
                              PaintLayerFlags);
-
-  void FillMaskingFragment(GraphicsContext&,
-                           const ClipRect&,
-                           const DisplayItemClient&);
 
   void AdjustForPaintProperties(const GraphicsContext&,
                                 PaintLayerPaintingInfo&,

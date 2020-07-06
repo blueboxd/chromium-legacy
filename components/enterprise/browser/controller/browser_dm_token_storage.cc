@@ -166,7 +166,9 @@ bool BrowserDMTokenStorage::ShouldDisplayErrorMessageOnFailure() {
 
 void BrowserDMTokenStorage::InitIfNeeded() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(delegate_) << "DM storage delegate has not been set";
+  DCHECK(delegate_) << "DM storage delegate has not been set. If this is a "
+                       "test, you may need to add an instance of "
+                       "FakeBrowserDMTokenStorage to the test fixture.";
 
   if (is_initialized_)
     return;

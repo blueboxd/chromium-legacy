@@ -91,7 +91,8 @@ public class ManageSyncSettingsTest {
             RuleChain.outerRule(mSyncTestRule).around(mSettingsActivityTestRule);
 
     @Rule
-    public final ChromeRenderTestRule mRenderTestRule = new ChromeRenderTestRule();
+    public final ChromeRenderTestRule mRenderTestRule =
+            ChromeRenderTestRule.Builder.withPublicCorpus().build();
 
     @Test
     @SmallTest

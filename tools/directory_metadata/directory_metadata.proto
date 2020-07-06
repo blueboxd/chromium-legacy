@@ -14,6 +14,8 @@ message Metadata {
   string team_email = 2;
   // The code in this directory is specific to this OS.
   OS os = 3;
+  // Whether wpt-importer should notify the team about new failures.
+  bool wpt_notify = 4;
   // Reserved for metadata information for third-party code. See
   // https://opensource.google/docs/thirdparty/metadata/
   reserved 13;

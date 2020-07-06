@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
@@ -53,7 +55,7 @@ class ReportSchedulerTest
 
   void CreatedBrowserMainParts(content::BrowserMainParts* parts) override {
     static_cast<ChromeBrowserMainParts*>(parts)->AddParts(
-        new ChromeBrowserExtraSetUp(this));
+        std::make_unique<ChromeBrowserExtraSetUp>(this));
   }
 
   void TearDownOnMainThread() override {

@@ -1073,12 +1073,7 @@ void XWindow::OnFocusEvent(bool focus_in,
 }
 
 bool XWindow::IsTargetedBy(const x11::Event& x11_event) const {
-  const XEvent& xev = x11_event.xlib_event();
-  auto target_window = static_cast<x11::Window>(
-      xev.type == x11::GeGenericEvent::opcode
-          ? static_cast<XIDeviceEvent*>(xev.xcookie.data)->event
-          : xev.xany.window);
-  return target_window == xwindow_;
+  return x11_event.window() == xwindow_;
 }
 
 void XWindow::WmMoveResize(int hittest, const gfx::Point& location) const {
@@ -1124,7 +1119,7 @@ void XWindow::ProcessEvent(x11::Event* xev) {
     OnConfigureEvent(*configure);
   } else if (auto* crossing = xev->As<x11::Input::CrossingEvent>()) {
     TouchFactory* factory = TouchFactory::GetInstance();
-    if (factory->ShouldProcessXI2Event(&xev->xlib_event())) {
+    if (factory->ShouldProcessCrossingEvent(*crossing)) {
       auto mode = XI2ModeToXMode(crossing->mode);
       auto detail = XI2DetailToXDetail(crossing->detail);
       switch (crossing->opcode) {
@@ -1176,6 +1171,9 @@ void XWindow::ProcessEvent(x11::Event* xev) {
     switch (mapping->request) {
       case x11::Mapping::Modifier:
       case x11::Mapping::Keyboard:
+        // TODO(https://crbug.com/1066670): Remove this when the Xlib dependency
+        // is removed.  We can't remove it now because it could cause the
+        // XDisplay state to become stale.
         XRefreshKeyboardMapping(&xev->xlib_event().xmapping);
         break;
       case x11::Mapping::Pointer:

@@ -354,18 +354,6 @@ void TpmChallengeKeySubtleImpl::IsAttestationPreparedCallback(
     return;
   }
 
-  if ((key_type_ == KEY_DEVICE) && will_register_key_) {
-    // Generate a new key and have it signed by PCA.
-    attestation_flow_->GetCertificate(
-        GetCertificateProfile(), GetAccountId(),
-        std::string(),  // Not used.
-        true,           // Force a new key to be generated.
-        key_name_,
-        base::BindOnce(&TpmChallengeKeySubtleImpl::GetCertificateCallback,
-                       weak_factory_.GetWeakPtr()));
-    return;
-  }
-
   // Attestation is available, see if the key we need already exists.
   CryptohomeClient::Get()->TpmAttestationDoesKeyExist(
       key_type_,

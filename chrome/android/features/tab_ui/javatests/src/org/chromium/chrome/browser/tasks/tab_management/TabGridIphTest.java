@@ -97,7 +97,8 @@ public class TabGridIphTest {
     public TestRule mProcessor = new Features.InstrumentationProcessor();
 
     @Rule
-    public ChromeRenderTestRule mRenderTestRule = new ChromeRenderTestRule();
+    public ChromeRenderTestRule mRenderTestRule =
+            ChromeRenderTestRule.Builder.withPublicCorpus().build();
 
     @Before
     public void setUp() {

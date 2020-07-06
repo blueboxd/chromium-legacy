@@ -594,12 +594,11 @@ TEST_P(InputHandlerProxyTest, NestedGestureBasedScrollsDifferentSourceDevice) {
   EXPECT_CALL(mock_input_handler_, ScrollEnd(true)).Times(1);
   EXPECT_CALL(mock_input_handler_, ScrollBegin(_, _))
       .WillOnce(testing::Return(kImplThreadScrollState));
-  // TODO(crbug.com/1060708): This should be called once.
   EXPECT_CALL(
       mock_input_handler_,
       RecordScrollBegin(ui::ScrollInputType::kScrollbar,
                         cc::ScrollBeginThreadState::kScrollingOnCompositor))
-      .Times(0);
+      .Times(1);
   EXPECT_CALL(mock_input_handler_, ScrollUpdate(_, _)).Times(1);
   if (!base::FeatureList::IsEnabled(features::kScrollUnification)) {
     EXPECT_CALL(mock_input_handler_, ScrollingShouldSwitchtoMainThread())
@@ -761,7 +760,7 @@ TEST_P(InputHandlerProxyTest, ScrollbarScrollEndOnDeviceChange) {
       mock_input_handler_,
       RecordScrollBegin(ui::ScrollInputType::kScrollbar,
                         cc::ScrollBeginThreadState::kScrollingOnCompositor))
-      .Times(0);
+      .Times(1);
   EXPECT_CALL(mock_input_handler_, ScrollUpdate(_, _)).Times(1);
   if (!base::FeatureList::IsEnabled(features::kScrollUnification)) {
     EXPECT_CALL(mock_input_handler_, ScrollingShouldSwitchtoMainThread())
@@ -1449,6 +1448,7 @@ TEST_F(InputHandlerProxyEventQueueTest,
 
   EXPECT_CALL(mock_input_handler_, ScrollBegin(_, _))
       .WillOnce(Return(kImplThreadScrollState));
+  EXPECT_CALL(mock_input_handler_, RecordScrollBegin(_, _)).Times(1);
   if (!base::FeatureList::IsEnabled(features::kScrollUnification)) {
     EXPECT_CALL(mock_input_handler_, ScrollingShouldSwitchtoMainThread())
         .WillOnce(Return(false));
@@ -1488,6 +1488,7 @@ TEST_F(InputHandlerProxyEventQueueTest,
   EXPECT_CALL(mock_input_handler_, RecordScrollEnd(_)).Times(1);
   EXPECT_CALL(mock_input_handler_, ScrollBegin(_, _))
       .WillOnce(Return(kImplThreadScrollState));
+  EXPECT_CALL(mock_input_handler_, RecordScrollBegin(_, _)).Times(1);
   if (!base::FeatureList::IsEnabled(features::kScrollUnification)) {
     EXPECT_CALL(mock_input_handler_, ScrollingShouldSwitchtoMainThread())
         .WillOnce(Return(false));

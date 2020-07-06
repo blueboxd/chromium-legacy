@@ -17,10 +17,6 @@ const char kSafeAreaInsetLeftName[] = "safe-area-inset-left";
 const char kSafeAreaInsetBottomName[] = "safe-area-inset-bottom";
 const char kSafeAreaInsetRightName[] = "safe-area-inset-right";
 
-String GetPx(int value) {
-  return String::Format("%dpx", value);
-}
-
 }  // namespace
 
 DisplayCutoutClientImpl::DisplayCutoutClientImpl(
@@ -41,10 +37,14 @@ void DisplayCutoutClientImpl::SetSafeArea(
     mojom::blink::DisplayCutoutSafeAreaPtr safe_area) {
   DocumentStyleEnvironmentVariables& vars =
       frame_->GetDocument()->GetStyleEngine().EnsureEnvironmentVariables();
-  vars.SetVariable(kSafeAreaInsetTopName, GetPx(safe_area->top));
-  vars.SetVariable(kSafeAreaInsetLeftName, GetPx(safe_area->left));
-  vars.SetVariable(kSafeAreaInsetBottomName, GetPx(safe_area->bottom));
-  vars.SetVariable(kSafeAreaInsetRightName, GetPx(safe_area->right));
+  vars.SetVariable(kSafeAreaInsetTopName,
+                   StyleEnvironmentVariables::FormatPx(safe_area->top));
+  vars.SetVariable(kSafeAreaInsetLeftName,
+                   StyleEnvironmentVariables::FormatPx(safe_area->left));
+  vars.SetVariable(kSafeAreaInsetBottomName,
+                   StyleEnvironmentVariables::FormatPx(safe_area->bottom));
+  vars.SetVariable(kSafeAreaInsetRightName,
+                   StyleEnvironmentVariables::FormatPx(safe_area->right));
 }
 
 void DisplayCutoutClientImpl::Trace(Visitor* visitor) const {

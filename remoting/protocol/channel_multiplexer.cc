@@ -339,8 +339,8 @@ void ChannelMultiplexer::CreateChannel(const std::string& name,
     if (pending_channels_.size() == 1U) {
       base_channel_factory_->CreateChannel(
           base_channel_name_,
-          base::Bind(&ChannelMultiplexer::OnBaseChannelReady,
-                     base::Unretained(this)));
+          base::BindOnce(&ChannelMultiplexer::OnBaseChannelReady,
+                         base::Unretained(this)));
     }
   }
 }
@@ -362,13 +362,14 @@ void ChannelMultiplexer::OnBaseChannelReady(
 
   if (base_channel_.get()) {
     // Initialize reader and writer.
-    reader_.StartReading(base_channel_.get(),
-                         base::Bind(&ChannelMultiplexer::OnIncomingPacket,
-                                    base::Unretained(this)),
-                         base::Bind(&ChannelMultiplexer::OnBaseChannelError,
-                                    base::Unretained(this)));
-    writer_.Start(base::Bind(&P2PStreamSocket::Write,
-                             base::Unretained(base_channel_.get())),
+    reader_.StartReading(
+        base_channel_.get(),
+        base::BindRepeating(&ChannelMultiplexer::OnIncomingPacket,
+                            base::Unretained(this)),
+        base::BindOnce(&ChannelMultiplexer::OnBaseChannelError,
+                       base::Unretained(this)));
+    writer_.Start(base::BindRepeating(&P2PStreamSocket::Write,
+                                      base::Unretained(base_channel_.get())),
                   base::BindOnce(&ChannelMultiplexer::OnBaseChannelError,
                                  base::Unretained(this)));
   }

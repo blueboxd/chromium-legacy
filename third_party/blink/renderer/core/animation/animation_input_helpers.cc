@@ -248,7 +248,7 @@ scoped_refptr<TimingFunction> AnimationInputHelpers::ParseTimingFunction(
   // Fallback to an insecure parsing mode if we weren't provided with a
   // document.
   SecureContextMode secure_context_mode =
-      document ? document->GetSecureContextMode()
+      document ? document->GetExecutionContext()->GetSecureContextMode()
                : SecureContextMode::kInsecureContext;
   const CSSValue* value = CSSParser::ParseSingleValue(
       CSSPropertyID::kTransitionTimingFunction, string,

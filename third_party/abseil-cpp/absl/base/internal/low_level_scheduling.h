@@ -76,7 +76,7 @@ class SchedulingGuard {
     bool disabled;
   };
 
-  // Access to SchedulingGuard is explicitly white-listed.
+  // Access to SchedulingGuard is explicitly permitted.
   friend class SchedulingHelper;
   friend class SpinLock;
 

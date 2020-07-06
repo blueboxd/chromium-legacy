@@ -4,11 +4,14 @@
 
 # Contains flags that we'd like all Chromium .apks to use.
 
-# Not needed for Android and saves a bit of processing time.
--dontpreverify
-
 # Keep line number information, useful for stack traces.
 -keepattributes SourceFile,LineNumberTable
+
+# Enable protobuf-related optimizations.
+-shrinkunusedprotofields
+
+# Allowing Proguard to change modifiers.
+-allowaccessmodification
 
 # Keep all CREATOR fields within Parcelable that are kept.
 -keepclassmembers class * implements android.os.Parcelable {
@@ -70,24 +73,6 @@
   static boolean isLoggable(...);
 }
 
-# The following chart was created on July 20, 2016, to decide on 3 optimization
-# passes for Chrome.
-# optimization passes | time | .dex size | dirty memory per process
-# -----------------------------------------------------------------
-#          1          | 0:48 |  5805676  |         488972
-#          2          | 1:07 |  5777376  |         487092
-#          3          | 1:24 |  5772192  |         486596
-#          4          | 1:42 |  5771124  |         486484
-#          5          | 1:56 |  5770504  |         486432
--optimizationpasses 3
-
-# Horizontal class merging marginally increases dex size (as of Mar 2018).
--optimizations !class/merging/horizontal
-
-# Allowing Proguard to change modifiers. This change shrinks the .dex size by
-# ~1%, and reduces the method count by ~4%.
--allowaccessmodification
-
 # Workaround for crbug/1002847. Methods of BaseGmsClient are incorrectly
 # removed even though they are required for the derived class GmsClient
 # to correctly implement Api$Client.
@@ -97,9 +82,4 @@
   public void dump(java.lang.String,java.io.FileDescriptor,java.io.PrintWriter,java.lang.String[]);
   public int getMinApkVersion();
   public boolean requiresSignIn();
-}
-
-# Protobuf java lite runtime uses reflection
--keepclassmembers class * extends com.google.protobuf.GeneratedMessageLite {
-  <fields>;
 }

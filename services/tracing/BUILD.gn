@@ -86,6 +86,7 @@ source_set("tests") {
     "public/cpp/perfetto/producer_test_utils.h",
     "public/cpp/perfetto/task_runner_unittest.cc",
     "public/cpp/perfetto/trace_event_data_source_unittest.cc",
+    "public/cpp/perfetto/trace_packet_tokenizer_unittest.cc",
     "public/cpp/perfetto/traced_value_proto_writer_unittest.cc",
     "public/cpp/stack_sampling/reached_code_data_source_android_unittest.cc",
     "public/cpp/stack_sampling/tracing_sampler_profiler_unittest.cc",

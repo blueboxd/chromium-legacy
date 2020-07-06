@@ -28,6 +28,7 @@
 #include "ui/events/x/x11_event_translation.h"
 #include "ui/events/x/x11_window_event_manager.h"
 #include "ui/gfx/x/connection.h"
+#include "ui/gfx/x/extension_manager.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/xproto.h"
@@ -239,29 +240,25 @@ X11EventSource::GetRootCursorLocationFromCurrentEvent() const {
     return base::nullopt;
 
   DCHECK(dispatching_event_);
-  XEvent* event = &dispatching_event_->xlib_event();
+  x11::Event* event = dispatching_event_;
 
-  bool is_xi2_event = event->type == x11::GeGenericEvent::opcode;
-  int event_type = is_xi2_event
-                       ? reinterpret_cast<XIDeviceEvent*>(event)->evtype
-                       : event->type;
+  auto* device = event->As<x11::Input::DeviceEvent>();
+  auto* crossing = event->As<x11::Input::CrossingEvent>();
+  auto* touch_factory = ui::TouchFactory::GetInstance();
 
   bool is_valid_event = false;
-  static_assert(XI_ButtonPress == x11::ButtonEvent::Press, "");
-  static_assert(XI_ButtonRelease == x11::ButtonEvent::Release, "");
-  static_assert(XI_Motion == x11::MotionNotifyEvent::opcode, "");
-  static_assert(XI_Enter == x11::CrossingEvent::EnterNotify, "");
-  static_assert(XI_Leave == x11::CrossingEvent::LeaveNotify, "");
-  switch (event_type) {
-    case x11::ButtonEvent::Press:
-    case x11::ButtonEvent::Release:
-    case x11::MotionNotifyEvent::opcode:
-    case x11::CrossingEvent::EnterNotify:
-    case x11::CrossingEvent::LeaveNotify:
-      is_valid_event =
-          is_xi2_event
-              ? ui::TouchFactory::GetInstance()->ShouldProcessXI2Event(event)
-              : true;
+  if (event->As<x11::ButtonEvent>() || event->As<x11::MotionNotifyEvent>() ||
+      event->As<x11::CrossingEvent>()) {
+    is_valid_event = true;
+  } else if (device &&
+             (device->opcode == x11::Input::DeviceEvent::ButtonPress ||
+              device->opcode == x11::Input::DeviceEvent::ButtonRelease ||
+              device->opcode == x11::Input::DeviceEvent::Motion)) {
+    is_valid_event = touch_factory->ShouldProcessDeviceEvent(*device);
+  } else if (crossing &&
+             (crossing->opcode == x11::Input::CrossingEvent::Enter ||
+              crossing->opcode == x11::Input::CrossingEvent::Leave)) {
+    is_valid_event = touch_factory->ShouldProcessCrossingEvent(*crossing);
   }
 
   if (is_valid_event)

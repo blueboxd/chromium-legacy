@@ -33,9 +33,10 @@ class WebrtcFrameSchedulerTest : public ::testing::Test {
     video_encoder_factory_.reset(new WebrtcDummyVideoEncoderFactory());
     scheduler_.reset(new WebrtcFrameSchedulerSimple(SessionOptions()));
     scheduler_->SetTickClockForTest(task_runner_->GetMockTickClock());
-    scheduler_->Start(video_encoder_factory_.get(),
-                      base::Bind(&WebrtcFrameSchedulerTest::CaptureCallback,
-                                 base::Unretained(this)));
+    scheduler_->Start(
+        video_encoder_factory_.get(),
+        base::BindRepeating(&WebrtcFrameSchedulerTest::CaptureCallback,
+                            base::Unretained(this)));
   }
   ~WebrtcFrameSchedulerTest() override = default;
 

@@ -99,7 +99,7 @@ EditingStyleUtilities::CreateWrappingStyleForAnnotatedSerialization(
   // Call collapseTextDecorationProperties first or otherwise it'll copy the
   // value over from in-effect to text-decorations.
   wrapping_style->CollapseTextDecorationProperties(
-      context->GetDocument().GetSecureContextMode());
+      context->GetExecutionContext()->GetSecureContextMode());
 
   return wrapping_style;
 }
@@ -190,9 +190,10 @@ EditingStyle* EditingStyleUtilities::CreateStyleAtSelectionStart(
     const EphemeralRange range(selection.ToNormalizedEphemeralRange());
     if (const CSSValue* value =
             BackgroundColorValueInEffect(range.CommonAncestorContainer())) {
-      style->SetProperty(CSSPropertyID::kBackgroundColor, value->CssText(),
-                         /* important */ false,
-                         document.GetSecureContextMode());
+      style->SetProperty(
+          CSSPropertyID::kBackgroundColor, value->CssText(),
+          /* important */ false,
+          document.GetExecutionContext()->GetSecureContextMode());
     }
   }
 

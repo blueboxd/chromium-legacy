@@ -130,11 +130,55 @@ class PpdProviderImpl : public PpdProvider {
   base::WeakPtrFactory<PpdProviderImpl> weak_factory_{this};
 };
 
+// Copied directly from v2 PpdProvider
+// TODO(crbug.com/888189): figure out where this fits in the big picture
+bool PpdReferenceIsWellFormed(const Printer::PpdReference& reference) {
+  int filled_fields = 0;
+  if (!reference.user_supplied_ppd_url.empty()) {
+    ++filled_fields;
+    GURL tmp_url(reference.user_supplied_ppd_url);
+    if (!tmp_url.is_valid() || !tmp_url.SchemeIs("file")) {
+      LOG(ERROR) << "Invalid url for a user-supplied ppd: "
+                 << reference.user_supplied_ppd_url
+                 << " (must be a file:// URL)";
+      return false;
+    }
+  }
+  if (!reference.effective_make_and_model.empty()) {
+    ++filled_fields;
+  }
+
+  // All effective-make-and-model strings should be lowercased, since v2.
+  // Since make-and-model strings could include non-Latin chars, only checking
+  // that it excludes all upper-case chars A-Z.
+  if (!std::all_of(reference.effective_make_and_model.begin(),
+                   reference.effective_make_and_model.end(),
+                   [](char c) -> bool { return !base::IsAsciiUpper(c); })) {
+    return false;
+  }
+  // Should have exactly one non-empty field.
+  return filled_fields == 1;
+}
+
 }  // namespace
 
 PrinterSearchData::PrinterSearchData() = default;
 PrinterSearchData::PrinterSearchData(const PrinterSearchData& other) = default;
 PrinterSearchData::~PrinterSearchData() = default;
+
+// static; copied directly from v2 PpdProvider
+// TODO(crbug.com/888189): figure out where this fits in the big picture
+std::string PpdProvider::PpdReferenceToCacheKey(
+    const Printer::PpdReference& reference) {
+  DCHECK(PpdReferenceIsWellFormed(reference));
+  // The key prefixes here are arbitrary, but ensure we can't have an (unhashed)
+  // collision between keys generated from different PpdReference fields.
+  if (!reference.effective_make_and_model.empty()) {
+    return std::string("em:") + reference.effective_make_and_model;
+  } else {
+    return std::string("up:") + reference.user_supplied_ppd_url;
+  }
+}
 
 // static
 scoped_refptr<PpdProvider> PpdProvider::Create(

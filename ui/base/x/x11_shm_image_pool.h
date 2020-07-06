@@ -20,6 +20,7 @@
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/x/event.h"
+#include "ui/gfx/x/shm.h"
 #include "ui/gfx/x/x11.h"
 
 namespace ui {
@@ -65,9 +66,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XShmImagePool
  protected:
   ~XShmImagePool() override;
 
-  void DispatchShmCompletionEvent(XShmCompletionEvent event);
-
-  bool CanDispatchXEvent(x11::Event* xev);
+  void DispatchShmCompletionEvent(x11::Shm::CompletionEvent event);
 
   const scoped_refptr<base::SequencedTaskRunner> host_task_runner_;
   const scoped_refptr<base::SequencedTaskRunner> event_task_runner_;

@@ -494,7 +494,8 @@ void SVGAnimateElement::ApplyResultsToTarget() {
     auto& document = target_element->GetDocument();
     auto set_result = properties->SetProperty(
         css_property_id_, animated_value_string, false,
-        document.GetSecureContextMode(), document.ElementSheet().Contents());
+        document.GetExecutionContext()->GetSecureContextMode(),
+        document.ElementSheet().Contents());
     if (set_result.did_change) {
       target_element->SetNeedsStyleRecalc(
           kLocalStyleChange,

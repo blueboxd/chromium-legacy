@@ -9,6 +9,7 @@
   }
 
   cr-input::part(input) {
+    cursor: pointer;
     opacity: 1;
     padding-inline-end: 32px;
     padding-inline-start: 8px;
@@ -74,6 +75,7 @@
     background: none;
     border: none;
     box-sizing: border-box;
+    cursor: pointer;
     font: inherit;
     min-height: 32px;
     padding: 0 8px;
@@ -100,6 +102,10 @@
   #pre-input-box,
   .printer-display-name {
     padding-inline-start: 8px;
+  }
+
+  #pre-input-box {
+    cursor: pointer;
   }
 </style>
 <cr-input id="dropdownInput" on-keydown="onKeyDown_"

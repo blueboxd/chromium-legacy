@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "base/feature_list.h"
+#include "chrome/browser/performance_hints/performance_hints_features.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -62,6 +64,9 @@ bool IsUserPermittedToFetchFromRemoteOptimizationGuide(Profile* profile) {
 
   if (!optimization_guide::features::IsRemoteFetchingEnabled())
     return false;
+
+  if (IsRemoteFetchingExplicitlyAllowedForPerformanceInfo())
+    return true;
 
   if (IsUserDataSaverEnabledAndAllowedToFetchFromRemoteService(profile))
     return true;

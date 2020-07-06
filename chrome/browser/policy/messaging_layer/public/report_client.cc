@@ -9,6 +9,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
+#include "base/path_service.h"
 #include "chrome/browser/policy/messaging_layer/encryption/encryption_module.h"
 #include "chrome/browser/policy/messaging_layer/public/report_queue.h"
 #include "chrome/browser/policy/messaging_layer/public/report_queue_configuration.h"
@@ -16,14 +17,42 @@
 #include "chrome/browser/policy/messaging_layer/util/status.h"
 #include "chrome/browser/policy/messaging_layer/util/status_macros.h"
 #include "chrome/browser/policy/messaging_layer/util/statusor.h"
+#include "chrome/common/chrome_paths.h"
 
 namespace reporting {
 
-using base::MakeRefCounted;
+namespace {
+
+const base::FilePath::CharType kReportingDirectory[] =
+    FILE_PATH_LITERAL("reporting");
+
+}  // namespace
+
+class ReportingClient::UploadClient : public Storage::UploaderInterface {
+ public:
+  static StatusOr<std::unique_ptr<Storage::UploaderInterface>> Build(
+      Priority priority) {
+    // Cannot use make_unique, since constructor is private.
+    return base::WrapUnique(new UploadClient());
+  }
+
+  void ProcessBlob(Priority priority,
+                   StatusOr<base::span<const uint8_t>> blob,
+                   base::OnceCallback<void(bool)> processed_cb) override {
+    std::move(processed_cb).Run(false);  // Do not proceed.
+  }
+
+  void Completed(Priority priority, Status status) override {
+    LOG(ERROR) << "Not implemented yet, status=" << status;
+  }
+
+ private:
+  UploadClient() = default;
+};
 
 ReportingClient::ReportingClient(scoped_refptr<StorageModule> storage)
     : storage_(std::move(storage)),
-      encryption_(MakeRefCounted<EncryptionModule>()) {}
+      encryption_(base::MakeRefCounted<EncryptionModule>()) {}
 
 ReportingClient::~ReportingClient() = default;
 
@@ -47,9 +76,29 @@ StatusOr<ReportingClient*> ReportingClient::GetInstance() {
 // this create function will need to be updated to check for
 // successful creation of the EncryptionModule too.
 StatusOr<std::unique_ptr<ReportingClient>> ReportingClient::Create() {
-  ASSIGN_OR_RETURN(scoped_refptr<StorageModule> storage,
-                   StorageModule::Create());
-  auto client = base::WrapUnique<ReportingClient>(new ReportingClient(storage));
+  base::FilePath user_data_dir;
+  if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
+    return Status(error::FAILED_PRECONDITION, "Could not retrieve base path");
+  }
+  base::FilePath reporting_path = user_data_dir.Append(kReportingDirectory);
+  base::WaitableEvent done(base::WaitableEvent::ResetPolicy::MANUAL,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED);
+  StatusOr<scoped_refptr<StorageModule>> storage_result;
+  StorageModule::Create(
+      Storage::Options().set_directory(reporting_path),
+      base::BindRepeating(&ReportingClient::UploadClient::Build),
+      base::BindOnce(
+          [](StatusOr<scoped_refptr<StorageModule>>* result,
+             base::WaitableEvent* done,
+             StatusOr<scoped_refptr<StorageModule>> storage) {
+            *result = std::move(storage);
+            done->Signal();
+          },
+          base::Unretained(&storage_result), base::Unretained(&done)));
+  done.Wait();
+  RETURN_IF_ERROR(storage_result.status());
+  auto client = base::WrapUnique<ReportingClient>(
+      new ReportingClient(std::move(storage_result.ValueOrDie())));
   return client;
 }
 

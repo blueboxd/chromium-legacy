@@ -750,8 +750,8 @@ void JingleSession::ProcessAuthenticationStep() {
 
 void JingleSession::OnAuthenticated() {
   transport_->Start(authenticator_.get(),
-                    base::Bind(&JingleSession::SendTransportInfo,
-                               weak_factory_.GetWeakPtr()));
+                    base::BindRepeating(&JingleSession::SendTransportInfo,
+                                        weak_factory_.GetWeakPtr()));
 
   base::WeakPtr<JingleSession> self = weak_factory_.GetWeakPtr();
   std::vector<PendingMessage> messages_to_process;

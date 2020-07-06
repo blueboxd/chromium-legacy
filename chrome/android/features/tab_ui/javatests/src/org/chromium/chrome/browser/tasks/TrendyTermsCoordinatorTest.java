@@ -32,7 +32,8 @@ import java.io.IOException;
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class TrendyTermsCoordinatorTest extends DummyUiActivityTestCase {
     @Rule
-    public ChromeRenderTestRule mRenderTestRule = new ChromeRenderTestRule();
+    public ChromeRenderTestRule mRenderTestRule =
+            ChromeRenderTestRule.Builder.withPublicCorpus().build();
 
     private TrendyTermsCoordinator mCoordinator;
     private RecyclerView mRecyclerView;

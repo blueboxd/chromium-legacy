@@ -13,6 +13,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/insecure_input/insecure_input_service.mojom-blink.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -76,8 +77,10 @@ TEST(PasswordInputTypeTest, DidEditFieldEventNotSentFromSecureContext) {
       nullptr /* extra_data */);
   blink::test::RunPendingTasks();
   MockInsecureInputService mock_service(page_holder->GetFrame());
-  page_holder->GetDocument().SetSecureContextModeForTesting(
-      SecureContextMode::kSecureContext);
+  page_holder->GetFrame()
+      .DomWindow()
+      ->GetSecurityContext()
+      .SetSecureContextModeForTesting(SecureContextMode::kSecureContext);
   page_holder->GetDocument().body()->setInnerHTML("<input type='password'>");
   page_holder->GetDocument().View()->UpdateAllLifecyclePhases(
       DocumentUpdateReason::kTest);

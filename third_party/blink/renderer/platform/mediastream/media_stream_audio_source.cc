@@ -9,11 +9,11 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_source.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -76,11 +76,11 @@ MediaStreamAudioSource::~MediaStreamAudioSource() {
 
 // static
 MediaStreamAudioSource* MediaStreamAudioSource::From(
-    const WebMediaStreamSource& source) {
-  if (source.IsNull() || source.GetType() != WebMediaStreamSource::kTypeAudio) {
+    MediaStreamSource* source) {
+  if (!source || source->GetType() != MediaStreamSource::kTypeAudio) {
     return nullptr;
   }
-  return static_cast<MediaStreamAudioSource*>(source.GetPlatformSource());
+  return static_cast<MediaStreamAudioSource*>(source->GetPlatformSource());
 }
 
 bool MediaStreamAudioSource::ConnectToTrack(MediaStreamComponent* component) {

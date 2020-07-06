@@ -2354,6 +2354,7 @@ def _ParseDeps(contents):
   local_scope = {}
   global_scope = {
       'Var': _VarImpl(local_scope).Lookup,
+      'Str': str,
   }
   exec contents in global_scope, local_scope
   return local_scope
@@ -3670,14 +3671,22 @@ class PydepsChecker(object):
     import os
 
     old_pydeps_data = self._LoadFile(pydeps_path).splitlines()
-    cmd = old_pydeps_data[1][1:].strip()
+    if old_pydeps_data:
+      cmd = old_pydeps_data[1][1:].strip()
+      old_contents = old_pydeps_data[2:]
+    else:
+      # A default cmd that should work in most cases (as long as pydeps filename
+      # matches the script name) so that PRESUBMIT.py does not crash if pydeps
+      # file is empty/new.
+      cmd = 'build/print_python_deps.py {} --root={} --output={}'.format(
+          pydeps_path[:-4], os.path.dirname(pydeps_path), pydeps_path)
+      old_contents = []
     env = dict(os.environ)
     env['PYTHONDONTWRITEBYTECODE'] = '1'
     new_pydeps_data = self._input_api.subprocess.check_output(
         cmd + ' --output ""', shell=True, env=env)
-    old_contents = old_pydeps_data[2:]
     new_contents = new_pydeps_data.splitlines()[2:]
-    if old_pydeps_data[2:] != new_pydeps_data.splitlines()[2:]:
+    if old_contents != new_contents:
       return cmd, '\n'.join(difflib.context_diff(old_contents, new_contents))
 
 

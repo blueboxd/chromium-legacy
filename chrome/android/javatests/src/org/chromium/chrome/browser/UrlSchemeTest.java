@@ -11,6 +11,7 @@ import android.support.test.InstrumentationRegistry;
 
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -121,23 +122,18 @@ public class UrlSchemeTest {
         mActivityTestRule.loadUrl(createContentUrl(resource));
 
         // Make sure iframe is really loaded by verifying the title
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mActivityTestRule.getActivity().getActivityTab().getTitle().equals(
-                        "iframe loaded");
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(mActivityTestRule.getActivity().getActivityTab().getTitle(),
+                    Matchers.is("iframe loaded"));
         });
         // Make sure that content provider was asked to provide the content.
         ensureResourceRequestCountInContentProviderNotLessThan(iframe, 1);
         mActivityTestRule.runJavaScriptCodeInCurrentTab(script);
 
         // Make sure content access failed by verifying that title is set to fail.
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mActivityTestRule.getActivity().getActivityTab().getTitle().equals("fail");
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(mActivityTestRule.getActivity().getActivityTab().getTitle(),
+                    Matchers.is("fail"));
         });
     }
 
@@ -150,12 +146,9 @@ public class UrlSchemeTest {
                 + "&url=" + URLEncoder.encode(imageUrl));
 
         // Make sure the CORS request fail in the page.
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return !mActivityTestRule.getActivity().getActivityTab().getTitle().equals(
-                        "running");
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(mActivityTestRule.getActivity().getActivityTab().getTitle(),
+                    Matchers.not("running"));
         });
 
         // Make sure that content provider was asked to provide the content.
@@ -205,12 +198,9 @@ public class UrlSchemeTest {
 
         mActivityTestRule.loadUrl(createContentUrl(resource));
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return !mActivityTestRule.getActivity().getActivityTab().getTitle().equals(
-                        "running");
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(mActivityTestRule.getActivity().getActivityTab().getTitle(),
+                    Matchers.not("running"));
         });
 
         // Make sure that content provider was asked to provide the content.
@@ -253,12 +243,9 @@ public class UrlSchemeTest {
         mActivityTestRule.loadUrl(url);
         mActivityTestRule.runJavaScriptCodeInCurrentTab(script);
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mActivityTestRule.getActivity().getActivityTab().getTitle().equals(
-                        expectedTitle);
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(mActivityTestRule.getActivity().getActivityTab().getTitle(),
+                    Matchers.is(expectedTitle));
         });
         ensureResourceRequestCountInContentProviderNotLessThan(resource, expectedLoadCount);
     }

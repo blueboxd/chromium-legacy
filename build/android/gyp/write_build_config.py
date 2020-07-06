@@ -315,9 +315,6 @@ A list of paths to ProGuard configuration files related to this library.
 For some Java related types, a list of extra `.jar` files to use at build time
 but not at runtime.
 
-* `deps_info['extra_classpath_interface_jars']:
-The interface jars corresponding to extra_classpath_jars.
-
 ## <a name="target_java_binary">Target type `java_binary`</a>:
 
 This type corresponds to a Java binary, which is nothing more than a
@@ -1390,87 +1387,62 @@ def main(argv):
   if options.type == 'group':
     if options.extra_classpath_jars:
       # These are .jars to add to javac classpath but not to runtime classpath.
-      extra_jars = build_utils.ParseGnList(options.extra_classpath_jars)
-      deps_info['extra_classpath_jars'] = extra_jars
-      deps_info['extra_classpath_interface_jars'] = extra_jars
+      extra_classpath_jars = build_utils.ParseGnList(
+          options.extra_classpath_jars)
+      deps_info['extra_classpath_jars'] = extra_classpath_jars
 
   if is_java_target:
     # The classpath used to compile this target when annotation processors are
     # present.
-    javac_classpath = [
-        c['unprocessed_jar_path'] for c in direct_library_deps]
+    javac_classpath = set(c['unprocessed_jar_path']
+                          for c in direct_library_deps)
     # The classpath used to compile this target when annotation processors are
     # not present. These are also always used to know when a target needs to be
     # rebuilt.
-    javac_interface_classpath = [
-        c['interface_jar_path'] for c in direct_library_deps]
-    # The classpath used for error prone.
-    javac_full_interface_classpath = [
-        c['interface_jar_path'] for c in all_library_deps]
-    # The path of the jetified jars.
-    jetified_full_jar_classpath = [
-        c['jetified_jar_path'] for c in all_library_deps
-    ]
+    javac_interface_classpath = set(c['interface_jar_path']
+                                    for c in direct_library_deps)
     # The classpath used for bytecode-rewritting.
-    javac_full_classpath = [
-        c['unprocessed_jar_path'] for c in all_library_deps]
+    javac_full_classpath = set(c['unprocessed_jar_path']
+                               for c in all_library_deps)
+    # The classpath used for error prone.
+    javac_full_interface_classpath = set(c['interface_jar_path']
+                                         for c in all_library_deps)
+    # The path of the jetified jars.
+    jetified_full_jar_classpath = set(c['jetified_jar_path']
+                                      for c in all_library_deps)
 
     # Adding base module to classpath to compile against its R.java file
     if base_module_build_config:
-      javac_full_classpath.append(
+      javac_full_classpath.add(
           base_module_build_config['deps_info']['unprocessed_jar_path'])
-      javac_full_interface_classpath.append(
+      javac_full_interface_classpath.add(
           base_module_build_config['deps_info']['interface_jar_path'])
-      jetified_full_jar_classpath.append(
+      jetified_full_jar_classpath.add(
           base_module_build_config['deps_info']['jetified_jar_path'])
 
     for dep in direct_group_deps:
-      javac_classpath.extend(dep.get('extra_classpath_jars', []))
-      javac_interface_classpath.extend(
-          dep.get('extra_classpath_interface_jars', []))
+      if 'extra_classpath_jars' in dep:
+        javac_classpath.update(dep['extra_classpath_jars'])
+        javac_interface_classpath.update(dep['extra_classpath_jars'])
     for dep in all_group_deps:
-      javac_full_classpath.extend(dep.get('extra_classpath_jars', []))
-      javac_full_interface_classpath.extend(
-          dep.get('extra_classpath_interface_jars', []))
-      jetified_full_jar_classpath.extend(
-          dep.get('extra_classpath_interface_jars', []))
+      if 'extra_classpath_jars' in dep:
+        javac_full_classpath.update(dep['extra_classpath_jars'])
+        javac_full_interface_classpath.update(dep['extra_classpath_jars'])
+        jetified_full_jar_classpath.update(dep['extra_classpath_jars'])
 
-    # Deps to add to the compile-time classpath (but not the runtime classpath).
     # TODO(agrieve): Might be less confusing to fold these into bootclasspath.
-    javac_extra_jars = []
-    extra_jars = []
-    interface_extra_jars = []
-
+    # Deps to add to the compile-time classpath (but not the runtime classpath).
     # These are jars specified by input_jars_paths that almost never change.
-    # Just add them directly to all the *extra_jars.
+    # Just add them directly to all the classpaths.
     if options.extra_classpath_jars:
-      # These are .jars to add to javac classpath but not to runtime classpath.
-      javac_extra_jars.extend(
-          build_utils.ParseGnList(options.extra_classpath_jars))
-      extra_jars.extend(build_utils.ParseGnList(options.extra_classpath_jars))
-      interface_extra_jars.extend(
-          build_utils.ParseGnList(options.extra_classpath_jars))
-
-    if extra_jars:
-      deps_info['extra_classpath_jars'] = extra_jars
-
-    if interface_extra_jars:
-      deps_info['extra_classpath_interface_jars'] = interface_extra_jars
-
-    javac_extra_jars = [p for p in javac_extra_jars if p not in javac_classpath]
-    javac_classpath.extend(javac_extra_jars)
-    javac_full_classpath.extend(
-        p for p in javac_extra_jars if p not in javac_full_classpath)
-
-    interface_extra_jars = [
-        p for p in interface_extra_jars if p not in javac_interface_classpath
-    ]
-    javac_interface_classpath.extend(interface_extra_jars)
-    javac_full_interface_classpath.extend(
-        p for p in interface_extra_jars
-        if p not in javac_full_interface_classpath)
-    jetified_full_jar_classpath.extend(
-        p for p in interface_extra_jars if p not in jetified_full_jar_classpath)
+      extra_classpath_jars = build_utils.ParseGnList(
+          options.extra_classpath_jars)
+      deps_info['extra_classpath_jars'] = extra_classpath_jars
+      javac_classpath.update(extra_classpath_jars)
+      javac_interface_classpath.update(extra_classpath_jars)
+      javac_full_classpath.update(extra_classpath_jars)
+      javac_full_interface_classpath.update(extra_classpath_jars)
+      jetified_full_jar_classpath.update(extra_classpath_jars)
 
   if is_java_target or options.type == 'android_app_bundle':
     # The classpath to use to run this target (or as an input to ProGuard).
@@ -1715,21 +1687,16 @@ def main(argv):
         if p not in device_classpath)
     # Include in the classpath classes that are added directly to the apk under
     # test (those that are not a part of a java_library).
-    javac_classpath.append(tested_apk_config['unprocessed_jar_path'])
-    javac_full_classpath.append(tested_apk_config['unprocessed_jar_path'])
-    javac_interface_classpath.append(tested_apk_config['interface_jar_path'])
-    javac_full_interface_classpath.append(
-        tested_apk_config['interface_jar_path'])
-    jetified_full_jar_classpath.append(tested_apk_config['interface_jar_path'])
-    javac_full_interface_classpath.extend(
-        p for p in tested_apk_config['javac_full_interface_classpath']
-        if p not in javac_full_interface_classpath)
-    jetified_full_jar_classpath.extend(
-        p for p in tested_apk_config['jetified_full_jar_classpath']
-        if p not in jetified_full_jar_classpath)
-    javac_full_classpath.extend(
-        p for p in tested_apk_config['javac_full_classpath']
-        if p not in javac_full_classpath)
+    javac_classpath.add(tested_apk_config['unprocessed_jar_path'])
+    javac_interface_classpath.add(tested_apk_config['interface_jar_path'])
+    javac_full_classpath.add(tested_apk_config['unprocessed_jar_path'])
+    javac_full_interface_classpath.add(tested_apk_config['interface_jar_path'])
+    jetified_full_jar_classpath.add(tested_apk_config['interface_jar_path'])
+    javac_full_classpath.update(tested_apk_config['javac_full_classpath'])
+    javac_full_interface_classpath.update(
+        tested_apk_config['javac_full_interface_classpath'])
+    jetified_full_jar_classpath.update(
+        tested_apk_config['jetified_full_jar_classpath'])
 
     # Exclude .jar files from the test apk that exist within the apk under test.
     tested_apk_library_deps = tested_apk_deps.All('java_library')
@@ -1756,8 +1723,8 @@ def main(argv):
     dex_config['all_dex_files'] = all_dex_files
 
   if is_java_target:
-    config['javac']['classpath'] = javac_classpath
-    config['javac']['interface_classpath'] = javac_interface_classpath
+    config['javac']['classpath'] = sorted(javac_classpath)
+    config['javac']['interface_classpath'] = sorted(javac_interface_classpath)
     # Direct() will be of type 'java_annotation_processor', and so not included
     # in All('java_library').
     # Annotation processors run as part of the build, so need host_jar_path.
@@ -1770,9 +1737,11 @@ def main(argv):
     ]
     config['javac']['processor_classes'] = [
         c['main_class'] for c in processor_deps.Direct()]
-    deps_info['javac_full_classpath'] = javac_full_classpath
-    deps_info['javac_full_interface_classpath'] = javac_full_interface_classpath
-    deps_info['jetified_full_jar_classpath'] = jetified_full_jar_classpath
+    deps_info['javac_full_classpath'] = sorted(javac_full_classpath)
+    deps_info['javac_full_interface_classpath'] = sorted(
+        javac_full_interface_classpath)
+    deps_info['jetified_full_jar_classpath'] = sorted(
+        jetified_full_jar_classpath)
   elif options.type == 'android_app_bundle':
     # bundles require javac_full_classpath to create .aab.jar.info.
     javac_full_classpath = set()

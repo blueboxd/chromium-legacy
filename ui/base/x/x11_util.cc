@@ -584,24 +584,22 @@ XcursorImage* SkBitmapToXcursorImage(const SkBitmap& cursor_image,
 
 int CoalescePendingMotionEvents(const x11::Event* x11_event,
                                 x11::Event* last_event) {
-  const XEvent* xev = &x11_event->xlib_event();
-  DCHECK(xev->type == x11::MotionNotifyEvent::opcode ||
-         xev->type == x11::GeGenericEvent::opcode);
+  const auto* motion = x11_event->As<x11::MotionNotifyEvent>();
+  const auto* device = x11_event->As<x11::Input::DeviceEvent>();
+  DCHECK(motion || device);
   auto* conn = x11::Connection::Get();
-  bool is_motion = false;
   int num_coalesced = 0;
 
   conn->ReadResponses();
-  if (xev->type == x11::MotionNotifyEvent::opcode) {
-    is_motion = true;
+  if (motion) {
     for (auto it = conn->events().begin(); it != conn->events().end();) {
-      const auto& next_event = it->xlib_event();
+      const auto& next_event = *it;
       // Discard all but the most recent motion event that targets the same
       // window with unchanged state.
-      if (next_event.type == x11::MotionNotifyEvent::opcode &&
-          next_event.xmotion.window == xev->xmotion.window &&
-          next_event.xmotion.subwindow == xev->xmotion.subwindow &&
-          next_event.xmotion.state == xev->xmotion.state) {
+      const auto* next_motion = next_event.As<x11::MotionNotifyEvent>();
+      if (next_motion && next_motion->event == motion->event &&
+          next_motion->child == motion->child &&
+          next_motion->state == motion->state) {
         *last_event = std::move(*it);
         it = conn->events().erase(it);
       } else {
@@ -609,48 +607,39 @@ int CoalescePendingMotionEvents(const x11::Event* x11_event,
       }
     }
   } else {
-    int event_type = xev->xgeneric.evtype;
-    XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev->xcookie.data);
-    DCHECK(event_type == XI_Motion || event_type == XI_TouchUpdate);
-    is_motion = event_type == XI_Motion;
+    DCHECK(device->opcode == x11::Input::DeviceEvent::Motion ||
+           device->opcode == x11::Input::DeviceEvent::TouchUpdate);
 
     auto* ddmx11 = ui::DeviceDataManagerX11::GetInstance();
     for (auto it = conn->events().begin(); it != conn->events().end();) {
-      auto& next_event = it->xlib_event();
+      auto* next_device = it->As<x11::Input::DeviceEvent>();
 
-      if (next_event.type != x11::GeGenericEvent::opcode ||
-          !next_event.xcookie.data) {
+      if (!next_device)
         break;
-      }
 
       // If this isn't from a valid device, throw the event away, as
       // that's what the message pump would do. Device events come in pairs
       // with one from the master and one from the slave so there will
       // always be at least one pending.
-      if (!ui::TouchFactory::GetInstance()->ShouldProcessXI2Event(
-              &next_event)) {
+      if (!ui::TouchFactory::GetInstance()->ShouldProcessDeviceEvent(
+              *next_device)) {
         it = conn->events().erase(it);
         continue;
       }
 
-      if (next_event.type == x11::GeGenericEvent::opcode &&
-          next_event.xgeneric.evtype == event_type &&
+      if (next_device->opcode == device->opcode &&
           !ddmx11->IsCMTGestureEvent(*it) &&
           ddmx11->GetScrollClassEventDetail(*it) == SCROLL_TYPE_NO_SCROLL) {
-        XIDeviceEvent* next_xievent =
-            static_cast<XIDeviceEvent*>(next_event.xcookie.data);
         // Confirm that the motion event is targeted at the same window
         // and that no buttons or modifiers have changed.
-        if (xievent->event == next_xievent->event &&
-            xievent->child == next_xievent->child &&
-            xievent->detail == next_xievent->detail &&
-            xievent->buttons.mask_len == next_xievent->buttons.mask_len &&
-            (memcmp(xievent->buttons.mask, next_xievent->buttons.mask,
-                    xievent->buttons.mask_len) == 0) &&
-            xievent->mods.base == next_xievent->mods.base &&
-            xievent->mods.latched == next_xievent->mods.latched &&
-            xievent->mods.locked == next_xievent->mods.locked &&
-            xievent->mods.effective == next_xievent->mods.effective) {
+        if (device->event == next_device->event &&
+            device->child == next_device->child &&
+            device->detail == next_device->detail &&
+            device->button_mask == next_device->button_mask &&
+            device->mods.base == next_device->mods.base &&
+            device->mods.latched == next_device->mods.latched &&
+            device->mods.locked == next_device->mods.locked &&
+            device->mods.effective == next_device->mods.effective) {
           *last_event = std::move(*it);
           it = conn->events().erase(it);
           num_coalesced++;

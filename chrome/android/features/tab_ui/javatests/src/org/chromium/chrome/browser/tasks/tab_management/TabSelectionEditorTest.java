@@ -63,7 +63,8 @@ public class TabSelectionEditorTest {
     public TestRule mProcessor = new Features.InstrumentationProcessor();
 
     @Rule
-    public ChromeRenderTestRule mRenderTestRule = new ChromeRenderTestRule();
+    public ChromeRenderTestRule mRenderTestRule =
+            ChromeRenderTestRule.Builder.withPublicCorpus().build();
 
     private TabSelectionEditorTestingRobot mRobot = new TabSelectionEditorTestingRobot();
 

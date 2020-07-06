@@ -100,7 +100,8 @@ class CATestOverlayProcessor : public OverlayProcessorMac {
  public:
   CATestOverlayProcessor()
       : OverlayProcessorMac(true /* could_overlay */,
-                            true /* enable_ca_overlay */) {}
+                            true /* enable_ca_overlay */,
+                            true /* enable_render_pass */) {}
 };
 
 std::unique_ptr<RenderPass> CreateRenderPass() {

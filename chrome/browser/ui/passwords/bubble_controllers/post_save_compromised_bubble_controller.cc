@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/passwords/bubble_controllers/post_save_compromised_bubble_controller.h"
 
 #include "base/metrics/histogram_functions.h"
+#include "base/notreached.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -83,9 +84,22 @@ int PostSaveCompromisedBubbleController::GetImageID(bool dark) const {
 }
 
 void PostSaveCompromisedBubbleController::OnAccepted() {
+  using password_manager::PasswordCheckReferrer;
   checked_clicked_ = true;
+  PasswordCheckReferrer referrer;
+  switch (type_) {
+    case BubbleType::kPasswordUpdatedSafeState:
+      NOTREACHED();
+      return;
+    case BubbleType::kPasswordUpdatedWithMoreToFix:
+      referrer = PasswordCheckReferrer::kMoreToFixBubble;
+      break;
+    case BubbleType::kUnsafeState:
+      referrer = PasswordCheckReferrer::kUnsafeStateBubble;
+      break;
+  }
   if (delegate_)
-    delegate_->NavigateToPasswordCheckup();
+    delegate_->NavigateToPasswordCheckup(referrer);
 }
 
 base::string16 PostSaveCompromisedBubbleController::GetTitle() const {

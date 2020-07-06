@@ -522,7 +522,7 @@ WebString WebPluginContainerImpl::ExecuteScriptURL(const WebURL& url,
   String script = DecodeURLEscapeSequences(kurl.GetString(),
                                            DecodeURLMode::kUTF8OrIsomorphic);
 
-  if (!element_->GetDocument().GetContentSecurityPolicy()->AllowInline(
+  if (!element_->GetExecutionContext()->GetContentSecurityPolicy()->AllowInline(
           ContentSecurityPolicy::InlineType::kNavigation, element_, script,
           String() /* nonce */, element_->GetDocument().Url(),
           OrdinalNumber())) {

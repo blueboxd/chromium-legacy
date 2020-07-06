@@ -169,7 +169,8 @@ class UserDataDowngradeBrowserCopyAndCleanTest
       // Ensure that the after-startup task to delete User Data has a chance to
       // run.
       static_cast<ChromeBrowserMainParts*>(parts)->AddParts(
-          new RunAllPendingTasksPostMainMessageLoopRunExtraParts());
+          std::make_unique<
+              RunAllPendingTasksPostMainMessageLoopRunExtraParts>());
     }
   }
 

@@ -233,6 +233,7 @@ class DepsBuilder(object):
       'File': FileImpl,
       'From': FromImpl,
       'Var': _VarImpl(local_scope).Lookup,
+      'Str': str,
     }
     deps_file_path = os.path.join(dir_path_local_abs, 'DEPS')
 

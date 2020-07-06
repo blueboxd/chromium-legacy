@@ -680,6 +680,151 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostBrowserTest,
             EvalJs(web_contents(), "`${screen.width}x${screen.height}`"));
 }
 
+class RenderWidgetHostFoldableCSSTest : public RenderWidgetHostBrowserTest {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ContentBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
+  }
+};
+
+// Tests that the renderer receives the root widget's window segments and
+// correctly exposes those via CSS.
+// TODO(crbug.com/1098549) Convert this to a WPT once emulation is available
+// via WebDriver.
+IN_PROC_BROWSER_TEST_F(RenderWidgetHostFoldableCSSTest,
+                       FoldablesCSSWithOverrides) {
+  const char kTestPageURL[] =
+      R"HTML(data:text/html,<!DOCTYPE html>
+      <style>
+        div {
+          margin: env(fold-top, 1px) env(fold-right, 1px)
+                  env(fold-bottom, 1px) env(fold-left, 1px);
+          width: env(fold-width, 1px);
+          height: env(fold-height, 1px);
+        }
+        @media (screen-spanning: none) {
+          div { opacity: 0.1; }
+        }
+        @media (screen-spanning: single-fold-vertical) {
+          div { opacity: 0.2; }
+        }
+        @media (screen-spanning: single-fold-horizontal) {
+          div { opacity: 0.3; }
+        }
+      </style>
+      <div id='target'></div>)HTML";
+
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(kTestPageURL)));
+
+  EXPECT_EQ(
+      "1px",
+      EvalJs(shell(), "getComputedStyle(target).marginTop").ExtractString());
+  EXPECT_EQ(
+      "1px",
+      EvalJs(shell(), "getComputedStyle(target).marginRight").ExtractString());
+  EXPECT_EQ(
+      "1px",
+      EvalJs(shell(), "getComputedStyle(target).marginBottom").ExtractString());
+  EXPECT_EQ(
+      "1px",
+      EvalJs(shell(), "getComputedStyle(target).marginLeft").ExtractString());
+  EXPECT_EQ("1px",
+            EvalJs(shell(), "getComputedStyle(target).width").ExtractString());
+  EXPECT_EQ("1px",
+            EvalJs(shell(), "getComputedStyle(target).height").ExtractString());
+
+  EXPECT_EQ(
+      "0.1",
+      EvalJs(shell(), "getComputedStyle(target).opacity").ExtractString());
+
+  const gfx::Size root_view_size = view()->GetVisibleViewportSize();
+  const int kDisplayFeatureLength = 10;
+  DisplayFeature emulated_display_feature{
+      DisplayFeature::Orientation::kVertical,
+      /* offset */ root_view_size.width() / 2 - kDisplayFeatureLength / 2,
+      /* mask_length */ kDisplayFeatureLength};
+  view()->SetDisplayFeatureForTesting(emulated_display_feature);
+  host()->SynchronizeVisualProperties();
+
+  EXPECT_EQ(
+      "0px",
+      EvalJs(shell(), "getComputedStyle(target).marginTop").ExtractString());
+  EXPECT_EQ(
+      base::NumberToString(emulated_display_feature.offset +
+                           emulated_display_feature.mask_length) +
+          "px",
+      EvalJs(shell(), "getComputedStyle(target).marginRight").ExtractString());
+  EXPECT_EQ(
+      base::NumberToString(root_view_size.height()) + "px",
+      EvalJs(shell(), "getComputedStyle(target).marginBottom").ExtractString());
+  EXPECT_EQ(
+      base::NumberToString(emulated_display_feature.offset) + "px",
+      EvalJs(shell(), "getComputedStyle(target).marginLeft").ExtractString());
+  EXPECT_EQ(base::NumberToString(emulated_display_feature.mask_length) + "px",
+            EvalJs(shell(), "getComputedStyle(target).width").ExtractString());
+  EXPECT_EQ(base::NumberToString(root_view_size.height()) + "px",
+            EvalJs(shell(), "getComputedStyle(target).height").ExtractString());
+
+  EXPECT_EQ(
+      "0.2",
+      EvalJs(shell(), "getComputedStyle(target).opacity").ExtractString());
+
+  emulated_display_feature.orientation =
+      DisplayFeature::Orientation::kHorizontal;
+  emulated_display_feature.offset =
+      root_view_size.height() / 2 - kDisplayFeatureLength / 2,
+  view()->SetDisplayFeatureForTesting(emulated_display_feature);
+  host()->SynchronizeVisualProperties();
+
+  EXPECT_EQ(
+      base::NumberToString(emulated_display_feature.offset) + "px",
+      EvalJs(shell(), "getComputedStyle(target).marginTop").ExtractString());
+  EXPECT_EQ(
+      base::NumberToString(root_view_size.width()) + "px",
+      EvalJs(shell(), "getComputedStyle(target).marginRight").ExtractString());
+  EXPECT_EQ(
+      base::NumberToString(emulated_display_feature.offset +
+                           emulated_display_feature.mask_length) +
+          "px",
+      EvalJs(shell(), "getComputedStyle(target).marginBottom").ExtractString());
+  EXPECT_EQ(
+      "0px",
+      EvalJs(shell(), "getComputedStyle(target).marginLeft").ExtractString());
+  EXPECT_EQ(base::NumberToString(root_view_size.width()) + "px",
+            EvalJs(shell(), "getComputedStyle(target).width").ExtractString());
+  EXPECT_EQ(base::NumberToString(emulated_display_feature.mask_length) + "px",
+            EvalJs(shell(), "getComputedStyle(target).height").ExtractString());
+
+  EXPECT_EQ(
+      "0.3",
+      EvalJs(shell(), "getComputedStyle(target).opacity").ExtractString());
+
+  view()->SetDisplayFeatureForTesting(base::nullopt);
+  host()->SynchronizeVisualProperties();
+
+  EXPECT_EQ(
+      "1px",
+      EvalJs(shell(), "getComputedStyle(target).marginTop").ExtractString());
+  EXPECT_EQ(
+      "1px",
+      EvalJs(shell(), "getComputedStyle(target).marginRight").ExtractString());
+  EXPECT_EQ(
+      "1px",
+      EvalJs(shell(), "getComputedStyle(target).marginBottom").ExtractString());
+  EXPECT_EQ(
+      "1px",
+      EvalJs(shell(), "getComputedStyle(target).marginLeft").ExtractString());
+  EXPECT_EQ("1px",
+            EvalJs(shell(), "getComputedStyle(target).width").ExtractString());
+  EXPECT_EQ("1px",
+            EvalJs(shell(), "getComputedStyle(target).height").ExtractString());
+
+  EXPECT_EQ(
+      "0.1",
+      EvalJs(shell(), "getComputedStyle(target).opacity").ExtractString());
+}
+
 class RenderWidgetHostDelegatedInkMetadataTest
     : public RenderWidgetHostTouchEmulatorBrowserTest {
  public:

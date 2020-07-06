@@ -444,6 +444,8 @@ static void AdjustStyleForDisplay(ComputedStyle& style,
       if (!style.HasOutOfFlowPosition())
         style.SetIsFlexOrGridOrCustomItem();
     }
+    if (layout_parent_style.IsDisplayFlexibleOrGridBox())
+      style.SetIsFlexOrGridItem();
   }
 
   if (style.Display() == EDisplay::kBlock && !style.IsFloating())
@@ -510,8 +512,6 @@ static void AdjustStyleForDisplay(ComputedStyle& style,
     style.SetUserModify(EUserModify::kReadOnly);
 
   if (layout_parent_style.IsDisplayFlexibleOrGridBox()) {
-    style.SetFloating(EFloat::kNone);
-
     // We want to count vertical percentage paddings/margins on flex items
     // because our current behavior is different from the spec and we want to
     // gather compatibility data.

@@ -134,24 +134,25 @@ class CORE_EXPORT ObjectPaintProperties {
 
   // The hierarchy of the effect subtree created by a LayoutObject is as
   // follows:
-  // [ effect ]
+  // [ Effect ]
   // |     Isolated group to apply various CSS effects, including opacity,
   // |     mix-blend-mode, backdrop-filter, and for isolation if a mask needs
   // |     to be applied or backdrop-dependent children are present.
-  // +-[ filter ]
+  // +-[ Filter ]
   // |     Isolated group for CSS filter.
-  // +-[ vertical/horizontal scrollbar effect ]
-  // |     Overlay Scrollbars on Aura and Android need effect node for fade
-  // |     animation.
-  // +-[ mask ]
-  // |     Isolated group for painting the CSS mask. This node will have
-  // |     SkBlendMode::kDstIn and shall paint last, i.e. after masked contents.
-  // +-[ clip path ]
-  //       Isolated group for painting the CSS clip-path. This node will have
-  //       SkBlendMode::kDstIn and shall paint last, i.e. after clipped
-  //       contents.
+  // +-[ Mask ]
+  // | |   Isolated group for painting the CSS mask or the mask-based CSS
+  // | |   clip-path. This node will have SkBlendMode::kDstIn and shall paint
+  // | |   last, i.e. after masked contents.
+  // | +-[ ClipPathMask ]
+  // |     Isolated group for painting the mask-based CSS clip-path. This node
+  // |     will have SkBlendMode::kDstIn and shall paint last, i.e. after
+  // |     clipped contents.
+  // +-[ VerticalScrollbarEffect / HorizontalScrollbarEffect ]
+  //       Overlay Scrollbars on Aura and Android need effect node for fade
+  //       animation.
   //
-  // ... +-[ effectIsolationNode ]
+  // ... +-[ EffectIsolationNode ]
   //       This serves as a parent to subtree effects on an element with paint
   //       containment, It is the deepest child of any effect tree on the
   //       contain: paint element.
@@ -160,44 +161,43 @@ class CORE_EXPORT ObjectPaintProperties {
   ADD_EFFECT(VerticalScrollbarEffect, vertical_scrollbar_effect_);
   ADD_EFFECT(HorizontalScrollbarEffect, horizontal_scrollbar_effect_);
   ADD_EFFECT(Mask, mask_);
-  ADD_EFFECT(ClipPath, clip_path_);
+  ADD_EFFECT(ClipPathMask, clip_path_mask_);
   ADD_ALIAS_NODE(Effect, EffectIsolationNode, effect_isolation_node_);
 
   // The hierarchy of the clip subtree created by a LayoutObject is as follows:
-  // [ fragment clip ]
+  // [ FragmentClip ]
   // |    Clips to a fragment's bounds.
   // |    This is only present for content under a fragmentation container.
-  // +-[ clip path clip ]
+  // +-[ ClipPathClip ]
   //   |  Clip created by path-based CSS clip-path. Only exists if the
   //  /   clip-path is "simple" that can be applied geometrically. This and
-  // /    the clip path effect node are mutually exclusive.
-  // | NOTE: for composited SPv1 clip path clips, we move clip path clip
-  // |       below mask.
-  // +-[ mask clip ]
-  //   |   Clip created by CSS mask or CSS clip-path. It serves two purposes:
+  // /    the ClipPathMask effect node are mutually exclusive.
+  // +-[ MaskClip ]
+  //   |   Clip created by CSS mask or mask-based CSS clip-path.
+  //   |   It serves two purposes:
   //   |   1. Cull painting of the masked subtree. Because anything outside of
   //   |      the mask is never visible, it is pointless to paint them.
   //   |   2. Raster clip of the masked subtree. Because the mask implemented
   //   |      as SkBlendMode::kDstIn, pixels outside of mask's bound will be
   //   |      intact when they shall be masked out. This clip ensures no pixels
   //   |      leak out.
-  //   +-[ css clip ]
+  //   +-[ CssClip ]
   //     |   Clip created by CSS clip. CSS clip applies to all descendants, this
   //     |   node only applies to containing block descendants. For descendants
   //     |   not contained by this object, use [ css clip fixed position ].
-  //     +-[ overflow controls clip ]
+  //     +-[ OverflowControlsClip ]
   //     |   Clip created by overflow clip to clip overflow controls
   //     |   (scrollbars, resizer, scroll corner) that would overflow the box.
-  //     +-[ inner border radius clip]
+  //     +-[ InnerBorderRadiusClip ]
   //       |   Clip created by a rounded border with overflow clip. This clip is
   //       |   not inset by scrollbars.
-  //       +-[ overflow clip ]
+  //       +-[ OverflowClip ]
   //             Clip created by overflow clip and is inset by the scrollbar.
-  //   [ css clip fixed position ]
+  //   [ CssClipFixedPosition ]
   //       Clip created by CSS clip. Only exists if the current clip includes
   //       some clip that doesn't apply to our fixed position descendants.
   //
-  //  ... +-[ clipIsolationNode ]
+  //  ... +-[ ClipIsolationNode ]
   //       This serves as a parent to subtree clips on an element with paint
   //       containment. It is the deepest child of any clip tree on the contain:
   //       paint element.
@@ -228,7 +228,7 @@ class CORE_EXPORT ObjectPaintProperties {
     DCHECK(!ScrollTranslation() || !ReplacedContentTransform())
         << "Replaced elements don't scroll so there should never be both a "
            "scroll translation and a replaced content transform.";
-    DCHECK(!ClipPathClip() || !ClipPath())
+    DCHECK(!ClipPathClip() || !ClipPathMask())
         << "ClipPathClip and ClipPathshould be mutually exclusive.";
     DCHECK((!TransformIsolationNode() && !ClipIsolationNode() &&
             !EffectIsolationNode()) ||

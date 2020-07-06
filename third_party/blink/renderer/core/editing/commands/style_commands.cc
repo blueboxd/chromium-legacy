@@ -109,7 +109,7 @@ bool StyleCommands::ExecuteApplyStyle(LocalFrame& frame,
   auto* const style =
       MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLQuirksMode);
   style->SetProperty(property_id, property_value, /* important */ false,
-                     frame.GetDocument()->GetSecureContextMode());
+                     frame.DomWindow()->GetSecureContextMode());
   return ApplyCommandToFrame(frame, source, input_type, style);
 }
 
@@ -208,7 +208,7 @@ bool StyleCommands::SelectionStartHasStyle(LocalFrame& frame,
                                            CSSPropertyID property_id,
                                            const String& value) {
   const SecureContextMode secure_context_mode =
-      frame.GetDocument()->GetSecureContextMode();
+      frame.DomWindow()->GetSecureContextMode();
 
   EditingStyle* const style_to_check = MakeGarbageCollected<EditingStyle>(
       property_id, value, secure_context_mode);
@@ -239,7 +239,7 @@ bool StyleCommands::ExecuteToggleStyle(LocalFrame& frame,
 
   EditingStyle* const style = MakeGarbageCollected<EditingStyle>(
       property_id, style_is_present ? off_value : on_value,
-      frame.GetDocument()->GetSecureContextMode());
+      frame.DomWindow()->GetSecureContextMode());
   return ApplyCommandToFrame(frame, source, input_type, style->Style());
 }
 
@@ -322,7 +322,7 @@ bool StyleCommands::ExecuteToggleStyleInList(LocalFrame& frame,
   auto* const new_mutable_style =
       MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLQuirksMode);
   new_mutable_style->SetProperty(property_id, new_style, /* important */ false,
-                                 frame.GetDocument()->GetSecureContextMode());
+                                 frame.DomWindow()->GetSecureContextMode());
   return ApplyCommandToFrame(frame, source, input_type, new_mutable_style);
 }
 

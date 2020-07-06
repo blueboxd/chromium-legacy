@@ -8,6 +8,8 @@ static_library("enterprise") {
     "browser/controller/browser_dm_token_storage.h",
     "browser/controller/chrome_browser_cloud_management_helper.cc",
     "browser/controller/chrome_browser_cloud_management_helper.h",
+    "browser/reporting/browser_report_generator.cc",
+    "browser/reporting/browser_report_generator.h",
     "browser/reporting/policy_info.cc",
     "browser/reporting/policy_info.h",
     "browser/reporting/report_request_definition.h",
@@ -22,6 +24,7 @@ static_library("enterprise") {
     "//components/policy/proto",
     "//components/prefs",
     "//components/strings",
+    "//components/version_info",
     "//net",
     "//services/network/public/cpp",
   ]

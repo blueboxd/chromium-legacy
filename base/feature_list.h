@@ -14,6 +14,7 @@
 #include "base/base_export.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/persistent_memory_allocator.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
@@ -140,6 +141,32 @@ class BASE_EXPORT FeatureList {
   void InitializeFromCommandLine(const std::string& enable_features,
                                  const std::string& disable_features);
 
+  // Initializes feature overrides via command-line flags |enable_features| and
+  // |disable_features|, each of which is a comma-separated list of features to
+  // enable or disable, respectively. This function also allows users to set
+  // feature's field trial params via |enable_features|. |decode_data_func|
+  // allows specifying a custom decoding function. Must only be invoked during
+  // the initialization phase (before FinalizeInitialization() has been called).
+  //
+  // If a feature appears on both lists, then it will be disabled. If
+  // a list entry has the format "FeatureName<TrialName" then this
+  // initialization will also associate the feature state override with the
+  // named field trial, if it exists. If a list entry has the format
+  // "FeatureName:k1/v1/k2/v2", "FeatureName<TrailName:k1/v1/k2/v2" or
+  // "FeatureName<TrailName.GroupName:k1/v1/k2/v2" then this initialization will
+  // also associate the feature state override with the named field trial and
+  // its params. If the feature params part is provided but trial and/or group
+  // isn't, this initialization will also create a synthetic trial, named
+  // "Study" followed by the feature name, i.e. "StudyFeature", and group, named
+  // "Group" followed by the feature name, i.e. "GroupFeature", for the params.
+  // If a feature name is prefixed with the '*' character, it will be created
+  // with OVERRIDE_USE_DEFAULT - which is useful for associating with a trial
+  // while using the default state.
+  void InitializeFromCommandLineWithFeatureParams(
+      const std::string& enable_features,
+      const std::string& disable_features,
+      FieldTrialParamsDecodeStringFunc decode_data_func);
+
   // Initializes feature overrides through the field trial allocator, which
   // we're using to store the feature names, their override state, and the name
   // of the associated field trial.
@@ -251,6 +278,10 @@ class BASE_EXPORT FeatureList {
   // for testing. Existing instance must be null. This is primarily intended
   // to support base::test::ScopedFeatureList helper class.
   static void RestoreInstanceForTesting(std::unique_ptr<FeatureList> instance);
+
+  // TODO(crbug.com/1068052): Port the UnescapeValue function and cleanup this.
+  // A no-op function that takes a string and returns it.
+  static std::string NoOpDecodeFunc(const std::string& str);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(FeatureListTest, CheckFeatureIdentity);

@@ -252,7 +252,7 @@
   {
     "name": "audio-worklet-realtime-thread",
     "owners": [ "//third_party/blink/renderer/modules/webaudio/OWNERS" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 90
   },
   {
     "name": "auto-fetch-on-net-error-page",
@@ -610,7 +610,7 @@
     "expiry_milestone": 88
   },
   {
-    "name": "context-menu-performance-info",
+    "name": "context-menu-performance-info-and-remote-hints-fetching",
     "owners": [ "jds" ],
     "expiry_milestone": 90
   },
@@ -3965,6 +3965,10 @@
     "name": "scheduler-configuration",
     "owners": [ "kerrnel", "mnissler" ],
     "expiry_milestone": 88
+  },
+  {"name": "schemeful-same-site",
+    "owners": [ "bingler", "chlily" ],
+    "expiry_milestone": 90
   },
   {
     "name": "scroll-unification",

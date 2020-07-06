@@ -156,8 +156,7 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
     /**
      * Remove an AccountHolder.
      *
-     * WARNING: this method will not wait for the cache in AccountManagerFacade to be updated. Tests
-     * that get accounts from AccountManagerFacade should use {@link #removeAccountHolderBlocking}.
+     * WARNING: This method will not wait for the cache in AccountManagerFacade to be updated.
      *
      * @param accountHolder the account holder to remove
      */
@@ -187,29 +186,6 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
         try {
             ThreadUtils.runOnUiThreadBlocking(() -> {
                 addAccountHolderExplicitly(accountHolder);
-                AccountManagerFacadeProvider.getInstance().waitForPendingUpdates(
-                        cacheUpdated::countDown);
-            });
-
-            cacheUpdated.await();
-        } catch (InterruptedException e) {
-            throw new RuntimeException("Exception occurred while waiting for updates", e);
-        }
-    }
-
-    /**
-     * Removes an AccountHolder and waits for AccountManagerFacade to update its cache. Requires
-     * AccountManagerFacade to be initialized with this delegate.
-     *
-     * @param accountHolder the account holder to remove
-     */
-    public void removeAccountHolderBlocking(AccountHolder accountHolder) {
-        ThreadUtils.assertOnBackgroundThread();
-
-        CountDownLatch cacheUpdated = new CountDownLatch(1);
-        try {
-            ThreadUtils.runOnUiThreadBlocking(() -> {
-                removeAccountHolderExplicitly(accountHolder);
                 AccountManagerFacadeProvider.getInstance().waitForPendingUpdates(
                         cacheUpdated::countDown);
             });

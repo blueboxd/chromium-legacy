@@ -140,6 +140,7 @@
     "libs/com_google_auto_auto_common",
     "libs/com_google_auto_service_auto_service",
     "libs/com_google_auto_service_auto_service_annotations",
+    "libs/com_google_auto_value_auto_value_annotations",
     "libs/com_google_code_findbugs_jFormatString",
     "libs/com_google_code_findbugs_jsr305",
     "libs/com_google_code_gson_gson",
@@ -191,8 +192,7 @@
     "libs/org_ccil_cowan_tagsoup_tagsoup",
     "libs/org_checkerframework_checker_compat_qual",
     "libs/org_checkerframework_checker_qual",
-    "libs/org_checkerframework_dataflow",
-    "libs/org_checkerframework_javacutil",
+    "libs/org_checkerframework_dataflow_shaded",
     "libs/org_codehaus_mojo_animal_sniffer_annotations",
     "libs/org_codehaus_plexus_plexus_container_default",
     "libs/org_codehaus_plexus_plexus_interpolation",
@@ -208,9 +208,6 @@
     "libs/org_ow2_asm_asm_tree",
     "libs/org_ow2_asm_asm_util",
     "libs/org_pcollections_pcollections",
-    "libs/org_plumelib_plume_util",
-    "libs/org_plumelib_reflection_util",
-    "libs/org_plumelib_require_javadoc",
     "libs/org_robolectric_annotations",
     "libs/org_robolectric_junit",
     "libs/org_robolectric_pluginapi",
@@ -223,5 +220,6 @@
     "libs/org_robolectric_shadows_multidex",
     "libs/org_robolectric_shadows_playservices",
     "libs/org_robolectric_utils",
-    "libs/org_robolectric_utils_reflector"
+    "libs/org_robolectric_utils_reflector",
+    "libs/org_threeten_threeten_extra"
 ]

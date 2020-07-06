@@ -22,6 +22,7 @@
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/x/extension_manager.h"
 #include "ui/gfx/x/x11_switches.h"
 
 namespace ui {
@@ -299,12 +300,13 @@ XShmImagePool::~XShmImagePool() {
 #endif
 }
 
-void XShmImagePool::DispatchShmCompletionEvent(XShmCompletionEvent event) {
+void XShmImagePool::DispatchShmCompletionEvent(
+    x11::Shm::CompletionEvent event) {
   DCHECK(host_task_runner_->RunsTasksInCurrentSequence());
   DCHECK_EQ(event.offset, 0UL);
 
   for (auto it = swap_closures_.begin(); it != swap_closures_.end(); ++it) {
-    if (event.shmseg == it->shmseg) {
+    if (static_cast<uint32_t>(event.shmseg) == it->shmseg) {
       std::move(it->closure).Run();
       swap_closures_.erase(it);
       return;
@@ -312,26 +314,14 @@ void XShmImagePool::DispatchShmCompletionEvent(XShmCompletionEvent event) {
   }
 }
 
-bool XShmImagePool::CanDispatchXEvent(x11::Event* x11_event) {
-  const XEvent* xev = &x11_event->xlib_event();
-  DCHECK(event_task_runner_->RunsTasksInCurrentSequence());
-
-  if (xev->type != ui::ShmEventBase() + ShmCompletion)
+bool XShmImagePool::DispatchXEvent(x11::Event* xev) {
+  auto* completion = xev->As<x11::Shm::CompletionEvent>();
+  if (!completion || completion->drawable.value != drawable_.value)
     return false;
 
-  const auto* shm_event = reinterpret_cast<const XShmCompletionEvent*>(xev);
-  return shm_event->drawable == drawable_.value;
-}
-
-bool XShmImagePool::DispatchXEvent(x11::Event* x11_event) {
-  XEvent* xev = &x11_event->xlib_event();
-  if (!CanDispatchXEvent(x11_event))
-    return false;
-
-  XShmCompletionEvent* shm_event = reinterpret_cast<XShmCompletionEvent*>(xev);
   host_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&XShmImagePool::DispatchShmCompletionEvent,
-                                this, *shm_event));
+                                this, *completion));
   return true;
 }
 

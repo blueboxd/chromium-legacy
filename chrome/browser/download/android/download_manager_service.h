@@ -117,6 +117,15 @@ class DownloadManagerService
                       const JavaParamRef<jobject>& callback,
                       bool is_off_the_record);
 
+  // Called to change the download schedule of a download item that has GUID
+  // equal to |id|.
+  void ChangeSchedule(JNIEnv* env,
+                      const JavaParamRef<jobject>& obj,
+                      const JavaParamRef<jstring>& id,
+                      jboolean only_on_wifi,
+                      jlong start_time,
+                      jboolean is_off_the_record);
+
   // Returns whether or not the given download can be opened by the browser.
   bool IsDownloadOpenableInBrowser(JNIEnv* env,
                                    jobject obj,

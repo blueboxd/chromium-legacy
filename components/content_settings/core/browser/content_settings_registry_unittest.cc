@@ -15,13 +15,20 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// Cannot use an anonymous namespace because WebsiteSettingsRegistry's
+// constructor and destructor are private.
 namespace content_settings {
+
+using ::testing::Contains;
+using ::testing::ElementsAre;
 
 class ContentSettingsRegistryTest : public testing::Test {
  protected:
   ContentSettingsRegistryTest() : registry_(&website_settings_registry_) {}
+
   ContentSettingsRegistry* registry() { return &registry_; }
   WebsiteSettingsRegistry* website_settings_registry() {
     return &website_settings_registry_;
@@ -61,11 +68,7 @@ TEST_F(ContentSettingsRegistryTest, Properties) {
       registry()->Get(ContentSettingsType::COOKIES);
   ASSERT_TRUE(info);
 
-  // Check that the whitelisted types are correct.
-  std::vector<std::string> expected_whitelist;
-  expected_whitelist.push_back("chrome");
-  expected_whitelist.push_back("devtools");
-  EXPECT_EQ(expected_whitelist, info->whitelisted_schemes());
+  EXPECT_THAT(info->whitelisted_schemes(), ElementsAre("chrome", "devtools"));
 
   // Check the other properties are populated correctly.
   EXPECT_TRUE(info->IsSettingValid(CONTENT_SETTING_SESSION_ONLY));
@@ -129,7 +132,7 @@ TEST_F(ContentSettingsRegistryTest, Inheritance) {
   // These settings are safe to inherit in incognito mode because they only
   // disable features like popup blocking, download blocking or ad blocking.
   // They do not allow access to user data.
-  const ContentSettingsType whitelist[] = {
+  const ContentSettingsType safe_types[] = {
       ContentSettingsType::PLUGINS,              //
       ContentSettingsType::POPUPS,               //
       ContentSettingsType::AUTOMATIC_DOWNLOADS,  //
@@ -143,6 +146,7 @@ TEST_F(ContentSettingsRegistryTest, Inheritance) {
     SCOPED_TRACE("Content setting: " + info->website_settings_info()->name());
     // TODO(crbug.com/781756): Check IsSettingValid() because "protocol-handler"
     // and "mixed-script" don't have a proper initial default value.
+
     if (info->IsSettingValid(CONTENT_SETTING_ALLOW) &&
         info->GetInitialDefaultSetting() == CONTENT_SETTING_ALLOW) {
       // ALLOW-by-default settings are not affected by incognito_behavior, so
@@ -151,10 +155,11 @@ TEST_F(ContentSettingsRegistryTest, Inheritance) {
                 ContentSettingsInfo::INHERIT_IN_INCOGNITO);
       continue;
     }
+
     if (info->incognito_behavior() ==
-            ContentSettingsInfo::INHERIT_IN_INCOGNITO &&
-        !base::Contains(whitelist, info->website_settings_info()->type()))
-      FAIL() << "Content setting not whitelisted.";
+        ContentSettingsInfo::INHERIT_IN_INCOGNITO) {
+      EXPECT_THAT(safe_types, Contains(info->website_settings_info()->type()));
+    }
   }
 }
 

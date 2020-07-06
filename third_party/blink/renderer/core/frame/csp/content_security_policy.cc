@@ -40,7 +40,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_security_policy_violation_event_init.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_string_list.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/events/event_queue.h"
@@ -135,7 +134,7 @@ bool ContentSecurityPolicy::IsNonceableElement(const Element* element) {
   }
 
   UseCounter::Count(
-      element->GetDocument(),
+      element->GetExecutionContext(),
       nonceable ? WebFeature::kCleanScriptElementWithNonce
                 : WebFeature::kPotentiallyInjectedScriptElementWithNonce);
 
@@ -627,20 +626,6 @@ bool ContentSecurityPolicy::AllowPluginType(
                                  reporting_disposition))
       return false;
   }
-  return true;
-}
-
-bool ContentSecurityPolicy::AllowPluginTypeForDocument(
-    const Document& document,
-    const String& type,
-    const String& type_attribute,
-    const KURL& url,
-    ReportingDisposition reporting_disposition) const {
-  if (document.GetContentSecurityPolicy() &&
-      !document.GetContentSecurityPolicy()->AllowPluginType(
-          type, type_attribute, url, reporting_disposition))
-    return false;
-
   return true;
 }
 
@@ -1476,7 +1461,7 @@ void ContentSecurityPolicy::ReportContentSecurityPolicyIssue(
 void ContentSecurityPolicy::LogToConsole(ConsoleMessage* console_message,
                                          LocalFrame* frame) {
   if (frame)
-    frame->GetDocument()->AddConsoleMessage(console_message);
+    frame->DomWindow()->AddConsoleMessage(console_message);
   else if (delegate_)
     delegate_->AddConsoleMessage(console_message);
   else

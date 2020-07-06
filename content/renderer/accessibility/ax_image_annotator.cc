@@ -18,6 +18,8 @@
 #include "content/renderer/accessibility/ax_image_stopwords.h"
 #include "content/renderer/render_frame_impl.h"
 #include "crypto/sha2.h"
+#include "services/metrics/public/cpp/mojo_ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/public/web/web_ax_object.h"
 #include "third_party/blink/public/web/web_document.h"
@@ -317,16 +319,20 @@ void AXImageAnnotator::OnImageAnnotated(
     return;
   }
 
+  bool has_ocr = false;
+  bool has_description = false;
   std::vector<std::string> contextualized_strings;
   for (const mojo::InlinedStructPtr<image_annotation::mojom::Annotation>&
            annotation : result->get_annotations()) {
     int message_id = 0;
     switch (annotation->type) {
       case image_annotation::mojom::AnnotationType::kOcr:
+        has_ocr = true;
         message_id = IDS_AX_IMAGE_ANNOTATION_OCR_CONTEXT;
         break;
       case image_annotation::mojom::AnnotationType::kCaption:
       case image_annotation::mojom::AnnotationType::kLabel:
+        has_description = true;
         message_id = IDS_AX_IMAGE_ANNOTATION_DESCRIPTION_CONTEXT;
         break;
     }
@@ -364,6 +370,18 @@ void AXImageAnnotator::OnImageAnnotated(
     MarkDirty(image);
     return;
   }
+
+  ax::mojom::NameFrom name_from;
+  blink::WebVector<blink::WebAXObject> name_objects;
+  blink::WebString name = image.GetName(name_from, name_objects);
+  bool has_existing_label = !name.IsEmpty();
+
+  ukm::builders::Accessibility_ImageDescriptions(
+      render_accessibility_->GetMainDocument().GetUkmSourceId())
+      .SetOCR(has_ocr)
+      .SetDescription(has_description)
+      .SetImageAlreadyHasLabel(has_existing_label)
+      .Record(render_accessibility_->ukm_recorder());
 
   image_annotations_.at(image.AxID())
       .set_status(ax::mojom::ImageAnnotationStatus::kAnnotationSucceeded);

@@ -179,9 +179,9 @@ class PartitionAllocTest : public testing::Test {
       void* ptr = allocator.root()->Alloc(size, type_name);
       EXPECT_TRUE(ptr);
       if (!i)
-        first = PartitionPointerAdjustSubtract(ptr);
+        first = PartitionPointerAdjustSubtract(true, ptr);
       else if (i == num_slots - 1)
-        last = PartitionPointerAdjustSubtract(ptr);
+        last = PartitionPointerAdjustSubtract(true, ptr);
     }
     EXPECT_EQ(PartitionRoot<ThreadSafe>::Page::FromPointer(first),
               PartitionRoot<ThreadSafe>::Page::FromPointer(last));
@@ -202,7 +202,7 @@ class PartitionAllocTest : public testing::Test {
     for (size_t i = 0; i < kMaxFreeableSpans; ++i) {
       void* ptr = allocator.root()->Alloc(size, type_name);
       auto* page = PartitionRoot<base::internal::ThreadSafe>::Page::FromPointer(
-          PartitionPointerAdjustSubtract(ptr));
+          PartitionPointerAdjustSubtract(true, ptr));
       auto* bucket = page->bucket;
       EXPECT_EQ(1, bucket->active_pages_head->num_allocated_slots);
       allocator.root()->Free(ptr);
@@ -736,7 +736,7 @@ TEST_F(PartitionAllocTest, GenericAllocSizes) {
   // Should be freeable at this point.
   PartitionRoot<ThreadSafe>::Page* page =
       PartitionRoot<ThreadSafe>::Page::FromPointer(
-          PartitionPointerAdjustSubtract(ptr));
+          PartitionPointerAdjustSubtract(true, ptr));
   EXPECT_NE(-1, page->empty_cache_index);
   allocator.root()->Free(ptr2);
 
@@ -755,10 +755,10 @@ TEST_F(PartitionAllocTest, GenericAllocSizes) {
   EXPECT_TRUE(ptr4);
 
   page = PartitionPage<base::internal::ThreadSafe>::FromPointer(
-      PartitionPointerAdjustSubtract(ptr));
+      PartitionPointerAdjustSubtract(true, ptr));
   PartitionRoot<ThreadSafe>::Page* page2 =
       PartitionRoot<ThreadSafe>::Page::FromPointer(
-          PartitionPointerAdjustSubtract(ptr3));
+          PartitionPointerAdjustSubtract(true, ptr3));
   EXPECT_NE(page, page2);
 
   allocator.root()->Free(ptr);
@@ -816,14 +816,12 @@ TEST_F(PartitionAllocTest, GenericAllocGetSizeAndOffset) {
   void* ptr;
   size_t requested_size, actual_size, predicted_size;
 
-  EXPECT_TRUE(PartitionAllocSupportsGetSize());
-
   // Allocate something small.
   requested_size = 511 - kExtraAllocSize;
   predicted_size = allocator.root()->ActualSize(requested_size);
   ptr = allocator.root()->Alloc(requested_size, type_name);
   EXPECT_TRUE(ptr);
-  actual_size = PartitionAllocGetSize<ThreadSafe>(ptr);
+  actual_size = allocator.root()->GetSize(ptr);
   EXPECT_EQ(predicted_size, actual_size);
   EXPECT_LT(requested_size, actual_size);
 #if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
@@ -849,7 +847,7 @@ TEST_F(PartitionAllocTest, GenericAllocGetSizeAndOffset) {
   predicted_size = allocator.root()->ActualSize(requested_size);
   ptr = allocator.root()->Alloc(requested_size, type_name);
   EXPECT_TRUE(ptr);
-  actual_size = PartitionAllocGetSize<ThreadSafe>(ptr);
+  actual_size = allocator.root()->GetSize(ptr);
   EXPECT_EQ(predicted_size, actual_size);
   EXPECT_EQ(requested_size, actual_size);
 #if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
@@ -876,7 +874,7 @@ TEST_F(PartitionAllocTest, GenericAllocGetSizeAndOffset) {
   predicted_size = allocator.root()->ActualSize(requested_size);
   ptr = allocator.root()->Alloc(requested_size, type_name);
   EXPECT_TRUE(ptr);
-  actual_size = PartitionAllocGetSize<ThreadSafe>(ptr);
+  actual_size = allocator.root()->GetSize(ptr);
   EXPECT_EQ(predicted_size, actual_size);
   EXPECT_EQ(requested_size + kSystemPageSize, actual_size);
 #if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
@@ -902,7 +900,7 @@ TEST_F(PartitionAllocTest, GenericAllocGetSizeAndOffset) {
     predicted_size = allocator.root()->ActualSize(requested_size);
     ptr = allocator.root()->Alloc(requested_size, type_name);
     EXPECT_TRUE(ptr);
-    actual_size = PartitionAllocGetSize<ThreadSafe>(ptr);
+    actual_size = allocator.root()->GetSize(ptr);
     EXPECT_EQ(predicted_size, actual_size);
     EXPECT_LT(requested_size, actual_size);
     // Unlike above, don't test for PartitionAllocGetSlotOffset. Such large
@@ -938,7 +936,7 @@ TEST_F(PartitionAllocTest, GetOffsetMultiplePages) {
   for (size_t i = 0; i < num_slots; ++i) {
     char* ptr = static_cast<char*>(ptrs[i]);
     for (size_t offset = 0; offset < requested_size; offset += 13) {
-      EXPECT_EQ(PartitionAllocGetSize<ThreadSafe>(ptr), requested_size);
+      EXPECT_EQ(allocator.root()->GetSize(ptr), requested_size);
       EXPECT_EQ(PartitionAllocGetSlotOffset<ThreadSafe>(ptr + offset), offset);
       // TODO(bartekn): Remove when CheckedPtr2Impl no longer calls mismatched
       // vartiant.
@@ -957,11 +955,11 @@ TEST_F(PartitionAllocTest, Realloc) {
   memset(ptr, 'A', kTestAllocSize);
   PartitionRoot<ThreadSafe>::Page* page =
       PartitionRoot<ThreadSafe>::Page::FromPointer(
-          PartitionPointerAdjustSubtract(ptr));
+          PartitionPointerAdjustSubtract(true, ptr));
   // realloc(ptr, 0) should be equivalent to free().
   void* ptr2 = allocator.root()->Realloc(ptr, 0, type_name);
   EXPECT_EQ(nullptr, ptr2);
-  EXPECT_EQ(PartitionPointerAdjustSubtract(ptr), page->freelist_head);
+  EXPECT_EQ(PartitionPointerAdjustSubtract(true, ptr), page->freelist_head);
 
   // Test that growing an allocation with realloc() copies everything from the
   // old allocation.
@@ -994,19 +992,17 @@ TEST_F(PartitionAllocTest, Realloc) {
   // Test that shrinking a direct mapped allocation happens in-place.
   size = kGenericMaxBucketed + 16 * kSystemPageSize;
   ptr = allocator.root()->Alloc(size, type_name);
-  size_t actual_size = PartitionAllocGetSize<ThreadSafe>(ptr);
+  size_t actual_size = allocator.root()->GetSize(ptr);
   ptr2 = allocator.root()->Realloc(
       ptr, kGenericMaxBucketed + 8 * kSystemPageSize, type_name);
   EXPECT_EQ(ptr, ptr2);
-  EXPECT_EQ(actual_size - 8 * kSystemPageSize,
-            PartitionAllocGetSize<ThreadSafe>(ptr2));
+  EXPECT_EQ(actual_size - 8 * kSystemPageSize, allocator.root()->GetSize(ptr2));
 
   // Test that a previously in-place shrunk direct mapped allocation can be
   // expanded up again within its original size.
   ptr = allocator.root()->Realloc(ptr2, size - kSystemPageSize, type_name);
   EXPECT_EQ(ptr2, ptr);
-  EXPECT_EQ(actual_size - kSystemPageSize,
-            PartitionAllocGetSize<ThreadSafe>(ptr));
+  EXPECT_EQ(actual_size - kSystemPageSize, allocator.root()->GetSize(ptr));
 
   // Test that a direct mapped allocation is performed not in-place when the
   // new size is small enough.
@@ -1029,7 +1025,7 @@ TEST_F(PartitionAllocTest, PartialPageFreelists) {
 
   PartitionRoot<ThreadSafe>::Page* page =
       PartitionRoot<ThreadSafe>::Page::FromPointer(
-          PartitionPointerAdjustSubtract(ptr));
+          PartitionPointerAdjustSubtract(true, ptr));
   size_t total_slots =
       (page->bucket->num_system_pages_per_slot_span * kSystemPageSize) /
       (big_size + kExtraAllocSize);
@@ -1064,7 +1060,7 @@ TEST_F(PartitionAllocTest, PartialPageFreelists) {
 
   PartitionRoot<ThreadSafe>::Page* page2 =
       PartitionRoot<ThreadSafe>::Page::FromPointer(
-          PartitionPointerAdjustSubtract(ptr5));
+          PartitionPointerAdjustSubtract(true, ptr5));
   EXPECT_EQ(1, page2->num_allocated_slots);
 
   // Churn things a little whilst there's a partial page freelist.
@@ -1093,7 +1089,7 @@ TEST_F(PartitionAllocTest, PartialPageFreelists) {
   ptr = allocator.root()->Alloc(medium_size, type_name);
   EXPECT_TRUE(ptr);
   page = PartitionRoot<ThreadSafe>::Page::FromPointer(
-      PartitionPointerAdjustSubtract(ptr));
+      PartitionPointerAdjustSubtract(true, ptr));
   EXPECT_EQ(1, page->num_allocated_slots);
   total_slots =
       (page->bucket->num_system_pages_per_slot_span * kSystemPageSize) /
@@ -1112,7 +1108,7 @@ TEST_F(PartitionAllocTest, PartialPageFreelists) {
   ptr = allocator.root()->Alloc(small_size, type_name);
   EXPECT_TRUE(ptr);
   page = PartitionRoot<ThreadSafe>::Page::FromPointer(
-      PartitionPointerAdjustSubtract(ptr));
+      PartitionPointerAdjustSubtract(true, ptr));
   EXPECT_EQ(1, page->num_allocated_slots);
   total_slots =
       (page->bucket->num_system_pages_per_slot_span * kSystemPageSize) /
@@ -1132,7 +1128,7 @@ TEST_F(PartitionAllocTest, PartialPageFreelists) {
   ptr = allocator.root()->Alloc(very_small_size, type_name);
   EXPECT_TRUE(ptr);
   page = PartitionRoot<ThreadSafe>::Page::FromPointer(
-      PartitionPointerAdjustSubtract(ptr));
+      PartitionPointerAdjustSubtract(true, ptr));
   EXPECT_EQ(1, page->num_allocated_slots);
   total_slots =
       (page->bucket->num_system_pages_per_slot_span * kSystemPageSize) /
@@ -1152,7 +1148,7 @@ TEST_F(PartitionAllocTest, PartialPageFreelists) {
   ptr = allocator.root()->Alloc(page_and_a_half_size, type_name);
   EXPECT_TRUE(ptr);
   page = PartitionRoot<ThreadSafe>::Page::FromPointer(
-      PartitionPointerAdjustSubtract(ptr));
+      PartitionPointerAdjustSubtract(true, ptr));
   EXPECT_EQ(1, page->num_allocated_slots);
   EXPECT_TRUE(page->freelist_head);
   total_slots =
@@ -1166,7 +1162,7 @@ TEST_F(PartitionAllocTest, PartialPageFreelists) {
   ptr = allocator.root()->Alloc(pageSize, type_name);
   EXPECT_TRUE(ptr);
   page = PartitionRoot<ThreadSafe>::Page::FromPointer(
-      PartitionPointerAdjustSubtract(ptr));
+      PartitionPointerAdjustSubtract(true, ptr));
   EXPECT_EQ(1, page->num_allocated_slots);
   EXPECT_TRUE(page->freelist_head);
   total_slots =
@@ -1190,7 +1186,7 @@ TEST_F(PartitionAllocTest, PageRefilling) {
   EXPECT_NE(page2, bucket->active_pages_head);
   PartitionRoot<ThreadSafe>::Page* page =
       PartitionRoot<ThreadSafe>::Page::FromPointer(
-          PartitionPointerAdjustSubtract(ptr));
+          PartitionPointerAdjustSubtract(true, ptr));
   EXPECT_EQ(1, page->num_allocated_slots);
 
   // Work out a pointer into page2 and free it; and then page1 and free it.
@@ -1341,7 +1337,7 @@ TEST_F(PartitionAllocTest, FreeCache) {
   EXPECT_TRUE(ptr);
   PartitionRoot<ThreadSafe>::Page* page =
       PartitionRoot<ThreadSafe>::Page::FromPointer(
-          PartitionPointerAdjustSubtract(ptr));
+          PartitionPointerAdjustSubtract(true, ptr));
   EXPECT_EQ(nullptr, bucket->empty_pages_head);
   EXPECT_EQ(1, page->num_allocated_slots);
   size_t expected_committed_size = kPartitionPageSize;
@@ -1393,10 +1389,10 @@ TEST_F(PartitionAllocTest, LostFreePagesBug) {
 
   PartitionPage<base::internal::ThreadSafe>* page =
       PartitionPage<base::internal::ThreadSafe>::FromPointer(
-          PartitionPointerAdjustSubtract(ptr));
+          PartitionPointerAdjustSubtract(true, ptr));
   PartitionPage<base::internal::ThreadSafe>* page2 =
       PartitionPage<base::internal::ThreadSafe>::FromPointer(
-          PartitionPointerAdjustSubtract(ptr2));
+          PartitionPointerAdjustSubtract(true, ptr2));
   PartitionBucket<base::internal::ThreadSafe>* bucket = page->bucket;
 
   EXPECT_EQ(nullptr, bucket->empty_pages_head);
@@ -1909,13 +1905,13 @@ TEST_F(PartitionAllocTest, PreferActiveOverEmpty) {
 
   PartitionPage<base::internal::ThreadSafe>* page1 =
       PartitionPage<base::internal::ThreadSafe>::FromPointer(
-          PartitionPointerAdjustSubtract(ptr1));
+          PartitionPointerAdjustSubtract(true, ptr1));
   PartitionPage<base::internal::ThreadSafe>* page2 =
       PartitionPage<base::internal::ThreadSafe>::FromPointer(
-          PartitionPointerAdjustSubtract(ptr3));
+          PartitionPointerAdjustSubtract(true, ptr3));
   PartitionPage<base::internal::ThreadSafe>* page3 =
       PartitionPage<base::internal::ThreadSafe>::FromPointer(
-          PartitionPointerAdjustSubtract(ptr6));
+          PartitionPointerAdjustSubtract(true, ptr6));
   EXPECT_NE(page1, page2);
   EXPECT_NE(page2, page3);
   PartitionBucket<base::internal::ThreadSafe>* bucket = page1->bucket;
@@ -1957,7 +1953,7 @@ TEST_F(PartitionAllocTest, PurgeDiscardable) {
     allocator.root()->Free(ptr2);
     PartitionPage<base::internal::ThreadSafe>* page =
         PartitionPage<base::internal::ThreadSafe>::FromPointer(
-            PartitionPointerAdjustSubtract(ptr1));
+            PartitionPointerAdjustSubtract(true, ptr1));
     EXPECT_EQ(2u, page->num_unprovisioned_slots);
     {
       MockPartitionStatsDumper dumper;
@@ -2149,7 +2145,7 @@ TEST_F(PartitionAllocTest, PurgeDiscardable) {
     ptr1[kSystemPageSize * 3] = 'A';
     PartitionPage<base::internal::ThreadSafe>* page =
         PartitionPage<base::internal::ThreadSafe>::FromPointer(
-            PartitionPointerAdjustSubtract(ptr1));
+            PartitionPointerAdjustSubtract(true, ptr1));
     allocator.root()->Free(ptr2);
     allocator.root()->Free(ptr4);
     allocator.root()->Free(ptr1);
@@ -2215,7 +2211,7 @@ TEST_F(PartitionAllocTest, PurgeDiscardable) {
     ptr1[kSystemPageSize * 3] = 'A';
     PartitionPage<base::internal::ThreadSafe>* page =
         PartitionPage<base::internal::ThreadSafe>::FromPointer(
-            PartitionPointerAdjustSubtract(ptr1));
+            PartitionPointerAdjustSubtract(true, ptr1));
     allocator.root()->Free(ptr4);
     allocator.root()->Free(ptr3);
     EXPECT_EQ(0u, page->num_unprovisioned_slots);
@@ -2436,7 +2432,7 @@ TEST_F(PartitionAllocTest, FundamentalAlignment) {
     EXPECT_EQ(reinterpret_cast<uintptr_t>(ptr3) % fundamental_alignment,
               static_cast<uintptr_t>(0));
 
-    EXPECT_EQ(PartitionAllocGetSize<ThreadSafe>(ptr) % fundamental_alignment,
+    EXPECT_EQ(allocator.root()->GetSize(ptr) % fundamental_alignment,
               static_cast<uintptr_t>(0));
 
     allocator.root()->Free(ptr);
@@ -2474,7 +2470,7 @@ TEST_F(PartitionAllocTest, TagBasic) {
 
   PartitionRoot<ThreadSafe>::Page* page =
       PartitionRoot<ThreadSafe>::Page::FromPointer(
-          PartitionPointerAdjustSubtract(ptr1));
+          PartitionPointerAdjustSubtract(true, ptr1));
   EXPECT_TRUE(page);
 
   char* char_ptr1 = reinterpret_cast<char*>(ptr1);
@@ -2532,7 +2528,7 @@ TEST_F(PartitionAllocTest, TagForDirectMap) {
 
   PartitionRoot<ThreadSafe>::Page* page =
       PartitionRoot<ThreadSafe>::Page::FromPointer(
-          PartitionPointerAdjustSubtract(ptr1));
+          PartitionPointerAdjustSubtract(true, ptr1));
   EXPECT_TRUE(page);
 
   constexpr PartitionTag kTag1 = 0xBADA;

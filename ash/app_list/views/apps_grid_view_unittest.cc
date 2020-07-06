@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/model/app_list_folder_item.h"
@@ -1955,6 +1956,8 @@ class AppsGridGapTest : public AppsGridViewTest {
  private:
   DISALLOW_COPY_AND_ASSIGN(AppsGridGapTest);
 };
+
+INSTANTIATE_TEST_SUITE_P(All, AppsGridGapTest, testing::Bool());
 
 TEST_P(AppsGridGapTest, MoveAnItemToNewEmptyPage) {
   const int kApps = 2;

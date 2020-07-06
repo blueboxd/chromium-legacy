@@ -36,7 +36,7 @@ def main(argv):
        .child_window(title_re='.*Your admin has blocked', control_type="TitleBar") \
        .print_control_identifiers()
   except ElementNotFoundError as error:
-    print "Not blocked"
+    print("Not blocked")
   finally:
     driver.quit()
 

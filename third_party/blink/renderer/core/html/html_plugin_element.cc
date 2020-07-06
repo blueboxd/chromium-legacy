@@ -710,9 +710,9 @@ bool HTMLPlugInElement::AllowedToLoadObject(const KURL& url,
     return false;
 
   AtomicString declared_mime_type = FastGetAttribute(html_names::kTypeAttr);
-  if (!GetDocument().GetContentSecurityPolicy()->AllowObjectFromSource(url) ||
-      !GetDocument().GetContentSecurityPolicy()->AllowPluginTypeForDocument(
-          GetDocument(), mime_type, declared_mime_type, url)) {
+  auto* csp = GetExecutionContext()->GetContentSecurityPolicy();
+  if (!csp->AllowObjectFromSource(url) ||
+      !csp->AllowPluginType(mime_type, declared_mime_type, url)) {
     if (auto* layout_object = GetLayoutEmbeddedObject()) {
       plugin_is_available_ = false;
       layout_object->SetPluginAvailability(

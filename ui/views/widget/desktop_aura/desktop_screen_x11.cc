@@ -151,8 +151,7 @@ std::string DesktopScreenX11::GetCurrentWorkspace() {
 }
 
 bool DesktopScreenX11::DispatchXEvent(x11::Event* event) {
-  return x11_display_manager_->CanProcessEvent(*event) &&
-         x11_display_manager_->ProcessEvent(event);
+  return x11_display_manager_->ProcessEvent(event);
 }
 
 void DesktopScreenX11::OnDeviceScaleFactorChanged() {

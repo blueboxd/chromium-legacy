@@ -14,7 +14,6 @@ import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
 import org.chromium.content_public.browser.BrowserStartupController;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
@@ -66,12 +65,7 @@ public class ServicificationBackgroundService extends ChromeBackgroundService {
 
     public void waitForNativeLoaded() {
         CriteriaHelper.pollUiThread(
-                new Criteria("Failed while waiting for starting Service Manager.") {
-                    @Override
-                    public boolean isSatisfied() {
-                        return mNativeLoaded;
-                    }
-                });
+                () -> mNativeLoaded, "Failed while waiting for starting Service Manager.");
     }
 
     public void setSupportsServiceManagerOnly(boolean supportsServiceManagerOnly) {

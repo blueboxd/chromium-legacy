@@ -1174,6 +1174,77 @@ TEST_F(SpdyHttpStreamTest, RequestCallbackCancelsStream) {
   EXPECT_FALSE(HasSpdySession(http_session_->spdy_session_pool(), key_));
 }
 
+// Regression test for https://crbug.com/1082683.
+// SendRequest() callback should be called as soon as sending is done,
+// even when sending greased frame type is allowed.
+TEST_F(SpdyHttpStreamTest, DownloadWithGreasedFrames) {
+  const uint8_t type = 0x0b;
+  const uint8_t flags = 0xcc;
+  const std::string payload("foo");
+  session_deps_.greased_http2_frame =
+      base::Optional<net::SpdySessionPool::GreasedHttp2Frame>(
+          {type, flags, payload});
+
+  spdy::SpdyHeaderBlock request_headers;
+  request_headers[spdy::kHttp2MethodHeader] = "GET";
+  spdy_util_.AddUrlToHeaderBlock(kDefaultUrl, &request_headers);
+  spdy::SpdySerializedFrame req = spdy_util_.ConstructSpdyHeaders(
+      1, std::move(request_headers), LOWEST, /* fin = */ false);
+
+  const char kRawFrameData[] = {
+      0x00, 0x00, 0x03,        // length
+      0x0b,                    // type
+      0xcc,                    // flags
+      0x00, 0x00, 0x00, 0x01,  // stream ID
+      'f',  'o',  'o'          // payload
+  };
+  spdy::SpdySerializedFrame grease(const_cast<char*>(kRawFrameData),
+                                   base::size(kRawFrameData),
+                                   /* owns_buffer = */ false);
+
+  spdy::SpdySerializedFrame empty_body(
+      spdy_util_.ConstructSpdyDataFrame(1, "", true));
+
+  MockWrite writes[] = {CreateMockWrite(req, 0), CreateMockWrite(grease, 1),
+                        CreateMockWrite(empty_body, 2)};
+
+  // This test only concerns the request,
+  // no need to construct a meaningful response.
+  MockRead reads[] = {
+      MockRead(ASYNC, ERR_IO_PENDING, 3),  // Pause reads.
+      MockRead(ASYNC, 0, 4)                // Close connection.
+  };
+
+  InitSession(reads, writes);
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = url_;
+  request.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  TestCompletionCallback callback;
+  HttpResponseInfo response;
+  HttpRequestHeaders headers;
+  NetLogWithSource net_log;
+  auto http_stream = std::make_unique<SpdyHttpStream>(
+      session_, kNoPushedStreamFound, net_log.source());
+
+  int rv = http_stream->InitializeStream(&request, true, DEFAULT_PRIORITY,
+                                         net_log, CompletionOnceCallback());
+  EXPECT_THAT(rv, IsOk());
+
+  rv = http_stream->SendRequest(headers, &response, callback.callback());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  // The request callback should be called even though response has not been
+  // received yet.
+  rv = callback.WaitForResult();
+  EXPECT_THAT(rv, IsOk());
+
+  sequenced_data_->Resume();
+  base::RunLoop().RunUntilIdle();
+}
+
 // TODO(willchan): Write a longer test for SpdyStream that exercises all
 // methods.
 

@@ -33,6 +33,8 @@ class MEDIA_GPU_EXPORT FrameInfoHelper {
       scoped_refptr<base::SequencedTaskRunner> gpu_task_runner,
       SharedImageVideoProvider::GetStubCB get_stub_cb);
 
+  static std::unique_ptr<FrameInfoHelper> CreateForTesting();
+
   virtual ~FrameInfoHelper() = default;
 
   // Call |cb| with the FrameInfo.  Will render |buffer_renderer| to the front

@@ -22,6 +22,7 @@ import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineContentProvider.Observer;
 import org.chromium.components.offline_items_collection.OfflineItem;
+import org.chromium.components.offline_items_collection.OfflineItemSchedule;
 import org.chromium.components.offline_items_collection.OfflineItemShareInfo;
 import org.chromium.components.offline_items_collection.ShareCallback;
 import org.chromium.components.offline_items_collection.VisualsCallback;
@@ -201,6 +202,12 @@ class LegacyDownloadProviderImpl implements DownloadObserver, LegacyDownloadProv
             OfflineItem item, String name, Callback</*RenameResult*/ Integer> callback) {
         DownloadManagerService.getDownloadManagerService().renameDownload(
                 item.id, name, callback, item.isOffTheRecord);
+    }
+
+    @Override
+    public void changeSchedule(final OfflineItem item, final OfflineItemSchedule schedule) {
+        DownloadManagerService.getDownloadManagerService().changeSchedule(
+                item.id, schedule, item.isOffTheRecord);
     }
 
     /**

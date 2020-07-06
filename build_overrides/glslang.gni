@@ -3,3 +3,6 @@
 # found in the LICENSE file.
 
 glslang_spirv_tools_dir = "//third_party/SPIRV-Tools/src"
+
+# Temporary to unblock glslang roll.  Will change to true afterwards.
+glslang_angle = false

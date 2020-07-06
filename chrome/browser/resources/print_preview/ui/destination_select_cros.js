@@ -388,9 +388,7 @@ Polymer({
    */
   getErrorString_: function(printerStatusReason) {
     const errorTextKey = ERROR_STRING_KEY_MAP.get(printerStatusReason);
-    return errorTextKey ?
-        this.i18n(errorTextKey, this.destination.displayName) :
-        '';
+    return errorTextKey ? this.i18n(errorTextKey) : '';
   },
 
   /**

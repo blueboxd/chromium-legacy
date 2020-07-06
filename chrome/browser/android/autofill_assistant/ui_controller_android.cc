@@ -1774,8 +1774,7 @@ UiControllerAndroid::CreateGenericUiControllerForProto(
   auto jcontext =
       Java_AutofillAssistantUiController_getContext(env, java_object_);
   return GenericUiControllerAndroid::CreateFromProto(
-      proto, /* context = */ {},
-      base::android::ScopedJavaGlobalRef<jobject>(jcontext),
+      proto, base::android::ScopedJavaGlobalRef<jobject>(jcontext),
       generic_ui_delegate_.GetJavaObject(), ui_delegate_->GetEventHandler(),
       ui_delegate_->GetUserModel(), ui_delegate_->GetBasicInteractions());
 }

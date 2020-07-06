@@ -42,8 +42,6 @@ using signin_metrics::PromoAction;
 @property(nonatomic, assign) PromoAction promoAction;
 // Add account sign-in intent.
 @property(nonatomic, assign, readonly) AddAccountSigninIntent signinIntent;
-// Called when the sign-in dialog is interrupted.
-@property(nonatomic, copy) ProceduralBlock interruptCompletion;
 
 @end
 
@@ -82,24 +80,17 @@ using signin_metrics::PromoAction;
   }
 
   DCHECK(self.identityInteractionManager);
-  // IdentityInteractionManager |cancelAndDismissAnimated| will trigger the call
-  // to add account completion in the AddAccountMediator, however we must also
-  // ensure that the interrupt completion is called on sign-in completion.
-  // TODO(crbug.com/1072347): Update IdentityInteractionManager dismiss API.
-  self.interruptCompletion = completion;
-  self.manager.signinInterrupted = YES;
   switch (action) {
-    // SSO doesn't support cancel without dismiss, so to make sure the cancel
-    // is properly done, -[ChromeIdentityInteractionManager
-    // cancelAndDismissAnimated:NO] has to be called.
     case SigninCoordinatorInterruptActionNoDismiss:
     case SigninCoordinatorInterruptActionDismissWithoutAnimation:
-      [self.identityInteractionManager cancelAddAccountWithAnimation:NO
-                                                          completion:nil];
+      [self.identityInteractionManager
+          cancelAddAccountWithAnimation:NO
+                             completion:completion];
       break;
     case SigninCoordinatorInterruptActionDismissWithAnimation:
-      [self.identityInteractionManager cancelAddAccountWithAnimation:YES
-                                                          completion:nil];
+      [self.identityInteractionManager
+          cancelAddAccountWithAnimation:YES
+                             completion:completion];
       break;
   }
 }
@@ -204,9 +195,6 @@ using signin_metrics::PromoAction;
   [self runCompletionCallbackWithSigninResult:signinResult
                                      identity:identity
                    showAdvancedSettingsSignin:NO];
-  if (self.interruptCompletion) {
-    self.interruptCompletion();
-  }
 }
 
 // Presents the user consent screen with |identity| pre-selected.

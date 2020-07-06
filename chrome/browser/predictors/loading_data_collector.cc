@@ -97,6 +97,8 @@ PageRequestSummary::PageRequestSummary(const NavigationID& navigation_id)
     : ukm_source_id(navigation_id.ukm_source_id),
       main_frame_url(navigation_id.main_frame_url),
       initial_url(navigation_id.main_frame_url),
+      navigation_started(navigation_id.creation_time),
+      navigation_committed(base::TimeTicks::Max()),
       first_contentful_paint(base::TimeTicks::Max()) {}
 
 PageRequestSummary::PageRequestSummary(const PageRequestSummary& other) =
@@ -180,6 +182,7 @@ void LoadingDataCollector::RecordFinishNavigation(
     summary = std::make_unique<PageRequestSummary>(new_navigation_id);
     summary->initial_url = old_navigation_id.main_frame_url;
   }
+  summary->navigation_committed = base::TimeTicks::Now();
 
   inflight_navigations_.emplace(new_navigation_id, std::move(summary));
 }

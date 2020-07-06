@@ -427,9 +427,9 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration(
   bool has_mask =
       CSSMaskPainter::MaskBoundingBox(GetLayoutObject(), PhysicalOffset())
           .has_value();
-  bool has_clip_path =
-      ClipPathClipper::LocalClipPathBoundingBox(GetLayoutObject()).has_value();
-  if (UpdateMaskLayer(has_mask || has_clip_path))
+  bool has_mask_based_clip_path =
+      ClipPathClipper::ShouldUseMaskBasedClip(GetLayoutObject());
+  if (UpdateMaskLayer(has_mask || has_mask_based_clip_path))
     layer_config_changed = true;
 
   if (layer_config_changed)

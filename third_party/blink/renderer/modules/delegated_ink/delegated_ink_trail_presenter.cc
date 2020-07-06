@@ -106,16 +106,15 @@ void DelegatedInkTrailPresenter::updateInkTrailStartPoint(
                   physical_rect_area.Width().ToFloat(),
                   physical_rect_area.Height().ToFloat());
 
-  TRACE_EVENT_INSTANT2("blink",
-                       "DelegatedInkTrailPresenter::updateInkTrailStartPoint",
-                       TRACE_EVENT_SCOPE_THREAD, "point", point.ToString(),
-                       "area", area.ToString());
-
   const double diameter_in_physical_pixels = style->diameter() * effective_zoom;
   std::unique_ptr<viz::DelegatedInkMetadata> metadata =
       std::make_unique<viz::DelegatedInkMetadata>(
           point, diameter_in_physical_pixels, color.Rgb(),
           evt->PlatformTimeStamp(), area);
+
+  TRACE_EVENT_INSTANT1(
+      "blink", "DelegatedInkTrailPresenter::updateInkTrailStartPoint",
+      TRACE_EVENT_SCOPE_THREAD, "ink metadata", metadata->ToString());
 
   Page* page = local_frame_->GetPage();
   page->GetChromeClient().SetDelegatedInkMetadata(local_frame_,

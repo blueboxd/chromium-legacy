@@ -261,6 +261,12 @@ void DownloadUIAdapter::RenameItem(const ContentId& id,
   NOTREACHED();
 }
 
+void DownloadUIAdapter::ChangeSchedule(
+    const ContentId& id,
+    base::Optional<OfflineItemSchedule> schedule) {
+  NOTREACHED();
+}
+
 void DownloadUIAdapter::OnPageGetForVisuals(
     const ContentId& id,
     GetVisualsOptions options,

@@ -56,6 +56,10 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
      */
     private final List<Rect> mSubFrameRects = new ArrayList<>();
     /**
+     * Contains all mediators corresponding to this frame's sub-frames.
+     */
+    private final List<PlayerFrameMediator> mSubFrameMediators = new ArrayList<>();
+    /**
      * Contains scaled clip rects corresponding to this frame's sub-frames.
      */
     private final List<Rect> mSubFrameScaledRects = new ArrayList<>();
@@ -67,6 +71,10 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
      * Contains scaled clip rects for currently visible sub-frames according to {@link #mViewPort}.
      */
     private final List<Rect> mVisibleSubFrameScaledRects = new ArrayList<>();
+    /**
+     * Contains mediators for currently visible sub-frames according to {@link #mViewPort}.
+     */
+    private final List<PlayerFrameMediator> mVisibleSubFrameMediators = new ArrayList<>();
     private final PropertyModel mModel;
     private final PlayerCompositorDelegate mCompositorDelegate;
     private final OverScroller mScroller;
@@ -125,10 +133,12 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
      * Adds a new sub-frame to this frame.
      * @param subFrameView The {@link View} associated with the sub-frame.
      * @param clipRect     The bounds of the sub-frame, relative to this frame.
+     * @param mediator     The mediator of the sub-frame.
      */
-    void addSubFrame(View subFrameView, Rect clipRect) {
+    void addSubFrame(View subFrameView, Rect clipRect, PlayerFrameMediator mediator) {
         mSubFrameViews.add(subFrameView);
         mSubFrameRects.add(clipRect);
+        mSubFrameMediators.add(mediator);
         mSubFrameScaledRects.add(new Rect());
     }
 
@@ -149,7 +159,6 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
                 width, height, (mScaleFactor == 0f) ? mInitialScaleFactor : mScaleFactor);
     }
 
-    @Override
     public void setBitmapScaleMatrix(Matrix matrix, float scaleFactor) {
         // Don't update the subframes if the matrix is identity as it will be forcibly recalculated.
         if (!matrix.isIdentity()) {
@@ -165,19 +174,17 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
         Matrix childBitmapScaleMatrix = new Matrix();
         childBitmapScaleMatrix.setScale(
                 matrixValues[Matrix.MSCALE_X], matrixValues[Matrix.MSCALE_Y]);
-        for (View subFrameView : mVisibleSubFrameViews) {
-            ((PlayerFrameView) subFrameView)
-                    .updateDelegateScaleMatrix(childBitmapScaleMatrix, scaleFactor);
+        for (PlayerFrameMediator subFrameMediator : mVisibleSubFrameMediators) {
+            subFrameMediator.setBitmapScaleMatrix(childBitmapScaleMatrix, scaleFactor);
         }
         mModel.set(PlayerFrameProperties.SCALE_MATRIX, mBitmapScaleMatrix);
     }
 
-    @Override
     public void forceRedraw() {
         mInitialScaleFactor = ((float) mViewportRect.width()) / ((float) mContentWidth);
         moveViewport(0, 0, (mScaleFactor == 0f) ? mInitialScaleFactor : mScaleFactor);
-        for (View subFrameView : mVisibleSubFrameViews) {
-            ((PlayerFrameView) subFrameView).forceRedraw();
+        for (PlayerFrameMediator subFrameMediator : mVisibleSubFrameMediators) {
+            subFrameMediator.forceRedraw();
         }
     }
 
@@ -279,6 +286,7 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
     private void updateSubFrames(Rect viewport, float scaleFactor) {
         mVisibleSubFrameViews.clear();
         mVisibleSubFrameScaledRects.clear();
+        mVisibleSubFrameMediators.clear();
         for (int i = 0; i < mSubFrameRects.size(); i++) {
             Rect subFrameScaledRect = mSubFrameScaledRects.get(i);
             scaleRect(mSubFrameRects.get(i), subFrameScaledRect, scaleFactor);
@@ -290,6 +298,7 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
                         transformedTop + subFrameScaledRect.height());
                 mVisibleSubFrameViews.add(mSubFrameViews.get(i));
                 mVisibleSubFrameScaledRects.add(subFrameScaledRect);
+                mVisibleSubFrameMediators.add(mSubFrameMediators.get(i));
             }
         }
     }
@@ -393,6 +402,8 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
         // Ignore if there is no active overscroll and the direction is down.
         if (!mIsOverscrolling && distanceY <= 0) return false;
 
+        // TODO(crbug/1100338): Propagate this state to child mediators to
+        // support easing.
         mOverscrollAmount += distanceY;
 
         // If the overscroll is completely eased off the cancel the event.
@@ -566,8 +577,8 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
                 newYRounded + mViewportRect.height());
 
         moveViewport(0, 0, finalScaleFactor);
-        for (View subFrameView : mVisibleSubFrameViews) {
-            ((PlayerFrameView) subFrameView).forceRedraw();
+        for (PlayerFrameMediator subFrameMediator : mVisibleSubFrameMediators) {
+            subFrameMediator.forceRedraw();
         }
 
         return true;

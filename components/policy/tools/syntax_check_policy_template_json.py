@@ -1254,10 +1254,22 @@ class PolicyTemplateChecker(object):
             'branch point. Please merge it into Beta or change the version to '
             '%d.' % (policy_name, platform, new_version, current_version))
       elif new_version < current_version - 1:
+        self.non_compatibility_error_count += 1
         self._Error(
             'Version %d has been released to Stable already. Please use '
             'version %d instead for platform %s.' %
             (new_version, current_version, platform), 'policy', policy_name)
+
+  def _CheckDeprecatedFutureField(self, original_policy, new_policy,
+                                  policy_name):
+    '''The 'future' flag has been deprecated, it shouldn't be used for any new
+       policy.'''
+    if ('future' in new_policy
+        and (original_policy is None or 'future' not in original_policy)):
+      self.non_compatibility_error_count += 1
+      self._Error(
+          "The 'future' flag has been deprecated, please use the 'future_on' "
+          "list instead.", 'policy', policy_name)
 
   # Checks if the new policy definitions are compatible with the policy
   # definitions coming from the original_file_contents.
@@ -1306,6 +1318,11 @@ class PolicyTemplateChecker(object):
         if policy['type'] != 'group'
     }
 
+    original_policy_name_set = {
+        policy['name']
+        for policy in original_policy_definitions if policy['type'] != 'group'
+    }
+
     for original_policy in original_policy_definitions:
       # Check change compatibility for all non-group policy definitions.
       if original_policy['type'] == 'group':
@@ -1339,6 +1356,22 @@ class PolicyTemplateChecker(object):
                       original_rolling_out_platforms),
             MergeDict(new_released_platforms, new_rolling_out_platform),
             current_version, original_policy['name'])
+
+      self._CheckDeprecatedFutureField(original_policy, new_policy,
+                                       original_policy['name'])
+
+    # Check brand new policies:
+    for new_policy_name in set(
+        policy_definitions_dict.keys()) - original_policy_name_set:
+      new_policy = policy_definitions_dict[new_policy_name]
+      new_released_platforms, new_rolling_out_platform = \
+              self._GetReleasedPlatforms(new_policy, current_version)
+      if new_released_platforms or new_rolling_out_platform:
+        self._CheckNewReleasedPlatforms({},
+                                        MergeDict(new_released_platforms,
+                                                  new_rolling_out_platform),
+                                        current_version, new_policy_name)
+      self._CheckDeprecatedFutureField(None, new_policy, new_policy_name)
 
   def _LeadingWhitespace(self, line):
     match = LEADING_WHITESPACE.match(line)
@@ -1592,15 +1625,15 @@ class PolicyTemplateChecker(object):
     # if the new policy definitions are compatible with the original policy
     # definitions (if the original file contents have not raised any syntax
     # errors).
-    current_error_count = self.error_count
-    if (not current_error_count and original_file_contents is not None and
-        current_version is not None):
+    self.non_compatibility_error_count = self.error_count
+    if (not self.non_compatibility_error_count
+        and original_file_contents is not None and current_version is not None):
       self._CheckPolicyDefinitionsChangeCompatibility(
           policy_definitions, original_file_contents, current_version)
 
-    if current_error_count != self.error_count:
+    if self.non_compatibility_error_count != self.error_count:
       print(
-          'There were compatibility validation errors in the change. You may '
+          '\nThere were compatibility validation errors in the change. You may '
           'bypass this validation by adding "BYPASS_POLICY_COMPATIBILITY_CHECK='
           '<justification>" to your changelist description. If you believe '
           'that this validation is a bug, please file a crbug against '

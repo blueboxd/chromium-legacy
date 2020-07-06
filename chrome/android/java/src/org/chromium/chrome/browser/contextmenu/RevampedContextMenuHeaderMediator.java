@@ -25,7 +25,7 @@ import androidx.annotation.Nullable;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.performance_hints.PerformanceHintsObserver;
 import org.chromium.chrome.browser.performance_hints.PerformanceHintsObserver.PerformanceClass;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ui.favicon.IconType;
@@ -55,8 +55,7 @@ class RevampedContextMenuHeaderMediator implements View.OnClickListener {
         } else if (params.isVideo()) {
             setVideoIcon();
         }
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXT_MENU_PERFORMANCE_INFO)
-                && params.isAnchor()) {
+        if (PerformanceHintsObserver.isContextMenuPerformanceInfoEnabled() && params.isAnchor()) {
             mModel.set(RevampedContextMenuHeaderProperties.URL_PERFORMANCE_CLASS, performanceClass);
         }
     }

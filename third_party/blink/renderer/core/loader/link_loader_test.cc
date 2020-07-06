@@ -14,6 +14,7 @@
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/link_rel_attribute.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
@@ -370,8 +371,9 @@ class LinkLoaderPreloadNonceTest
 
 TEST_P(LinkLoaderPreloadNonceTest, Preload) {
   const auto& test_case = GetParam();
-  dummy_page_holder_->GetDocument()
-      .GetContentSecurityPolicy()
+  dummy_page_holder_->GetFrame()
+      .DomWindow()
+      ->GetContentSecurityPolicy()
       ->DidReceiveHeader(test_case.content_security_policy,
                          network::mojom::ContentSecurityPolicyType::kEnforce,
                          network::mojom::ContentSecurityPolicySource::kHTTP);

@@ -839,16 +839,10 @@ void LayerTreeHostImpl::AnimateInternal() {
   bool did_animate = false;
 
   if (input_handler_client_) {
-    // This animates fling scrolls. But on Android WebView root flings are
-    // controlled by the application, so the compositor does not animate them.
-    bool ignore_fling =
-        settings_.ignore_root_layer_flings && IsCurrentlyScrollingViewport();
-    if (!ignore_fling) {
-      // This does not set did_animate, because if the InputHandlerClient
-      // changes anything it will be through the InputHandler interface which
-      // does SetNeedsRedraw.
-      input_handler_client_->Animate(monotonic_time);
-    }
+    // This does not set did_animate, because if the InputHandlerClient
+    // changes anything it will be through the InputHandler interface which
+    // does SetNeedsRedraw.
+    input_handler_client_->Animate(monotonic_time);
   }
 
   did_animate |= AnimatePageScale(monotonic_time);
@@ -926,8 +920,6 @@ void LayerTreeHostImpl::StartPageScaleAnimation(
 }
 
 void LayerTreeHostImpl::SetNeedsAnimateInput() {
-  DCHECK(!IsCurrentlyScrollingViewport() ||
-         !settings_.ignore_root_layer_flings);
   SetNeedsOneBeginImplFrame();
 }
 
@@ -2237,8 +2229,8 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
           active_tree_->take_delegated_ink_metadata()) {
     TRACE_EVENT_INSTANT1(
         "cc", "Delegated Ink Metadata set on compositor frame metadata",
-        TRACE_EVENT_SCOPE_THREAD, "point",
-        delegated_ink_metadata->point().ToString());
+        TRACE_EVENT_SCOPE_THREAD, "ink metadata",
+        delegated_ink_metadata->ToString());
     metadata.delegated_ink_metadata = std::move(delegated_ink_metadata);
   }
 
@@ -3049,11 +3041,6 @@ const ScrollNode* LayerTreeHostImpl::CurrentlyScrollingNode() const {
 
 bool LayerTreeHostImpl::IsActivelyPrecisionScrolling() const {
   if (!CurrentlyScrollingNode())
-    return false;
-  // On Android WebView root flings are controlled by the application,
-  // so the compositor does not animate them and can't tell if they
-  // are actually animating. So assume there are none.
-  if (settings_.ignore_root_layer_flings && IsCurrentlyScrollingViewport())
     return false;
 
   if (!last_scroll_update_state_)

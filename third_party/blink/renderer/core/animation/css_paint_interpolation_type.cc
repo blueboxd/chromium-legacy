@@ -21,10 +21,7 @@ namespace {
 static bool GetColorFromPaint(const SVGPaint& paint, StyleColor& result) {
   if (!paint.IsColor())
     return false;
-  if (paint.HasCurrentColor())
-    result = StyleColor::CurrentColor();
-  else
-    result = paint.GetColor();
+  result = paint.GetColor();
   return true;
 }
 

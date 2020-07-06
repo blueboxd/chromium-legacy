@@ -119,8 +119,8 @@ void CustomProperty::ApplyValue(StyleResolverState& state,
     if (registration_) {
       // TODO(andruud): Store CSSParserContext on CSSCustomPropertyDeclaration
       // and use that.
-      const CSSParserContext* context =
-          StrictCSSParserContext(state.GetDocument().GetSecureContextMode());
+      const CSSParserContext* context = StrictCSSParserContext(
+          state.GetDocument().GetExecutionContext()->GetSecureContextMode());
       auto mode = CSSParserLocalContext::VariableMode::kTyped;
       auto local_context = CSSParserLocalContext().WithVariableMode(mode);
       CSSParserTokenRange range = data->TokenRange();

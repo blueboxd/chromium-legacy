@@ -1307,9 +1307,8 @@ void DocumentLoader::StartLoadingResponse() {
   //
   // It is important to forward all the CSP data before loading the response
   // body, otherwise some loaded content might not be blocked.
-  frame_->GetSecurityContext()
-      ->GetContentSecurityPolicy()
-      ->ReportAccumulatedHeaders(frame_);
+  frame_->DomWindow()->GetContentSecurityPolicy()->ReportAccumulatedHeaders(
+      frame_);
 
   CreateParserPostCommit();
 
@@ -1366,7 +1365,7 @@ void DocumentLoader::StartLoadingResponse() {
 }
 
 void DocumentLoader::DidInstallNewDocument(Document* document) {
-  document->BindContentSecurityPolicy();
+  frame_->DomWindow()->BindContentSecurityPolicy();
 
   if (history_item_ && IsBackForwardLoadType(load_type_))
     document->SetStateForNewControls(history_item_->GetDocumentState());

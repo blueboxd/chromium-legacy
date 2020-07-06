@@ -91,12 +91,12 @@ class ChannelMultiplexerTest : public testing::Test {
                      std::unique_ptr<P2PStreamSocket>* host_socket,
                      std::unique_ptr<P2PStreamSocket>* client_socket) {
     int counter = 2;
-    host_mux_->CreateChannel(name, base::Bind(
-        &ChannelMultiplexerTest::OnChannelConnected, base::Unretained(this),
-        host_socket, &counter));
-    client_mux_->CreateChannel(name, base::Bind(
-        &ChannelMultiplexerTest::OnChannelConnected, base::Unretained(this),
-        client_socket, &counter));
+    host_mux_->CreateChannel(
+        name, base::BindOnce(&ChannelMultiplexerTest::OnChannelConnected,
+                             base::Unretained(this), host_socket, &counter));
+    client_mux_->CreateChannel(
+        name, base::BindOnce(&ChannelMultiplexerTest::OnChannelConnected,
+                             base::Unretained(this), client_socket, &counter));
 
     base::RunLoop().Run();
 
@@ -323,10 +323,12 @@ TEST_F(ChannelMultiplexerTest, SessionFail) {
   MockConnectCallback cb1;
   MockConnectCallback cb2;
 
-  host_mux_->CreateChannel(kTestChannelName, base::Bind(
-      &MockConnectCallback::OnConnected, base::Unretained(&cb1)));
-  host_mux_->CreateChannel(kTestChannelName2, base::Bind(
-      &MockConnectCallback::OnConnected, base::Unretained(&cb2)));
+  host_mux_->CreateChannel(kTestChannelName,
+                           base::BindOnce(&MockConnectCallback::OnConnected,
+                                          base::Unretained(&cb1)));
+  host_mux_->CreateChannel(kTestChannelName2,
+                           base::BindOnce(&MockConnectCallback::OnConnected,
+                                          base::Unretained(&cb2)));
 
   EXPECT_CALL(cb1, OnConnectedPtr(nullptr))
       .Times(AtMost(1))

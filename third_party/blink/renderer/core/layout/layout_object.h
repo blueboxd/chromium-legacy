@@ -1222,13 +1222,23 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   bool IsHTMLLegendElement() const { return bitfields_.IsHTMLLegendElement(); }
 
+  // Returns true if this can be used as a rendered legend.
+  bool IsRenderedLegendCandidate() const {
+    // Note, we can't directly use LayoutObject::IsFloating() because in the
+    // case where the legend is a flex/grid item, LayoutObject::IsFloating()
+    // could get set to false, even if the legend's computed style indicates
+    // that it is floating.
+    return IsHTMLLegendElement() && !IsOutOfFlowPositioned() &&
+           !Style()->IsFloating();
+  }
+
   // Return true if this is the "rendered legend" of a fieldset. They get
   // special treatment, in that they establish a new formatting context, and
   // shrink to fit if no logical width is specified.
   //
   // This function is performance sensitive.
   inline bool IsRenderedLegend() const {
-    if (LIKELY(!IsHTMLLegendElement()))
+    if (LIKELY(!IsRenderedLegendCandidate()))
       return false;
 
     return IsRenderedLegendInternal();

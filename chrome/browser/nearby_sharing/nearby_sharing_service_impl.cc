@@ -394,7 +394,11 @@ void NearbySharingServiceImpl::StartFastInitiationAdvertising() {
 
   fast_initiation_manager_ =
       FastInitiationManager::Factory::Create(bluetooth_adapter_);
+
+  // TODO(crbug.com/1100686): Determine whether to call StartAdvertising() with
+  // kNotify or kSilent.
   fast_initiation_manager_->StartAdvertising(
+      FastInitiationManager::FastInitType::kNotify,
       base::BindOnce(
           &NearbySharingServiceImpl::OnStartFastInitiationAdvertising,
           weak_ptr_factory_.GetWeakPtr()),

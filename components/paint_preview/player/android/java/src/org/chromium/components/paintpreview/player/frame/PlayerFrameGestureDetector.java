@@ -66,6 +66,11 @@ class PlayerFrameGestureDetector
 
         if (event.getAction() == MotionEvent.ACTION_UP) {
             mPlayerFrameViewDelegate.onRelease();
+            // Propagate the release to the parent, this won't trigger any unexpected behavior as
+            // this is only an UP event.
+            if (mParentGestureDetector != null) {
+                mParentGestureDetector.onTouchEvent(event);
+            }
         }
         return mGestureDetector.onTouchEvent(event);
     }

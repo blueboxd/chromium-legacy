@@ -296,7 +296,11 @@ base::TimeDelta KeyframeModel::TrimTimeToCurrentIteration(
 
   // Calculate the iteration time
   base::TimeDelta iteration_time;
-  if (scaled_active_time - start_offset == repeated_duration &&
+  bool has_defined_time_delta =
+      (start_offset != scaled_active_time) ||
+      !(start_offset.is_max() || start_offset.is_min());
+  if (has_defined_time_delta &&
+      scaled_active_time - start_offset == repeated_duration &&
       fmod(iterations_ + iteration_start_, 1) == 0)
     iteration_time = curve_->Duration();
   else

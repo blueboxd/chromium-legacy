@@ -49,7 +49,8 @@ class FakeFastInitiationManager : public FastInitiationManager {
     std::move(on_destroy_callback_).Run();
   }
 
-  void StartAdvertising(base::OnceCallback<void()> callback,
+  void StartAdvertising(FastInitType type,
+                        base::OnceCallback<void()> callback,
                         base::OnceCallback<void()> error_callback) override {
     ++start_advertising_call_count_;
     if (should_succeed_on_start_)

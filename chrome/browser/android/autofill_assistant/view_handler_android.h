@@ -18,8 +18,7 @@ namespace autofill_assistant {
 // Manages a map of view-identifier -> android view instances.
 class ViewHandlerAndroid {
  public:
-  explicit ViewHandlerAndroid(
-      const std::map<std::string, std::string>& identifier_placeholders);
+  ViewHandlerAndroid();
   ~ViewHandlerAndroid();
   ViewHandlerAndroid(const ViewHandlerAndroid&) = delete;
   ViewHandlerAndroid& operator=(const ViewHandlerAndroid&) = delete;
@@ -28,8 +27,6 @@ class ViewHandlerAndroid {
 
   // Returns the view associated with |view_identifier| or base::nullopt if
   // there is no such view.
-  // -Placeholders in |view_identifier| of the form ${key} are automatically
-  // replaced (see |AddIdentifierPlaceholders|).
   base::Optional<base::android::ScopedJavaGlobalRef<jobject>> GetView(
       const std::string& view_identifier) const;
 
@@ -37,20 +34,8 @@ class ViewHandlerAndroid {
   void AddView(const std::string& view_identifier,
                base::android::ScopedJavaGlobalRef<jobject> jview);
 
-  // Adds a set of placeholders (overwrite if necessary). When looking up views
-  // by identifier, all occurrences of ${key} are automatically replaced by
-  // their value. Example: the current set of placeholders contains "i" -> "1".
-  // Looking up the view "view_${i}" will now actually lookup "view_1".
-  void AddIdentifierPlaceholders(
-      const std::map<std::string, std::string> placeholders);
-
-  // Removes a set of placeholders.
-  void RemoveIdentifierPlaceholders(
-      const std::map<std::string, std::string> placeholders);
-
  private:
   std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>> views_;
-  std::map<std::string, std::string> identifier_placeholders_;
   base::WeakPtrFactory<ViewHandlerAndroid> weak_ptr_factory_{this};
 };
 

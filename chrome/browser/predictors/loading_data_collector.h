@@ -48,6 +48,8 @@ struct PageRequestSummary {
   ukm::SourceId ukm_source_id;
   GURL main_frame_url;
   GURL initial_url;
+  base::TimeTicks navigation_started;
+  base::TimeTicks navigation_committed;
   base::TimeTicks first_contentful_paint;
 
   // Map of origin -> OriginRequestSummary. Only one instance of each origin

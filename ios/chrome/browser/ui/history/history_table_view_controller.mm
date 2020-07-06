@@ -67,6 +67,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeEntriesStatusWithLink,
   ItemTypeActivityIndicator,
 };
+// Name of the asset to use when history is empty.
+// TODO(crbug.com/1101842): When changing this const with the new asset, delete
+// the old asset.
+NSString* const kEmptyStateImage = @"legacy_empty_history";
 // Section identifier for the header (sync information) section.
 const NSInteger kEntriesStatusSectionIdentifier = kSectionIdentifierEnumZero;
 // Maximum number of entries to retrieve in a single query to history service.
@@ -290,7 +294,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   // If there are no results and no URLs have been loaded, report that no
   // history entries were found.
   if (results.empty() && self.empty && !self.searchInProgress) {
-    UIImage* emptyImage = [[UIImage imageNamed:@"empty_history"]
+    UIImage* emptyImage = [[UIImage imageNamed:kEmptyStateImage]
         imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     [self addEmptyTableViewWithMessage:l10n_util::GetNSString(
                                            IDS_HISTORY_NO_RESULTS)
@@ -737,7 +741,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   if ([self.tableViewModel numberOfSections] == 1) {
     self.empty = YES;
     if (!self.searchInProgress) {
-      UIImage* emptyImage = [[UIImage imageNamed:@"empty_history"]
+      UIImage* emptyImage = [[UIImage imageNamed:kEmptyStateImage]
           imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
       [self addEmptyTableViewWithMessage:l10n_util::GetNSString(
                                              IDS_HISTORY_NO_RESULTS)

@@ -20,6 +20,7 @@
 #include "ash/login/ui/login_tooltip_view.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
+#include "ash/public/cpp/login_accelerators.h"
 #include "ash/public/cpp/login_types.h"
 #include "ash/public/cpp/system_tray_focus_observer.h"
 #include "base/callback_forward.h"
@@ -116,12 +117,6 @@ class ASH_EXPORT LockContentsView
     // Display only the public account expanded view, other views in
     // LockContentsView are hidden.
     kExclusivePublicAccountExpandedView,
-  };
-
-  enum class AcceleratorAction {
-    kToggleSystemInfo,
-    kShowFeedback,
-    kShowResetScreen,
   };
 
   // Number of login attempts before a login dialog is shown. For example, if
@@ -392,7 +387,7 @@ class ASH_EXPORT LockContentsView
   void RegisterAccelerators();
 
   // Performs the specified accelerator action.
-  void PerformAction(AcceleratorAction action);
+  void PerformAction(LoginAcceleratorAction action);
 
   // Check whether the view should display the system information based on all
   // factors including policy settings, channel and Alt-V accelerator.
@@ -487,7 +482,7 @@ class ASH_EXPORT LockContentsView
   bool keyboard_shown_ = false;
 
   // Accelerators handled by login screen.
-  std::map<ui::Accelerator, AcceleratorAction> accel_map_;
+  std::map<ui::Accelerator, LoginAcceleratorAction> accel_map_;
 
   // Notifies Chrome when user activity is detected on the login screen so that
   // the auto-login timer can be reset.

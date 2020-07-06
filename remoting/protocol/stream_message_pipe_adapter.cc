@@ -34,17 +34,17 @@ void StreamMessagePipeAdapter::Start(EventHandler* event_handler) {
   event_handler_ = event_handler;
 
   writer_ = std::make_unique<BufferedSocketWriter>();
-  writer_->Start(
-      base::Bind(&P2PStreamSocket::Write, base::Unretained(socket_.get())),
-      base::BindOnce(&StreamMessagePipeAdapter::CloseOnError,
-                     base::Unretained(this)));
+  writer_->Start(base::BindRepeating(&P2PStreamSocket::Write,
+                                     base::Unretained(socket_.get())),
+                 base::BindOnce(&StreamMessagePipeAdapter::CloseOnError,
+                                base::Unretained(this)));
 
   reader_ = std::make_unique<MessageReader>();
   reader_->StartReading(socket_.get(),
-                        base::Bind(&EventHandler::OnMessageReceived,
-                                   base::Unretained(event_handler_)),
-                        base::Bind(&StreamMessagePipeAdapter::CloseOnError,
-                                   base::Unretained(this)));
+                        base::BindRepeating(&EventHandler::OnMessageReceived,
+                                            base::Unretained(event_handler_)),
+                        base::BindOnce(&StreamMessagePipeAdapter::CloseOnError,
+                                       base::Unretained(this)));
 
   event_handler_->OnMessagePipeOpen();
 }

@@ -51,10 +51,10 @@ VideoFramePump::VideoFramePump(
       keep_alive_timer_(
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(kKeepAlivePacketIntervalMs),
-          base::Bind(&VideoFramePump::SendKeepAlivePacket,
-                     base::Unretained(this))),
-      capture_scheduler_(base::Bind(&VideoFramePump::CaptureNextFrame,
-                                    base::Unretained(this))) {
+          base::BindRepeating(&VideoFramePump::SendKeepAlivePacket,
+                              base::Unretained(this))),
+      capture_scheduler_(base::BindRepeating(&VideoFramePump::CaptureNextFrame,
+                                             base::Unretained(this))) {
   DCHECK(encoder_);
   DCHECK(video_stub_);
 

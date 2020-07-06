@@ -225,6 +225,7 @@ test("chromeos_unittests") {
       "printing/ppd_metadata_manager_unittest.cc",
       "printing/ppd_metadata_matchers.h",
       "printing/ppd_metadata_parser_unittest.cc",
+      "printing/ppd_provider_v3_unittest.cc",
       "printing/printer_config_cache_unittest.cc",
     ]
   } else {

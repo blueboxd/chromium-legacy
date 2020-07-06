@@ -59,6 +59,7 @@ import org.chromium.components.offline_items_collection.FailState;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
+import org.chromium.components.offline_items_collection.OfflineItemSchedule;
 import org.chromium.components.offline_items_collection.OfflineItemState;
 import org.chromium.components.offline_items_collection.PendingState;
 import org.chromium.components.offline_items_collection.UpdateDelta;
@@ -1381,6 +1382,20 @@ public class DownloadManagerService implements DownloadController.Observer,
     }
 
     /**
+     * Change the download schedule to start the download in a different condition.
+     * @param id The id of the {@link OfflineItem} that requests the change.
+     * @param schedule The download schedule that defines when to start the download.
+     * @param isOffTheRecord Whether the download is for off the record profile.
+     */
+    public void changeSchedule(
+            final ContentId id, final OfflineItemSchedule schedule, boolean isOffTheRecord) {
+        boolean onlyOnWifi = (schedule == null) ? false : schedule.onlyOnWifi;
+        long startTimeMs = (schedule == null) ? -1 : schedule.startTimeMs;
+        DownloadManagerServiceJni.get().changeSchedule(getNativeDownloadManagerService(),
+                DownloadManagerService.this, id.id, onlyOnWifi, startTimeMs, isOffTheRecord);
+    }
+
+    /**
      * Add an Intent extra for StateAtCancel UMA to know the state of a request prior to a
      * user-initated cancel.
      * @param intent The Intent associated with the download action.
@@ -1816,6 +1831,8 @@ public class DownloadManagerService implements DownloadController.Observer,
         void renameDownload(long nativeDownloadManagerService, DownloadManagerService caller,
                 String downloadGuid, String targetName, Callback</*RenameResult*/ Integer> callback,
                 boolean isOffTheRecord);
+        void changeSchedule(long nativeDownloadManagerService, DownloadManagerService caller,
+                String downloadGuid, boolean onlyOnWifi, long startTimeMs, boolean isOffTheRecord);
         void getAllDownloads(long nativeDownloadManagerService, DownloadManagerService caller,
                 boolean isOffTheRecord);
         void checkForExternallyRemovedDownloads(long nativeDownloadManagerService,

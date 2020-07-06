@@ -189,7 +189,7 @@ std::ostream& operator<<(std::ostream& os, ArcSupportHost::Error error) {
 
 ArcSupportHost::ArcSupportHost(Profile* profile)
     : profile_(profile),
-      request_open_app_callback_(base::Bind(&RequestOpenApp)) {
+      request_open_app_callback_(base::BindRepeating(&RequestOpenApp)) {
   DCHECK(profile_);
 }
 

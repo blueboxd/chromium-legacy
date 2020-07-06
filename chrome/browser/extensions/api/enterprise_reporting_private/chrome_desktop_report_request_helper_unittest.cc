@@ -18,6 +18,10 @@
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if !defined(OS_CHROMEOS)
+#include "components/enterprise/browser/controller/fake_browser_dm_token_storage.h"
+#endif  // !defined(OS_CHROMEOS)
+
 namespace em = enterprise_management;
 
 namespace extensions {
@@ -27,6 +31,10 @@ class ChromeDesktopReportRequestGeneratorTest : public ::testing::Test {
   content::BrowserTaskEnvironment task_environment_;
 
   TestingProfile profile_;
+
+#if !defined(OS_CHROMEOS)
+  policy::FakeBrowserDMTokenStorage dm_token_storage_;
+#endif  // !defined(OS_CHROMEOS)
 };
 
 TEST_F(ChromeDesktopReportRequestGeneratorTest, OSInfo) {

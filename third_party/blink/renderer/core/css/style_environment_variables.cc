@@ -87,6 +87,24 @@ const AtomicString StyleEnvironmentVariables::GetVariableName(
     case UADefinedVariable::kKeyboardInsetRight:
       DCHECK(RuntimeEnabledFeatures::VirtualKeyboardEnabled());
       return "keyboard-inset-right";
+    case UADefinedVariable::kFoldTop:
+      DCHECK(RuntimeEnabledFeatures::CSSFoldablesEnabled());
+      return "fold-top";
+    case UADefinedVariable::kFoldRight:
+      DCHECK(RuntimeEnabledFeatures::CSSFoldablesEnabled());
+      return "fold-right";
+    case UADefinedVariable::kFoldBottom:
+      DCHECK(RuntimeEnabledFeatures::CSSFoldablesEnabled());
+      return "fold-bottom";
+    case UADefinedVariable::kFoldLeft:
+      DCHECK(RuntimeEnabledFeatures::CSSFoldablesEnabled());
+      return "fold-left";
+    case UADefinedVariable::kFoldWidth:
+      DCHECK(RuntimeEnabledFeatures::CSSFoldablesEnabled());
+      return "fold-width";
+    case UADefinedVariable::kFoldHeight:
+      DCHECK(RuntimeEnabledFeatures::CSSFoldablesEnabled());
+      return "fold-height";
     default:
       break;
   }
@@ -167,6 +185,10 @@ void StyleEnvironmentVariables::DetachFromParent() {
     parent_->children_.EraseAt(it);
 
   parent_ = nullptr;
+}
+
+String StyleEnvironmentVariables::FormatPx(int value) {
+  return String::Format("%dpx", value);
 }
 
 void StyleEnvironmentVariables::ClearForTesting() {

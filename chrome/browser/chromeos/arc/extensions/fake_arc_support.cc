@@ -35,8 +35,8 @@ namespace arc {
 FakeArcSupport::FakeArcSupport(ArcSupportHost* support_host)
     : support_host_(support_host) {
   DCHECK(support_host_);
-  support_host_->SetRequestOpenAppCallbackForTesting(
-      base::Bind(&FakeArcSupport::Open, weak_ptr_factory_.GetWeakPtr()));
+  support_host_->SetRequestOpenAppCallbackForTesting(base::BindRepeating(
+      &FakeArcSupport::Open, weak_ptr_factory_.GetWeakPtr()));
 }
 
 FakeArcSupport::~FakeArcSupport() {

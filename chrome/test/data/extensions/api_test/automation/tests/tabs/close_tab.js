@@ -5,7 +5,7 @@
 var allTests = [
   function testCloseTab() {
     getUrlFromConfig('index.html', function(url) {
-      chrome.tabs.create({'url': url}, function(tab) {
+      createTabAndWaitUntilLoaded(url, function(tab) {
         chrome.automation.getTree(function(rootNode) {
           function doTestCloseTab() {
             var button = rootNode.find({role: 'button'});

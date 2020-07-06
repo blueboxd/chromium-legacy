@@ -29,7 +29,7 @@
     Exposed=Window,
     DoNotCheckConstants,
     RuntimeEnabled=AppCache,
-    SecureContext=RestrictAppCacheToSecureContexts
+    SecureContext
 ] interface ApplicationCache : EventTarget {
     // update status
     const unsigned short UNCACHED = 0;

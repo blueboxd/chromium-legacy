@@ -393,6 +393,7 @@ source_set("android_video_decode_accelerator_unittests") {
       "android/codec_wrapper_unittest.cc",
       "android/fake_codec_allocator.cc",
       "android/fake_codec_allocator.h",
+      "android/frame_info_helper_unittest.cc",
       "android/maybe_render_early_manager_unittest.cc",
       "android/media_codec_video_decoder_unittest.cc",
       "android/mock_android_video_surface_chooser.cc",

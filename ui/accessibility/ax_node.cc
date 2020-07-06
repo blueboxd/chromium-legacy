@@ -356,6 +356,12 @@ AXNode* AXNode::GetNextSibling() const {
 }
 
 bool AXNode::IsText() const {
+  // In Legacy Layout, a list marker has no children and is thus represented on
+  // all platforms as a leaf node that exposes the marker itself, i.e., it forms
+  // part of the AX tree's text representation. In contrast, in Layout NG, a
+  // list marker has a static text child.
+  if (data().role == ax::mojom::Role::kListMarker)
+    return !children().size();
   return ui::IsText(data().role);
 }
 

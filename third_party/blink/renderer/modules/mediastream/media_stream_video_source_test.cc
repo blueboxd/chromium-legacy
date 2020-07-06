@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/modules/mediastream/mock_media_stream_video_sink.h"
 #include "third_party/blink/renderer/modules/mediastream/mock_media_stream_video_source.h"
 #include "third_party/blink/renderer/modules/mediastream/video_track_adapter_settings.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -40,44 +41,37 @@ class MediaStreamVideoSourceTest : public testing::Test {
         number_of_failed_constraints_applied_(0),
         result_(mojom::MediaStreamRequestResult::OK),
         result_name_(""),
-        mock_source_(new MockMediaStreamVideoSource(
+        mock_stream_video_source_(new MockMediaStreamVideoSource(
             media::VideoCaptureFormat(gfx::Size(1280, 720),
                                       1000.0,
                                       media::PIXEL_FORMAT_I420),
             false)) {
-    mock_source_->DisableStopForRestart();
-    media::VideoCaptureFormats formats;
-    formats.push_back(media::VideoCaptureFormat(gfx::Size(1280, 720), 30,
-                                                media::PIXEL_FORMAT_I420));
-    formats.push_back(media::VideoCaptureFormat(gfx::Size(640, 480), 30,
-                                                media::PIXEL_FORMAT_I420));
-    formats.push_back(media::VideoCaptureFormat(gfx::Size(352, 288), 30,
-                                                media::PIXEL_FORMAT_I420));
-    formats.push_back(media::VideoCaptureFormat(gfx::Size(320, 240), 30,
-                                                media::PIXEL_FORMAT_I420));
-    web_source_.Initialize(WebString::FromASCII("dummy_source_id"),
-                           WebMediaStreamSource::kTypeVideo,
-                           WebString::FromASCII("dummy_source_name"),
-                           false /* remote */);
-    web_source_.SetPlatformSource(base::WrapUnique(mock_source_));
-    ON_CALL(*mock_source_, SupportsEncodedOutput).WillByDefault(Return(true));
+    mock_stream_video_source_->DisableStopForRestart();
+    stream_source_ = MakeGarbageCollected<MediaStreamSource>(
+        String::FromUTF8("dummy_source_id"), MediaStreamSource::kTypeVideo,
+        String::FromUTF8("dummy_source_name"), false /* remote */);
+    mock_stream_video_source_->SetOwner(stream_source_);
+    stream_source_->SetPlatformSource(
+        base::WrapUnique(mock_stream_video_source_));
+    ON_CALL(*mock_stream_video_source_, SupportsEncodedOutput)
+        .WillByDefault(Return(true));
   }
 
   void TearDown() override {
-    web_source_.Reset();
+    stream_source_ = nullptr;
     WebHeap::CollectAllGarbageForTesting();
   }
 
   MOCK_METHOD0(MockNotification, void());
 
  protected:
-  MediaStreamVideoSource* source() { return mock_source_; }
+  MediaStreamVideoSource* source() { return mock_stream_video_source_; }
 
-  // Create a track that's associated with |web_source_|.
+  // Create a track that's associated with |stream_source_|.
   WebMediaStreamTrack CreateTrack(const std::string& id) {
     bool enabled = true;
     return MediaStreamVideoTrack::CreateVideoTrack(
-        mock_source_,
+        mock_stream_video_source_,
         WTF::Bind(&MediaStreamVideoSourceTest::OnConstraintsApplied,
                   base::Unretained(this)),
         enabled);
@@ -91,8 +85,9 @@ class MediaStreamVideoSourceTest : public testing::Test {
       double min_frame_rate) {
     bool enabled = true;
     return MediaStreamVideoTrack::CreateVideoTrack(
-        mock_source_, adapter_settings, noise_reduction, is_screencast,
-        min_frame_rate, base::nullopt, base::nullopt, base::nullopt, false,
+        mock_stream_video_source_, adapter_settings, noise_reduction,
+        is_screencast, min_frame_rate, base::nullopt, base::nullopt,
+        base::nullopt, false,
         WTF::Bind(&MediaStreamVideoSourceTest::OnConstraintsApplied,
                   base::Unretained(this)),
         enabled);
@@ -113,7 +108,7 @@ class MediaStreamVideoSourceTest : public testing::Test {
         base::Optional<bool>(), false, 0.0);
 
     EXPECT_EQ(0, NumberOfSuccessConstraintsCallbacks());
-    mock_source_->StartMockedSource();
+    mock_stream_video_source_->StartMockedSource();
     // Once the source has started successfully we expect that the
     // ConstraintsOnceCallback in WebPlatformMediaStreamSource::AddTrack
     // completes.
@@ -132,9 +127,11 @@ class MediaStreamVideoSourceTest : public testing::Test {
   mojom::MediaStreamRequestResult error_type() const { return result_; }
   WebString error_name() const { return result_name_; }
 
-  MockMediaStreamVideoSource* mock_source() { return mock_source_; }
+  MockMediaStreamVideoSource* mock_source() {
+    return mock_stream_video_source_;
+  }
 
-  const WebMediaStreamSource& web_source() { return web_source_; }
+  MediaStreamSource* stream_source() { return stream_source_.Get(); }
 
   void TestSourceCropFrame(int capture_width,
                            int capture_height,
@@ -242,7 +239,7 @@ class MediaStreamVideoSourceTest : public testing::Test {
   void OnConstraintsApplied(WebPlatformMediaStreamSource* source,
                             mojom::MediaStreamRequestResult result,
                             const WebString& result_name) {
-    ASSERT_EQ(source, web_source().GetPlatformSource());
+    ASSERT_EQ(source, stream_source()->GetPlatformSource());
 
     if (result == mojom::MediaStreamRequestResult::OK) {
       ++number_of_successful_constraints_applied_;
@@ -253,8 +250,8 @@ class MediaStreamVideoSourceTest : public testing::Test {
     }
 
     if (!track_to_release_.IsNull()) {
-      mock_source_ = nullptr;
-      web_source_.Reset();
+      mock_stream_video_source_ = nullptr;
+      stream_source_ = nullptr;
       track_to_release_.Reset();
     }
   }
@@ -264,9 +261,9 @@ class MediaStreamVideoSourceTest : public testing::Test {
   int number_of_failed_constraints_applied_;
   mojom::MediaStreamRequestResult result_;
   WebString result_name_;
-  WebMediaStreamSource web_source_;
-  // |mock_source_| is owned by |web_source_|.
-  MockMediaStreamVideoSource* mock_source_;
+  Persistent<MediaStreamSource> stream_source_;
+  // |mock_stream_video_source_| is owned by |stream_source_|.
+  MockMediaStreamVideoSource* mock_stream_video_source_;
 };
 
 TEST_F(MediaStreamVideoSourceTest, AddTrackAndStartSource) {

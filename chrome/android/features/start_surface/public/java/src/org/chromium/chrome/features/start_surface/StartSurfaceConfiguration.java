@@ -62,12 +62,7 @@ public class StartSurfaceConfiguration {
      * @return Whether the Start Surface SinglePane is enabled.
      */
     public static boolean isStartSurfaceSinglePaneEnabled() {
-        // TODO(crbug.com/1062013): The values cached to START_SURFACE_SINGLE_PANE_ENABLED_KEY
-        // should be honored for some time. Remove only after M85 to be safe.
-        return isStartSurfaceEnabled()
-                && (START_SURFACE_VARIATION.getValue().equals("single")
-                        || SharedPreferencesManager.getInstance().readBoolean(
-                                ChromePreferenceKeys.START_SURFACE_SINGLE_PANE_ENABLED_KEY, false));
+        return isStartSurfaceEnabled() && START_SURFACE_VARIATION.getValue().equals("single");
     }
 
     /**

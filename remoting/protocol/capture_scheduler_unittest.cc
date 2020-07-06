@@ -28,8 +28,8 @@ class CaptureSchedulerTest : public testing::Test {
   CaptureSchedulerTest() : capture_called_(false) {}
 
   void InitScheduler() {
-    scheduler_.reset(new CaptureScheduler(
-        base::Bind(&CaptureSchedulerTest::DoCapture, base::Unretained(this))));
+    scheduler_.reset(new CaptureScheduler(base::BindRepeating(
+        &CaptureSchedulerTest::DoCapture, base::Unretained(this))));
     scheduler_->set_minimum_interval(
         base::TimeDelta::FromMilliseconds(kMinumumFrameIntervalMs));
     scheduler_->SetTickClockForTest(&tick_clock_);

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_ENTERPRISE_REPORTING_BROWSER_REPORT_GENERATOR_DESKTOP_H_
 #define CHROME_BROWSER_ENTERPRISE_REPORTING_BROWSER_REPORT_GENERATOR_DESKTOP_H_
 
-#include "chrome/browser/enterprise/reporting/browser_report_generator.h"
+#include "components/enterprise/browser/reporting/browser_report_generator.h"
 
 #include <memory>
 #include <vector>

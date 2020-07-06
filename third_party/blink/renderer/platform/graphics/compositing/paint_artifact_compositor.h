@@ -138,8 +138,6 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
 
   // Updates the layer tree to match the provided paint artifact.
   //
-  // Populates |animation_element_ids| with the CompositorElementId of all
-  // animations for which we saw a paint chunk and created a layer.
   // |scroll_translation_nodes| is the complete set of scroll nodes, including
   // noncomposited nodes, and is used for Scroll Unification to generate scroll
   // nodes for noncomposited scrollers to complete the compositor's scroll

@@ -37,14 +37,14 @@ class HttpEquiv {
                                            const AtomicString& content);
   static void ProcessHttpEquivOriginTrial(LocalDOMWindow*,
                                           const AtomicString& content);
-  static void ProcessHttpEquivRefresh(Document&,
+  static void ProcessHttpEquivRefresh(LocalDOMWindow*,
                                       const AtomicString& content,
                                       Element*);
   static void ProcessHttpEquivSetCookie(Document&,
                                         const AtomicString& content,
                                         Element*);
   static void ProcessHttpEquivContentSecurityPolicy(
-      Document&,
+      LocalDOMWindow*,
       const AtomicString& equiv,
       const AtomicString& content);
   static void ProcessHttpEquivAcceptCH(Document&, const AtomicString& content);

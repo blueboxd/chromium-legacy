@@ -110,6 +110,13 @@ class ConsumerHost : public perfetto::Consumer, public mojom::ConsumerHost {
     base::Optional<std::set<base::ProcessId>> pending_enable_tracing_ack_pids_;
     base::OneShotTimer enable_tracing_ack_timer_;
 
+    struct DataSourceHandle : public std::pair<std::string, std::string> {
+      using std::pair<std::string, std::string>::pair;
+      const std::string& producer_name() const { return first; }
+      const std::string& data_source_name() const { return second; }
+    };
+    std::map<DataSourceHandle, bool /*started*/> data_source_states_;
+
     SEQUENCE_CHECKER(sequence_checker_);
     base::WeakPtrFactory<TracingSession> weak_factory_{this};
 

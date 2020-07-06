@@ -86,19 +86,6 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
-  // Send an overlay promotion hint to all resources that requested it via
-  // |requestor_set|.  |promotable_hints| contains all the resources that should
-  // be told that they're promotable.  Others will be told that they're not.
-  //
-  // We don't use |wants_promotion_hints_set_| in place of |requestor_set|,
-  // since we might have resources that aren't used for drawing.  Sending a hint
-  // for a resource that wasn't even considered for overlay would be misleading
-  // to the requestor; the resource might be overlayable except that nobody
-  // tried to do it.
-  void SendPromotionHints(
-      const std::map<ResourceId, gfx::RectF>& promotion_hints,
-      const ResourceIdSet& requestor_set);
-
 #if defined(OS_ANDROID)
   // Indicates if this resource is backed by an Android SurfaceTexture, and thus
   // can't really be promoted to an overlay.

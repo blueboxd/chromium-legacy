@@ -110,7 +110,9 @@ TEST_F(PostSaveCompromisedBubbleControllerTest, MoreToFix_Click) {
   base::HistogramTester histogram_tester;
   CreateController(password_manager::ui::PASSWORD_UPDATED_MORE_TO_FIX);
 
-  EXPECT_CALL(*delegate(), NavigateToPasswordCheckup());
+  EXPECT_CALL(*delegate(),
+              NavigateToPasswordCheckup(
+                  password_manager::PasswordCheckReferrer::kMoreToFixBubble));
   controller()->OnAccepted();
   ResetController();
   histogram_tester.ExpectUniqueSample(kCheckedHistogram, true, 1);
@@ -148,7 +150,9 @@ TEST_F(PostSaveCompromisedBubbleControllerTest, Unsafe_Click) {
   base::HistogramTester histogram_tester;
   CreateController(password_manager::ui::PASSWORD_UPDATED_UNSAFE_STATE);
 
-  EXPECT_CALL(*delegate(), NavigateToPasswordCheckup());
+  EXPECT_CALL(*delegate(),
+              NavigateToPasswordCheckup(
+                  password_manager::PasswordCheckReferrer::kUnsafeStateBubble));
   controller()->OnAccepted();
   ResetController();
   histogram_tester.ExpectUniqueSample(kCheckedHistogram, true, 1);

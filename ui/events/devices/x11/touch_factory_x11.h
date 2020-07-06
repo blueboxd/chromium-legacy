@@ -18,10 +18,11 @@
 #include "ui/events/event_constants.h"
 #include "ui/gfx/sequential_id_generator.h"
 #include "ui/gfx/x/x11_types.h"
+#include "ui/gfx/x/xinput.h"
 
 namespace base {
-
-template <typename T> struct DefaultSingletonTraits;
+template <typename T>
+struct DefaultSingletonTraits;
 }
 
 typedef unsigned long Cursor;
@@ -47,7 +48,8 @@ class EVENTS_DEVICES_X11_EXPORT TouchFactory {
 
   // Checks whether an XI2 event should be processed or not (i.e. if the event
   // originated from a device we are interested in).
-  bool ShouldProcessXI2Event(XEvent* xevent);
+  bool ShouldProcessDeviceEvent(const x11::Input::DeviceEvent& event);
+  bool ShouldProcessCrossingEvent(const x11::Input::CrossingEvent& event);
 
   // Setup an X Window for XInput2 events.
   void SetupXI2ForXWindow(x11::Window window);
@@ -87,7 +89,7 @@ class EVENTS_DEVICES_X11_EXPORT TouchFactory {
   bool IsTouchDevicePresent();
 
   // Pairs of <vendor id, product id> of external touch screens.
-  const std::set<std::pair<int, int> >& GetTouchscreenIds() const {
+  const std::set<std::pair<int, int>>& GetTouchscreenIds() const {
     return touchscreen_ids_;
   }
 
@@ -112,6 +114,8 @@ class EVENTS_DEVICES_X11_EXPORT TouchFactory {
   friend struct base::DefaultSingletonTraits<TouchFactory>;
 
   void CacheTouchscreenIds(int id);
+
+  bool ShouldProcessEventForDevice(uint16_t device_id) const;
 
   // NOTE: To keep track of touch devices, we currently maintain a lookup table
   // to quickly decide if a device is a touch device or not. We also maintain a
@@ -141,7 +145,7 @@ class EVENTS_DEVICES_X11_EXPORT TouchFactory {
   std::map<int, TouchDeviceDetails> touch_device_list_;
 
   // Touch screen <vid, pid>s.
-  std::set<std::pair<int, int> > touchscreen_ids_;
+  std::set<std::pair<int, int>> touchscreen_ids_;
 
   // Device ID of the virtual core keyboard.
   int virtual_core_keyboard_device_;

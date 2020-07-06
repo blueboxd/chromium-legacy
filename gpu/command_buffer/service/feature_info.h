@@ -249,6 +249,9 @@ class GPU_GLES2_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
   void InitializeFeatures();
   void InitializeFloatAndHalfFloatFeatures(const gfx::ExtensionSet& extensions);
 
+  void EnableANGLEInstancedArrayIfPossible(const gfx::ExtensionSet& extensions);
+  void EnableWEBGLMultiDrawIfPossible(const gfx::ExtensionSet& extensions);
+
   bool initialized_ = false;
 
   Validators validators_;

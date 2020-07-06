@@ -1078,6 +1078,9 @@ extern const char kSafetyTipDescription[];
 extern const char kSameSiteByDefaultCookiesName[];
 extern const char kSameSiteByDefaultCookiesDescription[];
 
+extern const char kSchemefulSameSiteName[];
+extern const char kSchemefulSameSiteDescription[];
+
 extern const char kScrollableTabStripName[];
 extern const char kScrollableTabStripDescription[];
 
@@ -1456,8 +1459,8 @@ extern const char kContentIndexingNTPDescription[];
 extern const char kContextMenuCopyImageName[];
 extern const char kContextMenuCopyImageDescription[];
 
-extern const char kContextMenuPerformanceInfoName[];
-extern const char kContextMenuPerformanceInfoDescription[];
+extern const char kContextMenuPerformanceInfoAndRemoteHintFetchingName[];
+extern const char kContextMenuPerformanceInfoAndRemoteHintFetchingDescription[];
 
 extern const char kContextualSearchDebugName[];
 extern const char kContextualSearchDebugDescription[];

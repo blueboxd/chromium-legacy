@@ -381,12 +381,12 @@ class AddBookmarkFromAPITask : public HistoryProviderTask {
       : HistoryProviderTask(service, cancelable_tracker) {}
 
   history::URLID Run(const history::HistoryAndBookmarkRow& row) {
-    RunAsyncRequestOnUIThreadBlocking(
-        base::BindOnce(&AndroidHistoryProviderService::InsertHistoryAndBookmark,
-                       base::Unretained(service()), row,
-                       base::Bind(&AddBookmarkFromAPITask::OnBookmarkInserted,
-                                  base::Unretained(this)),
-                       cancelable_tracker()));
+    RunAsyncRequestOnUIThreadBlocking(base::BindOnce(
+        &AndroidHistoryProviderService::InsertHistoryAndBookmark,
+        base::Unretained(service()), row,
+        base::BindOnce(&AddBookmarkFromAPITask::OnBookmarkInserted,
+                       base::Unretained(this)),
+        cancelable_tracker()));
     return result_;
   }
 
@@ -419,8 +419,8 @@ class QueryBookmarksFromAPITask : public HistoryProviderTask {
         &AndroidHistoryProviderService::QueryHistoryAndBookmarks,
         base::Unretained(service()), projections, selection, selection_args,
         sort_order,
-        base::Bind(&QueryBookmarksFromAPITask::OnBookmarksQueried,
-                   base::Unretained(this)),
+        base::BindOnce(&QueryBookmarksFromAPITask::OnBookmarksQueried,
+                       base::Unretained(this)),
         cancelable_tracker()));
     return result_;
   }
@@ -449,8 +449,8 @@ class UpdateBookmarksFromAPITask : public HistoryProviderTask {
     RunAsyncRequestOnUIThreadBlocking(base::BindOnce(
         &AndroidHistoryProviderService::UpdateHistoryAndBookmarks,
         base::Unretained(service()), row, selection, selection_args,
-        base::Bind(&UpdateBookmarksFromAPITask::OnBookmarksUpdated,
-                   base::Unretained(this)),
+        base::BindOnce(&UpdateBookmarksFromAPITask::OnBookmarksUpdated,
+                       base::Unretained(this)),
         cancelable_tracker()));
     return result_;
   }
@@ -478,8 +478,8 @@ class RemoveBookmarksFromAPITask : public HistoryProviderTask {
     RunAsyncRequestOnUIThreadBlocking(base::BindOnce(
         &AndroidHistoryProviderService::DeleteHistoryAndBookmarks,
         base::Unretained(service()), selection, selection_args,
-        base::Bind(&RemoveBookmarksFromAPITask::OnBookmarksRemoved,
-                   base::Unretained(this)),
+        base::BindOnce(&RemoveBookmarksFromAPITask::OnBookmarksRemoved,
+                       base::Unretained(this)),
         cancelable_tracker()));
     return result_;
   }
@@ -504,12 +504,12 @@ class RemoveHistoryFromAPITask : public HistoryProviderTask {
 
   int Run(const std::string& selection,
           const std::vector<base::string16>& selection_args) {
-    RunAsyncRequestOnUIThreadBlocking(
-        base::BindOnce(&AndroidHistoryProviderService::DeleteHistory,
-                       base::Unretained(service()), selection, selection_args,
-                       base::Bind(&RemoveHistoryFromAPITask::OnHistoryRemoved,
-                                  base::Unretained(this)),
-                       cancelable_tracker()));
+    RunAsyncRequestOnUIThreadBlocking(base::BindOnce(
+        &AndroidHistoryProviderService::DeleteHistory,
+        base::Unretained(service()), selection, selection_args,
+        base::BindOnce(&RemoveHistoryFromAPITask::OnHistoryRemoved,
+                       base::Unretained(this)),
+        cancelable_tracker()));
     return result_;
   }
 
@@ -584,8 +584,8 @@ class AddSearchTermFromAPITask : public SearchTermTask {
     BuildSearchRow(&internal_row);
     service()->InsertSearchTerm(
         internal_row,
-        base::Bind(&AddSearchTermFromAPITask::OnSearchTermInserted,
-                   base::Unretained(this)),
+        base::BindOnce(&AddSearchTermFromAPITask::OnSearchTermInserted,
+                       base::Unretained(this)),
         cancelable_tracker());
   }
 
@@ -618,8 +618,8 @@ class QuerySearchTermsFromAPITask : public SearchTermTask {
         &AndroidHistoryProviderService::QuerySearchTerms,
         base::Unretained(service()), projections, selection, selection_args,
         sort_order,
-        base::Bind(&QuerySearchTermsFromAPITask::OnSearchTermsQueried,
-                   base::Unretained(this)),
+        base::BindOnce(&QuerySearchTermsFromAPITask::OnSearchTermsQueried,
+                       base::Unretained(this)),
         cancelable_tracker()));
     return result_;
   }
@@ -662,11 +662,9 @@ class UpdateSearchTermsFromAPITask : public SearchTermTask {
     history::SearchRow internal_row = row;
     BuildSearchRow(&internal_row);
     service()->UpdateSearchTerms(
-        internal_row,
-        selection,
-        selection_args,
-        base::Bind(&UpdateSearchTermsFromAPITask::OnSearchTermsUpdated,
-                   base::Unretained(this)),
+        internal_row, selection, selection_args,
+        base::BindOnce(&UpdateSearchTermsFromAPITask::OnSearchTermsUpdated,
+                       base::Unretained(this)),
         cancelable_tracker());
   }
 
@@ -693,8 +691,8 @@ class RemoveSearchTermsFromAPITask : public SearchTermTask {
     RunAsyncRequestOnUIThreadBlocking(base::BindOnce(
         &AndroidHistoryProviderService::DeleteSearchTerms,
         base::Unretained(service()), selection, selection_args,
-        base::Bind(&RemoveSearchTermsFromAPITask::OnSearchTermsDeleted,
-                   base::Unretained(this)),
+        base::BindOnce(&RemoveSearchTermsFromAPITask::OnSearchTermsDeleted,
+                       base::Unretained(this)),
         cancelable_tracker()));
     return result_;
   }

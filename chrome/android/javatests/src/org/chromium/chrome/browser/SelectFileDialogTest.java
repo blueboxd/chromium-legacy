@@ -12,6 +12,7 @@ import android.provider.MediaStore;
 
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -79,15 +80,11 @@ public class SelectFileDialogTest {
         }
     }
 
-    private class IntentSentCriteria extends Criteria {
-        public IntentSentCriteria() {
-            super("SelectFileDialog never sent an intent.");
-        }
-
-        @Override
-        public boolean isSatisfied() {
-            return mActivityWindowAndroidForTest.lastIntent != null;
-        }
+    private void verifyIntentSent() {
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat("SelectFileDialog never sent an intent.",
+                    mActivityWindowAndroidForTest.lastIntent, Matchers.notNullValue());
+        });
     }
 
     private WebContents mWebContents;
@@ -120,7 +117,7 @@ public class SelectFileDialogTest {
     public void testSelectFileAndCancelRequest() throws Throwable {
         {
             DOMUtils.clickNode(mWebContents, "input_file");
-            CriteriaHelper.pollInstrumentationThread(new IntentSentCriteria());
+            verifyIntentSent();
             Assert.assertEquals(
                     Intent.ACTION_CHOOSER, mActivityWindowAndroidForTest.lastIntent.getAction());
             Intent contentIntent =
@@ -133,7 +130,7 @@ public class SelectFileDialogTest {
 
         {
             DOMUtils.clickNode(mWebContents, "input_text");
-            CriteriaHelper.pollInstrumentationThread(new IntentSentCriteria());
+            verifyIntentSent();
             Assert.assertEquals(
                     Intent.ACTION_CHOOSER, mActivityWindowAndroidForTest.lastIntent.getAction());
             Intent contentIntent =
@@ -146,7 +143,7 @@ public class SelectFileDialogTest {
 
         {
             DOMUtils.clickNode(mWebContents, "input_any");
-            CriteriaHelper.pollInstrumentationThread(new IntentSentCriteria());
+            verifyIntentSent();
             Assert.assertEquals(
                     Intent.ACTION_CHOOSER, mActivityWindowAndroidForTest.lastIntent.getAction());
             Intent contentIntent =
@@ -159,7 +156,7 @@ public class SelectFileDialogTest {
 
         {
             DOMUtils.clickNode(mWebContents, "input_file_multiple");
-            CriteriaHelper.pollInstrumentationThread(new IntentSentCriteria());
+            verifyIntentSent();
             Assert.assertEquals(
                     Intent.ACTION_CHOOSER, mActivityWindowAndroidForTest.lastIntent.getAction());
             Intent contentIntent =
@@ -174,13 +171,13 @@ public class SelectFileDialogTest {
         }
 
         DOMUtils.clickNode(mWebContents, "input_image");
-        CriteriaHelper.pollInstrumentationThread(new IntentSentCriteria());
+        verifyIntentSent();
         Assert.assertEquals(MediaStore.ACTION_IMAGE_CAPTURE,
                 mActivityWindowAndroidForTest.lastIntent.getAction());
         resetActivityWindowAndroidForTest();
 
         DOMUtils.clickNode(mWebContents, "input_audio");
-        CriteriaHelper.pollInstrumentationThread(new IntentSentCriteria());
+        verifyIntentSent();
         Assert.assertEquals(MediaStore.Audio.Media.RECORD_SOUND_ACTION,
                 mActivityWindowAndroidForTest.lastIntent.getAction());
         resetActivityWindowAndroidForTest();

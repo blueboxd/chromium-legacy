@@ -48,7 +48,7 @@ public class PromoCardViewRenderTest extends DummyUiActivityTestCase {
             new NightModeTestUtils.NightModeParams().getParameters();
 
     @Rule
-    public RenderTestRule mRenderTestRule = new RenderTestRule();
+    public RenderTestRule mRenderTestRule = RenderTestRule.Builder.withPublicCorpus().build();
 
     public PromoCardViewRenderTest(boolean nightModeEnabled) {
         NightModeTestUtils.setUpNightModeForDummyUiActivity(nightModeEnabled);

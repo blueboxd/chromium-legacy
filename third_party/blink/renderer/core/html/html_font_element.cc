@@ -186,7 +186,7 @@ void HTMLFontElement::CollectStyleForPresentationAttribute(
     AddHTMLColorToStyle(style, CSSPropertyID::kColor, value);
   } else if (name == html_names::kFaceAttr && !value.IsEmpty()) {
     if (const CSSValueList* font_face_value = CreateFontFaceValueWithPool(
-            value, GetDocument().GetSecureContextMode())) {
+            value, GetExecutionContext()->GetSecureContextMode())) {
       style->SetProperty(
           CSSPropertyValue(GetCSSPropertyFontFamily(), *font_face_value));
     }

@@ -868,6 +868,40 @@ class GenXproto(FileWriter):
             for field_type_name in self.declare_field(field):
                 self.write('%s %s{};' % field_type_name)
 
+    # This tries to match XEvent.xany.window, except the window will be
+    # x11::Window::None for events that don't have a window, unlike the XEvent
+    # union which will get whatever data happened to be at the offset of
+    # xany.window.
+    def get_window_field(self, event):
+        # The window field is not stored at any particular offset in the event,
+        # so get a list of all the window fields.
+        WINDOW_TYPES = set([
+            ('xcb', 'WINDOW'),
+            ('xcb', 'DRAWABLE'),
+            ('xcb', 'Glx', 'DRAWABLE'),
+        ])
+        # The window we want may not be the first in the list if there are
+        # multiple windows. This is a list of all possible window names,
+        # ordered from highest to lowest priority.
+        WINDOW_NAMES = [
+            'event',
+            'window',
+            'request_window',
+            'owner',
+        ]
+        windows = set([
+            field.field_name for field in event.fields
+            if field.field_type in WINDOW_TYPES
+        ])
+        if len(windows) == 0:
+            return ''
+        if len(windows) == 1:
+            return list(windows)[0]
+        for name in WINDOW_NAMES:
+            if name in windows:
+                return name
+        assert False
+
     def declare_event(self, event, name):
         event_name = name[-1] + 'Event'
         self.undef(event_name)
@@ -885,6 +919,11 @@ class GenXproto(FileWriter):
                         self.write('%s = %s,' % (opname, opcode))
             self.write('bool send_event{};')
             self.declare_fields(event.fields)
+            self.write()
+            window_field = self.get_window_field(event)
+            ret = ('reinterpret_cast<x11::Window*>(&%s)' %
+                   window_field if window_field else 'nullptr')
+            self.write('x11::Window* GetWindow() { return %s; }' % ret)
         self.write()
 
     def declare_container(self, struct, struct_name):
@@ -1544,6 +1583,7 @@ class GenReadEvent(FileWriter):
                     'event_->opcode', opcode))
             self.write('event_->send_event = send_event;')
             self.write('event->event_ = event_;')
+            self.write('event->window_ = event_->GetWindow();')
             self.write('return;')
         self.write()
 

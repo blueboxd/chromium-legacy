@@ -46,9 +46,10 @@ void ThirdPartyClientAuthenticator::ProcessTokenMessage(
 
   fetch_token_callback_.Run(
       token_url, token_scope,
-      base::Bind(&ThirdPartyClientAuthenticator::OnThirdPartyTokenFetched,
-                 weak_factory_.GetWeakPtr(),
-                 base::Passed(std::move(resume_callback))));
+      base::BindRepeating(
+          &ThirdPartyClientAuthenticator::OnThirdPartyTokenFetched,
+          weak_factory_.GetWeakPtr(),
+          base::Passed(std::move(resume_callback))));
 }
 
 void ThirdPartyClientAuthenticator::AddTokenElements(

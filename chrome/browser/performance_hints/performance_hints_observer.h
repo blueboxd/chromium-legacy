@@ -35,17 +35,6 @@ class PerformanceHint;
 
 class GURL;
 
-// If enabled, PerformanceHintsObserver will be added as a tab helper and will
-// fetch performance hints.
-extern const base::Feature kPerformanceHintsObserver;
-// If enabled, hints of PERFORMANCE_UNKNOWN will be overridden to
-// PERFORMANCE_FAST. This does not affect the value that is recorded via UMA.
-extern const base::Feature kPerformanceHintsTreatUnknownAsFast;
-// If enabled, PerformanceHintsRewriteHandler will be used to detect rewritten
-// URLs (specified by the rewrite_config param) and revert them to their
-// original form.
-extern const base::Feature kPerformanceHintsHandleRewrites;
-
 // Provides an interface to access PerformanceHints for the associated
 // WebContents and links within it.
 class PerformanceHintsObserver

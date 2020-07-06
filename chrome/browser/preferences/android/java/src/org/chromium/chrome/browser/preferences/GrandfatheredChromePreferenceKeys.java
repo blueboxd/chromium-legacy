@@ -170,7 +170,6 @@ public class GrandfatheredChromePreferenceKeys {
                 ChromePreferenceKeys.SIGNIN_PROMO_PERSONALIZED_DECLINED,
                 ChromePreferenceKeys.SIGNIN_PROMO_SETTINGS_PERSONALIZED_DISMISSED,
                 ChromePreferenceKeys.SNAPSHOT_DATABASE_REMOVED,
-                ChromePreferenceKeys.START_SURFACE_SINGLE_PANE_ENABLED_KEY,
                 ChromePreferenceKeys.SURVEY_DATE_LAST_ROLLED,
                 ChromePreferenceKeys.SURVEY_INFO_BAR_DISPLAYED,
                 ChromePreferenceKeys.SYNC_SESSIONS_UUID,

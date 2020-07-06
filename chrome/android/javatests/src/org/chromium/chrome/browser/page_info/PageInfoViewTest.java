@@ -70,7 +70,7 @@ public class PageInfoViewTest {
 
     @Rule
     public RenderTestRule mRenderTestRule =
-            new RenderTestRule.SkiaGoldBuilder().setRevision(3).build();
+            RenderTestRule.Builder.withPublicCorpus().setRevision(3).build();
 
     private boolean mIsSystemLocationSettingEnabled = true;
 

@@ -198,8 +198,8 @@ class JingleSessionTest : public testing::Test {
 
     host_server_.reset(new JingleSessionManager(host_signal_strategy_.get()));
     host_server_->AcceptIncoming(
-        base::Bind(&MockSessionManagerListener::OnIncomingSession,
-                   base::Unretained(&host_server_listener_)));
+        base::BindRepeating(&MockSessionManagerListener::OnIncomingSession,
+                            base::Unretained(&host_server_listener_)));
 
     std::unique_ptr<AuthenticatorFactory> factory(
         new FakeHostAuthenticatorFactory(messages_till_start, auth_config));
@@ -426,7 +426,7 @@ TEST_F(JingleSessionTest, ConnectWithOutOfOrderIqsDestroyOnFirstMessage) {
   host_transport_.send_transport_info_callback().Run(CreateTransportInfo("2"));
 
   // Destroy the session as soon as the first message is received.
-  client_transport_.set_on_message_callback(base::Bind(
+  client_transport_.set_on_message_callback(base::BindRepeating(
       &JingleSessionTest::DeleteClientSession, base::Unretained(this)));
 
   base::RunLoop().RunUntilIdle();
@@ -580,7 +580,7 @@ TEST_F(JingleSessionTest, TransportInfoDuringAuthentication) {
   EXPECT_TRUE(client_transport_.received_messages().empty());
 
   // Destroy the session as soon as the first message is received.
-  client_transport_.set_on_message_callback(base::Bind(
+  client_transport_.set_on_message_callback(base::BindRepeating(
       &JingleSessionTest::DeleteClientSession, base::Unretained(this)));
 
   // Resume authentication.

@@ -8,6 +8,7 @@ import android.support.test.InstrumentationRegistry;
 
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -28,8 +29,6 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.PageTransition;
 
-import java.util.concurrent.Callable;
-
 /**
  * Test integration with the SafeBrowsingApiHandler.
  */
@@ -48,16 +47,19 @@ public final class SafeBrowsingTest {
      * that would indicate this, unfortunately.
      */
     private void waitForInterstitial(final boolean shouldBeShown) {
-        CriteriaHelper.pollUiThread(Criteria.equals(shouldBeShown, new Callable<Boolean>() {
-            @Override
-            public Boolean call() {
-                // TODO(carlosil): For now, we check the presence of an interstitial through the
-                // title since isShowingInterstitialPage does not work with committed interstitials.
-                // Once we fully migrate to committed interstitials, this should be changed to a
-                // more robust check.
-                return getWebContents().getTitle().equals("Security error");
+        CriteriaHelper.pollUiThread(() -> {
+            // TODO(carlosil): For now, we check the presence of an interstitial through the
+            // title since isShowingInterstitialPage does not work with committed interstitials.
+            // Once we fully migrate to committed interstitials, this should be changed to a
+            // more robust check.
+            String title = getWebContents().getTitle();
+            String errorTitle = "Security error";
+            if (shouldBeShown) {
+                Criteria.checkThat(title, Matchers.is(errorTitle));
+            } else {
+                Criteria.checkThat(title, Matchers.not(errorTitle));
             }
-        }));
+        });
     }
 
     private WebContents getWebContents() {

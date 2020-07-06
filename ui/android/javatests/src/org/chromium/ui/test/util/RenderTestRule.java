@@ -48,10 +48,10 @@ import java.util.concurrent.Callable;
  * @RunWith(BaseJUnit4ClassRunner.class)
  * public class MyTest extends DummyUiActivityTestCase {
  *     @Rule
- *     public RenderTestRule mRenderTestRule = new RenderTestRule.SkiaGoldBuilder()
- *             // Optional, only necessary if you want your results to be kept in a different
- *             // corpus than the default.
- *             .setCorpus("android-render-tests-my-fancy-feature")
+ *     public RenderTestRule mRenderTestRule = new RenderTestRule.Builder()
+ *             // Required. If using ANDROID_RENDER_TESTS_PUBLIC, the Builder can be created with
+ *             // the shorthand RenderTestRule.Builder.withPublicCorpus().
+ *             .setCorpus(RenderTestRule.Corpus.ANDROID_RENDER_TESTS_PUBLIC)
  *             // Optional, only necessary once a CL lands that should invalidate previous golden
  *             // images, e.g. a UI rework.
  *             .setRevision(2)
@@ -101,24 +101,16 @@ public class RenderTestRule extends TestWatcher {
     private String mSkiaGoldRevisionDescription;
     private boolean mFailOnUnsupportedConfigs;
 
-    @StringDef({Corpus.ANDROID_RENDER_TESTS, Corpus.ANDROID_VR_RENDER_TESTS})
+    @StringDef({Corpus.ANDROID_RENDER_TESTS_PUBLIC, Corpus.ANDROID_RENDER_TESTS_INTERNAL,
+            Corpus.ANDROID_VR_RENDER_TESTS})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Corpus {
-        // Corpus for general use.
-        String ANDROID_RENDER_TESTS = "android-render-tests";
+        // Corpus for general use and public results.
+        String ANDROID_RENDER_TESTS_PUBLIC = "android-render-tests";
+        // Corpus for general use and internal results.
+        String ANDROID_RENDER_TESTS_INTERNAL = "android-render-tests-internal";
         // Corpus for VR (virtual reality) features.
         String ANDROID_VR_RENDER_TESTS = "android-vr-render-tests";
-    }
-
-    /**
-     * Default constructor, which is equivalent to using the SkiaGoldBuilder without setting any
-     * additional configurations on it.
-     *
-     * If any such configurations are desired, e.g. bumping the image revision, please switch to
-     * using the builder instead.
-     */
-    public RenderTestRule() {
-        this(0, null, null, false);
     }
 
     // Skia Gold-specific constructor used by the builder.
@@ -128,8 +120,11 @@ public class RenderTestRule extends TestWatcher {
     protected RenderTestRule(int revision, @Corpus String corpus, String description,
             boolean failOnUnsupportedConfigs) {
         assert revision >= 0;
+        // Don't have a default corpus so that users explicitly specify whether
+        // they want their test results to be public or not.
+        assert corpus != null;
 
-        mSkiaGoldCorpus = (corpus == null) ? Corpus.ANDROID_RENDER_TESTS : corpus;
+        mSkiaGoldCorpus = corpus;
         mSkiaGoldRevisionDescription = description;
         mSkiaGoldRevision = revision;
         mFailOnUnsupportedConfigs = failOnUnsupportedConfigs;
@@ -201,6 +196,8 @@ public class RenderTestRule extends TestWatcher {
         JSONObject goldKeys = new JSONObject();
         try {
             goldKeys.put("source_type", mSkiaGoldCorpus);
+            goldKeys.put("model", Build.MODEL);
+            goldKeys.put("sdk_version", String.valueOf(Build.VERSION.SDK_INT));
             if (!TextUtils.isEmpty(mSkiaGoldRevisionDescription)) {
                 goldKeys.put("revision_description", mSkiaGoldRevisionDescription);
             }
@@ -332,9 +329,9 @@ public class RenderTestRule extends TestWatcher {
     }
 
     /**
-     * Builder to create a RenderTestRule for use with Skia Gold.
+     * Base Builder class for creating RenderTestRules and its derivatives.
      */
-    public static class SkiaGoldBuilder {
+    protected abstract static class BaseBuilder<B extends BaseBuilder<B>> {
         protected int mRevision;
         protected @Corpus String mCorpus;
         protected String mDescription;
@@ -345,25 +342,25 @@ public class RenderTestRule extends TestWatcher {
          * be incremented anytime output changes significantly enough that previous baselines
          * should be considered invalid.
          */
-        public SkiaGoldBuilder setRevision(int revision) {
+        public B setRevision(int revision) {
             mRevision = revision;
-            return this;
+            return self();
         }
 
         /**
          * Sets the corpus in the Gold instance that images belong to.
          */
-        public SkiaGoldBuilder setCorpus(@Corpus String corpus) {
+        public B setCorpus(@Corpus String corpus) {
             mCorpus = corpus;
-            return this;
+            return self();
         }
 
         /**
          * Sets the optional description that will be shown alongside the image in the Gold web UI.
          */
-        public SkiaGoldBuilder setDescription(String description) {
+        public B setDescription(String description) {
             mDescription = description;
-            return this;
+            return self();
         }
 
         /**
@@ -372,13 +369,32 @@ public class RenderTestRule extends TestWatcher {
          * //build/android/pylib/local/device/local_device_instrumentation_test_run.py under the
          * RENDER_TEST_MODEL_SDK_CONFIGS constant.
          */
-        public SkiaGoldBuilder setFailOnUnsupportedConfigs(boolean fail) {
+        public B setFailOnUnsupportedConfigs(boolean fail) {
             mFailOnUnsupportedConfigs = fail;
-            return this;
+            return self();
         }
 
+        protected B self() {
+            return (B) this;
+        }
+
+        public abstract RenderTestRule build();
+    }
+
+    /**
+     * Builder to create a RenderTestRule.
+     */
+    public static class Builder extends BaseBuilder<Builder> {
+        @Override
         public RenderTestRule build() {
             return new RenderTestRule(mRevision, mCorpus, mDescription, mFailOnUnsupportedConfigs);
+        }
+
+        /**
+         * Creates a Builder with the default public corpus.
+         */
+        public static Builder withPublicCorpus() {
+            return new Builder().setCorpus(Corpus.ANDROID_RENDER_TESTS_PUBLIC);
         }
     }
 }

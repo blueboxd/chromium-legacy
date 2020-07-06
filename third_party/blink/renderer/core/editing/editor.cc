@@ -652,7 +652,7 @@ void Editor::SetBaseWritingDirection(WritingDirection direction) {
       direction == WritingDirection::kLeftToRight
           ? "ltr"
           : direction == WritingDirection::kRightToLeft ? "rtl" : "inherit",
-      /* important */ false, GetFrame().GetDocument()->GetSecureContextMode());
+      /* important */ false, GetFrame().DomWindow()->GetSecureContextMode());
   ApplyParagraphStyleToSelection(
       style, InputEvent::InputType::kFormatSetBlockTextDirection);
 }

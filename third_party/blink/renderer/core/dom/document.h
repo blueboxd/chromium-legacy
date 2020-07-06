@@ -336,12 +336,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // Helpers for getting state off of SecurityContext.
   const SecurityOrigin* GetSecurityOrigin() const;
-  SecurityOrigin* GetMutableSecurityOrigin();
-  ContentSecurityPolicy* GetContentSecurityPolicy() const;
-  network::mojom::blink::WebSandboxFlags GetSandboxFlags() const;
-  bool IsSandboxed(network::mojom::blink::WebSandboxFlags mask) const;
-  SecureContextMode GetSecureContextMode() const;
-  void SetSecureContextModeForTesting(SecureContextMode);
 
   String addressSpaceForBindings(ScriptState*) const;
 
@@ -1582,11 +1576,6 @@ class CORE_EXPORT Document : public ContainerNode,
   // NOTE: only for use in testing.
   bool IsAnimatedPropertyCounted(CSSPropertyID property) const;
   void ClearUseCounterForTesting(mojom::WebFeature);
-
-  // Bind Content Security Policy to this document. This will cause the
-  // CSP to resolve the 'self' attribute and all policies will then be
-  // applied to this document.
-  void BindContentSecurityPolicy();
 
   void UpdateForcedColors();
   bool InForcedColorsMode() const;

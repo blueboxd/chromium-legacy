@@ -7,9 +7,9 @@
 #include "base/callback.h"
 #include "base/run_loop.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/modules/sensor/sensor_test_utils.h"
@@ -42,8 +42,9 @@ class SyncEventListener final : public NativeEventListener {
 SensorTestContext::SensorTestContext() {
   // Sensor's constructor has a check for this that could be removed in the
   // future.
-  testing_scope_.GetDocument().SetSecureContextModeForTesting(
-      SecureContextMode::kSecureContext);
+  testing_scope_.GetWindow()
+      .GetSecurityContext()
+      .SetSecureContextModeForTesting(SecureContextMode::kSecureContext);
   // Necessary for SensorProxy::ShouldSuspendUpdates() to work correctly.
   testing_scope_.GetPage().GetFocusController().SetFocused(true);
 

@@ -71,8 +71,9 @@ class CORE_EXPORT DocumentLifecycle {
     kInAccessibility,
     kAccessibilityClean,
 
-    kInCompositingUpdate,
+    kInCompositingInputsUpdate,
     kCompositingInputsClean,
+    kInCompositingUpdate,
     kCompositingClean,
 
     // In InPrePaint step, any data needed by painting are prepared.
@@ -270,7 +271,8 @@ inline bool DocumentLifecycle::StateAllowsTreeMutations() const {
   // FIXME: We should not allow mutations in InPreLayout or AfterPerformLayout
   // either, but we need to fix MediaList listeners and plugins first.
   return state_ != kInStyleRecalc && state_ != kInPerformLayout &&
-         state_ != kInCompositingUpdate && state_ != kInPrePaint &&
+         state_ != kInCompositingUpdate &&
+         state_ != kInCompositingInputsUpdate && state_ != kInPrePaint &&
          state_ != kInPaint;
 }
 

@@ -291,7 +291,8 @@ InterpolationValue CSSInterpolationType::MaybeConvertCustomPropertyDeclaration(
             DynamicTo<CSSCustomPropertyDeclaration>(value)) {
       DCHECK(resolved_declaration->Value());
       value = resolved_declaration->Value()->ParseForSyntax(
-          registration_->Syntax(), state.GetDocument().GetSecureContextMode());
+          registration_->Syntax(),
+          state.GetDocument().GetExecutionContext()->GetSecureContextMode());
       if (!value)
         return nullptr;
     }
@@ -339,10 +340,12 @@ InterpolationValue CSSInterpolationType::MaybeConvertCustomPropertyDeclaration(
     resolved_tokens = declaration.Value();
   }
   const CSSValue* resolved_value =
-      resolved_tokens ? resolved_tokens->ParseForSyntax(
-                            registration_->Syntax(),
-                            state.GetDocument().GetSecureContextMode())
-                      : nullptr;
+      resolved_tokens
+          ? resolved_tokens->ParseForSyntax(registration_->Syntax(),
+                                            state.GetDocument()
+                                                .GetExecutionContext()
+                                                ->GetSecureContextMode())
+          : nullptr;
   if (!resolved_value) {
     return nullptr;
   }

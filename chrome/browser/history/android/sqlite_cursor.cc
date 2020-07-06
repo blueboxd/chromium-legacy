@@ -186,8 +186,8 @@ bool SQLiteCursor::GetFavicon(favicon_base::FaviconID id,
     content::GetUIThreadTaskRunner({})->PostTask(
         FROM_HERE, base::BindOnce(&SQLiteCursor::GetFaviconForIDInUIThread,
                                   base::Unretained(this), id,
-                                  base::Bind(&SQLiteCursor::OnFaviconData,
-                                             base::Unretained(this))));
+                                  base::BindOnce(&SQLiteCursor::OnFaviconData,
+                                                 base::Unretained(this))));
 
     if (test_observer_)
       test_observer_->OnPostGetFaviconTask();
@@ -243,9 +243,7 @@ void SQLiteCursor::RunMoveStatementOnUIThread(int pos) {
   if (!tracker_.get())
     tracker_.reset(new base::CancelableTaskTracker());
   service_->MoveStatement(
-      statement_,
-      position_,
-      pos,
-      base::Bind(&SQLiteCursor::OnMoved, base::Unretained(this)),
+      statement_, position_, pos,
+      base::BindOnce(&SQLiteCursor::OnMoved, base::Unretained(this)),
       tracker_.get());
 }

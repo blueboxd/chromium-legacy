@@ -69,7 +69,8 @@ NavigationID CreateNavigationID(
 PageRequestSummary CreatePageRequestSummary(
     const std::string& main_frame_url,
     const std::string& initial_url,
-    const std::vector<blink::mojom::ResourceLoadInfoPtr>& resource_load_infos);
+    const std::vector<blink::mojom::ResourceLoadInfoPtr>& resource_load_infos,
+    base::TimeTicks navigation_started = base::TimeTicks::Now());
 
 blink::mojom::ResourceLoadInfoPtr CreateResourceLoadInfo(
     const std::string& url,

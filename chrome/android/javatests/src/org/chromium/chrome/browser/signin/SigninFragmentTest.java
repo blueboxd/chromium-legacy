@@ -68,7 +68,8 @@ public class SigninFragmentTest {
     public final SyncTestRule mSyncTestRule = new SyncTestRule();
 
     @Rule
-    public final ChromeRenderTestRule mRenderTestRule = new ChromeRenderTestRule();
+    public final ChromeRenderTestRule mRenderTestRule =
+            ChromeRenderTestRule.Builder.withPublicCorpus().build();
 
     private SigninActivity mSigninActivity;
 

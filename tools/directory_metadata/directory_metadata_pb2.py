@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x18\x64irectory_metadata.proto\"_\n\x08Metadata\x12\x1b\n\x08monorail\x18\x01 \x01(\x0b\x32\t.Monorail\x12\x12\n\nteam_email\x18\x02 \x01(\t\x12\x0f\n\x02os\x18\x03 \x01(\x0e\x32\x03.OSJ\x04\x08\r\x10\x0eR\x0bthird_party\".\n\x08Monorail\x12\x0f\n\x07project\x18\x01 \x01(\t\x12\x11\n\tcomponent\x18\x02 \x01(\t*h\n\x02OS\x12\x12\n\x0eOS_UNSPECIFIED\x10\x00\x12\t\n\x05LINUX\x10\x01\x12\x0b\n\x07WINDOWS\x10\x02\x12\x07\n\x03MAC\x10\x03\x12\x0b\n\x07\x41NDROID\x10\x04\x12\x07\n\x03IOS\x10\x05\x12\n\n\x06\x43HROME\x10\x06\x12\x0b\n\x07\x46UCHSIA\x10\x07\x62\x06proto3')
+  serialized_pb=_b('\n\x18\x64irectory_metadata.proto\"s\n\x08Metadata\x12\x1b\n\x08monorail\x18\x01 \x01(\x0b\x32\t.Monorail\x12\x12\n\nteam_email\x18\x02 \x01(\t\x12\x0f\n\x02os\x18\x03 \x01(\x0e\x32\x03.OS\x12\x12\n\nwpt_notify\x18\x04 \x01(\x08J\x04\x08\r\x10\x0eR\x0bthird_party\".\n\x08Monorail\x12\x0f\n\x07project\x18\x01 \x01(\t\x12\x11\n\tcomponent\x18\x02 \x01(\t*}\n\x02OS\x12\x12\n\x0eOS_UNSPECIFIED\x10\x00\x12\x0c\n\x08OS_LINUX\x10\x01\x12\x0e\n\nOS_WINDOWS\x10\x02\x12\n\n\x06OS_MAC\x10\x03\x12\x0e\n\nOS_ANDROID\x10\x04\x12\n\n\x06OS_IOS\x10\x05\x12\r\n\tOS_CHROME\x10\x06\x12\x0e\n\nOS_FUCHSIA\x10\x07\x62\x06proto3')
 )
 
 _OS = _descriptor.EnumDescriptor(
@@ -34,50 +34,50 @@ _OS = _descriptor.EnumDescriptor(
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='LINUX', index=1, number=1,
+      name='OS_LINUX', index=1, number=1,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='WINDOWS', index=2, number=2,
+      name='OS_WINDOWS', index=2, number=2,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='MAC', index=3, number=3,
+      name='OS_MAC', index=3, number=3,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='ANDROID', index=4, number=4,
+      name='OS_ANDROID', index=4, number=4,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='IOS', index=5, number=5,
+      name='OS_IOS', index=5, number=5,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='CHROME', index=6, number=6,
+      name='OS_CHROME', index=6, number=6,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='FUCHSIA', index=7, number=7,
+      name='OS_FUCHSIA', index=7, number=7,
       serialized_options=None,
       type=None),
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=173,
-  serialized_end=277,
+  serialized_start=193,
+  serialized_end=318,
 )
 _sym_db.RegisterEnumDescriptor(_OS)
 
 OS = enum_type_wrapper.EnumTypeWrapper(_OS)
 OS_UNSPECIFIED = 0
-LINUX = 1
-WINDOWS = 2
-MAC = 3
-ANDROID = 4
-IOS = 5
-CHROME = 6
-FUCHSIA = 7
+OS_LINUX = 1
+OS_WINDOWS = 2
+OS_MAC = 3
+OS_ANDROID = 4
+OS_IOS = 5
+OS_CHROME = 6
+OS_FUCHSIA = 7
 
 
 
@@ -109,6 +109,13 @@ _METADATA = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='wpt_notify', full_name='Metadata.wpt_notify', index=3,
+      number=4, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -122,7 +129,7 @@ _METADATA = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=28,
-  serialized_end=123,
+  serialized_end=143,
 )
 
 
@@ -159,8 +166,8 @@ _MONORAIL = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=125,
-  serialized_end=171,
+  serialized_start=145,
+  serialized_end=191,
 )
 
 _METADATA.fields_by_name['monorail'].message_type = _MONORAIL

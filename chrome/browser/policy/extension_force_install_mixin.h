@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_POLICY_EXTENSION_FORCE_INSTALL_MIXIN_H_
 #define CHROME_BROWSER_POLICY_EXTENSION_FORCE_INSTALL_MIXIN_H_
 
+#include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/optional.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "extensions/common/extension_id.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -14,7 +16,6 @@ class GURL;
 class Profile;
 
 namespace base {
-class FilePath;
 class Version;
 }  // namespace base
 
@@ -29,6 +30,7 @@ class DevicePolicyCrosTestHelper;
 // A mixin that allows to force-install an extension/app via the device policy.
 //
 // Encapsulates the following operations:
+// * generating a CRX file,
 // * generating an update manifest,
 // * hosting the update manifest and the CRX via an embedded test server,
 // * configuring the force installation in the device policy.
@@ -48,7 +50,7 @@ class DevicePolicyCrosTestHelper;
 //     ExtensionForceInstallMixin force_install_mixin_{&mixin_host_};
 //   };
 //
-// TODO(crbug.com/1090941): Add user policy, CRX packing, awaiting, auto update.
+// TODO(crbug.com/1090941): Add user policy, awaiting, auto update.
 class ExtensionForceInstallMixin final : public InProcessBrowserTestMixin {
  public:
   explicit ExtensionForceInstallMixin(InProcessBrowserTestMixinHost* host);
@@ -71,7 +73,16 @@ class ExtensionForceInstallMixin final : public InProcessBrowserTestMixin {
   // |extension_id| - if non-null, will be set to the installed extension ID.
   bool ForceInstallFromCrx(const base::FilePath& crx_path,
                            extensions::ExtensionId* extension_id = nullptr);
-
+  // Force-installs the extension from the given source directory (which should
+  // contain the manifest.json file and all other files of the extension).
+  // Under the hood, packs the directory into a CRX file and serves it like
+  // ForceInstallFromCrx().
+  // |pem_path| - if non-empty, will be used to load the private key for packing
+  // the extension; when empty, a random key will be generated. |extension_id| -
+  // if non-null, will be set to the installed extension ID.
+  bool ForceInstallFromSourceDir(const base::FilePath& extension_dir_path,
+                                 const base::Optional<base::FilePath>& pem_path,
+                                 std::string* extension_id = nullptr);
   // InProcessBrowserTestMixin:
   void SetUpOnMainThread() override;
 
@@ -90,6 +101,16 @@ class ExtensionForceInstallMixin final : public InProcessBrowserTestMixin {
   bool ServeExistingCrx(const base::FilePath& source_crx_path,
                         const extensions::ExtensionId& extension_id,
                         const base::Version& extension_version);
+  // Packs the given |extension_dir_path| (using the |pem_path| if provided or a
+  // random key otherwise) and makes the produced CRX file served by the
+  // embedded test server.
+  bool CreateAndServeCrx(const base::FilePath& extension_dir_path,
+                         const base::Optional<base::FilePath>& pem_path,
+                         const base::Version& extension_version,
+                         std::string* extension_id);
+  // Force-installs the CRX file served by the embedded test server.
+  bool ForceInstallFromServedCrx(const extensions::ExtensionId& extension_id,
+                                 const base::Version& extension_version);
   // Creates an update manifest with the CRX URL pointing to the embedded test
   // server.
   bool CreateAndServeUpdateManifestFile(

@@ -14,8 +14,8 @@
 #include "chrome/browser/android/autofill_assistant/generic_ui_interactions_android.h"
 #include "chrome/browser/android/autofill_assistant/view_handler_android.h"
 #include "components/autofill_assistant/browser/basic_interactions.h"
-#include "components/autofill_assistant/browser/field_formatter.h"
 #include "components/autofill_assistant/browser/generic_ui.pb.h"
+#include "components/autofill_assistant/browser/generic_ui_replace_placeholders.h"
 #include "components/autofill_assistant/browser/ui_delegate.h"
 #include "components/autofill_assistant/browser/user_model.h"
 #include "components/autofill_assistant/browser/value_util.h"
@@ -24,48 +24,9 @@ namespace autofill_assistant {
 
 namespace {
 
-// Helper RAII class that sets the execution context for callbacks and unsets
-// the context upon deletion. Simply unsetting the context after running the
-// callbacks is unsafe, as a callback may have ended the action, thus deleting
-// the context and leading to a crash.
-class SetExecutionContext {
- public:
-  SetExecutionContext(base::WeakPtr<UserModel> user_model,
-                      base::WeakPtr<ViewHandlerAndroid> view_handler,
-                      const std::map<std::string, std::string>& context)
-      : user_model_(user_model),
-        view_handler_(view_handler),
-        context_(context) {
-    if (user_model_ != nullptr) {
-      user_model_->AddIdentifierPlaceholders(context_);
-    }
-    if (view_handler_ != nullptr) {
-      view_handler_->AddIdentifierPlaceholders(context_);
-    }
-  }
-
-  ~SetExecutionContext() {
-    if (user_model_ != nullptr) {
-      user_model_->RemoveIdentifierPlaceholders(context_);
-    }
-    if (view_handler_ != nullptr) {
-      view_handler_->RemoveIdentifierPlaceholders(context_);
-    }
-  }
-
- private:
-  base::WeakPtr<UserModel> user_model_;
-  base::WeakPtr<ViewHandlerAndroid> view_handler_;
-  std::map<std::string, std::string> context_;
-};
-
-// Runs |callbacks| using the context provided by |interaction_handler| and
-// |additional_context|.
-// Note: parameters are passed by value, as their owner may go out of scope
-// before all callbacks have been processed.
-void RunWithContext(
+// Runs |callbacks|. Early-terminates if a callback causes the action to end.
+void RunCallbacks(
     std::vector<InteractionHandlerAndroid::InteractionCallback> callbacks,
-    std::map<std::string, std::string> additional_context,
     base::WeakPtr<InteractionHandlerAndroid> interaction_handler,
     base::WeakPtr<UserModel> user_model,
     base::WeakPtr<ViewHandlerAndroid> view_handler) {
@@ -73,10 +34,6 @@ void RunWithContext(
     return;
   }
 
-  // Context is set via RAII to ensure that it is properly unset when done.
-  interaction_handler->AddContext(additional_context);
-  SetExecutionContext set_context(user_model, view_handler,
-                                  interaction_handler->GetContext());
   for (const auto& callback : callbacks) {
     callback.Run();
     // A callback may have caused |interaction_handler| to go out of scope.
@@ -84,15 +41,10 @@ void RunWithContext(
       return;
     }
   }
-  if (interaction_handler != nullptr) {
-    interaction_handler->RemoveContext(additional_context);
-  }
 }
 
 void RunForEachLoop(
     const ForEachProto& proto,
-    const std::vector<InteractionHandlerAndroid::InteractionCallback>&
-        callbacks,
     base::WeakPtr<InteractionHandlerAndroid> interaction_handler,
     base::WeakPtr<UserModel> user_model,
     base::WeakPtr<ViewHandlerAndroid> view_handler) {
@@ -107,28 +59,37 @@ void RunForEachLoop(
   }
 
   for (int i = 0; i < GetValueSize(*loop_value); ++i) {
-    // Temporarily add "<loop_counter> -> i" to execution context.
-    // Note: interactions may create nested UI instances. Those instances
-    // will inherit their parents' current context, which includes the
-    // placeholder for the loop variable currently being iterated.
-    RunWithContext(callbacks, /* additional_context = */
-                   {{proto.loop_counter(), base::NumberToString(i)}},
-                   interaction_handler, user_model, view_handler);
+    std::vector<InteractionHandlerAndroid::InteractionCallback> callbacks;
+    // Note: callback protos are copied and then modified. |proto| is unchanged.
+    for (auto callback_proto_copy : proto.callbacks()) {
+      ReplacePlaceholdersInCallback(
+          &callback_proto_copy,
+          {{proto.loop_counter(), base::NumberToString(i)}});
+      auto callback = interaction_handler->CreateInteractionCallbackFromProto(
+          callback_proto_copy);
+      if (!callback.has_value()) {
+        // Should never happen.
+        VLOG(1) << "Error creating ForEach interaction: failed to create "
+                   "callback";
+        return;
+      }
+      callbacks.emplace_back(*callback);
+    }
+
+    RunCallbacks(callbacks, interaction_handler, user_model, view_handler);
   }
 }
 
 }  // namespace
 
 InteractionHandlerAndroid::InteractionHandlerAndroid(
-    const std::map<std::string, std::string>& context,
     EventHandler* event_handler,
     UserModel* user_model,
     BasicInteractions* basic_interactions,
     ViewHandlerAndroid* view_handler,
     base::android::ScopedJavaGlobalRef<jobject> jcontext,
     base::android::ScopedJavaGlobalRef<jobject> jdelegate)
-    : context_(context),
-      event_handler_(event_handler),
+    : event_handler_(event_handler),
       user_model_(user_model),
       basic_interactions_(basic_interactions),
       view_handler_(view_handler),
@@ -152,20 +113,6 @@ void InteractionHandlerAndroid::StartListening() {
 void InteractionHandlerAndroid::StopListening() {
   event_handler_->RemoveObserver(this);
   is_listening_ = false;
-}
-
-void InteractionHandlerAndroid::AddContext(
-    const std::map<std::string, std::string>& context) {
-  for (const auto& value : context) {
-    context_[value.first] = value.second;
-  }
-}
-
-void InteractionHandlerAndroid::RemoveContext(
-    const std::map<std::string, std::string>& context) {
-  for (const auto& value : context) {
-    context_.erase(value.first);
-  }
 }
 
 UserModel* InteractionHandlerAndroid::GetUserModel() const {
@@ -215,9 +162,8 @@ void InteractionHandlerAndroid::AddInteraction(
 void InteractionHandlerAndroid::OnEvent(const EventHandler::EventKey& key) {
   auto it = interactions_.find(key);
   if (it != interactions_.end()) {
-    RunWithContext(it->second, /* additional_context = */ {},
-                   this->GetWeakPtr(), user_model_->GetWeakPtr(),
-                   view_handler_->GetWeakPtr());
+    RunCallbacks(it->second, this->GetWeakPtr(), user_model_->GetWeakPtr(),
+                 view_handler_->GetWeakPtr());
     // Note: it is unsafe to call any code after running callbacks, because
     // a callback may effectively delete *this.
   }
@@ -388,7 +334,8 @@ InteractionHandlerAndroid::CreateInteractionCallbackFromProto(
                    "loop_value_model_identifier not set";
         return base::nullopt;
       }
-      std::vector<InteractionHandlerAndroid::InteractionCallback> callbacks;
+      // Parse the callbacks here to fail view inflation in case of invalid
+      // callbacks.
       for (const auto& callback_proto : proto.for_each().callbacks()) {
         auto callback = CreateInteractionCallbackFromProto(callback_proto);
         if (!callback.has_value()) {
@@ -396,10 +343,9 @@ InteractionHandlerAndroid::CreateInteractionCallbackFromProto(
                      "callback";
           return base::nullopt;
         }
-        callbacks.emplace_back(*callback);
       }
       return base::Optional<InteractionCallback>(base::BindRepeating(
-          &RunForEachLoop, proto.for_each(), callbacks, GetWeakPtr(),
+          &RunForEachLoop, proto.for_each(), GetWeakPtr(),
           user_model_->GetWeakPtr(), view_handler_->GetWeakPtr()));
     }
     case CallbackProto::KIND_NOT_SET:
@@ -408,14 +354,7 @@ InteractionHandlerAndroid::CreateInteractionCallbackFromProto(
   }
 }
 
-void InteractionHandlerAndroid::DeleteNestedUi(const std::string& input) {
-  // Replace all placeholders in the input.
-  auto formatted_identifier = field_formatter::FormatString(input, context_);
-  if (!formatted_identifier.has_value()) {
-    VLOG(2) << "Error deleting nested UI: placeholder not found for " << input;
-    return;
-  }
-  std::string identifier = *formatted_identifier;
+void InteractionHandlerAndroid::DeleteNestedUi(const std::string& identifier) {
   auto it = nested_ui_controllers_.find(identifier);
   if (it != nested_ui_controllers_.end()) {
     nested_ui_controllers_.erase(it);
@@ -424,14 +363,7 @@ void InteractionHandlerAndroid::DeleteNestedUi(const std::string& input) {
 
 const GenericUiControllerAndroid* InteractionHandlerAndroid::CreateNestedUi(
     const GenericUserInterfaceProto& proto,
-    const std::string& input) {
-  // Replace all placeholders in the input.
-  auto formatted_identifier = field_formatter::FormatString(input, context_);
-  if (!formatted_identifier.has_value()) {
-    VLOG(2) << "Error creating nested UI: placeholder not found for " << input;
-    return nullptr;
-  }
-  std::string identifier = *formatted_identifier;
+    const std::string& identifier) {
   if (nested_ui_controllers_.find(identifier) != nested_ui_controllers_.end()) {
     VLOG(2) << "Error creating nested UI: " << identifier
             << " already exixsts (did you forget to clear the previous "
@@ -439,7 +371,7 @@ const GenericUiControllerAndroid* InteractionHandlerAndroid::CreateNestedUi(
     return nullptr;
   }
   auto nested_ui = GenericUiControllerAndroid::CreateFromProto(
-      proto, context_, jcontext_, jdelegate_, event_handler_, user_model_,
+      proto, jcontext_, jdelegate_, event_handler_, user_model_,
       basic_interactions_);
   const auto* nested_ui_ptr = nested_ui.get();
   if (nested_ui) {

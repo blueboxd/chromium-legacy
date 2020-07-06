@@ -75,7 +75,7 @@
     // the user agent
     // includes https://github.com/whatwg/html/pull/5545 (originIsolationRestricted)
     [Affects=Nothing, LogActivity=GetterOnly] readonly attribute Navigator navigator;
-    [LogActivity=GetterOnly, SecureContext=RestrictAppCacheToSecureContexts, RuntimeEnabled=AppCache] readonly attribute ApplicationCache applicationCache;
+    [LogActivity=GetterOnly, SecureContext, RuntimeEnabled=AppCache] readonly attribute ApplicationCache applicationCache;
     [RuntimeEnabled=OriginIsolationHeader, SecureContext] readonly attribute boolean originIsolationRestricted;
 
     // user prompts

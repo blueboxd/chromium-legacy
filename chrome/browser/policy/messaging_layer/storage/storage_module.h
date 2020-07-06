@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/policy/messaging_layer/storage/storage.h"
 #include "chrome/browser/policy/messaging_layer/util/status.h"
 #include "chrome/browser/policy/messaging_layer/util/statusor.h"
 #include "components/policy/proto/record.pb.h"
@@ -20,7 +21,11 @@ namespace reporting {
 class StorageModule : public base::RefCountedThreadSafe<StorageModule> {
  public:
   // Factory method creates |StorageModule| object.
-  static StatusOr<scoped_refptr<StorageModule>> Create();
+  static void Create(
+      const Storage::Options& options,
+      Storage::StartUploadCb start_upload_cb,
+      base::OnceCallback<void(StatusOr<scoped_refptr<StorageModule>>)>
+          callback);
 
   StorageModule(const StorageModule& other) = delete;
   StorageModule& operator=(const StorageModule& other) = delete;
@@ -40,6 +45,10 @@ class StorageModule : public base::RefCountedThreadSafe<StorageModule> {
 
  private:
   friend base::RefCountedThreadSafe<StorageModule>;
+
+  // Storage backend (currently only Storage).
+  // TODO(b/160334561): make it a pluggable interface.
+  scoped_refptr<Storage> storage_;
 };
 
 }  // namespace reporting

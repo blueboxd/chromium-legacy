@@ -506,13 +506,13 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
 
   // Set up widget.
 
-  widget_ = views::BubbleDialogDelegateView::CreateBubble(this);
+  views::BubbleDialogDelegateView::CreateBubble(this);
   set_adjust_if_offscreen(true);
 
   slide_animation_delegate_ =
       std::make_unique<WidgetSlideAnimationDelegate>(this);
   fade_animation_delegate_ =
-      std::make_unique<WidgetFadeAnimationDelegate>(widget_);
+      std::make_unique<WidgetFadeAnimationDelegate>(GetWidget());
   thumbnail_observer_ = std::make_unique<ThumbnailObserver>(this);
 
   constexpr int kFootnoteVerticalMargin = 8;
@@ -569,31 +569,33 @@ void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
 
   // If widget is already visible and anchored to the correct tab we should not
   // try to reset the anchor view or reshow.
-  if (widget_->IsVisible() && GetAnchorView() == tab &&
+  if (GetWidget()->IsVisible() && GetAnchorView() == tab &&
       !slide_animation_delegate_->is_animating()) {
-    widget_->SetBounds(slide_animation_delegate_->CalculateTargetBounds(tab));
+    GetWidget()->SetBounds(
+        slide_animation_delegate_->CalculateTargetBounds(tab));
     slide_animation_delegate_->SetCurrentBounds();
     OnHoverCardLanded();
     return;
   }
 
-  if (widget_->IsVisible())
+  if (GetWidget()->IsVisible())
     ++hover_cards_seen_count_;
 
-  if (widget_->IsVisible() && !disable_animations_for_testing_) {
+  if (GetWidget()->IsVisible() && !disable_animations_for_testing_) {
     slide_animation_delegate_->AnimateToAnchorView(tab);
   } else {
     if (!anchor_view_set)
       SetAnchorView(tab);
-    widget_->SetBounds(slide_animation_delegate_->CalculateTargetBounds(tab));
+    GetWidget()->SetBounds(
+        slide_animation_delegate_->CalculateTargetBounds(tab));
     slide_animation_delegate_->SetCurrentBounds();
     OnHoverCardLanded();
   }
 
-  if (!widget_->IsVisible()) {
+  if (!GetWidget()->IsVisible()) {
     if (disable_animations_for_testing_ || show_immediately) {
-      widget_->SetOpacity(1.0f);
-      widget_->Show();
+      GetWidget()->SetOpacity(1.0f);
+      GetWidget()->Show();
     } else {
       // Note that this will restart the timer if it is already running. If the
       // hover cards are not yet visible, moving the cursor within the tabstrip
@@ -605,18 +607,18 @@ void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
 }
 
 bool TabHoverCardBubbleView::IsVisible() {
-  return widget_->IsVisible();
+  return GetWidget()->IsVisible();
 }
 
 void TabHoverCardBubbleView::FadeOutToHide() {
   delayed_show_timer_.Stop();
-  if (!widget_->IsVisible())
+  if (!GetWidget()->IsVisible())
     return;
   thumbnail_observer_->Observe(nullptr);
   slide_animation_delegate_->StopAnimation();
   last_visible_timestamp_ = base::TimeTicks::Now();
   if (disable_animations_for_testing_) {
-    widget_->Hide();
+    GetWidget()->Hide();
   } else {
     fade_animation_delegate_->FadeOut();
   }
@@ -859,7 +861,7 @@ void TabHoverCardBubbleView::RecordTimeSinceLastSeenMetric(
     base::TimeDelta elapsed_time) {
   constexpr base::TimeDelta kMaxHoverCardReshowTimeDelta =
       base::TimeDelta::FromSeconds(5);
-  if ((!widget_->IsVisible() || IsFadingOut()) &&
+  if ((!GetWidget()->IsVisible() || IsFadingOut()) &&
       elapsed_time <= kMaxHoverCardReshowTimeDelta) {
     constexpr base::TimeDelta kMinHoverCardReshowTimeDelta =
         base::TimeDelta::FromMilliseconds(1);

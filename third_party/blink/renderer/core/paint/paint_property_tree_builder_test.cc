@@ -5560,7 +5560,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ClearClipPathEffectNode) {
     const auto* rect = GetLayoutObjectByElementId("rect");
     ASSERT_TRUE(rect);
     EXPECT_TRUE(rect->FirstFragment().PaintProperties()->MaskClip());
-    EXPECT_TRUE(rect->FirstFragment().PaintProperties()->ClipPath());
+    EXPECT_TRUE(rect->FirstFragment().PaintProperties()->ClipPathMask());
   }
 
   Element* clip = GetDocument().getElementById("clip");
@@ -5573,7 +5573,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ClearClipPathEffectNode) {
     const auto* rect = GetLayoutObjectByElementId("rect");
     ASSERT_TRUE(rect);
     EXPECT_FALSE(rect->FirstFragment().PaintProperties()->MaskClip());
-    EXPECT_FALSE(rect->FirstFragment().PaintProperties()->ClipPath());
+    EXPECT_FALSE(rect->FirstFragment().PaintProperties()->ClipPathMask());
   }
 }
 
@@ -6378,81 +6378,35 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGRootCompositedClipPath) {
   EXPECT_EQ(properties->PaintOffsetTranslation(), transform->Parent());
   EXPECT_TRUE(transform->HasDirectCompositingReasons());
 
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    EXPECT_EQ(nullptr, properties->MaskClip());
+  EXPECT_EQ(nullptr, properties->MaskClip());
 
-    const auto* clip_path_clip = properties->ClipPathClip();
-    ASSERT_NE(nullptr, clip_path_clip);
-    EXPECT_EQ(DocContentClip(), clip_path_clip->Parent());
-    EXPECT_EQ(FloatRect(75, 0, 150, 150),
-              clip_path_clip->UnsnappedClipRect().Rect());
-    EXPECT_EQ(transform, &clip_path_clip->LocalTransformSpace());
-    EXPECT_NE(nullptr, clip_path_clip->ClipPath());
+  const auto* clip_path_clip = properties->ClipPathClip();
+  ASSERT_NE(nullptr, clip_path_clip);
+  EXPECT_EQ(DocContentClip(), clip_path_clip->Parent());
+  EXPECT_EQ(FloatRect(75, 0, 150, 150),
+            clip_path_clip->UnsnappedClipRect().Rect());
+  EXPECT_EQ(transform, &clip_path_clip->LocalTransformSpace());
+  EXPECT_NE(nullptr, clip_path_clip->ClipPath());
 
-    const auto* overflow_clip = properties->OverflowClip();
-    ASSERT_NE(nullptr, overflow_clip);
-    EXPECT_EQ(clip_path_clip, overflow_clip->Parent());
-    EXPECT_EQ(FloatRect(0, 0, 300, 150),
-              overflow_clip->UnsnappedClipRect().Rect());
-    EXPECT_EQ(transform, &overflow_clip->LocalTransformSpace());
+  const auto* overflow_clip = properties->OverflowClip();
+  ASSERT_NE(nullptr, overflow_clip);
+  EXPECT_EQ(clip_path_clip, overflow_clip->Parent());
+  EXPECT_EQ(FloatRect(0, 0, 300, 150),
+            overflow_clip->UnsnappedClipRect().Rect());
+  EXPECT_EQ(transform, &overflow_clip->LocalTransformSpace());
 
-    const auto* effect = properties->Effect();
-    ASSERT_NE(nullptr, effect);
-    EXPECT_EQ(&EffectPaintPropertyNode::Root(), effect->Parent());
-    EXPECT_EQ(transform, &effect->LocalTransformSpace());
-    EXPECT_EQ(clip_path_clip, effect->OutputClip());
-    EXPECT_EQ(SkBlendMode::kSrcOver, effect->BlendMode());
+  const auto* effect = properties->Effect();
+  ASSERT_NE(nullptr, effect);
+  EXPECT_EQ(&EffectPaintPropertyNode::Root(), effect->Parent());
+  EXPECT_EQ(transform, &effect->LocalTransformSpace());
+  EXPECT_EQ(clip_path_clip, effect->OutputClip());
+  EXPECT_EQ(SkBlendMode::kSrcOver, effect->BlendMode());
 
-    EXPECT_EQ(nullptr, properties->Mask());
-    EXPECT_EQ(nullptr, properties->ClipPath());
-  } else {
-    const auto* mask_clip = properties->MaskClip();
-    ASSERT_NE(nullptr, mask_clip);
-    EXPECT_EQ(DocContentClip(), mask_clip->Parent());
-    EXPECT_EQ(FloatRect(75, 0, 150, 150),
-              mask_clip->UnsnappedClipRect().Rect());
-    EXPECT_EQ(nullptr, mask_clip->ClipPath());
-    EXPECT_EQ(transform, &mask_clip->LocalTransformSpace());
-
-    const auto* clip_path_clip = properties->ClipPathClip();
-    ASSERT_NE(nullptr, clip_path_clip);
-    EXPECT_EQ(mask_clip, clip_path_clip->Parent());
-    EXPECT_EQ(FloatRect(75, 0, 150, 150),
-              clip_path_clip->UnsnappedClipRect().Rect());
-    EXPECT_EQ(transform, &clip_path_clip->LocalTransformSpace());
-    EXPECT_NE(nullptr, clip_path_clip->ClipPath());
-
-    const auto* overflow_clip = properties->OverflowClip();
-    ASSERT_NE(nullptr, overflow_clip);
-    EXPECT_EQ(mask_clip, overflow_clip->Parent());
-    EXPECT_EQ(FloatRect(0, 0, 300, 150),
-              overflow_clip->UnsnappedClipRect().Rect());
-    EXPECT_EQ(transform, &overflow_clip->LocalTransformSpace());
-
-    const auto* effect = properties->Effect();
-    ASSERT_NE(nullptr, effect);
-    EXPECT_EQ(&EffectPaintPropertyNode::Root(), effect->Parent());
-    EXPECT_EQ(transform, &effect->LocalTransformSpace());
-    EXPECT_EQ(mask_clip, effect->OutputClip());
-    EXPECT_EQ(SkBlendMode::kSrcOver, effect->BlendMode());
-
-    const auto* mask = properties->Mask();
-    ASSERT_NE(nullptr, mask);
-    EXPECT_EQ(effect, mask->Parent());
-    EXPECT_EQ(transform, &mask->LocalTransformSpace());
-    EXPECT_EQ(mask_clip, mask->OutputClip());
-    EXPECT_EQ(SkBlendMode::kDstIn, mask->BlendMode());
-
-    EXPECT_EQ(nullptr, properties->ClipPath());
-  }
+  EXPECT_EQ(nullptr, properties->Mask());
+  EXPECT_EQ(nullptr, properties->ClipPathMask());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, SimpleOpacityChangeDoesNotCausePacUpdate) {
-  // TODO(vmpstr): For CompositeAfterPaint, we don't seem to get a
-  // cc_effect, which we need to investigate.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   SetHtmlInnerHTML(R"HTML(
     <style>
       div {
@@ -6631,12 +6585,8 @@ TEST_P(PaintPropertyTreeBuilderTest,
   const auto& span_all_state = GetLayoutObjectByElementId("span-all")
                                    ->FirstFragment()
                                    .LocalBorderBoxProperties();
-  EXPECT_EQ(clip_path_properties->MaskClip(),
+  EXPECT_EQ(clip_path_properties->ClipPathClip(),
             span_all_state.Clip().Parent()->Parent());
-  // TODO(crbug.com/900241): We create effect and filter nodes when the
-  // transform node needs compositing, for crbug.com/942681.
-  EXPECT_EQ(clip_path_properties->Effect(),
-            span_all_state.Effect().Parent()->Parent()->Parent());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, VideoClipRect) {

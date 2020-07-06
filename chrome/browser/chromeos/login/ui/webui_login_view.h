@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "ash/public/cpp/login_accelerators.h"
 #include "ash/public/cpp/system_tray_focus_observer.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -131,7 +132,7 @@ class WebUILoginView : public views::View,
 
  private:
   // Map type for the accelerator-to-identifier map.
-  typedef std::map<ui::Accelerator, std::string> AccelMap;
+  typedef std::map<ui::Accelerator, ash::LoginAcceleratorAction> AccelMap;
 
   // ChromeKeyboardControllerClient::Observer:
   void OnKeyboardVisibilityChanged(bool visible) override;

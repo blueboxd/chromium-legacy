@@ -60,6 +60,10 @@ class MockOfflineContentProvider : public OfflineContentProvider {
   void RemoveObserver(Observer* observer) override;
   MOCK_METHOD3(RenameItem,
                void(const ContentId&, const std::string&, RenameCallback));
+  MOCK_METHOD(void,
+              ChangeSchedule,
+              (const ContentId&, base::Optional<OfflineItemSchedule>),
+              (override));
 
  private:
   base::ObserverList<Observer>::Unchecked observers_;

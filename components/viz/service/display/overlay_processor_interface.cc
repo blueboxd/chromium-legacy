@@ -4,6 +4,8 @@
 
 #include "components/viz/service/display/overlay_processor_interface.h"
 
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/viz/common/display/renderer_settings.h"
@@ -84,12 +86,14 @@ OverlayProcessorInterface::CreateOverlayProcessor(
     scoped_refptr<gpu::GpuTaskSchedulerHelper> gpu_task_scheduler,
     gpu::SharedImageInterface* shared_image_interface) {
 #if defined(OS_MACOSX)
+  // TODO(https://crbug.com/1100728): Get RenderPass overlays working.
+  bool allow_render_pass_overlays = !renderer_settings.use_skia_renderer;
   bool could_overlay = surface_handle != gpu::kNullSurfaceHandle;
   could_overlay &= capabilities.supports_surfaceless;
   bool enable_ca_overlay = could_overlay && renderer_settings.allow_overlays;
 
-  return base::WrapUnique(
-      new OverlayProcessorMac(could_overlay, enable_ca_overlay));
+  return base::WrapUnique(new OverlayProcessorMac(
+      could_overlay, enable_ca_overlay, allow_render_pass_overlays));
 #elif defined(OS_WIN)
   bool enable_dc_overlay = surface_handle != gpu::kNullSurfaceHandle;
   enable_dc_overlay &= !capabilities.supports_surfaceless;

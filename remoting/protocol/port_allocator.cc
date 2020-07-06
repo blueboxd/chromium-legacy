@@ -75,7 +75,7 @@ PortAllocatorSession::PortAllocatorSession(PortAllocator* allocator,
 PortAllocatorSession::~PortAllocatorSession() = default;
 
 void PortAllocatorSession::GetPortConfigurations() {
-  transport_context_->GetIceConfig(base::Bind(
+  transport_context_->GetIceConfig(base::BindOnce(
       &PortAllocatorSession::OnIceConfig, weak_factory_.GetWeakPtr()));
 }
 

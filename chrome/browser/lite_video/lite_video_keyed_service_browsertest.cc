@@ -51,11 +51,12 @@ int RetryForHistogramUntilCountReached(
   int total = 0;
   while (true) {
     base::ThreadPoolInstance::Get()->FlushForTesting();
-    base::RunLoop().RunUntilIdle();
-
     total = GetTotalHistogramSamples(histogram_tester, histogram_name);
     if (total >= count)
       return total;
+    content::FetchHistogramsFromChildProcesses();
+    metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+    base::RunLoop().RunUntilIdle();
   }
 }
 
@@ -111,11 +112,21 @@ class LiteVideoKeyedServiceBrowserTest
   void SetUpOnMainThread() override {
     content::NetworkConnectionChangeSimulator().SetConnectionType(
         network::mojom::ConnectionType::CONNECTION_4G);
+    SetEffectiveConnectionType(
+        net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G);
     InProcessBrowserTest::SetUpOnMainThread();
   }
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
     cmd->AppendSwitch("enable-spdy-proxy-auth");
+  }
+
+  // Sets the effective connection type that the Network Quality Tracker will
+  // report.
+  void SetEffectiveConnectionType(
+      net::EffectiveConnectionType effective_connection_type) {
+    g_browser_process->network_quality_tracker()
+        ->ReportEffectiveConnectionTypeForTesting(effective_connection_type);
   }
 
   lite_video::LiteVideoDecider* lite_video_decider() {
@@ -158,6 +169,8 @@ IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
                        LiteVideoCanApplyLiteVideo_NoHintForHost) {
+  SetEffectiveConnectionType(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G);
   WaitForBlocklistToBeLoaded();
   EXPECT_TRUE(
       LiteVideoKeyedServiceFactory::GetForProfile(browser()->profile()));
@@ -179,6 +192,8 @@ IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
                        LiteVideoCanApplyLiteVideo_HasHint) {
+  SetEffectiveConnectionType(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G);
   WaitForBlocklistToBeLoaded();
   EXPECT_TRUE(
       LiteVideoKeyedServiceFactory::GetForProfile(browser()->profile()));

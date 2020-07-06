@@ -56,7 +56,8 @@ import java.io.IOException;
     public final Features.JUnitProcessor mProcessor = new Features.JUnitProcessor();
 
     @Rule
-    public final ChromeRenderTestRule mRenderTestRule = new ChromeRenderTestRule();
+    public final ChromeRenderTestRule mRenderTestRule =
+            ChromeRenderTestRule.Builder.withPublicCorpus().build();
 
     @Rule
     public final AccountManagerTestRule mAccountManagerTestRule =

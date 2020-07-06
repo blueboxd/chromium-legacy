@@ -47,6 +47,9 @@ class ReportingClient {
       std::unique_ptr<ReportQueueConfiguration> config);
 
  private:
+  // Client for Upload operation.
+  class UploadClient;
+
   explicit ReportingClient(scoped_refptr<StorageModule> storage);
 
   static StatusOr<ReportingClient*> GetInstance();

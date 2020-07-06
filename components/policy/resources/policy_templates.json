@@ -9523,11 +9523,11 @@
       'id': 159,
       'caption': '''Allow playing audio''',
       'tags': [],
-      'desc': '''When this policy is set to false, audio output will not be available on the device while the user is logged in.
+      'desc': '''Setting the policy to Enabled or leaving it unset allows all supported audio outputs on the users' devices.
 
-      This policy affects all types of audio output and not only the built-in speakers. Audio accessibility features are also inhibited by this policy. Do not enable this policy if a screen reader is required for the user.
+      Setting the policy to Disabled allows no audio output while users are signed in.
 
-      If this setting is set to true or not configured then users can use all supported audio outputs on their device.''',
+      Note: The policy affects all audio input (not just the built-in microphone), including audio accessibility features. Do not turn the policy on if a user requires a screen reader.''',
     },
     {
       'name': 'AudioCaptureAllowed',
@@ -9543,14 +9543,11 @@
       'id': 160,
       'caption': '''Allow or deny audio capture''',
       'tags': [],
-      'desc': '''If enabled or not configured (default), the user will be prompted for
-      audio capture access except for URLs configured in the
-      AudioCaptureAllowedUrls list which will be granted access without prompting.
+      'desc': '''Setting the policy to Enabled or leaving it unset means that, with the exception of URLs set in the AudioCaptureAllowedUrls list, users get prompted for audio capture access.
 
-      When this policy is disabled, the user will never be prompted and audio
-      capture only be available to URLs configured in AudioCaptureAllowedUrls.
+      Setting the policy to Disabled turns off prompts, and audio capture is only available to URLs set in the AudioCaptureAllowedUrls list.
 
-      This policy affects all types of audio inputs and not only the built-in microphone.''',
+      Note: The policy affects all audio input (not just the built-in microphone).''',
       'arc_support': 'For Android apps, this policy affects the microphone only. When this policy is set to true, the microphone is muted for all Android apps, with no exceptions.',
     },
     {
@@ -9570,13 +9567,9 @@
       'id': 208,
       'caption': '''URLs that will be granted access to audio capture devices without prompt''',
       'tags': ['website-sharing'],
-      'desc': '''Patterns in this list will be matched against the security
-      origin of the requesting URL.  If a match is found, access to audio
-      capture devices will be granted without prompt.
+      'desc': '''Setting the policy means you specify the URL list whose patterns get matched to the security origin of the requesting URL. A match grants access to audio capture devices without prompt
 
-      For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.
-
-      NOTE: Until version 45, this policy was only supported in Kiosk mode.''',
+      For detailed information on valid <ph name="URL_LABEL">url</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
       'name': 'VideoCaptureAllowed',
@@ -9592,14 +9585,11 @@
       'id': 167,
       'caption': '''Allow or deny video capture''',
       'tags': [],
-      'desc': '''If enabled or not configured (default), the user will be prompted for
-      video capture access except for URLs configured in the
-      VideoCaptureAllowedUrls list which will be granted access without prompting.
+      'desc': '''Setting the policy to Enabled or leaving it unset means that, with the exception of URLs set in the VideoCaptureAllowedUrls list, users get prompted for video capture access.
 
-      When this policy is disabled, the user will never be prompted and video
-      capture only be available to URLs configured in VideoCaptureAllowedUrls.
+      Setting the policy to Disabled turns off prompts, and video capture is only available to URLs set in the VideoCaptureAllowedUrls list.
 
-      This policy affects all types of video inputs and not only the built-in camera.''',
+      Note: The policy affects all video input (not just the built-in camera).''',
     },
     {
       'name': 'VideoCaptureAllowedUrls',
@@ -9618,13 +9608,9 @@
       'id': 209,
       'caption': '''URLs that will be granted access to video capture devices without prompt''',
       'tags': ['website-sharing'],
-      'desc': '''Patterns in this list will be matched against the security
-      origin of the requesting URL.  If a match is found, access to video
-      capture devices will be granted without prompt.
+      'desc': '''Setting the policy means you specify the URL list whose patterns get matched to the security origin of the requesting URL. A match grants access to video capture devices without prompt
 
-      For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.
-
-      NOTE: Until version 45, this policy was only supported in Kiosk mode.''',
+      For detailed information on valid <ph name="URL_LABEL">url</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
       'name': 'DisableScreenshots',
@@ -9694,15 +9680,13 @@
       'id': 269,
       'caption': '''Enable virtual keyboard''',
       'tags': [],
-      'desc': '''This policy configures enabling the virtual keyboard as an input device on ChromeOS. Users cannot override this policy.
+      'desc': '''Setting the policy to Enabled keeps the on-screen virtual keyboard (a Chrome OS input device) on. Setting the policy to Disabled keeps this keyboard off.
 
-      If the policy is set to true, the on-screen virtual keyboard will always be enabled.
+      If you set the policy, users can't change it. (They can turn an accessibility on-screen keyboard that takes precedence over the virtual keyboard on or off. See the VirtualKeyboardEnabled policy.)
 
-      If set to false, the on-screen virtual keyboard will always be disabled.
+      If not set, the keyboard is off, but users can change it.
 
-      If you set this policy, users cannot change or override it. However, users will still be able to enable/disable an accessibility on-screen keyboard which takes precedence over the virtual keyboard controlled by this policy. See the |VirtualKeyboardEnabled| policy for controlling the accessibility on-screen keyboard.
-
-      If this policy is left unset, the on-screen keyboard is disabled initially but can be enabled by the user anytime. Heuristic rules may also be used to decide when to display the keyboard.''',
+       Note: Heuristic rules might also factor into keyboard display.''',
     },
     {
       'name': 'ShowLogoutButtonInTray',
@@ -13607,9 +13591,9 @@
       'id': 322,
       'caption': '''Whitelist of USB detachable devices''',
       'tags': ['system-security'],
-      'desc': '''Defines the list of USB devices that are allowed to be detached from their kernel driver in order to be used through the chrome.usb API directly inside a web application. Entries are pairs of USB Vendor Identifier and Product Identifier to identify a specific hardware.
+      'desc': '''Setting the policy defines the list of USB devices users can detach from their kernel driver to use through the chrome.usb API directly inside a web app. Entries are pairs of USB Vendor Identifier and Product Identifier to identify specific hardware.
 
-      If this policy is not configured, the list of a detachable USB devices is empty.''',
+      If not set, the list of a detachable USB devices is empty.''',
     },
     {
       'name': 'DeviceAllowBluetooth',
@@ -13625,13 +13609,11 @@
       'id': 323,
       'caption': '''Allow bluetooth on device''',
       'tags': [],
-      'desc': '''If this policy is set to false, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will disable Bluetooth and the user cannot enable it back.
+      'desc': '''Setting the policy to Enabled or leaving it unset lets users turn Bluetooth on or off.
 
-      If this policy is set to true or left unset, the user will be able to enable or disable Bluetooth as they wish.
+      Setting the policy to Disabled means <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> turns Bluetooth off, and users can't turn it on.
 
-      If this policy is set, the user cannot change or override it.
-
-      After enabling Bluetooth, the user must log out and log back in for the changes to take effect (no need for this when disabling Bluetooth).''',
+      Note: To turn on Bluetooth, users must sign out and in again.''',
     },
     {
       'name': 'SuppressUnsupportedOSWarning',
@@ -16674,9 +16656,11 @@
       'id': 456,
       'caption': '''Configure the allowed input methods in a user session''',
       'tags': [],
-      'desc': '''Configures which keyboard layouts are allowed for <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> user sessions.
+      'desc': '''Setting the policy lets users choose one of the input methods (keyboard layouts) for <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> sessions that you specify.
 
-      If this policy is set, the user can only select one of the input methods specified by this policy. If this policy is not set or set to an empty list, the user can select all supported input methods. If the current input method is not allowed by this policy, the input method will be switched to the hardware keyboard layout (if allowed) or the first valid entry in this list. All invalid or unsupported input methods in this list will be ignored.'''
+       If you leave it unset or set to an empty list, users can select all supported input methods.
+
+      Note: If the current input method is unsupported, it switches to the hardware keyboard layout (if allowed) or the first valid entry in this list. Invalid or unsupported methods are ignored.'''
     },
     {
       'name': 'ArcAppInstallEventLoggingEnabled',

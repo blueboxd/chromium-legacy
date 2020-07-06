@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1559 tests; 1534 PASS, 25 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1613 tests; 1582 PASS, 31 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS [["insertlinebreak",""]] "foo[bar]baz": execCommand("insertlinebreak", false, "") return value
 PASS [["insertlinebreak",""]] "foo[bar]baz" checks for modifications to non-editable content
 PASS [["insertlinebreak",""]] "foo[bar]baz" compare innerHTML
@@ -1559,5 +1559,59 @@ PASS [["insertlinebreak",""]] "<div class=a id=x><p class=b id=y>foo[]bar</div>"
 PASS [["insertlinebreak",""]] "<div class=a id=x><p class=b id=y>foo[]bar</div>" queryCommandIndeterm("insertlinebreak") after
 PASS [["insertlinebreak",""]] "<div class=a id=x><p class=b id=y>foo[]bar</div>" queryCommandState("insertlinebreak") after
 PASS [["insertlinebreak",""]] "<div class=a id=x><p class=b id=y>foo[]bar</div>" queryCommandValue("insertlinebreak") after
+PASS [["insertlinebreak",""]] "<div>abc [] </div>": execCommand("insertlinebreak", false, "") return value
+PASS [["insertlinebreak",""]] "<div>abc [] </div>" checks for modifications to non-editable content
+FAIL [["insertlinebreak",""]] "<div>abc [] </div>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<div>abc<br><br></div>" but got "<div>abc  <br><br></div>"
+PASS [["insertlinebreak",""]] "<div>abc [] </div>" queryCommandIndeterm("insertlinebreak") before
+PASS [["insertlinebreak",""]] "<div>abc [] </div>" queryCommandState("insertlinebreak") before
+PASS [["insertlinebreak",""]] "<div>abc [] </div>" queryCommandValue("insertlinebreak") before
+PASS [["insertlinebreak",""]] "<div>abc [] </div>" queryCommandIndeterm("insertlinebreak") after
+PASS [["insertlinebreak",""]] "<div>abc [] </div>" queryCommandState("insertlinebreak") after
+PASS [["insertlinebreak",""]] "<div>abc [] </div>" queryCommandValue("insertlinebreak") after
+PASS [["insertlinebreak",""]] "<div>abc[]  </div>": execCommand("insertlinebreak", false, "") return value
+PASS [["insertlinebreak",""]] "<div>abc[]  </div>" checks for modifications to non-editable content
+FAIL [["insertlinebreak",""]] "<div>abc[]  </div>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<div>abc<br><br></div>" but got "<div>abc  <br><br></div>"
+PASS [["insertlinebreak",""]] "<div>abc[]  </div>" queryCommandIndeterm("insertlinebreak") before
+PASS [["insertlinebreak",""]] "<div>abc[]  </div>" queryCommandState("insertlinebreak") before
+PASS [["insertlinebreak",""]] "<div>abc[]  </div>" queryCommandValue("insertlinebreak") before
+PASS [["insertlinebreak",""]] "<div>abc[]  </div>" queryCommandIndeterm("insertlinebreak") after
+PASS [["insertlinebreak",""]] "<div>abc[]  </div>" queryCommandState("insertlinebreak") after
+PASS [["insertlinebreak",""]] "<div>abc[]  </div>" queryCommandValue("insertlinebreak") after
+PASS [["insertlinebreak",""]] "<div>[] abc</div>": execCommand("insertlinebreak", false, "") return value
+PASS [["insertlinebreak",""]] "<div>[] abc</div>" checks for modifications to non-editable content
+FAIL [["insertlinebreak",""]] "<div>[] abc</div>" compare innerHTML assert_in_array: Unexpected innerHTML (after normalizing inline style) value "<div><br>&nbsp;abc</div>" not in array ["<div><br>abc</div>", "<div><br> abc</div>"]
+PASS [["insertlinebreak",""]] "<div>[] abc</div>" queryCommandIndeterm("insertlinebreak") before
+PASS [["insertlinebreak",""]] "<div>[] abc</div>" queryCommandState("insertlinebreak") before
+PASS [["insertlinebreak",""]] "<div>[] abc</div>" queryCommandValue("insertlinebreak") before
+PASS [["insertlinebreak",""]] "<div>[] abc</div>" queryCommandIndeterm("insertlinebreak") after
+PASS [["insertlinebreak",""]] "<div>[] abc</div>" queryCommandState("insertlinebreak") after
+PASS [["insertlinebreak",""]] "<div>[] abc</div>" queryCommandValue("insertlinebreak") after
+PASS [["insertlinebreak",""]] "<div>[]  abc</div>": execCommand("insertlinebreak", false, "") return value
+PASS [["insertlinebreak",""]] "<div>[]  abc</div>" checks for modifications to non-editable content
+FAIL [["insertlinebreak",""]] "<div>[]  abc</div>" compare innerHTML assert_in_array: Unexpected innerHTML (after normalizing inline style) value "<div><br>&nbsp; abc</div>" not in array ["<div><br>abc</div>", "<div><br>  abc</div>"]
+PASS [["insertlinebreak",""]] "<div>[]  abc</div>" queryCommandIndeterm("insertlinebreak") before
+PASS [["insertlinebreak",""]] "<div>[]  abc</div>" queryCommandState("insertlinebreak") before
+PASS [["insertlinebreak",""]] "<div>[]  abc</div>" queryCommandValue("insertlinebreak") before
+PASS [["insertlinebreak",""]] "<div>[]  abc</div>" queryCommandIndeterm("insertlinebreak") after
+PASS [["insertlinebreak",""]] "<div>[]  abc</div>" queryCommandState("insertlinebreak") after
+PASS [["insertlinebreak",""]] "<div>[]  abc</div>" queryCommandValue("insertlinebreak") after
+PASS [["insertlinebreak",""]] "<div> [] abc</div>": execCommand("insertlinebreak", false, "") return value
+PASS [["insertlinebreak",""]] "<div> [] abc</div>" checks for modifications to non-editable content
+FAIL [["insertlinebreak",""]] "<div> [] abc</div>" compare innerHTML assert_in_array: Unexpected innerHTML (after normalizing inline style) value "<div><br>&nbsp; abc</div>" not in array ["<div><br>abc</div>", "<div><br> abc</div>", "<div><br>  abc</div>"]
+PASS [["insertlinebreak",""]] "<div> [] abc</div>" queryCommandIndeterm("insertlinebreak") before
+PASS [["insertlinebreak",""]] "<div> [] abc</div>" queryCommandState("insertlinebreak") before
+PASS [["insertlinebreak",""]] "<div> [] abc</div>" queryCommandValue("insertlinebreak") before
+PASS [["insertlinebreak",""]] "<div> [] abc</div>" queryCommandIndeterm("insertlinebreak") after
+PASS [["insertlinebreak",""]] "<div> [] abc</div>" queryCommandState("insertlinebreak") after
+PASS [["insertlinebreak",""]] "<div> [] abc</div>" queryCommandValue("insertlinebreak") after
+PASS [["insertlinebreak",""]] "<div>  []abc</div>": execCommand("insertlinebreak", false, "") return value
+PASS [["insertlinebreak",""]] "<div>  []abc</div>" checks for modifications to non-editable content
+FAIL [["insertlinebreak",""]] "<div>  []abc</div>" compare innerHTML assert_in_array: Unexpected innerHTML (after normalizing inline style) value "<div><br>&nbsp; abc</div>" not in array ["<div><br>abc</div>", "<div><br>  abc</div>"]
+PASS [["insertlinebreak",""]] "<div>  []abc</div>" queryCommandIndeterm("insertlinebreak") before
+PASS [["insertlinebreak",""]] "<div>  []abc</div>" queryCommandState("insertlinebreak") before
+PASS [["insertlinebreak",""]] "<div>  []abc</div>" queryCommandValue("insertlinebreak") before
+PASS [["insertlinebreak",""]] "<div>  []abc</div>" queryCommandIndeterm("insertlinebreak") after
+PASS [["insertlinebreak",""]] "<div>  []abc</div>" queryCommandState("insertlinebreak") after
+PASS [["insertlinebreak",""]] "<div>  []abc</div>" queryCommandValue("insertlinebreak") after
 Harness: the test ran to completion.
 

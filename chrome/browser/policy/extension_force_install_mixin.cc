@@ -16,6 +16,7 @@
 #include "base/files/important_file_writer.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/notreached.h"
+#include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
@@ -23,6 +24,7 @@
 #include "base/version.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/crx_file/crx_verifier.h"
+#include "extensions/browser/extension_creator.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -198,10 +200,27 @@ bool ExtensionForceInstallMixin::ForceInstallFromCrx(
   base::Version extension_version;
   return ParseCrxInnerData(crx_path, &extension_version) &&
          ServeExistingCrx(crx_path, local_extension_id, extension_version) &&
-         CreateAndServeUpdateManifestFile(local_extension_id,
-                                          extension_version) &&
-         UpdatePolicy(local_extension_id,
-                      GetServedUpdateManifestUrl(local_extension_id));
+         ForceInstallFromServedCrx(local_extension_id, extension_version);
+}
+
+bool ExtensionForceInstallMixin::ForceInstallFromSourceDir(
+    const base::FilePath& extension_dir_path,
+    const base::Optional<base::FilePath>& pem_path,
+    extensions::ExtensionId* extension_id) {
+  DCHECK(profile_) << "Init not called";
+  DCHECK(embedded_test_server_.Started()) << "Called before setup";
+
+  base::Version extension_version;
+  if (!ParseExtensionManifestData(extension_dir_path, &extension_version))
+    return false;
+  extensions::ExtensionId local_extension_id;
+  if (!CreateAndServeCrx(extension_dir_path, pem_path, extension_version,
+                         &local_extension_id)) {
+    return false;
+  }
+  if (extension_id)
+    *extension_id = local_extension_id;
+  return ForceInstallFromServedCrx(local_extension_id, extension_version);
 }
 
 void ExtensionForceInstallMixin::SetUpOnMainThread() {
@@ -247,6 +266,53 @@ bool ExtensionForceInstallMixin::ServeExistingCrx(
     return false;
   }
   return true;
+}
+
+bool ExtensionForceInstallMixin::CreateAndServeCrx(
+    const base::FilePath& extension_dir_path,
+    const base::Optional<base::FilePath>& pem_path,
+    const base::Version& extension_version,
+    extensions::ExtensionId* extension_id) {
+  base::ScopedAllowBlockingForTesting scoped_allow_blocking;
+
+  // Use a temporary CRX file name, since the ID is yet unknown if |pem_path| is
+  // empty. Delete the file first in case the previous operation failed in the
+  // middle.
+  const std::string kTempCrxFileName = "temp.crx";
+  const base::FilePath temp_crx_path =
+      temp_dir_.GetPath().AppendASCII(kTempCrxFileName);
+  base::DeleteFile(temp_crx_path);
+  extensions::ExtensionCreator extension_creator;
+  if (!extension_creator.Run(extension_dir_path, temp_crx_path,
+                             pem_path.value_or(base::FilePath()),
+                             /*private_key_output_path=*/base::FilePath(),
+                             /*run_flags=*/0)) {
+    ADD_FAILURE() << "Failed to pack extension: "
+                  << extension_creator.error_message();
+    return false;
+  }
+
+  if (!ParseCrxOuterData(temp_crx_path, extension_id))
+    return false;
+  const base::FilePath served_crx_path = GetServedDirPath().AppendASCII(
+      GetServedCrxFileName(*extension_id, extension_version));
+  if (!base::Move(temp_crx_path, served_crx_path)) {
+    ADD_FAILURE() << "Failed to move the created CRX file to "
+                  << served_crx_path.value();
+    return false;
+  }
+
+  return true;
+}
+
+bool ExtensionForceInstallMixin::ForceInstallFromServedCrx(
+    const extensions::ExtensionId& extension_id,
+    const base::Version& extension_version) {
+  DCHECK(profile_) << "Init not called";
+  DCHECK(embedded_test_server_.Started()) << "Called before setup";
+
+  return CreateAndServeUpdateManifestFile(extension_id, extension_version) &&
+         UpdatePolicy(extension_id, GetServedUpdateManifestUrl(extension_id));
 }
 
 bool ExtensionForceInstallMixin::CreateAndServeUpdateManifestFile(

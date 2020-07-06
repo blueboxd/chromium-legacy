@@ -1319,9 +1319,9 @@ TEST_F(ContentSecurityPolicyTest, EmptyCSPIsNoOp) {
                                  g_empty_string));
   EXPECT_TRUE(csp->AllowPluginType("application/x-type-1",
                                    "application/x-type-1", example_url));
-  EXPECT_TRUE(csp->AllowPluginTypeForDocument(
-      *document, "application/x-type-1", "application/x-type-1", example_url,
-      ReportingDisposition::kSuppressReporting));
+  EXPECT_TRUE(csp->AllowPluginType("application/x-type-1",
+                                   "application/x-type-1", example_url,
+                                   ReportingDisposition::kSuppressReporting));
 
   ContentSecurityPolicy::DirectiveType types_to_test[] = {
       ContentSecurityPolicy::DirectiveType::kBaseURI,

@@ -179,7 +179,8 @@ void ScopedFeatureList::InitFromCommandLine(
     const std::string& enable_features,
     const std::string& disable_features) {
   std::unique_ptr<FeatureList> feature_list(new FeatureList);
-  feature_list->InitializeFromCommandLine(enable_features, disable_features);
+  feature_list->InitializeFromCommandLineWithFeatureParams(
+      enable_features, disable_features, &FeatureList::NoOpDecodeFunc);
   InitWithFeatureList(std::move(feature_list));
 }
 

@@ -1381,6 +1381,7 @@ TEST_P(CompositingSimTest, PromoteCrossOriginToParentIframeAfterDomainChange) {
   auto* main_iframe_element =
       To<HTMLIFrameElement>(GetDocument().getElementById("main_iframe"));
   NonThrowableExceptionState exception_state;
+
   GetDocument().setDomain(String("origin-a.com"), exception_state);
   auto* child_iframe_element = To<HTMLIFrameElement>(
       main_iframe_element->contentDocument()->getElementById("child_iframe"));
@@ -1392,7 +1393,6 @@ TEST_P(CompositingSimTest, PromoteCrossOriginToParentIframeAfterDomainChange) {
   // We may not have scheduled a visual update so force an update instead of
   // using BeginFrame.
   UpdateAllLifecyclePhases();
-
   iframe_doc = To<HTMLFrameOwnerElement>(GetElementById("main_iframe"))
                    ->contentDocument();
   EXPECT_FALSE(CcLayerByOwnerNodeId(iframe_doc));

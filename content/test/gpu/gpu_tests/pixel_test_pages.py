@@ -291,7 +291,12 @@ class PixelTestPages(object):
                       }),
         PixelTestPage('pixel_video_backdrop_filter.html',
                       base_name + '_Video_BackdropFilter',
-                      test_rect=[0, 0, 240, 135]),
+                      test_rect=[0, 0, 240, 135],
+                      matching_algorithm=algo.SobelMatchingAlgorithm(
+                          max_different_pixels=1000,
+                          pixel_delta_threshold=20,
+                          edge_threshold=40,
+                          ignored_border_thickness=1)),
         PixelTestPage('pixel_webgl_premultiplied_alpha_false.html',
                       base_name + '_WebGL_PremultipliedAlpha_False',
                       test_rect=[0, 0, 150, 150]),

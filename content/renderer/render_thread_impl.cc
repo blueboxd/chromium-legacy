@@ -693,26 +693,7 @@ void RenderThreadImpl::Init() {
 #if defined(OS_ANDROID)
   if (!command_line.HasSwitch(switches::kDisableAcceleratedVideoDecode) &&
       media::MediaCodecUtil::IsMediaCodecAvailable()) {
-    bool accelerated_video_decode_blacklisted = false;
-    if (!command_line.HasSwitch(switches::kIgnoreGpuBlacklist)) {
-      int32_t major_version = 0, minor_version = 0, bugfix_version = 0;
-      base::SysInfo::OperatingSystemVersionNumbers(
-          &major_version, &minor_version, &bugfix_version);
-      if (major_version < 5) {
-        // Currently accelerated video decode is only blacklisted on
-        // Android older than Lollipop.
-        scoped_refptr<gpu::GpuChannelHost> gpu_channel_host =
-            EstablishGpuChannelSync();
-        if (!gpu_channel_host ||
-            gpu_channel_host->gpu_feature_info().status_values
-                    [gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE] !=
-                gpu::kGpuFeatureStatusEnabled) {
-          accelerated_video_decode_blacklisted = true;
-        }
-      }
-    }
-    if (!accelerated_video_decode_blacklisted)
-      media::EnablePlatformDecoderSupport();
+    media::EnablePlatformDecoderSupport();
   }
 #endif
 

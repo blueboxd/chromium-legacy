@@ -1734,7 +1734,7 @@ ContentSecurityPolicy* FrameLoader::CreateCSP(
   // Document.
   if (commit_reason == CommitReason::kXSLT) {
     ContentSecurityPolicy* csp = MakeGarbageCollected<ContentSecurityPolicy>();
-    csp->CopyStateFrom(frame_->GetDocument()->GetContentSecurityPolicy());
+    csp->CopyStateFrom(frame_->DomWindow()->GetContentSecurityPolicy());
     return csp;
   }
 

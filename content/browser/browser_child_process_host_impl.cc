@@ -647,6 +647,14 @@ void BrowserChildProcessHostImpl::OnProcessLaunched() {
         base::BindOnce(&NotifyProcessLaunchedAndConnected, data_.Duplicate()));
   }
 
+#if defined(OS_CHROMEOS)
+  // In ChromeOS, there are still child processes of NaCl modules, and they
+  // don't contribute to tracing actually. So do not register those clients
+  // to the tracing service. See https://crbug.com/1101468.
+  if (data_.process_type >= PROCESS_TYPE_CONTENT_END)
+    return;
+#endif
+
   tracing_registration_ = TracingServiceController::Get().RegisterClient(
       process.Pid(), base::BindRepeating(&BindTracedProcessFromUIThread,
                                          weak_factory_.GetWeakPtr()));

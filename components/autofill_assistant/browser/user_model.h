@@ -74,17 +74,6 @@ class UserModel {
     return values;
   }
 
-  // Adds a set of placeholders (overwrite if necessary). When looking up values
-  // by identifier, all occurrences of ${key} are automatically replaced by
-  // their value. Example: the current set of placeholders contains "i" -> "1".
-  // Looking up the value "value[${i}]" will now actually lookup "value[1]".
-  void AddIdentifierPlaceholders(
-      const std::map<std::string, std::string> placeholders);
-
-  // Removes a set of placeholders.
-  void RemoveIdentifierPlaceholders(
-      const std::map<std::string, std::string> placeholders);
-
   // Replaces the set of available autofill credit cards.
   void SetAutofillCreditCards(
       std::unique_ptr<std::vector<std::unique_ptr<autofill::CreditCard>>>
@@ -118,7 +107,6 @@ class UserModel {
   friend class UserModelTest;
 
   std::map<std::string, ValueProto> values_;
-  std::map<std::string, std::string> identifier_placeholders_;
   std::map<std::string, std::unique_ptr<autofill::CreditCard>> credit_cards_;
   std::map<std::string, std::unique_ptr<autofill::AutofillProfile>> profiles_;
   base::ObserverList<Observer> observers_;

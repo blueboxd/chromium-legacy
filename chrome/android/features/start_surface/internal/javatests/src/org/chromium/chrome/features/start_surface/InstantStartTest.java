@@ -124,7 +124,8 @@ public class InstantStartTest {
     public TestRule mProcessor = new Features.InstrumentationProcessor();
 
     @Rule
-    public ChromeRenderTestRule mRenderTestRule = new ChromeRenderTestRule();
+    public ChromeRenderTestRule mRenderTestRule =
+            ChromeRenderTestRule.Builder.withPublicCorpus().build();
 
     /**
      * Only launch Chrome without waiting for a current tab.

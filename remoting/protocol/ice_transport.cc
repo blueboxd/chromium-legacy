@@ -46,7 +46,8 @@ void IceTransport::Start(
       pseudotcp_channel_factory_.get(), authenticator));
   message_channel_factory_.reset(new StreamMessageChannelFactoryAdapter(
       secure_channel_factory_.get(),
-      base::Bind(&IceTransport::OnChannelError, weak_factory_.GetWeakPtr())));
+      base::BindRepeating(&IceTransport::OnChannelError,
+                          weak_factory_.GetWeakPtr())));
 }
 
 bool IceTransport::ProcessTransportInfo(jingle_xmpp::XmlElement* transport_info_xml) {
@@ -91,7 +92,8 @@ MessageChannelFactory* IceTransport::GetMultiplexedChannelFactory() {
         new ChannelMultiplexer(secure_channel_factory_.get(), kMuxChannelName));
     mux_channel_factory_.reset(new StreamMessageChannelFactoryAdapter(
         channel_multiplexer_.get(),
-        base::Bind(&IceTransport::OnChannelError, weak_factory_.GetWeakPtr())));
+        base::BindRepeating(&IceTransport::OnChannelError,
+                            weak_factory_.GetWeakPtr())));
   }
   return mux_channel_factory_.get();
 }

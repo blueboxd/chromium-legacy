@@ -165,8 +165,7 @@ bool TrustedTypeFail(TrustedTypeViolationKind kind,
     prefix = "Function";
   }
   bool allow =
-      execution_context->GetSecurityContext()
-          .GetContentSecurityPolicy()
+      execution_context->GetContentSecurityPolicy()
           ->AllowTrustedTypeAssignmentFailure(
               GetMessage(kind),
               prefix == "Function" ? value.Substring(strlen(kAnonymousPrefix))
@@ -181,9 +180,8 @@ bool TrustedTypeFail(TrustedTypeViolationKind kind,
     DCHECK(kind == kTrustedScriptAssignment ||
            kind == kTrustedScriptAssignmentAndDefaultPolicyFailed ||
            kind == kTrustedScriptAssignmentAndNoDefaultPolicyExisted);
-    execution_context->GetSecurityContext()
-        .GetContentSecurityPolicy()
-        ->LogToConsole(MakeGarbageCollected<ConsoleMessage>(
+    execution_context->GetContentSecurityPolicy()->LogToConsole(
+        MakeGarbageCollected<ConsoleMessage>(
             mojom::blink::ConsoleMessageSource::kRecommendation,
             mojom::blink::ConsoleMessageLevel::kInfo,
             kFunctionConstructorFailureConsoleMessage));

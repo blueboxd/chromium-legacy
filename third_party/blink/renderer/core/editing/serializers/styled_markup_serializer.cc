@@ -267,7 +267,8 @@ String StyledMarkupSerializer<Strategy>::CreateMarkup() {
                       html_names::kBackgroundAttr) +
                   "')",
               /* important */ false,
-              fully_selected_root->GetDocument().GetSecureContextMode());
+              fully_selected_root->GetExecutionContext()
+                  ->GetSecureContextMode());
         }
 
         if (fully_selected_root_style->Style()) {

@@ -46,7 +46,8 @@ public class SignOutDialogRenderTest extends DummyUiActivityTestCase {
     public final DisableAnimationsTestRule mNoAnimationsRule = new DisableAnimationsTestRule();
 
     @Rule
-    public final ChromeRenderTestRule mRenderTestRule = new ChromeRenderTestRule();
+    public final ChromeRenderTestRule mRenderTestRule =
+            ChromeRenderTestRule.Builder.withPublicCorpus().build();
 
     @Rule
     public final JniMocker mocker = new JniMocker();

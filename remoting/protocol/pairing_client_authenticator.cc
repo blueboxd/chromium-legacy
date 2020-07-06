@@ -58,9 +58,9 @@ void PairingClientAuthenticator::CreateSpakeAuthenticatorWithPin(
   DCHECK(!waiting_for_pin_);
   waiting_for_pin_ = true;
   client_auth_config_.fetch_secret_callback.Run(
-      true, base::Bind(&PairingClientAuthenticator::OnPinFetched,
-                       weak_factory_.GetWeakPtr(), initial_state,
-                       base::Passed(std::move(resume_callback))));
+      true, base::BindRepeating(&PairingClientAuthenticator::OnPinFetched,
+                                weak_factory_.GetWeakPtr(), initial_state,
+                                base::Passed(std::move(resume_callback))));
 }
 
 void PairingClientAuthenticator::OnPinFetched(State initial_state,

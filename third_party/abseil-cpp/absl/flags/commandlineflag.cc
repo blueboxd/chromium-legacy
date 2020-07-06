@@ -30,9 +30,5 @@ bool CommandLineFlag::ParseFrom(absl::string_view value, std::string* error) {
                    flags_internal::kProgrammaticChange, *error);
 }
 
-namespace flags_internal {
-FlagStateInterface::~FlagStateInterface() {}
-}  // namespace flags_internal
 ABSL_NAMESPACE_END
 }  // namespace absl
-

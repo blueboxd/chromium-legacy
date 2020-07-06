@@ -10,6 +10,7 @@ import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
+import org.chromium.components.offline_items_collection.OfflineItemSchedule;
 import org.chromium.components.offline_items_collection.OpenParams;
 import org.chromium.components.offline_items_collection.ShareCallback;
 import org.chromium.components.offline_items_collection.UpdateDelta;
@@ -61,6 +62,12 @@ class DownloadBlockedOfflineContentProvider
     public void resumeDownload(ContentId id, boolean hasUserGesture) {
         assert !LegacyHelpers.isLegacyDownload(id);
         mProvider.resumeDownload(id, hasUserGesture);
+    }
+
+    @Override
+    public void changeSchedule(final ContentId id, final OfflineItemSchedule schedule) {
+        assert !LegacyHelpers.isLegacyDownload(id);
+        mProvider.changeSchedule(id, schedule);
     }
 
     @Override

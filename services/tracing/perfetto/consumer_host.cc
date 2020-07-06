@@ -217,27 +217,35 @@ ConsumerHost::TracingSession::~TracingSession() {
 
 void ConsumerHost::TracingSession::OnPerfettoEvents(
     const perfetto::ObservableEvents& events) {
-  if (!pending_enable_tracing_ack_pids_) {
+  if (!pending_enable_tracing_ack_pids_ ||
+      !events.instance_state_changes_size()) {
     return;
   }
 
   for (const auto& state_change : events.instance_state_changes()) {
-    if (state_change.state() !=
-        perfetto::ObservableEvents::DATA_SOURCE_INSTANCE_STATE_STARTED) {
-      continue;
-    }
+    DataSourceHandle handle(state_change.producer_name(),
+                            state_change.data_source_name());
+    data_source_states_[handle] =
+        state_change.state() ==
+        perfetto::ObservableEvents::DATA_SOURCE_INSTANCE_STATE_STARTED;
+  }
 
-    if (state_change.data_source_name() != mojom::kTraceEventDataSourceName) {
-      continue;
-    }
+  // Data sources are first reported as being stopped before starting, so once
+  // all the data sources we know about have started we can declare tracing
+  // begun.
+  bool all_data_sources_started = std::all_of(
+      data_source_states_.cbegin(), data_source_states_.cend(),
+      [](std::pair<DataSourceHandle, bool> state) { return state.second; });
+  if (!all_data_sources_started)
+    return;
 
+  for (const auto& it : data_source_states_) {
     // Attempt to parse the PID out of the producer name.
     base::ProcessId pid;
-    if (!PerfettoService::ParsePidFromProducerName(state_change.producer_name(),
+    if (!PerfettoService::ParsePidFromProducerName(it.first.producer_name(),
                                                    &pid)) {
       continue;
     }
-
     pending_enable_tracing_ack_pids_->erase(pid);
   }
   MaybeSendEnableTracingAck();

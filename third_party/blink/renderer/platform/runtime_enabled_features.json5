@@ -427,6 +427,7 @@
     },
     {
       name: "CSSFoldables",
+      status: "experimental",
     },
     {
       name: "CSSFontSizeAdjust",
@@ -1535,10 +1536,6 @@
       status: "stable",
     },
     {
-      name: "RestrictAppCacheToSecureContexts",
-      status: "stable",
-    },
-    {
       name: "RestrictAutomaticLazyFrameLoadingToDataSaver",
       depends_on: ["AutomaticLazyFrameLoading"],
       status: "stable",
@@ -2078,7 +2075,7 @@
     },
     {
       name: "WindowSegments",
-      status: "test"
+      status: "experimental",
     },
     {
       name: "XSLT",

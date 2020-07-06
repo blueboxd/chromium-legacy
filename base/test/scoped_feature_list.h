@@ -72,7 +72,9 @@ class ScopedFeatureList final {
   // default values, which can hide feature interaction bugs. Please use
   // sparingly.  https://crbug.com/713390
   // Initializes and registers a FeatureList instance with only the given
-  // enabled and disabled features (comma-separated names).
+  // enabled and disabled features (comma-separated names). If feature params
+  // are provided in the |enable_features|, this also associates features to
+  // their params.
   void InitFromCommandLine(const std::string& enable_features,
                            const std::string& disable_features);
 
@@ -139,7 +141,7 @@ class ScopedFeatureList final {
 
   bool init_called_ = false;
   std::unique_ptr<FeatureList> original_feature_list_;
-  base::FieldTrialList* original_field_trial_list_;
+  base::FieldTrialList* original_field_trial_list_ = nullptr;
   std::string original_params_;
   std::unique_ptr<base::FieldTrialList> field_trial_list_;
 

@@ -2096,9 +2096,9 @@ virtual/not-split-http-cache-not-site-per-process/http/tests/devtools/isolated-c
 virtual/split-http-cache-not-site-per-process/http/tests/devtools/isolated-code-cache/cross-origin-test.js [ Pass ]
 
 # This test run under virtual suites only.
-crbug.com/981970 external/wpt/fetch/http-cache/split-cache.tentative.html [ Skip ]
-virtual/not-split-http-cache/external/wpt/fetch/http-cache/split-cache.tentative.html [ Pass ]
-virtual/split-http-cache/external/wpt/fetch/http-cache/split-cache.tentative.html [ Pass ]
+crbug.com/981970 external/wpt/fetch/http-cache/split-cache.html [ Skip ]
+virtual/not-split-http-cache/external/wpt/fetch/http-cache/split-cache.html [ Pass ]
+virtual/split-http-cache/external/wpt/fetch/http-cache/split-cache.html [ Pass ]
 
 # Run the tests with the default MSE buffer sizes in the main test suite and the tests for 1MB buffers set via command line in a virtual test suite
 # with the --mse-audio-buffer-size-limit=1048576 and --mse-video-buffer-size-limit=1048576 command-line parameters.

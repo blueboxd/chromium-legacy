@@ -428,6 +428,38 @@ void FeatureInfo::EnableOESTextureHalfFloatLinear() {
   feature_flags_.gpu_memory_buffer_formats.Add(gfx::BufferFormat::RGBA_F16);
 }
 
+void FeatureInfo::EnableANGLEInstancedArrayIfPossible(
+    const gfx::ExtensionSet& extensions) {
+  if (!feature_flags_.angle_instanced_arrays) {
+    if (gfx::HasExtension(extensions, "GL_ANGLE_instanced_arrays") ||
+        (gfx::HasExtension(extensions, "GL_ARB_instanced_arrays") &&
+         gfx::HasExtension(extensions, "GL_ARB_draw_instanced")) ||
+        gl_version_info_->is_es3 || gl_version_info_->is_desktop_core_profile) {
+      AddExtensionString("GL_ANGLE_instanced_arrays");
+      feature_flags_.angle_instanced_arrays = true;
+      validators_.vertex_attribute.AddValue(
+          GL_VERTEX_ATTRIB_ARRAY_DIVISOR_ANGLE);
+    }
+  }
+}
+
+void FeatureInfo::EnableWEBGLMultiDrawIfPossible(
+    const gfx::ExtensionSet& extensions) {
+  if (!feature_flags_.webgl_multi_draw) {
+    if (!is_passthrough_cmd_decoder_ ||
+        gfx::HasExtension(extensions, "GL_ANGLE_multi_draw")) {
+      if (gfx::HasExtension(extensions, "GL_ANGLE_instanced_arrays") ||
+          feature_flags_.angle_instanced_arrays || gl_version_info_->is_es3 ||
+          gl_version_info_->is_desktop_core_profile) {
+        feature_flags_.webgl_multi_draw = true;
+        AddExtensionString("GL_WEBGL_multi_draw");
+
+        EnableANGLEInstancedArrayIfPossible(extensions);
+      }
+    }
+  }
+}
+
 void FeatureInfo::InitializeFeatures() {
   // Figure out what extensions to turn on.
   std::string extensions_string(gl::GetGLExtensionsFromCurrentContext());
@@ -1246,14 +1278,7 @@ void FeatureInfo::InitializeFeatures() {
         !have_arb_occlusion_query2;
   }
 
-  if (gfx::HasExtension(extensions, "GL_ANGLE_instanced_arrays") ||
-      (gfx::HasExtension(extensions, "GL_ARB_instanced_arrays") &&
-       gfx::HasExtension(extensions, "GL_ARB_draw_instanced")) ||
-      gl_version_info_->is_es3 || gl_version_info_->is_desktop_core_profile) {
-    AddExtensionString("GL_ANGLE_instanced_arrays");
-    feature_flags_.angle_instanced_arrays = true;
-    validators_.vertex_attribute.AddValue(GL_VERTEX_ATTRIB_ARRAY_DIVISOR_ANGLE);
-  }
+  EnableANGLEInstancedArrayIfPossible(extensions);
 
   bool have_es2_draw_buffers_vendor_agnostic =
       gl_version_info_->is_desktop_core_profile ||
@@ -1628,16 +1653,7 @@ void FeatureInfo::InitializeFeatures() {
     feature_flags_.khr_robust_buffer_access_behavior = true;
   }
 
-  if (!is_passthrough_cmd_decoder_ ||
-      gfx::HasExtension(extensions, "GL_ANGLE_multi_draw")) {
-
-    if (gfx::HasExtension(extensions, "GL_ANGLE_instanced_arrays") ||
-        feature_flags_.angle_instanced_arrays || gl_version_info_->is_es3 ||
-        gl_version_info_->is_desktop_core_profile) {
-      feature_flags_.webgl_multi_draw = true;
-      AddExtensionString("GL_WEBGL_multi_draw");
-    }
-  }
+  EnableWEBGLMultiDrawIfPossible(extensions);
 
 #if defined(OS_MACOSX)
   if (is_passthrough_cmd_decoder_ &&

@@ -129,8 +129,10 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectPrecisionRecallMetrics) {
       gen(1), network::mojom::RequestDestination::kScript));
   resources.push_back(CreateResourceLoadInfo(
       gen(100), network::mojom::RequestDestination::kScript));
+  base::TimeTicks now = base::TimeTicks::Now();
   PageRequestSummary summary =
-      CreatePageRequestSummary(main_frame_url, main_frame_url, resources);
+      CreatePageRequestSummary(main_frame_url, main_frame_url, resources, now);
+  summary.navigation_committed = now + base::TimeDelta::FromMilliseconds(3);
 
   stats_collector_->RecordPageRequestSummary(summary, base::nullopt);
 
@@ -158,6 +160,10 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectPrecisionRecallMetrics) {
       ukm::builders::LoadingPredictor::
           kLocalPredictionCorrectlyPredictedOriginsName,
       2);
+  ukm_recorder_->ExpectEntryMetric(
+      entry,
+      ukm::builders::LoadingPredictor::kNavigationStartToNavigationCommitName,
+      3);
   // Make sure optimization guide metrics are not recorded.
   EXPECT_FALSE(ukm_recorder_->EntryHasMetric(
       entry, ukm::builders::LoadingPredictor::
@@ -194,6 +200,9 @@ TEST_F(LoadingStatsCollectorTest,
       OptimizationGuidePrediction();
   optimization_guide_prediction->decision =
       optimization_guide::OptimizationGuideDecision::kTrue;
+  base::TimeTicks now = base::TimeTicks::Now();
+  optimization_guide_prediction->optimization_guide_prediction_arrived =
+      now + base::TimeDelta::FromMilliseconds(3);
   optimization_guide_prediction->preconnect_prediction =
       CreatePreconnectPrediction(
           GURL(main_frame_url).host(), false,
@@ -214,7 +223,7 @@ TEST_F(LoadingStatsCollectorTest,
   resources.push_back(CreateResourceLoadInfo(
       gen(100), network::mojom::RequestDestination::kScript));
   PageRequestSummary summary =
-      CreatePageRequestSummary(main_frame_url, main_frame_url, resources);
+      CreatePageRequestSummary(main_frame_url, main_frame_url, resources, now);
 
   stats_collector_->RecordPageRequestSummary(summary,
                                              optimization_guide_prediction);
@@ -241,6 +250,11 @@ TEST_F(LoadingStatsCollectorTest,
       ukm::builders::LoadingPredictor::kOptimizationGuidePredictionDecisionName,
       static_cast<int64_t>(
           optimization_guide::OptimizationGuideDecision::kTrue));
+  ukm_recorder_->ExpectEntryMetric(
+      entry,
+      ukm::builders::LoadingPredictor::
+          kNavigationStartToOptimizationGuidePredictionArrivedName,
+      3);
   ukm_recorder_->ExpectEntryMetric(
       entry,
       ukm::builders::LoadingPredictor::kOptimizationGuidePredictionOriginsName,
@@ -362,8 +376,10 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectHistogramsEmpty) {
   resources.push_back(
       CreateResourceLoadInfo("http://cdn.google.com/script.js",
                              network::mojom::RequestDestination::kScript));
+  base::TimeTicks now = base::TimeTicks::Now();
   PageRequestSummary summary =
-      CreatePageRequestSummary(main_frame_url, main_frame_url, resources);
+      CreatePageRequestSummary(main_frame_url, main_frame_url, resources, now);
+  summary.navigation_committed = now + base::TimeDelta::FromMilliseconds(3);
   stats_collector_->RecordPageRequestSummary(summary, base::nullopt);
 
   // No histograms should be recorded.
@@ -375,6 +391,11 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectHistogramsEmpty) {
       internal::kLoadingPredictorPreresolveCount, 0);
   histogram_tester_->ExpectTotalCount(
       internal::kLoadingPredictorPreconnectCount, 0);
+  // UKM should not be recorded since we did not have predictions for the
+  // navigation.
+  auto entries = ukm_recorder_->GetEntriesByName(
+      ukm::builders::LoadingPredictor::kEntryName);
+  EXPECT_EQ(0u, entries.size());
 }
 
 // Tests that the preconnect won't divide by zero if preconnect stats contain

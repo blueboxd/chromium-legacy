@@ -3,6 +3,7 @@ include_rules = [
   "+chrome/browser/android/lifecycle",
   "+chrome/browser/image_fetcher",
   "+chrome/android/java/src/org/chromium/chrome/browser/ssl/ChromeSecurityStateModelDelegate.java",
+  "+chrome/browser/performance_hints/android/java",
   "+chrome/browser/profiles/android",
   "+chrome/browser/tab",
   "+chrome/browser/thumbnail/generator/android/java",

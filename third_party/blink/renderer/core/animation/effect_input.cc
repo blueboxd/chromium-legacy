@@ -93,12 +93,14 @@ void SetKeyframeValue(Element* element,
   if (css_property != CSSPropertyID::kInvalid) {
     MutableCSSPropertyValueSet::SetResult set_result =
         css_property == CSSPropertyID::kVariable
-            ? keyframe.SetCSSPropertyValue(AtomicString(property), value,
-                                           document.GetSecureContextMode(),
-                                           style_sheet_contents)
-            : keyframe.SetCSSPropertyValue(css_property, value,
-                                           document.GetSecureContextMode(),
-                                           style_sheet_contents);
+            ? keyframe.SetCSSPropertyValue(
+                  AtomicString(property), value,
+                  document.GetExecutionContext()->GetSecureContextMode(),
+                  style_sheet_contents)
+            : keyframe.SetCSSPropertyValue(
+                  css_property, value,
+                  document.GetExecutionContext()->GetSecureContextMode(),
+                  style_sheet_contents);
     if (!set_result.did_parse && execution_context) {
       if (document.GetFrame()) {
         document.GetFrame()->Console().AddMessage(
@@ -116,7 +118,8 @@ void SetKeyframeValue(Element* element,
                                                                       element);
   if (css_property != CSSPropertyID::kInvalid) {
     keyframe.SetPresentationAttributeValue(
-        CSSProperty::Get(css_property), value, document.GetSecureContextMode(),
+        CSSProperty::Get(css_property), value,
+        document.GetExecutionContext()->GetSecureContextMode(),
         style_sheet_contents);
     return;
   }

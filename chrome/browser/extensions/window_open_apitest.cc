@@ -164,13 +164,7 @@ IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, WindowOpenPopupSmall) {
   EXPECT_TRUE(WaitForTabsPopupsApps(browser(), 0, 0, 1));
 }
 
-// Disabled on Windows. Often times out or fails: crbug.com/177530
-#if defined(OS_WIN)
-#define MAYBE_PopupBlockingExtension DISABLED_PopupBlockingExtension
-#else
-#define MAYBE_PopupBlockingExtension PopupBlockingExtension
-#endif
-IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, MAYBE_PopupBlockingExtension) {
+IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, PopupBlockingExtension) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   ASSERT_TRUE(LoadExtension(

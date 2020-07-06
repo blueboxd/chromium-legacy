@@ -80,6 +80,50 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Accessibility.ImageDescriptions">
+  <owner>dmazzoni@chromium.org</owner>
+  <summary>
+    Tracks automatic image descriptions provided to blind users.
+  </summary>
+  <metric name="Description" enum="Boolean">
+    <summary>
+      Whether the image description included a description.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="ImageAlreadyHasLabel" enum="Boolean">
+    <summary>
+      Whether the image already had label text before it was augmented with an
+      additional description.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="OCR" enum="Boolean">
+    <summary>
+      Whether the image description included OCR text.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
 <event name="Accessibility.Renderer">
   <owner>dmazzoni@chromium.org</owner>
   <summary>
@@ -4264,6 +4308,11 @@ be describing additional metrics about the same event.
       True when a rAF-driven animation was active this frame.
     </summary>
   </metric>
+  <metric name="ScrollbarScroll" enum="Boolean">
+    <summary>
+      True when a scrollbar driven interaction was active this frame.
+    </summary>
+  </metric>
   <metric name="SendBeginMainFrameToCommit">
     <summary>
       The time from when the BeginMainFrame is sent to the beginning of the
@@ -4508,6 +4557,12 @@ be describing additional metrics about the same event.
       animation.
     </summary>
   </metric>
+  <metric name="CompositorThread.ScrollbarScroll">
+    <summary>
+      The throughput of the compositor thread during scrollbar scroll driven
+      interactions.
+    </summary>
+  </metric>
   <metric name="CompositorThread.TouchScroll">
     <summary>
       The throughput of the compositor thread during touchscroll driven
@@ -4548,6 +4603,12 @@ be describing additional metrics about the same event.
   <metric name="MainThread.RAF">
     <summary>
       The throughput of the main thread during rAF callback driven animation.
+    </summary>
+  </metric>
+  <metric name="MainThread.ScrollbarScroll">
+    <summary>
+      The throughput of the main thread during scrollbar scroll driven
+      interactions.
     </summary>
   </metric>
   <metric name="MainThread.TouchScroll">
@@ -4617,6 +4678,20 @@ be describing additional metrics about the same event.
     <summary>
       The worse throughput of the main and the compositor thread during rAF
       callback driven animation.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="SlowerThread.ScrollbarScroll">
+    <summary>
+      The worse throughput of the main and the compositor thread during
+      scrollbar driven interactions.
     </summary>
     <aggregation>
       <history>
@@ -5209,6 +5284,18 @@ be describing additional metrics about the same event.
       database and does not necessarily mean that the prediction was used. If
       more than 100 subresource origins were predicted, this will be capped at
       100.
+    </summary>
+  </metric>
+  <metric name="NavigationStartToNavigationCommit">
+    <summary>
+      The time (in milliseconds) that elapsed between navigation start and the
+      commit finished.
+    </summary>
+  </metric>
+  <metric name="NavigationStartToOptimizationGuidePredictionArrived">
+    <summary>
+      The time (in milliseconds) that elapsed between navigation start and the
+      optimization guide prediction arriving for the navigation.
     </summary>
   </metric>
   <metric name="OptimizationGuidePredictionCorrectlyPredictedOrigins">

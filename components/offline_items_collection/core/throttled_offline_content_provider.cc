@@ -113,6 +113,12 @@ void ThrottledOfflineContentProvider::RenameItem(const ContentId& id,
   wrapped_provider_->RenameItem(id, name, std::move(callback));
 }
 
+void ThrottledOfflineContentProvider::ChangeSchedule(
+    const ContentId& id,
+    base::Optional<OfflineItemSchedule> schedule) {
+  wrapped_provider_->ChangeSchedule(id, std::move(schedule));
+}
+
 void ThrottledOfflineContentProvider::AddObserver(
     OfflineContentProvider::Observer* observer) {
   DCHECK(observer);

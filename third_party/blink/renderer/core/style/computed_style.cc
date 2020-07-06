@@ -2270,6 +2270,13 @@ Color ComputedStyle::VisitedDependentColor(
                unvisited_color.Alpha());
 }
 
+Color ComputedStyle::ResolvedColor(const StyleColor& color) const {
+  bool visited_link = (InsideLink() == EInsideLink::kInsideVisitedLink);
+  Color current_color =
+      visited_link ? GetInternalVisitedCurrentColor() : GetCurrentColor();
+  return color.Resolve(current_color);
+}
+
 void ComputedStyle::SetMarginStart(const Length& margin) {
   if (IsHorizontalWritingMode()) {
     if (IsLeftToRightDirection())

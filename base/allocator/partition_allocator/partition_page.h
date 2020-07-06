@@ -27,6 +27,7 @@ namespace internal {
 struct DeferredUnmap {
   void* ptr = nullptr;
   size_t size = 0;
+
   // In most cases there is no page to unmap and ptr == nullptr. This function
   // is inlined to avoid the overhead of a function call in the common case.
   ALWAYS_INLINE void Run();
@@ -239,7 +240,8 @@ ALWAYS_INLINE size_t PartitionPage<thread_safe>::get_raw_size() const {
 template <bool thread_safe>
 ALWAYS_INLINE DeferredUnmap PartitionPage<thread_safe>::Free(void* ptr) {
 #if DCHECK_IS_ON()
-  PartitionRoot<thread_safe>::FromPage(this)->lock_.AssertAcquired();
+  auto* root = PartitionRoot<thread_safe>::FromPage(this);
+  root->lock_.AssertAcquired();
 
   size_t slot_size = bucket->slot_size;
   const size_t raw_size = get_raw_size();
@@ -248,7 +250,8 @@ ALWAYS_INLINE DeferredUnmap PartitionPage<thread_safe>::Free(void* ptr) {
   }
 
   // If these asserts fire, you probably corrupted memory.
-  PartitionCookieCheckValue(reinterpret_cast<char*>(ptr) + kPartitionTagSize);
+  PartitionCookieCheckValue(reinterpret_cast<char*>(ptr) +
+                            (root->tag_pointers ? kPartitionTagSize : 0));
   PartitionCookieCheckValue(reinterpret_cast<char*>(ptr) + slot_size -
                             kCookieSize);
 

@@ -444,17 +444,16 @@ GenericUiControllerAndroid::~GenericUiControllerAndroid() {
 std::unique_ptr<GenericUiControllerAndroid>
 GenericUiControllerAndroid::CreateFromProto(
     const GenericUserInterfaceProto& proto,
-    const std::map<std::string, std::string> context,
     base::android::ScopedJavaGlobalRef<jobject> jcontext,
     base::android::ScopedJavaGlobalRef<jobject> jdelegate,
     EventHandler* event_handler,
     UserModel* user_model,
     BasicInteractions* basic_interactions) {
   // Create view layout.
-  auto view_handler = std::make_unique<ViewHandlerAndroid>(context);
+  auto view_handler = std::make_unique<ViewHandlerAndroid>();
   auto interaction_handler = std::make_unique<InteractionHandlerAndroid>(
-      context, event_handler, user_model, basic_interactions,
-      view_handler.get(), jcontext, jdelegate);
+      event_handler, user_model, basic_interactions, view_handler.get(),
+      jcontext, jdelegate);
   auto radio_button_controller =
       std::make_unique<RadioButtonController>(user_model);
   JNIEnv* env = base::android::AttachCurrentThread();

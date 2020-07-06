@@ -677,4 +677,46 @@ void LegacyPoliciesDeprecatingPolicyHandler::ApplyPolicySettings(
   NOTREACHED();
 }
 
+// SimpleDeprecatingPolicyHandler implementation -----------------------
+
+SimpleDeprecatingPolicyHandler::SimpleDeprecatingPolicyHandler(
+    std::unique_ptr<TypeCheckingPolicyHandler> legacy_policy_handler,
+    std::unique_ptr<TypeCheckingPolicyHandler> new_policy_handler)
+    : legacy_policy_handler_(std::move(legacy_policy_handler)),
+      new_policy_handler_(std::move(new_policy_handler)) {}
+
+SimpleDeprecatingPolicyHandler::~SimpleDeprecatingPolicyHandler() = default;
+
+bool SimpleDeprecatingPolicyHandler::CheckPolicySettings(
+    const PolicyMap& policies,
+    PolicyErrorMap* errors) {
+  // TODO(crbug/1102492): When the legacy policy value is ignored, do you think
+  // it's a good idea to add the "Ignore" error to it: IDS_POLICY_LABEL_IGNORED
+  // && IDS_POLICY_OVERRIDDEN.
+  if (policies.Get(new_policy_handler_->policy_name()))
+    return new_policy_handler_->CheckPolicySettings(policies, errors);
+
+  // The new policy is not set, fall back to legacy ones.
+  return legacy_policy_handler_->CheckPolicySettings(policies, errors);
+}
+
+void SimpleDeprecatingPolicyHandler::ApplyPolicySettingsWithParameters(
+    const policy::PolicyMap& policies,
+    const policy::PolicyHandlerParameters& parameters,
+    PrefValueMap* prefs) {
+  if (policies.Get(new_policy_handler_->policy_name())) {
+    new_policy_handler_->ApplyPolicySettingsWithParameters(policies, parameters,
+                                                           prefs);
+  } else {
+    legacy_policy_handler_->ApplyPolicySettingsWithParameters(
+        policies, parameters, prefs);
+  }
+}
+
+void SimpleDeprecatingPolicyHandler::ApplyPolicySettings(
+    const policy::PolicyMap& /* policies */,
+    PrefValueMap* /* prefs */) {
+  NOTREACHED();
+}
+
 }  // namespace policy

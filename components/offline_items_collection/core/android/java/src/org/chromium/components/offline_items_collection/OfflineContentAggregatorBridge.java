@@ -77,6 +77,17 @@ public class OfflineContentAggregatorBridge implements OfflineContentProvider {
     }
 
     @Override
+    public void changeSchedule(final ContentId id, final OfflineItemSchedule schedule) {
+        if (mNativeOfflineContentAggregatorBridge == 0) return;
+        boolean onlyOnWifi = (schedule == null) ? false : schedule.onlyOnWifi;
+        long startTimeMs = (schedule == null) ? -1 : schedule.startTimeMs;
+
+        OfflineContentAggregatorBridgeJni.get().changeSchedule(
+                mNativeOfflineContentAggregatorBridge, OfflineContentAggregatorBridge.this,
+                id.namespace, id.id, onlyOnWifi, startTimeMs);
+    }
+
+    @Override
     public void getItemById(ContentId id, Callback<OfflineItem> callback) {
         if (mNativeOfflineContentAggregatorBridge == 0) return;
         OfflineContentAggregatorBridgeJni.get().getItemById(mNativeOfflineContentAggregatorBridge,
@@ -209,5 +220,8 @@ public class OfflineContentAggregatorBridge implements OfflineContentProvider {
         void renameItem(long nativeOfflineContentAggregatorBridge,
                 OfflineContentAggregatorBridge caller, String nameSpace, String id, String name,
                 Callback</*RenameResult*/ Integer> callback);
+        void changeSchedule(long nativeOfflineContentAggregatorBridge,
+                OfflineContentAggregatorBridge caller, String nameSpace, String id,
+                boolean onlyOnWifi, long startTimeMs);
     }
 }

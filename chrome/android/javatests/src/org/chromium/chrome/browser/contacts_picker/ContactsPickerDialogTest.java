@@ -67,7 +67,8 @@ public class ContactsPickerDialogTest
             new ChromeActivityTestRule<>(ChromeActivity.class);
 
     @Rule
-    public ChromeRenderTestRule mRenderTestRule = new ChromeRenderTestRule();
+    public ChromeRenderTestRule mRenderTestRule =
+            ChromeRenderTestRule.Builder.withPublicCorpus().build();
 
     // The dialog we are testing.
     private ContactsPickerDialog mDialog;

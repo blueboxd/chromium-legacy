@@ -11,6 +11,7 @@
 #include "base/check.h"
 #include "base/json/json_reader.h"
 #include "base/values.h"
+#include "components/policy/core/browser/configuration_policy_handler_parameters.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
@@ -1038,6 +1039,68 @@ TEST(SimpleJsonStringSchemaValidatingPolicyHandlerTest, WrongRootType) {
       JsonStringHandlerForTesting();
   EXPECT_FALSE(handler->CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
+}
+
+TEST(SimpleDeprecatingPolicyHandlerTest, CheckDeprecatedUsedWhenNoNewValue) {
+  PolicyMap policy_map;
+  PrefValueMap prefs;
+  std::unique_ptr<base::Value> expected;
+  const base::Value* value;
+  PolicyErrorMap errors;
+  PolicyHandlerParameters params;
+  const char kLegacyPolicy[] = "legacy_policy";
+
+  SimpleDeprecatingPolicyHandler handler(
+      std::make_unique<SimplePolicyHandler>(kLegacyPolicy, kTestPref,
+                                            base::Value::Type::INTEGER),
+      std::make_unique<SimplePolicyHandler>(kTestPolicy, kTestPref,
+                                            base::Value::Type::INTEGER));
+
+  // Check that legacy value alone is used.
+  policy_map.Set(kLegacyPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(42),
+                 nullptr);
+  errors.Clear();
+  EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_TRUE(errors.empty());
+  prefs.Clear();
+  handler.ApplyPolicySettingsWithParameters(policy_map, params, &prefs);
+  expected = std::make_unique<base::Value>(42);
+  EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
+  EXPECT_EQ(*expected, *value);
+
+  // Set the new value as invalid and verify that the total result is invalid.
+  policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>("0"),
+                 nullptr);
+  errors.Clear();
+  EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_FALSE(errors.empty());
+  prefs.Clear();
+
+  // Set the new value and verify that it overrides the legacy.
+  policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(1337),
+                 nullptr);
+  errors.Clear();
+  EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_TRUE(errors.empty());
+  prefs.Clear();
+  handler.ApplyPolicySettingsWithParameters(policy_map, params, &prefs);
+  expected = std::make_unique<base::Value>(1337);
+  EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
+  EXPECT_EQ(*expected, *value);
+
+  // Erasing the legacy value should have no effect at this point.
+  policy_map.Erase(kLegacyPolicy);
+  errors.Clear();
+  EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_TRUE(errors.empty());
+  prefs.Clear();
+  handler.ApplyPolicySettingsWithParameters(policy_map, params, &prefs);
+  expected = std::make_unique<base::Value>(1337);
+  EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
+  EXPECT_EQ(*expected, *value);
 }
 
 }  // namespace policy

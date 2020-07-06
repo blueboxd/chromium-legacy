@@ -58,9 +58,9 @@ def main(argv):
 
     disabled = checkbox.get_attribute('disabled')
     if disabled == 'true':
-      print 'DISABLED'
+      print('DISABLED')
     else:
-      print 'ENABLED'
+      print('ENABLED')
 
   finally:
     driver.quit()

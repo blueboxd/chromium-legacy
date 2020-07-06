@@ -210,7 +210,7 @@ bool CSSPaintValue::ParseInputArguments(const Document& document) {
   for (wtf_size_t i = 0; i < argument_variable_data_.size(); ++i) {
     // If we are parsing a paint() function, we must be a secure context.
     DCHECK_EQ(SecureContextMode::kSecureContext,
-              document.GetSecureContextMode());
+              document.GetExecutionContext()->GetSecureContextMode());
     const CSSValue* parsed_value = argument_variable_data_[i]->ParseForSyntax(
         input_argument_types[i], SecureContextMode::kSecureContext);
     if (!parsed_value) {

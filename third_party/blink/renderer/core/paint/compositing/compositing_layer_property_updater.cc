@@ -186,9 +186,10 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
     auto state = fragment_data.LocalBorderBoxProperties();
     const auto* properties = fragment_data.PaintProperties();
     DCHECK(properties);
-    DCHECK(properties->Mask());
+    DCHECK(properties->Mask() || properties->ClipPathMask());
     DCHECK(properties->MaskClip());
-    state.SetEffect(*properties->Mask());
+    state.SetEffect(properties->Mask() ? *properties->Mask()
+                                       : *properties->ClipPathMask());
     state.SetClip(*properties->MaskClip());
 
     mask_layer->SetLayerState(

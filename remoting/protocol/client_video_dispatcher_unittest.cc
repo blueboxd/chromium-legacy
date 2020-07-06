@@ -71,22 +71,23 @@ class ClientVideoDispatcherTest : public testing::Test,
 ClientVideoDispatcherTest::ClientVideoDispatcherTest()
     : channel_factory_adapter_(
           &client_channel_factory_,
-          base::Bind(&ClientVideoDispatcherTest::OnChannelError,
-                     base::Unretained(this))),
+          base::BindRepeating(&ClientVideoDispatcherTest::OnChannelError,
+                              base::Unretained(this))),
       dispatcher_(this, &client_stub_) {
   dispatcher_.Init(&channel_factory_adapter_, this);
   base::RunLoop().RunUntilIdle();
   DCHECK(initialized_);
   host_socket_.PairWith(
       client_channel_factory_.GetFakeChannel(kVideoChannelName));
-  reader_.StartReading(&host_socket_,
-                       base::Bind(&ClientVideoDispatcherTest::OnMessageReceived,
-                                  base::Unretained(this)),
-                       base::Bind(&ClientVideoDispatcherTest::OnReadError,
-                                  base::Unretained(this)));
-  writer_.Start(
-      base::Bind(&P2PStreamSocket::Write, base::Unretained(&host_socket_)),
-      BufferedSocketWriter::WriteFailedCallback());
+  reader_.StartReading(
+      &host_socket_,
+      base::BindRepeating(&ClientVideoDispatcherTest::OnMessageReceived,
+                          base::Unretained(this)),
+      base::BindOnce(&ClientVideoDispatcherTest::OnReadError,
+                     base::Unretained(this)));
+  writer_.Start(base::BindRepeating(&P2PStreamSocket::Write,
+                                    base::Unretained(&host_socket_)),
+                BufferedSocketWriter::WriteFailedCallback());
 }
 
 void ClientVideoDispatcherTest::ProcessVideoPacket(

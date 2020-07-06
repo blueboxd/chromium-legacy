@@ -3,6 +3,7 @@ include_rules = [
   "+components/prefs",
   "+components/safe_browsing/core/proto",
   "+components/strings/grit",
+  "+components/version_info",
   "+net",
   "+services/network/public",
 ]

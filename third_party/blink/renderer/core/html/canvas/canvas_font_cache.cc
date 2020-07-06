@@ -93,8 +93,9 @@ MutableCSSPropertyValueSet* CanvasFontCache::ParseFont(
   } else {
     parsed_style =
         MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLStandardMode);
-    CSSParser::ParseValue(parsed_style, CSSPropertyID::kFont, font_string, true,
-                          document_->GetSecureContextMode());
+    CSSParser::ParseValue(
+        parsed_style, CSSPropertyID::kFont, font_string, true,
+        document_->GetExecutionContext()->GetSecureContextMode());
     if (parsed_style->IsEmpty())
       return nullptr;
     // According to

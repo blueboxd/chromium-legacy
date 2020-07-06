@@ -343,7 +343,8 @@ class DateOrderedListMediator {
 
     private void onChangeItem(OfflineItem item) {
         UmaUtils.recordItemAction(ViewAction.MENU_CHANGE);
-        // TODO(xingliu): Implement this by wiring to download later dialog.
+        // TODO(xingliu): Hook to download later dialog to generate the schedule.
+        mProvider.changeSchedule(item, null);
     }
 
     /**

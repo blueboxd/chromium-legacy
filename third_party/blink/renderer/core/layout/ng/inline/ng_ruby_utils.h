@@ -13,24 +13,9 @@ namespace blink {
 class ComputedStyle;
 class NGLineInfo;
 class NGLogicalLineItems;
-class NGPhysicalBoxFragment;
 struct NGInlineItemResult;
 struct NGLineHeightMetrics;
 struct PhysicalRect;
-
-// Returns the logical bottom offset of the last line text, relative to
-// |container| origin. This is used to decide ruby annotation box position.
-//
-// See NGBlockLayoutAlgorithm::LayoutRubyText().
-LayoutUnit LastLineTextLogicalBottom(const NGPhysicalBoxFragment& container,
-                                     LayoutUnit default_value);
-
-// Returns the logical top offset of the first line text, relative to
-// |container| origin. This is used to decide ruby annotation box position.
-//
-// See NGBlockLayoutAlgorithm::LayoutRubyText().
-LayoutUnit FirstLineTextLogicalTop(const NGPhysicalBoxFragment& container,
-                                   LayoutUnit default_value);
 
 // Adjust the specified |rect| of a text fragment for 'em' height.
 // This is called on computing scrollable overflow with kEmHeight.

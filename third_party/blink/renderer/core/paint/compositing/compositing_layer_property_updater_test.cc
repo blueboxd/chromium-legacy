@@ -26,24 +26,84 @@ class CompositingLayerPropertyUpdaterTest : public RenderingTest {
 
 TEST_F(CompositingLayerPropertyUpdaterTest, MaskLayerState) {
   SetBodyInnerHTML(R"HTML(
-    <div id=target style="position: absolute;
-        clip-path: polygon(-1px -1px, 86px 400px);
-        clip: rect(9px, -1px, -1px, 96px); will-change: transform">
+    <svg width="0" height="0">
+      <defs>
+        <clipPath id="text">
+          <text>Text</text>
+        </clipPath>
+      </defs>
+    </svg>
+    <style>
+      .clip-path-mask { clip-path: url(#text); }
+      .clip-path-path { clip-path: circle(50%); }
+      .mask-image { -webkit-mask-image: linear-gradient(black, transparent); }
+    </style>
+    <div id=target class="clip-path-mask"
+         style="position: absolute; will-change: transform;
+                clip: rect(9px, -1px, -1px, 96px)">
     </div>
     )HTML");
 
-  PaintLayer* target =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"))->Layer();
+  auto* target_element = GetDocument().getElementById("target");
+  auto* target = target_element->GetLayoutBoxModelObject();
   EXPECT_EQ(kPaintsIntoOwnBacking, target->GetCompositingState());
-  auto* mapping = target->GetCompositedLayerMapping();
+  auto* mapping = target->Layer()->GetCompositedLayerMapping();
   auto* mask_layer = mapping->MaskLayer();
 
-  auto* paint_properties =
-      target->GetLayoutObject().FirstFragment().PaintProperties();
+  auto* paint_properties = target->FirstFragment().PaintProperties();
   EXPECT_TRUE(paint_properties->CssClip());
   EXPECT_TRUE(paint_properties->MaskClip());
   EXPECT_EQ(paint_properties->MaskClip(),
             &mask_layer->GetPropertyTreeState().Clip());
+  EXPECT_FALSE(paint_properties->Mask());
+  EXPECT_EQ(paint_properties->ClipPathMask(),
+            &mask_layer->GetPropertyTreeState().Effect());
+
+  target_element->setAttribute(html_names::kClassAttr,
+                               "clip-path-mask mask-image");
+  UpdateAllLifecyclePhasesForTest();
+  ASSERT_EQ(mapping, target->Layer()->GetCompositedLayerMapping());
+  ASSERT_EQ(mask_layer, mapping->MaskLayer());
+  ASSERT_EQ(paint_properties, target->FirstFragment().PaintProperties());
+  EXPECT_FALSE(paint_properties->ClipPathClip());
+  EXPECT_EQ(paint_properties->MaskClip(),
+            &mask_layer->GetPropertyTreeState().Clip());
+  EXPECT_TRUE(paint_properties->ClipPathMask());
+  EXPECT_EQ(paint_properties->Mask(),
+            &mask_layer->GetPropertyTreeState().Effect());
+
+  target_element->setAttribute(html_names::kClassAttr, "mask-image");
+  UpdateAllLifecyclePhasesForTest();
+  ASSERT_EQ(mapping, target->Layer()->GetCompositedLayerMapping());
+  ASSERT_EQ(mask_layer, mapping->MaskLayer());
+  ASSERT_EQ(paint_properties, target->FirstFragment().PaintProperties());
+  EXPECT_EQ(paint_properties->MaskClip(),
+            &mask_layer->GetPropertyTreeState().Clip());
+  EXPECT_FALSE(paint_properties->ClipPathMask());
+  EXPECT_EQ(paint_properties->Mask(),
+            &mask_layer->GetPropertyTreeState().Effect());
+
+  target_element->setAttribute(html_names::kClassAttr,
+                               "clip-path-path mask-image");
+  UpdateAllLifecyclePhasesForTest();
+  ASSERT_EQ(mapping, target->Layer()->GetCompositedLayerMapping());
+  ASSERT_EQ(mask_layer, mapping->MaskLayer());
+  ASSERT_EQ(paint_properties, target->FirstFragment().PaintProperties());
+  EXPECT_TRUE(paint_properties->ClipPathClip());
+  EXPECT_EQ(paint_properties->MaskClip(),
+            &mask_layer->GetPropertyTreeState().Clip());
+  EXPECT_FALSE(paint_properties->ClipPathMask());
+  EXPECT_EQ(paint_properties->Mask(),
+            &mask_layer->GetPropertyTreeState().Effect());
+
+  target_element->setAttribute(html_names::kClassAttr, "clip-path-path");
+  UpdateAllLifecyclePhasesForTest();
+  ASSERT_EQ(mapping, target->Layer()->GetCompositedLayerMapping());
+  EXPECT_FALSE(mapping->MaskLayer());
+  ASSERT_EQ(paint_properties, target->FirstFragment().PaintProperties());
+  EXPECT_TRUE(paint_properties->ClipPathClip());
+  EXPECT_FALSE(paint_properties->ClipPathMask());
+  EXPECT_FALSE(paint_properties->Mask());
 }
 
 TEST_F(CompositingLayerPropertyUpdaterTest,

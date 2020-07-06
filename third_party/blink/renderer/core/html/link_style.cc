@@ -338,9 +338,12 @@ void LinkStyle::Process() {
       return;
     if (!GetDocument().GetSecurityOrigin()->CanDisplay(params.href))
       return;
-    if (!GetDocument().GetContentSecurityPolicy()->AllowImageFromSource(
-            params.href, params.href, RedirectStatus::kNoRedirect))
+    if (!GetExecutionContext()
+             ->GetContentSecurityPolicy()
+             ->AllowImageFromSource(params.href, params.href,
+                                    RedirectStatus::kNoRedirect)) {
       return;
+    }
     if (GetDocument().GetFrame())
       GetDocument().GetFrame()->UpdateFaviconURL();
   }

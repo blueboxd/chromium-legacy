@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/enterprise/reporting/browser_report_generator.h"
+#include "chrome/browser/enterprise/reporting/browser_report_generator_desktop.h"
 
 #include <memory>
 
@@ -12,13 +12,13 @@
 #include "base/test/bind_test_util.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/enterprise/reporting/browser_report_generator_desktop.h"
 #include "chrome/browser/enterprise/reporting/profile_report_generator.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/upgrade_detector/build_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/account_id/account_id.h"
+#include "components/enterprise/browser/reporting/browser_report_generator.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/test/browser_task_environment.h"

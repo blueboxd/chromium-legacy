@@ -908,7 +908,8 @@ class PublicSessionOobeTest : public MixinBasedInProcessBrowserTest,
   void CreatedBrowserMainParts(content::BrowserMainParts* parts) override {
     MixinBasedInProcessBrowserTest::CreatedBrowserMainParts(parts);
     static_cast<ChromeBrowserMainParts*>(parts)->AddParts(
-        new NativeWindowVisibilityBrowserMainExtraParts(observer_.get()));
+        std::make_unique<NativeWindowVisibilityBrowserMainExtraParts>(
+            observer_.get()));
   }
 
   void TearDownOnMainThread() override {

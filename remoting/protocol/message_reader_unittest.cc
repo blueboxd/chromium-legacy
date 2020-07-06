@@ -50,10 +50,11 @@ class MessageReaderTest : public testing::Test {
   }
 
   void InitReader() {
-    reader_->StartReading(
-        &socket_,
-        base::Bind(&MessageReaderTest::OnMessage, base::Unretained(this)),
-        base::Bind(&MessageReaderTest::OnReadError, base::Unretained(this)));
+    reader_->StartReading(&socket_,
+                          base::BindRepeating(&MessageReaderTest::OnMessage,
+                                              base::Unretained(this)),
+                          base::BindOnce(&MessageReaderTest::OnReadError,
+                                         base::Unretained(this)));
   }
 
   void AddMessage(const std::string& message) {

@@ -73,6 +73,7 @@
 #include "third_party/blink/renderer/core/content_capture/content_capture_manager.h"
 #include "third_party/blink/renderer/core/core_initializer.h"
 #include "third_party/blink/renderer/core/core_probe_sink.h"
+#include "third_party/blink/renderer/core/css/document_style_environment_variables.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/child_frame_disconnector.h"
 #include "third_party/blink/renderer/core/dom/document_init.h"
@@ -1034,6 +1035,79 @@ void LocalFrame::MediaQueryAffectingValueChangedForLocalSubtree(
        child = child->Tree().NextSibling()) {
     if (auto* child_local_frame = DynamicTo<LocalFrame>(child))
       child_local_frame->MediaQueryAffectingValueChangedForLocalSubtree(value);
+  }
+}
+
+void LocalFrame::WindowSegmentsChanged(
+    const WebVector<WebRect>& window_segments) {
+  if (!RuntimeEnabledFeatures::CSSFoldablesEnabled())
+    return;
+
+  // A change in the window segments requires re-evaluation of media queries
+  // for the local frame subtree (the segments affect the "screen-spanning"
+  // feature).
+  MediaQueryAffectingValueChangedForLocalSubtree(MediaValueChange::kOther);
+
+  // Also need to update the environment variables related to window segments
+  // on the local frame subtree.
+  UpdateCSSFoldEnvironmentVariables(window_segments);
+  for (Frame* child = Tree().FirstChild(); child;
+       child = child->Tree().NextSibling()) {
+    if (auto* child_local_frame = DynamicTo<LocalFrame>(child))
+      child_local_frame->UpdateCSSFoldEnvironmentVariables(window_segments);
+  }
+}
+
+void LocalFrame::UpdateCSSFoldEnvironmentVariables(
+    const WebVector<WebRect>& window_segments) {
+  DCHECK(RuntimeEnabledFeatures::CSSFoldablesEnabled());
+
+  DocumentStyleEnvironmentVariables& vars =
+      GetDocument()->GetStyleEngine().EnsureEnvironmentVariables();
+
+  // CSS environment variables related to window segments currently only
+  // expose values for a single fold (i.e. if there are two segments). In all
+  // other cases, these variables will not be defined - see the else clause for
+  // where these are unset.
+  if (window_segments.size() == 2) {
+    // We need to determine the rectangle between the two segments, which
+    // describes the fold area (note that this may have a zero width or height,
+    // but not negative).
+    gfx::Rect fold_rect;
+    if (window_segments[0].y == window_segments[1].y) {
+      int fold_width = window_segments[1].x - window_segments[0].width;
+      DCHECK_GE(fold_width, 0);
+      fold_rect.SetRect(window_segments[0].width, window_segments[0].y,
+                        fold_width, window_segments[0].height);
+    } else if (window_segments[0].x == window_segments[1].x) {
+      int fold_height = window_segments[1].y - window_segments[0].height;
+      DCHECK_GE(fold_height, 0);
+      fold_rect.SetRect(window_segments[0].x, window_segments[0].height,
+                        window_segments[0].width, fold_height);
+    }
+
+    vars.SetVariable(UADefinedVariable::kFoldTop,
+                     StyleEnvironmentVariables::FormatPx(fold_rect.y()));
+    vars.SetVariable(UADefinedVariable::kFoldRight,
+                     StyleEnvironmentVariables::FormatPx(fold_rect.right()));
+    vars.SetVariable(UADefinedVariable::kFoldBottom,
+                     StyleEnvironmentVariables::FormatPx(fold_rect.bottom()));
+    vars.SetVariable(UADefinedVariable::kFoldLeft,
+                     StyleEnvironmentVariables::FormatPx(fold_rect.x()));
+    vars.SetVariable(UADefinedVariable::kFoldWidth,
+                     StyleEnvironmentVariables::FormatPx(fold_rect.width()));
+    vars.SetVariable(UADefinedVariable::kFoldHeight,
+                     StyleEnvironmentVariables::FormatPx(fold_rect.height()));
+  } else {
+    // If there is not a single fold, we treat the variable as undefined
+    // (i.e. the fallback value specified in the env() function).
+    const UADefinedVariable vars_to_remove[] = {
+        UADefinedVariable::kFoldTop,    UADefinedVariable::kFoldRight,
+        UADefinedVariable::kFoldBottom, UADefinedVariable::kFoldLeft,
+        UADefinedVariable::kFoldWidth,  UADefinedVariable::kFoldHeight,
+    };
+    for (auto var : vars_to_remove)
+      vars.RemoveVariable(StyleEnvironmentVariables::GetVariableName(var));
   }
 }
 
@@ -2698,7 +2772,7 @@ void LocalFrame::ReportContentSecurityPolicyViolation(
           ? this
           : nullptr;
 
-  GetDocument()->GetContentSecurityPolicy()->ReportViolation(
+  DomWindow()->GetContentSecurityPolicy()->ReportViolation(
       violation->directive, directive_type, violation->console_message,
       violation->blocked_url, violation->report_endpoints,
       violation->use_reporting_api, violation->header, violation->type,

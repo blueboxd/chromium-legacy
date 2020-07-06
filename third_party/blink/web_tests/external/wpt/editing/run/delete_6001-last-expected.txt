@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 787 tests; 750 PASS, 37 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 895 tests; 858 PASS, 37 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS [["defaultparagraphseparator","div"],["delete",""]] "<p>foo<ol><li>bar<li>ba[z</ol><p>q]uz" queryCommandState("delete") before
 PASS [["defaultparagraphseparator","div"],["delete",""]] "<p>foo<ol><li>bar<li>ba[z</ol><p>q]uz" queryCommandValue("delete") before
 PASS [["defaultparagraphseparator","div"],["delete",""]] "<p>foo<ol><li>bar<li>ba[z</ol><p>q]uz" queryCommandIndeterm("delete") after
@@ -787,5 +787,113 @@ PASS [["delete",""]] "<div>foo</div><!-- comment --><div>[]bar</div>" queryComma
 PASS [["delete",""]] "<div>foo</div><!-- comment --><div>[]bar</div>" queryCommandIndeterm("delete") after
 PASS [["delete",""]] "<div>foo</div><!-- comment --><div>[]bar</div>" queryCommandState("delete") after
 PASS [["delete",""]] "<div>foo</div><!-- comment --><div>[]bar</div>" queryCommandValue("delete") after
+PASS [["delete",""]] "<div> a[]bc</div>": execCommand("delete", false, "") return value
+PASS [["delete",""]] "<div> a[]bc</div>" checks for modifications to non-editable content
+PASS [["delete",""]] "<div> a[]bc</div>" compare innerHTML
+PASS [["delete",""]] "<div> a[]bc</div>" queryCommandIndeterm("delete") before
+PASS [["delete",""]] "<div> a[]bc</div>" queryCommandState("delete") before
+PASS [["delete",""]] "<div> a[]bc</div>" queryCommandValue("delete") before
+PASS [["delete",""]] "<div> a[]bc</div>" queryCommandIndeterm("delete") after
+PASS [["delete",""]] "<div> a[]bc</div>" queryCommandState("delete") after
+PASS [["delete",""]] "<div> a[]bc</div>" queryCommandValue("delete") after
+PASS [["delete",""]] "<div>  a[]bc</div>": execCommand("delete", false, "") return value
+PASS [["delete",""]] "<div>  a[]bc</div>" checks for modifications to non-editable content
+PASS [["delete",""]] "<div>  a[]bc</div>" compare innerHTML
+PASS [["delete",""]] "<div>  a[]bc</div>" queryCommandIndeterm("delete") before
+PASS [["delete",""]] "<div>  a[]bc</div>" queryCommandState("delete") before
+PASS [["delete",""]] "<div>  a[]bc</div>" queryCommandValue("delete") before
+PASS [["delete",""]] "<div>  a[]bc</div>" queryCommandIndeterm("delete") after
+PASS [["delete",""]] "<div>  a[]bc</div>" queryCommandState("delete") after
+PASS [["delete",""]] "<div>  a[]bc</div>" queryCommandValue("delete") after
+PASS [["delete",""]] "<div> []abc</div>": execCommand("delete", false, "") return value
+PASS [["delete",""]] "<div> []abc</div>" checks for modifications to non-editable content
+PASS [["delete",""]] "<div> []abc</div>" compare innerHTML
+PASS [["delete",""]] "<div> []abc</div>" queryCommandIndeterm("delete") before
+PASS [["delete",""]] "<div> []abc</div>" queryCommandState("delete") before
+PASS [["delete",""]] "<div> []abc</div>" queryCommandValue("delete") before
+PASS [["delete",""]] "<div> []abc</div>" queryCommandIndeterm("delete") after
+PASS [["delete",""]] "<div> []abc</div>" queryCommandState("delete") after
+PASS [["delete",""]] "<div> []abc</div>" queryCommandValue("delete") after
+PASS [["delete",""]] "<div> [] abc</div>": execCommand("delete", false, "") return value
+PASS [["delete",""]] "<div> [] abc</div>" checks for modifications to non-editable content
+PASS [["delete",""]] "<div> [] abc</div>" compare innerHTML
+PASS [["delete",""]] "<div> [] abc</div>" queryCommandIndeterm("delete") before
+PASS [["delete",""]] "<div> [] abc</div>" queryCommandState("delete") before
+PASS [["delete",""]] "<div> [] abc</div>" queryCommandValue("delete") before
+PASS [["delete",""]] "<div> [] abc</div>" queryCommandIndeterm("delete") after
+PASS [["delete",""]] "<div> [] abc</div>" queryCommandState("delete") after
+PASS [["delete",""]] "<div> [] abc</div>" queryCommandValue("delete") after
+PASS [["delete",""]] "<div>abc</div><div> []def</div>": execCommand("delete", false, "") return value
+PASS [["delete",""]] "<div>abc</div><div> []def</div>" checks for modifications to non-editable content
+PASS [["delete",""]] "<div>abc</div><div> []def</div>" compare innerHTML
+PASS [["delete",""]] "<div>abc</div><div> []def</div>" queryCommandIndeterm("delete") before
+PASS [["delete",""]] "<div>abc</div><div> []def</div>" queryCommandState("delete") before
+PASS [["delete",""]] "<div>abc</div><div> []def</div>" queryCommandValue("delete") before
+PASS [["delete",""]] "<div>abc</div><div> []def</div>" queryCommandIndeterm("delete") after
+PASS [["delete",""]] "<div>abc</div><div> []def</div>" queryCommandState("delete") after
+PASS [["delete",""]] "<div>abc</div><div> []def</div>" queryCommandValue("delete") after
+PASS [["delete",""]] "<div>abc</div><div> [] def</div>": execCommand("delete", false, "") return value
+PASS [["delete",""]] "<div>abc</div><div> [] def</div>" checks for modifications to non-editable content
+PASS [["delete",""]] "<div>abc</div><div> [] def</div>" compare innerHTML
+PASS [["delete",""]] "<div>abc</div><div> [] def</div>" queryCommandIndeterm("delete") before
+PASS [["delete",""]] "<div>abc</div><div> [] def</div>" queryCommandState("delete") before
+PASS [["delete",""]] "<div>abc</div><div> [] def</div>" queryCommandValue("delete") before
+PASS [["delete",""]] "<div>abc</div><div> [] def</div>" queryCommandIndeterm("delete") after
+PASS [["delete",""]] "<div>abc</div><div> [] def</div>" queryCommandState("delete") after
+PASS [["delete",""]] "<div>abc</div><div> [] def</div>" queryCommandValue("delete") after
+PASS [["delete",""]] "<div>abc</div><div>  []def</div>": execCommand("delete", false, "") return value
+PASS [["delete",""]] "<div>abc</div><div>  []def</div>" checks for modifications to non-editable content
+PASS [["delete",""]] "<div>abc</div><div>  []def</div>" compare innerHTML
+PASS [["delete",""]] "<div>abc</div><div>  []def</div>" queryCommandIndeterm("delete") before
+PASS [["delete",""]] "<div>abc</div><div>  []def</div>" queryCommandState("delete") before
+PASS [["delete",""]] "<div>abc</div><div>  []def</div>" queryCommandValue("delete") before
+PASS [["delete",""]] "<div>abc</div><div>  []def</div>" queryCommandIndeterm("delete") after
+PASS [["delete",""]] "<div>abc</div><div>  []def</div>" queryCommandState("delete") after
+PASS [["delete",""]] "<div>abc</div><div>  []def</div>" queryCommandValue("delete") after
+PASS [["delete",""]] "<div>abc </div><div>[]def</div>": execCommand("delete", false, "") return value
+PASS [["delete",""]] "<div>abc </div><div>[]def</div>" checks for modifications to non-editable content
+PASS [["delete",""]] "<div>abc </div><div>[]def</div>" compare innerHTML
+PASS [["delete",""]] "<div>abc </div><div>[]def</div>" queryCommandIndeterm("delete") before
+PASS [["delete",""]] "<div>abc </div><div>[]def</div>" queryCommandState("delete") before
+PASS [["delete",""]] "<div>abc </div><div>[]def</div>" queryCommandValue("delete") before
+PASS [["delete",""]] "<div>abc </div><div>[]def</div>" queryCommandIndeterm("delete") after
+PASS [["delete",""]] "<div>abc </div><div>[]def</div>" queryCommandState("delete") after
+PASS [["delete",""]] "<div>abc </div><div>[]def</div>" queryCommandValue("delete") after
+PASS [["delete",""]] "<div>abc  </div><div>[]def</div>": execCommand("delete", false, "") return value
+PASS [["delete",""]] "<div>abc  </div><div>[]def</div>" checks for modifications to non-editable content
+PASS [["delete",""]] "<div>abc  </div><div>[]def</div>" compare innerHTML
+PASS [["delete",""]] "<div>abc  </div><div>[]def</div>" queryCommandIndeterm("delete") before
+PASS [["delete",""]] "<div>abc  </div><div>[]def</div>" queryCommandState("delete") before
+PASS [["delete",""]] "<div>abc  </div><div>[]def</div>" queryCommandValue("delete") before
+PASS [["delete",""]] "<div>abc  </div><div>[]def</div>" queryCommandIndeterm("delete") after
+PASS [["delete",""]] "<div>abc  </div><div>[]def</div>" queryCommandState("delete") after
+PASS [["delete",""]] "<div>abc  </div><div>[]def</div>" queryCommandValue("delete") after
+PASS [["delete",""]] "<div>abc </div><div> []def</div>": execCommand("delete", false, "") return value
+PASS [["delete",""]] "<div>abc </div><div> []def</div>" checks for modifications to non-editable content
+PASS [["delete",""]] "<div>abc </div><div> []def</div>" compare innerHTML
+PASS [["delete",""]] "<div>abc </div><div> []def</div>" queryCommandIndeterm("delete") before
+PASS [["delete",""]] "<div>abc </div><div> []def</div>" queryCommandState("delete") before
+PASS [["delete",""]] "<div>abc </div><div> []def</div>" queryCommandValue("delete") before
+PASS [["delete",""]] "<div>abc </div><div> []def</div>" queryCommandIndeterm("delete") after
+PASS [["delete",""]] "<div>abc </div><div> []def</div>" queryCommandState("delete") after
+PASS [["delete",""]] "<div>abc </div><div> []def</div>" queryCommandValue("delete") after
+PASS [["delete",""]] "<div>abc  </div><div> [] def</div>": execCommand("delete", false, "") return value
+PASS [["delete",""]] "<div>abc  </div><div> [] def</div>" checks for modifications to non-editable content
+PASS [["delete",""]] "<div>abc  </div><div> [] def</div>" compare innerHTML
+PASS [["delete",""]] "<div>abc  </div><div> [] def</div>" queryCommandIndeterm("delete") before
+PASS [["delete",""]] "<div>abc  </div><div> [] def</div>" queryCommandState("delete") before
+PASS [["delete",""]] "<div>abc  </div><div> [] def</div>" queryCommandValue("delete") before
+PASS [["delete",""]] "<div>abc  </div><div> [] def</div>" queryCommandIndeterm("delete") after
+PASS [["delete",""]] "<div>abc  </div><div> [] def</div>" queryCommandState("delete") after
+PASS [["delete",""]] "<div>abc  </div><div> [] def</div>" queryCommandValue("delete") after
+PASS [["delete",""]] "<div>abc  </div> <div>  []def</div>": execCommand("delete", false, "") return value
+PASS [["delete",""]] "<div>abc  </div> <div>  []def</div>" checks for modifications to non-editable content
+PASS [["delete",""]] "<div>abc  </div> <div>  []def</div>" compare innerHTML
+PASS [["delete",""]] "<div>abc  </div> <div>  []def</div>" queryCommandIndeterm("delete") before
+PASS [["delete",""]] "<div>abc  </div> <div>  []def</div>" queryCommandState("delete") before
+PASS [["delete",""]] "<div>abc  </div> <div>  []def</div>" queryCommandValue("delete") before
+PASS [["delete",""]] "<div>abc  </div> <div>  []def</div>" queryCommandIndeterm("delete") after
+PASS [["delete",""]] "<div>abc  </div> <div>  []def</div>" queryCommandState("delete") after
+PASS [["delete",""]] "<div>abc  </div> <div>  []def</div>" queryCommandValue("delete") after
 Harness: the test ran to completion.
 

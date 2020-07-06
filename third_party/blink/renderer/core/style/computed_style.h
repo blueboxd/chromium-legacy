@@ -2534,6 +2534,13 @@ class ComputedStyle : public ComputedStyleBase,
   CORE_EXPORT Color
   VisitedDependentColor(const CSSProperty& color_property) const;
 
+  // Helper for resolving a StyleColor which may contain currentColor or a
+  // system color keyword. This is intended for cases such as SVG <paint> where
+  // a given property consists of a StyleColor plus additional information. For
+  // <color> properties, prefer VisitedDependentColor() or
+  // Longhand::ColorIncludingFallback() instead.
+  Color ResolvedColor(const StyleColor& color) const;
+
   // -webkit-appearance utility functions.
   bool HasEffectiveAppearance() const {
     return EffectiveAppearance() != kNoControlPart;

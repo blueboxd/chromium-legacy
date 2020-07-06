@@ -244,7 +244,7 @@ StringKeyframeEffectModel* HTMLMarqueeElement::CreateEffectModel(
   MutableCSSPropertyValueSet::SetResult set_result;
 
   SecureContextMode secure_context_mode =
-      mover_->GetDocument().GetSecureContextMode();
+      mover_->GetExecutionContext()->GetSecureContextMode();
 
   StringKeyframeVector keyframes;
   auto* keyframe1 = MakeGarbageCollected<StringKeyframe>();

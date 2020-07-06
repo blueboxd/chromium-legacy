@@ -1,4 +1,4 @@
-From 445cc7889a6f470daba1a7056ea32bf9faf3e2d9 Mon Sep 17 00:00:00 2001
+From 44c33ec97d36034c0b8a85b66cc91ae87a382a11 Mon Sep 17 00:00:00 2001
 From: Andrew Grieve <agrieve@chromium.org>
 Date: Sun, 31 May 2020 22:09:27 -0400
 Subject: [PATCH 3/3] Allow access modification everywhere
@@ -7,24 +7,22 @@ Chrome does not need need -keep to maintain original visibility.
 Loosening this constraint allows for better optimization, and is easier
 than adding ",allowaccessmodification" to every single -keep rule.
 ---
- .../com/android/tools/r8/shaking/AppInfoWithLiveness.java     | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ .../java/com/android/tools/r8/shaking/AppInfoWithLiveness.java  | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/src/main/java/com/android/tools/r8/shaking/AppInfoWithLiveness.java b/src/main/java/com/android/tools/r8/shaking/AppInfoWithLiveness.java
-index 87bfd9a2d..75bc46e33 100644
+index d3afad2e6..ab50f4c83 100644
 --- a/src/main/java/com/android/tools/r8/shaking/AppInfoWithLiveness.java
 +++ b/src/main/java/com/android/tools/r8/shaking/AppInfoWithLiveness.java
-@@ -918,9 +918,7 @@ public class AppInfoWithLiveness extends AppInfoWithClassHierarchy
+@@ -924,7 +924,7 @@ public class AppInfoWithLiveness extends AppInfoWithClassHierarchy
  
    public boolean isAccessModificationAllowed(DexReference reference) {
      assert options().getProguardConfiguration().isAccessModificationAllowed();
--    return keepInfo
--        .getInfo(reference, this)
--        .isAccessModificationAllowed(options().getProguardConfiguration());
+-    return keepInfo.getInfo(reference, this).isAccessModificationAllowed(options());
 +    return true;
    }
  
    public boolean isPinned(DexReference reference) {
 -- 
-2.27.0.278.ge193c7cf3a9-goog
+2.27.0.212.ge8ba1cc988-goog
 

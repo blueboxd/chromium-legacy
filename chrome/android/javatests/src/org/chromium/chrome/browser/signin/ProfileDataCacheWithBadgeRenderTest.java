@@ -44,7 +44,8 @@ import java.io.IOException;
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class ProfileDataCacheWithBadgeRenderTest extends DummyUiActivityTestCase {
     @Rule
-    public ChromeRenderTestRule mRenderTestRule = new ChromeRenderTestRule();
+    public ChromeRenderTestRule mRenderTestRule =
+            ChromeRenderTestRule.Builder.withPublicCorpus().build();
 
     @Mock
     private ProfileDataCache.Observer mObserver;

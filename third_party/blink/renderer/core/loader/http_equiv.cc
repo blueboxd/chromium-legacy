@@ -90,7 +90,7 @@ void HttpEquiv::Process(Document& document,
   if (EqualIgnoringASCIICase(equiv, "default-style")) {
     ProcessHttpEquivDefaultStyle(document, content);
   } else if (EqualIgnoringASCIICase(equiv, "refresh")) {
-    ProcessHttpEquivRefresh(document, content, element);
+    ProcessHttpEquivRefresh(document.domWindow(), content, element);
   } else if (EqualIgnoringASCIICase(equiv, "set-cookie")) {
     ProcessHttpEquivSetCookie(document, content, element);
   } else if (EqualIgnoringASCIICase(equiv, "content-language")) {
@@ -108,10 +108,12 @@ void HttpEquiv::Process(Document& document,
   } else if (EqualIgnoringASCIICase(equiv, "content-security-policy") ||
              EqualIgnoringASCIICase(equiv,
                                     "content-security-policy-report-only")) {
-    if (in_document_head_element)
-      ProcessHttpEquivContentSecurityPolicy(document, equiv, content);
-    else
-      document.GetContentSecurityPolicy()->ReportMetaOutsideHead(content);
+    if (in_document_head_element) {
+      ProcessHttpEquivContentSecurityPolicy(document.domWindow(), equiv,
+                                            content);
+    } else if (auto* window = document.domWindow()) {
+      window->GetContentSecurityPolicy()->ReportMetaOutsideHead(content);
+    }
   } else if (EqualIgnoringASCIICase(equiv, http_names::kOriginTrial)) {
     if (in_document_head_element) {
       ProcessHttpEquivOriginTrial(document.domWindow(), content);
@@ -120,20 +122,20 @@ void HttpEquiv::Process(Document& document,
 }
 
 void HttpEquiv::ProcessHttpEquivContentSecurityPolicy(
-    Document& document,
+    LocalDOMWindow* window,
     const AtomicString& equiv,
     const AtomicString& content) {
-  if (document.ImportLoader())
+  if (!window || !window->GetFrame())
     return;
-  if (document.GetSettings() && document.GetSettings()->BypassCSP())
+  if (window->GetFrame()->GetSettings()->BypassCSP())
     return;
   if (EqualIgnoringASCIICase(equiv, "content-security-policy")) {
-    document.GetContentSecurityPolicy()->DidReceiveHeader(
+    window->GetContentSecurityPolicy()->DidReceiveHeader(
         content, network::mojom::ContentSecurityPolicyType::kEnforce,
         network::mojom::ContentSecurityPolicySource::kMeta);
   } else if (EqualIgnoringASCIICase(equiv,
                                     "content-security-policy-report-only")) {
-    document.GetContentSecurityPolicy()->DidReceiveHeader(
+    window->GetContentSecurityPolicy()->DidReceiveHeader(
         content, network::mojom::ContentSecurityPolicyType::kReport,
         network::mojom::ContentSecurityPolicySource::kMeta);
   } else {
@@ -194,19 +196,22 @@ void HttpEquiv::ProcessHttpEquivOriginTrial(LocalDOMWindow* window,
   window->GetOriginTrialContext()->AddToken(content);
 }
 
-void HttpEquiv::ProcessHttpEquivRefresh(Document& document,
+void HttpEquiv::ProcessHttpEquivRefresh(LocalDOMWindow* window,
                                         const AtomicString& content,
                                         Element* element) {
-  UseCounter::Count(document, WebFeature::kMetaRefresh);
-  if (!document.GetContentSecurityPolicy()->AllowInline(
+  if (!window)
+    return;
+  UseCounter::Count(window, WebFeature::kMetaRefresh);
+  if (!window->GetContentSecurityPolicy()->AllowInline(
           ContentSecurityPolicy::InlineType::kScript, element, "" /* content */,
           "" /* nonce */, NullURL(), OrdinalNumber(),
           ReportingDisposition::kSuppressReporting)) {
-    UseCounter::Count(document,
+    UseCounter::Count(window,
                       WebFeature::kMetaRefreshWhenCSPBlocksInlineScript);
   }
 
-  document.MaybeHandleHttpRefresh(content, Document::kHttpRefreshFromMetaTag);
+  window->document()->MaybeHandleHttpRefresh(content,
+                                             Document::kHttpRefreshFromMetaTag);
 }
 
 void HttpEquiv::ProcessHttpEquivSetCookie(Document& document,

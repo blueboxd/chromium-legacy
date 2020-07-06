@@ -123,7 +123,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_perftests/"
+        "test_id_prefix": "ninja://chrome/test:angle_perftests/"
       },
       {
         "args": [
@@ -345,7 +345,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_perftests/"
+        "test_id_prefix": "ninja://chrome/test:angle_perftests/"
       },
       {
         "args": [
@@ -407,7 +407,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/angle/src/tests:standalone_angle_unittests/"
+        "test_id_prefix": "ninja://chrome/test:standalone_angle_unittests/"
       },
       {
         "args": [
@@ -759,7 +759,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_perftests/"
+        "test_id_prefix": "ninja://chrome/test:angle_perftests/"
       },
       {
         "args": [
@@ -821,7 +821,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/angle/src/tests:standalone_angle_unittests/"
+        "test_id_prefix": "ninja://chrome/test:standalone_angle_unittests/"
       },
       {
         "args": [
@@ -1189,7 +1189,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/angle/src/tests:standalone_angle_unittests/"
+        "test_id_prefix": "ninja://chrome/test:standalone_angle_unittests/"
       },
       {
         "args": [
@@ -1536,7 +1536,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/angle/src/tests:standalone_angle_unittests/"
+        "test_id_prefix": "ninja://chrome/test:standalone_angle_unittests/"
       },
       {
         "args": [
@@ -1941,7 +1941,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_perftests/"
+        "test_id_prefix": "ninja://chrome/test:angle_perftests/"
       },
       {
         "args": [
@@ -2004,7 +2004,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/angle/src/tests:standalone_angle_unittests/"
+        "test_id_prefix": "ninja://chrome/test:standalone_angle_unittests/"
       },
       {
         "args": [
@@ -2378,7 +2378,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_perftests/"
+        "test_id_prefix": "ninja://chrome/test:angle_perftests/"
       },
       {
         "args": [
@@ -2439,7 +2439,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/angle/src/tests:standalone_angle_unittests/"
+        "test_id_prefix": "ninja://chrome/test:standalone_angle_unittests/"
       },
       {
         "args": [
@@ -2768,7 +2768,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_perftests/"
+        "test_id_prefix": "ninja://chrome/test:angle_perftests/"
       }
     ]
   },
@@ -3146,7 +3146,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_perftests/"
+        "test_id_prefix": "ninja://chrome/test:angle_perftests/"
       }
     ]
   },
@@ -3278,7 +3278,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_perftests/"
+        "test_id_prefix": "ninja://chrome/test:angle_perftests/"
       }
     ]
   },
@@ -3884,7 +3884,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_perftests/"
+        "test_id_prefix": "ninja://chrome/test:angle_perftests/"
       },
       {
         "args": [
@@ -4941,7 +4941,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_perftests/"
+        "test_id_prefix": "ninja://chrome/test:angle_perftests/"
       },
       {
         "args": [
@@ -6143,7 +6143,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_perftests/"
+        "test_id_prefix": "ninja://chrome/test:angle_perftests/"
       },
       {
         "args": [
@@ -6710,7 +6710,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_perftests/"
+        "test_id_prefix": "ninja://chrome/test:angle_perftests/"
       },
       {
         "args": [
@@ -11884,7 +11884,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_perftests/"
+        "test_id_prefix": "ninja://chrome/test:angle_perftests/"
       },
       {
         "args": [
@@ -21399,7 +21399,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_perftests/"
+        "test_id_prefix": "ninja://chrome/test:angle_perftests/"
       },
       {
         "args": [
@@ -23014,7 +23014,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_perftests/"
+        "test_id_prefix": "ninja://chrome/test:angle_perftests/"
       },
       {
         "args": [
@@ -23523,7 +23523,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_perftests/"
+        "test_id_prefix": "ninja://chrome/test:angle_perftests/"
       },
       {
         "args": [
@@ -24986,7 +24986,7 @@
           "expiration": 21600,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_perftests/"
+        "test_id_prefix": "ninja://chrome/test:angle_perftests/"
       },
       {
         "args": [
@@ -26692,7 +26692,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_perftests/"
+        "test_id_prefix": "ninja://chrome/test:angle_perftests/"
       },
       {
         "args": [
@@ -27636,7 +27636,7 @@
           "expiration": 14400,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_perftests/"
+        "test_id_prefix": "ninja://chrome/test:angle_perftests/"
       },
       {
         "args": [
@@ -29451,7 +29451,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_perftests/"
+        "test_id_prefix": "ninja://chrome/test:angle_perftests/"
       },
       {
         "args": [
@@ -31278,7 +31278,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_perftests/"
+        "test_id_prefix": "ninja://chrome/test:angle_perftests/"
       },
       {
         "args": [
@@ -31946,7 +31946,7 @@
           "expiration": 21600,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/angle/src/tests:standalone_angle_unittests/"
+        "test_id_prefix": "ninja://chrome/test:standalone_angle_unittests/"
       },
       {
         "args": [

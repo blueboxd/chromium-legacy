@@ -111,6 +111,13 @@ ChromeVoxPanelTest = class extends ChromeVoxNextE2ETest {
       <a href="#">banana</a>
     `;
   }
+
+  get internationalButtonDoc() {
+    return `
+      <button lang="en">Test</button>
+      <button lang="es">Prueba</button>
+    `;
+  }
 };
 
 TEST_F('ChromeVoxPanelTest', 'ActivateMenu', function() {
@@ -192,4 +199,21 @@ TEST_F('ChromeVoxPanelTest', 'DISABLED_Gestures', function() {
         doGesture('swipeLeft1');
         await this.waitForMenu('panel_menu_jump');
       }, {isAsync: true});
+});
+
+TEST_F('ChromeVoxPanelTest', 'InternationalFormControlsMenu', function() {
+  this.runWithLoadedTree(this.internationalButtonDoc, async function(root) {
+    // Turn on language switching and set available voice list.
+    localStorage['languageSwitching'] = 'true';
+    this.getPanelWindow().LocaleOutputHelper.instance.availableVoices_ =
+        [{'lang': 'en-US'}, {'lang': 'es-ES'}];
+    CommandHandler.onCommand('showFormsList');
+    await this.waitForMenu('panel_menu_form_controls');
+    this.fireMockEvent('ArrowDown')();
+    this.assertActiveMenuItem(
+        'panel_menu_form_controls', 'español: Prueba Button');
+    this.fireMockEvent('ArrowUp')();
+    this.assertActiveMenuItem(
+        'panel_menu_form_controls', 'English: Test Button');
+  }, {isAsync: true});
 });

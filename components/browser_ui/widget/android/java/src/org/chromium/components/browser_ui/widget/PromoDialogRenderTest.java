@@ -42,7 +42,7 @@ public class PromoDialogRenderTest extends DummyUiActivityTestCase {
             new NightModeTestUtils.NightModeParams().getParameters();
 
     @Rule
-    public RenderTestRule mRenderTestRule = new RenderTestRule();
+    public RenderTestRule mRenderTestRule = RenderTestRule.Builder.withPublicCorpus().build();
 
     private static final String LONG_STRING = "A very very very very very very very very very"
             + "very very very very long string";

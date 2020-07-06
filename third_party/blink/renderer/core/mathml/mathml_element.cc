@@ -118,7 +118,8 @@ base::Optional<Length> MathMLElement::AddMathLengthToComputedStyle(
     return base::nullopt;
   auto value = FastGetAttribute(attr_name);
   const CSSPrimitiveValue* parsed_value = CSSParser::ParseLengthPercentage(
-      value, StrictCSSParserContext(GetDocument().GetSecureContextMode()));
+      value,
+      StrictCSSParserContext(GetExecutionContext()->GetSecureContextMode()));
   if (!parsed_value || parsed_value->IsCalculated())
     return base::nullopt;
   return parsed_value->ConvertToLength(conversion_data);

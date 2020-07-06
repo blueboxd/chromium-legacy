@@ -14,13 +14,13 @@ import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.Log;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags.Add;
 import org.chromium.base.test.util.Feature;
@@ -118,8 +118,7 @@ public class JavascriptAppModalDialogTest {
         // JavaScript onbeforeunload dialogs require a user gesture.
         tapViewAndWait();
         TestThreadUtils.runOnUiThreadBlocking(() -> { activity.onBackPressed(); });
-        CriteriaHelper.pollInstrumentationThread(new JavascriptAppModalDialogShownCriteria(
-                "Could not spawn or locate a modal dialog.", true));
+        assertJavascriptAppModalDialogShownState(true);
 
         // Click leave and verify that the tab is closed.
         JavascriptAppModalDialog jsDialog = getCurrentDialog();
@@ -208,8 +207,7 @@ public class JavascriptAppModalDialogTest {
         });
 
         // Closing the tab should have dismissed the dialog.
-        CriteriaHelper.pollInstrumentationThread(new JavascriptAppModalDialogShownCriteria(
-                "The dialog should have been dismissed when its tab was closed.", false));
+        assertJavascriptAppModalDialogShownState(false);
     }
 
     /**
@@ -241,8 +239,7 @@ public class JavascriptAppModalDialogTest {
             final OnEvaluateJavaScriptResultHelper helper, String script) {
         helper.evaluateJavaScriptForTests(
                 mActivityTestRule.getActivity().getCurrentWebContents(), script);
-        CriteriaHelper.pollInstrumentationThread(new JavascriptAppModalDialogShownCriteria(
-                "Could not spawn or locate a modal dialog.", true));
+        assertJavascriptAppModalDialogShownState(true);
         return helper;
     }
 
@@ -272,27 +269,16 @@ public class JavascriptAppModalDialogTest {
         }
     }
 
-    private static class JavascriptAppModalDialogShownCriteria extends Criteria {
-        private final boolean mShouldBeShown;
-
-        public JavascriptAppModalDialogShownCriteria(String error, boolean shouldBeShown) {
-            super(error);
-            mShouldBeShown = shouldBeShown;
-        }
-
-        @Override
-        public boolean isSatisfied() {
-            try {
-                return TestThreadUtils.runOnUiThreadBlocking(() -> {
-                    final boolean isShown =
-                            JavascriptAppModalDialog.getCurrentDialogForTest() != null;
-                    return mShouldBeShown == isShown;
-                });
-            } catch (ExecutionException e) {
-                Log.e(TAG, "Failed to getCurrentDialog", e);
-                return false;
+    private void assertJavascriptAppModalDialogShownState(boolean shouldBeShown) {
+        CriteriaHelper.pollUiThread(() -> {
+            JavascriptAppModalDialog dialog = JavascriptAppModalDialog.getCurrentDialogForTest();
+            if (shouldBeShown) {
+                Criteria.checkThat("Could not spawn or locate a modal dialog.", dialog,
+                        Matchers.notNullValue());
+            } else {
+                Criteria.checkThat("No dialog should be shown.", dialog, Matchers.nullValue());
             }
-        }
+        });
     }
 
     private TestCallbackHelperContainer getActiveTabTestCallbackHelperContainer() {

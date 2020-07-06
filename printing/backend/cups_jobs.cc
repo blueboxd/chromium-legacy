@@ -262,7 +262,10 @@ void ParseField(ipp_attribute_t* attr, base::StringPiece name, CupsJob* job) {
   } else if (name == kJobStateReasons) {
     ParseCollection(attr, &(job->state_reasons));
   } else if (name == kJobStateMessage) {
-    job->state_message = ippGetString(attr, 0, nullptr);
+    const char* message_string = ippGetString(attr, 0, nullptr);
+    if (message_string) {
+      job->state_message = message_string;
+    }
   } else if (name == kTimeAtProcessing) {
     job->processing_started = ippGetInteger(attr, 0);
   }
@@ -306,7 +309,10 @@ bool ParsePrinterInfo(ipp_t* response, PrinterInfo* printer_info) {
     base::StringPiece name = ippGetName(attr);
     if (name == base::StringPiece(kPrinterMakeAndModel)) {
       DCHECK_EQ(IPP_TAG_TEXT, ippGetValueTag(attr));
-      printer_info->make_and_model = ippGetString(attr, 0, nullptr);
+      const char* make_and_model_string = ippGetString(attr, 0, nullptr);
+      if (make_and_model_string) {
+        printer_info->make_and_model = make_and_model_string;
+      }
     } else if (name == base::StringPiece(kIppVersionsSupported)) {
       std::vector<std::string> ipp_versions;
       ParseCollection(attr, &ipp_versions);

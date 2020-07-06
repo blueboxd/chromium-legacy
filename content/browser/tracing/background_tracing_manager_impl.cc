@@ -130,9 +130,15 @@ bool BackgroundTracingManagerImpl::SetActiveScenario(
 #if defined(OS_ANDROID)
   config_impl = BackgroundReachedCodeTracingObserver::GetInstance()
                     .IncludeReachedCodeConfigIfNeeded(std::move(config_impl));
+
+  if (BackgroundReachedCodeTracingObserver::GetInstance()
+          .enabled_in_current_session()) {
+    data_filtering = DataFiltering::ANONYMIZE_DATA;
+    RecordMetric(Metrics::REACHED_CODE_SCENARIO_TRIGGERED);
+  } else
 #endif
-  if (BackgroundStartupTracingObserver::GetInstance()
-          ->enabled_in_current_session()) {
+      if (BackgroundStartupTracingObserver::GetInstance()
+              ->enabled_in_current_session()) {
     // Anonymize data for startup tracing by default. We currently do not
     // support storing the config in preferences for next session.
     data_filtering = DataFiltering::ANONYMIZE_DATA;

@@ -35,9 +35,8 @@ class MonitoredVideoStubTest : public testing::Test {
     monitor_.reset(new MonitoredVideoStub(
         &video_stub_,
         base::TimeDelta::FromMilliseconds(kTestOverrideDelayMilliseconds),
-        base::Bind(
-            &MonitoredVideoStubTest::OnVideoChannelStatus,
-            base::Unretained(this))));
+        base::BindRepeating(&MonitoredVideoStubTest::OnVideoChannelStatus,
+                            base::Unretained(this))));
     EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _)).Times(AnyNumber());
   }
 

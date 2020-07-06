@@ -32,24 +32,24 @@ class AndroidHistoryProviderService {
 
   // Callback invoked when a method creating an |AndroidStatement| object is
   // complete. The pointer is NULL if the creation failed.
-  typedef base::Callback<void(history::AndroidStatement*)> QueryCallback;
+  typedef base::OnceCallback<void(history::AndroidStatement*)> QueryCallback;
 
   // Callback invoked when a method updating rows in the database complete.
   // The parameter is the number of rows updated or 0 if the update failed.
-  typedef base::Callback<void(int)> UpdateCallback;
+  typedef base::OnceCallback<void(int)> UpdateCallback;
 
   // Callback invoked when a method inserting rows in the database complete.
   // The value is the new row id or 0 if the insertion failed.
-  typedef base::Callback<void(int64_t)> InsertCallback;
+  typedef base::OnceCallback<void(int64_t)> InsertCallback;
 
   // Callback invoked when a method deleting rows in the database complete.
   // The value is the number of rows deleted or 0 if the deletion failed.
-  typedef base::Callback<void(int)> DeleteCallback;
+  typedef base::OnceCallback<void(int)> DeleteCallback;
 
   // Callback invoked when a method moving an |AndroidStatement| is complete.
   // The value passed to the callback is the new position, or in case of
   // failure, the old position.
-  typedef base::Callback<void(int)> MoveStatementCallback;
+  typedef base::OnceCallback<void(int)> MoveStatementCallback;
 
   // History and Bookmarks ----------------------------------------------------
   //
@@ -65,7 +65,7 @@ class AndroidHistoryProviderService {
       const std::string& selection,
       const std::vector<base::string16>& selection_args,
       const std::string& sort_order,
-      const QueryCallback& callback,
+      QueryCallback callback,
       base::CancelableTaskTracker* tracker);
 
   // Runs the given update and the number of the row updated is returned to the
@@ -78,7 +78,7 @@ class AndroidHistoryProviderService {
       const history::HistoryAndBookmarkRow& row,
       const std::string& selection,
       const std::vector<base::string16>& selection_args,
-      const UpdateCallback& callback,
+      UpdateCallback callback,
       base::CancelableTaskTracker* tracker);
 
   // Deletes the specified rows and invokes the |callback| to return the number
@@ -91,14 +91,14 @@ class AndroidHistoryProviderService {
   base::CancelableTaskTracker::TaskId DeleteHistoryAndBookmarks(
       const std::string& selection,
       const std::vector<base::string16>& selection_args,
-      const DeleteCallback& callback,
+      DeleteCallback callback,
       base::CancelableTaskTracker* tracker);
 
   // Inserts the given values into history backend, and invokes the |callback|
   // to return the result.
   base::CancelableTaskTracker::TaskId InsertHistoryAndBookmark(
       const history::HistoryAndBookmarkRow& values,
-      const InsertCallback& callback,
+      InsertCallback callback,
       base::CancelableTaskTracker* tracker);
 
   // Deletes the matched history and invokes |callback| to return the number of
@@ -106,7 +106,7 @@ class AndroidHistoryProviderService {
   base::CancelableTaskTracker::TaskId DeleteHistory(
       const std::string& selection,
       const std::vector<base::string16>& selection_args,
-      const DeleteCallback& callback,
+      DeleteCallback callback,
       base::CancelableTaskTracker* tracker);
 
   // Statement ----------------------------------------------------------------
@@ -117,7 +117,7 @@ class AndroidHistoryProviderService {
       history::AndroidStatement* statement,
       int current_pos,
       int destination,
-      const MoveStatementCallback& callback,
+      MoveStatementCallback callback,
       base::CancelableTaskTracker* tracker);
 
   // Closes the statement in db thread. The AndroidHistoryProviderService takes
@@ -129,7 +129,7 @@ class AndroidHistoryProviderService {
   // to the |callback| on success.
   base::CancelableTaskTracker::TaskId InsertSearchTerm(
       const history::SearchRow& row,
-      const InsertCallback& callback,
+      InsertCallback callback,
       base::CancelableTaskTracker* tracker);
 
   // Runs the given update and returns the number of the update rows to the
@@ -142,7 +142,7 @@ class AndroidHistoryProviderService {
       const history::SearchRow& row,
       const std::string& selection,
       const std::vector<base::string16>& selection_args,
-      const UpdateCallback& callback,
+      UpdateCallback callback,
       base::CancelableTaskTracker* tracker);
 
   // Deletes the matched rows and the number of deleted rows is returned to
@@ -155,7 +155,7 @@ class AndroidHistoryProviderService {
   base::CancelableTaskTracker::TaskId DeleteSearchTerms(
       const std::string& selection,
       const std::vector<base::string16>& selection_args,
-      const DeleteCallback& callback,
+      DeleteCallback callback,
       base::CancelableTaskTracker* tracker);
 
   // Runs the query and invokes the |callback| to return the result.
@@ -170,7 +170,7 @@ class AndroidHistoryProviderService {
       const std::string& selection,
       const std::vector<base::string16>& selection_args,
       const std::string& sort_order,
-      const QueryCallback& callback,
+      QueryCallback callback,
       base::CancelableTaskTracker* tracker);
 
   // Returns the largest Favicon for |favicon_id| and invokes

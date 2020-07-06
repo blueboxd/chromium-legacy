@@ -594,13 +594,13 @@ void ManagePasswordsUIController::NavigateToPasswordManagerAccountDashboard(
       referrer);
 }
 
-void ManagePasswordsUIController::NavigateToPasswordCheckup() {
+void ManagePasswordsUIController::NavigateToPasswordCheckup(
+    password_manager::PasswordCheckReferrer referrer) {
   if (base::FeatureList::IsEnabled(
           password_manager::features::kPasswordCheck)) {
     chrome::ShowPasswordCheck(
         chrome::FindBrowserWithWebContents(web_contents()));
-    password_manager::LogPasswordCheckReferrer(
-        password_manager::PasswordCheckReferrer::kPasswordBreachDialog);
+    password_manager::LogPasswordCheckReferrer(referrer);
   } else {
     NavigateToPasswordCheckupPage(
         Profile::FromBrowserContext(web_contents()->GetBrowserContext()));

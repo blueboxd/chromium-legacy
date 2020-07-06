@@ -70,7 +70,8 @@ public class FeedNewTabPageCardRenderTest {
     public SuggestionsDependenciesRule mSuggestionsDeps = new SuggestionsDependenciesRule();
 
     @Rule
-    public ChromeRenderTestRule mRenderTestRule = new ChromeRenderTestRule();
+    public ChromeRenderTestRule mRenderTestRule =
+            ChromeRenderTestRule.Builder.withPublicCorpus().build();
 
     @Rule
     public FeedDataInjectRule mFeedDataInjector = new FeedDataInjectRule(true);

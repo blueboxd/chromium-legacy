@@ -103,7 +103,8 @@ template("action_with_pydeps") {
     # Happens every time the template is instantiated, but benchmarking shows no
     # perceivable impact on overall 'gn gen' speed.
     _pydeps_file = invoker.script + "deps"
-    _pydeps_lines = read_file(_pydeps_file, "list lines")
+    _pydeps_lines =
+        read_file(_pydeps_file, "list lines")  # https://crbug.com/1102058
     _pydeps_entries = filter_exclude(_pydeps_lines, [ "#*" ])
 
     if (!defined(inputs)) {

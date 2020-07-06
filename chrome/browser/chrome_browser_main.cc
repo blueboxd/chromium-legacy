@@ -505,9 +505,9 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
 }
 
 ChromeBrowserMainParts::~ChromeBrowserMainParts() {
-  for (int i = static_cast<int>(chrome_extra_parts_.size())-1; i >= 0; --i)
-    delete chrome_extra_parts_[i];
-  chrome_extra_parts_.clear();
+  // Delete parts in the reverse of the order they were added.
+  while (!chrome_extra_parts_.empty())
+    chrome_extra_parts_.pop_back();
 }
 
 void ChromeBrowserMainParts::SetupMetrics() {
@@ -1790,8 +1790,9 @@ void ChromeBrowserMainParts::PostDestroyThreads() {
 
 // Public members:
 
-void ChromeBrowserMainParts::AddParts(ChromeBrowserMainExtraParts* parts) {
-  chrome_extra_parts_.push_back(parts);
+void ChromeBrowserMainParts::AddParts(
+    std::unique_ptr<ChromeBrowserMainExtraParts> parts) {
+  chrome_extra_parts_.push_back(std::move(parts));
 }
 
 #if !defined(OS_ANDROID)

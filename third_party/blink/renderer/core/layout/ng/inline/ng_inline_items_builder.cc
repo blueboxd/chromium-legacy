@@ -917,13 +917,6 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendFloating(
 template <typename OffsetMappingBuilder>
 void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
     AppendOutOfFlowPositioned(LayoutObject* layout_object) {
-  // This object may have |FirstInlineFragmentItemIndex| if it was a floating
-  // object in the previous layout. Clear here because OOF will not produce
-  // |NGFragmentItem|.
-  if (layout_object->IsInLayoutNGInlineFormattingContext() &&
-      RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
-    layout_object->ClearFirstInlineFragmentItemIndex();
-
   AppendOpaque(NGInlineItem::kOutOfFlowPositioned, kObjectReplacementCharacter,
                layout_object);
 }

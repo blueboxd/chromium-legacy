@@ -14,7 +14,6 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_ruby_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 #include "third_party/blink/renderer/core/layout/ng/list/ng_unpositioned_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_child_iterator.h"
@@ -2795,20 +2794,26 @@ void NGBlockLayoutAlgorithm::LayoutRubyText(
   LayoutUnit ruby_text_box_top;
   const NGPhysicalBoxFragment& ruby_text_fragment =
       To<NGPhysicalBoxFragment>(result->PhysicalFragment());
+  const LogicalRect ruby_text_box = ruby_text_fragment.ConvertChildToLogical(
+      ruby_text_fragment.ScrollableOverflow(NGPhysicalFragment::kEmHeight));
   RubyPosition block_start_position = Style().IsFlippedLinesWritingMode()
                                           ? RubyPosition::kAfter
                                           : RubyPosition::kBefore;
   if (Style().GetRubyPosition() == block_start_position) {
-    LayoutUnit last_line_ruby_text_bottom = LastLineTextLogicalBottom(
-        ruby_text_fragment, result->IntrinsicBlockSize());
+    LayoutUnit last_line_ruby_text_bottom = ruby_text_box.BlockEndOffset();
 
     // Find a fragment for RubyBase, and get the top of text in it.
     LayoutUnit first_line_top;
     for (const auto& child : container_builder_.Children()) {
       if (const auto* layout_object = child.fragment->GetLayoutObject()) {
         if (layout_object->IsRubyBase()) {
-          first_line_top = FirstLineTextLogicalTop(
-              To<NGPhysicalBoxFragment>(*child.fragment), LayoutUnit());
+          const auto& ruby_base_fragment =
+              To<NGPhysicalBoxFragment>(*child.fragment);
+          first_line_top =
+              ruby_base_fragment
+                  .ConvertChildToLogical(ruby_base_fragment.ScrollableOverflow(
+                      NGPhysicalFragment::kEmHeight))
+                  .offset.block_offset;
           first_line_top += child.offset.block_offset;
           break;
         }
@@ -2816,13 +2821,11 @@ void NGBlockLayoutAlgorithm::LayoutRubyText(
     }
     ruby_text_box_top = first_line_top - last_line_ruby_text_bottom;
     const LayoutUnit ruby_text_top =
-        ruby_text_box_top +
-        FirstLineTextLogicalTop(ruby_text_fragment, LayoutUnit());
+        ruby_text_box_top + ruby_text_box.offset.block_offset;
     if (ruby_text_top < LayoutUnit())
       container_builder_.SetAnnotationOverflow(ruby_text_top);
   } else {
-    LayoutUnit first_line_ruby_text_top =
-        FirstLineTextLogicalTop(ruby_text_fragment, LayoutUnit());
+    LayoutUnit first_line_ruby_text_top = ruby_text_box.offset.block_offset;
 
     // Find a fragment for RubyBase, and get the bottom of text in it.
     LayoutUnit last_line_bottom;
@@ -2834,8 +2837,13 @@ void NGBlockLayoutAlgorithm::LayoutRubyText(
               child.fragment->Size()
                   .ConvertToLogical(Style().GetWritingMode())
                   .block_size;
-          last_line_bottom = LastLineTextLogicalBottom(
-              To<NGPhysicalBoxFragment>(*child.fragment), base_block_size);
+          const auto& ruby_base_fragment =
+              To<NGPhysicalBoxFragment>(*child.fragment);
+          last_line_bottom =
+              ruby_base_fragment
+                  .ConvertChildToLogical(ruby_base_fragment.ScrollableOverflow(
+                      NGPhysicalFragment::kEmHeight))
+                  .BlockEndOffset();
           last_line_bottom += child.offset.block_offset;
           base_logical_bottom = child.offset.block_offset + base_block_size;
           break;
@@ -2843,14 +2851,9 @@ void NGBlockLayoutAlgorithm::LayoutRubyText(
       }
     }
     ruby_text_box_top = last_line_bottom - first_line_ruby_text_top;
-    LayoutUnit ruby_text_height =
-        ruby_text_fragment.Size()
-            .ConvertToLogical(Style().GetWritingMode())
-            .block_size;
-    ruby_text_height =
-        LastLineTextLogicalBottom(ruby_text_fragment, ruby_text_height);
-    LayoutUnit logical_bottom_overflow =
-        ruby_text_box_top + ruby_text_height - base_logical_bottom;
+    LayoutUnit logical_bottom_overflow = ruby_text_box_top +
+                                         ruby_text_box.BlockEndOffset() -
+                                         base_logical_bottom;
     if (logical_bottom_overflow > LayoutUnit())
       container_builder_.SetAnnotationOverflow(logical_bottom_overflow);
   }

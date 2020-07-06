@@ -66,6 +66,7 @@ absl_source_set("marshalling") {
 absl_source_set("commandlineflag_internal") {
   testonly = true
   public = [ "internal/commandlineflag.h" ]
+  sources = [ "internal/commandlineflag.cc" ]
   deps = [
     "//third_party/abseil-cpp/absl/base:config",
     "//third_party/abseil-cpp/absl/base:fast_type_id",

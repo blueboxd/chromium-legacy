@@ -34,7 +34,7 @@ def RunTest(driver):
   driver.get("chrome://extensions")
 
   # It's nested within a couple of shadow doms on the page - extract it.
-  print "Looking for extension on extensions page: %s" % FLAGS.extension_id
+  print("Looking for extension on extensions page: %s" % FLAGS.extension_id)
   extension_page = False
   try:
     selectors = ["extensions-manager", "extensions-item-list"]
@@ -46,9 +46,9 @@ def RunTest(driver):
     print(traceback.format_exc())
 
   if extension_page:
-    print "TRUE"
+    print("TRUE")
   else:
-    print "FALSE"
+    print("FALSE")
 
 
 def main(argv):

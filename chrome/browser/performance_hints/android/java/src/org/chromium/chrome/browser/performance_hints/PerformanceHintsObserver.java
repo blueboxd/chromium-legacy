@@ -32,10 +32,15 @@ public class PerformanceHintsObserver {
         return PerformanceHintsObserverJni.get().getPerformanceClassForURL(webContents, url);
     }
 
+    public static boolean isContextMenuPerformanceInfoEnabled() {
+        return PerformanceHintsObserverJni.get().isContextMenuPerformanceInfoEnabled();
+    }
+
     private PerformanceHintsObserver() {}
 
     @NativeMethods
-    interface Natives {
+    public interface Natives {
         int getPerformanceClassForURL(WebContents webContents, String url);
+        boolean isContextMenuPerformanceInfoEnabled();
     }
 }

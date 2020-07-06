@@ -47,7 +47,8 @@ void CredentialLeakDialogControllerImpl::OnAcceptDialog() {
     LogLeakDialogTypeAndDismissalReason(
         password_manager::GetLeakDialogType(leak_type_),
         LeakDialogDismissalReason::kClickedCheckPasswords);
-    delegate_->NavigateToPasswordCheckup();
+    delegate_->NavigateToPasswordCheckup(
+        password_manager::PasswordCheckReferrer::kPasswordBreachDialog);
   } else {
     LogLeakDialogTypeAndDismissalReason(
         password_manager::GetLeakDialogType(leak_type_),

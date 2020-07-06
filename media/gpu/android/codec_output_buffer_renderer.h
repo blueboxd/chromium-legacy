@@ -78,12 +78,15 @@ class MEDIA_GPU_EXPORT CodecOutputBufferRenderer {
   }
 
  private:
+  friend class FrameInfoHelperTest;
   // The lifecycle phases of an buffer.
   // The only possible transitions are from left to right. Both
   // kInFrontBuffer and kInvalidated are terminal.
   enum class Phase { kInCodec, kInBackBuffer, kInFrontBuffer, kInvalidated };
 
   void EnsureBoundIfNeeded(BindingsMode mode);
+
+  void set_phase_for_testing(Phase phase) { phase_ = phase; }
 
   // The phase of the image buffer's lifecycle.
   Phase phase_ = Phase::kInCodec;

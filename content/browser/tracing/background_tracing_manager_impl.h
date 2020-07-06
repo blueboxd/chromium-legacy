@@ -86,6 +86,7 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
     STARTUP_SCENARIO_TRIGGERED = 12,
     LARGE_UPLOAD_WAITING_TO_RETRY = 13,
     SYSTEM_TRIGGERED = 14,
+    REACHED_CODE_SCENARIO_TRIGGERED = 15,
     NUMBER_OF_BACKGROUND_TRACING_METRICS,
   };
   static void RecordMetric(Metrics metric);

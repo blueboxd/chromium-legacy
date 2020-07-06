@@ -470,7 +470,7 @@ void HTMLFormElement::ScheduleFormSubmission(
     return;
   }
 
-  if (!GetDocument().GetContentSecurityPolicy()->AllowFormAction(
+  if (!GetExecutionContext()->GetContentSecurityPolicy()->AllowFormAction(
           form_submission->Action())) {
     return;
   }

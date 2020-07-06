@@ -645,9 +645,10 @@ class AXPosition {
 
         // 2. The current position is not whitespace only, unless it is also
         //    the first leaf text position within the document.
-        if (text_position->IsInWhiteSpace())
+        if (text_position->IsInWhiteSpace()) {
           return text_position->CreatePreviousLeafTextPosition()
               ->IsNullPosition();
+        }
 
         // 3. Either (a) the current leaf text position is the first leaf text
         //    position in the document, or (b) there are no line breaking
@@ -3040,7 +3041,7 @@ class AXPosition {
     if (AnchorUnignoredChildCount())
       return false;
 
-    // All unignored leaf nodes in the AXTree except the document and the text
+    // All unignored leaf nodes in the AXTree except document and text
     // nodes should be replaced by the embedded object character. Also, nodes
     // that only have ignored children (e.g., a button that contains only an
     // empty div) need to be treated as leaf nodes.
@@ -3087,14 +3088,12 @@ class AXPosition {
     // The first unignored ancestor is necessarily the empty object if this node
     // is the descendant of an empty object.
     AXNodeType* ancestor_node = GetLowestUnignoredAncestor();
-
     if (!ancestor_node)
       return nullptr;
 
     AXPositionInstance position = CreateTextPosition(
         tree_id_, GetAnchorID(ancestor_node), 0 /* text_offset */,
         ax::mojom::TextAffinity::kDownstream);
-
     if (position && position->IsEmptyObjectReplacedByCharacter())
       return ancestor_node;
 

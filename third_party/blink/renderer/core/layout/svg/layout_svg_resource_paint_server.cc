@@ -79,20 +79,15 @@ static SVGPaintDescription RequestPaint(const LayoutObject& object,
   if (paint.IsNone())
     return SVGPaintDescription();
 
-  Color color = paint.GetColor();
+  Color color = style.ResolvedColor(paint.GetColor());
   bool has_color = paint.HasColor();
-
-  if (paint.HasCurrentColor())
-    color = style.VisitedDependentColor(GetCSSPropertyColor());
 
   if (style.InsideLink() == EInsideLink::kInsideVisitedLink) {
     // FIXME: This code doesn't support the uri component of the visited link
     // paint, https://bugs.webkit.org/show_bug.cgi?id=70006
-
-    // If the color (primary or fallback) is 'currentcolor', then |color|
-    // already contains the 'visited color'.
-    if (!visited_paint.HasUrl() && !visited_paint.HasCurrentColor()) {
-      const Color& visited_color = visited_paint.GetColor();
+    if (!visited_paint.HasUrl()) {
+      const Color& visited_color =
+          style.ResolvedColor(visited_paint.GetColor());
       color = Color(visited_color.Red(), visited_color.Green(),
                     visited_color.Blue(), color.Alpha());
       has_color = true;

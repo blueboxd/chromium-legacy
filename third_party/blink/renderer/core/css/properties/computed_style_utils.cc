@@ -2235,20 +2235,19 @@ CSSValue* ComputedStyleUtils::AdjustSVGPaintForCurrentColor(
     CSSValueList* values = CSSValueList::CreateSpaceSeparated();
     values->Append(
         *MakeGarbageCollected<cssvalue::CSSURIValue>(paint.GetUrl()));
-    if (paint.type == SVG_PAINTTYPE_URI_NONE)
+    if (paint.type == SVG_PAINTTYPE_URI_NONE) {
       values->Append(*CSSIdentifierValue::Create(CSSValueID::kNone));
-    else if (paint.type == SVG_PAINTTYPE_URI_CURRENTCOLOR)
-      values->Append(*cssvalue::CSSColorValue::Create(current_color.Rgb()));
-    else if (paint.type == SVG_PAINTTYPE_URI_RGBCOLOR)
-      values->Append(*cssvalue::CSSColorValue::Create(paint.GetColor().Rgb()));
+    } else if (paint.type == SVG_PAINTTYPE_URI_COLOR) {
+      values->Append(*cssvalue::CSSColorValue::Create(
+          paint.GetColor().Resolve(current_color).Rgb()));
+    }
     return values;
   }
   if (paint.type == SVG_PAINTTYPE_NONE)
     return CSSIdentifierValue::Create(CSSValueID::kNone);
-  if (paint.type == SVG_PAINTTYPE_CURRENTCOLOR)
-    return cssvalue::CSSColorValue::Create(current_color.Rgb());
 
-  return cssvalue::CSSColorValue::Create(paint.GetColor().Rgb());
+  return cssvalue::CSSColorValue::Create(
+      paint.GetColor().Resolve(current_color).Rgb());
 }
 
 CSSValue* ComputedStyleUtils::ValueForSVGResource(

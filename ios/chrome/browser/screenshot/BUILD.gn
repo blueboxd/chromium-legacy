@@ -1,0 +1,25 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("screenshot") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "screenshot_metrics_recorder.h",
+    "screenshot_metrics_recorder.mm",
+  ]
+  deps = [ "//base" ]
+}
+
+source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [ "screenshot_metrics_recorder_unittest.mm" ]
+  deps = [
+    ":screenshot",
+    "//base",
+    "//base/test:test_support",
+    "//ios/chrome/test:test_support",
+    "//third_party/ocmock",
+  ]
+}

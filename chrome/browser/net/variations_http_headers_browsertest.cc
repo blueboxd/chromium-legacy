@@ -5,6 +5,7 @@
 #include "components/variations/net/variations_http_headers.h"
 
 #include <map>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -80,7 +81,7 @@ class VariationsHttpHeadersBrowserTest : public InProcessBrowserTest {
 
   void CreatedBrowserMainParts(content::BrowserMainParts* parts) override {
     static_cast<ChromeBrowserMainParts*>(parts)->AddParts(
-        new VariationHeaderSetter());
+        std::make_unique<VariationHeaderSetter>());
   }
 
   void SetUp() override {

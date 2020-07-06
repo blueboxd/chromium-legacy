@@ -30,8 +30,8 @@
 namespace {
 
 ProfilePickerView* g_profile_picker_view = nullptr;
-constexpr int kWindowWidth = 800;
-constexpr int kWindowHeight = 600;
+constexpr int kWindowWidth = 1024;
+constexpr int kWindowHeight = 758;
 }  // namespace
 
 // static

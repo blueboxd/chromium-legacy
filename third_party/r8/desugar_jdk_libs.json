@@ -1,10 +1,73 @@
 {
-  "configuration_format_version": 4,
+  "configuration_format_version": 3,
   "group_id" : "com.tools.android",
   "artifact_id" : "desugar_jdk_libs",
-  "version": "0.11.2",
+  "version": "1.0.10",
   "required_compilation_api_level": 26,
   "synthesized_library_classes_package_prefix": "j$.",
+  "common_flags": [
+    {
+      "api_level_below_or_equal": 25,
+      "wrapper_conversion": [
+        "java.time.Clock"
+      ]
+    },
+    {
+      "api_level_below_or_equal": 23,
+      "wrapper_conversion": [
+        "java.util.PrimitiveIterator$OfDouble",
+        "java.util.PrimitiveIterator$OfInt",
+        "java.util.PrimitiveIterator$OfLong",
+        "java.util.Spliterator",
+        "java.util.Spliterator$OfDouble",
+        "java.util.Spliterator$OfInt",
+        "java.util.Spliterator$OfLong",
+        "java.util.Spliterator$OfPrimitive",
+        "java.util.function.BiConsumer",
+        "java.util.function.BiFunction",
+        "java.util.function.BiPredicate",
+        "java.util.function.BinaryOperator",
+        "java.util.function.Consumer",
+        "java.util.function.DoubleBinaryOperator",
+        "java.util.function.DoubleConsumer",
+        "java.util.function.DoubleFunction",
+        "java.util.function.DoublePredicate",
+        "java.util.function.DoubleToIntFunction",
+        "java.util.function.DoubleToLongFunction",
+        "java.util.function.DoubleUnaryOperator",
+        "java.util.function.Function",
+        "java.util.function.IntBinaryOperator",
+        "java.util.function.IntConsumer",
+        "java.util.function.IntFunction",
+        "java.util.function.IntPredicate",
+        "java.util.function.IntToDoubleFunction",
+        "java.util.function.IntToLongFunction",
+        "java.util.function.IntUnaryOperator",
+        "java.util.function.LongBinaryOperator",
+        "java.util.function.LongConsumer",
+        "java.util.function.LongFunction",
+        "java.util.function.LongPredicate",
+        "java.util.function.LongToDoubleFunction",
+        "java.util.function.LongToIntFunction",
+        "java.util.function.LongUnaryOperator",
+        "java.util.function.ObjDoubleConsumer",
+        "java.util.function.ObjIntConsumer",
+        "java.util.function.ObjLongConsumer",
+        "java.util.function.Predicate",
+        "java.util.function.Supplier",
+        "java.util.function.ToDoubleFunction",
+        "java.util.function.ToIntFunction",
+        "java.util.function.ToLongFunction",
+        "java.util.function.UnaryOperator",
+        "java.util.stream.BaseStream",
+        "java.util.stream.Collector",
+        "java.util.stream.DoubleStream",
+        "java.util.stream.IntStream",
+        "java.util.stream.LongStream",
+        "java.util.stream.Stream"
+      ]
+    }
+  ],
   "library_flags": [
     {
       "api_level_below_or_equal": 25,
@@ -21,7 +84,16 @@
       },
       "retarget_lib_member": {
         "java.util.Date#toInstant": "java.util.DesugarDate",
-        "java.util.GregorianCalendar#toZonedDateTime": "java.util.DesugarGregorianCalendar"
+        "java.util.GregorianCalendar#toZonedDateTime": "java.util.DesugarGregorianCalendar",
+        "java.util.TimeZone#toZoneId": "java.util.DesugarTimeZone"
+      },
+      "custom_conversion": {
+        "java.time.ZonedDateTime": "java.time.TimeConversions",
+        "java.time.LocalDate": "java.time.TimeConversions",
+        "java.time.Duration": "java.time.TimeConversions",
+        "java.time.ZoneId": "java.time.TimeConversions",
+        "java.time.MonthDay": "java.time.TimeConversions",
+        "java.time.Instant": "java.time.TimeConversions"
       }
     },
     {
@@ -92,7 +164,9 @@
         "java.util.Date#from": "java.util.DesugarDate",
         "java.util.Date#toInstant": "java.util.DesugarDate",
         "java.util.GregorianCalendar#from": "java.util.DesugarGregorianCalendar",
-        "java.util.GregorianCalendar#toZonedDateTime": "java.util.DesugarGregorianCalendar"
+        "java.util.GregorianCalendar#toZonedDateTime": "java.util.DesugarGregorianCalendar",
+        "java.util.TimeZone#getTimeZone": "java.util.DesugarTimeZone",
+        "java.util.TimeZone#toZoneId": "java.util.DesugarTimeZone"
       },
       "custom_conversion": {
         "java.time.ZonedDateTime": "java.time.TimeConversions",

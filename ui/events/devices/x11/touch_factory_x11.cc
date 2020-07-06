@@ -55,8 +55,7 @@ TouchFactory::TouchFactory()
   UpdateDeviceList(display);
 }
 
-TouchFactory::~TouchFactory() {
-}
+TouchFactory::~TouchFactory() = default;
 
 // static
 TouchFactory* TouchFactory::GetInstance() {
@@ -146,16 +145,14 @@ void TouchFactory::UpdateDeviceList(XDisplay* display) {
   }
 }
 
-bool TouchFactory::ShouldProcessXI2Event(XEvent* xev) {
-  DCHECK_EQ(x11::GeGenericEvent::opcode, xev->type);
-  XIEvent* event = static_cast<XIEvent*>(xev->xcookie.data);
-  XIDeviceEvent* xiev = reinterpret_cast<XIDeviceEvent*>(event);
-
+bool TouchFactory::ShouldProcessDeviceEvent(
+    const x11::Input::DeviceEvent& xiev) {
   const bool is_touch_disabled = !touch_screens_enabled_;
+  const uint16_t deviceid = static_cast<uint16_t>(xiev.deviceid);
 
-  if (event->evtype == XI_TouchBegin ||
-      event->evtype == XI_TouchUpdate ||
-      event->evtype == XI_TouchEnd) {
+  if (xiev.opcode == x11::Input::DeviceEvent::TouchBegin ||
+      xiev.opcode == x11::Input::DeviceEvent::TouchUpdate ||
+      xiev.opcode == x11::Input::DeviceEvent::TouchEnd) {
     // Since SetupXI2ForXWindow() selects events from all devices, for a
     // touchscreen attached to a master pointer device, X11 sends two
     // events for each touch: one from the slave (deviceid == the id of
@@ -166,34 +163,35 @@ bool TouchFactory::ShouldProcessXI2Event(XEvent* xev) {
     // For a 'floating' touchscreen device, X11 sends only one event for
     // each touch, with both deviceid and sourceid set to the id of the
     // touchscreen device.
-    bool is_from_master_or_float = touch_device_list_[xiev->deviceid].is_master;
-    bool is_from_slave_device = !is_from_master_or_float
-        && xiev->sourceid == xiev->deviceid;
-    return !is_touch_disabled &&
-           IsTouchDevice(xiev->deviceid) &&
+    bool is_from_master_or_float = touch_device_list_[deviceid].is_master;
+    bool is_from_slave_device =
+        !is_from_master_or_float && xiev.sourceid == xiev.deviceid;
+    return !is_touch_disabled && IsTouchDevice(deviceid) &&
            !is_from_slave_device;
   }
 
   // Make sure only key-events from the virtual core keyboard are processed.
-  if (event->evtype == XI_KeyPress || event->evtype == XI_KeyRelease) {
+  if (xiev.opcode == x11::Input::DeviceEvent::KeyPress ||
+      xiev.opcode == x11::Input::DeviceEvent::KeyRelease) {
     return (virtual_core_keyboard_device_ < 0) ||
-           (virtual_core_keyboard_device_ == xiev->deviceid);
+           (virtual_core_keyboard_device_ == deviceid);
   }
 
+  return ShouldProcessEventForDevice(deviceid);
+}
+
+bool TouchFactory::ShouldProcessCrossingEvent(
+    const x11::Input::CrossingEvent& xiev) {
   // Don't automatically accept XI_Enter or XI_Leave. They should be checked
   // against the pointer_device_lookup_ to prevent handling for slave devices.
   // This happens for unknown reasons when using xtest.
   // https://crbug.com/683434.
-  if (event->evtype != XI_ButtonPress && event->evtype != XI_ButtonRelease &&
-      event->evtype != XI_Enter && event->evtype != XI_Leave &&
-      event->evtype != XI_Motion) {
+  if (xiev.opcode != x11::Input::CrossingEvent::Enter &&
+      xiev.opcode != x11::Input::CrossingEvent::Leave) {
     return true;
   }
 
-  if (!pointer_device_lookup_[xiev->deviceid])
-    return false;
-
-  return IsTouchDevice(xiev->deviceid) ? !is_touch_disabled : true;
+  return ShouldProcessEventForDevice(static_cast<uint16_t>(xiev.deviceid));
 }
 
 void TouchFactory::SetupXI2ForXWindow(x11::Window window) {
@@ -297,8 +295,7 @@ void TouchFactory::ReleaseSlot(int slot) {
 }
 
 bool TouchFactory::IsTouchDevicePresent() {
-  return touch_screens_enabled_ &&
-      touch_device_lookup_.any();
+  return touch_screens_enabled_ && touch_device_lookup_.any();
 }
 
 void TouchFactory::ResetForTest() {
@@ -310,24 +307,21 @@ void TouchFactory::ResetForTest() {
   SetTouchscreensEnabled(true);
 }
 
-void TouchFactory::SetTouchDeviceForTest(
-    const std::vector<int>& devices) {
+void TouchFactory::SetTouchDeviceForTest(const std::vector<int>& devices) {
   touch_device_lookup_.reset();
   touch_device_list_.clear();
-  for (auto iter = devices.begin(); iter != devices.end(); ++iter) {
-    DCHECK(IsValidDevice(*iter));
-    touch_device_lookup_[*iter] = true;
-    touch_device_list_[*iter] = {true, EventPointerType::kTouch};
+  for (int device : devices) {
+    DCHECK(IsValidDevice(device));
+    touch_device_lookup_[device] = true;
+    touch_device_list_[device] = {true, EventPointerType::kTouch};
   }
   SetTouchscreensEnabled(true);
 }
 
-void TouchFactory::SetPointerDeviceForTest(
-    const std::vector<int>& devices) {
+void TouchFactory::SetPointerDeviceForTest(const std::vector<int>& devices) {
   pointer_device_lookup_.reset();
-  for (auto iter = devices.begin(); iter != devices.end(); ++iter) {
-    pointer_device_lookup_[*iter] = true;
-  }
+  for (int device : devices)
+    pointer_device_lookup_[device] = true;
 }
 
 void TouchFactory::SetTouchscreensEnabled(bool enabled) {
@@ -348,6 +342,13 @@ void TouchFactory::CacheTouchscreenIds(int device_id) {
   // Internal displays will have a vid and pid of 0. Ignore them.
   if (it != touchscreens.end() && it->vendor_id && it->product_id)
     touchscreen_ids_.emplace(it->vendor_id, it->product_id);
+}
+
+bool TouchFactory::ShouldProcessEventForDevice(uint16_t device_id) const {
+  if (!pointer_device_lookup_[device_id])
+    return false;
+
+  return IsTouchDevice(device_id) ? touch_screens_enabled_ : true;
 }
 
 }  // namespace ui

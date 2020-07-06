@@ -216,7 +216,8 @@ class ManagePasswordsUIController
   friend class content::WebContentsUserData<ManagePasswordsUIController>;
 
   // PasswordsLeakDialogDelegate:
-  void NavigateToPasswordCheckup() override;
+  void NavigateToPasswordCheckup(
+      password_manager::PasswordCheckReferrer referrer) override;
   void OnLeakDialogHidden() override;
 
   enum class BubbleStatus {

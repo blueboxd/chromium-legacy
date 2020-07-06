@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/limits.h"
-#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_source.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_source.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_deliverer.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_processor_options.h"
@@ -42,7 +41,7 @@ class MediaStreamComponent;
 // needed, and/or calls to DeliverDataToTracks() must be made at very specific
 // times.
 //
-// An instance of this class is owned by WebMediaStreamSource.
+// An instance of this class is owned by MediaStreamSource.
 //
 // Usage example:
 //
@@ -74,7 +73,7 @@ class PLATFORM_EXPORT MediaStreamAudioSource
 
   // Returns the MediaStreamAudioSource instance owned by the given blink
   // |source| or null.
-  static MediaStreamAudioSource* From(const WebMediaStreamSource& source);
+  static MediaStreamAudioSource* From(MediaStreamSource* source);
 
   // Provides a weak reference to this MediaStreamAudioSource. The weak pointer
   // may only be dereferenced on the main thread.

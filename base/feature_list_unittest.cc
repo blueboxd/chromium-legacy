@@ -101,6 +101,38 @@ TEST_F(FeatureListTest, InitializeFromCommandLine) {
   }
 }
 
+TEST_F(FeatureListTest, InitializeFromCommandLineWithFeatureParams) {
+  struct {
+    const std::string enable_features;
+    const std::string expected_field_trial_created;
+    const std::map<std::string, std::string> expected_feature_params;
+  } test_cases[] = {
+      {"Feature:x/100/y/test", "StudyFeature", {{"x", "100"}, {"y", "test"}}},
+      {"Feature<Trial1:x/200/y/123", "Trial1", {{"x", "200"}, {"y", "123"}}},
+      {"Feature<Trial2.Group2:x/test/y/uma/z/ukm",
+       "Trial2",
+       {{"x", "test"}, {"y", "uma"}, {"z", "ukm"}}},
+  };
+
+  const Feature kFeature = {"Feature", FEATURE_DISABLED_BY_DEFAULT};
+  for (const auto& test_case : test_cases) {
+    SCOPED_TRACE(test_case.enable_features);
+
+    auto feature_list = std::make_unique<FeatureList>();
+    feature_list->InitializeFromCommandLineWithFeatureParams(
+        test_case.enable_features, "", &FeatureList::NoOpDecodeFunc);
+    test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitWithFeatureList(std::move(feature_list));
+
+    EXPECT_TRUE(FeatureList::IsEnabled(kFeature));
+    EXPECT_TRUE(
+        FieldTrialList::IsTrialActive(test_case.expected_field_trial_created));
+    std::map<std::string, std::string> actualParams;
+    EXPECT_TRUE(GetFieldTrialParamsByFeature(kFeature, &actualParams));
+    EXPECT_EQ(test_case.expected_feature_params, actualParams);
+  }
+}
+
 TEST_F(FeatureListTest, CheckFeatureIdentity) {
   // Tests that CheckFeatureIdentity() correctly detects when two different
   // structs with the same feature name are passed to it.

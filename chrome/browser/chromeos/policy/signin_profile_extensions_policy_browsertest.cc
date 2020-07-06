@@ -62,8 +62,9 @@ const char kWhitelistedAppCrxPath[] =
 // * A trivial test app which is NOT whitelisted for running in the sign-in
 //   profile:
 const char kNotWhitelistedAppId[] = "mockapnacjbcdncmpkjngjalkhphojek";
-const char kNotWhitelistedUpdateManifestPath[] =
-    "/extensions/trivial_platform_app/update_manifest.xml";
+const char kNotWhitelistedAppPath[] = "extensions/trivial_platform_app/app/";
+const char kNotWhitelistedAppPemPath[] =
+    "extensions/trivial_platform_app/app.pem";
 // * A trivial test extension which is whitelisted for running in the sign-in
 //   profile:
 const char kWhitelistedExtensionId[] = "ngjobkbdodapjbbncmagbccommkggmnj";
@@ -73,8 +74,10 @@ const char kWhitelistedExtensionCrxPath[] =
 // * A trivial test extension which is NOT whitelisted for running in the
 //   sign-in profile:
 const char kNotWhitelistedExtensionId[] = "mockepjebcnmhmhcahfddgfcdgkdifnc";
-const char kNotWhitelistedExtensionUpdateManifestPath[] =
-    "/extensions/trivial_extension/update_manifest.xml";
+const char kNotWhitelistedExtensionPath[] =
+    "extensions/trivial_extension/extension/";
+const char kNotWhitelistedExtensionPemPath[] =
+    "extensions/trivial_extension/extension.pem";
 // * An extension which is NOT whitelisted for running in the sign-in profile
 //   and that suppresses its immediate auto updates:
 const char kNoImmediateUpdateExtensionId[] = "noidlplbgmdmbccnafgibfgokggdpncj";
@@ -263,8 +266,9 @@ IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest,
 
   ExtensionInstallErrorObserver install_error_observer(profile,
                                                        kNotWhitelistedAppId);
-  AddExtensionForForceInstallation(kNotWhitelistedAppId,
-                                   kNotWhitelistedUpdateManifestPath);
+  EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromSourceDir(
+      GetTestDataDir().AppendASCII(kNotWhitelistedAppPath),
+      GetTestDataDir().AppendASCII(kNotWhitelistedAppPemPath)));
   install_error_observer.Wait();
   EXPECT_FALSE(
       extensions::ExtensionRegistry::Get(profile)->GetInstalledExtension(
@@ -299,8 +303,9 @@ IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest,
 
   ExtensionInstallErrorObserver install_error_observer(
       profile, kNotWhitelistedExtensionId);
-  AddExtensionForForceInstallation(kNotWhitelistedExtensionId,
-                                   kNotWhitelistedExtensionUpdateManifestPath);
+  EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromSourceDir(
+      GetTestDataDir().AppendASCII(kNotWhitelistedExtensionPath),
+      GetTestDataDir().AppendASCII(kNotWhitelistedExtensionPemPath)));
   install_error_observer.Wait();
   EXPECT_FALSE(
       extensions::ExtensionRegistry::Get(profile)->GetInstalledExtension(

@@ -19,9 +19,7 @@
 
 namespace base {
 template <typename T>
-struct LeakySingletonTraits;
-template <typename T>
-struct DefaultSingletonTraits;
+class NoDestructor;
 }
 
 namespace enterprise_connectors {
@@ -75,15 +73,14 @@ class ConnectorsManager {
   const ReportingConnectorsSettings& GetReportingConnectorsSettingsForTesting()
       const;
 
-  // Helpers to reset the ConnectorManager instance across test since it's a
-  // singleton that would otherwise persist its state.
+  // Helpers to reset the ConnectorManager instance across test since it would
+  // otherwise persist its state.
   void SetUpForTesting();
   void TearDownForTesting();
   void ClearCacheForTesting();
 
  private:
-  friend struct base::LeakySingletonTraits<ConnectorsManager>;
-  friend struct base::DefaultSingletonTraits<ConnectorsManager>;
+  friend class base::NoDestructor<ConnectorsManager>;
 
   // Constructor and destructor are declared as private so callers use
   // GetInstance instead.

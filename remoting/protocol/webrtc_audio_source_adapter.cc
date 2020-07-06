@@ -68,7 +68,7 @@ void WebrtcAudioSourceAdapter::Core::Start(
   DCHECK(thread_checker_.CalledOnValidThread());
   audio_source_ = std::move(audio_source);
   audio_source_->Start(
-      base::Bind(&Core::OnAudioPacket, base::Unretained(this)));
+      base::BindRepeating(&Core::OnAudioPacket, base::Unretained(this)));
 }
 
 void WebrtcAudioSourceAdapter::Core::Pause(bool pause) {

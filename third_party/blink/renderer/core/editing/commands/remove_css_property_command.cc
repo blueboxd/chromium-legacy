@@ -56,15 +56,17 @@ void RemoveCSSPropertyCommand::DoApply(EditingState*) {
   // Mutate using the CSSOM wrapper so we get the same event behavior as a
   // script. Setting to null string removes the property. We don't have internal
   // version of removeProperty.
-  element_->style()->SetPropertyInternal(property_, String(), String(), false,
-                                         GetDocument().GetSecureContextMode(),
-                                         IGNORE_EXCEPTION_FOR_TESTING);
+  element_->style()->SetPropertyInternal(
+      property_, String(), String(), false,
+      GetDocument().GetExecutionContext()->GetSecureContextMode(),
+      IGNORE_EXCEPTION_FOR_TESTING);
 }
 
 void RemoveCSSPropertyCommand::DoUnapply() {
   element_->style()->SetPropertyInternal(
       property_, String(), old_value_, important_,
-      GetDocument().GetSecureContextMode(), IGNORE_EXCEPTION_FOR_TESTING);
+      GetDocument().GetExecutionContext()->GetSecureContextMode(),
+      IGNORE_EXCEPTION_FOR_TESTING);
 }
 
 void RemoveCSSPropertyCommand::Trace(Visitor* visitor) const {

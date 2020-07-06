@@ -11,11 +11,6 @@
       "bounds": [800, 300],
       "backgroundColor": "#FF0000E6",
       "transform": 2
-    },
-    {
-      "name": "Mask Layer",
-      "bounds": [800, 300],
-      "transform": 2
     }
   ],
   "transforms": [

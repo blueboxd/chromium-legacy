@@ -6,12 +6,12 @@ package org.chromium.chrome.browser;
 
 import android.content.pm.ActivityInfo;
 import android.support.test.InstrumentationRegistry;
-import android.text.TextUtils;
 import android.util.Base64;
 import android.view.KeyEvent;
 
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -93,26 +93,15 @@ public class NavigateTest {
         new TabLoadObserver(mActivityTestRule.getActivity().getActivityTab())
                 .fullyLoadUrl(startUrl);
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                final UrlBar urlBar =
-                        (UrlBar) mActivityTestRule.getActivity().findViewById(R.id.url_bar);
-                Assert.assertNotNull("urlBar is null", urlBar);
-
-                if (!TextUtils.equals(expectedLocation(endUrl), urlBar.getText().toString())) {
-                    updateFailureReason(String.format("Expected url bar text: %s, actual: %s",
-                            expectedLocation(endUrl), urlBar.getText().toString()));
-                    return false;
-                }
-                if (!TextUtils.equals(endUrl,
-                            mActivityTestRule.getActivity().getActivityTab().getUrlString())) {
-                    updateFailureReason(String.format("Expected tab url: %s, actual: %s", endUrl,
-                            mActivityTestRule.getActivity().getActivityTab().getUrlString()));
-                    return false;
-                }
-                return true;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            final UrlBar urlBar =
+                    (UrlBar) mActivityTestRule.getActivity().findViewById(R.id.url_bar);
+            Criteria.checkThat("urlBar is null", urlBar, Matchers.notNullValue());
+            Criteria.checkThat("UrlBar text wrong", urlBar.getText().toString(),
+                    Matchers.is(expectedLocation(endUrl)));
+            Criteria.checkThat("Tab url wrong",
+                    mActivityTestRule.getActivity().getActivityTab().getUrlString(),
+                    Matchers.is(endUrl));
         });
     }
 
@@ -357,8 +346,10 @@ public class NavigateTest {
                 mTestServer.getURL("/chrome/test/data/android/redirect/one.html");
         typeInOmniboxAndNavigate(initialUrl, null);
 
-        CriteriaHelper.pollInstrumentationThread(Criteria.equals(redirectedUrl,
-                () -> mActivityTestRule.getActivity().getActivityTab().getUrlString()));
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(mActivityTestRule.getActivity().getActivityTab().getUrlString(),
+                    Matchers.is(redirectedUrl));
+        });
     }
 
     /**
@@ -390,8 +381,10 @@ public class NavigateTest {
         typeInOmniboxAndNavigate(initialUrl, null);
 
         // Now intent fallback should be triggered assuming 'non_existent' scheme cannot be handled.
-        CriteriaHelper.pollInstrumentationThread(Criteria.equals(
-                targetUrl, () -> mActivityTestRule.getActivity().getActivityTab().getUrlString()));
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(mActivityTestRule.getActivity().getActivityTab().getUrlString(),
+                    Matchers.is(targetUrl));
+        });
 
         // Check if Java redirections were removed from the history.
         // Note that if we try to go back in the test: NavigateToEntry() is called, but
@@ -535,8 +528,9 @@ public class NavigateTest {
             // Wait for the url to change.
             final Tab tab = TabModelUtils.getCurrentTab(model);
             mActivityTestRule.assertWaitForPageScaleFactorMatch(0.75f);
-            CriteriaHelper.pollInstrumentationThread(
-                    Criteria.equals(mockedUrl, () -> getTabUrlOnUIThread(tab)), 5000, 50);
+            CriteriaHelper.pollInstrumentationThread(() -> {
+                Criteria.checkThat(getTabUrlOnUIThread(tab), Matchers.is(mockedUrl));
+            }, 5000, 50);
 
             // Make sure that we're showing new content now.
             Assert.assertEquals("Still showing spoofed data", "\"Real\"", getTabBodyText(tab));

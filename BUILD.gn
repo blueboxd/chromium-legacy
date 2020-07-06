@@ -1293,8 +1293,8 @@ group("chromium_builder_perf") {
     }
     if (is_win || is_android) {
       data_deps += [
+        "//chrome/test:angle_perftests",
         "//components:components_perftests",
-        "//third_party/angle/src/tests:angle_perftests",
       ]
     }
   }

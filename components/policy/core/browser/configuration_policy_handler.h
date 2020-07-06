@@ -472,6 +472,38 @@ class POLICY_EXPORT LegacyPoliciesDeprecatingPolicyHandler
   DISALLOW_COPY_AND_ASSIGN(LegacyPoliciesDeprecatingPolicyHandler);
 };
 
+// A policy handler to deprecate a single policy with a new one. It will attempt
+// to use the new value if present and then try to use the legacy value instead.
+class POLICY_EXPORT SimpleDeprecatingPolicyHandler
+    : public ConfigurationPolicyHandler {
+ public:
+  SimpleDeprecatingPolicyHandler(
+      std::unique_ptr<TypeCheckingPolicyHandler> legacy_policy_handler,
+      std::unique_ptr<TypeCheckingPolicyHandler> new_policy_handler);
+  ~SimpleDeprecatingPolicyHandler() override;
+  SimpleDeprecatingPolicyHandler(const SimpleDeprecatingPolicyHandler&) =
+      delete;
+  SimpleDeprecatingPolicyHandler& operator=(
+      const SimpleDeprecatingPolicyHandler&) = delete;
+
+  // ConfigurationPolicyHandler:
+  bool CheckPolicySettings(const PolicyMap& policies,
+                           PolicyErrorMap* errors) override;
+
+  void ApplyPolicySettingsWithParameters(
+      const PolicyMap& policies,
+      const PolicyHandlerParameters& parameters,
+      PrefValueMap* prefs) override;
+
+ protected:
+  void ApplyPolicySettings(const PolicyMap& policies,
+                           PrefValueMap* prefs) override;
+
+ private:
+  std::unique_ptr<TypeCheckingPolicyHandler> legacy_policy_handler_;
+  std::unique_ptr<TypeCheckingPolicyHandler> new_policy_handler_;
+};
+
 }  // namespace policy
 
 #endif  // COMPONENTS_POLICY_CORE_BROWSER_CONFIGURATION_POLICY_HANDLER_H_

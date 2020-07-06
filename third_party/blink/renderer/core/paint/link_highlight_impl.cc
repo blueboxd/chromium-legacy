@@ -270,7 +270,8 @@ void LinkHighlightImpl::Paint(GraphicsContext& context) {
   DCHECK(!object->GetFrameView()->ShouldThrottleRendering());
 
   static const FloatSize rect_rounding_radii(3, 3);
-  auto color = object->StyleRef().TapHighlightColor();
+  auto color = object->StyleRef().VisitedDependentColor(
+      GetCSSPropertyWebkitTapHighlightColor());
 
   // For now, we'll only use rounded rects if we have a single rect because
   // otherwise we may sometimes get a chain of adjacent boxes (e.g. for text

@@ -14,8 +14,11 @@ class PasswordsLeakDialogDelegateMock : public PasswordsLeakDialogDelegate {
   PasswordsLeakDialogDelegateMock();
   ~PasswordsLeakDialogDelegateMock() override;
 
-  MOCK_METHOD0(OnLeakDialogHidden, void());
-  MOCK_METHOD0(NavigateToPasswordCheckup, void());
+  MOCK_METHOD(void, OnLeakDialogHidden, (), (override));
+  MOCK_METHOD(void,
+              NavigateToPasswordCheckup,
+              (password_manager::PasswordCheckReferrer),
+              (override));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordsLeakDialogDelegateMock);

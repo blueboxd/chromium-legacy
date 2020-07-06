@@ -4404,8 +4404,8 @@
       inherited: true,
       field_group: "*",
       field_template: "<color>",
-      default_value: "LayoutTheme::TapHighlightColor()",
-      converter: "ConvertColor",
+      default_value: "StyleColor(LayoutTheme::TapHighlightColor())",
+      converter: "ConvertStyleColor",
       affected_by_forced_colors: true,
     },
     {

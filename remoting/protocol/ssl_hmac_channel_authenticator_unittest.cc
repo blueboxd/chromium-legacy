@@ -82,13 +82,14 @@ class SslHmacChannelAuthenticatorTest : public testing::Test {
 
     client_auth_->SecureAndAuthenticate(
         std::move(client_fake_socket_),
-        base::Bind(&SslHmacChannelAuthenticatorTest::OnClientConnected,
-                   base::Unretained(this)));
+        base::BindOnce(&SslHmacChannelAuthenticatorTest::OnClientConnected,
+                       base::Unretained(this)));
 
     host_auth_->SecureAndAuthenticate(
         std::move(host_fake_socket_),
-        base::Bind(&SslHmacChannelAuthenticatorTest::OnHostConnected,
-                   base::Unretained(this), std::string("ref argument value")));
+        base::BindOnce(&SslHmacChannelAuthenticatorTest::OnHostConnected,
+                       base::Unretained(this),
+                       std::string("ref argument value")));
 
     // Expect two callbacks to be called - the client callback and the host
     // callback.

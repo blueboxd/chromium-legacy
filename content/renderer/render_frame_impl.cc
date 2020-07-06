@@ -137,11 +137,9 @@
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/data_url.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -1057,58 +1055,6 @@ void FillNavigationParamsOriginPolicy(
   }
 }
 
-// TODO(lukasza): https://crbug.com/1098938: Remove this ad-hoc URLLoaderFactory
-// after the CHECKs below played their role in establishing that
-// CreateDefaultURLLoaderFactoryBundle is only used with opaque initiators.
-class FactoryWrapperToOnlyAllowOpaqueInitiators
-    : public network::mojom::URLLoaderFactory {
- public:
-  explicit FactoryWrapperToOnlyAllowOpaqueInitiators(
-      mojo::PendingRemote<network::mojom::URLLoaderFactory>
-          pending_factory_to_wrap)
-      : wrapped_factory_(std::move(pending_factory_to_wrap)) {}
-
-  ~FactoryWrapperToOnlyAllowOpaqueInitiators() override = default;
-
- private:
-  void CreateLoaderAndStart(
-      mojo::PendingReceiver<network::mojom::URLLoader> loader,
-      int32_t routing_id,
-      int32_t request_id,
-      uint32_t options,
-      const network::ResourceRequest& request,
-      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
-      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
-      override {
-    CHECK(request.request_initiator.has_value());
-    CHECK(request.request_initiator.value().opaque());
-
-    if (!wrapped_factory_)
-      return;
-    wrapped_factory_->CreateLoaderAndStart(
-        std::move(loader), routing_id, request_id, options, request,
-        std::move(client), traffic_annotation);
-  }
-
-  void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
-      override {
-    if (!wrapped_factory_)
-      return;
-
-    mojo::PendingRemote<network::mojom::URLLoaderFactory>
-        cloned_wrapped_factory;
-    wrapped_factory_->Clone(
-        cloned_wrapped_factory.InitWithNewPipeAndPassReceiver());
-
-    mojo::StrongBinding<network::mojom::URLLoaderFactory>::Create(
-        std::make_unique<FactoryWrapperToOnlyAllowOpaqueInitiators>(
-            std::move(cloned_wrapped_factory)),
-        std::move(receiver));
-  }
-
-  mojo::Remote<network::mojom::URLLoaderFactory> wrapped_factory_;
-};
-
 // Asks RenderProcessHostImpl::CreateURLLoaderFactoryForRendererProcess in the
 // browser process for a URLLoaderFactory.
 //
@@ -1117,18 +1063,10 @@ mojo::PendingRemote<network::mojom::URLLoaderFactory>
 CreateDefaultURLLoaderFactory() {
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   DCHECK(render_thread);
-  mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_factory;
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_remote;
   ChildThread::Get()->BindHostReceiver(
-      pending_factory.InitWithNewPipeAndPassReceiver());
-
-  mojo::PendingRemote<network::mojom::URLLoaderFactory>
-      pending_asserting_factory;
-  mojo::StrongBinding<network::mojom::URLLoaderFactory>::Create(
-      std::make_unique<FactoryWrapperToOnlyAllowOpaqueInitiators>(
-          std::move(pending_factory)),
-      pending_asserting_factory.InitWithNewPipeAndPassReceiver());
-
-  return pending_asserting_factory;
+      factory_remote.InitWithNewPipeAndPassReceiver());
+  return factory_remote;
 }
 
 // Returns a non-null pointer to a URLLoaderFactory bundle that is not

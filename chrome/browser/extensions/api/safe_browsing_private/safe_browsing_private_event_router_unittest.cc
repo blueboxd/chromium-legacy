@@ -43,6 +43,8 @@
 #include "components/account_id/account_id.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user.h"
+#else
+#include "components/enterprise/browser/controller/fake_browser_dm_token_storage.h"
 #endif
 
 using ::testing::_;
@@ -249,6 +251,10 @@ class SafeBrowsingPrivateEventRouterTest : public testing::Test {
   extensions::TestEventRouter* event_router_ = nullptr;
 
  private:
+#if !defined(OS_CHROMEOS)
+  policy::FakeBrowserDMTokenStorage dm_token_storage_;
+#endif  // !defined(OS_CHROMEOS)
+
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingPrivateEventRouterTest);
 };
 

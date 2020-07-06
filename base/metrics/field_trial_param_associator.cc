@@ -4,6 +4,7 @@
 
 #include "base/metrics/field_trial_param_associator.h"
 
+#include "base/logging.h"
 #include "base/metrics/field_trial.h"
 
 namespace base {
@@ -21,13 +22,18 @@ bool FieldTrialParamAssociator::AssociateFieldTrialParams(
     const std::string& trial_name,
     const std::string& group_name,
     const FieldTrialParams& params) {
-  if (FieldTrialList::IsTrialActive(trial_name))
+  if (FieldTrialList::IsTrialActive(trial_name)) {
+    DLOG(ERROR) << "Field trial " << trial_name << " is already active.";
     return false;
+  }
 
   AutoLock scoped_lock(lock_);
   const FieldTrialKey key(trial_name, group_name);
-  if (Contains(field_trial_params_, key))
+  if (Contains(field_trial_params_, key)) {
+    DLOG(ERROR) << "You can't override the existing params for field trial: "
+                << trial_name << "." << group_name;
     return false;
+  }
 
   field_trial_params_[key] = params;
   return true;

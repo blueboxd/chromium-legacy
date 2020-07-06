@@ -36,7 +36,6 @@ class InteractionHandlerAndroid : public EventHandler::Observer {
 
   // Constructor. All dependencies must outlive this instance.
   InteractionHandlerAndroid(
-      const std::map<std::string, std::string>& context,
       EventHandler* event_handler,
       UserModel* user_model,
       BasicInteractions* basic_interactions,
@@ -49,15 +48,6 @@ class InteractionHandlerAndroid : public EventHandler::Observer {
 
   void StartListening();
   void StopListening();
-
-  // Adds |context| to the current context of this interaction handler.
-  void AddContext(const std::map<std::string, std::string>& context);
-
-  // Removes the keys in |context| from this handler's context.
-  void RemoveContext(const std::map<std::string, std::string>& context);
-
-  // Returns a copy of the current context.
-  std::map<std::string, std::string> GetContext() const { return context_; }
 
   // Access to the user model that this interaction handler is bound to.
   UserModel* GetUserModel() const;
@@ -82,10 +72,11 @@ class InteractionHandlerAndroid : public EventHandler::Observer {
   // bound to the model.
   void RunValueChangedCallbacks();
 
- private:
+  // Creates a callback from |proto|.
   base::Optional<InteractionCallback> CreateInteractionCallbackFromProto(
       const CallbackProto& proto);
 
+ private:
   // Deletes the nested ui controller associated with |identifier|.
   void DeleteNestedUi(const std::string& identifier);
 
@@ -103,11 +94,6 @@ class InteractionHandlerAndroid : public EventHandler::Observer {
   std::map<EventHandler::EventKey, std::vector<InteractionCallback>>
       interactions_;
 
-  // These key-value pairs specify context variables that the handler will use
-  // to resolve views and values. Nested instances will inherit their parents'
-  // context variables. Special interactions, such as ForEach, may modify the
-  // context while they are being executed.
-  std::map<std::string, std::string> context_;
   EventHandler* event_handler_ = nullptr;
   UserModel* user_model_ = nullptr;
   BasicInteractions* basic_interactions_ = nullptr;

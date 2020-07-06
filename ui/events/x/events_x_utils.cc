@@ -431,7 +431,8 @@ EventType EventTypeFromXEvent(const x11::Event& x11_event) {
       return ET_MOUSE_EXITED;
     case x11::GeGenericEvent::opcode: {
       TouchFactory* factory = TouchFactory::GetInstance();
-      if (!factory->ShouldProcessXI2Event(const_cast<XEvent*>(&xev)))
+      auto* device = x11_event.As<x11::Input::DeviceEvent>();
+      if (!device || !factory->ShouldProcessDeviceEvent(*device))
         return ET_UNKNOWN;
 
       XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev.xcookie.data);

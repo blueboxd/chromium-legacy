@@ -138,8 +138,8 @@ void WebrtcVideoStream::Start(
   webrtc_transport_ = webrtc_transport;
 
   webrtc_transport_->video_encoder_factory()->RegisterEncoderSelectedCallback(
-      base::Bind(&WebrtcVideoStream::OnEncoderCreated,
-                 weak_factory_.GetWeakPtr()));
+      base::BindRepeating(&WebrtcVideoStream::OnEncoderCreated,
+                          weak_factory_.GetWeakPtr()));
 
   capturer_->Start(this);
 
@@ -159,9 +159,9 @@ void WebrtcVideoStream::Start(
   webrtc_transport_->OnVideoTransceiverCreated(transceiver);
 
   scheduler_.reset(new WebrtcFrameSchedulerSimple(session_options_));
-  scheduler_->Start(
-      webrtc_transport_->video_encoder_factory(),
-      base::Bind(&WebrtcVideoStream::CaptureNextFrame, base::Unretained(this)));
+  scheduler_->Start(webrtc_transport_->video_encoder_factory(),
+                    base::BindRepeating(&WebrtcVideoStream::CaptureNextFrame,
+                                        base::Unretained(this)));
 
   video_stats_dispatcher_.Init(webrtc_transport_->CreateOutgoingChannel(
                                    video_stats_dispatcher_.channel_name()),

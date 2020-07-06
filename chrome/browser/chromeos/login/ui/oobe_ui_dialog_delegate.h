@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "ash/public/cpp/login_accelerators.h"
 #include "ash/public/cpp/login_types.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -131,7 +132,7 @@ class OobeUIDialogDelegate : public ui::WebDialogDelegate,
   ScopedObserver<CaptivePortalWindowProxy, CaptivePortalWindowProxy::Observer>
       captive_portal_observer_{this};
 
-  std::map<ui::Accelerator, std::string> accel_map_;
+  std::map<ui::Accelerator, ash::LoginAcceleratorAction> accel_map_;
   ash::OobeDialogState state_ = ash::OobeDialogState::HIDDEN;
 
   // Whether the captive portal screen should be shown the next time the Gaia

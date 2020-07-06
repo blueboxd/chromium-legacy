@@ -649,8 +649,7 @@ RTCPeerConnection* RTCPeerConnection::Create(
   }
 
   // Count number of PeerConnections that could potentially be impacted by CSP
-  auto& security_context = context->GetSecurityContext();
-  auto* content_security_policy = security_context.GetContentSecurityPolicy();
+  auto* content_security_policy = context->GetContentSecurityPolicy();
   if (content_security_policy &&
       content_security_policy->IsActiveForConnections()) {
     UseCounter::Count(context, WebFeature::kRTCPeerConnectionWithActiveCsp);

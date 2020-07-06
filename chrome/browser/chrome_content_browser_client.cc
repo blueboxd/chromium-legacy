@@ -1355,36 +1355,39 @@ ChromeContentBrowserClient::CreateBrowserMainParts(
     // which they are added.
 #if defined(TOOLKIT_VIEWS)
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  main_parts->AddParts(new ChromeBrowserMainExtraPartsViewsLinux());
+  main_parts->AddParts(
+      std::make_unique<ChromeBrowserMainExtraPartsViewsLinux>());
 #else
-  main_parts->AddParts(new ChromeBrowserMainExtraPartsViews());
+  main_parts->AddParts(std::make_unique<ChromeBrowserMainExtraPartsViews>());
 #endif
 #endif
 
 #if defined(OS_CHROMEOS)
   // TODO(jamescook): Combine with ChromeBrowserMainPartsChromeos.
-  main_parts->AddParts(new ChromeBrowserMainExtraPartsAsh());
+  main_parts->AddParts(std::make_unique<ChromeBrowserMainExtraPartsAsh>());
 #endif
 
 #if BUILDFLAG(IS_LACROS)
-  main_parts->AddParts(new ChromeBrowserMainExtraPartsLacros());
+  main_parts->AddParts(std::make_unique<ChromeBrowserMainExtraPartsLacros>());
 #endif
 
 #if defined(USE_X11) || defined(USE_OZONE)
-  main_parts->AddParts(new ChromeBrowserMainExtraPartsOzone());
+  main_parts->AddParts(std::make_unique<ChromeBrowserMainExtraPartsOzone>());
 #endif
 
-  main_parts->AddParts(new ChromeBrowserMainExtraPartsPerformanceManager);
+  main_parts->AddParts(
+      std::make_unique<ChromeBrowserMainExtraPartsPerformanceManager>());
 
-  main_parts->AddParts(new ChromeBrowserMainExtraPartsProfiling);
+  main_parts->AddParts(
+      std::make_unique<ChromeBrowserMainExtraPartsProfiling>());
 
-  main_parts->AddParts(new ChromeBrowserMainExtraPartsMemory);
+  main_parts->AddParts(std::make_unique<ChromeBrowserMainExtraPartsMemory>());
 
   chrome::AddMetricsExtraParts(main_parts.get());
 
   // Always add ChromeBrowserMainExtraPartsGpu last to make sure
   // GpuDataManager initialization could pick up about:flags settings.
-  main_parts->AddParts(new ChromeBrowserMainExtraPartsGpu);
+  main_parts->AddParts(std::make_unique<ChromeBrowserMainExtraPartsGpu>());
 
   return main_parts;
 }

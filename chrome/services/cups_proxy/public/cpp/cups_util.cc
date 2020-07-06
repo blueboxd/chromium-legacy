@@ -130,7 +130,12 @@ base::Optional<std::string> GetPrinterId(ipp_t* ipp) {
   char resource[HTTP_MAX_URI], unwanted_buffer[HTTP_MAX_URI];
   int unwanted_port;
 
-  std::string printer_uri = ippGetString(printer_uri_attr, 0, NULL);
+  std::string printer_uri;
+  const char* printer_uri_ptr = ippGetString(printer_uri_attr, 0, nullptr);
+  if (printer_uri_ptr) {
+    printer_uri = printer_uri_ptr;
+  }
+
   httpSeparateURI(HTTP_URI_CODING_RESOURCE, printer_uri.data(), unwanted_buffer,
                   HTTP_MAX_URI, unwanted_buffer, HTTP_MAX_URI, unwanted_buffer,
                   HTTP_MAX_URI, &unwanted_port, resource, HTTP_MAX_URI);

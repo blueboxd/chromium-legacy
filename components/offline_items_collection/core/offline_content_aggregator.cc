@@ -234,6 +234,16 @@ void OfflineContentAggregator::RenameItem(const ContentId& id,
   it->second->RenameItem(id, name, std::move(callback));
 }
 
+void OfflineContentAggregator::ChangeSchedule(
+    const ContentId& id,
+    base::Optional<OfflineItemSchedule> schedule) {
+  auto it = providers_.find(id.name_space);
+  if (it == providers_.end())
+    return;
+
+  it->second->ChangeSchedule(id, std::move(schedule));
+}
+
 void OfflineContentAggregator::AddObserver(
     OfflineContentProvider::Observer* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

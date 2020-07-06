@@ -88,8 +88,9 @@ TEST_F(StackTraceTest, OutputToStream) {
 
   // Expect a demangled symbol.
   // Note that Windows Release builds omit the function parameters from the
-  // demangled stack output, otherwise this could be "testing::Test::Run()".
-  EXPECT_TRUE(backtrace_message.find("testing::Test::Run") != std::string::npos)
+  // demangled stack output, otherwise this could be "testing::UnitTest::Run()".
+  EXPECT_TRUE(backtrace_message.find("testing::UnitTest::Run") !=
+              std::string::npos)
       << "Expected a demangled symbol in backtrace:\n"
       << backtrace_message;
 

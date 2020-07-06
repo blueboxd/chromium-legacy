@@ -397,23 +397,6 @@ PaintResult PaintLayerPainter::PaintLayerContents(
   if (!PhysicalRect(painting_info.cull_rect.Rect()).Contains(bounds))
     result = kMayBeClippedByCullRect;
 
-  // These helpers output clip and compositing operations using a RAII pattern.
-  // Stack-allocated-varibles are destructed in the reverse order of
-  // construction, so they are nested properly.
-  base::Optional<ClipPathClipper> clip_path_clipper;
-  bool should_paint_clip_path =
-      is_painting_mask && paint_layer_.GetLayoutObject().HasClipPath();
-  if (should_paint_clip_path) {
-    PhysicalOffset visual_offset_from_root =
-        paint_layer_.EnclosingPaginationLayer()
-            ? paint_layer_.VisualOffsetFromAncestor(painting_info.root_layer,
-                                                    subpixel_accumulation)
-            : offset_from_root;
-    clip_path_clipper.emplace(context, paint_layer_.GetLayoutObject(),
-                              paint_layer_.GetLayoutObject(),
-                              visual_offset_from_root);
-  }
-
   PaintLayerPaintingInfo local_painting_info(painting_info);
   local_painting_info.sub_pixel_accumulation = subpixel_accumulation;
 
@@ -443,130 +426,109 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     }
   }
 
-  {  // Begin block for the lifetime of any filter.
-    bool is_painting_root_layer = (&paint_layer_) == painting_info.root_layer;
-    bool should_paint_background =
-        should_paint_content && !selection_drag_image_only &&
-        (is_painting_composited_background ||
-         (is_painting_root_layer &&
-          !(paint_flags & kPaintLayerPaintingSkipRootBackground)));
-    bool should_paint_neg_z_order_list =
-        !is_painting_overlay_overflow_controls &&
-        (is_painting_scrolling_content ? is_painting_overflow_contents
-                                       : is_painting_composited_background);
-    bool should_paint_own_contents =
-        is_painting_composited_foreground && should_paint_content;
-    bool should_paint_normal_flow_and_pos_z_order_lists =
-        is_painting_composited_foreground &&
-        !is_painting_overlay_overflow_controls;
-    bool is_video = IsA<LayoutVideo>(paint_layer_.GetLayoutObject());
+  bool is_painting_root_layer = (&paint_layer_) == painting_info.root_layer;
+  bool should_paint_background =
+      should_paint_content && !selection_drag_image_only &&
+      (is_painting_composited_background ||
+       (is_painting_root_layer &&
+        !(paint_flags & kPaintLayerPaintingSkipRootBackground)));
+  bool should_paint_neg_z_order_list =
+      !is_painting_overlay_overflow_controls &&
+      (is_painting_scrolling_content ? is_painting_overflow_contents
+                                     : is_painting_composited_background);
+  bool should_paint_own_contents =
+      is_painting_composited_foreground && should_paint_content;
+  bool should_paint_normal_flow_and_pos_z_order_lists =
+      is_painting_composited_foreground &&
+      !is_painting_overlay_overflow_controls;
+  bool is_video = IsA<LayoutVideo>(paint_layer_.GetLayoutObject());
 
-    base::Optional<ScopedPaintChunkHint> paint_chunk_hint;
-    if (should_paint_content) {
-      paint_chunk_hint.emplace(context.GetPaintController(),
-                               paint_layer_.GetLayoutObject()
-                                   .FirstFragment()
-                                   .LocalBorderBoxProperties(),
-                               paint_layer_, DisplayItem::kLayerChunk);
-    }
-
-    if (should_paint_background) {
-      PaintBackgroundForFragments(layer_fragments, context, local_painting_info,
-                                  paint_flags);
-    }
-
-    if (should_paint_neg_z_order_list) {
-      if (PaintChildren(kNegativeZOrderChildren, context, painting_info,
-                        paint_flags) == kMayBeClippedByCullRect)
-        result = kMayBeClippedByCullRect;
-    }
-
-    if (should_paint_own_contents) {
-      base::Optional<ScopedPaintChunkHint> paint_chunk_hint_foreground;
-      if (paint_chunk_hint && paint_chunk_hint->HasCreatedPaintChunk()) {
-        // Hint a foreground chunk if we have created any chunks, to give the
-        // paint chunk after the previous forced paint chunks a stable id.
-        paint_chunk_hint_foreground.emplace(context.GetPaintController(),
-                                            paint_layer_,
-                                            DisplayItem::kLayerChunkForeground);
-      }
-      if (selection_drag_image_only) {
-        PaintForegroundForFragmentsWithPhase(PaintPhase::kSelectionDragImage,
-                                             layer_fragments, context,
-                                             local_painting_info, paint_flags);
-      } else {
-        PaintForegroundForFragments(layer_fragments, context,
-                                    local_painting_info, paint_flags);
-      }
-    }
-
-    if (!is_video && should_paint_self_outline) {
-      PaintSelfOutlineForFragments(layer_fragments, context,
-                                   local_painting_info, paint_flags);
-    }
-
-    if (should_paint_normal_flow_and_pos_z_order_lists) {
-      if (PaintChildren(kNormalFlowAndPositiveZOrderChildren, context,
-                        painting_info, paint_flags) == kMayBeClippedByCullRect)
-        result = kMayBeClippedByCullRect;
-    }
-
-    if (paint_layer_.GetScrollableArea() &&
-        paint_layer_.GetScrollableArea()->HasOverlayOverflowControls()) {
-      if (is_painting_overlay_overflow_controls ||
-          !paint_layer_.NeedsReorderOverlayOverflowControls()) {
-        PaintOverlayOverflowControlsForFragments(
-            layer_fragments, context, local_painting_info, paint_flags);
-      }
-    }
-
-    if (is_video && should_paint_self_outline) {
-      // We paint outlines for video later so that they aren't obscured by the
-      // video controls.
-      PaintSelfOutlineForFragments(layer_fragments, context,
-                                   local_painting_info, paint_flags);
-    }
-  }  // FilterPainter block
-
-  bool should_paint_mask = is_painting_mask && should_paint_content &&
-                           paint_layer_.GetLayoutObject().HasMask() &&
-                           !selection_drag_image_only;
-  if (should_paint_mask) {
-    PaintMaskForFragments(layer_fragments, context, local_painting_info,
-                          paint_flags);
-  } else if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-             is_painting_mask &&
-             !(painting_info.GetGlobalPaintFlags() &
-               kGlobalPaintFlattenCompositingLayers) &&
-             paint_layer_.GetCompositedLayerMapping() &&
-             paint_layer_.GetCompositedLayerMapping()->MaskLayer()) {
-    // In SPv1 it is possible for CompositedLayerMapping to create a mask layer
-    // for just CSS clip-path but without a CSS mask. In that case we need to
-    // paint a fully filled mask (which will subsequently clipped by the
-    // clip-path), otherwise the mask layer will be empty.
-    const auto& fragment_data = paint_layer_.GetLayoutObject().FirstFragment();
-    auto state = fragment_data.LocalBorderBoxProperties();
-    const auto* properties = fragment_data.PaintProperties();
-    DCHECK(properties && properties->Mask());
-    state.SetEffect(*properties->Mask());
-    if (properties && properties->ClipPathClip()) {
-      DCHECK_EQ(properties->ClipPathClip()->Parent(), properties->MaskClip());
-      state.SetClip(*properties->ClipPathClip());
-    }
-    ScopedPaintChunkProperties path_based_clip_path_scope(
-        context.GetPaintController(), state,
-        *paint_layer_.GetCompositedLayerMapping()->MaskLayer(),
-        DisplayItem::kClippingMask);
-
-    const GraphicsLayer* mask_layer =
-        paint_layer_.GetCompositedLayerMapping()->MaskLayer();
-    ClipRect layer_rect =
-        PhysicalRect(PhysicalOffset(mask_layer->OffsetFromLayoutObject()),
-                     PhysicalSize(IntSize(mask_layer->Size())));
-    FillMaskingFragment(context, layer_rect, *mask_layer);
+  base::Optional<ScopedPaintChunkHint> paint_chunk_hint;
+  if (should_paint_content) {
+    paint_chunk_hint.emplace(context.GetPaintController(),
+                             paint_layer_.GetLayoutObject()
+                                 .FirstFragment()
+                                 .LocalBorderBoxProperties(),
+                             paint_layer_, DisplayItem::kLayerChunk);
   }
 
-  clip_path_clipper = base::nullopt;
+  if (should_paint_background) {
+    PaintBackgroundForFragments(layer_fragments, context, local_painting_info,
+                                paint_flags);
+  }
+
+  if (should_paint_neg_z_order_list) {
+    if (PaintChildren(kNegativeZOrderChildren, context, painting_info,
+                      paint_flags) == kMayBeClippedByCullRect)
+      result = kMayBeClippedByCullRect;
+  }
+
+  if (should_paint_own_contents) {
+    base::Optional<ScopedPaintChunkHint> paint_chunk_hint_foreground;
+    if (paint_chunk_hint && paint_chunk_hint->HasCreatedPaintChunk()) {
+      // Hint a foreground chunk if we have created any chunks, to give the
+      // paint chunk after the previous forced paint chunks a stable id.
+      paint_chunk_hint_foreground.emplace(context.GetPaintController(),
+                                          paint_layer_,
+                                          DisplayItem::kLayerChunkForeground);
+    }
+    if (selection_drag_image_only) {
+      PaintForegroundForFragmentsWithPhase(PaintPhase::kSelectionDragImage,
+                                           layer_fragments, context,
+                                           local_painting_info, paint_flags);
+    } else {
+      PaintForegroundForFragments(layer_fragments, context, local_painting_info,
+                                  paint_flags);
+    }
+  }
+
+  if (!is_video && should_paint_self_outline) {
+    PaintSelfOutlineForFragments(layer_fragments, context, local_painting_info,
+                                 paint_flags);
+  }
+
+  if (should_paint_normal_flow_and_pos_z_order_lists) {
+    if (PaintChildren(kNormalFlowAndPositiveZOrderChildren, context,
+                      painting_info, paint_flags) == kMayBeClippedByCullRect)
+      result = kMayBeClippedByCullRect;
+  }
+
+  if (paint_layer_.GetScrollableArea() &&
+      paint_layer_.GetScrollableArea()->HasOverlayOverflowControls()) {
+    if (is_painting_overlay_overflow_controls ||
+        !paint_layer_.NeedsReorderOverlayOverflowControls()) {
+      PaintOverlayOverflowControlsForFragments(
+          layer_fragments, context, local_painting_info, paint_flags);
+    }
+  }
+
+  if (is_video && should_paint_self_outline) {
+    // We paint outlines for video later so that they aren't obscured by the
+    // video controls.
+    PaintSelfOutlineForFragments(layer_fragments, context, local_painting_info,
+                                 paint_flags);
+  }
+
+  if (is_painting_mask && should_paint_content && !selection_drag_image_only) {
+    const auto* properties =
+        paint_layer_.GetLayoutObject().FirstFragment().PaintProperties();
+    if (properties) {
+      if (properties->Mask()) {
+        PaintMaskForFragments(layer_fragments, context, local_painting_info,
+                              paint_flags);
+      }
+      if (properties->ClipPathMask()) {
+        PhysicalOffset visual_offset_from_root =
+            paint_layer_.EnclosingPaginationLayer()
+                ? paint_layer_.VisualOffsetFromAncestor(
+                      local_painting_info.root_layer, subpixel_accumulation)
+                : offset_from_root;
+        ClipPathClipper::PaintClipPathAsMaskImage(
+            context, paint_layer_.GetLayoutObject(),
+            paint_layer_.GetLayoutObject(), visual_offset_from_root);
+      }
+    }
+  }
 
   paint_layer_.SetPreviousPaintResult(result);
   paint_layer_.SetPreviousCullRect(local_painting_info.cull_rect);
@@ -689,15 +651,9 @@ void PaintLayerPainter::PaintFragmentWithPhase(
   auto chunk_properties = fragment.fragment_data->LocalBorderBoxProperties();
   if (phase == PaintPhase::kMask) {
     const auto* properties = fragment.fragment_data->PaintProperties();
-    DCHECK(properties && properties->Mask());
+    DCHECK(properties);
+    DCHECK(properties->Mask());
     chunk_properties.SetEffect(*properties->Mask());
-    // Special case for SPv1 composited mask layer. Path-based clip-path
-    // is only applies to the mask chunk, but not to the layer property
-    // or local box box property.
-    if (properties->ClipPathClip() &&
-        properties->ClipPathClip()->Parent() == properties->MaskClip()) {
-      chunk_properties.SetClip(*properties->ClipPathClip());
-    }
   }
   ScopedPaintChunkProperties fragment_paint_chunk_properties(
       context.GetPaintController(), chunk_properties, paint_layer_,
@@ -824,18 +780,6 @@ void PaintLayerPainter::PaintOverlayOverflowControls(
   PaintLayerPaintingInfo painting_info(&paint_layer_, cull_rect, paint_flags,
                                        PhysicalOffset());
   Paint(context, painting_info, kPaintLayerPaintingOverlayOverflowControls);
-}
-
-void PaintLayerPainter::FillMaskingFragment(GraphicsContext& context,
-                                            const ClipRect& clip_rect,
-                                            const DisplayItemClient& client) {
-  if (DrawingRecorder::UseCachedDrawingIfPossible(context, client,
-                                                  DisplayItem::kClippingMask))
-    return;
-
-  DrawingRecorder recorder(context, client, DisplayItem::kClippingMask);
-  IntRect snapped_clip_rect = PixelSnappedIntRect(clip_rect.Rect());
-  context.FillRect(snapped_clip_rect, Color::kBlack);
 }
 
 }  // namespace blink

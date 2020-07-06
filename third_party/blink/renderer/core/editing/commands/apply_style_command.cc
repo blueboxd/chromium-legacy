@@ -787,7 +787,7 @@ void ApplyStyleCommand::ApplyInlineStyle(EditingStyle* style,
     if (embedding_remove_end != remove_start || embedding_remove_end != end) {
       style_without_embedding = style->Copy();
       embedding_style = style_without_embedding->ExtractAndRemoveTextDirection(
-          GetDocument().GetSecureContextMode());
+          GetDocument().GetExecutionContext()->GetSecureContextMode());
 
       if (ComparePositions(embedding_remove_start, embedding_remove_end) <= 0) {
         RemoveInlineStyle(
@@ -858,7 +858,7 @@ void ApplyStyleCommand::ApplyInlineStyle(EditingStyle* style,
         style_without_embedding = style->Copy();
         embedding_style =
             style_without_embedding->ExtractAndRemoveTextDirection(
-                GetDocument().GetSecureContextMode());
+                GetDocument().GetExecutionContext()->GetSecureContextMode());
       }
       FixRangeAndApplyInlineStyle(embedding_style, embedding_apply_start,
                                   embedding_apply_end, editing_state);

@@ -544,10 +544,8 @@ bool LayoutObject::HasClipRelatedProperty() const {
 
 bool LayoutObject::IsRenderedLegendInternal() const {
   DCHECK(IsBox());
-  DCHECK(IsHTMLLegendElement());
+  DCHECK(IsRenderedLegendCandidate());
 
-  if (IsFloatingOrOutOfFlowPositioned())
-    return false;
   const auto* parent = Parent();
   if (RuntimeEnabledFeatures::LayoutNGFieldsetEnabled()) {
     // If there is a rendered legend, it will be found inside the anonymous
@@ -2463,7 +2461,8 @@ void LayoutObject::StyleWillChange(StyleDifference diff,
 
     affects_parent_block_ =
         IsFloatingOrOutOfFlowPositioned() &&
-        (!new_style.IsFloating() && !new_style.HasOutOfFlowPosition()) &&
+        ((!new_style.IsFloating() || new_style.IsFlexOrGridItem()) &&
+         !new_style.HasOutOfFlowPosition()) &&
         Parent() &&
         (Parent()->IsLayoutBlockFlow() || Parent()->IsLayoutInline());
 

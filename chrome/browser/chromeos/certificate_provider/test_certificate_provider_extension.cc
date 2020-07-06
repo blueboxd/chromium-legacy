@@ -16,6 +16,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/common/extensions/api/certificate_provider.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_details.h"
@@ -108,6 +109,11 @@ void SendReplyToJs(extensions::TestSendMessageFunction* function,
   function->Reply(ConvertValueToJson(response));
 }
 
+bssl::UniquePtr<EVP_PKEY> LoadPrivateKeyFromPem(const base::FilePath& path) {
+  base::ScopedAllowBlockingForTesting allow_io;
+  return net::key_util::LoadEVP_PKEYFromPEM(path);
+}
+
 }  // namespace
 
 // static
@@ -134,9 +140,8 @@ TestCertificateProviderExtension::TestCertificateProviderExtension(
     : browser_context_(browser_context),
       extension_id_(extension_id),
       certificate_(GetCertificate()),
-      private_key_(net::key_util::LoadEVP_PKEYFromPEM(
-          net::GetTestCertsDirectory().Append(
-              FILE_PATH_LITERAL("client_1.key")))) {
+      private_key_(LoadPrivateKeyFromPem(net::GetTestCertsDirectory().Append(
+          FILE_PATH_LITERAL("client_1.key")))) {
   DCHECK(browser_context_);
   DCHECK(!extension_id_.empty());
   CHECK(certificate_);

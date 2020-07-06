@@ -4,6 +4,8 @@
 
 #include "chrome/browser/shell_integration.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
@@ -204,7 +206,7 @@ void DefaultWebClientWorker::SetAsDefault() {
 
   // SetAsDefaultImpl will make sure the callback is executed exactly once.
   SetAsDefaultImpl(
-      base::Bind(&DefaultWebClientWorker::CheckIsDefault, this, true));
+      base::BindOnce(&DefaultWebClientWorker::CheckIsDefault, this, true));
 }
 
 void DefaultWebClientWorker::ReportSetDefaultResult(
@@ -251,7 +253,7 @@ DefaultWebClientState DefaultBrowserWorker::CheckIsDefaultImpl() {
 }
 
 void DefaultBrowserWorker::SetAsDefaultImpl(
-    const base::Closure& on_finished_callback) {
+    base::OnceClosure on_finished_callback) {
   switch (GetDefaultWebClientSetPermission()) {
     case SET_DEFAULT_NOT_ALLOWED:
       NOTREACHED();
@@ -267,7 +269,8 @@ void DefaultBrowserWorker::SetAsDefaultImpl(
             win::SetAsDefaultBrowserUsingIntentPicker();
             break;
           case ShellUtil::SYSTEM_SETTINGS:
-            win::SetAsDefaultBrowserUsingSystemSettings(on_finished_callback);
+            win::SetAsDefaultBrowserUsingSystemSettings(
+                std::move(on_finished_callback));
             // Early return because the function above takes care of calling
             // |on_finished_callback|.
             return;
@@ -276,7 +279,7 @@ void DefaultBrowserWorker::SetAsDefaultImpl(
 #endif  // defined(OS_WIN)
       break;
   }
-  on_finished_callback.Run();
+  std::move(on_finished_callback).Run();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -302,7 +305,7 @@ DefaultWebClientState DefaultProtocolClientWorker::CheckIsDefaultImpl() {
 }
 
 void DefaultProtocolClientWorker::SetAsDefaultImpl(
-    const base::Closure& on_finished_callback) {
+    base::OnceClosure on_finished_callback) {
   switch (GetDefaultWebClientSetPermission()) {
     case SET_DEFAULT_NOT_ALLOWED:
       // Not allowed, do nothing.
@@ -319,7 +322,7 @@ void DefaultProtocolClientWorker::SetAsDefaultImpl(
             break;
           case ShellUtil::SYSTEM_SETTINGS:
             win::SetAsDefaultProtocolClientUsingSystemSettings(
-                protocol_, on_finished_callback);
+                protocol_, std::move(on_finished_callback));
             // Early return because the function above takes care of calling
             // |on_finished_callback|.
             return;
@@ -328,7 +331,7 @@ void DefaultProtocolClientWorker::SetAsDefaultImpl(
 #endif  // defined(OS_WIN)
       break;
   }
-  on_finished_callback.Run();
+  std::move(on_finished_callback).Run();
 }
 
 }  // namespace shell_integration

@@ -212,6 +212,13 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   //
   // Note that |navigation_handle| will be destroyed at the end of this call,
   // so do not keep a reference to it afterward.
+  //
+  // Note that using DidFinishNavigation to detect changes in the currently
+  // active document and reset per-document state is strongly discouraged.
+  // Please use RenderDocumentHostUserData to store such data instead.
+  // (In particular, the page might be stored in back-forward cache instead
+  // of being deleted. See the comment in RenderDocumentHostUserData for more
+  // details).
   virtual void DidFinishNavigation(NavigationHandle* navigation_handle) {}
 
   // Called after the contents replaces the |predecessor_contents| in its

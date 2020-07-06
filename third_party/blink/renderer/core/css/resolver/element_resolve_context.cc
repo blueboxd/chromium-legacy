@@ -50,14 +50,10 @@ ElementResolveContext::ElementResolveContext(Element& element)
     layout_parent_ = nullptr;
   }
 
-  const Document& document = element.GetDocument();
-  Node* document_element = document.documentElement();
-  const ComputedStyle* document_style = document.GetComputedStyle();
-  root_element_style_ = document_element && element != document_element
-                            ? document_element->GetComputedStyle()
-                            : document_style;
-  if (!root_element_style_)
-    root_element_style_ = document_style;
+  if (auto* document_element = element.GetDocument().documentElement()) {
+    if (element != document_element)
+      root_element_style_ = document_element->GetComputedStyle();
+  }
 }
 
 }  // namespace blink

@@ -1626,7 +1626,7 @@ TEST_F(CloudPolicyClientTest, CancelUploadAppInstallReport) {
                                   std::move(callback));
   EXPECT_EQ(1, client_->GetActiveRequestCountForTest());
 
-  // The job expected by the call to ExpectUploadAppInstallReport() completes
+  // The job expected by the call to ExpectRealTimeReport() completes
   // when base::RunLoop().RunUntilIdle() is called.  To simulate a cancel
   // before the response for the request is processed, make sure to cancel it
   // before running a loop.
@@ -1663,6 +1663,85 @@ TEST_F(CloudPolicyClientTest, UploadAppInstallReportSupersedesPending) {
                             base::Unretained(&callback_observer_));
   client_->UploadAppInstallReport(MakeDefaultRealtimeReport(),
                                   std::move(callback));
+  EXPECT_EQ(1, client_->GetActiveRequestCountForTest());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(
+      DeviceManagementService::JobConfiguration::TYPE_UPLOAD_REAL_TIME_REPORT,
+      job_type_);
+  EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
+  EXPECT_EQ(0, client_->GetActiveRequestCountForTest());
+}
+
+TEST_F(CloudPolicyClientTest, UploadExtensionInstallReport) {
+  RegisterClient();
+
+  ExpectRealtimeReport();
+  EXPECT_CALL(callback_observer_, OnCallbackComplete(true)).Times(1);
+  CloudPolicyClient::StatusCallback callback =
+      base::BindOnce(&MockStatusCallbackObserver::OnCallbackComplete,
+                     base::Unretained(&callback_observer_));
+
+  client_->UploadExtensionInstallReport(MakeDefaultRealtimeReport(),
+                                        std::move(callback));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(
+      DeviceManagementService::JobConfiguration::TYPE_UPLOAD_REAL_TIME_REPORT,
+      job_type_);
+  EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
+}
+
+TEST_F(CloudPolicyClientTest, CancelUploadExtensionInstallReport) {
+  RegisterClient();
+
+  ExpectRealtimeReport();
+  EXPECT_CALL(callback_observer_, OnCallbackComplete(true)).Times(0);
+
+  CloudPolicyClient::StatusCallback callback =
+      base::BindOnce(&MockStatusCallbackObserver::OnCallbackComplete,
+                     base::Unretained(&callback_observer_));
+
+  em::ExtensionInstallReportRequest app_install_report;
+  client_->UploadExtensionInstallReport(MakeDefaultRealtimeReport(),
+                                        std::move(callback));
+  EXPECT_EQ(1, client_->GetActiveRequestCountForTest());
+
+  // The job expected by the call to ExpectRealTimeReport() completes
+  // when base::RunLoop().RunUntilIdle() is called.  To simulate a cancel
+  // before the response for the request is processed, make sure to cancel it
+  // before running a loop.
+  client_->CancelExtensionInstallReportUpload();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(0, client_->GetActiveRequestCountForTest());
+  EXPECT_EQ(
+      DeviceManagementService::JobConfiguration::TYPE_UPLOAD_REAL_TIME_REPORT,
+      job_type_);
+}
+
+TEST_F(CloudPolicyClientTest, UploadExtensionInstallReportSupersedesPending) {
+  RegisterClient();
+
+  ExpectRealtimeReport();
+  EXPECT_CALL(callback_observer_, OnCallbackComplete(true)).Times(0);
+  CloudPolicyClient::StatusCallback callback =
+      base::BindOnce(&MockStatusCallbackObserver::OnCallbackComplete,
+                     base::Unretained(&callback_observer_));
+
+  client_->UploadExtensionInstallReport(MakeDefaultRealtimeReport(),
+                                        std::move(callback));
+
+  EXPECT_EQ(1, client_->GetActiveRequestCountForTest());
+  Mock::VerifyAndClearExpectations(&service_);
+  Mock::VerifyAndClearExpectations(&callback_observer_);
+
+  // Starting another extension install report upload should cancel the pending
+  // one.
+  ExpectRealtimeReport();
+  EXPECT_CALL(callback_observer_, OnCallbackComplete(true)).Times(1);
+  callback = base::BindOnce(&MockStatusCallbackObserver::OnCallbackComplete,
+                            base::Unretained(&callback_observer_));
+  client_->UploadExtensionInstallReport(MakeDefaultRealtimeReport(),
+                                        std::move(callback));
   EXPECT_EQ(1, client_->GetActiveRequestCountForTest());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(

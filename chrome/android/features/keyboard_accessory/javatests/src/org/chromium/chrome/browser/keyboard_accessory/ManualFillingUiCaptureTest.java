@@ -15,6 +15,8 @@ import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingTestHe
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingTestHelper.whenDisplayed;
 import static org.chromium.chrome.browser.keyboard_accessory.tab_layout_component.KeyboardAccessoryTabTestHelper.isKeyboardAccessoryTabLayout;
 
+import android.os.Build.VERSION_CODES;
+
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.filters.MediumTest;
 
@@ -24,6 +26,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -63,8 +66,11 @@ public class ManualFillingUiCaptureTest {
     @MediumTest
     @DisableFeatures(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)
     @Feature({"KeyboardAccessory", "LTR", "UiCatalogue"})
-    public void testCaptureKeyboardAccessoryWithPasswords()
-            throws InterruptedException, TimeoutException {
+    @DisableIf.
+    Build(sdk_is_greater_than = VERSION_CODES.LOLLIPOP_MR1, sdk_is_less_than = VERSION_CODES.N,
+            message = "Flaky on Marshmallow https://crbug.com/1102302")
+    public void
+    testCaptureKeyboardAccessoryWithPasswords() throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
         mHelper.cacheTestCredentials();
         mHelper.addGenerationButton();
@@ -90,8 +96,11 @@ public class ManualFillingUiCaptureTest {
     @MediumTest
     @DisableFeatures(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)
     @Feature({"KeyboardAccessory", "RTL", "UiCatalogue"})
-    public void testCaptureKeyboardAccessoryWithPasswordsRTL()
-            throws InterruptedException, TimeoutException {
+    @DisableIf.
+    Build(sdk_is_greater_than = VERSION_CODES.LOLLIPOP_MR1, sdk_is_less_than = VERSION_CODES.N,
+            message = "Flaky on Marshmallow https://crbug.com/1102302")
+    public void
+    testCaptureKeyboardAccessoryWithPasswordsRTL() throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(true);
         mHelper.cacheTestCredentials();
         mHelper.focusPasswordField();
@@ -116,8 +125,11 @@ public class ManualFillingUiCaptureTest {
     @MediumTest
     @EnableFeatures(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)
     @Feature({"KeyboardAccessoryModern", "LTR", "UiCatalogue"})
-    public void testCaptureKeyboardAccessoryV2WithPasswords()
-            throws InterruptedException, TimeoutException {
+    @DisableIf.
+    Build(sdk_is_greater_than = VERSION_CODES.LOLLIPOP_MR1, sdk_is_less_than = VERSION_CODES.N,
+            message = "Flaky on Marshmallow https://crbug.com/1102302")
+    public void
+    testCaptureKeyboardAccessoryV2WithPasswords() throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
         ManualFillingTestHelper.createAutofillTestProfiles();
         mHelper.cacheTestCredentials();
@@ -146,8 +158,11 @@ public class ManualFillingUiCaptureTest {
     @MediumTest
     @EnableFeatures(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)
     @Feature({"KeyboardAccessoryModern", "RTL", "UiCatalogue"})
-    public void testCaptureKeyboardAccessoryV2WithPasswordsRTL()
-            throws InterruptedException, TimeoutException {
+    @DisableIf.
+    Build(sdk_is_greater_than = VERSION_CODES.LOLLIPOP_MR1, sdk_is_less_than = VERSION_CODES.N,
+            message = "Flaky on Marshmallow https://crbug.com/1102302")
+    public void
+    testCaptureKeyboardAccessoryV2WithPasswordsRTL() throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(true);
         ManualFillingTestHelper.createAutofillTestProfiles();
         mHelper.cacheTestCredentials();

@@ -1,0 +1,287 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/policy/extension_force_install_mixin.h"
+
+#include <stdint.h>
+
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "base/check.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/files/important_file_writer.h"
+#include "base/files/scoped_temp_dir.h"
+#include "base/notreached.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
+#include "base/threading/thread_restrictions.h"
+#include "base/values.h"
+#include "base/version.h"
+#include "chrome/browser/profiles/profile.h"
+#include "components/crx_file/crx_verifier.h"
+#include "extensions/common/file_util.h"
+#include "extensions/common/manifest_constants.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/zlib/google/zip.h"
+#include "url/gurl.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
+#include "components/policy/proto/chrome_device_policy.pb.h"
+#endif
+
+namespace {
+
+// Name of the directory whose contents are served by the embedded test
+// server.
+constexpr char kServedDirName[] = "served";
+// Template for the file name of a served CRX file.
+constexpr char kCrxFileNameTemplate[] = "%s-%s.crx";
+// Template for the file name of a served update manifest file.
+constexpr char kUpdateManifestFileNameTemplate[] = "%s.xml";
+// Template for the update manifest contents.
+constexpr char kUpdateManifestTemplate[] =
+    R"(<?xml version='1.0' encoding='UTF-8'?>
+       <gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>
+         <app appid='$1'>
+           <updatecheck codebase='$2' version='$3' />
+         </app>
+       </gupdate>)";
+
+std::string GetServedUpdateManifestFileName(
+    const extensions::ExtensionId& extension_id) {
+  return base::StringPrintf(kUpdateManifestFileNameTemplate,
+                            extension_id.c_str());
+}
+
+std::string GetServedCrxFileName(const extensions::ExtensionId& extension_id,
+                                 const base::Version& extension_version) {
+  return base::StringPrintf(kCrxFileNameTemplate, extension_id.c_str(),
+                            extension_version.GetString().c_str());
+}
+
+std::string GenerateUpdateManifest(const extensions::ExtensionId& extension_id,
+                                   const base::Version& extension_version,
+                                   const GURL& crx_url) {
+  return base::ReplaceStringPlaceholders(
+      kUpdateManifestTemplate,
+      {extension_id, crx_url.spec(), extension_version.GetString()},
+      /*offsets=*/nullptr);
+}
+
+bool ParseExtensionManifestData(const base::FilePath& extension_dir_path,
+                                base::Version* extension_version) {
+  std::string error_message;
+  std::unique_ptr<base::DictionaryValue> extension_manifest;
+  {
+    base::ScopedAllowBlockingForTesting scoped_allow_blocking;
+    extension_manifest =
+        extensions::file_util::LoadManifest(extension_dir_path, &error_message);
+  }
+  if (!extension_manifest) {
+    ADD_FAILURE() << "Failed to load extension manifest from "
+                  << extension_dir_path.value() << ": " << error_message;
+    return false;
+  }
+  std::string version_string;
+  if (!extension_manifest->GetString(extensions::manifest_keys::kVersion,
+                                     &version_string)) {
+    ADD_FAILURE() << "Failed to load extension version from "
+                  << extension_dir_path.value()
+                  << ": manifest key missing or has wrong type";
+    return false;
+  }
+  *extension_version = base::Version(version_string);
+  if (!extension_version->IsValid()) {
+    ADD_FAILURE() << "Failed to load extension version from "
+                  << extension_dir_path.value() << ": bad format";
+    return false;
+  }
+  return true;
+}
+
+bool ParseCrxOuterData(const base::FilePath& crx_path,
+                       extensions::ExtensionId* extension_id) {
+  base::ScopedAllowBlockingForTesting scoped_allow_blocking;
+  std::string public_key;
+  const crx_file::VerifierResult crx_verifier_result = crx_file::Verify(
+      crx_path, crx_file::VerifierFormat::CRX3,
+      /*required_key_hashes=*/std::vector<std::vector<uint8_t>>(),
+      /*required_file_hash=*/std::vector<uint8_t>(), &public_key, extension_id);
+  if (crx_verifier_result != crx_file::VerifierResult::OK_FULL) {
+    ADD_FAILURE() << "Failed to read created CRX: verifier result "
+                  << static_cast<int>(crx_verifier_result);
+    return false;
+  }
+  return true;
+}
+
+bool ParseCrxInnerData(const base::FilePath& crx_path,
+                       base::Version* extension_version) {
+  base::ScopedAllowBlockingForTesting scoped_allow_blocking;
+  base::ScopedTempDir temp_dir;
+  if (!temp_dir.CreateUniqueTempDir()) {
+    ADD_FAILURE() << "Failed to create temp directory";
+    return false;
+  }
+  if (!zip::Unzip(crx_path, temp_dir.GetPath())) {
+    ADD_FAILURE() << "Failed to unpack CRX from " << crx_path.value();
+    return false;
+  }
+  return ParseExtensionManifestData(temp_dir.GetPath(), extension_version);
+}
+
+#if defined(OS_CHROMEOS)
+
+std::string MakeForceInstallPolicyItemValue(
+    const extensions::ExtensionId& extension_id,
+    const GURL& update_manifest_url) {
+  if (update_manifest_url.is_empty())
+    return extension_id;
+  return base::StringPrintf("%s;%s", extension_id.c_str(),
+                            update_manifest_url.spec().c_str());
+}
+
+void UpdatePolicyViaDevicePolicyCrosTestHelper(
+    const extensions::ExtensionId& extension_id,
+    const GURL& update_manifest_url,
+    policy::DevicePolicyCrosTestHelper* device_policy_cros_test_helper) {
+  device_policy_cros_test_helper->device_policy()
+      ->payload()
+      .mutable_device_login_screen_extensions()
+      ->add_device_login_screen_extensions(
+          MakeForceInstallPolicyItemValue(extension_id, update_manifest_url));
+  device_policy_cros_test_helper->RefreshDevicePolicy();
+}
+
+#endif  // OS_CHROMEOS
+
+}  // namespace
+
+ExtensionForceInstallMixin::ExtensionForceInstallMixin(
+    InProcessBrowserTestMixinHost* host)
+    : InProcessBrowserTestMixin(host) {}
+
+ExtensionForceInstallMixin::~ExtensionForceInstallMixin() = default;
+
+#if defined(OS_CHROMEOS)
+
+void ExtensionForceInstallMixin::InitWithDevicePolicyCrosTestHelper(
+    Profile* profile,
+    policy::DevicePolicyCrosTestHelper* device_policy_cros_test_helper) {
+  DCHECK(profile);
+  DCHECK(device_policy_cros_test_helper);
+  DCHECK(!profile_) << "Init already called";
+  DCHECK(!device_policy_cros_test_helper_);
+  profile_ = profile;
+  device_policy_cros_test_helper_ = device_policy_cros_test_helper;
+}
+
+#endif  // OS_CHROMEOS
+
+bool ExtensionForceInstallMixin::ForceInstallFromCrx(
+    const base::FilePath& crx_path,
+    extensions::ExtensionId* extension_id) {
+  DCHECK(profile_) << "Init not called";
+  DCHECK(embedded_test_server_.Started()) << "Called before setup";
+
+  extensions::ExtensionId local_extension_id;
+  if (!ParseCrxOuterData(crx_path, &local_extension_id))
+    return false;
+  if (extension_id)
+    *extension_id = local_extension_id;
+  base::Version extension_version;
+  return ParseCrxInnerData(crx_path, &extension_version) &&
+         ServeExistingCrx(crx_path, local_extension_id, extension_version) &&
+         CreateAndServeUpdateManifestFile(local_extension_id,
+                                          extension_version) &&
+         UpdatePolicy(local_extension_id,
+                      GetServedUpdateManifestUrl(local_extension_id));
+}
+
+void ExtensionForceInstallMixin::SetUpOnMainThread() {
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+  ASSERT_TRUE(base::CreateDirectory(GetServedDirPath()));
+  embedded_test_server_.ServeFilesFromDirectory(GetServedDirPath());
+  ASSERT_TRUE(embedded_test_server_.Start());
+}
+
+base::FilePath ExtensionForceInstallMixin::GetServedDirPath() const {
+  return temp_dir_.GetPath().AppendASCII(kServedDirName);
+}
+
+GURL ExtensionForceInstallMixin::GetServedUpdateManifestUrl(
+    const extensions::ExtensionId& extension_id) const {
+  DCHECK(embedded_test_server_.Started()) << "Called before setup";
+
+  return embedded_test_server_.GetURL(
+      "/" + GetServedUpdateManifestFileName(extension_id));
+}
+
+GURL ExtensionForceInstallMixin::GetServedCrxUrl(
+    const extensions::ExtensionId& extension_id,
+    const base::Version& extension_version) const {
+  DCHECK(embedded_test_server_.Started()) << "Called before setup";
+
+  return embedded_test_server_.GetURL(
+      "/" + GetServedCrxFileName(extension_id, extension_version));
+}
+
+bool ExtensionForceInstallMixin::ServeExistingCrx(
+    const base::FilePath& source_crx_path,
+    const extensions::ExtensionId& extension_id,
+    const base::Version& extension_version) {
+  DCHECK(embedded_test_server_.Started()) << "Called before setup";
+
+  const base::FilePath served_crx_path = GetServedDirPath().AppendASCII(
+      GetServedCrxFileName(extension_id, extension_version));
+  base::ScopedAllowBlockingForTesting scoped_allow_blocking;
+  if (!base::CopyFile(source_crx_path, served_crx_path)) {
+    ADD_FAILURE() << "Failed to copy CRX from " << source_crx_path.value()
+                  << " to " << served_crx_path.value();
+    return false;
+  }
+  return true;
+}
+
+bool ExtensionForceInstallMixin::CreateAndServeUpdateManifestFile(
+    const extensions::ExtensionId& extension_id,
+    const base::Version& extension_version) {
+  DCHECK(embedded_test_server_.Started()) << "Called before setup";
+
+  const GURL crx_url = GetServedCrxUrl(extension_id, extension_version);
+  const std::string update_manifest =
+      GenerateUpdateManifest(extension_id, extension_version, crx_url);
+  const base::FilePath update_manifest_path = GetServedDirPath().AppendASCII(
+      GetServedUpdateManifestFileName(extension_id));
+  // Note: Doing an atomic write, since the embedded test server might
+  // concurrently try to access this file from another thread.
+  base::ScopedAllowBlockingForTesting scoped_allow_blocking;
+  if (!base::ImportantFileWriter::WriteFileAtomically(update_manifest_path,
+                                                      update_manifest)) {
+    ADD_FAILURE() << "Failed to write update manifest file";
+    return false;
+  }
+  return true;
+}
+
+bool ExtensionForceInstallMixin::UpdatePolicy(
+    const extensions::ExtensionId& extension_id,
+    const GURL& update_manifest_url) {
+  DCHECK(profile_) << "Init not called";
+
+#if defined(OS_CHROMEOS)
+  if (device_policy_cros_test_helper_) {
+    UpdatePolicyViaDevicePolicyCrosTestHelper(extension_id, update_manifest_url,
+                                              device_policy_cros_test_helper_);
+    return true;
+  }
+#endif  // OS_CHROMEOS
+  NOTREACHED() << "Init not called";
+  return false;
+}

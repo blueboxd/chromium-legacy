@@ -7,10 +7,13 @@
 
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_manager_base.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
+#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 
 namespace chromeos {
+
+class FakeOwnerSettingsService;
 
 // Common classes that can be used for kiosk mode testing.
 // Waits for kiosk session to be initialized.
@@ -31,6 +34,21 @@ class KioskSessionInitializedWaiter : public KioskAppManagerObserver {
   ScopedObserver<KioskAppManagerBase, KioskAppManagerObserver> scoped_observer_{
       this};
   base::RunLoop run_loop_;
+};
+
+// Used to replace OwnerSettingsService.
+class ScopedDeviceSettings {
+ public:
+  ScopedDeviceSettings();
+  ~ScopedDeviceSettings();
+
+  FakeOwnerSettingsService* owner_settings_service() {
+    return owner_settings_service_.get();
+  }
+
+ private:
+  ScopedCrosSettingsTestHelper settings_helper_;
+  std::unique_ptr<FakeOwnerSettingsService> owner_settings_service_;
 };
 
 }  // namespace chromeos

@@ -36,14 +36,14 @@ class TestSearchEngineDelegate
     return url::Origin::Create(GURL(kDSETestUrl));
   }
 
-  void SetDSEChangedCallback(const base::Closure& callback) override {
-    dse_changed_callback_ = callback;
+  void SetDSEChangedCallback(base::RepeatingClosure callback) override {
+    dse_changed_callback_ = std::move(callback);
   }
 
   void UpdateDSEOrigin() { dse_changed_callback_.Run(); }
 
  private:
-  base::Closure dse_changed_callback_;
+  base::RepeatingClosure dse_changed_callback_;
 };
 }  // namespace
 #endif

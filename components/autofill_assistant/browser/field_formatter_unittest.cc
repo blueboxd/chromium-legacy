@@ -25,14 +25,20 @@ TEST(FieldFormatterTest, FormatString) {
   std::map<std::string, std::string> mappings = {
       {"keyA", "valueA"}, {"keyB", "valueB"}, {"keyC", "valueC"}};
 
-  EXPECT_EQ(*FormatString("", mappings), "");
-  EXPECT_EQ(*FormatString("input", mappings), "input");
-  EXPECT_EQ(*FormatString("prefix ${keyA}", mappings), "prefix valueA");
-  EXPECT_EQ(*FormatString("prefix ${keyA}${keyB}${keyC} suffix", mappings),
+  EXPECT_EQ(FormatString("", mappings), "");
+  EXPECT_EQ(FormatString("input", mappings), "input");
+  EXPECT_EQ(FormatString("prefix ${keyA}", mappings), "prefix valueA");
+  EXPECT_EQ(FormatString("prefix ${keyA}${keyB}${keyC} suffix", mappings),
             "prefix valueAvalueBvalueC suffix");
-  EXPECT_EQ(*FormatString("keyA = ${keyA}", mappings), "keyA = valueA");
+  EXPECT_EQ(FormatString("keyA = ${keyA}", mappings), "keyA = valueA");
   EXPECT_EQ(FormatString("${keyD}", mappings), base::nullopt);
   EXPECT_EQ(FormatString("${keyA}${keyD}", mappings), base::nullopt);
+
+  EXPECT_EQ(FormatString("${keyD}", mappings, /*strict = */ false), "${keyD}");
+  EXPECT_EQ(FormatString("${keyA}${keyD}", mappings, /*strict = */ false),
+            "valueA${keyD}");
+  EXPECT_EQ(FormatString("${keyD}${keyA}", mappings, /*strict = */ false),
+            "${keyD}valueA");
 }
 
 TEST(FieldFormatterTest, AutofillProfile) {

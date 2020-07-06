@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/version.h"
@@ -15,8 +16,10 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/policy/extension_force_install_mixin.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_paths.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_details.h"
@@ -54,8 +57,8 @@ namespace {
 // * The manual testing app which is whitelisted for running in the sign-in
 //   profile:
 const char kWhitelistedAppId[] = "bjaiihebfngildkcjkjckolinodhliff";
-const char kWhitelistedAppUpdateManifestPath[] =
-    "/extensions/signin_screen_manual_test_app/crx/update_manifest.xml";
+const char kWhitelistedAppCrxPath[] =
+    "extensions/signin_screen_manual_test_app/app_signed_by_webstore.crx";
 // * A trivial test app which is NOT whitelisted for running in the sign-in
 //   profile:
 const char kNotWhitelistedAppId[] = "mockapnacjbcdncmpkjngjalkhphojek";
@@ -64,8 +67,9 @@ const char kNotWhitelistedUpdateManifestPath[] =
 // * A trivial test extension which is whitelisted for running in the sign-in
 //   profile:
 const char kWhitelistedExtensionId[] = "ngjobkbdodapjbbncmagbccommkggmnj";
-const char kWhitelistedExtensionUpdateManifestPath[] =
-    "/extensions/signin_screen_manual_test_extension/update_manifest.xml";
+const char kWhitelistedExtensionCrxPath[] =
+    "extensions/signin_screen_manual_test_extension/"
+    "extension_signed_by_webstore.crx";
 // * A trivial test extension which is NOT whitelisted for running in the
 //   sign-in profile:
 const char kNotWhitelistedExtensionId[] = "mockepjebcnmhmhcahfddgfcdgkdifnc";
@@ -212,9 +216,24 @@ class SigninProfileExtensionsPolicyTest
   SigninProfileExtensionsPolicyTest()
       : SigninProfileExtensionsPolicyTestBase(version_info::Channel::STABLE) {}
 
+  void SetUpOnMainThread() override {
+    SigninProfileExtensionsPolicyTestBase::SetUpOnMainThread();
+
+    extension_force_install_mixin_.InitWithDevicePolicyCrosTestHelper(
+        GetInitialProfile(), policy_helper());
+  }
+
+  ExtensionForceInstallMixin extension_force_install_mixin_{&mixin_host_};
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SigninProfileExtensionsPolicyTest);
 };
+
+base::FilePath GetTestDataDir() {
+  base::FilePath test_data_dir;
+  EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
+  return test_data_dir;
+}
 
 }  // namespace
 
@@ -226,8 +245,8 @@ IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest,
   extensions::TestExtensionRegistryObserver registry_observer(
       extensions::ExtensionRegistry::Get(profile), kWhitelistedAppId);
 
-  AddExtensionForForceInstallation(kWhitelistedAppId,
-                                   kWhitelistedAppUpdateManifestPath);
+  EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromCrx(
+      GetTestDataDir().AppendASCII(kWhitelistedAppCrxPath)));
 
   registry_observer.WaitForExtensionLoaded();
   const extensions::Extension* extension =
@@ -262,8 +281,8 @@ IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest,
   extensions::TestExtensionRegistryObserver registry_observer(
       extensions::ExtensionRegistry::Get(profile), kWhitelistedExtensionId);
 
-  AddExtensionForForceInstallation(kWhitelistedExtensionId,
-                                   kWhitelistedExtensionUpdateManifestPath);
+  EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromCrx(
+      GetTestDataDir().AppendASCII(kWhitelistedExtensionCrxPath)));
 
   registry_observer.WaitForExtensionLoaded();
   const extensions::Extension* extension =
@@ -302,8 +321,8 @@ IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest, BackgroundPage) {
   EXPECT_FALSE(
       chromeos::ProfileHelper::SigninProfileHasLoginScreenExtensions());
   ExtensionBackgroundPageReadyObserver page_observer(kWhitelistedAppId);
-  AddExtensionForForceInstallation(kWhitelistedAppId,
-                                   kWhitelistedAppUpdateManifestPath);
+  EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromCrx(
+      GetTestDataDir().AppendASCII(kWhitelistedAppCrxPath)));
   page_observer.Wait();
   EXPECT_TRUE(chromeos::ProfileHelper::SigninProfileHasLoginScreenExtensions());
 }
@@ -318,10 +337,10 @@ IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest,
   extensions::TestExtensionRegistryObserver registry_observer2(
       extensions::ExtensionRegistry::Get(profile), kWhitelistedExtensionId);
 
-  AddExtensionForForceInstallation(kWhitelistedAppId,
-                                   kWhitelistedAppUpdateManifestPath);
-  AddExtensionForForceInstallation(kWhitelistedExtensionId,
-                                   kWhitelistedExtensionUpdateManifestPath);
+  EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromCrx(
+      GetTestDataDir().AppendASCII(kWhitelistedAppCrxPath)));
+  EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromCrx(
+      GetTestDataDir().AppendASCII(kWhitelistedExtensionCrxPath)));
 
   registry_observer1.WaitForExtensionLoaded();
   registry_observer2.WaitForExtensionLoaded();
@@ -337,10 +356,10 @@ IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest,
   ExtensionBackgroundPageReadyObserver page_observer_for_extension(
       kWhitelistedExtensionId);
 
-  AddExtensionForForceInstallation(kWhitelistedAppId,
-                                   kWhitelistedAppUpdateManifestPath);
-  AddExtensionForForceInstallation(kWhitelistedExtensionId,
-                                   kWhitelistedExtensionUpdateManifestPath);
+  EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromCrx(
+      GetTestDataDir().AppendASCII(kWhitelistedAppCrxPath)));
+  EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromCrx(
+      GetTestDataDir().AppendASCII(kWhitelistedExtensionCrxPath)));
 
   page_observer_for_app.Wait();
   page_observer_for_extension.Wait();
@@ -376,8 +395,8 @@ class SigninProfileExtensionsPolicyOfflineLaunchTest
             extensions::ExtensionRegistry::Get(GetInitialProfile()),
             kWhitelistedAppId);
 
-    AddExtensionForForceInstallation(kWhitelistedAppId,
-                                     kWhitelistedAppUpdateManifestPath);
+    EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromCrx(
+        GetTestDataDir().AppendASCII(kWhitelistedAppCrxPath)));
 
     // In the non-PRE test, this simulates inability to make network requests
     // for fetching the extension update manifest and CRX files. In the PRE test

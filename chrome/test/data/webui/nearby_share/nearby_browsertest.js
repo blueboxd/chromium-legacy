@@ -47,6 +47,7 @@ const NearbyBrowserTest = class extends PolymerTest {
 };
 
 [['ConfirmationPage', 'nearby_confirmation_page_test.js'],
+ ['Preview', 'nearby_preview_test.js'],
  ['Progress', 'nearby_progress_test.js'],
 ].forEach(test => registerTest(...test));
 

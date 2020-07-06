@@ -121,11 +121,8 @@ class FileStreamReader::OperationRunner
   void CloseRunnerOnUIThread() {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-    if (!abort_callback_.is_null()) {
-      const AbortCallback last_abort_callback = abort_callback_;
-      abort_callback_ = AbortCallback();
-      last_abort_callback.Run();
-    }
+    if (!abort_callback_.is_null())
+      std::move(abort_callback_).Run();
 
     // Close the file (if opened).
     file_opener_.reset();
@@ -145,7 +142,7 @@ class FileStreamReader::OperationRunner
       int file_handle,
       base::File::Error result) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    abort_callback_ = AbortCallback();
+    abort_callback_.Reset();
 
     if (result == base::File::FILE_OK)
       file_handle_ = file_handle;
@@ -160,7 +157,7 @@ class FileStreamReader::OperationRunner
       std::unique_ptr<EntryMetadata> metadata,
       base::File::Error result) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    abort_callback_ = AbortCallback();
+    abort_callback_.Reset();
 
     content::GetIOThreadTaskRunner({})->PostTask(
         FROM_HERE,
@@ -176,7 +173,7 @@ class FileStreamReader::OperationRunner
       base::File::Error result) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (!has_more)
-      abort_callback_ = AbortCallback();
+      abort_callback_.Reset();
 
     content::GetIOThreadTaskRunner({})->PostTask(
         FROM_HERE, base::BindOnce(chunk_received_callback, chunk_length,

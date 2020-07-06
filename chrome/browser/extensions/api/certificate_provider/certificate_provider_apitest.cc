@@ -517,14 +517,8 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderApiTest, LazyBackgroundPage) {
                         .AppendASCII("test_certificate_provider")
                         .AppendASCII("extension"));
   ASSERT_TRUE(extension);
-  std::unique_ptr<TestCertificateProviderExtension>
-      test_certificate_provider_extension;
-  {
-    base::ScopedAllowBlockingForTesting allow_io;
-    test_certificate_provider_extension =
-        std::make_unique<TestCertificateProviderExtension>(profile(),
-                                                           extension->id());
-  }
+  TestCertificateProviderExtension test_certificate_provider_extension(
+      profile(), extension->id());
   extensions::TestBackgroundPageFirstLoadObserver(profile(), extension->id())
       .Wait();
 
@@ -540,8 +534,7 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderApiTest, LazyBackgroundPage) {
       incognito_browser, client_cert_url,
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
-  EXPECT_EQ(test_certificate_provider_extension->certificate_request_count(),
-            1);
+  EXPECT_EQ(test_certificate_provider_extension.certificate_request_count(), 1);
   EXPECT_EQ(GetPageTextContent(
                 incognito_browser->tab_strip_model()->GetActiveWebContents()),
             "got client cert with fingerprint: " + client_cert_fingerprint);
@@ -556,8 +549,7 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderApiTest, LazyBackgroundPage) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), client_cert_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
-  EXPECT_EQ(test_certificate_provider_extension->certificate_request_count(),
-            2);
+  EXPECT_EQ(test_certificate_provider_extension.certificate_request_count(), 2);
   EXPECT_EQ(
       GetPageTextContent(browser()->tab_strip_model()->GetActiveWebContents()),
       "got client cert with fingerprint: " + client_cert_fingerprint);

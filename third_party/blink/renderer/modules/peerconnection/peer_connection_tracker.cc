@@ -167,7 +167,7 @@ String SerializeSender(const String& indent,
     result.Append("null");
   } else {
     result.Append("'");
-    result.Append(sender.Track()->Source()->Id());
+    result.Append(sender.Track()->Id());
     result.Append("'");
   }
   result.Append(",\n");
@@ -189,7 +189,7 @@ String SerializeReceiver(const String& indent,
   DCHECK(receiver.Track());
   result.Append(indent);
   result.Append("  track:'");
-  result.Append(receiver.Track()->Source()->Id());
+  result.Append(receiver.Track()->Id());
   result.Append("',\n");
   // streams:['id,'id'],
   result.Append(indent);

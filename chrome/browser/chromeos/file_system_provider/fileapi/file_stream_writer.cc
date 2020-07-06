@@ -83,11 +83,8 @@ class FileStreamWriter::OperationRunner
   void CloseRunnerOnUIThread() {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-    if (!abort_callback_.is_null()) {
-      const AbortCallback last_abort_callback = abort_callback_;
-      abort_callback_ = AbortCallback();
-      last_abort_callback.Run();
-    }
+    if (!abort_callback_.is_null())
+      std::move(abort_callback_).Run();
 
     // Close the file (if opened).
     file_opener_.reset();
@@ -108,7 +105,7 @@ class FileStreamWriter::OperationRunner
       base::File::Error result) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-    abort_callback_ = AbortCallback();
+    abort_callback_.Reset();
     if (result == base::File::FILE_OK)
       file_handle_ = file_handle;
 
@@ -122,7 +119,7 @@ class FileStreamWriter::OperationRunner
       base::File::Error result) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-    abort_callback_ = AbortCallback();
+    abort_callback_.Reset();
     content::GetIOThreadTaskRunner({})->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), result));
   }

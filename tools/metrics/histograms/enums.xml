@@ -12491,6 +12491,9 @@ Called by update_net_error_codes.py.-->
 
 <enum name="CorsCompletionStatus">
   <summary>The completion status of CorsURLLoader request.</summary>
+  <obsolete>
+    Removed at 06/2019 with Net.Cors.CompletionStatus histogram.
+  </obsolete>
   <int value="0"
       label="A request finished successfully when CORS flag was not set"/>
   <int value="1" label="A request failed when CORS flag was not set"/>
@@ -36682,6 +36685,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="10" label="AccessibilityExtraLarge"/>
   <int value="11" label="AccessibilityExtraExtraLarge"/>
   <int value="12" label="AccessibilityExtraExtraExtraLarge"/>
+</enum>
+
+<enum name="iOSCredentialIdentityStoreErrorForReporting">
+  <int value="0" label="Unknown Error"/>
+  <int value="1" label="Internal Error"/>
+  <int value="2" label="Store Disabled"/>
+  <int value="3" label="Store Busy"/>
 </enum>
 
 <enum name="IOSDeviceThermalState">

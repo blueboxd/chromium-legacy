@@ -67,9 +67,6 @@ class DownloadFeedbackImpl : public DownloadFeedback {
                       const std::string& response);
 
   void RecordUploadResult(UploadResultType result);
-  void RecordErrorCodes(TwoPhaseUploader::State state,
-                        int net_error,
-                        int response_code);
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   scoped_refptr<base::TaskRunner> file_task_runner_;
@@ -214,7 +211,6 @@ void DownloadFeedbackImpl::FinishedUpload(base::Closure finish_callback,
       break;
   }
 
-  RecordErrorCodes(state, net_error, response_code);
   UMA_HISTOGRAM_LONG_TIMES("SBDownloadFeedback.UploadDuration",
                            base::Time::Now() - uploader_start_time_);
 
@@ -234,18 +230,6 @@ void DownloadFeedbackImpl::RecordUploadResult(UploadResultType result) {
   }
   UMA_HISTOGRAM_ENUMERATION("SBDownloadFeedback.UploadResult", result,
                             UPLOAD_RESULT_MAX);
-}
-
-void DownloadFeedbackImpl::RecordErrorCodes(TwoPhaseUploader::State state,
-                                            int net_error,
-                                            int response_code) {
-  if (state == TwoPhaseUploader::UPLOAD_FILE) {
-    base::UmaHistogramSparse("SBDownloadFeedback.FileErrors",
-                             net_error == net::OK ? response_code : net_error);
-  } else if (state == TwoPhaseUploader::UPLOAD_METADATA) {
-    base::UmaHistogramSparse("SBDownloadFeedback.MetadataErrors",
-                             net_error == net::OK ? response_code : net_error);
-  }
 }
 
 }  // namespace

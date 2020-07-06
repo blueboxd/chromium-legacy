@@ -510,7 +510,7 @@
   <message name="IDS_SETTINGS_PASSWORD_REMOVE_DIALOG_TITLE" desc="Title for the dialog that asks the user which versions of a password to remove (device, Google Account or both).">
     Delete password?
   </message>
-  <!-- TODO(crbug.com/1049141): Inject the website in the string and make it translateable. -->
+  <!-- TODO(crbug.com/1102294): Inject the website in the string and make it translateable. -->
   <message translateable="false" name="IDS_SETTINGS_PASSWORD_REMOVE_DIALOG_BODY" desc="Description message for the dialog that asks the user which versions of a password to remove (device, Google Account or both).">
     Your password is stored on this device and in your Google Account. Which one do you want to delete?
   </message>

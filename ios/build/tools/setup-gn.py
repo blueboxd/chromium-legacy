@@ -209,6 +209,7 @@ class GnGenerator(object):
     if generate_xcode_project:
       gn_command.append('--ide=xcode')
       gn_command.append('--root-target=gn_all')
+      gn_command.append('--xcode-build-system=new')
       gn_command.append('--ninja-executable=autoninja')
       if self._settings.has_section('filters'):
         target_filters = self._settings.values('filters')

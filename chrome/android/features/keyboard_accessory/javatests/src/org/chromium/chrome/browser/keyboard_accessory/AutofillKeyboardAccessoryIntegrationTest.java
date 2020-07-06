@@ -18,6 +18,7 @@ import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingTestHe
 import static org.chromium.chrome.browser.keyboard_accessory.tab_layout_component.KeyboardAccessoryTabTestHelper.isKeyboardAccessoryTabLayout;
 
 import android.app.Activity;
+import android.os.Build.VERSION_CODES;
 import android.view.View;
 
 import androidx.annotation.IntDef;
@@ -35,6 +36,7 @@ import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.browser.ChromeWindow;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -199,7 +201,11 @@ public class AutofillKeyboardAccessoryIntegrationTest {
     @Test
     @MediumTest
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
-    public void testSelectSuggestionHidesKeyboardAccessory(@EnabledFeature int enabledFeature)
+    @DisableIf.
+    Build(sdk_is_greater_than = VERSION_CODES.LOLLIPOP_MR1, sdk_is_less_than = VERSION_CODES.N,
+            message = "Flaky on Marshmallow https://crbug.com/1102302")
+    public void
+    testSelectSuggestionHidesKeyboardAccessory(@EnabledFeature int enabledFeature)
             throws ExecutionException, TimeoutException {
         loadTestPage(FakeKeyboard::new, enabledFeature);
         mHelper.clickNodeAndShowKeyboard("NAME_FIRST");

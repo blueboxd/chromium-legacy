@@ -52,8 +52,8 @@ class TestSearchEngineDelegate
 
   url::Origin GetDSEOrigin() override { return dse_origin_; }
 
-  void SetDSEChangedCallback(const base::Closure& callback) override {
-    dse_changed_callback_ = callback;
+  void SetDSEChangedCallback(base::RepeatingClosure callback) override {
+    dse_changed_callback_ = std::move(callback);
   }
 
   void ChangeDSEOrigin(const std::string& dse_origin) {
@@ -67,7 +67,7 @@ class TestSearchEngineDelegate
 
  private:
   url::Origin dse_origin_;
-  base::Closure dse_changed_callback_;
+  base::RepeatingClosure dse_changed_callback_;
 };
 
 }  // namespace

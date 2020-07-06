@@ -109,12 +109,12 @@ class GCMProfileServiceTest : public testing::Test {
   void UnregisterAndWaitForCompletion();
   void SendAndWaitForCompletion(const OutgoingMessage& message);
 
-  void RegisterCompleted(const base::Closure& callback,
+  void RegisterCompleted(base::OnceClosure callback,
                          const std::string& registration_id,
                          GCMClient::Result result);
-  void UnregisterCompleted(const base::Closure& callback,
+  void UnregisterCompleted(base::OnceClosure callback,
                            GCMClient::Result result);
-  void SendCompleted(const base::Closure& callback,
+  void SendCompleted(base::OnceClosure callback,
                      const std::string& message_id,
                      GCMClient::Result result);
 
@@ -208,28 +208,26 @@ void GCMProfileServiceTest::SendAndWaitForCompletion(
 }
 
 void GCMProfileServiceTest::RegisterCompleted(
-     const base::Closure& callback,
-     const std::string& registration_id,
-     GCMClient::Result result) {
+    base::OnceClosure callback,
+    const std::string& registration_id,
+    GCMClient::Result result) {
   registration_id_ = registration_id;
   registration_result_ = result;
-  callback.Run();
+  std::move(callback).Run();
 }
 
-void GCMProfileServiceTest::UnregisterCompleted(
-    const base::Closure& callback,
-    GCMClient::Result result) {
+void GCMProfileServiceTest::UnregisterCompleted(base::OnceClosure callback,
+                                                GCMClient::Result result) {
   unregistration_result_ = result;
-  callback.Run();
+  std::move(callback).Run();
 }
 
-void GCMProfileServiceTest::SendCompleted(
-    const base::Closure& callback,
-    const std::string& message_id,
-    GCMClient::Result result) {
+void GCMProfileServiceTest::SendCompleted(base::OnceClosure callback,
+                                          const std::string& message_id,
+                                          GCMClient::Result result) {
   send_message_id_ = message_id;
   send_result_ = result;
-  callback.Run();
+  std::move(callback).Run();
 }
 
 TEST_F(GCMProfileServiceTest, RegisterAndUnregister) {

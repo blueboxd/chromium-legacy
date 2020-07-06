@@ -83,7 +83,7 @@ MoveToAccountStoreBubbleView::MoveToAccountStoreBubbleView(
               /*horizontal=*/0));
 
   AddChildView(CreateDescription());
-  // TODO(crbug.com/1060128): Add images indicating "site"->"account" move.
+  // TODO(crbug.com/1100814): Add images indicating "site"->"account" move.
 
   SetButtonLabel(ui::DIALOG_BUTTON_OK,
                  l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_MOVE_BUTTON));

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_WEB_KIOSK_CONTROLLER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_WEB_KIOSK_CONTROLLER_H_
 
+#include "base/auto_reset.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
@@ -69,6 +70,12 @@ class WebKioskController : public AppLaunchSplashScreenView::Delegate,
   static std::unique_ptr<WebKioskController> CreateForTesting(
       AppLaunchSplashScreenView* view,
       std::unique_ptr<WebKioskAppLauncher> app_launcher);
+
+  static std::unique_ptr<base::AutoReset<bool>>
+  SkipSplashScreenWaitForTesting();
+  static std::unique_ptr<base::AutoReset<base::TimeDelta>>
+  SetNetworkWaitForTesting(base::TimeDelta wait_time);
+  static std::unique_ptr<base::AutoReset<bool>> BlockAppLaunchForTesting();
 
  private:
   friend class WebKioskControllerTest;

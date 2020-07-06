@@ -13,12 +13,18 @@ js_type_check("closure_compile") {
                   ]
   deps = [
     ":nearby_confirmation_page_test",
+    ":nearby_preview_test",
     ":nearby_progress_test",
   ]
 }
 
 js_library("nearby_confirmation_page_test") {
   deps = [ "//chrome/browser/resources/nearby_share:nearby_confirmation_page" ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
+js_library("nearby_preview_test") {
+  deps = [ "//chrome/browser/resources/nearby_share:nearby_preview" ]
   externs_list = [ "$externs_path/mocha-2.5.js" ]
 }
 

@@ -106,6 +106,12 @@ export class ManagementBrowserProxy {
    *     items to display in device reporting section.
    */
   getDeviceReportingInfo() {}
+
+  /**
+   * @return {!Promise<boolean>} Boolean describing Plugin VM data collection
+   *     enabled or not.
+   */
+  getPluginVmDataCollectionStatus() {}
   // </if>
 
   /** @return {!Promise<!ManagedDataResponse>} */
@@ -137,6 +143,11 @@ export class ManagementBrowserProxyImpl {
   /** @override */
   getDeviceReportingInfo() {
     return sendWithPromise('getDeviceReportingInfo');
+  }
+
+  /** @override */
+  getPluginVmDataCollectionStatus() {
+    return sendWithPromise('getPluginVmDataCollectionStatus');
   }
   // </if>
 

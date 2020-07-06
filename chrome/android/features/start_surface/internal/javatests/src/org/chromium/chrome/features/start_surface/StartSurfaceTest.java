@@ -136,11 +136,13 @@ public class StartSurfaceTest {
     @Rule
     public TestRule mProcessor = new Features.InstrumentationProcessor();
 
+    private final boolean mUseInstantStart;
     private final boolean mImmediateReturn;
 
     public StartSurfaceTest(boolean useInstantStart, boolean immediateReturn) {
         CachedFeatureFlags.setForTesting(ChromeFeatureList.INSTANT_START, useInstantStart);
 
+        mUseInstantStart = useInstantStart;
         mImmediateReturn = immediateReturn;
     }
 
@@ -281,6 +283,11 @@ public class StartSurfaceTest {
     @CommandLineFlags.Add({BASE_PARAMS + "/trendyterms" +
             "/hide_switch_when_no_incognito_tabs/true"})
     public void testShow_TrendyTerms() {
+        // TODO(https://crbug.com/1102288) Reenable this test.
+        if (!mUseInstantStart && mImmediateReturn) {
+          return;
+        }
+
         // clang-format on
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         if (!mImmediateReturn) {

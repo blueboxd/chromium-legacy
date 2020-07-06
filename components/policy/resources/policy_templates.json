@@ -4829,19 +4829,11 @@
       'id': 40,
       'caption': '''Enable the default search provider''',
       'tags': [],
-      'desc': '''Enables the use of a default search provider.
+      'desc': '''Setting the policy to Enabled means a default search is performed when a user enters non-URL text in the address bar. To specify the default search provider, set the rest of the default search policies. If you leave those policies empty, the user can choose the default provider. Setting the policy to Disabled means there's no search when the user enters non-URL text in the address bar.
 
-          If you enable this setting, a default search is performed when the user types text in the omnibox that is not a URL.
+      If you set the policy, users can't change it in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. If not set, the default search provider is on, and users can set the search provider list.
 
-          You can specify the default search provider to be used by setting the rest of the default search policies. If these are left empty, the user can choose the default provider.
-
-          If you disable this setting, no search is performed when the user enters non-URL text in the omnibox.
-
-          If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
-
-          If this policy is left not set, the default search provider is enabled, and the user will be able to set the search provider list.
-
-          This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain. or Windows 10 Pro or Enterprise instances that enrolled for device management and macOS instances that are that are managed via MDM or joined to a domain via MCX.''',
+      Note: This policy is only on Windows® instances that are joined to a <ph name="MS_AD_NAME">Microsoft®ActiveDirectory®</ph> domain, Windows 10 Pro, or Chrome Enterprise Upgrade and macOS instances that are that are managed via MDM or joined to a domain via MCX.''',
     },
     {
       'name': 'DefaultSearchProviderContextMenuAccessAllowed',
@@ -4884,9 +4876,9 @@
       'id': 41,
       'caption': '''Default search provider name''',
       'tags': ['website-sharing'],
-      'desc': '''Specifies the name of the default search provider. If left empty or not set, the host name specified by the search URL will be used.
+      'desc': '''If <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME">DefaultSearchProviderEnabled</ph> is on, then setting <ph name="DEFAULT_SEARCH_PROVIDER_NAME_POLICY_NAME">DefaultSearchProviderName</ph> specifies the default search provider's name.
 
-          This policy is only considered if the 'DefaultSearchProviderEnabled' policy is enabled.''',
+      Leaving <ph name="DEFAULT_SEARCH_PROVIDER_NAME_POLICY_NAME">DefaultSearchProviderName</ph> unset means the hostname specified by the search URL is used.''',
     },
     {
       'name': 'DefaultSearchProviderKeyword',
@@ -4907,11 +4899,9 @@
       'id': 42,
       'caption': '''Default search provider keyword''',
       'tags': [],
-      'desc': '''Specifies the keyword, which is the shortcut used in the omnibox to trigger the search for this provider.
+      'desc': '''If <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME">DefaultSearchProviderEnabled</ph> is on, then setting <ph name="DEFAULT_SEARCH_PROVIDER_KEYWORD_POLICY_NAME">DefaultSearchProviderKeyword</ph> specifies the keyword or shortcut used in the address bar to trigger the search for this provider.
 
-          This policy is optional. If not set, no keyword will activate the search provider.
-
-          This policy is only considered if the 'DefaultSearchProviderEnabled' policy is enabled.''',
+      Leaving <ph name="DEFAULT_SEARCH_PROVIDER_KEYWORD_POLICY_NAME">DefaultSearchProviderKeyword</ph> unset means no keyword activates the search provider.''',
     },
     {
       'name': 'DefaultSearchProviderSearchURL',
@@ -4932,11 +4922,9 @@
       'id': 43,
       'caption': '''Default search provider search URL''',
       'tags': ['website-sharing'],
-      'desc': '''Specifies the URL of the search engine used when doing a default search. The URL should contain the string '<ph name="SEARCH_TERM_MARKER">{searchTerms}</ph>', which will be replaced at query time by the terms the user is searching for.
+      'desc': '''If <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME">DefaultSearchProviderEnabled</ph> is on, then setting <ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POLICY_NAME">DefaultSearchProviderSearchURL</ph> specifies the URL of the search engine used during a default search. The URL should include the string <ph name="SEARCH_TERM_MARKER">'{searchTerms}'</ph>, replaced at the query by the user's search terms.
 
-          Google's search URL can be specified as: <ph name="GOOGLE_SEARCH_URL">'{google:baseURL}search?q={searchTerms}&amp;{google:RLZ}{google:originalQueryForSuggestion}{google:assistedQueryStats}{google:searchFieldtrialParameter}{google:searchClient}{google:sourceId}ie={inputEncoding}'</ph>.
-
-          This option must be set when the 'DefaultSearchProviderEnabled' policy is enabled and will only be respected if this is the case.''',
+      You can specify Google's search URL as: <ph name="GOOGLE_SEARCH_URL">'{google:baseURL}search?q={searchTerms}&amp;{google:RLZ}{google:originalQueryForSuggestion}{google:assistedQueryStats}{google:searchFieldtrialParameter}{google:searchClient}{google:sourceId}ie={inputEncoding}'</ph>.''',
     },
     {
       'name': 'DefaultSearchProviderSuggestURL',
@@ -4957,13 +4945,9 @@
       'id': 44,
       'caption': '''Default search provider suggest URL''',
       'tags': [],
-      'desc': '''Specifies the URL of the search engine used to provide search suggestions. The URL should contain the string '<ph name="SEARCH_TERM_MARKER">{searchTerms}</ph>', which will be replaced at query time by the text the user has entered so far.
+      'desc': '''If <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME">DefaultSearchProviderEnabled</ph> is on, then setting <ph name="DEFAULT_SEARCH_PROVIDER_SUGGEST_URL_POLICY_NAME">DefaultSearchProviderSuggestURL</ph> specifies the URL of the search engine to provide search suggestions. The URL should include the string <ph name="SEARCH_TERM_MARKER">{searchTerms}</ph>, replaced at the query by the user's search terms.
 
-          This policy is optional. If not set, no suggest URL will be used.
-
-          Google's suggest URL can be specified as: <ph name="GOOGLE_SUGGEST_SEARCH_URL">'{google:baseURL}complete/search?output=chrome&amp;q={searchTerms}'</ph>.
-
-          This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.''',
+      You can specify Google's search URL as: <ph name="GOOGLE_SUGGEST_SEARCH_URL">'{google:baseURL}complete/search?output=chrome&amp;q={searchTerms}'</ph>.''',
     },
     {
       'name': 'DefaultSearchProviderInstantURL',
@@ -5007,11 +4991,9 @@
       'id': 46,
       'caption': '''Default search provider icon''',
       'tags': [],
-      'desc': '''Specifies the favorite icon URL of the default search provider.
+      'desc': '''If <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME">DefaultSearchProviderEnabled</ph> is on, then setting <ph name="DEFAULT_SEARCH_PROVIDER_ICON_URL_POLICY_NAME">DefaultSearchProviderIconURL</ph> specifies the default search provider's favorite icon URL.
 
-          This policy is optional. If not set, no icon will be present for the search provider.
-
-          This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.''',
+      Leaving <ph name="DEFAULT_SEARCH_PROVIDER_ICON_URL_POLICY_NAME">DefaultSearchProviderIconURL</ph> unset means there's no icon for the search provider.''',
     },
     {
       'name': 'DefaultSearchProviderEncodings',
@@ -5035,11 +5017,9 @@
       'id': 47,
       'caption': '''Default search provider encodings''',
       'tags': [],
-      'desc': '''Specifies the character encodings supported by the search provider. Encodings are code page names like UTF-8, GB2312, and ISO-8859-1. They are tried in the order provided.
+      'desc': '''If <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME">DefaultSearchProviderEnabled</ph> is on, setting <ph name="DEFAULT_SEARCH_PROVIDER_ENCODINGS_POLICY_NAME">DefaultSearchProviderEncodings</ph> specifies the character encodings supported by the search provider. Encodings are code page names such as UTF-8, GB2312, and ISO-8859-1. They're tried in the order provided.
 
-          This policy is optional. If not set, the default will be used which is UTF-8.
-
-          This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.''',
+      Leaving <ph name="DEFAULT_SEARCH_PROVIDER_ENCODINGS_POLICY_NAME">DefaultSearchProviderEncodings</ph> unset puts UTF-8 in use.''',
     },
     {
       'name': 'DefaultSearchProviderAlternateURLs',
@@ -5063,11 +5043,9 @@
       'id': 161,
       'caption': '''List of alternate URLs for the default search provider''',
       'tags': [],
-      'desc': '''Specifies a list of alternate URLs that can be used to extract search terms from the search engine. The URLs should contain the string <ph name="SEARCH_TERM_MARKER">'{searchTerms}'</ph>, which will be used to extract the search terms.
+      'desc': '''If <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME">DefaultSearchProviderEnabled</ph> is on, then setting <ph name="DEFAULT_SEARCH_PROVIDER_ALTERNATE_URLS_POLICY_NAME">DefaultSearchProviderAlternateURLs</ph> specifies a list of alternate URLs for extracting search terms from the search engine. The URLs should include the string <ph name="SEARCH_TERM_MARKER">'{searchTerms}'</ph>.
 
-          This policy is optional. If not set, no alternate urls will be used to extract search terms.
-
-          This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.''',
+      Leaving <ph name="DEFAULT_SEARCH_PROVIDER_ALTERNATE_URLS_POLICY_NAME">DefaultSearchProviderAlternateURLs</ph> unset means no alternate URLs are used to extract search terms.''',
     },
     {
       'name': 'DefaultSearchProviderSearchTermsReplacementKey',
@@ -5109,11 +5087,9 @@
       'id': 229,
       'caption': '''Parameter providing search-by-image feature for the default search provider''',
       'tags': [],
-      'desc': '''Specifies the URL of the search engine used to provide image search. Search requests will be sent using the GET method. If the DefaultSearchProviderImageURLPostParams policy is set then image search requests will use the POST method instead.
+      'desc': '''If <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME">DefaultSearchProviderEnabled</ph> is on, then setting <ph name="DEFAULT_SEARCH_PROVIDER_IMAGE_URL_POLICY_NAME">DefaultSearchProviderImageURL</ph> specifies the URL of the search engine used for image search. (If <ph name="DEFAULT_SEARCH_PROVIDER_IMAGE_URL_POST_PARMS_POLICY_NAME">DefaultSearchProviderImageURLPostParams</ph> is set, then image search requests use the POST method instead.)
 
-          This policy is optional. If not set, no image search will be used.
-
-          This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.''',
+      Leaving <ph name="DEFAULT_SEARCH_PROVIDER_IMAGE_URL_POLICY_NAME">DefaultSearchProviderImageURL</ph> unset means no image search is used.''',
     },
     {
       'name': 'DefaultSearchProviderNewTabURL',
@@ -5134,11 +5110,9 @@
       'id': 237,
       'caption': '''Default search provider new tab page URL''',
       'tags': [],
-      'desc': '''Specifies the URL that a search engine uses to provide a new tab page.
+      'desc': '''If <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME">DefaultSearchProviderEnabled</ph> is on, then setting <ph name="DEFAULT_SEARCH_PROVIDER_NEW_TAB_URL_POLICY_NAME">DefaultSearchProviderNewTabURL</ph> specifies the URL that a search engine uses to provide a New Tab page.
 
-          This policy is optional. If not set, no new tab page will be provided.
-
-          This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.''',
+      Leaving <ph name="DEFAULT_SEARCH_PROVIDER_NEW_TAB_URL_POLICY_NAME">DefaultSearchProviderNewTabURL</ph> unset means no new tab page is provided.''',
     },
     {
       'name': 'DefaultSearchProviderSearchURLPostParams',
@@ -5159,11 +5133,9 @@
       'id': 230,
       'caption': '''Parameters for search URL which uses POST''',
       'tags': [],
-      'desc': '''Specifies the parameters used when searching a URL with POST. It consists of comma-separated name/value pairs. If a value is a template parameter, like {searchTerms} in above example, it will be replaced with real search terms data.
+      'desc': '''If <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME">DefaultSearchProviderEnabled</ph> is on, then setting <ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POST_PARAMS_POLICY_NAME">DefaultSearchProviderSearchURLPostParams</ph> specifies the parameters when searching a URL with POST. It consists of comma-separated, name-value pairs. If a value is a template parameter, such as <ph name="SEARCH_TERM_MARKER">'{searchTerms}'</ph>, real search terms data replaces it.
 
-          This policy is optional. If not set, search request will be sent using the GET method.
-
-          This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.''',
+      Leaving <ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POST_PARAMS_POLICY_NAME">DefaultSearchProviderSearchURLPostParams</ph> unset means search requests are sent using the GET method.''',
     },
     {
       'name': 'DefaultSearchProviderSuggestURLPostParams',
@@ -5184,11 +5156,9 @@
       'id': 231,
       'caption': '''Parameters for suggest URL which uses POST''',
       'tags': [],
-      'desc': '''Specifies the parameters used when doing suggestion search with POST. It consists of comma-separated name/value pairs. If a value is a template parameter, like {searchTerms} in above example, it will be replaced with real search terms data.
+      'desc': '''If <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME">DefaultSearchProviderEnabled</ph> is on, then setting <ph name="DEFAULT_SEARCH_PROVIDER_SUGGEST_URL_POST_PARAMS_POLICY_NAME">DefaultSearchProviderSuggestURLPostParams</ph> specifies the parameters during suggestion search with POST. It consists of comma-separated, name-value pairs. If a value is a template parameter, such as <ph name="SEARCH_TERM_MARKER">'{searchTerms}'</ph>, real search terms data replaces it.
 
-          This policy is optional. If not set, suggest search request will be sent using the GET method.
-
-          This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.''',
+      Leaving <ph name="DEFAULT_SEARCH_PROVIDER_SUGGEST_URL_POST_PARAMS_POLICY_NAME">DefaultSearchProviderSuggestURLPostParams</ph> unset unset means suggest search requests are sent using the GET method.''',
     },
     {
       'name': 'DefaultSearchProviderInstantURLPostParams',
@@ -5230,11 +5200,9 @@
       'id': 233,
       'caption': '''Parameters for image URL which uses POST''',
       'tags': [],
-      'desc': '''Specifies the parameters used when doing image search with POST. It consists of comma-separated name/value pairs. If a value is a template parameter, like {imageThumbnail} in above example, it will be replaced with real image thumbnail data.
+      'desc': '''If <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME">DefaultSearchProviderEnabled</ph> is on, then setting <ph name="DEFAULT_SEARCH_PROVIDER_IMAGE_URL_POST_PARMS_POLICY_NAME">DefaultSearchProviderImageURLPostParams</ph> specifies the parameters during image search with POST. It consists of comma-separated, name-value pairs. If a value is a template parameter, such as {imageThumbnail}, real image thumbnail data replaces it.
 
-          This policy is optional. If not set, image search request will be sent using the GET method.
-
-          This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.''',
+      Leaving <ph name="DEFAULT_SEARCH_PROVIDER_IMAGE_URL_POST_PARMS_POLICY_NAME">DefaultSearchProviderImageURLPostParams</ph> unset means image search request is sent using the GET method.''',
     },
     {
       'name': 'DefaultCookiesSetting',

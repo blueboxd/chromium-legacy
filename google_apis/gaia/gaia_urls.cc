@@ -5,14 +5,11 @@
 #include "google_apis/gaia/gaia_urls.h"
 
 #include "base/command_line.h"
-#include "base/files/file_path.h"
-#include "base/files/file_util.h"
-#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
-#include "base/values.h"
 #include "build/build_config.h"
+#include "google_apis/gaia/gaia_config.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "google_apis/google_api_keys.h"
 #include "url/url_canon.h"
@@ -122,30 +119,6 @@ void ResolveURLIfInvalid(GURL* url_to_set,
   }
 }
 
-void InitializeUrlFromConfig(const base::Value& urls,
-                             base::StringPiece key,
-                             GURL* out_value) {
-  const base::Value* url_config = urls.FindDictKey(key);
-  if (!url_config)
-    return;
-
-  const std::string* url_string = url_config->FindStringKey("url");
-  if (!url_string) {
-    LOG(ERROR) << "Incorrect format of \"" << key
-               << "\" gaia config key. A key should contain {\"url\": "
-                  "\"https://...\"} dictionary.";
-    return;
-  }
-
-  GURL url = GURL(*url_string);
-  if (!url.is_valid()) {
-    LOG(ERROR) << "Invalid URL at \"" << key << "\" URL key";
-    return;
-  }
-
-  *out_value = url;
-}
-
 }  // namespace
 
 GaiaUrls* GaiaUrls::GetInstance() {
@@ -154,11 +127,7 @@ GaiaUrls* GaiaUrls::GetInstance() {
 
 GaiaUrls::GaiaUrls() {
   // Initialize all urls from a config first.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kGaiaConfig)) {
-    InitializeFromConfig(
-        command_line->GetSwitchValuePath(switches::kGaiaConfig));
-  }
+  InitializeFromConfig();
 
   // Set a default value for all urls not set by the config.
   InitializeDefault();
@@ -416,70 +385,47 @@ void GaiaUrls::InitializeDefault() {
                       kOAuth2IssueTokenUrlSuffix);
 }
 
-void GaiaUrls::InitializeFromConfig(const base::FilePath& config_path) {
-  std::string config_contents;
-  if (!base::ReadFileToString(config_path, &config_contents)) {
-    LOG(ERROR) << "Couldn't read gaia config file " << config_path;
+void GaiaUrls::InitializeFromConfig() {
+  GaiaConfig* config = GaiaConfig::GetInstance();
+  if (!config)
     return;
-  }
 
-  base::Optional<base::Value> dict = base::JSONReader::Read(config_contents);
-  if (!dict || !dict->is_dict()) {
-    LOG(ERROR) << "Couldn't parse gaia config file " << config_path;
-    return;
-  }
-
-  const base::Value* url_dict = dict->FindDictKey("urls");
-  if (!url_dict) {
-    LOG(ERROR) << "Incorrect format of gaia config file. A config should "
-                  "contain {\"urls\": {...}} dictionary.";
-    return;
-  }
-
-  InitializeUrlFromConfig(*url_dict, URL_KEY_AND_PTR(google_url));
-  InitializeUrlFromConfig(*url_dict, URL_KEY_AND_PTR(secure_google_url));
-  InitializeUrlFromConfig(*url_dict, URL_KEY_AND_PTR(gaia_url));
-  InitializeUrlFromConfig(*url_dict, URL_KEY_AND_PTR(lso_origin_url));
-  InitializeUrlFromConfig(*url_dict, URL_KEY_AND_PTR(google_apis_origin_url));
-  InitializeUrlFromConfig(*url_dict,
-                          URL_KEY_AND_PTR(oauth_account_manager_origin_url));
-  InitializeUrlFromConfig(*url_dict, URL_KEY_AND_PTR(captcha_base_url));
-  InitializeUrlFromConfig(*url_dict, URL_KEY_AND_PTR(client_login_url));
-  InitializeUrlFromConfig(*url_dict, URL_KEY_AND_PTR(service_login_url));
-  InitializeUrlFromConfig(*url_dict,
-                          URL_KEY_AND_PTR(embedded_setup_chromeos_url_v2));
-  InitializeUrlFromConfig(*url_dict,
-                          URL_KEY_AND_PTR(embedded_setup_windows_url));
-  InitializeUrlFromConfig(*url_dict, URL_KEY_AND_PTR(signin_chrome_sync_dice));
-  InitializeUrlFromConfig(*url_dict,
-                          URL_KEY_AND_PTR(signin_chrome_sync_keys_url));
-  InitializeUrlFromConfig(*url_dict, URL_KEY_AND_PTR(service_login_auth_url));
-  InitializeUrlFromConfig(*url_dict, URL_KEY_AND_PTR(service_logout_url));
-  InitializeUrlFromConfig(*url_dict, URL_KEY_AND_PTR(continue_url_for_logout));
-  InitializeUrlFromConfig(*url_dict, URL_KEY_AND_PTR(get_user_info_url));
-  InitializeUrlFromConfig(*url_dict, URL_KEY_AND_PTR(token_auth_url));
-  InitializeUrlFromConfig(*url_dict, URL_KEY_AND_PTR(merge_session_url));
-  InitializeUrlFromConfig(*url_dict, URL_KEY_AND_PTR(get_oauth_token_url));
-  InitializeUrlFromConfig(*url_dict,
-                          URL_KEY_AND_PTR(oauth_get_access_token_url));
-  InitializeUrlFromConfig(*url_dict, URL_KEY_AND_PTR(oauth_wrap_bridge_url));
-  InitializeUrlFromConfig(*url_dict, URL_KEY_AND_PTR(oauth_multilogin_url));
-  InitializeUrlFromConfig(*url_dict, URL_KEY_AND_PTR(oauth_user_info_url));
-  InitializeUrlFromConfig(*url_dict, URL_KEY_AND_PTR(oauth_revoke_token_url));
-  InitializeUrlFromConfig(*url_dict, URL_KEY_AND_PTR(oauth1_login_url));
-  InitializeUrlFromConfig(*url_dict, URL_KEY_AND_PTR(list_accounts_url));
-  InitializeUrlFromConfig(*url_dict, URL_KEY_AND_PTR(embedded_signin_url));
-  InitializeUrlFromConfig(*url_dict, URL_KEY_AND_PTR(add_account_url));
-  InitializeUrlFromConfig(*url_dict, URL_KEY_AND_PTR(reauth_url));
-  InitializeUrlFromConfig(*url_dict,
-                          URL_KEY_AND_PTR(get_check_connection_info_url));
-  InitializeUrlFromConfig(*url_dict, URL_KEY_AND_PTR(oauth2_auth_url));
-  InitializeUrlFromConfig(*url_dict, URL_KEY_AND_PTR(oauth2_token_url));
-  InitializeUrlFromConfig(*url_dict, URL_KEY_AND_PTR(oauth2_issue_token_url));
-  InitializeUrlFromConfig(*url_dict, URL_KEY_AND_PTR(oauth2_token_info_url));
-  InitializeUrlFromConfig(*url_dict, URL_KEY_AND_PTR(oauth2_revoke_url));
-  InitializeUrlFromConfig(*url_dict, URL_KEY_AND_PTR(reauth_api_url));
-  InitializeUrlFromConfig(*url_dict, URL_KEY_AND_PTR(gaia_login_form_realm));
-
-  // TODO(crbug.com/1072731): add OAuth Client ID and secret.
+  config->GetURLIfExists(URL_KEY_AND_PTR(google_url));
+  config->GetURLIfExists(URL_KEY_AND_PTR(secure_google_url));
+  config->GetURLIfExists(URL_KEY_AND_PTR(gaia_url));
+  config->GetURLIfExists(URL_KEY_AND_PTR(lso_origin_url));
+  config->GetURLIfExists(URL_KEY_AND_PTR(google_apis_origin_url));
+  config->GetURLIfExists(URL_KEY_AND_PTR(oauth_account_manager_origin_url));
+  config->GetURLIfExists(URL_KEY_AND_PTR(captcha_base_url));
+  config->GetURLIfExists(URL_KEY_AND_PTR(client_login_url));
+  config->GetURLIfExists(URL_KEY_AND_PTR(service_login_url));
+  config->GetURLIfExists(URL_KEY_AND_PTR(embedded_setup_chromeos_url_v2));
+  config->GetURLIfExists(URL_KEY_AND_PTR(embedded_setup_windows_url));
+  config->GetURLIfExists(URL_KEY_AND_PTR(signin_chrome_sync_dice));
+  config->GetURLIfExists(URL_KEY_AND_PTR(signin_chrome_sync_keys_url));
+  config->GetURLIfExists(URL_KEY_AND_PTR(service_login_auth_url));
+  config->GetURLIfExists(URL_KEY_AND_PTR(service_logout_url));
+  config->GetURLIfExists(URL_KEY_AND_PTR(continue_url_for_logout));
+  config->GetURLIfExists(URL_KEY_AND_PTR(get_user_info_url));
+  config->GetURLIfExists(URL_KEY_AND_PTR(token_auth_url));
+  config->GetURLIfExists(URL_KEY_AND_PTR(merge_session_url));
+  config->GetURLIfExists(URL_KEY_AND_PTR(get_oauth_token_url));
+  config->GetURLIfExists(URL_KEY_AND_PTR(oauth_get_access_token_url));
+  config->GetURLIfExists(URL_KEY_AND_PTR(oauth_wrap_bridge_url));
+  config->GetURLIfExists(URL_KEY_AND_PTR(oauth_multilogin_url));
+  config->GetURLIfExists(URL_KEY_AND_PTR(oauth_user_info_url));
+  config->GetURLIfExists(URL_KEY_AND_PTR(oauth_revoke_token_url));
+  config->GetURLIfExists(URL_KEY_AND_PTR(oauth1_login_url));
+  config->GetURLIfExists(URL_KEY_AND_PTR(list_accounts_url));
+  config->GetURLIfExists(URL_KEY_AND_PTR(embedded_signin_url));
+  config->GetURLIfExists(URL_KEY_AND_PTR(add_account_url));
+  config->GetURLIfExists(URL_KEY_AND_PTR(reauth_url));
+  config->GetURLIfExists(URL_KEY_AND_PTR(get_check_connection_info_url));
+  config->GetURLIfExists(URL_KEY_AND_PTR(oauth2_auth_url));
+  config->GetURLIfExists(URL_KEY_AND_PTR(oauth2_token_url));
+  config->GetURLIfExists(URL_KEY_AND_PTR(oauth2_issue_token_url));
+  config->GetURLIfExists(URL_KEY_AND_PTR(oauth2_token_info_url));
+  config->GetURLIfExists(URL_KEY_AND_PTR(oauth2_revoke_url));
+  config->GetURLIfExists(URL_KEY_AND_PTR(reauth_api_url));
+  config->GetURLIfExists(URL_KEY_AND_PTR(gaia_login_form_realm));
 }

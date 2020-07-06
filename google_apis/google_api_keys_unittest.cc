@@ -12,10 +12,15 @@
 
 #include "google_apis/google_api_keys_unittest.h"
 
+#include "base/files/file_path.h"
+#include "base/path_service.h"
 #include "base/stl_util.h"
+#include "base/test/scoped_command_line.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
+#include "google_apis/gaia/gaia_config.h"
 #include "google_apis/gaia/gaia_switches.h"
+#include "google_apis/google_api_keys.h"
 
 // The Win builders fail (with a linker crash) when trying to link
 // unit_tests, and the Android builders complain about multiply
@@ -88,6 +93,17 @@ void GoogleAPIKeysTest::TearDown() {
 
 // This is the default baked-in value for OAuth IDs and secrets.
 static const char kDummyToken[] = "dummytoken";
+
+base::FilePath GetTestFilePath(const std::string& relative_path) {
+  base::FilePath path;
+  if (!base::PathService::Get(base::DIR_SOURCE_ROOT, &path))
+    return base::FilePath();
+  return path.AppendASCII("google_apis")
+      .AppendASCII("test")
+      .AppendASCII("data")
+      .AppendASCII("gaia")
+      .AppendASCII(relative_path);
+}
 
 #if defined(USE_OFFICIAL_GOOGLE_API_KEYS)
 // Test official build behavior, since we are in a checkout where this
@@ -585,5 +601,71 @@ TEST_F(GoogleAPIKeysTest, OverrideAllKeysUsingSetters) {
             testcase::GetOAuth2ClientSecret(testcase::CLIENT_REMOTING_HOST));
 }
 #endif  // defined(OS_IOS)
+
+// Override all keys using both preprocessor defines and gaia config.
+// Config should win.
+namespace override_all_keys_config {
+
+// We start every test by creating a clean environment for the
+// preprocessor defines used in google_api_keys.cc
+#undef DUMMY_API_TOKEN
+#undef GOOGLE_API_KEY
+#undef GOOGLE_CLIENT_ID_MAIN
+#undef GOOGLE_CLIENT_SECRET_MAIN
+#undef GOOGLE_CLIENT_ID_CLOUD_PRINT
+#undef GOOGLE_CLIENT_SECRET_CLOUD_PRINT
+#undef GOOGLE_CLIENT_ID_REMOTING
+#undef GOOGLE_CLIENT_SECRET_REMOTING
+#undef GOOGLE_CLIENT_ID_REMOTING_HOST
+#undef GOOGLE_CLIENT_SECRET_REMOTING_HOST
+#undef GOOGLE_DEFAULT_CLIENT_ID
+#undef GOOGLE_DEFAULT_CLIENT_SECRET
+
+#define GOOGLE_API_KEY "API_KEY"
+#define GOOGLE_CLIENT_ID_MAIN "ID_MAIN"
+#define GOOGLE_CLIENT_SECRET_MAIN "SECRET_MAIN"
+#define GOOGLE_CLIENT_ID_CLOUD_PRINT "ID_CLOUD_PRINT"
+#define GOOGLE_CLIENT_SECRET_CLOUD_PRINT "SECRET_CLOUD_PRINT"
+#define GOOGLE_CLIENT_ID_REMOTING "ID_REMOTING"
+#define GOOGLE_CLIENT_SECRET_REMOTING "SECRET_REMOTING"
+#define GOOGLE_CLIENT_ID_REMOTING_HOST "ID_REMOTING_HOST"
+#define GOOGLE_CLIENT_SECRET_REMOTING_HOST "SECRET_REMOTING_HOST"
+
+// Undef include guard so things get defined again, within this namespace.
+#undef GOOGLE_APIS_GOOGLE_API_KEYS_H_
+#undef GOOGLE_APIS_INTERNAL_GOOGLE_CHROME_API_KEYS_
+#include "google_apis/google_api_keys.cc"
+
+}  // namespace override_all_keys_config
+
+TEST_F(GoogleAPIKeysTest, OverrideAllKeysUsingConfig) {
+  namespace testcase = override_all_keys_config::google_apis;
+
+  base::test::ScopedCommandLine command_line;
+  command_line.GetProcessCommandLine()->AppendSwitchPath(
+      "gaia-config", GetTestFilePath("api_keys.json"));
+  GaiaConfig::ResetInstanceForTesting();
+
+  EXPECT_TRUE(testcase::HasAPIKeyConfigured());
+  EXPECT_TRUE(testcase::HasOAuthClientConfigured());
+
+  EXPECT_EQ("config-API_KEY", testcase::GetAPIKey());
+  EXPECT_EQ("config-ID_MAIN",
+            testcase::GetOAuth2ClientID(testcase::CLIENT_MAIN));
+  EXPECT_EQ("config-SECRET_MAIN",
+            testcase::GetOAuth2ClientSecret(testcase::CLIENT_MAIN));
+  EXPECT_EQ("config-ID_CLOUD_PRINT",
+            testcase::GetOAuth2ClientID(testcase::CLIENT_CLOUD_PRINT));
+  EXPECT_EQ("config-SECRET_CLOUD_PRINT",
+            testcase::GetOAuth2ClientSecret(testcase::CLIENT_CLOUD_PRINT));
+  EXPECT_EQ("config-ID_REMOTING",
+            testcase::GetOAuth2ClientID(testcase::CLIENT_REMOTING));
+  EXPECT_EQ("config-SECRET_REMOTING",
+            testcase::GetOAuth2ClientSecret(testcase::CLIENT_REMOTING));
+  EXPECT_EQ("config-ID_REMOTING_HOST",
+            testcase::GetOAuth2ClientID(testcase::CLIENT_REMOTING_HOST));
+  EXPECT_EQ("config-SECRET_REMOTING_HOST",
+            testcase::GetOAuth2ClientSecret(testcase::CLIENT_REMOTING_HOST));
+}
 
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX)

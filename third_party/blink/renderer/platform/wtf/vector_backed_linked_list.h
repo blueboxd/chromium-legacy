@@ -178,9 +178,10 @@ class VectorBackedLinkedList {
   // Removes all elements in a linked list.
   void clear() {
     RegisterModification();
-    nodes_.clear();
-    // Reinserts anchor so that we can insert elements after this operation.
-    nodes_.push_back(Node(anchor_index_, anchor_index_));
+    // Keep anchor so that we can insert elements after this operation.
+    nodes_.ShrinkCapacity(1);
+    nodes_[anchor_index_].prev_index_ = anchor_index_;
+    nodes_[anchor_index_].next_index_ = anchor_index_;
     free_head_index_ = anchor_index_;
     size_ = 0;
   }

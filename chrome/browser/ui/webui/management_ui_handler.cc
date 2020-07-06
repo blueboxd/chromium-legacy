@@ -41,6 +41,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"
@@ -384,6 +385,11 @@ void ManagementUIHandler::RegisterMessages() {
       "getDeviceReportingInfo",
       base::BindRepeating(&ManagementUIHandler::HandleGetDeviceReportingInfo,
                           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getPluginVmDataCollectionStatus",
+      base::BindRepeating(
+          &ManagementUIHandler::HandleGetPluginVmDataCollectionStatus,
+          base::Unretained(this)));
 #endif  // defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
       "getThreatProtectionInfo",
@@ -941,6 +947,18 @@ void ManagementUIHandler::HandleGetDeviceReportingInfo(
   ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
                             report_sources);
 }
+
+void ManagementUIHandler::HandleGetPluginVmDataCollectionStatus(
+    const base::ListValue* args) {
+  CHECK_EQ(1U, args->GetSize());
+  base::Value plugin_vm_data_collection_enabled(
+      Profile::FromWebUI(web_ui())->GetPrefs()->GetBoolean(
+          plugin_vm::prefs::kPluginVmDataCollectionAllowed));
+  AllowJavascript();
+  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
+                            plugin_vm_data_collection_enabled);
+}
+
 #endif  // defined(OS_CHROMEOS)
 
 void ManagementUIHandler::HandleGetContextualManagedData(
@@ -973,6 +991,15 @@ void ManagementUIHandler::NotifyBrowserReportingInfoUpdated() {
   AddReportingInfo(&report_sources);
   FireWebUIListener("browser-reporting-info-updated", report_sources);
 }
+
+#if defined(OS_CHROMEOS)
+void ManagementUIHandler::NotifyPluginVmDataCollectionUpdated() {
+  FireWebUIListener(
+      "plugin-vm-data-collection-updated",
+      base::Value(Profile::FromWebUI(web_ui())->GetPrefs()->GetBoolean(
+          plugin_vm::prefs::kPluginVmDataCollectionAllowed)));
+}
+#endif  // defined(OS_CHROMEOS)
 
 void ManagementUIHandler::NotifyThreatProtectionInfoUpdated() {
   FireWebUIListener("threat-protection-info-updated",
@@ -1044,6 +1071,14 @@ void ManagementUIHandler::AddObservers() {
       prefs::kSupervisedUserId,
       base::BindRepeating(&ManagementUIHandler::UpdateManagedState,
                           base::Unretained(this)));
+
+#if defined(OS_CHROMEOS)
+  pref_registrar_.Add(
+      plugin_vm::prefs::kPluginVmDataCollectionAllowed,
+      base::BindRepeating(
+          &ManagementUIHandler::NotifyPluginVmDataCollectionUpdated,
+          base::Unretained(this)));
+#endif  // defined(OS_CHROMEOS)
 }
 
 void ManagementUIHandler::RemoveObservers() {

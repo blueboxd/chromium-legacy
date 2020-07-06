@@ -24,11 +24,17 @@
 // https://developers.google.com/console/help/ and
 // https://developers.google.com/console/.
 //
-// The keys must either be provided using preprocessor variables (set
-// via e.g. ~/.gyp/include.gypi). Alternatively, in Chromium builds, they can be
-// overridden at runtime using environment variables of the same name.
-// Environment variable overrides will be ignored for official Google Chrome
-// builds.
+// The keys must either be provided using preprocessor variables (set via e.g.
+// GN args). Alternatively, they can be overridden at runtime using one of the
+// following methods (in priority order):
+// - Command line parameters (only for GOOGLE_CLIENT_ID_MAIN and
+//   GOOGLE_CLIENT_SECRET_MAIN values). The command-line parameters are
+//   --oauth2-client-id and --oauth2-client-secret.
+// - Config file entry of the same name. Path to a config file is set via the
+//   --gaia-config command line parameter. See google_apis/gaia/gaia_config.h
+//   for syntax reference.
+// - Environment variables of the same name. Environment variable overrides will
+//   be ignored for official Google Chrome builds.
 //
 // The names of the preprocessor variables (or environment variables
 // to override them at runtime in Chromium builds) are as follows:
@@ -44,11 +50,6 @@
 // - GOOGLE_CLIENT_SECRET_[client name]
 //   (e.g. GOOGLE_CLIENT_SECRET_CLOUD_PRINT, i.e. one for each item in
 //   the OAuth2Client enumeration below)
-//
-// The GOOGLE_CLIENT_ID_MAIN and GOOGLE_CLIENT_SECRET_MAIN values can
-// also be set via the command line (this overrides any other
-// setting).  The command-line parameters are --oauth2-client-id and
-// --oauth2-client-secret.
 //
 // If some of the parameters mentioned above are not provided,
 // Chromium will still build and run, but services that require them

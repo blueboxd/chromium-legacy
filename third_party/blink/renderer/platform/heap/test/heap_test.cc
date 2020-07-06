@@ -3113,6 +3113,40 @@ TEST_F(HeapTest, HeapWeakLinkedHashSet) {
   OrderedSetHelper<HeapNewLinkedHashSet<WeakMember<IntWrapper>>>(false);
 }
 
+template <typename Set>
+class SetOwner final : public GarbageCollected<SetOwner<Set>> {
+ public:
+  SetOwner() = default;
+  bool operator==(const SetOwner& other) const { return false; }
+
+  void Trace(Visitor* visitor) const {
+    visitor->RegisterWeakCallbackMethod<SetOwner,
+                                        &SetOwner::ProcessCustomWeakness>(this);
+    visitor->Trace(set_);
+  }
+
+  void ProcessCustomWeakness(const LivenessBroker& info) { set_.clear(); }
+
+  Set set_;
+};
+
+template <typename Set>
+void ClearInWeakProcessingHelper() {
+  Persistent<SetOwner<Set>> set = MakeGarbageCollected<SetOwner<Set>>();
+  TestSupportingGC::PreciselyCollectGarbage();
+}
+
+TEST_F(HeapTest, ClearInWeakProcessing) {
+  ClearOutOldGarbage();
+  ClearInWeakProcessingHelper<HeapLinkedHashSet<Member<IntWrapper>>>();
+  ClearOutOldGarbage();
+  ClearInWeakProcessingHelper<HeapLinkedHashSet<WeakMember<IntWrapper>>>();
+  ClearOutOldGarbage();
+  ClearInWeakProcessingHelper<HeapNewLinkedHashSet<Member<IntWrapper>>>();
+  ClearOutOldGarbage();
+  ClearInWeakProcessingHelper<HeapNewLinkedHashSet<WeakMember<IntWrapper>>>();
+}
+
 class ThingWithDestructor {
   DISALLOW_NEW();
 

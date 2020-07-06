@@ -28,18 +28,6 @@ namespace cors {
 
 namespace {
 
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class CompletionStatusMetric {
-  kPassedWhenCorsFlagUnset = 0,
-  kFailedWhenCorsFlagUnset = 1,
-  kPassedWhenCorsFlagSet = 2,
-  kFailedWhenCorsFlagSet = 3,
-  kBlockedByCors = 4,
-
-  kMaxValue = kBlockedByCors,
-};
-
 bool NeedsPreflight(
     const ResourceRequest& request,
     const base::flat_set<std::string>& extra_safelisted_header_names) {
@@ -65,21 +53,6 @@ bool NeedsPreflight(
               request.headers.GetHeaderVector(), request.is_revalidating,
               extra_safelisted_header_names)
               .empty();
-}
-
-void ReportCompletionStatusMetric(bool fetch_cors_flag,
-                                  const URLLoaderCompletionStatus& status) {
-  CompletionStatusMetric metric;
-  if (status.error_code == net::OK) {
-    metric = fetch_cors_flag ? CompletionStatusMetric::kPassedWhenCorsFlagSet
-                             : CompletionStatusMetric::kPassedWhenCorsFlagUnset;
-  } else if (status.cors_error_status) {
-    metric = CompletionStatusMetric::kBlockedByCors;
-  } else {
-    metric = fetch_cors_flag ? CompletionStatusMetric::kFailedWhenCorsFlagSet
-                             : CompletionStatusMetric::kFailedWhenCorsFlagUnset;
-  }
-  UMA_HISTOGRAM_ENUMERATION("Net.Cors.CompletionStatus", metric);
 }
 
 constexpr const char kTimingAllowOrigin[] = "Timing-Allow-Origin";
@@ -564,7 +537,6 @@ void CorsURLLoader::StartNetworkRequest(
 }
 
 void CorsURLLoader::HandleComplete(const URLLoaderCompletionStatus& status) {
-  ReportCompletionStatusMetric(fetch_cors_flag_, status);
   forwarding_client_->OnComplete(status);
   std::move(delete_callback_).Run(this);
   // |this| is deleted here.

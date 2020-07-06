@@ -208,7 +208,7 @@ class DefaultWebClientWorker
   // The callback may be run synchronously or at an arbitrary time later on this
   // thread.
   // Note: Subclasses MUST make sure |on_finished_callback| is executed.
-  virtual void SetAsDefaultImpl(const base::Closure& on_finished_callback) = 0;
+  virtual void SetAsDefaultImpl(base::OnceClosure on_finished_callback) = 0;
 
   // Reports the result for the set-as-default operation.
   void ReportSetDefaultResult(DefaultWebClientState state);
@@ -241,7 +241,7 @@ class DefaultBrowserWorker : public DefaultWebClientWorker {
   DefaultWebClientState CheckIsDefaultImpl() override;
 
   // Set Chrome as the default browser.
-  void SetAsDefaultImpl(const base::Closure& on_finished_callback) override;
+  void SetAsDefaultImpl(base::OnceClosure on_finished_callback) override;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultBrowserWorker);
 };
@@ -265,7 +265,7 @@ class DefaultProtocolClientWorker : public DefaultWebClientWorker {
   DefaultWebClientState CheckIsDefaultImpl() override;
 
   // Set Chrome as the default handler for this protocol.
-  void SetAsDefaultImpl(const base::Closure& on_finished_callback) override;
+  void SetAsDefaultImpl(base::OnceClosure on_finished_callback) override;
 
   std::string protocol_;
 

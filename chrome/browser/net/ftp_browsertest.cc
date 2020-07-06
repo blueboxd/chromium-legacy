@@ -4,6 +4,8 @@
 
 #include <vector>
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
@@ -78,9 +80,9 @@ class FakeDefaultProtocolClientWorker
     return shell_integration::DefaultWebClientState::NOT_DEFAULT;
   }
 
-  void SetAsDefaultImpl(const base::Closure& on_finished_callback) override {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                     on_finished_callback);
+  void SetAsDefaultImpl(base::OnceClosure on_finished_callback) override {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, std::move(on_finished_callback));
   }
 
   DISALLOW_COPY_AND_ASSIGN(FakeDefaultProtocolClientWorker);

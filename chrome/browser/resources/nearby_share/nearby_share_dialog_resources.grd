@@ -29,6 +29,9 @@
       <include name="IDR_NEARBY_SHARE_NEARBY_DISCOVERY_PAGE_JS"
                file="${root_gen_dir}/chrome/browser/resources/nearby_share/nearby_discovery_page.js"
                use_base_dir="false" type="BINDATA"/>
+      <include name="IDR_NEARBY_SHARE_NEARBY_PREVIEW_JS"
+               file="${root_gen_dir}/chrome/browser/resources/nearby_share/nearby_preview.js"
+               use_base_dir="false" type="BINDATA"/>
       <include name="IDR_NEARBY_SHARE_NEARBY_PROGRESS_JS"
                file="${root_gen_dir}/chrome/browser/resources/nearby_share/nearby_progress.js"
                use_base_dir="false" type="BINDATA"/>

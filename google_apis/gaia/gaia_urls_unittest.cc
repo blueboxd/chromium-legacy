@@ -11,6 +11,7 @@
 #include "base/path_service.h"
 #include "base/test/scoped_command_line.h"
 #include "build/build_config.h"
+#include "google_apis/gaia/gaia_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -44,8 +45,10 @@ class GaiaUrlsTest : public ::testing::Test {
 
   // Lazily constructs |gaia_urls_|.
   GaiaUrls* gaia_urls() {
-    if (!gaia_urls_)
+    if (!gaia_urls_) {
+      GaiaConfig::ResetInstanceForTesting();
       gaia_urls_ = new GaiaUrls();
+    }
     return gaia_urls_;
   }
 

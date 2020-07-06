@@ -49,6 +49,8 @@
 
 namespace blink {
 
+class WebAudioDestinationConsumer;
+
 class PLATFORM_EXPORT MediaStreamSource final
     : public GarbageCollected<MediaStreamSource> {
   USING_PRE_FINALIZER(MediaStreamSource, Dispose);
@@ -114,9 +116,12 @@ class PLATFORM_EXPORT MediaStreamSource final
   void SetAudioFormat(size_t number_of_channels, float sample_rate);
   void ConsumeAudio(AudioBus*, size_t number_of_frames);
 
+  // Only used if this is a WebAudio source.
+  // The WebAudioDestinationConsumer is not owned, and has to be disposed of
+  // separately after calling removeAudioConsumer.
   bool RequiresAudioConsumer() const { return requires_consumer_; }
-  void AddAudioConsumer(AudioDestinationConsumer*);
-  bool RemoveAudioConsumer(AudioDestinationConsumer*);
+  void AddAudioConsumer(WebAudioDestinationConsumer*);
+  bool RemoveAudioConsumer(WebAudioDestinationConsumer*);
   const HashSet<AudioDestinationConsumer*>& AudioConsumers() {
     return audio_consumers_;
   }

@@ -347,8 +347,8 @@ bool BrowserViewRenderer::DoUpdateParentDrawData() {
 
   content::SynchronousCompositor* compositor = FindCompositor(id);
   if (compositor) {
-    compositor_->DidPresentCompositorFrames(std::move(new_timing_details),
-                                            frame_token);
+    compositor->DidPresentCompositorFrames(std::move(new_timing_details),
+                                           frame_token);
   }
 
   if (external_draw_constraints_ == new_constraints)

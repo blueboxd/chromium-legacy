@@ -301,7 +301,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  // TODO(crbug.com/1049141): Consider grouping the ctrl-z related code into
+  // TODO(crbug.com/1102294): Consider grouping the ctrl-z related code into
   // a dedicated behavior.
   onUndoKeyBinding_(event) {
     const activeElement = getDeepActiveElement();

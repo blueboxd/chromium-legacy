@@ -170,8 +170,6 @@ bool VulkanSurface::Initialize(VulkanDeviceQueue* device_queue,
     return false;
   }
 
-  image_count_ = std::max(surface_caps.minImageCount, kMinImageCount);
-
   constexpr auto kRequiredUsageFlags =
       VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
   if ((surface_caps.supportedUsageFlags & kRequiredUsageFlags) !=
@@ -283,11 +281,10 @@ bool VulkanSurface::CreateSwapChain(const gfx::Size& size,
   transform_ = transform;
 
   auto swap_chain = std::make_unique<VulkanSwapChain>();
-
   // Create swap chain.
-  DCHECK_EQ(image_count_, std::max(surface_caps.minImageCount, kMinImageCount));
+  auto min_image_count = std::max(surface_caps.minImageCount, kMinImageCount);
   if (!swap_chain->Initialize(device_queue_, surface_, surface_format_,
-                              image_size_, image_count_, image_usage_flags_,
+                              image_size_, min_image_count, image_usage_flags_,
                               vk_transform, enforce_protected_memory_,
                               std::move(swap_chain_))) {
     return false;

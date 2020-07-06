@@ -42,7 +42,7 @@ export class MultiStorePasswordUiEntry extends MultiStoreIdHandler {
    * |contents_| and the id corresponding to its store is not set.
    * @param {!PasswordManagerProxy.PasswordUiEntry} otherEntry
    */
-  // TODO(crbug.com/1049141) Consider asserting frontendId as well.
+  // TODO(crbug.com/1102294) Consider asserting frontendId as well.
   merge(otherEntry) {
     assert(
         (this.isPresentInAccount() && !otherEntry.fromAccountStore) ||

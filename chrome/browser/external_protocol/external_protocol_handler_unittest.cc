@@ -4,6 +4,8 @@
 
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 
+#include <utility>
+
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -36,8 +38,8 @@ class FakeExternalProtocolHandlerWorker
     return os_state_;
   }
 
-  void SetAsDefaultImpl(const base::Closure& on_finished_callback) override {
-    on_finished_callback.Run();
+  void SetAsDefaultImpl(base::OnceClosure on_finished_callback) override {
+    std::move(on_finished_callback).Run();
   }
 
   shell_integration::DefaultWebClientState os_state_;

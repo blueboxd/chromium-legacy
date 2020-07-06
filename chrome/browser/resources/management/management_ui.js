@@ -72,6 +72,9 @@ Polymer({
     /** @private */
     managementOverview_: String,
 
+    /** @private */
+    pluginVmDataCollectionEnabled_: Boolean,
+
     // </if>
 
     /** @private */
@@ -107,6 +110,10 @@ Polymer({
         'browser-reporting-info-updated',
         reportingInfo => this.onBrowserReportingInfoReceived_(reportingInfo));
 
+    this.addWebUIListener(
+        'plugin-vm-data-collection-updated',
+        enabled => this.pluginVmDataCollectionEnabled_ = enabled);
+
     this.addWebUIListener('managed_data_changed', () => {
       this.updateManagedFields_();
     });
@@ -118,6 +125,7 @@ Polymer({
     this.getExtensions_();
     // <if expr="chromeos">
     this.getDeviceReportingInfo_();
+    this.getPluginVmDataCollectionStatus_();
     this.getLocalTrustRootsInfo_();
     // </if>
   },
@@ -194,6 +202,14 @@ Polymer({
     this.browserProxy_.getDeviceReportingInfo().then(reportingInfo => {
       this.deviceReportingInfo_ = reportingInfo;
     });
+  },
+
+  /** @private */
+  getPluginVmDataCollectionStatus_() {
+    this.browserProxy_.getPluginVmDataCollectionStatus().then(
+        pluginVmDataCollectionEnabled => {
+          this.pluginVmDataCollectionEnabled_ = pluginVmDataCollectionEnabled;
+        });
   },
 
   /**

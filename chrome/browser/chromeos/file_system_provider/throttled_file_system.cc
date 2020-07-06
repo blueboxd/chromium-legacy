@@ -83,8 +83,8 @@ AbortCallback ThrottledFileSystem::OpenFile(const base::FilePath& file_path,
           base::Bind(&ThrottledFileSystem::OnOpenFileCompleted,
                      weak_ptr_factory_.GetWeakPtr(), task_token,
                      std::move(callback))));
-  return base::Bind(&ThrottledFileSystem::Abort, weak_ptr_factory_.GetWeakPtr(),
-                    task_token);
+  return base::BindOnce(&ThrottledFileSystem::Abort,
+                        weak_ptr_factory_.GetWeakPtr(), task_token);
 }
 
 AbortCallback ThrottledFileSystem::CloseFile(

@@ -75,7 +75,7 @@ void Queue::MaybeRun() {
   // we need to check if the task is still in the executed collection.
   const auto executed_task_it = executed_.find(task.token);
   if (executed_task_it != executed_.end())
-    executed_task_it->second.abort_callback = abort_callback;
+    executed_task_it->second.abort_callback = std::move(abort_callback);
 }
 
 void Queue::Abort(size_t token) {
@@ -83,10 +83,9 @@ void Queue::Abort(size_t token) {
   const auto it = executed_.find(token);
   if (it != executed_.end()) {
     Task& task = it->second;
-    AbortCallback abort_callback = task.abort_callback;
-    task.abort_callback = AbortCallback();
+    AbortCallback abort_callback = std::move(task.abort_callback);
     DCHECK(!abort_callback.is_null());
-    abort_callback.Run();
+    std::move(abort_callback).Run();
     return;
   }
 

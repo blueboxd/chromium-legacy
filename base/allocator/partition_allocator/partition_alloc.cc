@@ -388,7 +388,8 @@ void* PartitionRoot<thread_safe>::ReallocFlags(int flags,
         &actual_old_size, ptr);
   }
   if (LIKELY(!overridden)) {
-    auto* page = Page::FromPointer(internal::PartitionFreePointerAdjust(ptr));
+    auto* page =
+        Page::FromPointer(internal::PartitionPointerAdjustSubtract(ptr));
     bool success = false;
     {
       internal::ScopedGuard<thread_safe> guard{lock_};

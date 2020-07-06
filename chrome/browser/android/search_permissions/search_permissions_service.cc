@@ -79,8 +79,8 @@ class SearchEngineDelegateImpl
     return url::Origin();
   }
 
-  void SetDSEChangedCallback(const base::Closure& callback) override {
-    dse_changed_callback_ = callback;
+  void SetDSEChangedCallback(base::RepeatingClosure callback) override {
+    dse_changed_callback_ = std::move(callback);
   }
 
   // TemplateURLServiceObserver
@@ -92,7 +92,7 @@ class SearchEngineDelegateImpl
   // Will be null in unittests.
   TemplateURLService* template_url_service_;
 
-  base::Closure dse_changed_callback_;
+  base::RepeatingClosure dse_changed_callback_;
 };
 
 }  // namespace
@@ -154,7 +154,7 @@ SearchPermissionsService::SearchPermissionsService(Profile* profile)
   DCHECK(!profile_->IsOffTheRecord());
 
   delegate_.reset(new SearchEngineDelegateImpl(profile_));
-  delegate_->SetDSEChangedCallback(base::Bind(
+  delegate_->SetDSEChangedCallback(base::BindRepeating(
       &SearchPermissionsService::OnDSEChanged, base::Unretained(this)));
 
   // Under normal circumstances we wouldn't need to call OnDSEChanged here, just
@@ -488,6 +488,6 @@ void SearchPermissionsService::SetContentSetting(const GURL& origin,
 void SearchPermissionsService::SetSearchEngineDelegateForTest(
     std::unique_ptr<SearchEngineDelegate> delegate) {
   delegate_ = std::move(delegate);
-  delegate_->SetDSEChangedCallback(base::Bind(
+  delegate_->SetDSEChangedCallback(base::BindRepeating(
       &SearchPermissionsService::OnDSEChanged, base::Unretained(this)));
 }

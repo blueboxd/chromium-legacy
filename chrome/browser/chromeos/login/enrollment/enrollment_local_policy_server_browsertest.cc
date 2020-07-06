@@ -861,23 +861,6 @@ const char kTestAppId[] = "ggaeimfdpnmlhdhpcikgoblffmkckdmn";
 const char kTestAppFile[] = "ggaeimfdpnmlhdhpcikgoblffmkckdmn.crx";
 const char kTestAppVersion[] = "1.0.0";
 
-class ScopedDeviceSettings {
- public:
-  ScopedDeviceSettings() : settings_helper_(false) {
-    settings_helper_.ReplaceDeviceSettingsProviderWithStub();
-    owner_settings_service_ = settings_helper_.CreateOwnerSettingsService(
-        ProfileManager::GetPrimaryUserProfile());
-  }
-
-  FakeOwnerSettingsService* owner_settings_service() {
-    return owner_settings_service_.get();
-  }
-
- private:
-  ScopedCrosSettingsTestHelper settings_helper_;
-  std::unique_ptr<FakeOwnerSettingsService> owner_settings_service_;
-};
-
 }  // namespace
 
 class KioskEnrollmentTest : public EnrollmentLocalPolicyServerBase {

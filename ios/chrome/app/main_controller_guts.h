@@ -27,9 +27,9 @@ class ChromeBrowserState;
 @property(nonatomic, strong) CrashRestoreHelper* restoreHelper;
 
 - (ChromeBrowserState*)mainBrowserState;
-- (UIWindow*)window;
+
+// Only for iOS 12 compat.
 - (NSDictionary*)launchOptions;
-- (AppState*)appState;
 
 - (void)removeBrowsingDataForBrowserState:(ChromeBrowserState*)browserState
                                timePeriod:(browsing_data::TimePeriod)timePeriod

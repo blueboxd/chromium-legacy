@@ -77,7 +77,9 @@ class CORE_EXPORT StyleResolverState {
     return element_context_.ParentNode();
   }
   const ComputedStyle* RootElementStyle() const {
-    return element_context_.RootElementStyle();
+    if (const auto* root_element_style = element_context_.RootElementStyle())
+      return root_element_style;
+    return Style();
   }
   EInsideLink ElementLinkState() const {
     return element_context_.ElementLinkState();

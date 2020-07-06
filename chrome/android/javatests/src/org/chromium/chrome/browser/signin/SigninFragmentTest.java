@@ -13,6 +13,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import android.accounts.Account;
+import android.os.Build.VERSION_CODES;
 import android.support.test.InstrumentationRegistry;
 import android.text.Spanned;
 import android.text.style.ClickableSpan;
@@ -33,6 +34,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Matchers;
 import org.chromium.chrome.R;
@@ -142,7 +144,10 @@ public class SigninFragmentTest {
 
     @Test
     @LargeTest
-    public void testClickingSettingsDoesNotSetFirstSetupComplete() {
+    @DisableIf.Build(sdk_is_greater_than = VERSION_CODES.N_MR1, sdk_is_less_than = VERSION_CODES.P,
+            message = "Flaky on Oreo https://crbug.com/1102296")
+    public void
+    testClickingSettingsDoesNotSetFirstSetupComplete() {
         Account account = mSyncTestRule.addTestAccount();
         mSigninActivity = ActivityUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), SigninActivity.class, () -> {

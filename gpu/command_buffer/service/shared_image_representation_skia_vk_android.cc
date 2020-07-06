@@ -27,6 +27,7 @@
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
+#include "ui/gl/gl_utils.h"
 
 namespace gpu {
 
@@ -35,9 +36,11 @@ SharedImageRepresentationSkiaVkAndroid::SharedImageRepresentationSkiaVkAndroid(
     SharedImageBackingAndroid* backing,
     scoped_refptr<SharedContextState> context_state,
     std::unique_ptr<VulkanImage> vulkan_image,
+    base::ScopedFD init_read_fence,
     MemoryTypeTracker* tracker)
     : SharedImageRepresentationSkia(manager, backing, tracker),
       vulkan_image_(std::move(vulkan_image)),
+      init_read_fence_(std::move(init_read_fence)),
       context_state_(std::move(context_state)) {
   DCHECK(vulkan_image_);
   DCHECK(context_state_);
@@ -68,7 +71,8 @@ sk_sp<SkSurface> SharedImageRepresentationSkiaVkAndroid::BeginWriteAccess(
     std::vector<GrBackendSemaphore>* end_semaphores) {
   DCHECK_EQ(mode_, RepresentationAccessMode::kNone);
 
-  if (!BeginAccess(false /* readonly */, begin_semaphores, end_semaphores))
+  if (!BeginAccess(false /* readonly */, begin_semaphores, end_semaphores,
+                   base::ScopedFD()))
     return nullptr;
 
   auto* gr_context = context_state_->gr_context();
@@ -117,7 +121,8 @@ SharedImageRepresentationSkiaVkAndroid::BeginReadAccess(
   DCHECK_EQ(mode_, RepresentationAccessMode::kNone);
   DCHECK(!surface_);
 
-  if (!BeginAccess(true /* readonly */, begin_semaphores, end_semaphores))
+  if (!BeginAccess(true /* readonly */, begin_semaphores, end_semaphores,
+                   std::move(init_read_fence_)))
     return nullptr;
   return promise_texture_;
 }
@@ -155,7 +160,8 @@ VkQueue SharedImageRepresentationSkiaVkAndroid::vk_queue() {
 bool SharedImageRepresentationSkiaVkAndroid::BeginAccess(
     bool readonly,
     std::vector<GrBackendSemaphore>* begin_semaphores,
-    std::vector<GrBackendSemaphore>* end_semaphores) {
+    std::vector<GrBackendSemaphore>* end_semaphores,
+    base::ScopedFD init_read_fence) {
   DCHECK(begin_semaphores);
   DCHECK(end_semaphores);
   DCHECK(end_access_semaphore_ == VK_NULL_HANDLE);
@@ -170,6 +176,7 @@ bool SharedImageRepresentationSkiaVkAndroid::BeginAccess(
       return false;
   }
 
+  sync_fd = gl::MergeFDs(std::move(sync_fd), std::move(init_read_fence));
   VkSemaphore begin_access_semaphore = VK_NULL_HANDLE;
   if (sync_fd.is_valid()) {
     begin_access_semaphore = vk_implementation()->ImportSemaphoreHandle(

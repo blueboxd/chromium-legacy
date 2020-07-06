@@ -16,11 +16,13 @@ namespace field_formatter {
 
 // Replaces all placeholder occurrences of the form ${key} in |input| with the
 // corresponding value in |mappings|, where |key| is an arbitrary string that
-// does not contain curly braces. Fails if any of the found placeholders is not
-// in |mappings|.
+// does not contain curly braces. If |strict| is true, this will fail if any of
+// the found placeholders is not in |mappings|. Otherwise, placeholders other
+// than those from |mappings| will be left unchanged.
 base::Optional<std::string> FormatString(
     const std::string& input,
-    const std::map<std::string, std::string>& mappings);
+    const std::map<std::string, std::string>& mappings,
+    bool strict = true);
 
 // Creates a lookup map for all non-empty autofill and custom
 // AutofillFormatProto::AutofillAssistantCustomField field types in

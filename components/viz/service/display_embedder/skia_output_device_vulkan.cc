@@ -271,7 +271,6 @@ bool SkiaOutputDeviceVulkan::Initialize() {
 
   capabilities_.uses_default_gl_framebuffer = false;
   capabilities_.max_frames_pending = 1;
-  capabilities_.number_of_buffers = vulkan_surface_->image_count();
   // Vulkan FIFO swap chain should return vk images in presenting order, so set
   // preserve_buffer_content & supports_post_sub_buffer to true to let
   // SkiaOutputBufferImpl to manager damages.
@@ -279,6 +278,11 @@ bool SkiaOutputDeviceVulkan::Initialize() {
   capabilities_.output_surface_origin = gfx::SurfaceOrigin::kTopLeft;
   capabilities_.supports_post_sub_buffer = true;
   capabilities_.supports_pre_transform = true;
+  // We don't know the number of buffers until the VulkanSwapChain is
+  // initialized, so set it to 0. Since |damage_area_from_skia_output_device| is
+  // assigned to true, so |number_of_buffers| will not be used for tracking
+  // framebuffer damages.
+  capabilities_.number_of_buffers = 0;
   capabilities_.damage_area_from_skia_output_device = true;
 
   const auto surface_format = vulkan_surface_->surface_format().format;
@@ -308,10 +312,11 @@ bool SkiaOutputDeviceVulkan::RecreateSwapChain(
     for (const auto& sk_surface_size_pair : sk_surface_size_pairs_) {
       memory_type_tracker_->TrackMemFree(sk_surface_size_pair.bytes_allocated);
     }
+    auto num_images = vulkan_surface_->swap_chain()->num_images();
     sk_surface_size_pairs_.clear();
-    sk_surface_size_pairs_.resize(vulkan_surface_->swap_chain()->num_images());
+    sk_surface_size_pairs_.resize(num_images);
     color_space_ = std::move(color_space);
-    damage_of_images_.resize(vulkan_surface_->image_count());
+    damage_of_images_.resize(num_images);
     for (auto& damage : damage_of_images_)
       damage = gfx::Rect(vulkan_surface_->image_size());
     is_new_swap_chain_ = true;

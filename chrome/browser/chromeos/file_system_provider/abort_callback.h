@@ -11,7 +11,7 @@
 namespace chromeos {
 namespace file_system_provider {
 
-typedef base::Closure AbortCallback;
+typedef base::OnceClosure AbortCallback;
 
 }  // namespace file_system_provider
 }  // namespace chromeos

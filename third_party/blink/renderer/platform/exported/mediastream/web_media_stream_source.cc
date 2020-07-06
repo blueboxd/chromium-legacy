@@ -35,11 +35,9 @@
 
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/renderer/platform/audio/audio_bus.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
-#include "third_party/blink/renderer/platform/mediastream/webaudio_destination_consumer.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -144,86 +142,6 @@ void WebMediaStreamSource::SetCapabilities(
     const WebMediaStreamSource::Capabilities& capabilities) {
   DCHECK(!private_.IsNull());
   private_->SetCapabilities(capabilities);
-}
-
-bool WebMediaStreamSource::RequiresAudioConsumer() const {
-  DCHECK(!private_.IsNull());
-  return private_->RequiresAudioConsumer();
-}
-
-class ConsumerWrapper final : public AudioDestinationConsumer {
-  USING_FAST_MALLOC(ConsumerWrapper);
-
- public:
-  static ConsumerWrapper* Create(WebAudioDestinationConsumer* consumer) {
-    return new ConsumerWrapper(consumer);
-  }
-
-  void SetFormat(size_t number_of_channels, float sample_rate) override;
-  void ConsumeAudio(AudioBus*, size_t number_of_frames) override;
-
-  WebAudioDestinationConsumer* Consumer() { return consumer_; }
-
- private:
-  explicit ConsumerWrapper(WebAudioDestinationConsumer* consumer)
-      : consumer_(consumer) {
-    // To avoid reallocation in ConsumeAudio, reserve initial capacity for most
-    // common known layouts.
-    bus_vector_.ReserveInitialCapacity(8);
-  }
-
-  // m_consumer is not owned by this class.
-  WebAudioDestinationConsumer* consumer_;
-  // bus_vector_ must only be used in ConsumeAudio. The only reason it's a
-  // member variable is to not have to reallocate it for each call.
-  Vector<const float*> bus_vector_;
-};
-
-void ConsumerWrapper::SetFormat(size_t number_of_channels, float sample_rate) {
-  consumer_->SetFormat(number_of_channels, sample_rate);
-}
-
-void ConsumerWrapper::ConsumeAudio(AudioBus* bus, size_t number_of_frames) {
-  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("mediastream"),
-               "ConsumerWrapper::ConsumeAudio");
-
-  if (!bus)
-    return;
-
-  // Wrap AudioBus.
-  size_t number_of_channels = bus->NumberOfChannels();
-  if (bus_vector_.size() != number_of_channels) {
-    bus_vector_.resize(number_of_channels);
-  }
-  for (size_t i = 0; i < number_of_channels; ++i)
-    bus_vector_[i] = bus->Channel(i)->Data();
-
-  consumer_->ConsumeAudio(bus_vector_, number_of_frames);
-}
-
-void WebMediaStreamSource::AddAudioConsumer(
-    WebAudioDestinationConsumer* consumer) {
-  DCHECK(IsMainThread());
-  DCHECK(!private_.IsNull() && consumer);
-
-  private_->AddAudioConsumer(ConsumerWrapper::Create(consumer));
-}
-
-bool WebMediaStreamSource::RemoveAudioConsumer(
-    WebAudioDestinationConsumer* consumer) {
-  DCHECK(IsMainThread());
-  DCHECK(!private_.IsNull() && consumer);
-
-  const HashSet<AudioDestinationConsumer*>& consumers =
-      private_->AudioConsumers();
-  for (AudioDestinationConsumer* it : consumers) {
-    ConsumerWrapper* wrapper = static_cast<ConsumerWrapper*>(it);
-    if (wrapper->Consumer() == consumer) {
-      private_->RemoveAudioConsumer(wrapper);
-      return true;
-    }
-  }
-  return false;
 }
 
 }  // namespace blink

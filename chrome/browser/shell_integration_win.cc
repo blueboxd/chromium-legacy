@@ -294,9 +294,9 @@ class DefaultBrowserActionRecorder : public SettingsAppMonitor::Delegate {
 // a closure to keep the former alive until the time comes to run the latter.
 void OnSettingsAppFinished(
     std::unique_ptr<DefaultBrowserActionRecorder> recorder,
-    const base::Closure& on_finished_callback) {
+    base::OnceClosure on_finished_callback) {
   recorder.reset();
-  on_finished_callback.Run();
+  std::move(on_finished_callback).Run();
 }
 
 // There is no way to make sure the user is done with the system settings, but a
@@ -315,9 +315,10 @@ class OpenSystemSettingsHelper {
   // Takes in a null-terminated array of |protocols| whose registry keys must be
   // watched. The array must contain at least one element.
   static void Begin(const wchar_t* const protocols[],
-                    const base::Closure& on_finished_callback) {
+                    base::OnceClosure on_finished_callback) {
     delete instance_;
-    instance_ = new OpenSystemSettingsHelper(protocols, on_finished_callback);
+    instance_ = new OpenSystemSettingsHelper(protocols,
+                                             std::move(on_finished_callback));
   }
 
  private:
@@ -326,9 +327,9 @@ class OpenSystemSettingsHelper {
   enum ConcludeReason { REGISTRY_WATCHER, TIMEOUT, NUM_CONCLUDE_REASON_TYPES };
 
   OpenSystemSettingsHelper(const wchar_t* const protocols[],
-                           const base::Closure& on_finished_callback)
+                           base::OnceClosure on_finished_callback)
       : scoped_user_protocol_entry_(protocols[0]),
-        on_finished_callback_(on_finished_callback) {
+        on_finished_callback_(std::move(on_finished_callback)) {
     static const wchar_t kUrlAssociationFormat[] =
         L"SOFTWARE\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\"
         L"%ls\\UserChoice";
@@ -378,7 +379,7 @@ class OpenSystemSettingsHelper {
     UMA_HISTOGRAM_ENUMERATION(
         "DefaultBrowser.SettingsInteraction.ConcludeReason", conclude_reason,
         NUM_CONCLUDE_REASON_TYPES);
-    on_finished_callback_.Run();
+    std::move(on_finished_callback_).Run();
     delete instance_;
     instance_ = nullptr;
   }
@@ -407,7 +408,7 @@ class OpenSystemSettingsHelper {
 
   // The function to call when the interaction with the system settings is
   // finished.
-  base::Closure on_finished_callback_;
+  base::OnceClosure on_finished_callback_;
 
   // The number of time the registry key watchers must fire.
   int registry_watcher_count_ = 0;
@@ -650,11 +651,11 @@ bool SetAsDefaultBrowserUsingIntentPicker() {
 }
 
 void SetAsDefaultBrowserUsingSystemSettings(
-    const base::Closure& on_finished_callback) {
+    base::OnceClosure on_finished_callback) {
   base::FilePath chrome_exe;
   if (!base::PathService::Get(base::FILE_EXE, &chrome_exe)) {
     NOTREACHED() << "Error getting app exe path";
-    on_finished_callback.Run();
+    std::move(on_finished_callback).Run();
     return;
   }
 
@@ -670,8 +671,9 @@ void SetAsDefaultBrowserUsingSystemSettings(
   // interaction.
   static const wchar_t* const kProtocols[] = {L"http", L"https", nullptr};
   OpenSystemSettingsHelper::Begin(
-      kProtocols, base::Bind(&OnSettingsAppFinished, base::Passed(&recorder),
-                             on_finished_callback));
+      kProtocols,
+      base::BindOnce(&OnSettingsAppFinished, base::Passed(&recorder),
+                     std::move(on_finished_callback)));
 }
 
 bool SetAsDefaultProtocolClientUsingIntentPicker(const std::string& protocol) {
@@ -697,18 +699,18 @@ bool SetAsDefaultProtocolClientUsingIntentPicker(const std::string& protocol) {
 
 void SetAsDefaultProtocolClientUsingSystemSettings(
     const std::string& protocol,
-    const base::Closure& on_finished_callback) {
+    base::OnceClosure on_finished_callback) {
   base::FilePath chrome_exe;
   if (!base::PathService::Get(base::FILE_EXE, &chrome_exe)) {
     NOTREACHED() << "Error getting app exe path";
-    on_finished_callback.Run();
+    std::move(on_finished_callback).Run();
     return;
   }
 
   // The helper manages its own lifetime.
   base::string16 wprotocol(base::UTF8ToUTF16(protocol));
   const wchar_t* const kProtocols[] = {wprotocol.c_str(), nullptr};
-  OpenSystemSettingsHelper::Begin(kProtocols, on_finished_callback);
+  OpenSystemSettingsHelper::Begin(kProtocols, std::move(on_finished_callback));
 
   ShellUtil::ShowMakeChromeDefaultProtocolClientSystemUI(chrome_exe, wprotocol);
 }

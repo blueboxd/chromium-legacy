@@ -7,6 +7,7 @@
 #import <AuthenticationServices/AuthenticationServices.h>
 
 #include "base/check.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/scoped_observer.h"
 #include "base/strings/sys_string_conversions.h"
@@ -33,6 +34,34 @@ using autofill::PasswordForm;
 using password_manager::PasswordStore;
 using password_manager::PasswordStoreChange;
 using password_manager::PasswordStoreChangeList;
+
+// ASCredentialIdentityStoreError enum to report UMA metrics. Must be in sync
+// with iOSCredentialIdentityStoreErrorForReporting in
+// tools/metrics/histograms/enums.xml.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class CredentialIdentityStoreErrorForReporting {
+  kUnknownError,
+  kInternal,
+  kDisabled,
+  kBusy,
+  kMaxValue = kBusy
+};
+
+// Converts a UIKit interface style to an interface style for reporting.
+CredentialIdentityStoreErrorForReporting
+ErrorForReportingForASCredentialIdentityStoreErrorCode(
+    ASCredentialIdentityStoreErrorCode errorCode) {
+  switch (errorCode) {
+    case ASCredentialIdentityStoreErrorCodeInternalError:
+      return CredentialIdentityStoreErrorForReporting::kInternal;
+    case ASCredentialIdentityStoreErrorCodeStoreDisabled:
+      return CredentialIdentityStoreErrorForReporting::kDisabled;
+    case ASCredentialIdentityStoreErrorCodeStoreBusy:
+      return CredentialIdentityStoreErrorForReporting::kBusy;
+  }
+  return CredentialIdentityStoreErrorForReporting::kUnknownError;
+}
 
 BOOL ShouldSyncAllCredentials() {
   NSUserDefaults* user_defaults = [NSUserDefaults standardUserDefaults];
@@ -65,9 +94,18 @@ void SyncASIdentityStore(ArchivableCredentialStore* credential_store) {
                                        initWithCredential:credential]];
       }
       auto replaceCompletion = ^(BOOL success, NSError* error) {
-        DCHECK(success) << "Failed to update store, error description: "
-                        << base::SysNSStringToUTF8(error.localizedDescription)
-                        << ", error code: " << error.code;
+        // Sometimes ASCredentialIdentityStore fails. Log this to measure the
+        // impact of these failures and move on.
+        if (!success) {
+          ASCredentialIdentityStoreErrorCode code =
+              static_cast<ASCredentialIdentityStoreErrorCode>(error.code);
+          CredentialIdentityStoreErrorForReporting errorForReporting =
+              ErrorForReportingForASCredentialIdentityStoreErrorCode(code);
+          base::UmaHistogramEnumeration(
+              "IOS.CredentialExtension.Service.Error."
+              "ReplaceCredentialIdentitiesWithIdentities",
+              errorForReporting);
+        }
         NSUserDefaults* user_defaults = [NSUserDefaults standardUserDefaults];
         NSString* key =
             kUserDefaultsCredentialProviderASIdentityStoreSyncCompleted;

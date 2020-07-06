@@ -4,17 +4,25 @@
 
 #include "chrome/browser/chromeos/login/test/kiosk_test_helpers.h"
 
+#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/app_mode/web_app/web_kiosk_app_manager.h"
+#include "chrome/browser/chromeos/ownership/fake_owner_settings_service.h"
+#include "chrome/browser/profiles/profile_manager.h"
+
 namespace chromeos {
 
 KioskSessionInitializedWaiter::KioskSessionInitializedWaiter() {
   scoped_observer_.Add(KioskAppManager::Get());
+  scoped_observer_.Add(WebKioskAppManager::Get());
 }
 
 KioskSessionInitializedWaiter::~KioskSessionInitializedWaiter() = default;
 
 void KioskSessionInitializedWaiter::Wait() {
-  if (KioskAppManager::Get()->app_session())
+  if (KioskAppManager::Get()->app_session() ||
+      WebKioskAppManager::Get()->app_session()) {
     return;
+  }
 
   run_loop_.Run();
 }
@@ -22,5 +30,13 @@ void KioskSessionInitializedWaiter::Wait() {
 void KioskSessionInitializedWaiter::OnKioskSessionInitialized() {
   run_loop_.Quit();
 }
+
+ScopedDeviceSettings::ScopedDeviceSettings() : settings_helper_(false) {
+  settings_helper_.ReplaceDeviceSettingsProviderWithStub();
+  owner_settings_service_ = settings_helper_.CreateOwnerSettingsService(
+      ProfileManager::GetPrimaryUserProfile());
+}
+
+ScopedDeviceSettings::~ScopedDeviceSettings() = default;
 
 }  // namespace chromeos

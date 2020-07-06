@@ -2590,47 +2590,6 @@ void NavigationControllerImpl::NavigateToExistingPendingEntry(
   FrameTreeNode* root = delegate_->GetFrameTree()->root();
   int nav_entry_id = pending_entry_->GetUniqueID();
 
-  // BackForwardCache:
-  // Navigate immediately if the document is in the BackForwardCache.
-  if (back_forward_cache_.GetEntry(nav_entry_id)) {
-    TRACE_EVENT0("navigation", "BackForwardCache_CreateNavigationRequest");
-    DCHECK_EQ(reload_type, ReloadType::NONE);
-    auto navigation_request = CreateNavigationRequestFromEntry(
-        root, pending_entry_, pending_entry_->GetFrameEntry(root),
-        ReloadType::NONE, false /* is_same_document_history_load */,
-        false /* is_history_navigation_in_new_child */);
-    root->navigator().Navigate(std::move(navigation_request), ReloadType::NONE,
-                               RestoreType::NONE);
-
-    return;
-  }
-
-  // History navigation might try to reuse a specific BrowsingInstance, already
-  // used by a page in the cache. To avoid having two different main frames that
-  // live in the same BrowsingInstance, evict the all pages with this
-  // BrowsingInstance from the cache.
-  //
-  // For example, take the following scenario:
-  //
-  // A1 = Some page on a.com
-  // A2 = Some other page on a.com
-  // B3 = An uncacheable page on b.com
-  //
-  // Then the following navigations occur:
-  // A1->A2->B3->A1
-  // On the navigation from B3 to A1, A2 will remain in the cache (B3 doesn't
-  // take its place) and A1 will be created in the same BrowsingInstance (and
-  // SiteInstance), as A2.
-  //
-  // If we didn't do anything, both A1 and A2 would remain alive in the same
-  // BrowsingInstance/SiteInstance, which is unsupported by
-  // RenderFrameHostManager::CommitPending(). To avoid this conundrum, we evict
-  // A2 from the cache.
-  if (pending_entry_->site_instance()) {
-    back_forward_cache_.EvictFramesInRelatedSiteInstances(
-        pending_entry_->site_instance());
-  }
-
   // If we were navigating to a slow-to-commit page, and the user performs
   // a session history navigation to the last committed page, RenderViewHost
   // will force the throbber to start, but WebKit will essentially ignore the
@@ -2723,6 +2682,47 @@ void NavigationControllerImpl::NavigateToExistingPendingEntry(
       DiscardPendingEntry(false);
       return;
     }
+  }
+
+  // BackForwardCache:
+  // Navigate immediately if the document is in the BackForwardCache.
+  if (back_forward_cache_.GetEntry(nav_entry_id)) {
+    TRACE_EVENT0("navigation", "BackForwardCache_CreateNavigationRequest");
+    DCHECK_EQ(reload_type, ReloadType::NONE);
+    auto navigation_request = CreateNavigationRequestFromEntry(
+        root, pending_entry_, pending_entry_->GetFrameEntry(root),
+        ReloadType::NONE, false /* is_same_document_history_load */,
+        false /* is_history_navigation_in_new_child */);
+    root->navigator().Navigate(std::move(navigation_request), ReloadType::NONE,
+                               RestoreType::NONE);
+
+    return;
+  }
+
+  // History navigation might try to reuse a specific BrowsingInstance, already
+  // used by a page in the cache. To avoid having two different main frames that
+  // live in the same BrowsingInstance, evict the all pages with this
+  // BrowsingInstance from the cache.
+  //
+  // For example, take the following scenario:
+  //
+  // A1 = Some page on a.com
+  // A2 = Some other page on a.com
+  // B3 = An uncacheable page on b.com
+  //
+  // Then the following navigations occur:
+  // A1->A2->B3->A1
+  // On the navigation from B3 to A1, A2 will remain in the cache (B3 doesn't
+  // take its place) and A1 will be created in the same BrowsingInstance (and
+  // SiteInstance), as A2.
+  //
+  // If we didn't do anything, both A1 and A2 would remain alive in the same
+  // BrowsingInstance/SiteInstance, which is unsupported by
+  // RenderFrameHostManager::CommitPending(). To avoid this conundrum, we evict
+  // A2 from the cache.
+  if (pending_entry_->site_instance()) {
+    back_forward_cache_.EvictFramesInRelatedSiteInstances(
+        pending_entry_->site_instance());
   }
 
   // This call does not support re-entrancy.  See http://crbug.com/347742.

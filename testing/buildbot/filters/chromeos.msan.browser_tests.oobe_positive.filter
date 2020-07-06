@@ -113,6 +113,7 @@ TermsOfServiceScreenTest.*
 UpdateRequiredScreenTest.*
 UpdateScreenTest.*
 UserCloudExternalDataManagerTest.*
+WebKioskTest.*
 WebviewClientCertsLoginTest.*
 WebviewClientCertsLoginTestBase.*
 WebviewClientCertsTokenLoadingLoginTest.*

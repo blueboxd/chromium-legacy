@@ -35,7 +35,7 @@ class ScopedFileOpener::Runner
   void AbortOrClose() {
     if (!open_completed_) {
       aborting_requested_ = true;
-      abort_callback_.Run();
+      std::move(abort_callback_).Run();
       return;
     }
 

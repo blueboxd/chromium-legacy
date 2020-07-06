@@ -50,8 +50,13 @@ ALWAYS_INLINE PartitionTag* PartitionTagPointer(void* ptr) {
                                          kPartitionTagOffset);
 }
 
-ALWAYS_INLINE void* PartitionTagFreePointerAdjust(void* ptr) {
+ALWAYS_INLINE void* PartitionTagPointerAdjustSubtract(void* ptr) {
   return reinterpret_cast<void*>(reinterpret_cast<char*>(ptr) -
+                                 kPartitionTagSize);
+}
+
+ALWAYS_INLINE void* PartitionTagPointerAdjustAdd(void* ptr) {
+  return reinterpret_cast<void*>(reinterpret_cast<char*>(ptr) +
                                  kPartitionTagSize);
 }
 
@@ -81,7 +86,11 @@ ALWAYS_INLINE PartitionTag* PartitionTagPointer(void* ptr) {
   return nullptr;
 }
 
-ALWAYS_INLINE void* PartitionTagFreePointerAdjust(void* ptr) {
+ALWAYS_INLINE void* PartitionTagPointerAdjustSubtract(void* ptr) {
+  return ptr;
+}
+
+ALWAYS_INLINE void* PartitionTagPointerAdjustAdd(void* ptr) {
   return ptr;
 }
 

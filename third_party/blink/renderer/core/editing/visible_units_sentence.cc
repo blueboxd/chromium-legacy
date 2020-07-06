@@ -288,6 +288,8 @@ VisiblePosition PreviousSentencePosition(const VisiblePosition& c) {
 // ----
 
 PositionInFlatTree StartOfSentencePosition(const PositionInFlatTree& position) {
+  if (position.IsNull())
+    return position;
   const PositionInFlatTree result = StartOfSentenceInternal(position);
   return AdjustBackwardPositionToAvoidCrossingEditingBoundaries(
              PositionInFlatTreeWithAffinity(result), position)

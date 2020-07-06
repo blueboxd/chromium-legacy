@@ -1,2 +1,101 @@
-<h1>Nearby Confirmation Page</h1>
-<nearby-progress device-name="Pixel 2"></nearby-progress>
+<style>
+  #actions {
+    margin-inline-start: auto;
+    margin-top: auto;
+  }
+
+  #add-contacts {
+    margin-top: 32px;
+  }
+
+  #add-contacts-label {
+    color: rgb(32, 33, 36);
+    line-height: 138%;
+  }
+
+  #add-contacts-label-secondary {
+    color: rgb(95, 99, 104);
+    line-height: 138%;
+  }
+
+  #horizontal-line {
+    border-top: 1px dashed rgba(151, 151, 151, 0.74);
+    color: rgba(0, 0, 0, 0.4);
+    flex-grow: 1;
+    font-size: 90%;
+    letter-spacing: 0.3px;
+    margin-inline-end: -15px;
+    margin-top: 55px;
+    padding-top: 6px;
+    text-align: center;
+  }
+
+  nearby-preview {
+    margin-inline-end: 10px;
+    margin-inline-start: 10px;
+  }
+
+  nearby-progress {
+    margin-top: 15px;
+    width: 126px;
+  }
+
+  #page-content {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 27px 32px 25px 37px;
+  }
+
+  #process-row {
+    display: flex;
+    margin-top: 48px;
+  }
+
+  #subtitle {
+    color: rgb(32, 33, 36);
+    font-size: 100%;
+    font-weight: normal;
+    line-height: 154%;
+    margin: 0;
+  }
+
+  #title {
+    color: rgb(32, 33, 36);
+    font-size: 123%;
+    font-weight: normal;
+    letter-spacing: 0.27px;
+    line-height: 150%;
+    margin: 0;
+  }
+</style>
+
+<div id="page-content">
+  <h1 id="title">Share with this device...</h1>
+  <h2 id="subtitle">Your Chromebook is ready to share</h2>
+
+  <div id="process-row">
+    <nearby-preview title="Doggo.jpg"></nearby-preview>
+    <div id="horizontal-line">Secure connection ID: A392</div>
+    <nearby-progress device-name="Pixel 2"></nearby-progress>
+  </div>
+
+  <cr-checkbox id="add-contacts">
+    <div id="add-contacts-label">
+      Add Richard to contacts
+    </div>
+    <div id="add-contacts-label-secondary">
+      Adding this contact will remember the next time you share
+    </div>
+  </cr-checkbox>
+
+  <div id="actions">
+    <cr-button class="cancel-button">
+      Cancel
+    </cr-button>
+    <cr-button class="action-button">
+      Confirm
+    </cr-button>
+  </div>
+</div>

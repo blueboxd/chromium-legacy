@@ -45,7 +45,6 @@
 namespace blink {
 
 class MediaStreamSource;
-class WebAudioDestinationConsumer;
 class WebPlatformMediaStreamSource;
 class WebString;
 
@@ -122,13 +121,6 @@ class WebMediaStreamSource {
       bool noise_supression);
 
   BLINK_PLATFORM_EXPORT void SetCapabilities(const Capabilities&);
-
-  // Only used if if this is a WebAudio source.
-  // The WebAudioDestinationConsumer is not owned, and has to be disposed of
-  // separately after calling removeAudioConsumer.
-  BLINK_PLATFORM_EXPORT bool RequiresAudioConsumer() const;
-  BLINK_PLATFORM_EXPORT void AddAudioConsumer(WebAudioDestinationConsumer*);
-  BLINK_PLATFORM_EXPORT bool RemoveAudioConsumer(WebAudioDestinationConsumer*);
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT WebMediaStreamSource(MediaStreamSource*);

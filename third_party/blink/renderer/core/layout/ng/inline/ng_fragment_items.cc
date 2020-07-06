@@ -263,32 +263,18 @@ void NGFragmentItems::DirtyLinesFromChangedChild(
 void NGFragmentItems::DirtyLinesFromNeedsLayout(
     const LayoutBlockFlow* container) const {
   DCHECK_EQ(this, container->FragmentItems());
-  for (LayoutObject* layout_object = container->FirstChild(); layout_object;) {
-    if (layout_object->IsText()) {
-      if (layout_object->SelfNeedsLayout()) {
-        DirtyLinesFromChangedChild(layout_object);
-        return;
-      }
-    } else if (auto* layout_inline = ToLayoutInlineOrNull(layout_object)) {
-      if (layout_object->NeedsLayout()) {
-        if (layout_object->SelfNeedsLayout()) {
-          DirtyLinesFromChangedChild(layout_object);
-          return;
-        }
-        // If children need layout, look into them.
-        if (LayoutObject* child = layout_inline->FirstChild()) {
-          layout_object = child;
-          continue;
-        }
-      }
-    } else {
-      if (layout_object->NeedsLayout()) {
-        DirtyLinesFromChangedChild(layout_object);
-        return;
-      }
+  // Mark dirty for the first top-level child that has |NeedsLayout|.
+  //
+  // TODO(kojii): We could mark first descendant to increase reuse
+  // opportunities. Doing this complicates the logic, especially when culled
+  // inline is involved, and common case is to append to large IFC. Choose
+  // simpler logic and faster to check over more reuse opportunities.
+  for (LayoutObject* child = container->FirstChild(); child;
+       child = child->NextSibling()) {
+    if (child->NeedsLayout()) {
+      DirtyLinesFromChangedChild(child);
+      return;
     }
-
-    layout_object = layout_object->NextInPreOrderAfterChildren(container);
   }
 }
 

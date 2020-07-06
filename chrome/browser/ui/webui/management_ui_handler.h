@@ -152,14 +152,11 @@ class ManagementUIHandler : public content::WebUIMessageHandler,
 
 #if defined(OS_CHROMEOS)
   void HandleGetDeviceReportingInfo(const base::ListValue* args);
-#endif  // defined(OS_CHROMEOS)
-
-  void HandleGetExtensions(const base::ListValue* args);
-
-#if defined(OS_CHROMEOS)
+  void HandleGetPluginVmDataCollectionStatus(const base::ListValue* args);
   void HandleGetLocalTrustRootsInfo(const base::ListValue* args);
 #endif  // defined(OS_CHROMEOS)
 
+  void HandleGetExtensions(const base::ListValue* args);
   void HandleGetContextualManagedData(const base::ListValue* args);
   void HandleGetThreatProtectionInfo(const base::ListValue* args);
   void HandleInitBrowserReportingInfo(const base::ListValue* args);
@@ -170,6 +167,9 @@ class ManagementUIHandler : public content::WebUIMessageHandler,
   void OnFetchComplete(const GURL& url, const SkBitmap* bitmap) override;
 
   void NotifyBrowserReportingInfoUpdated();
+#if defined(OS_CHROMEOS)
+  void NotifyPluginVmDataCollectionUpdated();
+#endif  // defined(OS_CHROMEOS)
   void NotifyThreatProtectionInfoUpdated();
 
   // extensions::ExtensionRegistryObserver implementation.

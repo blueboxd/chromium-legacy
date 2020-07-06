@@ -33,17 +33,6 @@
 
 namespace video_capture {
 
-namespace {
-
-// Used to assess the impact of running the video capture service at background
-// priority. If the experiment confirms that running the video capture service
-// at background priority causes jank, change the code to use a foreground
-// priority by default. See https://crbug.com/1066137.
-const base::Feature kForegroundVideoCaptureService{
-    "ForegroundVideoCaptureService", base::FEATURE_DISABLED_BY_DEFAULT};
-
-}  // namespace
-
 // Intended usage of this class is to instantiate on any sequence, and then
 // operate and release the instance on the task runner exposed via
 // GetTaskRunner() via WeakPtrs provided via GetWeakPtr(). To this end,
@@ -52,13 +41,8 @@ const base::Feature kForegroundVideoCaptureService{
 class VideoCaptureServiceImpl::GpuDependenciesContext {
  public:
   GpuDependenciesContext() {
-    const base::TaskPriority priority =
-        base::FeatureList::IsEnabled(kForegroundVideoCaptureService)
-            ? base::TaskPriority::USER_BLOCKING
-            : base::TaskPriority::BEST_EFFORT;
-
     gpu_io_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
-        {priority, base::MayBlock()});
+        {base::TaskPriority::USER_BLOCKING, base::MayBlock()});
   }
 
   ~GpuDependenciesContext() {

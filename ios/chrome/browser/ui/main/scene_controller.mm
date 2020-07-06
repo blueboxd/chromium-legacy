@@ -302,7 +302,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
               [[URLOpenerParams alloc] initWithUIOpenURLContext:context];
           [self openTabFromLaunchWithParams:params
                          startupInformation:self.mainController
-                                   appState:self.mainController.appState];
+                                   appState:self.sceneState.appState];
         }
         if (self.sceneState.connectionOptions.shortcutItem) {
           [UserActivityHandler
@@ -362,7 +362,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
           [[URLOpenerParams alloc] initWithLaunchOptions:launchOptions];
       [self openTabFromLaunchWithParams:params
                      startupInformation:self.mainController
-                               appState:self.mainController.appState];
+                               appState:self.sceneState.appState];
     }
 
     if (!initializingUIInColdStart && self.tabSwitcherIsActive &&
@@ -438,7 +438,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   self.blockingOverlayViewController =
       [[BlockingOverlayViewController alloc] init];
   self.blockingOverlayViewController.blockingSceneCommandHandler =
-      HandlerForProtocol(self.mainController.appState.appCommandDispatcher,
+      HandlerForProtocol(self.sceneState.appState.appCommandDispatcher,
                          BlockingSceneCommands);
   UIView* overlayView = self.blockingOverlayViewController.view;
   [self.sceneState.window addSubview:overlayView];
@@ -481,7 +481,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 
 - (void)sceneState:(SceneState*)sceneState
     receivedUserActivity:(NSUserActivity*)userActivity {
-  if (self.mainController.appState.isInSafeMode || !userActivity) {
+  if (self.sceneState.appState.isInSafeMode || !userActivity) {
     return;
   }
   BOOL sceneIsActive =
@@ -1953,7 +1953,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 
 - (void)openURLContexts:(NSSet<UIOpenURLContext*>*)URLContexts
     API_AVAILABLE(ios(13)) {
-  if (self.mainController.appState.isInSafeMode) {
+  if (self.sceneState.appState.isInSafeMode) {
     return;
   }
 
@@ -2024,7 +2024,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 
   NSMutableArray<SceneController*>* sceneControllers =
       [[NSMutableArray alloc] init];
-  for (SceneState* sceneState in self.mainController.appState.connectedScenes) {
+  for (SceneState* sceneState in self.sceneState.appState.connectedScenes) {
     SceneController* sceneController = sceneState.controller;
     if (sceneController.mainController.mainBrowserState == mainBrowserState) {
       [sceneControllers addObject:sceneController];

@@ -16,8 +16,9 @@
 
 namespace {
 // Regex to find placeholders of the form ${key}, where key is an arbitrary
-// string that does not contain curly braces.
-const char kPlaceholderExtractor[] = R"re(\$\{([^{}]+)\})re";
+// string that does not contain curly braces. The first capture group is for
+// the prefix before the key, the second for the key itself.
+const char kPlaceholderExtractor[] = R"re(([^$]*)\$\{([^{}]+)\})re";
 
 base::Optional<std::string> GetFieldValue(
     const std::map<std::string, std::string>& mappings,
@@ -50,24 +51,32 @@ namespace field_formatter {
 
 base::Optional<std::string> FormatString(
     const std::string& pattern,
-    const std::map<std::string, std::string>& mappings) {
+    const std::map<std::string, std::string>& mappings,
+    bool strict) {
   if (pattern.empty()) {
     return std::string();
   }
 
-  std::string key;
-  std::string out = pattern;
+  std::string out;
   re2::StringPiece input(pattern);
-  while (re2::RE2::FindAndConsume(&input, kPlaceholderExtractor, &key)) {
+  std::string prefix;
+  std::string key;
+  while (
+      re2::RE2::FindAndConsume(&input, kPlaceholderExtractor, &prefix, &key)) {
     auto rewrite_value = GetFieldValue(mappings, key);
     if (!rewrite_value.has_value()) {
-      VLOG(2) << "No value for " << key << " in " << pattern;
-      return base::nullopt;
+      if (strict) {
+        VLOG(2) << "No value for " << key << " in " << pattern;
+        return base::nullopt;
+      }
+      // Leave placeholder unchanged.
+      rewrite_value = "${" + key + "}";
     }
 
-    re2::RE2::Replace(&out, kPlaceholderExtractor,
-                      re2::StringPiece(rewrite_value.value()));
+    out = out + prefix + *rewrite_value;
   }
+  // Append remaining unmatched suffix (if any).
+  out = out + input.ToString();
 
   return out;
 }

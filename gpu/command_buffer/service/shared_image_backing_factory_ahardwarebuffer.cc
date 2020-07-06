@@ -344,7 +344,7 @@ SharedImageBackingAHB::ProduceSkia(
 
     return std::make_unique<SharedImageRepresentationSkiaVkAndroid>(
         manager, this, std::move(context_state), std::move(vulkan_image),
-        tracker);
+        base::ScopedFD(), tracker);
   }
   DCHECK(context_state->GrContextIsGL());
   DCHECK(hardware_buffer_handle_.is_valid());

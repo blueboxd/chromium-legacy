@@ -11,10 +11,6 @@
 #include "base/memory/singleton.h"
 #include "url/gurl.h"
 
-namespace base {
-class FilePath;
-}  // namespace base
-
 // A signleton that provides all the URLs that are used for connecting to GAIA.
 //
 // Please update InitializeFromConfig() when adding new URLs.
@@ -72,7 +68,7 @@ class GaiaUrls {
   friend class GaiaUrlsTest;
 
   void InitializeDefault();
-  void InitializeFromConfig(const base::FilePath& config_path);
+  void InitializeFromConfig();
 
   GURL google_url_;
   GURL secure_google_url_;

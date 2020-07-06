@@ -45,12 +45,6 @@ ALWAYS_INLINE size_t PartitionCookieSizeAdjustAdd(size_t size) {
   return size;
 }
 
-ALWAYS_INLINE void* PartitionCookieFreePointerAdjust(void* ptr) {
-  // The value given to the application is actually just after the cookie.
-  ptr = static_cast<char*>(ptr) - kCookieSize;
-  return ptr;
-}
-
 ALWAYS_INLINE size_t PartitionCookieSizeAdjustSubtract(size_t size) {
   // Remove space for cookies.
   PA_DCHECK(size >= 2 * kCookieSize);
@@ -58,13 +52,16 @@ ALWAYS_INLINE size_t PartitionCookieSizeAdjustSubtract(size_t size) {
   return size;
 }
 
-ALWAYS_INLINE size_t PartitionCookieOffsetSubtract(size_t offset) {
-#if DCHECK_IS_ON()
-  // Convert offset from the beginning of the allocated slot to offset from
-  // the value given to the application, which is just after the cookie.
-  offset -= kCookieSize;
-#endif
-  return offset;
+ALWAYS_INLINE void* PartitionCookiePointerAdjustSubtract(void* ptr) {
+  // The value given to the application is actually just after the cookie.
+  ptr = static_cast<char*>(ptr) - kCookieSize;
+  return ptr;
+}
+
+ALWAYS_INLINE void* PartitionCookiePointerAdjustAdd(void* ptr) {
+  // The value given to the application is actually just after the cookie.
+  ptr = static_cast<char*>(ptr) + kCookieSize;
+  return ptr;
 }
 
 ALWAYS_INLINE void PartitionCookieWriteValue(void* ptr) {
@@ -81,12 +78,16 @@ ALWAYS_INLINE size_t PartitionCookieSizeAdjustAdd(size_t size) {
   return size;
 }
 
-ALWAYS_INLINE void* PartitionCookieFreePointerAdjust(void* ptr) {
+ALWAYS_INLINE size_t PartitionCookieSizeAdjustSubtract(size_t size) {
+  return size;
+}
+
+ALWAYS_INLINE void* PartitionCookiePointerAdjustSubtract(void* ptr) {
   return ptr;
 }
 
-ALWAYS_INLINE size_t PartitionCookieSizeAdjustSubtract(size_t size) {
-  return size;
+ALWAYS_INLINE void* PartitionCookiePointerAdjustAdd(void* ptr) {
+  return ptr;
 }
 
 ALWAYS_INLINE void PartitionCookieWriteValue(void* ptr) {}

@@ -100,6 +100,7 @@ void WebKioskAppManager::AddAppForTesting(const AccountId& account_id,
   apps_.push_back(std::make_unique<WebKioskAppData>(
       this, app_id, account_id, install_url, /*title*/ std::string(),
       /*icon_url*/ GURL()));
+  NotifyKioskAppsChanged();
 }
 
 void WebKioskAppManager::InitSession(Browser* browser) {

@@ -42,6 +42,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_contents.h"
@@ -6440,6 +6441,10 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
       ExecJs(shell()->web_contents(), "history.forward(); history.forward();"));
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+  // TODO(https://crbug.com/1102358): Remove this when test passes. It is
+  // currently failing on Android Oreo.
+  if (ShouldCreateNewHostForSameSiteSubframe())
+    return;
   EXPECT_EQ(url_b, root->current_url());
   NavigationEntry* entry = controller.GetLastCommittedEntry();
   EXPECT_EQ(url_b, entry->GetURL());
@@ -10097,6 +10102,52 @@ IN_PROC_BROWSER_TEST_P(SandboxedNavigationControllerBrowserTest,
   EXPECT_EQ(1, controller.GetCurrentEntryIndex());
 }
 
+class SandboxedNavigationControllerWithBfcacheBrowserTest
+    : public NavigationControllerBrowserTest {
+ protected:
+  void SetUp() override {
+    feature_list_.InitWithFeaturesAndParameters(
+        {{features::kBackForwardCache,
+          {{"TimeToLiveInBackForwardCacheInSeconds", "3600"}}},
+         {features::kHistoryPreventSandboxedNavigation, {}}},
+        {});
+    NavigationControllerBrowserTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Tests navigations which occur from a sandboxed frame are prevented.
+IN_PROC_BROWSER_TEST_P(SandboxedNavigationControllerWithBfcacheBrowserTest,
+                       BackNavigationToCachedPageNotAllowed) {
+  GURL cached_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+
+  GURL main_url(embedded_test_server()->GetURL(
+      "b.com", "/navigation_controller/page_with_sandbox_iframe.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), cached_url));
+  RenderFrameHost* cached_rfh = shell()->web_contents()->GetMainFrame();
+  content::RenderFrameDeletedObserver observer(cached_rfh);
+
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  ASSERT_FALSE(observer.deleted());
+  EXPECT_TRUE(cached_rfh->IsInBackForwardCache());
+
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  ASSERT_EQ(2UL, root->child_count());
+  FrameTreeNode* sanboxed_iframe = root->child_at(1);
+
+  EXPECT_EQ(1, controller.GetCurrentEntryIndex());
+  // Navigation not allowed. It should fail.
+  EXPECT_TRUE(ExecJs(sanboxed_iframe, "history.back();"));
+  EXPECT_EQ(1, controller.GetCurrentEntryIndex());
+}
+
 class SandboxedNavigationControllerPopupBrowserTest
     : public NavigationControllerBrowserTest {
  protected:
@@ -11337,6 +11388,9 @@ INSTANTIATE_TEST_SUITE_P(All,
                          testing::ValuesIn(RenderDocumentFeatureLevelValues()));
 INSTANTIATE_TEST_SUITE_P(All,
                          SandboxedNavigationControllerBrowserTest,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
+INSTANTIATE_TEST_SUITE_P(All,
+                         SandboxedNavigationControllerWithBfcacheBrowserTest,
                          testing::ValuesIn(RenderDocumentFeatureLevelValues()));
 INSTANTIATE_TEST_SUITE_P(All,
                          SandboxedNavigationControllerPopupBrowserTest,

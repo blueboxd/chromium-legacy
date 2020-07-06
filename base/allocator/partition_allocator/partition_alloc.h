@@ -167,9 +167,15 @@ class BASE_EXPORT PartitionAllocHooks {
 
 namespace internal {
 
-ALWAYS_INLINE void* PartitionFreePointerAdjust(void* ptr) {
-  ptr = PartitionTagFreePointerAdjust(ptr);
-  ptr = PartitionCookieFreePointerAdjust(ptr);
+ALWAYS_INLINE void* PartitionPointerAdjustSubtract(void* ptr) {
+  ptr = PartitionTagPointerAdjustSubtract(ptr);
+  ptr = PartitionCookiePointerAdjustSubtract(ptr);
+  return ptr;
+}
+
+ALWAYS_INLINE void* PartitionPointerAdjustAdd(void* ptr) {
+  ptr = PartitionTagPointerAdjustAdd(ptr);
+  ptr = PartitionCookiePointerAdjustAdd(ptr);
   return ptr;
 }
 
@@ -521,7 +527,6 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFromBucket(Bucket* bucket,
     PA_DCHECK(!ret || IsValidPage(Page::FromPointer(ret)));
   }
 
-#if DCHECK_IS_ON() && !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
   if (!ret) {
     return nullptr;
   }
@@ -544,31 +549,28 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFromBucket(Bucket* bucket,
   //   c: new_slot_size
   // Note, empty space occurs if the slot size is larger than needed to
   // accommodate the request.
-  char* char_ret = static_cast<char*>(ret);
   size_t size_with_no_extras =
       internal::PartitionSizeAdjustSubtract(new_slot_size);
   // The value given to the application is just after the tag and cookie.
-  char_ret += internal::kPartitionTagSize + internal::kCookieSize;
-  ret = char_ret;
+  ret = internal::PartitionPointerAdjustAdd(ret);
+
+#if DCHECK_IS_ON() && !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
   // Surround the region with 2 cookies.
+  char* char_ret = static_cast<char*>(ret);
   internal::PartitionCookieWriteValue(char_ret - internal::kCookieSize);
   internal::PartitionCookieWriteValue(char_ret + size_with_no_extras);
+#endif
 
-  // Fill the region kUninitializedByte or 0.
+  // Fill the region kUninitializedByte (on debug builds, if not requested to 0)
+  // or 0 (if requested and not 0 already).
   if (!zero_fill) {
+#if DCHECK_IS_ON()
     memset(ret, kUninitializedByte, size_with_no_extras);
+#endif
   } else if (!is_already_zeroed) {
     memset(ret, 0, size_with_no_extras);
   }
-#else
-  if (!ret)
-    return nullptr;
 
-  ret = static_cast<char*>(ret) + internal::kPartitionTagSize;
-  if (zero_fill && !is_already_zeroed) {
-    memset(ret, 0, internal::PartitionTagSizeAdjustSubtract(size));
-  }
-#endif
   // TODO(tasak): initialize tag randomly. Temporarily use
   // kTagTemporaryInitialValue to initialize the tag.
   internal::PartitionTagSetValue(ret, internal::kTagTemporaryInitialValue);
@@ -594,7 +596,7 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::Free(void* ptr) {
 
   // TODO(tasak): clear partition tag. Temporarily set the tag to be 0.
   internal::PartitionTagSetValue(ptr, 0);
-  ptr = internal::PartitionFreePointerAdjust(ptr);
+  ptr = internal::PartitionPointerAdjustSubtract(ptr);
   Page* page = Page::FromPointer(ptr);
   // TODO(palmer): See if we can afford to make this a CHECK.
   PA_DCHECK(IsValidPage(page));
@@ -713,7 +715,7 @@ PartitionAllocGetPageForSize(void* ptr) {
 // partition page.
 template <bool thread_safe>
 ALWAYS_INLINE size_t PartitionAllocGetSize(void* ptr) {
-  ptr = internal::PartitionFreePointerAdjust(ptr);
+  ptr = internal::PartitionPointerAdjustSubtract(ptr);
   auto* page = internal::PartitionAllocGetPageForSize<thread_safe>(ptr);
   size_t size = internal::PartitionSizeAdjustSubtract(page->bucket->slot_size);
   return size;
@@ -726,7 +728,7 @@ ALWAYS_INLINE size_t PartitionAllocGetSize(void* ptr) {
 template <bool thread_safe>
 ALWAYS_INLINE size_t PartitionAllocGetSlotOffset(void* ptr) {
   PA_DCHECK(IsManagedByPartitionAllocNormalBuckets(ptr));
-  ptr = internal::PartitionFreePointerAdjust(ptr);
+  ptr = internal::PartitionPointerAdjustSubtract(ptr);
   auto* page = internal::PartitionAllocGetPageForSize<thread_safe>(ptr);
   size_t slot_size = page->bucket->slot_size;
 

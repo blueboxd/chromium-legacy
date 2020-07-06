@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
@@ -183,6 +184,10 @@ void OnArcIconLoaded(
     Verb handler_verb = Verb::VERB_NONE;
     if (action == arc::kIntentActionSend ||
         action == arc::kIntentActionSendMultiple) {
+      // Use app service to get send tasks when the flag is on, so skip
+      // the send tasks here.
+      if (base::FeatureList::IsEnabled(features::kIntentHandlingSharing))
+        continue;
       handler_verb = Verb::VERB_SHARE_WITH;
     }
     auto it = icons->find(arc::ArcIntentHelperBridge::ActivityName(

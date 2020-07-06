@@ -25,12 +25,21 @@
 namespace chromeos {
 
 namespace {
+
 // Web Kiosk splash screen minimum show time.
 constexpr base::TimeDelta kWebKioskSplashScreenMinTime =
     base::TimeDelta::FromSeconds(10);
-// Time of waiting for the network to be ready to start installation.
+
+// Whether we should skip the wait for minimum screen show time.
+bool g_skip_splash_wait_for_testing = false;
+bool g_block_app_launch_for_testing = false;
+
+// Time of waiting for the network to be ready to start installation. Can be
+// changed in tests.
 constexpr base::TimeDelta kWebKioskNetworkWaitTime =
     base::TimeDelta::FromSeconds(10);
+base::TimeDelta g_network_wait_time = kWebKioskNetworkWaitTime;
+
 }  // namespace
 
 WebKioskController::WebKioskController(LoginDisplayHost* host, OobeUI* oobe_ui)
@@ -178,7 +187,7 @@ void WebKioskController::InitializeNetwork() {
   if (!web_kiosk_splash_screen_view_)
     return;
 
-  network_wait_timer_.Start(FROM_HERE, kWebKioskNetworkWaitTime, this,
+  network_wait_timer_.Start(FROM_HERE, g_network_wait_time, this,
                             &WebKioskController::OnNetworkWaitTimedOut);
 
   web_kiosk_splash_screen_view_->UpdateAppLaunchState(
@@ -260,20 +269,28 @@ void WebKioskController::OnAppPrepared() {
 
   if (!web_kiosk_splash_screen_view_)
     return;
+
+  if (network_ui_state_ != NetworkUIState::NOT_SHOWING)
+    return;
+
   web_kiosk_splash_screen_view_->UpdateAppLaunchState(
       AppLaunchSplashScreenView::AppLaunchState::
           APP_LAUNCH_STATE_WAITING_APP_WINDOW);
   web_kiosk_splash_screen_view_->Show();
-  if (launch_on_install_)
+  if (launch_on_install_ || g_skip_splash_wait_for_testing)
     LaunchApp();
 }
 
 void WebKioskController::OnAppInstallFailed() {
-  // When app installation, still try running the app(there can network/app
-  // restrictions that block app launch until we handle them).
-  // For example, chat.google.com on the first launch opens accounts.google.com
-  // to get the gaia id.
+  // We end up here when WebKioskAppLauncher was not able to obtain metadata
+  // for the app.
+  // This can happen in some temporary states -- we are under captive portal, or
+  // there is a third-party authorization which causes redirect to url that
+  // differs from the install url. We should proceed with launch in such cases,
+  // expecting this situation to not happen upon next launch.
   app_state_ = AppState::INSTALLED;
+
+  SYSLOG(WARNING) << "Failed to obtain app data, trying to launch anyway..";
 
   if (!web_kiosk_splash_screen_view_)
     return;
@@ -281,11 +298,14 @@ void WebKioskController::OnAppInstallFailed() {
       AppLaunchSplashScreenView::AppLaunchState::
           APP_LAUNCH_STATE_WAITING_APP_WINDOW_INSTALL_FAILED);
   web_kiosk_splash_screen_view_->Show();
-  if (launch_on_install_)
+  if (launch_on_install_ || g_skip_splash_wait_for_testing)
     LaunchApp();
 }
 
 void WebKioskController::LaunchApp() {
+  if (g_block_app_launch_for_testing)
+    return;
+
   DCHECK(app_state_ == AppState::INSTALLED);
   // We need to change the session state so we are able to create browser
   // windows.
@@ -332,6 +352,27 @@ std::unique_ptr<WebKioskController> WebKioskController::CreateForTesting(
   controller->app_launcher_ = std::move(app_launcher);
   controller->testing_ = true;
   return controller;
+}
+
+// static
+std::unique_ptr<base::AutoReset<bool>>
+WebKioskController::SkipSplashScreenWaitForTesting() {
+  return std::make_unique<base::AutoReset<bool>>(
+      &g_skip_splash_wait_for_testing, true);
+}
+
+// static
+std::unique_ptr<base::AutoReset<base::TimeDelta>>
+WebKioskController::SetNetworkWaitForTesting(base::TimeDelta wait_time) {
+  return std::make_unique<base::AutoReset<base::TimeDelta>>(
+      &g_network_wait_time, wait_time);
+}
+
+// static
+std::unique_ptr<base::AutoReset<bool>>
+WebKioskController::BlockAppLaunchForTesting() {
+  return std::make_unique<base::AutoReset<bool>>(
+      &g_block_app_launch_for_testing, true);
 }
 
 }  // namespace chromeos

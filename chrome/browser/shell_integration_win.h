@@ -27,7 +27,7 @@ bool SetAsDefaultBrowserUsingIntentPicker();
 // The function takes care of making sure |on_finished_callback| will get called
 // exactly once when the interaction is finished.
 void SetAsDefaultBrowserUsingSystemSettings(
-    const base::Closure& on_finished_callback);
+    base::OnceClosure on_finished_callback);
 
 // Initiates an OS shell flow which (if followed by the user) should set
 // Chrome as the default handler for |protocol|. Returns false if the flow
@@ -42,7 +42,7 @@ bool SetAsDefaultProtocolClientUsingIntentPicker(const std::string& protocol);
 // will get called exactly once when the interaction is finished.
 void SetAsDefaultProtocolClientUsingSystemSettings(
     const std::string& protocol,
-    const base::Closure& on_finished_callback);
+    base::OnceClosure on_finished_callback);
 
 // Generates an application user model ID (AppUserModelId) for a given app
 // name and profile path. The returned app id is in the format of

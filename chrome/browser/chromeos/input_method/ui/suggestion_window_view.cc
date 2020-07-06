@@ -46,6 +46,9 @@ class SettingLinkView : public views::View {
     setting_link_ = AddChildView(
         std::make_unique<views::Link>(base::UTF8ToUTF16(kSettingLinkLabel)));
     setting_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    // TODO(crbug/1102215): Implement proper UI layout using Insets constant.
+    const gfx::Insets insets(0, kPadding, kPadding, kPadding);
+    setting_link_->SetBorder(views::CreateEmptyBorder(insets));
     setting_link_->SetFontList(gfx::FontList({kFontStyle}, gfx::Font::ITALIC,
                                              kSettingLinkFontSize,
                                              gfx::Font::Weight::NORMAL));
@@ -61,16 +64,6 @@ class SettingLinkView : public views::View {
     AssistiveWindowButton button;
     button.id = ButtonId::kSmartInputsSettingLink;
     delegate_->AssistiveWindowButtonClicked(button);
-  }
-
-  void Layout() override {
-    setting_link_->SetBounds(kPadding, 0, width(), height());
-  }
-
-  gfx::Size CalculatePreferredSize() const override {
-    gfx::Size size;
-    size.Enlarge(setting_link_->GetPreferredSize().width() + 2 * kPadding, 0);
-    return size;
   }
 
   DISALLOW_COPY_AND_ASSIGN(SettingLinkView);

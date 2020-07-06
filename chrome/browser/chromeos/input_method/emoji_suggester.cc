@@ -69,7 +69,8 @@ std::string GetLastWord(const std::string& str) {
 
 }  // namespace
 
-EmojiSuggester::EmojiSuggester(InputMethodEngine* engine) : engine_(engine) {
+EmojiSuggester::EmojiSuggester(SuggestionHandlerInterface* engine)
+    : engine_(engine) {
   LoadEmojiMap();
   properties_.type = ui::ime::AssistiveWindowType::kEmojiSuggestion;
   current_candidate_.id = ui::ime::ButtonId::kSuggestion;

@@ -77,16 +77,31 @@ class COMPONENTS_DOWNLOAD_EXPORT AutoResumptionHandler
   void OnDownloadDestroyed(download::DownloadItem* item) override;
 
  private:
+  using DownloadMap = std::map<std::string, DownloadItem*>;
+
   // NetworkStatusListener::Observer implementation.
   void OnNetworkChanged(network::mojom::ConnectionType type) override;
 
   void ResumePendingDownloads();
+
+  // Maybe resume some of the |downloads|. Returns the number of downloads
+  // resumed.
+  int MaybeResumeDownloads(const DownloadMap& downloads);
+
   void RecomputeTaskParams();
   void RescheduleTaskIfNecessary();
   void ResumeDownloadImmediately();
   bool ShouldResumeNow(download::DownloadItem* download) const;
   bool IsAutoResumableDownload(download::DownloadItem* item) const;
 
+  // Returns whether the user has scheduled the download to happen later.
+  static bool ShouldDownloadLater(DownloadItem* item, base::Time now);
+
+  // Reschedule the download later background task. May cancel the task when no
+  // need to run a future task.
+  void RescheduleDownloadLaterTask(const std::vector<DownloadItem*> downloads);
+
+  // Listens to network events to stop/resume downloads accordingly.
   std::unique_ptr<download::NetworkStatusListener> network_listener_;
 
   std::unique_ptr<download::TaskManager> task_manager_;
@@ -97,7 +112,7 @@ class COMPONENTS_DOWNLOAD_EXPORT AutoResumptionHandler
 
   // List of downloads that are auto-resumable. These will be resumed as soon as
   // network conditions becomes favorable.
-  std::map<std::string, download::DownloadItem*> resumable_downloads_;
+  DownloadMap resumable_downloads_;
 
   // A temporary list of downloads which are being retried immediately.
   std::set<download::DownloadItem*> downloads_to_retry_;

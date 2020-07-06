@@ -14,7 +14,7 @@ import {assert} from 'chrome://resources/js/assert.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {EduAccountLoginBrowserProxyImpl} from './browser_proxy.js';
-import {EduCoexistenceFlowResult, EduLoginParams, ParentAccount} from './edu_login_util.js';
+import {EduCoexistenceFlowResult, EduLoginErrorType, EduLoginParams, ParentAccount} from './edu_login_util.js';
 
 /** @enum {string} */
 const Steps = {
@@ -78,12 +78,19 @@ Polymer({
     isErrorShown_: {
       type: Boolean,
       value: false,
-    }
+    },
+
+    /** @private {EduLoginErrorType} */
+    errorType_: {
+      type: String,
+      value: '',
+    },
   },
 
   listeners: {
     'go-next': 'onGoNext_',
     'go-back': 'onGoBack_',
+    'edu-login-error': 'onError_',
   },
 
   /** @override */
@@ -135,5 +142,14 @@ Polymer({
     assert(result !== undefined);
     EduAccountLoginBrowserProxyImpl.getInstance()
         .updateEduCoexistenceFlowResult(result);
+  },
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onError_(e) {
+    this.errorType_ = e.detail.errorType;
+    this.isErrorShown_ = true;
   },
 });

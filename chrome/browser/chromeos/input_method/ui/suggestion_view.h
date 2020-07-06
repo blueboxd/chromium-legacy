@@ -22,11 +22,12 @@ struct SuggestionDetails;
 constexpr char kFontStyle[] = "Roboto";
 constexpr int kSuggestionFontSize = 14;
 constexpr int kAnnotationFontSize = 10;
+constexpr int kIndexFontSize = 10;
 
 // Style-related constants
 constexpr int kAnnotationBorderThickness = 1;
 constexpr int kAnnotationCornerRadius = 4;
-constexpr int kPadding = 10;
+constexpr int kPadding = 8;
 constexpr int kAnnotationPaddingHeight = 6;
 constexpr char kTabKey[] = "tab";
 constexpr SkColor kConfirmedTextColor = gfx::kGoogleGrey900;

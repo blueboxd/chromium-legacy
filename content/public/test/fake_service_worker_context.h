@@ -49,6 +49,9 @@ class FakeServiceWorkerContext : public ServiceWorkerContext {
       const GURL& url,
       CountExternalRequestsCallback callback) override;
   bool MaybeHasRegistrationForOrigin(const url::Origin& origin) override;
+  void GetInstalledRegistrationOrigins(
+      base::Optional<std::string> host_filter,
+      GetInstalledRegistrationOriginsCallback callback) override;
   void GetAllOriginsInfo(GetUsageInfoCallback callback) override;
   void DeleteForOrigin(const GURL& origin, ResultCallback callback) override;
   void PerformStorageCleanup(base::OnceClosure callback) override;

@@ -203,7 +203,7 @@ jumbo_component("shared_impl") {
   }
 
   if (is_mac) {
-    libs = [ "QuartzCore.framework" ]
+    frameworks = [ "QuartzCore.framework" ]
   }
 }
 

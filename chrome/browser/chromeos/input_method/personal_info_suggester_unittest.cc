@@ -86,6 +86,13 @@ class TestSuggestionHandler : public SuggestionHandlerInterface {
     return false;
   }
 
+  bool SetAssistiveWindowProperties(
+      int context_id,
+      const AssistiveWindowProperties& assistive_window,
+      std::string* error) override {
+    return false;
+  }
+
   void VerifyShowTab(const bool show_tab) { EXPECT_EQ(show_tab_, show_tab); }
   void VerifyShowSettingLink(const bool show_setting_link) {
     EXPECT_EQ(show_setting_link_, show_setting_link);

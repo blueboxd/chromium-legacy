@@ -9,6 +9,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
+#include "content/public/browser/native_file_system_permission_context.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "url/origin.h"
@@ -44,13 +45,14 @@ class NativeFileSystemPermissionRequestManager
   };
 
   struct RequestData {
-    RequestData(const url::Origin& origin,
-                const base::FilePath& path,
-                bool is_directory,
-                Access access)
+    RequestData(
+        const url::Origin& origin,
+        const base::FilePath& path,
+        content::NativeFileSystemPermissionContext::HandleType handle_type,
+        Access access)
         : origin(origin),
           path(path),
-          is_directory(is_directory),
+          handle_type(handle_type),
           access(access) {}
     RequestData(RequestData&&) = default;
     RequestData(const RequestData&) = default;
@@ -59,7 +61,7 @@ class NativeFileSystemPermissionRequestManager
 
     url::Origin origin;
     base::FilePath path;
-    bool is_directory;
+    content::NativeFileSystemPermissionContext::HandleType handle_type;
     Access access;
   };
 

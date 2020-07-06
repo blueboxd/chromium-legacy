@@ -13,20 +13,20 @@
 #include "ui/views/controls/button/label_button.h"
 
 using AccessType = NativeFileSystemPermissionRequestManager::Access;
+using HandleType = content::NativeFileSystemPermissionContext::HandleType;
 
 class NativeFileSystemPermissionViewTest : public DialogBrowserTest {
  public:
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override {
     NativeFileSystemPermissionView::Request request(
-        kTestOrigin, base::FilePath(), /*is_directory=*/false,
-        AccessType::kWrite);
+        kTestOrigin, base::FilePath(), HandleType::kFile, AccessType::kWrite);
     if (name == "LongFileName") {
       request.path = base::FilePath(FILE_PATH_LITERAL(
           "/foo/bar/Some Really Really Really Really Long File Name.txt"));
     } else if (name == "Folder") {
       request.path = base::FilePath(FILE_PATH_LITERAL("/bar/MyProject"));
-      request.is_directory = true;
+      request.handle_type = HandleType::kDirectory;
     } else if (name == "LongOrigin") {
       request.path = base::FilePath(FILE_PATH_LITERAL("/foo/README.txt"));
       request.origin =
@@ -42,11 +42,11 @@ class NativeFileSystemPermissionViewTest : public DialogBrowserTest {
           "chrome-extension://ehoadneljpdggcbbknedodolkkjodefl/capture.html"));
     } else if (name == "FolderRead") {
       request.path = base::FilePath(FILE_PATH_LITERAL("/bar/MyProject"));
-      request.is_directory = true;
+      request.handle_type = HandleType::kDirectory;
       request.access = AccessType::kRead;
     } else if (name == "FolderReadWrite") {
       request.path = base::FilePath(FILE_PATH_LITERAL("/bar/MyProject"));
-      request.is_directory = true;
+      request.handle_type = HandleType::kDirectory;
       request.access = AccessType::kReadWrite;
     } else if (name == "FileRead") {
       request.path = base::FilePath(FILE_PATH_LITERAL("/foo/README.txt"));

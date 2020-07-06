@@ -13,7 +13,7 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {EduAccountLoginBrowserProxyImpl} from './browser_proxy.js';
-import {EduLoginParams, ParentAccount, ParentSigninFailureResult} from './edu_login_util.js';
+import {EduLoginErrorType, EduLoginParams, ParentAccount, ParentSigninFailureResult} from './edu_login_util.js';
 
 Polymer({
   is: 'edu-login-parent-signin',
@@ -174,11 +174,13 @@ Polymer({
    *    password.
    */
   parentSigninFailure_(result) {
-    if (result.isWrongPassword) {
+    if (result && result.isWrongPassword) {
       this.isWrongPassword_ = true;
       this.$.passwordField.focus();
+    } else {
+      this.fire(
+          'edu-login-error', {errorType: EduLoginErrorType.CANNOT_ADD_ACCOUNT});
     }
-    // TODO(anastasiian): handle other error cases
   },
 
   /** @private */

@@ -36,7 +36,7 @@ void ShowNativeFileSystemRestrictedDirectoryDialogOnUIThread(
     content::GlobalFrameRoutingId frame_id,
     const url::Origin& origin,
     const base::FilePath& path,
-    bool is_directory,
+    content::NativeFileSystemPermissionContext::HandleType handle_type,
     base::OnceCallback<
         void(ChromeNativeFileSystemPermissionContext::SensitiveDirectoryResult)>
         callback) {
@@ -59,7 +59,7 @@ void ShowNativeFileSystemRestrictedDirectoryDialogOnUIThread(
   }
 
   ShowNativeFileSystemRestrictedDirectoryDialog(
-      origin, path, is_directory, std::move(callback), web_contents);
+      origin, path, handle_type, std::move(callback), web_contents);
 }
 
 // Sentinel used to indicate that no PathService key is specified for a path in
@@ -303,7 +303,7 @@ bool ChromeNativeFileSystemPermissionContext::CanObtainWritePermission(
 void ChromeNativeFileSystemPermissionContext::ConfirmSensitiveDirectoryAccess(
     const url::Origin& origin,
     const std::vector<base::FilePath>& paths,
-    bool is_directory,
+    HandleType handle_type,
     content::GlobalFrameRoutingId frame_id,
 
     base::OnceCallback<void(SensitiveDirectoryResult)> callback) {
@@ -320,7 +320,7 @@ void ChromeNativeFileSystemPermissionContext::ConfirmSensitiveDirectoryAccess(
       base::BindOnce(&ShouldBlockAccessToPath, paths[0]),
       base::BindOnce(&ChromeNativeFileSystemPermissionContext::
                          DidConfirmSensitiveDirectoryAccess,
-                     GetWeakPtr(), origin, paths, is_directory, frame_id,
+                     GetWeakPtr(), origin, paths, handle_type, frame_id,
                      std::move(callback)));
 }
 
@@ -351,7 +351,7 @@ void ChromeNativeFileSystemPermissionContext::
     DidConfirmSensitiveDirectoryAccess(
         const url::Origin& origin,
         const std::vector<base::FilePath>& paths,
-        bool is_directory,
+        HandleType handle_type,
         content::GlobalFrameRoutingId frame_id,
         base::OnceCallback<void(SensitiveDirectoryResult)> callback,
         bool should_block) {
@@ -367,7 +367,7 @@ void ChromeNativeFileSystemPermissionContext::
   content::GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE,
       base::BindOnce(&ShowNativeFileSystemRestrictedDirectoryDialogOnUIThread,
-                     frame_id, origin, paths[0], is_directory,
+                     frame_id, origin, paths[0], handle_type,
                      std::move(result_callback)));
 }
 

@@ -55,6 +55,13 @@ class SuggestionHandlerInterface {
   virtual bool AcceptSuggestionCandidate(int context_id,
                                          const base::string16& candidate,
                                          std::string* error) = 0;
+
+  // Shows/Hides given assistive window. No-op if context_id doesn't match or
+  // engine is not active.
+  virtual bool SetAssistiveWindowProperties(
+      int context_id,
+      const AssistiveWindowProperties& assistive_window,
+      std::string* error) = 0;
 };
 
 }  // namespace chromeos

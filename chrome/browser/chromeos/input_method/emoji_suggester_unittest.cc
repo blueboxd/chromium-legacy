@@ -14,10 +14,56 @@ namespace chromeos {
 
 const char kEmojiData[] = "happy,😀;😃;😄";
 
+class TestSuggestionHandler : public SuggestionHandlerInterface {
+ public:
+  bool SetButtonHighlighted(int context_id,
+                            const ui::ime::AssistiveWindowButton& button,
+                            bool highlighted,
+                            std::string* error) override {
+    return false;
+  }
+
+  bool SetAssistiveWindowProperties(
+      int context_id,
+      const AssistiveWindowProperties& assistive_window,
+      std::string* error) override {
+    return false;
+  }
+
+  bool DismissSuggestion(int context_id, std::string* error) override {
+    return false;
+  }
+
+  bool AcceptSuggestion(int context_id, std::string* error) override {
+    return false;
+  }
+
+  void OnSuggestionsChanged(
+      const std::vector<std::string>& suggestions) override {}
+
+  bool ShowMultipleSuggestions(int context_id,
+                               const std::vector<base::string16>& candidates,
+                               std::string* error) override {
+    return false;
+  }
+
+  bool AcceptSuggestionCandidate(int context_id,
+                                 const base::string16& candidate,
+                                 std::string* error) override {
+    return false;
+  }
+
+  bool SetSuggestion(int context_id,
+                     const ui::ime::SuggestionDetails& details,
+                     std::string* error) override {
+    return false;
+  }
+};
+
 class EmojiSuggesterTest : public testing::Test {
  protected:
   void SetUp() override {
-    engine_ = std::make_unique<InputMethodEngine>();
+    engine_ = std::make_unique<TestSuggestionHandler>();
     emoji_suggester_ = std::make_unique<EmojiSuggester>(engine_.get());
     emoji_suggester_->LoadEmojiMapForTesting(kEmojiData);
     chrome_keyboard_controller_client_ =
@@ -26,7 +72,7 @@ class EmojiSuggesterTest : public testing::Test {
   }
 
   std::unique_ptr<EmojiSuggester> emoji_suggester_;
-  std::unique_ptr<InputMethodEngine> engine_;
+  std::unique_ptr<TestSuggestionHandler> engine_;
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<ChromeKeyboardControllerClient>
       chrome_keyboard_controller_client_;

@@ -13,6 +13,7 @@
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/permissions/permission_util.h"
 #include "components/vector_icons/vector_icons.h"
+#include "content/public/browser/native_file_system_permission_context.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -22,18 +23,19 @@
 
 namespace {
 using AccessType = NativeFileSystemPermissionRequestManager::Access;
+using HandleType = content::NativeFileSystemPermissionContext::HandleType;
 
 int GetMessageText(const NativeFileSystemPermissionView::Request& request) {
   switch (request.access) {
     case AccessType::kRead:
-      return request.is_directory
+      return request.handle_type == HandleType::kDirectory
                  ? IDS_NATIVE_FILE_SYSTEM_ORIGIN_SCOPED_READ_PERMISSION_DIRECTORY_TEXT
                  : IDS_NATIVE_FILE_SYSTEM_ORIGIN_SCOPED_READ_PERMISSION_FILE_TEXT;
     case AccessType::kWrite:
     case AccessType::kReadWrite:
       // Only difference between write and read-write access dialog is in button
       // label and dialog title.
-      return request.is_directory
+      return request.handle_type == HandleType::kDirectory
                  ? IDS_NATIVE_FILE_SYSTEM_ORIGIN_SCOPED_WRITE_PERMISSION_DIRECTORY_TEXT
                  : IDS_NATIVE_FILE_SYSTEM_ORIGIN_SCOPED_WRITE_PERMISSION_FILE_TEXT;
   }
@@ -43,13 +45,13 @@ int GetMessageText(const NativeFileSystemPermissionView::Request& request) {
 int GetButtonLabel(const NativeFileSystemPermissionView::Request& request) {
   switch (request.access) {
     case AccessType::kRead:
-      return request.is_directory
+      return request.handle_type == HandleType::kDirectory
                  ? IDS_NATIVE_FILE_SYSTEM_VIEW_DIRECTORY_PERMISSION_ALLOW_TEXT
                  : IDS_NATIVE_FILE_SYSTEM_VIEW_FILE_PERMISSION_ALLOW_TEXT;
     case AccessType::kWrite:
       return IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_ALLOW_TEXT;
     case AccessType::kReadWrite:
-      return request.is_directory
+      return request.handle_type == HandleType::kDirectory
                  ? IDS_NATIVE_FILE_SYSTEM_EDIT_DIRECTORY_PERMISSION_ALLOW_TEXT
                  : IDS_NATIVE_FILE_SYSTEM_EDIT_FILE_PERMISSION_ALLOW_TEXT;
   }
@@ -107,7 +109,7 @@ views::Widget* NativeFileSystemPermissionView::ShowDialog(
 base::string16 NativeFileSystemPermissionView::GetWindowTitle() const {
   switch (request_.access) {
     case AccessType::kRead:
-      if (request_.is_directory) {
+      if (request_.handle_type == HandleType::kDirectory) {
         return l10n_util::GetStringUTF16(
             IDS_NATIVE_FILE_SYSTEM_READ_DIRECTORY_PERMISSION_TITLE);
       } else {
@@ -120,7 +122,7 @@ base::string16 NativeFileSystemPermissionView::GetWindowTitle() const {
           IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_TITLE,
           request_.path.BaseName().LossyDisplayName());
     case AccessType::kReadWrite:
-      if (request_.is_directory) {
+      if (request_.handle_type == HandleType::kDirectory) {
         return l10n_util::GetStringUTF16(
             IDS_NATIVE_FILE_SYSTEM_EDIT_DIRECTORY_PERMISSION_TITLE);
       } else {

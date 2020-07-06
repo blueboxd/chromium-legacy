@@ -47,7 +47,7 @@ class TestNativeFileSystemPermissionContext
   scoped_refptr<content::NativeFileSystemPermissionGrant>
   GetReadPermissionGrant(const url::Origin& origin,
                          const base::FilePath& path,
-                         bool is_directory,
+                         HandleType handle_type,
                          UserAction user_action) override {
     NOTREACHED();
     return nullptr;
@@ -55,7 +55,7 @@ class TestNativeFileSystemPermissionContext
   scoped_refptr<content::NativeFileSystemPermissionGrant>
   GetWritePermissionGrant(const url::Origin& origin,
                           const base::FilePath& path,
-                          bool is_directory,
+                          HandleType handle_type,
                           UserAction user_action) override {
     NOTREACHED();
     return nullptr;
@@ -103,7 +103,8 @@ class ChromeNativeFileSystemPermissionContextTest : public testing::Test {
     base::RunLoop loop;
     SensitiveDirectoryResult out_result;
     permission_context_->ConfirmSensitiveDirectoryAccess(
-        kTestOrigin, paths, /*is_directory=*/false,
+        kTestOrigin, paths,
+        content::NativeFileSystemPermissionContext::HandleType::kFile,
         content::GlobalFrameRoutingId(),
         base::BindLambdaForTesting([&](SensitiveDirectoryResult result) {
           out_result = result;

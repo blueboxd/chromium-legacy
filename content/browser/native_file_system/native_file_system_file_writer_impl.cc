@@ -89,11 +89,7 @@ NativeFileSystemFileWriterImpl::NativeFileSystemFileWriterImpl(
     const storage::FileSystemURL& swap_url,
     const SharedHandleState& handle_state,
     bool has_transient_user_activation)
-    : NativeFileSystemHandleBase(manager,
-                                 context,
-                                 url,
-                                 handle_state,
-                                 /*is_directory=*/false),
+    : NativeFileSystemHandleBase(manager, context, url, handle_state),
       swap_url_(swap_url),
       has_transient_user_activation_(has_transient_user_activation) {
   DCHECK_EQ(swap_url.type(), url.type());

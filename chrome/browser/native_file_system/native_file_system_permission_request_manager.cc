@@ -17,14 +17,14 @@ bool RequestsAreIdentical(
     const NativeFileSystemPermissionRequestManager::RequestData& a,
     const NativeFileSystemPermissionRequestManager::RequestData& b) {
   return a.origin == b.origin && a.path == b.path &&
-         a.is_directory == b.is_directory && a.access == b.access;
+         a.handle_type == b.handle_type && a.access == b.access;
 }
 
 bool RequestsAreForSamePath(
     const NativeFileSystemPermissionRequestManager::RequestData& a,
     const NativeFileSystemPermissionRequestManager::RequestData& b) {
   return a.origin == b.origin && a.path == b.path &&
-         a.is_directory == b.is_directory;
+         a.handle_type == b.handle_type;
 }
 
 }  // namespace

@@ -21,6 +21,10 @@ namespace {
 // The label text is not set in this function.
 std::unique_ptr<views::Label> CreateIndexLabel() {
   auto index_label = std::make_unique<views::Label>();
+  index_label->SetFontList(gfx::FontList({kFontStyle}, gfx::Font::NORMAL,
+                                         kIndexFontSize,
+                                         gfx::Font::Weight::MEDIUM));
+  index_label->SetEnabledColor(kSuggestionColor);
   index_label->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   index_label->SetBorder(
       views::CreateEmptyBorder(gfx::Insets(kPadding / 2, 0)));

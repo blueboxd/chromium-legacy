@@ -764,8 +764,43 @@ testcase.transferDragAndHoverTreeItemFakeEntry = async () => {
 };
 
 /**
- * Tests that we can drag a file from #file-list to #directory-tree.
- * It copies the file from Downloads to Downloads/photos.
+ * Tests that dragging a file list item selects its file list row.
+ */
+testcase.transferDragFileListItemSelects = async () => {
+  const entries = [ENTRIES.hello, ENTRIES.photos];
+
+  // Open files app.
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, entries, []);
+
+  // The drag has to start in the file list column "name" text, otherwise it
+  // starts a drag-selection instead of a drag operation.
+  const listItem = `#file-list li[file-name="${ENTRIES.hello.nameText}"]`;
+  const source = listItem + ' .entry-name';
+
+  // Wait for the source.
+  await remoteCall.waitForElement(appId, source);
+
+  // Wait for the target.
+  const target = listItem + ' .detail-icon';
+  await remoteCall.waitForElement(appId, target);
+
+  // Check: the file list row should not be selected
+  await remoteCall.waitForElement(appId, listItem + ':not([selected])');
+
+  // Drag the source and hover it over the target.
+  const skipDrop = true;
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil(
+          'fakeDragAndDrop', appId, [source, target, skipDrop]),
+      'fakeDragAndDrop failed');
+
+  // Check: the file list row should be selected.
+  await remoteCall.waitForElement(appId, listItem + '[selected]');
+};
+
+/**
+ * Tests that dropping a file on a directory tree item (folder) copies the
+ * file to that folder.
  */
 testcase.transferDragAndDrop = async () => {
   const entries = [ENTRIES.hello, ENTRIES.photos];
@@ -776,34 +811,33 @@ testcase.transferDragAndDrop = async () => {
   // Expand Downloads to display "photos" folder in the directory tree.
   await expandTreeItem(appId, '#directory-tree [entry-label="Downloads"]');
 
-  // Drag has to start in the file list column "name" text content, otherwise it
-  // starts a selection instead of a drag.
-  const src =
+  // The drag has to start in the file list column "name" text, otherwise it
+  // starts a drag-selection instead of a drag operation.
+  const source =
       `#file-list li[file-name="${ENTRIES.hello.nameText}"] .entry-name`;
-  const dst = '#directory-tree [entry-label="photos"]';
 
-  // Select the file to be dragged.
-  chrome.test.assertTrue(
-      await remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [src]),
-      'fakeMouseClick failed');
+  // Wait for the source.
+  await remoteCall.waitForElement(appId, source);
 
-  // Drag and drop it.
+  // Wait for the directory tree target.
+  const target = '#directory-tree [entry-label="photos"]';
+  await remoteCall.waitForElement(appId, target);
+
+  // Drag the source and drop it on the target.
   const skipDrop = false;
   chrome.test.assertTrue(
       await remoteCall.callRemoteTestUtil(
-          'fakeDragAndDrop', appId, [src, dst, skipDrop]),
+          'fakeDragAndDrop', appId, [source, target, skipDrop]),
       'fakeDragAndDrop failed');
 
-  // Navigate to the dst folder.
-  chrome.test.assertTrue(
-      !!await remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [dst]),
-      'fakeMouseClick failed');
+  // Navigate the file list to the target.
+  await remoteCall.waitAndClickElement(appId, target);
 
   // Wait for navigation to finish.
   await remoteCall.waitUntilCurrentDirectoryIsChanged(
       appId, '/My files/Downloads/photos');
 
-  // Wait for the expected files to appear in the file list.
+  // Check: the dropped file should appear in the file list.
   await remoteCall.waitForFiles(
       appId, TestEntryInfo.getExpectedRows([ENTRIES.hello]),
       {ignoreLastModifiedTime: true});

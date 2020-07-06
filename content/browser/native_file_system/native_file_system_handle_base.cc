@@ -17,8 +17,7 @@ NativeFileSystemHandleBase::NativeFileSystemHandleBase(
     NativeFileSystemManagerImpl* manager,
     const BindingContext& context,
     const storage::FileSystemURL& url,
-    const SharedHandleState& handle_state,
-    bool is_directory)
+    const SharedHandleState& handle_state)
     : manager_(manager),
       context_(context),
       url_(url),

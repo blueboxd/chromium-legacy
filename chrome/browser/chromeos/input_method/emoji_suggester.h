@@ -7,10 +7,10 @@
 
 #include <string>
 
-#include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine_base.h"
 #include "chrome/browser/chromeos/input_method/suggester.h"
 #include "chrome/browser/chromeos/input_method/suggestion_enums.h"
+#include "chrome/browser/chromeos/input_method/suggestion_handler_interface.h"
 #include "chrome/browser/chromeos/input_method/ui/assistive_delegate.h"
 
 namespace chromeos {
@@ -19,7 +19,7 @@ namespace chromeos {
 // dismiss the suggestion according to the user action.
 class EmojiSuggester : public Suggester {
  public:
-  explicit EmojiSuggester(InputMethodEngine* engine);
+  explicit EmojiSuggester(SuggestionHandlerInterface* engine);
   ~EmojiSuggester() override;
 
   // Suggester overrides:
@@ -43,7 +43,7 @@ class EmojiSuggester : public Suggester {
   void ResetState();
   void BuildCandidateAnnounceString();
 
-  InputMethodEngine* const engine_;
+  SuggestionHandlerInterface* const engine_;
 
   // ID of the focused text field, 0 if none is focused.
   int context_id_ = -1;

@@ -33,17 +33,19 @@ constexpr base::TimeDelta kPermissionRevocationTimeout =
 
 class OriginScopedNativeFileSystemPermissionContext::PermissionGrantImpl
     : public content::NativeFileSystemPermissionGrant {
+  using HandleType = NativeFileSystemPermissionContext::HandleType;
+
  public:
   PermissionGrantImpl(
       base::WeakPtr<OriginScopedNativeFileSystemPermissionContext> context,
       const url::Origin& origin,
       const base::FilePath& path,
-      bool is_directory,
+      HandleType handle_type,
       GrantType type)
       : context_(std::move(context)),
         origin_(origin),
         path_(path),
-        is_directory_(is_directory),
+        handle_type_(handle_type),
         type_(type) {}
 
   // NativeFileSystemPermissionGrant:
@@ -148,7 +150,7 @@ class OriginScopedNativeFileSystemPermissionContext::PermissionGrantImpl
     // code does not have to have any way to request Access::kReadWrite.
 
     request_manager->AddRequest(
-        {origin_, path_, is_directory_, access},
+        {origin_, path_, handle_type_, access},
         base::BindOnce(&PermissionGrantImpl::OnPermissionRequestResult, this,
                        std::move(callback)),
         std::move(fullscreen_block));
@@ -159,9 +161,9 @@ class OriginScopedNativeFileSystemPermissionContext::PermissionGrantImpl
     return origin_;
   }
 
-  bool is_directory() const {
+  HandleType handle_type() const {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    return is_directory_;
+    return handle_type_;
   }
 
   const base::FilePath& path() const {
@@ -189,7 +191,7 @@ class OriginScopedNativeFileSystemPermissionContext::PermissionGrantImpl
     for (const auto& entry : grants) {
       if (entry.second->GetStatus() != PermissionStatus::GRANTED)
         continue;
-      if (entry.second->is_directory()) {
+      if (entry.second->handle_type() == HandleType::kDirectory) {
         directory_grants->push_back(entry.second->path());
       } else {
         file_grants->push_back(entry.second->path());
@@ -238,7 +240,7 @@ class OriginScopedNativeFileSystemPermissionContext::PermissionGrantImpl
     if (type_ == GrantType::kWrite) {
       base::UmaHistogramEnumeration(
           "NativeFileSystemAPI.WritePermissionRequestOutcome", outcome);
-      if (is_directory_) {
+      if (handle_type_ == HandleType::kDirectory) {
         base::UmaHistogramEnumeration(
             "NativeFileSystemAPI.WritePermissionRequestOutcome.Directory",
             outcome);
@@ -249,7 +251,7 @@ class OriginScopedNativeFileSystemPermissionContext::PermissionGrantImpl
     } else {
       base::UmaHistogramEnumeration(
           "NativeFileSystemAPI.ReadPermissionRequestOutcome", outcome);
-      if (is_directory_) {
+      if (handle_type_ == HandleType::kDirectory) {
         base::UmaHistogramEnumeration(
             "NativeFileSystemAPI.ReadPermissionRequestOutcome.Directory",
             outcome);
@@ -267,7 +269,7 @@ class OriginScopedNativeFileSystemPermissionContext::PermissionGrantImpl
   base::WeakPtr<OriginScopedNativeFileSystemPermissionContext> const context_;
   const url::Origin origin_;
   const base::FilePath path_;
-  const bool is_directory_;
+  const HandleType handle_type_;
   const GrantType type_;
 
   // This member should only be updated via SetStatus(), to make sure
@@ -302,7 +304,7 @@ scoped_refptr<content::NativeFileSystemPermissionGrant>
 OriginScopedNativeFileSystemPermissionContext::GetReadPermissionGrant(
     const url::Origin& origin,
     const base::FilePath& path,
-    bool is_directory,
+    content::NativeFileSystemPermissionContext::HandleType handle_type,
     UserAction user_action) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // operator[] might insert a new OriginState in |origins_|, but that
@@ -313,7 +315,7 @@ OriginScopedNativeFileSystemPermissionContext::GetReadPermissionGrant(
   auto*& existing_grant = origin_state.read_grants[path];
   scoped_refptr<PermissionGrantImpl> new_grant;
 
-  if (existing_grant && existing_grant->is_directory() != is_directory) {
+  if (existing_grant && existing_grant->handle_type() != handle_type) {
     // |path| changed from being a directory to being a file or vice versa,
     // don't just re-use the existing grant but revoke the old grant before
     // creating a new grant.
@@ -323,7 +325,7 @@ OriginScopedNativeFileSystemPermissionContext::GetReadPermissionGrant(
 
   if (!existing_grant) {
     new_grant = base::MakeRefCounted<PermissionGrantImpl>(
-        weak_factory_.GetWeakPtr(), origin, path, is_directory,
+        weak_factory_.GetWeakPtr(), origin, path, handle_type,
         GrantType::kRead);
     existing_grant = new_grant.get();
   }
@@ -336,7 +338,8 @@ OriginScopedNativeFileSystemPermissionContext::GetReadPermissionGrant(
     case CONTENT_SETTING_ASK:
       // Files automatically get read access when picked by the user,
       // directories need to first be confirmed.
-      if (user_action != UserAction::kLoadFromStorage && !is_directory) {
+      if (user_action != UserAction::kLoadFromStorage &&
+          handle_type == HandleType::kFile) {
         existing_grant->SetStatus(PermissionStatus::GRANTED);
         ScheduleUsageIconUpdate();
       }
@@ -361,7 +364,7 @@ scoped_refptr<content::NativeFileSystemPermissionGrant>
 OriginScopedNativeFileSystemPermissionContext::GetWritePermissionGrant(
     const url::Origin& origin,
     const base::FilePath& path,
-    bool is_directory,
+    HandleType handle_type,
     UserAction user_action) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // operator[] might insert a new OriginState in |origins_|, but that
@@ -372,7 +375,7 @@ OriginScopedNativeFileSystemPermissionContext::GetWritePermissionGrant(
   auto*& existing_grant = origin_state.write_grants[path];
   scoped_refptr<PermissionGrantImpl> new_grant;
 
-  if (existing_grant && existing_grant->is_directory() != is_directory) {
+  if (existing_grant && existing_grant->handle_type() != handle_type) {
     // |path| changed from being a directory to being a file or vice versa,
     // don't just re-use the existing grant but revoke the old grant before
     // creating a new grant.
@@ -382,7 +385,7 @@ OriginScopedNativeFileSystemPermissionContext::GetWritePermissionGrant(
 
   if (!existing_grant) {
     new_grant = base::MakeRefCounted<PermissionGrantImpl>(
-        weak_factory_.GetWeakPtr(), origin, path, is_directory,
+        weak_factory_.GetWeakPtr(), origin, path, handle_type,
         GrantType::kWrite);
     existing_grant = new_grant.get();
   }
@@ -422,7 +425,7 @@ void OriginScopedNativeFileSystemPermissionContext::ConfirmDirectoryReadAccess(
   // refactor the calling code of this method to just do what this
   // implementation does directly.
   scoped_refptr<content::NativeFileSystemPermissionGrant> grant =
-      GetReadPermissionGrant(origin, path, /*is_directory=*/true,
+      GetReadPermissionGrant(origin, path, HandleType::kDirectory,
                              UserAction::kOpen);
   static_cast<PermissionGrantImpl*>(grant.get())
       ->RequestPermissionImpl(

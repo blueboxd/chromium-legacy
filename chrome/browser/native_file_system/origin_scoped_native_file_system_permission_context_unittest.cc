@@ -41,6 +41,7 @@ using PermissionRequestOutcome =
     content::NativeFileSystemPermissionGrant::PermissionRequestOutcome;
 using SensitiveDirectoryResult =
     ChromeNativeFileSystemPermissionContext::SensitiveDirectoryResult;
+using HandleType = content::NativeFileSystemPermissionContext::HandleType;
 
 class OriginScopedNativeFileSystemPermissionContextTest : public testing::Test {
  public:
@@ -122,51 +123,49 @@ class OriginScopedNativeFileSystemPermissionContextTest : public testing::Test {
 TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
        GetReadPermissionGrant_InitialState_LoadFromStorage) {
   auto grant = permission_context()->GetReadPermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false,
-      UserAction::kLoadFromStorage);
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kLoadFromStorage);
   EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
 }
 
 TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
        GetReadPermissionGrant_InitialState_Open_File) {
   auto grant = permission_context()->GetReadPermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, UserAction::kOpen);
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
 }
 
 TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
        GetReadPermissionGrant_InitialState_Open_Directory) {
   auto grant = permission_context()->GetReadPermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/true, UserAction::kOpen);
+      kTestOrigin, kTestPath, HandleType::kDirectory, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
 }
 
 TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
        GetWritePermissionGrant_InitialState_LoadFromStorage) {
   auto grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false,
-      UserAction::kLoadFromStorage);
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kLoadFromStorage);
   EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
 }
 
 TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
        GetWritePermissionGrant_InitialState_Open_File) {
   auto grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, UserAction::kOpen);
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
 }
 
 TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
        GetWritePermissionGrant_InitialState_Open_Directory) {
   auto grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/true, UserAction::kOpen);
+      kTestOrigin, kTestPath, HandleType::kDirectory, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
 }
 
 TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
        GetWritePermissionGrant_InitialState_WritableImplicitState) {
   auto grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, UserAction::kSave);
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
   EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
 
   // The existing grant should not change if the permission is blocked globally.
@@ -178,18 +177,18 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
   // Getting a grant for the same file again should also not change the grant,
   // even now asking for more permissions is blocked globally.
   grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, UserAction::kSave);
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
   EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
 }
 
 TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
        GetWritePermissionGrant_WriteGrantedChangesExistingGrant) {
   auto grant1 = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, UserAction::kOpen);
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
   auto grant2 = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, UserAction::kSave);
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
   auto grant3 = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, UserAction::kOpen);
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
   // All grants should be the same grant, and be granted.
   EXPECT_EQ(grant1, grant2);
   EXPECT_EQ(grant1, grant3);
@@ -199,14 +198,14 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
 TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
        GetWritePermissionGrant_GrantIsRevokedWhenNoLongerUsed) {
   auto grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, UserAction::kSave);
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
   EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
   grant.reset();
 
   // After reset grant should go away, so new grant request should be in ASK
   // state.
   grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, UserAction::kOpen);
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
 }
 
@@ -217,7 +216,7 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
       CONTENT_SETTING_BLOCK);
 
   auto grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, UserAction::kOpen);
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::DENIED, grant->GetStatus());
   grant.reset();
 
@@ -226,7 +225,7 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
       CONTENT_SETTING_ASK);
 
   grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, UserAction::kOpen);
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
 }
 
@@ -238,7 +237,7 @@ TEST_F(
       CONTENT_SETTING_BLOCK);
 
   auto grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, UserAction::kSave);
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
   EXPECT_EQ(PermissionStatus::DENIED, grant->GetStatus());
   grant.reset();
 
@@ -247,7 +246,7 @@ TEST_F(
       CONTENT_SETTING_ASK);
 
   grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, UserAction::kSave);
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
   EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
 }
 
@@ -259,11 +258,11 @@ TEST_F(
       CONTENT_SETTING_BLOCK);
 
   auto grant1 = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, UserAction::kOpen);
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
   auto grant2 = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, UserAction::kSave);
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
   auto grant3 = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, UserAction::kOpen);
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
   // All grants should be the same grant, and be denied.
   EXPECT_EQ(grant1, grant2);
   EXPECT_EQ(grant1, grant3);
@@ -278,14 +277,14 @@ TEST_F(
       CONTENT_SETTING_BLOCK);
 
   auto grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, UserAction::kSave);
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
   EXPECT_EQ(PermissionStatus::DENIED, grant->GetStatus());
   grant.reset();
 
   // After reset grant should go away, but the new grant request should be in
   // DENIED state.
   grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, UserAction::kOpen);
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::DENIED, grant->GetStatus());
 }
 
@@ -293,14 +292,14 @@ TEST_F(
     OriginScopedNativeFileSystemPermissionContextTest,
     GetWritePermissionGrant_GrantIsRevokedWhenNoLongerUsed_GlobalGuardBlockedAfterNewGrant) {
   auto grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, UserAction::kSave);
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
   EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
   grant.reset();
 
   // After reset grant should go away, but the new grant request should be in
   // ASK state.
   grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, UserAction::kOpen);
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
 
   SetDefaultContentSettingValue(
@@ -320,7 +319,7 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
       ->SimulateUserActivation();
 
   auto grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, UserAction::kOpen);
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
 
   base::RunLoop loop;
   grant->RequestPermission(
@@ -342,7 +341,7 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
       ->SimulateUserActivation();
 
   auto grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, UserAction::kOpen);
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
 
   base::RunLoop loop;
   grant->RequestPermission(
@@ -363,7 +362,7 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
       ->SimulateUserActivation();
 
   auto grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, UserAction::kOpen);
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
 
   base::RunLoop loop;
   grant->RequestPermission(
@@ -382,7 +381,7 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
       ->set_auto_response_for_test(PermissionAction::GRANTED);
 
   auto grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, UserAction::kOpen);
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
 
   base::RunLoop loop;
   grant->RequestPermission(
@@ -402,7 +401,7 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
   // should call the passed-in callback and return immediately without showing a
   // prompt.
   auto grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, UserAction::kSave);
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
 
   base::RunLoop loop;
   grant->RequestPermission(
@@ -425,7 +424,7 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
       CONTENT_SETTING_BLOCK);
 
   auto grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, UserAction::kOpen);
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
 
   base::RunLoop loop;
   grant->RequestPermission(
@@ -438,7 +437,7 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
   EXPECT_EQ(PermissionStatus::DENIED, grant->GetStatus());
 
   auto grant2 = permission_context()->GetWritePermissionGrant(
-      kTestOrigin2, kTestPath, /*is_directory=*/false, UserAction::kOpen);
+      kTestOrigin2, kTestPath, HandleType::kFile, UserAction::kOpen);
 
   base::RunLoop loop2;
   grant2->RequestPermission(
@@ -456,7 +455,7 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
       CONTENT_SETTING_ASK);
 
   grant2 = permission_context()->GetWritePermissionGrant(
-      kTestOrigin2, kTestPath, /*is_directory=*/false, UserAction::kOpen);
+      kTestOrigin2, kTestPath, HandleType::kFile, UserAction::kOpen);
 
   base::RunLoop loop3;
   grant2->RequestPermission(
@@ -475,9 +474,9 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
   // should update the PermissionStatus to DENIED, call the passed-in
   // callback, and return immediately without showing a prompt.
   auto grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, UserAction::kOpen);
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
   auto grant2 = permission_context()->GetWritePermissionGrant(
-      kTestOrigin2, kTestPath, /*is_directory=*/false, UserAction::kOpen);
+      kTestOrigin2, kTestPath, HandleType::kFile, UserAction::kOpen);
 
   SetDefaultContentSettingValue(
       ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
@@ -510,9 +509,9 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
       kTestOrigin, ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
       CONTENT_SETTING_ASK);
   grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, UserAction::kOpen);
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
   grant2 = permission_context()->GetWritePermissionGrant(
-      kTestOrigin2, kTestPath, /*is_directory=*/false, UserAction::kOpen);
+      kTestOrigin2, kTestPath, HandleType::kFile, UserAction::kOpen);
 
   base::RunLoop loop3;
   grant->RequestPermission(
@@ -549,19 +548,19 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
 
   // Allowlisted origin automatically gets write permission.
   auto grant1 = permission_context()->GetWritePermissionGrant(
-      kChromeOrigin, kTestPath, /*is_directory=*/false, UserAction::kOpen);
+      kChromeOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::GRANTED, grant1->GetStatus());
 
   auto grant2 = permission_context()->GetWritePermissionGrant(
-      kChromeOrigin, kTestPath, /*is_directory=*/true, UserAction::kOpen);
+      kChromeOrigin, kTestPath, HandleType::kDirectory, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::GRANTED, grant2->GetStatus());
 
   // Other origin should gets blocked.
   auto grant3 = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, UserAction::kOpen);
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::DENIED, grant3->GetStatus());
   auto grant4 = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/true, UserAction::kOpen);
+      kTestOrigin, kTestPath, HandleType::kDirectory, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::DENIED, grant4->GetStatus());
 }
 
@@ -579,33 +578,33 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
 
   // Initial grant (file).
   auto grant1 = permission_context()->GetWritePermissionGrant(
-      kChromeOrigin, kTestPath, /*is_directory=*/false, UserAction::kOpen);
+      kChromeOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::GRANTED, grant1->GetStatus());
 
   // Existing grant (file).
   auto grant2 = permission_context()->GetWritePermissionGrant(
-      kChromeOrigin, kTestPath, /*is_directory=*/false, UserAction::kOpen);
+      kChromeOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::GRANTED, grant2->GetStatus());
 
   // Initial grant (directory).
   auto grant3 = permission_context()->GetWritePermissionGrant(
-      kChromeOrigin, kTestPath, /*is_directory=*/true, UserAction::kOpen);
+      kChromeOrigin, kTestPath, HandleType::kDirectory, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::GRANTED, grant3->GetStatus());
 
   // Existing grant (directory).
   auto grant4 = permission_context()->GetWritePermissionGrant(
-      kChromeOrigin, kTestPath, /*is_directory=*/true, UserAction::kOpen);
+      kChromeOrigin, kTestPath, HandleType::kDirectory, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::GRANTED, grant4->GetStatus());
 }
 
 TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
        GetReadPermissionGrant_FileBecomesDirectory) {
   auto file_grant = permission_context()->GetReadPermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, UserAction::kOpen);
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::GRANTED, file_grant->GetStatus());
 
   auto directory_grant = permission_context()->GetReadPermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/true, UserAction::kOpen);
+      kTestOrigin, kTestPath, HandleType::kDirectory, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::ASK, directory_grant->GetStatus());
 
   // Requesting a permission grant for a directory which was previously a file
@@ -616,11 +615,11 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
 TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
        GetWritePermissionGrant_FileBecomesDirectory) {
   auto file_grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, UserAction::kSave);
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
   EXPECT_EQ(PermissionStatus::GRANTED, file_grant->GetStatus());
 
   auto directory_grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/true, UserAction::kOpen);
+      kTestOrigin, kTestPath, HandleType::kDirectory, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::ASK, directory_grant->GetStatus());
 
   // Requesting a permission grant for a directory which was previously a file

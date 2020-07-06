@@ -49,6 +49,9 @@ const int64_t kWindowStartTimeSeconds = 0;
 // The window end time before which the system should fire the task.
 const int64_t kWindowEndTimeSeconds = 24 * 60 * 60;
 
+// The window length for download later task.
+const int64_t kDownloadLaterTaskWindowSeconds = 15; /* 15 seconds.*/
+
 bool IsConnected(network::mojom::ConnectionType type) {
   switch (type) {
     case network::mojom::ConnectionType::CONNECTION_UNKNOWN:
@@ -158,6 +161,7 @@ void AutoResumptionHandler::OnDownloadUpdated(download::DownloadItem* item) {
 
 void AutoResumptionHandler::OnDownloadRemoved(download::DownloadItem* item) {
   resumable_downloads_.erase(item->GetGuid());
+  downloads_to_retry_.erase(item);
   RecomputeTaskParams();
 }
 
@@ -204,6 +208,12 @@ void AutoResumptionHandler::RecomputeTaskParams() {
       kBatchDownloadUpdatesInterval);
 }
 
+// Go through all the downloads.
+// 1- If there is no immediately resumable downloads, finish the task
+// 2- If there are resumable downloads, schedule a task
+// 3- If there are no resumable downloads, unschedule the task.
+// At any point either a task is running or is scheduled but not both, which is
+// handled by TaskManager.
 void AutoResumptionHandler::RescheduleTaskIfNecessary() {
   if (!config_->is_auto_resumption_enabled_in_native)
     return;
@@ -213,21 +223,33 @@ void AutoResumptionHandler::RescheduleTaskIfNecessary() {
   bool has_resumable_downloads = false;
   bool has_actionable_downloads = false;
   bool can_download_on_metered = false;
+
+  std::vector<DownloadItem*> download_later_items;
+  auto now = clock_->Now();
+
   for (auto iter = resumable_downloads_.begin();
        iter != resumable_downloads_.end(); ++iter) {
     download::DownloadItem* download = iter->second;
     if (!IsAutoResumableDownload(download))
       continue;
 
+    if (ShouldDownloadLater(download, now)) {
+      download_later_items.push_back(download);
+      continue;
+    }
+
     has_resumable_downloads = true;
     has_actionable_downloads |= ShouldResumeNow(download);
     can_download_on_metered |= download->AllowMetered();
-    if (can_download_on_metered)
-      break;
   }
 
-  if (!has_actionable_downloads)
+  if (!has_actionable_downloads) {
     task_manager_->NotifyTaskFinished(kResumptionTaskType, false);
+    task_manager_->NotifyTaskFinished(DownloadTaskType::DOWNLOAD_LATER_TASK,
+                                      false);
+  }
+
+  RescheduleDownloadLaterTask(download_later_items);
 
   if (!has_resumable_downloads) {
     task_manager_->UnscheduleTask(kResumptionTaskType);
@@ -245,15 +267,28 @@ void AutoResumptionHandler::ResumePendingDownloads() {
   if (!config_->is_auto_resumption_enabled_in_native)
     return;
 
-  for (auto iter = resumable_downloads_.begin();
-       iter != resumable_downloads_.end(); ++iter) {
-    download::DownloadItem* download = iter->second;
+  int resumed = MaybeResumeDownloads(resumable_downloads_);
+
+  // If we resume nothing, finish the current task and reschedule.
+  if (!resumed)
+    RecomputeTaskParams();
+}
+
+int AutoResumptionHandler::MaybeResumeDownloads(
+    const std::map<std::string, DownloadItem*>& downloads) {
+  int resumed = 0;
+  for (const auto& pair : downloads) {
+    DownloadItem* download = pair.second;
     if (!IsAutoResumableDownload(download))
       continue;
 
-    if (ShouldResumeNow(download))
+    if (ShouldResumeNow(download)) {
       download->Resume(false);
+      resumed++;
+    }
   }
+
+  return resumed;
 }
 
 bool AutoResumptionHandler::ShouldResumeNow(
@@ -262,9 +297,7 @@ bool AutoResumptionHandler::ShouldResumeNow(
     return false;
 
   // If the user selects a time to start in the future, don't resume now.
-  const auto& download_schedule = download->GetDownloadSchedule();
-  if (download_schedule &&
-      download_schedule->start_time().value_or(base::Time()) >= clock_->Now()) {
+  if (ShouldDownloadLater(download, clock_->Now())) {
     return false;
   }
 
@@ -291,6 +324,51 @@ bool AutoResumptionHandler::IsAutoResumableDownload(
   }
 
   return false;
+}
+
+// static
+bool AutoResumptionHandler::ShouldDownloadLater(DownloadItem* item,
+                                                base::Time now) {
+  const auto& download_schedule = item->GetDownloadSchedule();
+  if (download_schedule &&
+      download_schedule->start_time().value_or(base::Time()) > now) {
+    return true;
+  }
+
+  return false;
+}
+
+void AutoResumptionHandler::RescheduleDownloadLaterTask(
+    const std::vector<DownloadItem*> downloads) {
+  base::Time window_start = base::Time::Max();
+  for (auto* download : downloads) {
+    const auto schedule = download->GetDownloadSchedule();
+    if (!schedule || !schedule->start_time().has_value())
+      continue;
+
+    if (schedule->start_time().value() < window_start)
+      window_start = schedule->start_time().value();
+  }
+
+  base::Time now = clock_->Now();
+  if (window_start.is_max() || window_start < now) {
+    // Unschedule download later task, nothing to schedule.
+    task_manager_->UnscheduleTask(DownloadTaskType::DOWNLOAD_LATER_TASK);
+  } else {
+    // Fulfill the user scheduled time.
+    TaskManager::TaskParams task_params;
+    task_params.window_start_time_seconds = (window_start - now).InSeconds();
+    task_params.window_end_time_seconds =
+        task_params.window_start_time_seconds + kDownloadLaterTaskWindowSeconds;
+    task_params.require_charging = false;
+    task_params.require_unmetered_network = false;
+
+    // Needs to call |UnscheduleTask| first to make |task_manager_| set
+    // needs_reschedule to false.
+    task_manager_->UnscheduleTask(DownloadTaskType::DOWNLOAD_LATER_TASK);
+    task_manager_->ScheduleTask(DownloadTaskType::DOWNLOAD_LATER_TASK,
+                                task_params);
+  }
 }
 
 // static

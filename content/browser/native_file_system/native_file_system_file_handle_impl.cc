@@ -36,11 +36,7 @@ NativeFileSystemFileHandleImpl::NativeFileSystemFileHandleImpl(
     const BindingContext& context,
     const storage::FileSystemURL& url,
     const SharedHandleState& handle_state)
-    : NativeFileSystemHandleBase(manager,
-                                 context,
-                                 url,
-                                 handle_state,
-                                 /*is_directory=*/false) {}
+    : NativeFileSystemHandleBase(manager, context, url, handle_state) {}
 
 NativeFileSystemFileHandleImpl::~NativeFileSystemFileHandleImpl() = default;
 
@@ -116,7 +112,7 @@ void NativeFileSystemFileHandleImpl::IsSameEntryImpl(
     return;
   }
 
-  if (other->type() != NativeFileSystemTransferTokenImpl::HandleType::kFile) {
+  if (other->type() != NativeFileSystemPermissionContext::HandleType::kFile) {
     std::move(callback).Run(native_file_system_error::Ok(), false);
     return;
   }

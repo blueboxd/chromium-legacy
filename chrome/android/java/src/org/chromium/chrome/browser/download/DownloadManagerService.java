@@ -296,6 +296,13 @@ public class DownloadManagerService implements DownloadController.Observer,
     }
 
     /**
+     * Initializes download related systems for background task.
+     */
+    public void initForBackgroundTask() {
+        getNativeDownloadManagerService();
+    }
+
+    /**
      * Pre-load shared prefs to avoid being blocked on the disk access async task in the future.
      */
     public static void warmUpSharedPrefs() {

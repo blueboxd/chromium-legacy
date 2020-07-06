@@ -22,8 +22,6 @@ namespace content {
 class CONTENT_EXPORT NativeFileSystemTransferTokenImpl
     : public blink::mojom::NativeFileSystemTransferToken {
  public:
-  enum class HandleType { kFile, kDirectory };
-
   // Create a token that is tied to a particular origin (the origin of |url|,
   // and uses the permission grants in |handle_state| when creating new handles
   // out of the token. This is used for postMessage and IndexedDB serialization,
@@ -31,7 +29,7 @@ class CONTENT_EXPORT NativeFileSystemTransferTokenImpl
   static std::unique_ptr<NativeFileSystemTransferTokenImpl> Create(
       const storage::FileSystemURL& url,
       const NativeFileSystemManagerImpl::SharedHandleState& handle_state,
-      bool is_directory,
+      NativeFileSystemPermissionContext::HandleType handle_type,
       NativeFileSystemManagerImpl* manager,
       mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken>
           receiver);
@@ -39,21 +37,23 @@ class CONTENT_EXPORT NativeFileSystemTransferTokenImpl
   // Create a token that is not associated with any origin.
   static std::unique_ptr<NativeFileSystemTransferTokenImpl> CreateFromPath(
       const base::FilePath file_path,
-      bool is_directory,
+      NativeFileSystemPermissionContext::HandleType handle_type,
       NativeFileSystemManagerImpl* manager,
       mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken>
           receiver,
       int renderer_process_id);
 
   NativeFileSystemTransferTokenImpl(
-      HandleType type,
+      NativeFileSystemPermissionContext::HandleType handle_type,
       NativeFileSystemManagerImpl* manager,
       mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken>
           receiver);
   ~NativeFileSystemTransferTokenImpl() override;
 
   const base::UnguessableToken& token() const { return token_; }
-  HandleType type() const { return type_; }
+  NativeFileSystemPermissionContext::HandleType type() const {
+    return handle_type_;
+  }
 
   // Returns true if |origin| is allowed to use this token. Where the transfer
   // token isn't associated with an origin, |process_id| is checked.
@@ -81,7 +81,7 @@ class CONTENT_EXPORT NativeFileSystemTransferTokenImpl
 
  protected:
   const base::UnguessableToken token_;
-  const HandleType type_;
+  const NativeFileSystemPermissionContext::HandleType handle_type_;
   // Raw pointer since NativeFileSystemManagerImpl owns |this|.
   NativeFileSystemManagerImpl* const manager_;
 

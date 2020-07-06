@@ -11,7 +11,7 @@ import {getImage} from 'chrome://resources/js/icon.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {EduAccountLoginBrowserProxyImpl} from './browser_proxy.js';
-import {ParentAccount} from './edu_login_util.js';
+import {EduLoginErrorType, ParentAccount} from './edu_login_util.js';
 
 Polymer({
   is: 'edu-login-parents',
@@ -66,10 +66,15 @@ Polymer({
 
   /** @override */
   ready() {
-    // TODO(anastasiian): handle fetching error.
-    EduAccountLoginBrowserProxyImpl.getInstance().getParents().then(result => {
-      this.parents_ = result;
-    });
+    EduAccountLoginBrowserProxyImpl.getInstance().getParents().then(
+        result => {
+          this.parents_ = result;
+        },
+        error => {
+          this.fire(
+              'edu-login-error',
+              {errorType: EduLoginErrorType.CANNOT_ADD_ACCOUNT});
+        });
   },
 
   /**

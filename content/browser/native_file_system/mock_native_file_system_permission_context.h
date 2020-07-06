@@ -20,7 +20,7 @@ class MockNativeFileSystemPermissionContext
                scoped_refptr<NativeFileSystemPermissionGrant>(
                    const url::Origin& origin,
                    const base::FilePath& path,
-                   bool is_directory,
+                   HandleType handle_type,
 
                    NativeFileSystemPermissionContext::UserAction user_action));
 
@@ -28,7 +28,7 @@ class MockNativeFileSystemPermissionContext
                scoped_refptr<NativeFileSystemPermissionGrant>(
                    const url::Origin& origin,
                    const base::FilePath& path,
-                   bool is_directory,
+                   HandleType handle_type,
 
                    NativeFileSystemPermissionContext::UserAction user_action));
 
@@ -46,14 +46,14 @@ class MockNativeFileSystemPermissionContext
   void ConfirmSensitiveDirectoryAccess(
       const url::Origin& origin,
       const std::vector<base::FilePath>& paths,
-      bool is_directory,
+      HandleType handle_type,
       GlobalFrameRoutingId frame_id,
       base::OnceCallback<void(SensitiveDirectoryResult)> callback) override;
   MOCK_METHOD5(
       ConfirmSensitiveDirectoryAccess_,
       void(const url::Origin& origin,
            const std::vector<base::FilePath>& paths,
-           bool is_directory,
+           HandleType handle_type,
            GlobalFrameRoutingId frame_id,
            base::OnceCallback<void(SensitiveDirectoryResult)>& callback));
 

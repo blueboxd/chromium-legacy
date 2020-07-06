@@ -28,6 +28,8 @@ using storage::FileSystemOperationRunner;
 
 namespace content {
 
+using HandleType = NativeFileSystemPermissionContext::HandleType;
+
 namespace {
 
 // Returns true when |name| contains a path separator like "/".
@@ -54,11 +56,7 @@ NativeFileSystemDirectoryHandleImpl::NativeFileSystemDirectoryHandleImpl(
     const BindingContext& context,
     const storage::FileSystemURL& url,
     const SharedHandleState& handle_state)
-    : NativeFileSystemHandleBase(manager,
-                                 context,
-                                 url,
-                                 handle_state,
-                                 /*is_directory=*/true) {}
+    : NativeFileSystemHandleBase(manager, context, url, handle_state) {}
 
 NativeFileSystemDirectoryHandleImpl::~NativeFileSystemDirectoryHandleImpl() =
     default;
@@ -255,8 +253,7 @@ void NativeFileSystemDirectoryHandleImpl::ResolveImpl(
   if (parent_path == child_path) {
     std::move(callback).Run(
         native_file_system_error::Ok(),
-        possible_child->type() ==
-                NativeFileSystemTransferTokenImpl::HandleType::kDirectory
+        possible_child->type() == HandleType::kDirectory
             ? base::make_optional(std::vector<std::string>())
             : base::nullopt);
     return;
@@ -393,7 +390,9 @@ void NativeFileSystemDirectoryHandleImpl::DidReadDirectory(
 
     entries.push_back(
         CreateEntry(basename, child_url,
-                    entry.type == filesystem::mojom::FsFileType::DIRECTORY));
+                    entry.type == filesystem::mojom::FsFileType::DIRECTORY
+                        ? HandleType::kDirectory
+                        : HandleType::kFile));
   }
   (*listener)->DidReadDirectory(native_file_system_error::Ok(),
                                 std::move(entries), has_more_entries);
@@ -455,8 +454,8 @@ NativeFileSystemDirectoryHandleImpl::GetChildURL(
 NativeFileSystemEntryPtr NativeFileSystemDirectoryHandleImpl::CreateEntry(
     const std::string& basename,
     const storage::FileSystemURL& url,
-    bool is_directory) {
-  if (is_directory) {
+    HandleType handle_type) {
+  if (handle_type == HandleType::kDirectory) {
     return NativeFileSystemEntry::New(
         NativeFileSystemHandle::NewDirectory(
             manager()->CreateDirectoryHandle(context(), url, handle_state())),

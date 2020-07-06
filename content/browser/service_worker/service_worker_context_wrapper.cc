@@ -579,6 +579,28 @@ bool ServiceWorkerContextWrapper::MaybeHasRegistrationForOrigin(
   return false;
 }
 
+void ServiceWorkerContextWrapper::GetInstalledRegistrationOrigins(
+    base::Optional<std::string> host_filter,
+    GetInstalledRegistrationOriginsCallback callback) {
+  RunOrPostTaskOnCoreThread(
+      FROM_HERE, base::BindOnce(&ServiceWorkerContextWrapper::
+                                    GetInstalledRegistrationOriginsOnCoreThread,
+                                this, host_filter, std::move(callback),
+                                base::ThreadTaskRunnerHandle::Get()));
+}
+
+void ServiceWorkerContextWrapper::GetInstalledRegistrationOriginsOnCoreThread(
+    base::Optional<std::string> host_filter,
+    GetInstalledRegistrationOriginsCallback callback,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_callback) {
+  DCHECK_CURRENTLY_ON(GetCoreThreadId());
+
+  context()->registry()->storage()->GetRegisteredOrigins(base::BindOnce(
+      &ServiceWorkerContextWrapper::
+          DidGetRegisteredOriginsForGetInstalledRegistrationOrigins,
+      host_filter, std::move(callback), task_runner_for_callback));
+}
+
 void ServiceWorkerContextWrapper::GetAllOriginsInfo(
     GetUsageInfoCallback callback) {
   RunOrPostTaskOnCoreThread(
@@ -1113,28 +1135,6 @@ void ServiceWorkerContextWrapper::GetAllRegistrationsOnCoreThread(
     return;
   }
   context_core_->registry()->GetAllRegistrationsInfos(std::move(callback));
-}
-
-void ServiceWorkerContextWrapper::GetInstalledRegistrationOrigins(
-    base::Optional<std::string> host_filter,
-    GetInstalledRegistrationOriginsCallback callback) {
-  RunOrPostTaskOnCoreThread(
-      FROM_HERE, base::BindOnce(&ServiceWorkerContextWrapper::
-                                    GetInstalledRegistrationOriginsOnCoreThread,
-                                this, host_filter, std::move(callback),
-                                base::ThreadTaskRunnerHandle::Get()));
-}
-
-void ServiceWorkerContextWrapper::GetInstalledRegistrationOriginsOnCoreThread(
-    base::Optional<std::string> host_filter,
-    GetInstalledRegistrationOriginsCallback callback,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_callback) {
-  DCHECK_CURRENTLY_ON(GetCoreThreadId());
-
-  context()->registry()->storage()->GetRegisteredOrigins(base::BindOnce(
-      &ServiceWorkerContextWrapper::
-          DidGetRegisteredOriginsForGetInstalledRegistrationOrigins,
-      host_filter, std::move(callback), task_runner_for_callback));
 }
 
 void ServiceWorkerContextWrapper::GetStorageUsageForOrigin(

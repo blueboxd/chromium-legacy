@@ -15,6 +15,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/native_file_system_entry_factory.h"
 #include "content/public/browser/native_file_system_permission_context.h"
+#include "content/public/browser/native_file_system_permission_grant.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -171,7 +172,7 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
   // and drop operations.
   void CreateTransferTokenFromPath(
       const base::FilePath& file_path,
-      bool is_directory,
+      NativeFileSystemPermissionContext::HandleType handle_type,
       int renderer_id,
       mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken>
           receiver);
@@ -180,7 +181,7 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
   void CreateTransferTokenForTesting(
       const storage::FileSystemURL& url,
       const SharedHandleState& handle_state,
-      bool is_directory,
+      NativeFileSystemPermissionContext::HandleType handle_type,
       mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken>
           receiver);
 
@@ -220,7 +221,7 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
       const base::FilePath& path,
       const url::Origin& origin,
       storage::IsolatedContext::ScopedFSHandle file_system,
-      bool is_directory,
+      NativeFileSystemPermissionContext::HandleType handle_type,
       NativeFileSystemPermissionContext::UserAction user_action);
 
   // Creates a FileSystemURL which corresponds to a FilePath and Origin.
@@ -267,7 +268,7 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
   void CreateTransferTokenImpl(
       const storage::FileSystemURL& url,
       const SharedHandleState& handle_state,
-      bool is_directory,
+      NativeFileSystemPermissionContext::HandleType handle_type,
       mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken>
           receiver);
   void DoResolveTransferToken(

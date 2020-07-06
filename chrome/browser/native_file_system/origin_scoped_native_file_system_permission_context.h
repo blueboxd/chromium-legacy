@@ -28,12 +28,12 @@ class OriginScopedNativeFileSystemPermissionContext
   scoped_refptr<content::NativeFileSystemPermissionGrant>
   GetReadPermissionGrant(const url::Origin& origin,
                          const base::FilePath& path,
-                         bool is_directory,
+                         HandleType handle_type,
                          UserAction user_action) override;
   scoped_refptr<content::NativeFileSystemPermissionGrant>
   GetWritePermissionGrant(const url::Origin& origin,
                           const base::FilePath& path,
-                          bool is_directory,
+                          HandleType handle_type,
                           UserAction user_action) override;
   void ConfirmDirectoryReadAccess(
       const url::Origin& origin,

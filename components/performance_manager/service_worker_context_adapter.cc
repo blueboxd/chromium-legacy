@@ -122,6 +122,12 @@ bool ServiceWorkerContextAdapter::MaybeHasRegistrationForOrigin(
   return false;
 }
 
+void ServiceWorkerContextAdapter::GetInstalledRegistrationOrigins(
+    base::Optional<std::string> host_filter,
+    GetInstalledRegistrationOriginsCallback callback) {
+  NOTIMPLEMENTED();
+}
+
 void ServiceWorkerContextAdapter::GetAllOriginsInfo(
     GetUsageInfoCallback callback) {
   NOTIMPLEMENTED();

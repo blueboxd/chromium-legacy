@@ -37,11 +37,15 @@ class NativeFileSystemPermissionContext {
     kLoadFromStorage,
   };
 
+  // This enum helps distinguish between file or directory Native File System
+  // handles.
+  enum class HandleType { kFile, kDirectory };
+
   // Returns the read permission grant to use for a particular path.
   virtual scoped_refptr<NativeFileSystemPermissionGrant> GetReadPermissionGrant(
       const url::Origin& origin,
       const base::FilePath& path,
-      bool is_directory,
+      HandleType handle_type,
       UserAction user_action) = 0;
 
   // Returns the permission grant to use for a particular path. This could be a
@@ -52,7 +56,7 @@ class NativeFileSystemPermissionContext {
   virtual scoped_refptr<NativeFileSystemPermissionGrant>
   GetWritePermissionGrant(const url::Origin& origin,
                           const base::FilePath& path,
-                          bool is_directory,
+                          HandleType handle_type,
                           UserAction user_action) = 0;
 
   // Displays a dialog to confirm that the user intended to give read access to
@@ -80,7 +84,7 @@ class NativeFileSystemPermissionContext {
   virtual void ConfirmSensitiveDirectoryAccess(
       const url::Origin& origin,
       const std::vector<base::FilePath>& paths,
-      bool is_directory,
+      HandleType handle_type,
       GlobalFrameRoutingId frame_id,
       base::OnceCallback<void(SensitiveDirectoryResult)> callback) = 0;
 

@@ -131,6 +131,11 @@ class InputMethodEngine : public InputMethodEngineBase,
                                  const base::string16& candidate,
                                  std::string* error) override;
 
+  bool SetAssistiveWindowProperties(
+      int context_id,
+      const AssistiveWindowProperties& assistive_window,
+      std::string* error) override;
+
   // This function returns the current property of the candidate window of the
   // corresponding engine_id. If the CandidateWindowProperty is not set for the
   // engine_id, a default value is set. The caller can use the returned value as
@@ -153,12 +158,6 @@ class InputMethodEngine : public InputMethodEngineBase,
 
   // Set the position of the cursor in the candidate window.
   bool SetCursorPosition(int context_id, int candidate_id, std::string* error);
-
-  // Show/Hide given assistive window.
-  bool SetAssistiveWindowProperties(
-      int context_id,
-      const AssistiveWindowProperties& assistive_window,
-      std::string* error);
 
   // Set the list of items that appears in the language menu when this IME is
   // active.

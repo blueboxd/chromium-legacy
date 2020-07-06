@@ -168,6 +168,9 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       const GURL& url,
       CountExternalRequestsCallback callback) override;
   bool MaybeHasRegistrationForOrigin(const url::Origin& origin) override;
+  void GetInstalledRegistrationOrigins(
+      base::Optional<std::string> host_filter,
+      GetInstalledRegistrationOriginsCallback callback) override;
   void GetAllOriginsInfo(GetUsageInfoCallback callback) override;
   void DeleteForOrigin(const GURL& origin, ResultCallback callback) override;
   void PerformStorageCleanup(base::OnceClosure callback) override;
@@ -308,16 +311,6 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void ClearUserDataForAllRegistrationsByKeyPrefix(
       const std::string& key_prefix,
       StatusCallback callback);
-
-  // Returns a set of origins which have at least one stored registration.
-  // The set doesn't include installing/uninstalling/uninstalled registrations.
-  // When |host_filter| is specified the set only includes origins whose host
-  // matches |host_filter|.
-  // This function can be called from any thread and the callback is called on
-  // that thread.
-  void GetInstalledRegistrationOrigins(
-      base::Optional<std::string> host_filter,
-      GetInstalledRegistrationOriginsCallback callback);
 
   // Returns total resource size stored in the storage for |origin|.
   // This can be called from any thread and the callback is called on that

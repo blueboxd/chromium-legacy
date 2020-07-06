@@ -67,6 +67,9 @@ class CONTENT_EXPORT ServiceWorkerContext {
  public:
   using ResultCallback = base::OnceCallback<void(bool success)>;
 
+  using GetInstalledRegistrationOriginsCallback =
+      base::OnceCallback<void(const std::set<url::Origin>& origins)>;
+
   using GetUsageInfoCallback =
       base::OnceCallback<void(const std::vector<StorageUsageInfo>& usage_info)>;
 
@@ -164,6 +167,16 @@ class CONTENT_EXPORT ServiceWorkerContext {
   // returns true if it doesn't know (registrations are not yet initialized).
   // Must be called on the UI thread.
   virtual bool MaybeHasRegistrationForOrigin(const url::Origin& origin) = 0;
+
+  // Returns a set of origins which have at least one stored registration.
+  // The set doesn't include installing/uninstalling/uninstalled registrations.
+  // When |host_filter| is specified the set only includes origins whose host
+  // matches |host_filter|.
+  // This function can be called from any thread and the callback is called on
+  // that thread.
+  virtual void GetInstalledRegistrationOrigins(
+      base::Optional<std::string> host_filter,
+      GetInstalledRegistrationOriginsCallback callback) = 0;
 
   // May be called from any thread, and the callback is called on that thread.
   virtual void GetAllOriginsInfo(GetUsageInfoCallback callback) = 0;

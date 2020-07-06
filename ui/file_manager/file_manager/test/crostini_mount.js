@@ -92,10 +92,22 @@ crostiniMount.testMountCrostiniError = async (done) => {
 crostiniMount.testCrostiniMountOnDrag = async (done) => {
   const fakeRoot = '#directory-tree [root-type-icon="crostini"]';
   chrome.fileManagerPrivate.mountCrostiniDelay_ = 0;
+
+  function createDragDropEvent(type, relatedTarget) {
+    return new DragEvent(type, {
+      bubbles: true,
+      composed: true,
+      dataTransfer: new DataTransfer(),
+      relatedTarget: relatedTarget,
+    });
+  }
+
   await test.setupAndWaitUntilReady();
   await test.waitForElement(fakeRoot);
-  assertTrue(test.sendEvent(fakeRoot, new Event('dragenter', {bubbles: true})));
-  assertTrue(test.sendEvent(fakeRoot, new Event('dragleave', {bubbles: true})));
+  const dragEnter = createDragDropEvent('dragenter', document.body);
+  assertTrue(test.sendEvent(fakeRoot, dragEnter));
+  const dragLeave = createDragDropEvent('dragleave', null);
+  assertTrue(test.sendEvent(fakeRoot, dragLeave));
   await test.waitForFiles(
       test.TestEntryInfo.getExpectedRows(test.BASIC_CROSTINI_ENTRY_SET));
   chrome.fileManagerPrivate.removeMount('crostini');

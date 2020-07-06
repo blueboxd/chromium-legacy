@@ -1,6 +1,6 @@
 # WebDriver Status
 
-Below is a list of all WebDriver commands and their current support in ChromeDriver based on what is in the [WebDriver Specification](https://w3c.github.io/webdriver/webdriver-spec.html).
+Below is a list of all WebDriver commands and their current support in ChromeDriver based on what is in the [WebDriver Specification](https://w3c.github.io/webdriver/).
 
 | Method | URL | Command | Status | Bug
 | --- | --- | --- | --- | --- |

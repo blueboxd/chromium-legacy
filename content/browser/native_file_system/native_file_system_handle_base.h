@@ -44,8 +44,7 @@ class CONTENT_EXPORT NativeFileSystemHandleBase : public WebContentsObserver {
   NativeFileSystemHandleBase(NativeFileSystemManagerImpl* manager,
                              const BindingContext& context,
                              const storage::FileSystemURL& url,
-                             const SharedHandleState& handle_state,
-                             bool is_directory);
+                             const SharedHandleState& handle_state);
   ~NativeFileSystemHandleBase() override;
 
   const storage::FileSystemURL& url() const { return url_; }

@@ -2936,15 +2936,18 @@ group("performance_test_suite") {
 
   data_deps = [
     "//base:base_perftests",
-    "//chrome/test:angle_perftests",
-    "//chrome/test:dawn_perf_tests",
     "//components:components_perftests",
     "//components/tracing:tracing_perftests",
     "//gpu:command_buffer_perftests",
     "//gpu:gpu_perftests",
     "//media:media_perftests",
     "//testing:run_perf_test",
+    "//third_party/angle/src/tests:angle_perftests",
   ]
+
+  if (build_dawn_tests) {
+    data_deps += [ "//third_party/dawn/src/tests:dawn_perf_tests" ]
+  }
 
   if (!is_android && !is_fuchsia) {
     data_deps += [
@@ -2981,30 +2984,6 @@ group("performance_weblayer_test_suite") {
 group("telemetry_perf_webview_tests") {
   testonly = true
   deps = [ "//chrome/test:telemetry_perf_tests" ]
-}
-
-group("standalone_angle_unittests") {
-  testonly = true
-
-  # TODO(jmadill): Move into ANGLE. http://anglebug.com/3162
-  data = [ "//testing/scripts/run_gtest_angle_test.py" ]
-  data_deps = [ "//third_party/angle/src/tests:standalone_angle_unittests" ]
-}
-
-group("angle_perftests") {
-  testonly = true
-  data_deps = [ "//testing:run_perf_test" ]
-  if (is_win || is_linux || is_android) {
-    data_deps += [ "//third_party/angle/src/tests:angle_perftests" ]
-  }
-}
-
-group("dawn_perf_tests") {
-  testonly = true
-  data_deps = [ "//testing:run_perf_test" ]
-  if (build_dawn_tests) {
-    data_deps += [ "//third_party/dawn/src/tests:dawn_perf_tests" ]
-  }
 }
 
 if (is_mac) {

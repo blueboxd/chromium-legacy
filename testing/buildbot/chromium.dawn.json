@@ -264,7 +264,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_perf_tests/"
       },
       {
         "args": [
@@ -586,7 +586,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_perf_tests/"
       },
       {
         "args": [
@@ -908,7 +908,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_perf_tests/"
       },
       {
         "args": [
@@ -1230,7 +1230,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_perf_tests/"
       },
       {
         "args": [
@@ -1561,7 +1561,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_perf_tests/"
       },
       {
         "args": [
@@ -1870,7 +1870,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_perf_tests/"
       },
       {
         "args": [
@@ -2195,7 +2195,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_perf_tests/"
       },
       {
         "args": [
@@ -2504,7 +2504,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_perf_tests/"
       },
       {
         "args": [
@@ -2839,7 +2839,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_perf_tests/"
       },
       {
         "args": [
@@ -3136,7 +3136,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_perf_tests/"
       },
       {
         "args": [
@@ -3454,7 +3454,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_perf_tests/"
       },
       {
         "args": [
@@ -3772,7 +3772,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_perf_tests/"
       },
       {
         "args": [
@@ -4090,7 +4090,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_perf_tests/"
       },
       {
         "args": [
@@ -4410,7 +4410,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_perf_tests/"
       },
       {
         "args": [
@@ -4726,7 +4726,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_perf_tests/"
       },
       {
         "args": [
@@ -5042,7 +5042,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_perf_tests/"
       },
       {
         "args": [
@@ -5358,7 +5358,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_perf_tests/"
       },
       {
         "args": [

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {MultiDeviceSettingsMode, MultiDeviceFeature, MultiDeviceFeatureState, MultiDevicePageContentData } from './multidevice_constants.m.js';
+// #import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+// clang-format on
+
 /**
  * @fileoverview Polymer behavior for dealing with MultiDevice features. It is
  * intended to facilitate passing data between elements in the MultiDevice page
@@ -184,7 +189,7 @@ const MultiDeviceFeatureBehaviorImpl = {
 };
 
 /** @polymerBehavior */
-const MultiDeviceFeatureBehavior = [
+/* #export */ const MultiDeviceFeatureBehavior = [
   I18nBehavior,
   MultiDeviceFeatureBehaviorImpl,
 ];

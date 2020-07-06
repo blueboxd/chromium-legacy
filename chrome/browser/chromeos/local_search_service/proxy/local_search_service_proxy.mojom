@@ -8,7 +8,8 @@ import "chrome/browser/chromeos/local_search_service/proxy/types.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 
 enum IndexId {
-  kCrosSettings = 0
+  kCrosSettings = 0,
+  kHelpApp = 1
   // Add new client IDs here.
 };
 

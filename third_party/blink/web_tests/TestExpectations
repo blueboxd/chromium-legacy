@@ -5748,6 +5748,7 @@ crbug.com/946714 [ Release ] http/tests/devtools/elements/styles-4/styles-live-l
 crbug.com/946699 [ Release ] http/tests/devtools/network/network-filter-service-worker.js [ Pass Timeout ]
 crbug.com/946711 [ Release ] http/tests/devtools/editor/text-editor-search-switch-editor.js [ Crash Pass Timeout ]
 crbug.com/946712 [ Release ] http/tests/devtools/elements/styles-2/paste-property.js [ Crash Pass Timeout ]
+crbug.com/848799 [ Win7 ] http/tests/devtools/coverage/multiple-instances-merge.js [ Pass Timeout ]
 crbug.com/947383 inspector-protocol/css/reattach-after-editing-styles.js [ Pass Timeout ]
 
 ### external/wpt/fetch/sec-metadata/
@@ -6508,6 +6509,7 @@ crbug.com/1050995 [ Fuchsia ] http/tests/pointer-lock/iframe-sandboxed.html [ Sk
 crbug.com/1051774 [ Fuchsia ] http/tests/plugins/navigator-plugins-in-cross-origin-frame.html [ Skip ]
 crbug.com/1051133 [ Fuchsia ] http/tests/canvas/philip/tests/security.pattern.canvas.fillStyle.html [ Skip ]
 crbug.com/1051131 [ Fuchsia ] http/tests/appcache/abort-cache-onchecking-resource-404.html [ Skip ]
+crbug.com/848799 [ Win10 ] http/tests/devtools/coverage/multiple-instances-merge.js [ Pass Timeout ]
 
 # Sheriff 2020-02-19
 crbug.com/1053903 [ Mac ] external/wpt/webxr/events_referenceSpace_reset_inline.https.html [ Pass Failure Timeout ]
@@ -6852,5 +6854,3 @@ crbug.com/1101699 external/wpt/webrtc/RTCPeerConnection-setLocalDescription-answ
 crbug.com/1101699 external/wpt/webrtc/RTCPeerConnection-setLocalDescription-pranswer.html [ Pass Failure ]
 crbug.com/1101699 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-rollback.html [ Pass Failure ]
 
-# Temporarily disable test to allow devtools-frontend changes
-crbug.com/1011811 http/tests/devtools/coverage/multiple-instances-merge.js [ Skip ]

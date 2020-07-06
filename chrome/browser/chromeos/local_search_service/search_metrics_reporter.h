@@ -34,6 +34,8 @@ class SearchMetricsReporter {
   // Histogram names of daily counts, one for each IndexId.
   static constexpr char kCrosSettingsName[] =
       "LocalSearchService.CrosSettings.DailySearch";
+  static constexpr char kHelpAppName[] =
+      "LocalSearchService.HelpApp.DailySearch";
 
   // Registers prefs used by SearchMetricsReporter in |registry|.
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);

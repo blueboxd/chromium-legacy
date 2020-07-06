@@ -219,6 +219,10 @@ void AXNodeObject::AlterSliderOrSpinButtonValue(bool increase) {
   // TODO(crbug.com/1099069): add a brief pause between keydown and keyup?
   // TODO(crbug.com/1099069): fire a "char" event depending on platform?
 
+  // The keydown handler may have caused the node to be removed.
+  if (!GetNode())
+    return;
+
   KeyboardEvent* keyup = CreateKeyboardEvent(
       local_dom_window, WebInputEvent::Type::kKeyUp, action);
   GetNode()->DispatchEvent(*keyup);

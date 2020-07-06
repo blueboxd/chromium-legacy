@@ -917,6 +917,12 @@
       <structure name="IDR_OS_SETTINGS_OS_ROUTE_HTML"
                  file="chromeos/os_route.html"
                  compress="false" type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_OS__SETTINGS_ROUTES_HTML"
+                 file="chromeos/os_settings_routes.html"
+                 compress="false" type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_OS__SETTINGS_ROUTES_JS"
+                 file="chromeos/os_settings_routes.js"
+                 compress="false" type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_OS_ROUTE_JS"
                  file="chromeos/os_route.js"
                  compress="false" type="chrome_html" />

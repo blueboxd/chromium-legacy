@@ -176,6 +176,11 @@ bool InputMethodEngine::SetButtonHighlighted(
   return true;
 }
 
+void InputMethodEngine::ClickButton(
+    const ui::ime::AssistiveWindowButton& button) {
+  observer_->OnAssistiveWindowButtonClicked(button);
+}
+
 bool InputMethodEngine::AcceptSuggestionCandidate(
     int context_id,
     const base::string16& suggestion,

@@ -7,6 +7,7 @@
 
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_xr_dom_overlay_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_xr_session_init.h"

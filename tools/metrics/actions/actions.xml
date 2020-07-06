@@ -4350,6 +4350,24 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="ChromeOS.Settings.SmartInputs.EmojiSuggestions.Open">
+  <owner>myy@chromium.org</owner>
+  <owner>essential-inputs-team@google.com</owner>
+  <description>
+    Recorded when a user clicks the link to open Emoji Suggestions section in
+    Chrome OS Smart Inputs setting page.
+  </description>
+</action>
+
+<action name="ChromeOS.Settings.SmartInputs.PersonalInfoSuggestions.Open">
+  <owner>myy@chromium.org</owner>
+  <owner>essential-inputs-team@google.com</owner>
+  <description>
+    Recorded when a user clicks the link to open Personal Information
+    Suggestions section in Chrome OS Smart Inputs setting page.
+  </description>
+</action>
+
 <action name="ClearAuthenticationCache">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -16337,6 +16355,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="OpenSmartInputsSettings">
+  <obsolete>Deprecated 07/2020</obsolete>
   <owner>myy@chromium.org</owner>
   <owner>essential-inputs-team@google.com</owner>
   <description>

@@ -895,6 +895,11 @@ class FileTransferController {
   onDragEnterTree_(tree, event) {
     event.preventDefault();  // Required to prevent the cursor flicker.
 
+    if (!event.relatedTarget) {
+      event.dataTransfer.dropEffect = 'move';
+      return;
+    }
+
     this.lastEnteredTarget_ = event.target;
     let item = event.target;
     while (item && !(item instanceof cr.ui.TreeItem)) {

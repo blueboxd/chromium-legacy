@@ -1,7 +1,14 @@
-os_test_namespace_rewrites = [
+import("//chrome/browser/resources/settings/chromeos/os_settings.gni")
+
+os_test_namespace_rewrites = os_settings_namespace_rewrites + [
+  "multidevice.createFakePageContentData|createFakePageContentData",
+  "multidevice.TestMultideviceBrowserProxy|TestMultideviceBrowserProxy",
+  "multidevice.HOST_DEVICE|HOST_DEVICE",
   "reset_page.TestOsResetBrowserProxy|TestOsResetBrowserProxy",
   "settings.TestLifetimeBrowserProxy|TestLifetimeBrowserProxy",
   "settings.FakeBluetooth|FakeBluetooth",
   "settings.FakeBluetoothPrivate|FakeBluetoothPrivate",
+  "settings.MultiDeviceSettingsMode|MultiDeviceSettingsMode",
   "test_util.flushTasks|flushTasks",
+  "test_util.eventToPromise|eventToPromise"
 ]

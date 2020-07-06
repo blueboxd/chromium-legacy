@@ -12,6 +12,7 @@
 #include "content/shell/renderer/web_test/blink_test_runner.h"
 #include "content/shell/renderer/web_test/event_sender.h"
 #include "content/shell/renderer/web_test/gc_controller.h"
+#include "content/shell/renderer/web_test/spell_check_client.h"
 #include "content/shell/renderer/web_test/test_interfaces.h"
 #include "content/shell/renderer/web_test/test_plugin.h"
 #include "content/shell/renderer/web_test/test_runner.h"
@@ -234,6 +235,9 @@ void WebFrameTestProxy::Initialize() {
 
   GetWebFrame()->SetContentSettingsClient(test_runner->GetWebContentSettings());
 
+  spell_check_ = std::make_unique<SpellCheckClient>(GetWebFrame());
+  GetWebFrame()->SetTextCheckClient(spell_check_.get());
+
   GetAssociatedInterfaceRegistry()->AddInterface(
       base::BindRepeating(&WebFrameTestProxy::BindReceiver,
                           // The registry goes away and stops using this
@@ -261,6 +265,8 @@ void WebFrameTestProxy::Reset() {
   if (IsLocalRoot()) {
     GetLocalRootWebWidgetTestProxy()->Reset();
   }
+
+  spell_check_->Reset();
 }
 
 std::string WebFrameTestProxy::GetFrameNameForWebTests() {
@@ -698,7 +704,7 @@ void WebFrameTestProxy::DidClearWindowObject() {
   // frame before JS has a chance to run.
   GCController::Install(GetWebFrame());
   interfaces->Install(GetWebFrame());
-  test_runner()->Install(this);
+  test_runner()->Install(this, spell_check_.get());
   web_view_test_proxy_->Install(GetWebFrame());
   GetLocalRootWebWidgetTestProxy()->Install(GetWebFrame());
   blink::WebTestingSupport::InjectInternalsObject(GetWebFrame());

@@ -120,7 +120,7 @@ scoped_refptr<const NGLayoutResult> NGMathRadicalLayoutAlgorithm::Layout() {
         std::max(horizontal.kern_after_degree, -index_inline_size);
   }
 
-  StretchyOperatorShaper::Metrics surd_metrics = {};
+  StretchyOperatorShaper::Metrics surd_metrics;
   if (HasBaseGlyphForRadical(Style())) {
     // Stretch the radical operator to cover the base height.
     StretchyOperatorShaper shaper(kSquareRootCharacter,

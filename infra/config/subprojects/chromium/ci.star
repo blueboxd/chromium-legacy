@@ -839,7 +839,7 @@ ci.linux_builder(
         short_name = 'rel',
     ),
     main_console_view = settings.main_console_name,
-    notifies = ['cr-fuchsia'],
+    extra_notifies = ['cr-fuchsia'],
 )
 
 ci.linux_builder(
@@ -849,7 +849,7 @@ ci.linux_builder(
         short_name = 'rel',
     ),
     main_console_view = settings.main_console_name,
-    notifies = ['cr-fuchsia'],
+    extra_notifies = ['cr-fuchsia'],
 )
 
 ci.linux_builder(
@@ -898,7 +898,11 @@ ci.linux_builder(
         short_name = 'a64',
     ),
     main_console_view = settings.main_console_name,
-    notifies = ['cr-fuchsia'],
+    # Set tree_closing to false to disable the defaualt tree closer, which
+    # filters by step name, and instead enable tree closing for any step
+    # failure.
+    tree_closing = False,
+    extra_notifies = ['cr-fuchsia', 'close-on-any-step-failure'],
 )
 
 ci.linux_builder(
@@ -908,7 +912,11 @@ ci.linux_builder(
         short_name = 'x64',
     ),
     main_console_view = settings.main_console_name,
-    notifies = ['cr-fuchsia'],
+    # Set tree_closing to false to disable the defaualt tree closer, which
+    # filters by step name, and instead enable tree closing for any step
+    # failure.
+    tree_closing = False,
+    extra_notifies = ['cr-fuchsia', 'close-on-any-step-failure'],
 )
 
 ci.linux_builder(
@@ -918,7 +926,11 @@ ci.linux_builder(
         short_name = 'ozo',
     ),
     main_console_view = settings.main_console_name,
-    notifies = ['linux-ozone-rel'],
+    # Set tree_closing to false to disable the defaualt tree closer, which
+    # filters by step name, and instead enable tree closing for any step
+    # failure.
+    tree_closing = False,
+    extra_notifies = ['linux-ozone-rel', 'close-on-any-step-failure'],
 )
 
 ci.linux_builder(

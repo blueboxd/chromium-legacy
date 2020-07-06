@@ -39,6 +39,11 @@ var OSSettingsV3BrowserTest = class extends PolymerTest {
  ['LocalizedLink', 'localized_link_test.m.js'],
  ['BluetoothPage', 'bluetooth_page_tests.m.js'],
  ['NearbyShareSubPage', 'nearby_share_subpage_tests.m.js'],
+ ['MultidevicePage', 'multidevice_page_tests.m.js'],
+ ['MultideviceSubPage', 'multidevice_subpage_tests.m.js'],
+ ['MultideviceSmartLockSubPage', 'multidevice_smartlock_subpage_test.m.js'],
+ ['MultideviceFeatureItem', 'multidevice_feature_item_tests.m.js'],
+ ['MultideviceFeatureToggle', 'multidevice_feature_toggle_tests.m.js'],
 ].forEach(test => registerTest(...test));
 
 function registerTest(testName, module, caseName) {

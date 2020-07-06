@@ -2259,7 +2259,7 @@ TEST_F(DownloadItemTest, AnnotationWithEmptyURLInIncognito) {
 // various permutations of observer calls that will then be applied to a
 // DownloadItem in a state as yet undetermined.
 using CurriedObservation =
-    base::Callback<void(base::WeakPtr<DownloadDestinationObserver>)>;
+    base::RepeatingCallback<void(base::WeakPtr<DownloadDestinationObserver>)>;
 
 // A list of observations that are to be made during some event in the
 // DownloadItemImpl control flow. Ordering of the observations is significant.
@@ -2369,17 +2369,17 @@ std::vector<EventList> DistributeObservationsIntoEvents(
 
 std::vector<EventList> GenerateSuccessfulEventLists() {
   std::vector<CurriedObservation> all_observations;
-  all_observations.push_back(base::Bind(&DestinationUpdateInvoker, 100, 100));
-  all_observations.push_back(base::Bind(&DestinationUpdateInvoker, 200, 100));
-  all_observations.push_back(base::Bind(&DestinationCompletedInvoker, 200));
+  all_observations.push_back(base::BindRepeating(&DestinationUpdateInvoker, 100, 100));
+  all_observations.push_back(base::BindRepeating(&DestinationUpdateInvoker, 200, 100));
+  all_observations.push_back(base::BindRepeating(&DestinationCompletedInvoker, 200));
   return DistributeObservationsIntoEvents(all_observations.begin(),
                                           all_observations.end(), kEventCount);
 }
 
 std::vector<EventList> GenerateFailingEventLists() {
   std::vector<CurriedObservation> all_observations;
-  all_observations.push_back(base::Bind(&DestinationUpdateInvoker, 100, 100));
-  all_observations.push_back(base::Bind(
+  all_observations.push_back(base::BindRepeating(&DestinationUpdateInvoker, 100, 100));
+  all_observations.push_back(base::BindRepeating(
       &DestinationErrorInvoker, DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, 100));
   return DistributeObservationsIntoEvents(all_observations.begin(),
                                           all_observations.end(), kEventCount);

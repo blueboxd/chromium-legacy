@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/app_management/app_management.mojom.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
@@ -138,6 +139,14 @@ PluginVmApps::PluginVmApps(
     const mojo::Remote<apps::mojom::AppService>& app_service,
     Profile* profile)
     : profile_(profile), permissions_observer_(this) {
+  // Don't show anything for non-primary profiles. We can't use
+  // `IsPluginVmAllowedForProfile()` here because we still let the user
+  // uninstall Plugin VM when it isn't allowed for some other reasons (e.g.
+  // policy).
+  if (!chromeos::ProfileHelper::IsPrimaryProfile(profile)) {
+    return;
+  }
+
   PublisherBase::Initialize(app_service, apps::mojom::AppType::kPluginVm);
 
   // Register for Plugin VM changes to policy and installed state, so that we

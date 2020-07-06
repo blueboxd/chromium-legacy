@@ -14,7 +14,7 @@ namespace local_search_service {
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
-enum class IndexId { kCrosSettings = 0, kMaxValue = kCrosSettings };
+enum class IndexId { kCrosSettings = 0, kHelpApp = 1, kMaxValue = kHelpApp };
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.

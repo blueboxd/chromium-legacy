@@ -54,6 +54,11 @@ luci.tree_closer(
     failed_step_regexp = TREE_CLOSING_STEPS
 )
 
+luci.tree_closer(
+    name = 'close-on-any-step-failure',
+    tree_status_host = 'chromium-status.appspot.com',
+)
+
 def tree_closure_notifier(name, notify_emails):
   return luci.notifier(
       name = name,
@@ -173,4 +178,11 @@ luci.notifier(
         "nicolaso@chromium.org",
     ],
     on_new_status = ['FAILURE'],
+)
+
+tree_closure_notifier(
+    name = 'chromium.linux',
+    notify_emails = [
+        'thomasanderson@chromium.org',
+    ],
 )

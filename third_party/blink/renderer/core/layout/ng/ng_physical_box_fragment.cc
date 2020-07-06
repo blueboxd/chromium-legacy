@@ -291,7 +291,8 @@ PhysicalRect NGPhysicalBoxFragment::ScrollableOverflowFromChildren(
 
     void AddChild(const PhysicalRect& child_scrollable_overflow) {
       // Do not add overflow if fragment is not reachable by scrolling.
-      if (IsRectReachableByScroll(child_scrollable_overflow))
+      if (height_type == kEmHeight ||
+          IsRectReachableByScroll(child_scrollable_overflow))
         children_overflow.Unite(child_scrollable_overflow);
     }
 

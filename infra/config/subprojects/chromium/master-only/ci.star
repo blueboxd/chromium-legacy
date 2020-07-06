@@ -2766,7 +2766,11 @@ ci.linux_builder(
     executable = 'recipe:swarming/deterministic_build',
     execution_timeout = 6 * time.hour,
     main_console_view = 'main',
-    notifies = ['Deterministic Linux'],
+    # Set tree_closing to false to disable the defaualt tree closer, which
+    # filters by step name, and instead enable tree closing for any step
+    # failure.
+    tree_closing = False,
+    extra_notifies = ['Deterministic Linux', 'close-on-any-step-failure'],
 )
 
 ci.linux_builder(
@@ -2788,6 +2792,8 @@ ci.linux_builder(
         category = 'linux',
         short_name = 'lk',
     ),
+    notifies = [],
+    tree_closing = False,
 )
 
 ci.linux_builder(
@@ -2815,7 +2821,7 @@ ci.linux_builder(
         short_name = 'dbg',
     ),
     main_console_view = 'main',
-    notifies = ['cr-fuchsia'],
+    extra_notifies = ['cr-fuchsia'],
 )
 
 ci.linux_builder(
@@ -2854,7 +2860,7 @@ ci.linux_builder(
     schedule = '0 0,6,12,18 * * *',
     service_account = 'component-mapping-updater@chops-service-accounts.iam.gserviceaccount.com',
     triggered_by = [],
-    notifies = ['component-mapping'],
+    extra_notifies = ['component-mapping'],
 )
 
 

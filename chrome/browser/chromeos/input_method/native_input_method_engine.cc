@@ -8,8 +8,12 @@
 #include "base/i18n/icu_string_conversions.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
@@ -227,12 +231,37 @@ void NativeInputMethodEngine::ImeObserver::OnCandidateClicked(
 
 void NativeInputMethodEngine::ImeObserver::OnAssistiveWindowButtonClicked(
     const ui::ime::AssistiveWindowButton& button) {
-  if (button.id == ui::ime::ButtonId::kSuggestion) {
-    if (assistive_suggester_->IsAssistiveFeatureEnabled()) {
-      assistive_suggester_->AcceptSuggestion(button.index);
-    }
-  } else {
-    base_observer_->OnAssistiveWindowButtonClicked(button);
+  switch (button.id) {
+    case ui::ime::ButtonId::kSmartInputsSettingLink:
+      base::RecordAction(base::UserMetricsAction(
+          "ChromeOS.Settings.SmartInputs.PersonalInfoSuggestions.Open"));
+      // TODO(crbug/1101689): Add subpath for personal info suggestions
+      // settings.
+      chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+          ProfileManager::GetActiveUserProfile(),
+          chromeos::settings::mojom::kSmartInputsSubpagePath);
+      break;
+    case ui::ime::ButtonId::kLearnMore:
+      if (button.window_type ==
+          ui::ime::AssistiveWindowType::kEmojiSuggestion) {
+        base::RecordAction(base::UserMetricsAction(
+            "ChromeOS.Settings.SmartInputs.EmojiSuggestions.Open"));
+        // TODO(crbug/1101689): Add subpath for emoji suggestions settings.
+        chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+            ProfileManager::GetActiveUserProfile(),
+            chromeos::settings::mojom::kSmartInputsSubpagePath);
+      }
+      break;
+    case ui::ime::ButtonId::kSuggestion:
+      if (assistive_suggester_->IsAssistiveFeatureEnabled()) {
+        assistive_suggester_->AcceptSuggestion(button.index);
+      }
+      break;
+    case ui::ime::ButtonId::kUndo:
+    case ui::ime::ButtonId::kAddToDictionary:
+    case ui::ime::ButtonId::kNone:
+      base_observer_->OnAssistiveWindowButtonClicked(button);
+      break;
   }
 }
 

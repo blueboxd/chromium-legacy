@@ -8,26 +8,10 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/local_search_service/linear_map_search.h"
 
 namespace local_search_service {
 
 namespace {
-
-// Only logs metrics if |histogram_prefix| is not empty.
-void MaybeLogSearchResultsStats(const std::string& histogram_prefix,
-                                ResponseStatus status,
-                                size_t num_results) {
-  if (histogram_prefix.empty())
-    return;
-
-  base::UmaHistogramEnumeration(histogram_prefix + ".ResponseStatus", status);
-  if (status == ResponseStatus::kSuccess) {
-    // Only logs number of results if search is a success.
-    base::UmaHistogramCounts100(histogram_prefix + ".NumberResults",
-                                num_results);
-  }
-}
 
 // Only logs metrics if |histogram_prefix| is not empty.
 void MaybeLogIndexIdAndBackendType(const std::string& histogram_prefix,
@@ -43,6 +27,8 @@ std::string IndexIdBasedHistogramPrefix(IndexId index_id) {
   switch (index_id) {
     case IndexId::kCrosSettings:
       return prefix + "CrosSettings";
+    case IndexId::kHelpApp:
+      return prefix + "HelpApp";
     default:
       return "";
   }
@@ -50,12 +36,8 @@ std::string IndexIdBasedHistogramPrefix(IndexId index_id) {
 
 }  // namespace
 
-Index::Index(IndexId index_id, Backend backend) : index_id_(index_id) {
-  // TODO(jiameng): currently only support linear map.
-  DCHECK_EQ(backend, Backend::kLinearMap);
-
-  histogram_prefix_ = IndexIdBasedHistogramPrefix(*index_id_);
-  linear_map_search_ = std::make_unique<LinearMapSearch>();
+Index::Index(IndexId index_id, Backend backend) {
+  histogram_prefix_ = IndexIdBasedHistogramPrefix(index_id);
   if (!g_browser_process || !g_browser_process->local_state()) {
     return;
   }
@@ -63,50 +45,35 @@ Index::Index(IndexId index_id, Backend backend) : index_id_(index_id) {
   reporter_ =
       std::make_unique<SearchMetricsReporter>(g_browser_process->local_state());
   DCHECK(reporter_);
-  reporter_->SetIndexId(*index_id_);
+  reporter_->SetIndexId(index_id);
 
   MaybeLogIndexIdAndBackendType(histogram_prefix_, backend);
 }
 
 Index::~Index() = default;
 
-uint64_t Index::GetSize() {
-  DCHECK(linear_map_search_);
-  return linear_map_search_->GetSize();
-}
-
-void Index::AddOrUpdate(const std::vector<local_search_service::Data>& data) {
-  DCHECK(linear_map_search_);
-  linear_map_search_->AddOrUpdate(data);
-}
-
-uint32_t Index::Delete(const std::vector<std::string>& ids) {
-  DCHECK(linear_map_search_);
-  const uint32_t num_deleted = linear_map_search_->Delete(ids);
-  return num_deleted;
-}
-
-ResponseStatus Index::Find(const base::string16& query,
-                           uint32_t max_results,
-                           std::vector<Result>* results) {
-  DCHECK(linear_map_search_);
-  ResponseStatus status = linear_map_search_->Find(query, max_results, results);
-  MaybeLogSearchResultsStats(histogram_prefix_, status, results->size());
-
+void Index::MaybeLogSearchResultsStats(ResponseStatus status,
+                                       size_t num_results) {
   if (reporter_)
     reporter_->OnSearchPerformed();
 
-  return status;
+  if (histogram_prefix_.empty())
+    return;
+
+  base::UmaHistogramEnumeration(histogram_prefix_ + ".ResponseStatus", status);
+  if (status == ResponseStatus::kSuccess) {
+    // Only logs number of results if search is a success.
+    base::UmaHistogramCounts100(histogram_prefix_ + ".NumberResults",
+                                num_results);
+  }
 }
 
 void Index::SetSearchParams(const SearchParams& search_params) {
-  DCHECK(linear_map_search_);
-  linear_map_search_->SetSearchParams(search_params);
+  search_params_ = search_params;
 }
 
 SearchParams Index::GetSearchParamsForTesting() {
-  DCHECK(linear_map_search_);
-  return linear_map_search_->GetSearchParams();
+  return search_params_;
 }
 
 

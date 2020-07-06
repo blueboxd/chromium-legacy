@@ -741,6 +741,10 @@ class PluginVmAppTest : public ::testing::TestWithParam<ProviderType> {
     testing_profile_ = std::make_unique<TestingProfile>();
     web_app::TestWebAppProvider::Get(testing_profile_.get())->Start();
     test_helper_ = std::make_unique<PluginVmTestHelper>(testing_profile_.get());
+    // We need to call this before creating the builder, otherwise
+    // |PluginVmApps| is disabled forever.
+    test_helper_->SetUserRequirementsToAllowPluginVm();
+
     CreateBuilder();
   }
 
@@ -777,6 +781,14 @@ class PluginVmAppTest : public ::testing::TestWithParam<ProviderType> {
                model_updater_.get());
   }
 
+  void AllowPluginVm() {
+    // We cannot call test_helper_.AllowPluginVm() because we have called
+    // SetUserRequirementsToAllowPluginVm()
+    test_helper_->EnablePluginVmFeature();
+    test_helper_->EnterpriseEnrollDevice();
+    test_helper_->SetPolicyRequirementsToAllowPluginVm();
+  }
+
   base::test::ScopedFeatureList scoped_feature_list_;
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> testing_profile_;
@@ -797,7 +809,7 @@ TEST_P(PluginVmAppTest, EnableAndDisablePluginVm) {
   app_service_test_.FlushMojoCalls();
   EXPECT_THAT(GetModelContent(model_updater_.get()), testing::IsEmpty());
 
-  test_helper_->AllowPluginVm();
+  AllowPluginVm();
 
   app_service_test_.FlushMojoCalls();
   EXPECT_EQ(std::vector<std::string>{l10n_util::GetStringUTF8(
@@ -812,7 +824,7 @@ TEST_P(PluginVmAppTest, EnableAndDisablePluginVm) {
 }
 
 TEST_P(PluginVmAppTest, PluginVmEnabled) {
-  test_helper_->AllowPluginVm();
+  AllowPluginVm();
 
   // Reset the AppModelBuilder, so that it is created in a state where
   // Plugin VM was enabled.

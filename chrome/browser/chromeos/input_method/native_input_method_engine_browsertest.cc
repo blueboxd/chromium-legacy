@@ -7,12 +7,14 @@
 #include "base/guid.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/chromeos/input_method/textinput_test_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -419,4 +421,32 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineTest, SuggestUserName) {
                                       1);
 
   SetFocus(nullptr);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    NativeInputMethodEngineTest,
+    OnLearnMoreButtonClickedOpensEmojiSuggestionSettingsPage) {
+  base::UserActionTester user_action_tester;
+  ui::ime::AssistiveWindowButton button;
+  button.id = ui::ime::ButtonId::kLearnMore;
+  button.window_type = ui::ime::AssistiveWindowType::kEmojiSuggestion;
+
+  engine_.AssistiveWindowButtonClicked(button);
+
+  EXPECT_EQ(1, user_action_tester.GetActionCount(
+                   "ChromeOS.Settings.SmartInputs.EmojiSuggestions.Open"));
+}
+
+IN_PROC_BROWSER_TEST_F(
+    NativeInputMethodEngineTest,
+    OnSettingLinkButtonClickedOpensPersonalInfoSuggestionSettingsPage) {
+  base::UserActionTester user_action_tester;
+  ui::ime::AssistiveWindowButton button;
+  button.id = ui::ime::ButtonId::kSmartInputsSettingLink;
+
+  engine_.AssistiveWindowButtonClicked(button);
+
+  EXPECT_EQ(1,
+            user_action_tester.GetActionCount(
+                "ChromeOS.Settings.SmartInputs.PersonalInfoSuggestions.Open"));
 }

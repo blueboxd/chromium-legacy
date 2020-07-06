@@ -27,6 +27,7 @@ enum class SuggestionStatus {
   kAccept = 1,
   kDismiss = 2,
   kBrowsing = 3,
+  kOpenSettings = 4,
 };
 
 }  // namespace chromeos

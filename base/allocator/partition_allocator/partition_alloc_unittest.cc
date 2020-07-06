@@ -130,7 +130,7 @@ namespace base {
 namespace internal {
 
 const size_t kTestAllocSize = 16;
-#if !DCHECK_IS_ON()
+#if !DCHECK_IS_ON() || BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 const size_t kPointerOffset = kPartitionTagSize;
 const size_t kExtraAllocSize = kPartitionTagSize;
 #else
@@ -919,8 +919,11 @@ TEST_F(PartitionAllocTest, GenericAllocGetSizeAndOffset) {
 
 #if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
 TEST_F(PartitionAllocTest, GetOffsetMultiplePages) {
-  size_t size = 48 - kExtraAllocSize;
-  size_t real_size = size + kExtraAllocSize;
+  const size_t real_size = 80;
+  const size_t requested_size = real_size - kExtraAllocSize;
+  // Double check we don't end up with 0 or negative size.
+  EXPECT_GT(requested_size, 0u);
+  EXPECT_LE(requested_size, real_size);
   PartitionBucket<ThreadSafe>* bucket =
       allocator.root()->SizeToBucket(real_size);
   // Make sure the test is testing multiple partition pages case.
@@ -930,12 +933,12 @@ TEST_F(PartitionAllocTest, GetOffsetMultiplePages) {
       (bucket->num_system_pages_per_slot_span * kSystemPageSize) / real_size;
   std::vector<void*> ptrs;
   for (size_t i = 0; i < num_slots; ++i) {
-    ptrs.push_back(allocator.root()->Alloc(size, type_name));
+    ptrs.push_back(allocator.root()->Alloc(requested_size, type_name));
   }
   for (size_t i = 0; i < num_slots; ++i) {
     char* ptr = static_cast<char*>(ptrs[i]);
-    for (size_t offset = 0; offset < size; offset += 13) {
-      EXPECT_EQ(PartitionAllocGetSize<ThreadSafe>(ptr), size);
+    for (size_t offset = 0; offset < requested_size; offset += 13) {
+      EXPECT_EQ(PartitionAllocGetSize<ThreadSafe>(ptr), requested_size);
       EXPECT_EQ(PartitionAllocGetSlotOffset<ThreadSafe>(ptr + offset), offset);
       // TODO(bartekn): Remove when CheckedPtr2Impl no longer calls mismatched
       // vartiant.

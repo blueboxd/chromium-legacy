@@ -11,13 +11,10 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
-#include "base/metrics/user_metrics.h"
 #include "chrome/browser/chromeos/input_method/assistive_window_controller_delegate.h"
 #include "chrome/browser/chromeos/input_method/assistive_window_properties.h"
 #include "chrome/browser/chromeos/input_method/ui/suggestion_details.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/settings_window_manager_chromeos.h"
-#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/views/widget/widget.h"
@@ -163,11 +160,9 @@ void AssistiveWindowController::ShowSuggestion(
   suggestion_window_view_->Show(details);
 }
 
+// TODO(crbug/1102219): Method unused. Remove all definitions and references.
 void AssistiveWindowController::ShowMultipleSuggestions(
     const std::vector<base::string16>& suggestions) {
-  if (!suggestion_window_view_)
-    InitSuggestionWindow();
-  suggestion_window_view_->ShowMultipleCandidates(suggestions);
 }
 
 void AssistiveWindowController::SetButtonHighlighted(
@@ -208,7 +203,7 @@ void AssistiveWindowController::SetAssistiveWindowProperties(
       if (!suggestion_window_view_)
         InitSuggestionWindow();
       if (window_.visible) {
-        suggestion_window_view_->ShowMultipleCandidates(window.candidates);
+        suggestion_window_view_->ShowMultipleCandidates(window);
       } else {
         HideSuggestion();
       }
@@ -221,14 +216,7 @@ void AssistiveWindowController::SetAssistiveWindowProperties(
 
 void AssistiveWindowController::AssistiveWindowButtonClicked(
     const ui::ime::AssistiveWindowButton& button) const {
-  if (button.id == ui::ime::ButtonId::kSmartInputsSettingLink) {
-    base::RecordAction(base::UserMetricsAction("OpenSmartInputsSettings"));
-    chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-        ProfileManager::GetActiveUserProfile(),
-        chromeos::settings::mojom::kSmartInputsSubpagePath);
-  } else {
     delegate_->AssistiveWindowButtonClicked(button);
-  }
 }
 
 ui::ime::SuggestionWindowView*

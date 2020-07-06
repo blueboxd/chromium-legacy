@@ -11,12 +11,14 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/input_method/ui/suggestion_details.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chromeos/constants/chromeos_pref_names.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/ui/label_formatter_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 
@@ -36,6 +38,22 @@ const char kAnnounceShowTab[] = "Press tab to insert.";
 
 constexpr base::TimeDelta kTtsShowDelay =
     base::TimeDelta::FromMilliseconds(1200);
+
+const std::vector<autofill::ServerFieldType>& GetHomeAddressTypes() {
+  static base::NoDestructor<std::vector<autofill::ServerFieldType>>
+      homeAddressTypes{
+          {autofill::ServerFieldType::ADDRESS_HOME_LINE1,
+           autofill::ServerFieldType::ADDRESS_HOME_LINE2,
+           autofill::ServerFieldType::ADDRESS_HOME_LINE3,
+           autofill::ServerFieldType::ADDRESS_HOME_STREET_ADDRESS,
+           autofill::ServerFieldType::ADDRESS_HOME_DEPENDENT_LOCALITY,
+           autofill::ServerFieldType::ADDRESS_HOME_CITY,
+           autofill::ServerFieldType::ADDRESS_HOME_STATE,
+           autofill::ServerFieldType::ADDRESS_HOME_ZIP,
+           autofill::ServerFieldType::ADDRESS_HOME_SORTING_CODE,
+           autofill::ServerFieldType::ADDRESS_HOME_COUNTRY}};
+  return *homeAddressTypes;
+}
 
 }  // namespace
 
@@ -196,13 +214,14 @@ base::string16 PersonalInfoSuggester::GetSuggestion(
   // strategy in the future.
   auto* profile = autofill_profiles[0];
   base::string16 suggestion;
+  const std::string app_locale = g_browser_process->GetApplicationLocale();
   switch (proposed_action_type_) {
     case AssistiveType::kPersonalName:
       suggestion = profile->GetRawInfo(autofill::ServerFieldType::NAME_FULL);
       break;
     case AssistiveType::kPersonalAddress:
-      suggestion = profile->GetRawInfo(
-          autofill::ServerFieldType::ADDRESS_HOME_STREET_ADDRESS);
+      suggestion = autofill::GetLabelNationalAddress(GetHomeAddressTypes(),
+                                                     *profile, app_locale);
       break;
     case AssistiveType::kPersonalPhoneNumber:
     case AssistiveType::kPersonalNumber:

@@ -805,12 +805,17 @@ def linux_builder(
     name,
     goma_backend=builders.goma.backend.RBE_PROD,
     goma_jobs=builders.goma.jobs.MANY_JOBS_FOR_CI,
+    tree_closing=True,
+    notifies=('chromium.linux',),
+    extra_notifies=None,
     **kwargs):
   return ci.builder(
       name = name,
       goma_backend = goma_backend,
       goma_jobs = goma_jobs,
       mastername = 'chromium.linux',
+      tree_closing = tree_closing,
+      notifies = list(notifies) + (extra_notifies or []),
       **kwargs
   )
 

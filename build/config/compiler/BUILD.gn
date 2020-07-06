@@ -145,7 +145,8 @@ declare_args() {
   # so only enable them by default for mainstream build configs.
   enable_wmax_tokens =
       !is_official_build &&
-      (is_mac || (is_linux && !is_chromeos && target_cpu == "x64") ||
+      ((is_mac && target_cpu == "x64") ||
+       (is_linux && !is_chromeos && target_cpu == "x64") ||
        (is_win && target_cpu == "x86") || (is_win && target_cpu == "x64") ||
        (is_android && target_cpu == "arm") ||
        (is_android && target_cpu == "arm64"))

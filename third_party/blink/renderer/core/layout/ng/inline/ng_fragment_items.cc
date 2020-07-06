@@ -270,12 +270,12 @@ void NGFragmentItems::DirtyLinesFromNeedsLayout(
         return;
       }
     } else if (auto* layout_inline = ToLayoutInlineOrNull(layout_object)) {
-      if (layout_object->SelfNeedsLayout()) {
-        DirtyLinesFromChangedChild(layout_object);
-        return;
-      }
-      if (layout_object->NormalChildNeedsLayout() ||
-          layout_object->PosChildNeedsLayout()) {
+      if (layout_object->NeedsLayout()) {
+        if (layout_object->SelfNeedsLayout()) {
+          DirtyLinesFromChangedChild(layout_object);
+          return;
+        }
+        // If children need layout, look into them.
         if (LayoutObject* child = layout_inline->FirstChild()) {
           layout_object = child;
           continue;

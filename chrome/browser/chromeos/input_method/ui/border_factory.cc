@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/input_method/ui/border_factory.h"
 
+#include "chrome/browser/ui/views/chrome_layout_provider.h"
+
 namespace ui {
 namespace ime {
 
@@ -18,6 +20,9 @@ std::unique_ptr<views::BubbleBorder> GetBorderForWindow(
       border = std::make_unique<views::BubbleBorder>(
           views::BubbleBorder::NONE, views::BubbleBorder::SMALL_SHADOW,
           gfx::kPlaceholderColor);
+      border->set_md_shadow_elevation(
+          ChromeLayoutProvider::Get()->GetShadowElevationMetric(
+              views::EMPHASIS_MEDIUM));
   }
   border->SetCornerRadius(views::LayoutProvider::Get()->GetCornerRadiusMetric(
       views::EmphasisMetric::EMPHASIS_MEDIUM));

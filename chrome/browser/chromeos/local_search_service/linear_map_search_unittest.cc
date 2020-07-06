@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/local_search_service/index.h"
+#include "chrome/browser/chromeos/local_search_service/linear_map_search.h"
 #include "chrome/browser/chromeos/local_search_service/shared_structs.h"
 #include "chrome/browser/chromeos/local_search_service/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,7 +31,7 @@ void CheckSearchParams(const SearchParams& actual,
   EXPECT_DOUBLE_EQ(actual.fuzzy_threshold, expected.fuzzy_threshold);
 }
 
-void FindAndCheckResults(Index* index,
+void FindAndCheckResults(LinearMapSearch* index,
                          std::string query,
                          int32_t max_results,
                          ResponseStatus expected_status,
@@ -68,17 +68,16 @@ void FindAndCheckResults(Index* index,
 
 }  // namespace
 
-class IndexTest : public testing::Test {
+class LinearMapSearchTest : public testing::Test {
   void SetUp() override {
-    index_ =
-        std::make_unique<Index>(IndexId::kCrosSettings, Backend::kLinearMap);
+    index_ = std::make_unique<LinearMapSearch>(IndexId::kCrosSettings);
   }
 
  protected:
-  std::unique_ptr<Index> index_;
+  std::unique_ptr<LinearMapSearch> index_;
 };
 
-TEST_F(IndexTest, SetSearchParams) {
+TEST_F(LinearMapSearchTest, SetSearchParams) {
   {
     // No params are specified so default values are used.
     const SearchParams used_params = index_->GetSearchParamsForTesting();
@@ -102,7 +101,7 @@ TEST_F(IndexTest, SetSearchParams) {
   }
 }
 
-TEST_F(IndexTest, RelevanceThreshold) {
+TEST_F(LinearMapSearchTest, RelevanceThreshold) {
   const std::map<std::string, std::vector<ContentWithId>> data_to_register = {
       {"id1", {{"tag1", "Wi-Fi"}}}, {"id2", {{"tag2", "famous"}}}};
   std::vector<Data> data = CreateTestData(data_to_register);
@@ -139,7 +138,7 @@ TEST_F(IndexTest, RelevanceThreshold) {
   }
 }
 
-TEST_F(IndexTest, MaxResults) {
+TEST_F(LinearMapSearchTest, MaxResults) {
   const std::map<std::string, std::vector<ContentWithId>> data_to_register = {
       {"id1", {{"tag1", "abcde"}, {"tag2", "Wi-Fi"}}},
       {"id2", {{"tag3", "wifi"}}}};
@@ -165,7 +164,7 @@ TEST_F(IndexTest, MaxResults) {
   }
 }
 
-TEST_F(IndexTest, ResultFound) {
+TEST_F(LinearMapSearchTest, ResultFound) {
   const std::map<std::string, std::vector<ContentWithId>> data_to_register = {
       {"id1", {{"cid1", "id1"}, {"cid2", "tag1a"}, {"cid3", "tag1b"}}},
       {"xyz", {{"cid4", "xyz"}}}};

@@ -496,7 +496,7 @@ ci.linux_builder(
         category = 'fuchsia|a64',
         short_name = 'rel',
     ),
-    notifies = ['cr-fuchsia'],
+    extra_notifies = ['cr-fuchsia'],
 )
 
 ci.linux_builder(
@@ -505,7 +505,7 @@ ci.linux_builder(
         category = 'fuchsia|x64',
         short_name = 'rel',
     ),
-    notifies = ['cr-fuchsia'],
+    extra_notifies = ['cr-fuchsia'],
 )
 
 ci.linux_builder(
@@ -549,7 +549,7 @@ ci.linux_builder(
         category = 'fuchsia|cast',
         short_name = 'a64',
     ),
-    notifies = ['cr-fuchsia'],
+    extra_notifies = ['cr-fuchsia'],
 )
 
 ci.linux_builder(
@@ -558,7 +558,7 @@ ci.linux_builder(
         category = 'fuchsia|cast',
         short_name = 'x64',
     ),
-    notifies = ['cr-fuchsia'],
+    extra_notifies = ['cr-fuchsia'],
 )
 
 ci.linux_builder(

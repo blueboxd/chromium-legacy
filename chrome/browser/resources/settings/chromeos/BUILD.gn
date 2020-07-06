@@ -69,6 +69,10 @@ if (optimize_webui) {
       "../../../../../ui/webui/resources:modulize",
     ]
     excludes = [
+      "chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-lite.js",
+      "chrome://resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom-lite.js",
+      "chrome://resources/mojo/services/network/public/mojom/ip_address.mojom-lite.js",
+      "chrome://resources/cr_components/chromeos/network/mojo_interface_provider.m.js",
       "chrome://resources/js/cr.m.js",
       "chrome://resources/css/cros_colors.generated.css",
       "chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js",
@@ -234,15 +238,13 @@ group("closure_compile_module") {
     #":closure_compile_local_module",
     #"ambient_mode_page:closure_compile_module",
     "bluetooth_page:closure_compile_module",
-
     #"crostini_page:closure_compile_module",
     #"date_time_page:closure_compile_module",
     #"device_page:closure_compile_module",
     #"google_assistant_page:closure_compile_module",
     #"internet_page:closure_compile_module",
     "localized_link:closure_compile_module",
-
-    #"multidevice_page:closure_compile_module",
+    "multidevice_page:closure_compile_module",
     #"os_a11y_page:closure_compile_module",
     #"os_about_page:closure_compile_module",
     #"os_apps_page:closure_compile_module",
@@ -253,7 +255,6 @@ group("closure_compile_module") {
     #"os_printing_page:closure_compile_module",
     #"os_privacy_page:closure_compile_module",
     "os_reset_page:closure_compile_module",
-
     #"os_search_page:closure_compile_module",
     #"os_settings_main:closure_compile_module",
     #"os_settings_menu:closure_compile_module",
@@ -278,9 +279,8 @@ js_type_check("closure_compile_local_module") {
     #  ":os_settings.m",
     #  ":os_settings_icons_css.m",
     ":os_settings_routes.m",
-
-    #  ":route_origin_behavior.m",
-    #  ":search_handler.m",
+    ":route_origin_behavior.m",
+    #":search_handler.m",
   ]
 }
 
@@ -339,7 +339,8 @@ js_library("os_settings_routes.m") {
 js_library("route_origin_behavior.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/route_origin_behavior.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    ":os_route.m",
+    "//ui/webui/resources/js:cr.m",
   ]
   extra_deps = [ ":modulize" ]
 }

@@ -52,6 +52,9 @@ class SuggestionHandlerInterface {
       bool highlighted,
       std::string* error) = 0;
 
+  // Click the given button in assitive window.
+  virtual void ClickButton(const ui::ime::AssistiveWindowButton& button) = 0;
+
   virtual bool AcceptSuggestionCandidate(int context_id,
                                          const base::string16& candidate,
                                          std::string* error) = 0;

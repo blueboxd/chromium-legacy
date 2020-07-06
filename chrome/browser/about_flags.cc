@@ -5940,7 +5940,7 @@ void GetFlagFeatureEntries(flags_ui::FlagsStorage* flags_storage,
                            base::ListValue* unsupported_entries) {
   FlagsStateSingleton::GetFlagsState()->GetFlagFeatureEntries(
       flags_storage, access, supported_entries, unsupported_entries,
-      base::Bind(&SkipConditionalFeatureEntry));
+      base::BindRepeating(&SkipConditionalFeatureEntry));
 }
 
 void GetFlagFeatureEntriesForDeprecatedPage(
@@ -5950,7 +5950,7 @@ void GetFlagFeatureEntriesForDeprecatedPage(
     base::ListValue* unsupported_entries) {
   FlagsStateSingleton::GetFlagsState()->GetFlagFeatureEntries(
       flags_storage, access, supported_entries, unsupported_entries,
-      base::Bind(&ShouldSkipNonDeprecatedFeatureEntry));
+      base::BindRepeating(&ShouldSkipNonDeprecatedFeatureEntry));
 }
 
 bool IsRestartNeededToCommitChanges() {

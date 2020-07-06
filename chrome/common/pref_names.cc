@@ -2321,6 +2321,8 @@ const char kLocalSearchServiceMetricsDailySample[] =
 // local_search_service::MetricsReporter.
 const char kLocalSearchServiceMetricsCrosSettingsCount[] =
     "local_search_service.metrics.cros_settings_count";
+const char kLocalSearchServiceMetricsHelpAppCount[] =
+    "local_search_service.metrics.help_app_count";
 
 #endif  // defined(OS_CHROMEOS)
 

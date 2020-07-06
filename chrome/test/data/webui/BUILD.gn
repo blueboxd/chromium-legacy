@@ -235,10 +235,16 @@ if (include_js_tests) {
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/fake_bluetooth_private.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/fake_bluetooth.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/localized_link_test.m.js",
+        "$root_gen_dir/chrome/test/data/webui/settings/chromeos/multidevice_page_tests.m.js",
+        "$root_gen_dir/chrome/test/data/webui/settings/chromeos/multidevice_subpage_tests.m.js",
+        "$root_gen_dir/chrome/test/data/webui/settings/chromeos/multidevice_smartlock_subpage_test.m.js",
+        "$root_gen_dir/chrome/test/data/webui/settings/chromeos/multidevice_feature_item_tests.m.js",
+        "$root_gen_dir/chrome/test/data/webui/settings/chromeos/multidevice_feature_toggle_tests.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/nearby_share_subpage_tests.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/os_reset_page_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/test_os_reset_browser_proxy.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/test_os_lifetime_browser_proxy.m.js",
+        "$root_gen_dir/chrome/test/data/webui/settings/chromeos/test_multidevice_browser_proxy.m.js",
       ]
     }
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]

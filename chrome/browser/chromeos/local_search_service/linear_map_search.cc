@@ -9,6 +9,7 @@
 #include "base/optional.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/chromeos/local_search_service/search_utils.h"
 #include "chrome/common/string_matching/fuzzy_tokenized_string_match.h"
 #include "chrome/common/string_matching/tokenized_string.h"
 
@@ -60,15 +61,10 @@ bool IsItemRelevant(const TokenizedString& query,
   return false;
 }
 
-// Compares Results by |score|.
-bool CompareResults(const local_search_service::Result& r1,
-                    const local_search_service::Result& r2) {
-  return r1.score > r2.score;
-}
-
 }  // namespace
 
-LinearMapSearch::LinearMapSearch() = default;
+LinearMapSearch::LinearMapSearch(IndexId index_id)
+    : Index(index_id, Backend::kLinearMap) {}
 
 LinearMapSearch::~LinearMapSearch() = default;
 
@@ -108,23 +104,24 @@ ResponseStatus LinearMapSearch::Find(const base::string16& query,
                                      std::vector<Result>* results) {
   DCHECK(results);
   results->clear();
+
   if (query.empty()) {
-    return ResponseStatus::kEmptyQuery;
+    const ResponseStatus status = ResponseStatus::kEmptyQuery;
+    MaybeLogSearchResultsStats(status, 0u);
+    return status;
   }
+
   if (data_.empty()) {
-    return ResponseStatus::kEmptyIndex;
+    const ResponseStatus status = ResponseStatus::kEmptyIndex;
+    MaybeLogSearchResultsStats(status, 0u);
+    return status;
   }
 
   *results = GetSearchResults(query, max_results);
-  return ResponseStatus::kSuccess;
-}
 
-void LinearMapSearch::SetSearchParams(const SearchParams& search_params) {
-  search_params_ = search_params;
-}
-
-SearchParams LinearMapSearch::GetSearchParams() {
-  return search_params_;
+  const ResponseStatus status = ResponseStatus::kSuccess;
+  MaybeLogSearchResultsStats(status, results->size());
+  return status;
 }
 
 std::vector<Result> LinearMapSearch::GetSearchResults(

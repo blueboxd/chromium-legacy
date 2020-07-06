@@ -843,36 +843,38 @@ testcase.transferDragAndDrop = async () => {
       {ignoreLastModifiedTime: true});
 };
 
-/**
- * Tests that we can drag a file from #file-list and hover above USB root as
- * EntryList without raising an error.
+/*
+ * Tests that dragging a file over a directory tree item (folder) navigates
+ * the file list to that folder.
  */
 testcase.transferDragAndHover = async () => {
   const entries = [ENTRIES.hello, ENTRIES.photos];
 
-  await sendTestMessage({name: 'mountUsbWithPartitions'});
-  await sendTestMessage({name: 'mountFakeUsb'});
-
   // Open files app.
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, entries, []);
 
-  // Drag has to start in the file list column "name" text content, otherwise it
-  // starts a selection instead of a drag.
-  const src =
+  // Expand Downloads to display "photos" folder in the directory tree.
+  await expandTreeItem(appId, '#directory-tree [entry-label="Downloads"]');
+
+  // The drag has to start in the file list column "name" text, otherwise it
+  // starts a drag-selection instead of a drag operation.
+  const source =
       `#file-list li[file-name="${ENTRIES.hello.nameText}"] .entry-name`;
-  const dst1 = '#directory-tree [entry-label="Drive Label"]';
-  const dst2 = '#directory-tree [entry-label="fake-usb"]';
 
-  // Wait for USB roots to be ready.
-  await remoteCall.waitForElement(appId, dst1);
-  await remoteCall.waitForElement(appId, dst2);
+  // Wait for the directory tree target.
+  const target = '#directory-tree [entry-label="photos"]';
+  await remoteCall.waitForElement(appId, target);
 
-  // Drag and hover it.
+  // Drag the source and hover it over the target.
   const skipDrop = true;
   chrome.test.assertTrue(
       await remoteCall.callRemoteTestUtil(
-          'fakeDragAndDrop', appId, [src, dst1, skipDrop]),
+          'fakeDragAndDrop', appId, [source, target, skipDrop]),
       'fakeDragAndDrop failed');
+
+  // Check: drag hovering should navigate the file list.
+  await remoteCall.waitUntilCurrentDirectoryIsChanged(
+      appId, '/My files/Downloads/photos');
 };
 
 /**

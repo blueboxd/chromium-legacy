@@ -19,50 +19,52 @@
 
 namespace local_search_service {
 
-class LinearMapSearch;
-
 // A local search service Index.
-// It is the client-facing API for search and indexing. It owns different
-// backends that provide actual data storage/indexing/search functions.
+// It is the client-facing API for search and indexing. It can be implemented
+// with different backends that provide actual data storage/indexing/search
+// functions.
 class Index {
  public:
   Index(IndexId index_id, Backend backend);
-  ~Index();
+  virtual ~Index();
 
   Index(const Index&) = delete;
   Index& operator=(const Index&) = delete;
 
   // Returns number of data items.
-  uint64_t GetSize();
+  virtual uint64_t GetSize() = 0;
 
   // Adds or updates data.
   // IDs of data should not be empty.
-  void AddOrUpdate(const std::vector<Data>& data);
+  virtual void AddOrUpdate(const std::vector<Data>& data) = 0;
 
   // Deletes data with |ids| and returns number of items deleted.
   // If an id doesn't exist in the Index, no operation will be done.
   // IDs should not be empty.
-  uint32_t Delete(const std::vector<std::string>& ids);
+  virtual uint32_t Delete(const std::vector<std::string>& ids) = 0;
 
   // Returns matching results for a given query.
   // Zero |max_results| means no max.
-  // For each data in the index, we return the 1st search tag that matches
-  // the query (i.e. above the threshold). Client should put the most
-  // important search tag first when registering the data in the index.
-  ResponseStatus Find(const base::string16& query,
-                      uint32_t max_results,
-                      std::vector<Result>* results);
+  // Search behaviour depends on the implementation.
+  virtual ResponseStatus Find(const base::string16& query,
+                              uint32_t max_results,
+                              std::vector<Result>* results) = 0;
+
+  // Logs daily search metrics if |reporter_| is non-null and other
+  // UMA metrics if |histogram_prefix_| is non-empty.
+  // Each implementation of this class should call this method at the end of
+  // Find.
+  void MaybeLogSearchResultsStats(ResponseStatus status, size_t num_results);
 
   void SetSearchParams(const SearchParams& search_params);
-
   SearchParams GetSearchParamsForTesting();
+
+ protected:
+  SearchParams search_params_;
+
  private:
-  base::Optional<IndexId> index_id_;
   std::string histogram_prefix_;
   std::unique_ptr<SearchMetricsReporter> reporter_;
-  // TODO(jiameng): Currently linear map is the only backend supported. We will
-  // add inverted index in the next CLs.
-  std::unique_ptr<LinearMapSearch> linear_map_search_;
   base::WeakPtrFactory<Index> weak_ptr_factory_{this};
 };
 

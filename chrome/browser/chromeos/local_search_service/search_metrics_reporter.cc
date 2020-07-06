@@ -22,18 +22,21 @@ constexpr base::TimeDelta kCheckDailyEventInternal =
 constexpr std::array<const char*, SearchMetricsReporter::kNumberIndexIds>
     kDailyCountPrefs = {
         prefs::kLocalSearchServiceMetricsCrosSettingsCount,
+        prefs::kLocalSearchServiceMetricsHelpAppCount,
 };
 
 // Histograms corresponding to IndexId values.
 constexpr std::array<const char*, SearchMetricsReporter::kNumberIndexIds>
     kDailyCountHistograms = {
         SearchMetricsReporter::kCrosSettingsName,
+        SearchMetricsReporter::kHelpAppName,
 };
 
 }  // namespace
 
 constexpr char SearchMetricsReporter::kDailyEventIntervalName[];
 constexpr char SearchMetricsReporter::kCrosSettingsName[];
+constexpr char SearchMetricsReporter::kHelpAppName[];
 
 constexpr int SearchMetricsReporter::kNumberIndexIds;
 

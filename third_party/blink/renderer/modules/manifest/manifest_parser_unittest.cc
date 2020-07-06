@@ -373,8 +373,10 @@ TEST_F(ManifestParserTest, ScopeParseRules) {
     EXPECT_EQ(
         "property 'start_url' ignored, should be same origin as document.",
         errors()[0]);
-    EXPECT_EQ("property 'scope' ignored, should be same origin as document.",
-              errors()[1]);
+    EXPECT_EQ(
+        "property 'scope' ignored. Start url should be within scope "
+        "of scope URL.",
+        errors()[1]);
   }
 
   // No start URL. Document URL is in scope.
@@ -1389,7 +1391,7 @@ TEST_F(ManifestParserTest, ShortcutUrlParseRules) {
         KURL("http://foo.com/landing/manifest.json"), DefaultDocumentUrl());
     EXPECT_TRUE(manifest->shortcuts.IsEmpty());
     EXPECT_EQ(2u, GetErrorCount());
-    EXPECT_EQ("property 'url' ignored, should be same origin as document.",
+    EXPECT_EQ("property 'url' ignored, should be within scope of the manifest.",
               errors()[0]);
     EXPECT_EQ("property 'url' of 'shortcut' not present.", errors()[1]);
   }
@@ -1405,11 +1407,10 @@ TEST_F(ManifestParserTest, ShortcutUrlParseRules) {
         KURL("http://foo.com/landing/index.html"));
     EXPECT_TRUE(manifest->shortcuts.IsEmpty());
     ASSERT_EQ(manifest->scope.GetString(), "http://foo.com/landing");
-    EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ(
-        "property 'url' of 'shortcut' ignored. url should be within scope of "
-        "the manifest.",
-        errors()[0]);
+    EXPECT_EQ(2u, GetErrorCount());
+    EXPECT_EQ("property 'url' ignored, should be within scope of the manifest.",
+              errors()[0]);
+    EXPECT_EQ("property 'url' of 'shortcut' not present.", errors()[1]);
   }
 
   // Shortcut url should be within the manifest scope.

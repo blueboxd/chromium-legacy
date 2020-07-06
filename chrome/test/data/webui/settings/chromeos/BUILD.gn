@@ -37,10 +37,16 @@ js_modulizer("modulize") {
     "fake_settings_search_handler.js",
     "fake_user_action_recorder.js",
     "localized_link_test.js",
+    "multidevice_page_tests.js",
+    "multidevice_subpage_tests.js",
+    "multidevice_smartlock_subpage_test.js",
+    "multidevice_feature_item_tests.js",
+    "multidevice_feature_toggle_tests.js",
     "nearby_share_subpage_tests.js",
     "os_reset_page_test.js",
     "test_os_reset_browser_proxy.js",
     "test_os_lifetime_browser_proxy.js",
+    "test_multidevice_browser_proxy.js",
   ]
   namespace_rewrites =
       os_settings_namespace_rewrites + os_test_namespace_rewrites

@@ -33,9 +33,6 @@ enum FileError {
   FILE_ERROR_SERVICE_UNAVAILABLE = -18,
 };
 
-// Used as callbacks for file operations.
-typedef base::Callback<void(FileError error)> FileOperationCallback;
-
 // Returns a string representation of FileError.
 std::string FileErrorToString(FileError error);
 

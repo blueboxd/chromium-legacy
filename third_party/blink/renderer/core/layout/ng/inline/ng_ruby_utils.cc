@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_ruby_utils.h"
 
+#include <tuple>
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_result.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_logical_line_item.h"
@@ -13,18 +14,20 @@
 
 namespace blink {
 
-PhysicalRect AdjustTextRectForEmHeight(const PhysicalRect& rect,
-                                       const ComputedStyle& style,
-                                       WritingMode writing_mode) {
+namespace {
+
+std::tuple<LayoutUnit, LayoutUnit> AdjustTextOverUnderOffsetsForEmHeight(
+    LayoutUnit over,
+    LayoutUnit under,
+    const ComputedStyle& style) {
+  DCHECK_LE(over, under);
   const SimpleFontData* font_data = style.GetFont().PrimaryFont();
   if (!font_data)
-    return rect;
+    return std::make_pair(over, under);
   const auto font_baseline = style.GetFontBaseline();
   const LayoutUnit ascent =
       font_data->GetFontMetrics().FixedAscent(font_baseline);
-  const LayoutUnit line_height = IsHorizontalWritingMode(writing_mode)
-                                     ? rect.size.height
-                                     : rect.size.width;
+  const LayoutUnit line_height = under - over;
   // Gap amount to avoid too dense result.
   // TODO(crbug.com/1082087): Adjust the value.
   constexpr int kGapPx = 1;
@@ -36,7 +39,23 @@ PhysicalRect AdjustTextRectForEmHeight(const PhysicalRect& rect,
   LayoutUnit under_diff((line_height - ascent) -
                         font_data->EmHeightDescent(font_baseline) - kGapPx);
   under_diff = LayoutUnit(under_diff.ClampNegativeToZero().Floor());
-  const LayoutUnit new_line_height = line_height - over_diff - under_diff;
+  return std::make_tuple(over + over_diff, under - under_diff);
+}
+
+}  // anonymous namespace
+
+PhysicalRect AdjustTextRectForEmHeight(const PhysicalRect& rect,
+                                       const ComputedStyle& style,
+                                       WritingMode writing_mode) {
+  const LayoutUnit line_height = IsHorizontalWritingMode(writing_mode)
+                                     ? rect.size.height
+                                     : rect.size.width;
+  LayoutUnit over, under;
+  std::tie(over, under) =
+      AdjustTextOverUnderOffsetsForEmHeight(LayoutUnit(), line_height, style);
+  const LayoutUnit over_diff = over;
+  const LayoutUnit under_diff = line_height - under;
+  const LayoutUnit new_line_height = under - over;
 
   if (IsHorizontalWritingMode(writing_mode)) {
     return {{rect.offset.left, rect.offset.top + over_diff},
@@ -259,13 +278,12 @@ NGAnnotationMetrics ComputeAnnotationOverflow(
     LayoutUnit line_over,
     const ComputedStyle& line_style) {
   DCHECK(RuntimeEnabledFeatures::LayoutNGRubyEnabled());
-  // Min/max position of content without line-height.
+  // Min/max position of content and annotations, ignoring line-height.
   LayoutUnit content_over = line_over + line_box_metrics.ascent;
   LayoutUnit content_under = content_over;
 
-  // Min/max position of annotations.
-  LayoutUnit annotation_over = content_over;
-  LayoutUnit annotation_under = content_over;
+  bool has_over_annotation = false;
+  bool has_under_annotation = false;
 
   const LayoutUnit line_under = line_over + line_box_metrics.LineHeight();
   bool has_over_emphasis = false;
@@ -273,8 +291,50 @@ NGAnnotationMetrics ComputeAnnotationOverflow(
   for (const NGLogicalLineItem& item : logical_line) {
     if (item.HasInFlowFragment()) {
       if (!item.IsControl()) {
-        content_over = std::min(content_over, item.BlockOffset());
-        content_under = std::max(content_under, item.BlockEndOffset());
+        LayoutUnit item_over = item.BlockOffset();
+        LayoutUnit item_under = item.BlockEndOffset();
+        if (item.fragment || item.shape_result) {
+          if (const auto* style = item.Style()) {
+            std::tie(item_over, item_under) =
+                AdjustTextOverUnderOffsetsForEmHeight(item_over, item_under,
+                                                      *style);
+          }
+        } else {
+          const auto* fragment = item.PhysicalFragment();
+          if (fragment && fragment->IsRubyRun()) {
+            PhysicalRect rect =
+                To<NGPhysicalBoxFragment>(fragment)->ScrollableOverflow(
+                    NGPhysicalFragment::kEmHeight);
+            LayoutUnit block_size;
+            if (IsHorizontalWritingMode(line_style.GetWritingMode())) {
+              item_under = item_over + rect.Bottom();
+              item_over += rect.offset.top;
+              block_size = fragment->Size().height;
+            } else {
+              block_size = fragment->Size().width;
+              // We assume 'over' is always on right in vertical writing modes.
+              // TODO(layout-dev): sideways-lr support.
+              DCHECK(line_style.IsFlippedBlocksWritingMode() ||
+                     line_style.IsFlippedLinesWritingMode());
+              item_under = item_over + block_size;
+              item_over = item_under - rect.Right();
+              item_under -= rect.offset.left;
+            }
+
+            // Check if we really have an annotation.
+            if (const auto* layout_result = item.layout_result.get()) {
+              LayoutUnit overflow = layout_result->AnnotationOverflow();
+              if (IsFlippedLinesWritingMode(line_style.GetWritingMode()))
+                overflow = -overflow;
+              if (overflow < LayoutUnit())
+                has_over_annotation = true;
+              else if (overflow > LayoutUnit())
+                has_under_annotation = true;
+            }
+          }
+        }
+        content_over = std::min(content_over, item_over);
+        content_under = std::max(content_under, item_under);
       }
       if (const auto* style = item.Style()) {
         if (style->GetTextEmphasisMark() != TextEmphasisMark::kNone) {
@@ -284,27 +344,6 @@ NGAnnotationMetrics ComputeAnnotationOverflow(
             has_under_emphasis = true;
         }
       }
-    }
-
-    // Accumulate |AnnotationOverflow| from ruby runs. All ruby run items have
-    // |layout_result|.
-    const NGLayoutResult* layout_result = item.layout_result.get();
-    if (!layout_result)
-      continue;
-    LayoutUnit overflow = layout_result->AnnotationOverflow();
-    if (IsFlippedLinesWritingMode(line_style.GetWritingMode()))
-      overflow = -overflow;
-    if (overflow < LayoutUnit()) {
-      annotation_over =
-          std::min(annotation_over, item.rect.offset.block_offset + overflow);
-    } else if (overflow > LayoutUnit()) {
-      const LayoutUnit logical_bottom =
-          item.rect.offset.block_offset +
-          layout_result->PhysicalFragment()
-              .Size()
-              .ConvertToLogical(line_style.GetWritingMode())
-              .block_size;
-      annotation_under = std::max(annotation_under, logical_bottom + overflow);
     }
   }
 
@@ -321,21 +360,22 @@ NGAnnotationMetrics ComputeAnnotationOverflow(
   // TODO(layout-dev): If the text-emphasis is in [line_over, line_under],
   // this line can provide annotation space.
   if (has_over_emphasis)
-    content_over = line_over;
+    content_over = std::min(content_over, line_over);
   if (has_under_emphasis)
+    content_under = std::max(content_under, line_under);
+
+  // With some fonts, text fragment sizes can exceed line-height.
+  // We'd like to set overflow only if we have annotations.
+  // This affects fast/ruby/line-height.html on macOS.
+  if (content_over < line_over && !has_over_annotation)
+    content_over = line_over;
+  if (content_under > line_under && !has_under_annotation)
     content_under = line_under;
 
-  const LayoutUnit overflow_over =
-      (line_over - annotation_over).ClampNegativeToZero();
-  const LayoutUnit overflow_under =
-      (annotation_under - line_under).ClampNegativeToZero();
-  return {overflow_over, overflow_under,
-          // With some fonts, text fragment sizes can exceed line-height.
-          // We need ClampNegativeToZero().
-          overflow_over ? LayoutUnit()
-                        : (content_over - line_over).ClampNegativeToZero(),
-          overflow_under ? LayoutUnit()
-                         : (line_under - content_under).ClampNegativeToZero()};
+  return {(line_over - content_over).ClampNegativeToZero(),
+          (content_under - line_under).ClampNegativeToZero(),
+          (content_over - line_over).ClampNegativeToZero(),
+          (line_under - content_under).ClampNegativeToZero()};
 }
 
 }  // namespace blink

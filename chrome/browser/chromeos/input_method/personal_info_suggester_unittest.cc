@@ -13,6 +13,7 @@
 #include "chromeos/constants/chromeos_pref_names.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/geo/country_names.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -72,6 +73,8 @@ class TestSuggestionHandler : public SuggestionHandlerInterface {
                                std::string* error) override {
     return false;
   }
+
+  void ClickButton(const ui::ime::AssistiveWindowButton& button) override {}
 
   bool SetButtonHighlighted(int context_id,
                             const ui::ime::AssistiveWindowButton& button,
@@ -173,7 +176,8 @@ class PersonalInfoSuggesterTest : public testing::Test {
   const base::string16 first_name_ = base::UTF8ToUTF16("John");
   const base::string16 last_name_ = base::UTF8ToUTF16("Wayne");
   const base::string16 full_name_ = base::UTF8ToUTF16("John Wayne");
-  const base::string16 address_ = base::UTF8ToUTF16("1 Dream Road Hollywood");
+  const base::string16 address_ =
+      base::UTF8ToUTF16("1 Dream Road, Hollywood, CA 12345");
   const base::string16 phone_number_ = base::UTF8ToUTF16("16505678910");
 };
 
@@ -224,10 +228,19 @@ TEST_F(PersonalInfoSuggesterTest, SuggestNames) {
 }
 
 TEST_F(PersonalInfoSuggesterTest, SuggestAddress) {
+  autofill::CountryNames::SetLocaleString("en-US");
   autofill::AutofillProfile autofill_profile(base::GenerateGUID(),
                                              autofill::test::kEmptyOrigin);
-  autofill_profile.SetRawInfo(
-      autofill::ServerFieldType::ADDRESS_HOME_STREET_ADDRESS, address_);
+  autofill_profile.SetRawInfo(autofill::ServerFieldType::ADDRESS_HOME_LINE1,
+                              base::UTF8ToUTF16("1 Dream Road"));
+  autofill_profile.SetRawInfo(autofill::ServerFieldType::ADDRESS_HOME_CITY,
+                              base::UTF8ToUTF16("Hollywood"));
+  autofill_profile.SetRawInfo(autofill::ServerFieldType::ADDRESS_HOME_ZIP,
+                              base::UTF8ToUTF16("12345"));
+  autofill_profile.SetRawInfo(autofill::ServerFieldType::ADDRESS_HOME_STATE,
+                              base::UTF8ToUTF16("CA"));
+  autofill_profile.SetRawInfo(autofill::ServerFieldType::ADDRESS_HOME_COUNTRY,
+                              base::UTF8ToUTF16("US"));
   personal_data_->AddProfile(autofill_profile);
 
   suggester_->Suggest(base::UTF8ToUTF16("my address is "));

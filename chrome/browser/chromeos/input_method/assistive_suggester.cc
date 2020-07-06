@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/window_properties.h"
 #include "base/feature_list.h"
+#include "base/hash/hash.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -26,13 +27,17 @@ const char kMaxTextBeforeCursorLength = 50;
 const char kKeydown[] = "keydown";
 
 const char* kAllowedDomainsForPersonalInfoSuggester[] = {
-    "amazon.com", "facebook.com", "instagram.com", "netflix.com",
-    "twitch.tv",  "twitter.com",  "youtube.com",
+    "discord.com",      "messenger.com",       "web.whatsapp.com",
+    "web.skype.com",    "duo.google.com",      "hangouts.google.com",
+    "chat.google.com",  "messages.google.com", "web.telegram.org",
+    "voice.google.com",
 };
 
 const char* kAllowedDomainsForEmojiSuggester[] = {
-    "amazon.com", "facebook.com", "instagram.com", "netflix.com",
-    "twitch.tv",  "twitter.com",  "youtube.com",
+    "discord.com",      "messenger.com",       "web.whatsapp.com",
+    "web.skype.com",    "duo.google.com",      "hangouts.google.com",
+    "chat.google.com",  "messages.google.com", "web.telegram.org",
+    "voice.google.com",
 };
 
 const char* kTestUrls[] = {
@@ -40,15 +45,61 @@ const char* kTestUrls[] = {
     "simple_textarea.html",
 };
 
+// For some internal websites, we do not want to reveal their urls in plain
+// text. See map between url and hash code in
+// https://docs.google.com/spreadsheets/d/1VELTWiHrUTEyX4HQI5PL_jDVFreM-lRhThVOurUuOk4/edit#gid=0
+const uint32_t kHashedInternalUrls[] = {
+    1845308025U,
+    153302869U,
+};
+
+// For ARC++ apps, use arc package name. For system apps, use app ID.
 const char* kAllowedAppsForPersonalInfoSuggester[] = {
-    "pondihnpfglkihppmldjekdcjgbkpnen",  // Facebook messenger
-    "cnbgggchhmkkdmeppjobngjoejnihlei",  // Google Play Store
+    "com.discord",
+    "com.facebook.orca",
+    "com.whatsapp",
+    "com.skype.raider",
+    "com.google.android.apps.tachyon",
+    "com.google.android.talk",
+    "org.telegram.messenger",
+    "com.enflick.android.TextNow",
+    "com.facebook.mlite",
+    "com.viber.voip",
+    "com.skype.m2",
+    "com.imo.android.imoim",
+    "com.google.android.apps.googlevoice",
+    "com.playstation.mobilemessenger",
+    "kik.android",
+    "com.link.messages.sms",
+    "jp.naver.line.android",
+    "com.skype.m2",
+    "co.happybits.marcopolo",
+    "com.imo.android.imous",
     "mmfbcljfglbokpmkimbfghdkjmjhdgbg",  // System text
 };
 
+// For ARC++ apps, use arc package name. For system apps, use app ID.
 const char* kAllowedAppsForEmojiSuggester[] = {
-    "pondihnpfglkihppmldjekdcjgbkpnen",  // Facebook messenger
-    "cnbgggchhmkkdmeppjobngjoejnihlei",  // Google Play Store
+    "com.discord",
+    "com.facebook.orca",
+    "com.whatsapp",
+    "com.skype.raider",
+    "com.google.android.apps.tachyon",
+    "com.google.android.talk",
+    "org.telegram.messenger",
+    "com.enflick.android.TextNow",
+    "com.facebook.mlite",
+    "com.viber.voip",
+    "com.skype.m2",
+    "com.imo.android.imoim",
+    "com.google.android.apps.googlevoice",
+    "com.playstation.mobilemessenger",
+    "kik.android",
+    "com.link.messages.sms",
+    "jp.naver.line.android",
+    "com.skype.m2",
+    "co.happybits.marcopolo",
+    "com.imo.android.imous",
     "mmfbcljfglbokpmkimbfghdkjmjhdgbg",  // System text
 };
 
@@ -78,6 +129,16 @@ bool IsTestUrl(GURL url) {
   return false;
 }
 
+bool IsInternalWebsite(GURL url) {
+  std::string host = url.host();
+  for (const size_t hash_code : kHashedInternalUrls) {
+    if (hash_code == base::PersistentHash(host)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 template <size_t N>
 bool IsAllowedUrl(const char* (&allowedDomains)[N]) {
   Browser* browser = chrome::FindLastActive();
@@ -85,7 +146,7 @@ bool IsAllowedUrl(const char* (&allowedDomains)[N]) {
     GURL url = browser->tab_strip_model()
                    ->GetActiveWebContents()
                    ->GetLastCommittedURL();
-    if (IsTestUrl(url))
+    if (IsTestUrl(url) || IsInternalWebsite(url))
       return true;
     for (size_t i = 0; i < N; i++) {
       if (url.DomainIs(allowedDomains[i])) {
@@ -106,9 +167,12 @@ bool IsAllowedApp(const char* (&allowedApps)[N]) {
 
   // TODO(crbug/1094113): improve to cover more scenarios such as chat heads.
   const std::string* app_id = window->GetProperty(ash::kAppIDKey);
+  const std::string* arc_package_name =
+      window->GetProperty(ash::kArcPackageNameKey);
   if (app_id) {
     for (size_t i = 0; i < N; i++) {
-      if (strcmp(app_id->c_str(), allowedApps[i]) == 0) {
+      if (strcmp(app_id->c_str(), allowedApps[i]) == 0 ||
+          strcmp(arc_package_name->c_str(), allowedApps[i]) == 0) {
         return true;
       }
     }

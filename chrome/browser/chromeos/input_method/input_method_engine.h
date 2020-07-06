@@ -127,6 +127,8 @@ class InputMethodEngine : public InputMethodEngineBase,
                             bool highlighted,
                             std::string* error) override;
 
+  void ClickButton(const ui::ime::AssistiveWindowButton& button) override;
+
   bool AcceptSuggestionCandidate(int context_id,
                                  const base::string16& candidate,
                                  std::string* error) override;

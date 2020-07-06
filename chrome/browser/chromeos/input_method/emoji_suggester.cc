@@ -16,6 +16,8 @@
 #include "base/task/thread_pool.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chromeos/services/ime/constants.h"
+#include "components/strings/grit/components_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
 
@@ -76,6 +78,9 @@ EmojiSuggester::EmojiSuggester(SuggestionHandlerInterface* engine)
   current_candidate_.id = ui::ime::ButtonId::kSuggestion;
   current_candidate_.window_type =
       ui::ime::AssistiveWindowType::kEmojiSuggestion;
+  learn_more_button_.id = ui::ime::ButtonId::kLearnMore;
+  learn_more_button_.window_type =
+      ui::ime::AssistiveWindowType::kEmojiSuggestion;
 }
 
 EmojiSuggester::~EmojiSuggester() = default;
@@ -132,23 +137,45 @@ SuggestionStatus EmojiSuggester::HandleKeyEvent(
   SuggestionStatus status = SuggestionStatus::kNotHandled;
   std::string error;
   if (event.key == "Enter") {
-    if (AcceptSuggestion(current_candidate_.index))
+    if (is_learn_more_button_chosen_) {
+      engine_->ClickButton(learn_more_button_);
+      status = SuggestionStatus::kOpenSettings;
+    } else if (AcceptSuggestion(current_candidate_.index)) {
       status = SuggestionStatus::kAccept;
+    }
   } else if (event.key == "Down") {
-    current_candidate_.index < candidates_.size() - 1
-        ? current_candidate_.index++
-        : current_candidate_.index = 0;
-    BuildCandidateAnnounceString();
-    engine_->SetButtonHighlighted(context_id_, current_candidate_, true,
-                                  &error);
+    if (!properties_.show_indices) {
+      ShowSuggestionWindowWithIndices(true);
+    }
+    // If current_candidate.index is the last one, goes to learn_more_button.
+    if (current_candidate_.index == candidates_.size() - 1) {
+      SetLearnMoreButtonHighlighted(true);
+    } else {
+      current_candidate_.index < candidates_.size() - 1
+          ? current_candidate_.index++
+          : current_candidate_.index = 0;
+      if (is_learn_more_button_chosen_) {
+        SetLearnMoreButtonHighlighted(false);
+      }
+      BuildCandidateAnnounceString();
+      engine_->SetButtonHighlighted(context_id_, current_candidate_, true,
+                                    &error);
+    }
     status = SuggestionStatus::kBrowsing;
   } else if (event.key == "Up") {
-    current_candidate_.index > 0 && current_candidate_.index != INT_MAX
-        ? current_candidate_.index--
-        : current_candidate_.index = candidates_.size() - 1;
-    BuildCandidateAnnounceString();
-    engine_->SetButtonHighlighted(context_id_, current_candidate_, true,
-                                  &error);
+    if (!properties_.show_indices) {
+      ShowSuggestionWindowWithIndices(true);
+    }
+    // If current_candidate.index is the first one, goes to learn_more_button.
+    if (current_candidate_.index == 0 || (current_candidate_.index == INT_MAX &&
+                                          !is_learn_more_button_chosen_)) {
+      SetLearnMoreButtonHighlighted(true);
+    } else {
+      current_candidate_.index > 0 && current_candidate_.index != INT_MAX
+          ? current_candidate_.index--
+          : current_candidate_.index = candidates_.size() - 1;
+      SetCandidateButtonHighlighted(true);
+    }
     status = SuggestionStatus::kBrowsing;
   } else if (event.key == "Esc") {
     DismissSuggestion();
@@ -192,6 +219,12 @@ void EmojiSuggester::ShowSuggestion(const std::string& text) {
   properties_.visible = true;
   properties_.candidates = candidates_;
   properties_.announce_string = kShowEmojiSuggestionMessage;
+  ShowSuggestionWindowWithIndices(false);
+}
+
+void EmojiSuggester::ShowSuggestionWindowWithIndices(bool show_indices) {
+  properties_.show_indices = show_indices;
+  std::string error;
   engine_->SetAssistiveWindowProperties(context_id_, properties_, &error);
   if (!error.empty()) {
     LOG(ERROR) << "Fail to show suggestion. " << error;
@@ -229,6 +262,7 @@ void EmojiSuggester::ResetState() {
   candidates_.clear();
   current_candidate_.index = INT_MAX;
   last_event_key_ = base::EmptyString();
+  is_learn_more_button_chosen_ = false;
 }
 
 void EmojiSuggester::BuildCandidateAnnounceString() {
@@ -238,12 +272,50 @@ void EmojiSuggester::BuildCandidateAnnounceString() {
       current_candidate_.index + 1, candidates_.size());
 }
 
+void EmojiSuggester::SetCandidateButtonHighlighted(bool highlighted) {
+  if (highlighted) {
+    if (is_learn_more_button_chosen_) {
+      SetLearnMoreButtonHighlighted(false);
+    }
+    BuildCandidateAnnounceString();
+  }
+  std::string error;
+  engine_->SetButtonHighlighted(context_id_, current_candidate_, highlighted,
+                                &error);
+  if (!error.empty()) {
+    LOG(ERROR) << "Failed to set candidate button highlighted " << error;
+  }
+}
+
+void EmojiSuggester::SetLearnMoreButtonHighlighted(bool highlighted) {
+  if (highlighted && current_candidate_.index != INT_MAX) {
+    SetCandidateButtonHighlighted(false);
+  }
+  std::string error;
+  learn_more_button_.announce_string =
+      highlighted ? l10n_util::GetStringUTF8(IDS_LEARN_MORE)
+                  : base::EmptyString();
+  engine_->SetButtonHighlighted(context_id_, learn_more_button_, highlighted,
+                                &error);
+  if (!error.empty()) {
+    LOG(ERROR) << "Failed to set learn more button highlighted " << error;
+  } else {
+    is_learn_more_button_chosen_ = highlighted;
+    if (highlighted)
+      current_candidate_.index = INT_MAX;
+  }
+}
+
 AssistiveType EmojiSuggester::GetProposeActionType() {
   return AssistiveType::kEmoji;
 }
 
 bool EmojiSuggester::GetSuggestionShownForTesting() const {
   return suggestion_shown_;
+}
+
+size_t EmojiSuggester::GetCandidatesSizeForTesting() const {
+  return candidates_.size();
 }
 
 }  // namespace chromeos

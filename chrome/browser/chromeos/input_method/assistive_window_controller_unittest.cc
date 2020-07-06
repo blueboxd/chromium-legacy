@@ -9,11 +9,13 @@
 #include "chrome/browser/chromeos/input_method/assistive_window_controller_delegate.h"
 #include "chrome/browser/chromeos/input_method/ui/suggestion_details.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/test/base/chrome_ash_test_base.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
 #include "ui/base/ime/chromeos/ime_bridge.h"
+#include "ui/views/test/test_views_delegate.h"
 #include "ui/wm/core/window_util.h"
 
 namespace {
@@ -61,6 +63,11 @@ class AssistiveWindowControllerTest : public ChromeAshTestBase {
     ChromeAshTestBase::SetUp();
     std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(1));
     wm::ActivateWindow(window.get());
+
+    // TODO(crbug/1102283): Create MockSuggestionWindowView to be independent of
+    // SuggestionWindowView's implementation.
+    static_cast<views::TestViewsDelegate*>(views::ViewsDelegate::GetInstance())
+        ->set_layout_provider(ChromeLayoutProvider::CreateLayoutProvider());
   }
 
   std::vector<base::string16> Candidates() {

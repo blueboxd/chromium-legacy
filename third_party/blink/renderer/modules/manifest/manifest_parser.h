@@ -51,10 +51,13 @@ class MODULES_EXPORT ManifestParser {
   // Used to indicate whether to strip whitespace when parsing a string.
   enum TrimType { Trim, NoTrim };
 
-  // Indicate whether a parsed URL should be restricted to document origin.
-  enum class ParseURLOriginRestrictions {
+  // Indicate restrictions to be placed on the parsed URL with respect to the
+  // document URL or manifest scope.
+  enum class ParseURLRestrictions {
     kNoRestrictions = 0,
-    kSameOriginOnly,
+    kSameOriginOnly,  // Parsed URLs must be same origin as the document URL.
+    kWithinScope,     // Parsed URLs must be within scope of the manifest scope
+                      // (implies same origin as document URL).
   };
 
   // Helper function to parse booleans present on a given |dictionary| in a
@@ -99,7 +102,7 @@ class MODULES_EXPORT ManifestParser {
   KURL ParseURL(const JSONObject* object,
                 const String& key,
                 const KURL& base_url,
-                ParseURLOriginRestrictions origin_restriction);
+                ParseURLRestrictions origin_restriction);
 
   // Parses the 'name' field of the manifest, as defined in:
   // https://w3c.github.io/manifest/#dfn-steps-for-processing-the-name-member

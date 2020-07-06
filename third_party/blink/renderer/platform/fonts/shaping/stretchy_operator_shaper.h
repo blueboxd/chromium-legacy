@@ -31,10 +31,10 @@ class PLATFORM_EXPORT StretchyOperatorShaper final {
       : stretchy_character_(stretchy_character), stretch_axis_(stretch_axis) {}
 
   struct Metrics {
-    float advance;
-    float ascent;
-    float descent;
-    float italic_correction;
+    float advance { 0.0f };
+    float ascent { 0.0f };
+    float descent { 0.0f };
+    float italic_correction { 0.0f };
   };
   // Shape the stretched operator. The coordinates of the glyph(s) use the same
   // origin as the rectangle assigned to the optional OUT Metrics parameter.

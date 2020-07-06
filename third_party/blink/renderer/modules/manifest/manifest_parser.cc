@@ -40,6 +40,12 @@ bool VerifyFiles(const Vector<mojom::blink::ManifestFileFilterPtr>& files) {
   return true;
 }
 
+// Determines whether |url| is within scope of |scope|.
+bool URLIsWithinScope(const KURL& url, const KURL& scope) {
+  return SecurityOrigin::AreSameOrigin(url, scope) &&
+         url.GetPath().StartsWith(scope.GetPath());
+}
+
 }  // anonymous namespace
 
 ManifestParser::ManifestParser(const String& data,
@@ -209,7 +215,7 @@ base::Optional<RGBA32> ManifestParser::ParseColor(const JSONObject* object,
 KURL ManifestParser::ParseURL(const JSONObject* object,
                               const String& key,
                               const KURL& base_url,
-                              ParseURLOriginRestrictions origin_restriction) {
+                              ParseURLRestrictions origin_restriction) {
   base::Optional<String> url_str = ParseString(object, key, NoTrim);
   if (!url_str.has_value())
     return KURL();
@@ -221,14 +227,25 @@ KURL ManifestParser::ParseURL(const JSONObject* object,
   }
 
   switch (origin_restriction) {
-    case ParseURLOriginRestrictions::kSameOriginOnly:
+    case ParseURLRestrictions::kNoRestrictions:
+      return resolved;
+    case ParseURLRestrictions::kSameOriginOnly:
       if (!SecurityOrigin::AreSameOrigin(resolved, document_url_)) {
         AddErrorInfo("property '" + key +
                      "' ignored, should be same origin as document.");
         return KURL();
       }
       return resolved;
-    case ParseURLOriginRestrictions::kNoRestrictions:
+    case ParseURLRestrictions::kWithinScope:
+      if (!URLIsWithinScope(resolved, manifest_->scope)) {
+        AddErrorInfo("property '" + key +
+                     "' ignored, should be within scope of the manifest.");
+        return KURL();
+      }
+
+      // Within scope implies same origin as document URL.
+      DCHECK(SecurityOrigin::AreSameOrigin(resolved, document_url_));
+
       return resolved;
   }
 
@@ -248,13 +265,13 @@ String ManifestParser::ParseShortName(const JSONObject* object) {
 
 KURL ManifestParser::ParseStartURL(const JSONObject* object) {
   return ParseURL(object, "start_url", manifest_url_,
-                  ParseURLOriginRestrictions::kSameOriginOnly);
+                  ParseURLRestrictions::kSameOriginOnly);
 }
 
 KURL ManifestParser::ParseScope(const JSONObject* object,
                                 const KURL& start_url) {
   KURL scope = ParseURL(object, "scope", manifest_url_,
-                        ParseURLOriginRestrictions::kSameOriginOnly);
+                        ParseURLRestrictions::kNoRestrictions);
 
   // This will change to remove the |document_url_| fallback in the future.
   // See https://github.com/w3c/manifest/issues/668.
@@ -264,8 +281,7 @@ KURL ManifestParser::ParseScope(const JSONObject* object,
   if (scope.IsEmpty())
     return KURL(default_value.BaseAsString());
 
-  if (!SecurityOrigin::AreSameOrigin(default_value, scope) ||
-      !default_value.GetPath().StartsWith(scope.GetPath())) {
+  if (!URLIsWithinScope(default_value, scope)) {
     AddErrorInfo(
         "property 'scope' ignored. Start url should be within scope "
         "of scope URL.");
@@ -273,6 +289,7 @@ KURL ManifestParser::ParseScope(const JSONObject* object,
   }
 
   DCHECK(scope.IsValid());
+  DCHECK(SecurityOrigin::AreSameOrigin(scope, document_url_));
   return scope;
 }
 
@@ -305,7 +322,7 @@ WebScreenOrientationLockType ManifestParser::ParseOrientation(
 
 KURL ManifestParser::ParseIconSrc(const JSONObject* icon) {
   return ParseURL(icon, "src", manifest_url_,
-                  ParseURLOriginRestrictions::kNoRestrictions);
+                  ParseURLRestrictions::kNoRestrictions);
 }
 
 String ManifestParser::ParseIconType(const JSONObject* icon) {
@@ -442,16 +459,9 @@ String ManifestParser::ParseShortcutDescription(const JSONObject* shortcut) {
 
 KURL ManifestParser::ParseShortcutUrl(const JSONObject* shortcut) {
   KURL shortcut_url = ParseURL(shortcut, "url", manifest_url_,
-                               ParseURLOriginRestrictions::kSameOriginOnly);
-  if (shortcut_url.IsNull()) {
+                               ParseURLRestrictions::kWithinScope);
+  if (shortcut_url.IsNull())
     AddErrorInfo("property 'url' of 'shortcut' not present.");
-  } else if (!shortcut_url.GetString().StartsWith(
-                 manifest_->scope.GetString())) {
-    AddErrorInfo(
-        "property 'url' of 'shortcut' ignored. url should be within scope of "
-        "the manifest.");
-    return KURL();
-  }
 
   return shortcut_url;
 }
@@ -673,7 +683,7 @@ ManifestParser::ParseShareTarget(const JSONObject* object) {
 
   auto share_target = mojom::blink::ManifestShareTarget::New();
   share_target->action = ParseURL(share_target_object, "action", manifest_url_,
-                                  ParseURLOriginRestrictions::kSameOriginOnly);
+                                  ParseURLRestrictions::kSameOriginOnly);
   if (!share_target->action.IsValid()) {
     AddErrorInfo(
         "property 'share_target' ignored. Property 'action' is "
@@ -775,7 +785,7 @@ ManifestParser::ParseFileHandler(const JSONObject* file_handler) {
   mojom::blink::ManifestFileHandlerPtr entry =
       mojom::blink::ManifestFileHandler::New();
   entry->action = ParseURL(file_handler, "action", manifest_url_,
-                           ParseURLOriginRestrictions::kSameOriginOnly);
+                           ParseURLRestrictions::kSameOriginOnly);
   if (!entry->action.IsValid()) {
     AddErrorInfo("FileHandler ignored. Property 'action' is invalid.");
     return base::nullopt;
@@ -920,7 +930,7 @@ ManifestParser::ParseProtocolHandler(const JSONObject* object) {
     return base::nullopt;
   }
   protocol_handler->url = ParseURL(object, "url", manifest_url_,
-                                   ParseURLOriginRestrictions::kSameOriginOnly);
+                                   ParseURLRestrictions::kSameOriginOnly);
   bool is_valid_url = protocol_handler->url.IsValid();
   if (is_valid_url) {
     const char kToken[] = "%s";
@@ -954,7 +964,7 @@ String ManifestParser::ParseRelatedApplicationPlatform(
 base::Optional<KURL> ManifestParser::ParseRelatedApplicationURL(
     const JSONObject* application) {
   return ParseURL(application, "url", manifest_url_,
-                  ParseURLOriginRestrictions::kNoRestrictions);
+                  ParseURLRestrictions::kNoRestrictions);
 }
 
 String ManifestParser::ParseRelatedApplicationId(

@@ -57,6 +57,7 @@ class BlinkTestRunner;
 class MockContentSettingsClient;
 class MockScreenOrientationClient;
 class RenderFrame;
+class SpellCheckClient;
 class TestInterfaces;
 class WebFrameTestProxy;
 class WebWidgetTestProxy;
@@ -78,7 +79,7 @@ class TestRunner {
   explicit TestRunner(TestInterfaces*);
   virtual ~TestRunner();
 
-  void Install(WebFrameTestProxy* frame);
+  void Install(WebFrameTestProxy* frame, SpellCheckClient* spell_check);
 
   void SetDelegate(BlinkTestRunner*);
   void SetMainView(blink::WebView*);

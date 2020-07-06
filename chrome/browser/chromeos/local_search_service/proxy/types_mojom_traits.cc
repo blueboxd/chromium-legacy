@@ -14,6 +14,8 @@ EnumTraits<local_search_service::mojom::IndexId,
   switch (input) {
     case local_search_service::IndexId::kCrosSettings:
       return local_search_service::mojom::IndexId::kCrosSettings;
+    case local_search_service::IndexId::kHelpApp:
+      return local_search_service::mojom::IndexId::kHelpApp;
   }
   NOTREACHED();
   return local_search_service::mojom::IndexId::kCrosSettings;
@@ -27,6 +29,9 @@ bool EnumTraits<local_search_service::mojom::IndexId,
   switch (input) {
     case local_search_service::mojom::IndexId::kCrosSettings:
       *output = local_search_service::IndexId::kCrosSettings;
+      return true;
+    case local_search_service::mojom::IndexId::kHelpApp:
+      *output = local_search_service::IndexId::kHelpApp;
       return true;
   }
   NOTREACHED();

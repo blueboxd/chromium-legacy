@@ -13,6 +13,14 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/button_observer.h"
 
+namespace chromeos {
+struct AssistiveWindowProperties;
+}  // namespace chromeos
+
+namespace views {
+class ImageButton;
+}
+
 namespace ui {
 namespace ime {
 
@@ -40,7 +48,8 @@ class UI_CHROMEOS_EXPORT SuggestionWindowView
   // Shows suggestion text.
   void Show(const SuggestionDetails& details);
 
-  void ShowMultipleCandidates(const std::vector<base::string16>& candidates);
+  void ShowMultipleCandidates(
+      const chromeos::AssistiveWindowProperties& properties);
 
   // This highlights/unhighlights a valid button based on the given params.
   // Only one button of the same id will be highlighted at anytime.
@@ -50,6 +59,8 @@ class UI_CHROMEOS_EXPORT SuggestionWindowView
   void SetBounds(const gfx::Rect& cursor_bounds);
 
   views::View* GetCandidateAreaForTesting();
+  views::View* GetSettingLinkViewForTesting();
+  views::View* GetLearnMoreButtonForTesting();
 
  private:
   // Overridden from views::ButtonListener:
@@ -58,6 +69,11 @@ class UI_CHROMEOS_EXPORT SuggestionWindowView
   // views::ButtonObserver's override:
   void OnStateChanged(views::Button* observed_button,
                       views::Button::ButtonState old_state) override;
+
+  // views::View's override:
+  void OnThemeChanged() override;
+
+  std::unique_ptr<views::ImageButton> CreateLearnMoreButton();
 
   void MaybeInitializeSuggestionViews(size_t candidates_size);
 
@@ -72,6 +88,10 @@ class UI_CHROMEOS_EXPORT SuggestionWindowView
   // range.
   void UnhighlightCandidate(int index);
 
+  // This highlights or unhighlights the Learn More Button based on the given
+  // parameter. No-op if the button is already in that state.
+  void SetLearnMoreButtonHighlighted(bool highlighted);
+
   // views::BubbleDialogDelegateView:
   const char* GetClassName() const override;
 
@@ -83,6 +103,9 @@ class UI_CHROMEOS_EXPORT SuggestionWindowView
 
   // The view for rendering setting link, positioned below candidate_area_.
   SettingLinkView* setting_link_view_;
+
+  views::ImageButton* learn_more_button_;
+  bool is_learn_more_button_highlighted = false;
 
   // The items in view_
   std::vector<std::unique_ptr<SuggestionView>> candidate_views_;

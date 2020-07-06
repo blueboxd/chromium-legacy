@@ -34,14 +34,19 @@ class EmojiSuggester : public Suggester {
 
   void LoadEmojiMapForTesting(const std::string& emoji_data);
   bool GetSuggestionShownForTesting() const;
+  size_t GetCandidatesSizeForTesting() const;
 
  private:
   void ShowSuggestion(const std::string& text);
+  void ShowSuggestionWindowWithIndices(bool show_indices);
   void LoadEmojiMap();
   void OnEmojiDataLoaded(const std::string& emoji_data);
   void RecordAcceptanceIndex(int index);
   void ResetState();
   void BuildCandidateAnnounceString();
+
+  void SetCandidateButtonHighlighted(bool highlighted);
+  void SetLearnMoreButtonHighlighted(bool highlighted);
 
   SuggestionHandlerInterface* const engine_;
 
@@ -58,6 +63,8 @@ class EmojiSuggester : public Suggester {
   AssistiveWindowProperties properties_;
 
   ui::ime::AssistiveWindowButton current_candidate_;
+  ui::ime::AssistiveWindowButton learn_more_button_;
+  bool is_learn_more_button_chosen_ = false;
 
   // The map holding one-word-mapping to emojis.
   std::map<std::string, std::vector<base::string16>> emoji_map_;

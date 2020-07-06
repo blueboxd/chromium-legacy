@@ -363,6 +363,9 @@ class Field(object):
                  self.attributes) == (rhs.mojom_name, rhs.kind, rhs.ordinal,
                                       rhs.default, rhs.attributes))
 
+  def __hash__(self):
+    return hash((self.mojom_name, self.kind, self.ordinal, self.default))
+
 
 class StructField(Field):
   pass

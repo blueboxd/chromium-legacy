@@ -9,6 +9,7 @@
 #include "base/check_op.h"
 #include "base/hash/hash.h"
 #include "base/notreached.h"
+#include "components/favicon_base/select_favicon_frames.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -60,9 +61,16 @@ void IconHelper::DownloadFaviconCallback(
   // in different sizes. We need more fine grain API spec
   // to let clients pick out the frame they want.
 
-  // TODO(acleung): Pick the best icon to return based on size.
-  if (listener_)
-    listener_->OnReceivedIcon(image_url, bitmaps[0]);
+  if (listener_) {
+    std::vector<size_t> best_indices;
+    SelectFaviconFrameIndices(original_bitmap_sizes,
+                              std::vector<int>(1U, kLargestIconSize),
+                              &best_indices, nullptr);
+
+    listener_->OnReceivedIcon(
+        image_url,
+        bitmaps[best_indices.size() == 0 ? 0 : best_indices.front()]);
+  }
 }
 
 void IconHelper::DidUpdateFaviconURL(

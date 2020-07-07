@@ -392,6 +392,16 @@ bool ArcImeService::ShouldEnableKeyEventForwarding() {
       chromeos::features::kArcPreImeKeyEventSupport);
 }
 
+void ArcImeService::SendKeyEvent(std::unique_ptr<ui::KeyEvent> key_event,
+                                 KeyEventDoneCallback callback) {
+  ui::InputMethod* const input_method = GetInputMethod();
+  if (input_method)
+    ignore_result(input_method->DispatchKeyEvent(key_event.get()));
+  // TODO(yhanada): Wait the host IME for handling the event and return the
+  // correct result.
+  std::move(callback).Run(true);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Overridden from ash::KeyboardControllerObserver
 void ArcImeService::OnKeyboardAppearanceChanged(

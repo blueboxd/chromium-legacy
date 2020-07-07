@@ -19,6 +19,7 @@ import android.webkit.JavascriptInterface;
 import androidx.test.filters.LargeTest;
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -32,7 +33,9 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.WebContentsAccessibility;
+import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.CriteriaNotSatisfiedException;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentUrlConstants;
 
@@ -330,10 +333,10 @@ public class AwContentsGarbageCollectionTest {
                             AwGLFunctor.getNativeInstanceCount());
                 });
             } catch (Exception e) {
-                Assert.fail(e.toString());
+                throw new CriteriaNotSatisfiedException(e);
             }
-            Assert.assertEquals("AwContents count", (int) nativeCounts.first, 0);
-            Assert.assertEquals("AwGLFunctor count", (int) nativeCounts.second, 0);
+            Criteria.checkThat("AwContents count", (int) nativeCounts.first, Matchers.is(0));
+            Criteria.checkThat("AwGLFunctor count", (int) nativeCounts.second, Matchers.is(0));
         };
 
         // Depending on a single gc call can make this test flaky. It's possible

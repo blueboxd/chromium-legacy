@@ -9,7 +9,6 @@
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "chrome/common/safe_browsing/rar_analyzer.h"
 #include "chrome/common/safe_browsing/zip_analyzer.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/utility/safe_browsing/mac/dmg_analyzer.h"

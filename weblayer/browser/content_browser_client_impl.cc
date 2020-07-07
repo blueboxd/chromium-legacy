@@ -77,6 +77,7 @@
 #include "weblayer/browser/password_manager_driver_factory.h"
 #include "weblayer/browser/popup_navigation_delegate_impl.h"
 #include "weblayer/browser/profile_impl.h"
+#include "weblayer/browser/signin_url_loader_throttle.h"
 #include "weblayer/browser/system_network_context_manager.h"
 #include "weblayer/browser/tab_impl.h"
 #include "weblayer/browser/tab_specific_content_settings_delegate.h"
@@ -394,6 +395,11 @@ ContentBrowserClientImpl::CreateURLLoaderThrottles(
         wc_getter, frame_tree_node_id, url_lookup_service));
 #endif
   }
+
+  auto signin_throttle =
+      SigninURLLoaderThrottle::Create(browser_context, wc_getter);
+  if (signin_throttle)
+    result.push_back(std::move(signin_throttle));
 
   return result;
 }

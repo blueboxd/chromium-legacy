@@ -989,8 +989,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnScrollFocusedEditableNodeIntoRect(const gfx::Rect& rect);
   void OnSelectRange(const gfx::Point& base, const gfx::Point& extent);
   void OnVisualStateRequest(uint64_t key);
-  // TODO(https://crbug.com/995428): Deprecated.
-  void OnReload();
   void OnSuppressFurtherDialogs();
   void OnMixedContentFound(const FrameMsg_MixedContentFound_Params& params);
 

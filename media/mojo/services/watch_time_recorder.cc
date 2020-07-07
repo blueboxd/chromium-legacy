@@ -16,7 +16,6 @@
 #include "media/base/video_codecs.h"
 #include "media/base/video_decoder.h"
 #include "media/base/watch_time_keys.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 

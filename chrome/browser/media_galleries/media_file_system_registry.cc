@@ -302,7 +302,7 @@ class ExtensionGalleriesHost
   // system objects to the |callback|.
   void GetMediaFileSystems(const MediaGalleryPrefIdSet& galleries,
                            const MediaGalleriesPrefInfoMap& galleries_info,
-                           const MediaFileSystemsCallback& callback) {
+                           MediaFileSystemsCallback callback) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     // Extract all the device ids so we can make sure they are attached.
@@ -316,7 +316,7 @@ class ExtensionGalleriesHost
         base::BindOnce(
             &ExtensionGalleriesHost::GetMediaFileSystemsForAttachedDevices,
             this, base::Owned(device_ids), galleries, galleries_info,
-            callback));
+            std::move(callback)));
   }
 
   // Checks if |gallery| is attached and if so, registers the file system and
@@ -372,14 +372,14 @@ class ExtensionGalleriesHost
       const MediaStorageUtil::DeviceIdSet* attached_devices,
       const MediaGalleryPrefIdSet& galleries,
       const MediaGalleriesPrefInfoMap& galleries_info,
-      const MediaFileSystemsCallback& callback) {
+      MediaFileSystemsCallback callback) {
     std::vector<MediaFileSystemInfo> result;
 
     if (rph_refs_.empty()) {
       // We're actually in the middle of shutdown, and Filter...() lagging
       // which can invoke this method interleaved in the destruction callback
       // sequence and re-populate pref_id_map_.
-      callback.Run(result);
+      std::move(callback).Run(result);
       return;
     }
 
@@ -426,7 +426,7 @@ class ExtensionGalleriesHost
     }
 
     DCHECK_EQ(pref_id_map_.size(), result.size());
-    callback.Run(result);
+    std::move(callback).Run(result);
   }
 
   void RegisterAttachedMediaFileSystem(
@@ -518,7 +518,7 @@ class ExtensionGalleriesHost
 void MediaFileSystemRegistry::GetMediaFileSystemsForExtension(
     content::WebContents* contents,
     const extensions::Extension* extension,
-    const MediaFileSystemsCallback& callback) {
+    MediaFileSystemsCallback callback) {
   // TODO(tommycli): Change to DCHECK after fixing http://crbug.com/374330.
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -528,7 +528,7 @@ void MediaFileSystemRegistry::GetMediaFileSystemsForExtension(
       preferences->GalleriesForExtension(*extension);
 
   if (galleries.empty()) {
-    callback.Run(std::vector<MediaFileSystemInfo>());
+    std::move(callback).Run(std::vector<MediaFileSystemInfo>());
     return;
   }
 
@@ -540,7 +540,7 @@ void MediaFileSystemRegistry::GetMediaFileSystemsForExtension(
   extension_host->ReferenceFromWebContents(contents);
 
   extension_host->GetMediaFileSystems(galleries, preferences->known_galleries(),
-                                      callback);
+                                      std::move(callback));
 }
 
 void MediaFileSystemRegistry::RegisterMediaFileSystemForExtension(

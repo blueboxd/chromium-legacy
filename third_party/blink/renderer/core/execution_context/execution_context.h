@@ -161,6 +161,10 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   network::mojom::blink::WebSandboxFlags GetSandboxFlags() const;
   bool IsSandboxed(network::mojom::blink::WebSandboxFlags mask) const;
 
+  // Returns a reference to the current world we are in. If the current v8
+  // context is empty, returns null.
+  scoped_refptr<const DOMWrapperWorld> GetCurrentWorld() const;
+
   // Returns the content security policy to be used based on the current
   // JavaScript world we are in.
   // Note: As part of crbug.com/896041, existing usages of

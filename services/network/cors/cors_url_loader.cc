@@ -361,14 +361,20 @@ void CorsURLLoader::OnReceiveRedirect(const net::RedirectInfo& redirect_info,
     tainted_ = true;
   }
 
-  // TODO(yhirano): Implement the following:
+  // TODO(crbug.com/1073353): Implement the following:
   // If either |actualResponse|’s status is 301 or 302 and |request|’s method is
   // `POST`, or |actualResponse|’s status is 303, set |request|’s method to
-  // `GET` and request’s body to null.
+  // `GET` and request’s body to null, and remove request-body-header name from
+  // request's headers. Some of them are implemented in //net, but when we
+  // create another request on exceptional redirect cases, such newly created
+  // request doesn't reflect the spec comformant request modifications. See the
+  // linked crbug for details. See also 4.4. HTTP-redirect fetch
+  // (https://fetch.spec.whatwg.org/#http-redirect-fetch), step 11.
 
-  // TODO(yhirano): Implement the following:
+  // TODO(crbug.com/1073353): Implement the following:
   // Invoke |set request’s referrer policy on redirect| on |request| and
-  // |actualResponse|.
+  // |actualResponse|. See 4.4. HTTP-redirect fetch
+  // (https://fetch.spec.whatwg.org/#http-redirect-fetch), step 14.
 
   redirect_info_ = redirect_info;
 

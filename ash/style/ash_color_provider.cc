@@ -247,13 +247,13 @@ SkColor AshColorProvider::GetContentLayerColorImpl(
       dark_color = SkColorSetA(SK_ColorWHITE, 0x24);
       break;
     case ContentLayerType::kTextColorPrimary:
-      return cros_colors::ResolveColor(ColorName::kCrosDefaultTextColor,
+      return cros_colors::ResolveColor(ColorName::kDefaultTextColor,
                                        color_mode);
     case ContentLayerType::kTextColorSecondary:
-      return cros_colors::ResolveColor(
-          ColorName::kCrosDefaultTextColorSecondary, color_mode);
+      return cros_colors::ResolveColor(ColorName::kDefaultTextColorSecondary,
+                                       color_mode);
     case ContentLayerType::kIconColorPrimary:
-      return cros_colors::ResolveColor(ColorName::kCrosDefaultIconColorPrimary,
+      return cros_colors::ResolveColor(ColorName::kDefaultIconColorPrimary,
                                        color_mode);
     case ContentLayerType::kIconColorSecondary:
       light_color = dark_color = gfx::kGoogleGrey500;
@@ -264,8 +264,8 @@ SkColor AshColorProvider::GetContentLayerColorImpl(
       break;
     case ContentLayerType::kButtonIconColorProminent:
     case ContentLayerType::kSliderThumbColorEnabled:
-      return cros_colors::ResolveColor(
-          ColorName::kCrosDefaultIconColorProminent, color_mode);
+      return cros_colors::ResolveColor(ColorName::kDefaultIconColorProminent,
+                                       color_mode);
     case ContentLayerType::kButtonLabelColor:
       light_color = gfx::kGoogleGrey700;
       dark_color = gfx::kGoogleGrey200;

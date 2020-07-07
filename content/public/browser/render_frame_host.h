@@ -518,9 +518,10 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
                                           BrowserControlsState current,
                                           bool animate) = 0;
 
-  // Reloads the frame if it is live. It initiates a reload but doesn't wait for
-  // it to finish.
-  virtual void Reload() = 0;
+  // Reloads the frame. It initiates a reload but doesn't wait for it to finish.
+  // In some rare cases, there is no history related to the frame, nothing
+  // happens and this returns false.
+  virtual bool Reload() = 0;
 
   // Returns true if this frame has fired DOMContentLoaded.
   virtual bool IsDOMContentLoaded() = 0;

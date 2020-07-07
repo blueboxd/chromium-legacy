@@ -80,14 +80,16 @@ void ExecutionContextCSPDelegate::AddInsecureRequestPolicy(
     mojom::blink::InsecureRequestPolicy policy) {
   SecurityContext& security_context = GetSecurityContext();
 
-  Document* document = GetDocument();
+  auto* window = DynamicTo<LocalDOMWindow>(execution_context_.Get());
 
   // Step 2. Set settings’s insecure requests policy to Upgrade. [spec text]
   // Upgrade Insecure Requests: Update the policy.
   security_context.SetInsecureRequestPolicy(
       security_context.GetInsecureRequestPolicy() | policy);
-  if (document)
-    document->DidEnforceInsecureRequestPolicy();
+  if (window && window->GetFrame()) {
+    window->GetFrame()->GetLocalFrameHostRemote().EnforceInsecureRequestPolicy(
+        security_context.GetInsecureRequestPolicy());
+  }
 
   // Upgrade Insecure Requests: Update the set of insecure URLs to upgrade.
   if ((policy &
@@ -100,14 +102,18 @@ void ExecutionContextCSPDelegate::AddInsecureRequestPolicy(
     // Step 4. Insert tuple into settings’s upgrade insecure navigations set.
     // [spec text]
     Count(WebFeature::kUpgradeInsecureRequestsEnabled);
-    // We don't add the hash if |document| is null, to prevent
+    // We don't add the hash if |window| is null, to prevent
     // WorkerGlobalScope::Url() before it's ready. https://crbug.com/861564
     // This should be safe, because the insecure navigations set is not used
     // in non-Document contexts.
-    if (document && !Url().Host().IsEmpty()) {
+    if (window && !Url().Host().IsEmpty()) {
       uint32_t hash = Url().Host().Impl()->GetHash();
       security_context.AddInsecureNavigationUpgrade(hash);
-      document->DidEnforceInsecureNavigationsSet();
+      if (auto* frame = window->GetFrame()) {
+        frame->GetLocalFrameHostRemote().EnforceInsecureNavigationsSet(
+            SecurityContext::SerializeInsecureNavigationSet(
+                GetSecurityContext().InsecureNavigationsToUpgrade()));
+      }
     }
   }
 }

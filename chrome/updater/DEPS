@@ -10,7 +10,8 @@ include_rules = [
   "+components/update_client",
   "+components/version_info",
   "+courgette",
+  "+crypto",
+  "+third_party/boringssl",
   "+third_party/crashpad",
   "+third_party/zlib/google",
-  "+third_party/boringssl/src/include",
 ]

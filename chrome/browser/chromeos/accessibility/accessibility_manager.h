@@ -80,7 +80,7 @@ struct AccessibilityStatusEventDetails {
   bool enabled;
 };
 
-typedef base::Callback<void(const AccessibilityStatusEventDetails&)>
+typedef base::RepeatingCallback<void(const AccessibilityStatusEventDetails&)>
     AccessibilityStatusCallback;
 
 typedef base::CallbackList<void(const AccessibilityStatusEventDetails&)>

@@ -9,6 +9,8 @@ import unittest
 class ViewsStyleGeneratorTest(unittest.TestCase):
     def setUp(self):
         self.generator = ViewsStyleGenerator()
+        self.generator.AddJSONFileToModel('colors_test_palette.json5')
+        self.generator.AddJSONFileToModel('colors_test.json5')
 
     def assertEqualToFile(self, value, filename):
         with open(filename) as f:
@@ -19,7 +21,6 @@ class ViewsStyleGeneratorTest(unittest.TestCase):
                 (value, contents))
 
     def testColorTestJSON(self):
-        self.generator.AddJSONFileToModel('colors_test.json5')
         self.generator.out_file_path = (
             'tools/style_variable_generator/colors_test_expected.h')
         self.assertEqualToFile(self.generator.Render(),

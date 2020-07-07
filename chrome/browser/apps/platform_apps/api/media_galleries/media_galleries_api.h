@@ -122,7 +122,7 @@ class MediaGalleriesGetMediaFileSystemsFunction : public ExtensionFunction {
 
   // A helper method that calls
   // MediaFileSystemRegistry::GetMediaFileSystemsForExtension().
-  void GetMediaFileSystemsForExtension(const MediaFileSystemsCallback& cb);
+  void GetMediaFileSystemsForExtension(MediaFileSystemsCallback cb);
 };
 
 class MediaGalleriesAddUserSelectedFolderFunction : public ExtensionFunction {
@@ -154,7 +154,7 @@ class MediaGalleriesAddUserSelectedFolderFunction : public ExtensionFunction {
 
   // A helper method that calls
   // MediaFileSystemRegistry::GetMediaFileSystemsForExtension().
-  void GetMediaFileSystemsForExtension(const MediaFileSystemsCallback& cb);
+  void GetMediaFileSystemsForExtension(MediaFileSystemsCallback cb);
 };
 
 class MediaGalleriesGetMetadataFunction : public ExtensionFunction {

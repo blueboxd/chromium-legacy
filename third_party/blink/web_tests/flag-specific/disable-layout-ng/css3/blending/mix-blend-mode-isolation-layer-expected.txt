@@ -6,10 +6,10 @@
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='stacking-context'",
+      "position": [8, 8],
       "bounds": [160, 90],
       "contentsOpaque": true,
-      "backgroundColor": "#008000",
-      "transform": 1
+      "backgroundColor": "#008000"
     },
     {
       "name": "LayoutImage IMG class='accelerated blended'",

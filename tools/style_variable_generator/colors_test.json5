@@ -1,12 +1,16 @@
 {
+  options: {
+    CSS: {
+      prefix: 'cros'
+    }
+  },
   colors: {
-    google_grey_900: "#202124",
-    cros_default_text_color: {
+    default_text_color: {
       light: "$google_grey_900",
       dark: "rgb(255, 255, 255)",
     },
-    cros_toggle_color: {
-      light: "rgba($cros_default_text_color_rgb, 0.1)"
+    toggle_color: {
+      light: "rgba($default_text_color_rgb, 0.1)"
     }
   },
 }

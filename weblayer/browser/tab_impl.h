@@ -199,10 +199,15 @@ class TabImpl : public Tab,
   void AddDataObserver(DataObserver* observer);
   void RemoveDataObserver(DataObserver* observer);
 
+  GoogleAccountsDelegate* google_accounts_delegate() {
+    return google_accounts_delegate_;
+  }
+
   // Tab:
   void SetErrorPageDelegate(ErrorPageDelegate* delegate) override;
   void SetFullscreenDelegate(FullscreenDelegate* delegate) override;
   void SetNewTabDelegate(NewTabDelegate* delegate) override;
+  void SetGoogleAccountsDelegate(GoogleAccountsDelegate* delegate) override;
   void AddObserver(TabObserver* observer) override;
   void RemoveObserver(TabObserver* observer) override;
   NavigationController* GetNavigationController() override;
@@ -346,6 +351,7 @@ class TabImpl : public Tab,
   ErrorPageDelegate* error_page_delegate_ = nullptr;
   FullscreenDelegate* fullscreen_delegate_ = nullptr;
   NewTabDelegate* new_tab_delegate_ = nullptr;
+  GoogleAccountsDelegate* google_accounts_delegate_ = nullptr;
   ProfileImpl* profile_;
   std::unique_ptr<content::WebContents> web_contents_;
   std::unique_ptr<NavigationControllerImpl> navigation_controller_;

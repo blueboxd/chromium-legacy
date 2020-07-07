@@ -3447,10 +3447,10 @@ void Document::open(LocalDOMWindow* entered_window,
     csp->CopyStateFrom(entered_window->GetContentSecurityPolicy());
     // We inherit the sandbox flags of the entered document, so mask on
     // the ones contained in the CSP.
-    GetSecurityContext().ApplySandboxFlags(csp->GetSandboxMask());
-    GetSecurityContext().SetContentSecurityPolicy(csp);
-    GetExecutionContext()->GetContentSecurityPolicy()->BindToDelegate(
-        GetExecutionContext()->GetContentSecurityPolicyDelegate());
+    dom_window_->GetSecurityContext().ApplySandboxFlags(csp->GetSandboxMask());
+    dom_window_->GetSecurityContext().SetContentSecurityPolicy(csp);
+    dom_window_->GetContentSecurityPolicy()->BindToDelegate(
+        dom_window_->GetContentSecurityPolicyDelegate());
     // Clear the hash fragment from the inherited URL to prevent a
     // scroll-into-view for any document.open()'d frame.
     KURL new_url = entered_window->Url();
@@ -3459,10 +3459,9 @@ void Document::open(LocalDOMWindow* entered_window,
     if (Loader())
       Loader()->UpdateUrlForDocumentOpen(new_url);
 
-    GetSecurityContext().SetSecurityOrigin(
+    dom_window_->GetSecurityContext().SetSecurityOrigin(
         entered_window->GetMutableSecurityOrigin());
-    GetExecutionContext()->SetReferrerPolicy(
-        entered_window->GetReferrerPolicy());
+    dom_window_->SetReferrerPolicy(entered_window->GetReferrerPolicy());
     cookie_url_ = entered_window->document()->CookieURL();
   }
 
@@ -7977,21 +7976,6 @@ void Document::PlatformColorsChanged() {
     return;
 
   GetStyleEngine().PlatformColorsChanged();
-}
-
-void Document::DidEnforceInsecureRequestPolicy() {
-  if (!GetFrame())
-    return;
-  GetFrame()->GetLocalFrameHostRemote().EnforceInsecureRequestPolicy(
-      GetSecurityContext().GetInsecureRequestPolicy());
-}
-
-void Document::DidEnforceInsecureNavigationsSet() {
-  if (!GetFrame())
-    return;
-  GetFrame()->GetLocalFrameHostRemote().EnforceInsecureNavigationsSet(
-      SecurityContext::SerializeInsecureNavigationSet(
-          GetSecurityContext().InsecureNavigationsToUpgrade()));
 }
 
 void Document::SetShadowCascadeOrder(ShadowCascadeOrder order) {

@@ -430,10 +430,6 @@ IPC_MESSAGE_ROUTED2(FrameMsg_CustomContextMenuAction,
 // commit, activation and frame swap of the current DOM tree in blink.
 IPC_MESSAGE_ROUTED1(FrameMsg_VisualStateRequest, uint64_t /* id */)
 
-// TODO(https://crbug.com/995428): Deprecated.
-// Tells the renderer to reload the frame.
-IPC_MESSAGE_ROUTED0(FrameMsg_Reload)
-
 // Update a proxy's window.name property.  Used when the frame's name is
 // changed in another process.
 IPC_MESSAGE_ROUTED2(FrameMsg_DidUpdateName,

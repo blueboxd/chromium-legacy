@@ -19,6 +19,7 @@ import org.json.JSONObject;
 import org.chromium.weblayer_private.interfaces.APICallException;
 import org.chromium.weblayer_private.interfaces.IErrorPageCallbackClient;
 import org.chromium.weblayer_private.interfaces.IFullscreenCallbackClient;
+import org.chromium.weblayer_private.interfaces.IGoogleAccountsCallbackClient;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 import org.chromium.weblayer_private.interfaces.ITab;
 import org.chromium.weblayer_private.interfaces.ITabClient;
@@ -386,6 +387,26 @@ public class Tab {
         }
         try {
             return (Map<String, String>) mImpl.getData();
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    /**
+     * Sets a callback to intercept interaction with GAIA accounts. If this callback is set, any
+     * link that would result in a change to a user's GAIA account state will trigger a call to
+     * {@link GoogleAccountsCallback#onGoogleAccountsRequest}.
+     *
+     * @since 86
+     */
+    public void setGoogleAccountsCallback(@Nullable GoogleAccountsCallback callback) {
+        ThreadCheck.ensureOnUiThread();
+        if (WebLayer.getSupportedMajorVersionInternal() < 86) {
+            throw new UnsupportedOperationException();
+        }
+        try {
+            mImpl.setGoogleAccountsCallbackClient(
+                    callback == null ? null : new GoogleAccountsCallbackClientImpl(callback));
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
@@ -786,6 +807,27 @@ public class Tab {
         public void exitFullscreen() {
             StrictModeWorkaround.apply();
             mCallback.onExitFullscreen();
+        }
+    }
+
+    private static final class GoogleAccountsCallbackClientImpl
+            extends IGoogleAccountsCallbackClient.Stub {
+        private GoogleAccountsCallback mCallback;
+
+        GoogleAccountsCallbackClientImpl(GoogleAccountsCallback callback) {
+            mCallback = callback;
+        }
+
+        @Override
+        public void onGoogleAccountsRequest(
+                int serviceType, String email, String continueUrl, boolean isSameTab) {
+            mCallback.onGoogleAccountsRequest(new GoogleAccountsParams(
+                    serviceType, email, Uri.parse(continueUrl), isSameTab));
+        }
+
+        @Override
+        public String getGaiaId() {
+            return mCallback.getGaiaId();
         }
     }
 }

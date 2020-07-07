@@ -90,6 +90,10 @@ declare_args() {
   # which doesn't use Crashpad, crbug.com/479283) builds it's useful to be able
   # to unwind at runtime.
   exclude_unwind_tables = is_official_build
+
+  # Where to redirect clang crash diagnoses
+  clang_diagnostic_dir =
+      rebase_path("//tools/clang/crashreports", root_build_dir)
 }
 
 assert(!is_cfi || use_thin_lto, "CFI requires ThinLTO")

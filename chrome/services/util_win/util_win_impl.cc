@@ -25,7 +25,6 @@
 #include "chrome/installer/util/install_util.h"
 #include "chrome/services/util_win/av_products.h"
 #include "chrome/services/util_win/processor_metrics.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
 #include "ui/shell_dialogs/execute_select_file_win.h"
 

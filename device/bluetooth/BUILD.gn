@@ -221,7 +221,6 @@ component("bluetooth") {
     "//crypto",
     "//device/base",
     "//device/bluetooth/strings",
-    "//device/bluetooth/uribeacon",
     "//ipc",
     "//net",
     "//third_party/re2",

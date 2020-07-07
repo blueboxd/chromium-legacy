@@ -9,6 +9,10 @@ from base_generator import Color, Modes, BaseGenerator, VariableType
 class ViewsStyleGenerator(BaseGenerator):
     '''Generator for Views Variables'''
 
+    @staticmethod
+    def GetName():
+        return 'Views'
+
     def Render(self):
         self.Validate()
         return self.ApplyTemplate(self, 'views_generator_h.tmpl',

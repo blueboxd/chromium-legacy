@@ -10,9 +10,6 @@ ca-certificates
 # Make sure users have compatible fonts for viewing PDFs.
 fonts-liberation
 
-# Temporary entry for systray icons.
-libappindicator3-1
-
 # Pull a more recent version of NSS than required by runtime linking, for
 # security and stability updates in NSS.
 libnss3 (>= 3.26)

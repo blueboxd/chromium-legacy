@@ -86,6 +86,8 @@ class CompositingInputsUpdater {
   // current value of AncestorInfo.
   void UpdateAncestorInfo(PaintLayer* const, UpdateType&, AncestorInfo&);
 
+  bool NeedsPaintOffsetTranslationForCompositing(PaintLayer*);
+
   LayoutGeometryMap geometry_map_;
   PaintLayer* root_layer_;
   PaintLayer* compositing_inputs_root_;

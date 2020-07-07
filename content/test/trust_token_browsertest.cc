@@ -429,6 +429,11 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, AdditionalSigningData) {
 }
 
 IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, OverlongAdditionalSigningData) {
+  TrustTokenRequestHandler::Options options;
+  options.client_signing_outcome =
+      TrustTokenRequestHandler::SigningOutcome::kFailure;
+  request_handler_.UpdateOptions(std::move(options));
+
   ProvideRequestHandlerKeyCommitmentsToNetworkService({"a.test"});
 
   GURL start_url = server_.GetURL("a.test", "/title1.html");
@@ -458,19 +463,25 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, OverlongAdditionalSigningData) {
     fetch("/sign", {trustToken: {type: 'send-srr',
       signRequestData: 'include',
       issuer: $1,
-      additionalSigningData: $2}}).then(()=>"Success").catch(e=>e.name);)";
+      additionalSigningData: $2}}).then(()=>"Success");)";
 
-  EXPECT_THAT(EvalJs(shell(), JsReplace(cmd, IssuanceOriginFromHost("a.test"),
-                                        overlong_signing_data))
-                  .ExtractString(),
-              HasSubstr("OperationError"));
+  EXPECT_EQ("Success",
+            EvalJs(shell(), JsReplace(cmd, IssuanceOriginFromHost("a.test"),
+                                      overlong_signing_data)));
+  EXPECT_EQ(request_handler_.LastVerificationError(), base::nullopt);
 }
 
 IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest,
                        AdditionalSigningDataNotAValidHeader) {
+  TrustTokenRequestHandler::Options options;
+  options.client_signing_outcome =
+      TrustTokenRequestHandler::SigningOutcome::kFailure;
+  request_handler_.UpdateOptions(std::move(options));
+
   ProvideRequestHandlerKeyCommitmentsToNetworkService({"a.test"});
+
   GURL start_url = server_.GetURL("a.test", "/title1.html");
-  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+  ASSERT_TRUE(NavigateToURL(shell(), start_url));
 
   std::string command = R"(
   (async () => {
@@ -486,12 +497,12 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest,
     fetch("/sign", {trustToken: {type: 'send-srr',
       signRequestData: 'include',
       issuer: $1,
-      additionalSigningData: '\r'}}).then(()=>"Success").catch(e=>e.name);)";
+      additionalSigningData: '\r'}}).then(()=>"Success");)";
 
-  EXPECT_THAT(
-      EvalJs(shell(), JsReplace(command, IssuanceOriginFromHost("a.test")))
-          .ExtractString(),
-      HasSubstr("OperationError"));
+  EXPECT_EQ(
+      "Success",
+      EvalJs(shell(), JsReplace(command, IssuanceOriginFromHost("a.test"))));
+  EXPECT_EQ(request_handler_.LastVerificationError(), base::nullopt);
 }
 
 // Issuance from a context with a secure-but-non-HTTP/S top frame origin

@@ -20,56 +20,72 @@
 
 namespace extensions {
 
-// Test that visiting an url associated with a disabled extension offers to
-// re-enable it.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest,
-                       PromptToReEnableExtensionsOnNavigation) {
+// A class for testing various scenarios of disabled extensions.
+class DisableExtensionBrowserTest : public ExtensionBrowserTest {
+ protected:
+  void SetUpOnMainThread() override {
+    ExtensionBrowserTest::SetUpOnMainThread();
+    extension_ = LoadExtension(test_data_dir_.AppendASCII("simple_with_file"));
+
+    extension_id_ = extension_->id();
+    extension_resource_url_ = extension_->GetResourceURL("file.html");
+
+    NavigationObserver::SetAllowedRepeatedPromptingForTesting(true);
+    ASSERT_TRUE(extension_);
+
+    registry_ = ExtensionRegistry::Get(profile());
+    EXPECT_TRUE(registry_->enabled_extensions().Contains(extension_id_));
+
+    prefs_ = ExtensionPrefs::Get(profile());
+  }
+
+  // We always navigate in a new tab because when we disable the extension, it
+  // closes all tabs for that extension. If we only opened in the current tab,
+  // this would result in the only open tab being closed, and the test
+  // quitting.
+  void NavigateToUrlInNewTab(const GURL& url) {
+    ui_test_utils::NavigateToURLWithDisposition(
+        browser(), url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+  }
+
   // TODO(lukasza): https://crbug.com/970917: We should not terminate a renderer
   // that hosts a disabled extension.  Once that is fixed, we should remove
   // ScopedAllowRendererCrashes below.
   content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
 
-  NavigationObserver::SetAllowedRepeatedPromptingForTesting(true);
+  scoped_refptr<const Extension> extension_;
+  std::string extension_id_;
+  GURL extension_resource_url_;
+  ExtensionRegistry* registry_;
+  ExtensionPrefs* prefs_;
+};
+
+// Test that visiting an url associated with a disabled extension offers to
+// re-enable it.
+IN_PROC_BROWSER_TEST_F(
+    DisableExtensionBrowserTest,
+    PromptToReEnableExtensionsOnNavigation_PermissionsIncrease) {
   base::ScopedClosureRunner reset_repeated_prompting(base::BindOnce([]() {
     NavigationObserver::SetAllowedRepeatedPromptingForTesting(false);
   }));
-  scoped_refptr<const Extension> extension =
-      ChromeTestExtensionLoader(profile()).LoadExtension(
-          test_data_dir_.AppendASCII("simple_with_file"));
-  ASSERT_TRUE(extension);
-  const std::string kExtensionId = extension->id();
-  const GURL kUrl = extension->GetResourceURL("file.html");
-
-  // We always navigate in a new tab because when we disable the extension, it
-  // closes all tabs for that extension. If we only opened in the current tab,
-  // this would result in the only open tab being closed, and the test quitting.
-  auto navigate_to_url_in_new_tab = [this](const GURL& url) {
-    ui_test_utils::NavigateToURLWithDisposition(
-        browser(), url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-        ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
-  };
-
-  ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
-  EXPECT_TRUE(registry->enabled_extensions().Contains(kExtensionId));
-
   // Disable the extension due to a permissions increase.
   extension_service()->DisableExtension(
-      kExtensionId, disable_reason::DISABLE_PERMISSIONS_INCREASE);
-  EXPECT_TRUE(registry->disabled_extensions().Contains(kExtensionId));
+      extension_id_, disable_reason::DISABLE_PERMISSIONS_INCREASE);
+  EXPECT_TRUE(registry_->disabled_extensions().Contains(extension_id_));
 
-  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
   EXPECT_EQ(disable_reason::DISABLE_PERMISSIONS_INCREASE,
-            prefs->GetDisableReasons(kExtensionId));
+            prefs_->GetDisableReasons(extension_id_));
 
   {
     // Visit an associated url and deny the prompt. The extension should remain
     // disabled.
     ScopedTestDialogAutoConfirm auto_deny(ScopedTestDialogAutoConfirm::CANCEL);
-    navigate_to_url_in_new_tab(kUrl);
+    NavigateToUrlInNewTab(extension_resource_url_);
     base::RunLoop().RunUntilIdle();
-    EXPECT_TRUE(registry->disabled_extensions().Contains(kExtensionId));
+    EXPECT_TRUE(registry_->disabled_extensions().Contains(extension_id_));
     EXPECT_EQ(disable_reason::DISABLE_PERMISSIONS_INCREASE,
-              prefs->GetDisableReasons(kExtensionId));
+              prefs_->GetDisableReasons(extension_id_));
   }
 
   {
@@ -77,47 +93,56 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest,
     // re-enabled.
     ScopedTestDialogAutoConfirm auto_accept(
         ScopedTestDialogAutoConfirm::ACCEPT);
-    navigate_to_url_in_new_tab(kUrl);
+    NavigateToUrlInNewTab(extension_resource_url_);
     base::RunLoop().RunUntilIdle();
-    EXPECT_TRUE(registry->enabled_extensions().Contains(kExtensionId));
+    EXPECT_TRUE(registry_->enabled_extensions().Contains(extension_id_));
     EXPECT_EQ(disable_reason::DISABLE_NONE,
-              prefs->GetDisableReasons(kExtensionId));
+              prefs_->GetDisableReasons(extension_id_));
   }
+}
 
+// Test that visiting an url associated with a disabled extension offers to
+// re-enable it.
+IN_PROC_BROWSER_TEST_F(DisableExtensionBrowserTest,
+                       PromptToReEnableExtensionsOnNavigation_UserAction) {
   // Disable the extension for something other than a permissions increase.
-  extension_service()->DisableExtension(kExtensionId,
+  extension_service()->DisableExtension(extension_id_,
                                         disable_reason::DISABLE_USER_ACTION);
-  EXPECT_TRUE(registry->disabled_extensions().Contains(kExtensionId));
+  EXPECT_TRUE(registry_->disabled_extensions().Contains(extension_id_));
   EXPECT_EQ(disable_reason::DISABLE_USER_ACTION,
-            prefs->GetDisableReasons(kExtensionId));
+            prefs_->GetDisableReasons(extension_id_));
 
   {
     // We only prompt for permissions increases, not any other disable reason.
     // As such, the extension should stay disabled.
     ScopedTestDialogAutoConfirm auto_accept(
         ScopedTestDialogAutoConfirm::ACCEPT);
-    navigate_to_url_in_new_tab(kUrl);
+    NavigateToUrlInNewTab(extension_resource_url_);
     base::RunLoop().RunUntilIdle();
-    EXPECT_TRUE(registry->disabled_extensions().Contains(kExtensionId));
+    EXPECT_TRUE(registry_->disabled_extensions().Contains(extension_id_));
     EXPECT_EQ(disable_reason::DISABLE_USER_ACTION,
-              prefs->GetDisableReasons(kExtensionId));
+              prefs_->GetDisableReasons(extension_id_));
   }
+}
 
+// Test that visiting an url associated with a disabled hosted app offers to
+// re-enable it.
+IN_PROC_BROWSER_TEST_F(DisableExtensionBrowserTest,
+                       PromptToReEnableHostedAppOnNavigation) {
   // Load a hosted app and disable it for a permissions increase.
   scoped_refptr<const Extension> hosted_app =
-      ChromeTestExtensionLoader(profile()).LoadExtension(
-          test_data_dir_.AppendASCII("hosted_app"));
+      LoadExtension(test_data_dir_.AppendASCII("hosted_app"));
   ASSERT_TRUE(hosted_app);
   const std::string kHostedAppId = hosted_app->id();
   const GURL kHostedAppUrl("http://localhost/extensions/hosted_app/main.html");
-  EXPECT_EQ(hosted_app, registry->enabled_extensions().GetExtensionOrAppByURL(
+  EXPECT_EQ(hosted_app, registry_->enabled_extensions().GetExtensionOrAppByURL(
                             kHostedAppUrl));
 
   extension_service()->DisableExtension(
       kHostedAppId, disable_reason::DISABLE_PERMISSIONS_INCREASE);
-  EXPECT_TRUE(registry->disabled_extensions().Contains(kHostedAppId));
+  EXPECT_TRUE(registry_->disabled_extensions().Contains(kHostedAppId));
   EXPECT_EQ(disable_reason::DISABLE_PERMISSIONS_INCREASE,
-            prefs->GetDisableReasons(kHostedAppId));
+            prefs_->GetDisableReasons(kHostedAppId));
 
   {
     // When visiting a site that's associated with a hosted app, but not a
@@ -126,11 +151,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest,
     // See crbug.com/678631.
     ScopedTestDialogAutoConfirm auto_accept(
         ScopedTestDialogAutoConfirm::ACCEPT);
-    navigate_to_url_in_new_tab(kHostedAppUrl);
+    NavigateToUrlInNewTab(kHostedAppUrl);
     base::RunLoop().RunUntilIdle();
-    EXPECT_TRUE(registry->disabled_extensions().Contains(kHostedAppId));
+    EXPECT_TRUE(registry_->disabled_extensions().Contains(kHostedAppId));
     EXPECT_EQ(disable_reason::DISABLE_PERMISSIONS_INCREASE,
-              prefs->GetDisableReasons(kHostedAppId));
+              prefs_->GetDisableReasons(kHostedAppId));
   }
 }
 

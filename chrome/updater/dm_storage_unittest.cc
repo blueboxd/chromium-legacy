@@ -167,10 +167,10 @@ TEST(DMStorage, GetCachedPolicyInfo) {
 
   auto policy_info = storage.GetCachedPolicyInfo();
   ASSERT_NE(policy_info, nullptr);
-  EXPECT_EQ(policy_info->PublicKey(), "SampleNewPublicKeyData");
-  EXPECT_TRUE(policy_info->HasKeyVersion());
-  EXPECT_EQ(policy_info->KeyVersion(), 15);
-  EXPECT_EQ(policy_info->TimeStamp(), 12340000);
+  EXPECT_EQ(policy_info->public_key(), "SampleNewPublicKeyData");
+  EXPECT_TRUE(policy_info->has_key_version());
+  EXPECT_EQ(policy_info->key_version(), 15);
+  EXPECT_EQ(policy_info->timestamp(), 12340000);
 }
 
 TEST(DMStorage, ReadCachedOmahaPolicy) {

@@ -31,23 +31,29 @@ abstract class WebLayerActivityTestRule<T extends Activity> extends ActivityTest
         super(clazz, /*initialTouchMode=*/false, /*launchActivity=*/false);
     }
 
+    /**
+     * Writes the command line file. This can be useful if a test needs to dynamically add command
+     * line arguments before WebLayer has been loaded.
+     */
+    public void writeCommandLineFile() throws Exception {
+        // The CommandLine instance we have here will not be picked up in the
+        // implementation since they use different class loaders, so we need to write
+        // all the switches to the WebLayer command line file.
+        try (Writer writer = new OutputStreamWriter(
+                     InstrumentationRegistry.getInstrumentation().getTargetContext().openFileOutput(
+                             COMMAND_LINE_FILE, Context.MODE_PRIVATE),
+                     "UTF-8")) {
+            writer.write(TextUtils.join(" ", CommandLine.getJavaSwitchesOrNull()));
+        }
+    }
+
     @Override
     public Statement apply(final Statement base, Description description) {
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
                 try {
-                    // The CommandLine instance we have here will not be picked up in the
-                    // implementation since they use different class loaders, so we need to write
-                    // all the switches to the WebLayer command line file.
-                    try (Writer writer = new OutputStreamWriter(
-                                 InstrumentationRegistry.getInstrumentation()
-                                         .getTargetContext()
-                                         .openFileOutput(COMMAND_LINE_FILE, Context.MODE_PRIVATE),
-                                 "UTF-8")) {
-                        writer.write(TextUtils.join(" ", CommandLine.getJavaSwitchesOrNull()));
-                    }
-
+                    writeCommandLineFile();
                     base.evaluate();
                 } finally {
                     new File(InstrumentationRegistry.getInstrumentation()

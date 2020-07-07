@@ -34,3 +34,6 @@ crbug.com/1084796 [ chromeos ] GpuProcess_readback_webgl_gpu_process [ Skip ]
 # Started crashing with passthrough field trial.
 crbug.com/1099576 [ mac amd ] GpuProcess_mac_webgl_backgrounded_high_performance [ Skip ]
 crbug.com/1099576 [ mac intel ] GpuProcess_mac_webgl_backgrounded_high_performance [ Skip ]
+
+# GpuProcess_canvas2d is flaky on fuchsia.
+crbug.com/1102542 [ fuchsia ] GpuProcess_canvas2d [ Failure ]

@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -51,7 +52,9 @@ import org.chromium.base.test.util.InMemorySharedPreferences;
 import org.chromium.components.safe_browsing.SafeBrowsingApiBridge;
 import org.chromium.components.safe_browsing.SafeBrowsingApiHandler;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
+import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.CriteriaNotSatisfiedException;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -362,8 +365,8 @@ public class SafeBrowsingTest {
 
         CriteriaHelper.pollInstrumentationThread(() -> {
             try {
-                Assert.assertEquals(
-                        expected, evaluateJavaScriptOnInterstitialOnUiThreadSync(script));
+                Criteria.checkThat(evaluateJavaScriptOnInterstitialOnUiThreadSync(script),
+                        Matchers.is(expected));
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -1246,9 +1249,9 @@ public class SafeBrowsingTest {
             try {
                 int awContentsCount = TestThreadUtils.runOnUiThreadBlocking(
                         () -> AwContents.getNativeInstanceCount());
-                Assert.assertEquals(0, awContentsCount);
+                Criteria.checkThat(awContentsCount, Matchers.is(0));
             } catch (Exception e) {
-                Assert.fail(e.getMessage());
+                throw new CriteriaNotSatisfiedException(e);
             }
         });
     }

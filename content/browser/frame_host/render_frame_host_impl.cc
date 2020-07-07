@@ -61,6 +61,7 @@
 #include "content/browser/frame_host/input/input_injector_impl.h"
 #include "content/browser/frame_host/ipc_utils.h"
 #include "content/browser/frame_host/keep_alive_handle_factory.h"
+#include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator.h"
@@ -4140,14 +4141,10 @@ void RenderFrameHostImpl::UpdateBrowserControlsState(
     frame_->UpdateBrowserControlsState(constraints, current, animate);
 }
 
-void RenderFrameHostImpl::Reload() {
-  if (!IsRenderFrameLive())
-    return;
-
-  // TODO(https://crbug.com/995428): This IPC is deprecated. Navigations are
-  // handled from the browser process. There is no need to send an IPC to the
-  // renderer process for this.
-  Send(new FrameMsg_Reload(GetRoutingID()));
+bool RenderFrameHostImpl::Reload() {
+  NavigationControllerImpl* controller = static_cast<NavigationControllerImpl*>(
+      frame_tree_node_->navigator().GetController());
+  return controller->ReloadFrame(frame_tree_node_);
 }
 
 void RenderFrameHostImpl::SendAccessibilityEventsToManager(

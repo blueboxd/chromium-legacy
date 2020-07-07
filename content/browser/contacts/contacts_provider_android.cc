@@ -17,7 +17,6 @@
 #include "content/public/android/content_jni_headers/ContactsDialogHost_jni.h"
 #include "content/public/browser/contacts_picker_properties_requested.h"
 #include "content/public/browser/web_contents.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "ui/android/window_android.h"
 #include "url/origin.h"
 

@@ -45,15 +45,26 @@ class BaseGeneratorTest(unittest.TestCase):
         ''')
         self.assertRaises(ValueError, self.generator.Validate)
 
-        # Add google_grey_900 to light mode.
+    def testDuplicateKeys(self):
         self.generator.AddJSONToModel('''
 {
   colors: {
-    google_grey_900: { light: "rgb(255, 255, 255)", }
+    google_grey_900: { light: "rgb(255, 255, 255)", },
   }
 }
         ''')
         self.generator.Validate()
+
+        # Add google_grey_900's dark mode as if in a separate file. This counts
+        # as a redefinition/conflict and causes an error.
+        self.assertRaises(
+            ValueError, self.generator.AddJSONToModel, '''
+{
+  colors: {
+    google_grey_900: { dark: "rgb(255, 255, 255)", }
+  }
+}
+        ''')
 
 
 if __name__ == '__main__':

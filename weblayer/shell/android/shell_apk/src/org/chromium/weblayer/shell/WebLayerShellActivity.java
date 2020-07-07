@@ -27,6 +27,7 @@ import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ViewSwitcher;
 
 import androidx.fragment.app.Fragment;
@@ -37,6 +38,7 @@ import androidx.fragment.app.FragmentTransaction;
 import org.chromium.base.CommandLine;
 import org.chromium.base.IntentUtils;
 import org.chromium.weblayer.Browser;
+import org.chromium.weblayer.BrowsingDataType;
 import org.chromium.weblayer.ContextMenuParams;
 import org.chromium.weblayer.ErrorPageCallback;
 import org.chromium.weblayer.FindInPageCallback;
@@ -225,6 +227,16 @@ public class WebLayerShellActivity extends FragmentActivity {
                 if (item.getItemId() == R.id.translate_menu_id) {
                     mBrowser.getActiveTab().showTranslateUi();
                     return true;
+                }
+
+                if (item.getItemId() == R.id.clear_browsing_data_menu_id) {
+                    mProfile.clearBrowsingData(new int[] {BrowsingDataType.COOKIES_AND_SITE_DATA,
+                                                       BrowsingDataType.CACHE},
+                            () -> {
+                                Toast.makeText(getApplicationContext(), "Data cleared!",
+                                             Toast.LENGTH_SHORT)
+                                        .show();
+                            });
                 }
 
                 return false;

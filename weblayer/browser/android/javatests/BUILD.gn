@@ -20,6 +20,7 @@ android_library("weblayer_java_tests") {
     "src/org/chromium/weblayer/test/ExternalNavigationTest.java",
     "src/org/chromium/weblayer/test/FindInPageTest.java",
     "src/org/chromium/weblayer/test/FullscreenCallbackTest.java",
+    "src/org/chromium/weblayer/test/GoogleAccountsTest.java",
     "src/org/chromium/weblayer/test/InputTypesTest.java",
     "src/org/chromium/weblayer/test/NavigationTest.java",
     "src/org/chromium/weblayer/test/NewTabCallbackTest.java",

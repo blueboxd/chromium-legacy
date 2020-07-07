@@ -53,6 +53,7 @@ import org.chromium.weblayer_private.interfaces.IDownloadCallbackClient;
 import org.chromium.weblayer_private.interfaces.IErrorPageCallbackClient;
 import org.chromium.weblayer_private.interfaces.IFindInPageCallbackClient;
 import org.chromium.weblayer_private.interfaces.IFullscreenCallbackClient;
+import org.chromium.weblayer_private.interfaces.IGoogleAccountsCallbackClient;
 import org.chromium.weblayer_private.interfaces.IMediaCaptureCallbackClient;
 import org.chromium.weblayer_private.interfaces.INavigationControllerClient;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
@@ -86,6 +87,7 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
     private ErrorPageCallbackProxy mErrorPageCallbackProxy;
     private FullscreenCallbackProxy mFullscreenCallbackProxy;
     private TabViewAndroidDelegate mViewAndroidDelegate;
+    private GoogleAccountsCallbackProxy mGoogleAccountsCallbackProxy;
     // BrowserImpl this TabImpl is in. This is only null during creation.
     private BrowserImpl mBrowser;
     private LoginPrompt mLoginPrompt;
@@ -502,6 +504,21 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
     }
 
     @Override
+    public void setGoogleAccountsCallbackClient(IGoogleAccountsCallbackClient client) {
+        StrictModeWorkaround.apply();
+        if (client != null) {
+            if (mGoogleAccountsCallbackProxy == null) {
+                mGoogleAccountsCallbackProxy = new GoogleAccountsCallbackProxy(mNativeTab, client);
+            } else {
+                mGoogleAccountsCallbackProxy.setClient(client);
+            }
+        } else if (mGoogleAccountsCallbackProxy != null) {
+            mGoogleAccountsCallbackProxy.destroy();
+            mGoogleAccountsCallbackProxy = null;
+        }
+    }
+
+    @Override
     public void executeScript(String script, boolean useSeparateIsolate, IObjectWrapper callback) {
         StrictModeWorkaround.apply();
         Callback<String> nativeCallback = new Callback<String>() {
@@ -813,6 +830,10 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
         if (mNewTabCallbackProxy != null) {
             mNewTabCallbackProxy.destroy();
             mNewTabCallbackProxy = null;
+        }
+        if (mGoogleAccountsCallbackProxy != null) {
+            mGoogleAccountsCallbackProxy.destroy();
+            mGoogleAccountsCallbackProxy = null;
         }
 
         mInterceptNavigationDelegateClient.destroy();

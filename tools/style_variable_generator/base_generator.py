@@ -91,8 +91,19 @@ class BaseGenerator:
             VariableType.OPACITY: ModeVariables(self._default_mode),
         }
 
+        # A dictionary of variable names to objects containing information about
+        # how the generator should run for that variable. All variables must
+        # populate this dictionary and as such, its keys can be used as a list
+        # of all variable names,
+        self.context_map = dict()
 
-    def AddColor(self, name, value_obj):
+    def _SetVariableContext(self, name, context):
+        if name in self.context_map:
+            raise ValueError('Variable name "%s" is reused' % name)
+        self.context_map[name] = context or {}
+
+    def AddColor(self, name, value_obj, context=None):
+        self._SetVariableContext(name, context)
         try:
             if isinstance(value_obj, unicode):
                 self.model[VariableType.COLOR].Add(self._default_mode, name,
@@ -107,25 +118,26 @@ class BaseGenerator:
 
     def AddJSONFileToModel(self, path):
         self.in_files.append(path)
-        with open(path, 'r') as f:
-            self.AddJSONToModel(f.read())
+        try:
+            with open(path, 'r') as f:
+                self.AddJSONToModel(f.read(), self.GetName())
+        except ValueError as err:
+            raise ValueError('\n%s:\n    %s' % (path, err))
 
-    def AddJSONToModel(self, json_string):
+    def AddJSONToModel(self, json_string, generator_name=None):
         # TODO(calamity): Add allow_duplicate_keys=False once pyjson5 is
         # rolled.
         data = json5.loads(json_string,
                            object_pairs_hook=collections.OrderedDict)
+        generator_context = data.get('options', {}).get(generator_name, None)
+        for name, value in data['colors'].items():
+            if not re.match('^[a-z0-9_]+$', name):
+                raise ValueError(
+                    '%s is not a valid variable name (lower case, 0-9, _)' %
+                    name)
 
-        try:
-            for name, value in data['colors'].items():
-                if not re.match('^[a-z0-9_]+$', name):
-                    raise ValueError(
-                        '%s is not a valid variable name (lower case, 0-9, _)'
-                        % name)
+            self.AddColor(name, value, generator_context)
 
-                self.AddColor(name, value)
-        except ValueError as err:
-            raise ValueError('\n%s:\n    %s' % (path, err))
 
     def ApplyTemplate(self, style_generator, path_to_template, params):
         loader_root_dir = path_overrides.GetFileSystemLoaderRootDirectory()
@@ -155,7 +167,7 @@ class BaseGenerator:
                 if value.var:
                     CheckColorInDefaultMode(value.var)
                 if value.rgb_var:
-                    CheckColorInDefaultMode(value.rgb_var[:-4])
+                    CheckColorInDefaultMode(value.RGBVarToVar())
 
         # TODO(calamity): Check for circular references.
 

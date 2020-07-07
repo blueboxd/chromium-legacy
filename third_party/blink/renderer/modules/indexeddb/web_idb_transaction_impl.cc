@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/format_macros.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_database_error.h"

@@ -30,4 +30,27 @@ diff \Users\rogerta\Documents\Visual Studio 2017\Projects\7z.1514.orig\C\Util\Sf
 <           unsigned extPrice = FindItem(kExts, sizeof(kExts) / sizeof(kExts[0]), name + len - extLen, extLen);
 ---
 >           unsigned extPrice = FindItem(kExts, sizeof(kExts) / sizeof(kExts[0]), name + len2 - extLen, extLen);
-
+diff --git a/third_party/lzma_sdk/README.chromium b/third_party/lzma_sdk/README.chromium
+index 96fc788132b2..956b8d6c2fae 100644
+--- a/third_party/lzma_sdk/README.chromium
++++ b/third_party/lzma_sdk/README.chromium
+@@ -28,4 +28,5 @@ The patch in Util/SfxSetup/chromium.patch was applied so that:
+    C6246: Local declaration hides declaration of same name in outer scope.
+ 2/ Fix for includes file names, since the original code causes an include
+    file violation during git cl presubmit.
+-
++3/ Extended search range for 7z archive signature to accomodate
++   increased sfx binary size in debug builds.
+diff --git a/third_party/lzma_sdk/Util/SfxSetup/SfxSetup.c b/third_party/lzma_sdk/Util/SfxSetup/SfxSetup.c
+index 967c5c247702..95766a6a2dd4 100644
+--- a/third_party/lzma_sdk/Util/SfxSetup/SfxSetup.c
++++ b/third_party/lzma_sdk/Util/SfxSetup/SfxSetup.c
+@@ -125,7 +125,7 @@ static WRes MyCreateDir(const WCHAR *name)
+ #define kBufferSize (1 << 15)
+ #endif
+ 
+-#define kSignatureSearchLimit (1 << 22)
++#define kSignatureSearchLimit (1 << 26)
+ 
+ static Bool FindSignature(CSzFile *stream, UInt64 *resPos)
+ {

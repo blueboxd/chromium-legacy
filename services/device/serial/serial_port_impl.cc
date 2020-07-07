@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/single_thread_task_runner.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/device/serial/buffer.h"
 #include "services/device/serial/serial_io_handler.h"
 

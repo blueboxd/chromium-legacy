@@ -232,19 +232,23 @@ ExecutionContext::GetContentSecurityPolicyDelegate() {
   return *csp_delegate_;
 }
 
-ContentSecurityPolicy*
-ExecutionContext::GetContentSecurityPolicyForCurrentWorld() {
+scoped_refptr<const DOMWrapperWorld> ExecutionContext::GetCurrentWorld() const {
   v8::Isolate* isolate = GetIsolate();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> v8_context = isolate->GetCurrentContext();
 
-  // This can be called before we enter v8, hence the context might be empty,
-  // which implies we are not in an isolated world.
+  // This can be called before we enter v8, hence the context might be empty.
   if (v8_context.IsEmpty())
-    return GetContentSecurityPolicy();
+    return nullptr;
 
-  return GetContentSecurityPolicyForWorld(
-      DOMWrapperWorld::Current(GetIsolate()));
+  return &DOMWrapperWorld::Current(isolate);
+}
+
+ContentSecurityPolicy*
+ExecutionContext::GetContentSecurityPolicyForCurrentWorld() {
+  scoped_refptr<const DOMWrapperWorld> world = GetCurrentWorld();
+  return world ? GetContentSecurityPolicyForWorld(*world)
+               : GetContentSecurityPolicy();
 }
 
 ContentSecurityPolicy* ExecutionContext::GetContentSecurityPolicyForWorld(

@@ -18,7 +18,6 @@
 #include "media/base/test_helpers.h"
 #include "media/base/video_decoder_config.h"
 #include "media/remoting/fake_remoter.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {

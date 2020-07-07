@@ -91,6 +91,8 @@ if (is_win || is_mac) {
       "configurator.h",
       "dm_cached_policy_info.cc",
       "dm_cached_policy_info.h",
+      "dm_message.cc",
+      "dm_message.h",
       "dm_policy_manager.cc",
       "dm_policy_manager.h",
       "dm_storage.cc",
@@ -163,9 +165,14 @@ if (is_win || is_mac) {
       "//components/prefs",
       "//components/update_client",
       "//components/version_info",
+      "//crypto",
+      "//third_party/boringssl",
       "//url",
     ]
-    public_deps = [ "//components/policy/proto" ]
+    public_deps = [
+      "//components/policy/core/common:common",
+      "//components/policy/proto",
+    ]
 
     if (is_win) {
       deps += [
@@ -224,6 +231,9 @@ if (is_win || is_mac) {
 
     sources = [
       "app/app_server_unittest.cc",
+      "dm_message_unittest.cc",
+      "dm_policy_builder_for_testing.cc",
+      "dm_policy_builder_for_testing.h",
       "dm_policy_manager_unittest.cc",
       "dm_storage_unittest.cc",
       "external_constants_unittest.cc",
@@ -254,6 +264,7 @@ if (is_win || is_mac) {
       "//chrome/updater/tools:unittest",
       "//components/prefs:test_support",
       "//components/update_client",
+      "//crypto",
       "//testing/gtest",
       "//url",
     ]

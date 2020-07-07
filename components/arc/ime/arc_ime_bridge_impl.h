@@ -54,6 +54,8 @@ class ArcImeBridgeImpl : public ArcImeBridge, public mojom::ImeHost {
   void RequestHideImeDeprecated() override;
   void ShouldEnableKeyEventForwarding(
       ShouldEnableKeyEventForwardingCallback callback) override;
+  void SendKeyEvent(std::unique_ptr<ui::KeyEvent> key_event,
+                    SendKeyEventCallback callback) override;
 
  private:
   Delegate* const delegate_;

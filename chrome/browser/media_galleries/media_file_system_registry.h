@@ -60,7 +60,7 @@ struct MediaFileSystemInfo {
   bool media_device;
 };
 
-typedef base::Callback<void(const std::vector<MediaFileSystemInfo>&)>
+typedef base::OnceCallback<void(const std::vector<MediaFileSystemInfo>&)>
     MediaFileSystemsCallback;
 
 // Tracks usage of filesystems by extensions.
@@ -74,10 +74,9 @@ class MediaFileSystemRegistry
 
   // Passes to |callback| the list of media filesystem IDs and paths for a
   // given WebContents.
-  void GetMediaFileSystemsForExtension(
-      content::WebContents* contents,
-      const extensions::Extension* extension,
-      const MediaFileSystemsCallback& callback);
+  void GetMediaFileSystemsForExtension(content::WebContents* contents,
+                                       const extensions::Extension* extension,
+                                       MediaFileSystemsCallback callback);
 
   // Attempt to register the file system for |pref_id|. If |extension| does not
   // have permission to |pref_id|, sends |callback| FILE_ERROR_NOT_FOUND.

@@ -14,6 +14,7 @@ import android.webkit.JavascriptInterface;
 
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -187,7 +188,8 @@ public class PostMessageTest {
 
     // Call on non-UI thread.
     private void expectTitle(String title) {
-        CriteriaHelper.pollUiThread(Criteria.equals(title, () -> mAwContents.getTitle()));
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(mAwContents.getTitle(), Matchers.is(title)));
     }
 
     private void loadPage(String page) throws Throwable {

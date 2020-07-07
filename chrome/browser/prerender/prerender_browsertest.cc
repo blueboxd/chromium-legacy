@@ -120,7 +120,6 @@
 #include "extensions/common/switches.h"
 #include "extensions/test/result_catcher.h"
 #include "media/base/media_switches.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/escape.h"
 #include "net/cert/x509_certificate.h"
 #include "net/dns/mock_host_resolver.h"

@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "chrome/services/printing/public/mojom/pdf_to_pwg_raster_converter.mojom.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace printing {
 

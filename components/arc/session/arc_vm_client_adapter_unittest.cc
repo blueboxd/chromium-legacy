@@ -64,7 +64,6 @@ StartParams GetPopulatedStartParams() {
   params.play_store_auto_update =
       StartParams::PlayStoreAutoUpdate::AUTO_UPDATE_ON;
   params.arc_custom_tabs_experiment = true;
-  params.arc_print_spooler_experiment = true;
   params.num_cores_disabled = 2;
   return params;
 }

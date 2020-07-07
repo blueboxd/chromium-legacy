@@ -27,6 +27,7 @@ class WebView;
 namespace weblayer {
 class ErrorPageDelegate;
 class FullscreenDelegate;
+class GoogleAccountsDelegate;
 class NavigationController;
 class NewTabDelegate;
 class TabObserver;
@@ -48,6 +49,8 @@ class Tab {
   // Sets the NewBrowserDelegate. Setting a null value implicitly disables
   // popups.
   virtual void SetNewTabDelegate(NewTabDelegate* delegate) = 0;
+
+  virtual void SetGoogleAccountsDelegate(GoogleAccountsDelegate* delegate) = 0;
 
   virtual void AddObserver(TabObserver* observer) = 0;
 

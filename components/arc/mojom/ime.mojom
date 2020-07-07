@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 14
+// Next MinVersion: 15
 
 module arc.mojom;
 
@@ -56,7 +56,7 @@ struct KeyEventData {
   bool is_capslock_on;
 };
 
-// Next method ID: 7
+// Next method ID: 8
 interface ImeHost {
   // Notifies Chrome that the text input focus is changed.
   // Each bit of the bitmask |flags| corresponds to TEXT_INPUT_FLAG_*.
@@ -108,6 +108,10 @@ interface ImeHost {
 
   // Asks Chrome whether the proxy IME should send a key event to the host IME.
   [MinVersion=13] ShouldEnableKeyEventForwarding@6() => (bool should_forward);
+
+  // Sends a key event to Chrome to pass it to the Chrome OS IME.
+  [MinVersion=14] SendKeyEvent@7(KeyEventData key_event_data)
+      => (bool is_consumed);
 };
 
 // Next method ID: 8

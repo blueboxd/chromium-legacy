@@ -149,7 +149,6 @@ void ChromeFeaturesServiceProvider::IsFeatureEnabled(
       &arc::kCustomTabsExperimentFeature,
       &arc::kFilePickerExperimentFeature,
       &arc::kNativeBridgeToggleFeature,
-      &arc::kPrintSpoolerExperimentFeature,
       &features::kSessionManagerLongKillTimeout,
   };
 

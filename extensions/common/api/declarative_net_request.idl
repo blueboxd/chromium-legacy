@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 // The <code>chrome.declarativeNetRequest</code> API is used to block or modify
-// network requests by specifying declarative rules.
+// network requests by specifying declarative rules. This lets extensions
+// modify network requests without intercepting them and viewing their content,
+// thus providing more privacy.
 [generate_error_messages]
 namespace declarativeNetRequest {
   // This describes the resource type of the network request.

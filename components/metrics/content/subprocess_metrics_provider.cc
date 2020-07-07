@@ -31,6 +31,7 @@ SubprocessMetricsProvider::SubprocessMetricsProvider() {
   base::StatisticsRecorder::RegisterHistogramProvider(
       weak_ptr_factory_.GetWeakPtr());
   content::BrowserChildProcessObserver::Add(this);
+  RegisterExistingRenderProcesses();
   g_subprocess_metrics_provider_for_testing = this;
 }
 
@@ -44,6 +45,18 @@ SubprocessMetricsProvider::~SubprocessMetricsProvider() {
 void SubprocessMetricsProvider::MergeHistogramDeltasForTesting() {
   DCHECK(g_subprocess_metrics_provider_for_testing);
   g_subprocess_metrics_provider_for_testing->MergeHistogramDeltas();
+}
+
+void SubprocessMetricsProvider::RegisterExistingRenderProcesses() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  for (auto it(content::RenderProcessHost::AllHostsIterator()); !it.IsAtEnd();
+       it.Advance()) {
+    auto* rph = it.GetCurrentValue();
+    OnRenderProcessHostCreated(rph);
+    if (rph->IsReady())
+      RenderProcessReady(rph);
+  }
 }
 
 void SubprocessMetricsProvider::RegisterSubprocessAllocator(

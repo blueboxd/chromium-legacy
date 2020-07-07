@@ -43,7 +43,8 @@ class GalleryWatchManager
       public storage_monitor::RemovableStorageObserver {
  public:
   // On success, |error| is empty.
-  typedef base::Callback<void(const std::string& /* error */)> ResultCallback;
+  typedef base::OnceCallback<void(const std::string& /* error */)>
+      ResultCallback;
 
   static const char kInvalidGalleryIDError[];
   static const char kNoPermissionError[];
@@ -66,7 +67,7 @@ class GalleryWatchManager
   void AddWatch(content::BrowserContext* browser_context,
                 const extensions::Extension* extension,
                 MediaGalleryPrefId gallery_id,
-                const ResultCallback& callback);
+                ResultCallback callback);
 
   // Remove the watch for |gallery_id|. It is valid to call this method on
   // non-existent watches.
@@ -130,7 +131,7 @@ class GalleryWatchManager
   // watch the path.
   void OnFileWatchActivated(const WatchOwner& owner,
                             const base::FilePath& path,
-                            const ResultCallback& callback,
+                            ResultCallback callback,
                             bool success);
 
   // Called by FilePathWatcher on the UI thread on a change event for |path|.

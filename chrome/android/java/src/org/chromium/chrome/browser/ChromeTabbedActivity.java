@@ -2207,9 +2207,11 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         if (keyCode == KeyEvent.KEYCODE_BACK && !isTablet()) {
             mHandler.removeCallbacks(mShowHistoryRunnable);
             mShowHistoryRunnable = null;
-            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.N
-                    && event.getEventTime() - event.getDownTime()
-                            >= ViewConfiguration.getLongPressTimeout()) {
+            if (event.getEventTime() - event.getDownTime()
+                            >= ViewConfiguration.getLongPressTimeout()
+                    && NavigationSheet.isInstanceShowing(getBottomSheetController())) {
+                // If tab history popup is showing, do not process the keyUp event
+                // which will dismiss it immediately.
                 return true;
             }
         }

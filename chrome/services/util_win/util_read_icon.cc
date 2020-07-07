@@ -8,7 +8,6 @@
 
 #include "base/files/file_path.h"
 #include "base/strings/string16.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/display/win/dpi.h"
 #include "ui/gfx/geometry/size.h"

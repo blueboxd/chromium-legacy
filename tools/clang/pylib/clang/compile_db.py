@@ -14,12 +14,13 @@ import subprocess
 
 _RSP_RE = re.compile(r' (@(.+?\.rsp)) ')
 _CMD_LINE_RE = re.compile(
-    r'^(?P<gomacc>.*gomacc\.exe"?\s+)?(?P<clang>\S*clang\S*)\s+(?P<args>.*)$')
+    r'^(?P<gomacc>.*gomacc(\.exe)?"?\s+)?(?P<clang>\S*clang\S*)\s+(?P<args>.*)$'
+)
 _debugging = False
 
 
 def _ProcessCommand(command):
-  """Removes gomacc.exe and inserts --driver-mode=cl as the first argument.
+  """Removes gomacc(.exe). On Windows inserts --driver-mode=cl as the first arg.
 
   Note that we deliberately don't use shlex.split here, because it doesn't work
   predictably for Windows commands (specifically, it doesn't parse args the same
@@ -31,10 +32,9 @@ def _ProcessCommand(command):
   # If the driver mode is not already set then define it. Driver mode is
   # automatically included in the compile db by clang starting with release
   # 9.0.0.
-  if "--driver_mode" in command:
-    driver_mode = ""
+  driver_mode = ''
   # Only specify for Windows. Other platforms do fine without it.
-  elif sys.platform == 'win32':
+  if sys.platform == 'win32' and '--driver_mode' not in command:
     driver_mode = '--driver-mode=cl'
 
   match = _CMD_LINE_RE.search(command)
@@ -88,6 +88,8 @@ def ProcessCompileDatabaseIfNeeded(compile_db):
   Returns:
     A postprocessed compile db that clang tooling can use.
   """
+  compile_db = [_ProcessEntry(e) for e in compile_db]
+
   # TODO(dcheng): Ideally this would check target_os... but not sure there's an
   # easy way to do that, and (for now) cross-compiles don't work without custom
   # patches anyway.
@@ -96,7 +98,6 @@ def ProcessCompileDatabaseIfNeeded(compile_db):
 
   if _debugging:
     print('Read in %d entries from the compile db' % len(compile_db))
-  compile_db = [_ProcessEntry(e) for e in compile_db]
   original_length = len(compile_db)
 
   # Filter out NaCl stuff. The clang tooling chokes on them.

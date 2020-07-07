@@ -15,9 +15,9 @@ TODO(https://crbug.com/1062154): Remove once deprecated colors are removed from
 Chrome OS pages.
 -#}
 html:not(body) {
-{%- for var_name, color in light_colors.items() %}
-  {{var_name | to_var_name}}-rgb: {{color | css_color_rgb}};
-  {{var_name | to_var_name}}: {{css_color_from_rgb_var(var_name, color.a)}};
+{%- for model_name, color in light_colors.items() %}
+  {{model_name | to_css_var_name}}-rgb: {{color | css_color_rgb}};
+  {{model_name | to_css_var_name}}: {{css_color_from_rgb_var(model_name, color.a)}};
 {%  endfor %}
 }
 {%- if dark_colors %}
@@ -30,9 +30,9 @@ TODO(https://crbug.com/1062154): Remove once deprecated colors are removed from
 Chrome OS pages.
 #}
   html:not(body) {
-{%- for var_name, color in dark_colors.items() %}
-    {{var_name | to_var_name}}-rgb: {{color | css_color_rgb}};
-    {{var_name | to_var_name}}: {{css_color_from_rgb_var(var_name, color.a)}};
+{%- for model_name, color in dark_colors.items() %}
+    {{model_name | to_css_var_name}}-rgb: {{color | css_color_rgb}};
+    {{model_name | to_css_var_name}}: {{css_color_from_rgb_var(model_name, color.a)}};
 {%  endfor %}
   }
 }

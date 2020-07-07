@@ -23,7 +23,6 @@
 #include "content/public/browser/web_contents.h"
 #include "media/base/android/media_drm_bridge.h"
 #include "media/base/media_switches.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace {
 

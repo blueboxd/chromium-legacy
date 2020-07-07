@@ -10,14 +10,12 @@
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "build/build_config.h"
+#include "chrome/updater/dm_message.h"
 
 namespace updater {
 
 class CachedPolicyInfo;
 class PolicyManagerInterface;
-
-// DM policy map: policy_type --> serialized_policy_data
-using DMPolicyMap = base::flat_map<std::string, std::string>;
 
 // The token service interface defines how to serialize tokens.
 class TokenServiceInterface {

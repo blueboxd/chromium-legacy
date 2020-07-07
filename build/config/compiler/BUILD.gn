@@ -482,8 +482,7 @@ config("compiler") {
   }
 
   if (is_clang && !is_nacl && !use_xcode_clang) {
-    cflags += [ "-fcrash-diagnostics-dir=" +
-                rebase_path("//tools/clang/crashreports", root_build_dir) ]
+    cflags += [ "-fcrash-diagnostics-dir=" + clang_diagnostic_dir ]
 
     cflags += [
       # TODO(hans): Remove this once Clang generates better optimized debug info

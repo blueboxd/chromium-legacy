@@ -1376,9 +1376,9 @@ void PPBNaClPrivate::DownloadNexe(PP_Instance instance,
   // FileDownloader deletes itself after invoking DownloadNexeCompletion.
   FileDownloader* file_downloader = new FileDownloader(
       std::move(url_loader), std::move(target_file),
-      base::Bind(&DownloadNexeCompletion, request, out_file_info),
-      base::Bind(&ProgressEventRateLimiter::ReportProgress,
-                 base::Owned(tracker), std::string(url)));
+      base::BindOnce(&DownloadNexeCompletion, request, out_file_info),
+      base::BindRepeating(&ProgressEventRateLimiter::ReportProgress,
+                          base::Owned(tracker), std::string(url)));
   file_downloader->Load(url_request);
 }
 
@@ -1531,11 +1531,11 @@ void DownloadFile(PP_Instance instance,
   ProgressEventRateLimiter* tracker = new ProgressEventRateLimiter(instance);
 
   // FileDownloader deletes itself after invoking DownloadNexeCompletion.
-  FileDownloader* file_downloader =
-      new FileDownloader(std::move(url_loader), std::move(target_file),
-                         base::Bind(&DownloadFileCompletion, callback),
-                         base::Bind(&ProgressEventRateLimiter::ReportProgress,
-                                    base::Owned(tracker), std::string(url)));
+  FileDownloader* file_downloader = new FileDownloader(
+      std::move(url_loader), std::move(target_file),
+      base::BindOnce(&DownloadFileCompletion, callback),
+      base::BindRepeating(&ProgressEventRateLimiter::ReportProgress,
+                          base::Owned(tracker), std::string(url)));
   file_downloader->Load(url_request);
 }
 

@@ -159,4 +159,9 @@ void ArcImeBridgeImpl::ShouldEnableKeyEventForwarding(
   std::move(callback).Run(delegate_->ShouldEnableKeyEventForwarding());
 }
 
+void ArcImeBridgeImpl::SendKeyEvent(std::unique_ptr<ui::KeyEvent> key_event,
+                                    SendKeyEventCallback callback) {
+  delegate_->SendKeyEvent(std::move(key_event), std::move(callback));
+}
+
 }  // namespace arc

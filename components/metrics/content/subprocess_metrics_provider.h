@@ -46,6 +46,12 @@ class SubprocessMetricsProvider
 
  private:
   friend class SubprocessMetricsProviderTest;
+  friend class SubprocessMetricsProviderBrowserTest;
+
+  // Registers the existing render processes by calling
+  // OnRenderProcessHostCreated() and RenderProcessReady() according to its
+  // state.
+  void RegisterExistingRenderProcesses();
 
   // Indicates subprocess to be monitored with unique id for later reference.
   // Metrics reporting will read histograms from it and upload them to UMA.

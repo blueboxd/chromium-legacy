@@ -11,6 +11,7 @@ import android.webkit.JavascriptInterface;
 
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -30,6 +31,7 @@ import org.chromium.content_public.browser.MessagePort;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.CriteriaNotSatisfiedException;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -203,8 +205,14 @@ public class PopupWindowTest {
                     }
                 });
 
-        CriteriaHelper.pollUiThread(Criteria.equals(
-                myUserAgentString, () -> mActivityTestRule.getTitleOnUiThread(popupContents)));
+        CriteriaHelper.pollUiThread(() -> {
+            try {
+                Criteria.checkThat(mActivityTestRule.getTitleOnUiThread(popupContents),
+                        Matchers.is(myUserAgentString));
+            } catch (Exception e) {
+                throw new CriteriaNotSatisfiedException(e);
+            }
+        });
     }
 
     @Test
@@ -526,8 +534,9 @@ public class PopupWindowTest {
     // Copied from imeTest.java.
     private void assertWaitForSelectActionBarStatus(
             boolean show, final SelectionPopupController controller) {
-        CriteriaHelper.pollUiThread(
-                Criteria.equals(show, () -> controller.isSelectActionBarShowing()));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(controller.isSelectActionBarShowing(), Matchers.is(show));
+        });
     }
 
     private void hideSelectActionMode(final SelectionPopupController controller) {

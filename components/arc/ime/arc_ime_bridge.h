@@ -5,9 +5,11 @@
 #ifndef COMPONENTS_ARC_IME_ARC_IME_BRIDGE_H_
 #define COMPONENTS_ARC_IME_ARC_IME_BRIDGE_H_
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/base/ime/text_input_type.h"
+#include "ui/events/event.h"
 
 namespace gfx {
 class Range;
@@ -29,6 +31,8 @@ class ArcImeBridge {
   // Received IPCs are deserialized and passed to this delegate.
   class Delegate {
    public:
+    using KeyEventDoneCallback = base::OnceCallback<void(bool)>;
+
     virtual void OnTextInputTypeChanged(ui::TextInputType type,
                                         bool is_personalized_learning_allowed,
                                         int flags) = 0;
@@ -43,6 +47,8 @@ class ArcImeBridge {
         const gfx::Range& selection_range,
         bool is_screen_coordinates) = 0;
     virtual bool ShouldEnableKeyEventForwarding() = 0;
+    virtual void SendKeyEvent(std::unique_ptr<ui::KeyEvent> key_event,
+                              KeyEventDoneCallback callback) = 0;
   };
 
   // Serializes and sends IME related requests through IPCs.

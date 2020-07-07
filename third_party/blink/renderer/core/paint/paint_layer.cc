@@ -183,6 +183,7 @@ PaintLayer::PaintLayer(LayoutBoxModelObject& layout_object)
       needs_reorder_overlay_overflow_controls_(false),
       static_inline_edge_(InlineEdge::kInlineStart),
       static_block_edge_(BlockEdge::kBlockStart),
+      needs_paint_offset_translation_for_compositing_(false),
 #if DCHECK_IS_ON()
       layer_list_mutation_allowed_(true),
 #endif

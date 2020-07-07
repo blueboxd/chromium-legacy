@@ -13,11 +13,12 @@ def main():
     parser = argparse.ArgumentParser(
         description='Generate style variables from JSON5 color file.')
 
-    parser.add_argument(
-        '--generator',
-        choices=['CSS', 'Views'],
-        required=True,
-        help='type of file to generate')
+    generators = [CSSStyleGenerator, ViewsStyleGenerator]
+
+    parser.add_argument('--generator',
+                        choices=[g.GetName() for g in generators],
+                        required=True,
+                        help='type of file to generate')
     parser.add_argument('--generate-single-mode',
                         choices=Modes.ALL,
                         help='generates output for a single mode')
@@ -26,11 +27,9 @@ def main():
 
     args = parser.parse_args()
 
-    if args.generator == 'CSS':
-        style_generator = CSSStyleGenerator()
-
-    if args.generator == 'Views':
-        style_generator = ViewsStyleGenerator()
+    for g in generators:
+        if args.generator == g.GetName():
+            style_generator = g()
 
     for t in args.targets:
         style_generator.AddJSONFileToModel(t)

@@ -65,13 +65,12 @@ void MojoDecoderFactory::CreateVideoDecoders(
         target_color_space));
   }
 #endif  // defined(OS_WIN)
-  mojo::PendingRemote<mojom::VideoDecoder> d3d11_video_decoder_remote;
+  mojo::PendingRemote<mojom::VideoDecoder> video_decoder_remote;
   interface_factory_->CreateVideoDecoder(
-      d3d11_video_decoder_remote.InitWithNewPipeAndPassReceiver());
+      video_decoder_remote.InitWithNewPipeAndPassReceiver());
 
   video_decoders->push_back(std::make_unique<MojoVideoDecoder>(
-      task_runner, gpu_factories, media_log,
-      std::move(d3d11_video_decoder_remote),
+      task_runner, gpu_factories, media_log, std::move(video_decoder_remote),
       VideoDecoderImplementation::kDefault, std::move(request_overlay_info_cb),
       target_color_space));
 

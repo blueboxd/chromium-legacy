@@ -22,6 +22,7 @@
 #include "net/http/structured_headers.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
+#include "services/network/public/cpp/trust_token_parameterization.h"
 #include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 #include "services/network/trust_tokens/proto/public.pb.h"
 #include "services/network/trust_tokens/trust_token_http_headers.h"
@@ -202,18 +203,20 @@ TrustTokenRequestSigningHelper::TrustTokenRequestSigningHelper(
 
 TrustTokenRequestSigningHelper::~TrustTokenRequestSigningHelper() = default;
 
-Params::Params(SuitableTrustTokenOrigin issuer,
-               SuitableTrustTokenOrigin toplevel,
-               std::vector<std::string> additional_headers_to_sign,
-               bool should_add_timestamp,
-               mojom::TrustTokenSignRequestData sign_request_data,
-               base::Optional<std::string> additional_signing_data)
+Params::Params(
+    SuitableTrustTokenOrigin issuer,
+    SuitableTrustTokenOrigin toplevel,
+    std::vector<std::string> additional_headers_to_sign,
+    bool should_add_timestamp,
+    mojom::TrustTokenSignRequestData sign_request_data,
+    base::Optional<std::string> possibly_unsafe_additional_signing_data)
     : issuer(std::move(issuer)),
       toplevel(std::move(toplevel)),
       additional_headers_to_sign(std::move(additional_headers_to_sign)),
       should_add_timestamp(should_add_timestamp),
       sign_request_data(sign_request_data),
-      additional_signing_data(additional_signing_data) {}
+      possibly_unsafe_additional_signing_data(
+          possibly_unsafe_additional_signing_data) {}
 
 Params::Params(SuitableTrustTokenOrigin issuer,
                SuitableTrustTokenOrigin toplevel)
@@ -279,7 +282,26 @@ void TrustTokenRequestSigningHelper::Begin(
     return;
   }
 
-  if (params_.additional_signing_data) {
+  if (params_.possibly_unsafe_additional_signing_data) {
+    if (params_.possibly_unsafe_additional_signing_data->size() >
+        kTrustTokenAdditionalSigningDataMaxSizeBytes) {
+      LogOutcome(net_log_, "Overly long additionalSigningData");
+
+      AttachSignedRedemptionRecordHeader(request, std::string());
+      std::move(done).Run(mojom::TrustTokenOperationStatus::kOk);
+      return;
+    }
+
+    if (!net::HttpUtil::IsValidHeaderValue(
+            *params_.possibly_unsafe_additional_signing_data)) {
+      LogOutcome(net_log_,
+                 "additionalSigningData was not a valid HTTP header value");
+
+      AttachSignedRedemptionRecordHeader(request, std::string());
+      std::move(done).Run(mojom::TrustTokenOperationStatus::kOk);
+      return;
+    }
+
     // |request| is guaranteed to not have
     // kTrustTokensRequestHeaderSecTrustTokensAdditionalSigningData because
     // network::TrustTokenRequestHeaders() contains this header name, so the
@@ -290,7 +312,7 @@ void TrustTokenRequestSigningHelper::Begin(
 
     request->SetExtraRequestHeaderByName(
         kTrustTokensRequestHeaderSecTrustTokensAdditionalSigningData,
-        *params_.additional_signing_data,
+        *params_.possibly_unsafe_additional_signing_data,
         /*overwrite=*/true);
 
     params_.additional_headers_to_sign.push_back(

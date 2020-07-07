@@ -1036,67 +1036,67 @@ void AccessibilityManager::SetProfile(Profile* profile) {
     pref_change_registrar_->Init(profile->GetPrefs());
     pref_change_registrar_->Add(
         ash::prefs::kShouldAlwaysShowAccessibilityMenu,
-        base::Bind(&AccessibilityManager::UpdateAlwaysShowMenuFromPref,
-                   base::Unretained(this)));
+        base::BindRepeating(&AccessibilityManager::UpdateAlwaysShowMenuFromPref,
+                            base::Unretained(this)));
     pref_change_registrar_->Add(
         ash::prefs::kAccessibilityLargeCursorEnabled,
-        base::Bind(&AccessibilityManager::OnLargeCursorChanged,
-                   base::Unretained(this)));
+        base::BindRepeating(&AccessibilityManager::OnLargeCursorChanged,
+                            base::Unretained(this)));
     pref_change_registrar_->Add(
         ash::prefs::kAccessibilityLargeCursorDipSize,
-        base::Bind(&AccessibilityManager::OnLargeCursorChanged,
-                   base::Unretained(this)));
+        base::BindRepeating(&AccessibilityManager::OnLargeCursorChanged,
+                            base::Unretained(this)));
     pref_change_registrar_->Add(
         ash::prefs::kAccessibilityStickyKeysEnabled,
-        base::Bind(&AccessibilityManager::OnStickyKeysChanged,
-                   base::Unretained(this)));
+        base::BindRepeating(&AccessibilityManager::OnStickyKeysChanged,
+                            base::Unretained(this)));
     pref_change_registrar_->Add(
         ash::prefs::kAccessibilitySpokenFeedbackEnabled,
-        base::Bind(&AccessibilityManager::OnSpokenFeedbackChanged,
-                   base::Unretained(this)));
+        base::BindRepeating(&AccessibilityManager::OnSpokenFeedbackChanged,
+                            base::Unretained(this)));
     pref_change_registrar_->Add(
         ash::prefs::kAccessibilityHighContrastEnabled,
-        base::Bind(&AccessibilityManager::OnHighContrastChanged,
-                   base::Unretained(this)));
+        base::BindRepeating(&AccessibilityManager::OnHighContrastChanged,
+                            base::Unretained(this)));
     pref_change_registrar_->Add(
         ash::prefs::kAccessibilityVirtualKeyboardEnabled,
-        base::Bind(&AccessibilityManager::OnVirtualKeyboardChanged,
-                   base::Unretained(this)));
+        base::BindRepeating(&AccessibilityManager::OnVirtualKeyboardChanged,
+                            base::Unretained(this)));
     pref_change_registrar_->Add(
         ash::prefs::kAccessibilityMonoAudioEnabled,
-        base::Bind(&AccessibilityManager::OnMonoAudioChanged,
-                   base::Unretained(this)));
+        base::BindRepeating(&AccessibilityManager::OnMonoAudioChanged,
+                            base::Unretained(this)));
     pref_change_registrar_->Add(
         ash::prefs::kAccessibilityCaretHighlightEnabled,
-        base::Bind(&AccessibilityManager::OnCaretHighlightChanged,
-                   base::Unretained(this)));
+        base::BindRepeating(&AccessibilityManager::OnCaretHighlightChanged,
+                            base::Unretained(this)));
     pref_change_registrar_->Add(
         ash::prefs::kAccessibilityCursorHighlightEnabled,
-        base::Bind(&AccessibilityManager::OnCursorHighlightChanged,
-                   base::Unretained(this)));
+        base::BindRepeating(&AccessibilityManager::OnCursorHighlightChanged,
+                            base::Unretained(this)));
     pref_change_registrar_->Add(
         ash::prefs::kAccessibilityFocusHighlightEnabled,
-        base::Bind(&AccessibilityManager::OnFocusHighlightChanged,
-                   base::Unretained(this)));
+        base::BindRepeating(&AccessibilityManager::OnFocusHighlightChanged,
+                            base::Unretained(this)));
     pref_change_registrar_->Add(
         ash::prefs::kAccessibilitySelectToSpeakEnabled,
-        base::Bind(&AccessibilityManager::OnSelectToSpeakChanged,
-                   base::Unretained(this)));
+        base::BindRepeating(&AccessibilityManager::OnSelectToSpeakChanged,
+                            base::Unretained(this)));
     pref_change_registrar_->Add(
         ash::prefs::kAccessibilitySwitchAccessEnabled,
-        base::Bind(&AccessibilityManager::OnSwitchAccessChanged,
-                   base::Unretained(this)));
+        base::BindRepeating(&AccessibilityManager::OnSwitchAccessChanged,
+                            base::Unretained(this)));
     pref_change_registrar_->Add(
         ash::prefs::kAccessibilityAutoclickEnabled,
-        base::Bind(&AccessibilityManager::OnAutoclickChanged,
-                   base::Unretained(this)));
+        base::BindRepeating(&AccessibilityManager::OnAutoclickChanged,
+                            base::Unretained(this)));
 
     local_state_pref_change_registrar_.reset(new PrefChangeRegistrar);
     local_state_pref_change_registrar_->Init(g_browser_process->local_state());
     local_state_pref_change_registrar_->Add(
         language::prefs::kApplicationLocale,
-        base::Bind(&AccessibilityManager::OnLocaleChanged,
-                   base::Unretained(this)));
+        base::BindRepeating(&AccessibilityManager::OnLocaleChanged,
+                            base::Unretained(this)));
 
     // Compute these histograms on the main (UI) thread because they
     // need to access PrefService.

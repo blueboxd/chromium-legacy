@@ -76,8 +76,6 @@ luci.project(
 luci.cq(
     submit_max_burst = 2,
     submit_burst_delay = time.minute,
-    # Goma outage, see https://crbug.com/1102597
-    draining_start_time = '2020-07-06T23:00:30Z',
     status_host = 'chromium-cq-status.appspot.com',
 )
 

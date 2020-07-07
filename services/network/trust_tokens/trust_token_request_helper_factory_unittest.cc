@@ -166,32 +166,7 @@ TEST_F(TrustTokenRequestHelperFactoryTest,
 }
 
 TEST_F(TrustTokenRequestHelperFactoryTest,
-       WontCreateSigningHelperWithOverlongAdditionalData) {
-  auto request = CreateSuitableRequest();
-
-  auto params = suitable_params().Clone();
-  params->type = mojom::TrustTokenOperationType::kSigning;
-  params->possibly_unsafe_additional_signing_data =
-      std::string(kTrustTokenAdditionalSigningDataMaxSizeBytes + 1, 'a');
-
-  EXPECT_EQ(CreateHelperAndWaitForResult(*request, *params).status(),
-            mojom::TrustTokenOperationStatus::kInvalidArgument);
-}
-
-TEST_F(TrustTokenRequestHelperFactoryTest,
-       WontCreateSigningHelperWithUnsafeAdditionalData) {
-  auto request = CreateSuitableRequest();
-
-  auto params = suitable_params().Clone();
-  params->type = mojom::TrustTokenOperationType::kSigning;
-  params->possibly_unsafe_additional_signing_data = "\r";
-
-  EXPECT_EQ(CreateHelperAndWaitForResult(*request, *params).status(),
-            mojom::TrustTokenOperationStatus::kInvalidArgument);
-}
-
-TEST_F(TrustTokenRequestHelperFactoryTest,
-       WillCreateSigningHelperWithAcceptablyShortAdditionalData) {
+       WillCreateSigningHelperWithAdditionalData) {
   auto request = CreateSuitableRequest();
 
   auto params = suitable_params().Clone();

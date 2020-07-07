@@ -82,12 +82,6 @@ enum NetworkMethodErrorType {
   NETWORK_METHOD_ERROR_REMOTE = 2,
 };
 
-// Callback for methods that initiate an operation and return no data.
-typedef base::Callback<void(
-    const std::string& path,
-    NetworkMethodErrorType error,
-    const std::string& error_message)> NetworkOperationCallback;
-
 namespace network_util {
 
 // Converts a |prefix_length| to a netmask. (for IPv4 only)

@@ -31,12 +31,11 @@ SUPPORTED_UBUNTU_RELEASES = {
     'Ubuntu 14.04 (Trusty)': 'trusty',
     'Ubuntu 16.04 (Xenial)': 'xenial',
     'Ubuntu 18.04 (Bionic)': 'bionic',
-    'Ubuntu 19.04 (Disco)': 'disco',
     'Ubuntu 19.10 (Eoan)': 'eoan',
+    'Ubuntu 20.04 (Focal)': 'focal',
 }
 
 PACKAGE_FILTER = set([
-    "libappindicator3-1",
     "libatspi2.0-0",
     "libasound2",
     "libatk1.0-0",

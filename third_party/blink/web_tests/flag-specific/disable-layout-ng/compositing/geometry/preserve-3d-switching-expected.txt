@@ -11,22 +11,22 @@ transform: translateZ(-100px) rotateY(45deg);
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='container'",
-      "bounds": [304, 304],
-      "transform": 1
+      "position": [108, 73],
+      "bounds": [304, 304]
     },
     {
       "name": "LayoutBlockFlow DIV id='parent'",
       "bounds": [280, 280],
       "contentsOpaque": true,
       "backgroundColor": "#FFFF00",
-      "transform": 4
+      "transform": 3
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV",
       "bounds": [200, 200],
       "contentsOpaque": true,
       "backgroundColor": "#008000",
-      "transform": 6
+      "transform": 5
     }
   ],
   "transforms": [
@@ -35,9 +35,10 @@ transform: translateZ(-100px) rotateY(45deg);
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [108, 73, 0, 1]
-      ]
+        [0, 0, 1, -0.002],
+        [0, 0, 0, 1]
+      ],
+      "origin": [260, 225]
     },
     {
       "id": 2,
@@ -45,25 +46,14 @@ transform: translateZ(-100px) rotateY(45deg);
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
-        [0, 0, 1, -0.002],
-        [0, 0, 0, 1]
-      ],
-      "origin": [152, 152]
-    },
-    {
-      "id": 3,
-      "parent": 2,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [12, 12, 0, 1]
+        [120, 85, 0, 1]
       ],
       "flattenInheritedTransform": false
     },
     {
-      "id": 4,
-      "parent": 3,
+      "id": 3,
+      "parent": 2,
       "transform": [
         [0.766044443118978, -0.556670399226419, -0.32139380484327, 0],
         [0, 0.5, -0.866025403784439, 0],
@@ -75,8 +65,8 @@ transform: translateZ(-100px) rotateY(45deg);
       "renderingContext": 1
     },
     {
-      "id": 5,
-      "parent": 4,
+      "id": 4,
+      "parent": 3,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
@@ -87,8 +77,8 @@ transform: translateZ(-100px) rotateY(45deg);
       "renderingContext": 1
     },
     {
-      "id": 6,
-      "parent": 5,
+      "id": 5,
+      "parent": 4,
       "transform": [
         [0.766044443118978, 0, 0.642787609686539, 0],
         [0, 1, 0, 0],

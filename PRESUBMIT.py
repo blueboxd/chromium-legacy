@@ -382,7 +382,6 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^media/blink/',
   '^media/cast/',
   '^media/cdm/',
-  '^media/device_monitors/',
   '^media/filters/',
   '^media/formats/',
   '^media/gpu/',
@@ -393,11 +392,8 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^ppapi/shared_impl/',
   '^ppapi/tests/',
   '^ppapi/thunk/',
-  '^remoting/base/',
-  '^remoting/client/',
   '^remoting/host/',
   '^remoting/internal/',
-  '^remoting/protocol/',
   '^services/',
   '^third_party/blink/',
   '^tools/clang/base_bind_rewriters/',  # Intentional.
@@ -1216,6 +1212,20 @@ _DEPRECATED_MOJO_TYPES = (
         'mojo::MakeStrongAssociatedBinding is deprecated.',
         'Either migrate to mojo::UniqueAssociatedReceiverSet, if possible, or',
         'use mojo::MakeSelfOwnedAssociatedReceiver() instead.',
+      ),
+    ),
+    (
+      r'/\bmojo::StrongAssociatedBinding\b',
+      (
+        'mojo::StrongAssociatedBinding<Interface> is deprecated.',
+        'Use mojo::MakeSelfOwnedAssociatedReceiver<Interface> instead.',
+      ),
+    ),
+    (
+      r'/\bmojo::StrongBinding\b',
+      (
+        'mojo::StrongBinding<Interface> is deprecated.',
+        'Use mojo::MakeSelfOwnedReceiver<Interface> instead.',
       ),
     ),
     (
@@ -5157,20 +5167,20 @@ def _CheckStrings(input_api, output_api):
   results = []
   if run_screenshot_check:
     if unnecessary_screenshots:
-      results.append(output_api.PresubmitNotifyResult(
+      results.append(output_api.PresubmitError(
         'Do not include actual screenshots in the changelist. Run '
         'tools/translate/upload_screenshots.py to upload them instead:',
         sorted(unnecessary_screenshots)))
 
     if missing_sha1:
-      results.append(output_api.PresubmitNotifyResult(
+      results.append(output_api.PresubmitError(
         'You are adding or modifying UI strings.\n'
         'To ensure the best translations, take screenshots of the relevant UI '
         '(https://g.co/chrome/translation) and add these files to your '
         'changelist:', sorted(missing_sha1)))
 
     if unnecessary_sha1_files:
-      results.append(output_api.PresubmitNotifyResult(
+      results.append(output_api.PresubmitError(
         'You removed strings associated with these files. Remove:',
         sorted(unnecessary_sha1_files)))
   else:

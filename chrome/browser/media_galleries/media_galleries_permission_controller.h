@@ -55,7 +55,7 @@ class MediaGalleriesPermissionController
   // The constructor creates a dialog controller which owns itself.
   MediaGalleriesPermissionController(content::WebContents* web_contents,
                                      const extensions::Extension& extension,
-                                     const base::Closure& on_finish);
+                                     base::OnceClosure on_finish);
 
   // MediaGalleriesDialogController implementation.
   base::string16 GetHeader() const override;
@@ -84,7 +84,7 @@ class MediaGalleriesPermissionController
       const extensions::Extension& extension,
       MediaGalleriesPreferences* preferences,
       const CreateDialogCallback& create_dialog_callback,
-      const base::Closure& on_finish);
+      base::OnceClosure on_finish);
 
   ~MediaGalleriesPermissionController() override;
 
@@ -198,7 +198,7 @@ class MediaGalleriesPermissionController
   std::set<GalleryDialogId> forgotten_galleries_;
 
   // Callback to run when the dialog closes.
-  base::Closure on_finish_;
+  base::OnceClosure on_finish_;
 
   // The model that tracks galleries and extensions' permissions.
   // This is the authoritative source for gallery information.

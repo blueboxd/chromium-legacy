@@ -6,6 +6,8 @@ package org.chromium.android_webview.test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 
 import android.content.Context;
 import android.graphics.Rect;
@@ -20,7 +22,6 @@ import android.widget.LinearLayout.LayoutParams;
 
 import androidx.test.filters.SmallTest;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -154,7 +155,7 @@ public class AwImeTest {
     }
 
     private void waitForNonNullInputConnection() {
-        CriteriaHelper.pollUiThread(() -> { Assert.assertNotNull(getInputConnection()); });
+        CriteriaHelper.pollUiThread(() -> Criteria.checkThat(getInputConnection(), notNullValue()));
     }
 
     /**
@@ -186,16 +187,19 @@ public class AwImeTest {
         focusOnWebViewAndEnableEditing();
         waitForNonNullInputConnection();
 
-        CriteriaHelper.pollUiThread(Criteria.equals(
-                mTestContainerView, () -> mActivityTestRule.getActivity().getCurrentFocus()));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(
+                    mActivityTestRule.getActivity().getCurrentFocus(), is(mTestContainerView));
+        });
 
         TestThreadUtils.runOnUiThreadBlocking((Runnable) () -> {
             getInputConnection().sendKeyEvent(
                     new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_UP));
         });
 
-        CriteriaHelper.pollUiThread(Criteria.equals(
-                mEditText, () -> mActivityTestRule.getActivity().getCurrentFocus()));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(mActivityTestRule.getActivity().getCurrentFocus(), is(mEditText));
+        });
     }
 
     /**
@@ -210,16 +214,19 @@ public class AwImeTest {
         focusOnWebViewAndEnableEditing();
         waitForNonNullInputConnection();
 
-        CriteriaHelper.pollUiThread(Criteria.equals(
-                mTestContainerView, () -> mActivityTestRule.getActivity().getCurrentFocus()));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(
+                    mActivityTestRule.getActivity().getCurrentFocus(), is(mTestContainerView));
+        });
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mTestContainerView.dispatchKeyEvent(
                     new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_UP));
         });
 
-        CriteriaHelper.pollUiThread(Criteria.equals(
-                mEditText, () -> mActivityTestRule.getActivity().getCurrentFocus()));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(mActivityTestRule.getActivity().getCurrentFocus(), is(mEditText));
+        });
     }
 
     private void scrollBottomOfNodeIntoView(String nodeId) throws Exception {

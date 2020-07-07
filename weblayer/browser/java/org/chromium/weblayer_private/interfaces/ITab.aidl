@@ -10,6 +10,7 @@ import org.chromium.weblayer_private.interfaces.IDownloadCallbackClient;
 import org.chromium.weblayer_private.interfaces.IErrorPageCallbackClient;
 import org.chromium.weblayer_private.interfaces.IFindInPageCallbackClient;
 import org.chromium.weblayer_private.interfaces.IFullscreenCallbackClient;
+import org.chromium.weblayer_private.interfaces.IGoogleAccountsCallbackClient;
 import org.chromium.weblayer_private.interfaces.IMediaCaptureCallbackClient;
 import org.chromium.weblayer_private.interfaces.INavigationController;
 import org.chromium.weblayer_private.interfaces.INavigationControllerClient;
@@ -66,4 +67,7 @@ interface ITab {
   void unregisterWebMessageCallback(in String jsObjectName) = 20;
   boolean canTranslate() = 21;
   void showTranslateUi() = 22;
+
+  // Added in 86
+  void setGoogleAccountsCallbackClient(IGoogleAccountsCallbackClient client) = 23;
 }

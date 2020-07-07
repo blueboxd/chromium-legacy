@@ -173,6 +173,9 @@ class CONTENT_EXPORT FrameNavigationEntry
   const std::string& method() const { return method_; }
   void set_method(const std::string& method) { method_ = method; }
 
+  // Returns true if the HTTP method was POST.
+  bool get_has_post_data() { return method() == "POST"; }
+
   // The id of the post corresponding to this navigation or -1 if the
   // navigation was not a POST.
   int64_t post_id() const { return post_id_; }

@@ -141,6 +141,10 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       mojo::PendingAssociatedRemote<mojom::NavigationClient>*
           navigation_client);
 
+  // Reloads the |frame_tree_node| and returns true. In some rare cases, there
+  // is no history related to the frame, nothing happens and this returns false.
+  bool ReloadFrame(FrameTreeNode* frame_tree_node);
+
   // Navigates to a specified offset from the "current entry". Currently records
   // a histogram indicating whether the session history navigation would only
   // affect frames within the subtree of |sandbox_frame_tree_node_id|, which

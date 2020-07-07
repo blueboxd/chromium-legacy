@@ -257,7 +257,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '9ef36d0c0fe8213efd4c8019aeac87182eac6972',
+  'catapult_revision': '1b843e7903f8438ff93c1e6b8b44d373967accbf',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -1448,7 +1448,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '8fe932a5a3686ec21b8c6d5b0efcdc21d253f7a0',
+    Var('webrtc_git') + '/src.git' + '@' + 'a166a353fbc3091c5d227b52802ad75b0ebcad23',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),

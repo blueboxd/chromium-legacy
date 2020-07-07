@@ -63,9 +63,10 @@ class MockAccessibilityObserver {
   MockAccessibilityObserver() {
     AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
     CHECK(accessibility_manager);
-    accessibility_subscription_ = accessibility_manager->RegisterCallback(
-        base::Bind(&MockAccessibilityObserver::OnAccessibilityStatusChanged,
-                   base::Unretained(this)));
+    accessibility_subscription_ =
+        accessibility_manager->RegisterCallback(base::BindRepeating(
+            &MockAccessibilityObserver::OnAccessibilityStatusChanged,
+            base::Unretained(this)));
   }
 
   virtual ~MockAccessibilityObserver() = default;

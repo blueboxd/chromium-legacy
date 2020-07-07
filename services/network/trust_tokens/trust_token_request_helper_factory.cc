@@ -139,25 +139,6 @@ void TrustTokenRequestHelperFactory::ConstructHelperUsingStore(
         return;
       }
 
-      if (params->possibly_unsafe_additional_signing_data) {
-        if (params->possibly_unsafe_additional_signing_data->size() >
-            kTrustTokenAdditionalSigningDataMaxSizeBytes) {
-          LogOutcome(net_log, "Overly long additionalSigningData");
-          std::move(done).Run(
-              mojom::TrustTokenOperationStatus::kInvalidArgument);
-          return;
-        }
-
-        if (!net::HttpUtil::IsValidHeaderValue(
-                *params->possibly_unsafe_additional_signing_data)) {
-          LogOutcome(net_log,
-                     "additionalSigningData was not a valid HTTP header value");
-          std::move(done).Run(
-              mojom::TrustTokenOperationStatus::kInvalidArgument);
-          return;
-        }
-      }
-
       TrustTokenRequestSigningHelper::Params signing_params(
           std::move(*maybe_issuer), top_frame_origin,
           std::move(params->additional_signed_headers),

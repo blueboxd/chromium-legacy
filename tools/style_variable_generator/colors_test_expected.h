@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 // This file is generated from:
+//   colors_test_palette.json5
 //   colors_test.json5
 
 #ifndef TOOLS_STYLE_VARIABLE_GENERATOR_COLORS_TEST_EXPECTED_H_
@@ -16,22 +17,22 @@ using AshColorMode = ash::AshColorProvider::AshColorMode;
 
 enum class ColorName {
   kGoogleGrey900,
-  kCrosDefaultTextColor,
-  kCrosToggleColor,
+  kDefaultTextColor,
+  kToggleColor,
 };
 
 constexpr SkColor ResolveColor(ColorName color_name, AshColorMode color_mode) {
   switch (color_name) {
     case ColorName::kGoogleGrey900:
       return SkColorSetRGB(0x20, 0x21, 0x24);
-    case ColorName::kCrosDefaultTextColor:
+    case ColorName::kDefaultTextColor:
       if (color_mode == AshColorMode::kLight) {
         return ResolveColor(ColorName::kGoogleGrey900, color_mode);
       } else {
         return SkColorSetRGB(0xFF, 0xFF, 0xFF);
       }
-    case ColorName::kCrosToggleColor:
-      return SkColorSetA(ResolveColor(ColorName::kCrosDefaultTextColor, color_mode), 0x19);
+    case ColorName::kToggleColor:
+      return SkColorSetA(ResolveColor(ColorName::kDefaultTextColor, color_mode), 0x19);
   }
 }
 

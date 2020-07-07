@@ -125,7 +125,7 @@ static WRes MyCreateDir(const WCHAR *name)
 #define kBufferSize (1 << 15)
 #endif
 
-#define kSignatureSearchLimit (1 << 22)
+#define kSignatureSearchLimit (1 << 26)
 
 static Bool FindSignature(CSzFile *stream, UInt64 *resPos)
 {

@@ -2478,12 +2478,20 @@ class BannedTypeCheckTest(unittest.TestCase):
         'file': 'file14.cc'
       },
       {
-        'type': 'mojo::StrongAssociatedBindingSet<>',
+        'type': 'mojo::StrongAssociatedBinding<>',
         'file': 'file15.cc'
       },
       {
-        'type': 'mojo::StrongBindingSet<>',
+        'type': 'mojo::StrongBinding<>',
         'file': 'file16.cc'
+      },
+      {
+        'type': 'mojo::StrongAssociatedBindingSet<>',
+        'file': 'file17.cc'
+      },
+      {
+        'type': 'mojo::StrongBindingSet<>',
+        'file': 'file18.cc'
       },
     ]
 
@@ -2942,6 +2950,7 @@ class StringTest(unittest.TestCase):
                                                       MockOutputApi())
     self.assertEqual(1, len(warnings))
     self.assertEqual(self.GENERATE_SIGNATURES_MESSAGE, warnings[0].message)
+    self.assertEqual('error', warnings[0].type)
     self.assertEqual([
       os.path.join('part_grdp', 'IDS_PART_TEST2.png.sha1'),
       os.path.join('test_grd', 'IDS_TEST2.png.sha1')],
@@ -2956,6 +2965,7 @@ class StringTest(unittest.TestCase):
     warnings = PRESUBMIT._CheckStrings(input_api,
                                                       MockOutputApi())
     self.assertEqual(1, len(warnings))
+    self.assertEqual('error', warnings[0].type)
     self.assertEqual(self.GENERATE_SIGNATURES_MESSAGE, warnings[0].message)
     self.assertEqual([
         os.path.join('part_grdp', 'IDS_PART_TEST1.png.sha1'),
@@ -2983,9 +2993,11 @@ class StringTest(unittest.TestCase):
     warnings = PRESUBMIT._CheckStrings(input_api,
                                                       MockOutputApi())
     self.assertEqual(2, len(warnings))
+    self.assertEqual('error', warnings[0].type)
     self.assertEqual(self.DO_NOT_UPLOAD_PNG_MESSAGE, warnings[0].message)
     self.assertEqual([os.path.join('test_grd', 'IDS_TEST1.png')],
                      warnings[0].items)
+    self.assertEqual('error', warnings[1].type)
     self.assertEqual(self.GENERATE_SIGNATURES_MESSAGE, warnings[1].message)
     self.assertEqual([os.path.join('test_grd', 'IDS_TEST1.png.sha1')],
                      warnings[1].items)
@@ -3018,10 +3030,12 @@ class StringTest(unittest.TestCase):
     warnings = PRESUBMIT._CheckStrings(input_api,
                                                       MockOutputApi())
     self.assertEqual(2, len(warnings))
+    self.assertEqual('error', warnings[0].type)
     self.assertEqual(self.DO_NOT_UPLOAD_PNG_MESSAGE, warnings[0].message)
     self.assertEqual([os.path.join('part_grdp', 'IDS_PART_TEST1.png'),
                       os.path.join('test_grd', 'IDS_TEST1.png')],
                      warnings[0].items)
+    self.assertEqual('error', warnings[0].type)
     self.assertEqual(self.GENERATE_SIGNATURES_MESSAGE, warnings[1].message)
     self.assertEqual([os.path.join('part_grdp', 'IDS_PART_TEST1.png.sha1'),
                       os.path.join('test_grd', 'IDS_TEST1.png.sha1')],
@@ -3091,6 +3105,7 @@ class StringTest(unittest.TestCase):
     warnings = PRESUBMIT._CheckStrings(input_api,
                                                       MockOutputApi())
     self.assertEqual(1, len(warnings))
+    self.assertEqual('error', warnings[0].type)
     self.assertEqual(self.REMOVE_SIGNATURES_MESSAGE, warnings[0].message)
     self.assertEqual([
         os.path.join('part_grdp', 'IDS_PART_TEST1.png.sha1'),
@@ -3131,6 +3146,7 @@ class StringTest(unittest.TestCase):
     warnings = PRESUBMIT._CheckStrings(input_api,
                                                       MockOutputApi())
     self.assertEqual(1, len(warnings))
+    self.assertEqual('error', warnings[0].type)
     self.assertEqual(self.REMOVE_SIGNATURES_MESSAGE, warnings[0].message)
     self.assertEqual([os.path.join('part_grdp', 'IDS_PART_TEST1.png.sha1'),
                       os.path.join('test_grd', 'IDS_TEST1.png.sha1')

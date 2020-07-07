@@ -25,7 +25,6 @@ extern const base::Feature kEnableUnifiedAudioFocusFeature;
 extern const base::Feature kFilePickerExperimentFeature;
 extern const base::Feature kNativeBridgeToggleFeature;
 extern const base::Feature kPictureInPictureFeature;
-extern const base::Feature kPrintSpoolerExperimentFeature;
 extern const base::Feature kSmartTextSelectionFeature;
 extern const base::Feature kUsbHostFeature;
 extern const base::Feature kUsbStorageUIFeature;

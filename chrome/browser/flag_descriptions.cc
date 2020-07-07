@@ -3313,11 +3313,6 @@ const char kArcNativeBridgeToggleName[] =
 const char kArcNativeBridgeToggleDescription[] =
     "Toggle between native bridge implementations for ARC.";
 
-const char kArcPrintSpoolerExperimentName[] =
-    "Enable print spooler experiment for ARC";
-const char kArcPrintSpoolerExperimentDescription[] =
-    "Enables using the Chrome OS print system and print preview in ARC.";
-
 const char kArcUsbHostName[] = "Enable ARC USB host integration";
 const char kArcUsbHostDescription[] =
     "Allow Android apps to use USB host feature on ChromeOS devices.";

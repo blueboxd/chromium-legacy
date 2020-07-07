@@ -407,6 +407,10 @@ void TabImpl::SetNewTabDelegate(NewTabDelegate* delegate) {
   new_tab_delegate_ = delegate;
 }
 
+void TabImpl::SetGoogleAccountsDelegate(GoogleAccountsDelegate* delegate) {
+  google_accounts_delegate_ = delegate;
+}
+
 void TabImpl::AddObserver(TabObserver* observer) {
   observers_.AddObserver(observer);
 }

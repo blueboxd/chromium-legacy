@@ -8,6 +8,7 @@ import static org.chromium.android_webview.test.OnlyRunIn.ProcessMode.SINGLE_PRO
 
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -70,7 +71,8 @@ public class CleanupReferenceTest {
         // Ensure compiler / instrumentation does not strip out the assignment.
         Assert.assertNull(instance);
         collectGarbage();
-        CriteriaHelper.pollInstrumentationThread(Criteria.equals(0, () -> sObjectCount.get()));
+        CriteriaHelper.pollInstrumentationThread(
+                () -> Criteria.checkThat(sObjectCount.get(), Matchers.is(0)));
     }
 
     @Test
@@ -94,6 +96,7 @@ public class CleanupReferenceTest {
         // to be GC'ed only when building using GN.
         Assert.assertNotEquals(sObjectCount.get(), -1);
         collectGarbage();
-        CriteriaHelper.pollInstrumentationThread(Criteria.equals(0, () -> sObjectCount.get()));
+        CriteriaHelper.pollInstrumentationThread(
+                () -> Criteria.checkThat(sObjectCount.get(), Matchers.is(0)));
     }
 }

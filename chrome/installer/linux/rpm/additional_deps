@@ -7,9 +7,6 @@
 # Make sure users have SSL certificates.
 ca-certificates
 
-# Temporary entry for tray icons
-libappindicator3.so.1()(64bit)
-
 # Make sure users have compatible fonts for viewing PDFs.
 liberation-fonts
 

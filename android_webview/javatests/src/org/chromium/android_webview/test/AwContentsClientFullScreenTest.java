@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -24,7 +25,9 @@ import org.chromium.android_webview.test.util.JavascriptEventObserver;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.CriteriaNotSatisfiedException;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
@@ -354,7 +357,7 @@ public class AwContentsClientFullScreenTest {
                 // Checking HTMLMediaElement.readyState == 4 (HAVE_ENOUGH_DATA).
                 int readyState = DOMUtils.getNodeField(
                         "readyState", getWebContentsOnUiThread(), VIDEO_ID, Integer.class);
-                Assert.assertEquals(4, readyState);
+                Criteria.checkThat(readyState, Matchers.is(4));
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -383,11 +386,12 @@ public class AwContentsClientFullScreenTest {
         // views and Javascript.
         CriteriaHelper.pollInstrumentationThread(() -> {
             try {
-                Assert.assertEquals(expected, getKeepScreenOnOnInstrumentationThread(view));
-                Assert.assertNotEquals(
-                        expected, DOMUtils.isMediaPaused(getWebContentsOnUiThread(), VIDEO_ID));
+                Criteria.checkThat(
+                        getKeepScreenOnOnInstrumentationThread(view), Matchers.is(expected));
+                Criteria.checkThat(DOMUtils.isMediaPaused(getWebContentsOnUiThread(), VIDEO_ID),
+                        Matchers.not(expected));
             } catch (TimeoutException e) {
-                Assert.fail(e.getMessage());
+                throw new CriteriaNotSatisfiedException(e);
             }
         });
     }
@@ -435,9 +439,10 @@ public class AwContentsClientFullScreenTest {
         // We need to poll because the Javascript state is updated asynchronously
         CriteriaHelper.pollInstrumentationThread(() -> {
             try {
-                Assert.assertTrue(DOMUtils.isFullscreen(getWebContentsOnUiThread()));
+                Criteria.checkThat(
+                        DOMUtils.isFullscreen(getWebContentsOnUiThread()), Matchers.is(true));
             } catch (TimeoutException e) {
-                Assert.fail(e.getMessage());
+                throw new CriteriaNotSatisfiedException(e);
             }
         });
     }
@@ -446,9 +451,10 @@ public class AwContentsClientFullScreenTest {
         // We need to poll because the Javascript state is updated asynchronously
         CriteriaHelper.pollInstrumentationThread(() -> {
             try {
-                Assert.assertFalse(DOMUtils.isFullscreen(getWebContentsOnUiThread()));
+                Criteria.checkThat(
+                        DOMUtils.isFullscreen(getWebContentsOnUiThread()), Matchers.is(false));
             } catch (TimeoutException e) {
-                Assert.fail(e.getMessage());
+                throw new CriteriaNotSatisfiedException(e);
             }
         });
         // TODO: Test that inline video is actually displayed.

@@ -9,6 +9,10 @@ import collections
 class CSSStyleGenerator(BaseGenerator):
     '''Generator for CSS Variables'''
 
+    @staticmethod
+    def GetName():
+        return 'CSS'
+
     def Render(self):
         self.Validate()
         return self.ApplyTemplate(self, 'css_generator.tmpl',
@@ -43,7 +47,7 @@ class CSSStyleGenerator(BaseGenerator):
 
     def GetFilters(self):
         return {
-            'to_var_name': self._ToVarName,
+            'to_css_var_name': self._ToCSSVarName,
             'css_color': self._CssColor,
             'css_color_rgb': self._CssColorRGB,
         }
@@ -54,20 +58,26 @@ class CSSStyleGenerator(BaseGenerator):
             'in_files': self.in_files,
         }
 
-    def _ToVarName(self, var_name):
-        return '--%s' % var_name.replace('_', '-')
+    def _GetCSSVarPrefix(self, model_name):
+        prefix = self.context_map[model_name].get('prefix')
+        return prefix + '-' if prefix else ''
+
+    def _ToCSSVarName(self, model_name):
+        return '--%s%s' % (self._GetCSSVarPrefix(model_name),
+                           model_name.replace('_', '-'))
 
     def _CssColor(self, c):
         '''Returns the CSS color representation of |c|'''
         assert (isinstance(c, Color))
         if c.var:
-            return 'var(%s)' % self._ToVarName(c.var)
+            return 'var(%s)' % self._ToCSSVarName(c.var)
 
         if c.rgb_var:
             if c.a != 1:
-                return 'rgba(var(%s), %g)' % (self._ToVarName(c.rgb_var), c.a)
+                return 'rgba(var(%s-rgb), %g)' % (self._ToCSSVarName(
+                    c.RGBVarToVar()), c.a)
             else:
-                return 'rgb(var(%s))' % self._ToVarName(c.rgb_var)
+                return 'rgb(var(%s-rgb))' % self._ToCSSVarName(c.RGBVarToVar())
 
         if c.a != 1:
             return 'rgba(%d, %d, %d, %g)' % (c.r, c.g, c.b, c.a)
@@ -77,16 +87,17 @@ class CSSStyleGenerator(BaseGenerator):
     def _CssColorRGB(self, c):
         '''Returns the CSS rgb representation of |c|'''
         if c.var:
-            return 'var(%s-rgb)' % self._ToVarName(c.var)
+            return 'var(%s-rgb)' % self._ToCSSVarName(c.var)
 
         if c.rgb_var:
-            return 'var(%s)' % self._ToVarName(c.rgb_var)
+            return 'var(%s-rgb)' % self._ToCSSVarName(c.RGBVarToVar())
 
         return '%d, %d, %d' % (c.r, c.g, c.b)
 
-    def _CssColorFromRGBVar(self, name, alpha):
+    def _CssColorFromRGBVar(self, model_name, alpha):
         '''Returns the CSS color representation given a color name and alpha'''
         if alpha != 1:
-            return 'rgba(var(%s-rgb), %g)' % (self._ToVarName(name), alpha)
+            return 'rgba(var(%s-rgb), %g)' % (self._ToCSSVarName(model_name),
+                                              alpha)
         else:
-            return 'rgb(var(%s-rgb))' % self._ToVarName(name)
+            return 'rgb(var(%s-rgb))' % self._ToCSSVarName(model_name)

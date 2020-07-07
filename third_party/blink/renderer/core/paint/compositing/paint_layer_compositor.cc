@@ -459,10 +459,6 @@ bool PaintLayerCompositor::AllocateOrClearCompositedLayerMapping(
 
   layer->ClearClipRects(kPaintingClipRects);
 
-  // Compositing state affects whether to create paint offset translation of
-  // this layer, and amount of paint offset translation of descendants.
-  layer->GetLayoutObject().SetNeedsPaintPropertyUpdate();
-
   return true;
 }
 

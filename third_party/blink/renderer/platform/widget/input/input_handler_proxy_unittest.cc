@@ -135,7 +135,7 @@ class MockInputHandler : public cc::InputHandler {
   cc::InputHandlerPointerResult MouseDown(const gfx::PointF& mouse_position,
                                           const bool shift_modifier) override {
     cc::InputHandlerPointerResult pointer_result;
-    pointer_result.type = cc::kScrollbarScroll;
+    pointer_result.type = cc::PointerResultType::kScrollbarScroll;
     pointer_result.scroll_offset = gfx::ScrollOffset(0, 1);
     return pointer_result;
   }
@@ -143,7 +143,7 @@ class MockInputHandler : public cc::InputHandler {
   cc::InputHandlerPointerResult MouseUp(
       const gfx::PointF& mouse_position) override {
     cc::InputHandlerPointerResult pointer_result;
-    pointer_result.type = cc::kScrollbarScroll;
+    pointer_result.type = cc::PointerResultType::kScrollbarScroll;
     return pointer_result;
   }
 
@@ -260,20 +260,20 @@ WebTouchPoint CreateWebTouchPoint(WebTouchPoint::State state,
 }
 
 const cc::InputHandler::ScrollStatus kImplThreadScrollState(
-    cc::InputHandler::SCROLL_ON_IMPL_THREAD,
+    cc::InputHandler::ScrollThread::SCROLL_ON_IMPL_THREAD,
     cc::MainThreadScrollingReason::kNotScrollingOnMain);
 
 const cc::InputHandler::ScrollStatus kRequiresMainThreadHitTestState(
-    cc::InputHandler::SCROLL_ON_IMPL_THREAD,
+    cc::InputHandler::ScrollThread::SCROLL_ON_IMPL_THREAD,
     cc::MainThreadScrollingReason::kNotScrollingOnMain,
     /*needs_main_thread_hit_test=*/true);
 
 const cc::InputHandler::ScrollStatus kMainThreadScrollState(
-    cc::InputHandler::SCROLL_ON_MAIN_THREAD,
+    cc::InputHandler::ScrollThread::SCROLL_ON_MAIN_THREAD,
     cc::MainThreadScrollingReason::kHandlingScrollFromMainThread);
 
 const cc::InputHandler::ScrollStatus kScrollIgnoredScrollState(
-    cc::InputHandler::SCROLL_IGNORED,
+    cc::InputHandler::ScrollThread::SCROLL_IGNORED,
     cc::MainThreadScrollingReason::kNotScrollable);
 
 }  // namespace

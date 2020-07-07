@@ -9,7 +9,7 @@ namespace display {
 DisplayConfigurationParams::DisplayConfigurationParams() = default;
 DisplayConfigurationParams::DisplayConfigurationParams(
     int64_t id,
-    gfx::Point origin,
+    const gfx::Point& origin,
     const display::DisplayMode* pmode)
     : id(id), origin(origin) {
   if (pmode)

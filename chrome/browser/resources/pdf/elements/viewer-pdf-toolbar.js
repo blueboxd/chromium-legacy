@@ -7,7 +7,9 @@ import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 import 'chrome://resources/polymer/v3_0/paper-progress/paper-progress.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import './icons.js';
+import './shared-css.js';
 import './viewer-bookmark.js';
+import './viewer-download-controls.js';
 import './viewer-page-selector.js';
 import './viewer-toolbar-dropdown.js';
 // <if expr="chromeos">
@@ -18,11 +20,9 @@ import './viewer-pen-options.js';
 import {AnchorAlignment} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Bookmark} from '../bookmark_type.js';
-import {SaveRequestType} from '../constants.js';
 
 Polymer({
   is: 'viewer-pdf-toolbar',
@@ -79,10 +79,7 @@ Polymer({
 
     hasEnteredAnnotationMode: Boolean,
 
-    isFormFieldFocused: {
-      type: Boolean,
-      observer: 'onFormFieldFocusedChanged_',
-    },
+    isFormFieldFocused: Boolean,
 
     /** The current loading progress of the PDF document (0 - 100). */
     loadProgress: {
@@ -98,51 +95,18 @@ Polymer({
 
     pageNo: Number,
 
-    /**
-     * Whether the PDF Annotations feature is enabled.
-     * @private
-     */
-    pdfAnnotationsEnabled_: {
-      type: Boolean,
-      value: false,
-    },
+    /** Whether the PDF Annotations feature is enabled. */
+    pdfAnnotationsEnabled: Boolean,
 
-    /**
-     * Whether the Printing feature is enabled.
-     * @private
-     */
-    printingEnabled_: {
-      type: Boolean,
-      value: false,
-    },
+    /** Whether the Printing feature is enabled. */
+    printingEnabled: Boolean,
 
-    /** @private */
-    downloadHasPopup_: {
-      type: String,
-      computed: 'computeDownloadHasPopup_(' +
-          'pdfFormSaveEnabled_, hasEdits, hasEnteredAnnotationMode)',
-    },
-
-    strings: {
-      type: Object,
-      observer: 'onStringsSet_',
-    },
-
-    /**
-     * Whether the PDF Form save feature is enabled.
-     * @private
-     */
-    pdfFormSaveEnabled_: {
-      type: Boolean,
-      value: false,
-    },
+    /** Whether the PDF Form save feature is enabled. */
+    pdfFormSaveEnabled: Boolean,
   },
 
   /** @type {?Object} */
   animation_: null,
-
-  /** @private {?PromiseResolver<boolean>} */
-  waitForFormFocusChange_: null,
 
   /**
    * @param {number} newProgress
@@ -208,7 +172,7 @@ Polymer({
   shouldKeepOpen() {
     return this.$.bookmarks.dropdownOpen || this.loadProgress < 100 ||
         this.$.pageselector.isActive() || this.annotationMode ||
-        this.$.downloadMenu.open;
+        this.$.downloads.isMenuOpen();
   },
 
   /** @return {boolean} Whether a dropdown was open and was hidden. */
@@ -216,6 +180,10 @@ Polymer({
     let result = false;
     if (this.$.bookmarks.dropdownOpen) {
       this.$.bookmarks.toggleDropdown();
+      result = true;
+    }
+    if (this.$.downloads.isMenuOpen()) {
+      this.$.downloads.closeMenu();
       result = true;
     }
     // <if expr="chromeos">
@@ -238,69 +206,6 @@ Polymer({
 
   rotateRight() {
     this.fire('rotate-right');
-  },
-
-  /** @private */
-  showDownloadMenu_() {
-    this.$.downloadMenu.showAt(this.$.download, {
-      anchorAlignmentX: AnchorAlignment.CENTER,
-      anchorAlignmentY: AnchorAlignment.AFTER_END,
-      noOffset: true,
-    });
-    // For tests
-    this.fire('download-menu-shown-for-testing');
-  },
-
-  /** @private */
-  onDownloadClick_() {
-    this.waitForEdits_().then(hasEdits => {
-      if (hasEdits) {
-        this.showDownloadMenu_();
-      } else {
-        this.fire('save', SaveRequestType.ORIGINAL);
-      }
-    });
-  },
-
-  /**
-   * @return {!Promise<boolean>} Promise that resolves with true if the PDF has
-   *     edits and/or annotations, and false otherwise.
-   * @private
-   */
-  waitForEdits_() {
-    if (this.hasEditsToSave_()) {
-      return Promise.resolve(true);
-    }
-    if (!this.isFormFieldFocused || !this.pdfFormSaveEnabled_) {
-      return Promise.resolve(false);
-    }
-    this.waitForFormFocusChange_ = new PromiseResolver();
-    return this.waitForFormFocusChange_.promise;
-  },
-
-  /** @private */
-  onFormFieldFocusedChanged_() {
-    if (!this.waitForFormFocusChange_) {
-      return;
-    }
-
-    this.waitForFormFocusChange_.resolve(this.hasEdits);
-    this.waitForFormFocusChange_ = null;
-  },
-
-  /** @private */
-  onDownloadOriginalClick_() {
-    this.fire('save', SaveRequestType.ORIGINAL);
-    this.$.downloadMenu.close();
-  },
-
-  /** @private */
-  onDownloadEditedClick_() {
-    this.fire(
-        'save',
-        this.hasEnteredAnnotationMode ? SaveRequestType.ANNOTATION :
-                                        SaveRequestType.EDITED);
-    this.$.downloadMenu.close();
   },
 
   print() {
@@ -378,33 +283,5 @@ Polymer({
    */
   isAnnotationTool_(toolName) {
     return !!this.annotationTool && this.annotationTool.tool === toolName;
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
-  hasEditsToSave_() {
-    return this.hasEnteredAnnotationMode ||
-        (this.pdfFormSaveEnabled_ && this.hasEdits);
-  },
-
-  /**
-   * @return {string} The value for the aria-haspopup attribute for the download
-   *     button.
-   * @private
-   */
-  computeDownloadHasPopup_() {
-    return this.hasEditsToSave_() ? 'menu' : 'false';
-  },
-
-  /** @private */
-  onStringsSet_() {
-    assert(this.strings);
-
-    this.pdfAnnotationsEnabled_ =
-        loadTimeData.getBoolean('pdfAnnotationsEnabled');
-    this.pdfFormSaveEnabled_ = loadTimeData.getBoolean('pdfFormSaveEnabled');
-    this.printingEnabled_ = loadTimeData.getBoolean('printingEnabled');
   },
 });

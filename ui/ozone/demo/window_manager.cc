@@ -87,8 +87,10 @@ void WindowManager::OnDisplaysAquired(
       continue;
     }
 
+    display::DisplayConfigurationParams display_config_params(
+        display->display_id(), origin, display->native_mode());
     delegate_->Configure(
-        *display, display->native_mode(), origin,
+        display_config_params,
         base::BindOnce(&WindowManager::OnDisplayConfigured,
                        base::Unretained(this),
                        gfx::Rect(origin, display->native_mode()->size())));

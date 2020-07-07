@@ -11,7 +11,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "ui/display/types/display_configuration_params.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
@@ -36,35 +35,16 @@ void DrmDisplayHost::UpdateDisplaySnapshot(
   snapshot_ = std::move(params);
 }
 
-void DrmDisplayHost::Configure(const display::DisplayMode* mode,
-                               const gfx::Point& origin,
-                               display::ConfigureCallback callback) {
+void DrmDisplayHost::Configure(
+    const display::DisplayConfigurationParams& display_config_params,
+    display::ConfigureCallback callback) {
   if (is_dummy_) {
     std::move(callback).Run(true);
     return;
   }
 
-  configure_callback_ = std::move(callback);
-  bool status = false;
-
-  display::DisplayConfigurationParams display_config_params(
-      snapshot_->display_id(), origin, mode);
-  status = sender_->GpuConfigureNativeDisplay(display_config_params);
-
-  if (!status)
-    OnDisplayConfigured(false);
-}
-
-void DrmDisplayHost::OnDisplayConfigured(bool status) {
-  if (!configure_callback_.is_null()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(configure_callback_), status));
-  } else {
-    LOG(ERROR) << "Got unexpected event for display "
-               << snapshot_->display_id();
-  }
-
-  configure_callback_.Reset();
+  sender_->GpuConfigureNativeDisplay(display_config_params,
+                                     std::move(callback));
 }
 
 void DrmDisplayHost::GetHDCPState(display::GetHDCPStateCallback callback) {
@@ -134,8 +114,6 @@ void DrmDisplayHost::OnGpuThreadReady() {
 void DrmDisplayHost::OnGpuThreadRetired() {}
 
 void DrmDisplayHost::ClearCallbacks() {
-  if (!configure_callback_.is_null())
-    OnDisplayConfigured(false);
   if (!get_hdcp_callback_.is_null())
     OnHDCPStateReceived(false, display::HDCP_STATE_UNDESIRED);
   if (!set_hdcp_callback_.is_null())

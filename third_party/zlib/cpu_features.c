@@ -56,11 +56,19 @@ int ZLIB_INTERNAL x86_cpu_enable_simd = 0;
 static void _cpu_check_features(void);
 #endif
 
-#if defined(ARMV8_OS_ANDROID) || defined(ARMV8_OS_LINUX) || defined(ARMV8_OS_FUCHSIA) || defined(X86_NOT_WINDOWS)
+#if defined(ARMV8_OS_ANDROID) || defined(ARMV8_OS_LINUX) || defined(ARMV8_OS_MACOS) || defined(ARMV8_OS_FUCHSIA) || defined(X86_NOT_WINDOWS)
+#if !defined(ARMV8_OS_MACOS)
+// _cpu_check_features() doesn't need to do anything on mac/arm since all
+// features are known at build time, so don't call it.
+// Do provide cpu_check_features() (with a no-op implementation) so that we
+// don't have to make all callers of it check for mac/arm.
 static pthread_once_t cpu_check_inited_once = PTHREAD_ONCE_INIT;
+#endif
 void ZLIB_INTERNAL cpu_check_features(void)
 {
+#if !defined(ARMV8_OS_MACOS)
     pthread_once(&cpu_check_inited_once, _cpu_check_features);
+#endif
 }
 #elif defined(ARMV8_OS_WINDOWS) || defined(X86_WINDOWS)
 static INIT_ONCE cpu_check_inited_once = INIT_ONCE_STATIC_INIT;

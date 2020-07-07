@@ -17,8 +17,10 @@ static MathScriptType ScriptTypeOf(const QualifiedName& tagName) {
     return MathScriptType::kUnder;
   if (tagName == mathml_names::kMoverTag)
     return MathScriptType::kOver;
-  DCHECK(tagName == mathml_names::kMunderoverTag);
-  return MathScriptType::kUnderOver;
+  if (tagName == mathml_names::kMunderoverTag)
+    return MathScriptType::kUnderOver;
+  DCHECK_EQ(tagName, mathml_names::kMmultiscriptsTag);
+  return MathScriptType::kMultiscripts;
 }
 
 MathMLScriptsElement::MathMLScriptsElement(const QualifiedName& tagName,

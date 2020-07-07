@@ -6472,6 +6472,11 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
       remote_interfaces.InitWithNewPipeAndPassReceiver());
   remote_interfaces_.reset(new service_manager::InterfaceProvider);
   remote_interfaces_->Bind(std::move(remote_interfaces));
+
+  // Called to bind the receiver for this interface to the local frame. We need
+  // to eagarly bind here because binding happens at normal priority on the main
+  // thread and future calls to this interface need to be high priority.
+  GetHighPriorityLocalFrame();
 }
 
 void RenderFrameHostImpl::InvalidateMojoConnection() {
@@ -6480,6 +6485,7 @@ void RenderFrameHostImpl::InvalidateMojoConnection() {
   frame_host_associated_receiver_.reset();
   local_frame_.reset();
   local_main_frame_.reset();
+  high_priority_local_frame_.reset();
   navigation_control_.reset();
   find_in_page_.reset();
   render_accessibility_.reset();
@@ -6595,6 +6601,15 @@ RenderFrameHostImpl::GetAssociatedLocalMainFrame() {
   if (!local_main_frame_)
     GetRemoteAssociatedInterfaces()->GetInterface(&local_main_frame_);
   return local_main_frame_;
+}
+
+const mojo::Remote<blink::mojom::HighPriorityLocalFrame>&
+RenderFrameHostImpl::GetHighPriorityLocalFrame() {
+  if (!high_priority_local_frame_.is_bound()) {
+    GetRemoteInterfaces()->GetInterface(
+        high_priority_local_frame_.BindNewPipeAndPassReceiver());
+  }
+  return high_priority_local_frame_;
 }
 
 void RenderFrameHostImpl::ResetLoadingState() {
@@ -8553,8 +8568,15 @@ void RenderFrameHostImpl::SendBeforeUnload(
             renderer_before_unload_start_time, renderer_before_unload_end_time);
       },
       rfh);
-  rfh->GetAssociatedLocalFrame()->BeforeUnload(
-      is_reload, std::move(before_unload_closure));
+  // Experiment to run beforeunload handlers at a higher priority in the
+  // renderer. See crubug.com/1042118.
+  if (base::FeatureList::IsEnabled(features::kHighPriorityBeforeUnload)) {
+    rfh->GetHighPriorityLocalFrame()->DispatchBeforeUnload(
+        is_reload, std::move(before_unload_closure));
+  } else {
+    rfh->GetAssociatedLocalFrame()->BeforeUnload(
+        is_reload, std::move(before_unload_closure));
+  }
 }
 
 void RenderFrameHostImpl::AddServiceWorkerContainerHost(

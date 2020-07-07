@@ -9,6 +9,7 @@
 #include "ui/display/types/display_configuration_params.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/types/gamma_ramp_rgb_entry.h"
+#include "ui/display/types/native_display_delegate.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -21,7 +22,7 @@ class GpuThreadObserver;
 // to use either a GPU process or thread for their implementation.
 class GpuThreadAdapter {
  public:
-  virtual ~GpuThreadAdapter() {}
+  virtual ~GpuThreadAdapter() = default;
 
   virtual bool IsConnected() = 0;
   virtual void AddGpuThreadObserver(GpuThreadObserver* observer) = 0;
@@ -43,8 +44,9 @@ class GpuThreadAdapter {
   virtual bool GpuRemoveGraphicsDevice(const base::FilePath& path) = 0;
 
   // Services needed by DrmDisplayHost
-  virtual bool GpuConfigureNativeDisplay(
-      const display::DisplayConfigurationParams& display_config_params) = 0;
+  virtual void GpuConfigureNativeDisplay(
+      const display::DisplayConfigurationParams& display_config_params,
+      display::ConfigureCallback callback) = 0;
   virtual bool GpuGetHDCPState(int64_t display_id) = 0;
   virtual bool GpuSetHDCPState(int64_t display_id,
                                display::HDCPState state) = 0;

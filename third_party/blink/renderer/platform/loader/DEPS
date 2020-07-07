@@ -11,6 +11,7 @@ include_rules = [
     "+components/link_header_util",  # for LinkHeader.cpp
     "+services/metrics/public", # for UKM API
     "+services/network/public",  # for Fetch API and CORS
+    "+third_party/blink/renderer/platform/bindings/dom_wrapper_world.h",
     "+third_party/blink/renderer/platform/bindings/parkable_string.h",
     "+third_party/blink/renderer/platform/bindings/script_forbidden_scope.h",
     "+third_party/blink/renderer/platform/bindings/trace_wrapper_member.h",

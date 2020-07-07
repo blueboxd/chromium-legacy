@@ -104,6 +104,14 @@ void WorkerFetchContext::DispatchDidBlockRequest(
                          fetch_initiator_info, blocked_reason, resource_type);
 }
 
+const ContentSecurityPolicy*
+WorkerFetchContext::GetContentSecurityPolicyForWorld(
+    const DOMWrapperWorld* world) const {
+  // Worker threads don't support per-world CSP. Hence just return the default
+  // CSP.
+  return GetContentSecurityPolicy();
+}
+
 bool WorkerFetchContext::ShouldBypassMainWorldCSP() const {
   // This method was introduced to bypass the page's CSP while running the
   // script from an isolated world (ex: Chrome extensions). But worker threads
@@ -248,9 +256,9 @@ void WorkerFetchContext::PopulateResourceRequest(
     const ClientHintsPreferences& hints_preferences,
     const FetchParameters::ResourceWidth& resource_width,
     ResourceRequest& out_request,
-    const FetchInitiatorInfo& initiator_info) {
+    const ResourceLoaderOptions& options) {
   if (!GetResourceFetcherProperties().IsDetached())
-    probe::SetDevToolsIds(Probe(), out_request, initiator_info);
+    probe::SetDevToolsIds(Probe(), out_request, options.initiator_info);
   MixedContentChecker::UpgradeInsecureRequest(
       out_request,
       &GetResourceFetcherProperties().GetFetchClientSettingsObject(),

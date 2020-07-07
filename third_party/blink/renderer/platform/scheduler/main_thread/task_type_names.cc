@@ -139,6 +139,8 @@ const char* TaskTypeNames::TaskTypeToString(TaskType task_type) {
       return "InternalFrameLifecycleControl";
     case TaskType::kInternalFindInPage:
       return "InternalFindInPage";
+    case TaskType::kInternalHighPriorityLocalFrame:
+      return "InternalHighPriorityLocalFrame";
     case TaskType::kCount:
       return "Count";
   }

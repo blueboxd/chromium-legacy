@@ -327,18 +327,15 @@ void DrmThread::RefreshNativeDisplays(
 
 void DrmThread::ConfigureNativeDisplay(
     const display::DisplayConfigurationParams& display_config_params,
-    base::OnceCallback<void(int64_t, bool)> callback) {
+    base::OnceCallback<void(bool)> callback) {
   TRACE_EVENT0("drm", "DrmThread::ConfigureNativeDisplay");
 
   if (display_config_params.mode) {
-    std::move(callback).Run(
-        display_config_params.id,
-        display_manager_->ConfigureDisplay(display_config_params.id,
-                                           *display_config_params.mode.value(),
-                                           display_config_params.origin));
+    std::move(callback).Run(display_manager_->ConfigureDisplay(
+        display_config_params.id, *display_config_params.mode.value(),
+        display_config_params.origin));
   } else {
     std::move(callback).Run(
-        display_config_params.id,
         display_manager_->DisableDisplay(display_config_params.id));
   }
 }

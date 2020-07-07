@@ -119,7 +119,7 @@ class TestObserver : public DisplayConfigurator::Observer {
 class TestStateController : public DisplayConfigurator::StateController {
  public:
   TestStateController() : state_(MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED) {}
-  ~TestStateController() override {}
+  ~TestStateController() override = default;
 
   void set_state(MultipleDisplayState state) { state_ = state; }
 
@@ -144,7 +144,7 @@ class TestMirroringController
     : public DisplayConfigurator::SoftwareMirroringController {
  public:
   TestMirroringController() : software_mirroring_enabled_(false) {}
-  ~TestMirroringController() override {}
+  ~TestMirroringController() override = default;
 
   void SetSoftwareMirroring(bool enabled) override {
     software_mirroring_enabled_ = enabled;
@@ -349,8 +349,9 @@ class DisplayConfiguratorTest : public testing::Test {
                               Modes... modes) {
     static_assert(I < kNumOutputs, "More expected modes than outputs");
 
-    std::string action = GetCrtcAction(
-        *outputs_[I], config == DisplayConfig::kOff ? nullptr : mode, origin);
+    std::string action =
+        GetCrtcAction({outputs_[I]->display_id(), origin,
+                       config == DisplayConfig::kOff ? nullptr : mode});
 
     if (mode && config != DisplayConfig::kMirror)
       origin += {0, mode->size().height() + DisplayConfigurator::kVerticalGap};
@@ -947,13 +948,17 @@ TEST_F(DisplayConfiguratorTest, HandleConfigureCrtcFailure) {
   state_controller_.set_state(MULTIPLE_DISPLAY_STATE_SINGLE);
   UpdateOutputs(1, true);
 
-  EXPECT_EQ(
-      JoinActions(
-          GetCrtcAction(*outputs_[0], modes[0].get(), gfx::Point(0, 0)).c_str(),
-          GetCrtcAction(*outputs_[0], modes[3].get(), gfx::Point(0, 0)).c_str(),
-          GetCrtcAction(*outputs_[0], modes[2].get(), gfx::Point(0, 0)).c_str(),
-          nullptr),
-      log_->GetActionsAndClear());
+  EXPECT_EQ(JoinActions(GetCrtcAction({outputs_[0]->display_id(),
+                                       gfx::Point(0, 0), modes[0].get()})
+                            .c_str(),
+                        GetCrtcAction({outputs_[0]->display_id(),
+                                       gfx::Point(0, 0), modes[3].get()})
+                            .c_str(),
+                        GetCrtcAction({outputs_[0]->display_id(),
+                                       gfx::Point(0, 0), modes[2].get()})
+                            .c_str(),
+                        nullptr),
+            log_->GetActionsAndClear());
 
   outputs_[1] = FakeDisplaySnapshot::Builder()
                     .SetId(kDisplayIds[1])
@@ -976,26 +981,40 @@ TEST_F(DisplayConfiguratorTest, HandleConfigureCrtcFailure) {
 
   EXPECT_EQ(
       JoinActions(
-          GetCrtcAction(*outputs_[0], modes[0].get(), gfx::Point(0, 0)).c_str(),
+          GetCrtcAction(
+              {outputs_[0]->display_id(), gfx::Point(0, 0), modes[0].get()})
+              .c_str(),
           // Then attempt to configure crtc1 with the first mode.
-          GetCrtcAction(*outputs_[1], modes[0].get(), gfx::Point(0, 0)).c_str(),
+          GetCrtcAction(
+              {outputs_[1]->display_id(), gfx::Point(0, 0), modes[0].get()})
+              .c_str(),
           // First mode tried is expected to fail and it will
           // retry wil the 4th mode in the list.
-          GetCrtcAction(*outputs_[0], modes[3].get(), gfx::Point(0, 0)).c_str(),
-          GetCrtcAction(*outputs_[1], modes[3].get(), gfx::Point(0, 0)).c_str(),
+          GetCrtcAction(
+              {outputs_[0]->display_id(), gfx::Point(0, 0), modes[3].get()})
+              .c_str(),
+          GetCrtcAction(
+              {outputs_[1]->display_id(), gfx::Point(0, 0), modes[3].get()})
+              .c_str(),
           // Since it was requested to go into mirror mode
           // and the configured modes were different, it
           // should now try and setup a valid configurable
           // extended mode.
-          GetCrtcAction(*outputs_[0], modes[0].get(), gfx::Point(0, 0)).c_str(),
-          GetCrtcAction(*outputs_[1], modes[0].get(),
-                        gfx::Point(0, modes[0]->size().height() +
-                                          DisplayConfigurator::kVerticalGap))
+          GetCrtcAction(
+              {outputs_[0]->display_id(), gfx::Point(0, 0), modes[0].get()})
               .c_str(),
-          GetCrtcAction(*outputs_[0], modes[3].get(), gfx::Point(0, 0)).c_str(),
-          GetCrtcAction(*outputs_[1], modes[3].get(),
-                        gfx::Point(0, modes[0]->size().height() +
-                                          DisplayConfigurator::kVerticalGap))
+          GetCrtcAction({outputs_[1]->display_id(),
+                         gfx::Point(0, modes[0]->size().height() +
+                                           DisplayConfigurator::kVerticalGap),
+                         modes[0].get()})
+              .c_str(),
+          GetCrtcAction(
+              {outputs_[0]->display_id(), gfx::Point(0, 0), modes[3].get()})
+              .c_str(),
+          GetCrtcAction({outputs_[1]->display_id(),
+                         gfx::Point(0, modes[0]->size().height() +
+                                           DisplayConfigurator::kVerticalGap),
+                         modes[3].get()})
               .c_str(),
           nullptr),
       log_->GetActionsAndClear());
@@ -1213,9 +1232,10 @@ TEST_F(DisplayConfiguratorTest,
   EXPECT_EQ(
       JoinActions(
           GetCrtcActions(&small_mode_, &big_mode_).c_str(),
-          GetCrtcAction(*outputs_[1], &small_mode_,
-                        gfx::Point(0, small_mode_.size().height() +
-                                          DisplayConfigurator::kVerticalGap))
+          GetCrtcAction({outputs_[1]->display_id(),
+                         gfx::Point(0, small_mode_.size().height() +
+                                           DisplayConfigurator::kVerticalGap),
+                         &small_mode_})
               .c_str(),
           nullptr),
       log_->GetActionsAndClear());

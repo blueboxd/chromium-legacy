@@ -1371,8 +1371,13 @@ bool VaapiWrapper::GetJpegDecodeSuitableImageFourCC(unsigned int rt_format,
   } else if (GetImplementationType() == VAImplementation::kIntelIHD) {
     // TODO(b/155939640): iHD v19.4 fails to allocate AYUV surfaces for the VPP
     // on gen 9.5.
-    if (preferred_fourcc == VA_FOURCC_AYUV)
+    // (b/159896972): iHD v19.4 cannot create Y216 and Y416 images from a
+    // decoded JPEG on gen 12.
+    if (preferred_fourcc == VA_FOURCC_AYUV ||
+        preferred_fourcc == VA_FOURCC_Y216 ||
+        preferred_fourcc == VA_FOURCC_Y416) {
       preferred_fourcc = VA_FOURCC_I420;
+    }
   }
 
   if (!VASupportedImageFormats::Get().IsImageFormatSupported(

@@ -71,6 +71,33 @@ bool IsValidMathMLFraction(const NGBlockNode& node) {
   return InFlowChildCountIs(node, 2);
 }
 
+static bool IsPrescriptDelimiter(const NGBlockNode& block_node) {
+  auto* node = block_node.GetLayoutBox()->GetNode();
+  return node && IsA<MathMLElement>(node) &&
+         node->HasTagName(mathml_names::kMprescriptsTag);
+}
+
+// Valid according to:
+// https://mathml-refresh.github.io/mathml-core/#prescripts-and-tensor-indices-mmultiscripts
+inline bool IsValidMultiscript(const NGBlockNode& node) {
+  auto child = To<NGBlockNode>(FirstChildInFlow(node));
+  if (!child || IsPrescriptDelimiter(child))
+    return false;
+  bool number_of_scripts_is_even = true;
+  while (child) {
+    child = To<NGBlockNode>(NextSiblingInFlow(child));
+    if (!child)
+      continue;
+    if (IsPrescriptDelimiter(child)) {
+      if (!number_of_scripts_is_even)
+        return false;
+      continue;
+    }
+    number_of_scripts_is_even = !number_of_scripts_is_even;
+  }
+  return number_of_scripts_is_even;
+}
+
 bool IsValidMathMLScript(const NGBlockNode& node) {
   switch (node.ScriptType()) {
     case MathScriptType::kUnder:
@@ -81,6 +108,8 @@ bool IsValidMathMLScript(const NGBlockNode& node) {
     case MathScriptType::kSubSup:
     case MathScriptType::kUnderOver:
       return InFlowChildCountIs(node, 3);
+    case MathScriptType::kMultiscripts:
+      return IsValidMultiscript(node);
     default:
       return false;
   }

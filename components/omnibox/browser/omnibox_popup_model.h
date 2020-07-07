@@ -79,10 +79,15 @@ class OmniboxPopupModel {
     // Also see Selection::IsButtonFocused().
     BUTTON_FOCUSED = 3,
 
+    // FOCUSED_BUTTON_REMOVE_SUGGESTION state means the Remove Suggestion (X)
+    // button is focused. Pressing enter will attempt to remove this suggestion.
+    FOCUSED_BUTTON_REMOVE_SUGGESTION = 4,
+
     // Button row focus states:
-    FOCUSED_BUTTON_KEYWORD = 4,
-    FOCUSED_BUTTON_TAB_SWITCH = 5,
-    FOCUSED_BUTTON_PEDAL = 6,
+    FOCUSED_BUTTON_KEYWORD = 5,
+    FOCUSED_BUTTON_TAB_SWITCH = 6,
+    FOCUSED_BUTTON_PEDAL = 7,
+
   };
 
   struct Selection {

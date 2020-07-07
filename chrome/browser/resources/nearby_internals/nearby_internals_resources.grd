@@ -11,9 +11,16 @@
     <output filename="nearby_internals_resources.pak" type="data_package" />
   </outputs>
   <release seq="1">
-    <includes>
+   <includes>
+      <include name="IDR_NEARBY_INTERNALS_TYPES_JS"
+               file="types.js"
+               type="BINDATA"/>
       <include name="IDR_NEARBY_INTERNALS_INDEX_HTML"
                file="index.html"
+               type="BINDATA"/>
+      <include name="IDR_NEARBY_INTERNALS_LOG_OBJECT_JS"
+               file="${root_gen_dir}\chrome\browser\resources\nearby_internals\log_object.js"
+               use_base_dir="false"
                type="BINDATA"/>
       <include name="IDR_NEARBY_INTERNALS_LOGGING_TAB_JS"
                file="${root_gen_dir}\chrome\browser\resources\nearby_internals\logging_tab.js"
@@ -21,6 +28,13 @@
                type="BINDATA"/>
       <include name="IDR_NEARBY_INTERNALS_NEARBY_INTERNALS_JS"
                file="${root_gen_dir}\chrome\browser\resources\nearby_internals\nearby_internals.js"
+               use_base_dir="false"
+               type="BINDATA"/>
+      <include name="IDR_NEARBY_INTERNALS_NEARBY_LOGS_BROWSER_PROXY_JS"
+               file="nearby_logs_browser_proxy.js"
+               type="BINDATA"/>
+      <include name="IDR_NEARBY_INTERNALS_SHARED_STYLE_JS"
+               file="${root_gen_dir}\chrome\browser\resources\nearby_internals\shared_style.js"
                use_base_dir="false"
                type="BINDATA"/>
     </includes>

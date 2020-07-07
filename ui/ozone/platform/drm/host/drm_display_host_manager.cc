@@ -39,7 +39,9 @@ typedef base::OnceCallback<void(const base::FilePath&,
 const char kDefaultGraphicsCardPattern[] = "/dev/dri/card%d";
 
 const char* kDisplayActionString[] = {
-    "ADD", "REMOVE", "CHANGE",
+    "ADD",
+    "REMOVE",
+    "CHANGE",
 };
 
 // Find sysfs device path for the given device path.
@@ -390,16 +392,6 @@ void DrmDisplayHostManager::GpuHasUpdatedNativeDisplays(
                        weak_ptr_factory_.GetWeakPtr(),
                        std::move(get_displays_callback_)));
     get_displays_callback_.Reset();
-  }
-}
-
-void DrmDisplayHostManager::GpuConfiguredDisplay(int64_t display_id,
-                                                 bool status) {
-  DrmDisplayHost* display = GetDisplay(display_id);
-  if (display) {
-    display->OnDisplayConfigured(status);
-  } else {
-    LOG(ERROR) << "Couldn't find display with id=" << display_id;
   }
 }
 

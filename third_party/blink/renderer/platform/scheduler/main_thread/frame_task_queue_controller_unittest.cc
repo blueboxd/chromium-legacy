@@ -323,14 +323,16 @@ class TaskQueueCreationFromQueueTraitsTest :
 INSTANTIATE_TEST_SUITE_P(
     All,
     TaskQueueCreationFromQueueTraitsTest,
-    ::testing::Values(QueueTraits::PrioritisationType::kVeryHigh,
-                      QueueTraits::PrioritisationType::kBestEffort,
-                      QueueTraits::PrioritisationType::kRegular,
-                      QueueTraits::PrioritisationType::kLoading,
-                      QueueTraits::PrioritisationType::kLoadingControl,
-                      QueueTraits::PrioritisationType::kFindInPage,
-                      QueueTraits::PrioritisationType::kExperimentalDatabase,
-                      QueueTraits::PrioritisationType::kJavaScriptTimer));
+    ::testing::Values(
+        QueueTraits::PrioritisationType::kVeryHigh,
+        QueueTraits::PrioritisationType::kBestEffort,
+        QueueTraits::PrioritisationType::kRegular,
+        QueueTraits::PrioritisationType::kLoading,
+        QueueTraits::PrioritisationType::kLoadingControl,
+        QueueTraits::PrioritisationType::kFindInPage,
+        QueueTraits::PrioritisationType::kExperimentalDatabase,
+        QueueTraits::PrioritisationType::kJavaScriptTimer,
+        QueueTraits::PrioritisationType::kHighPriorityLocalFrame));
 
 TEST_P(TaskQueueCreationFromQueueTraitsTest,
         AddAndRetrieveAllTaskQueues) {

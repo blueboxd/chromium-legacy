@@ -451,6 +451,11 @@ const base::Feature kProcessSharingWithDefaultSiteInstances{
 const base::Feature kProcessSharingWithStrictSiteInstances{
     "ProcessSharingWithStrictSiteInstances", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Tells the RenderFrameHost to send beforeunload messages on a different
+// local frame interface which will handle the messages at a higher priority.
+const base::Feature kHighPriorityBeforeUnload{
+    "HighPriorityBeforeUnload", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Under this flag bootstrap (aka startup) tasks will be prioritized. This flag
 // is used by various modules to determine whether special scheduling
 // arrangements need to be made to prioritize certain tasks.

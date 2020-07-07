@@ -354,6 +354,7 @@ OmniboxPopupModel::GetAllAvailableSelectionsSorted(Direction direction,
     if (OmniboxFieldTrial::IsSuggestionButtonRowEnabled()) {
       // The button row experiment makes things simple. We no longer access
       // keyword mode by arrow or tab button in this case.
+      all_states.push_back(FOCUSED_BUTTON_REMOVE_SUGGESTION);
       all_states.push_back(FOCUSED_BUTTON_KEYWORD);
       all_states.push_back(FOCUSED_BUTTON_TAB_SWITCH);
       all_states.push_back(FOCUSED_BUTTON_PEDAL);
@@ -367,7 +368,6 @@ OmniboxPopupModel::GetAllAvailableSelectionsSorted(Direction direction,
           all_states.push_back(KEYWORD);
         }
       }
-
       all_states.push_back(BUTTON_FOCUSED);
     }
   }
@@ -530,6 +530,12 @@ bool OmniboxPopupModel::IsControlPresentOnMatch(Selection selection) const {
 
       return false;
     }
+    case FOCUSED_BUTTON_REMOVE_SUGGESTION:
+      // Buttons are suppressed for matches with an associated keyword.
+      if (match.associated_keyword != nullptr)
+        return false;
+
+      return match.SupportsDeletion();
     case FOCUSED_BUTTON_KEYWORD:
       return match.associated_keyword != nullptr;
     case FOCUSED_BUTTON_TAB_SWITCH:
@@ -585,6 +591,10 @@ bool OmniboxPopupModel::TriggerSelectionAction(Selection selection,
       edit_model()->ExecutePedal(match, timestamp);
       break;
 
+    case FOCUSED_BUTTON_REMOVE_SUGGESTION:
+      TryDeletingLine(selection.line);
+      break;
+
     default:
       // Behavior is not yet supported, return false.
       return false;
@@ -631,6 +641,9 @@ base::string16 OmniboxPopupModel::GetAccessibilityLabelForCurrentSelection(
       } else if (match.SupportsDeletion()) {
         additional_message_id = IDS_ACC_REMOVE_SUGGESTION_FOCUSED_PREFIX;
       }
+      break;
+    case FOCUSED_BUTTON_REMOVE_SUGGESTION:
+      additional_message_id = IDS_ACC_REMOVE_SUGGESTION_FOCUSED_PREFIX;
       break;
     case FOCUSED_BUTTON_KEYWORD:
       // TODO(yoangela): Add an accessibility message for the Keyword button

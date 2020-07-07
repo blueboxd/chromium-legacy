@@ -37,7 +37,8 @@ class NotificationHandler {
     //                          // user via a notification.
     SHARING = 6,
     ANNOUNCEMENT = 7,
-    MAX = ANNOUNCEMENT,
+    NEARBY_SHARE = 8,
+    MAX = NEARBY_SHARE,
   };
 
   virtual ~NotificationHandler();

@@ -666,6 +666,200 @@ TEST_F(PdfAccessibilityTreeTest, TestTextFieldNodeCreation) {
   EXPECT_EQ(0u, text_field_node->children().size());
 }
 
+TEST_F(PdfAccessibilityTreeTest, TestButtonNodeCreation) {
+  // Enable feature flag
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      chrome_pdf::features::kAccessiblePDFForm);
+  text_runs_.emplace_back(kFirstTextRun);
+  text_runs_.emplace_back(kSecondTextRun);
+  chars_.insert(chars_.end(), std::begin(kDummyCharsData),
+                std::end(kDummyCharsData));
+
+  {
+    ppapi::PdfAccessibilityButtonInfo check_box;
+    check_box.bounds = PP_MakeFloatRectFromXYWH(1.0f, 1.0f, 5.0f, 6.0f);
+    check_box.index_in_page = 0;
+    check_box.text_run_index = 2;
+    check_box.name = "Read Only Checkbox";
+    check_box.value = "Yes";
+    check_box.is_read_only = true;
+    check_box.is_checked = true;
+    check_box.control_count = 1;
+    check_box.control_index = 0;
+    check_box.type = PP_PrivateButtonType::PP_PRIVATEBUTTON_CHECKBOX;
+    page_objects_.form_fields.buttons.push_back(std::move(check_box));
+  }
+
+  {
+    ppapi::PdfAccessibilityButtonInfo radio_button;
+    radio_button.bounds = PP_MakeFloatRectFromXYWH(1.0f, 2.0f, 5.0f, 6.0f);
+    radio_button.index_in_page = 1;
+    radio_button.text_run_index = 2;
+    radio_button.name = "Radio Button";
+    radio_button.value = "value 1";
+    radio_button.is_read_only = false;
+    radio_button.is_checked = false;
+    radio_button.control_count = 2;
+    radio_button.control_index = 0;
+    radio_button.type = PP_PrivateButtonType::PP_PRIVATEBUTTON_RADIOBUTTON;
+    page_objects_.form_fields.buttons.push_back(std::move(radio_button));
+  }
+
+  {
+    ppapi::PdfAccessibilityButtonInfo radio_button;
+    radio_button.bounds = PP_MakeFloatRectFromXYWH(1.0f, 3.0f, 5.0f, 6.0f);
+    radio_button.index_in_page = 2;
+    radio_button.text_run_index = 2;
+    radio_button.name = "Radio Button";
+    radio_button.value = "value 2";
+    radio_button.is_read_only = false;
+    radio_button.is_checked = true;
+    radio_button.control_count = 2;
+    radio_button.control_index = 1;
+    radio_button.type = PP_PrivateButtonType::PP_PRIVATEBUTTON_RADIOBUTTON;
+    page_objects_.form_fields.buttons.push_back(std::move(radio_button));
+  }
+
+  {
+    ppapi::PdfAccessibilityButtonInfo push_button;
+    push_button.bounds = PP_MakeFloatRectFromXYWH(1.0f, 4.0f, 5.0f, 6.0f);
+    push_button.index_in_page = 3;
+    push_button.text_run_index = 2;
+    push_button.name = "Push Button";
+    push_button.type = PP_PrivateButtonType::PP_PRIVATEBUTTON_PUSHBUTTON;
+    page_objects_.form_fields.buttons.push_back(std::move(push_button));
+  }
+
+  page_info_.text_run_count = text_runs_.size();
+  page_info_.char_count = chars_.size();
+
+  content::RenderFrame* render_frame = view_->GetMainRenderFrame();
+  ASSERT_TRUE(render_frame);
+  render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
+  ASSERT_TRUE(render_frame->GetRenderAccessibility());
+
+  FakeRendererPpapiHost host(view_->GetMainRenderFrame());
+  PP_Instance instance = 0;
+  pdf::PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+
+  pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
+  pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
+  pdf_accessibility_tree.SetAccessibilityPageInfo(page_info_, text_runs_,
+                                                  chars_, page_objects_);
+
+  /*
+   * Expected tree structure
+   * Document
+   * ++ Region
+   * ++++ Paragraph
+   * ++++++ Static Text
+   * ++++ Paragraph
+   * ++++++ Static Text
+   * ++++++ Check Box
+   * ++++++ Radio Button
+   * ++++++ Radio Button
+   * ++++++ Button
+   */
+
+  ui::AXNode* root_node = pdf_accessibility_tree.GetRoot();
+  ASSERT_TRUE(root_node);
+  EXPECT_EQ(ax::mojom::Role::kDocument, root_node->data().role);
+  ASSERT_EQ(1u, root_node->children().size());
+
+  ui::AXNode* page_node = root_node->children()[0];
+  ASSERT_TRUE(page_node);
+  EXPECT_EQ(ax::mojom::Role::kRegion, page_node->data().role);
+  ASSERT_EQ(2u, page_node->children().size());
+
+  ui::AXNode* paragraph_node = page_node->children()[0];
+  ASSERT_TRUE(paragraph_node);
+  EXPECT_EQ(ax::mojom::Role::kParagraph, paragraph_node->data().role);
+  ASSERT_EQ(1u, paragraph_node->children().size());
+
+  ui::AXNode* static_text_node = paragraph_node->children()[0];
+  ASSERT_TRUE(static_text_node);
+  EXPECT_EQ(ax::mojom::Role::kStaticText, static_text_node->data().role);
+  ASSERT_EQ(1u, static_text_node->children().size());
+
+  paragraph_node = page_node->children()[1];
+  ASSERT_TRUE(paragraph_node);
+  EXPECT_EQ(ax::mojom::Role::kParagraph, paragraph_node->data().role);
+  const std::vector<ui::AXNode*>& child_nodes = paragraph_node->children();
+  ASSERT_EQ(5u, child_nodes.size());
+
+  static_text_node = child_nodes[0];
+  ASSERT_TRUE(static_text_node);
+  EXPECT_EQ(ax::mojom::Role::kStaticText, static_text_node->data().role);
+  ASSERT_EQ(1u, static_text_node->children().size());
+
+  ui::AXNode* check_box_node = child_nodes[1];
+  ASSERT_TRUE(check_box_node);
+  EXPECT_EQ(ax::mojom::Role::kCheckBox, check_box_node->data().role);
+  EXPECT_EQ("Read Only Checkbox", check_box_node->GetStringAttribute(
+                                      ax::mojom::StringAttribute::kName));
+  EXPECT_EQ("Yes", check_box_node->GetStringAttribute(
+                       ax::mojom::StringAttribute::kValue));
+  EXPECT_EQ(ax::mojom::CheckedState::kTrue,
+            check_box_node->data().GetCheckedState());
+  EXPECT_EQ(1,
+            check_box_node->GetIntAttribute(ax::mojom::IntAttribute::kSetSize));
+  EXPECT_EQ(
+      1, check_box_node->GetIntAttribute(ax::mojom::IntAttribute::kPosInSet));
+  EXPECT_EQ(ax::mojom::Restriction::kReadOnly,
+            check_box_node->data().GetRestriction());
+  EXPECT_EQ(gfx::RectF(1.0f, 1.0f, 5.0f, 6.0f),
+            check_box_node->data().relative_bounds.bounds);
+  EXPECT_EQ(0u, check_box_node->children().size());
+
+  ui::AXNode* radio_button_node = child_nodes[2];
+  ASSERT_TRUE(radio_button_node);
+  EXPECT_EQ(ax::mojom::Role::kRadioButton, radio_button_node->data().role);
+  EXPECT_EQ("Radio Button", radio_button_node->GetStringAttribute(
+                                ax::mojom::StringAttribute::kName));
+  EXPECT_EQ("value 1", radio_button_node->GetStringAttribute(
+                           ax::mojom::StringAttribute::kValue));
+  EXPECT_EQ(ax::mojom::CheckedState::kNone,
+            radio_button_node->data().GetCheckedState());
+  EXPECT_EQ(
+      2, radio_button_node->GetIntAttribute(ax::mojom::IntAttribute::kSetSize));
+  EXPECT_EQ(1, radio_button_node->GetIntAttribute(
+                   ax::mojom::IntAttribute::kPosInSet));
+  EXPECT_NE(ax::mojom::Restriction::kReadOnly,
+            radio_button_node->data().GetRestriction());
+  EXPECT_EQ(gfx::RectF(1.0f, 2.0f, 5.0f, 6.0f),
+            radio_button_node->data().relative_bounds.bounds);
+  EXPECT_EQ(0u, radio_button_node->children().size());
+
+  radio_button_node = child_nodes[3];
+  ASSERT_TRUE(radio_button_node);
+  EXPECT_EQ(ax::mojom::Role::kRadioButton, radio_button_node->data().role);
+  EXPECT_EQ("Radio Button", radio_button_node->GetStringAttribute(
+                                ax::mojom::StringAttribute::kName));
+  EXPECT_EQ("value 2", radio_button_node->GetStringAttribute(
+                           ax::mojom::StringAttribute::kValue));
+  EXPECT_EQ(ax::mojom::CheckedState::kTrue,
+            radio_button_node->data().GetCheckedState());
+  EXPECT_EQ(
+      2, radio_button_node->GetIntAttribute(ax::mojom::IntAttribute::kSetSize));
+  EXPECT_EQ(2, radio_button_node->GetIntAttribute(
+                   ax::mojom::IntAttribute::kPosInSet));
+  EXPECT_EQ(ax::mojom::Restriction::kNone,
+            radio_button_node->data().GetRestriction());
+  EXPECT_EQ(gfx::RectF(1.0f, 3.0f, 5.0f, 6.0f),
+            radio_button_node->data().relative_bounds.bounds);
+  EXPECT_EQ(0u, radio_button_node->children().size());
+
+  ui::AXNode* push_button_node = child_nodes[4];
+  ASSERT_TRUE(push_button_node);
+  EXPECT_EQ(ax::mojom::Role::kButton, push_button_node->data().role);
+  EXPECT_EQ("Push Button", push_button_node->GetStringAttribute(
+                               ax::mojom::StringAttribute::kName));
+  EXPECT_EQ(gfx::RectF(1.0f, 4.0f, 5.0f, 6.0f),
+            push_button_node->data().relative_bounds.bounds);
+  EXPECT_EQ(0u, push_button_node->children().size());
+}
+
 TEST_F(PdfAccessibilityTreeTest, TestPreviousNextOnLine) {
   text_runs_.emplace_back(kFirstRunMultiLine);
   text_runs_.emplace_back(kSecondRunMultiLine);

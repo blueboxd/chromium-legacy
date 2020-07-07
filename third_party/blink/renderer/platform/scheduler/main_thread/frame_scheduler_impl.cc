@@ -381,7 +381,7 @@ QueueTraits FrameSchedulerImpl::CreateQueueTraitsForTaskType(TaskType type) {
   switch (type) {
     case TaskType::kInternalContentCapture:
       return ThrottleableTaskQueueTraits().SetPrioritisationType(
-            QueueTraits::PrioritisationType::kBestEffort);
+          QueueTraits::PrioritisationType::kBestEffort);
     case TaskType::kJavascriptTimer:
       return ThrottleableTaskQueueTraits().SetPrioritisationType(
           QueueTraits::PrioritisationType::kJavaScriptTimer);
@@ -436,9 +436,12 @@ QueueTraits FrameSchedulerImpl::CreateQueueTraitsForTaskType(TaskType type) {
       return PausableTaskQueueTraits();
     case TaskType::kInternalFindInPage:
       return FindInPageTaskQueueTraits();
+    case TaskType::kInternalHighPriorityLocalFrame:
+      return QueueTraits().SetPrioritisationType(
+          QueueTraits::PrioritisationType::kHighPriorityLocalFrame);
     case TaskType::kInternalContinueScriptLoading:
       return PausableTaskQueueTraits().SetPrioritisationType(
-            QueueTraits::PrioritisationType::kVeryHigh);
+          QueueTraits::PrioritisationType::kVeryHigh);
     case TaskType::kDatabaseAccess:
       if (base::FeatureList::IsEnabled(kHighPriorityDatabaseTaskType)) {
         return PausableTaskQueueTraits().SetPrioritisationType(
@@ -530,8 +533,8 @@ FrameSchedulerImpl::CreateResourceLoadingTaskRunnerHandleImpl() {
     return ResourceLoadingTaskRunnerHandleImpl::WrapTaskRunner(task_queue);
   }
 
-  return ResourceLoadingTaskRunnerHandleImpl::WrapTaskRunner(GetTaskQueue
-      (TaskType::kNetworkingWithURLLoaderAnnotation));
+  return ResourceLoadingTaskRunnerHandleImpl::WrapTaskRunner(
+      GetTaskQueue(TaskType::kNetworkingWithURLLoaderAnnotation));
 }
 
 void FrameSchedulerImpl::DidChangeResourceLoadingPriority(
@@ -1075,14 +1078,13 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
 
   if (task_queue->GetPrioritisationType() ==
       MainThreadTaskQueue::QueueTraits::PrioritisationType::kLoadingControl) {
-    return main_thread_scheduler_
-                   ->should_prioritize_loading_with_compositing()
+    return main_thread_scheduler_->should_prioritize_loading_with_compositing()
                ? TaskQueue::QueuePriority::kVeryHighPriority
                : TaskQueue::QueuePriority::kHighPriority;
   }
 
   if (task_queue->GetPrioritisationType() ==
-      MainThreadTaskQueue::QueueTraits::PrioritisationType::kLoading &&
+          MainThreadTaskQueue::QueueTraits::PrioritisationType::kLoading &&
       main_thread_scheduler_->should_prioritize_loading_with_compositing()) {
     return main_thread_scheduler_->compositor_priority();
   }
@@ -1090,6 +1092,12 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
   if (task_queue->GetPrioritisationType() ==
       MainThreadTaskQueue::QueueTraits::PrioritisationType::kFindInPage) {
     return main_thread_scheduler_->find_in_page_priority();
+  }
+
+  if (task_queue->GetPrioritisationType() ==
+      MainThreadTaskQueue::QueueTraits::PrioritisationType::
+          kHighPriorityLocalFrame) {
+    return TaskQueue::QueuePriority::kHighestPriority;
   }
 
   if (task_queue->GetPrioritisationType() ==
@@ -1242,8 +1250,7 @@ FrameSchedulerImpl::DeferrableTaskQueueTraits() {
 }
 
 // static
-MainThreadTaskQueue::QueueTraits
-FrameSchedulerImpl::PausableTaskQueueTraits() {
+MainThreadTaskQueue::QueueTraits FrameSchedulerImpl::PausableTaskQueueTraits() {
   return QueueTraits()
       .SetCanBeFrozen(base::FeatureList::IsEnabled(
           blink::features::kStopNonTimersInBackground))
@@ -1284,14 +1291,12 @@ void FrameSchedulerImpl::SetPreemptedForCooperativeScheduling(
   UpdatePolicy();
 }
 
-MainThreadTaskQueue::QueueTraits
-FrameSchedulerImpl::LoadingTaskQueueTraits() {
+MainThreadTaskQueue::QueueTraits FrameSchedulerImpl::LoadingTaskQueueTraits() {
   return QueueTraits()
       .SetCanBePaused(true)
       .SetCanBeFrozen(true)
       .SetCanBeDeferred(true)
-      .SetPrioritisationType(
-          QueueTraits::PrioritisationType::kLoading);
+      .SetPrioritisationType(QueueTraits::PrioritisationType::kLoading);
 }
 
 MainThreadTaskQueue::QueueTraits
@@ -1300,8 +1305,7 @@ FrameSchedulerImpl::LoadingControlTaskQueueTraits() {
       .SetCanBePaused(true)
       .SetCanBeFrozen(true)
       .SetCanBeDeferred(true)
-      .SetPrioritisationType(
-          QueueTraits::PrioritisationType::kLoadingControl);
+      .SetPrioritisationType(QueueTraits::PrioritisationType::kLoadingControl);
 }
 
 MainThreadTaskQueue::QueueTraits

@@ -167,8 +167,16 @@ IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
   histogram_tester()->ExpectTotalCount("LiteVideo.Navigation.HasHint", 0);
 }
 
+// Fails occasionally on ChromeOS. http://crbug.com/1102563
+#if defined(OS_CHROMEOS)
+#define MAYBE_LiteVideoCanApplyLiteVideo_NoHintForHost \
+  DISABLED_LiteVideoCanApplyLiteVideo_NoHintForHost
+#else
+#define MAYBE_LiteVideoCanApplyLiteVideo_NoHintForHost \
+  LiteVideoCanApplyLiteVideo_NoHintForHost
+#endif
 IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
-                       LiteVideoCanApplyLiteVideo_NoHintForHost) {
+                       MAYBE_LiteVideoCanApplyLiteVideo_NoHintForHost) {
   SetEffectiveConnectionType(
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G);
   WaitForBlocklistToBeLoaded();

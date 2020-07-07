@@ -5,12 +5,9 @@
 package org.chromium.chrome.test.util;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.util.Pair;
@@ -50,10 +47,6 @@ public class ApplicationTestUtils {
     @SuppressWarnings("deprecation")
     @SuppressLint("WakelockTimeout")
     public static void setUp(Context context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            finishAllChromeTasks(context);
-        }
-
         // Make sure the screen is on during test runs.
         PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
         sWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK
@@ -71,12 +64,6 @@ public class ApplicationTestUtils {
         if (sWakeLock.isHeld()) {
             // Make sure that sWakeLock is only released from being held state
             sWakeLock.release();
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            try {
-                finishAllChromeTasks(context);
-            } catch (AssertionError exception) {
-            }
         }
     }
 
@@ -186,39 +173,6 @@ public class ApplicationTestUtils {
             }
         });
         waitForActivityState(activity, ActivityState.DESTROYED);
-    }
-
-    /** Finishes all tasks Chrome has listed in Android's Overview. */
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public static void finishAllChromeTasks(final Context context) {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            try {
-                // Close all of the tasks one by one.
-                ActivityManager activityManager =
-                        (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-                for (ActivityManager.AppTask task : activityManager.getAppTasks()) {
-                    task.finishAndRemoveTask();
-                }
-            } catch (Exception e) {
-                // Ignore any exceptions the Android framework throws so that otherwise passing
-                // tests don't fail during tear down. See crbug.com/653731.
-            }
-        });
-
-        CriteriaHelper.pollUiThread(Criteria.equals(0, new Callable<Integer>() {
-            @Override
-            public Integer call() {
-                return getNumChromeTasks(context);
-            }
-        }));
-    }
-
-    /** Counts how many tasks Chrome has listed in Android's Overview. */
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public static int getNumChromeTasks(Context context) {
-        ActivityManager activityManager =
-                (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-        return activityManager.getAppTasks().size();
     }
 
     /**

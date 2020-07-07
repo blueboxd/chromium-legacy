@@ -88,6 +88,8 @@ std::unique_ptr<BackoffEntry> BackoffEntrySerializer::DeserializeFromValue(
   // against the clock being wound forward).
   if (backoff_duration > original_backoff_duration)
     backoff_duration = original_backoff_duration;
+  if (backoff_duration.is_min() || backoff_duration.is_max())
+    return nullptr;
   entry->SetCustomReleaseTime(
       entry->BackoffDurationToReleaseTime(backoff_duration));
 

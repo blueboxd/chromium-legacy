@@ -135,11 +135,13 @@ class WebURLLoaderFactory;
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<LocalFrame>;
 
-class CORE_EXPORT LocalFrame final : public Frame,
-                                     public FrameScheduler::Delegate,
-                                     public Supplementable<LocalFrame>,
-                                     public mojom::blink::LocalFrame,
-                                     public mojom::blink::LocalMainFrame {
+class CORE_EXPORT LocalFrame final
+    : public Frame,
+      public FrameScheduler::Delegate,
+      public Supplementable<LocalFrame>,
+      public mojom::blink::LocalFrame,
+      public mojom::blink::LocalMainFrame,
+      public mojom::blink::HighPriorityLocalFrame {
   USING_GARBAGE_COLLECTED_MIXIN(LocalFrame);
 
  public:
@@ -563,6 +565,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void ReportBlinkFeatureUsage(const Vector<mojom::blink::WebFeature>&) final;
   void RenderFallbackContent() final;
   void BeforeUnload(bool is_reload, BeforeUnloadCallback callback) final;
+  void DispatchBeforeUnload(bool is_reload,
+                            BeforeUnloadCallback callback) final;
   void MediaPlayerActionAt(
       const gfx::Point& window_point,
       blink::mojom::blink::MediaPlayerActionPtr action) final;
@@ -688,6 +692,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   static void BindToMainFrameReceiver(
       blink::LocalFrame* frame,
       mojo::PendingAssociatedReceiver<mojom::blink::LocalMainFrame> receiver);
+  void BindToHighPriorityReceiver(
+      mojo::PendingReceiver<mojom::blink::HighPriorityLocalFrame> receiver);
 
   std::unique_ptr<FrameScheduler> frame_scheduler_;
 
@@ -810,6 +816,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
                              LocalFrame,
                              HeapMojoWrapperMode::kWithoutContextObserver>
       main_frame_receiver_{this, nullptr};
+
+  mojo::Receiver<mojom::blink::HighPriorityLocalFrame>
+      high_priority_frame_receiver_{this};
 
   // Variable to control burst of download requests.
   int num_burst_download_requests_ = 0;

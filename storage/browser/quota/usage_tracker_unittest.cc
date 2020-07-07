@@ -96,10 +96,10 @@ class UsageTrackerTestQuotaClient : public QuotaClient {
   }
 
   int64_t GetUsage(const url::Origin& origin) {
-    auto found = origin_usage_map_.find(origin);
-    if (found == origin_usage_map_.end())
+    auto it = origin_usage_map_.find(origin);
+    if (it == origin_usage_map_.end())
       return 0;
-    return found->second;
+    return it->second;
   }
 
   void SetUsage(const url::Origin& origin, int64_t usage) {

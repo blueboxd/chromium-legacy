@@ -23,7 +23,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/content_restriction.h"
 #include "net/base/escape.h"
 #include "net/base/filename_util.h"
 #include "pdf/accessibility.h"
@@ -1406,7 +1405,7 @@ pp::URLLoader OutOfProcessInstance::CreateURLLoader() {
     // would generate an incomplete document.  Need to do this each time we
     // call DidStartLoading since that resets the content restrictions.
     pp::PDF::SetContentRestriction(
-        this, CONTENT_RESTRICTION_SAVE | CONTENT_RESTRICTION_PRINT);
+        this, PP_CONTENT_RESTRICTION_SAVE | PP_CONTENT_RESTRICTION_PRINT);
   }
 
   return CreateURLLoaderInternal();
@@ -1471,13 +1470,13 @@ void OutOfProcessInstance::DocumentLoadComplete(
   }
 
   int content_restrictions =
-      CONTENT_RESTRICTION_CUT | CONTENT_RESTRICTION_PASTE;
+      PP_CONTENT_RESTRICTION_CUT | PP_CONTENT_RESTRICTION_PASTE;
   if (!engine_->HasPermission(PDFEngine::PERMISSION_COPY))
-    content_restrictions |= CONTENT_RESTRICTION_COPY;
+    content_restrictions |= PP_CONTENT_RESTRICTION_COPY;
 
   if (!engine_->HasPermission(PDFEngine::PERMISSION_PRINT_LOW_QUALITY) &&
       !engine_->HasPermission(PDFEngine::PERMISSION_PRINT_HIGH_QUALITY)) {
-    content_restrictions |= CONTENT_RESTRICTION_PRINT;
+    content_restrictions |= PP_CONTENT_RESTRICTION_PRINT;
   }
 
   pp::PDF::SetContentRestriction(this, content_restrictions);

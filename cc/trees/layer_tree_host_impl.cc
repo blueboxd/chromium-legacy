@@ -131,6 +131,8 @@
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/skia_util.h"
 
+using ScrollThread = cc::InputHandler::ScrollThread;
+
 namespace cc {
 namespace {
 
@@ -228,10 +230,10 @@ void DidVisibilityChange(LayerTreeHostImpl* id, bool visible) {
                                   TRACE_ID_LOCAL(id));
 }
 
-enum ScrollThread { MAIN_THREAD, CC_THREAD };
+enum SlowScrollMetricThread { MAIN_THREAD, CC_THREAD };
 
 void RecordCompositorSlowScrollMetric(ui::ScrollInputType type,
-                                      ScrollThread scroll_thread) {
+                                      SlowScrollMetricThread scroll_thread) {
   bool scroll_on_main_thread = (scroll_thread == MAIN_THREAD);
   if (type == ui::ScrollInputType::kWheel) {
     UMA_HISTOGRAM_BOOLEAN("Renderer4.CompositorWheelScrollUpdateThread",
@@ -3796,7 +3798,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::TryScroll(
     TRACE_EVENT1("cc", "LayerImpl::TryScroll: Failed ShouldScrollOnMainThread",
                  "MainThreadScrollingReason",
                  scroll_node->main_thread_scrolling_reasons);
-    scroll_status.thread = InputHandler::SCROLL_ON_MAIN_THREAD;
+    scroll_status.thread = ScrollThread::SCROLL_ON_MAIN_THREAD;
     scroll_status.main_thread_scrolling_reasons =
         scroll_node->main_thread_scrolling_reasons;
     return scroll_status;
@@ -3806,7 +3808,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::TryScroll(
       scroll_tree.ScreenSpaceTransform(scroll_node->id);
   if (!screen_space_transform.IsInvertible()) {
     TRACE_EVENT0("cc", "LayerImpl::TryScroll: Ignored NonInvertibleTransform");
-    scroll_status.thread = InputHandler::SCROLL_IGNORED;
+    scroll_status.thread = ScrollThread::SCROLL_IGNORED;
     scroll_status.main_thread_scrolling_reasons =
         MainThreadScrollingReason::kNonInvertibleTransform;
     return scroll_status;
@@ -3814,7 +3816,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::TryScroll(
 
   if (!scroll_node->scrollable) {
     TRACE_EVENT0("cc", "LayerImpl::tryScroll: Ignored not scrollable");
-    scroll_status.thread = InputHandler::SCROLL_IGNORED;
+    scroll_status.thread = ScrollThread::SCROLL_IGNORED;
     scroll_status.main_thread_scrolling_reasons =
         MainThreadScrollingReason::kNotScrollable;
     return scroll_status;
@@ -3830,7 +3832,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::TryScroll(
       !active_tree_->LayerByElementId(scroll_node->element_id)) {
     TRACE_EVENT0("cc",
                  "LayerImpl::tryScroll: Failed due to no scrolling layer");
-    scroll_status.thread = InputHandler::SCROLL_ON_MAIN_THREAD;
+    scroll_status.thread = ScrollThread::SCROLL_ON_MAIN_THREAD;
     scroll_status.main_thread_scrolling_reasons =
         MainThreadScrollingReason::kNonFastScrollableRegion;
     return scroll_status;
@@ -3846,19 +3848,19 @@ InputHandler::ScrollStatus LayerTreeHostImpl::TryScroll(
     TRACE_EVENT0("cc",
                  "LayerImpl::tryScroll: Ignored. Technically scrollable,"
                  " but has no affordance in either direction.");
-    scroll_status.thread = InputHandler::SCROLL_IGNORED;
+    scroll_status.thread = ScrollThread::SCROLL_IGNORED;
     scroll_status.main_thread_scrolling_reasons =
         MainThreadScrollingReason::kNotScrollable;
     return scroll_status;
   }
 
-  scroll_status.thread = InputHandler::SCROLL_ON_IMPL_THREAD;
+  scroll_status.thread = ScrollThread::SCROLL_ON_IMPL_THREAD;
   return scroll_status;
 }
 
 static bool IsMainThreadScrolling(const InputHandler::ScrollStatus& status,
                                   const ScrollNode* scroll_node) {
-  if (status.thread == InputHandler::SCROLL_ON_MAIN_THREAD) {
+  if (status.thread == ScrollThread::SCROLL_ON_MAIN_THREAD) {
     if (!!scroll_node->main_thread_scrolling_reasons) {
       DCHECK(MainThreadScrollingReason::MainThreadCanSetScrollReasons(
           status.main_thread_scrolling_reasons));
@@ -3933,7 +3935,7 @@ ScrollNode* LayerTreeHostImpl::FindScrollNodeForCompositedScrolling(
         return scroll_node;
       }
 
-      if (status.thread == InputHandler::SCROLL_ON_IMPL_THREAD &&
+      if (status.thread == ScrollThread::SCROLL_ON_IMPL_THREAD &&
           !impl_scroll_node) {
         impl_scroll_node = scroll_node;
       }
@@ -3972,7 +3974,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::RootScrollBegin(
   TRACE_EVENT0("cc", "LayerTreeHostImpl::RootScrollBegin");
   if (!OuterViewportScrollNode()) {
     ScrollStatus scroll_status;
-    scroll_status.thread = InputHandler::SCROLL_IGNORED;
+    scroll_status.thread = ScrollThread::SCROLL_IGNORED;
     scroll_status.main_thread_scrolling_reasons =
         MainThreadScrollingReason::kNoScrollingLayer;
     return scroll_status;
@@ -4073,7 +4075,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
         // thread. However, these cases shouldn't be user perceptible.
         scroll_status.main_thread_scrolling_reasons =
             MainThreadScrollingReason::kNoScrollingLayer;
-        scroll_status.thread = SCROLL_IGNORED;
+        scroll_status.thread = ScrollThread::SCROLL_IGNORED;
         return scroll_status;
       }
     } else {
@@ -4093,7 +4095,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
           NOTREACHED();
           scroll_status.main_thread_scrolling_reasons =
               MainThreadScrollingReason::kNoScrollingLayer;
-          scroll_status.thread = SCROLL_IGNORED;
+          scroll_status.thread = ScrollThread::SCROLL_IGNORED;
           return scroll_status;
         }
 
@@ -4109,7 +4111,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
                                        type)) {
             TRACE_EVENT_INSTANT0("cc", "Scrollbar Scrolling",
                                  TRACE_EVENT_SCOPE_THREAD);
-            scroll_status.thread = SCROLL_ON_MAIN_THREAD;
+            scroll_status.thread = ScrollThread::SCROLL_ON_MAIN_THREAD;
             scroll_status.main_thread_scrolling_reasons =
                 MainThreadScrollingReason::kScrollbarScrolling;
             return scroll_status;
@@ -4126,7 +4128,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
           // ElementId of the hit-tested scroll node.
           TRACE_EVENT_INSTANT0("cc", "Request Main Thread Hit Test",
                                TRACE_EVENT_SCOPE_THREAD);
-          scroll_status.thread = SCROLL_ON_IMPL_THREAD;
+          scroll_status.thread = ScrollThread::SCROLL_ON_IMPL_THREAD;
           scroll_status.needs_main_thread_hit_test = true;
           return scroll_status;
         }
@@ -4147,7 +4149,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
                                        type)) {
             TRACE_EVENT_INSTANT0("cc", "Scrollbar Scrolling",
                                  TRACE_EVENT_SCOPE_THREAD);
-            scroll_status.thread = SCROLL_ON_MAIN_THREAD;
+            scroll_status.thread = ScrollThread::SCROLL_ON_MAIN_THREAD;
             scroll_status.main_thread_scrolling_reasons =
                 MainThreadScrollingReason::kScrollbarScrolling;
             return scroll_status;
@@ -4155,7 +4157,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
                          layer_impl, first_scrolling_layer_or_scrollbar)) {
             TRACE_EVENT_INSTANT0("cc", "Failed Hit Test",
                                  TRACE_EVENT_SCOPE_THREAD);
-            scroll_status.thread = SCROLL_UNKNOWN;
+            scroll_status.thread = ScrollThread::SCROLL_UNKNOWN;
             scroll_status.main_thread_scrolling_reasons =
                 MainThreadScrollingReason::kFailedHitTest;
             return scroll_status;
@@ -4180,7 +4182,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
     DCHECK(!base::FeatureList::IsEnabled(features::kScrollUnification));
 
     RecordCompositorSlowScrollMetric(type, MAIN_THREAD);
-    scroll_status.thread = SCROLL_ON_MAIN_THREAD;
+    scroll_status.thread = ScrollThread::SCROLL_ON_MAIN_THREAD;
     return scroll_status;
   } else if (!scrolling_node) {
     scroll_status.main_thread_scrolling_reasons =
@@ -4191,7 +4193,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
       // returning SCROLL_UNKNOWN.
       TRACE_EVENT_INSTANT0("cc", "Ignored - No ScrollNode (OOPIF)",
                            TRACE_EVENT_SCOPE_THREAD);
-      scroll_status.thread = SCROLL_UNKNOWN;
+      scroll_status.thread = ScrollThread::SCROLL_UNKNOWN;
     } else {
       // If we didn't hit a layer above we'd usually fallback to the
       // viewport scroll node. However, there may not be one if a scroll
@@ -4201,14 +4203,14 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
       // configurations where input is allowed prior to a commit.
       TRACE_EVENT_INSTANT0("cc", "Ignored - No ScrollNode",
                            TRACE_EVENT_SCOPE_THREAD);
-      scroll_status.thread = SCROLL_IGNORED;
+      scroll_status.thread = ScrollThread::SCROLL_IGNORED;
     }
     return scroll_status;
   }
 
   DCHECK_EQ(scroll_status.main_thread_scrolling_reasons,
             MainThreadScrollingReason::kNotScrollingOnMain);
-  DCHECK_EQ(scroll_status.thread, SCROLL_ON_IMPL_THREAD);
+  DCHECK_EQ(scroll_status.thread, ScrollThread::SCROLL_ON_IMPL_THREAD);
 
   active_tree_->SetCurrentlyScrollingNode(scrolling_node);
 

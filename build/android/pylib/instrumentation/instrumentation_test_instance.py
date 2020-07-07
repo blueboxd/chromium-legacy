@@ -147,6 +147,14 @@ def GenerateTestResults(result_code, result_bundle, statuses, duration_ms,
   cumulative_duration = 0
 
   for status_code, bundle in statuses:
+    # If the last test was a failure already, don't override that failure with
+    # post-test failures that could be caused by the original failure.
+    if (status_code == instrumentation_parser.STATUS_CODE_BATCH_FAILURE
+        and current_result.GetType() != base_test_result.ResultType.FAIL):
+      current_result.SetType(base_test_result.ResultType.FAIL)
+      _MaybeSetLog(bundle, current_result, symbolizer, device_abi)
+      continue
+
     if status_code == instrumentation_parser.STATUS_CODE_TEST_DURATION:
       # For the first result, duration will be set below to the difference
       # between the reported and actual durations to account for overhead like
@@ -185,13 +193,7 @@ def GenerateTestResults(result_code, result_bundle, statuses, duration_ms,
           logging.error('Unrecognized status code %d. Handling as an error.',
                         status_code)
         current_result.SetType(base_test_result.ResultType.FAIL)
-    if _BUNDLE_STACK_ID in bundle:
-      if symbolizer and device_abi:
-        current_result.SetLog('%s\n%s' % (bundle[_BUNDLE_STACK_ID], '\n'.join(
-            symbolizer.ExtractAndResolveNativeStackTraces(
-                bundle[_BUNDLE_STACK_ID], device_abi))))
-      else:
-        current_result.SetLog(bundle[_BUNDLE_STACK_ID])
+    _MaybeSetLog(bundle, current_result, symbolizer, device_abi)
 
   if current_result:
     if current_result.GetType() == base_test_result.ResultType.UNKNOWN:
@@ -209,6 +211,16 @@ def GenerateTestResults(result_code, result_bundle, statuses, duration_ms,
     results[0].SetDuration(duration_ms - cumulative_duration)
 
   return results
+
+
+def _MaybeSetLog(bundle, current_result, symbolizer, device_abi):
+  if _BUNDLE_STACK_ID in bundle:
+    if symbolizer and device_abi:
+      current_result.SetLog('%s\n%s' % (bundle[_BUNDLE_STACK_ID], '\n'.join(
+          symbolizer.ExtractAndResolveNativeStackTraces(
+              bundle[_BUNDLE_STACK_ID], device_abi))))
+    else:
+      current_result.SetLog(bundle[_BUNDLE_STACK_ID])
 
 
 def FilterTests(tests, filter_str=None, annotations=None,

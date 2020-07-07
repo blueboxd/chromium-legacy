@@ -9,6 +9,7 @@
 
 #include "base/i18n/break_iterator.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "components/pdf/renderer/pdf_ax_action_target.h"
@@ -341,6 +342,20 @@ ui::AXNodeData* CreateNode(
   return node_ptr;
 }
 
+ax::mojom::Role GetRoleForButtonType(PP_PrivateButtonType button_type) {
+  switch (button_type) {
+    case PP_PrivateButtonType::PP_PRIVATEBUTTON_RADIOBUTTON:
+      return ax::mojom::Role::kRadioButton;
+    case PP_PrivateButtonType::PP_PRIVATEBUTTON_CHECKBOX:
+      return ax::mojom::Role::kCheckBox;
+    case PP_PrivateButtonType::PP_PRIVATEBUTTON_PUSHBUTTON:
+      return ax::mojom::Role::kButton;
+    default:
+      NOTREACHED();
+      return ax::mojom::Role::kNone;
+  }
+}
+
 class PdfAccessibilityTreeBuilder {
  public:
   explicit PdfAccessibilityTreeBuilder(
@@ -361,6 +376,7 @@ class PdfAccessibilityTreeBuilder {
         images_(page_objects.images),
         highlights_(page_objects.highlights),
         text_fields_(page_objects.form_fields.text_fields),
+        buttons_(page_objects.form_fields.buttons),
         page_bounds_(page_bounds),
         page_index_(page_index),
         page_node_(page_node),
@@ -391,7 +407,10 @@ class PdfAccessibilityTreeBuilder {
     uint32_t current_image_index = 0;
     uint32_t current_highlight_index = 0;
     uint32_t current_text_field_index = 0;
+    uint32_t current_button_index = 0;
     LineHelper line_helper(text_runs_);
+    bool pdf_forms_enabled =
+        base::FeatureList::IsEnabled(chrome_pdf::features::kAccessiblePDFForm);
 
     for (size_t text_run_index = 0; text_run_index < text_runs_.size();
          ++text_run_index) {
@@ -430,11 +449,17 @@ class PdfAccessibilityTreeBuilder {
                                &text_run_index);
       } else if (IsObjectInTextRun(text_fields_, current_text_field_index,
                                    text_run_index) &&
-                 base::FeatureList::IsEnabled(
-                     chrome_pdf::features::kAccessiblePDFForm)) {
+                 pdf_forms_enabled) {
         FinishStaticNode(&static_text_node, &static_text);
         AddTextFieldToParaNode(text_fields_[current_text_field_index++],
                                para_node, &text_run_index);
+        continue;
+      } else if (IsObjectInTextRun(buttons_, current_button_index,
+                                   text_run_index) &&
+                 pdf_forms_enabled) {
+        FinishStaticNode(&static_text_node, &static_text);
+        AddButtonToParaNode(buttons_[current_button_index++], para_node,
+                            &text_run_index);
         continue;
       } else {
         PP_PdfPageCharacterIndex page_char_index = {
@@ -502,8 +527,11 @@ class PdfAccessibilityTreeBuilder {
     base::span<const ppapi::PdfAccessibilityTextFieldInfo>
         remaining_text_fields =
             base::make_span(text_fields_).subspan(current_text_field_index);
+    base::span<const ppapi::PdfAccessibilityButtonInfo> remaining_buttons =
+        base::make_span(buttons_).subspan(current_button_index);
     AddRemainingAnnotations(remaining_links, remaining_images,
-                            remaining_text_fields, para_node);
+                            remaining_text_fields, remaining_buttons,
+                            para_node);
   }
 
  private:
@@ -694,6 +722,36 @@ class PdfAccessibilityTreeBuilder {
     return text_field_node;
   }
 
+  ui::AXNodeData* CreateButtonNode(
+      const ppapi::PdfAccessibilityButtonInfo& button) {
+    ax::mojom::Restriction restriction = button.is_read_only
+                                             ? ax::mojom::Restriction::kReadOnly
+                                             : ax::mojom::Restriction::kNone;
+    ui::AXNodeData* button_node =
+        CreateNode(GetRoleForButtonType(button.type), restriction,
+                   render_accessibility_, nodes_);
+    button_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                    button.name);
+    button_node->AddState(ax::mojom::State::kFocusable);
+
+    if (button.type == PP_PRIVATEBUTTON_RADIOBUTTON ||
+        button.type == PP_PRIVATEBUTTON_CHECKBOX) {
+      ax::mojom::CheckedState checkedState =
+          button.is_checked ? ax::mojom::CheckedState::kTrue
+                            : ax::mojom::CheckedState::kNone;
+      button_node->SetCheckedState(checkedState);
+      button_node->AddStringAttribute(ax::mojom::StringAttribute::kValue,
+                                      button.value);
+      button_node->AddIntAttribute(ax::mojom::IntAttribute::kSetSize,
+                                   button.control_count);
+      button_node->AddIntAttribute(ax::mojom::IntAttribute::kPosInSet,
+                                   button.control_index + 1);
+    }
+
+    button_node->relative_bounds.bounds = PpFloatRectToGfxRectF(button.bounds);
+    return button_node;
+  }
+
   void AddTextToAXNode(uint32_t start_text_run_index,
                        uint32_t end_text_run_index,
                        ui::AXNodeData* ax_node,
@@ -851,15 +909,31 @@ class PdfAccessibilityTreeBuilder {
     --(*text_run_index);
   }
 
+  void AddButtonToParaNode(const ppapi::PdfAccessibilityButtonInfo& button,
+                           ui::AXNodeData* para_node,
+                           size_t* text_run_index) {
+    // If the |text_run_index| is less than or equal to the button's text
+    // run index, then push the button ahead of the current text run.
+    ui::AXNodeData* button_node = CreateButtonNode(button);
+    para_node->child_ids.push_back(button_node->id);
+    --(*text_run_index);
+  }
+
   void AddRemainingAnnotations(
       base::span<const ppapi::PdfAccessibilityLinkInfo> links,
       base::span<const ppapi::PdfAccessibilityImageInfo> images,
       base::span<const ppapi::PdfAccessibilityTextFieldInfo> text_fields,
+      base::span<const ppapi::PdfAccessibilityButtonInfo> buttons,
       ui::AXNodeData* para_node) {
-    // If we have additional links, images or text fields to insert in the tree,
-    // and we don't have a paragraph node, create a new one.
-    if (!para_node &&
-        (!links.empty() || !images.empty() || !text_fields.empty())) {
+    // If we don't have additional links, images or form fields to insert in the
+    // tree, then return.
+    if (links.empty() && images.empty() && text_fields.empty() &&
+        buttons.empty()) {
+      return;
+    }
+
+    // If we don't have a paragraph node, create a new one.
+    if (!para_node) {
       para_node = CreateNode(ax::mojom::Role::kParagraph,
                              ax::mojom::Restriction::kReadOnly,
                              render_accessibility_, nodes_);
@@ -885,6 +959,13 @@ class PdfAccessibilityTreeBuilder {
         ui::AXNodeData* text_field_node = CreateTextFieldNode(text_field);
         para_node->child_ids.push_back(text_field_node->id);
       }
+
+      // Push all the buttons not anchored to any text run to the last
+      // paragraph.
+      for (const ppapi::PdfAccessibilityButtonInfo& button : buttons) {
+        ui::AXNodeData* button_node = CreateButtonNode(button);
+        para_node->child_ids.push_back(button_node->id);
+      }
     }
   }
 
@@ -895,6 +976,7 @@ class PdfAccessibilityTreeBuilder {
   const std::vector<ppapi::PdfAccessibilityImageInfo>& images_;
   const std::vector<ppapi::PdfAccessibilityHighlightInfo>& highlights_;
   const std::vector<ppapi::PdfAccessibilityTextFieldInfo>& text_fields_;
+  const std::vector<ppapi::PdfAccessibilityButtonInfo>& buttons_;
   const gfx::RectF& page_bounds_;
   uint32_t page_index_;
   ui::AXNodeData* page_node_;

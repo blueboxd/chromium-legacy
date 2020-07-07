@@ -40,7 +40,7 @@ class ConfigureDisplaysTaskTest : public testing::Test {
                        .AddMode(small_mode_.Clone())
                        .Build();
   }
-  ~ConfigureDisplaysTaskTest() override {}
+  ~ConfigureDisplaysTaskTest() override = default;
 
   void ConfigureCallback(ConfigureDisplaysTask::Status status) {
     callback_called_ = true;
@@ -92,8 +92,9 @@ TEST_F(ConfigureDisplaysTaskTest, ConfigureWithOneDisplay) {
 
   EXPECT_TRUE(callback_called_);
   EXPECT_EQ(ConfigureDisplaysTask::SUCCESS, status_);
-  EXPECT_EQ(GetCrtcAction(*displays_[0], &small_mode_, gfx::Point()),
-            log_.GetActionsAndClear());
+  EXPECT_EQ(
+      GetCrtcAction({displays_[0]->display_id(), gfx::Point(), &small_mode_}),
+      log_.GetActionsAndClear());
 }
 
 TEST_F(ConfigureDisplaysTaskTest, ConfigureWithTwoDisplay) {
@@ -102,8 +103,8 @@ TEST_F(ConfigureDisplaysTaskTest, ConfigureWithTwoDisplay) {
 
   std::vector<DisplayConfigureRequest> requests;
   for (size_t i = 0; i < base::size(displays_); ++i) {
-    requests.push_back(DisplayConfigureRequest(
-        displays_[i].get(), displays_[i]->native_mode(), gfx::Point()));
+    requests.emplace_back(displays_[i].get(), displays_[i]->native_mode(),
+                          gfx::Point());
   }
 
   ConfigureDisplaysTask task(&delegate_, requests, std::move(callback));
@@ -111,12 +112,14 @@ TEST_F(ConfigureDisplaysTaskTest, ConfigureWithTwoDisplay) {
 
   EXPECT_TRUE(callback_called_);
   EXPECT_EQ(ConfigureDisplaysTask::SUCCESS, status_);
-  EXPECT_EQ(
-      JoinActions(
-          GetCrtcAction(*displays_[0], &small_mode_, gfx::Point()).c_str(),
-          GetCrtcAction(*displays_[1], &big_mode_, gfx::Point()).c_str(),
-          nullptr),
-      log_.GetActionsAndClear());
+  EXPECT_EQ(JoinActions(GetCrtcAction({displays_[0]->display_id(), gfx::Point(),
+                                       &small_mode_})
+                            .c_str(),
+                        GetCrtcAction({displays_[1]->display_id(), gfx::Point(),
+                                       &big_mode_})
+                            .c_str(),
+                        nullptr),
+            log_.GetActionsAndClear());
 }
 
 TEST_F(ConfigureDisplaysTaskTest, DisableDisplayFails) {
@@ -132,10 +135,11 @@ TEST_F(ConfigureDisplaysTaskTest, DisableDisplayFails) {
 
   EXPECT_TRUE(callback_called_);
   EXPECT_EQ(ConfigureDisplaysTask::ERROR, status_);
-  EXPECT_EQ(
-      JoinActions(GetCrtcAction(*displays_[0], nullptr, gfx::Point()).c_str(),
-                  nullptr),
-      log_.GetActionsAndClear());
+  EXPECT_EQ(JoinActions(GetCrtcAction(
+                            {displays_[0]->display_id(), gfx::Point(), nullptr})
+                            .c_str(),
+                        nullptr),
+            log_.GetActionsAndClear());
 }
 
 TEST_F(ConfigureDisplaysTaskTest, ConfigureWithOneDisplayFails) {
@@ -151,12 +155,14 @@ TEST_F(ConfigureDisplaysTaskTest, ConfigureWithOneDisplayFails) {
 
   EXPECT_TRUE(callback_called_);
   EXPECT_EQ(ConfigureDisplaysTask::ERROR, status_);
-  EXPECT_EQ(
-      JoinActions(
-          GetCrtcAction(*displays_[1], &big_mode_, gfx::Point()).c_str(),
-          GetCrtcAction(*displays_[1], &small_mode_, gfx::Point()).c_str(),
-          nullptr),
-      log_.GetActionsAndClear());
+  EXPECT_EQ(JoinActions(GetCrtcAction({displays_[1]->display_id(), gfx::Point(),
+                                       &big_mode_})
+                            .c_str(),
+                        GetCrtcAction({displays_[1]->display_id(), gfx::Point(),
+                                       &small_mode_})
+                            .c_str(),
+                        nullptr),
+            log_.GetActionsAndClear());
 }
 
 TEST_F(ConfigureDisplaysTaskTest, ConfigureWithTwoDisplayFails) {
@@ -167,8 +173,8 @@ TEST_F(ConfigureDisplaysTaskTest, ConfigureWithTwoDisplayFails) {
 
   std::vector<DisplayConfigureRequest> requests;
   for (size_t i = 0; i < base::size(displays_); ++i) {
-    requests.push_back(DisplayConfigureRequest(
-        displays_[i].get(), displays_[i]->native_mode(), gfx::Point()));
+    requests.emplace_back(displays_[i].get(), displays_[i]->native_mode(),
+                          gfx::Point());
   }
 
   ConfigureDisplaysTask task(&delegate_, requests, std::move(callback));
@@ -176,13 +182,17 @@ TEST_F(ConfigureDisplaysTaskTest, ConfigureWithTwoDisplayFails) {
 
   EXPECT_TRUE(callback_called_);
   EXPECT_EQ(ConfigureDisplaysTask::ERROR, status_);
-  EXPECT_EQ(
-      JoinActions(
-          GetCrtcAction(*displays_[0], &small_mode_, gfx::Point()).c_str(),
-          GetCrtcAction(*displays_[1], &big_mode_, gfx::Point()).c_str(),
-          GetCrtcAction(*displays_[1], &small_mode_, gfx::Point()).c_str(),
-          nullptr),
-      log_.GetActionsAndClear());
+  EXPECT_EQ(JoinActions(GetCrtcAction({displays_[0]->display_id(), gfx::Point(),
+                                       &small_mode_})
+                            .c_str(),
+                        GetCrtcAction({displays_[1]->display_id(), gfx::Point(),
+                                       &big_mode_})
+                            .c_str(),
+                        GetCrtcAction({displays_[1]->display_id(), gfx::Point(),
+                                       &small_mode_})
+                            .c_str(),
+                        nullptr),
+            log_.GetActionsAndClear());
 }
 
 TEST_F(ConfigureDisplaysTaskTest, ConfigureWithTwoDisplaysPartialSuccess) {
@@ -193,8 +203,8 @@ TEST_F(ConfigureDisplaysTaskTest, ConfigureWithTwoDisplaysPartialSuccess) {
 
   std::vector<DisplayConfigureRequest> requests;
   for (size_t i = 0; i < base::size(displays_); ++i) {
-    requests.push_back(DisplayConfigureRequest(
-        displays_[i].get(), displays_[i]->native_mode(), gfx::Point()));
+    requests.emplace_back(displays_[i].get(), displays_[i]->native_mode(),
+                          gfx::Point());
   }
 
   ConfigureDisplaysTask task(&delegate_, requests, std::move(callback));
@@ -202,13 +212,17 @@ TEST_F(ConfigureDisplaysTaskTest, ConfigureWithTwoDisplaysPartialSuccess) {
 
   EXPECT_TRUE(callback_called_);
   EXPECT_EQ(ConfigureDisplaysTask::PARTIAL_SUCCESS, status_);
-  EXPECT_EQ(
-      JoinActions(
-          GetCrtcAction(*displays_[0], &small_mode_, gfx::Point()).c_str(),
-          GetCrtcAction(*displays_[1], &big_mode_, gfx::Point()).c_str(),
-          GetCrtcAction(*displays_[1], &small_mode_, gfx::Point()).c_str(),
-          nullptr),
-      log_.GetActionsAndClear());
+  EXPECT_EQ(JoinActions(GetCrtcAction({displays_[0]->display_id(), gfx::Point(),
+                                       &small_mode_})
+                            .c_str(),
+                        GetCrtcAction({displays_[1]->display_id(), gfx::Point(),
+                                       &big_mode_})
+                            .c_str(),
+                        GetCrtcAction({displays_[1]->display_id(), gfx::Point(),
+                                       &small_mode_})
+                            .c_str(),
+                        nullptr),
+            log_.GetActionsAndClear());
 }
 
 TEST_F(ConfigureDisplaysTaskTest, AsyncConfigureWithTwoDisplaysPartialSuccess) {
@@ -220,8 +234,8 @@ TEST_F(ConfigureDisplaysTaskTest, AsyncConfigureWithTwoDisplaysPartialSuccess) {
 
   std::vector<DisplayConfigureRequest> requests;
   for (size_t i = 0; i < base::size(displays_); ++i) {
-    requests.push_back(DisplayConfigureRequest(
-        displays_[i].get(), displays_[i]->native_mode(), gfx::Point()));
+    requests.emplace_back(displays_[i].get(), displays_[i]->native_mode(),
+                          gfx::Point());
   }
 
   ConfigureDisplaysTask task(&delegate_, requests, std::move(callback));
@@ -232,13 +246,17 @@ TEST_F(ConfigureDisplaysTaskTest, AsyncConfigureWithTwoDisplaysPartialSuccess) {
 
   EXPECT_TRUE(callback_called_);
   EXPECT_EQ(ConfigureDisplaysTask::PARTIAL_SUCCESS, status_);
-  EXPECT_EQ(
-      JoinActions(
-          GetCrtcAction(*displays_[0], &small_mode_, gfx::Point()).c_str(),
-          GetCrtcAction(*displays_[1], &big_mode_, gfx::Point()).c_str(),
-          GetCrtcAction(*displays_[1], &small_mode_, gfx::Point()).c_str(),
-          nullptr),
-      log_.GetActionsAndClear());
+  EXPECT_EQ(JoinActions(GetCrtcAction({displays_[0]->display_id(), gfx::Point(),
+                                       &small_mode_})
+                            .c_str(),
+                        GetCrtcAction({displays_[1]->display_id(), gfx::Point(),
+                                       &big_mode_})
+                            .c_str(),
+                        GetCrtcAction({displays_[1]->display_id(), gfx::Point(),
+                                       &small_mode_})
+                            .c_str(),
+                        nullptr),
+            log_.GetActionsAndClear());
 }
 
 }  // namespace test

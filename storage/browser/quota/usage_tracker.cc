@@ -318,15 +318,15 @@ void UsageTracker::AccumulateClientHostUsage(base::OnceClosure callback,
 void UsageTracker::FinallySendHostUsageWithBreakdown(AccumulateInfo* info,
                                                      const std::string& host) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto host_it = host_usage_callbacks_.find(host);
-  if (host_it == host_usage_callbacks_.end())
+  auto it = host_usage_callbacks_.find(host);
+  if (it == host_usage_callbacks_.end())
     return;
 
   std::vector<UsageWithBreakdownCallback> pending_callbacks;
-  pending_callbacks.swap(host_it->second);
+  pending_callbacks.swap(it->second);
   DCHECK(pending_callbacks.size() > 0)
       << "host_usage_callbacks_ should only have non-empty callback lists";
-  host_usage_callbacks_.erase(host_it);
+  host_usage_callbacks_.erase(it);
 
   for (auto& callback : pending_callbacks) {
     std::move(callback).Run(info->usage, info->usage_breakdown->Clone());

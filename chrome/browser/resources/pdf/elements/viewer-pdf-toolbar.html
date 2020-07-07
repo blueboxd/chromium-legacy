@@ -1,4 +1,4 @@
-    <style include="cr-hidden-style">
+    <style include="pdf-shared cr-hidden-style">
       :host {
         --pdf-toolbar-background-color: rgb(50, 54, 57);
         --pdf-toolbar-text-color: rgb(241, 241, 241);
@@ -37,16 +37,6 @@
         flex: 5;
         text-align: end;
         user-select: none;
-      }
-
-      cr-icon-button {
-        --cr-icon-button-fill-color: var(--pdf-toolbar-text-color);
-        margin: 6px;
-      }
-
-      cr-icon-button:hover {
-        background: rgba(255, 255, 255, 0.08);
-        border-radius: 50%;
       }
 
       paper-progress {
@@ -171,7 +161,7 @@
 
         <div id="buttons" class="invisible">
 <if expr="chromeos">
-          <template is="dom-if" if="[[pdfAnnotationsEnabled_]]">
+          <template is="dom-if" if="[[pdfAnnotationsEnabled]]">
             <cr-icon-button id="annotate" iron-icon="pdf:create"
                 disabled="[[!annotationAvailable]]" on-click="toggleAnnotation"
                 aria-label$="$i18n{tooltipAnnotate}"
@@ -183,22 +173,15 @@
               disabled="[[annotationMode]]" on-click="rotateRight"
               aria-label$="$i18n{tooltipRotateCW}"
               title="$i18n{tooltipRotateCW}"></cr-icon-button>
-
-          <cr-icon-button id="download" iron-icon="cr:file-download"
-              on-click="onDownloadClick_" aria-label$="$i18n{tooltipDownload}"
-              aria-haspopup$="[[downloadHasPopup_]]"
-              title="$i18n{tooltipDownload}"></cr-icon-button>
-          <cr-action-menu id="downloadMenu">
-            <button class="dropdown-item" on-click="onDownloadEditedClick_">
-              $i18n{downloadEdited}
-            </button>
-            <button class="dropdown-item" on-click="onDownloadOriginalClick_">
-              $i18n{downloadOriginal}
-            </button>
-          </cr-action-menu>
+          <viewer-download-controls id="downloads"
+              has-edits="[[hasEdits]]"
+              has-entered-annotation-mode="[[hasEnteredAnnotationMode]]"
+              is-form-field-focused="[[isFormFieldFocused]]"
+              pdf-form-save-enabled="[[pdfFormSaveEnabled]]">
+          </viewer-download-controls>
 
           <cr-icon-button id="print" iron-icon="cr:print" on-click="print"
-              hidden="[[!printingEnabled_]]" title="$i18n{tooltipPrint}"
+              hidden="[[!printingEnabled]]" title="$i18n{tooltipPrint}"
               aria-label$="$i18n{tooltipPrint}"></cr-icon-button>
 
           <viewer-toolbar-dropdown id="bookmarks"

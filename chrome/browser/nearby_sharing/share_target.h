@@ -30,25 +30,25 @@ class ShareTarget {
   ShareTarget(const ShareTarget&);
   ShareTarget& operator=(const ShareTarget&);
 
-  int id() { return id_; }
-  const std::string& device_name() { return device_name_; }
+  int id() const { return id_; }
+  const std::string& device_name() const { return device_name_; }
 
   // Returns a Uri that points to an image of the ShareTarget, if one exists.
-  const base::Optional<GURL>& image_url() { return image_url_; }
+  const base::Optional<GURL>& image_url() const { return image_url_; }
 
-  Type type() { return type_; }
-  const std::vector<TextAttachment>& text_attachments() {
+  Type type() const { return type_; }
+  const std::vector<TextAttachment>& text_attachments() const {
     return text_attachments_;
   }
-  const std::vector<FileAttachment>& file_attachments() {
+  const std::vector<FileAttachment>& file_attachments() const {
     return file_attachments_;
   }
-  bool is_incoming() { return is_incoming_; }
-  const base::Optional<std::string>& full_name() { return full_name_; }
+  bool is_incoming() const { return is_incoming_; }
+  const base::Optional<std::string>& full_name() const { return full_name_; }
 
   // Returns True if local device has the PublicCertificate the remote device is
   // advertising.
-  bool is_known() { return is_known_; }
+  bool is_known() const { return is_known_; }
 
  private:
   int id_;

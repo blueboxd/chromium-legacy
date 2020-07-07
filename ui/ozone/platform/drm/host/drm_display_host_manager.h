@@ -63,7 +63,6 @@ class DrmDisplayHostManager : public DeviceEventObserver, GpuThreadObserver {
   // Communication-free implementations of actions performed in response to
   // messages from the GPU thread.
   void GpuHasUpdatedNativeDisplays(MovableDisplaySnapshots displays);
-  void GpuConfiguredDisplay(int64_t display_id, bool status);
   void GpuReceivedHDCPState(int64_t display_id,
                             bool status,
                             display::HDCPState state);

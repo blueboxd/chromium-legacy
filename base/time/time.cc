@@ -69,27 +69,15 @@ int TimeDelta::InDaysFloored() const {
 }
 
 int TimeDelta::InHours() const {
-  if (is_max()) {
-    // Preserve max to prevent overflow.
-    return std::numeric_limits<int>::max();
-  }
-  if (is_min()) {
-    // Preserve min to prevent underflow.
-    return std::numeric_limits<int>::min();
-  }
-  return static_cast<int>(delta_ / Time::kMicrosecondsPerHour);
+  // saturated_cast<> is necessary since very large (but still less than
+  // min/max) deltas would result in overflow.
+  return saturated_cast<int>(delta_ / Time::kMicrosecondsPerHour);
 }
 
 int TimeDelta::InMinutes() const {
-  if (is_max()) {
-    // Preserve max to prevent overflow.
-    return std::numeric_limits<int>::max();
-  }
-  if (is_min()) {
-    // Preserve min to prevent underflow.
-    return std::numeric_limits<int>::min();
-  }
-  return static_cast<int>(delta_ / Time::kMicrosecondsPerMinute);
+  // saturated_cast<> is necessary since very large (but still less than
+  // min/max) deltas would result in overflow.
+  return saturated_cast<int>(delta_ / Time::kMicrosecondsPerMinute);
 }
 
 double TimeDelta::InSecondsF() const {
@@ -170,15 +158,7 @@ double TimeDelta::InMicrosecondsF() const {
 }
 
 int64_t TimeDelta::InNanoseconds() const {
-  if (is_max()) {
-    // Preserve max to prevent overflow.
-    return std::numeric_limits<int64_t>::max();
-  }
-  if (is_min()) {
-    // Preserve min to prevent underflow.
-    return std::numeric_limits<int64_t>::min();
-  }
-  return delta_ * Time::kNanosecondsPerMicrosecond;
+  return base::ClampMul(delta_, Time::kNanosecondsPerMicrosecond);
 }
 
 std::ostream& operator<<(std::ostream& os, TimeDelta time_delta) {

@@ -113,7 +113,8 @@ NearbySharingServiceImpl::NearbySharingServiceImpl(
     std::unique_ptr<NearbyConnectionsManager> nearby_connections_manager)
     : prefs_(prefs),
       profile_(profile),
-      nearby_connections_manager_(std::move(nearby_connections_manager)) {
+      nearby_connections_manager_(std::move(nearby_connections_manager)),
+      nearby_notification_manager_(profile) {
   DCHECK(prefs_);
   DCHECK(profile_);
   DCHECK(nearby_connections_manager_);

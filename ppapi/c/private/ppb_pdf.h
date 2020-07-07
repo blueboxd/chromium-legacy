@@ -22,6 +22,14 @@ typedef enum {
   PP_PDFFEATURE_PRINTING = 1
 } PP_PDFFeature;
 
+typedef enum {
+  PP_CONTENT_RESTRICTION_COPY = 1 << 0,
+  PP_CONTENT_RESTRICTION_CUT = 1 << 1,
+  PP_CONTENT_RESTRICTION_PASTE = 1 << 2,
+  PP_CONTENT_RESTRICTION_PRINT = 1 << 3,
+  PP_CONTENT_RESTRICTION_SAVE = 1 << 4
+} PP_ContentRestriction;
+
 struct PP_PrivateFontFileDescription {
   const char* face;
   uint32_t weight;
@@ -381,7 +389,7 @@ struct PPB_PDF {
   void (*DidStopLoading)(PP_Instance instance);
 
   // Sets content restriction for a full-page plugin (i.e. can't copy/print).
-  // The value is a bitfield of ContentRestriction enums.
+  // The value is a bitfield of PP_ContentRestriction enums.
   void (*SetContentRestriction)(PP_Instance instance, int restrictions);
 
   // Notifies the browser that the given action has been performed.

@@ -131,8 +131,9 @@ class PLATFORM_EXPORT MainThreadTaskQueue
       kFindInPage = 5,
       kExperimentalDatabase = 6,
       kJavaScriptTimer = 7,
+      kHighPriorityLocalFrame = 8,
 
-      kCount = 8
+      kCount = 9
     };
 
     // kPrioritisationTypeWidthBits is the number of bits required
@@ -141,10 +142,10 @@ class PLATFORM_EXPORT MainThreadTaskQueue
     // We need to update it whenever there is a change in
     // PrioritisationType::kCount.
     // TODO(sreejakshetty) make the number of bits calculation automated.
-    static constexpr int kPrioritisationTypeWidthBits = 3;
+    static constexpr int kPrioritisationTypeWidthBits = 4;
     static_assert(static_cast<int>(PrioritisationType::kCount) <=
-                    (1 << kPrioritisationTypeWidthBits),
-                    "Wrong Instanstiation for kPrioritisationTypeWidthBits");
+                      (1 << kPrioritisationTypeWidthBits),
+                  "Wrong Instanstiation for kPrioritisationTypeWidthBits");
 
     QueueTraits(const QueueTraits&) = default;
 
@@ -189,7 +190,8 @@ class PLATFORM_EXPORT MainThreadTaskQueue
              can_be_paused == other.can_be_paused &&
              can_be_frozen == other.can_be_frozen &&
              can_run_in_background == other.can_run_in_background &&
-             can_run_when_virtual_time_paused == other.can_run_when_virtual_time_paused &&
+             can_run_when_virtual_time_paused ==
+                 other.can_run_when_virtual_time_paused &&
              prioritisation_type == other.prioritisation_type;
     }
 
@@ -357,7 +359,8 @@ class PLATFORM_EXPORT MainThreadTaskQueue
   QueueTraits GetQueueTraits() const { return queue_traits_; }
 
   QueueTraits::PrioritisationType GetPrioritisationType() const {
-      return queue_traits_.prioritisation_type;}
+    return queue_traits_.prioritisation_type;
+  }
 
   void OnTaskReady(const void* frame_scheduler,
                    const base::sequence_manager::Task& task,

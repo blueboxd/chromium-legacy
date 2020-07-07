@@ -9,6 +9,7 @@ js_type_check("closure_compile") {
   is_polymer3 = true
   deps = [
     ":viewer-bookmark",
+    ":viewer-download-controls",
     ":viewer-error-screen",
     ":viewer-page-indicator",
     ":viewer-page-selector",
@@ -32,6 +33,14 @@ js_library("viewer-bookmark") {
   deps = [
     "..:bookmark_type",
     "//third_party/polymer/v3_0/components-chromium/iron-a11y-keys-behavior",
+  ]
+}
+
+js_library("viewer-download-controls") {
+  deps = [
+    "..:constants",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu.m",
   ]
 }
 
@@ -76,11 +85,11 @@ js_library("viewer-password-screen") {
 js_library("viewer-pdf-toolbar") {
   deps = [
     ":viewer-bookmark",
+    ":viewer-download-controls",
     ":viewer-page-selector",
     ":viewer-toolbar-dropdown",
     "..:annotation_tool",
     "..:constants",
-    "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu.m",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:load_time_data.m",
     "//ui/webui/resources/js:promise_resolver.m",
@@ -90,6 +99,7 @@ js_library("viewer-pdf-toolbar") {
 
 js_library("viewer-pdf-toolbar-new") {
   deps = [
+    ":viewer-download-controls",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 }
@@ -117,7 +127,9 @@ html_to_js("web_components") {
   js_files = [
     "icons.js",
     "shared-vars.js",
+    "shared-css.js",
     "viewer-bookmark.js",
+    "viewer-download-controls.js",
     "viewer-error-screen.js",
     "viewer-page-indicator.js",
     "viewer-page-selector.js",

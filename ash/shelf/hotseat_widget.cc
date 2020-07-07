@@ -11,6 +11,7 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_model.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/wallpaper_controller_observer.h"
 #include "ash/shelf/hotseat_transition_animator.h"
 #include "ash/shelf/scrollable_shelf_view.h"
@@ -402,7 +403,7 @@ void HotseatWidget::DelegateView::SetTranslucentBackground(
   auto* animator = translucent_background_.GetAnimator();
 
   base::Optional<ui::AnimationThroughputReporter> reporter;
-  if (hotseat_widget_) {
+  if (hotseat_widget_ && hotseat_widget_->state() != HotseatState::kNone) {
     reporter.emplace(animator,
                      hotseat_widget_->GetTranslucentBackgroundReportCallback());
   }
@@ -810,9 +811,11 @@ void HotseatWidget::UpdateLayout(bool animate) {
     animation_setter.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
 
-    ui::AnimationThroughputReporter reporter(
-        animation_setter.GetAnimator(),
-        shelf_->GetHotseatTransitionReportCallback(state_));
+    base::Optional<ui::AnimationThroughputReporter> reporter;
+    if (animate && state_ != HotseatState::kNone) {
+      reporter.emplace(animation_setter.GetAnimator(),
+                       shelf_->GetHotseatTransitionReportCallback(state_));
+    }
 
     shelf_view_layer->SetOpacity(new_layout_inputs.shelf_view_opacity);
   }
@@ -1010,9 +1013,11 @@ void HotseatWidget::LayoutHotseatByAnimation(double target_opacity,
   animation_setter.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
 
-  ui::AnimationThroughputReporter reporter(
-      animation_setter.GetAnimator(),
-      shelf_->GetHotseatTransitionReportCallback(state_));
+  base::Optional<ui::AnimationThroughputReporter> reporter;
+  if (state_ != HotseatState::kNone) {
+    reporter.emplace(animation_setter.GetAnimator(),
+                     shelf_->GetHotseatTransitionReportCallback(state_));
+  }
 
   if (!state_transition_in_progress_.has_value()) {
     // Hotseat animation is not triggered by the update in |state_|. So apply

@@ -303,9 +303,14 @@ void OmniboxResultView::SetRichSuggestionImage(const gfx::ImageSkia& image) {
 void OmniboxResultView::ButtonPressed(views::Button* button,
                                       const ui::Event& event) {
   if (button == suggestion_tab_switch_button_) {
-    OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB, event.time_stamp());
+    popup_contents_view_->model()->TriggerSelectionAction(
+        OmniboxPopupModel::Selection(
+            model_index_, OmniboxPopupModel::FOCUSED_BUTTON_TAB_SWITCH),
+        event.time_stamp());
   } else if (button == remove_suggestion_button_) {
-    RemoveSuggestion();
+    popup_contents_view_->model()->TriggerSelectionAction(
+        OmniboxPopupModel::Selection(
+            model_index_, OmniboxPopupModel::FOCUSED_BUTTON_REMOVE_SUGGESTION));
   } else {
     NOTREACHED();
   }
@@ -429,7 +434,8 @@ void OmniboxResultView::OnMouseReleased(const ui::MouseEvent& event) {
     if (match_.IsTabSwitchSuggestion()) {
       disposition = WindowOpenDisposition::SWITCH_TO_TAB;
     }
-    OpenMatch(disposition, event.time_stamp());
+    popup_contents_view_->OpenMatch(model_index_, disposition,
+                                    event.time_stamp());
   }
 }
 
@@ -493,10 +499,6 @@ void OmniboxResultView::OnThemeChanged() {
   ApplyThemeAndRefreshIcons(true);
 }
 
-void OmniboxResultView::RemoveSuggestion() const {
-  popup_contents_view_->model()->TryDeletingLine(model_index_);
-}
-
 void OmniboxResultView::EmitTextChangedAccessiblityEvent() {
   if (!popup_contents_view_->IsOpen())
     return;
@@ -528,12 +530,6 @@ gfx::Image OmniboxResultView::GetIcon() const {
 void OmniboxResultView::UpdateHoverState() {
   UpdateRemoveSuggestionVisibility();
   ApplyThemeAndRefreshIcons();
-}
-
-void OmniboxResultView::OpenMatch(WindowOpenDisposition disposition,
-                                  base::TimeTicks match_selection_timestamp) {
-  popup_contents_view_->OpenMatch(model_index_, disposition,
-                                  match_selection_timestamp);
 }
 
 void OmniboxResultView::UpdateRemoveSuggestionVisibility() {

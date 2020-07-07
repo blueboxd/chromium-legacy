@@ -25,7 +25,7 @@ class SimpleMediaTaskRunner : public MediaTaskRunner {
 
   // MediaTaskRunner implementation.
   bool PostMediaTask(const base::Location& from_here,
-                     const base::Closure& task,
+                     base::OnceClosure task,
                      base::TimeDelta timestamp) override;
 
  private:

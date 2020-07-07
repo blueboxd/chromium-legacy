@@ -29,14 +29,14 @@ void DidGetHostUsage(UsageCallback callback,
 bool EraseOriginFromOriginSet(OriginSetByHost* origins_by_host,
                               const std::string& host,
                               const url::Origin& origin) {
-  auto found = origins_by_host->find(host);
-  if (found == origins_by_host->end())
+  auto it = origins_by_host->find(host);
+  if (it == origins_by_host->end())
     return false;
 
-  if (!found->second.erase(origin))
+  if (!it->second.erase(origin))
     return false;
 
-  if (found->second.empty())
+  if (it->second.empty())
     origins_by_host->erase(host);
   return true;
 }
@@ -223,17 +223,17 @@ void ClientUsageTracker::SetUsageCacheEnabled(const url::Origin& origin,
   const std::string& host = origin.host();
   if (!enabled) {
     // Erase |origin| from cache and subtract its usage.
-    auto found_host = cached_usage_by_host_.find(host);
-    if (found_host != cached_usage_by_host_.end()) {
-      UsageMap& cached_usage_for_host = found_host->second;
+    auto host_it = cached_usage_by_host_.find(host);
+    if (host_it != cached_usage_by_host_.end()) {
+      UsageMap& cached_usage_for_host = host_it->second;
 
-      auto found = cached_usage_for_host.find(origin);
-      if (found != cached_usage_for_host.end()) {
-        int64_t usage = found->second;
+      auto origin_it = cached_usage_for_host.find(origin);
+      if (origin_it != cached_usage_for_host.end()) {
+        int64_t usage = origin_it->second;
         UpdateUsageCache(origin, -usage);
-        cached_usage_for_host.erase(found);
+        cached_usage_for_host.erase(origin_it);
         if (cached_usage_for_host.empty()) {
-          cached_usage_by_host_.erase(found_host);
+          cached_usage_by_host_.erase(host_it);
           cached_hosts_.erase(host);
         }
       }
@@ -414,12 +414,12 @@ void ClientUsageTracker::AddCachedHost(const std::string& host) {
 
 int64_t ClientUsageTracker::GetCachedHostUsage(const std::string& host) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto found = cached_usage_by_host_.find(host);
-  if (found == cached_usage_by_host_.end())
+  auto it = cached_usage_by_host_.find(host);
+  if (it == cached_usage_by_host_.end())
     return 0;
 
   int64_t usage = 0;
-  const UsageMap& usage_map = found->second;
+  const UsageMap& usage_map = it->second;
   for (const auto& origin_and_usage : usage_map)
     usage += origin_and_usage.second;
   return usage;
@@ -429,16 +429,16 @@ bool ClientUsageTracker::GetCachedOriginUsage(const url::Origin& origin,
                                               int64_t* usage) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const std::string& host = origin.host();
-  auto found_host = cached_usage_by_host_.find(host);
-  if (found_host == cached_usage_by_host_.end())
+  auto host_it = cached_usage_by_host_.find(host);
+  if (host_it == cached_usage_by_host_.end())
     return false;
 
-  auto found = found_host->second.find(origin);
-  if (found == found_host->second.end())
+  auto origin_it = host_it->second.find(origin);
+  if (origin_it == host_it->second.end())
     return false;
 
   DCHECK(IsUsageCacheEnabledForOrigin(origin));
-  *usage = found->second;
+  *usage = origin_it->second;
   return true;
 }
 

@@ -1442,6 +1442,27 @@ TEST(TimeDelta, InMillisecondsRoundedUp) {
   EXPECT_EQ(TimeDelta::FromMicroseconds(1001).InMillisecondsRoundedUp(), 2);
 }
 
+// Check that near-min/max values saturate rather than overflow when converted
+// lossily with InXXX() functions.  Only integral hour, minute, and nanosecond
+// conversions are checked, since those are the only cases where the return type
+// is small enough for saturation or overflow to occur.
+TEST(TimeDelta, InXXXOverflow) {
+  constexpr TimeDelta kLargeDelta =
+      TimeDelta::FromMicroseconds(std::numeric_limits<int64_t>::max() - 1);
+  static_assert(!kLargeDelta.is_max(), "");
+  EXPECT_EQ(std::numeric_limits<int>::max(), kLargeDelta.InHours());
+  EXPECT_EQ(std::numeric_limits<int>::max(), kLargeDelta.InMinutes());
+  EXPECT_EQ(std::numeric_limits<int64_t>::max(), kLargeDelta.InNanoseconds());
+
+  constexpr TimeDelta kLargeNegative =
+      TimeDelta::FromMicroseconds(std::numeric_limits<int64_t>::min() + 1);
+  static_assert(!kLargeNegative.is_min(), "");
+  EXPECT_EQ(std::numeric_limits<int>::min(), kLargeNegative.InHours());
+  EXPECT_EQ(std::numeric_limits<int>::min(), kLargeNegative.InMinutes());
+  EXPECT_EQ(std::numeric_limits<int64_t>::min(),
+            kLargeNegative.InNanoseconds());
+}
+
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
 TEST(TimeDelta, TimeSpecConversion) {
   TimeDelta delta = TimeDelta::FromSeconds(0);

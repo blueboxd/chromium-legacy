@@ -459,6 +459,8 @@ class MainThreadSchedulerImplTest : public testing::Test {
     timer_task_runner_ = timer_task_queue()->task_runner();
     find_in_page_task_runner_ = main_frame_scheduler_->GetTaskRunner(
         blink::TaskType::kInternalFindInPage);
+    prioritised_local_frame_task_runner_ = main_frame_scheduler_->GetTaskRunner(
+        blink::TaskType::kInternalHighPriorityLocalFrame);
   }
 
   TaskQueue* loading_task_queue() {
@@ -786,6 +788,8 @@ class MainThreadSchedulerImplTest : public testing::Test {
   // - 'I': Idle task
   // - 'T': Timer task
   // - 'V': kV8 task
+  // - 'F': FindInPage task
+  // - 'U': Prioritised local frame task
   void PostTestTasks(Vector<String>* run_order, const String& task_descriptor) {
     std::istringstream stream(task_descriptor.Utf8());
     while (!stream.eof()) {
@@ -834,6 +838,11 @@ class MainThreadSchedulerImplTest : public testing::Test {
           break;
         case 'F':
           find_in_page_task_runner_->PostTask(
+              FROM_HERE, base::BindOnce(&AppendToVectorTestTask, run_order,
+                                        String::FromUTF8(task)));
+          break;
+        case 'U':
+          prioritised_local_frame_task_runner_->PostTask(
               FROM_HERE, base::BindOnce(&AppendToVectorTestTask, run_order,
                                         String::FromUTF8(task)));
           break;
@@ -937,6 +946,8 @@ class MainThreadSchedulerImplTest : public testing::Test {
   scoped_refptr<base::SingleThreadTaskRunner> timer_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> v8_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> find_in_page_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner>
+      prioritised_local_frame_task_runner_;
   bool simulate_timer_task_ran_;
   bool initially_ensure_usecase_none_ = true;
   uint64_t next_begin_frame_number_ = viz::BeginFrameArgs::kStartingFrameNumber;
@@ -1099,15 +1110,15 @@ TEST_F(MainThreadSchedulerImplTest, TestDefaultPolicy) {
   EnsureUseCaseNone();
 
   Vector<String> run_order;
-  PostTestTasks(&run_order, "L1 I1 D1 P1 C1 D2 P2 C2");
+  PostTestTasks(&run_order, "L1 I1 D1 P1 C1 D2 P2 C2 U1");
 
   EnableIdleTasks();
   base::RunLoop().RunUntilIdle();
   // High-priority input is enabled and input tasks are processed first.
   // One compositing event is prioritized after an input event but still
   // has lower priority than input event.
-  EXPECT_THAT(run_order, testing::ElementsAre("P1", "P2", "L1", "D1", "C1",
-                                              "D2", "C2", "I1"));
+  EXPECT_THAT(run_order, testing::ElementsAre("P1", "P2", "U1", "L1", "D1",
+                                              "C1", "D2", "C2", "I1"));
   EXPECT_EQ(UseCase::kNone, CurrentUseCase());
 }
 

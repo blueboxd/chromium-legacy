@@ -8,17 +8,18 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/non_persistent_notification_handler.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
 #include "chrome/browser/notifications/persistent_notification_handler.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sharing/sharing_notification_handler.h"
 #include "chrome/browser/updates/announcement_notification/announcement_notification_handler.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -37,7 +38,9 @@
 #endif
 
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
+#include "chrome/browser/nearby_sharing/nearby_notification_handler.h"
 #include "chrome/browser/send_tab_to_self/desktop_notification_handler.h"
+#include "chrome/browser/sharing/sharing_notification_handler.h"
 #endif
 
 #if defined(OS_WIN)
@@ -166,6 +169,11 @@ NotificationDisplayServiceImpl::NotificationDisplayServiceImpl(Profile* profile)
                            std::make_unique<SharingNotificationHandler>());
     AddNotificationHandler(NotificationHandler::Type::ANNOUNCEMENT,
                            std::make_unique<AnnouncementNotificationHandler>());
+
+    if (base::FeatureList::IsEnabled(features::kNearbySharing)) {
+      AddNotificationHandler(NotificationHandler::Type::NEARBY_SHARE,
+                             std::make_unique<NearbyNotificationHandler>());
+    }
 #endif
   }
 

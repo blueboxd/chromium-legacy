@@ -15,7 +15,6 @@ import android.support.test.internal.util.AndroidRunnerParams;
 import androidx.annotation.CallSuper;
 
 import org.junit.rules.MethodRule;
-import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runner.notification.RunNotifier;
@@ -236,14 +235,7 @@ public class BaseJUnit4ClassRunner extends AndroidJUnit4ClassRunner {
      */
     @CallSuper
     protected List<TestRule> getDefaultTestRules() {
-        // Order is important here. Outer rule setUp's run first, and tearDown's run last.
-        // Base setUp() should go first to initialize ContextUtils and clear out prefs.
-        // Base's tearDown() should come last since it deletes files.
-        // Activities must be destroyed before lifetimes are checked, so DestroyActivitiesRule()
-        // must come last so that its tearDown() runs before LifetimeAssertRule's.
-        return Collections.singletonList(RuleChain.outerRule(new BaseJUnit4TestRule())
-                                                 .around(new LifetimeAssertRule())
-                                                 .around(new DestroyActivitiesRule()));
+        return Collections.singletonList(new BaseJUnit4TestRule());
     }
 
     /**
@@ -273,8 +265,7 @@ public class BaseJUnit4ClassRunner extends AndroidJUnit4ClassRunner {
      */
     @Override
     public void run(RunNotifier notifier) {
-        if (BaseChromiumAndroidJUnitRunner.shouldListTests(
-                    InstrumentationRegistry.getArguments())) {
+        if (BaseChromiumAndroidJUnitRunner.shouldListTests()) {
             for (Description child : getDescription().getChildren()) {
                 notifier.fireTestFinished(child);
             }

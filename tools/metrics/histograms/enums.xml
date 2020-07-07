@@ -2308,6 +2308,7 @@ Unknown properties are collapsed to zero. -->
   <int value="5" label="NOT_SENT_FAILED_TO_SERIALIZE"/>
   <int value="6" label="NOT_SENT_FEATURE_NOT_ENABLED"/>
   <int value="7" label="SENT"/>
+  <int value="8" label="NOT_SENT_UNCONSENTED"/>
 </enum>
 
 <enum name="AppBannersBeforeInstallEvent">
@@ -59713,6 +59714,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="68" label="InternalFrameLifecycleControl"/>
   <int value="69" label="MainThreadTaskQueueNonWaking"/>
   <int value="70" label="InternalFindInPage"/>
+  <int value="71" label="InternalHighPriorityLocalFrame"/>
 </enum>
 
 <enum name="RendererSchedulerTaskUseCase">

@@ -74,6 +74,10 @@ class MockBaseFetchContext final : public BaseFetchContext {
                                const FetchInitiatorInfo&,
                                ResourceRequestBlockedReason,
                                ResourceType) const override {}
+  const ContentSecurityPolicy* GetContentSecurityPolicyForWorld(
+      const DOMWrapperWorld* world) const override {
+    return GetContentSecurityPolicy();
+  }
   bool ShouldBypassMainWorldCSP() const override { return false; }
   bool IsSVGImageChromeClient() const override { return false; }
   void CountUsage(WebFeature) const override {}

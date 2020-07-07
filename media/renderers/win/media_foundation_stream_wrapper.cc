@@ -43,18 +43,16 @@ bool AreLowIVBytesZero(const std::string& iv) {
 }
 
 // Add encryption related attributes to |mf_sample| and update |last_key_id|.
-HRESULT AddEncryptAttributes(const DecoderBuffer& buffer,
+HRESULT AddEncryptAttributes(const DecryptConfig& decrypt_config,
                              IMFSample* mf_sample,
                              GUID* last_key_id) {
-  const DecryptConfig* decrypt_config = buffer.decrypt_config();
-  if (!decrypt_config)
-    return S_OK;
+  DVLOG(3) << __func__;
 
   MFSampleEncryptionProtectionScheme mf_protection_scheme;
-  if (decrypt_config->encryption_scheme() == EncryptionScheme::kCenc) {
+  if (decrypt_config.encryption_scheme() == EncryptionScheme::kCenc) {
     mf_protection_scheme = MFSampleEncryptionProtectionScheme::
         MF_SAMPLE_ENCRYPTION_PROTECTION_SCHEME_AES_CTR;
-  } else if (decrypt_config->encryption_scheme() == EncryptionScheme::kCbcs) {
+  } else if (decrypt_config.encryption_scheme() == EncryptionScheme::kCbcs) {
     mf_protection_scheme = MFSampleEncryptionProtectionScheme::
         MF_SAMPLE_ENCRYPTION_PROTECTION_SCHEME_AES_CBC;
   } else {
@@ -67,29 +65,29 @@ HRESULT AddEncryptAttributes(const DecoderBuffer& buffer,
   // KID
   // https://matroska.org/technical/specs/index.html#ContentEncKeyID
   // For WebM case, key ID size is not specified.
-  if (decrypt_config->key_id().length() != sizeof(GUID)) {
+  if (decrypt_config.key_id().length() != sizeof(GUID)) {
     DLOG(ERROR) << __func__ << ": Unsupported key ID size";
     return MF_E_UNEXPECTED;
   }
-  GUID key_id = GetGUIDFromString(decrypt_config->key_id());
+  GUID key_id = GetGUIDFromString(decrypt_config.key_id());
   RETURN_IF_FAILED(mf_sample->SetGUID(MFSampleExtension_Content_KeyID, key_id));
   *last_key_id = key_id;
 
   // IV
-  size_t iv_length = decrypt_config->iv().length();
+  size_t iv_length = decrypt_config.iv().length();
   DCHECK(iv_length == 16);
   // For cases where a 16-byte IV is specified, but the low 8-bytes are all
   // 0, ensure that a 8-byte IV is set (this allows HWDRM to work on
   // hardware / drivers which don't support CTR decryption with 16-byte IVs)
-  if (AreLowIVBytesZero(decrypt_config->iv()))
+  if (AreLowIVBytesZero(decrypt_config.iv()))
     iv_length = 8;
   RETURN_IF_FAILED(mf_sample->SetBlob(
       MFSampleExtension_Encryption_SampleID,
-      reinterpret_cast<const uint8_t*>(decrypt_config->iv().c_str()),
+      reinterpret_cast<const uint8_t*>(decrypt_config.iv().c_str()),
       iv_length));
 
   // Handle subsample entries.
-  const auto& subsample_entries = decrypt_config->subsamples();
+  const auto& subsample_entries = decrypt_config.subsamples();
   if (subsample_entries.empty())
     return S_OK;
 
@@ -381,7 +379,10 @@ HRESULT MediaFoundationStreamWrapper::QueueFormatChangedEvent() {
 void MediaFoundationStreamWrapper::OnDemuxerStreamRead(
     DemuxerStream::Status status,
     scoped_refptr<DecoderBuffer> buffer) {
-  DVLOG_FUNC(3);
+  DVLOG_FUNC(3) << "status=" << status
+                << (buffer ? " buffer=" + buffer->AsHumanReadableString(true)
+                           : "");
+
   {
     base::AutoLock auto_lock(lock_);
     DCHECK(pending_stream_read_);
@@ -465,9 +466,9 @@ HRESULT MediaFoundationStreamWrapper::GenerateSampleFromDecoderBuffer(
 
   RETURN_IF_FAILED(mf_sample->AddBuffer(mf_buffer.Get()));
 
-  if (IsEncrypted()) {
-    RETURN_IF_FAILED(
-        AddEncryptAttributes(*buffer, mf_sample.Get(), &last_key_id_));
+  if (buffer->decrypt_config()) {
+    RETURN_IF_FAILED(AddEncryptAttributes(*(buffer->decrypt_config()),
+                                          mf_sample.Get(), &last_key_id_));
   }
 
   RETURN_IF_FAILED(TransformSample(mf_sample));

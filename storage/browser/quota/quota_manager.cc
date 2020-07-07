@@ -1575,15 +1575,15 @@ void QuotaManager::DidDumpOriginInfoTableForHistogram(
 
     // Ignore stale database entries. If there is no map entry, the origin's
     // data has been deleted.
-    auto found = usage_map.find(info.origin);
-    if (found == usage_map.end() || found->second == 0)
+    auto it = usage_map.find(info.origin);
+    if (it == usage_map.end() || it->second == 0)
       continue;
 
     base::TimeDelta age = now - std::max(info.last_access_time,
                                          info.last_modified_time);
     UMA_HISTOGRAM_COUNTS_1000("Quota.AgeOfOriginInDays", age.InDays());
 
-    int64_t kilobytes = std::max(found->second / INT64_C(1024), INT64_C(1));
+    int64_t kilobytes = std::max(it->second / INT64_C(1024), INT64_C(1));
     base::Histogram::FactoryGet(
         "Quota.AgeOfDataInDays", 1, 1000, 50,
         base::HistogramBase::kUmaTargetedHistogramFlag)->

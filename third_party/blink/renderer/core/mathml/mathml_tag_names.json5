@@ -60,6 +60,14 @@
       interfaceName: "MathMLScriptsElement",
     },
     {
+      name: "mmultiscripts",
+      interfaceName: "MathMLScriptsElement",
+    },
+    {
+      name: "mprescripts",
+      interfaceName: "MathMLRowElement",
+    },
+    {
       name: "mi",
       interfaceName: "MathMLElement",
     },
@@ -109,6 +117,10 @@
     },
     {
       name: "semantics",
+      interfaceName: "MathMLRowElement",
+    },
+    {
+      name: "none",
       interfaceName: "MathMLRowElement",
     },
   ]

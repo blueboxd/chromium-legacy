@@ -867,7 +867,7 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
   // This may modify params.Url() (via the resource_request argument).
   Context().PopulateResourceRequest(
       resource_type, params.GetClientHintsPreferences(),
-      params.GetResourceWidth(), resource_request, options.initiator_info);
+      params.GetResourceWidth(), resource_request, options);
 
   if (!params.Url().IsValid())
     return ResourceRequestBlockedReason::kOther;

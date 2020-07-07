@@ -289,7 +289,8 @@ public class ChildProcessConnection {
             }
         };
 
-        createBindings(sFallbackEnabled ? mFallbackServiceName : mServiceName);
+        createBindings(sFallbackEnabled && mFallbackServiceName != null ? mFallbackServiceName
+                                                                        : mServiceName);
     }
 
     private void createBindings(ComponentName serviceName) {

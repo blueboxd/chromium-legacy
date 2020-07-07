@@ -15,6 +15,7 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/nearby_sharing/nearby_connections_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_constants.h"
+#include "chrome/browser/nearby_sharing/nearby_notification_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_process_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_service.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -111,6 +112,7 @@ class NearbySharingServiceImpl
   std::unique_ptr<FastInitiationManager> fast_initiation_manager_;
   StatusCodesCallback register_send_surface_callback_;
   StatusCodesCallback unregister_send_surface_callback_;
+  NearbyNotificationManager nearby_notification_manager_;
 
   // A list of foreground receivers.
   base::ObserverList<TransferUpdateCallback> foreground_receive_callbacks_;

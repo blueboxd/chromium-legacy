@@ -13,7 +13,6 @@ import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
-import org.chromium.base.Log;
 import org.chromium.base.PackageManagerUtils;
 import org.chromium.ui.base.PageTransition;
 
@@ -24,7 +23,6 @@ import java.util.List;
  * This class contains the logic to determine effective navigation/redirect.
  */
 public class RedirectHandler {
-    private static final String TAG = "RedirectHandler";
     /**
      * An invalid entry index.
      */
@@ -150,30 +148,15 @@ public class RedirectHandler {
         boolean isNewLoadingStartedByUser = false;
         boolean isFromIntent = pageTransitionCore == PageTransition.LINK
                 && (pageTransType & PageTransition.FROM_API) != 0;
-
-        Log.i(TAG,
-                "updateNewUrlLoading called (pageTransType: " + pageTransType
-                        + ", isRedirect: " + isRedirect + ", hasUserGesture: " + hasUserGesture
-                        + ", lastUserInteractionTime: " + lastUserInteractionTime
-                        + ", lastCommittedEntryIndex: " + lastCommittedEntryIndex + ")");
-        Log.i(TAG,
-                " - prevNewUrlLoadingTime: " + prevNewUrlLoadingTime
-                        + ", mLastNewUrlLoadingTime: " + mLastNewUrlLoadingTime);
-        Log.i(TAG,
-                " - pageTransitionCore: " + pageTransitionCore + ", isFromIntent: " + isFromIntent);
         if (!isRedirect) {
             if ((pageTransType & PageTransition.FORWARD_BACK) != 0) {
                 isNewLoadingStartedByUser = true;
-                Log.i(TAG, "- isNewLoadingStartedByUser: forward/back navigation");
             } else if (pageTransitionCore != PageTransition.LINK
                     && pageTransitionCore != PageTransition.FORM_SUBMIT) {
                 isNewLoadingStartedByUser = true;
-                Log.i(TAG, "- isNewLoadingStartedByUser: not a link or form submission");
             } else if (prevNewUrlLoadingTime == INVALID_TIME || isFromIntent
                     || lastUserInteractionTime > prevNewUrlLoadingTime) {
                 isNewLoadingStartedByUser = true;
-                Log.i(TAG,
-                        "- isNewLoadingStartedByUser: first load, from intent or new user gesture");
             }
         }
 
@@ -181,22 +164,17 @@ public class RedirectHandler {
             // Updates mInitialNavigationType for a new loading started by a user's gesture.
             if (isFromIntent && mInitialIntent != null) {
                 mInitialNavigationType = NAVIGATION_TYPE_FROM_INTENT;
-                Log.i(TAG, " - mInitialNavigationType: FROM_INTENT");
             } else {
                 clearIntentHistory();
                 if (pageTransitionCore == PageTransition.TYPED) {
                     mInitialNavigationType = NAVIGATION_TYPE_FROM_USER_TYPING;
-                    Log.i(TAG, " - mInitialNavigationType: USER_TYPING");
                 } else if (pageTransitionCore == PageTransition.RELOAD
                         || (pageTransType & PageTransition.FORWARD_BACK) != 0) {
                     mInitialNavigationType = NAVIGATION_TYPE_FROM_RELOAD;
-                    Log.i(TAG, " - mInitialNavigationType: RELOAD");
                 } else if (pageTransitionCore == PageTransition.LINK && !hasUserGesture) {
                     mInitialNavigationType = NAVIGATION_TYPE_FROM_LINK_WITHOUT_USER_GESTURE;
-                    Log.i(TAG, " - mInitialNavigationType: LINK_WITHOUT_USER_GESTURE");
                 } else {
                     mInitialNavigationType = NAVIGATION_TYPE_OTHER;
-                    Log.i(TAG, " - mInitialNavigationType: OTHER");
                 }
             }
             mIsOnEffectiveRedirectChain = false;
@@ -205,9 +183,6 @@ public class RedirectHandler {
         } else if (mInitialNavigationType != NAVIGATION_TYPE_NONE) {
             // Redirect chain starts from the second url loading.
             mIsOnEffectiveRedirectChain = true;
-            Log.i(TAG, " - mIsOnEffectiveRedirectChain: true");
-        } else {
-            Log.i(TAG, " - no updates");
         }
     }
 

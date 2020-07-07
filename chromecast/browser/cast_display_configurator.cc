@@ -189,8 +189,10 @@ void CastDisplayConfigurator::OnDisplaysAcquired(
                  RotationFromPanelOrientation(display_->panel_orientation()));
   }
 
+  display::DisplayConfigurationParams display_config_params(
+      display_->display_id(), origin, display_->native_mode());
   delegate_->Configure(
-      *display_, display_->native_mode(), origin,
+      display_config_params,
       base::BindRepeating(&CastDisplayConfigurator::OnDisplayConfigured,
                           weak_factory_.GetWeakPtr(), display_,
                           display_->native_mode(), origin));

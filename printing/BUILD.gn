@@ -166,7 +166,7 @@ component("printing") {
       ]
     }
 
-    libs = [
+    frameworks = [
       "AppKit.framework",
       "QuartzCore.framework",
       "ApplicationServices.framework",

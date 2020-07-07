@@ -7,6 +7,7 @@ import 'chrome://resources/polymer/v3_0/iron-location/iron-location.js';
 import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
 import './logging_tab.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {NearbyLogsBrowserProxy} from './nearby_logs_browser_proxy.js';
 
 Polymer({
   is: 'nearby-internals',
@@ -34,6 +35,7 @@ Polymer({
       value: () => ['Logs'],
       readonly: true,
     },
+
   },
 
   /**

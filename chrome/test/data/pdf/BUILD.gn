@@ -11,7 +11,11 @@ js_type_check("closure_compile") {
                     "js_module_root=../../chrome/test/data/webui/",
                     "js_module_root=./gen/chrome/test/data/webui/",
                   ]
-  deps = [ ":gesture_detector_test" ]
+  deps = [
+    ":download_controls_test",
+    ":gesture_detector_test",
+    ":test_util",
+  ]
 }
 
 js_library("gesture_detector_test") {
@@ -20,4 +24,24 @@ js_library("gesture_detector_test") {
     "//ui/webui/resources/js/cr:event_target.m",
   ]
   externs_list = [ "$externs_path/test.js" ]
+}
+
+js_library("download_controls_test") {
+  deps = [
+    ":test_util",
+    "//chrome/browser/resources/pdf:constants",
+    "//chrome/browser/resources/pdf/elements:viewer-download-controls",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu.m",
+    "//ui/webui/resources/cr_elements/cr_icon_button:cr_icon_button.m",
+    "//ui/webui/resources/js:util.m",
+  ]
+  externs_list = [ "$externs_path/test.js" ]
+}
+
+js_library("test_util") {
+  deps = [
+    "//chrome/browser/resources/pdf:viewport",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
 }

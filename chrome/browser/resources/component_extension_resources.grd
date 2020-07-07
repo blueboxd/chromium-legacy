@@ -119,9 +119,11 @@
         <include name="IDR_PDF_BROWSER_API_JS" file="pdf/browser_api.js" type="BINDATA" />
         <include name="IDR_PDF_METRICS_JS" file="pdf/metrics.js" type="BINDATA" />
 
+        <include name="IDR_PDF_ELEMENTS_SHARED_CSS_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/shared-css.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_PDF_SHARED_VARS_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/shared-vars.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_PDF_ICONS_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/icons.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_BOOKMARK_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/viewer-bookmark.js" use_base_dir="false" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_DOWNLOADS_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/viewer-download-controls.js" use_base_dir="false" type="BINDATA"/>
         <include name="IDR_PDF_VIEWER_ERROR_SCREEN_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/viewer-error-screen.js" use_base_dir="false" type="BINDATA" />
         <if expr="chromeos">
           <include name="IDR_PDF_VIEWER_INK_CONTROLLER_JS" file="pdf/ink_controller.js" type="BINDATA" />

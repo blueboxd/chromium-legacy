@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "ui/display/manager/display_util.h"
+#include "ui/display/types/display_configuration_params.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/native_display_delegate.h"
 
@@ -129,8 +130,10 @@ void ConfigureDisplaysTask::Run() {
       histogram->Add(request->mode ? std::round(request->mode->refresh_rate())
                                    : 0);
 
+      display::DisplayConfigurationParams display_config_params(
+          request->display->display_id(), request->origin, request->mode);
       delegate_->Configure(
-          *request->display, request->mode, request->origin,
+          display_config_params,
           base::BindOnce(&ConfigureDisplaysTask::OnConfigured,
                          weak_ptr_factory_.GetWeakPtr(), index));
     }

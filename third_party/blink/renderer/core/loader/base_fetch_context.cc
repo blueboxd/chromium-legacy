@@ -118,7 +118,8 @@ BaseFetchContext::CheckCSPForRequestInternal(
     return base::nullopt;
   }
 
-  const ContentSecurityPolicy* csp = GetContentSecurityPolicy();
+  const ContentSecurityPolicy* csp =
+      GetContentSecurityPolicyForWorld(options.world.get());
   if (csp &&
       !csp->AllowRequest(request_context, request_destination, url,
                          options.content_security_policy_nonce,

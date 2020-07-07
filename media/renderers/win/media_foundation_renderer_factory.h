@@ -32,7 +32,8 @@ class MEDIA_EXPORT MediaFoundationRendererFactory : public RendererFactory {
       const gfx::ColorSpace& target_color_space) final;
 
  private:
-  uint64_t next_playback_element_id_ = 0;
+  // Zero is treated as invalid playback element ID by MediaFoundationRenderer.
+  uint64_t next_playback_element_id_ = 1;
 };
 
 }  // namespace media

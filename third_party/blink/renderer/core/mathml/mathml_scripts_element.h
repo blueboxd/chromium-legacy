@@ -11,7 +11,15 @@ namespace blink {
 
 class Document;
 
-enum class MathScriptType { kSub, kSuper, kSubSup, kUnder, kOver, kUnderOver };
+enum class MathScriptType {
+  kSub,
+  kSuper,
+  kSubSup,
+  kMultiscripts,
+  kUnder,
+  kOver,
+  kUnderOver
+};
 
 class CORE_EXPORT MathMLScriptsElement : public MathMLElement {
  public:
@@ -39,7 +47,8 @@ struct DowncastTraits<MathMLScriptsElement> {
            mathml_element.HasTagName(mathml_names::kMunderoverTag) ||
            mathml_element.HasTagName(mathml_names::kMsubTag) ||
            mathml_element.HasTagName(mathml_names::kMsupTag) ||
-           mathml_element.HasTagName(mathml_names::kMsubsupTag);
+           mathml_element.HasTagName(mathml_names::kMsubsupTag) ||
+           mathml_element.HasTagName(mathml_names::kMmultiscriptsTag);
   }
 };
 

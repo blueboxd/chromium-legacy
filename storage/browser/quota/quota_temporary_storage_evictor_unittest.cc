@@ -108,9 +108,9 @@ class MockQuotaEvictionHandler : public QuotaEvictionHandler {
   // Simulates an access to |origin|.  It reorders the internal LRU list.
   // It internally uses AddOrigin().
   void AccessOrigin(const url::Origin& origin) {
-    const auto& found = origins_.find(origin);
-    EXPECT_TRUE(origins_.end() != found);
-    AddOrigin(origin, found->second);
+    const auto& it = origins_.find(origin);
+    EXPECT_TRUE(origins_.end() != it);
+    AddOrigin(origin, it->second);
   }
 
   // Simulates adding or overwriting the |origin| to the internal origin set

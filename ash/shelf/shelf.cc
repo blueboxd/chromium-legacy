@@ -125,6 +125,7 @@ class HotseatWidgetAnimationMetricsReporter {
   }
 
   metrics_util::ReportCallback GetReportCallback(HotseatState target_state) {
+    DCHECK_NE(target_state, HotseatState::kNone);
     return metrics_util::ForSmoothness(base::BindRepeating(
         &HotseatWidgetAnimationMetricsReporter::ReportSmoothness,
         weak_ptr_factory_.GetWeakPtr(), target_state));

@@ -465,6 +465,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     @Override
     protected void initializeStartupMetrics() {
+        // Initialize the activity session tracker as early as possible so that
+        // it can start background tasks.
+        ChromeActivitySessionTracker.getInstance();
         mActivityTabStartupMetricsTracker =
                 new ActivityTabStartupMetricsTracker(mTabModelSelectorSupplier);
     }

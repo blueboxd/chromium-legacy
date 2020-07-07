@@ -93,9 +93,6 @@ class OmniboxResultView : public views::View,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // Removes the shown |match_| from history, if possible.
-  void RemoveSuggestion() const;
-
   // Helper to emit accessibility events (may only emit if conditions are met).
   void EmitTextChangedAccessiblityEvent();
   void EmitSelectedChildrenChangedAccessibilityEvent();
@@ -120,11 +117,6 @@ class OmniboxResultView : public views::View,
   // Updates the highlight state of the row, as well as conditionally shows
   // controls that are only visible on row hover.
   void UpdateHoverState();
-
-  // Call model's OpenMatch() with the selected index and provided disposition
-  // and timestamp the match was selected (base::TimeTicks() if unknown).
-  void OpenMatch(WindowOpenDisposition disposition,
-                 base::TimeTicks match_selection_timestamp);
 
   // Sets the visibility of the |remove_suggestion_button_| based on the current
   // state.

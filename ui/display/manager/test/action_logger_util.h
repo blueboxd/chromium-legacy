@@ -10,17 +10,13 @@
 #include <string>
 #include <vector>
 
+#include "ui/display/types/display_configuration_params.h"
 #include "ui/display/types/display_constants.h"
-
-namespace gfx {
-class Point;
-}  // namespace gfx
 
 namespace display {
 
 struct GammaRampRGBEntry;
-class DisplayMode;
-class DisplaySnapshot;
+struct DisplayConfigurationParams;
 
 namespace test {
 
@@ -34,13 +30,10 @@ const char kRelinquishDisplayControl[] = "relinquish";
 // actions were requested.
 const char kNoActions[] = "";
 
-std::string DisplaySnapshotToString(const DisplaySnapshot& output);
-
 // Returns a string describing a TestNativeDisplayDelegate::Configure()
 // call.
-std::string GetCrtcAction(const DisplaySnapshot& output,
-                          const DisplayMode* mode,
-                          const gfx::Point& origin);
+std::string GetCrtcAction(
+    const display::DisplayConfigurationParams& display_config_params);
 
 // Returns a string describing a TestNativeDisplayDelegate::SetHDCPState() call.
 std::string GetSetHDCPStateAction(int64_t display_id, HDCPState state);

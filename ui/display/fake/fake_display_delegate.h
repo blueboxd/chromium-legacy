@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
-#include "ui/display/fake/fake_display_delegate.h"
 #include "ui/display/fake/fake_display_export.h"
 #include "ui/display/types/fake_display_controller.h"
 #include "ui/display/types/native_display_delegate.h"
@@ -84,10 +83,9 @@ class FAKE_DISPLAY_EXPORT FakeDisplayDelegate : public NativeDisplayDelegate,
   void TakeDisplayControl(DisplayControlCallback callback) override;
   void RelinquishDisplayControl(DisplayControlCallback callback) override;
   void GetDisplays(GetDisplaysCallback callback) override;
-  void Configure(const DisplaySnapshot& output,
-                 const DisplayMode* mode,
-                 const gfx::Point& origin,
-                 ConfigureCallback callback) override;
+  void Configure(
+      const display::DisplayConfigurationParams& display_config_params,
+      ConfigureCallback callback) override;
   void GetHDCPState(const DisplaySnapshot& output,
                     GetHDCPStateCallback callback) override;
   void SetHDCPState(const DisplaySnapshot& output,

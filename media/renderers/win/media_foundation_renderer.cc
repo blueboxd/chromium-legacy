@@ -146,9 +146,9 @@ HRESULT MediaFoundationRenderer::CreateMediaEngine(
       BindToCurrentLoop(base::BindRepeating(
           &MediaFoundationRenderer::OnPlaybackEnded, weak_this)),
       BindToCurrentLoop(base::BindRepeating(
-          &MediaFoundationRenderer::OnBufferingStateChanged, weak_this)),
+          &MediaFoundationRenderer::OnBufferingStateChange, weak_this)),
       BindToCurrentLoop(base::BindRepeating(
-          &MediaFoundationRenderer::OnVideoNaturalSizeChanged, weak_this)),
+          &MediaFoundationRenderer::OnVideoNaturalSizeChange, weak_this)),
       BindToCurrentLoop(base::BindRepeating(
           &MediaFoundationRenderer::OnTimeUpdate, weak_this))));
 
@@ -514,7 +514,7 @@ void MediaFoundationRenderer::SendStatistics() {
   PipelineStatistics new_stats = {};
   HRESULT hr = PopulateStatistics(new_stats);
   if (FAILED(hr)) {
-    DVLOG(3) << "Failed to populate pipeline stats: " << PrintHr(hr);
+    DVLOG(3) << "Unable to populate pipeline stats: " << PrintHr(hr);
     return;
   }
 
@@ -547,12 +547,14 @@ void MediaFoundationRenderer::SetVolume(float volume) {
 }
 
 base::TimeDelta MediaFoundationRenderer::GetMediaTime() {
-// GetCurrentTime is expaned as GetTickCount in base/win/windows_types.h
+// GetCurrentTime is expanded as GetTickCount in base/win/windows_types.h
 #undef GetCurrentTime
   double current_time = mf_media_engine_->GetCurrentTime();
 // Restore macro definition.
 #define GetCurrentTime() GetTickCount()
-  return base::TimeDelta::FromSecondsD(current_time);
+  auto media_time = base::TimeDelta::FromSecondsD(current_time);
+  DVLOG_FUNC(3) << "media_time=" << media_time;
+  return media_time;
 }
 
 void MediaFoundationRenderer::OnPlaybackError(PipelineStatus status) {
@@ -569,7 +571,7 @@ void MediaFoundationRenderer::OnPlaybackEnded() {
   StopSendingStatistics();
 }
 
-void MediaFoundationRenderer::OnBufferingStateChanged(
+void MediaFoundationRenderer::OnBufferingStateChange(
     BufferingState state,
     BufferingStateChangeReason reason) {
   DVLOG_FUNC(2);
@@ -585,10 +587,11 @@ void MediaFoundationRenderer::OnBufferingStateChanged(
     return;
   }
 
+  DVLOG_FUNC(2) << "state=" << state << ", reason=" << reason;
   renderer_client_->OnBufferingStateChange(state, reason);
 }
 
-void MediaFoundationRenderer::OnVideoNaturalSizeChanged() {
+void MediaFoundationRenderer::OnVideoNaturalSizeChange() {
   DVLOG_FUNC(2);
 
   const bool has_video = mf_media_engine_->HasVideo();
@@ -636,8 +639,6 @@ void MediaFoundationRenderer::OnVideoNaturalSizeChanged() {
   return;
 }
 
-void MediaFoundationRenderer::OnTimeUpdate() {
-  DVLOG_FUNC(3) << "media_time=" << GetMediaTime();
-}
+void MediaFoundationRenderer::OnTimeUpdate() {}
 
 }  // namespace media

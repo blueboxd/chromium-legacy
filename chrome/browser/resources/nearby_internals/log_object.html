@@ -1,0 +1,45 @@
+<style>
+  :host {
+    --large-font-size: 120%;
+  }
+
+  .warning-log {
+    background-color: rgb(255, 252, 239);
+    color: rgb(49, 34, 0);
+    font-size: var(--large-font-size);
+  }
+
+  .error-log {
+    background-color: rgb(255, 241, 241);
+    color: rgb(239, 0, 0);
+    font-size: var(--large-font-size);
+  }
+
+  #item-metadata {
+    color: #888;
+    display: flex;
+    font-size: 10px;
+    margin-bottom: 4px;
+    padding: 6px;
+  }
+
+  #flex {
+    flex: 1;
+  }
+
+  #text {
+    display: inline-block;
+    margin: 3px;
+    padding: 5px;
+    text-align: left;
+    width: 100%;
+  }
+</style>
+<div id="item" severity="[[item.severity]]">
+  <p id="text">[[item.text]]</p>
+  <div id="item-metadata">
+    <span>[[item.time]]</span>
+    <div id="flex"></div>
+    <span>[[item.file]]:[[item.line]]</span>
+  </div>
+</div>

@@ -38,7 +38,7 @@ namespace cc {
 class EventMetrics;
 class ScrollElasticityHelper;
 
-enum PointerResultType { kUnhandled = 0, kScrollbarScroll };
+enum class PointerResultType { kUnhandled = 0, kScrollbarScroll };
 
 // These enum values are reported in UMA. So these values should never be
 // removed or changed.
@@ -53,7 +53,7 @@ struct CC_EXPORT InputHandlerPointerResult {
   InputHandlerPointerResult() = default;
   // Tells what type of processing occurred in the input handler as a result of
   // the pointer event.
-  PointerResultType type = kUnhandled;
+  PointerResultType type = PointerResultType::kUnhandled;
 
   // Tells what scroll_units should be used.
   ui::ScrollGranularity scroll_units =
@@ -128,7 +128,7 @@ class CC_EXPORT InputHandler {
  public:
   // Note these are used in a histogram. Do not reorder or delete existing
   // entries.
-  enum ScrollThread {
+  enum class ScrollThread {
     SCROLL_ON_MAIN_THREAD = 0,
     SCROLL_ON_IMPL_THREAD,
     SCROLL_IGNORED,
@@ -150,7 +150,7 @@ class CC_EXPORT InputHandler {
         : thread(thread),
           main_thread_scrolling_reasons(main_thread_scrolling_reasons),
           needs_main_thread_hit_test(needs_main_thread_hit_test) {}
-    ScrollThread thread = SCROLL_ON_IMPL_THREAD;
+    ScrollThread thread = ScrollThread::SCROLL_ON_IMPL_THREAD;
     uint32_t main_thread_scrolling_reasons =
         MainThreadScrollingReason::kNotScrollingOnMain;
     bool bubble = false;

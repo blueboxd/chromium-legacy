@@ -101,6 +101,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/detachable_use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loading_log.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
 #include "third_party/blink/renderer/platform/loader/fetch/unique_identifier.h"
@@ -681,14 +682,15 @@ void FrameFetchContext::PopulateResourceRequest(
     const ClientHintsPreferences& hints_preferences,
     const FetchParameters::ResourceWidth& resource_width,
     ResourceRequest& request,
-    const FetchInitiatorInfo& initiator_info) {
+    const ResourceLoaderOptions& options) {
   if (!GetResourceFetcherProperties().IsDetached())
-    probe::SetDevToolsIds(Probe(), request, initiator_info);
+    probe::SetDevToolsIds(Probe(), request, options.initiator_info);
 
   ModifyRequestForCSP(request);
   AddClientHintsIfNecessary(hints_preferences, resource_width, request);
 
-  const ContentSecurityPolicy* csp = GetContentSecurityPolicy();
+  const ContentSecurityPolicy* csp =
+      GetContentSecurityPolicyForWorld(options.world.get());
   if (csp && csp->ShouldSendCSPHeader(type))
     // TODO(crbug.com/993769): Test if this header returns duplicated values
     // (i.e. "CSP: active, active") on asynchronous "stale-while-revalidate"
@@ -751,6 +753,20 @@ void FrameFetchContext::DispatchDidBlockRequest(
     return;
   probe::DidBlockRequest(Probe(), resource_request, document_loader_, Url(),
                          fetch_initiator_info, blocked_reason, resource_type);
+}
+
+const ContentSecurityPolicy*
+FrameFetchContext::GetContentSecurityPolicyForWorld(
+    const DOMWrapperWorld* world) const {
+  if (GetResourceFetcherProperties().IsDetached())
+    return frozen_state_->content_security_policy;
+
+  // If a valid |world| is not specified, use the CSP this context is bound to.
+  if (!world)
+    return GetContentSecurityPolicy();
+
+  return document_->GetExecutionContext()->GetContentSecurityPolicyForWorld(
+      *world);
 }
 
 bool FrameFetchContext::ShouldBypassMainWorldCSP() const {

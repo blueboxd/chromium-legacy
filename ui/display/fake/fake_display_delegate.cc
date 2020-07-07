@@ -37,9 +37,9 @@ constexpr base::TimeDelta kConfigureDisplayDelay =
 
 }  // namespace
 
-FakeDisplayDelegate::FakeDisplayDelegate() {}
+FakeDisplayDelegate::FakeDisplayDelegate() = default;
 
-FakeDisplayDelegate::~FakeDisplayDelegate() {}
+FakeDisplayDelegate::~FakeDisplayDelegate() = default;
 
 int64_t FakeDisplayDelegate::AddDisplay(const gfx::Size& display_size) {
   DCHECK(!display_size.IsEmpty());
@@ -122,23 +122,30 @@ void FakeDisplayDelegate::GetDisplays(GetDisplaysCallback callback) {
   std::move(callback).Run(displays);
 }
 
-void FakeDisplayDelegate::Configure(const DisplaySnapshot& output,
-                                    const DisplayMode* mode,
-                                    const gfx::Point& origin,
-                                    ConfigureCallback callback) {
+void FakeDisplayDelegate::Configure(
+    const display::DisplayConfigurationParams& display_config_params,
+    ConfigureCallback callback) {
   bool configure_success = false;
 
-  if (!mode) {
-    // This is a request to turn off the display.
-    configure_success = true;
-  } else {
-    // Check that |mode| is appropriate for the display snapshot.
-    for (const auto& existing_mode : output.modes()) {
-      if (existing_mode.get() == mode) {
-        configure_success = true;
-        break;
+  if (display_config_params.mode.has_value()) {
+    // Find display snapshot of display ID.
+    auto snapshot = find_if(
+        displays_.begin(), displays_.end(),
+        [&display_config_params](std::unique_ptr<DisplaySnapshot>& snapshot) {
+          return snapshot->display_id() == display_config_params.id;
+        });
+    if (snapshot != displays_.end()) {
+      // Check that config mode is appropriate for the display snapshot.
+      for (const auto& existing_mode : snapshot->get()->modes()) {
+        if (existing_mode.get() == display_config_params.mode.value().get()) {
+          configure_success = true;
+          break;
+        }
       }
     }
+  } else {
+    // This is a request to turn off the display.
+    configure_success = true;
   }
 
   configure_callbacks_.push(

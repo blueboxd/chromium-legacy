@@ -45,6 +45,8 @@
 using perfetto::protos::pbzero::ChromeLatencyInfo;
 using perfetto::protos::pbzero::TrackEvent;
 
+using ScrollThread = cc::InputHandler::ScrollThread;
+
 namespace blink {
 namespace {
 
@@ -1024,7 +1026,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
   scroll_sequence_ignored_ = false;
   in_inertial_scrolling_ = false;
   switch (scroll_status.thread) {
-    case cc::InputHandler::SCROLL_ON_IMPL_THREAD:
+    case ScrollThread::SCROLL_ON_IMPL_THREAD:
       TRACE_EVENT_INSTANT0("input", "Handle On Impl", TRACE_EVENT_SCOPE_THREAD);
       handling_gesture_on_impl_thread_ = true;
       if (input_handler_->IsCurrentlyScrollingViewport())
@@ -1035,12 +1037,12 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
       else
         result = DID_HANDLE;
       break;
-    case cc::InputHandler::SCROLL_UNKNOWN:
-    case cc::InputHandler::SCROLL_ON_MAIN_THREAD:
+    case ScrollThread::SCROLL_UNKNOWN:
+    case ScrollThread::SCROLL_ON_MAIN_THREAD:
       TRACE_EVENT_INSTANT0("input", "Handle On Main", TRACE_EVENT_SCOPE_THREAD);
       result = DID_NOT_HANDLE;
       break;
-    case cc::InputHandler::SCROLL_IGNORED:
+    case ScrollThread::SCROLL_IGNORED:
       TRACE_EVENT_INSTANT0("input", "Ignore Scroll", TRACE_EVENT_SCOPE_THREAD);
       scroll_sequence_ignored_ = true;
       result = DROP_EVENT;

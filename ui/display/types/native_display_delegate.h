@@ -10,20 +10,17 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "ui/display/types/display_configuration_params.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/types/display_types_export.h"
 #include "ui/display/types/fake_display_controller.h"
 
-namespace gfx {
-class Point;
-}
-
 namespace display {
-class DisplayMode;
 class DisplaySnapshot;
 class NativeDisplayObserver;
 
 struct GammaRampRGBEntry;
+struct DisplayConfigurationParams;
 
 using GetDisplaysCallback =
     base::OnceCallback<void(const std::vector<DisplaySnapshot*>&)>;
@@ -58,10 +55,9 @@ class DISPLAY_TYPES_EXPORT NativeDisplayDelegate {
   // the display to |origin| in the framebuffer. |mode| can be NULL, which
   // represents disabling the display. The callback will return the status of
   // the operation.
-  virtual void Configure(const DisplaySnapshot& output,
-                         const DisplayMode* mode,
-                         const gfx::Point& origin,
-                         ConfigureCallback callback) = 0;
+  virtual void Configure(
+      const display::DisplayConfigurationParams& display_config_params,
+      ConfigureCallback callback) = 0;
 
   // Gets HDCP state of output.
   virtual void GetHDCPState(const DisplaySnapshot& output,

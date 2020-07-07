@@ -126,10 +126,11 @@ constexpr TaskType kAllFrameTaskTypes[] = {
     TaskType::kInternalFrameLifecycleControl,
     TaskType::kInternalTranslation,
     TaskType::kInternalInspector,
-    TaskType::kInternalNavigationAssociatedUnfreezable};
+    TaskType::kInternalNavigationAssociatedUnfreezable,
+    TaskType::kInternalHighPriorityLocalFrame};
 
 static_assert(
-    static_cast<int>(TaskType::kCount) == 71,
+    static_cast<int>(TaskType::kCount) == 72,
     "When adding a TaskType, make sure that kAllFrameTaskTypes is updated.");
 
 void AppendToVectorTestTask(Vector<String>* vector, String value) {
@@ -301,13 +302,12 @@ class FrameSchedulerImplTest : public testing::Test {
 
   scoped_refptr<MainThreadTaskQueue> GetTaskQueue(
       MainThreadTaskQueue::QueueTraits queue_traits) {
-    return frame_scheduler_->FrameTaskQueueControllerForTest()
-        ->GetTaskQueue(queue_traits);
+    return frame_scheduler_->FrameTaskQueueControllerForTest()->GetTaskQueue(
+        queue_traits);
   }
 
   scoped_refptr<TaskQueue> ThrottleableTaskQueue() {
-    return GetTaskQueue(
-        FrameSchedulerImpl::ThrottleableTaskQueueTraits());
+    return GetTaskQueue(FrameSchedulerImpl::ThrottleableTaskQueueTraits());
   }
 
   scoped_refptr<TaskQueue> JavaScriptTimerTaskQueue() {
@@ -317,13 +317,11 @@ class FrameSchedulerImplTest : public testing::Test {
   }
 
   scoped_refptr<TaskQueue> LoadingTaskQueue() {
-    return GetTaskQueue(
-        FrameSchedulerImpl::LoadingTaskQueueTraits());
+    return GetTaskQueue(FrameSchedulerImpl::LoadingTaskQueueTraits());
   }
 
   scoped_refptr<TaskQueue> LoadingControlTaskQueue() {
-    return GetTaskQueue(
-        FrameSchedulerImpl::LoadingControlTaskQueueTraits());
+    return GetTaskQueue(FrameSchedulerImpl::LoadingControlTaskQueueTraits());
   }
 
   scoped_refptr<TaskQueue> DeferrableTaskQueue() {
@@ -339,8 +337,7 @@ class FrameSchedulerImplTest : public testing::Test {
   }
 
   scoped_refptr<TaskQueue> ForegroundOnlyTaskQueue() {
-    return GetTaskQueue(
-        FrameSchedulerImpl::ForegroundOnlyTaskQueueTraits());
+    return GetTaskQueue(FrameSchedulerImpl::ForegroundOnlyTaskQueueTraits());
   }
 
   scoped_refptr<MainThreadTaskQueue> GetTaskQueue(TaskType type) {

@@ -172,10 +172,9 @@ void BalancedMediaTaskRunnerTest::ScheduleTask() {
 
   bool may_run = context.media_task_runner->PostMediaTask(
       FROM_HERE,
-      base::Bind(&BalancedMediaTaskRunnerTest::Task,
-                 base::Unretained(this),
-                 task_runner_id,
-                 context.task_timestamp_list[context.task_index]),
+      base::BindOnce(&BalancedMediaTaskRunnerTest::Task, base::Unretained(this),
+                     task_runner_id,
+                     context.task_timestamp_list[context.task_index]),
       context.task_timestamp_list[context.task_index]);
   EXPECT_EQ(may_run, expected_may_run);
 

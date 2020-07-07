@@ -334,7 +334,10 @@ void LocalFrame::Init() {
           GetTaskRunner(blink::TaskType::kInternalDefault)));
   GetInterfaceRegistry()->AddAssociatedInterface(WTF::BindRepeating(
       &LocalFrame::BindToReceiver, WrapWeakPersistent(this)));
-
+  GetInterfaceRegistry()->AddInterface(
+      WTF::BindRepeating(&LocalFrame::BindToHighPriorityReceiver,
+                         WrapWeakPersistent(this)),
+      GetTaskRunner(blink::TaskType::kInternalHighPriorityLocalFrame));
   loader_.Init();
 }
 
@@ -2626,6 +2629,11 @@ void LocalFrame::BeforeUnload(bool is_reload, BeforeUnloadCallback callback) {
                           before_unload_end_time);
 }
 
+void LocalFrame::DispatchBeforeUnload(bool is_reload,
+                                      BeforeUnloadCallback callback) {
+  BeforeUnload(is_reload, std::move(callback));
+}
+
 void LocalFrame::MediaPlayerActionAtViewportPoint(
     const IntPoint& viewport_position,
     const blink::mojom::blink::MediaPlayerActionType type,
@@ -2942,6 +2950,13 @@ void LocalFrame::BindToMainFrameReceiver(
   frame->main_frame_receiver_.Bind(
       std::move(receiver),
       frame->GetTaskRunner(blink::TaskType::kInternalDefault));
+}
+
+void LocalFrame::BindToHighPriorityReceiver(
+    mojo::PendingReceiver<mojom::blink::HighPriorityLocalFrame> receiver) {
+  high_priority_frame_receiver_.Bind(
+      std::move(receiver),
+      GetTaskRunner(blink::TaskType::kInternalHighPriorityLocalFrame));
 }
 
 SpellChecker& LocalFrame::GetSpellChecker() const {

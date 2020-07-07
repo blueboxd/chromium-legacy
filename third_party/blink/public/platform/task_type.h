@@ -237,6 +237,9 @@ enum class TaskType : unsigned char {
   // Tasks used for find-in-page.
   kInternalFindInPage = 70,
 
+  // Tasks that come in on the HighPriorityLocalFrame interface.
+  kInternalHighPriorityLocalFrame = 71,
+
   ///////////////////////////////////////
   // The following task types are only for thread-local queues.
   ///////////////////////////////////////
@@ -261,7 +264,7 @@ enum class TaskType : unsigned char {
   kWorkerThreadTaskQueueV8 = 47,
   kWorkerThreadTaskQueueCompositor = 48,
 
-  kCount = 71,
+  kCount = 72,
 };
 
 }  // namespace blink

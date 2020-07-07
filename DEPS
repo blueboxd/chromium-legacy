@@ -198,7 +198,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'e7d651a2b780ccb84878ffd247948654f74ce5f1',
+  'v8_revision': '8221db0d87ca9ffa6ccd81ab38f2ad0a19c51e00',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -214,7 +214,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': 'afd27509974add1b4e4a962be0a30583b1735dfe',
+  'pdfium_revision': '5a61ad5add2496ef935137d36ab0d82463da1d0e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -265,7 +265,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '62283b083c51c04179c1f3681496a3ea58ab8461',
+  'devtools_frontend_revision': '85757b5481aff2945ca9f45c791ca1ef31b7ff13',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -317,7 +317,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'db34c78910773b9a5b092bf53bf5232582f1310e',
+  'dawn_revision': '9585c468a280736de56851dda8bb01c47fc217de',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -352,7 +352,7 @@ vars = {
   # revisions.
 
   # GN CIPD package version.
-  'gn_version': 'git_revision:b6203d186bff6b39ac25af6c1e80e1d3f96c949a',
+  'gn_version': 'git_revision:d585128cdaf3e6ff7bfd58641965e60c12618eb1',
 
   # Also, if you change these, update buildtools/DEPS too. Also update the
   # libc++ svn_revision in //buildtools/deps_revisions.gni.
@@ -896,7 +896,7 @@ deps = {
   },
 
   'src/third_party/ffmpeg':
-    Var('chromium_git') + '/chromium/third_party/ffmpeg.git' + '@' + '388ba367aad4c288ebe2ef382fd80c7abc32b2c8',
+    Var('chromium_git') + '/chromium/third_party/ffmpeg.git' + '@' + '15f6cfec63d094ad7852d57d71b548067c32bd7b',
 
   'src/third_party/flac':
     Var('chromium_git') + '/chromium/deps/flac.git' + '@' + 'af862024c8c8fa0ae07ced05e89013d881b00596',

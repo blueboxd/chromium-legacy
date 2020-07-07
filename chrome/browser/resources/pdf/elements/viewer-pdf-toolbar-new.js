@@ -8,7 +8,9 @@ import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/polymer/v3_0/paper-progress/paper-progress.js';
 
 import './icons.js';
+import './viewer-download-controls.js';
 import './viewer-page-selector.js';
+import './shared-css.js';
 
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -25,7 +27,9 @@ class ViewerPdfToolbarNewElement extends PolymerElement {
     return {
       docTitle: String,
       docLength: Number,
-      pageNo: Number,
+      hasEdits: Boolean,
+      hasEnteredAnnotationMode: Boolean,
+      isFormFieldFocused: Boolean,
 
       loadProgress: {
         type: Number,
@@ -36,6 +40,11 @@ class ViewerPdfToolbarNewElement extends PolymerElement {
         type: Boolean,
         reflectToAttribute: true,
       },
+
+      pageNo: Number,
+      pdfAnnotationsEnabled: Boolean,
+      pdfFormSaveEnabled: Boolean,
+      printingEnabled: Boolean,
     };
   }
 
@@ -50,6 +59,12 @@ class ViewerPdfToolbarNewElement extends PolymerElement {
   loadProgressChanged_() {
     this.loading_ = this.loadProgress < 100;
   }
+
+  /** @private */
+  onPrintClick_() {
+    this.dispatchEvent(new CustomEvent('print'));
+  }
 }
+
 customElements.define(
     ViewerPdfToolbarNewElement.is, ViewerPdfToolbarNewElement);

@@ -1,0 +1,13 @@
+<style include="pdf-shared"></style>
+<cr-icon-button id="download" iron-icon="cr:file-download"
+    on-click="onDownloadClick_" aria-label$="$i18n{tooltipDownload}"
+    aria-haspopup$="[[downloadHasPopup_]]"
+    title="$i18n{tooltipDownload}"></cr-icon-button>
+<cr-action-menu id="menu">
+  <button class="dropdown-item" on-click="onDownloadEditedClick_">
+    $i18n{downloadEdited}
+  </button>
+  <button class="dropdown-item" on-click="onDownloadOriginalClick_">
+    $i18n{downloadOriginal}
+  </button>
+</cr-action-menu>

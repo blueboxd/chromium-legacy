@@ -2,10 +2,162 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import './log_object.js';
+import './shared_style.js';
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {NearbyLogsBrowserProxy} from './nearby_logs_browser_proxy.js';
+import {LogMessage, Severity} from './types.js';
+
+/**
+ * Converts log message to string format for saved download file.
+ * @param {!LogMessage} log
+ * @return {string}
+ */
+function logToSavedString_(log) {
+  // Convert to string value for |line.severity|.
+  let severity;
+  switch (log.severity) {
+    case Severity.INFO:
+      severity = 'INFO';
+      break;
+    case Severity.WARNING:
+      severity = 'WARNING';
+      break;
+    case Severity.ERROR:
+      severity = 'ERROR';
+      break;
+    case Severity.VERBOSE:
+      severity = 'VERBOSE';
+      break;
+  }
+
+  // Reduce the file path to just the file name for logging simplification.
+  const file = log.file.substring(log.file.lastIndexOf('/') + 1);
+
+  return `[${log.time} ${severity} ${file} (${log.line})] ${log.text}`;
+}
 
 Polymer({
   is: 'logging-tab',
 
   _template: html`{__html_template__}`,
+
+  behaviors: [
+    WebUIListenerBehavior,
+  ],
+
+  properties: {
+
+    /**
+     * @private {!Array<!LogMessage>}
+     */
+    logList_: {
+      type: Array,
+      value: [],
+    },
+  },
+
+  /** @private {?NearbyLogsBrowserProxy}*/
+  browserProxy_: null,
+
+  /**
+   * Initialize |browserProxy_| and |logList_|.
+   * @override
+   */
+  created() {
+    this.browserProxy_ = NearbyLogsBrowserProxy.getInstance();
+  },
+
+  /**
+   * When the page is initialized, notify the C++ layer and load in the
+   * contents of its log buffer. Initialize WebUI Listeners.
+   * @override
+   */
+  attached() {
+    this.addWebUIListener(
+        'log-message-added', log => this.onLogMessageAdded_(log));
+    this.addWebUIListener(
+        'log-buffer-cleared', () => this.onWebUILogBufferCleared_());
+    this.browserProxy_.getLogMessages().then(
+        logs => this.parseAndAddLogs_(logs));
+  },
+
+  /**
+   * Clears javascript logs displayed, but c++ log buffer remains.
+   * @private
+   */
+  onClearLogsButtonClicked_() {
+    this.clearLogBuffer_();
+  },
+
+  /**
+   * Saves and downloads javascript logs that appear on the page.
+   * @private
+   */
+  onSaveLogsButtonClicked_() {
+    const blob = new Blob(
+        this.getSerializedLogStrings_(), {type: 'text/plain;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+
+    const anchorElement = document.createElement('a');
+    anchorElement.href = url;
+    anchorElement.download =
+        'nearby_internals_logs_' + new Date().toJSON() + '.txt';
+    document.body.appendChild(anchorElement);
+    anchorElement.click();
+
+    window.setTimeout(function() {
+      document.body.removeChild(anchorElement);
+      window.URL.revokeObjectURL(url);
+    }, 0);
+  },
+
+  /**
+   * Iterates through log messages in |logList_| and prepares them for download.
+   * @private
+   * @return
+   */
+  getSerializedLogStrings_() {
+    return this.logList_.map(logToSavedString_);
+  },
+
+  /**
+   * Adds a log message to the javascript log list displayed. Called from the
+   * C++ WebUI handler when a log message is added to the log buffer.
+   * @param {!Array<!LogMessage>} log
+   * @private
+   */
+  onLogMessageAdded_(log) {
+    this.parseAndAddLogs_([log]);
+  },
+
+  /**
+   * Called in response to WebUI handler clearing log buffer.
+   * @private
+   */
+  onWebUILogBufferCleared_() {
+    this.clearLogBuffer_();
+  },
+
+  /**
+   * Parses an array of log messages and adds to the javascript list.
+   * @param {!Array<!LogMessage>} logs
+   * @private
+   */
+  parseAndAddLogs_(logs) {
+    logs.unshift('logList_');
+    this.push.apply(this, logs);
+  },
+
+  /**
+   * Clears the javascript log buffer.
+   * @private
+   */
+  clearLogBuffer_() {
+    this.logList_ = [];
+  },
 });

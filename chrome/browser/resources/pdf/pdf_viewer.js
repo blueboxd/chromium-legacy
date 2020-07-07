@@ -140,6 +140,9 @@ class PDFViewerElement extends PDFViewerBaseElement {
       docLength_: Number,
       loadProgress_: Number,
       pageNo_: Number,
+      pdfFormSaveEnabled_: Boolean,
+      pdfAnnotationsEnabled_: Boolean,
+      printingEnabled_: Boolean,
     };
   }
 
@@ -176,6 +179,15 @@ class PDFViewerElement extends PDFViewerBaseElement {
 
     /** @private {boolean} */
     this.isFormFieldFocused_ = false;
+
+    /** @private {boolean} */
+    this.pdfAnnotationsEnabled_ = false;
+
+    /** @private {boolean} */
+    this.pdfFormSaveEnabled_ = false;
+
+    /** @private {boolean} */
+    this.printingEnabled_ = false;
 
     // Non-Polymer properties
 
@@ -618,6 +630,16 @@ class PDFViewerElement extends PDFViewerBaseElement {
     }
 
     this.currentController.viewportChanged();
+  }
+
+  /** @override */
+  handleStrings(strings) {
+    super.handleStrings(strings);
+
+    this.pdfAnnotationsEnabled_ =
+        loadTimeData.getBoolean('pdfAnnotationsEnabled');
+    this.pdfFormSaveEnabled_ = loadTimeData.getBoolean('pdfFormSaveEnabled');
+    this.printingEnabled_ = loadTimeData.getBoolean('printingEnabled');
   }
 
   /** @override */

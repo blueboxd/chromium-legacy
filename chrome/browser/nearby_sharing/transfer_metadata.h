@@ -43,18 +43,18 @@ class TransferMetadata {
   TransferMetadata(const TransferMetadata&);
   TransferMetadata& operator=(const TransferMetadata&);
 
-  Status status() { return status_; }
-  float progress() { return progress_; }
+  Status status() const { return status_; }
+  float progress() const { return progress_; }
 
   // Represents the UKey2 token from Nearby Connection. base::nullopt if no
   // UKey2 comparison is needed for this transfer.
-  const base::Optional<std::string>& token() { return token_; }
+  const base::Optional<std::string>& token() const { return token_; }
 
   // True if this |TransferMetadata| has not been seen.
-  bool is_original() { return is_original_; }
+  bool is_original() const { return is_original_; }
 
   // True if this |TransferMetadata| is the last status for this transfer.
-  bool is_final_status() { return is_final_status_; }
+  bool is_final_status() const { return is_final_status_; }
 
  private:
   Status status_;

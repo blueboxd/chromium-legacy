@@ -85,9 +85,9 @@ class MEDIA_EXPORT MediaFoundationRenderer
   // Callbacks for |mf_media_engine_notify_|.
   void OnPlaybackError(PipelineStatus status);
   void OnPlaybackEnded();
-  void OnBufferingStateChanged(BufferingState state,
-                               BufferingStateChangeReason reason);
-  void OnVideoNaturalSizeChanged();
+  void OnBufferingStateChange(BufferingState state,
+                              BufferingStateChangeReason reason);
+  void OnVideoNaturalSizeChange();
   void OnTimeUpdate();
 
   void OnCdmProxyReceived(Microsoft::WRL::ComPtr<IMFCdmProxy> cdm_proxy);

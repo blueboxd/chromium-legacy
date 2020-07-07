@@ -186,7 +186,7 @@ bool IsWebSocketAllowedInFrame(const BaseFetchContext& fetch_context,
   return settings && settings->GetAllowRunningOfInsecureContent();
 }
 
-bool IsWebSocketAllowedInWorker(const BaseFetchContext& fetch_context,
+bool IsWebSocketAllowedInWorker(const WorkerFetchContext& fetch_context,
                                 WorkerSettings* settings,
                                 const KURL& url) {
   fetch_context.CountUsage(WebFeature::kMixedContentPresent);

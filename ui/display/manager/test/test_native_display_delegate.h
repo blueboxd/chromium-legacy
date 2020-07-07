@@ -57,10 +57,9 @@ class TestNativeDisplayDelegate : public NativeDisplayDelegate {
   void TakeDisplayControl(DisplayControlCallback callback) override;
   void RelinquishDisplayControl(DisplayControlCallback callback) override;
   void GetDisplays(GetDisplaysCallback callback) override;
-  void Configure(const DisplaySnapshot& output,
-                 const DisplayMode* mode,
-                 const gfx::Point& origin,
-                 ConfigureCallback callback) override;
+  void Configure(
+      const display::DisplayConfigurationParams& display_config_params,
+      ConfigureCallback callback) override;
   void GetHDCPState(const DisplaySnapshot& output,
                     GetHDCPStateCallback callback) override;
   void SetHDCPState(const DisplaySnapshot& output,
@@ -78,9 +77,8 @@ class TestNativeDisplayDelegate : public NativeDisplayDelegate {
   FakeDisplayController* GetFakeDisplayController() override;
 
  private:
-  bool Configure(const DisplaySnapshot& output,
-                 const DisplayMode* mode,
-                 const gfx::Point& origin);
+  bool Configure(
+      const display::DisplayConfigurationParams& display_config_params);
 
   void DoSetHDCPState(int64_t display_id,
                       HDCPState state,

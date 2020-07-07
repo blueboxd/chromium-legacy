@@ -123,7 +123,7 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
                 try {
                     base.evaluate();
                 } finally {
-                    ruleTearDown();
+                    Thread.setDefaultUncaughtExceptionHandler(mDefaultUncaughtExceptionHandler);
                 }
             }
         };
@@ -136,27 +136,6 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
      */
     public static int getActivityStartTimeoutMs() {
         return ACTIVITY_START_TIMEOUT_MS;
-    }
-
-    private void ruleTearDown() {
-        try {
-            ApplicationTestUtils.tearDown(InstrumentationRegistry.getTargetContext());
-            waitForActivityFinished();
-            Thread.setDefaultUncaughtExceptionHandler(mDefaultUncaughtExceptionHandler);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to tearDown", e);
-        }
-    }
-
-    private void waitForActivityFinished() {
-        if (mSetActivity == null) return;
-        try {
-            ApplicationTestUtils.waitForActivityState(mSetActivity, ActivityState.DESTROYED);
-        } catch (Exception e) {
-            Log.e(TAG, "Cannot finish activity, exception:" + e);
-        } finally {
-            mSetActivity = null;
-        }
     }
 
     // TODO(yolandyan): remove this once startActivityCompletely is refactored out of

@@ -121,7 +121,7 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView {
   FrameCaptionButtonContainerView* GetFrameCaptionButtonContainerViewForTest();
 
   // Not owned.
-  views::Widget* frame_;
+  views::Widget* const frame_;
 
   // View which contains the title and window controls.
   HeaderView* header_view_ = nullptr;

@@ -428,6 +428,14 @@ void ShellSurfaceBase::SetStartupId(const char* startup_id) {
     SetShellStartupId(widget_->GetNativeWindow(), startup_id_);
 }
 
+void ShellSurfaceBase::SetUseImmersiveForFullscreen(bool value) {
+  // Store the value in case the window doesn't exist yet.
+  immersive_implied_by_fullscreen_ = value;
+
+  if (widget_ && widget_->GetNativeWindow())
+    SetShellUseImmersiveForFullscreen(widget_->GetNativeWindow(), value);
+}
+
 void ShellSurfaceBase::SetChildAxTreeId(ui::AXTreeID child_ax_tree_id) {
   if (child_ax_tree_id_ == child_ax_tree_id)
     return;
@@ -957,9 +965,7 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   ash::WindowState* window_state = ash::WindowState::Get(window);
   InitializeWindowState(window_state);
 
-  // AutoHide shelf in fullscreen state.
-  if (window_state)
-    window_state->SetHideShelfWhenFullscreen(false);
+  SetShellUseImmersiveForFullscreen(window, immersive_implied_by_fullscreen_);
 
   // Fade visibility animations for non-activatable windows.
   if (!CanActivate()) {

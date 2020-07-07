@@ -595,6 +595,13 @@ void ServiceWorkerContextWrapper::GetInstalledRegistrationOriginsOnCoreThread(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_callback) {
   DCHECK_CURRENTLY_ON(GetCoreThreadId());
 
+  if (!context_core_) {
+    task_runner_for_callback->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback), std::set<url::Origin>()));
+    return;
+  }
+
   context()->registry()->storage()->GetRegisteredOrigins(base::BindOnce(
       &ServiceWorkerContextWrapper::
           DidGetRegisteredOriginsForGetInstalledRegistrationOrigins,

@@ -55,10 +55,12 @@
 //   }
 //
 //   // Automatically deregisters the callback when deleted (e.g. in
-//   // ~MyWidgetListener()).
+//   // ~MyWidgetListener()).  Unretained(this) is safe here since the
+//   // Subscription does not outlive |this|.
 //   std::unique_ptr<MyWidget::CallbackList::Subscription> foo_subscription_ =
 //       MyWidget::Get()->RegisterCallback(
-//           base::BindRepeating(&MyWidgetListener::OnFoo, this));
+//           base::BindRepeating(&MyWidgetListener::OnFoo,
+//                               base::Unretained(this)));
 // };
 //
 // UNSUPPORTED:

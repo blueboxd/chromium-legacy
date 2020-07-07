@@ -111,8 +111,8 @@ class COMPONENT_EXPORT(URL) SchemeHostPort {
   // Copyable and movable.
   SchemeHostPort(const SchemeHostPort&) = default;
   SchemeHostPort& operator=(const SchemeHostPort&) = default;
-  SchemeHostPort(SchemeHostPort&&) = default;
-  SchemeHostPort& operator=(SchemeHostPort&&) = default;
+  SchemeHostPort(SchemeHostPort&&) noexcept = default;
+  SchemeHostPort& operator=(SchemeHostPort&&) noexcept = default;
 
   ~SchemeHostPort();
 
@@ -158,7 +158,7 @@ class COMPONENT_EXPORT(URL) SchemeHostPort {
 
   std::string scheme_;
   std::string host_;
-  uint16_t port_;
+  uint16_t port_ = 0;
 };
 
 COMPONENT_EXPORT(URL)

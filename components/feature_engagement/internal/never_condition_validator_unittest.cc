@@ -28,7 +28,7 @@ class NeverTestEventModel : public EventModel {
  public:
   NeverTestEventModel() = default;
 
-  void Initialize(const OnModelInitializationFinished& callback,
+  void Initialize(OnModelInitializationFinished callback,
                   uint32_t current_day) override {}
 
   bool IsReady() const override { return true; }

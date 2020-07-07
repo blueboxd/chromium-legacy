@@ -71,7 +71,7 @@ class MarketingOptInScreen : public BaseScreen {
 
  protected:
   // BaseScreen:
-  bool MaybeSkip() override;
+  bool MaybeSkip(WizardContext* context) override;
   void ShowImpl() override;
   void HideImpl() override;
 

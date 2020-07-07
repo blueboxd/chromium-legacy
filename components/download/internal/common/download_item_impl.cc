@@ -1624,7 +1624,7 @@ void DownloadItemImpl::Start(
   TransitionTo(TARGET_PENDING_INTERNAL);
 
   job_->Start(download_file_.get(),
-              base::Bind(&DownloadItemImpl::OnDownloadFileInitialized,
+              base::BindRepeating(&DownloadItemImpl::OnDownloadFileInitialized,
                          weak_ptr_factory_.GetWeakPtr()),
               GetReceivedSlices());
 }
@@ -1660,7 +1660,7 @@ void DownloadItemImpl::DetermineDownloadTarget() {
   RecordDownloadCountWithSource(DETERMINE_DOWNLOAD_TARGET_COUNT,
                                 download_source_);
   delegate_->DetermineDownloadTarget(
-      this, base::Bind(&DownloadItemImpl::OnDownloadTargetDetermined,
+      this, base::BindOnce(&DownloadItemImpl::OnDownloadTargetDetermined,
                        weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -1748,7 +1748,7 @@ void DownloadItemImpl::OnDownloadTargetDetermined(
   //               http://crbug.com/74187.
   DCHECK(!IsSavePackageDownload());
   DownloadFile::RenameCompletionCallback callback =
-      base::Bind(&DownloadItemImpl::OnDownloadRenamedToIntermediateName,
+      base::BindOnce(&DownloadItemImpl::OnDownloadRenamedToIntermediateName,
                  weak_ptr_factory_.GetWeakPtr());
 #if defined(OS_ANDROID)
   if ((download_type_ == TYPE_ACTIVE_DOWNLOAD && !transient_ &&
@@ -1931,7 +1931,7 @@ void DownloadItemImpl::OnDownloadCompleting() {
   // Unilaterally rename; even if it already has the right name,
   // we need theannotation.
   DownloadFile::RenameCompletionCallback callback =
-      base::Bind(&DownloadItemImpl::OnDownloadRenamedToFinalName,
+      base::BindOnce(&DownloadItemImpl::OnDownloadRenamedToFinalName,
                  weak_ptr_factory_.GetWeakPtr());
 #if defined(OS_ANDROID)
   if (GetTargetFilePath().IsContentUri()) {

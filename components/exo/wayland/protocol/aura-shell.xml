@@ -24,7 +24,7 @@
     DEALINGS IN THE SOFTWARE.
   </copyright>
 
-  <interface name="zaura_shell" version="9">
+  <interface name="zaura_shell" version="10">
     <description summary="aura_shell">
       The global interface exposing aura shell capabilities is used to
       instantiate an interface extension for a wl_surface object.
@@ -68,7 +68,7 @@
     </request>
   </interface>
 
-  <interface name="zaura_surface" version="9">
+  <interface name="zaura_surface" version="10">
     <description summary="aura shell interface to a wl_surface">
       An additional interface to a wl_surface object, which allows the
       client to access aura shell specific functionality for surface.
@@ -194,6 +194,35 @@
 	draw_focus, these requests are expected to come from background tasks,
 	and are more likely to be honoured.
       </description>
+    </request>
+
+    <!-- Version 10 additions -->
+
+    <enum name="fullscreen_mode">
+      <description
+        summary="Specifies the behavior of the surface in fullscreen.">
+          Possible windowing system behaviors if this surface were to go
+          fullscreen.
+      </description>
+      <entry
+        name="immersive"
+        value="0"
+        summary="user can access system UIs such as the shelf and window frame
+          by pointing to, or swiping over, the screen edge"/>
+      <entry
+        name="plain"
+        value="1"
+        summary="user cannot access system UIs using mouse/touches"/>
+    </enum>
+
+    <request name="set_fullscreen_mode" since="10">
+      <description summary="Sets the behavior of the surface in fullscreen.">
+        Suggests how the windowing system should behave if this surface were
+        to go fullscreen. Does not make the surface fullscreen.
+
+        Typically the default mode is "immersive".
+      </description>
+      <arg name="mode" type="uint" enum="fullscreen_mode"/>
     </request>
   </interface>
 

@@ -87,6 +87,7 @@ cast_test_group("cast_tests") {
     "//net:net_unittests",
     "//sql:sql_unittests",
     "//storage:storage_unittests",
+    "//third_party/cacheinvalidation:cacheinvalidation_unittests",
     "//ui/base:ui_base_unittests",
   ]
 

@@ -22,7 +22,8 @@ const GUEST_ORIGIN = 'chrome-untrusted://media-app';
  */
 const GENERIC_ERROR_MESSAGE_REGEX = '^".*[A-Za-z].*"$';
 
-let driver = null;
+/** @type {!GuestDriver} */
+let driver;
 
 /**
  * Runs a CSS selector until it detects the "error" UX being loaded.
@@ -108,7 +109,7 @@ const TEST_IMAGE_HEIGHT = 456;
  * @param {number=} height
  * @param {string=} name
  * @param {number=} lastModified
- * @return {Promise<File>} A {width}x{height} transparent encoded image/png.
+ * @return {!Promise<!File>} A {width}x{height} transparent encoded image/png.
  */
 async function createTestImageFile(
     width = TEST_IMAGE_WIDTH, height = TEST_IMAGE_HEIGHT,
@@ -121,12 +122,26 @@ async function createTestImageFile(
 
 /**
  * @param {!Array<string>} filenames
- * @return {!Array<!File>}
+ * @return {!Promise<!Array<!File>>}
  */
 async function createMultipleImageFiles(filenames) {
   const filePromise = name => createTestImageFile(1, 1, `${name}.png`);
   const files = await Promise.all(filenames.map(filePromise));
   return files;
+}
+
+/**
+ * @param {!Object=} data
+ * @return {!Promise<!TestMessageResponseData>}
+ */
+function sendTestMessage(data = undefined) {
+  return /** @type {!Promise<!TestMessageResponseData>} */ (
+      guestMessagePipe.sendMessage('test', data));
+}
+
+/** @return {!HTMLIFrameElement} */
+function queryIFrame() {
+  return /** @type{!HTMLIFrameElement} */ (document.querySelector('iframe'));
 }
 
 // Tests that chrome://media-app is allowed to frame
@@ -137,7 +152,7 @@ async function createMultipleImageFiles(filenames) {
 // terminated, e.g., due to webui performing bad IPC such as network requests
 // (failure detected in content/public/test/no_renderer_crashes_assertion.cc).
 TEST_F('MediaAppUIBrowserTest', 'GuestCanLoad', async () => {
-  const guest = document.querySelector('iframe');
+  const guest = queryIFrame();
   const app = await driver.waitForElementInGuest('backlight-app', 'tagName');
 
   assertEquals(document.location.origin, HOST_ORIGIN);
@@ -183,7 +198,7 @@ TEST_F('MediaAppUIBrowserTest', 'NonLaunchableIpcAfterFastLoad', async () => {
 
   // Invoke Deletion IPC that doesn't relaunch the app.
   const messageDelete = {deleteLastFile: true};
-  testResponse = await guestMessagePipe.sendMessage('test', messageDelete);
+  const testResponse = await sendTestMessage(messageDelete);
   assertEquals(
       'deleteOriginalFile resolved success', testResponse.testQueryResult);
 
@@ -226,7 +241,7 @@ TEST_F('MediaAppUIBrowserTest', 'ReLaunchableIpcAfterFastLoad', async () => {
   // Invoke Rename IPC that relaunches the app, this calls
   // `launchWithDirectory()` which increments globalLaunchNumber.
   const messageRename = {renameLastFile: 'new_file_name.png'};
-  testResponse = await guestMessagePipe.sendMessage('test', messageRename);
+  const testResponse = await sendTestMessage(messageRename);
   assertEquals(
       testResponse.testQueryResult, 'renameOriginalFile resolved success');
 
@@ -260,7 +275,7 @@ TEST_F('MediaAppUIBrowserTest', 'ReLaunchableIpcAfterFastLoad', async () => {
               JSON.stringify(fd)} in currentFiles filed`));
 
   // Focus file stays index 0.
-  lastLoadedFiles = await getLoadedFiles();
+  const lastLoadedFiles = await getLoadedFiles();
   assertEquals('new_file_name.png', lastLoadedFiles[0].name);
   assertEquals(loadedFilesAfterRename[0].name, lastLoadedFiles[0].name);
   // Focus file in the `FileSystemDirectoryHandle` is at index 3.
@@ -465,7 +480,7 @@ TEST_F('MediaAppUIBrowserTest', 'ReceivesNoHandlerError', async () => {
   let caughtError = {};
 
   try {
-    await guestMessagePipe.sendMessage('unknown-message', null);
+    await guestMessagePipe.sendMessage('unknown-message');
   } catch (error) {
     caughtError = error;
   }
@@ -495,7 +510,7 @@ TEST_F('MediaAppUIBrowserTest', 'ReceivesProxiedError', async () => {
   let caughtError = {};
 
   try {
-    await guestMessagePipe.sendMessage('bad-handler', null);
+    await guestMessagePipe.sendMessage('bad-handler');
   } catch (error) {
     caughtError = error;
   }
@@ -529,7 +544,7 @@ TEST_F('MediaAppUIBrowserTest', 'OverwriteOriginalIPC', async () => {
   assertEquals(handle.lastWritable.writes.length, 0);
 
   const message = {overwriteLastFile: 'Foo'};
-  const testResponse = await guestMessagePipe.sendMessage('test', message);
+  const testResponse = await sendTestMessage(message);
   const writeResult = await handle.lastWritable.closePromise;
 
   assertEquals(testResponse.testQueryResult, 'overwriteOriginal resolved');
@@ -560,7 +575,7 @@ TEST_F('MediaAppUIBrowserTest', 'CrossContextErrors', async () => {
 
   try {
     const message = {overwriteLastFile: 'Foo'};
-    await guestMessagePipe.sendMessage('test', message);
+    await sendTestMessage(message);
   } catch (e) {
     caughtError = e;
   }
@@ -593,7 +608,7 @@ TEST_F('MediaAppUIBrowserTest', 'DeleteOriginalIPC', async () => {
   assertEquals(null, directory.lastDeleted);
 
   const messageDelete = {deleteLastFile: true};
-  testResponse = await guestMessagePipe.sendMessage('test', messageDelete);
+  testResponse = await sendTestMessage(messageDelete);
 
   // Assertion will fail if exceptions from launch.js are thrown, no exceptions
   // indicates the file was successfully deleted.
@@ -614,7 +629,7 @@ TEST_F('MediaAppUIBrowserTest', 'DeleteOriginalIPC', async () => {
 
   // Try delete the first file again, should result in file moved.
   const messageDeleteMoved = {deleteLastFile: true};
-  testResponse = await guestMessagePipe.sendMessage('test', messageDeleteMoved);
+  testResponse = await sendTestMessage(messageDeleteMoved);
 
   assertEquals(
       'deleteOriginalFile resolved file moved', testResponse.testQueryResult);
@@ -628,7 +643,7 @@ TEST_F('MediaAppUIBrowserTest', 'DeleteOriginalIPC', async () => {
   simulateLosingAccessToDirectory();
 
   const messageDeleteNoOp = {deleteLastFile: true};
-  testResponse = await guestMessagePipe.sendMessage('test', messageDeleteNoOp);
+  testResponse = await sendTestMessage(messageDeleteNoOp);
 
   assertEquals(
       'deleteOriginalFile failed Error: Error: delete-file: Delete failed. ' +
@@ -660,7 +675,7 @@ TEST_F('MediaAppUIBrowserTest', 'DeletionOpensNextFile', async () => {
 
   // Delete the first file.
   const messageDelete = {deleteLastFile: true};
-  testResponse = await guestMessagePipe.sendMessage('test', messageDelete);
+  testResponse = await sendTestMessage(messageDelete);
 
   assertEquals(
       'deleteOriginalFile resolved success', testResponse.testQueryResult);
@@ -674,8 +689,8 @@ TEST_F('MediaAppUIBrowserTest', 'DeletionOpensNextFile', async () => {
   assertEquals('test_file_3.png', lastLoadedFiles[1].name);
 
   // Navigate to the last file (originally the third file) and delete it
-  await guestMessagePipe.sendMessage('test', {navigate: 'next'});
-  testResponse = await guestMessagePipe.sendMessage('test', messageDelete);
+  await sendTestMessage({navigate: 'next'});
+  testResponse = await sendTestMessage(messageDelete);
 
   assertEquals(
       'deleteOriginalFile resolved success', testResponse.testQueryResult);
@@ -689,7 +704,7 @@ TEST_F('MediaAppUIBrowserTest', 'DeletionOpensNextFile', async () => {
   assertEquals(testFiles[1].name, lastLoadedFiles[0].name);
 
   // Delete the last file, should lead to zero state.
-  testResponse = await guestMessagePipe.sendMessage('test', messageDelete);
+  testResponse = await sendTestMessage(messageDelete);
   assertEquals(
       'deleteOriginalFile resolved success', testResponse.testQueryResult);
 
@@ -705,21 +720,21 @@ TEST_F('MediaAppUIBrowserTest', 'DeletionOpensNextFile', async () => {
 TEST_F('MediaAppUIBrowserTest', 'NavigateIPC', async () => {
   async function fakeEntry() {
     const file = await createTestImageFile();
-    const handle = new FakeFileSystemFileHandle(file.name, file.type, file);
+    const handle = new FakeFileSystemFileHandle(file.name, file.type, 0, file);
     return {file, handle};
   }
   await loadMultipleFiles([await fakeEntry(), await fakeEntry()]);
   assertEquals(entryIndex, 0);
 
-  let result = await guestMessagePipe.sendMessage('test', {navigate: 'next'});
+  let result = await sendTestMessage({navigate: 'next'});
   assertEquals(result.testQueryResult, 'loadNext called');
   assertEquals(entryIndex, 1);
 
-  result = await guestMessagePipe.sendMessage('test', {navigate: 'prev'});
+  result = await sendTestMessage({navigate: 'prev'});
   assertEquals(result.testQueryResult, 'loadPrev called');
   assertEquals(entryIndex, 0);
 
-  result = await guestMessagePipe.sendMessage('test', {navigate: 'prev'});
+  result = await sendTestMessage({navigate: 'prev'});
   assertEquals(result.testQueryResult, 'loadPrev called');
   assertEquals(entryIndex, 1);
   testDone();
@@ -739,7 +754,7 @@ TEST_F('MediaAppUIBrowserTest', 'RenameOriginalIPC', async () => {
 
   // Test normal rename flow.
   const messageRename = {renameLastFile: 'new_file_name.png'};
-  testResponse = await guestMessagePipe.sendMessage('test', messageRename);
+  testResponse = await sendTestMessage(messageRename);
 
   assertEquals(
       testResponse.testQueryResult, 'renameOriginalFile resolved success');
@@ -756,8 +771,7 @@ TEST_F('MediaAppUIBrowserTest', 'RenameOriginalIPC', async () => {
 
   // Test renaming when a file with the new name already exists.
   const messageRenameExists = {renameLastFile: 'new_file_name.png'};
-  testResponse =
-      await guestMessagePipe.sendMessage('test', messageRenameExists);
+  testResponse = await sendTestMessage(messageRenameExists);
 
   assertEquals(
       testResponse.testQueryResult, 'renameOriginalFile resolved file exists');
@@ -772,7 +786,7 @@ TEST_F('MediaAppUIBrowserTest', 'RenameOriginalIPC', async () => {
   simulateLosingAccessToDirectory();
 
   const messageRenameNoOp = {renameLastFile: 'new_file_name_2.png'};
-  testResponse = await guestMessagePipe.sendMessage('test', messageRenameNoOp);
+  testResponse = await sendTestMessage(messageRenameNoOp);
 
   assertEquals(
       testResponse.testQueryResult,
@@ -789,13 +803,13 @@ TEST_F('MediaAppUIBrowserTest', 'SaveCopyIPC', async () => {
   const chooseEntries = new Promise(resolve => {
     window.showSaveFilePicker = options => {
       resolve(options);
-      return newFileHandle;
+      return Promise.resolve(newFileHandle);
     };
   });
   const testImage = await createTestImageFile(10, 10);
   await loadFile(testImage, new FakeFileSystemFileHandle());
 
-  const result = await guestMessagePipe.sendMessage('test', {saveCopy: true});
+  const result = await sendTestMessage({saveCopy: true});
   assertEquals(result.testQueryResult, 'boo yah!');
   const options = await chooseEntries;
 
@@ -870,7 +884,7 @@ TEST_F('MediaAppUIBrowserTest', 'SortedFiles', async () => {
 
 // Tests that the guest gets focus automatically on start up.
 TEST_F('MediaAppUIBrowserTest', 'GuestHasFocus', async () => {
-  const guest = document.querySelector('iframe');
+  const guest = queryIFrame();
 
   // By the time this tests runs the iframe should already have been loaded.
   assertEquals(document.activeElement, guest);

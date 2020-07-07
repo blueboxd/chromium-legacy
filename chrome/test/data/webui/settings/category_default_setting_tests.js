@@ -30,12 +30,11 @@ suite('CategoryDefaultSetting', function() {
     PolymerTest.clearBody();
     testElement = document.createElement('category-default-setting');
     testElement.subOptionLabel = 'test label';
-    testElement.subOptionMode = 'cookies-session-only';
     document.body.appendChild(testElement);
   });
 
   test('browserProxy APIs used on startup', function() {
-    const category = ContentSettingsTypes.COOKIES;
+    const category = ContentSettingsTypes.JAVASCRIPT;
     testElement.category = category;
     return Promise
         .all([
@@ -297,23 +296,6 @@ suite('CategoryDefaultSetting', function() {
           assertTrue(secondaryToggle.checked);
         });
   }
-
-  test('test special tri-state Cookies category', function() {
-    /**
-     * An example pref where the Cookies category is set to delete when
-     * session ends.
-     */
-    const prefsCookiesSessionOnly = createSiteSettingsPrefs(
-        [createContentSettingTypeToValuePair(
-            ContentSettingsTypes.COOKIES, createDefaultContentSetting({
-              setting: ContentSetting.SESSION_ONLY,
-            }))],
-        []);
-
-    return testTristateCategory(
-        prefsCookiesSessionOnly, ContentSettingsTypes.COOKIES,
-        ContentSetting.SESSION_ONLY, '#subOptionCookiesToggle');
-  });
 
   test('test popups content setting default value', function() {
     testElement.category = ContentSettingsTypes.POPUPS;

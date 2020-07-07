@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/environment.h"
-#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -36,6 +35,11 @@
 #include "mojo/public/cpp/system/invitation.h"
 #include "mojo/public/mojom/base/binder.mojom.h"
 
+// TODO(crbug.com/1101667): Currently, this source has log spamming
+// by LOG(WARNING) for non critical errors to make it easy
+// to debug and develop. Get rid of the log spamming
+// when it gets stable enough.
+
 namespace chromeos {
 namespace {
 
@@ -44,49 +48,6 @@ LacrosManager* g_instance = nullptr;
 
 base::FilePath LacrosLogPath() {
   return lacros_util::GetUserDataDir().Append("lacros.log");
-}
-
-// TODO(https://crbug.com/1091863): This logic is not robust against the
-// situation where Lacros has been killed, but another process was spawned
-// with the same pid. This logic also relies on I/O, which we'd like to avoid
-// if possible.
-bool IsLacrosChromeInProc(base::ProcessId pid,
-                          const base::FilePath& lacros_path) {
-  // We avoid using WaitForExitWithTimeout() since that can block for up to
-  // 256ms. Instead, we check existence of /proc/<pid>/cmdline and check for a
-  // match against lacros_path_. This logic assumes that lacros_path_ is a fully
-  // qualified path.
-  base::FilePath cmdline_filepath("/proc");
-  cmdline_filepath = cmdline_filepath.Append(base::NumberToString(pid));
-  cmdline_filepath = cmdline_filepath.Append("cmdline");
-  base::File cmdline_file = base::File(
-      cmdline_filepath, base::File::FLAG_OPEN | base::File::FLAG_READ);
-  if (!cmdline_file.IsValid())
-    return false;
-  std::string expected_cmdline = lacros_path.value();
-  size_t expected_length = expected_cmdline.size();
-  char data[1000];
-  int size_read = cmdline_file.Read(0, data, 1000);
-  if (static_cast<size_t>(size_read) < expected_length)
-    return false;
-  return expected_cmdline.compare(0, expected_length, data, expected_length) ==
-         0;
-}
-
-bool StartBackground(base::ProcessId pid, const base::FilePath& lacros_path) {
-  bool already_running =
-      pid != base::kNullProcessId && IsLacrosChromeInProc(pid, lacros_path);
-
-  if (!already_running) {
-    // Only delete the old log file if lacros is not running. If it's already
-    // running, then the subsequent call to base::LaunchProcess opens a new
-    // window, and we do not want to delete the existing log file.
-    // TODO(erikchen): Currently, launching a second instance of chrome deletes
-    // the existing log file, even though the new instance quickly exits.
-    base::DeleteFile(LacrosLogPath());
-  }
-
-  return already_running;
 }
 
 std::string GetXdgRuntimeDir() {
@@ -98,6 +59,23 @@ std::string GetXdgRuntimeDir() {
 
   // Otherwise provide the default for Chrome OS devices.
   return "/run/chrome";
+}
+
+void TerminateLacrosChrome(base::Process process) {
+  // Here, lacros-chrome process may crashed, or be in the shutdown procedure.
+  // Give some amount of time for the collection. In most cases,
+  // this wait captures the process termination.
+  constexpr base::TimeDelta kGracefulShutdownTimeout =
+      base::TimeDelta::FromSeconds(5);
+  if (process.WaitForExitWithTimeout(kGracefulShutdownTimeout, nullptr))
+    return;
+
+  // Here, the process is not yet terminated.
+  // This happens if some critical error happens on the mojo connection,
+  // while both ash-chrome and lacros-chrome are still alive.
+  // Terminate the lacros-chrome.
+  bool success = process.Terminate(/*exit_code=*/0, /*wait=*/true);
+  LOG_IF(ERROR, !success) << "Failed to terminate the lacros-chrome.";
 }
 
 }  // namespace
@@ -133,7 +111,8 @@ LacrosManager::~LacrosManager() {
 }
 
 bool LacrosManager::IsReady() const {
-  return !lacros_path_.empty();
+  return state_ != State::NOT_INITIALIZED && state_ != State::LOADING &&
+         state_ != State::UNAVAILABLE;
 }
 
 void LacrosManager::SetLoadCompleteCallback(LoadCompleteCallback callback) {
@@ -144,28 +123,47 @@ void LacrosManager::Start() {
   if (!lacros_util::IsLacrosAllowed())
     return;
 
-  if (lacros_path_.empty()) {
+  if (!IsReady()) {
     LOG(WARNING) << "lacros component image not yet available";
     return;
   }
+  DCHECK(!lacros_path_.empty());
 
-  // Because we haven't yet handled process termination of lacros-chrome,
-  // lacros_process_ may point to a stale process. Check it by looking at
-  // procfs in a background task runner in addition.
-  // TODO(hidehiko): Handle the process termination correctly after mojo
-  // connection available.
+  if (state_ == State::TERMINATING) {
+    LOG(WARNING) << "lacros-chrome is terminating, so cannot start now";
+    return;
+  }
+
+  // If it is on launching Lacros, wait for its async operation's completion.
+  if (state_ == State::STARTING) {
+    ++num_pending_start_;
+    return;
+  }
+
+  if (state_ == State::RUNNING) {
+    StartForeground(true);
+    return;
+  }
+
+  DCHECK_EQ(state_, State::STOPPED);
+  DCHECK(!lacros_process_.IsValid());
+  state_ = State::STARTING;
+  // Only delete the old log file if lacros is not running. If it's already
+  // running, then the subsequent call to base::LaunchProcess opens a new
+  // window, and we do not want to delete the existing log file.
+  // TODO(erikchen/hidehiko): Currently, launching a second instance of chrome
+  // deletes the existing log file, even though the new instance quickly exits.
   scoped_refptr<base::SequencedTaskRunner> task_runner =
       base::ThreadPool::CreateSequencedTaskRunner(
           {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
-  base::ProcessId pid =
-      lacros_process_.IsValid() ? lacros_process_.Pid() : base::kNullProcessId;
-  task_runner->PostTaskAndReplyWithResult(
-      FROM_HERE, base::BindOnce(&StartBackground, pid, lacros_path_),
+  task_runner->PostTaskAndReply(
+      FROM_HERE, base::BindOnce(base::GetDeleteFileCallback(), LacrosLogPath()),
       base::BindOnce(&LacrosManager::StartForeground,
-                     weak_factory_.GetWeakPtr()));
+                     weak_factory_.GetWeakPtr(), false));
 }
 
 void LacrosManager::StartForeground(bool already_running) {
+  DCHECK(state_ == State::STARTING || state_ == State::RUNNING);
   DCHECK(!lacros_path_.empty());
 
   std::string chrome_path = lacros_path_.MaybeAsASCII() + "/chrome";
@@ -209,12 +207,14 @@ void LacrosManager::StartForeground(bool already_running) {
   }
 
   if (already_running) {
+    DCHECK_EQ(state_, State::RUNNING);
     // If Lacros is already running, then the new call to launch process spawns
     // a new window but does not create a lasting process.
     // TODO(erikchen): we should send a mojo signal to open a new tab rather
     // than going through the start flow again.
     base::LaunchProcess(argv, options);
   } else {
+    DCHECK_EQ(state_, State::STARTING);
     // Set up Mojo channel.
     base::CommandLine command_line(argv);
     mojo::PlatformChannel channel;
@@ -239,6 +239,8 @@ void LacrosManager::StartForeground(bool already_running) {
                                      lacros_process_.Handle(),
                                      channel.TakeLocalEndpoint());
       binder->Bind(lacros_chrome_service_.BindNewPipeAndPassReceiver());
+      lacros_chrome_service_.set_disconnect_handler(base::BindOnce(
+          &LacrosManager::OnMojoDisconnected, weak_factory_.GetWeakPtr()));
       lacros_chrome_service_->RequestAshChromeServiceReceiver(
           base::BindOnce(&LacrosManager::OnAshChromeServiceReceiverReceived,
                          weak_factory_.GetWeakPtr()));
@@ -249,11 +251,48 @@ void LacrosManager::StartForeground(bool already_running) {
 
 void LacrosManager::OnAshChromeServiceReceiverReceived(
     mojo::PendingReceiver<lacros::mojom::AshChromeService> pending_receiver) {
+  DCHECK_EQ(state_, State::STARTING);
   ash_chrome_service_ =
       std::make_unique<AshChromeServiceImpl>(std::move(pending_receiver));
+  state_ = State::RUNNING;
+  LOG(WARNING) << "Connection to lacros-chrome is established.";
+
+  // If Start() is called during launching lacros-chrome,
+  // re-call Start() which will trigger to open new windows.
+  // TODO(hidehiko): Simplify the logic. Introducing a Mojo API to control
+  // window opening helps it.
+  if (num_pending_start_ > 0) {
+    int num_pending_start = num_pending_start_;
+    num_pending_start_ = 0;
+    for (int i = 0; i < num_pending_start; ++i)
+      Start();
+  }
+}
+
+void LacrosManager::OnMojoDisconnected() {
+  DCHECK(state_ == State::STARTING || state_ == State::RUNNING);
+  LOG(WARNING)
+      << "Mojo to lacros-chrome is disconnected. Terminating lacros-chrome";
+  state_ = State::TERMINATING;
+
+  lacros_chrome_service_.reset();
+  ash_chrome_service_ = nullptr;
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE, {base::MayBlock()},
+      base::BindOnce(&TerminateLacrosChrome, std::move(lacros_process_)),
+      base::BindOnce(&LacrosManager::OnLacrosChromeTerminated,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void LacrosManager::OnLacrosChromeTerminated() {
+  DCHECK_EQ(state_, State::TERMINATING);
+  LOG(WARNING) << "Lacros-chrome is terminated";
+  state_ = State::STOPPED;
 }
 
 void LacrosManager::OnUserSessionStarted(bool is_primary_user) {
+  DCHECK_EQ(state_, State::NOT_INITIALIZED);
+
   // Ensure this isn't called multiple times.
   session_manager::SessionManager::Get()->RemoveObserver(this);
 
@@ -268,15 +307,20 @@ void LacrosManager::OnUserSessionStarted(bool is_primary_user) {
   DCHECK(!lacros_loader_);
   lacros_loader_ = std::make_unique<LacrosLoader>(component_manager_);
   if (chromeos::features::IsLacrosSupportEnabled()) {
+    state_ = State::LOADING;
     lacros_loader_->Load(base::BindOnce(&LacrosManager::OnLoadComplete,
                                         weak_factory_.GetWeakPtr()));
   } else {
+    state_ = State::UNAVAILABLE;
     lacros_loader_->Unload();
   }
 }
 
 void LacrosManager::OnLoadComplete(const base::FilePath& path) {
+  DCHECK_EQ(state_, State::LOADING);
+
   lacros_path_ = path;
+  state_ = path.empty() ? State::UNAVAILABLE : State::STOPPED;
   if (load_complete_callback_) {
     const bool success = !path.empty();
     std::move(load_complete_callback_).Run(success);

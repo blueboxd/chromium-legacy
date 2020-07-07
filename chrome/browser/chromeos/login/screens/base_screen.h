@@ -15,6 +15,8 @@
 
 namespace chromeos {
 
+class WizardContext;
+
 // Base class for the all OOBE/login/before-session screens.
 // Screens are identified by ID, screen and it's JS counterpart must have same
 // id.
@@ -30,14 +32,14 @@ class BaseScreen {
   virtual ~BaseScreen();
 
   // Makes wizard screen visible.
-  void Show();
+  void Show(WizardContext* context);
 
   // Makes wizard screen invisible.
   void Hide();
 
   // Returns whether the screen should be skipped i. e. should be exited due to
   // specific unmet conditions. Returns true if skips the screen.
-  virtual bool MaybeSkip() WARN_UNUSED_RESULT;
+  virtual bool MaybeSkip(WizardContext* context) WARN_UNUSED_RESULT;
 
   // Forwards user action if screen is shown.
   void HandleUserAction(const std::string& action_id);
@@ -72,12 +74,18 @@ class BaseScreen {
   // triggering while the screen is not displayed.
   base::Value* GetConfiguration() { return configuration_; }
 
+  WizardContext* context() { return wizard_context_; }
+
  private:
   bool is_hidden_ = true;
 
   // Configuration itself is owned by WizardController and is accessible
   // to screen only between OnShow / OnHide calls.
   base::Value* configuration_ = nullptr;
+
+  // Wizard context itself is owned by WizardController and is accessible
+  // to screen only between OnShow / OnHide calls.
+  WizardContext* wizard_context_ = nullptr;
 
   const OobeScreenId screen_id_;
 

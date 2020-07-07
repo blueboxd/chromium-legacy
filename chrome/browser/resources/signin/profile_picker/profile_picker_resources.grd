@@ -12,12 +12,21 @@
   </outputs>
   <release seq="1">
     <includes>
+    <include name="IDR_PROFILE_PICKER_LEFT_BANNER_IMAGE"
+               file="left_banner_image.svg"
+               type="BINDATA" />
+    <include name="IDR_PROFILE_PICKER_RIGHT_BANNER_IMAGE"
+               file="right_banner_image.svg"
+               type="BINDATA" />
     <!-- Generated Polymer 3 elements -->
       <include name="IDR_PROFILE_PICKER_PROFILE_PICKER_MAIN_VIEW_JS"
                file="${root_gen_dir}/chrome/browser/resources/signin/profile_picker/profile_picker_main_view.js"
                use_base_dir="false" type="BINDATA" preprocess="true"/>
       <include name="IDR_PROFILE_PICKER_PROFILE_PICKER_APP_JS"
                file="${root_gen_dir}/chrome/browser/resources/signin/profile_picker/profile_picker_app.js"
+               use_base_dir="false" type="BINDATA" preprocess="true"/>
+      <include name="IDR_PROFILE_PICKER_PROFILE_CARD_JS"
+               file="${root_gen_dir}/chrome/browser/resources/signin/profile_picker/profile_card.js"
                use_base_dir="false" type="BINDATA" preprocess="true"/>
     </includes>
     <structures>

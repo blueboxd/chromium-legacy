@@ -246,13 +246,11 @@ scoped_refptr<const DOMWrapperWorld> ExecutionContext::GetCurrentWorld() const {
 
 ContentSecurityPolicy*
 ExecutionContext::GetContentSecurityPolicyForCurrentWorld() {
-  scoped_refptr<const DOMWrapperWorld> world = GetCurrentWorld();
-  return world ? GetContentSecurityPolicyForWorld(*world)
-               : GetContentSecurityPolicy();
+  return GetContentSecurityPolicyForWorld(GetCurrentWorld().get());
 }
 
 ContentSecurityPolicy* ExecutionContext::GetContentSecurityPolicyForWorld(
-    const DOMWrapperWorld& world) {
+    const DOMWrapperWorld* world) {
   // Only documents support isolated worlds and only isolated worlds can have
   // their own CSP distinct from the main world CSP. Hence just return the main
   // world's content security policy by default.

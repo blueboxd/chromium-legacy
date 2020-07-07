@@ -248,6 +248,7 @@ class PLATFORM_EXPORT ConcurrentMarkingVisitor : public MarkingVisitorBase {
  private:
   NotSafeToConcurrentlyTraceWorklist::View
       not_safe_to_concurrently_trace_worklist_;
+  NotFullyConstructedWorklist::View previously_not_fully_constructed_worklist_;
 };
 
 }  // namespace blink

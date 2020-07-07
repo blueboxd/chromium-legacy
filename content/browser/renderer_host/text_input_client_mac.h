@@ -98,11 +98,6 @@ class CONTENT_EXPORT TextInputClientMac {
                           const gfx::Range& range,
                           GetStringCallback callback);
 
-  // This is called on the IO thread when we get the renderer's reply for
-  // GetStringFromRange.
-  void GetStringFromRangeReply(ui::mojom::AttributedStringPtr string,
-                               const gfx::Point& point);
-
  private:
   friend struct base::DefaultSingletonTraits<TextInputClientMac>;
   TextInputClientMac();
@@ -122,9 +117,6 @@ class CONTENT_EXPORT TextInputClientMac {
 
   base::Lock lock_;
   base::ConditionVariable condition_;
-
-  // The callback when received IPC TextInputClientReplyMsg_GotStringForRange.
-  GetStringCallback replyForRangeHandler_;
 
   DISALLOW_COPY_AND_ASSIGN(TextInputClientMac);
 };

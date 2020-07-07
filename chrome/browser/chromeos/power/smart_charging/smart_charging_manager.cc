@@ -44,8 +44,7 @@ constexpr base::TimeDelta kUserActivityDuration =
     base::TimeDelta::FromMinutes(30);
 
 // Granularity of input events is per minute.
-constexpr int kNumUserInputEventsBuckets =
-    kUserActivityDuration / base::TimeDelta::FromMinutes(1);
+constexpr int kNumUserInputEventsBuckets = kUserActivityDuration.InMinutes();
 
 constexpr char kSavedFileName[] = "past_charging_events.pb";
 constexpr char kSavedDir[] = "smartcharging";

@@ -1,1 +1,12 @@
 # These tests currently fail when run with --enable-features=BackForwardCache
+
+# https://crbug.com/1102633
+# Needs investigation.
+-org.chromium.chrome.features.start_surface.StartSurfaceTest.*
+-org.chromium.chrome.features.start_surface.StartSurfaceLayoutTest.*
+-org.chromium.chrome.browser.tasks.ReturnToChromeTest.*
+-org.chromium.chrome.features.start_surface.InstantStartTest.*
+-org.chromium.chrome.browser.datareduction.DataReductionSavingsMilestonePromoTest.*
+-org.chromium.chrome.browser.tasks.tab_management.TabSuggestionMessageCardTest.*
+-org.chromium.chrome.browser.feed.FeedContentStorageConformanceTest.*
+-org.chromium.chrome.browser.status_indicator.StatusIndicatorTest.*

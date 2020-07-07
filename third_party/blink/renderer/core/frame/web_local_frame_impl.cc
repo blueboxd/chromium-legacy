@@ -2198,7 +2198,7 @@ void WebLocalFrameImpl::LoadJavaScriptURL(const WebURL& url) {
   LocalFrame::NotifyUserActivation(GetFrame());
   GetFrame()->GetScriptController().ExecuteJavaScriptURL(
       url, network::mojom::CSPDisposition::DO_NOT_CHECK,
-      DOMWrapperWorld::MainWorld());
+      &DOMWrapperWorld::MainWorld());
 }
 
 WebNavigationControl::FallbackContentResult

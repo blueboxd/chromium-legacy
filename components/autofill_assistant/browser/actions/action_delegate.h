@@ -106,6 +106,16 @@ class ActionDelegate {
       ClickType click_type,
       base::OnceCallback<void(const ClientStatus&)> callback) = 0;
 
+  // Wait for the |element|'s document to become interactive.
+  virtual void WaitForDocumentToBecomeInteractive(
+      const ElementFinder::Result& element,
+      base::OnceCallback<void(const ClientStatus&)> callback) = 0;
+
+  // Scroll the |element| into view.
+  virtual void ScrollIntoView(
+      const ElementFinder::Result& element,
+      base::OnceCallback<void(const ClientStatus&)> callback) = 0;
+
   // Have the UI enter the prompt mode and make the given actions available.
   //
   // While a prompt is in progress, the UI looks the same as it does between

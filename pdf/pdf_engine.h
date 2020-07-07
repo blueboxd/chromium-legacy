@@ -273,6 +273,10 @@ class PDFEngine {
   };
 
   struct AccessibilityLinkInfo {
+    AccessibilityLinkInfo();
+    AccessibilityLinkInfo(const AccessibilityLinkInfo& that);
+    ~AccessibilityLinkInfo();
+
     std::string url;
     int start_char_index;
     int char_count;
@@ -280,11 +284,19 @@ class PDFEngine {
   };
 
   struct AccessibilityImageInfo {
+    AccessibilityImageInfo();
+    AccessibilityImageInfo(const AccessibilityImageInfo& that);
+    ~AccessibilityImageInfo();
+
     std::string alt_text;
     pp::FloatRect bounds;
   };
 
   struct AccessibilityHighlightInfo {
+    AccessibilityHighlightInfo();
+    AccessibilityHighlightInfo(const AccessibilityHighlightInfo& that);
+    ~AccessibilityHighlightInfo();
+
     int start_char_index = -1;
     int char_count;
     pp::FloatRect bounds;

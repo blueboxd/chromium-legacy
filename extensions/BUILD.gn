@@ -313,6 +313,7 @@ source_set("chrome_extensions_browsertests") {
     "//testing/gtest",
     "//testing/perf",
     "//third_party/blink/public:blink",
+    "//third_party/cacheinvalidation",
     "//third_party/icu",
     "//third_party/leveldatabase",
     "//third_party/libaddressinput",

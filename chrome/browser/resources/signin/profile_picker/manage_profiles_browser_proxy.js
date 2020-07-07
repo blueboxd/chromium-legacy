@@ -4,12 +4,29 @@
 
 import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
 
+/**
+ * This is the data structure sent back and forth between C++ and JS.
+ * @typedef {{
+ *   profilePath: string,
+ *   localProfileName: string,
+ *   gaiaName: string,
+ *   avatarIcon: string,
+ * }}
+ */
+export let ProfileState;
+
 /** @interface */
 export class ManageProfilesBrowserProxy {
   /**
    * Initializes profile picker main view.
    */
   initializeMainView() {}
+
+  /**
+   * Opens picked profile and closes the profile picker.
+   * @param {string} profilePath
+   */
+  openSelectedProfile(profilePath) {}
 }
 
 /** @implements {ManageProfilesBrowserProxy} */
@@ -17,6 +34,11 @@ export class ManageProfilesBrowserProxyImpl {
   /** @override */
   initializeMainView() {
     chrome.send('mainViewInitialize');
+  }
+
+  /** @override */
+  openSelectedProfile(profilePath) {
+    // TODO(msalama): Implement open selected profile.
   }
 }
 

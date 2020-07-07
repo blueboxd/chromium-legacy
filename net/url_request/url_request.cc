@@ -124,6 +124,10 @@ void ConvertRealLoadTimesToBlockingTimes(LoadTimingInfo* load_timing_info) {
 ///////////////////////////////////////////////////////////////////////////////
 // URLRequest::Delegate
 
+int URLRequest::Delegate::OnConnected(URLRequest* request) {
+  return OK;
+}
+
 void URLRequest::Delegate::OnReceivedRedirect(URLRequest* request,
                                               const RedirectInfo& redirect_info,
                                               bool* defer_redirect) {}
@@ -764,6 +768,10 @@ void URLRequest::set_status(int status) {
 
 bool URLRequest::failed() const {
   return (status_ != OK && status_ != ERR_IO_PENDING);
+}
+
+int URLRequest::NotifyConnected() {
+  return delegate_->OnConnected(this);
 }
 
 void URLRequest::NotifyReceivedRedirect(const RedirectInfo& redirect_info,

@@ -35,10 +35,8 @@ class Widget;
 class VIEWS_EXPORT CustomFrameView : public NonClientFrameView,
                                      public ButtonListener {
  public:
-  CustomFrameView();
+  explicit CustomFrameView(Widget* frame);
   ~CustomFrameView() override;
-
-  void Init(Widget* frame);
 
   // Overridden from NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;
@@ -142,16 +140,16 @@ class VIEWS_EXPORT CustomFrameView : public NonClientFrameView,
   gfx::Rect title_bounds_;
 
   // Not owned.
-  Widget* frame_ = nullptr;
+  Widget* const frame_;
 
   // The icon of this window. May be NULL.
   ImageButton* window_icon_ = nullptr;
 
   // Window caption buttons.
-  ImageButton* minimize_button_ = nullptr;
-  ImageButton* maximize_button_ = nullptr;
-  ImageButton* restore_button_ = nullptr;
-  ImageButton* close_button_ = nullptr;
+  ImageButton* minimize_button_;
+  ImageButton* maximize_button_;
+  ImageButton* restore_button_;
+  ImageButton* close_button_;
 
   // Background painter for the window frame.
   std::unique_ptr<FrameBackground> frame_background_;

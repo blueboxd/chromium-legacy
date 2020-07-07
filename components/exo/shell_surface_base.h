@@ -144,6 +144,7 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   void OnSetFrameColors(SkColor active_color, SkColor inactive_color) override;
   void OnSetStartupId(const char* startup_id) override;
   void OnSetApplicationId(const char* application_id) override;
+  void SetUseImmersiveForFullscreen(bool value) override;
   void OnActivationRequested() override;
 
   // SurfaceObserver:
@@ -199,6 +200,9 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   }
 
   Surface* surface_for_testing() { return root_surface(); }
+  bool get_shadow_bounds_changed_for_testing() {
+    return shadow_bounds_changed_;
+  }
 
  protected:
   // Creates the |widget_| for |surface_|. |show_state| is the initial state
@@ -248,6 +252,8 @@ class ShellSurfaceBase : public SurfaceTreeHost,
       views::Widget* widget,
       bool client_controlled);
 
+  virtual void OnPostWidgetCommit();
+
   views::Widget* widget_ = nullptr;
   aura::Window* parent_ = nullptr;
   bool movement_disabled_ = false;
@@ -284,7 +290,6 @@ class ShellSurfaceBase : public SurfaceTreeHost,
 
   // Commit is deferred if this returns false.
   virtual bool OnPreWidgetCommit() = 0;
-  virtual void OnPostWidgetCommit();
 
   void CommitWidget();
 
@@ -296,6 +301,7 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   bool pending_show_widget_ = false;
   base::Optional<std::string> application_id_;
   base::Optional<std::string> startup_id_;
+  bool immersive_implied_by_fullscreen_ = true;
   base::RepeatingClosure close_callback_;
   base::RepeatingClosure pre_close_callback_;
   base::OnceClosure surface_destroyed_callback_;

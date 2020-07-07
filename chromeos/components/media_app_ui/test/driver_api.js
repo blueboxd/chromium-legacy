@@ -30,6 +30,6 @@ let TestMessageRunTestCase;
  * guest app using `loadFiles()`. We pass `ReceivedFileList.files` since passing
  * `ReceivedFileList` through different contexts prunes methods and fails due to
  * observers.
- * @typedef {{fileList: ?Array<!ReceivedFile>}}
+ * @typedef {{fileList: ?Array<!mediaApp.AbstractFile>}}
  */
 let LastLoadedFilesResponse;

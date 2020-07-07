@@ -251,7 +251,6 @@
 
 #if defined(OS_MACOSX)
 #include "content/browser/child_process_task_port_provider_mac.h"
-#include "content/browser/renderer_host/text_input_client_message_filter.h"
 #include "content/browser/sandbox_support_mac_impl.h"
 #include "content/common/sandbox_support_mac.mojom.h"
 #endif
@@ -1987,9 +1986,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   AddFilter(new PepperRendererConnection(GetID()));
-#endif
-#if defined(OS_MACOSX)
-  AddFilter(new TextInputClientMessageFilter());
 #endif
 
   p2p_socket_dispatcher_host_ =

@@ -145,6 +145,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   //
   // The callbacks will be called in the following order:
   //   Start()
+  //    - OnConnected* (zero or more calls, see method comment)
   //    - OnCertificateRequested* (zero or more calls, if the SSL server and/or
   //      SSL proxy requests a client certificate for authentication)
   //    - OnSSLCertificateError* (zero or one call, if the SSL server's
@@ -161,6 +162,25 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // there is an error.
   class NET_EXPORT Delegate {
    public:
+    // Called each time a connection is obtained, before any data is sent.
+    //
+    // This may be called several times if the request creates multiple HTTP
+    // transactions, e.g. if the request is redirected. It may also be called
+    // several times per transaction, e.g. if the connection is retried, after
+    // each HTTP auth challenge, or for split HTTP range requests.
+    // TODO(crbug.com/986744): Verify range request behavior with tests.
+    //
+    // The delegate may call request->GetTransactionRemoteEndpoint() to
+    // determine where the latest connection terminates.
+    //
+    // If this returns an error, the request fails with the given error.
+    // Otherwise the request continues unimpeded.
+    // Must not return ERR_IO_PENDING.
+    //
+    // TODO(crbug.com/591068): Allow ERR_IO_PENDING for a potentially-slow
+    // CORS-RFC1918 preflight check.
+    virtual int OnConnected(URLRequest* request);
+
     // Called upon receiving a redirect.  The delegate may call the request's
     // Cancel method to prevent the redirect from being followed.  Since there
     // may be multiple chained redirects, there may also be more than one
@@ -691,9 +711,9 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
 
   // Sets a callback that will be invoked each time the request is about to
   // be actually sent and will receive actual request headers that are about
-  // to hit the wire, including SPDY/QUIC internal headers and any additional
-  // request headers set via BeforeSendHeaders hooks. Can only be set once
-  // before the request is started.
+  // to hit the wire, including SPDY/QUIC internal headers.
+  //
+  // Can only be set once before the request is started.
   void SetRequestHeadersCallback(RequestHeadersCallback callback);
 
   // Sets a callback that will be invoked each time the response is received
@@ -803,6 +823,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
 
   // These functions delegate to |delegate_|.  See URLRequest::Delegate for the
   // meaning of these functions.
+  int NotifyConnected();
   void NotifyAuthRequired(std::unique_ptr<AuthChallengeInfo> auth_info);
   void NotifyCertificateRequested(SSLCertRequestInfo* cert_request_info);
   void NotifySSLCertificateError(int net_error,

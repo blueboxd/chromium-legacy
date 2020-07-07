@@ -233,8 +233,7 @@ class NET_EXPORT URLRequestJob {
 
   // Sets a callback that will be invoked each time the request is about to
   // be actually sent and will receive actual request headers that are about
-  // to hit the wire, including SPDY/QUIC internal headers and any additional
-  // request headers set via BeforeSendHeaders hooks.
+  // to hit the wire, including SPDY/QUIC internal headers.
   virtual void SetRequestHeadersCallback(RequestHeadersCallback callback) {}
 
   // Sets a callback that will be invoked each time the response is received
@@ -256,6 +255,9 @@ class NET_EXPORT URLRequestJob {
       bool* same_origin_out_for_metrics = nullptr);
 
  protected:
+  // Notifies the job that we are connected.
+  int NotifyConnected();
+
   // Notifies the job that a certificate is requested.
   void NotifyCertificateRequested(SSLCertRequestInfo* cert_request_info);
 

@@ -83,7 +83,7 @@ component("gin") {
   deps = [ "//base/third_party/dynamic_annotations" ]
 
   if (is_mac) {
-    libs = [ "CoreFoundation.framework" ]
+    frameworks = [ "CoreFoundation.framework" ]
   }
 
   configs += [ "//v8:external_startup_data" ]

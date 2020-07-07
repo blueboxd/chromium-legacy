@@ -26,6 +26,9 @@ class LoginTooltipView : public LoginBaseBubbleView {
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   gfx::Point CalculatePosition() override;
 
+ protected:
+  views::Label* label() { return label_; }
+
  private:
   views::Label* label_ = nullptr;
 

@@ -1698,6 +1698,12 @@ bool LayoutObject::IsPaintInvalidationContainer() const {
          ToLayoutBoxModelObject(this)->Layer()->IsPaintInvalidationContainer();
 }
 
+bool LayoutObject::CanBeCompositedForDirectReasons() const {
+  return HasLayer() && ToLayoutBoxModelObject(this)
+                           ->Layer()
+                           ->CanBeCompositedForDirectReasons();
+}
+
 void LayoutObject::InvalidateDisplayItemClients(
     PaintInvalidationReason reason) const {
   // This default implementation invalidates only the object itself as a

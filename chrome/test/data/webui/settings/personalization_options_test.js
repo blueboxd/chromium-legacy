@@ -14,7 +14,6 @@ import {eventToPromise, isChildVisible, isVisible} from 'chrome://test/test_util
 
 // clang-format on
 
-
 suite('PersonalizationOptionsTests_AllBuilds', function() {
   /** @type {settings.TestPrivacyPageBrowserProxy} */
   let testBrowserProxy;
@@ -28,7 +27,6 @@ suite('PersonalizationOptionsTests_AllBuilds', function() {
   suiteSetup(function() {
     loadTimeData.overrideValues({
       driveSuggestAvailable: true,
-      privacySettingsRedesignEnabled: true,
     });
   });
 
@@ -72,15 +70,6 @@ suite('PersonalizationOptionsTests_AllBuilds', function() {
     };
     flush();
     assertFalse(!!testElement.$$('#driveSuggestControl'));
-  });
-
-  /**
-   *  TODO(crbug.com/1032584): This test verifies that the link doctor setting
-   * is removed as part of the privacy settings redesign. Consider removing
-   * the test once the redesign is fully launched.
-   */
-  test('LinkDoctor', function() {
-    assertFalse(!!testElement.$$('#linkDoctor'));
   });
 
   if (!isChromeOS) {
@@ -229,40 +218,5 @@ suite('PersonalizationOptionsTests_OfficialBuild', function() {
     flush();
     testElement.$.spellCheckControl.click();
     assertTrue(testElement.prefs.spellcheck.use_spelling_service.value);
-  });
-});
-
-suite('PersonalizationOptionsTests_AllBuilds_Old', function() {
-  /**
-   * Tests for changes in the personalization page when the
-   * |privacySettingsRedesignEnabled| flag is off.
-   * TODO(crbug.com/1032584): Remove this suite when the redesign is fully
-   * launched and the flag is removed.
-   */
-
-  /** @type {SettingsPersonalizationOptionsElement} */
-  let testElement;
-
-  suiteSetup(function() {
-    loadTimeData.overrideValues({
-      privacySettingsRedesignEnabled: false,
-    });
-  });
-
-  setup(function() {
-    PolymerTest.clearBody();
-    testElement = document.createElement('settings-personalization-options');
-    document.body.appendChild(testElement);
-    flush();
-  });
-
-  teardown(function() {
-    testElement.remove();
-  });
-
-  test('LinkDoctor', function() {
-    // The Link Doctor setting exists if the |privacySettingsRedesignEnabled|
-    // has not been turned on.
-    assertTrue(isChildVisible(testElement, '#linkDoctor'));
   });
 });

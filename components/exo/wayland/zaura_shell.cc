@@ -7,12 +7,15 @@
 #include <aura-shell-server-protocol.h>
 #include <wayland-server-core.h>
 #include <wayland-server-protocol-core.h>
+
 #include <algorithm>
 #include <limits>
 #include <memory>
 #include <utility>
 #include <vector>
 
+#include "ash/public/cpp/window_properties.h"
+#include "ash/wm/window_state.h"
 #include "components/exo/wayland/server_util.h"
 #include "components/exo/wayland/wayland_display_observer.h"
 #include "components/exo/wayland/wl_output.h"
@@ -137,6 +140,12 @@ void aura_surface_draw_attention(wl_client* client, wl_resource* resource) {
   GetUserDataAs<AuraSurface>(resource)->DrawAttention();
 }
 
+void aura_surface_set_fullscreen_mode(wl_client* client,
+                                      wl_resource* resource,
+                                      uint32_t mode) {
+  GetUserDataAs<AuraSurface>(resource)->SetFullscreenMode(mode);
+}
+
 const struct zaura_surface_interface aura_surface_implementation = {
     aura_surface_set_frame,
     aura_surface_set_parent,
@@ -147,7 +156,8 @@ const struct zaura_surface_interface aura_surface_implementation = {
     aura_surface_set_occlusion_tracking,
     aura_surface_unset_occlusion_tracking,
     aura_surface_activate,
-    aura_surface_draw_attention};
+    aura_surface_draw_attention,
+    aura_surface_set_fullscreen_mode};
 
 }  // namespace
 
@@ -215,6 +225,24 @@ void AuraSurface::DrawAttention() {
     return;
   // TODO(hollingum): implement me.
   LOG(WARNING) << "Surface requested attention, but that is not implemented";
+}
+
+void AuraSurface::SetFullscreenMode(uint32_t mode) {
+  if (!surface_)
+    return;
+
+  switch (mode) {
+    case ZAURA_SURFACE_FULLSCREEN_MODE_PLAIN:
+      surface_->SetUseImmersiveForFullscreen(false);
+      break;
+    case ZAURA_SURFACE_FULLSCREEN_MODE_IMMERSIVE:
+      surface_->SetUseImmersiveForFullscreen(true);
+      break;
+    default:
+      VLOG(2) << "aura_surface_set_fullscreen_mode(): unknown fullscreen_mode: "
+              << mode;
+      break;
+  }
 }
 
 // Overridden from SurfaceObserver:

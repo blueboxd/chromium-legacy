@@ -77,7 +77,8 @@ source_set("browser_test_support") {
 group("closure_compile") {
   testonly = true
   deps = [
-    ":closure_compile_tests",
+    ":closure_compile_browsertests",
+    ":closure_compile_test_lib",
     "resources/js:closure_compile",
     "resources/mock/js:closure_compile",
   ]
@@ -87,15 +88,28 @@ mojom("mojo_bindings") {
   sources = [ "media_app_ui.mojom" ]
 }
 
-media_test_closure_flags = system_app_closure_flags_strict + [ "hide_warnings_for=chromeos/components/media_app_ui/media_app_ui.mojom-lite-for-compile.js" ]
+media_test_lib_closure_flags = system_app_closure_flags_strict + [ "hide_warnings_for=chromeos/components/media_app_ui/media_app_ui.mojom-lite-for-compile.js" ]
 
-js_type_check("closure_compile_tests") {
+# Use relaxed flags for the browsertest files themselves. This removes null
+# checks and "could not determine type" errors which don't add a lot of value.
+media_browsertest_closure_flags = system_app_closure_flags + [ "hide_warnings_for=chromeos/components/media_app_ui/media_app_ui.mojom-lite-for-compile.js" ]
+
+js_type_check("closure_compile_test_lib") {
   testonly = true
-  closure_flags = media_test_closure_flags
+  closure_flags = media_test_lib_closure_flags
   deps = [
     ":test_driver_api_js",
     ":test_driver_js",
     ":test_guest_query_receiver_js",
+  ]
+}
+
+js_type_check("closure_compile_browsertests") {
+  testonly = true
+  closure_flags = media_browsertest_closure_flags
+  deps = [
+    ":test_media_app_guest_ui_browsertest_js",
+    ":test_media_app_ui_browsertest_js",
   ]
 }
 
@@ -124,10 +138,36 @@ js_library("test_guest_query_receiver_js") {
 js_library("test_driver_js") {
   testonly = true
   sources = [ "test/driver.js" ]
-  externs_list = [ "//third_party/chaijs/externs/chai-3.5.js" ]
+  externs_list = [
+    "resources/js/media_app.externs.js",
+    "//third_party/chaijs/externs/chai-3.5.js",
+  ]
   deps = [
     ":test_driver_api_js",
     "//chromeos/components/media_app_ui/resources/js:launch",
+    "//chromeos/components/media_app_ui/resources/js:message_pipe",
+  ]
+}
+
+js_library("test_media_app_ui_browsertest_js") {
+  testonly = true
+  sources = [ "test/media_app_ui_browsertest.js" ]
+  externs_list =
+      [ "//chromeos/components/web_applications/js2gtest_support.externs.js" ]
+  deps = [
+    ":test_driver_js",
+    "//chromeos/components/media_app_ui/resources/js:launch",
+    "//chromeos/components/media_app_ui/resources/js:message_pipe",
+  ]
+}
+
+js_library("test_media_app_guest_ui_browsertest_js") {
+  testonly = true
+  sources = [ "test/media_app_guest_ui_browsertest.js" ]
+  externs_list =
+      [ "//chromeos/components/web_applications/js2gtest_support.externs.js" ]
+  deps = [
+    ":test_driver_js",
     "//chromeos/components/media_app_ui/resources/js:message_pipe",
   ]
 }

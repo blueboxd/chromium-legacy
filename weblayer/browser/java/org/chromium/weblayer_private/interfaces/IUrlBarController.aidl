@@ -7,5 +7,13 @@ package org.chromium.weblayer_private.interfaces;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 
 interface IUrlBarController {
-  IObjectWrapper /* View */ createUrlBarView(in Bundle options) = 0;
+
+  // Deprecated in 84, use createUrlBarView with three arguments.
+  IObjectWrapper /* View */ deprecatedCreateUrlBarView(in Bundle options) = 0;
+
+  // Since 86
+  IObjectWrapper /* View */ createUrlBarView(
+      in Bundle options,
+      in IObjectWrapper /* View.OnClickListener */ textClickListener,
+      in IObjectWrapper /* View.OnLongClickListener */ textLongClickListener) = 1;
 }

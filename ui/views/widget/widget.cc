@@ -478,6 +478,14 @@ void Widget::SetContentsView(View* view) {
   if (view == GetContentsView())
     return;
 
+  // |non_client_view_| can only be non-null here if RequiresNonClientView() was
+  // true when the widget was initialized. Creating widgets with non-client
+  // views and then setting the contents view can cause subtle problems on
+  // Windows, where the native widget thinks there is still a
+  // |non_client_view_|. If you get this error, either use a different type when
+  // initializing the widget, or don't call SetContentsView().
+  DCHECK(!non_client_view_);
+
   root_view_->SetContentsView(view);
 
   // Force a layout now, since the attached hierarchy won't be ready for the
@@ -485,17 +493,6 @@ void Widget::SetContentsView(View* view) {
   // calling the widget's size changed handler, since the RootView's bounds may
   // not have changed, which will cause the Layout not to be done otherwise.
   root_view_->Layout();
-
-  if (non_client_view_ != view) {
-    // |non_client_view_| can only be non-NULL here if RequiresNonClientView()
-    // was true when the widget was initialized. Creating widgets with non
-    // client views and then setting the contents view can cause subtle
-    // problems on Windows, where the native widget thinks there is still a
-    // |non_client_view_|. If you get this error, either use a different type
-    // when initializing the widget, or don't call SetContentsView().
-    DCHECK(!non_client_view_);
-    non_client_view_ = nullptr;
-  }
 }
 
 View* Widget::GetContentsView() {
@@ -909,9 +906,7 @@ std::unique_ptr<NonClientFrameView> Widget::CreateNonClientFrameView() {
   if (frame_view)
     return frame_view;
 
-  auto custom_frame_view = std::make_unique<CustomFrameView>();
-  custom_frame_view->Init(this);
-  return custom_frame_view;
+  return std::make_unique<CustomFrameView>(this);
 }
 
 bool Widget::ShouldUseNativeFrame() const {

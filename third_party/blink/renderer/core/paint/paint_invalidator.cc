@@ -200,9 +200,7 @@ void PaintInvalidator::UpdateDirectlyCompositedContainer(
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
-  if (object.HasLayer() && ToLayoutBoxModelObject(object)
-                               .Layer()
-                               ->CanBeCompositedForDirectReasons()) {
+  if (object.CanBeCompositedForDirectReasons()) {
     context.directly_composited_container = ToLayoutBoxModelObject(&object);
     if (object.IsStackingContext() || object.IsSVGRoot())
       context.directly_composited_container_for_stacked_contents =

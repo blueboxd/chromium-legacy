@@ -169,12 +169,6 @@ std::unique_ptr<ImageDecoder> ImageDecoder::Create(
   if (type.IsEmpty())
     return nullptr;
 
-  // On low end devices, always decode to 8888.
-  if (high_bit_depth_decoding_option == kHighBitDepthToHalfFloat &&
-      Platform::Current() && Platform::Current()->IsLowEndDevice()) {
-    high_bit_depth_decoding_option = kDefaultBitDepth;
-  }
-
   return CreateByMimeType(type, std::move(data), data_complete, alpha_option,
                           high_bit_depth_decoding_option, color_behavior,
                           allow_decode_to_yuv, desired_size, animation_option);
@@ -623,6 +617,10 @@ bool ImageDecoder::InitFrameBuffer(size_t frame_index) {
       buffer->ZeroFillFrameRect(prev_rect);
     }
   }
+
+  DCHECK_EQ(high_bit_depth_decoding_option_ == kHighBitDepthToHalfFloat &&
+                ImageIsHighBitDepth(),
+            buffer->GetPixelFormat() == ImageFrame::kRGBA_F16);
 
   OnInitFrameBuffer(frame_index);
 

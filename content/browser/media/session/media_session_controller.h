@@ -41,7 +41,7 @@ class CONTENT_EXPORT MediaSessionController
 
   // Must be called when a pause occurs on the renderer side media player; keeps
   // the MediaSession instance in sync with renderer side behavior.
-  virtual void OnPlaybackPaused();
+  void OnPlaybackPaused();
 
   // MediaSessionObserver implementation.
   void OnSuspend(int player_id) override;

@@ -75,6 +75,8 @@ if (enable_pdf) {
       "pdf_ppapi.cc",
       "pdf_transform.cc",
       "pdf_transform.h",
+      "ppapi_migration/callback.cc",
+      "ppapi_migration/callback.h",
       "ppapi_migration/geometry_conversions.cc",
       "ppapi_migration/geometry_conversions.h",
       "preview_mode_client.cc",

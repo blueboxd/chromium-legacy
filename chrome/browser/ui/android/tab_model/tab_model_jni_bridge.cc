@@ -31,22 +31,11 @@ using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 using content::WebContents;
 
-namespace {
-
-static Profile* FindProfile(jboolean is_incognito) {
-  Profile* profile = ProfileManager::GetActiveUserProfile();
-  if (is_incognito)
-    return profile->GetOffTheRecordProfile();
-  return profile;
-}
-
-}  // namespace
-
 TabModelJniBridge::TabModelJniBridge(JNIEnv* env,
                                      jobject jobj,
-                                     bool is_incognito,
+                                     Profile* profile,
                                      bool is_tabbed_activity)
-    : TabModel(FindProfile(is_incognito), is_tabbed_activity),
+    : TabModel(profile, is_tabbed_activity),
       java_object_(env, env->NewWeakGlobalRef(jobj)) {
   TabModelList::AddTabModel(this);
 }
@@ -73,7 +62,9 @@ void TabModelJniBridge::TabAddedToModel(JNIEnv* env,
   if (tab)
     tab->SetWindowSessionID(GetSessionId());
 
-  if (IsOffTheRecord())
+  // Count tabs that are used for incognito mode inside the browser (excluding
+  // off-the-record tabs for incognito CCTs, etc.).
+  if (GetProfile()->IsIncognitoProfile())
     UMA_HISTOGRAM_COUNTS_100("Tab.Count.Incognito", GetTabCount());
 }
 
@@ -90,9 +81,12 @@ int TabModelJniBridge::GetActiveIndex() const {
 void TabModelJniBridge::CreateTab(TabAndroid* parent,
                                   WebContents* web_contents) {
   JNIEnv* env = AttachCurrentThread();
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+
   Java_TabModelJniBridge_createTabWithWebContents(
       env, java_object_.get(env), (parent ? parent->GetJavaObject() : nullptr),
-      web_contents->GetBrowserContext()->IsOffTheRecord(),
+      ProfileAndroid::FromProfile(profile)->GetJavaObject(),
       web_contents->GetJavaWebContents());
 }
 
@@ -270,9 +264,10 @@ TabModelJniBridge::~TabModelJniBridge() {
 
 static jlong JNI_TabModelJniBridge_Init(JNIEnv* env,
                                         const JavaParamRef<jobject>& obj,
-                                        jboolean is_incognito,
+                                        const JavaParamRef<jobject>& j_profile,
                                         jboolean is_tabbed_activity) {
-  TabModel* tab_model =
-      new TabModelJniBridge(env, obj, is_incognito, is_tabbed_activity);
+  TabModel* tab_model = new TabModelJniBridge(
+      env, obj, ProfileAndroid::FromProfileAndroid(j_profile),
+      is_tabbed_activity);
   return reinterpret_cast<intptr_t>(tab_model);
 }

@@ -10,7 +10,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
@@ -1354,89 +1353,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
   }
 }
 
-// The original TextInputClientMessageFilter is added during the initialization
-// phase of RenderProcessHost. The only chance we have to add the test filter
-// (so that it can receive the TextInputClientMac incoming IPC messages) is
-// during the call to RenderProcessWillLaunch() on ContentBrowserClient. This
-// class provides that for testing.
-class TestBrowserClient : public ChromeContentBrowserClient {
- public:
-  TestBrowserClient() {
-    old_client_ = content::SetBrowserClientForTesting(this);
-  }
-
-  ~TestBrowserClient() override {
-    content::SetBrowserClientForTesting(old_client_);
-  }
-
-  // ContentBrowserClient overrides.
-  void RenderProcessWillLaunch(
-      content::RenderProcessHost* process_host) override {
-    ChromeContentBrowserClient::RenderProcessWillLaunch(process_host);
-    filters_.push_back(
-        new content::TestTextInputClientMessageFilter(process_host));
-  }
-
-  // Retrieves the registered filter for the given RenderProcessHost. It will
-  // return false if the RenderProcessHost was initialized while a different
-  // instance of ContentBrowserClient was in action.
-  scoped_refptr<content::TestTextInputClientMessageFilter>
-  GetTextInputClientMessageFilterForProcess(
-      content::RenderProcessHost* process_host) const {
-    for (auto filter : filters_) {
-      if (filter->process() == process_host)
-        return filter;
-    }
-    return nullptr;
-  }
-
- private:
-  content::ContentBrowserClient* old_client_ = nullptr;
-  std::vector<scoped_refptr<content::TestTextInputClientMessageFilter>>
-      filters_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestBrowserClient);
-};
-
-// Earlier injection of TestBrowserClient (a ContentBrowserClient) is needed to
-// make sure it is active during creation of the first spare RenderProcessHost.
-// Without this change, the tests would be surprised that they cannot find an
-// injected message filter via GetTextInputClientMessageFilterForProcess.
-class SitePerProcessCustomTextInputManagerFilteringTest
-    : public SitePerProcessTextInputManagerTest {
- public:
-  SitePerProcessCustomTextInputManagerFilteringTest() {}
-  ~SitePerProcessCustomTextInputManagerFilteringTest() override {}
-
-  void CreatedBrowserMainParts(content::BrowserMainParts* parts) override {
-    SitePerProcessTextInputManagerTest::CreatedBrowserMainParts(parts);
-    browser_client_ = std::make_unique<TestBrowserClient>();
-  }
-
-  void TearDown() override {
-    browser_client_.reset();
-    SitePerProcessTextInputManagerTest::TearDown();
-  }
-
-  scoped_refptr<content::TestTextInputClientMessageFilter>
-  GetTextInputClientMessageFilterForProcess(
-      content::RenderProcessHost* process_host) const {
-    return browser_client_->GetTextInputClientMessageFilterForProcess(
-        process_host);
-  }
-
- private:
-  std::unique_ptr<TestBrowserClient> browser_client_;
-
-  DISALLOW_COPY_AND_ASSIGN(SitePerProcessCustomTextInputManagerFilteringTest);
-};
-
 // This test verifies that when a word lookup result comes from the renderer
 // after the target RenderWidgetHost has been deleted, the browser will not
 // crash. This test covers the case where the target RenderWidgetHost is that of
 // an OOPIF.
 IN_PROC_BROWSER_TEST_F(
-    SitePerProcessCustomTextInputManagerFilteringTest,
+    SitePerProcessTextInputManagerTest,
     DoNotCrashBrowserInWordLookUpForDestroyedWidget_ChildFrame) {
   std::unique_ptr<content::WebContents> new_contents =
       content::WebContents::Create(content::WebContents::CreateParams(
@@ -1457,25 +1379,23 @@ IN_PROC_BROWSER_TEST_F(
                             "document.querySelector('input').focus();"
                             "document.querySelector('input').select();"));
 
-  content::RenderWidgetHostView* child_view = child_frame->GetView();
-  scoped_refptr<content::TestTextInputClientMessageFilter>
-      child_message_filter = GetTextInputClientMessageFilterForProcess(
-          child_view->GetRenderWidgetHost()->GetProcess());
-  DCHECK(child_message_filter);
+  content::TextInputTestLocalFrame text_input_local_frame;
+  text_input_local_frame.SetUp(child_frame);
 
   // We need to wait for test scenario to complete before leaving this block.
   base::RunLoop test_complete_waiter;
 
   // Destroy the RenderWidgetHost from the browser side right after the
-  // dictionary IPC is received. The destruction is post tasked to UI thread.
-  int32_t child_process_id =
-      child_view->GetRenderWidgetHost()->GetProcess()->GetID();
+  // dictionary message is received. The destruction is post tasked to UI
+  // thread.
+  int32_t child_process_id = child_frame->GetProcess()->GetID();
   int32_t child_frame_routing_id = child_frame->GetRoutingID();
-  child_message_filter->SetStringForRangeCallback(base::Bind(
+
+  text_input_local_frame.SetStringForRangeCallback(base::Bind(
       [](int32_t process_id, int32_t routing_id,
          const base::Closure& callback_on_io) {
-        // This runs before TextInputClientMac gets to handle the IPC. Then,
-        // by the time TextInputClientMac calls back into UI to show the
+        // This runs before TextInputClientMac gets to handle the mojo message.
+        // Then, by the time TextInputClientMac calls back into UI to show the
         // dictionary, the target RWH is already destroyed which will be a
         // close enough repro for the crash in https://crbug.com/737032.
         ASSERT_TRUE(content::DestroyRenderWidgetHost(process_id, routing_id));
@@ -1506,7 +1426,7 @@ IN_PROC_BROWSER_TEST_F(
 // crash. This test covers the case where the target RenderWidgetHost is that of
 // the main frame (no OOPIFs on page).
 IN_PROC_BROWSER_TEST_F(
-    SitePerProcessCustomTextInputManagerFilteringTest,
+    SitePerProcessTextInputManagerTest,
     DoNotCrashBrowserInWordLookUpForDestroyedWidget_MainFrame) {
   std::unique_ptr<content::WebContents> new_contents =
       content::WebContents::Create(content::WebContents::CreateParams(
@@ -1526,25 +1446,24 @@ IN_PROC_BROWSER_TEST_F(
                             "document.querySelector('input').focus();"
                             "document.querySelector('input').select();"));
 
+  content::TextInputTestLocalFrame text_input_local_frame;
+  text_input_local_frame.SetUp(main_frame);
+
   content::RenderWidgetHostView* page_rwhv = main_frame->GetView();
-  scoped_refptr<content::TestTextInputClientMessageFilter> message_filter =
-      GetTextInputClientMessageFilterForProcess(
-          page_rwhv->GetRenderWidgetHost()->GetProcess());
-  DCHECK(message_filter);
 
   // We need to wait for test scenario to complete before leaving this block.
   base::RunLoop test_complete_waiter;
 
   // Destroy the RenderWidgetHost from the browser side right after the
-  // dictionary IPC is received. The destruction is post tasked to UI thread.
-  int32_t main_frame_process_id =
-      page_rwhv->GetRenderWidgetHost()->GetProcess()->GetID();
+  // dictionary message is received. The destruction is post tasked to UI
+  // thread.
+  int32_t main_frame_process_id = main_frame->GetProcess()->GetID();
   int32_t main_frame_routing_id = main_frame->GetRoutingID();
-  message_filter->SetStringForRangeCallback(base::Bind(
+  text_input_local_frame.SetStringForRangeCallback(base::Bind(
       [](int32_t process_id, int32_t routing_id,
          const base::Closure& callback_on_io) {
-        // This runs before TextInputClientMac gets to handle the IPC. Then,
-        // by the time TextInputClientMac calls back into UI to show the
+        // This runs before TextInputClientMac gets to handle the mojo message.
+        // Then, by the time TextInputClientMac calls back into UI to show the
         // dictionary, the target RWH is already destroyed which will be a
         // close enough repro for the crash in https://crbug.com/737032.
         ASSERT_TRUE(content::DestroyRenderWidgetHost(process_id, routing_id));

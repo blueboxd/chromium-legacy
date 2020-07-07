@@ -813,7 +813,8 @@ int MigrateShortcutsInPathInternal(const base::FilePath& chrome_exe,
     // TODO(gab): Use ProgramCompare instead of comparing FilePaths below once
     // it is fixed to work with FilePaths with spaces.
     if (!base::win::ResolveShortcut(shortcut, &target_path, &arguments) ||
-        chrome_exe != target_path) {
+        !base::FilePath::CompareEqualIgnoreCase(chrome_exe.value(),
+                                                target_path.value())) {
       continue;
     }
     base::CommandLine command_line(

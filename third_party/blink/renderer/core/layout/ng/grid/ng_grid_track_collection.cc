@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/layout/ng/grid/ng_grid_track_collection.h"
+
 #include "base/check.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -48,6 +49,11 @@ wtf_size_t NGGridTrackCollectionBase::RangeIndexFromTrackNumber(
   return lower;
 }
 
+NGGridTrackCollectionBase::RangeRepeatIterator
+NGGridTrackCollectionBase::RangeIterator() const {
+  return RangeRepeatIterator(this, 0u);
+}
+
 String NGGridTrackCollectionBase::ToString() const {
   if (RangeCount() == kInvalidRangeIndex)
     return "NGGridTrackCollection: Empty";
@@ -80,12 +86,20 @@ NGGridTrackCollectionBase::RangeRepeatIterator::RangeRepeatIterator(
   SetRangeIndex(range_index);
 }
 
+bool NGGridTrackCollectionBase::RangeRepeatIterator::IsAtEnd() const {
+  return range_index_ == kInvalidRangeIndex;
+}
+
 bool NGGridTrackCollectionBase::RangeRepeatIterator::MoveToNextRange() {
   return SetRangeIndex(range_index_ + 1);
 }
 
 wtf_size_t NGGridTrackCollectionBase::RangeRepeatIterator::RepeatCount() const {
   return range_track_count_;
+}
+
+wtf_size_t NGGridTrackCollectionBase::RangeRepeatIterator::RangeIndex() const {
+  return range_index_;
 }
 
 wtf_size_t NGGridTrackCollectionBase::RangeRepeatIterator::RangeTrackStart()
@@ -108,7 +122,7 @@ bool NGGridTrackCollectionBase::RangeRepeatIterator::IsRangeCollapsed() const {
 
 bool NGGridTrackCollectionBase::RangeRepeatIterator::SetRangeIndex(
     wtf_size_t range_index) {
-  if (range_index < 0 || range_index >= range_count_) {
+  if (range_index >= range_count_) {
     // Invalid index.
     range_index_ = kInvalidRangeIndex;
     range_track_start_ = kInvalidRangeIndex;
@@ -122,11 +136,11 @@ bool NGGridTrackCollectionBase::RangeRepeatIterator::SetRangeIndex(
   return true;
 }
 
-NGGridTrackRepeater::NGGridTrackRepeater(wtf_size_t track_index,
+NGGridTrackRepeater::NGGridTrackRepeater(wtf_size_t repeat_index,
                                          wtf_size_t repeat_size,
                                          wtf_size_t repeat_count,
                                          AutoRepeatType repeat_type)
-    : track_index(track_index),
+    : repeat_index(repeat_index),
       repeat_size(repeat_size),
       repeat_count(repeat_count),
       repeat_type(repeat_type) {}
@@ -134,7 +148,7 @@ NGGridTrackRepeater::NGGridTrackRepeater(wtf_size_t track_index,
 String NGGridTrackRepeater::ToString() const {
   StringBuilder builder;
   builder.Append("Repeater: [Index: ");
-  builder.AppendNumber<wtf_size_t>(track_index);
+  builder.AppendNumber<wtf_size_t>(repeat_index);
   builder.Append("], [RepeatSize: ");
   builder.AppendNumber<wtf_size_t>(repeat_size);
   builder.Append("], [RepeatCount: ");
@@ -153,10 +167,9 @@ String NGGridTrackRepeater::ToString() const {
   return builder.ToString();
 }
 
-NGGridTrackList::NGGridTrackList() {
-  auto_repeater_index_ = NGGridTrackCollectionBase::kInvalidRangeIndex;
-  total_track_count_ = 0;
-}
+NGGridTrackList::NGGridTrackList()
+    : auto_repeater_index_(NGGridTrackCollectionBase::kInvalidRangeIndex),
+      total_track_count_(0) {}
 
 wtf_size_t NGGridTrackList::RepeatCount(wtf_size_t index,
                                         wtf_size_t auto_value) const {
@@ -176,6 +189,16 @@ AutoRepeatType NGGridTrackList::RepeatType(wtf_size_t index) const {
   return repeaters_[index].repeat_type;
 }
 
+const GridTrackSize& NGGridTrackList::RepeatTrackSize(wtf_size_t index,
+                                                      wtf_size_t n) const {
+  DCHECK_LT(index, RepeaterCount());
+  DCHECK_LT(n, RepeatSize(index));
+
+  wtf_size_t repeat_index = repeaters_[index].repeat_index;
+  DCHECK_LT(repeat_index + n, repeater_track_sizes_.size());
+  return repeater_track_sizes_[repeat_index + n];
+}
+
 wtf_size_t NGGridTrackList::RepeaterCount() const {
   return repeaters_.size();
 }
@@ -184,54 +207,51 @@ wtf_size_t NGGridTrackList::TotalTrackCount() const {
   return total_track_count_;
 }
 
-bool NGGridTrackList::AddRepeater(wtf_size_t track_index,
-                                  wtf_size_t track_count,
-                                  wtf_size_t repeat_count) {
-  return AddRepeater(track_index, track_count, repeat_count,
-                     AutoRepeatType::kNoAutoRepeat);
+bool NGGridTrackList::AddRepeater(
+    const Vector<GridTrackSize>& repeater_track_sizes,
+    wtf_size_t repeat_count) {
+  return AddRepeater(repeater_track_sizes, AutoRepeatType::kNoAutoRepeat,
+                     repeat_count);
 }
 
-bool NGGridTrackList::AddAutoRepeater(wtf_size_t track_index,
-                                      wtf_size_t track_count,
-                                      AutoRepeatType repeat_type) {
-  return AddRepeater(track_index, track_count, 1u, repeat_type);
+bool NGGridTrackList::AddAutoRepeater(
+    const Vector<GridTrackSize>& repeater_track_sizes,
+    AutoRepeatType repeat_type) {
+  return AddRepeater(repeater_track_sizes, repeat_type, 1u);
 }
 
-bool NGGridTrackList::AddRepeater(wtf_size_t track_index,
-                                  wtf_size_t track_count,
-                                  wtf_size_t repeat_count,
-                                  AutoRepeatType repeat_type) {
-  // Ensure valid track index.
-  DCHECK_NE(NGGridTrackCollectionBase::kInvalidRangeIndex, track_index);
-
-#if DCHECK_IS_ON()
-  // Ensure we do not skip or overlap tracks.
-  DCHECK(IsTrackContiguous(track_index));
-#endif
+bool NGGridTrackList::AddRepeater(
+    const Vector<GridTrackSize>& repeater_track_sizes,
+    AutoRepeatType repeat_type,
+    wtf_size_t repeat_count) {
+  if (repeat_count == 0u || repeater_track_sizes.IsEmpty())
+    return false;
 
   // If the repeater is auto, the repeat_count should be 1.
   DCHECK(repeat_type == AutoRepeatType::kNoAutoRepeat || repeat_count == 1u);
 
   // Ensure adding tracks will not overflow the total in this track list and
   // that there is only one auto repeater per track list.
+  wtf_size_t repeat_size = repeater_track_sizes.size();
   switch (repeat_type) {
     case AutoRepeatType::kNoAutoRepeat:
-      if (track_count > AvailableTrackCount() / repeat_count)
+      if (repeat_size > AvailableTrackCount() / repeat_count)
         return false;
-      total_track_count_ += track_count * repeat_count;
+      total_track_count_ += repeat_size * repeat_count;
       break;
     case AutoRepeatType::kAutoFill:
     case AutoRepeatType::kAutoFit:  // Intentional Fallthrough.
-      if (HasAutoRepeater() || track_count > AvailableTrackCount())
+      if (HasAutoRepeater() || repeat_size > AvailableTrackCount())
         return false;
-      total_track_count_ += track_count;
+      total_track_count_ += repeat_size;
       // Update auto repeater index and append repeater.
       auto_repeater_index_ = repeaters_.size();
       break;
   }
 
-  repeaters_.emplace_back(track_index, track_count, repeat_count, repeat_type);
-
+  repeaters_.emplace_back(repeater_track_sizes_.size(), repeat_size,
+                          repeat_count, repeat_type);
+  repeater_track_sizes_.AppendVector(repeater_track_sizes);
   return true;
 }
 
@@ -256,33 +276,25 @@ wtf_size_t NGGridTrackList::AvailableTrackCount() const {
   return NGGridTrackCollectionBase::kMaxRangeIndex - total_track_count_;
 }
 
-#if DCHECK_IS_ON()
-bool NGGridTrackList::IsTrackContiguous(wtf_size_t track_index) const {
-  return repeaters_.IsEmpty() ||
-         (repeaters_.back().track_index + repeaters_.back().repeat_size ==
-          track_index);
-}
-#endif
-
 void NGGridBlockTrackCollection::SetSpecifiedTracks(
-    const NGGridTrackList& specified_tracks,
-    wtf_size_t auto_repeat_count,
-    const NGGridTrackList& implicit_tracks) {
+    const NGGridTrackList& explicit_tracks,
+    const NGGridTrackList& implicit_tracks,
+    wtf_size_t auto_repeat_count) {
   // The implicit track list should have only one repeater, if any.
   DCHECK_LE(implicit_tracks.RepeaterCount(), 1u);
   DCHECK_NE(NGGridTrackCollectionBase::kInvalidRangeIndex, auto_repeat_count);
-  specified_tracks_ = specified_tracks;
+  explicit_tracks_ = explicit_tracks;
   implicit_tracks_ = implicit_tracks;
   auto_repeat_count_ = auto_repeat_count;
 
-  wtf_size_t repeater_count = specified_tracks_.RepeaterCount();
+  wtf_size_t repeater_count = explicit_tracks_.RepeaterCount();
   wtf_size_t total_track_count = 0;
 
   for (wtf_size_t i = 0; i < repeater_count; ++i) {
     wtf_size_t repeater_track_start = total_track_count + 1;
     wtf_size_t repeater_track_count =
-        specified_tracks_.RepeatCount(i, auto_repeat_count_) *
-        specified_tracks_.RepeatSize(i);
+        explicit_tracks_.RepeatCount(i, auto_repeat_count_) *
+        explicit_tracks_.RepeatSize(i);
     if (repeater_track_count != 0) {
       starting_tracks_.push_back(repeater_track_start);
       ending_tracks_.push_back(repeater_track_start + repeater_track_count - 1);
@@ -322,7 +334,7 @@ void NGGridBlockTrackCollection::FinalizeRanges() {
   wtf_size_t next_repeater_track_start = 1u;
   wtf_size_t current_repeater_track_count = 0;
 
-  wtf_size_t total_repeater_count = specified_tracks_.RepeaterCount();
+  wtf_size_t total_repeater_count = explicit_tracks_.RepeaterCount();
   wtf_size_t open_items_or_repeaters = 0;
   bool is_in_auto_fit_range = false;
 
@@ -365,11 +377,11 @@ void NGGridBlockTrackCollection::FinalizeRanges() {
         break;
       }
 
-      is_in_auto_fit_range = specified_tracks_.RepeatType(repeater_index) ==
+      is_in_auto_fit_range = explicit_tracks_.RepeatType(repeater_index) ==
                              AutoRepeatType::kAutoFit;
       current_repeater_track_count =
-          specified_tracks_.RepeatCount(repeater_index, auto_repeat_count_) *
-          specified_tracks_.RepeatSize(repeater_index);
+          explicit_tracks_.RepeatCount(repeater_index, auto_repeat_count_) *
+          explicit_tracks_.RepeatSize(repeater_index);
       repeater_track_start = next_repeater_track_start;
       next_repeater_track_start += current_repeater_track_count;
     }
@@ -394,18 +406,9 @@ void NGGridBlockTrackCollection::FinalizeRanges() {
         range.repeater_offset = 0;
       } else {
         // Use implicit tracks.
-        wtf_size_t implicit_repeat_size = ImplicitRepeatSize();
         range.repeater_index = 0;
-        if (range.starting_track_number == 0) {
-          wtf_size_t offset_from_end =
-              (1 - range.starting_track_number) % implicit_repeat_size;
-          if (offset_from_end == implicit_repeat_size) {
-            range.repeater_offset = 0;
-          } else {
-            range.repeater_offset =
-                current_range_track_start - repeater_track_start;
-          }
-        }
+        range.repeater_offset =
+            current_range_track_start - repeater_track_start;
       }
     } else {
       range.is_implicit_range = false;
@@ -422,7 +425,7 @@ void NGGridBlockTrackCollection::FinalizeRanges() {
   while (repeater_index != kInvalidRangeIndex &&
          repeater_index < total_repeater_count - 1u) {
     ++repeater_index;
-    DCHECK_EQ(0u, specified_tracks_.RepeatSize(repeater_index));
+    DCHECK_EQ(0u, explicit_tracks_.RepeatSize(repeater_index));
   }
 #endif
   DCHECK_EQ(starting_tracks_index, starting_tracks_.size());
@@ -435,23 +438,30 @@ void NGGridBlockTrackCollection::FinalizeRanges() {
 
 const NGGridBlockTrackCollection::Range&
 NGGridBlockTrackCollection::RangeAtRangeIndex(wtf_size_t range_index) const {
-  DCHECK_NE(range_index, kInvalidRangeIndex);
   DCHECK_LT(range_index, ranges_.size());
   return ranges_[range_index];
 }
+
 const NGGridBlockTrackCollection::Range&
 NGGridBlockTrackCollection::RangeAtTrackNumber(wtf_size_t track_number) const {
   wtf_size_t range_index = RangeIndexFromTrackNumber(track_number);
-  DCHECK_NE(range_index, kInvalidRangeIndex);
   DCHECK_LT(range_index, ranges_.size());
   return ranges_[range_index];
+}
+
+const NGGridTrackList& NGGridBlockTrackCollection::ExplicitTracks() const {
+  return explicit_tracks_;
+}
+
+const NGGridTrackList& NGGridBlockTrackCollection::ImplicitTracks() const {
+  return implicit_tracks_;
 }
 
 String NGGridBlockTrackCollection::ToString() const {
   if (ranges_.IsEmpty()) {
     StringBuilder builder;
     builder.Append("NGGridTrackCollection: [SpecifiedTracks: ");
-    builder.Append(specified_tracks_.ToString());
+    builder.Append(explicit_tracks_.ToString());
     if (HasImplicitTracks()) {
       builder.Append("], [ImplicitTracks: ");
       builder.Append(implicit_tracks_.ToString());
@@ -475,9 +485,11 @@ String NGGridBlockTrackCollection::ToString() const {
     return NGGridTrackCollectionBase::ToString();
   }
 }
+
 bool NGGridBlockTrackCollection::HasImplicitTracks() const {
   return implicit_tracks_.RepeaterCount() != 0;
 }
+
 wtf_size_t NGGridBlockTrackCollection::ImplicitRepeatSize() const {
   DCHECK(HasImplicitTracks());
   return implicit_tracks_.RepeatSize(0);
@@ -503,6 +515,165 @@ bool NGGridBlockTrackCollection::IsRangeCollapsed(
 
 wtf_size_t NGGridBlockTrackCollection::RangeCount() const {
   return ranges_.size();
+}
+
+NGGridSet::NGGridSet(wtf_size_t track_count, bool is_collapsed)
+    : track_count_(track_count), track_size_(Length::Auto()) {
+  if (is_collapsed) {
+    // From https://www.w3.org/TR/css-grid-1/#collapsed-track:
+    // A collapsed track is treated as having a fixed size of '0px'.
+    track_size_ = GridTrackSize(Length::Fixed());
+  }
+}
+
+NGGridSet::NGGridSet(wtf_size_t track_count, const GridTrackSize& track_size)
+    : track_count_(track_count), track_size_(track_size) {}
+
+NGGridLayoutAlgorithmTrackCollection::Range::Range(
+    const NGGridBlockTrackCollection::Range& block_track_range,
+    wtf_size_t starting_set_index)
+    : starting_track_number(block_track_range.starting_track_number),
+      track_count(block_track_range.track_count),
+      starting_set_index(starting_set_index),
+      is_collapsed(block_track_range.is_collapsed) {}
+
+NGGridLayoutAlgorithmTrackCollection::SetIterator::SetIterator(
+    NGGridLayoutAlgorithmTrackCollection* collection,
+    wtf_size_t begin_set_index,
+    wtf_size_t end_set_index)
+    : collection_(collection),
+      current_set_index_(begin_set_index),
+      end_set_index_(end_set_index) {
+  DCHECK(collection_);
+  DCHECK_LE(current_set_index_, end_set_index_);
+}
+
+bool NGGridLayoutAlgorithmTrackCollection::SetIterator::IsAtEnd() const {
+  DCHECK_LE(current_set_index_, end_set_index_);
+  return current_set_index_ == end_set_index_;
+}
+
+bool NGGridLayoutAlgorithmTrackCollection::SetIterator::MoveToNextSet() {
+  current_set_index_ = std::min(current_set_index_ + 1, end_set_index_);
+  return current_set_index_ < end_set_index_;
+}
+
+NGGridSet& NGGridLayoutAlgorithmTrackCollection::SetIterator::CurrentSet()
+    const {
+  DCHECK_LT(current_set_index_, end_set_index_);
+  return collection_->SetAt(current_set_index_);
+}
+
+NGGridLayoutAlgorithmTrackCollection::NGGridLayoutAlgorithmTrackCollection(
+    const NGGridBlockTrackCollection& block_track_collection) {
+  RangeRepeatIterator range_iterator = block_track_collection.RangeIterator();
+
+  while (!range_iterator.IsAtEnd()) {
+    const NGGridBlockTrackCollection::Range& block_track_range =
+        block_track_collection.RangeAtRangeIndex(range_iterator.RangeIndex());
+    AppendTrackRange(block_track_range,
+                     block_track_range.is_implicit_range
+                         ? block_track_collection.ImplicitTracks()
+                         : block_track_collection.ExplicitTracks());
+    range_iterator.MoveToNextRange();
+  }
+}
+
+void NGGridLayoutAlgorithmTrackCollection::AppendTrackRange(
+    const NGGridBlockTrackCollection::Range& block_track_range,
+    const NGGridTrackList& specified_track_list) {
+  Range new_range(block_track_range, /* starting_set_index */ sets_.size());
+
+  if (block_track_range.is_collapsed ||
+      block_track_range.repeater_index == kInvalidRangeIndex) {
+#if DCHECK_IS_ON()
+    // If there are no specified repeaters for this range, it must be implicit.
+    if (block_track_range.repeater_index == kInvalidRangeIndex)
+      DCHECK(block_track_range.is_implicit_range);
+#endif
+
+    // Append a single element for the entire range's set.
+    new_range.set_count = 1;
+    sets_.emplace_back(block_track_range.track_count,
+                       block_track_range.is_collapsed);
+  } else {
+    wtf_size_t repeater_size =
+        specified_track_list.RepeatSize(block_track_range.repeater_index);
+
+    // The number of different set elements in this range is the number of track
+    // definitions from |NGGridBlockTrackCollection| range's repeater clamped by
+    // the range's total track count if it's less than the repeater's size.
+    new_range.set_count =
+        std::min(repeater_size, block_track_range.track_count);
+    DCHECK_GT(new_range.set_count, 0u);
+
+    // The following two variables help compute how many tracks a set element
+    // compresses; suppose we want to print this range, we would circle through
+    // the repeater's track list, starting at the range's repeater offset,
+    // printing every definition until the track count for the range is covered:
+    //
+    // 1. |floor_set_track_count| is the number of times we would return to the
+    // range's repeater offset, meaning that every definition in the repeater's
+    // track list appears at least that many times within the range.
+    wtf_size_t floor_set_track_count = new_range.track_count / repeater_size;
+    // 2. The remaining track count would not complete another iteration over
+    // the entire repeater; this means that the first |remaining_track_count|
+    // definitions appear one more time in the range.
+    wtf_size_t remaining_track_count = new_range.track_count % repeater_size;
+
+    for (wtf_size_t i = 0; i < new_range.set_count; ++i) {
+      wtf_size_t set_track_count =
+          floor_set_track_count + ((i < remaining_track_count) ? 1 : 0);
+      wtf_size_t set_repeater_offset =
+          (block_track_range.repeater_offset + i) % repeater_size;
+      const GridTrackSize& set_track_size =
+          specified_track_list.RepeatTrackSize(block_track_range.repeater_index,
+                                               set_repeater_offset);
+      sets_.emplace_back(set_track_count, set_track_size);
+    }
+  }
+  ranges_.push_back(new_range);
+}
+
+NGGridSet& NGGridLayoutAlgorithmTrackCollection::SetAt(wtf_size_t set_index) {
+  DCHECK_LT(set_index, SetCount());
+  return sets_[set_index];
+}
+
+NGGridLayoutAlgorithmTrackCollection::SetIterator
+NGGridLayoutAlgorithmTrackCollection::IteratorForRange(wtf_size_t range_index) {
+  DCHECK_LT(range_index, RangeCount());
+
+  const Range& range = ranges_[range_index];
+  DCHECK_LE(range.starting_set_index + range.set_count, SetCount());
+  return SetIterator(this, range.starting_set_index,
+                     range.starting_set_index + range.set_count);
+}
+
+wtf_size_t NGGridLayoutAlgorithmTrackCollection::RangeTrackNumber(
+    wtf_size_t range_index) const {
+  DCHECK_LT(range_index, RangeCount());
+  return ranges_[range_index].starting_track_number;
+}
+
+wtf_size_t NGGridLayoutAlgorithmTrackCollection::RangeTrackCount(
+    wtf_size_t range_index) const {
+  DCHECK_LT(range_index, RangeCount());
+  return ranges_[range_index].track_count;
+}
+
+bool NGGridLayoutAlgorithmTrackCollection::IsRangeCollapsed(
+    wtf_size_t range_index) const {
+  DCHECK_LT(range_index, RangeCount());
+  return ranges_[range_index].is_collapsed;
+}
+
+wtf_size_t NGGridLayoutAlgorithmTrackCollection::RangeCount() const {
+  return ranges_.size();
+}
+
+wtf_size_t NGGridLayoutAlgorithmTrackCollection::SetCount() const {
+  return sets_.size();
 }
 
 }  // namespace blink

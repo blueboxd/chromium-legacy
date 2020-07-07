@@ -23,15 +23,18 @@ class CORE_EXPORT NGGridTrackCollectionBase {
     RangeRepeatIterator(const NGGridTrackCollectionBase* collection,
                         wtf_size_t range_index);
 
+    bool IsAtEnd() const;
     // Moves iterator to next range, skipping over repeats in a range. Return
     // true if the move was successful.
     bool MoveToNextRange();
+
     wtf_size_t RepeatCount() const;
+    // Returns the index of this range in the collection.
+    wtf_size_t RangeIndex() const;
     // Returns the track number for the start of the range.
     wtf_size_t RangeTrackStart() const;
     // Returns the track number at the end of the range.
     wtf_size_t RangeTrackEnd() const;
-
     bool IsRangeCollapsed() const;
 
    private:
@@ -49,6 +52,7 @@ class CORE_EXPORT NGGridTrackCollectionBase {
   // Gets the range index for the range that contains the given track number.
   wtf_size_t RangeIndexFromTrackNumber(wtf_size_t track_number) const;
 
+  RangeRepeatIterator RangeIterator() const;
   String ToString() const;
 
  protected:
@@ -67,14 +71,17 @@ class CORE_EXPORT NGGridTrackCollectionBase {
 
 // Stores tracks related data by compressing repeated tracks into a single node.
 struct NGGridTrackRepeater {
-  NGGridTrackRepeater(wtf_size_t track_index,
+  NGGridTrackRepeater(wtf_size_t repeat_index,
                       wtf_size_t repeat_size,
                       wtf_size_t repeat_count,
                       AutoRepeatType repeat_type);
   String ToString() const;
   bool operator==(const NGGridTrackRepeater& rhs) const;
-  // Index of the first track being repeated.
-  wtf_size_t track_index;
+
+  // |NGGridTrackList| will store the sizes for each track in this repeater
+  // consecutively in a single vector for all repeaters; this index specifies
+  // the position of the first track size that belongs to this repeater.
+  wtf_size_t repeat_index;
   // Amount of tracks to be repeated.
   wtf_size_t repeat_size;
   // Amount of times the group of tracks are repeated.
@@ -93,18 +100,18 @@ class CORE_EXPORT NGGridTrackList {
   wtf_size_t RepeatSize(wtf_size_t index) const;
   // Returns the repeat type of the repeater at |index|.
   AutoRepeatType RepeatType(wtf_size_t index) const;
+  // Returns the size of the |n|-th specified track of the repeater at |index|.
+  const GridTrackSize& RepeatTrackSize(wtf_size_t index, wtf_size_t n) const;
   // Returns the count of repeaters.
   wtf_size_t RepeaterCount() const;
   // Returns the total count of all the tracks in this list.
   wtf_size_t TotalTrackCount() const;
 
   // Adds a non-auto repeater.
-  bool AddRepeater(wtf_size_t track_index,
-                   wtf_size_t track_count,
+  bool AddRepeater(const Vector<GridTrackSize>& repeater_track_sizes,
                    wtf_size_t repeat_count);
   // Adds an auto repeater.
-  bool AddAutoRepeater(wtf_size_t track_index,
-                       wtf_size_t track_count,
+  bool AddAutoRepeater(const Vector<GridTrackSize>& repeater_track_sizes,
                        AutoRepeatType repeat_type);
   // Returns true if this list contains an auto repeater.
   bool HasAutoRepeater();
@@ -115,21 +122,18 @@ class CORE_EXPORT NGGridTrackList {
   String ToString() const;
 
  private:
-  bool AddRepeater(wtf_size_t track_index,
-                   wtf_size_t track_count,
-                   wtf_size_t repeat_count,
-                   AutoRepeatType repeat_type);
+  bool AddRepeater(const Vector<GridTrackSize>& repeater_track_sizes,
+                   AutoRepeatType repeat_type,
+                   wtf_size_t repeat_count);
   // Returns the amount of tracks available before overflow.
   wtf_size_t AvailableTrackCount() const;
 
-#if DCHECK_IS_ON()
-  // Helper to check if |track_index| does not cause a gap or overlap with the
-  // tracks in this list. Ensures |track_index| is equal to 1 + the last track's
-  // index.
-  bool IsTrackContiguous(wtf_size_t track_index) const;
-#endif
-
   Vector<NGGridTrackRepeater> repeaters_;
+
+  // Stores the track sizes of every repeater added to this list; tracks from
+  // the same repeater group are stored consecutively.
+  Vector<GridTrackSize> repeater_track_sizes_;
+
   // The index of the automatic repeater, if there is one; |kInvalidRangeIndex|
   // otherwise.
   wtf_size_t auto_repeater_index_;
@@ -150,9 +154,9 @@ class CORE_EXPORT NGGridBlockTrackCollection
   };
 
   // Sets the specified, implicit tracks, along with a given auto repeat value.
-  void SetSpecifiedTracks(const NGGridTrackList& specified_tracks,
-                          wtf_size_t auto_repeat_count,
-                          const NGGridTrackList& implicit_tracks);
+  void SetSpecifiedTracks(const NGGridTrackList& explicit_tracks,
+                          const NGGridTrackList& implicit_tracks,
+                          wtf_size_t auto_repeat_count);
   // Ensures that after FinalizeRanges is called, a range will start at the
   // |track_number|, and a range will end at |track_number| + |span_length|
   void EnsureTrackCoverage(wtf_size_t track_number, wtf_size_t span_length);
@@ -165,19 +169,16 @@ class CORE_EXPORT NGGridBlockTrackCollection
   // Returns the range at the given track.
   const Range& RangeAtTrackNumber(wtf_size_t track_number) const;
 
+  const NGGridTrackList& ExplicitTracks() const;
+  const NGGridTrackList& ImplicitTracks() const;
+
   String ToString() const;
 
  protected:
-  // Returns the first track number of a range.
+  // NGGridTrackCollectionBase overrides.
   wtf_size_t RangeTrackNumber(wtf_size_t range_index) const override;
-
-  // Returns the number of tracks in a range.
   wtf_size_t RangeTrackCount(wtf_size_t range_index) const override;
-
-  // Returns true if the range at |range_index| is collapsed.
   bool IsRangeCollapsed(wtf_size_t range_index) const override;
-
-  // Returns the number of track ranges in the collection.
   wtf_size_t RangeCount() const override;
 
  private:
@@ -190,7 +191,7 @@ class CORE_EXPORT NGGridBlockTrackCollection
   wtf_size_t auto_repeat_count_ = 0;
 
   // Stores the specified and implicit tracks specified by SetSpecifiedTracks.
-  NGGridTrackList specified_tracks_;
+  NGGridTrackList explicit_tracks_;
   NGGridTrackList implicit_tracks_;
 
   // Starting and ending tracks mark where ranges will start and end.
@@ -198,6 +199,117 @@ class CORE_EXPORT NGGridBlockTrackCollection
   Vector<wtf_size_t> starting_tracks_;
   Vector<wtf_size_t> ending_tracks_;
   Vector<Range> ranges_;
+};
+
+// |NGGridBlockTrackCollection::EnsureTrackCoverage| may introduce a range start
+// and/or end at the middle of any repeater from the block collection. This will
+// affect how some repeated tracks within the same repeater group resolve their
+// track sizes; e.g. consider the track list 'repeat(10, auto)' with a grid item
+// spanning from the 3rd to the 7th track in the repeater, every track within
+// the item's range will grow to fit the content of that item first.
+//
+// For the track sizing algorithm we want to have separate data (e.g. base size,
+// growth limit, etc.) between tracks in different ranges; instead of trivially
+// expanding the repeaters, which will limit our implementation to support
+// relatively small track counts, we introduce the concept of a "set".
+//
+// A "set" is a collection of distinct track definitions that compose a range in
+// |NGGridLayoutAlgorithmTrackCollection|; each set element stores the number of
+// tracks within the range that share its definition. The |NGGridSet| class
+// represents a single element from a set.
+//
+// As an example, consider the following grid definition:
+//   - 'grid-template-columns: repeat(4, 5px 1fr)'
+//   - Grid item 1 with 'grid-column: 1 / span 5'
+//   - Grid item 2 with 'grid-column: 2 / span 1'
+//   - Grid item 3 with 'grid-column: 6 / span 8'
+//
+// Expanding the track definitions above we would look at the explicit grid:
+//   | 5px | 1fr | 5px | 1fr | 5px | 1fr | 5px | 1fr |
+//
+// This example would produce the following ranges and their respective sets:
+//   Range 1:  [1-1], Set 1: {  5px (1) }
+//   Range 2:  [2-2], Set 2: {  1fr (1) }
+//   Range 3:  [3-5], Set 3: {  5px (2) , 1fr (1) }
+//   Range 4:  [6-8], Set 4: {  1fr (2) , 5px (1) }
+//   Range 5: [9-13], Set 5: { auto (5) }
+//
+// Note that, since |NGGridBlockTrackCollection|'s ranges are assured to span a
+// single repeater and to not cross any grid item's boundary in the respective
+// dimension, tracks within a set are "commutative" and can be sized evenly.
+class CORE_EXPORT NGGridSet {
+ public:
+  NGGridSet(wtf_size_t track_count, bool is_collapsed);
+  NGGridSet(wtf_size_t track_count, const GridTrackSize& track_size);
+
+  wtf_size_t TrackCount() const { return track_count_; }
+  const GridTrackSize& TrackSize() const { return track_size_; }
+
+ private:
+  wtf_size_t track_count_;
+  GridTrackSize track_size_;
+};
+
+class CORE_EXPORT NGGridLayoutAlgorithmTrackCollection
+    : public NGGridTrackCollectionBase {
+ public:
+  struct Range {
+    // Copies fields that are the same as in |GridBlockTrackCollection::Range|.
+    Range(const NGGridBlockTrackCollection::Range& block_track_range,
+          wtf_size_t starting_set_index);
+
+    wtf_size_t starting_track_number;
+    wtf_size_t track_count;
+    wtf_size_t starting_set_index;
+    wtf_size_t set_count;
+    bool is_collapsed;
+  };
+
+  class CORE_EXPORT SetIterator {
+   public:
+    SetIterator(NGGridLayoutAlgorithmTrackCollection* collection,
+                wtf_size_t begin_set_index,
+                wtf_size_t end_set_index);
+
+    bool IsAtEnd() const;
+    bool MoveToNextSet();
+    NGGridSet& CurrentSet() const;
+
+   private:
+    NGGridLayoutAlgorithmTrackCollection* collection_;
+    wtf_size_t current_set_index_;
+    wtf_size_t end_set_index_;
+  };
+
+  explicit NGGridLayoutAlgorithmTrackCollection(
+      const NGGridBlockTrackCollection& block_track_collection);
+
+  // Returns a reference to the set located at position |set_index|.
+  NGGridSet& SetAt(wtf_size_t set_index);
+  // Returns an iterator for all the sets contained within the |range_index|-th
+  // range of the collection. Note that this iterator can alter any set's data.
+  SetIterator IteratorForRange(wtf_size_t range_index);
+
+ protected:
+  // NGGridTrackCollectionBase overrides.
+  wtf_size_t RangeTrackNumber(wtf_size_t range_index) const override;
+  wtf_size_t RangeTrackCount(wtf_size_t range_index) const override;
+  bool IsRangeCollapsed(wtf_size_t range_index) const override;
+  wtf_size_t RangeCount() const override;
+
+ private:
+  void AppendTrackRange(
+      const NGGridBlockTrackCollection::Range& block_track_range,
+      const NGGridTrackList& specified_track_list);
+
+  // Returns the number of sets in the collection.
+  wtf_size_t SetCount() const;
+
+  Vector<Range> ranges_;
+  // A vector of every set element that compose the entire collection's ranges;
+  // track definitions from the same set are stored in consecutive positions,
+  // preserving the order in which the definitions appear in their range.
+  Vector<NGGridSet> sets_;
 };
 
 }  // namespace blink

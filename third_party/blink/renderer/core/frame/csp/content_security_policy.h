@@ -452,7 +452,7 @@ class CORE_EXPORT ContentSecurityPolicy final
 
   // Whether the main world's CSP should be bypassed for operations in the given
   // |world|.
-  static bool ShouldBypassMainWorld(const DOMWrapperWorld& world);
+  static bool ShouldBypassMainWorld(const DOMWrapperWorld* world);
 
   static bool IsNonceableElement(const Element*);
 

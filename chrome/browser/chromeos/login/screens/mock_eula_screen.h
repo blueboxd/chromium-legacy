@@ -16,8 +16,8 @@ class MockEulaScreen : public EulaScreen {
   MockEulaScreen(EulaView* view, const ScreenExitCallback& exit_callback);
   ~MockEulaScreen() override;
 
-  MOCK_METHOD0(ShowImpl, void());
-  MOCK_METHOD0(HideImpl, void());
+  MOCK_METHOD(void, ShowImpl, ());
+  MOCK_METHOD(void, HideImpl, ());
 
   void ExitScreen(Result result);
 };
@@ -30,12 +30,12 @@ class MockEulaView : public EulaView {
   void Bind(EulaScreen* screen) override;
   void Unbind() override;
 
-  MOCK_METHOD0(Show, void());
-  MOCK_METHOD0(Hide, void());
+  MOCK_METHOD(void, Show, ());
+  MOCK_METHOD(void, Hide, ());
 
-  MOCK_METHOD1(MockBind, void(EulaScreen* screen));
-  MOCK_METHOD0(MockUnbind, void());
-  MOCK_METHOD1(OnPasswordFetched, void(const std::string& tpm_password));
+  MOCK_METHOD(void, MockBind, (EulaScreen * screen));
+  MOCK_METHOD(void, MockUnbind, ());
+  MOCK_METHOD(void, OnPasswordFetched, (const std::string& tpm_password));
 
  private:
   EulaScreen* screen_ = nullptr;

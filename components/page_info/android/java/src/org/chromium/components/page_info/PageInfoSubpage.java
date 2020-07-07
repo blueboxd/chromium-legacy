@@ -26,16 +26,19 @@ public class PageInfoSubpage extends FrameLayout {
         public String subpageTitle;
     }
 
-    public PageInfoSubpage(Context context, Params params) {
+    private PageInfoView.ElidedUrlTextView mUrlTitle;
+    private TextView mSubpageTitle;
+
+    public PageInfoSubpage(Context context) {
         super(context);
         LayoutInflater.from(context).inflate(R.layout.page_info_subpage, this, true);
-        // Set the url title.
-        PageInfoView.ElidedUrlTextView urlTitle = findViewById(R.id.subpage_url);
-        urlTitle.setUrl(params.url, params.urlOriginLength);
-        // Set the back button.
-        // Set the page title.
-        TextView subpageTitle = findViewById(R.id.subpage_title);
-        subpageTitle.setText(params.subpageTitle);
+        mUrlTitle = findViewById(R.id.subpage_url);
+        mSubpageTitle = findViewById(R.id.subpage_title);
+    }
+
+    public void updateSubpage(Params params) {
+        mUrlTitle.setUrl(params.url, params.urlOriginLength);
+        mSubpageTitle.setText(params.subpageTitle);
     }
 
     public void setBackButtonOnClickListener(View.OnClickListener listener) {

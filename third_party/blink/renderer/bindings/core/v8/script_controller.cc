@@ -255,7 +255,7 @@ void ScriptController::UpdateDocument() {
 void ScriptController::ExecuteJavaScriptURL(
     const KURL& url,
     network::mojom::CSPDisposition csp_disposition,
-    const DOMWrapperWorld& world_for_csp) {
+    const DOMWrapperWorld* world_for_csp) {
   DCHECK(url.ProtocolIsJavaScript());
 
   const int kJavascriptSchemeLength = sizeof("javascript:") - 1;

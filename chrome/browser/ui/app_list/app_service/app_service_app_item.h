@@ -19,14 +19,6 @@ class AppServiceAppItem : public ChromeAppListItem,
  public:
   static const char kItemType[];
 
-  static std::unique_ptr<app_list::AppContextMenu> MakeAppContextMenu(
-      apps::mojom::AppType app_type,
-      AppContextMenuDelegate* delegate,
-      Profile* profile,
-      const std::string& app_id,
-      AppListControllerDelegate* controller,
-      bool is_platform_app);
-
   AppServiceAppItem(Profile* profile,
                     AppListModelUpdater* model_updater,
                     const app_list::AppListSyncableService::SyncItem* sync_item,

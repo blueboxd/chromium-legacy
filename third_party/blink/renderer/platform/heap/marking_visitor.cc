@@ -293,6 +293,9 @@ ConcurrentMarkingVisitor::ConcurrentMarkingVisitor(ThreadState* state,
     : MarkingVisitorBase(state, marking_mode, task_id),
       not_safe_to_concurrently_trace_worklist_(
           Heap().GetNotSafeToConcurrentlyTraceWorklist(),
+          task_id),
+      previously_not_fully_constructed_worklist_(
+          Heap().GetPreviouslyNotFullyConstructedWorklist(),
           task_id) {
   DCHECK(!state->CheckThread());
   DCHECK_NE(WorklistTaskId::MutatorThread, task_id);
@@ -303,6 +306,7 @@ void ConcurrentMarkingVisitor::FlushWorklists() {
   marking_worklist_.FlushToGlobal();
   write_barrier_worklist_.FlushToGlobal();
   not_fully_constructed_worklist_.FlushToGlobal();
+  previously_not_fully_constructed_worklist_.FlushToGlobal();
   weak_callback_worklist_.FlushToGlobal();
   discovered_ephemeron_pairs_worklist_.FlushToGlobal();
   ephemeron_pairs_to_process_worklist_.FlushToGlobal();

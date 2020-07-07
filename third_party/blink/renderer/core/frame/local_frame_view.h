@@ -568,8 +568,6 @@ class CORE_EXPORT LocalFrameView final
   void UpdateRenderThrottlingStatus(bool hidden_for_throttling,
                                     bool subtree_throttled,
                                     bool recurse = false) override;
-  // DEBUG
-  bool LifecycleThrottlingAllowed() { return Lifecycle().ThrottlingAllowed(); }
 
   void BeginLifecycleUpdates();
 

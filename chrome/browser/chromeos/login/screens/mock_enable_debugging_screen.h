@@ -18,8 +18,8 @@ class MockEnableDebuggingScreen : public EnableDebuggingScreen {
                             const base::RepeatingClosure& exit_callback);
   ~MockEnableDebuggingScreen() override;
 
-  MOCK_METHOD0(ShowImpl, void());
-  MOCK_METHOD0(HideImpl, void());
+  MOCK_METHOD(void, ShowImpl, ());
+  MOCK_METHOD(void, HideImpl, ());
 
   void ExitScreen();
 };
@@ -29,9 +29,9 @@ class MockEnableDebuggingScreenView : public EnableDebuggingScreenView {
   MockEnableDebuggingScreenView();
   ~MockEnableDebuggingScreenView() override;
 
-  MOCK_METHOD0(Show, void());
-  MOCK_METHOD0(Hide, void());
-  MOCK_METHOD1(MockSetDelegate, void(EnableDebuggingScreen* screen));
+  MOCK_METHOD(void, Show, ());
+  MOCK_METHOD(void, Hide, ());
+  MOCK_METHOD(void, MockSetDelegate, (EnableDebuggingScreen * screen));
 
   void SetDelegate(EnableDebuggingScreen* screen) override;
 

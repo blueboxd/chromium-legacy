@@ -156,11 +156,6 @@ var CrSettingsAutofillPageV3Test = class extends CrSettingsV3BrowserTest {
   get browsePreload() {
     return 'chrome://settings/test_loader.html?module=settings/autofill_page_test.js';
   }
-
-  /** @override */
-  get featureListInternal() {
-    return {disabled: ['features::kPrivacySettingsRedesign']};
-  }
 };
 
 TEST_F('CrSettingsAutofillPageV3Test', 'All', function() {
@@ -312,7 +307,6 @@ var CrSettingsSafetyCheckPageBrandedWindowsV3Test =
   get featureListInternal() {
     return {
       enabled: [
-        'features::kPrivacySettingsRedesign',
         'features::kSafetyCheckChromeCleanerChild',
       ],
     };
@@ -336,7 +330,6 @@ var CrSettingsSafetyCheckPageV3Test = class extends CrSettingsV3BrowserTest {
   get featureListInternal() {
     return {
       enabled: [
-        'features::kPrivacySettingsRedesign',
         'password_manager::features::kPasswordCheck',
       ],
     };
@@ -352,15 +345,6 @@ var CrSettingsSafetyCheckChromeCleanerV3Test = class extends CrSettingsV3Browser
   /** @override */
   get browsePreload() {
     return 'chrome://settings/test_loader.html?module=settings/safety_check_chrome_cleaner_test.js';
-  }
-
-  /** @override */
-  get featureListInternal() {
-    return {
-      enabled: [
-        'features::kPrivacySettingsRedesign',
-      ],
-    };
   }
 };
 
@@ -438,29 +422,16 @@ TEST_F('CrSettingsPersonalizationOptionsV3Test', 'OfficialBuild', function() {
 });
 GEN('#endif');
 
-TEST_F('CrSettingsPersonalizationOptionsV3Test', 'AllBuildsOld', function() {
-  runMochaSuite('PersonalizationOptionsTests_AllBuilds_Old');
-});
-
 // eslint-disable-next-line no-var
 var CrSettingsPrivacyPageV3Test = class extends CrSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://settings/test_loader.html?module=settings/privacy_page_test.js';
   }
-
-  /** @override */
-  get featureListInternal() {
-    return {disabled: ['features::kPrivacySettingsRedesign']};
-  }
 };
 
 TEST_F('CrSettingsPrivacyPageV3Test', 'PrivacyPageTests', function() {
   runMochaSuite('PrivacyPage');
-});
-
-TEST_F('CrSettingsPrivacyPageV3Test', 'PrivacyPageRedesignTests', function() {
-  runMochaSuite('PrivacyPageRedesignEnabled');
 });
 
 // TODO(crbug.com/1043665): flaky crash on Linux Tests (dbg).
@@ -470,9 +441,10 @@ TEST_F(
       runMochaSuite('PrivacyPageSound');
     });
 
-TEST_F('CrSettingsPrivacyPageV3Test', 'UMALoggingTests', function() {
-  runMochaSuite('PrivacyPageUMACheck');
-});
+TEST_F(
+    'CrSettingsPrivacyPageV3Test', 'HappinessTrackingSurveysTests', function() {
+      runMochaSuite('HappinessTrackingSurveys');
+    });
 
 GEN('#if defined(OS_MACOSX) || defined(OS_WIN)');
 // TODO(crbug.com/1043665): disabling due to failures on several builders.
@@ -482,26 +454,6 @@ TEST_F(
       runMochaSuite('NativeCertificateManager');
     });
 GEN('#endif');
-
-// eslint-disable-next-line no-var
-var CrSettingsPrivacyPageRedesignV3Test =
-    class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/privacy_page_test.js';
-  }
-
-  /** @override */
-  get featureListInternal() {
-    return {enabled: ['features::kPrivacySettingsRedesign']};
-  }
-};
-
-TEST_F(
-    'CrSettingsPrivacyPageRedesignV3Test', 'HappinessTrackingSurveysTests',
-    function() {
-      runMochaSuite('HappinessTrackingSurveys');
-    });
 
 // eslint-disable-next-line no-var
 var CrSettingsRouteV3Test = class extends CrSettingsV3BrowserTest {

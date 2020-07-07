@@ -106,8 +106,6 @@ class LargeIconService : public KeyedService {
   // TODO(crbug.com/903826): It is not clear from the name of this function,
   // that it actually adds the icon to the local cache. Maybe
   // "StoreLargeIcon..."?
-  // TODO(victorvianna): Consider moving |may_page_url_be_private| and/or
-  // |should_trim_page_url_path| inside the parameters struct.
   virtual void GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
       const GURL& page_url,
       bool may_page_url_be_private,

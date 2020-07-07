@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper_mock.h"
 #include "chrome/browser/chromeos/login/enrollment/mock_enrollment_screen.h"
+#include "chrome/browser/chromeos/login/wizard_context.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/browser/policy/enrollment_status.h"
@@ -35,6 +36,8 @@ class EnrollmentScreenUnitTest : public testing::Test {
 
   // Creates the EnrollmentScreen and sets required parameters.
   virtual void SetUpEnrollmentScreen() {
+    wizard_context_ = std::make_unique<WizardContext>();
+
     enrollment_screen_ = std::make_unique<EnrollmentScreen>(
         &mock_view_,
         base::BindRepeating(&EnrollmentScreenUnitTest::HandleScreenExit,
@@ -63,6 +66,7 @@ class EnrollmentScreenUnitTest : public testing::Test {
 
  protected:
   std::unique_ptr<EnrollmentScreen> enrollment_screen_;
+  std::unique_ptr<WizardContext> wizard_context_;
 
   // The last result reported by |enrollment_screen_|.
   base::Optional<EnrollmentScreen::Result> last_screen_result_;
@@ -174,7 +178,7 @@ class ZeroTouchEnrollmentScreenUnitTest : public EnrollmentScreenUnitTest {
     enrollment_screen_->retry_policy_.jitter_factor = 0;
 
     // Start zero-touch enrollment.
-    enrollment_screen_->Show();
+    enrollment_screen_->Show(wizard_context_.get());
 
     // Fast forward time by 1 minute.
     FastForwardTime(base::TimeDelta::FromMinutes(1));
@@ -190,7 +194,7 @@ class ZeroTouchEnrollmentScreenUnitTest : public EnrollmentScreenUnitTest {
     SetUpEnrollmentScreen();
 
     // Start zero-touch enrollment.
-    enrollment_screen_->Show();
+    enrollment_screen_->Show(wizard_context_.get());
 
     // Verify that enrollment flow finished and exited cleanly.
     ASSERT_TRUE(last_screen_result_.has_value());
@@ -208,7 +212,7 @@ class ZeroTouchEnrollmentScreenUnitTest : public EnrollmentScreenUnitTest {
     EXPECT_CALL(*GetMockScreenView(), ShowSigninScreen()).Times(1);
 
     // Start enrollment.
-    enrollment_screen_->Show();
+    enrollment_screen_->Show(wizard_context_.get());
   }
 
  private:
@@ -238,7 +242,7 @@ TEST_F(ZeroTouchEnrollmentScreenUnitTest, DoNotRetryOnTopOfUser) {
   enrollment_screen_->retry_policy_.jitter_factor = 0;
 
   // Start zero-touch enrollment.
-  enrollment_screen_->Show();
+  enrollment_screen_->Show(wizard_context_.get());
 
   // Schedule user retry button click after 30 sec.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
@@ -261,7 +265,7 @@ TEST_F(ZeroTouchEnrollmentScreenUnitTest, DoNotRetryAfterSuccess) {
   SetUpEnrollmentScreen();
 
   // Start zero-touch enrollment.
-  enrollment_screen_->Show();
+  enrollment_screen_->Show(wizard_context_.get());
 
   // Fast forward time by 1 minute.
   FastForwardTime(base::TimeDelta::FromMinutes(1));

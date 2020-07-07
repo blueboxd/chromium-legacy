@@ -86,7 +86,7 @@ void TermsOfServiceScreen::OnViewDestroyed(TermsOfServiceScreenView* view) {
     view_ = nullptr;
 }
 
-bool TermsOfServiceScreen::MaybeSkip() {
+bool TermsOfServiceScreen::MaybeSkip(WizardContext* context) {
   // Only show the Terms of Service when logging into a public account and Terms
   // of Service have been specified through policy. In all other cases, advance
   // to the post-ToS part immediately.

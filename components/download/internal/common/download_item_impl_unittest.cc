@@ -1237,7 +1237,7 @@ TEST_F(DownloadItemTest, InitDownloadFileFails) {
 
   item->Start(
       std::move(file),
-      base::Bind(&DownloadItemTest::CancelRequest, base::Unretained(this)),
+      base::BindOnce(&DownloadItemTest::CancelRequest, base::Unretained(this)),
       *create_info(), URLLoaderFactoryProvider::GetNullPtr());
   task_environment_.RunUntilIdle();
 
@@ -2085,7 +2085,7 @@ TEST_F(DownloadItemTest, StealDangerousDownloadAndDiscard) {
   item->OnAllDataSaved(0, std::unique_ptr<crypto::SecureHash>());
   item->StealDangerousDownload(
       true,  // delete_file_after_feedback
-      base::Bind(&DownloadItemTest::OnDownloadFileAcquired,
+      base::BindOnce(&DownloadItemTest::OnDownloadFileAcquired,
                  weak_ptr_factory.GetWeakPtr(),
                  base::Unretained(&returned_path)));
   task_environment_.RunUntilIdle();
@@ -2104,7 +2104,7 @@ TEST_F(DownloadItemTest, StealDangerousDownloadAndKeep) {
   item->OnAllDataSaved(0, std::unique_ptr<crypto::SecureHash>());
   item->StealDangerousDownload(
       false,  // delete_file_after_feedback
-      base::Bind(&DownloadItemTest::OnDownloadFileAcquired,
+      base::BindOnce(&DownloadItemTest::OnDownloadFileAcquired,
                  weak_ptr_factory.GetWeakPtr(),
                  base::Unretained(&returned_path)));
   task_environment_.RunUntilIdle();
@@ -2130,7 +2130,7 @@ TEST_F(DownloadItemTest, StealInterruptedContinuableDangerousDownload) {
   base::WeakPtrFactory<DownloadItemTest> weak_ptr_factory(this);
   item->OnAllDataSaved(0, std::unique_ptr<crypto::SecureHash>());
   item->StealDangerousDownload(
-      true, base::Bind(&DownloadItemTest::OnDownloadFileAcquired,
+      true, base::BindOnce(&DownloadItemTest::OnDownloadFileAcquired,
                        weak_ptr_factory.GetWeakPtr(),
                        base::Unretained(&returned_path)));
   task_environment_.RunUntilIdle();
@@ -2152,7 +2152,7 @@ TEST_F(DownloadItemTest, StealInterruptedNonContinuableDangerousDownload) {
   base::WeakPtrFactory<DownloadItemTest> weak_ptr_factory(this);
   item->OnAllDataSaved(0, std::unique_ptr<crypto::SecureHash>());
   item->StealDangerousDownload(
-      true, base::Bind(&DownloadItemTest::OnDownloadFileAcquired,
+      true, base::BindOnce(&DownloadItemTest::OnDownloadFileAcquired,
                        weak_ptr_factory.GetWeakPtr(),
                        base::Unretained(&returned_path)));
   task_environment_.RunUntilIdle();
@@ -2447,7 +2447,7 @@ TEST_P(DownloadItemDestinationUpdateRaceTest, DownloadCancelledByUser) {
       .WillOnce(SaveArg<0>(&initialize_callback));
   item_->Start(
       std::move(file_),
-      base::Bind(&DownloadItemTest::CancelRequest, base::Unretained(this)),
+      base::BindOnce(&DownloadItemTest::CancelRequest, base::Unretained(this)),
       *create_info(), URLLoaderFactoryProvider::GetNullPtr());
   task_environment_.RunUntilIdle();
 
@@ -2500,7 +2500,7 @@ TEST_P(DownloadItemDestinationUpdateRaceTest, IntermediateRenameFails) {
 
   item_->Start(
       std::move(file_),
-      base::Bind(&DownloadItemTest::CancelRequest, base::Unretained(this)),
+      base::BindOnce(&DownloadItemTest::CancelRequest, base::Unretained(this)),
       *create_info(), URLLoaderFactoryProvider::GetNullPtr());
   task_environment_.RunUntilIdle();
 

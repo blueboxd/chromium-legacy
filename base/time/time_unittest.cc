@@ -1450,17 +1450,21 @@ TEST(TimeDelta, InXXXOverflow) {
   constexpr TimeDelta kLargeDelta =
       TimeDelta::FromMicroseconds(std::numeric_limits<int64_t>::max() - 1);
   static_assert(!kLargeDelta.is_max(), "");
-  EXPECT_EQ(std::numeric_limits<int>::max(), kLargeDelta.InHours());
-  EXPECT_EQ(std::numeric_limits<int>::max(), kLargeDelta.InMinutes());
-  EXPECT_EQ(std::numeric_limits<int64_t>::max(), kLargeDelta.InNanoseconds());
+  static_assert(std::numeric_limits<int>::max() == kLargeDelta.InHours(), "");
+  static_assert(std::numeric_limits<int>::max() == kLargeDelta.InMinutes(), "");
+  static_assert(
+      std::numeric_limits<int64_t>::max() == kLargeDelta.InNanoseconds(), "");
 
   constexpr TimeDelta kLargeNegative =
       TimeDelta::FromMicroseconds(std::numeric_limits<int64_t>::min() + 1);
   static_assert(!kLargeNegative.is_min(), "");
-  EXPECT_EQ(std::numeric_limits<int>::min(), kLargeNegative.InHours());
-  EXPECT_EQ(std::numeric_limits<int>::min(), kLargeNegative.InMinutes());
-  EXPECT_EQ(std::numeric_limits<int64_t>::min(),
-            kLargeNegative.InNanoseconds());
+  static_assert(std::numeric_limits<int>::min() == kLargeNegative.InHours(),
+                "");
+  static_assert(std::numeric_limits<int>::min() == kLargeNegative.InMinutes(),
+                "");
+  static_assert(
+      std::numeric_limits<int64_t>::min() == kLargeNegative.InNanoseconds(),
+      "");
 }
 
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)

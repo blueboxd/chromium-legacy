@@ -1018,7 +1018,7 @@ PaintLayer::EnclosingDirectlyCompositableLayerCrossingFrameBoundaries() const {
   const PaintLayer* layer = this;
   PaintLayer* composited_layer = nullptr;
   while (!composited_layer) {
-    composited_layer = layer->EnclosingDirectlyCompositableLayer();
+    composited_layer = layer->EnclosingDirectlyCompositableLayer(kIncludeSelf);
     if (!composited_layer) {
       CHECK(layer->GetLayoutObject().GetFrame());
       auto* owner = layer->GetLayoutObject().GetFrame()->OwnerLayoutObject();
@@ -1030,9 +1030,10 @@ PaintLayer::EnclosingDirectlyCompositableLayerCrossingFrameBoundaries() const {
   return composited_layer;
 }
 
-PaintLayer* PaintLayer::EnclosingDirectlyCompositableLayer() const {
+PaintLayer* PaintLayer::EnclosingDirectlyCompositableLayer(
+    IncludeSelfOrNot include_self_or_not) const {
   DCHECK(IsAllowedToQueryCompositingState());
-  if (CanBeCompositedForDirectReasons())
+  if (include_self_or_not == kIncludeSelf && CanBeCompositedForDirectReasons())
     return const_cast<PaintLayer*>(this);
 
   for (PaintLayer* curr = CompositingContainer(); curr;
@@ -1614,7 +1615,7 @@ bool PaintLayer::ShouldFragmentCompositedBounds(
     return true;
   if (!compositing_layer) {
     compositing_layer =
-        EnclosingLayerForPaintInvalidationCrossingFrameBoundaries();
+        EnclosingDirectlyCompositableLayerCrossingFrameBoundaries();
   }
   if (!compositing_layer)
     return true;

@@ -23,7 +23,7 @@ class InitAwareEventModel : public EventModel {
   ~InitAwareEventModel() override;
 
   // EventModel implementation.
-  void Initialize(const OnModelInitializationFinished& callback,
+  void Initialize(OnModelInitializationFinished callback,
                   uint32_t current_day) override;
   bool IsReady() const override;
   const Event* GetEvent(const std::string& event_name) const override;
@@ -36,7 +36,7 @@ class InitAwareEventModel : public EventModel {
   size_t GetQueuedEventCountForTesting();
 
  private:
-  void OnInitializeComplete(const OnModelInitializationFinished& callback,
+  void OnInitializeComplete(OnModelInitializationFinished callback,
                             bool success);
 
   std::unique_ptr<EventModel> event_model_;

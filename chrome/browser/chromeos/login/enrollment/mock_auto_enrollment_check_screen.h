@@ -18,8 +18,8 @@ class MockAutoEnrollmentCheckScreen : public AutoEnrollmentCheckScreen {
                                 const base::RepeatingClosure& exit_callback);
   ~MockAutoEnrollmentCheckScreen() override;
 
-  MOCK_METHOD0(ShowImpl, void());
-  MOCK_METHOD0(HideImpl, void());
+  MOCK_METHOD(void, ShowImpl, ());
+  MOCK_METHOD(void, HideImpl, ());
 
   void RealShow();
   void ExitScreen();
@@ -32,8 +32,8 @@ class MockAutoEnrollmentCheckScreenView : public AutoEnrollmentCheckScreenView {
 
   void SetDelegate(Delegate* screen) override;
 
-  MOCK_METHOD1(MockSetDelegate, void(Delegate* screen));
-  MOCK_METHOD0(Show, void());
+  MOCK_METHOD(void, MockSetDelegate, (Delegate * screen));
+  MOCK_METHOD(void, Show, ());
 
  private:
   Delegate* screen_ = nullptr;

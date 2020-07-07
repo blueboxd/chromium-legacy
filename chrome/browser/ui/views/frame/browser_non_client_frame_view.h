@@ -187,10 +187,10 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   const ui::ThemeProvider* GetFrameThemeProvider() const;
 
   // The frame that hosts this view.
-  BrowserFrame* frame_;
+  BrowserFrame* const frame_;
 
   // The BrowserView hosted within this View.
-  BrowserView* browser_view_;
+  BrowserView* const browser_view_;
 
   // Menu button and page status icons. Only used by web-app windows.
   WebAppFrameToolbarView* web_app_frame_toolbar_ = nullptr;

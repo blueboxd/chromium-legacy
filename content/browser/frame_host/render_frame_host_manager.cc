@@ -2534,7 +2534,7 @@ void RenderFrameHostManager::CommitPending(
     bool clear_proxies_on_commit) {
   TRACE_EVENT1("navigation", "RenderFrameHostManager::CommitPending",
                "FrameTreeNode id", frame_tree_node_->frame_tree_node_id());
-  DCHECK(pending_rfh);
+  CHECK(pending_rfh);
 
   // We should never have a pending bfcache entry if bfcache is disabled.
   DCHECK(!pending_bfcache_entry || IsBackForwardCacheEnabled());
@@ -2591,8 +2591,6 @@ void RenderFrameHostManager::CommitPending(
 
   // Swap in the new frame and make it active. Also ensure the FrameTree
   // stays in sync.
-  // TODO(http://crbug.com/1014212): Change to DCHECK.
-  CHECK(pending_rfh);
   std::unique_ptr<RenderFrameHostImpl> old_render_frame_host;
   old_render_frame_host = SetRenderFrameHost(std::move(pending_rfh));
 

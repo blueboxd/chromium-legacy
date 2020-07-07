@@ -283,7 +283,7 @@ void EnrollmentScreen::ProcessRetry() {
   ++num_retries_;
   LOG(WARNING) << "Enrollment retries: " << num_retries_
                << ", current auth: " << current_auth_ << ".";
-  Show();
+  Show(context());
 }
 
 void EnrollmentScreen::OnCancel() {
@@ -297,7 +297,7 @@ void EnrollmentScreen::OnCancel() {
   UMA(policy::kMetricEnrollmentCancelled);
 
   if (AdvanceToNextAuth()) {
-    Show();
+    Show(context());
     return;
   }
 
@@ -343,7 +343,7 @@ void EnrollmentScreen::OnEnrollmentError(policy::EnrollmentStatus status) {
       current_auth_ == AUTH_ATTESTATION) {
     UMA(policy::kMetricEnrollmentDeviceNotPreProvisioned);
     if (AdvanceToNextAuth()) {
-      Show();
+      Show(context());
       return;
     }
   }

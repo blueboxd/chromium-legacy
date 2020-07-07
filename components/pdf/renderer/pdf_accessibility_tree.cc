@@ -941,11 +941,15 @@ bool PdfAccessibilityTree::IsDataFromPluginValid(
   // |text_runs|. The index denotes the position of the link relative to the
   // text runs. The index value equal to the size of |text_runs| indicates that
   // the link should be after the last text run.
+  // |index_in_page| of every |link| should be with in the range of total number
+  // of links, which is size of |links|.
   for (const ppapi::PdfAccessibilityLinkInfo& link : links) {
     base::CheckedNumeric<uint32_t> index = link.text_run_index;
     index += link.text_run_count;
-    if (!index.IsValid() || index.ValueOrDie() > text_runs.size())
+    if (!index.IsValid() || index.ValueOrDie() > text_runs.size() ||
+        link.index_in_page >= links.size()) {
       return false;
+    }
   }
 
   const std::vector<ppapi::PdfAccessibilityImageInfo>& images =
@@ -970,11 +974,15 @@ bool PdfAccessibilityTree::IsDataFromPluginValid(
 
   // Since highlights also span across text runs similar to links, the
   // validation method is the same.
+  // |index_in_page| of a |highlight| follows the same index validation rules
+  // as of links.
   for (const auto& highlight : highlights) {
     base::CheckedNumeric<uint32_t> index = highlight.text_run_index;
     index += highlight.text_run_count;
-    if (!index.IsValid() || index.ValueOrDie() > text_runs.size())
+    if (!index.IsValid() || index.ValueOrDie() > text_runs.size() ||
+        highlight.index_in_page >= highlights.size()) {
       return false;
+    }
   }
 
   const std::vector<ppapi::PdfAccessibilityTextFieldInfo>& text_fields =
@@ -985,9 +993,13 @@ bool PdfAccessibilityTree::IsDataFromPluginValid(
   }
   // Text run index of an |text_field| works on the same logic as the text run
   // index of a |link| as mentioned above.
+  // |index_in_page| of a |text_field| follows the same index validation rules
+  // as of links.
   for (const ppapi::PdfAccessibilityTextFieldInfo& text_field : text_fields) {
-    if (text_field.text_run_index > text_runs.size())
+    if (text_field.text_run_index > text_runs.size() ||
+        text_field.index_in_page >= text_fields.size()) {
       return false;
+    }
   }
 
   const std::vector<ppapi::PdfAccessibilityChoiceFieldInfo>& choice_fields =
@@ -999,9 +1011,13 @@ bool PdfAccessibilityTree::IsDataFromPluginValid(
   }
   // Text run index of an |choice_field| works on the same logic as the text run
   // index of a |link| as mentioned above.
+  // |index_in_page| of a |choice_field| follows the same index validation rules
+  // as of links.
   for (const auto& choice_field : choice_fields) {
-    if (choice_field.text_run_index > text_runs.size())
+    if (choice_field.text_run_index > text_runs.size() ||
+        choice_field.index_in_page >= choice_fields.size()) {
       return false;
+    }
   }
 
   const std::vector<ppapi::PdfAccessibilityButtonInfo>& buttons =
@@ -1015,9 +1031,12 @@ bool PdfAccessibilityTree::IsDataFromPluginValid(
        buttons) {
     // Text run index of an |button| works on the same logic as the text run
     // index of a |link| as mentioned above.
-    if (button.text_run_index > text_runs.size())
+    // |index_in_page| of a |button| follows the same index validation rules as
+    // of links.
+    if (button.text_run_index > text_runs.size() ||
+        button.index_in_page >= buttons.size()) {
       return false;
-
+    }
     // For radio button or checkbox, value of |button.control_index| should
     // always be less than |button.control_count|.
     if ((button.type == PP_PrivateButtonType::PP_PRIVATEBUTTON_CHECKBOX ||

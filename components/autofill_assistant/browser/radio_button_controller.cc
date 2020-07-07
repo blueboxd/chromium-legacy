@@ -20,6 +20,15 @@ void RadioButtonController::AddRadioButtonToGroup(
   radio_groups_[radio_group].insert(model_identifier);
 }
 
+void RadioButtonController::RemoveRadioButtonFromGroup(
+    const std::string& radio_group,
+    const std::string& model_identifier) {
+  auto it = radio_groups_.find(radio_group);
+  if (it != radio_groups_.end()) {
+    it->second.erase(model_identifier);
+  }
+}
+
 bool RadioButtonController::UpdateRadioButtonGroup(
     const std::string& radio_group,
     const std::string& selected_model_identifier) {

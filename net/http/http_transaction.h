@@ -39,6 +39,24 @@ class NET_EXPORT_PRIVATE HttpTransaction {
   // ResumeNetworkStart is called before establishing a connection.
   typedef base::Callback<void(bool* defer)> BeforeNetworkStartCallback;
 
+  // Called each time a connection is obtained, before any data is sent.
+  //
+  // This can be called multiple times for a single transaction, in the case of
+  // retries, auth challenges, and split range requests.
+  // TODO(crbug.com/986744): Verify range request behavior with tests.
+  //
+  // The callee can call GetRemoteEndpoint() on the caller transaction to
+  // determine where the latest connection terminates.
+  //
+  // If this callback returns an error, the transaction fails with that error.
+  // Otherwise the transaction continues unimpeded.
+  // Must not return ERR_IO_PENDING.
+  //
+  // TODO(crbug.com/591068): Allow ERR_IO_PENDING, add a new state machine state
+  // to wait on a callback (either passed to this callback or a new explicit
+  // method like ResumeNetworkStart()) to be called before continuing.
+  typedef base::RepeatingCallback<int()> ConnectedCallback;
+
   // Stops any pending IO and destroys the transaction object.
   virtual ~HttpTransaction() {}
 
@@ -172,6 +190,9 @@ class NET_EXPORT_PRIVATE HttpTransaction {
   // Sets the callback to receive notification just before network use.
   virtual void SetBeforeNetworkStartCallback(
       const BeforeNetworkStartCallback& callback) = 0;
+
+  // Sets the callback to receive a notification upon connection.
+  virtual void SetConnectedCallback(const ConnectedCallback& callback) = 0;
 
   virtual void SetRequestHeadersCallback(RequestHeadersCallback callback) = 0;
   virtual void SetResponseHeadersCallback(ResponseHeadersCallback callback) = 0;

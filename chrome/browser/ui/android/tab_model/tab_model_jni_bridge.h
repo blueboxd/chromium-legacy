@@ -28,7 +28,7 @@ class TabModelJniBridge : public TabModel {
  public:
   TabModelJniBridge(JNIEnv* env,
                     jobject obj,
-                    bool is_incognito,
+                    Profile* profile,
                     bool is_tabbed_activity);
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   ~TabModelJniBridge() override;

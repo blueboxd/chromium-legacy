@@ -15,31 +15,17 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "content/common/text_input_client_messages.h"
 #include "ui/base/mojom/attributed_string.mojom.h"
 
 namespace content {
 
 namespace {
 
-// TODO(ekaramad): TextInputClientObserver, the renderer side of
-// TextInputClientMac for each RenderWidgetHost, expects to have a
-// WebFrameWidget to use for handling these IPCs. However, for fullscreen flash,
-// we end up with a PepperWidget. For those scenarios, do not send the IPCs. We
-// need to figure out what features are properly supported and perhaps send the
-// IPC to the parent widget of the plugin (https://crbug.com/663384).
-bool SendMessageToRenderWidget(RenderWidgetHostImpl* widget,
-                               IPC::Message* message) {
-  if (!widget->delegate() ||
-      widget == widget->delegate()->GetFullscreenRenderWidgetHost()) {
-    delete message;
-    return false;
-  }
-
-  DCHECK_EQ(widget->GetRoutingID(), message->routing_id());
-  return widget->Send(message);
-}
-
+// TODO(ekaramad): TextInputClientMac expects to have a RenderWidgetHost to use
+// for handling mojo calls. However, for fullscreen flash, we end up with a
+// PepperWidget. For those scenarios, do not send the mojo calls. We need to
+// figure out what features are properly supported and perhaps send the
+// mojo call to the parent widget of the plugin (https://crbug.com/663384).
 bool IsFullScreenRenderWidget(RenderWidgetHost* widget) {
   RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(widget);
   if (!rwhi->delegate() ||
@@ -86,19 +72,14 @@ void TextInputClientMac::GetStringAtPoint(RenderWidgetHost* rwh,
 void TextInputClientMac::GetStringFromRange(RenderWidgetHost* rwh,
                                             const gfx::Range& range,
                                             GetStringCallback callback) {
-  DCHECK(!replyForRangeHandler_);
-  replyForRangeHandler_ = std::move(callback);
-  RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(rwh);
-  SendMessageToRenderWidget(
-      rwhi, new TextInputClientMsg_StringForRange(rwhi->GetRoutingID(), range));
-}
+  RenderFrameHostImpl* rfhi = GetFocusedRenderFrameHostImpl(rwh);
+  // If it doesn't have a focused frame, it calls |callback| with
+  // an empty string and point.
+  if (!rfhi)
+    return std::move(callback).Run(nullptr, gfx::Point());
 
-void TextInputClientMac::GetStringFromRangeReply(
-    ui::mojom::AttributedStringPtr string,
-    const gfx::Point& point) {
-  if (replyForRangeHandler_) {
-    std::move(replyForRangeHandler_).Run(std::move(string), point);
-  }
+  rfhi->GetAssociatedLocalFrame()->GetStringForRange(range,
+                                                     std::move(callback));
 }
 
 uint32_t TextInputClientMac::GetCharacterIndexAtPoint(RenderWidgetHost* rwh,

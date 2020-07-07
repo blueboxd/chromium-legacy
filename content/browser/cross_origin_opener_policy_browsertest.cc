@@ -15,6 +15,7 @@
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/render_document_feature.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/default_handlers.h"
 #include "services/network/public/cpp/cross_origin_opener_policy.h"
 #include "services/network/public/cpp/features.h"
 
@@ -58,7 +59,8 @@ class CrossOriginOpenerPolicyBrowserTest
     feature_list_.InitWithFeatures(
         {network::features::kCrossOriginOpenerPolicy,
          network::features::kCrossOriginOpenerPolicyReporting,
-         network::features::kCrossOriginEmbedderPolicy},
+         network::features::kCrossOriginEmbedderPolicy,
+         network::features::kCrossOriginIsolated},
         {});
     InitAndEnableRenderDocumentFeature(&feature_list_for_render_document_,
                                        GetParam());
@@ -75,6 +77,7 @@ class CrossOriginOpenerPolicyBrowserTest
 
     https_server()->ServeFilesFromSourceDirectory(GetTestDataFilePath());
     SetupCrossSiteRedirector(https_server());
+    net::test_server::RegisterDefaultHandlers(&https_server_);
     ASSERT_TRUE(https_server()->Start());
   }
 
@@ -222,14 +225,15 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
                        NetworkErrorOnSandboxedPopups) {
   GURL starting_page(https_server()->GetURL(
       "a.com", "/cross-origin-opener-policy_sandbox_popup.html"));
+  GURL openee_url = https_server()->GetURL(
+      "a.com", "/set-header?Cross-Origin-Opener-Policy: same-origin");
   EXPECT_TRUE(NavigateToURL(shell(), starting_page));
 
   ShellAddedObserver shell_observer;
   RenderFrameHostImpl* iframe =
       current_frame_host()->child_at(0)->current_frame_host();
 
-  EXPECT_TRUE(ExecJs(
-      iframe, "window.open('/cross-origin-opener-policy_same-origin.html')"));
+  EXPECT_TRUE(ExecJs(iframe, JsReplace("window.open($1);", openee_url)));
 
   auto* popup_webcontents =
       static_cast<WebContentsImpl*>(shell_observer.GetShell()->web_contents());
@@ -243,14 +247,14 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
 IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
                        NoNetworkErrorOnSandboxedDocuments) {
   GURL starting_page(https_server()->GetURL(
-      "a.com", "/cross-origin-opener-policy_csp_sandboxed.html"));
+      "a.com", "/set-header?Content-Security-Policy: sandbox allow-scripts"));
   EXPECT_TRUE(NavigateToURL(shell(), starting_page));
   EXPECT_NE(current_frame_host()->active_sandbox_flags(),
             network::mojom::WebSandboxFlags::kNone)
       << "Document should be sandboxed.";
 
-  GURL next_page(https_server()->GetURL(
-      "a.com", "/cross-origin-opener-policy_same-origin.html"));
+  GURL next_page = https_server()->GetURL(
+      "a.com", "/set-header?Cross-Origin-Opener-Policy: same-origin");
 
   EXPECT_TRUE(NavigateToURL(shell(), next_page));
   EXPECT_EQ(
@@ -316,8 +320,8 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
 IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
                        CoopIsIgnoredOverHttp) {
   GURL non_coop_page(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  GURL coop_page(embedded_test_server()->GetURL(
-      "a.com", "/cross-origin-opener-policy_same-origin.html"));
+  GURL coop_page = embedded_test_server()->GetURL(
+      "a.com", "/set-header?Cross-Origin-Opener-Policy: same-origin");
 
   EXPECT_TRUE(NavigateToURL(shell(), non_coop_page));
   scoped_refptr<SiteInstance> initial_site_instance(
@@ -333,8 +337,8 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
                        CoopIsIgnoredOnIframes) {
   GURL starting_page(
       https_server()->GetURL("a.com", "/cross_site_iframe_factory.html?a(b)"));
-  GURL iframe_navigation_url(https_server()->GetURL(
-      "b.com", "/cross-origin-opener-policy_same-origin.html"));
+  GURL iframe_navigation_url = https_server()->GetURL(
+      "b.com", "/set-header?Cross-Origin-Opener-Policy: same-origin");
   EXPECT_TRUE(NavigateToURL(shell(), starting_page));
 
   RenderFrameHostImpl* main_rfh = current_frame_host();
@@ -360,8 +364,8 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
                        NonCoopPageCrashIntoCoop) {
   IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
   GURL non_coop_page(https_server()->GetURL("a.com", "/title1.html"));
-  GURL coop_page(https_server()->GetURL(
-      "a.com", "/cross-origin-opener-policy_same-origin.html"));
+  GURL coop_page = https_server()->GetURL(
+      "a.com", "/set-header?Cross-Origin-Opener-Policy: same-origin");
 
   // Test a crash before the navigation.
   {
@@ -465,9 +469,8 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
     return;
   IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
   GURL non_coop_page(https_server()->GetURL("a.com", "/title1.html"));
-  GURL coop_page(https_server()->GetURL(
-      "a.com", "/cross-origin-opener-policy_same-origin.html"));
-
+  GURL coop_page = https_server()->GetURL(
+      "a.com", "/set-header?Cross-Origin-Opener-Policy: same-origin");
   // Test a crash before the navigation.
   {
     // Navigate to a COOP page.
@@ -480,12 +483,12 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
     GURL cross_site_iframe(https_server()->GetURL("b.com", "/title1.html"));
     TestNavigationManager iframe_navigation(popup_shell->web_contents(),
                                             cross_site_iframe);
-    EXPECT_TRUE(ExecJs(popup_shell->web_contents(),
-                       "var iframe = document.createElement('iframe');"
-                       "iframe.src = '" +
-                           cross_site_iframe.spec() +
-                           "';"
-                           "document.body.appendChild(iframe);"));
+    EXPECT_TRUE(
+        ExecJs(popup_shell->web_contents(),
+               JsReplace("var iframe = document.createElement('iframe');"
+                         "iframe.src = $1;"
+                         "document.body.appendChild(iframe);",
+                         cross_site_iframe)));
     iframe_navigation.WaitForNavigationFinished();
     EXPECT_EQ(web_contents()
                   ->GetFrameTree()
@@ -532,12 +535,12 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
     GURL cross_site_iframe(https_server()->GetURL("b.com", "/title1.html"));
     TestNavigationManager iframe_navigation(popup_shell->web_contents(),
                                             cross_site_iframe);
-    EXPECT_TRUE(ExecJs(popup_shell->web_contents(),
-                       "var iframe = document.createElement('iframe');"
-                       "iframe.src = '" +
-                           cross_site_iframe.spec() +
-                           "';"
-                           "document.body.appendChild(iframe);"));
+    EXPECT_TRUE(
+        ExecJs(popup_shell->web_contents(),
+               JsReplace("var iframe = document.createElement('iframe');"
+                         "iframe.src = $1;"
+                         "document.body.appendChild(iframe);",
+                         cross_site_iframe)));
     iframe_navigation.WaitForNavigationFinished();
     EXPECT_EQ(web_contents()
                   ->GetFrameTree()
@@ -586,8 +589,8 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
     return;
   IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
   GURL non_coop_page(https_server()->GetURL("a.com", "/title1.html"));
-  GURL coop_page(https_server()->GetURL(
-      "a.com", "/cross-origin-opener-policy_same-origin.html"));
+  GURL coop_page = https_server()->GetURL(
+      "a.com", "/set-header?Cross-Origin-Opener-Policy: same-origin");
 
   // Test a crash before the navigation.
   {
@@ -601,12 +604,12 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
     GURL cross_site_iframe(https_server()->GetURL("b.com", "/title1.html"));
     TestNavigationManager iframe_navigation(popup_shell->web_contents(),
                                             cross_site_iframe);
-    EXPECT_TRUE(ExecJs(popup_shell->web_contents(),
-                       "var iframe = document.createElement('iframe');"
-                       "iframe.src = '" +
-                           cross_site_iframe.spec() +
-                           "';"
-                           "document.body.appendChild(iframe);"));
+    EXPECT_TRUE(
+        ExecJs(popup_shell->web_contents(),
+               JsReplace("var iframe = document.createElement('iframe');"
+                         "iframe.src = $1;"
+                         "document.body.appendChild(iframe);",
+                         cross_site_iframe)));
     iframe_navigation.WaitForNavigationFinished();
     EXPECT_EQ(web_contents()
                   ->GetFrameTree()
@@ -653,12 +656,12 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
     GURL cross_site_iframe(https_server()->GetURL("b.com", "/title1.html"));
     TestNavigationManager iframe_navigation(popup_shell->web_contents(),
                                             cross_site_iframe);
-    EXPECT_TRUE(ExecJs(popup_shell->web_contents(),
-                       "var iframe = document.createElement('iframe');"
-                       "iframe.src = '" +
-                           cross_site_iframe.spec() +
-                           "';"
-                           "document.body.appendChild(iframe);"));
+    EXPECT_TRUE(
+        ExecJs(popup_shell->web_contents(),
+               JsReplace("var iframe = document.createElement('iframe');"
+                         "iframe.src = $1;"
+                         "document.body.appendChild(iframe);",
+                         cross_site_iframe)));
     iframe_navigation.WaitForNavigationFinished();
     EXPECT_EQ(web_contents()
                   ->GetFrameTree()
@@ -703,8 +706,8 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
 IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
                        ProxiesAreRemovedWhenCrossingCoopBoundary) {
   GURL non_coop_page(https_server()->GetURL("a.com", "/title1.html"));
-  GURL coop_page(https_server()->GetURL(
-      "a.com", "/cross-origin-opener-policy_same-origin.html"));
+  GURL coop_page = https_server()->GetURL(
+      "a.com", "/set-header?Cross-Origin-Opener-Policy: same-origin");
 
   RenderFrameHostManager* main_window_rfhm =
       web_contents()->GetFrameTree()->root()->render_manager();
@@ -736,8 +739,8 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
 IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
                        ProxiesAreKeptWhenNavigatingFromCoopToCoop) {
   IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
-  GURL coop_page(https_server()->GetURL(
-      "a.com", "/cross-origin-opener-policy_same-origin.html"));
+  GURL coop_page = https_server()->GetURL(
+      "a.com", "/set-header?Cross-Origin-Opener-Policy: same-origin");
 
   // Navigate to a COOP page.
   EXPECT_TRUE(NavigateToURL(shell(), coop_page));
@@ -750,11 +753,10 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
   TestNavigationManager iframe_navigation(popup_shell->web_contents(),
                                           cross_site_iframe);
   EXPECT_TRUE(ExecJs(popup_shell->web_contents(),
-                     "var iframe = document.createElement('iframe');"
-                     "iframe.src = '" +
-                         cross_site_iframe.spec() +
-                         "';"
-                         "document.body.appendChild(iframe);"));
+                     JsReplace("var iframe = document.createElement('iframe');"
+                               "iframe.src = $1;"
+                               "document.body.appendChild(iframe);",
+                               cross_site_iframe)));
   iframe_navigation.WaitForNavigationFinished();
   EXPECT_EQ(
       web_contents()->GetFrameTree()->root()->render_manager()->GetProxyCount(),
@@ -780,9 +782,14 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
 
   // Open a popup with CrossOriginOpenerPolicy and CrossOriginEmbedderPolicy
   // set.
+  GURL url_openee =
+      https_server()->GetURL("a.com",
+                             "/set-header?"
+                             "Cross-Origin-Opener-Policy: same-origin&"
+                             "Cross-Origin-Embedder-Policy: require-corp");
   ShellAddedObserver shell_observer;
-  EXPECT_TRUE(ExecJs(current_frame_host(),
-                     "window.open('/page_with_coop_and_coep.html')"));
+  EXPECT_TRUE(
+      ExecJs(current_frame_host(), JsReplace("window.open($1)", url_openee)));
 
   auto* popup_webcontents =
       static_cast<WebContentsImpl*>(shell_observer.GetShell()->web_contents());
@@ -803,8 +810,11 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
 
   // Navigate to a starting page with CrossOriginOpenerPolicy and
   // CrossOriginEmbedderPolicy set.
-  GURL starting_page(
-      https_server()->GetURL("a.com", "/page_with_coop_and_coep.html"));
+  GURL starting_page =
+      https_server()->GetURL("a.com",
+                             "/set-header?"
+                             "Cross-Origin-Opener-Policy: same-origin&"
+                             "Cross-Origin-Embedder-Policy: require-corp");
   EXPECT_TRUE(NavigateToURL(shell(), starting_page));
 
   // Open a popup without CrossOriginOpenerPolicy and CrossOriginEmbedderPolicy
@@ -833,8 +843,12 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
                        SpeculativeRfhsAndCoop) {
-  GURL non_coop_page(https_server()->GetURL("/title1.html"));
-  GURL coop_page(https_server()->GetURL("/page_with_coop_and_coep.html"));
+  GURL non_coop_page(https_server()->GetURL("a.com", "/title1.html"));
+  GURL coop_page =
+      https_server()->GetURL("a.com",
+                             "/set-header?"
+                             "Cross-Origin-Opener-Policy: same-origin&"
+                             "Cross-Origin-Embedder-Policy: require-corp");
 
   // Non-COOP into non-COOP.
   {
@@ -988,39 +1002,66 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
       {
           // same-origin => change.
           https_server()->GetURL("a.com", "/title1.html"),
-          https_server()->GetURL("a.com", "/page_with_coop_and_coep.html"),
+          https_server()->GetURL("a.com",
+                                 "/set-header?"
+                                 "Cross-Origin-Opener-Policy: same-origin&"
+                                 "Cross-Origin-Embedder-Policy: require-corp"),
           false,  // TODO(https://crbug.com/1101339): Replace by true.
       },
       {
           // different-origin => change.
           https_server()->GetURL("a.a.com", "/title1.html"),
-          https_server()->GetURL("b.a.com", "/page_with_coop_and_coep.html"),
+          https_server()->GetURL("b.a.com",
+                                 "/set-header?"
+                                 "Cross-Origin-Opener-Policy: same-origin&"
+                                 "Cross-Origin-Embedder-Policy: require-corp"),
           false,  // TODO(https://crbug.com/1101339): Replace by true.
       },
       {
           // different-site => change.
           https_server()->GetURL("a.com", "/title1.html"),
-          https_server()->GetURL("b.com", "/page_with_coop_and_coep.html"),
+          https_server()->GetURL("b.com",
+                                 "/set-header?"
+                                 "Cross-Origin-Opener-Policy: same-origin&"
+                                 "Cross-Origin-Embedder-Policy: require-corp"),
           false,  // TODO(https://crbug.com/1101339): Replace by true.
       },
 
       // coop <-> coop.
       {
           // same-origin => keep.
-          https_server()->GetURL("a.com", "/page_with_coop_and_coep.html"),
-          https_server()->GetURL("a.com", "/page_with_coop_and_coep.html"),
+          https_server()->GetURL("a.com",
+                                 "/set-header?"
+                                 "Cross-Origin-Opener-Policy: same-origin&"
+                                 "Cross-Origin-Embedder-Policy: require-corp"),
+          https_server()->GetURL("a.com",
+                                 "/set-header?"
+                                 "Cross-Origin-Opener-Policy: same-origin&"
+                                 "Cross-Origin-Embedder-Policy: require-corp"),
           false,
       },
       {
           // different-origin => change.
-          https_server()->GetURL("a.a.com", "/page_with_coop_and_coep.html"),
-          https_server()->GetURL("b.a.com", "/page_with_coop_and_coep.html"),
+          https_server()->GetURL("a.a.com",
+                                 "/set-header?"
+                                 "Cross-Origin-Opener-Policy: same-origin&"
+                                 "Cross-Origin-Embedder-Policy: require-corp"),
+          https_server()->GetURL("b.a.com",
+                                 "/set-header?"
+                                 "Cross-Origin-Opener-Policy: same-origin&"
+                                 "Cross-Origin-Embedder-Policy: require-corp"),
           false,  // TODO(https://crbug.com/1101339): Replace by true.
       },
       {
           // different-site => keep.
-          https_server()->GetURL("a.com", "/page_with_coop_and_coep.html"),
-          https_server()->GetURL("b.com", "/page_with_coop_and_coep.html"),
+          https_server()->GetURL("a.com",
+                                 "/set-header?"
+                                 "Cross-Origin-Opener-Policy: same-origin&"
+                                 "Cross-Origin-Embedder-Policy: require-corp"),
+          https_server()->GetURL("b.com",
+                                 "/set-header?"
+                                 "Cross-Origin-Opener-Policy: same-origin&"
+                                 "Cross-Origin-Embedder-Policy: require-corp"),
           false,  // TODO(https://crbug.com/1101339): Replace by true.
       },
 
@@ -1028,59 +1069,116 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
       {
           // same-origin => change.
           https_server()->GetURL("a.com", "/title1.html"),
-          https_server()->GetURL("a.com", "/page_with_coop_ro_and_coep.html"),
+          https_server()->GetURL(
+              "a.com",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy-Report-Only: same-origin&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
           false,  // TODO(https://crbug.com/1101339): Replace by true.
       },
       {
           // different-origin => change.
           https_server()->GetURL("a.a.com", "/title1.html"),
-          https_server()->GetURL("b.a.com", "/page_with_coop_ro_and_coep.html"),
+          https_server()->GetURL(
+              "b.a.com",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy-Report-Only: same-origin&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
           false,  // TODO(https://crbug.com/1101339): Replace by true.
       },
       {
           // different-site => change.
           https_server()->GetURL("a.com", "/title1.html"),
-          https_server()->GetURL("b.com", "/page_with_coop_ro_and_coep.html"),
+          https_server()->GetURL(
+              "b.com",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy-Report-Only: same-origin&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
           false,  // TODO(https://crbug.com/1101339): Replace by true.
       },
 
       // coop-ro <-> coop-ro.
       {
           // same-origin => keep.
-          https_server()->GetURL("a.com", "/page_with_coop_ro_and_coep.html"),
-          https_server()->GetURL("a.com", "/page_with_coop_ro_and_coep.html"),
+          https_server()->GetURL(
+              "a.com",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy-Report-Only: same-origin&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
+          https_server()->GetURL(
+              "a.com",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy-Report-Only: same-origin&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
           false,
       },
       {
           // different-origin => change.
-          https_server()->GetURL("a.a.com", "/page_with_coop_ro_and_coep.html"),
-          https_server()->GetURL("b.a.com", "/page_with_coop_ro_and_coep.html"),
+          https_server()->GetURL(
+              "a.a.com",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy-Report-Only: same-origin&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
+          https_server()->GetURL(
+              "b.a.com",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy-Report-Only: same-origin&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
           false,  // TODO(https://crbug.com/1101339): Replace by true.
       },
       {
           // different-site => keep.
-          https_server()->GetURL("a.com", "/page_with_coop_ro_and_coep.html"),
-          https_server()->GetURL("b.com", "/page_with_coop_ro_and_coep.html"),
+          https_server()->GetURL(
+              "a.com",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy-Report-Only: same-origin&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
+          https_server()->GetURL(
+              "b.com",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy-Report-Only: same-origin&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
           false,  // TODO(https://crbug.com/1101339): Replace by true.
       },
 
       // coop <-> coop-ro.
       {
           // same-origin => change.
-          https_server()->GetURL("a.com", "/page_with_coop_and_coep.html"),
-          https_server()->GetURL("a.com", "/page_with_coop_ro_and_coep.html"),
+          https_server()->GetURL("a.com",
+                                 "/set-header?"
+                                 "Cross-Origin-Opener-Policy: same-origin&"
+                                 "Cross-Origin-Embedder-Policy: require-corp"),
+          https_server()->GetURL(
+              "a.com",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy-Report-Only: same-origin&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
           false,  // TODO(https://crbug.com/1101339): Replace by true.
       },
       {
           // different-origin => change.
-          https_server()->GetURL("a.a.com", "/page_with_coop_and_coep.html"),
-          https_server()->GetURL("b.a.com", "/page_with_coop_ro_and_coep.html"),
+          https_server()->GetURL("a.a.com",
+                                 "/set-header?"
+                                 "Cross-Origin-Opener-Policy: same-origin&"
+                                 "Cross-Origin-Embedder-Policy: require-corp"),
+          https_server()->GetURL(
+              "b.a.com",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy-Report-Only: same-origin&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
           false,  // TODO(https://crbug.com/1101339): Replace by true.
       },
       {
           // different-site => change
-          https_server()->GetURL("a.com", "/page_with_coop_and_coep.html"),
-          https_server()->GetURL("b.com", "/page_with_coop_ro_and_coep.html"),
+          https_server()->GetURL("a.com",
+                                 "/set-header?"
+                                 "Cross-Origin-Opener-Policy: same-origin&"
+                                 "Cross-Origin-Embedder-Policy: require-corp"),
+          https_server()->GetURL(
+              "b.com",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy-Report-Only: same-origin&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
           false,  // TODO(https://crbug.com/1101339): Replace by true.
       },
       // TODO(https://crbug.com/1101339). Test with COEP-RO.
@@ -1134,13 +1232,20 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
       },
       {
           // From coop-ro.
-          https_server()->GetURL("a.com", "/page_with_coop_ro_and_coep.html"),
+          https_server()->GetURL(
+              "a.com",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy-Report-Only: same-origin&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
           GURL(),
           false,
       },
       {
           // From coop.
-          https_server()->GetURL("a.com", "/page_with_coop_and_coep.html"),
+          https_server()->GetURL("a.com",
+                                 "/set-header?"
+                                 "Cross-Origin-Opener-Policy: same-origin&"
+                                 "Cross-Origin-Embedder-Policy: require-corp"),
           GURL(),
           false,
       },
@@ -1164,35 +1269,61 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
       // non-coop opens coop-ro.
       {
           https_server()->GetURL("a.com", "/title1.html"),
-          https_server()->GetURL("a.com", "/page_with_coop_ro_and_coep.html"),
+          https_server()->GetURL(
+              "a.com",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy-Report-Only: same-origin&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
           false,  // TODO(https://crbug.com/11001339): Replace by true.
       },
 
       // non-coop opens coop.
       {
           https_server()->GetURL("a.com", "/title1.html"),
-          https_server()->GetURL("a.com", "/page_with_coop_and_coep.html"),
+          https_server()->GetURL("a.com",
+                                 "/set-header?"
+                                 "Cross-Origin-Opener-Policy: same-origin&"
+                                 "Cross-Origin-Embedder-Policy: require-corp"),
           false,  // TODO(https://crbug.com/11001339): Replace by true.
       },
 
       // coop opens non-coop.
       {
-          https_server()->GetURL("a.com", "/page_with_coop_and_coep.html"),
+          https_server()->GetURL("a.com",
+                                 "/set-header?"
+                                 "Cross-Origin-Opener-Policy: same-origin&"
+                                 "Cross-Origin-Embedder-Policy: require-corp"),
           https_server()->GetURL("a.com", "/title1.html"),
           false,  // TODO(https://crbug.com/11001339): Replace by true.
       },
 
       // coop-ro opens coop-ro (same-origin).
       {
-          https_server()->GetURL("a.com", "/page_with_coop_ro_and_coep.html"),
-          https_server()->GetURL("a.com", "/page_with_coop_ro_and_coep.html"),
+          https_server()->GetURL(
+              "a.com",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy-Report-Only: same-origin&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
+          https_server()->GetURL(
+              "a.com",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy-Report-Only: same-origin&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
           false,
       },
 
       // coop-ro opens coop-ro (different-origin).
       {
-          https_server()->GetURL("a.com", "/page_with_coop_ro_and_coep.html"),
-          https_server()->GetURL("b.com", "/page_with_coop_ro_and_coep.html"),
+          https_server()->GetURL(
+              "a.com",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy-Report-Only: same-origin&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
+          https_server()->GetURL(
+              "b.com",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy-Report-Only: same-origin&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
           false,  // TODO(https://crbug.com/11001339): Replace by true.
       },
 
@@ -1234,10 +1365,16 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
 // The goal is to spot differences when the BackForwardCache is enabled.
 IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
                        VirtualBrowsingContextGroup_HistoryNavigation) {
-  GURL url_a =
-      https_server()->GetURL("a.com", "/page_with_coop_ro_and_coep.html");
-  GURL url_b =
-      https_server()->GetURL("b.com", "/page_with_coop_ro_and_coep.html");
+  GURL url_a = https_server()->GetURL(
+      "a.com",
+      "/set-header?"
+      "Cross-Origin-Opener-Policy-Report-Only: same-origin&"
+      "Cross-Origin-Embedder-Policy: require-corp");
+  GURL url_b = https_server()->GetURL(
+      "b.com",
+      "/set-header?"
+      "Cross-Origin-Opener-Policy-Report-Only: same-origin&"
+      "Cross-Origin-Embedder-Policy: require-corp");
 
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
   int group_1 = VirtualBrowsingContextGroup(web_contents());
@@ -1271,8 +1408,11 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
                        VirtualBrowsingContextGroup_HistoryNavigationWithPopup) {
   GURL url_a = https_server()->GetURL("a.com", "/title1.html");
   GURL url_b = https_server()->GetURL("b.com", "/title1.html");
-  GURL url_c =
-      https_server()->GetURL("c.com", "/page_with_coop_ro_and_coep.html");
+  GURL url_c = https_server()->GetURL(
+      "c.com",
+      "/set-header?"
+      "Cross-Origin-Opener-Policy-Report-Only: same-origin&"
+      "Cross-Origin-Embedder-Policy: require-corp");
 
   // Navigate to A1.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));

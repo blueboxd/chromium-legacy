@@ -622,10 +622,6 @@ void LoginDisplayHostWebUI::OnStartUserAdding() {
 
   CreateExistingUserController();
 
-  if (!signin_screen_controller_.get()) {
-    signin_screen_controller_.reset(new SignInScreenController(GetOobeUI()));
-  }
-
   SetOobeProgressBarVisible(oobe_progress_bar_visible_ = false);
   SetStatusAreaVisible(true);
   existing_user_controller_->Init(
@@ -664,10 +660,6 @@ void LoginDisplayHostWebUI::OnStartSignInScreen() {
 
   DVLOG(1) << "Starting sign in screen";
   CreateExistingUserController();
-
-  if (!signin_screen_controller_.get()) {
-    signin_screen_controller_.reset(new SignInScreenController(GetOobeUI()));
-  }
 
   // TODO(crbug.com/784495): This is always false, since
   // LoginDisplayHost::StartSignInScreen marks the device as registered.

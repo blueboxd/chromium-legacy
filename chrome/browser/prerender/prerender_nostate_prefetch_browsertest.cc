@@ -31,7 +31,10 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
+#include "components/content_settings/core/common/pref_names.h"
 #include "components/embedder_support/switches.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/appcache_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -1357,4 +1360,30 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, AppCacheRegistered) {
   // wait until we see both.
   run_loop.Run();
 }
+
+class NoStatePrefetchIncognitoBrowserTest : public NoStatePrefetchBrowserTest {
+ public:
+  void SetUpOnMainThread() override {
+    Profile* normal_profile = current_browser()->profile();
+    set_browser(OpenURLOffTheRecord(normal_profile, GURL("about:blank")));
+    NoStatePrefetchBrowserTest::SetUpOnMainThread();
+    current_browser()->profile()->GetPrefs()->SetInteger(
+        prefs::kCookieControlsMode,
+        static_cast<int>(content_settings::CookieControlsMode::kOff));
+  }
+};
+
+// Checks that prerendering works in incognito mode.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchIncognitoBrowserTest,
+                       PrerenderIncognito) {
+  std::unique_ptr<TestPrerender> test_prerender =
+      PrefetchFromFile(kPrefetchPage, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+
+  // Verify that the page load did not happen.
+  test_prerender->WaitForLoads(0);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchPage), 1);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchScript), 1);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchScript2), 0);
+}
+
 }  // namespace prerender

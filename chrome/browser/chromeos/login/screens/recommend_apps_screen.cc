@@ -68,7 +68,7 @@ void RecommendAppsScreen::OnViewDestroyed(RecommendAppsScreenView* view) {
   view_ = nullptr;
 }
 
-bool RecommendAppsScreen::MaybeSkip() {
+bool RecommendAppsScreen::MaybeSkip(WizardContext* context) {
   const user_manager::UserManager* user_manager =
       user_manager::UserManager::Get();
   DCHECK(user_manager->IsUserLoggedIn());

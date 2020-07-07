@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.chrome.browser.ntp.RecentlyClosedBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.HistoricalTabSaver;
 import org.chromium.chrome.browser.tab.InterceptNavigationDelegateTabHelper;
 import org.chromium.chrome.browser.tab.Tab;
@@ -799,14 +800,16 @@ public class TabModelImpl extends TabModelJniBridge {
     }
 
     @Override
-    protected TabCreator getTabCreator(boolean incognito) {
-        return incognito ? mIncognitoTabCreator : mRegularTabCreator;
+    protected TabCreator getTabCreator(Profile profile) {
+        // TODO(https://crbug.com/1099642): Update to get the proper tab creator for different OTR
+        // profiles.
+        return profile.isOffTheRecord() ? mIncognitoTabCreator : mRegularTabCreator;
     }
 
     @Override
     protected boolean createTabWithWebContents(
-            Tab parent, boolean incognito, WebContents webContents) {
-        return getTabCreator(incognito).createTabWithWebContents(
+            Tab parent, Profile profile, WebContents webContents) {
+        return getTabCreator(profile).createTabWithWebContents(
                 parent, webContents, TabLaunchType.FROM_LONGPRESS_BACKGROUND);
     }
 
@@ -846,7 +849,10 @@ public class TabModelImpl extends TabModelJniBridge {
         loadUrlParams.setVerbatimHeaders(extraHeaders);
         loadUrlParams.setPostData(postData);
         loadUrlParams.setIsRendererInitiated(isRendererInitiated);
-        getTabCreator(incognito).createNewTab(
+        // TODO(https://crbug.com/1099642): Update to pass the correct OTR profile.
+        Profile profile = Profile.getLastUsedRegularProfile();
+        if (incognito) profile = profile.getPrimaryOTRProfile();
+        getTabCreator(profile).createNewTab(
                 loadUrlParams, tabLaunchType, persistParentage ? parent : null);
     }
 

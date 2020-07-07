@@ -441,6 +441,44 @@ void DOMWindow::InstallCoopAccessMonitor(
   coop_access_monitor_.push_back(std::move(monitor));
 }
 
+// Check if the accessing context would be able to access this window if COOP
+// was enforced. If this isn't a report is sent.
+void DOMWindow::ReportCoopAccess(v8::Isolate* isolate,
+                                 const char* property_name) {
+  if (coop_access_monitor_.IsEmpty())  // Fast early return. Very likely true.
+    return;
+
+  DOMWindow* accessing_window = CurrentDOMWindow(isolate);
+  // Iframes are allowed to trigger reports, only when they are same-origin with
+  // their top-level document.
+  if (accessing_window->GetFrame()->IsCrossOriginToParentFrame())
+    return;
+  const base::UnguessableToken& accessing_main_frame =
+      accessing_window->GetFrame()->Tree().Top().GetFrameToken();
+
+  auto* it = coop_access_monitor_.begin();
+  while (it != coop_access_monitor_.end()) {
+    if (it->accessing_main_frame != accessing_main_frame) {
+      ++it;
+      continue;
+    }
+
+    // TODO(arthursonzogni): Capture and send the SourceLocation.
+    // TODO(arthursonzogni): Send the blocked-window-url.
+    // TODO(arthursonzogni): Send whether this was access-to-coop or
+    // access-from-coop.
+
+    it->reporter->QueueAccessReport(property_name);
+
+    // TODO(arthursonzogni): In the access-from-coop case, dispatch a
+    // reportingObserver event.
+
+    // CoopAccessMonitor are used once and destroyed. This avoids sending
+    // multiple reports for the same access.
+    it = coop_access_monitor_.erase(it);
+  }
+}
+
 void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,
                               const MessagePortArray& ports,
                               const WindowPostMessageOptions* options,

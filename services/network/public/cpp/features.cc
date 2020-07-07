@@ -105,6 +105,11 @@ const base::Feature kCrossOriginOpenerPolicyAccessReporting{
 const base::Feature kCrossOriginEmbedderPolicy{
     "CrossOriginEmbedderPolicy", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables the most recent developments on the crossOriginIsolated property.
+// https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/crossOriginIsolated
+const base::Feature kCrossOriginIsolated{"CrossOriginIsolated",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 // When kBlockNonSecureExternalRequests is enabled, requests initiated from a
 // pubic network may only target a private network if the initiating context
 // is secure.

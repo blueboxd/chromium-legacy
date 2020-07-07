@@ -561,7 +561,7 @@ bool FrameLoader::AllowRequestForThisFrame(const FrameLoadRequest& request) {
     // as per https://html.spec.whatwg.org/C/#javascript-protocol.
     bool javascript_url_is_allowed =
         request.GetOriginWindow()
-            ->GetContentSecurityPolicyForWorld(request.JavascriptWorld())
+            ->GetContentSecurityPolicyForWorld(request.JavascriptWorld().get())
             ->AllowInline(ContentSecurityPolicy::InlineType::kNavigation,
                           frame_->DeprecatedLocalOwner(), url.GetString(),
                           String() /* nonce */,
@@ -836,7 +836,8 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
   // plumbing the correct CSP to the browser.
   using CSPDisposition = network::mojom::CSPDisposition;
   CSPDisposition should_check_main_world_csp =
-      ContentSecurityPolicy::ShouldBypassMainWorld(request.JavascriptWorld())
+      ContentSecurityPolicy::ShouldBypassMainWorld(
+          request.JavascriptWorld().get())
           ? CSPDisposition::DO_NOT_CHECK
           : CSPDisposition::CHECK;
   Client()->BeginNavigation(

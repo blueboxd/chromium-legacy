@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/public/cpp/app_types.h"
+#include "ash/public/cpp/window_properties.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "components/exo/permission.h"
@@ -103,6 +104,14 @@ void SetShellStartupId(aura::Window* window,
 
 const std::string* GetShellStartupId(aura::Window* window) {
   return window->GetProperty(kStartupIdKey);
+}
+
+void SetShellUseImmersiveForFullscreen(aura::Window* window, bool value) {
+  window->SetProperty(ash::kImmersiveImpliedByFullscreen, value);
+
+  // Ensure the shelf is fully hidden in plain fullscreen, but shown
+  // (auto-hides based on mouse movement) when in immersive fullscreen.
+  window->SetProperty(ash::kHideShelfWhenFullscreenKey, !value);
 }
 
 void SetShellClientAccessibilityId(aura::Window* window,

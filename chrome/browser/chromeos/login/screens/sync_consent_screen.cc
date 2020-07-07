@@ -127,7 +127,7 @@ void SyncConsentScreen::Finish(Result result) {
   exit_callback_.Run(result);
 }
 
-bool SyncConsentScreen::MaybeSkip() {
+bool SyncConsentScreen::MaybeSkip(WizardContext* context) {
   Init();
 
   switch (behavior_) {

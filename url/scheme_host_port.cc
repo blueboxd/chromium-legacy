@@ -128,14 +128,12 @@ bool IsValidInput(const base::StringPiece& scheme,
 
 }  // namespace
 
-SchemeHostPort::SchemeHostPort() : port_(0) {
-}
+SchemeHostPort::SchemeHostPort() = default;
 
 SchemeHostPort::SchemeHostPort(std::string scheme,
                                std::string host,
                                uint16_t port,
-                               ConstructPolicy policy)
-    : port_(0) {
+                               ConstructPolicy policy) {
   if (!IsValidInput(scheme, host, port, policy)) {
     DCHECK(!IsValid());
     return;
@@ -156,7 +154,7 @@ SchemeHostPort::SchemeHostPort(base::StringPiece scheme,
                      port,
                      ConstructPolicy::CHECK_CANONICALIZATION) {}
 
-SchemeHostPort::SchemeHostPort(const GURL& url) : port_(0) {
+SchemeHostPort::SchemeHostPort(const GURL& url) {
   if (!url.is_valid())
     return;
 

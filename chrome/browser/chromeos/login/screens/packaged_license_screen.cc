@@ -46,7 +46,7 @@ PackagedLicenseScreen::~PackagedLicenseScreen() {
     view_->Unbind();
 }
 
-bool PackagedLicenseScreen::MaybeSkip() {
+bool PackagedLicenseScreen::MaybeSkip(WizardContext* context) {
   policy::EnrollmentConfig enrollment_config =
       g_browser_process->platform_part()
           ->browser_policy_connector_chromeos()

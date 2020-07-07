@@ -7,7 +7,6 @@
 
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
-#include "ipc/ipc_message_utils.h"
 #include "ui/base/mojom/attributed_string.mojom.h"
 #include "ui/gfx/range/range.h"
 
@@ -16,11 +15,6 @@
 #else
 class NSAttributedString;
 #endif
-
-namespace base {
-class Pickle;
-class PickleIterator;
-}
 
 namespace mojo {
 
@@ -39,21 +33,5 @@ struct CONTENT_EXPORT
 };
 
 }  // namespace mojo
-
-// IPC ParamTraits specialization //////////////////////////////////////////////
-
-namespace IPC {
-
-template <>
-struct ParamTraits<ui::mojom::FontAttributePtr> {
-  typedef ui::mojom::FontAttributePtr param_type;
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-}  // namespace IPC
 
 #endif  // CONTENT_COMMON_MAC_ATTRIBUTED_STRING_TYPE_CONVERTERS_H_

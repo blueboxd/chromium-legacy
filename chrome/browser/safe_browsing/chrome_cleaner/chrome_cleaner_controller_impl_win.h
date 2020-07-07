@@ -84,6 +84,7 @@ class ChromeCleanerControllerImpl : public ChromeCleanerController {
   // Force the current controller's state for tests that check the effect of
   // starting and completing reporter runs.
   void SetStateForTesting(State state);
+  void SetIdleForTesting(IdleReason idle_reason);
 
  private:
   ChromeCleanerControllerImpl();

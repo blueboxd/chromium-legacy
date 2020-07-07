@@ -26,8 +26,8 @@ InMemoryEventStore::InMemoryEventStore()
 
 InMemoryEventStore::~InMemoryEventStore() = default;
 
-void InMemoryEventStore::Load(const OnLoadedCallback& callback) {
-  HandleLoadResult(callback, true);
+void InMemoryEventStore::Load(OnLoadedCallback callback) {
+  HandleLoadResult(std::move(callback), true);
 }
 
 bool InMemoryEventStore::IsReady() const {
@@ -42,10 +42,11 @@ void InMemoryEventStore::DeleteEvent(const std::string& event_name) {
   // Intentionally ignore all deletes.
 }
 
-void InMemoryEventStore::HandleLoadResult(const OnLoadedCallback& callback,
+void InMemoryEventStore::HandleLoadResult(OnLoadedCallback callback,
                                           bool success) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, success, std::move(events_)));
+      FROM_HERE,
+      base::BindOnce(std::move(callback), success, std::move(events_)));
   ready_ = success;
 }
 

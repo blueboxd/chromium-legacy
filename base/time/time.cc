@@ -68,18 +68,6 @@ int TimeDelta::InDaysFloored() const {
   return result;
 }
 
-int TimeDelta::InHours() const {
-  // saturated_cast<> is necessary since very large (but still less than
-  // min/max) deltas would result in overflow.
-  return saturated_cast<int>(delta_ / Time::kMicrosecondsPerHour);
-}
-
-int TimeDelta::InMinutes() const {
-  // saturated_cast<> is necessary since very large (but still less than
-  // min/max) deltas would result in overflow.
-  return saturated_cast<int>(delta_ / Time::kMicrosecondsPerMinute);
-}
-
 double TimeDelta::InSecondsF() const {
   if (is_max()) {
     // Preserve max to prevent overflow.
@@ -155,10 +143,6 @@ double TimeDelta::InMicrosecondsF() const {
     return -std::numeric_limits<double>::infinity();
   }
   return static_cast<double>(delta_);
-}
-
-int64_t TimeDelta::InNanoseconds() const {
-  return base::ClampMul(delta_, Time::kNanosecondsPerMicrosecond);
 }
 
 std::ostream& operator<<(std::ostream& os, TimeDelta time_delta) {

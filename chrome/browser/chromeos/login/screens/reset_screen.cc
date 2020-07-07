@@ -433,7 +433,7 @@ void ResetScreen::UpdateStatusChanged(
     view_->SetScreenState(ResetView::State::kError);
     // Show error screen.
     error_screen_->SetUIState(NetworkError::UI_STATE_ROLLBACK_ERROR);
-    error_screen_->Show();
+    error_screen_->Show(nullptr);
   } else if (status.current_operation() ==
              update_engine::Operation::UPDATED_NEED_REBOOT) {
     PowerManagerClient::Get()->RequestRestart(

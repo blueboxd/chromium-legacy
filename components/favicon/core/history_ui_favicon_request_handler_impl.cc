@@ -131,7 +131,9 @@ void HistoryUiFaviconRequestHandlerImpl::OnBitmapLocalDataAvailable(
   }
 
   if (can_send_history_data_getter_.Run()) {
-    // TODO(victorvianna): Avoid using AdaptCallbackForRepeating.
+    // base::AdaptCallbackForRepeating() is necessary here because
+    // |response_callback| is needed to build both the empty response and local
+    // lookup callbacks. This is safe because only one of the two is called.
     base::RepeatingCallback<void(const favicon_base::FaviconRawBitmapResult&)>
         repeating_response_callback =
             base::AdaptCallbackForRepeating(std::move(response_callback));
@@ -177,12 +179,12 @@ void HistoryUiFaviconRequestHandlerImpl::OnImageLocalDataAvailable(
   }
 
   if (can_send_history_data_getter_.Run()) {
-    // TODO(victorvianna): Avoid using AdaptCallbackForRepeating.
+    // base::AdaptCallbackForRepeating() is necessary here because
+    // |response_callback| is needed to build both the empty response and local
+    // lookup callbacks. This is safe because only one of the two is called.
     base::RepeatingCallback<void(const favicon_base::FaviconImageResult&)>
         repeating_response_callback =
             base::AdaptCallbackForRepeating(std::move(response_callback));
-    // We use CreateForDesktop because GetFaviconImageForPageURL is only called
-    // by desktop.
     RequestFromGoogleServer(
         page_url,
         /*empty_response_callback=*/

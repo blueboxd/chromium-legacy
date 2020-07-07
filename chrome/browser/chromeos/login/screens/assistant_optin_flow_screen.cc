@@ -62,7 +62,7 @@ AssistantOptInFlowScreen::~AssistantOptInFlowScreen() {
     view_->Unbind();
 }
 
-bool AssistantOptInFlowScreen::MaybeSkip() {
+bool AssistantOptInFlowScreen::MaybeSkip(WizardContext* context) {
   if (!g_libassistant_enabled ||
       chrome_user_manager_util::IsPublicSessionOrEphemeralLogin()) {
     exit_callback_.Run(Result::NOT_APPLICABLE);

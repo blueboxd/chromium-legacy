@@ -2340,4 +2340,16 @@ TEST_F(ClientControlledShellSurfaceTest, EnteringPipSavesPipSnapFraction) {
             window->bounds());
 }
 
+TEST_F(ClientControlledShellSurfaceTest,
+       ShadowBoundsChangedIsResetAfterCommit) {
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface =
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get());
+  surface->SetFrame(SurfaceFrameType::SHADOW);
+  shell_surface->SetShadowBounds(gfx::Rect(10, 10, 100, 100));
+  EXPECT_TRUE(shell_surface->get_shadow_bounds_changed_for_testing());
+  surface->Commit();
+  EXPECT_FALSE(shell_surface->get_shadow_bounds_changed_for_testing());
+}
+
 }  // namespace exo

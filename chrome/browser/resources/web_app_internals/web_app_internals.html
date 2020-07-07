@@ -1,0 +1,76 @@
+<style>
+  h2 {
+    margin-bottom: 10px;
+    margin-top: 0;
+  }
+
+  .section {
+    margin: 10px;
+    margin-bottom: 20px;
+    padding: 5px;
+  }
+
+  .web-app {
+    background-color: var(--highlight, #00000007);
+    border-inline-start-color: rgb(0, 50, 220);
+    border-inline-start-style: solid;
+  }
+
+  .highlight {
+    --highlight: #eff;
+  }
+
+  .web-app-name {
+    font-weight: bold;
+  }
+</style>
+
+<h1>Web App Internals</h1>
+
+<div class="section">
+  BMO enabled: <b>[[isBmoEnabled_]]</b>
+  <template is="dom-if" if="[[!isBmoEnabled_]]">
+    <p>
+      Web apps are using the extension system via bookmark apps, see
+      <a href="chrome://extensions-internals">
+       chrome://extensions-internals
+      </a>
+      for bookmark app details.
+    </p>
+    <p>
+      Enable BMO via
+      <a href="chrome://flags/#enable-desktop-pwas-without-extensions">
+        chrome://flags/#enable-desktop-pwas-without-extensions.
+      </a>
+    </p>
+  </template>
+</div>
+
+<div class="section">
+  <h2>Page index:</h2>
+  <template is="dom-repeat" items="[[webAppList_]]">
+    <div>
+      <a href="#[[item.id]]">
+        <img src="chrome://app-icon/[[item.id]]/32">
+        [[item.name]]
+      </a>
+    </div>
+  </template>
+  <a href="#external">Externally installed web app prefs</a>
+</div>
+
+<div class="section">
+  <h2 id="details">Web apps details:</h2>
+  <template is="dom-repeat" items="[[webAppList_]]">
+    <div class="section web-app" id="[[item.id]]">
+      <h2>[[item.name]]</h2>
+      <img src="chrome://app-icon/[[item.id]]/128">
+      <pre>[[item.debugInfo]]</pre>
+    </div>
+  </template>
+</div>
+
+<div class="section" id="external">
+  <h2>Externally installed web app prefs:</h2>
+  <pre>[[externallyInstalledWebAppPrefs_]]</pre>
+</div>

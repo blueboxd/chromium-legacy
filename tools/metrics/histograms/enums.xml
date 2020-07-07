@@ -39849,6 +39849,7 @@ from previous Chrome versions.
   <int value="-1660972490" label="gpu-rasterization-msaa-sample-count"/>
   <int value="-1655535052" label="enable-pointer-events"/>
   <int value="-1654344175" label="disable-extension-info-dialog"/>
+  <int value="-1653991213" label="CrossOriginIsolated:disabled"/>
   <int value="-1653838003" label="PauseBackgroundTabs:enabled"/>
   <int value="-1652173255"
       label="OmniboxUIExperimentShowPlaceholderWhenCaretShowing:enabled"/>
@@ -39945,6 +39946,7 @@ from previous Chrome versions.
   <int value="-1549356351" label="SyncPseudoUSSExtensionSettings:enabled"/>
   <int value="-1547247328" label="OverrideTranslateTriggerInIndia:disabled"/>
   <int value="-1546903171" label="enable-touch-drag-drop"/>
+  <int value="-1546351452" label="CrossOriginIsolated:enabled"/>
   <int value="-1546029755" label="OverrideTranslateTriggerInIndia:enabled"/>
   <int value="-1545595496" label="RendererSideResourceScheduler:enabled"/>
   <int value="-1544248549" label="ArcUseAuthEndpoint:enabled"/>
@@ -66462,6 +66464,17 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="0" label="Storage access blocked"/>
   <int value="1" label="Storage access allowed"/>
   <int value="2" label="Access grant used to allow access"/>
+</enum>
+
+<enum name="StoragePartitionRemoverTasks">
+  <int value="1" label="kSynchronous"/>
+  <int value="2" label="kCookies"/>
+  <int value="3" label="kQuota"/>
+  <int value="4" label="kLocalStorage"/>
+  <int value="5" label="kSessionStorage"/>
+  <int value="6" label="kShaderCache"/>
+  <int value="7" label="kPluginPrivate"/>
+  <int value="8" label="kConversions"/>
 </enum>
 
 <enum name="StoragePressureBubbleUserAction">

@@ -49,6 +49,9 @@ import "url/mojom/url.mojom";
 [EnableIf=is_mac]
 import "ui/gfx/range/mojom/range.mojom";
 
+[EnableIf=is_mac]
+import "ui/base/mojom/attributed_string.mojom";
+
 // Information about a subframe being saved as "complete html".
 struct SavableSubframe {
   // Original url of the subframe (i.e. based the parent's html sources).
@@ -564,6 +567,11 @@ interface LocalFrame {
   // TextInputHost.
   [EnableIf=is_mac]
   GetFirstRectForRange(gfx.mojom.Range range);
+
+  // Requests the text fragment in a given range.
+  [EnableIf=is_mac]
+  GetStringForRange(gfx.mojom.Range range)
+      => (ui.mojom.AttributedString? string, gfx.mojom.Point baseline_point);
 
   // Binds |receiver| to the document of this frame.
   BindReportingObserver(

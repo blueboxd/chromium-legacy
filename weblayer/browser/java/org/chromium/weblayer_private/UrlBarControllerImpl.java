@@ -11,6 +11,8 @@ import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -18,6 +20,7 @@ import android.widget.TextView;
 import androidx.annotation.ColorRes;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.core.widget.ImageViewCompat;
 
@@ -68,7 +71,16 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
     }
 
     @Override
-    public IObjectWrapper /* View */ createUrlBarView(Bundle options) {
+    @Deprecated
+    public IObjectWrapper /* View */ deprecatedCreateUrlBarView(Bundle options) {
+        return createUrlBarView(
+                options, /* OnLongClickListener */ null, /* OnLongClickListener */ null);
+    }
+
+    @Override
+    public IObjectWrapper /* View */ createUrlBarView(Bundle options,
+            @Nullable IObjectWrapper /* OnLongClickListener */ textClickListener,
+            @Nullable IObjectWrapper /* OnLongClickListener */ textLongClickListener) {
         StrictModeWorkaround.apply();
         if (mBrowserImpl == null) {
             throw new IllegalStateException("UrlBarView cannot be created without a valid Browser");
@@ -76,7 +88,8 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
         Context context = mBrowserImpl.getContext();
         if (context == null) throw new IllegalStateException("BrowserFragment not attached yet.");
 
-        UrlBarView urlBarView = new UrlBarView(context, options);
+        UrlBarView urlBarView =
+                new UrlBarView(context, options, textClickListener, textLongClickListener);
         return ObjectWrapper.wrap(urlBarView);
     }
 
@@ -92,8 +105,12 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
         private TextView mUrlTextView;
         private ImageButton mSecurityButton;
         private final SecurityButtonAnimationDelegate mSecurityButtonAnimationDelegate;
+        OnClickListener mTextClickListener;
+        OnLongClickListener mTextLongClickListener;
 
-        public UrlBarView(@NonNull Context context, Bundle options) {
+        public UrlBarView(@NonNull Context context, @NonNull Bundle options,
+                @Nullable IObjectWrapper /* OnClickListener */ textClickListener,
+                @Nullable IObjectWrapper /* OnLongClickListener */ textLongClickListener) {
             super(context);
             setGravity(Gravity.CENTER_HORIZONTAL);
 
@@ -110,6 +127,9 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
             mSecurityButton = (ImageButton) findViewById(R.id.security_button);
             mSecurityButtonAnimationDelegate = new SecurityButtonAnimationDelegate(
                     mSecurityButton, mUrlTextView, R.dimen.security_status_icon_size);
+            mTextClickListener = ObjectWrapper.unwrap(textClickListener, OnClickListener.class);
+            mTextLongClickListener =
+                    ObjectWrapper.unwrap(textLongClickListener, OnLongClickListener.class);
 
             updateView();
         }
@@ -161,8 +181,18 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
             }
 
             mSecurityButton.setOnClickListener(v -> { showPageInfoUi(v); });
+
+            if (mTextClickListener != null) {
+                mUrlTextView.setOnClickListener(mTextClickListener);
+            }
+
             if (mShowPageInfoWhenUrlTextClicked) {
+                assert (mTextClickListener == null);
                 mUrlTextView.setOnClickListener(v -> { showPageInfoUi(v); });
+            }
+
+            if (mTextLongClickListener != null) {
+                mUrlTextView.setOnLongClickListener(mTextLongClickListener);
             }
         }
 

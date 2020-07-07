@@ -54,6 +54,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/components/proximity_auth/public/mojom/auth_type.mojom.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/user_manager/user_type.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -67,7 +68,6 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/accessibility/view_accessibility.h"
@@ -111,6 +111,12 @@ constexpr int kMediumDensityDistanceBetweenAuthUserAndUsersPortraitDp = 84;
 constexpr int kHorizontalPaddingAuthErrorBubbleDp = 8;
 constexpr int kVerticalPaddingAuthErrorBubbleDp = 8;
 
+// The font color of the bottom status indicator for enterprise management.
+constexpr SkColor kBottomStatusManagedFontColor = gfx::kGoogleGrey200;
+
+// The font color of the bottom status indicator for ADB warning.
+constexpr SkColor kBottomStatusAdbFontColor = gfx::kGoogleRed300;
+
 // Spacing between the bottom status indicator and the shelf.
 constexpr int kBottomStatusIndicatorBottomMarginDp = 16;
 
@@ -119,6 +125,20 @@ constexpr int kBottomStatusIndicatorChildSpacingDp = 8;
 
 // Spacing between child of LoginBaseBubbleView.
 constexpr int kBubbleBetweenChildSpacingDp = 16;
+
+// Width of the management pop-up.
+constexpr int kManagementPopUpWidth = 400;
+
+// Padding around the management bubble view.
+constexpr int kBubblePaddingDp = 16;
+
+// Size of the tooltip view info icon.
+constexpr int kInfoIconSizeDp = 20;
+
+// Maximum width of the management pop-up label.
+constexpr int kManagementLabelMaxWidth =
+    kManagementPopUpWidth - 2 * kBubblePaddingDp - kInfoIconSizeDp -
+    kBubbleBetweenChildSpacingDp;
 
 constexpr char kAuthErrorContainerName[] = "AuthErrorContainer";
 
@@ -294,6 +314,41 @@ class LockContentsView::AuthErrorBubble : public LoginErrorBubble,
   }
 };
 
+class LockContentsView::ManagementPopUp : public LoginTooltipView {
+ public:
+  ManagementPopUp(const base::string16& message, views::View* anchor_view)
+      : LoginTooltipView(message, anchor_view) {
+    views::BoxLayout* layout_manager =
+        SetLayoutManager(std::make_unique<views::BoxLayout>(
+            views::BoxLayout::Orientation::kHorizontal,
+            gfx::Insets(kBubblePaddingDp), kBubbleBetweenChildSpacingDp));
+    layout_manager->set_cross_axis_alignment(
+        views::BoxLayout::CrossAxisAlignment::kStart);
+    label()->SetMaximumWidth(kManagementLabelMaxWidth);
+    SetVisible(false);
+  }
+
+  // LoginBaseBubbleView:
+  gfx::Size CalculatePreferredSize() const override {
+    gfx::Size size;
+    size.set_width(kManagementPopUpWidth);
+    size.set_height(GetHeightForWidth(kManagementPopUpWidth));
+    return size;
+  }
+
+  // LoginTooltipView:
+  gfx::Point CalculatePosition() override {
+    DCHECK(GetAnchorView());
+    gfx::Point top_center = GetAnchorView()->bounds().top_center();
+    gfx::Point position =
+        top_center - gfx::Vector2d(GetPreferredSize().width() / 2,
+                                   GetPreferredSize().height());
+    ConvertPointToTarget(GetAnchorView()->parent() /*source*/,
+                         parent() /*target*/, &position);
+    return position;
+  }
+};
+
 class LockContentsView::AutoLoginUserActivityHandler
     : public ui::UserActivityObserver {
  public:
@@ -358,6 +413,10 @@ LoginTooltipView* LockContentsView::TestApi::tooltip_bubble() const {
   return view_->tooltip_bubble_;
 }
 
+LoginTooltipView* LockContentsView::TestApi::management_bubble() const {
+  return view_->management_bubble_;
+}
+
 LoginErrorBubble* LockContentsView::TestApi::auth_error_bubble() const {
   return view_->auth_error_bubble_;
 }
@@ -382,6 +441,11 @@ views::View* LockContentsView::TestApi::system_info() const {
 
 views::View* LockContentsView::TestApi::bottom_status_indicator() const {
   return view_->bottom_status_indicator_;
+}
+
+LockContentsView::BottomIndicatorState
+LockContentsView::TestApi::bottom_status_indicator_status() const {
+  return view_->bottom_status_indicator_status_;
 }
 
 LoginExpandedPublicAccountView* LockContentsView::TestApi::expanded_view()
@@ -499,7 +563,9 @@ LockContentsView::LockContentsView(
 
   // The bottom status indicator view.
   bottom_status_indicator_ =
-      AddChildView(std::make_unique<BottomStatusIndicator>());
+      AddChildView(std::make_unique<BottomStatusIndicator>(
+          base::BindRepeating(&LockContentsView::OnBottomStatusIndicatorTapped,
+                              weak_ptr_factory_.GetWeakPtr())));
   auto bottom_status_indicator_layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
       kBottomStatusIndicatorChildSpacingDp);
@@ -535,6 +601,13 @@ LockContentsView::LockContentsView(
 
   tooltip_bubble_ = AddChildView(std::make_unique<LoginTooltipView>(
       base::UTF8ToUTF16("") /*message*/, nullptr /*anchor_view*/));
+
+  management_bubble_ = new ManagementPopUp(
+      l10n_util::GetStringFUTF16(IDS_ASH_LOGIN_ENTERPRISE_MANAGED_POP_UP,
+                                 ui::GetChromeOSDeviceName(),
+                                 base::UTF8ToUTF16(entreprise_domain_name)),
+      bottom_status_indicator_);
+  AddChildView(management_bubble_);
 
   warning_banner_bubble_ = AddChildView(std::make_unique<LoginErrorBubble>());
   warning_banner_bubble_->SetPersistent(true);
@@ -644,13 +717,13 @@ void LockContentsView::ShowEntrepriseDomainName(
   bottom_status_indicator_->SetIcon(
       kLoginScreenEnterpriseIcon,
       AshColorProvider::ContentLayerType::kIconColorPrimary);
-  bottom_status_indicator_->SetText(
-      l10n_util::GetStringFUTF16(IDS_ASH_LOGIN_MANAGED_DEVICE_INDICATOR,
-                                 ui::GetChromeOSDeviceName(),
-                                 base::UTF8ToUTF16(entreprise_domain_name)),
-      gfx::kGoogleGrey200);
-  bottom_status_indicator_->set_content_type(
-      BottomStatusIndicator::ContentType::kManagedDevice);
+  bottom_status_indicator_->SetText(l10n_util::GetStringFUTF16(
+      IDS_ASH_LOGIN_MANAGED_DEVICE_INDICATOR, ui::GetChromeOSDeviceName(),
+      base::UTF8ToUTF16(entreprise_domain_name)));
+  bottom_status_indicator_->SetEnabledTextColors(kBottomStatusManagedFontColor);
+  bottom_status_indicator_->set_role_for_accessibility(
+      ax::mojom::Role::kButton);
+  bottom_status_indicator_status_ = BottomIndicatorState::kManagedDevice;
   UpdateBottomStatusIndicatorVisibility();
 }
 
@@ -658,10 +731,12 @@ void LockContentsView::ShowAdbEnabled() {
   bottom_status_indicator_->SetIcon(
       kLockScreenAlertIcon, AshColorProvider::ContentLayerType::kIconAlert);
   bottom_status_indicator_->SetText(
-      l10n_util::GetStringUTF16(IDS_ASH_LOGIN_SCREEN_UNVERIFIED_CODE_WARNING),
-      gfx::kGoogleRed300);
-  bottom_status_indicator_->set_content_type(
-      BottomStatusIndicator::ContentType::kAdbSideLoadingEnabled);
+      l10n_util::GetStringUTF16(IDS_ASH_LOGIN_SCREEN_UNVERIFIED_CODE_WARNING));
+  bottom_status_indicator_->SetEnabledTextColors(kBottomStatusAdbFontColor);
+  bottom_status_indicator_->set_role_for_accessibility(
+      ax::mojom::Role::kStaticText);
+  bottom_status_indicator_status_ =
+      BottomIndicatorState::kAdbSideLoadingEnabled;
   UpdateBottomStatusIndicatorVisibility();
 }
 
@@ -1597,6 +1672,11 @@ void LockContentsView::LayoutBottomStatusIndicator() {
                     ShelfConfig::Get()->shelf_size() +
                         kBottomStatusIndicatorBottomMarginDp +
                         bottom_status_indicator_->height()));
+
+  // If the management bubble is currently displayed, we need to re-layout it as
+  // the bottom status indicator is its anchor view.
+  if (management_bubble_->GetVisible())
+    management_bubble_->Layout();
 }
 
 void LockContentsView::LayoutPublicSessionView() {
@@ -2156,13 +2236,18 @@ bool LockContentsView::GetSystemInfoVisibility() const {
 }
 
 void LockContentsView::UpdateBottomStatusIndicatorVisibility() {
-  bool visible =
-      bottom_status_indicator_->content_type() ==
-          BottomStatusIndicator::ContentType::kAdbSideLoadingEnabled ||
-      (bottom_status_indicator_->content_type() ==
-           BottomStatusIndicator::ContentType::kManagedDevice &&
-       !extension_ui_visible_);
+  bool visible = bottom_status_indicator_status_ ==
+                     BottomIndicatorState::kAdbSideLoadingEnabled ||
+                 (bottom_status_indicator_status_ ==
+                      BottomIndicatorState::kManagedDevice &&
+                  !extension_ui_visible_);
   bottom_status_indicator_->SetVisible(visible);
+}
+
+void LockContentsView::OnBottomStatusIndicatorTapped() {
+  if (bottom_status_indicator_status_ != BottomIndicatorState::kManagedDevice)
+    return;
+  management_bubble_->Show();
 }
 
 BEGIN_METADATA(LockContentsView)

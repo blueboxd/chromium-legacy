@@ -200,7 +200,9 @@ source_set("unit_tests") {
     "//components/exo",
     "//components/exo:test_support",
     "//components/exo/wayland/fuzzer:unit_tests",
+    "//components/exo/wayland/protocol:aura_shell_protocol",
     "//skia",
+    "//testing/gmock",
     "//testing/gtest",
     "//third_party/wayland:wayland_client",
   ]

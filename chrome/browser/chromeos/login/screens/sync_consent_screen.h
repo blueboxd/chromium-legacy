@@ -131,7 +131,7 @@ class SyncConsentScreen : public BaseScreen,
   void Finish(Result result);
 
   // BaseScreen:
-  bool MaybeSkip() override;
+  bool MaybeSkip(WizardContext* context) override;
   void ShowImpl() override;
   void HideImpl() override;
 

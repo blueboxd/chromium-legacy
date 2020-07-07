@@ -1330,6 +1330,22 @@ TEST_F(SQLDatabaseTest, CheckpointDatabase) {
   EXPECT_EQ(ExecuteWithResult(&db(), "SELECT value FROM foo where id=2"), "2");
 }
 
+TEST_F(SQLDatabaseTest, CorruptSizeInHeaderTest) {
+  ASSERT_TRUE(db().Execute("CREATE TABLE foo (x)"));
+  ASSERT_TRUE(db().Execute("CREATE TABLE bar (x)"));
+
+  ASSERT_TRUE(CorruptSizeInHeaderOfDB());
+  {
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_CORRUPT);
+    EXPECT_FALSE(db().Execute("INSERT INTO foo values (1)"));
+    EXPECT_FALSE(db().DoesTableExist("foo"));
+    EXPECT_FALSE(db().DoesTableExist("bar"));
+    EXPECT_FALSE(db().Execute("SELECT * FROM foo"));
+    EXPECT_TRUE(expecter.SawExpectedErrors());
+  }
+}
+
 // To prevent invalid SQL from accidentally shipping to production, prepared
 // statements which fail to compile with SQLITE_ERROR call DLOG(DCHECK).  This
 // case cannot be suppressed with an error callback.

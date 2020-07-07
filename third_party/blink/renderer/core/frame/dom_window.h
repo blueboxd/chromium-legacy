@@ -134,12 +134,19 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData {
                              ExceptionState&);
 
   // Cross-Origin-Opener-Policy (COOP):
-  // Check accesses from |accessing_frame| and his same-origin iframes toward
-  // this window. If this happens, a report will be sent to |reporter|.
+  // Check accesses from |accessing_frame| and every same-origin iframe toward
+  // this window. A report is sent to |reporter| when this happens.
   void InstallCoopAccessMonitor(
       LocalFrame* accessing_frame,
       mojo::PendingRemote<
           network::mojom::blink::CrossOriginOpenerPolicyReporter> reporter);
+  // Whenever we detect that the enforcement of a report-only COOP policy would
+  // have resulted in preventing access to this window, a report is potentially
+  // sent when calling this function.
+  //
+  // This function must be called when accessing any attributes and methods
+  // marked as "CrossOrigin" in the window.idl.
+  void ReportCoopAccess(v8::Isolate* isolate, const char* property_name);
 
  protected:
   explicit DOMWindow(Frame&);

@@ -29,7 +29,7 @@
 
 namespace autofill_assistant {
 struct ClientSettings;
-class GenericUiControllerAndroid;
+class GenericUiRootControllerAndroid;
 
 // Starts and owns the UI elements required to display AA.
 //
@@ -242,8 +242,8 @@ class UiControllerAndroid : public ControllerObserver {
   void HideKeyboardIfFocusNotOnText();
 
   void ResetGenericUiControllers();
-  std::unique_ptr<GenericUiControllerAndroid> CreateGenericUiControllerForProto(
-      const GenericUserInterfaceProto& proto);
+  std::unique_ptr<GenericUiRootControllerAndroid>
+  CreateGenericUiControllerForProto(const GenericUserInterfaceProto& proto);
 
   // Hide the UI, show a snackbar with an undo button, and execute the given
   // action after a short delay unless the user taps the undo button.
@@ -273,11 +273,11 @@ class UiControllerAndroid : public ControllerObserver {
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
 
   // Native controllers for generic UI.
-  std::unique_ptr<GenericUiControllerAndroid>
+  std::unique_ptr<GenericUiRootControllerAndroid>
       collect_user_data_prepended_generic_ui_controller_;
-  std::unique_ptr<GenericUiControllerAndroid>
+  std::unique_ptr<GenericUiRootControllerAndroid>
       collect_user_data_appended_generic_ui_controller_;
-  std::unique_ptr<GenericUiControllerAndroid> generic_ui_controller_;
+  std::unique_ptr<GenericUiRootControllerAndroid> generic_ui_controller_;
 
   OverlayState desired_overlay_state_ = OverlayState::FULL;
   OverlayState overlay_state_ = OverlayState::FULL;

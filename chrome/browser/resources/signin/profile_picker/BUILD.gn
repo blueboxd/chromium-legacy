@@ -49,5 +49,6 @@ html_to_js("web_components") {
   js_files = [
     "profile_picker_app.js",
     "profile_picker_main_view.js",
+    "profile_card.js",
   ]
 }

@@ -1,23 +1,49 @@
 <style>
+  :host {
+    --avatar-icon-size: 74px;
+    --banner-img-height: 628px;
+    --banner-img-width: 250px;
+  }
+
+  .banner {
+    bottom: 0;
+    height: var(--banner-img-height);
+    margin: auto;
+    overflow: hidden;
+    position: absolute;
+    top: 0;
+    width: var(--banner-img-width);
+    z-index: -1;
+  }
+
+  #leftBanner {
+    background: url(left_banner_image.svg);
+    left: 0;
+  }
+
+  #rightBanner {
+    background: url(right_banner_image.svg);
+    right: 0;
+  }
+
  .profiles-container {
-    --grid-gutter: 12px;
-    --max-columns: 4;
+    --grid-gutter: 24px;
     --profile-item-height:178px;
     --profile-item-width: 162px;
     align-items: center;
     display: grid;
-    height: 80%;
     grid-column-gap: var(--grid-gutter);
     grid-row-gap: var(--grid-gutter);
     grid-template-columns: repeat(auto-fit, var(--profile-item-width));
     justify-content: center;
     margin: auto;
-    max-width: calc(var(--profile-item-width) * var(--max-columns) +
-        var(--grid-gutter) * var(--max-columns));
+    margin-inline-end: 140px;
+    margin-inline-start: 140px;
  }
 
-.profile-item {
+ .profile-item {
     align-items: center;
+    border-radius: 12px;
     display: flex;
     flex-direction: column;
     height: var(--profile-item-height);
@@ -28,11 +54,10 @@
  #addProfile {
   border: 1px dashed;
   border-color:  var(--google-grey-400);
-  border-radius: 12px;
  }
 
  cr-icon-button[iron-icon='profiles:add'] {
-  --cr-icon-button-icon-size: 74px;
+  --cr-icon-button-icon-size: var(--avatar-icon-size);
   --cr-icon-button-size: 84px;
   --cr-icon-button-fill-color: var(--google-grey-refresh-100);
   --cr-icon-button-margin-end: 0px;
@@ -40,11 +65,17 @@
   --cr-icon-button-stroke-color: var(--google-grey-refresh-700);
  }
 
-@media (prefers-color-scheme: dark) {
+ @media (prefers-color-scheme: dark) {
   /* TODO(msalama): Dark mode mocks not ready yet.*/
-}
+ }
 </style>
+
+<div id="leftBanner" class="banner"></div>
 <div class="profiles-container">
+  <template is="dom-repeat"
+      hidden="[[!profilesList_]]" items="[[profilesList_]]">
+    <profile-card class="profile-item" profile-state="[[item]]"></profile-card>
+  </template>
   <div id="addProfile" class="profile-item">
     <!-- TODO(msalama): Add title, aria-label once strings are ready-->
     <cr-icon-button iron-icon="profiles:add"
@@ -52,3 +83,4 @@
     </cr-icon-button>
   </div>
 </div>
+<div id="rightBanner" class="banner"></div>

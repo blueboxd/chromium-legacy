@@ -83,6 +83,8 @@ class FakeLocalFrame : public blink::mojom::LocalFrame {
 #if defined(OS_MACOSX)
   void GetCharacterIndexAtPoint(const gfx::Point& point) override;
   void GetFirstRectForRange(const gfx::Range& range) override;
+  void GetStringForRange(const gfx::Range& range,
+                         GetStringForRangeCallback callback) override;
 #endif
   void BindReportingObserver(
       mojo::PendingReceiver<blink::mojom::ReportingObserver> receiver) override;

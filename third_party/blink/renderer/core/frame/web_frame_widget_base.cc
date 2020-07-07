@@ -55,7 +55,7 @@
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 #if defined(OS_MACOSX)
-#include "third_party/blink/public/web/mac/web_substring_util.h"
+#include "third_party/blink/renderer/core/editing/substring_util.h"
 #include "third_party/blink/renderer/platform/fonts/mac/attributed_string_type_converter.h"
 #include "ui/base/mojom/attributed_string.mojom-blink.h"
 #include "ui/gfx/geometry/point.h"
@@ -309,7 +309,7 @@ void WebFrameWidgetBase::GetStringAtPoint(const gfx::Point& point_in_local_root,
                                           GetStringAtPointCallback callback) {
   gfx::Point baseline_point;
   ui::mojom::blink::AttributedStringPtr attributed_string = nullptr;
-  NSAttributedString* string = blink::WebSubstringUtil::AttributedWordAtPoint(
+  NSAttributedString* string = SubstringUtil::AttributedWordAtPoint(
       this, point_in_local_root, baseline_point);
   if (string)
     attributed_string = ui::mojom::blink::AttributedString::From(string);

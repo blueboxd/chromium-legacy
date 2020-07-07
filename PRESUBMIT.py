@@ -311,7 +311,6 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^components/download/internal/common/',
   '^components/drive/',
   '^components/exo/',
-  '^components/feature_engagement/',
   '^components/feedback/',
   '^components/flags_ui/',
   '^components/gcm_driver/',

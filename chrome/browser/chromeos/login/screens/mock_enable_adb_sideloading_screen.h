@@ -17,8 +17,8 @@ class MockEnableAdbSideloadingScreen : public EnableAdbSideloadingScreen {
                                  const base::RepeatingClosure& exit_callback);
   ~MockEnableAdbSideloadingScreen() override;
 
-  MOCK_METHOD0(ShowImpl, void());
-  MOCK_METHOD0(HideImpl, void());
+  MOCK_METHOD(void, ShowImpl, ());
+  MOCK_METHOD(void, HideImpl, ());
 
   void ExitScreen();
 };
@@ -32,11 +32,11 @@ class MockEnableAdbSideloadingScreenView
   void Bind(EnableAdbSideloadingScreen* screen) override;
   void Unbind() override;
 
-  MOCK_METHOD0(Show, void());
-  MOCK_METHOD0(Hide, void());
-  MOCK_METHOD1(MockBind, void(EnableAdbSideloadingScreen* screen));
-  MOCK_METHOD0(MockUnbind, void());
-  MOCK_METHOD1(SetScreenState, void(UIState value));
+  MOCK_METHOD(void, Show, ());
+  MOCK_METHOD(void, Hide, ());
+  MOCK_METHOD(void, MockBind, (EnableAdbSideloadingScreen * screen));
+  MOCK_METHOD(void, MockUnbind, ());
+  MOCK_METHOD(void, SetScreenState, (UIState value));
 
  private:
   EnableAdbSideloadingScreen* screen_;

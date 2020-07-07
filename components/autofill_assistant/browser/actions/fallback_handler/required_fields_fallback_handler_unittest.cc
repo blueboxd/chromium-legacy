@@ -28,7 +28,6 @@ using ::base::test::RunOnceCallback;
 using ::testing::_;
 using ::testing::Expectation;
 using ::testing::Invoke;
-using ::testing::WithArgs;
 
 RequiredField CreateRequiredField(const std::string& value_expression,
                                   const std::vector<std::string>& selector) {
@@ -50,6 +49,10 @@ class RequiredFieldsFallbackHandlerTest : public testing::Test {
         .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "INPUT"));
     ON_CALL(mock_action_delegate_, OnSetFieldValue(_, _, _))
         .WillByDefault(RunOnceCallback<2>(OkClientStatus()));
+    ON_CALL(mock_action_delegate_, WaitForDocumentToBecomeInteractive(_, _))
+        .WillByDefault(RunOnceCallback<1>(OkClientStatus()));
+    ON_CALL(mock_action_delegate_, ScrollIntoView(_, _))
+        .WillByDefault(RunOnceCallback<1>(OkClientStatus()));
   }
 
  protected:

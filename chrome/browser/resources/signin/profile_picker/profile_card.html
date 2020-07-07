@@ -1,0 +1,40 @@
+<style>
+  cr-button {
+    --text-color: inherit;
+    background-color: rgb(248, 249, 250);
+    border: none;
+    border-radius: inherit;
+    box-shadow: none;
+    flex-direction: column;
+    height: inherit;
+    padding: 0;
+    width: inherit;
+  }
+
+  :host-context(.focus-outline-visible) cr-button:focus {
+    box-shadow: 0 0 0 2px rgba(var(--google-blue-600-rgb), .4);
+  }
+
+  .profile-avatar {
+    border-radius: 37px;
+    height: var(--avatar-icon-size);
+    width: var(--avatar-icon-size);
+  }
+
+  .profile-info {
+    height: 20px;
+    overflow: hidden;
+    padding: 16px;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 146px;
+  }
+</style>
+
+<cr-button on-click="onProfileClick_">
+  <!-- TODO(msalama): Implement editing local profile name in place -->
+  <div class="profile-info">[[profileState.localProfileName]]</div>
+  <img class="profile-avatar" alt="" src="[[profileState.avatarIcon]]">
+  <div class="profile-info">[[profileState.gaiaName]]</div>
+</cr-button>

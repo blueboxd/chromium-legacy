@@ -714,7 +714,7 @@ void EnrollmentScreenHandler::SetupAndShowOfflineMessage(
     error_screen_->SetParentScreen(kScreenId);
     error_screen_->SetHideCallback(base::BindOnce(
         &EnrollmentScreenHandler::DoShow, weak_ptr_factory_.GetWeakPtr()));
-    error_screen_->Show();
+    error_screen_->Show(nullptr);
     histogram_helper_->OnErrorShow(error_screen_->GetErrorState());
   }
 }

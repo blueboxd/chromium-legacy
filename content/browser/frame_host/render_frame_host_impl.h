@@ -1767,6 +1767,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   friend class RenderFrameHostFeaturePolicyTest;
   friend class TestRenderFrameHost;
   friend class TestRenderViewHost;
+  friend class TextInputTestLocalFrame;
   friend class WebContentsSplitCacheBrowserTest;
 
   FRIEND_TEST_ALL_PREFIXES(NavigatorTest, TwoNavigationsRacingCommit);

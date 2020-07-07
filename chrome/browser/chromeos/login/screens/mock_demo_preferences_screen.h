@@ -20,8 +20,8 @@ class MockDemoPreferencesScreen : public DemoPreferencesScreen {
                             const ScreenExitCallback& exit_callback);
   ~MockDemoPreferencesScreen() override;
 
-  MOCK_METHOD0(ShowImpl, void());
-  MOCK_METHOD0(HideImpl, void());
+  MOCK_METHOD(void, ShowImpl, ());
+  MOCK_METHOD(void, HideImpl, ());
 
   void ExitScreen(Result result);
 
@@ -34,10 +34,10 @@ class MockDemoPreferencesScreenView : public DemoPreferencesScreenView {
   MockDemoPreferencesScreenView();
   ~MockDemoPreferencesScreenView() override;
 
-  MOCK_METHOD0(Show, void());
-  MOCK_METHOD0(Hide, void());
-  MOCK_METHOD1(MockBind, void(DemoPreferencesScreen* screen));
-  MOCK_METHOD1(SetInputMethodId, void(const std::string& input_method));
+  MOCK_METHOD(void, Show, ());
+  MOCK_METHOD(void, Hide, ());
+  MOCK_METHOD(void, MockBind, (DemoPreferencesScreen * screen));
+  MOCK_METHOD(void, SetInputMethodId, (const std::string& input_method));
 
   void Bind(DemoPreferencesScreen* screen) override;
 

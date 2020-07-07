@@ -264,6 +264,8 @@ public class PageInfoController
                              : new PageInfoView(mContext, viewParams);
         if (isSheet(mContext)) mView.setBackgroundColor(Color.WHITE);
         if (mIsV2Enabled) {
+            mSubpage = new PageInfoSubpage(mContext);
+            mSubpage.setBackButtonOnClickListener(view -> exitSubpage());
             PageInfoViewV2 view2 = (PageInfoViewV2) mView;
             mConnectionController =
                     new PageInfoConnectionController(this, view2.getConnectionRowView());
@@ -323,7 +325,7 @@ public class PageInfoController
             }
         };
 
-        mDialog = new PageInfoDialog(mContext, mView,
+        mDialog = new PageInfoDialog(mContext, mView, mSubpage,
                 webContents.getViewAndroidDelegate().getContainerView(), isSheet(mContext),
                 delegate.getModalDialogManager(), this);
         mDialog.show();
@@ -561,10 +563,6 @@ public class PageInfoController
                 long nativePageInfoControllerAndroid, PageInfoController caller, int action);
     }
 
-    PageInfoControllerDelegate getDelegate() {
-        return mDelegate;
-    }
-
     @Override
     public BrowserContextHandle getBrowserContext() {
         return mDelegate.getBrowserContext();
@@ -580,8 +578,7 @@ public class PageInfoController
         subpageParams.url = mDisplayUrlBuilder;
         subpageParams.urlOriginLength = mUrlOriginLength;
         subpageParams.subpageTitle = mSubpageController.getSubpageTitle();
-        mSubpage = new PageInfoSubpage(mContext, subpageParams);
-        mSubpage.setBackButtonOnClickListener(view -> exitSubpage());
+        mSubpage.updateSubpage(subpageParams);
         View subview = mSubpageController.createViewForSubpage(mSubpage);
 
         if (subview != null) {
@@ -619,7 +616,6 @@ public class PageInfoController
     private void exitSubpage() {
         replaceView(mSubpage, mView);
         mSubpageController.onSubpageRemoved();
-        mSubpage = null;
         mSubpageController = null;
     }
 }

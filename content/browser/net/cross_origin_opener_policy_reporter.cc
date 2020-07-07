@@ -167,6 +167,11 @@ void CrossOriginOpenerPolicyReporter::QueueOpenerBreakageReport(
       std::move(body));
 }
 
+void CrossOriginOpenerPolicyReporter::QueueAccessReport(
+    const std::string& property) {
+  // TODO(arthursonzogni) Implement this.
+}
+
 void CrossOriginOpenerPolicyReporter::Clone(
     mojo::PendingReceiver<network::mojom::CrossOriginOpenerPolicyReporter>
         receiver) {

@@ -69,11 +69,6 @@ function defineTest(testName, module, config) {
       return `chrome://settings/test_loader.html?module=settings/a11y/${
           module}`;
     }
-
-    /** @override */
-    get featureListInternal() {
-      return {disabled: ['features::kPrivacySettingsRedesign']};
-    }
   };
 
   const filter = config && config.filter ?

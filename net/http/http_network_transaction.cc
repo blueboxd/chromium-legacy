@@ -518,6 +518,11 @@ void HttpNetworkTransaction::SetBeforeNetworkStartCallback(
   before_network_start_callback_ = callback;
 }
 
+void HttpNetworkTransaction::SetConnectedCallback(
+    const ConnectedCallback& callback) {
+  connected_callback_ = callback;
+}
+
 void HttpNetworkTransaction::SetRequestHeadersCallback(
     RequestHeadersCallback callback) {
   DCHECK(!stream_);
@@ -857,9 +862,7 @@ int HttpNetworkTransaction::DoInitStream() {
 }
 
 int HttpNetworkTransaction::DoInitStreamComplete(int result) {
-  if (result == OK) {
-    next_state_ = STATE_GENERATE_PROXY_AUTH_TOKEN;
-  } else {
+  if (result != OK) {
     if (result < 0)
       result = HandleIOError(result);
 
@@ -869,8 +872,20 @@ int HttpNetworkTransaction::DoInitStreamComplete(int result) {
       total_sent_bytes_ += stream_->GetTotalSentBytes();
     }
     CacheNetErrorDetailsAndResetStream();
+
+    return result;
   }
 
+  // Fire off notification that we have successfully connected.
+  if (!connected_callback_.is_null()) {
+    result = connected_callback_.Run();
+    DCHECK_NE(result, ERR_IO_PENDING);
+  }
+
+  if (result == OK) {
+    // Only transition if we succeeded. Otherwise stop at STATE_NONE.
+    next_state_ = STATE_GENERATE_PROXY_AUTH_TOKEN;
+  }
   return result;
 }
 

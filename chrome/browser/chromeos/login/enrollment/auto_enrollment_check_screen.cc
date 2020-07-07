@@ -251,13 +251,13 @@ void AutoEnrollmentCheckScreen::ShowErrorScreen(
       base::BindOnce(&AutoEnrollmentCheckScreen::OnErrorScreenHidden,
                      weak_ptr_factory_.GetWeakPtr()));
   error_screen_->SetParentScreen(AutoEnrollmentCheckScreenView::kScreenId);
-  error_screen_->Show();
+  error_screen_->Show(context());
   histogram_helper_->OnErrorShow(error_state);
 }
 
 void AutoEnrollmentCheckScreen::OnErrorScreenHidden() {
   error_screen_->SetParentScreen(OobeScreen::SCREEN_UNKNOWN);
-  Show();
+  Show(context());
 }
 
 void AutoEnrollmentCheckScreen::SignalCompletion() {

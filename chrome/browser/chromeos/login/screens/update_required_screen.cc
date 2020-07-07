@@ -294,7 +294,7 @@ void UpdateRequiredScreen::ShowErrorMessage() {
   error_screen_->SetHideCallback(base::BindOnce(
       &UpdateRequiredScreen::OnErrorScreenHidden, weak_factory_.GetWeakPtr()));
   error_screen_->SetIsPersistentError(true /* is_persistent */);
-  error_screen_->Show();
+  error_screen_->Show(nullptr);
   histogram_helper_->OnErrorShow(error_screen_->GetErrorState());
 }
 
@@ -405,7 +405,7 @@ void UpdateRequiredScreen::OnErrorScreenHidden() {
   error_screen_->SetParentScreen(OobeScreen::SCREEN_UNKNOWN);
   // Return to the default state.
   error_screen_->SetIsPersistentError(false /* is_persistent */);
-  Show();
+  Show(context());
 }
 
 }  // namespace chromeos

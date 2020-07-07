@@ -24,12 +24,19 @@ class RadioButtonController {
   base::WeakPtr<RadioButtonController> GetWeakPtr();
 
   // Adds |model_identifier| to the list of model identifiers belonging to
-  // |radio_group|.
+  // |radio_group|. Creates |radio_group| if necessary.
   void AddRadioButtonToGroup(const std::string& radio_group,
                              const std::string& model_identifier);
 
+  // Removes |model_identifier| from the list of model identifiers belonging to
+  // |radio_group|. Does nothing if |radio_group| or |model_identifier| do not
+  // exist.
+  void RemoveRadioButtonFromGroup(const std::string& radio_group,
+                                  const std::string& model_identifier);
+
   // Ensures that only |selected_model_identifier| is set to true in
-  // |radio_group|.
+  // |radio_group|. Does nothing if |radio_group| or |selected_model_identifier|
+  // do not exist.
   bool UpdateRadioButtonGroup(const std::string& radio_group,
                               const std::string& selected_model_identifier);
 

@@ -19,8 +19,10 @@ import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
 import static androidx.test.espresso.matcher.ViewMatchers.hasSibling;
 import static androidx.test.espresso.matcher.ViewMatchers.isChecked;
 import static androidx.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.isEnabled;
+import static androidx.test.espresso.matcher.ViewMatchers.isNotChecked;
 import static androidx.test.espresso.matcher.ViewMatchers.withClassName;
 import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static androidx.test.espresso.matcher.ViewMatchers.withTagValue;
@@ -203,15 +205,14 @@ public class AutofillAssistantGenericUiTest {
                 .build();
     }
 
-    private ViewProto createRadioButtonView(
-            String text, String radioGroup, String viewIdentifier, String modelIdentifier) {
+    private ViewProto createRadioButtonView(ViewProto contentView, String radioGroup,
+            String viewIdentifier, String modelIdentifier) {
         return (ViewProto) ViewProto.newBuilder()
                 .setToggleButtonView(
                         ToggleButtonViewProto.newBuilder()
                                 .setRadioButton(ToggleButtonViewProto.RadioButton.newBuilder()
                                                         .setRadioGroupIdentifier(radioGroup))
-                                .setRightContentView(ViewProto.newBuilder().setTextView(
-                                        TextViewProto.newBuilder().setText(text)))
+                                .setRightContentView(contentView)
                                 .setModelIdentifier(modelIdentifier))
                 .setIdentifier(viewIdentifier)
                 .build();
@@ -298,6 +299,21 @@ public class AutofillAssistantGenericUiTest {
     private ValueReferenceProto createValueReference(String modelIdentifier) {
         return (ValueReferenceProto) ValueReferenceProto.newBuilder()
                 .setModelIdentifier(modelIdentifier)
+                .build();
+    }
+
+    private ValueReferenceProto createEmptyValue() {
+        return (ValueReferenceProto) ValueReferenceProto.newBuilder()
+                .setValue(ValueProto.getDefaultInstance())
+                .build();
+    }
+
+    private ValueComparisonProto createValueComparison(ValueReferenceProto valueA,
+            ValueReferenceProto valueB, ValueComparisonProto.Mode mode) {
+        return (ValueComparisonProto) ValueComparisonProto.newBuilder()
+                .setMode(mode)
+                .setValueA(valueA)
+                .setValueB(valueB)
                 .build();
     }
 
@@ -1488,14 +1504,9 @@ public class AutofillAssistantGenericUiTest {
                         .addCallbacks(CallbackProto.newBuilder().setComputeValue(
                                 ComputeValueProto.newBuilder()
                                         .setResultModelIdentifier("condition")
-                                        .setComparison(
-                                                ValueComparisonProto.newBuilder()
-                                                        .setValueA(ValueReferenceProto.newBuilder()
-                                                                           .setModelIdentifier(
-                                                                                   "counter"))
-                                                        .setValueB(target)
-                                                        .setMode(ValueComparisonProto.Mode
-                                                                         .GREATER_OR_EQUAL))))
+                                        .setComparison(createValueComparison(
+                                                createValueReference("counter"), target,
+                                                ValueComparisonProto.Mode.GREATER_OR_EQUAL))))
                         .build());
 
         List<ModelProto.ModelValue> modelValues = new ArrayList<>();
@@ -2020,14 +2031,22 @@ public class AutofillAssistantGenericUiTest {
                                                 LinearLayoutProto.newBuilder().setOrientation(
                                                         LinearLayoutProto.Orientation.VERTICAL))
                                         .addAllViews(Arrays.asList(
-                                                createRadioButtonView("Option A", "group_a",
-                                                        "option_a_view", "option_a_toggled"),
-                                                createRadioButtonView("Option B", "group_a",
-                                                        "option_b_view", "option_b_toggled"),
-                                                createRadioButtonView("Option C", "group_b",
-                                                        "option_c_view", "option_c_toggled"),
-                                                createRadioButtonView("Option D", "group_b",
-                                                        "option_d_view", "option_d_toggled"),
+                                                createRadioButtonView(
+                                                        createSimpleTextView("a", "Option A"),
+                                                        "group_a", "option_a_view",
+                                                        "option_a_toggled"),
+                                                createRadioButtonView(
+                                                        createSimpleTextView("b", "Option B"),
+                                                        "group_a", "option_b_view",
+                                                        "option_b_toggled"),
+                                                createRadioButtonView(
+                                                        createSimpleTextView("c", "Option C"),
+                                                        "group_b", "option_c_view",
+                                                        "option_c_toggled"),
+                                                createRadioButtonView(
+                                                        createSimpleTextView("d", "Option D"),
+                                                        "group_b", "option_d_view",
+                                                        "option_d_toggled"),
                                                 createCheckBoxView("Optional option E",
                                                         "option_e_view", "option_e_toggled")))))
                         .setInteractions(
@@ -2060,19 +2079,19 @@ public class AutofillAssistantGenericUiTest {
 
         onView(allOf(withClassName(is(RadioButton.class.getName())),
                        hasSibling(withText("Option A"))))
-                .check(matches(not(isChecked())));
+                .check(matches(isNotChecked()));
         onView(allOf(withClassName(is(RadioButton.class.getName())),
                        hasSibling(withText("Option B"))))
-                .check(matches(not(isChecked())));
+                .check(matches(isNotChecked()));
         onView(allOf(withClassName(is(RadioButton.class.getName())),
                        hasSibling(withText("Option C"))))
-                .check(matches(not(isChecked())));
+                .check(matches(isNotChecked()));
         onView(allOf(withClassName(is(RadioButton.class.getName())),
                        hasSibling(withText("Option D"))))
                 .check(matches(isChecked()));
         onView(allOf(withClassName(is(CheckBox.class.getName())),
                        hasSibling(withText("Optional option E"))))
-                .check(matches(not(isChecked())));
+                .check(matches(isNotChecked()));
 
         onView(withText("Option A")).perform(click());
         onView(withText("Option B")).perform(click());
@@ -2989,30 +3008,30 @@ public class AutofillAssistantGenericUiTest {
     @Test
     @MediumTest
     public void testCreditCardUi() throws Exception {
-        // Clicking |credit_card_view| will write the current card to |selected_card| and end the
-        // action.
+        // When the toggle button becomes checked, we write the current card to
+        // |selected_credit_card|.
         List<InteractionProto> singleCardInteractions = new ArrayList<>();
         singleCardInteractions.add(
                 (InteractionProto) InteractionProto.newBuilder()
-                        .setTriggerEvent(EventProto.newBuilder().setOnViewClicked(
-                                OnViewClickedEventProto.newBuilder().setViewIdentifier(
-                                        "credit_card_view_${i}")))
-                        .addCallbacks(CallbackProto.newBuilder().setSetValue(
-                                SetModelValueProto.newBuilder()
-                                        .setModelIdentifier("selected_credit_card")
-                                        .setValue(createValueReference("credit_cards[${i}]"))))
-                        .addCallbacks(CallbackProto.newBuilder().setEndAction(
-                                EndActionProto.newBuilder().setStatus(
-                                        ProcessedActionStatusProto.ACTION_APPLIED)))
+                        .setTriggerEvent(EventProto.newBuilder().setOnValueChanged(
+                                OnModelValueChangedEventProto.newBuilder().setModelIdentifier(
+                                        "credit_card_selected_${i}")))
+                        .addCallbacks(
+                                CallbackProto.newBuilder()
+                                        .setConditionModelIdentifier("credit_card_selected_${i}")
+                                        .setSetValue(
+                                                SetModelValueProto.newBuilder()
+                                                        .setModelIdentifier("selected_credit_card")
+                                                        .setValue(createValueReference(
+                                                                "credit_cards[${i}]"))))
                         .build());
 
         // For each credit card, a simple UI containing the name and the obfuscated number is
         // created.
         GenericUserInterfaceProto singleCardUi =
                 (GenericUserInterfaceProto) GenericUserInterfaceProto.newBuilder()
-                        .setRootView(
-                                ViewProto.newBuilder()
-                                        .setIdentifier("credit_card_view_${i}")
+                        .setRootView(createRadioButtonView(
+                                (ViewProto) ViewProto.newBuilder()
                                         .setViewContainer(
                                                 ViewContainerProto.newBuilder()
                                                         .setLinearLayout(
@@ -3026,7 +3045,10 @@ public class AutofillAssistantGenericUiTest {
                                                                 "card_holder_name_${i}"))
                                                         .addViews(createTextModelView(
                                                                 "obfuscated_number_view_${i}",
-                                                                "obfuscated_number_${i}"))))
+                                                                "obfuscated_number_${i}")))
+                                        .build(),
+                                "credit_cards", "credit_card_view_${i}",
+                                "credit_card_selected_${i}"))
                         .setInteractions(InteractionsProto.newBuilder().addAllInteractions(
                                 singleCardInteractions))
 
@@ -3034,8 +3056,11 @@ public class AutofillAssistantGenericUiTest {
 
         // Every time |credit_cards| changes, we:
         // - clear any previous card views
+        // - store previously selected card in 'previously_selected_card'
+        // - clear currently selected credit card
         // - compute |card_holder_name_${i}| and |obfuscated_number_${i}|
         // - re-create card UI
+        // - try to re-select the previously selected card
         List<InteractionProto> interactions = new ArrayList<>();
         interactions.add(
                 (InteractionProto) InteractionProto.newBuilder()
@@ -3045,6 +3070,15 @@ public class AutofillAssistantGenericUiTest {
                         .addCallbacks(CallbackProto.newBuilder().setClearViewContainer(
                                 ClearViewContainerProto.newBuilder().setViewIdentifier(
                                         "credit_card_container_view")))
+                        .addCallbacks(CallbackProto.newBuilder().setSetValue(
+                                SetModelValueProto.newBuilder()
+                                        .setModelIdentifier("previously_selected_card")
+                                        .setValue(createValueReference("selected_credit_card"))))
+                        .addCallbacks(CallbackProto.newBuilder().setSetValue(
+                                SetModelValueProto.newBuilder()
+                                        .setModelIdentifier("selected_credit_card")
+                                        .setValue(ValueReferenceProto.newBuilder().setValue(
+                                                ValueProto.getDefaultInstance()))))
                         .addCallbacks(CallbackProto.newBuilder().setForEach(
                                 ForEachProto.newBuilder()
                                         .setLoopCounter("i")
@@ -3060,11 +3094,25 @@ public class AutofillAssistantGenericUiTest {
                                                         .setGenericUiIdentifier("nested_ui_${i}")
                                                         .setGenericUi(singleCardUi)
                                                         .setParentViewIdentifier(
-                                                                "credit_card_container_view")))))
+                                                                "credit_card_container_view")))
+                                        .addCallbacks(CallbackProto.newBuilder().setComputeValue(
+                                                ComputeValueProto.newBuilder()
+                                                        .setResultModelIdentifier(
+                                                                "credit_card_selected_${i}")
+                                                        .setComparison(createValueComparison(
+                                                                createValueReference(
+                                                                        "credit_cards[${i}]"),
+                                                                createValueReference(
+                                                                        "previously_selected_card"),
+                                                                ValueComparisonProto.Mode.EQUAL))))
+
+                                        ))
                         .build());
 
-        // Every time |selected_credit_card| changes, we write the network of the selected card to
-        // |selected_card_network|, which will be sent back to backend.
+        // Every time |selected_credit_card| changes:
+        //  - write the network of the selected card to |selected_card_network|, which will be
+        // sent back to backend.
+        // - enable/disable confirm button
         interactions.add(
                 (InteractionProto) InteractionProto.newBuilder()
                         .setTriggerEvent(EventProto.newBuilder().setOnValueChanged(
@@ -3077,12 +3125,74 @@ public class AutofillAssistantGenericUiTest {
                                                 CreateCreditCardResponseProto.newBuilder().setValue(
                                                         createValueReference(
                                                                 "selected_credit_card")))))
+                        .addCallbacks(CallbackProto.newBuilder().setComputeValue(
+                                ComputeValueProto.newBuilder()
+                                        .setResultModelIdentifier("confirm_button_disabled")
+                                        .setComparison(createValueComparison(
+                                                createValueReference("selected_credit_card"),
+                                                createEmptyValue(),
+                                                ValueComparisonProto.Mode.EQUAL))))
                         .build());
+        interactions.add(
+                (InteractionProto) InteractionProto.newBuilder()
+                        .setTriggerEvent(EventProto.newBuilder().setOnValueChanged(
+                                OnModelValueChangedEventProto.newBuilder().setModelIdentifier(
+                                        "confirm_button_disabled")))
+                        .addCallbacks(CallbackProto.newBuilder().setComputeValue(
+                                ComputeValueProto.newBuilder()
+                                        .setResultModelIdentifier("confirm_button_enabled")
+                                        .setBooleanNot(BooleanNotProto.newBuilder().setValue(
+                                                ValueReferenceProto.newBuilder(createValueReference(
+                                                        "confirm_button_disabled"))))))
+                        .build());
+        interactions.add(
+                (InteractionProto) InteractionProto.newBuilder()
+                        .setTriggerEvent(EventProto.newBuilder().setOnValueChanged(
+                                OnModelValueChangedEventProto.newBuilder().setModelIdentifier(
+                                        "confirm_button_enabled")))
+                        .addCallbacks(CallbackProto.newBuilder().setToggleUserAction(
+                                ToggleUserActionProto.newBuilder()
+                                        .setUserActionsModelIdentifier("chips")
+                                        .setUserActionIdentifier("done_chip")
+                                        .setEnabled(ValueReferenceProto.newBuilder(
+                                                createValueReference("confirm_button_enabled")))))
+                        .build());
+
+        // A confirm chip interaction that ends the action.
+        interactions.add(
+                (InteractionProto) InteractionProto.newBuilder()
+                        .setTriggerEvent(EventProto.newBuilder().setOnValueChanged(
+                                OnModelValueChangedEventProto.newBuilder().setModelIdentifier(
+                                        "chips")))
+                        .addCallbacks(CallbackProto.newBuilder().setSetUserActions(
+                                SetUserActionsProto.newBuilder().setUserActions(
+                                        ValueReferenceProto.newBuilder().setModelIdentifier(
+                                                "chips"))))
+                        .build());
+        interactions.add((InteractionProto) InteractionProto.newBuilder()
+                                 .setTriggerEvent(EventProto.newBuilder().setOnUserActionCalled(
+                                         OnUserActionCalled.newBuilder().setUserActionIdentifier(
+                                                 "done_chip")))
+                                 .addCallbacks(CallbackProto.newBuilder().setEndAction(
+                                         EndActionProto.newBuilder().setStatus(
+                                                 ProcessedActionStatusProto.ACTION_APPLIED)))
+                                 .build());
 
         List<ModelProto.ModelValue> modelValues = new ArrayList<>();
         modelValues.add((ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
                                 .setIdentifier("selected_card_network")
                                 .build());
+        modelValues.add(
+                (ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
+                        .setIdentifier("chips")
+                        .setValue(ValueProto.newBuilder().setUserActions(
+                                UserActionList.newBuilder().addValues(
+                                        UserActionProto.newBuilder()
+                                                .setChip(ChipProto.newBuilder()
+                                                                 .setText("Confirm")
+                                                                 .setType(ChipType.NORMAL_ACTION))
+                                                .setIdentifier("done_chip"))))
+                        .build());
 
         GenericUserInterfaceProto genericUserInterface =
                 (GenericUserInterfaceProto) GenericUserInterfaceProto.newBuilder()
@@ -3120,8 +3230,11 @@ public class AutofillAssistantGenericUiTest {
                         .build(),
                 list);
 
-        mHelper.addDummyCreditCard(mHelper.addDummyProfile("John Doe", "johndoe@google.com"));
-        mHelper.addDummyCreditCard(mHelper.addDummyProfile("Jane Doe", "janedoe@google.com"));
+        // John with Visa, Jane with MasterCard.
+        mHelper.addDummyCreditCard(
+                mHelper.addDummyProfile("John Doe", "johndoe@google.com"), "4111111111111111");
+        String janeCardId = mHelper.addDummyCreditCard(
+                mHelper.addDummyProfile("Jane Doe", "janedoe@google.com"), "5555555555554444");
 
         AutofillAssistantTestService testService =
                 new AutofillAssistantTestService(Collections.singletonList(script));
@@ -3131,11 +3244,56 @@ public class AutofillAssistantGenericUiTest {
         onView(withText("Jane Doe")).check(matches(isDisplayed()));
         onView(allOf(withText(containsString("1111")), hasSibling(withText("John Doe"))))
                 .check(matches(isDisplayed()));
-        onView(allOf(withText(containsString("1111")), hasSibling(withText("Jane Doe"))))
+        onView(allOf(withText(containsString("4444")), hasSibling(withText("Jane Doe"))))
                 .check(matches(isDisplayed()));
 
-        int numNextActionsCalled = testService.getNextActionsCounter();
+        // No initial selection.
+        onView(withText("John Doe")).check(matches(isDescendantOfA(hasSibling(isNotChecked()))));
+        onView(withText("Jane Doe")).check(matches(isDescendantOfA(hasSibling(isNotChecked()))));
+        waitUntilViewAssertionTrue(withContentDescription("Confirm"), matches(not(isEnabled())),
+                DEFAULT_MAX_TIME_TO_POLL);
+
+        // Select John's card.
+        onView(withText("John Doe")).perform(click());
+        onView(withText("John Doe")).check(matches(isDescendantOfA(hasSibling(isChecked()))));
+        onView(withText("Jane Doe")).check(matches(isDescendantOfA(hasSibling(isNotChecked()))));
+        waitUntilViewAssertionTrue(
+                withContentDescription("Confirm"), matches(isEnabled()), DEFAULT_MAX_TIME_TO_POLL);
+
+        // Select Jane's card.
         onView(withText("Jane Doe")).perform(click());
+        onView(withText("John Doe")).check(matches(isDescendantOfA(hasSibling(isNotChecked()))));
+        onView(withText("Jane Doe")).check(matches(isDescendantOfA(hasSibling(isChecked()))));
+        waitUntilViewAssertionTrue(
+                withContentDescription("Confirm"), matches(isEnabled()), DEFAULT_MAX_TIME_TO_POLL);
+
+        // External: add Mary's card (American Express). Jane's card should still be selected.
+        mHelper.addDummyCreditCard(
+                mHelper.addDummyProfile("Mary Doe", "marydoe@google.com"), "371449635398431");
+        waitUntilViewMatchesCondition(
+                allOf(withText(containsString("8431")), hasSibling(withText("Mary Doe"))),
+                isDisplayed());
+        onView(withText("John Doe")).check(matches(isDescendantOfA(hasSibling(isNotChecked()))));
+        onView(withText("Jane Doe")).check(matches(isDescendantOfA(hasSibling(isChecked()))));
+        onView(withText("Mary Doe")).check(matches(isDescendantOfA(hasSibling(isNotChecked()))));
+        waitUntilViewAssertionTrue(
+                withContentDescription("Confirm"), matches(isEnabled()), DEFAULT_MAX_TIME_TO_POLL);
+
+        // External: remove Jane's card. The card selection is cleared.
+        mHelper.deleteCreditCard(janeCardId);
+        waitUntilViewAssertionTrue(withText("Jane Doe"), doesNotExist(), DEFAULT_MAX_TIME_TO_POLL);
+        onView(withText("John Doe")).check(matches(isDescendantOfA(hasSibling(isNotChecked()))));
+        onView(withText("Mary Doe")).check(matches(isDescendantOfA(hasSibling(isNotChecked()))));
+        waitUntilViewAssertionTrue(withContentDescription("Confirm"), matches(not(isEnabled())),
+                DEFAULT_MAX_TIME_TO_POLL);
+
+        // Select Mary's card and complete the action.
+        onView(withText("Mary Doe")).perform(click());
+        waitUntilViewAssertionTrue(
+                withContentDescription("Confirm"), matches(isEnabled()), DEFAULT_MAX_TIME_TO_POLL);
+
+        int numNextActionsCalled = testService.getNextActionsCounter();
+        onView(withContentDescription("Confirm")).perform(click());
         testService.waitUntilGetNextActions(numNextActionsCalled + 1);
 
         List<ProcessedActionProto> processedActions = testService.getProcessedActions();
@@ -3150,7 +3308,7 @@ public class AutofillAssistantGenericUiTest {
                         (ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
                                 .setIdentifier("selected_card_network")
                                 .setValue(ValueProto.newBuilder().setCreditCardResponse(
-                                        CreditCardResponseProto.newBuilder().setNetwork("visa")))
+                                        CreditCardResponseProto.newBuilder().setNetwork("amex")))
                                 .build()));
     }
 }

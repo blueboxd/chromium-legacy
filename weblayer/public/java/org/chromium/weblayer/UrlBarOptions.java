@@ -5,6 +5,9 @@
 package org.chromium.weblayer;
 
 import android.os.Bundle;
+import android.util.AndroidRuntimeException;
+import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 
 import androidx.annotation.ColorRes;
 import androidx.annotation.NonNull;
@@ -20,12 +23,16 @@ public final class UrlBarOptions {
     }
 
     private Bundle mOptions;
+    private OnClickListener mTextClickListener;
+    private OnLongClickListener mTextLongClickListener;
 
     /**
      * A Builder class to help create UrlBarOptions.
      */
     public static final class Builder {
         private Bundle mOptions;
+        private OnClickListener mTextClickListener;
+        private OnLongClickListener mTextLongClickListener;
 
         private Builder() {
             mOptions = new Bundle();
@@ -33,6 +40,14 @@ public final class UrlBarOptions {
 
         Bundle getBundle() {
             return mOptions;
+        }
+
+        OnClickListener getTextClickListener() {
+            return mTextClickListener;
+        }
+
+        OnLongClickListener getTextLongClickListener() {
+            return mTextLongClickListener;
         }
 
         /**
@@ -79,17 +94,37 @@ public final class UrlBarOptions {
             return this;
         }
 
+        @NonNull
+        public Builder setTextClickListener(@NonNull OnClickListener clickListener) {
+            mTextClickListener = clickListener;
+            return this;
+        }
+
+        @NonNull
+        public Builder setTextLongClickListener(@NonNull OnLongClickListener longClickListener) {
+            mTextLongClickListener = longClickListener;
+            return this;
+        }
+
         /**
          * Builds a UrlBarOptions object.
          */
         @NonNull
         public UrlBarOptions build() {
+            boolean showPageInfoWhenUrlTextClicked = mOptions.getBoolean(
+                    UrlBarOptionsKeys.SHOW_PAGE_INFO_WHEN_URL_TEXT_CLICKED, /*default= */ false);
+            if (mTextClickListener != null && showPageInfoWhenUrlTextClicked) {
+                throw new AndroidRuntimeException("Text click listener cannot be set when "
+                        + "SHOW_PAGE_INFO_WHEN_URL_TEXT_CLICKED is true.");
+            }
             return new UrlBarOptions(this);
         }
     }
 
     private UrlBarOptions(Builder builder) {
         mOptions = builder.getBundle();
+        mTextClickListener = builder.getTextClickListener();
+        mTextLongClickListener = builder.getTextLongClickListener();
     }
 
     /**
@@ -104,5 +139,19 @@ public final class UrlBarOptions {
      */
     public float getTextSizeSP() {
         return mOptions.getFloat(UrlBarOptionsKeys.URL_TEXT_SIZE);
+    }
+
+    /**
+     * Gets the ClickListener.
+     */
+    OnClickListener getTextClickListener() {
+        return mTextClickListener;
+    }
+
+    /**
+     * Gets the LongClickListener.
+     */
+    OnLongClickListener getTextLongClickListener() {
+        return mTextLongClickListener;
     }
 }

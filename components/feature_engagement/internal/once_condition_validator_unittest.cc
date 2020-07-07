@@ -31,7 +31,7 @@ class OnceTestEventModel : public EventModel {
  public:
   OnceTestEventModel() : ready_(false) { kValidFeatureConfig.valid = true; }
 
-  void Initialize(const OnModelInitializationFinished& callback,
+  void Initialize(OnModelInitializationFinished callback,
                   uint32_t current_day) override {}
 
   bool IsReady() const override { return ready_; }

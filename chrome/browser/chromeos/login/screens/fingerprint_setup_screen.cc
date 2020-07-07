@@ -127,7 +127,7 @@ FingerprintSetupScreen::~FingerprintSetupScreen() {
   view_->Bind(nullptr);
 }
 
-bool FingerprintSetupScreen::MaybeSkip() {
+bool FingerprintSetupScreen::MaybeSkip(WizardContext* context) {
   if (!chromeos::quick_unlock::IsFingerprintEnabled(
           ProfileManager::GetActiveUserProfile()) ||
       chrome_user_manager_util::IsPublicSessionOrEphemeralLogin()) {

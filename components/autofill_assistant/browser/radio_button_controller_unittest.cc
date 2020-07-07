@@ -21,6 +21,11 @@ class RadioButtonControllerTest : public testing::Test {
     return controller_.radio_groups_;
   }
 
+  void SetRadioGroups(
+      const std::map<std::string, std::set<std::string>>& radio_groups) {
+    controller_.radio_groups_ = radio_groups;
+  }
+
   UserModel user_model_;
   RadioButtonController controller_;
 };
@@ -45,6 +50,25 @@ TEST_F(RadioButtonControllerTest, AddRadioButtonToGroup) {
               UnorderedElementsAre(
                   Pair("group_1", std::set<std::string>{"id_1", "id_2"}),
                   Pair("group_2", std::set<std::string>{"id_3"})));
+}
+
+TEST_F(RadioButtonControllerTest, RemoveRadioButtonFromGroup) {
+  SetRadioGroups(
+      {{"group_1", {"id_1", "id_2"}}, {"group_2", {"id_3", "id_4"}}});
+
+  // Does not create group_3 or remove id_1 from a different group.
+  controller_.RemoveRadioButtonFromGroup("group_3", "id_1");
+  EXPECT_THAT(GetRadioGroups(),
+              UnorderedElementsAre(
+                  Pair("group_1", std::set<std::string>{"id_1", "id_2"}),
+                  Pair("group_2", std::set<std::string>{"id_3", "id_4"})));
+
+  controller_.RemoveRadioButtonFromGroup("group_1", "id_2");
+  controller_.RemoveRadioButtonFromGroup("group_2", "id_3");
+  EXPECT_THAT(
+      GetRadioGroups(),
+      UnorderedElementsAre(Pair("group_1", std::set<std::string>{"id_1"}),
+                           Pair("group_2", std::set<std::string>{"id_4"})));
 }
 
 TEST_F(RadioButtonControllerTest, UpdateRadioButtonGroup) {

@@ -1,5 +1,5 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
-# Use of this source code is governed by a BSD-style license that can be
+# Copyright 2014 The Chromium Authors.All rights reserved.
+# Use of this source code is governed by a BSD - style license that can be
 # found in the LICENSE file.
 
 import("//base/allocator/allocator.gni")
@@ -63,9 +63,10 @@ if (is_win) {
       "cryptui.lib",
       "dwmapi.lib",
       "netapi32.lib",
-      "ndfapi.lib",  # For browser/net/net_error_diagnostics_dialog_win.h
-      "pdh.lib",  # For browser/private_working_set_snapshot.h
-      "wbemuuid.lib",  # For browser/metrics/antivirus_metrics_provider_win.cc
+      "ndfapi.lib",  # For browser / net / net_error_diagnostics_dialog_win.h
+      "pdh.lib",  # For browser / private_working_set_snapshot.h
+      "wbemuuid.lib",  # For browser / metrics /
+                       # antivirus_metrics_provider_win.cc
     ]
     ldflags = [
       "/DELAYLOAD:ndfapi.dll",
@@ -83,14 +84,14 @@ buildflag_header("buildflags") {
   ]
 }
 
-# This proto library is used for non-android NTPs below.
+# This proto library is used for non - android NTPs below.
 proto_library("ntp_background_proto") {
   sources = [ "search/background/ntp_background.proto" ]
   generate_python = false
 }
 
 # Use a static library here because many test binaries depend on this but don't
-# require many files from it. This makes linking more efficient.
+# require many files from it.This makes linking more efficient.
 static_library("browser") {
   sources = [
     "about_flags.cc",
@@ -2111,6 +2112,7 @@ static_library("browser") {
     "//third_party/blink/public:resources",
     "//third_party/blink/public:scaled_resources",
     "//third_party/blink/public/common",
+    "//third_party/cacheinvalidation",
     "//third_party/icu",
     "//third_party/leveldatabase",
     "//third_party/libaddressinput",
@@ -2173,12 +2175,14 @@ static_library("browser") {
       "android/autofill_assistant/assistant_overlay_delegate.h",
       "android/autofill_assistant/client_android.cc",
       "android/autofill_assistant/client_android.h",
-      "android/autofill_assistant/generic_ui_controller_android.cc",
-      "android/autofill_assistant/generic_ui_controller_android.h",
       "android/autofill_assistant/generic_ui_events_android.cc",
       "android/autofill_assistant/generic_ui_events_android.h",
       "android/autofill_assistant/generic_ui_interactions_android.cc",
       "android/autofill_assistant/generic_ui_interactions_android.h",
+      "android/autofill_assistant/generic_ui_nested_controller_android.cc",
+      "android/autofill_assistant/generic_ui_nested_controller_android.h",
+      "android/autofill_assistant/generic_ui_root_controller_android.cc",
+      "android/autofill_assistant/generic_ui_root_controller_android.h",
       "android/autofill_assistant/interaction_handler_android.cc",
       "android/autofill_assistant/interaction_handler_android.h",
       "android/autofill_assistant/ui_controller_android.cc",
@@ -2925,7 +2929,8 @@ static_library("browser") {
       "//components/resources:components_resources",
       "//components/security_state/content/android",
       "//components/send_tab_to_self",
-      "//components/signin/internal/identity_manager",  # cf android/signin/DEPS
+      "//components/signin/internal/identity_manager",  # cf android / signin /
+                                                        # DEPS
       "//components/subresource_filter/android",
       "//components/viz/common",
       "//ipc:param_traits",
@@ -2967,7 +2972,7 @@ static_library("browser") {
       ]
       deps += [ "//chrome/android/modules/dev_ui/provider:native" ]
     }
-  } else {  # !is_android
+  } else {  #!is_android
     sources += [
       "accessibility/caption_controller.cc",
       "accessibility/caption_controller.h",
@@ -3579,7 +3584,7 @@ static_library("browser") {
       "signin/signin_ui_util.h",
       "speech/extension_api/tts_extension_api_constants.cc",  # Should be moved
                                                               # to extensions
-                                                              # section?
+                                                              # section ?
       "speech/extension_api/tts_extension_api_constants.h",
       "speech/speech_recognition_service.cc",
       "speech/speech_recognition_service.h",
@@ -3963,7 +3968,7 @@ static_library("browser") {
         "notifications/notification_platform_bridge_chromeos.h",
       ]
     }
-  } else {  # Non-ChromeOS.
+  } else {  # Non - ChromeOS.
     sources += [
       "fullscreen.h",
       "policy/browser_signin_policy_handler.cc",
@@ -4236,7 +4241,7 @@ static_library("browser") {
       ]
     }
   } else {
-    # Non-Windows.
+    # Non - Windows.
     sources += [
       "profile_resetter/triggered_profile_resetter_stub.cc",
       "profiles/profile_shortcut_manager_stub.cc",
@@ -4426,7 +4431,7 @@ static_library("browser") {
   }
 
   if (is_win || is_mac) {
-    # Sources (generally "desktop OS importers") used only on Mac & Windows.
+    # Sources(generally "desktop OS importers") used only on Mac & Windows.
     sources += [
       "recovery/recovery_install_global_error.cc",
       "recovery/recovery_install_global_error.h",
@@ -4574,7 +4579,7 @@ static_library("browser") {
   }
 
   if (is_posix && !is_mac) {
-    # TODO(crbug.com/753619): Enable crash reporting on Fuchsia.
+    # TODO(crbug.com / 753619): Enable crash reporting on Fuchsia.
     sources += [
       "//chrome/app/chrome_crash_reporter_client.cc",
       "//chrome/app/chrome_crash_reporter_client.h",
@@ -4619,8 +4624,8 @@ static_library("browser") {
       "media_galleries/fileapi/mtp_file_stream_reader.h",
     ]
     if (is_chromeos && use_dbus) {
-      # TODO(donna.wu@intel.com): push this into chrome/browser/chromeos
-      # and chrome/browser/media_galleries/chromeos
+      # TODO(donna.wu@intel.com): push this into chrome / browser / chromeos
+      # and chrome / browser / media_galleries / chromeos
       deps += [ "//services/device/public/mojom" ]
     }
   }
@@ -4630,7 +4635,7 @@ static_library("browser") {
   }
 
   if (use_aura) {
-    # Cross-platform Aura files.
+    # Cross - platform Aura files.
     sources += [
       "download/drag_download_item_aura.cc",
       "lifetime/application_lifetime_aura.cc",
@@ -4786,7 +4791,7 @@ static_library("browser") {
         public_deps += [ "//chrome/common:service_process_mojom" ]
       }
     } else {
-      # Partial-only printing support.
+      # Partial - only printing support.
       sources += [
         "printing/print_view_manager_basic.cc",
         "printing/print_view_manager_basic.h",
@@ -5052,15 +5057,15 @@ static_library("browser") {
       "//chrome/browser/apps/platform_apps",
 
       # TODO(https://crbug.com/883570): This is unfortunate, but not easy to
-      # fix. Ideally, //chrome/browser:browser shouldn't depend on these APIs
-      # (though the APIs likely will depend on //chrome/browser), but we need
+      # fix.Ideally, //chrome/browser:browser shouldn't depend on these APIs
+      #(though the APIs likely will depend on //chrome/browser), but we need
       # to pull them in here to allow registration of keyed services.
       "//chrome/browser/apps/platform_apps/api",
 
       "//chrome/browser/extensions",
       "//chrome/browser/web_applications",
 
-      # TODO(loyso): Erase these. crbug.com/877898.
+      # TODO(loyso): Erase these.crbug.com / 877898.
       "//chrome/browser/web_applications:common",
       "//chrome/browser/web_applications:web_applications_on_extensions",
       "//chrome/browser/web_applications/components",
@@ -5295,10 +5300,10 @@ static_library("browser") {
       "//components/offline_pages/core/request_header:request_header",
     ]
 
-    # Used to build test harness locally. The harness is used manually to
+    # Used to build test harness locally.The harness is used manually to
     # produce multiple offline pages to evaluate quality of the snapshots.
-    # This will only be built iff. |enable_offline_pages_harness| is set while
-    # |enable_offline_pages| and |is_android| are both true.
+    # This will only be built iff. | enable_offline_pages_harness | is set while
+    # | enable_offline_pages | and | is_android | are both true.
     if (enable_offline_pages_harness && is_android) {
       sources += [
         "offline_pages/android/evaluation/evaluation_test_scheduler.cc",
@@ -5611,8 +5616,8 @@ static_library("browser") {
   }
   if (enable_supervised_users && !is_android) {
     sources += [
-      # TODO(bauerb): The legacy code should be removed (on desktop) once child
-      # account support has launched (https://crbug.com/505443).
+      # TODO(bauerb): The legacy code should be removed(on desktop) once child
+      # account support has launched(https://crbug.com/505443).
       "supervised_user/legacy/custodian_profile_downloader_service.cc",
       "supervised_user/legacy/custodian_profile_downloader_service.h",
       "supervised_user/legacy/custodian_profile_downloader_service_factory.cc",
@@ -5791,7 +5796,7 @@ proto_library("permissions_proto") {
 grit("resources") {
   source = "browser_resources.grd"
 
-  # Required due to flattenhtml="true" on a generated file.
+  # Required due to flattenhtml = "true" on a generated file.
   enable_input_discovery_for_gn_analyze = false
 
   use_brotli = true
@@ -5827,7 +5832,7 @@ grit("resources") {
   ]
 
   if (enable_plugins) {
-    # .json is not in the default sources_assignment_filter.
+    #.json is not in the default sources_assignment_filter.
     if (is_chromeos) {
       inputs = [ "resources/plugin_metadata/plugins_chromeos.json" ]
     }
@@ -5922,6 +5927,8 @@ grit("dev_ui_browser_resources") {
     "//chrome/browser/engagement:mojo_bindings_js",
     "//chrome/browser/media:mojo_bindings_js",
     "//chrome/browser/media/feeds:mojo_bindings_js",
+    "//chrome/browser/resources/web_app_internals:components",
+    "//chrome/browser/ui/webui/internals/web_app:mojo_bindings_js",
     "//chrome/browser/ui/webui/interventions_internals:mojo_bindings_js",
   ]
   if (is_android) {
@@ -5973,7 +5980,7 @@ source_set("unexpire_flags") {
 }
 
 # Use a static library here because many test binaries depend on this but don't
-# require many files from it. This makes linking more efficient.
+# require many files from it.This makes linking more efficient.
 static_library("test_support") {
   testonly = true
 
@@ -6212,10 +6219,10 @@ static_library("test_support") {
       "extensions/extension_action_test_util.h",
       "extensions/mock_extension_special_storage_policy.cc",
       "extensions/mock_extension_special_storage_policy.h",
-      "extensions/test_blacklist.cc",
-      "extensions/test_blacklist.h",
-      "extensions/test_blacklist_state_fetcher.cc",
-      "extensions/test_blacklist_state_fetcher.h",
+      "extensions/test_blocklist.cc",
+      "extensions/test_blocklist.h",
+      "extensions/test_blocklist_state_fetcher.cc",
+      "extensions/test_blocklist_state_fetcher.h",
       "extensions/test_extension_environment.cc",
       "extensions/test_extension_environment.h",
       "extensions/test_extension_prefs.cc",
@@ -6254,7 +6261,7 @@ static_library("test_support") {
 
   if (safe_browsing_mode != 0) {
     # "Safe Browsing Basic" files used for safe browsing in full mode
-    # (safe_browsing=1) and mobile (=2)
+    #(safe_browsing = 1) and mobile(=2)
     sources += [
       "safe_browsing/certificate_reporting_service_test_utils.cc",
       "safe_browsing/certificate_reporting_service_test_utils.h",

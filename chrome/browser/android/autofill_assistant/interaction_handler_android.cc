@@ -10,8 +10,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/android/autofill_assistant/generic_ui_controller_android.h"
 #include "chrome/browser/android/autofill_assistant/generic_ui_interactions_android.h"
+#include "chrome/browser/android/autofill_assistant/generic_ui_nested_controller_android.h"
 #include "chrome/browser/android/autofill_assistant/view_handler_android.h"
 #include "components/autofill_assistant/browser/basic_interactions.h"
 #include "components/autofill_assistant/browser/generic_ui.pb.h"
@@ -87,12 +87,14 @@ InteractionHandlerAndroid::InteractionHandlerAndroid(
     UserModel* user_model,
     BasicInteractions* basic_interactions,
     ViewHandlerAndroid* view_handler,
+    RadioButtonController* radio_button_controller,
     base::android::ScopedJavaGlobalRef<jobject> jcontext,
     base::android::ScopedJavaGlobalRef<jobject> jdelegate)
     : event_handler_(event_handler),
       user_model_(user_model),
       basic_interactions_(basic_interactions),
       view_handler_(view_handler),
+      radio_button_controller_(radio_button_controller),
       jcontext_(jcontext),
       jdelegate_(jdelegate) {}
 
@@ -361,7 +363,8 @@ void InteractionHandlerAndroid::DeleteNestedUi(const std::string& identifier) {
   }
 }
 
-const GenericUiControllerAndroid* InteractionHandlerAndroid::CreateNestedUi(
+const GenericUiNestedControllerAndroid*
+InteractionHandlerAndroid::CreateNestedUi(
     const GenericUserInterfaceProto& proto,
     const std::string& identifier) {
   if (nested_ui_controllers_.find(identifier) != nested_ui_controllers_.end()) {
@@ -370,9 +373,9 @@ const GenericUiControllerAndroid* InteractionHandlerAndroid::CreateNestedUi(
                "instance with ClearViewContainerProto?)";
     return nullptr;
   }
-  auto nested_ui = GenericUiControllerAndroid::CreateFromProto(
+  auto nested_ui = GenericUiNestedControllerAndroid::CreateFromProto(
       proto, jcontext_, jdelegate_, event_handler_, user_model_,
-      basic_interactions_);
+      basic_interactions_, radio_button_controller_);
   const auto* nested_ui_ptr = nested_ui.get();
   if (nested_ui) {
     nested_ui_controllers_.emplace(identifier, std::move(nested_ui));

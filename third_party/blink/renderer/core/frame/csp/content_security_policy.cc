@@ -1505,25 +1505,16 @@ bool ContentSecurityPolicy::ShouldBypassMainWorld(
   if (!context)
     return false;
 
-  v8::Isolate* isolate = context->GetIsolate();
-  v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Context> v8_context = isolate->GetCurrentContext();
-
-  // This can be called before we enter v8, hence the context might be empty,
-  // which implies we are not in an isolated world.
-  if (v8_context.IsEmpty())
-    return false;
-
-  return ShouldBypassMainWorld(DOMWrapperWorld::Current(isolate));
+  return ShouldBypassMainWorld(context->GetCurrentWorld().get());
 }
 
 // static
 bool ContentSecurityPolicy::ShouldBypassMainWorld(
-    const DOMWrapperWorld& world) {
-  if (!world.IsIsolatedWorld())
+    const DOMWrapperWorld* world) {
+  if (!world || !world->IsIsolatedWorld())
     return false;
 
-  return IsolatedWorldCSP::Get().HasContentSecurityPolicy(world.GetWorldId());
+  return IsolatedWorldCSP::Get().HasContentSecurityPolicy(world->GetWorldId());
 }
 
 bool ContentSecurityPolicy::ShouldSendViolationReport(

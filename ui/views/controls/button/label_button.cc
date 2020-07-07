@@ -156,7 +156,6 @@ void LabelButton::SetMinSize(const gfx::Size& min_size) {
   if (GetMinSize() == min_size)
     return;
   min_size_ = min_size;
-  ResetCachedPreferredSize();
   OnPropertyChanged(&min_size_, kPropertyEffectsNone);
 }
 
@@ -168,7 +167,6 @@ void LabelButton::SetMaxSize(const gfx::Size& max_size) {
   if (GetMaxSize() == max_size)
     return;
   max_size_ = max_size;
-  ResetCachedPreferredSize();
   OnPropertyChanged(&max_size_, kPropertyEffectsNone);
 }
 
@@ -197,7 +195,6 @@ void LabelButton::SetImageLabelSpacing(int spacing) {
   if (GetImageLabelSpacing() == spacing)
     return;
   image_label_spacing_ = spacing;
-  ResetCachedPreferredSize();
   OnPropertyChanged(&image_label_spacing_, kPropertyEffectsLayout);
 }
 
@@ -221,7 +218,6 @@ std::unique_ptr<LabelButtonBorder> LabelButton::CreateDefaultBorder() const {
 void LabelButton::SetBorder(std::unique_ptr<Border> border) {
   border_is_themed_border_ = false;
   View::SetBorder(std::move(border));
-  ResetCachedPreferredSize();
 }
 
 void LabelButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
@@ -230,34 +226,29 @@ void LabelButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 }
 
 gfx::Size LabelButton::CalculatePreferredSize() const {
-  // Cache the computed size, as recomputing it is an expensive operation.
-  if (!cached_preferred_size_) {
-    gfx::Size size = GetUnclampedSizeWithoutLabel();
+  gfx::Size size = GetUnclampedSizeWithoutLabel();
 
-    // Disregard label in the preferred size if the button is shrinking down to
-    // show no label soon.
-    if (!shrinking_down_label_) {
-      const gfx::Size preferred_label_size = label_->GetPreferredSize();
-      size.Enlarge(preferred_label_size.width(), 0);
+  // Disregard label in the preferred size if the button is shrinking down to
+  // show no label soon.
+  if (!shrinking_down_label_) {
+    const gfx::Size preferred_label_size = label_->GetPreferredSize();
+    size.Enlarge(preferred_label_size.width(), 0);
 
-      // Increase the height of the label (with insets) if larger.
-      size.set_height(std::max(
-          preferred_label_size.height() + GetInsets().height(), size.height()));
-    }
-
-    size.SetToMax(GetMinSize());
-
-    // Clamp size to max size (if valid).
-    const gfx::Size max_size = GetMaxSize();
-    if (max_size.width() > 0)
-      size.set_width(std::min(max_size.width(), size.width()));
-    if (max_size.height() > 0)
-      size.set_height(std::min(max_size.height(), size.height()));
-
-    cached_preferred_size_ = size;
+    // Increase the height of the label (with insets) if larger.
+    size.set_height(std::max(
+        preferred_label_size.height() + GetInsets().height(), size.height()));
   }
 
-  return cached_preferred_size_.value();
+  size.SetToMax(GetMinSize());
+
+  // Clamp size to max size (if valid).
+  const gfx::Size max_size = GetMaxSize();
+  if (max_size.width() > 0)
+    size.set_width(std::min(max_size.width(), size.width()));
+  if (max_size.height() > 0)
+    size.set_height(std::min(max_size.height(), size.height()));
+
+  return size;
 }
 
 gfx::Size LabelButton::GetMinimumSize() const {
@@ -422,10 +413,7 @@ ui::NativeTheme::State LabelButton::GetForegroundThemeState(
 }
 
 void LabelButton::UpdateImage() {
-  const gfx::Size old_preferred_size = image_->GetPreferredSize();
   image_->SetImage(GetImage(GetVisualState()));
-  if (old_preferred_size != image_->GetPreferredSize())
-    ResetCachedPreferredSize();
 }
 
 void LabelButton::UpdateThemedBorder() {
@@ -476,11 +464,6 @@ PropertyEffects LabelButton::UpdateStyleToIndicateDefaultStatus() {
 
 void LabelButton::ChildPreferredSizeChanged(View* child) {
   PreferredSizeChanged();
-}
-
-void LabelButton::PreferredSizeChanged() {
-  ResetCachedPreferredSize();
-  Button::PreferredSizeChanged();
 }
 
 void LabelButton::OnFocus() {
@@ -534,19 +517,14 @@ void LabelButton::SetTextInternal(const base::string16& text) {
 }
 
 void LabelButton::ClearTextIfShrunkDown() {
-  if (!cached_preferred_size_)
-    CalculatePreferredSize();
-  if (shrinking_down_label_ && width() <= cached_preferred_size_->width() &&
-      height() <= cached_preferred_size_->height()) {
+  const gfx::Size preferred_size = GetPreferredSize();
+  if (shrinking_down_label_ && width() <= preferred_size.width() &&
+      height() <= preferred_size.height()) {
     // Once the button shrinks down to its preferred size (that disregards the
     // current text), we finish the operation by clearing the text.
     shrinking_down_label_ = false;
     SetText(base::string16());
   }
-}
-
-void LabelButton::ResetCachedPreferredSize() {
-  cached_preferred_size_ = base::nullopt;
 }
 
 gfx::Size LabelButton::GetUnclampedSizeWithoutLabel() const {

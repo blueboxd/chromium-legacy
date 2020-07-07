@@ -5,6 +5,7 @@
 module network.mojom;
 
 import "url/mojom/url.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
 
 // Reports potential COOP violations. Implemented in the browser process.
 // TODO(ahemery, pmeuleman): Add extra coop breakage cases as listed in
@@ -22,6 +23,11 @@ interface CrossOriginOpenerPolicyReporter {
   QueueOpenerBreakageReport(url.mojom.Url other_url,
                             bool is_reported_from_document,
                             bool is_report_only);
+
+  // When two browsing contexts from different virtual browsing context groups
+  // tries to access each other, a report it sent.
+  // - |property| is the name of the access property (postMessage, open, ...).
+  QueueAccessReport(string property);
 
   // Connects a new pipe to this instance.
   Clone(pending_receiver<CrossOriginOpenerPolicyReporter> receiver);

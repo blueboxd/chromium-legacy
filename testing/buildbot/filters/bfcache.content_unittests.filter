@@ -1,5 +1,6 @@
 # These tests currently fail when run with --enable-features=BackForwardCache
 
-# https://crbug.com/1062923
-# Need investigation.
--RenderFrameHostImplBrowserTest.CheckIsCurrentBeforeAndAfterUnload
+# https://crbug.com/1102630
+# Needs investigation.
+-All/RenderFrameHostManagerTest.BeginNavigationIgnoredWhenNotActive/*
+-WebContentsImplTest.ActiveContentsCountChangeBrowsingInstance

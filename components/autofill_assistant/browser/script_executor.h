@@ -119,6 +119,12 @@ class ScriptExecutor : public ActionDelegate,
   std::string GetBubbleMessage() override;
   void FindElement(const Selector& selector,
                    ElementFinder::Callback callback) override;
+  void WaitForDocumentToBecomeInteractive(
+      const ElementFinder::Result& element,
+      base::OnceCallback<void(const ClientStatus&)> callback) override;
+  void ScrollIntoView(
+      const ElementFinder::Result& element,
+      base::OnceCallback<void(const ClientStatus&)> callback) override;
   void ClickOrTapElement(
       const ElementFinder::Result& element,
       ClickType click_type,

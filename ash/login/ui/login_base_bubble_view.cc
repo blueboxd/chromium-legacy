@@ -28,7 +28,7 @@ namespace {
 // Total width of the bubble view.
 constexpr int kBubbleTotalWidthDp = 192;
 
-// Margin around the bubble view.
+// Padding around the bubble view.
 constexpr int kBubblePaddingDp = 16;
 
 // Spacing between the child view inside the bubble view.

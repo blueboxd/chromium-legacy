@@ -40,6 +40,11 @@ class LayerTreeHostCopyRequestTest
           ::testing::tuple<LayerTreeTest::RendererType, CompositorMode>> {
  public:
   LayerTreeHostCopyRequestTest() : LayerTreeTest(renderer_type()) {}
+  ~LayerTreeHostCopyRequestTest() {
+    // To prevent any tasks posted from previous tests from interfering wait for
+    // the task environment to empty.
+    CCTestSuite::RunUntilIdle();
+  }
 
   RendererType renderer_type() const { return ::testing::get<0>(GetParam()); }
 

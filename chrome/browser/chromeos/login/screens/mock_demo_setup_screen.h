@@ -18,8 +18,8 @@ class MockDemoSetupScreen : public DemoSetupScreen {
                       const ScreenExitCallback& exit_callback);
   ~MockDemoSetupScreen() override;
 
-  MOCK_METHOD0(ShowImpl, void());
-  MOCK_METHOD0(HideImpl, void());
+  MOCK_METHOD(void, ShowImpl, ());
+  MOCK_METHOD(void, HideImpl, ());
 
   void ExitScreen(Result result);
 };
@@ -29,14 +29,16 @@ class MockDemoSetupScreenView : public DemoSetupScreenView {
   MockDemoSetupScreenView();
   ~MockDemoSetupScreenView() override;
 
-  MOCK_METHOD0(Show, void());
-  MOCK_METHOD0(Hide, void());
-  MOCK_METHOD1(MockBind, void(DemoSetupScreen* screen));
-  MOCK_METHOD0(OnSetupSucceeded, void());
-  MOCK_METHOD1(OnSetupFailed,
-               void(const DemoSetupController::DemoSetupError& error));
-  MOCK_METHOD1(SetCurrentSetupStep,
-               void(const DemoSetupController::DemoSetupStep current_step));
+  MOCK_METHOD(void, Show, ());
+  MOCK_METHOD(void, Hide, ());
+  MOCK_METHOD(void, MockBind, (DemoSetupScreen * screen));
+  MOCK_METHOD(void, OnSetupSucceeded, ());
+  MOCK_METHOD(void,
+              OnSetupFailed,
+              (const DemoSetupController::DemoSetupError& error));
+  MOCK_METHOD(void,
+              SetCurrentSetupStep,
+              (const DemoSetupController::DemoSetupStep current_step));
 
   void Bind(DemoSetupScreen* screen) override;
 

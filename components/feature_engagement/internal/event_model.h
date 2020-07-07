@@ -19,13 +19,13 @@ class EventModel {
  public:
   // Callback for when model initialization has finished. The |success|
   // argument denotes whether the model was successfully initialized.
-  using OnModelInitializationFinished = base::Callback<void(bool success)>;
+  using OnModelInitializationFinished = base::OnceCallback<void(bool success)>;
 
   virtual ~EventModel() = default;
 
   // Initialize the model, including all underlying sub systems. When all
   // required operations have been finished, a callback is posted.
-  virtual void Initialize(const OnModelInitializationFinished& callback,
+  virtual void Initialize(OnModelInitializationFinished callback,
                           uint32_t current_day) = 0;
 
   // Returns whether the model is ready, i.e. whether it has been successfully

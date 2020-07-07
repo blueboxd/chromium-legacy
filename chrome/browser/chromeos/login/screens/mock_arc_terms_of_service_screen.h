@@ -17,8 +17,8 @@ class MockArcTermsOfServiceScreen : public ArcTermsOfServiceScreen {
                               const ScreenExitCallback& exit_callback);
   ~MockArcTermsOfServiceScreen() override;
 
-  MOCK_METHOD0(ShowImpl, void());
-  MOCK_METHOD0(HideImpl, void());
+  MOCK_METHOD(void, ShowImpl, ());
+  MOCK_METHOD(void, HideImpl, ());
 
   void ExitScreen(Result result);
 };
@@ -31,13 +31,15 @@ class MockArcTermsOfServiceScreenView : public ArcTermsOfServiceScreenView {
   void AddObserver(ArcTermsOfServiceScreenViewObserver* observer) override;
   void RemoveObserver(ArcTermsOfServiceScreenViewObserver* observer) override;
 
-  MOCK_METHOD0(Show, void());
-  MOCK_METHOD0(Hide, void());
-  MOCK_METHOD1(Bind, void(ArcTermsOfServiceScreen* screen));
-  MOCK_METHOD1(MockAddObserver,
-               void(ArcTermsOfServiceScreenViewObserver* observer));
-  MOCK_METHOD1(MockRemoveObserver,
-               void(ArcTermsOfServiceScreenViewObserver* observer));
+  MOCK_METHOD(void, Show, ());
+  MOCK_METHOD(void, Hide, ());
+  MOCK_METHOD(void, Bind, (ArcTermsOfServiceScreen * screen));
+  MOCK_METHOD(void,
+              MockAddObserver,
+              (ArcTermsOfServiceScreenViewObserver * observer));
+  MOCK_METHOD(void,
+              MockRemoveObserver,
+              (ArcTermsOfServiceScreenViewObserver * observer));
 
  private:
   ArcTermsOfServiceScreenViewObserver* observer_ = nullptr;

@@ -13,7 +13,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_source.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
@@ -22,6 +21,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/mock_peer_connection_dependency_factory.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
 
 namespace blink {
@@ -59,20 +59,18 @@ class WebRtcMediaStreamTrackAdapterTest : public ::testing::Test {
     return component;
   }
 
-  blink::WebMediaStreamTrack CreateLocalVideoTrack() {
-    blink::WebMediaStreamSource web_source;
-    web_source.Initialize(blink::WebString::FromUTF8("local_video_id"),
-                          blink::WebMediaStreamSource::kTypeVideo,
-                          blink::WebString::FromUTF8("local_video_track"),
-                          false);
-    blink::MockMediaStreamVideoSource* video_source =
-        new blink::MockMediaStreamVideoSource();
-    // Takes ownership of |video_source|.
-    web_source.SetPlatformSource(base::WrapUnique(video_source));
+  MediaStreamComponent* CreateLocalVideoTrack() {
+    auto* source = MakeGarbageCollected<MediaStreamSource>(
+        String::FromUTF8("local_video_id"), MediaStreamSource::kTypeVideo,
+        String::FromUTF8("local_video_track"), false);
+    auto video_source = std::make_unique<MockMediaStreamVideoSource>();
+    auto* video_source_ptr = video_source.get();
+    video_source->SetOwner(source);
+    source->SetPlatformSource(std::move(video_source));
 
-    return blink::MediaStreamVideoTrack::CreateVideoTrack(
-        video_source, blink::MediaStreamVideoSource::ConstraintsOnceCallback(),
-        true);
+    return MediaStreamVideoTrack::CreateVideoTrack(
+        video_source_ptr,
+        blink::MediaStreamVideoSource::ConstraintsOnceCallback(), true);
   }
 
   void CreateRemoteTrackAdapter(

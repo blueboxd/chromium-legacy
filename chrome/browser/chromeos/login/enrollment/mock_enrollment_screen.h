@@ -20,8 +20,8 @@ class MockEnrollmentScreen : public EnrollmentScreen {
                        const ScreenExitCallback& exit_callback);
   ~MockEnrollmentScreen() override;
 
-  MOCK_METHOD0(ShowImpl, void());
-  MOCK_METHOD0(HideImpl, void());
+  MOCK_METHOD(void, ShowImpl, ());
+  MOCK_METHOD(void, HideImpl, ());
 
   void ExitScreen(Result result);
 };
@@ -31,28 +31,32 @@ class MockEnrollmentScreenView : public EnrollmentScreenView {
   MockEnrollmentScreenView();
   virtual ~MockEnrollmentScreenView();
 
-  MOCK_METHOD2(SetEnrollmentConfig,
-               void(Controller*, const policy::EnrollmentConfig& config));
-  MOCK_METHOD2(SetEnterpriseDomainAndDeviceType,
-               void(const std::string& domain,
-                    const base::string16& device_type));
-  MOCK_METHOD0(Show, void());
-  MOCK_METHOD0(Hide, void());
-  MOCK_METHOD0(ShowSigninScreen, void());
-  MOCK_METHOD1(ShowLicenseTypeSelectionScreen,
-               void(const base::DictionaryValue&));
-  MOCK_METHOD4(ShowActiveDirectoryScreen,
-               void(const std::string& domain_join_config,
-                    const std::string& machine_name,
-                    const std::string& username,
-                    authpolicy::ErrorType error));
-  MOCK_METHOD2(ShowAttributePromptScreen,
-               void(const std::string& asset_id, const std::string& location));
-  MOCK_METHOD0(ShowEnrollmentSuccessScreen, void());
-  MOCK_METHOD0(ShowEnrollmentSpinnerScreen, void());
-  MOCK_METHOD1(ShowAuthError, void(const GoogleServiceAuthError&));
-  MOCK_METHOD1(ShowOtherError, void(EnterpriseEnrollmentHelper::OtherError));
-  MOCK_METHOD1(ShowEnrollmentStatus, void(policy::EnrollmentStatus status));
+  MOCK_METHOD(void,
+              SetEnrollmentConfig,
+              (Controller*, const policy::EnrollmentConfig& config));
+  MOCK_METHOD(void,
+              SetEnterpriseDomainAndDeviceType,
+              (const std::string& domain, const base::string16& device_type));
+  MOCK_METHOD(void, Show, ());
+  MOCK_METHOD(void, Hide, ());
+  MOCK_METHOD(void, ShowSigninScreen, ());
+  MOCK_METHOD(void,
+              ShowLicenseTypeSelectionScreen,
+              (const base::DictionaryValue&));
+  MOCK_METHOD(void,
+              ShowActiveDirectoryScreen,
+              (const std::string& domain_join_config,
+               const std::string& machine_name,
+               const std::string& username,
+               authpolicy::ErrorType error));
+  MOCK_METHOD(void,
+              ShowAttributePromptScreen,
+              (const std::string& asset_id, const std::string& location));
+  MOCK_METHOD(void, ShowEnrollmentSuccessScreen, ());
+  MOCK_METHOD(void, ShowEnrollmentSpinnerScreen, ());
+  MOCK_METHOD(void, ShowAuthError, (const GoogleServiceAuthError&));
+  MOCK_METHOD(void, ShowOtherError, (EnterpriseEnrollmentHelper::OtherError));
+  MOCK_METHOD(void, ShowEnrollmentStatus, (policy::EnrollmentStatus status));
 };
 
 }  // namespace chromeos

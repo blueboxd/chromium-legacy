@@ -18,8 +18,8 @@ class MockNetworkScreen : public NetworkScreen {
                     const ScreenExitCallback& exit_callback);
   ~MockNetworkScreen() override;
 
-  MOCK_METHOD0(ShowImpl, void());
-  MOCK_METHOD0(HideImpl, void());
+  MOCK_METHOD(void, ShowImpl, ());
+  MOCK_METHOD(void, HideImpl, ());
 
   void ExitScreen(NetworkScreen::Result result);
 
@@ -35,15 +35,16 @@ class MockNetworkScreenView : public NetworkScreenView {
   void Bind(NetworkScreen* screen) override;
   void Unbind() override;
 
-  MOCK_METHOD1(MockBind, void(NetworkScreen* screen));
-  MOCK_METHOD0(MockUnbind, void());
-  MOCK_METHOD0(Show, void());
-  MOCK_METHOD0(Hide, void());
-  MOCK_METHOD1(ShowError, void(const base::string16& message));
-  MOCK_METHOD0(ClearErrors, void());
-  MOCK_METHOD2(ShowConnectingStatus,
-               void(bool connecting, const base::string16& network_id));
-  MOCK_METHOD1(SetOfflineDemoModeEnabled, void(bool enabled));
+  MOCK_METHOD(void, MockBind, (NetworkScreen * screen));
+  MOCK_METHOD(void, MockUnbind, ());
+  MOCK_METHOD(void, Show, ());
+  MOCK_METHOD(void, Hide, ());
+  MOCK_METHOD(void, ShowError, (const base::string16& message));
+  MOCK_METHOD(void, ClearErrors, ());
+  MOCK_METHOD(void,
+              ShowConnectingStatus,
+              (bool connecting, const base::string16& network_id));
+  MOCK_METHOD(void, SetOfflineDemoModeEnabled, (bool enabled));
 
  private:
   NetworkScreen* screen_ = nullptr;

@@ -609,6 +609,8 @@ class CORE_EXPORT LocalFrame final
 #if defined(OS_MACOSX)
   void GetCharacterIndexAtPoint(const gfx::Point& point) final;
   void GetFirstRectForRange(const gfx::Range& range) final;
+  void GetStringForRange(const gfx::Range& range,
+                         GetStringForRangeCallback callback) final;
 #endif
   void InstallCoopAccessMonitor(
       const base::UnguessableToken& accessed_window,

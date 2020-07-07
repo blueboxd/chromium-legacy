@@ -179,7 +179,7 @@ void UpdateScreen::ShowErrorMessage() {
   error_screen_->SetParentScreen(UpdateView::kScreenId);
   error_screen_->SetHideCallback(base::BindOnce(
       &UpdateScreen::OnErrorScreenHidden, weak_factory_.GetWeakPtr()));
-  error_screen_->Show();
+  error_screen_->Show(nullptr);
   histogram_helper_->OnErrorShow(error_screen_->GetErrorState());
 }
 
@@ -336,7 +336,7 @@ void UpdateScreen::OnConnectRequested() {
 
 void UpdateScreen::OnErrorScreenHidden() {
   error_screen_->SetParentScreen(OobeScreen::SCREEN_UNKNOWN);
-  Show();
+  Show(context());
 }
 
 }  // namespace chromeos

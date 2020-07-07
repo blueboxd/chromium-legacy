@@ -431,7 +431,10 @@ mojom("mojom_core") {
     enable_bytecode_checks = false
   }
   if (is_mac) {
-    public_deps += [ "//ui/gfx/range/mojom" ]
+    public_deps += [
+      "//ui/base/mojom",
+      "//ui/gfx/range/mojom",
+    ]
   }
 
   overridden_deps_blink = [

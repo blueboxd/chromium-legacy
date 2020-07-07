@@ -1490,6 +1490,92 @@ TEST_F(URLRequestTest, PriorityIgnoreLimits) {
   EXPECT_EQ(MAXIMUM_PRIORITY, job_priority);
 }
 
+// This test verifies that URLRequest::Delegate's OnConnected() callback is
+// never called if the request fails before connecting to a remote endpoint.
+TEST_F(URLRequestTest, NotifyDelegateConnectedSkippedOnEarlyFailure) {
+  TestDelegate delegate;
+
+  // The request will never connect to anything because the URL is invalid.
+  auto request =
+      default_context().CreateRequest(GURL("invalid url"), DEFAULT_PRIORITY,
+                                      &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  request->Start();
+  delegate.RunUntilComplete();
+
+  EXPECT_EQ(delegate.connected_count(), 0);
+}
+
+// This test verifies that URLRequest::Delegate's OnConnected() callback
+// is called once for simple redirect-less requests.
+TEST_F(URLRequestTest, NotifyDelegateConnectedOnce) {
+  HttpTestServer test_server;
+  ASSERT_TRUE(test_server.Start());
+
+  TestDelegate delegate;
+
+  auto request = default_context().CreateRequest(test_server.GetURL("/echo"),
+                                                 DEFAULT_PRIORITY, &delegate,
+                                                 TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  request->Start();
+  delegate.RunUntilComplete();
+
+  EXPECT_EQ(delegate.connected_count(), 1);
+}
+
+// This test verifies that URLRequest::Delegate's OnConnected() callback is
+// called after each redirect.
+TEST_F(URLRequestTest, NotifyDelegateConnectedOnEachRedirect) {
+  HttpTestServer test_server;
+  ASSERT_TRUE(test_server.Start());
+
+  TestDelegate delegate;
+
+  // Fetch a page that redirects us once.
+  GURL url = test_server.GetURL("/server-redirect?" +
+                                test_server.GetURL("/echo").spec());
+  auto request = default_context().CreateRequest(
+      url, DEFAULT_PRIORITY, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  request->Start();
+  delegate.RunUntilRedirect();
+
+  EXPECT_EQ(delegate.connected_count(), 1);
+
+  request->FollowDeferredRedirect(/*removed_headers=*/{},
+                                  /*modified_headers=*/{});
+  delegate.RunUntilComplete();
+
+  EXPECT_EQ(delegate.connected_count(), 2);
+}
+
+// This test verifies that when the URLRequest Delegate returns an error from
+// OnBeforeSendHeaders(), the entire request fails with that error.
+TEST_F(URLRequestTest, NotifyDelegateConnectedReturnError) {
+  HttpTestServer test_server;
+  ASSERT_TRUE(test_server.Start());
+
+  TestDelegate delegate;
+  delegate.set_on_connected_result(ERR_NOT_IMPLEMENTED);
+
+  auto request = default_context().CreateRequest(test_server.GetURL("/echo"),
+                                                 DEFAULT_PRIORITY, &delegate,
+                                                 TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  request->Start();
+  delegate.RunUntilComplete();
+
+  EXPECT_EQ(delegate.connected_count(), 1);
+  EXPECT_TRUE(delegate.request_failed());
+  EXPECT_THAT(delegate.request_status(), IsError(ERR_NOT_IMPLEMENTED));
+}
+
+// TODO(crbug.com/986744): Test that OnConnected() is called multiple times for
+// split HTTP range requests. This behavior should happen when a range is
+// requested for which a subrange "in the middle" is already cached. See the
+// comment threads on crrev.com/c/2257752 for details.
+
 TEST_F(URLRequestTest, DelayedCookieCallback) {
   HttpTestServer test_server;
   ASSERT_TRUE(test_server.Start());

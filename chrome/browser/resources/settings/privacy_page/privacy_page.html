@@ -1,7 +1,4 @@
     <style include="cr-shared-style settings-shared iron-flex">
-      .iron-collapse-indented {
-        margin-inline-start: var(--cr-section-indent-width);
-      }
     </style>
     <template is="dom-if" if="[[showClearBrowsingDataDialog_]]" restamp>
       <settings-clear-browsing-data-dialog prefs="{{prefs}}"
@@ -11,111 +8,29 @@
     <settings-animated-pages id="pages" section="privacy"
         focus-config="[[focusConfig_]]">
       <div route-path="default">
-        <template is="dom-if" if="[[!privacySettingsRedesignEnabled_]]" restamp>
-          <cr-link-row id="clearBrowsingData"
-              class="hr"
-              label="$i18n{clearBrowsingData}"
-              sub-label="$i18n{clearBrowsingDataDescription}"
-              on-click="onClearBrowsingDataTap_"></cr-link-row>
-          <cr-link-row id="site-settings-subpage-trigger"
-              class="hr"
-              label="$i18n{siteSettings}"
-              sub-label="$i18n{siteSettingsDescription}"
-              on-click="onSiteSettingsTap_"></cr-link-row>
-          <cr-expand-button id="moreExpansion"
-              alt="$i18n{privacyPageMore}"
-              class="cr-row"
-              expanded="{{moreOpened_}}">
-              <div>$i18n{privacyPageMore}</div>
-          </cr-expand-button>
-          <iron-collapse id="moreCollapse" opened="[[moreOpened_]]"
-              class="iron-collapse-indented">
-            <settings-toggle-button id="safeBrowsingToggle"
-                pref="{{prefs.safebrowsing.enabled}}"
-                label="$i18n{safeBrowsingEnableProtection}"
-                sub-label="$i18n{safeBrowsingEnableProtectionDesc}"
-                on-settings-boolean-control-change=
-                    "onSafeBrowsingToggleChange_">
-            </settings-toggle-button>
-            <settings-passwords-leak-detection-toggle
-                id="passwordsLeakDetectionToggle"
-                prefs="{{prefs}}"
-                sync-status="[[syncStatus]]">
-            </settings-passwords-leak-detection-toggle>
-            <settings-toggle-button id="safeBrowsingReportingToggle"
-                class="hr"
-                pref="[[safeBrowsingReportingPref_]]" no-set-pref
-                label="$i18n{safeBrowsingEnableExtendedReporting}"
-                sub-label="$i18n{safeBrowsingEnableExtendedReportingDesc}"
-                disabled="[[getDisabledExtendedSafeBrowsing_(prefs.*)]]"
-                on-settings-boolean-control-change=
-                    "onSafeBrowsingReportingToggleChange_">
-            </settings-toggle-button>
-            <settings-do-not-track-toggle id="doNotTrack" prefs="{{prefs}}">
-            </settings-do-not-track-toggle>
-            <settings-toggle-button id="canMakePaymentToggle"
-                class="hr"
-                aria-label="$i18n{canMakePaymentToggleLabel}"
-                label="$i18n{canMakePaymentToggleLabel}"
-                pref="{{prefs.payments.can_make_payment_enabled}}"
-                on-settings-boolean-control-change="onCanMakePaymentChange_">
-            </settings-toggle-button>
-            <settings-toggle-button class="hr"
-                hidden="[[!pageVisibility.networkPrediction]]"
-                pref="{{prefs.net.network_prediction_options}}"
-                label="$i18n{networkPredictionEnabled}"
-                sub-label="$i18n{networkPredictionEnabledDesc}"
-                numeric-unchecked-value="[[networkPredictionUncheckedValue_]]"
-                on-settings-boolean-control-change="onNetworkPredictionChange_">
-            </settings-toggle-button>
-            <template is="dom-if" if="[[showSecureDnsSetting_]]">
-              <settings-secure-dns prefs="{{prefs}}"></settings-secure-dns>
-            </template>
-<if expr="use_nss_certs or is_win or is_macosx">
-            <cr-link-row id="manageCertificates"
-                class="hr"
-<if expr="not use_nss_certs">
-                external
-</if>
-                label="$i18n{manageCertificates}"
-                sub-label="$i18n{manageCertificatesDescription}"
-                on-click="onManageCertificatesTap_"></cr-link-row>
-</if>
-            <template is="dom-if" if="[[enableSecurityKeysSubpage_]]">
-              <cr-link-row id="security-keys-subpage-trigger"
-                class="hr"
-                label="$i18n{securityKeysTitle}"
-                sub-label="$i18n{securityKeysDesc}"
-                on-click="onSecurityKeysTap_"></cr-link-row>
-            </template>
-          </iron-collapse>
-        </template>
-        <template is="dom-if" if="[[privacySettingsRedesignEnabled_]]" restamp>
-          <cr-link-row id="clearBrowsingData"
-              class="hr" start-icon="cr:delete"
-              label="$i18n{clearBrowsingData}"
-              sub-label="$i18n{clearBrowsingDataDescription}"
-              on-click="onClearBrowsingDataTap_"></cr-link-row>
-          <cr-link-row id="cookiesLinkRow" start-icon="settings:cookie"
-              class="hr" label="$i18n{cookiePageTitle}"
-              sub-label="[[cookieSettingDescription_]]"
-              on-click="onCookiesClick_"></cr-link-row>
-          <cr-link-row id="securityLinkRow" start-icon="cr:security"
-              class="hr" label="$i18n{securityPageTitle}"
-              sub-label="$i18n{securityPageDescription}"
-              on-click="onSecurityPageClick_"></cr-link-row>
-          <cr-link-row id="permissionsLinkRow" start-icon="settings:permissions"
-              class="hr" label="$i18n{siteSettings}"
-              sub-label="$i18n{permissionsPageDescription}"
-              on-click="onPermissionsPageClick_"></cr-link-row>
-        </template>
+        <cr-link-row id="clearBrowsingData"
+            class="hr" start-icon="cr:delete"
+            label="$i18n{clearBrowsingData}"
+            sub-label="$i18n{clearBrowsingDataDescription}"
+            on-click="onClearBrowsingDataTap_"></cr-link-row>
+        <cr-link-row id="cookiesLinkRow" start-icon="settings:cookie"
+            class="hr" label="$i18n{cookiePageTitle}"
+            sub-label="[[cookieSettingDescription_]]"
+            on-click="onCookiesClick_"></cr-link-row>
+        <cr-link-row id="securityLinkRow" start-icon="cr:security"
+            class="hr" label="$i18n{securityPageTitle}"
+            sub-label="$i18n{securityPageDescription}"
+            on-click="onSecurityPageClick_"></cr-link-row>
+        <cr-link-row id="permissionsLinkRow" start-icon="settings:permissions"
+            class="hr" label="$i18n{siteSettings}"
+            sub-label="$i18n{permissionsPageDescription}"
+            on-click="onPermissionsPageClick_"></cr-link-row>
       </div>
 
 <if expr="use_nss_certs">
       <template is="dom-if" route-path="/certificates">
         <settings-subpage
-            associated-control="[[getControlForCertificatesSubpage_(
-                privacySettingsRedesignEnabled_)]]"
+            associated-control="[[$$('#securityLinkRow'))]]"
             page-title="$i18n{manageCertificates}">
           <certificate-manager></certificate-manager>
         </settings-subpage>
@@ -124,9 +39,7 @@
 
       <template is="dom-if" if="[[enableSecurityKeysSubpage_]]">
         <template is="dom-if" route-path="/securityKeys">
-          <settings-subpage
-              associated-control="[[getControlForSecurityKeysSubpage_(
-                  privacySettingsRedesignEnabled_)]]"
+          <settings-subpage associated-control="[[$$('#securityLinkRow')]]"
               page-title="$i18n{securityKeysTitle}">
             <security-keys-subpage></security-keys-subpage>
           </settings-subpage>
@@ -135,8 +48,7 @@
 
       <template is="dom-if" route-path="/content">
         <settings-subpage
-            associated-control="[[getControlForSiteSettingsSubpage_(
-                privacySettingsRedesignEnabled_)]]"
+            associated-control="[[$$('#permissionsLinkRow')]]"
             id="site-settings"
             page-title="$i18n{siteSettings}"
             learn-more-url="$i18n{exceptionsLearnMoreURL}">
@@ -145,10 +57,8 @@
         </settings-subpage>
       </template>
 
-      <template is="dom-if" route-path="/security"
-          no-search="[[!privacySettingsRedesignEnabled_]]">
+      <template is="dom-if" route-path="/security">
         <settings-subpage id="security" page-title="$i18n{securityPageTitle}"
-            no-search$="[[!privacySettingsRedesignEnabled_]]"
             associated-control="[[$$('#securityLinkRow')]]"
             learn-more-url="$i18n{safeBrowsingHelpCenterURL}">
           <settings-security-page prefs="{{prefs}}"
@@ -217,11 +127,9 @@
           </category-setting-exceptions>
         </settings-subpage>
       </template>
-      <template is="dom-if" route-path="/cookies"
-          no-search="[[!privacySettingsRedesignEnabled_]]">
+      <template is="dom-if" route-path="/cookies" no-search>
         <settings-subpage id="cookies" page-title="$i18n{cookiePageTitle}"
             learn-more-url="$i18n{cookiesSettingsHelpCenterURL}"
-            no-search$="[[!privacySettingsRedesignEnabled_]]"
             search-label="$i18n{siteSettingsAllSitesSearch}"
             search-term="{{searchFilter_}}"
             associated-control="[[$$('#cookiesLinkRow')]]">
@@ -229,36 +137,6 @@
               focus-config="[[focusConfig_]]"
               search-term="[[searchFilter_]]">
           </settings-cookies-page>
-        </settings-subpage>
-      </template>
-      <template is="dom-if" route-path="/content/cookies" no-search>
-        <settings-subpage page-title="$i18n{siteSettingsCategoryCookies}"
-            search-label="$i18n{siteSettingsAllSitesSearch}"
-            search-term="{{searchFilter_}}">
-          <category-default-setting category="{{ContentSettingsTypes.COOKIES}}"
-              toggle-off-label="$i18n{siteSettingsBlocked}"
-              toggle-on-label="$i18n{siteSettingsCookiesAllowedRecommended}"
-              sub-option-label="$i18n{deleteDataPostSession}"
-              sub-option-mode="cookies-session-only">
-          </category-default-setting>
-          <settings-toggle-button
-              id="blockThirdPartyCookies"
-              class="hr"
-              pref="{{prefs.profile.block_third_party_cookies}}"
-              label="$i18n{thirdPartyCookie}"
-              sub-label="$i18n{thirdPartyCookieSublabel}"
-              on-settings-boolean-control-change=
-                  "onBlockThirdPartyCookiesToggleChange_"
-              no-set-pref>
-          </settings-toggle-button>
-          <cr-link-row id="site-data-trigger" class="hr"
-              on-click="onSiteDataTap_" label="$i18n{siteSettingsCookieLink}">
-          </cr-link-row>
-          <category-setting-exceptions
-              category="{{ContentSettingsTypes.COOKIES}}"
-              block-header="$i18n{siteSettingsBlock}"
-              search-filter="[[searchFilter_]]">
-          </category-setting-exceptions>
         </settings-subpage>
       </template>
       <template is="dom-if" route-path="/siteData" no-search>

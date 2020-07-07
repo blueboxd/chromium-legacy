@@ -21,6 +21,8 @@
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
@@ -132,6 +134,11 @@ namespace content {
 namespace {
 
 const storage::QuotaSettings* g_test_quota_settings;
+
+// Timeout after which the
+// History.ClearBrowsingData.Duration.SlowTasks180sStoragePartition histogram is
+// recorded.
+const base::TimeDelta kSlowTaskTimeout = base::TimeDelta::FromSeconds(180);
 
 mojo::Remote<storage::mojom::StorageService>& GetStorageServiceRemoteStorage() {
   // NOTE: This use of sequence-local storage is only to ensure that the Remote
@@ -957,8 +964,7 @@ class StoragePartitionImpl::DataDeletionHelper {
                      base::OnceClosure callback)
       : remove_mask_(remove_mask),
         quota_storage_remove_mask_(quota_storage_remove_mask),
-        callback_(std::move(callback)),
-        task_count_(0) {}
+        callback_(std::move(callback)) {}
 
   ~DataDeletionHelper() = default;
 
@@ -988,6 +994,9 @@ class StoragePartitionImpl::DataDeletionHelper {
       base::OnceClosure callback);
 
  private:
+  // For debugging purposes. Please add new deletion tasks at the end.
+  // This enum is recorded in a histogram, so don't change or reuse ids.
+  // Entries must also be added to StoragePartitionRemoverTasks in enums.xml.
   enum class TracingDataType {
     kSynchronous = 1,
     kCookies = 2,
@@ -997,10 +1006,13 @@ class StoragePartitionImpl::DataDeletionHelper {
     kShaderCache = 6,
     kPluginPrivate = 7,
     kConversions = 8,
+    kMaxValue = kConversions,
   };
 
   base::OnceClosure CreateTaskCompletionClosure(TracingDataType data_type);
-  void OnTaskComplete(int tracing_id);  // Callable on any thread.
+  void OnTaskComplete(TracingDataType data_type,
+                      int tracing_id);  // Callable on any thread.
+  void RecordUnfinishedSubTasks();
 
   uint32_t remove_mask_;
   uint32_t quota_storage_remove_mask_;
@@ -1008,7 +1020,10 @@ class StoragePartitionImpl::DataDeletionHelper {
   // Accessed on UI thread.
   base::OnceClosure callback_;
   // Accessed on UI thread.
-  int task_count_;
+  std::set<TracingDataType> pending_tasks_;
+
+  base::WeakPtrFactory<StoragePartitionImpl::DataDeletionHelper> weak_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(DataDeletionHelper);
 };
@@ -2009,30 +2024,45 @@ base::OnceClosure
 StoragePartitionImpl::DataDeletionHelper::CreateTaskCompletionClosure(
     TracingDataType data_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  ++task_count_;
+  auto result = pending_tasks_.insert(data_type);
+  DCHECK(result.second) << "Task already started: "
+                        << static_cast<int>(data_type);
+
   static int tracing_id = 0;
   TRACE_EVENT_ASYNC_BEGIN1("browsing_data", "StoragePartitionImpl",
                            ++tracing_id, "data_type",
                            static_cast<int>(data_type));
   return base::BindOnce(
       &StoragePartitionImpl::DataDeletionHelper::OnTaskComplete,
-      base::Unretained(this), tracing_id);
+      base::Unretained(this), data_type, tracing_id);
 }
 
-void StoragePartitionImpl::DataDeletionHelper::OnTaskComplete(int tracing_id) {
+void StoragePartitionImpl::DataDeletionHelper::OnTaskComplete(
+    TracingDataType data_type,
+    int tracing_id) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     GetUIThreadTaskRunner({})->PostTask(
-        FROM_HERE, base::BindOnce(&DataDeletionHelper::OnTaskComplete,
-                                  base::Unretained(this), tracing_id));
+        FROM_HERE,
+        base::BindOnce(&DataDeletionHelper::OnTaskComplete,
+                       base::Unretained(this), data_type, tracing_id));
     return;
   }
-  DCHECK_GT(task_count_, 0);
-  --task_count_;
+  size_t num_erased = pending_tasks_.erase(data_type);
+  DCHECK_EQ(num_erased, 1U) << static_cast<int>(data_type);
   TRACE_EVENT_ASYNC_END0("browsing_data", "StoragePartitionImpl", tracing_id);
 
-  if (!task_count_) {
+  if (pending_tasks_.empty()) {
     std::move(callback_).Run();
     delete this;
+  }
+}
+
+void StoragePartitionImpl::DataDeletionHelper::RecordUnfinishedSubTasks() {
+  DCHECK(!pending_tasks_.empty());
+  for (TracingDataType task : pending_tasks_) {
+    base::UmaHistogramEnumeration(
+        "History.ClearBrowsingData.Duration.SlowTasks180sStoragePartition",
+        task);
   }
 }
 
@@ -2055,6 +2085,13 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
 
   // Only one of |storage_origin| and |origin_matcher| can be set.
   DCHECK(storage_origin.is_empty() || origin_matcher.is_null());
+
+  GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(
+          &StoragePartitionImpl::DataDeletionHelper::RecordUnfinishedSubTasks,
+          weak_factory_.GetWeakPtr()),
+      kSlowTaskTimeout);
 
   base::ScopedClosureRunner synchronous_clear_operations(
       CreateTaskCompletionClosure(TracingDataType::kSynchronous));

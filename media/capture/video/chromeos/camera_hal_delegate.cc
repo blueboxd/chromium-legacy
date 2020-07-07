@@ -371,15 +371,11 @@ bool CameraHalDelegate::IsPanTiltZoomSupported(
   if (is_vendor_range_valid("com.google.control.zoomRange"))
     return true;
 
-  auto scaler_crop_region = GetMetadataEntryAsSpan<int32_t>(
-      camera_info->static_camera_characteristics,
-      cros::mojom::CameraMetadataTag::ANDROID_SCALER_CROP_REGION);
   auto max_digital_zoom = GetMetadataEntryAsSpan<float>(
       camera_info->static_camera_characteristics,
       cros::mojom::CameraMetadataTag::
           ANDROID_SCALER_AVAILABLE_MAX_DIGITAL_ZOOM);
-  if (max_digital_zoom.size() == 1 && max_digital_zoom[0] > 1 &&
-      scaler_crop_region.size() == 4) {
+  if (max_digital_zoom.size() == 1 && max_digital_zoom[0] > 1) {
     return true;
   }
 

@@ -1448,8 +1448,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
       blink::scheduler::WebSchedulerTrackedFeature::kSharedWorker, FROM_HERE);
 }
 
-#if defined(OS_MACOSX)
-// Flaky: https://crbug.com/1076594
+#if defined(OS_MACOSX) || defined(OS_LINUX)
+// Flaky: https://crbug.com/1076594 on Mac
+// Flaky: https://crbug.com/1102571 on Linux Ozone
 #define MAYBE_SubframeWithDisallowedFeatureNotCached \
   DISABLED_SubframeWithDisallowedFeatureNotCached
 #else

@@ -67,16 +67,8 @@ void LayoutButton(ImageButton* button, const gfx::Rect& bounds) {
 
 }  // namespace
 
-///////////////////////////////////////////////////////////////////////////////
-// CustomFrameView, public:
-
-CustomFrameView::CustomFrameView() : frame_background_(new FrameBackground()) {}
-
-CustomFrameView::~CustomFrameView() = default;
-
-void CustomFrameView::Init(Widget* frame) {
-  frame_ = frame;
-
+CustomFrameView::CustomFrameView(Widget* frame)
+    : frame_(frame), frame_background_(new FrameBackground()) {
   close_button_ = InitWindowCaptionButton(IDS_APP_ACCNAME_CLOSE, IDR_CLOSE,
                                           IDR_CLOSE_H, IDR_CLOSE_P);
   minimize_button_ = InitWindowCaptionButton(
@@ -92,8 +84,7 @@ void CustomFrameView::Init(Widget* frame) {
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// CustomFrameView, NonClientFrameView implementation:
+CustomFrameView::~CustomFrameView() = default;
 
 gfx::Rect CustomFrameView::GetBoundsForClientView() const {
   return client_view_bounds_;
@@ -190,9 +181,6 @@ void CustomFrameView::PaintAsActiveChanged(bool active) {
   SchedulePaint();
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// CustomFrameView, View overrides:
-
 void CustomFrameView::OnPaint(gfx::Canvas* canvas) {
   if (!ShouldShowTitleBarAndBorder())
     return;
@@ -247,9 +235,6 @@ gfx::Size CustomFrameView::GetMaximumSize() const {
                    max_size.height() == 0 ? 0 : converted_size.height());
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// CustomFrameView, ButtonListener implementation:
-
 void CustomFrameView::ButtonPressed(Button* sender, const ui::Event& event) {
   if (sender == close_button_)
     frame_->CloseWithReason(views::Widget::ClosedReason::kCloseButtonClicked);
@@ -260,9 +245,6 @@ void CustomFrameView::ButtonPressed(Button* sender, const ui::Event& event) {
   else if (sender == restore_button_)
     frame_->Restore();
 }
-
-///////////////////////////////////////////////////////////////////////////////
-// CustomFrameView, private:
 
 int CustomFrameView::FrameBorderThickness() const {
   return frame_->IsMaximized() ? 0 : kFrameBorderThickness;

@@ -194,7 +194,7 @@ ImporterList::~ImporterList() {
 void ImporterList::DetectSourceProfiles(
     const std::string& locale,
     bool include_interactive_profiles,
-    const base::Closure& profiles_loaded_callback) {
+    base::OnceClosure profiles_loaded_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
@@ -203,7 +203,8 @@ void ImporterList::DetectSourceProfiles(
       base::BindOnce(&DetectSourceProfilesWorker, locale,
                      include_interactive_profiles),
       base::BindOnce(&ImporterList::SourceProfilesLoaded,
-                     weak_ptr_factory_.GetWeakPtr(), profiles_loaded_callback));
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(profiles_loaded_callback)));
 }
 
 const importer::SourceProfile& ImporterList::GetSourceProfileAt(
@@ -213,10 +214,10 @@ const importer::SourceProfile& ImporterList::GetSourceProfileAt(
 }
 
 void ImporterList::SourceProfilesLoaded(
-    const base::Closure& profiles_loaded_callback,
+    base::OnceClosure profiles_loaded_callback,
     const std::vector<importer::SourceProfile>& profiles) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   source_profiles_.assign(profiles.begin(), profiles.end());
-  profiles_loaded_callback.Run();
+  std::move(profiles_loaded_callback).Run();
 }

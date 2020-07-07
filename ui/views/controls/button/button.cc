@@ -45,8 +45,6 @@ DEFINE_UI_CLASS_PROPERTY_KEY(bool, kIsButtonProperty, false)
 
 }  // namespace
 
-////////////////////////////////////////////////////////////////////////////////
-// WidgetObserverButtonBridge:
 Button::WidgetObserverButtonBridge::WidgetObserverButtonBridge(Button* button)
     : owner_(button) {
   DCHECK(button->GetWidget());
@@ -70,8 +68,6 @@ void Button::WidgetObserverButtonBridge::OnWidgetDestroying(Widget* widget) {
   owner_ = nullptr;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// ButtonControllerDelegate:
 Button::DefaultButtonControllerDelegate::DefaultButtonControllerDelegate(
     Button* button)
     : ButtonControllerDelegate(button) {}
@@ -120,8 +116,6 @@ bool Button::DefaultButtonControllerDelegate::InDrag() {
   return button()->InDrag();
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
 // static
 constexpr Button::ButtonState Button::kButtonStates[STATE_COUNT];
 
@@ -153,9 +147,6 @@ Button::ButtonState Button::GetButtonStateFrom(ui::NativeTheme::State state) {
   }
   return Button::STATE_NORMAL;
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// Button, public:
 
 Button::~Button() = default;
 
@@ -327,9 +318,6 @@ gfx::Point Button::GetMenuPosition() const {
     menu_position.set_x(max_x_coordinate - 1);
   return menu_position;
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// Button, View overrides:
 
 bool Button::OnMousePressed(const ui::MouseEvent& event) {
   return button_controller_->OnMousePressed(event);
@@ -526,15 +514,9 @@ SkColor Button::GetInkDropBaseColor() const {
   return ink_drop_base_color_;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Button, gfx::AnimationDelegate implementation:
-
 void Button::AnimationProgressed(const gfx::Animation* animation) {
   SchedulePaint();
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// Button, protected:
 
 Button::Button(ButtonListener* listener)
     : AnimationDelegateViews(this),

@@ -700,6 +700,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "cross-origin-isolated",
+    "owners": [ "ahemery", "arthursonzogni", "clamy", "pmeuleman" ],
+    "expiry_milestone": 86
+  },
+  {
     "name": "cross-origin-opener-policy",
     "owners": [ "ahemery", "clamy", "pmeuleman" ],
     "expiry_milestone": 85

@@ -15,22 +15,15 @@ import {SettingsRoutes} from './settings_routes.js';
  */
 function addPrivacyChildRoutes(r) {
   r.SITE_SETTINGS = r.PRIVACY.createChild('/content');
-  if (loadTimeData.getBoolean('privacySettingsRedesignEnabled')) {
-    r.SECURITY = r.PRIVACY.createChild('/security');
-    r.COOKIES = r.PRIVACY.createChild('/cookies');
-  }
+  r.COOKIES = r.PRIVACY.createChild('/cookies');
+  r.SECURITY = r.PRIVACY.createChild('/security');
 
   // <if expr="use_nss_certs">
-  r.CERTIFICATES = loadTimeData.getBoolean('privacySettingsRedesignEnabled') ?
-      r.SECURITY.createChild('/certificates') :
-      r.PRIVACY.createChild('/certificates');
+  r.CERTIFICATES = r.SECURITY.createChild('/certificates');
   // </if>
 
   if (loadTimeData.getBoolean('enableSecurityKeysSubpage')) {
-    r.SECURITY_KEYS =
-        loadTimeData.getBoolean('privacySettingsRedesignEnabled') ?
-        r.SECURITY.createChild('/securityKeys') :
-        r.PRIVACY.createChild('/securityKeys');
+    r.SECURITY_KEYS = r.SECURITY.createChild('/securityKeys');
   }
 
   r.SITE_SETTINGS_ALL = r.SITE_SETTINGS.createChild('all');
@@ -49,8 +42,7 @@ function addPrivacyChildRoutes(r) {
       r.SITE_SETTINGS.createChild('backgroundSync');
   r.SITE_SETTINGS_CAMERA = r.SITE_SETTINGS.createChild('camera');
   r.SITE_SETTINGS_CLIPBOARD = r.SITE_SETTINGS.createChild('clipboard');
-  r.SITE_SETTINGS_COOKIES = r.SITE_SETTINGS.createChild('cookies');
-  r.SITE_SETTINGS_SITE_DATA = r.SITE_SETTINGS_COOKIES.createChild('/siteData');
+  r.SITE_SETTINGS_SITE_DATA = r.COOKIES.createChild('/siteData');
   r.SITE_SETTINGS_DATA_DETAILS =
       r.SITE_SETTINGS_SITE_DATA.createChild('/cookies/detail');
   r.SITE_SETTINGS_IMAGES = r.SITE_SETTINGS.createChild('images');
@@ -157,9 +149,7 @@ function createBrowserSettingsRoutes() {
     r.PRIVACY = r.BASIC.createSection('/privacy', 'privacy');
     addPrivacyChildRoutes(r);
 
-    if (loadTimeData.getBoolean('privacySettingsRedesignEnabled')) {
-      r.SAFETY_CHECK = r.BASIC.createSection('/safetyCheck', 'safetyCheck');
-    }
+    r.SAFETY_CHECK = r.BASIC.createSection('/safetyCheck', 'safetyCheck');
   }
 
   if (visibility.defaultBrowser !== false) {

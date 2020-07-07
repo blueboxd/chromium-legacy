@@ -237,8 +237,8 @@ class BASE_EXPORT TimeDelta {
   // Hence, floating point values should not be used for storage.
   int InDays() const;
   int InDaysFloored() const;
-  int InHours() const;
-  int InMinutes() const;
+  constexpr int InHours() const;
+  constexpr int InMinutes() const;
   double InSecondsF() const;
   int64_t InSeconds() const;
   double InMillisecondsF() const;
@@ -246,7 +246,7 @@ class BASE_EXPORT TimeDelta {
   int64_t InMillisecondsRoundedUp() const;
   constexpr int64_t InMicroseconds() const { return delta_; }
   double InMicrosecondsF() const;
-  int64_t InNanoseconds() const;
+  constexpr int64_t InNanoseconds() const;
 
   // Computations with other deltas.
   constexpr TimeDelta operator+(TimeDelta other) const {
@@ -893,6 +893,22 @@ constexpr TimeDelta TimeDelta::FromMicrosecondsD(double us) {
 // static
 constexpr TimeDelta TimeDelta::FromNanosecondsD(double ns) {
   return FromDouble(ns / Time::kNanosecondsPerMicrosecond);
+}
+
+constexpr int TimeDelta::InHours() const {
+  // saturated_cast<> is necessary since very large (but still less than
+  // min/max) deltas would result in overflow.
+  return saturated_cast<int>(delta_ / Time::kMicrosecondsPerHour);
+}
+
+constexpr int TimeDelta::InMinutes() const {
+  // saturated_cast<> is necessary since very large (but still less than
+  // min/max) deltas would result in overflow.
+  return saturated_cast<int>(delta_ / Time::kMicrosecondsPerMinute);
+}
+
+constexpr int64_t TimeDelta::InNanoseconds() const {
+  return base::ClampMul(delta_, Time::kNanosecondsPerMicrosecond);
 }
 
 // static

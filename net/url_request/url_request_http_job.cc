@@ -362,6 +362,10 @@ void URLRequestHttpJob::GetConnectionAttempts(ConnectionAttempts* out) const {
     out->clear();
 }
 
+int URLRequestHttpJob::NotifyConnectedCallback() {
+  return URLRequestJob::NotifyConnected();
+}
+
 void URLRequestHttpJob::NotifyHeadersComplete() {
   DCHECK(!response_info_);
   DCHECK_EQ(0, num_cookie_lines_left_);
@@ -493,6 +497,8 @@ void URLRequestHttpJob::StartTransactionInternal() {
     }
 
     if (rv == OK) {
+      transaction_->SetConnectedCallback(base::BindRepeating(
+          &URLRequestHttpJob::NotifyConnectedCallback, base::Unretained(this)));
       transaction_->SetRequestHeadersCallback(request_headers_callback_);
       transaction_->SetResponseHeadersCallback(response_headers_callback_);
 

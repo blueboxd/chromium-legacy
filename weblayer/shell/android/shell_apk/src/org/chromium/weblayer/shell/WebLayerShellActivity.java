@@ -302,12 +302,20 @@ public class WebLayerShellActivity extends FragmentActivity {
                         .setTextSizeSP(DEFAULT_TEXT_SIZE)
                         .setTextColor(android.R.color.black)
                         .setIconColor(android.R.color.black)
+                        .setTextClickListener(v -> {
+                            mEditUrlView.setText("");
+                            mUrlViewContainer.setDisplayedChild(EDITABLE_URL_TEXT_VIEW);
+                            mEditUrlView.requestFocus();
+                        })
+                        .setTextLongClickListener(v -> {
+                            ClipboardManager clipboard =
+                                    (ClipboardManager) v.getContext().getSystemService(
+                                            Context.CLIPBOARD_SERVICE);
+                            clipboard.setPrimaryClip(
+                                    ClipData.newPlainText("link address", getCurrentDisplayUrl()));
+                            return true;
+                        })
                         .build());
-        nonEditUrlView.setOnClickListener(v -> {
-            mEditUrlView.setText("");
-            mUrlViewContainer.setDisplayedChild(EDITABLE_URL_TEXT_VIEW);
-            mEditUrlView.requestFocus();
-        });
         mUrlViewContainer.removeViewAt(NONEDITABLE_URL_TEXT_VIEW);
         mUrlViewContainer.addView(nonEditUrlView, NONEDITABLE_URL_TEXT_VIEW);
         mUrlViewContainer.setDisplayedChild(NONEDITABLE_URL_TEXT_VIEW);

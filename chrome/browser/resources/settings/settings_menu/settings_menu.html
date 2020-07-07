@@ -107,13 +107,11 @@
         <iron-icon icon="settings:assignment"></iron-icon>
         $i18n{autofillPageTitle}
       </a>
-      <template is="dom-if" if="[[privacySettingsRedesignEnabled_]]" restamp>
-        <a href="/safetyCheck" hidden="[[!pageVisibility.safetyCheck]]"
-            id="safetyCheck">
-          <iron-icon icon="settings20:safety-check"></iron-icon>
-          $i18n{safetyCheckSectionTitle}
-        </a>
-      </template>
+      <a href="/safetyCheck" hidden="[[!pageVisibility.safetyCheck]]"
+          id="safetyCheck">
+        <iron-icon icon="settings20:safety-check"></iron-icon>
+        $i18n{safetyCheckSectionTitle}
+      </a>
       <a href="/privacy" hidden="[[!pageVisibility.privacy]]">
         <iron-icon icon="cr:security"></iron-icon>
         $i18n{privacyPageTitle}

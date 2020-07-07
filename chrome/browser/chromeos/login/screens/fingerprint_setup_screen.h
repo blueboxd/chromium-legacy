@@ -72,7 +72,7 @@ class FingerprintSetupScreen : public BaseScreen,
 
  protected:
   // BaseScreen:
-  bool MaybeSkip() override;
+  bool MaybeSkip(WizardContext* context) override;
   void ShowImpl() override;
   void HideImpl() override;
   void OnUserAction(const std::string& action_id) override;

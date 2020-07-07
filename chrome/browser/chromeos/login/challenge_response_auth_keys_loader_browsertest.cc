@@ -75,9 +75,10 @@ class ChallengeResponseAuthKeysLoaderBrowserTest : public OobeBaseTest {
     std::vector<ChallengeResponseKey> challenge_response_keys;
     ChallengeResponseKey challenge_response_key;
     challenge_response_key.set_public_key_spki_der(GetSpki());
-    if (with_extension_id)
+    if (with_extension_id) {
       challenge_response_key.set_extension_id(
           cert_provider_extension_mixin_.GetExtensionId());
+    }
 
     challenge_response_keys.push_back(challenge_response_key);
     base::Value challenge_response_keys_value =
@@ -134,7 +135,7 @@ class ChallengeResponseAuthKeysLoaderBrowserTest : public OobeBaseTest {
     EXPECT_TRUE(pref);
     EXPECT_TRUE(pref->IsManaged());
     EXPECT_EQ(pref->GetType(), base::Value::Type::DICTIONARY);
-    EXPECT_EQ(pref->GetValue()->DictSize(), size_t{1});
+    EXPECT_EQ(pref->GetValue()->DictSize(), static_cast<size_t>(1));
 
     for (const auto& item : pref->GetValue()->DictItems()) {
       EXPECT_EQ(item.first, GetExtensionId());
@@ -151,19 +152,23 @@ class ChallengeResponseAuthKeysLoaderBrowserTest : public OobeBaseTest {
     return challenge_response_keys;
   }
 
-  std::string GetSpki() {
+  std::string GetSpki() const {
     return cert_provider_extension_mixin_.test_certificate_provider_extension()
         ->GetCertificateSpki();
   }
 
-  std::string GetExtensionId() {
+  std::string GetExtensionId() const {
     return cert_provider_extension_mixin_.GetExtensionId();
   }
 
-  AccountId account_id() { return account_id_; }
+  AccountId account_id() const { return account_id_; }
 
   ChallengeResponseAuthKeysLoader* challenge_response_auth_keys_loader() {
     return challenge_response_auth_keys_loader_.get();
+  }
+
+  void DeleteChallengeResponseAuthKeysLoader() {
+    challenge_response_auth_keys_loader_.reset();
   }
 
  private:
@@ -185,7 +190,7 @@ class ChallengeResponseAuthKeysLoaderBrowserTest : public OobeBaseTest {
     }
   }
 
-  AccountId account_id_{AccountId::FromUserEmail(kUserEmail)};
+  const AccountId account_id_{AccountId::FromUserEmail(kUserEmail)};
 
   DeviceStateMixin device_state_mixin_{
       &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
@@ -200,6 +205,31 @@ class ChallengeResponseAuthKeysLoaderBrowserTest : public OobeBaseTest {
   base::WeakPtrFactory<ChallengeResponseAuthKeysLoaderBrowserTest>
       weak_ptr_factory_{this};
 };
+
+// Tests the error case when no key is registered for the current user.
+IN_PROC_BROWSER_TEST_F(ChallengeResponseAuthKeysLoaderBrowserTest,
+                       NoKeyRegistered) {
+  InstallExtension(/*wait_on_extension_loaded=*/true);
+  CheckExtensionInstallPolicyApplied();
+
+  // Challenge Response Auth Keys cannot be loaded.
+  EXPECT_FALSE(
+      ChallengeResponseAuthKeysLoader::CanAuthenticateUser(account_id()));
+  EXPECT_EQ(LoadChallengeResponseKeys().size(), static_cast<size_t>(0));
+}
+
+// Tests the error case when no extension providing keys is installed.
+IN_PROC_BROWSER_TEST_F(ChallengeResponseAuthKeysLoaderBrowserTest,
+                       NoExtensions) {
+  RegisterChallengeResponseKey(/*with_extension_id=*/true);
+
+  // Challenge Response Auth Keys can be loaded.
+  EXPECT_TRUE(
+      ChallengeResponseAuthKeysLoader::CanAuthenticateUser(account_id()));
+
+  // LoadAvailableKeys returns no keys, since there's no extension available.
+  EXPECT_EQ(LoadChallengeResponseKeys().size(), static_cast<size_t>(0));
+}
 
 // Tests that auth keys can be loaded with an extension providing them already
 // in place.
@@ -216,7 +246,7 @@ IN_PROC_BROWSER_TEST_F(ChallengeResponseAuthKeysLoaderBrowserTest,
   // LoadAvailableKeys returns the expected keys.
   std::vector<ChallengeResponseKey> challenge_response_keys =
       LoadChallengeResponseKeys();
-  EXPECT_EQ(challenge_response_keys.size(), size_t{1});
+  ASSERT_EQ(challenge_response_keys.size(), static_cast<size_t>(1));
   EXPECT_EQ(challenge_response_keys.at(0).extension_id(), GetExtensionId());
   EXPECT_EQ(challenge_response_keys.at(0).public_key_spki_der(), GetSpki());
 }
@@ -238,7 +268,7 @@ IN_PROC_BROWSER_TEST_F(ChallengeResponseAuthKeysLoaderBrowserTest,
   // LoadAvailableKeys returns the expected keys.
   std::vector<ChallengeResponseKey> challenge_response_keys =
       LoadChallengeResponseKeys();
-  EXPECT_EQ(challenge_response_keys.size(), size_t{1});
+  ASSERT_EQ(challenge_response_keys.size(), static_cast<size_t>(1));
   EXPECT_EQ(challenge_response_keys.at(0).extension_id(), GetExtensionId());
   EXPECT_EQ(challenge_response_keys.at(0).public_key_spki_der(), GetSpki());
 }
@@ -258,7 +288,7 @@ IN_PROC_BROWSER_TEST_F(ChallengeResponseAuthKeysLoaderBrowserTest,
   // LoadAvailableKeys returns before any keys are available.
   std::vector<ChallengeResponseKey> challenge_response_keys =
       LoadChallengeResponseKeys();
-  EXPECT_EQ(challenge_response_keys.size(), size_t{0});
+  EXPECT_EQ(challenge_response_keys.size(), static_cast<size_t>(0));
 }
 
 // Tests flow when there is no stored extension_id, for backward compatibility.
@@ -275,9 +305,32 @@ IN_PROC_BROWSER_TEST_F(ChallengeResponseAuthKeysLoaderBrowserTest,
   // LoadAvailableKeys returns the expected keys.
   std::vector<ChallengeResponseKey> challenge_response_keys =
       LoadChallengeResponseKeys();
-  EXPECT_EQ(challenge_response_keys.size(), size_t{1});
+  ASSERT_EQ(challenge_response_keys.size(), static_cast<size_t>(1));
   EXPECT_EQ(challenge_response_keys.at(0).extension_id(), GetExtensionId());
   EXPECT_EQ(challenge_response_keys.at(0).public_key_spki_der(), GetSpki());
+}
+
+// Tests the case when the loader is destroyed before the operation completes.
+IN_PROC_BROWSER_TEST_F(ChallengeResponseAuthKeysLoaderBrowserTest,
+                       DestroyedBeforeCompletion) {
+  RegisterChallengeResponseKey(/*with_extension_id=*/true);
+  InstallExtension(/*wait_on_extension_loaded=*/false);
+  CheckExtensionInstallPolicyApplied();
+
+  // Challenge Response Auth Keys can be loaded.
+  EXPECT_TRUE(
+      ChallengeResponseAuthKeysLoader::CanAuthenticateUser(account_id()));
+
+  // Start the LoadAvailableKeys operation. The operation is expected to never
+  // complete.
+  challenge_response_auth_keys_loader()->LoadAvailableKeys(
+      account_id(),
+      base::BindOnce(
+          [](std::vector<ChallengeResponseKey> challenge_response_keys) {
+            ADD_FAILURE();
+          }));
+  // Destroy the loader immediately.
+  DeleteChallengeResponseAuthKeysLoader();
 }
 
 class ChallengeResponseExtensionLoadObserverTest

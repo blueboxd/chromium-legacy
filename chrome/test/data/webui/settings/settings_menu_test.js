@@ -88,12 +88,6 @@ suite('SettingsMenu', function() {
 suite('SettingsMenuReset', function() {
   let settingsMenu = null;
 
-  suiteSetup(function() {
-    loadTimeData.overrideValues({
-      privacySettingsRedesignEnabled: true,
-    });
-  });
-
   setup(function() {
     PolymerTest.clearBody();
     Router.getInstance().navigateTo(routes.RESET, '');
@@ -169,35 +163,5 @@ suite('SettingsMenuReset', function() {
 
     // Now, the menu items should be hidden.
     assertPagesHidden(true);
-  });
-
-  test('safetyCheckInMenu', function() {
-    assertTrue(!!settingsMenu.$$('#safetyCheck'));
-  });
-});
-
-suite('SettingsMenuPrivacyRedesignFlagOff', function() {
-  let settingsMenu = null;
-
-  suiteSetup(function() {
-    loadTimeData.overrideValues({
-      privacySettingsRedesignEnabled: false,
-    });
-  });
-
-  setup(function() {
-    PolymerTest.clearBody();
-    settingsMenu = document.createElement('settings-menu');
-    settingsMenu.pageVisibility = pageVisibility;
-    document.body.appendChild(settingsMenu);
-    flush();
-  });
-
-  teardown(function() {
-    settingsMenu.remove();
-  });
-
-  test('safetyCheckNotInMenu', function() {
-    assertFalse(!!settingsMenu.$$('#safetyCheck'));
   });
 });

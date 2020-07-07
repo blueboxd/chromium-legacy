@@ -1909,6 +1909,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   bool IsPaintInvalidationContainer() const;
 
+  bool CanBeCompositedForDirectReasons() const;
+
   // Invalidate the raster of a specific sub-rectangle within the object. The
   // rect is in the object's local coordinate space. This is useful e.g. when
   // a small region of a canvas changes.

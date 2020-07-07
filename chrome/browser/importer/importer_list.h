@@ -35,7 +35,7 @@ class ImporterList {
   // alive, run the callback when the source profile detection finishes.
   void DetectSourceProfiles(const std::string& locale,
                             bool include_interactive_profiles,
-                            const base::Closure& profiles_loaded_callback);
+                            base::OnceClosure profiles_loaded_callback);
 
   // Returns the number of different source profiles you can import from.
   size_t count() const { return source_profiles_.size(); }
@@ -49,7 +49,7 @@ class ImporterList {
   // Called when the source profiles are loaded. Copies the loaded profiles
   // in |profiles| and calls |profiles_loaded_callback|.
   void SourceProfilesLoaded(
-      const base::Closure& profiles_loaded_callback,
+      base::OnceClosure profiles_loaded_callback,
       const std::vector<importer::SourceProfile>& profiles);
 
   // The list of profiles with the default one first.

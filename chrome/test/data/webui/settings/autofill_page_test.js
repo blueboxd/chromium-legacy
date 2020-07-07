@@ -67,6 +67,11 @@ suite('PasswordsAndForms', function() {
           type: chrome.settingsPrivate.PrefType.BOOLEAN,
           value: true,
         },
+        {
+          key: 'payments.can_make_payment_enabled',
+          type: chrome.settingsPrivate.PrefType.BOOLEAN,
+          value: true,
+        }
       ]));
 
       CrSettingsPrefs.initialized.then(function() {

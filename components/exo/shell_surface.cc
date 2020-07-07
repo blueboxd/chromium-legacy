@@ -527,8 +527,6 @@ bool ShellSurface::OnPreWidgetCommit() {
   return true;
 }
 
-void ShellSurface::OnPostWidgetCommit() {}
-
 ////////////////////////////////////////////////////////////////////////////////
 // ShellSurface, private:
 

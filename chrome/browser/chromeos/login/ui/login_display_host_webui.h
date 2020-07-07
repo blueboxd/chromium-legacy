@@ -17,7 +17,6 @@
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/oobe_configuration.h"
-#include "chrome/browser/chromeos/login/signin_screen_controller.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_common.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -196,8 +195,6 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
 
   // OOBE and some screens (camera, recovery) controller.
   std::unique_ptr<WizardController> wizard_controller_;
-
-  std::unique_ptr<SignInScreenController> signin_screen_controller_;
 
   // Whether progress bar is shown on the OOBE page.
   bool oobe_progress_bar_visible_ = false;

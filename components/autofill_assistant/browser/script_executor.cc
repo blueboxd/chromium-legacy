@@ -229,6 +229,19 @@ void ScriptExecutor::FindElement(const Selector& selector,
                                              std::move(callback));
 }
 
+void ScriptExecutor::WaitForDocumentToBecomeInteractive(
+    const ElementFinder::Result& element,
+    base::OnceCallback<void(const ClientStatus&)> callback) {
+  delegate_->GetWebController()->WaitForDocumentToBecomeInteractive(
+      element, std::move(callback));
+}
+
+void ScriptExecutor::ScrollIntoView(
+    const ElementFinder::Result& element,
+    base::OnceCallback<void(const ClientStatus&)> callback) {
+  delegate_->GetWebController()->ScrollIntoView(element, std::move(callback));
+}
+
 void ScriptExecutor::ClickOrTapElement(
     const ElementFinder::Result& element,
     ClickType click_type,

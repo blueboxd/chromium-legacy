@@ -75,7 +75,14 @@ class ASH_EXPORT LockContentsView
  public:
   METADATA_HEADER(LockContentsView);
   class AuthErrorBubble;
+  class ManagementPopUp;
   class UserState;
+
+  enum class BottomIndicatorState {
+    kNone,
+    kManagedDevice,
+    kAdbSideLoadingEnabled,
+  };
 
   // TestApi is used for tests to get internal implementation details.
   class ASH_EXPORT TestApi {
@@ -90,12 +97,14 @@ class ASH_EXPORT LockContentsView
     LockScreenMediaControlsView* media_controls_view() const;
     views::View* note_action() const;
     LoginTooltipView* tooltip_bubble() const;
+    LoginTooltipView* management_bubble() const;
     LoginErrorBubble* auth_error_bubble() const;
     LoginErrorBubble* detachable_base_error_bubble() const;
     LoginErrorBubble* warning_banner_bubble() const;
     LoginErrorBubble* supervised_user_deprecation_bubble() const;
     views::View* system_info() const;
     views::View* bottom_status_indicator() const;
+    BottomIndicatorState bottom_status_indicator_status() const;
     LoginExpandedPublicAccountView* expanded_view() const;
     views::View* main_view() const;
     const std::vector<LockContentsView::UserState>& users() const;
@@ -397,6 +406,11 @@ class ASH_EXPORT LockContentsView
   // content type and whether the extension UI window is opened.
   void UpdateBottomStatusIndicatorVisibility();
 
+  // Shows a pop-up including more details about device management. It is
+  // triggered when the bottom status indicator is clicked while displaying a
+  // "device is managed" type message.
+  void OnBottomStatusIndicatorTapped();
+
   const LockScreen::ScreenType screen_type_;
 
   std::vector<UserState> users_;
@@ -442,6 +456,8 @@ class ASH_EXPORT LockContentsView
   LoginErrorBubble* detachable_base_error_bubble_;
   // Bubble for displaying easy-unlock tooltips.
   LoginTooltipView* tooltip_bubble_;
+  // Bubble for displaying management details.
+  ManagementPopUp* management_bubble_;
   // Bubble for displaying warning banner message.
   LoginErrorBubble* warning_banner_bubble_;
   // Bubble for displaying supervised user deprecation message.
@@ -488,6 +504,9 @@ class ASH_EXPORT LockContentsView
   // the auto-login timer can be reset.
   std::unique_ptr<AutoLoginUserActivityHandler>
       auto_login_user_activity_handler_;
+
+  BottomIndicatorState bottom_status_indicator_status_ =
+      BottomIndicatorState::kNone;
 
   base::WeakPtrFactory<LockContentsView> weak_ptr_factory_{this};
 

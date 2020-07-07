@@ -409,6 +409,27 @@ void ShutdownSDK() {
     TearDownV8();
 }
 
+PDFEngine::AccessibilityLinkInfo::AccessibilityLinkInfo() = default;
+
+PDFEngine::AccessibilityLinkInfo::AccessibilityLinkInfo(
+    const AccessibilityLinkInfo& that) = default;
+
+PDFEngine::AccessibilityLinkInfo::~AccessibilityLinkInfo() = default;
+
+PDFEngine::AccessibilityImageInfo::AccessibilityImageInfo() = default;
+
+PDFEngine::AccessibilityImageInfo::AccessibilityImageInfo(
+    const AccessibilityImageInfo& that) = default;
+
+PDFEngine::AccessibilityImageInfo::~AccessibilityImageInfo() = default;
+
+PDFEngine::AccessibilityHighlightInfo::AccessibilityHighlightInfo() = default;
+
+PDFEngine::AccessibilityHighlightInfo::AccessibilityHighlightInfo(
+    const AccessibilityHighlightInfo& that) = default;
+
+PDFEngine::AccessibilityHighlightInfo::~AccessibilityHighlightInfo() = default;
+
 PDFEngine::AccessibilityTextFieldInfo::AccessibilityTextFieldInfo() = default;
 
 PDFEngine::AccessibilityTextFieldInfo::AccessibilityTextFieldInfo(

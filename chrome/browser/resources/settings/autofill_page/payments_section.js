@@ -219,17 +219,6 @@ Polymer({
       },
       readOnly: true,
     },
-
-    /**
-     * True if the privacy settings redesign feature is enabled.
-     * @private
-     */
-    privacySettingsRedesignEnabled_: {
-      type: Boolean,
-      value() {
-        return loadTimeData.getBoolean('privacySettingsRedesignEnabled');
-      }
-    },
   },
 
   listeners: {

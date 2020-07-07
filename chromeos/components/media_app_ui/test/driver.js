@@ -143,7 +143,7 @@ class FakeFileSystemFileHandle extends FakeFileSystemHandle {
     /** @type {number} */
     this.lastModified = lastModified;
 
-    /** @type {?DOMException} */
+    /** @type {!DOMException|!Error|undefined} */
     this.nextCreateWritableError;
   }
   /** @override */
@@ -381,9 +381,9 @@ async function loadFilesWithoutSendingToGuest(directory, file) {
  * Checks that the `currentFiles` array maintained by launch.js has the same
  * sequence of files as `expectedFiles`.
  * @param {!Array<!File>} expectedFiles
- * @param {?string} testCase
+ * @param {string=} testCase
  */
-function assertFilesToBe(expectedFiles, testCase) {
+function assertFilesToBe(expectedFiles, testCase = undefined) {
   assertFilenamesToBe(expectedFiles.map(f => f.name).join(), testCase);
 }
 
@@ -391,9 +391,9 @@ function assertFilesToBe(expectedFiles, testCase) {
  * Checks that the `currentFiles` array maintained by launch.js has the same
  * sequence of filenames as `expectedFilenames`.
  * @param {string} expectedFilenames
- * @param {?string} testCase
+ * @param {string=} testCase
  */
-function assertFilenamesToBe(expectedFilenames, testCase) {
+function assertFilenamesToBe(expectedFilenames, testCase = undefined) {
   // Use filenames as an approximation of file uniqueness.
   const currentFilenames = currentFiles.map(d => d.handle.name).join();
   chai.assert.equal(
@@ -427,7 +427,7 @@ function assertMatchErrorStack(
 
 /**
  * Returns the files loaded in the most recent call to `loadFiles()`.
- * @return {!Promise<?Array<!ReceivedFile>>}
+ * @return {!Promise<?Array<!mediaApp.AbstractFile>>}
  */
 async function getLoadedFiles() {
   const response = /** @type {!LastLoadedFilesResponse} */ (
@@ -483,9 +483,9 @@ async function assertSingleFileLaunch(directory, totalFiles) {
  * directory and the untrusted context.
  * @param {!FakeFileSystemDirectoryHandle} directory
  * @param {!Array<string>} fileNames
- * @param {?string} testCase
+ * @param {string=} testCase
  */
-async function assertFilesLoaded(directory, fileNames, testCase) {
+async function assertFilesLoaded(directory, fileNames, testCase = undefined) {
   chai.assert.equal(fileNames.length, directory.files.length);
   chai.assert.equal(fileNames.length, currentFiles.length);
 

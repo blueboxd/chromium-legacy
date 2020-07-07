@@ -8245,15 +8245,16 @@ void Document::ExecuteJavaScriptUrls() {
   for (auto& url_to_execute : urls_to_execute) {
     GetFrame()->GetScriptController().ExecuteJavaScriptURL(
         url_to_execute.url, network::mojom::CSPDisposition::CHECK,
-        *url_to_execute.world);
+        url_to_execute.world.get());
     if (!GetFrame())
       break;
   }
   CheckCompleted();
 }
 
-void Document::ProcessJavaScriptUrl(const KURL& url,
-                                    const DOMWrapperWorld& world) {
+void Document::ProcessJavaScriptUrl(
+    const KURL& url,
+    scoped_refptr<const DOMWrapperWorld> world) {
   DCHECK(url.ProtocolIsJavaScript());
   if (GetFrame()->Loader().StateMachine()->IsDisplayingInitialEmptyDocument())
     load_event_progress_ = kLoadEventNotRun;

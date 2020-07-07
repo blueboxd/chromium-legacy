@@ -354,8 +354,8 @@ void ArcSettingsServiceImpl::StartObservingSettingsChanges() {
 
   reporting_consent_subscription_ =
       chromeos::StatsReportingController::Get()->AddObserver(
-          base::Bind(&ArcSettingsServiceImpl::SyncReportingConsent,
-                     base::Unretained(this), /*initial_sync=*/false));
+          base::BindRepeating(&ArcSettingsServiceImpl::SyncReportingConsent,
+                              base::Unretained(this), /*initial_sync=*/false));
 
   TimezoneSettings::GetInstance()->AddObserver(this);
 
@@ -648,8 +648,9 @@ void ArcSettingsServiceImpl::ResetPageZoomToDefault() const {
 }
 
 void ArcSettingsServiceImpl::AddPrefToObserve(const std::string& pref_name) {
-  registrar_.Add(pref_name, base::Bind(&ArcSettingsServiceImpl::OnPrefChanged,
-                                       base::Unretained(this)));
+  registrar_.Add(pref_name,
+                 base::BindRepeating(&ArcSettingsServiceImpl::OnPrefChanged,
+                                     base::Unretained(this)));
 }
 
 int ArcSettingsServiceImpl::GetIntegerPref(const std::string& pref_name) const {

@@ -18,117 +18,6 @@ import {flushTasks, isChildVisible, whenAttributeIs} from 'chrome://test/test_ut
 
 // clang-format on
 
-suite('PrivacyPageUMACheck', function() {
-  /** @type {TestPrivacyPageBrowserProxy} */
-  let testBrowserProxy;
-
-  /** @type {TestMetricsBrowserProxy} */
-  let testMetricsBrowserProxy;
-
-  /** @type {SettingsPrivacyPageElement} */
-  let page;
-
-  suiteSetup(function() {
-    loadTimeData.overrideValues({
-      privacySettingsRedesignEnabled: false,
-    });
-  });
-
-  setup(function() {
-    testMetricsBrowserProxy = new TestMetricsBrowserProxy();
-    MetricsBrowserProxyImpl.instance_ = testMetricsBrowserProxy;
-    testBrowserProxy = new TestPrivacyPageBrowserProxy();
-    PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
-    const testSyncBrowserProxy = new TestSyncBrowserProxy();
-    SyncBrowserProxyImpl.instance_ = testSyncBrowserProxy;
-    PolymerTest.clearBody();
-    page = document.createElement('settings-privacy-page');
-    page.prefs = {
-      profile: {password_manager_leak_detection: {value: true}},
-      signin: {
-        allowed_on_next_startup:
-            {type: chrome.settingsPrivate.PrefType.BOOLEAN, value: true}
-      },
-      safebrowsing: {
-        enabled: {value: true},
-        scout_reporting_enabled: {value: true},
-        enhanced: {value: false}
-      },
-      dns_over_https:
-          {mode: {value: SecureDnsMode.AUTOMATIC}, templates: {value: ''}},
-    };
-    document.body.appendChild(page);
-    flush();
-  });
-
-  teardown(function() {
-    page.remove();
-  });
-
-  test('LogAllPrivacyPageClicks', async function() {
-    page.$$('#manageCertificates').click();
-    let result =
-        await testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram');
-    assertEquals(PrivacyElementInteractions.MANAGE_CERTIFICATES, result);
-
-    Router.getInstance().navigateTo(routes.PRIVACY);
-    testMetricsBrowserProxy.reset();
-
-    page.$$('#canMakePaymentToggle').click();
-    result =
-        await testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram');
-    assertEquals(PrivacyElementInteractions.PAYMENT_METHOD, result);
-
-    Router.getInstance().navigateTo(routes.PRIVACY);
-    testMetricsBrowserProxy.reset();
-
-    page.$$('#safeBrowsingToggle').click();
-    result =
-        await testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram');
-    assertEquals(PrivacyElementInteractions.SAFE_BROWSING, result);
-  });
-
-  test('LogSafeBrowsingReportingToggleClick', function() {
-    page.$$('#safeBrowsingReportingToggle').click();
-    return testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram')
-        .then(result => {
-          assertEquals(PrivacyElementInteractions.IMPROVE_SECURITY, result);
-        });
-  });
-});
-
-suite('NativeCertificateManager', function() {
-  /** @type {TestPrivacyPageBrowserProxy} */
-  let testBrowserProxy;
-
-  /** @type {SettingsPrivacyPageElement} */
-  let page;
-
-  suiteSetup(function() {
-    assertTrue(isMac || isWindows);
-    loadTimeData.overrideValues({
-      privacySettingsRedesignEnabled: false,
-    });
-  });
-
-  setup(function() {
-    testBrowserProxy = new TestPrivacyPageBrowserProxy();
-    PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
-    PolymerTest.clearBody();
-    page = document.createElement('settings-privacy-page');
-    document.body.appendChild(page);
-  });
-
-  teardown(function() {
-    page.remove();
-  });
-
-  test('NativeCertificateManager', function() {
-    page.$$('#manageCertificates').click();
-    return testBrowserProxy.whenCalled('showManageSSLCertificates');
-  });
-});
-
 suite('PrivacyPage', function() {
   /** @type {SettingsPrivacyPageElement} */
   let page;
@@ -136,11 +25,11 @@ suite('PrivacyPage', function() {
   /** @type {TestClearBrowsingDataBrowserProxy} */
   let testClearBrowsingDataBrowserProxy;
 
-  suiteSetup(function() {
-    loadTimeData.overrideValues({
-      privacySettingsRedesignEnabled: false,
-    });
-  });
+  /** @type {TestSiteSettingsPrefsBrowserProxy}*/
+  let siteSettingsBrowserProxy = null;
+
+  /** @type {Array<string>} */
+  const testLabels = ['test label 1', 'test label 2'];
 
   setup(async function() {
     PolymerTest.clearBody();
@@ -152,6 +41,9 @@ suite('PrivacyPage', function() {
     PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
     const testSyncBrowserProxy = new TestSyncBrowserProxy();
     SyncBrowserProxyImpl.instance_ = testSyncBrowserProxy;
+    siteSettingsBrowserProxy = new TestSiteSettingsPrefsBrowserProxy();
+    SiteSettingsPrefsBrowserProxyImpl.instance_ = siteSettingsBrowserProxy;
+    siteSettingsBrowserProxy.setCookieSettingDescription(testLabels[0]);
 
     page = document.createElement('settings-privacy-page');
     page.prefs = {
@@ -186,120 +78,6 @@ suite('PrivacyPage', function() {
     assertTrue(!!dialog);
   });
 
-  test('safeBrowsingReportingToggle', function() {
-    const safeBrowsingToggle = page.$$('#safeBrowsingToggle');
-    const safeBrowsingReportingToggle = page.$$('#safeBrowsingReportingToggle');
-    assertTrue(safeBrowsingToggle.checked);
-    assertFalse(safeBrowsingReportingToggle.disabled);
-    assertTrue(safeBrowsingReportingToggle.checked);
-    safeBrowsingToggle.click();
-    flush();
-
-    assertFalse(safeBrowsingToggle.checked);
-    assertTrue(safeBrowsingReportingToggle.disabled);
-    assertFalse(safeBrowsingReportingToggle.checked);
-    assertTrue(page.prefs.safebrowsing.scout_reporting_enabled.value);
-    safeBrowsingToggle.click();
-    flush();
-
-    assertTrue(safeBrowsingToggle.checked);
-    assertFalse(safeBrowsingReportingToggle.disabled);
-    assertTrue(safeBrowsingReportingToggle.checked);
-  });
-
-  test('ElementVisibility', async function() {
-    await flushTasks();
-    assertFalse(isChildVisible(page, '#cookiesLinkRow'));
-    assertFalse(isChildVisible(page, '#securityLinkRow'));
-    assertFalse(isChildVisible(page, '#permissionsLinkRow'));
-
-    assertTrue(isChildVisible(page, '#clearBrowsingData'));
-    assertTrue(isChildVisible(page, '#site-settings-subpage-trigger'));
-    assertTrue(isChildVisible(page, '#moreExpansion'));
-
-    page.$$('#moreExpansion').click();
-
-    assertTrue(isChildVisible(page, '#safeBrowsingToggle'));
-    assertTrue(isChildVisible(page, '#passwordsLeakDetectionToggle'));
-    assertTrue(isChildVisible(page, '#safeBrowsingReportingToggle'));
-    assertTrue(isChildVisible(page, '#doNotTrack'));
-    assertTrue(isChildVisible(page, '#canMakePaymentToggle'));
-    if (loadTimeData.getBoolean('enableSecurityKeysSubpage')) {
-      assertTrue(isChildVisible(page, '#security-keys-subpage-trigger'));
-    }
-  });
-
-  test('BlockThirdPartyCookiesToggle', async function() {
-    page.prefs.profile.block_third_party_cookies = {value: false};
-    page.prefs.profile.cookie_controls_mode = {value: CookieControlsMode.OFF};
-    Router.getInstance().navigateTo(routes.SITE_SETTINGS_COOKIES);
-    flush();
-
-    page.$$('#blockThirdPartyCookies').click();
-    flush();
-    assertTrue(page.prefs.profile.block_third_party_cookies.value);
-    assertEquals(
-        page.prefs.profile.cookie_controls_mode.value,
-        CookieControlsMode.BLOCK_THIRD_PARTY);
-
-    page.$$('#blockThirdPartyCookies').click();
-    flush();
-    assertFalse(page.prefs.profile.block_third_party_cookies.value);
-    assertEquals(
-        page.prefs.profile.cookie_controls_mode.value, CookieControlsMode.OFF);
-  });
-});
-
-suite('PrivacyPageRedesignEnabled', function() {
-  /** @type {SettingsPrivacyPageElement} */
-  let page;
-
-  /** @type {TestSiteSettingsPrefsBrowserProxy}*/
-  let siteSettingsBrowserProxy = null;
-
-  /** @type {Array<string>} */
-  const testLabels = ['test label 1', 'test label 2'];
-
-  suiteSetup(function() {
-    loadTimeData.overrideValues({
-      privacySettingsRedesignEnabled: true,
-    });
-  });
-
-  setup(function() {
-    siteSettingsBrowserProxy = new TestSiteSettingsPrefsBrowserProxy();
-    SiteSettingsPrefsBrowserProxyImpl.instance_ = siteSettingsBrowserProxy;
-    siteSettingsBrowserProxy.setCookieSettingDescription(testLabels[0]);
-    PolymerTest.clearBody();
-    page = document.createElement('settings-privacy-page');
-    document.body.appendChild(page);
-    return flushTasks();
-  });
-
-  teardown(function() {
-    page.remove();
-  });
-
-  test('ElementVisibility', function() {
-    assertTrue(isChildVisible(page, '#clearBrowsingData'));
-    assertTrue(isChildVisible(page, '#cookiesLinkRow'));
-    assertTrue(isChildVisible(page, '#securityLinkRow'));
-    assertTrue(isChildVisible(page, '#permissionsLinkRow'));
-
-    ['#site-settings-subpage-trigger',
-     '#moreExpansion',
-     '#safeBrowsingToggle',
-     '#passwordsLeakDetectionToggle',
-     '#safeBrowsingToggle',
-     '#safeBrowsingReportingToggle',
-     '#doNotTrack',
-     '#canMakePaymentToggle',
-     '#security-keys-subpage-trigger',
-    ].forEach(selector => {
-      assertFalse(isChildVisible(page, selector));
-    });
-  });
-
   test('CookiesLinkRowSublabel', async function() {
     await siteSettingsBrowserProxy.whenCalled('getCookieSettingDescription');
     flush();
@@ -308,6 +86,7 @@ suite('PrivacyPageRedesignEnabled', function() {
     webUIListenerCallback('cookieSettingDescriptionChanged', testLabels[1]);
     assertEquals(page.$$('#cookiesLinkRow').subLabel, testLabels[1]);
   });
+
 });
 
 suite('PrivacyPageSound', function() {
@@ -329,12 +108,6 @@ suite('PrivacyPageSound', function() {
         .queryEffectiveChildren('settings-subpage')
         .queryEffectiveChildren('#block-autoplay-setting');
   }
-
-  suiteSetup(function() {
-    loadTimeData.overrideValues({
-      privacySettingsRedesignEnabled: false,
-    });
-  });
 
   setup(() => {
     loadTimeData.overrideValues({enableBlockAutoplayContentSetting: true});

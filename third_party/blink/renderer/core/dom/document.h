@@ -1519,7 +1519,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void IncrementNumberOfCanvases();
 
-  void ProcessJavaScriptUrl(const KURL&, const DOMWrapperWorld& world);
+  void ProcessJavaScriptUrl(const KURL&,
+                            scoped_refptr<const DOMWrapperWorld> world);
 
   DisplayLockDocumentState& GetDisplayLockDocumentState() const;
 
@@ -1859,8 +1860,9 @@ class CORE_EXPORT Document : public ContainerNode,
   TaskHandle javascript_url_task_handle_;
   struct PendingJavascriptUrl {
    public:
-    PendingJavascriptUrl(const KURL& input_url, const DOMWrapperWorld& world)
-        : url(input_url), world(&world) {}
+    PendingJavascriptUrl(const KURL& input_url,
+                         scoped_refptr<const DOMWrapperWorld> world)
+        : url(input_url), world(std::move(world)) {}
     KURL url;
 
     // The world in which the navigation to |url| initiated. Non-null.

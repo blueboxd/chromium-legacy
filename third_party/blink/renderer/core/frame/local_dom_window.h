@@ -122,7 +122,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   bool IsContextThread() const final;
   bool ShouldInstallV8Extensions() const final;
   ContentSecurityPolicy* GetContentSecurityPolicyForWorld(
-      const DOMWrapperWorld& world) final;
+      const DOMWrapperWorld* world) final;
   const KURL& Url() const final;
   const KURL& BaseURL() const final;
   KURL CompleteURL(const String&) const final;

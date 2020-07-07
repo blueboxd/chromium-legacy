@@ -586,7 +586,7 @@
     'client.v8.fyi': {
       'Android V8 FYI Release (Nexus 5X)': 'gpu_tests_android_release_trybot_arm64',
       'Linux ASAN Builder': 'asan_lsan_release_trybot',
-      'Linux Debug Builder': 'debug_bot',
+      'Linux Debug Builder': 'debug_bot_blink',
       'Linux V8 FYI Release (NVIDIA)': 'gpu_tests_release_trybot',
       'Linux V8 FYI Release - pointer compression (NVIDIA)': 'gpu_tests_release_trybot_ptr_comp',
       'Mac V8 FYI Release (Intel)': 'gpu_tests_release_trybot',
@@ -1706,6 +1706,10 @@
       'debug_bot',
     ],
 
+    'debug_bot_blink': [
+      'debug_bot_blink',
+    ],
+
     'debug_bot_deterministic': [
       'debug_bot', 'mac_deterministic_build',
     ],
@@ -2554,6 +2558,10 @@
 
     'debug_bot': {
       'mixins': ['debug', 'shared', 'goma', 'minimal_symbols'],
+    },
+
+    'debug_bot_blink': {
+      'mixins': ['debug', 'shared', 'goma', 'minimal_symbols', 'chrome_with_codecs' ],
     },
 
     'debug_bot_local_build': {

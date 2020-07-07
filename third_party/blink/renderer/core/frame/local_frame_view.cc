@@ -1029,7 +1029,6 @@ void LocalFrameView::MarkFirstEligibleToPaint() {
   if (frame_ && frame_->GetDocument()) {
     PaintTiming& timing = PaintTiming::From(*frame_->GetDocument());
     timing.MarkFirstEligibleToPaint();
-    GetPaintTimingDetector().DidChangePerformanceTiming();
   }
 }
 
@@ -1037,7 +1036,6 @@ void LocalFrameView::MarkIneligibleToPaint() {
   if (frame_ && frame_->GetDocument()) {
     PaintTiming& timing = PaintTiming::From(*frame_->GetDocument());
     timing.MarkIneligibleToPaint();
-    GetPaintTimingDetector().DidChangePerformanceTiming();
   }
 }
 

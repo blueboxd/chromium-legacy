@@ -17,14 +17,15 @@ namespace feature_engagement {
 class EventStore {
  public:
   using OnLoadedCallback =
-      base::Callback<void(bool success, std::unique_ptr<std::vector<Event>>)>;
+      base::OnceCallback<void(bool success,
+                              std::unique_ptr<std::vector<Event>>)>;
 
   virtual ~EventStore() = default;
 
   // Loads the database from storage and asynchronously posts the result back
   // on the caller's thread.
   // Ownership of the loaded data is given to the caller.
-  virtual void Load(const OnLoadedCallback& callback) = 0;
+  virtual void Load(OnLoadedCallback callback) = 0;
 
   // Returns whether the database is ready, i.e. whether it has been fully
   // loaded.

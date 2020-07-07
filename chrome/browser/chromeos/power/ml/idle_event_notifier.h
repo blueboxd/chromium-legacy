@@ -52,7 +52,7 @@ class IdleEventNotifier : public PowerManagerClient::Observer,
 
   // Granularity of input events is per minute.
   static constexpr int kNumUserInputEventsBuckets =
-      kUserInputEventsDuration / base::TimeDelta::FromMinutes(1);
+      kUserInputEventsDuration.InMinutes();
 
   struct ActivityData {
     ActivityData();

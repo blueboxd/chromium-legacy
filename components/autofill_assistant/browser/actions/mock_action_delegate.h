@@ -70,6 +70,12 @@ class MockActionDelegate : public ActionDelegate {
                void(const ElementFinder::Result& element,
                     ClickType click_type,
                     base::OnceCallback<void(const ClientStatus&)> callback));
+  MOCK_METHOD2(WaitForDocumentToBecomeInteractive,
+               void(const ElementFinder::Result& element,
+                    base::OnceCallback<void(const ClientStatus&)> callback));
+  MOCK_METHOD2(ScrollIntoView,
+               void(const ElementFinder::Result& element,
+                    base::OnceCallback<void(const ClientStatus&)> callback));
 
   MOCK_METHOD4(Prompt,
                void(std::unique_ptr<std::vector<UserAction>> user_actions,

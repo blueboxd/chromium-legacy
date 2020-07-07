@@ -176,7 +176,7 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
 
   // Returns the content security policy to be used for the given |world|.
   virtual ContentSecurityPolicy* GetContentSecurityPolicyForWorld(
-      const DOMWrapperWorld& world);
+      const DOMWrapperWorld* world);
 
   virtual const KURL& Url() const = 0;
   virtual const KURL& BaseURL() const = 0;

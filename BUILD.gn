@@ -22,8 +22,8 @@ import("//gpu/vulkan/features.gni")
 import("//media/gpu/args.gni")
 import("//media/media_options.gni")
 import("//remoting/remoting_enable.gni")
-import("//third_party/closure_compiler/compile_js.gni")
 import("//third_party/openh264/openh264_args.gni")
+import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 import("//ui/base/ui_features.gni")
 import("//ui/gl/features.gni")
@@ -90,7 +90,9 @@ group("gn_all") {
   ]
 
   if (!is_component_build) {
-    deps += [ "//third_party/abseil-cpp:absl_tests" ]
+    deps += [
+      "//third_party/abseil-cpp:absl_tests",
+    ]
   }
 
   if (!is_android && !is_chromecast) {
@@ -149,6 +151,7 @@ group("gn_all") {
       "//printing:printing_unittests",
       "//third_party/SPIRV-Tools/src:SPIRV-Tools",
       "//third_party/SPIRV-Tools/src/test/fuzzers",
+      "//third_party/cacheinvalidation:cacheinvalidation_unittests",
       "//third_party/pdfium/samples:pdfium_test",
       "//tools/perf/clear_system_cache",
       "//tools/polymer:polymer_tools_python_unittests",

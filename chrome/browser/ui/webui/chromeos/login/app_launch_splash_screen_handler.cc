@@ -188,7 +188,7 @@ void AppLaunchSplashScreenHandler::ShowNetworkConfigureUI() {
 
   if (GetCurrentScreen() != ErrorScreenView::kScreenId)
     error_screen_->SetParentScreen(kScreenId);
-  error_screen_->Show();
+  error_screen_->Show(nullptr);
 }
 
 bool AppLaunchSplashScreenHandler::IsNetworkReady() {

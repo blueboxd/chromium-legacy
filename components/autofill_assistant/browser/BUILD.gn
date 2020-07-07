@@ -249,6 +249,7 @@ source_set("unit_tests") {
   sources = [
     "actions/action_test_utils.cc",
     "actions/action_test_utils.h",
+    "actions/click_action_unittest.cc",
     "actions/collect_user_data_action_unittest.cc",
     "actions/configure_bottom_sheet_action_unittest.cc",
     "actions/fallback_handler/required_fields_fallback_handler_unittest.cc",

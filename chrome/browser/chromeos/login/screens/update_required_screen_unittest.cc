@@ -9,6 +9,7 @@
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "chrome/browser/chromeos/login/screens/mock_error_screen.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/wizard_context.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
@@ -52,6 +53,7 @@ class UpdateRequiredScreenUnitTest : public testing::Test {
         switches::kEnterpriseEnableZeroTouchEnrollment, "hands-off");
 
     // Initialize objects needed by |UpdateRequiredScreen|.
+    wizard_context_ = std::make_unique<WizardContext>();
     fake_view_ = std::make_unique<FakeUpdateRequiredScreenHandler>();
     fake_update_engine_client_ = new FakeUpdateEngineClient();
     DBusThreadManager::GetSetterForTesting()->SetUpdateEngineClient(
@@ -82,6 +84,7 @@ class UpdateRequiredScreenUnitTest : public testing::Test {
   void TearDown() override {
     TestingBrowserProcess::GetGlobal()->SetShuttingDown(true);
 
+    wizard_context_.reset();
     update_required_screen_.reset();
     mock_error_view_.reset();
     mock_error_screen_.reset();
@@ -101,6 +104,7 @@ class UpdateRequiredScreenUnitTest : public testing::Test {
   std::unique_ptr<FakeUpdateRequiredScreenHandler> fake_view_;
   std::unique_ptr<MockErrorScreenView> mock_error_view_;
   std::unique_ptr<MockErrorScreen> mock_error_screen_;
+  std::unique_ptr<WizardContext> wizard_context_;
   // Will be deleted in |network_portal_detector::Shutdown()|.
   MockNetworkPortalDetector* mock_network_portal_detector_;
   // Will be deleted in |DBusThreadManager::Shutdown()|.
@@ -126,7 +130,7 @@ constexpr char kUserActionAcceptUpdateOverCellular[] = "update-accept-cellular";
 
 TEST_F(UpdateRequiredScreenUnitTest, HandlesNoUpdate) {
   // DUT reaches |UpdateRequiredScreen|.
-  update_required_screen_->Show();
+  update_required_screen_->Show(wizard_context_.get());
   EXPECT_EQ(fake_view_->ui_state(),
             UpdateRequiredView::UPDATE_REQUIRED_MESSAGE);
   update_required_screen_->HandleUserAction(kUserActionUpdateButtonClicked);
@@ -143,7 +147,7 @@ TEST_F(UpdateRequiredScreenUnitTest, HandlesNoUpdate) {
 
 TEST_F(UpdateRequiredScreenUnitTest, HandlesUpdateExists) {
   // DUT reaches |UpdateRequiredScreen|.
-  update_required_screen_->Show();
+  update_required_screen_->Show(wizard_context_.get());
   EXPECT_EQ(fake_view_->ui_state(),
             UpdateRequiredView::UPDATE_REQUIRED_MESSAGE);
   update_required_screen_->HandleUserAction(kUserActionUpdateButtonClicked);
@@ -171,7 +175,7 @@ TEST_F(UpdateRequiredScreenUnitTest, HandlesUpdateExists) {
 
 TEST_F(UpdateRequiredScreenUnitTest, HandlesCellularPermissionNeeded) {
   // DUT reaches |UpdateRequiredScreen|.
-  update_required_screen_->Show();
+  update_required_screen_->Show(wizard_context_.get());
   EXPECT_EQ(fake_view_->ui_state(),
             UpdateRequiredView::UPDATE_REQUIRED_MESSAGE);
   update_required_screen_->HandleUserAction(kUserActionUpdateButtonClicked);

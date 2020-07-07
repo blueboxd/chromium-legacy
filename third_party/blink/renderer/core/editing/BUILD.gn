@@ -310,6 +310,8 @@ blink_core_sources("editing") {
     "state_machines/state_machine_util.h",
     "state_machines/text_segmentation_machine_state.cc",
     "state_machines/text_segmentation_machine_state.h",
+    "substring_util.h",
+    "substring_util.mm",
     "suggestion/text_suggestion_backend_impl.cc",
     "suggestion/text_suggestion_backend_impl.h",
     "suggestion/text_suggestion_controller.cc",
@@ -334,7 +336,6 @@ blink_core_sources("editing") {
     "visible_units_paragraph.cc",
     "visible_units_sentence.cc",
     "visible_units_word.cc",
-    "web_substring_util.mm",
     "writing_direction.h",
   ]
 
@@ -429,6 +430,7 @@ jumbo_source_set("unit_tests") {
     "state_machines/state_machine_test_util.cc",
     "state_machines/state_machine_test_util.h",
     "state_machines/state_machine_util_test.cc",
+    "substring_util_test.mm",
     "suggestion/text_suggestion_controller_test.cc",
     "surrounding_text_test.cc",
     "testing/editing_test_base.cc",

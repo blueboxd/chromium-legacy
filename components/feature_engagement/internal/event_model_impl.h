@@ -27,7 +27,7 @@ class EventModelImpl : public EventModel {
   ~EventModelImpl() override;
 
   // EventModel implementation.
-  void Initialize(const OnModelInitializationFinished& callback,
+  void Initialize(OnModelInitializationFinished callback,
                   uint32_t current_day) override;
   bool IsReady() const override;
   const Event* GetEvent(const std::string& event_name) const override;
@@ -39,7 +39,7 @@ class EventModelImpl : public EventModel {
 
  private:
   // Callback for loading the underlying store.
-  void OnStoreLoaded(const OnModelInitializationFinished& callback,
+  void OnStoreLoaded(OnModelInitializationFinished callback,
                      uint32_t current_day,
                      bool success,
                      std::unique_ptr<std::vector<Event>> events);

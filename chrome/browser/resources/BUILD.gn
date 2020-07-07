@@ -48,6 +48,7 @@ if (enable_js_type_check) {
         "signin:closure_compile",
         "usb_internals:closure_compile",
         "user_manager:closure_compile",
+        "web_app_internals:closure_compile",
         "welcome:closure_compile",
       ]
     }

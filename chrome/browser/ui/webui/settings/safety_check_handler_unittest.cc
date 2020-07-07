@@ -39,6 +39,11 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_controller_impl_win.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_controller_win.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 #include "ui/chromeos/devicetype_utils.h"
 #endif
@@ -49,6 +54,9 @@ constexpr char kUpdates[] = "updates";
 constexpr char kPasswords[] = "passwords";
 constexpr char kSafeBrowsing[] = "safe-browsing";
 constexpr char kExtensions[] = "extensions";
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+constexpr char kChromeCleaner[] = "extensions";
+#endif
 
 namespace {
 using Enabled = util::StrongAlias<class EnabledTag, bool>;
@@ -1079,6 +1087,265 @@ TEST_F(SafetyCheckHandlerTest, CheckExtensions_Error) {
       "Settings.SafetyCheck.ExtensionsResult",
       SafetyCheckHandler::ExtensionsStatus::kError, 1);
 }
+
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+TEST_F(SafetyCheckHandlerTest, CheckChromeCleaner_Checking) {
+  safety_check_->PerformSafetyCheck();
+  const base::DictionaryValue* event =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kChromeCleaner,
+          static_cast<int>(SafetyCheckHandler::ChromeCleanerStatus::kChecking));
+  ASSERT_TRUE(event);
+  VerifyDisplayString(event, base::UTF8ToUTF16(""));
+}
+
+TEST_F(SafetyCheckHandlerTest, CheckChromeCleaner_Initial) {
+  ChromeCleanerControllerImpl::ResetInstanceForTesting();
+  ChromeCleanerControllerImpl::GetInstance()->SetIdleForTesting(
+      safe_browsing::ChromeCleanerController::IdleReason::kInitial);
+
+  safety_check_->PerformSafetyCheck();
+  const base::DictionaryValue* event =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kChromeCleaner,
+          static_cast<int>(SafetyCheckHandler::ChromeCleanerStatus::kInitial));
+  ASSERT_TRUE(event);
+  VerifyDisplayString(event, "No harmful software found");
+}
+
+TEST_F(SafetyCheckHandlerTest, CheckChromeCleaner_ReporterFoundNothing) {
+  ChromeCleanerControllerImpl::ResetInstanceForTesting();
+  ChromeCleanerControllerImpl::GetInstance()->SetIdleForTesting(
+      safe_browsing::ChromeCleanerController::IdleReason::
+          kReporterFoundNothing);
+
+  safety_check_->PerformSafetyCheck();
+  const base::DictionaryValue* event =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kChromeCleaner,
+          static_cast<int>(
+              SafetyCheckHandler::ChromeCleanerStatus::kReporterFoundNothing));
+  ASSERT_TRUE(event);
+  VerifyDisplayString(event, "No harmful software found");
+}
+
+TEST_F(SafetyCheckHandlerTest, CheckChromeCleaner_ReporterFailed) {
+  ChromeCleanerControllerImpl::ResetInstanceForTesting();
+  ChromeCleanerControllerImpl::GetInstance()->SetIdleForTesting(
+      safe_browsing::ChromeCleanerController::IdleReason::kReporterFailed);
+
+  safety_check_->PerformSafetyCheck();
+  const base::DictionaryValue* event =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kChromeCleaner,
+          static_cast<int>(
+              SafetyCheckHandler::ChromeCleanerStatus::kReporterFailed));
+  ASSERT_TRUE(event);
+  VerifyDisplayString(
+      event,
+      "An error occurred while Chrome was searching for harmful software");
+}
+
+TEST_F(SafetyCheckHandlerTest, CheckChromeCleaner_ScanningFoundNothing) {
+  ChromeCleanerControllerImpl::ResetInstanceForTesting();
+  ChromeCleanerControllerImpl::GetInstance()->SetIdleForTesting(
+      safe_browsing::ChromeCleanerController::IdleReason::
+          kScanningFoundNothing);
+
+  safety_check_->PerformSafetyCheck();
+  const base::DictionaryValue* event =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kChromeCleaner,
+          static_cast<int>(
+              SafetyCheckHandler::ChromeCleanerStatus::kScanningFoundNothing));
+  ASSERT_TRUE(event);
+  VerifyDisplayString(event, "No harmful software found");
+}
+
+TEST_F(SafetyCheckHandlerTest, CheckChromeCleaner_ScanningFailed) {
+  ChromeCleanerControllerImpl::ResetInstanceForTesting();
+  ChromeCleanerControllerImpl::GetInstance()->SetIdleForTesting(
+      safe_browsing::ChromeCleanerController::IdleReason::kScanningFailed);
+
+  safety_check_->PerformSafetyCheck();
+  const base::DictionaryValue* event =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kChromeCleaner,
+          static_cast<int>(
+              SafetyCheckHandler::ChromeCleanerStatus::kScanningFailed));
+  ASSERT_TRUE(event);
+  VerifyDisplayString(
+      event,
+      "An error occurred while Chrome was searching for harmful software");
+}
+
+TEST_F(SafetyCheckHandlerTest, CheckChromeCleaner_ConnectionLost) {
+  ChromeCleanerControllerImpl::ResetInstanceForTesting();
+  ChromeCleanerControllerImpl::GetInstance()->SetIdleForTesting(
+      safe_browsing::ChromeCleanerController::IdleReason::kConnectionLost);
+
+  safety_check_->PerformSafetyCheck();
+  const base::DictionaryValue* event =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kChromeCleaner,
+          static_cast<int>(
+              SafetyCheckHandler::ChromeCleanerStatus::kConnectionLost));
+  ASSERT_TRUE(event);
+  VerifyDisplayString(event, "Chrome found harmful software on your computer");
+}
+
+TEST_F(SafetyCheckHandlerTest, CheckChromeCleaner_UserDeclinedCleanup) {
+  ChromeCleanerControllerImpl::ResetInstanceForTesting();
+  ChromeCleanerControllerImpl::GetInstance()->SetIdleForTesting(
+      safe_browsing::ChromeCleanerController::IdleReason::kUserDeclinedCleanup);
+
+  safety_check_->PerformSafetyCheck();
+  const base::DictionaryValue* event =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kChromeCleaner,
+          static_cast<int>(
+              SafetyCheckHandler::ChromeCleanerStatus::kUserDeclinedCleanup));
+  ASSERT_TRUE(event);
+  VerifyDisplayString(event, "Chrome found harmful software on your computer");
+}
+
+TEST_F(SafetyCheckHandlerTest, CheckChromeCleaner_CleaningFailed) {
+  ChromeCleanerControllerImpl::ResetInstanceForTesting();
+  ChromeCleanerControllerImpl::GetInstance()->SetIdleForTesting(
+      safe_browsing::ChromeCleanerController::IdleReason::kCleaningFailed);
+
+  safety_check_->PerformSafetyCheck();
+  const base::DictionaryValue* event =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kChromeCleaner,
+          static_cast<int>(
+              SafetyCheckHandler::ChromeCleanerStatus::kCleaningFailed));
+  ASSERT_TRUE(event);
+  VerifyDisplayString(
+      event, "An error occurred while Chrome was removing harmful software");
+}
+
+TEST_F(SafetyCheckHandlerTest, CheckChromeCleaner_CleaningSucceed) {
+  ChromeCleanerControllerImpl::ResetInstanceForTesting();
+  ChromeCleanerControllerImpl::GetInstance()->SetIdleForTesting(
+      safe_browsing::ChromeCleanerController::IdleReason::kCleaningSucceeded);
+
+  safety_check_->PerformSafetyCheck();
+  const base::DictionaryValue* event =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kChromeCleaner,
+          static_cast<int>(
+              SafetyCheckHandler::ChromeCleanerStatus::kCleaningSucceeded));
+  ASSERT_TRUE(event);
+  VerifyDisplayString(event, "No harmful software found");
+}
+
+TEST_F(SafetyCheckHandlerTest, CheckChromeCleaner_CleaningSucceed) {
+  ChromeCleanerControllerImpl::ResetInstanceForTesting();
+  ChromeCleanerControllerImpl::GetInstance()->SetIdleForTesting(
+      safe_browsing::ChromeCleanerController::IdleReason::
+          kCleanerDownloadFailed);
+
+  safety_check_->PerformSafetyCheck();
+  const base::DictionaryValue* event =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kChromeCleaner,
+          static_cast<int>(
+              SafetyCheckHandler::ChromeCleanerStatus::kCleanerDownloadFailed));
+  ASSERT_TRUE(event);
+  VerifyDisplayString(event, "Please try again later");
+}
+
+TEST_F(SafetyCheckHandlerTest, CheckChromeCleaner_ReporterRunning) {
+  ChromeCleanerControllerImpl::ResetInstanceForTesting();
+  ChromeCleanerControllerImpl::GetInstance()->SetStateForTesting(
+      safe_browsing::ChromeCleanerController::IdleReason::kReporterRunning);
+
+  safety_check_->PerformSafetyCheck();
+  const base::DictionaryValue* event =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kChromeCleaner,
+          static_cast<int>(
+              SafetyCheckHandler::ChromeCleanerStatus::kReporterRunning));
+  ASSERT_TRUE(event);
+  VerifyDisplayString(event, "No harmful software found");
+}
+
+TEST_F(SafetyCheckHandlerTest, CheckChromeCleaner_Scanning) {
+  ChromeCleanerControllerImpl::ResetInstanceForTesting();
+  ChromeCleanerControllerImpl::GetInstance()->SetStateForTesting(
+      safe_browsing::ChromeCleanerController::IdleReason::kScanning);
+
+  safety_check_->PerformSafetyCheck();
+  const base::DictionaryValue* event =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kChromeCleaner,
+          static_cast<int>(SafetyCheckHandler::ChromeCleanerStatus::kScanning));
+  ASSERT_TRUE(event);
+  VerifyDisplayString(event, "No harmful software found");
+}
+
+TEST_F(SafetyCheckHandlerTest, CheckChromeCleaner_Infected) {
+  ChromeCleanerControllerImpl::ResetInstanceForTesting();
+  ChromeCleanerControllerImpl::GetInstance()->SetStateForTesting(
+      safe_browsing::ChromeCleanerController::State::kInfected);
+
+  safety_check_->PerformSafetyCheck();
+  const base::DictionaryValue* event =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kChromeCleaner,
+          static_cast<int>(SafetyCheckHandler::ChromeCleanerStatus::kInfected));
+  ASSERT_TRUE(event);
+  VerifyDisplayString(event, "Chrome found harmful software on your computer");
+}
+
+TEST_F(SafetyCheckHandlerTest, CheckChromeCleaner_Cleaning) {
+  ChromeCleanerControllerImpl::ResetInstanceForTesting();
+  ChromeCleanerControllerImpl::GetInstance()->SetStateForTesting(
+      safe_browsing::ChromeCleanerController::State::kCleaning);
+
+  safety_check_->PerformSafetyCheck();
+  const base::DictionaryValue* event =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kChromeCleaner,
+          static_cast<int>(SafetyCheckHandler::ChromeCleanerStatus::kCleaning));
+  ASSERT_TRUE(event);
+  VerifyDisplayString(event, "Removing harmful software...");
+}
+
+TEST_F(SafetyCheckHandlerTest, CheckChromeCleaner_RebootRequired) {
+  ChromeCleanerControllerImpl::ResetInstanceForTesting();
+  ChromeCleanerControllerImpl::GetInstance()->SetStateForTesting(
+      safe_browsing::ChromeCleanerController::State::kRebootRequired);
+
+  safety_check_->PerformSafetyCheck();
+  const base::DictionaryValue* event =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kChromeCleaner,
+          static_cast<int>(
+              SafetyCheckHandler::ChromeCleanerStatus::kRebootRequired));
+  ASSERT_TRUE(event);
+  VerifyDisplayString(
+      event, "To finish removing harmful software, restart your computer");
+}
+
+TEST_F(SafetyCheckHandlerTest, CheckChromeCleaner_DisabledByAdmin) {
+  ChromeCleanerControllerImpl::ResetInstanceForTesting();
+  ChromeCleanerControllerImpl::GetInstance()->SetStateForTesting(
+      safe_browsing::ChromeCleanerController::State::kDisabledByAdmin);
+
+  safety_check_->PerformSafetyCheck();
+  const base::DictionaryValue* event =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kChromeCleaner,
+          static_cast<int>(
+              SafetyCheckHandler::ChromeCleanerStatus::kDisabledByAdmin));
+  ASSERT_TRUE(event);
+  VerifyDisplayString(
+      event,
+      "Your administrator has disabled browser's check for harmful software");
+}
+#endif
 
 TEST_F(SafetyCheckHandlerTest, CheckParentRanDisplayString) {
   // 1 second before midnight Dec 31st 2020, so that -(24h-1s) is still on the

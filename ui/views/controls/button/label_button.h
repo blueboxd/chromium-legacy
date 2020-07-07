@@ -160,7 +160,6 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
 
   // Button:
   void ChildPreferredSizeChanged(View* child) override;
-  void PreferredSizeChanged() override;
   void OnFocus() override;
   void OnBlur() override;
   void OnThemeChanged() override;
@@ -170,9 +169,6 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   void SetTextInternal(const base::string16& text);
 
   void ClearTextIfShrunkDown();
-
-  // Resets |cached_preferred_size_|.
-  void ResetCachedPreferredSize();
 
   // Gets the preferred size (without respecting min_size_ or max_size_), but
   // does not account for the label. This is shared between GetHeightForWidth
@@ -215,9 +211,6 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   // |min_size_| and |max_size_| may be set to clamp the preferred size.
   gfx::Size min_size_;
   gfx::Size max_size_;
-
-  // Cache the last computed preferred size.
-  mutable base::Optional<gfx::Size> cached_preferred_size_;
 
   // A flag indicating that this button should not include the label in its
   // desired size. Furthermore, once the bounds of the button adapt to this

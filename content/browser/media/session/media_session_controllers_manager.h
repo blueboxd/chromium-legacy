@@ -32,11 +32,6 @@ class RenderFrameHost;
 // handles MediaSessionController instances.
 class CONTENT_EXPORT MediaSessionControllersManager {
  public:
-  using ControllersMap =
-      std::map<MediaPlayerId, std::unique_ptr<MediaSessionController>>;
-  using PositionMap = std::map<MediaPlayerId, media_session::MediaPosition>;
-  using PipAvailabilityMap = std::map<MediaPlayerId, bool>;
-
   explicit MediaSessionControllersManager(
       MediaWebContentsObserver* media_web_contents_observer);
   ~MediaSessionControllersManager();
@@ -77,7 +72,10 @@ class CONTENT_EXPORT MediaSessionControllersManager {
                                              bool available);
 
  private:
-  friend class MediaSessionControllersManagerTest;
+  using ControllersMap =
+      std::map<MediaPlayerId, std::unique_ptr<MediaSessionController>>;
+  using PositionMap = std::map<MediaPlayerId, media_session::MediaPosition>;
+  using PipAvailabilityMap = std::map<MediaPlayerId, bool>;
 
   // Weak pointer because |this| is owned by |media_web_contents_observer_|.
   MediaWebContentsObserver* const media_web_contents_observer_;

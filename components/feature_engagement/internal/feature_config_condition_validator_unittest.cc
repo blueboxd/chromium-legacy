@@ -61,7 +61,7 @@ class TestEventModel : public EventModel {
  public:
   TestEventModel() : ready_(true) {}
 
-  void Initialize(const OnModelInitializationFinished& callback,
+  void Initialize(OnModelInitializationFinished callback,
                   uint32_t current_day) override {}
 
   bool IsReady() const override { return ready_; }

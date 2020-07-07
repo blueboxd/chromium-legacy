@@ -20,6 +20,9 @@ class AccountId;
 
 namespace chromeos {
 
+class UserBoardView;
+class UserSelectionScreen;
+
 // WebUI-based login UI implementation.
 class LoginDisplayWebUI : public LoginDisplay,
                           public SigninScreenHandlerDelegate,
@@ -85,6 +88,10 @@ class LoginDisplayWebUI : public LoginDisplay,
 
   // Reference to the WebUI handling layer for the login screen
   LoginDisplayWebUIHandler* webui_handler_ = nullptr;
+
+  // Used only for the "user-adding" (aka "multiprofile") flow.
+  std::unique_ptr<UserSelectionScreen> user_selection_screen_;
+  base::WeakPtr<UserBoardView> user_board_view_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginDisplayWebUI);
 };

@@ -698,6 +698,7 @@ if (!is_android) {
       "//testing/perf",
       "//third_party/blink/public:blink_headers",
       "//third_party/blink/public:buildflags",
+      "//third_party/cacheinvalidation",
       "//third_party/icu",
       "//third_party/leveldatabase",
       "//third_party/webrtc_overrides:webrtc_component",
@@ -3841,6 +3842,7 @@ test("unit_tests") {
     "//testing/gmock",
     "//testing/gtest",
     "//testing/perf:unit_tests",
+    "//third_party/cacheinvalidation",
     "//third_party/icu",
     "//third_party/leveldatabase",
     "//third_party/libaddressinput",
@@ -4758,8 +4760,8 @@ test("unit_tests") {
       "../browser/extensions/api/web_request/web_request_permissions_unittest.cc",
       "../browser/extensions/api/webstore_private/extension_install_status_unittest.cc",
       "../browser/extensions/api/webstore_private/webstore_private_unittest.cc",
-      "../browser/extensions/blacklist_check_unittest.cc",
-      "../browser/extensions/blacklist_state_fetcher_unittest.cc",
+      "../browser/extensions/blocklist_check_unittest.cc",
+      "../browser/extensions/blocklist_state_fetcher_unittest.cc",
       "../browser/extensions/chrome_app_icon_unittest.cc",
       "../browser/extensions/chrome_app_sorting_unittest.cc",
       "../browser/extensions/chrome_component_extension_resource_manager_unittest.cc",
@@ -5607,7 +5609,7 @@ test("unit_tests") {
     ]
   }
   if (safe_browsing_mode == 1 && enable_extensions) {
-    sources += [ "../browser/extensions/blacklist_unittest.cc" ]
+    sources += [ "../browser/extensions/blocklist_unittest.cc" ]
   }
 
   if (is_win || is_mac || (is_linux && !is_chromeos)) {

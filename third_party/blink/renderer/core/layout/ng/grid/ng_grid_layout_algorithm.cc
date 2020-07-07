@@ -99,22 +99,20 @@ void NGGridLayoutAlgorithm::BuildTrackLists() {
 
   // TODO(kschmi): Auto track repeat count should be based on the number of
   // children, rather than specified auto-column/track.
-  NGGridTrackList implicit_columns;
   NGGridTrackList implicit_rows;
-  implicit_columns.AddRepeater(
-      /*track_index*/ 0, /*track_count*/ 1,
-      /*repeat_count*/ grid_style.GridAutoColumns().size());
-  implicit_rows.AddRepeater(/*track_index*/ 0, 1 /*track_count*/,
-                            /*repeat_count*/ grid_style.GridAutoRows().size());
+  NGGridTrackList implicit_columns;
+  implicit_rows.AddRepeater(grid_style.GridAutoRows(), /* repeat_count */ 1);
+  implicit_columns.AddRepeater(grid_style.GridAutoColumns(),
+                               /* repeat_count */ 1);
 
   // TODO(janewman): We need to implement calculation for track auto repeat
   // count so this can be used outside of testing.
   column_track_collection_.SetSpecifiedTracks(
-      column_track_list_, automatic_column_repetitions_for_testing,
-      implicit_columns);
+      column_track_list_, implicit_columns,
+      automatic_column_repetitions_for_testing);
 
   row_track_collection_.SetSpecifiedTracks(
-      row_track_list_, automatic_row_repetitions_for_testing, implicit_rows);
+      row_track_list_, implicit_rows, automatic_row_repetitions_for_testing);
 }
 
 void NGGridLayoutAlgorithm::EnsureTrackCoverageForGridItem(
@@ -149,7 +147,6 @@ void NGGridLayoutAlgorithm::AddRepeaters(
     AutoRepeatType repeat_type,
     NGGridTrackList& track_list) {
   wtf_size_t repeat_start = NGGridBlockTrackCollection::kInvalidRangeIndex;
-  wtf_size_t unique_track_count = 0;
   // TODO(janewman): Track lists should live on the computed style, mirroring
   // the legacy layout's template_tracks and auto tracks vectors. For now, build
   // up the NG version from what already exists on the computed style.
@@ -157,9 +154,7 @@ void NGGridLayoutAlgorithm::AddRepeaters(
     const GridTrackSize& current_track = template_tracks[i];
     // If this is the insertion point for an auto repeater, add it here.
     if (!auto_tracks.IsEmpty() && i == auto_insertion_point) {
-      track_list.AddAutoRepeater(unique_track_count, auto_tracks.size(),
-                                 repeat_type);
-      unique_track_count += auto_tracks.size();
+      track_list.AddAutoRepeater(auto_tracks, repeat_type);
       repeat_start = NGGridBlockTrackCollection::kInvalidRangeIndex;
     }
     // As the legacy implementation expands repeaters out, compress repeated
@@ -183,8 +178,7 @@ void NGGridLayoutAlgorithm::AddRepeaters(
       repeat_count = i + 1 - repeat_start;
     DCHECK_NE(0u, repeat_count);
     DCHECK_NE(NGGridBlockTrackCollection::kInvalidRangeIndex, repeat_count);
-    track_list.AddRepeater(unique_track_count++, /*track_count*/ 1,
-                           repeat_count);
+    track_list.AddRepeater({template_tracks[i]}, repeat_count);
     repeat_start = NGGridBlockTrackCollection::kInvalidRangeIndex;
   }
 }

@@ -1,3 +1,5 @@
 # These tests currently fail when run with --enable-features=BackForwardCache
 
-# https://crbug.com/1015328
+# https://crbug.com/1102632
+# Needs Investigation.
+-WebUsbServiceImplTest.OpenAndNavigateCrossOrigin

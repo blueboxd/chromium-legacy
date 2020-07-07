@@ -761,12 +761,8 @@ FrameFetchContext::GetContentSecurityPolicyForWorld(
   if (GetResourceFetcherProperties().IsDetached())
     return frozen_state_->content_security_policy;
 
-  // If a valid |world| is not specified, use the CSP this context is bound to.
-  if (!world)
-    return GetContentSecurityPolicy();
-
   return document_->GetExecutionContext()->GetContentSecurityPolicyForWorld(
-      *world);
+      world);
 }
 
 bool FrameFetchContext::ShouldBypassMainWorldCSP() const {

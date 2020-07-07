@@ -45,7 +45,8 @@ void ValidatePathsAreEqual(const FilePath& expected_path,
   EXPECT_FALSE(long_expected_path.empty());
   EXPECT_FALSE(long_actual_path.empty());
 
-  EXPECT_EQ(long_expected_path, long_actual_path);
+  EXPECT_TRUE(base::FilePath::CompareEqualIgnoreCase(long_expected_path.value(),
+                                                     long_actual_path.value()));
 }
 
 void ValidateShortcut(const FilePath& shortcut_path,

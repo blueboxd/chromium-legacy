@@ -13,8 +13,8 @@
  * |                                                 |
  * |  optionLabel_                     ( O)          |
  * |  optionDescription_                             |
- * |                                                 |    SubOptionMode.PREF or
- * |  subOptionLabel                   ( O)          |<-- COOKIES_SESSION_ONLY
+ * |                                                 |
+ * |  subOptionLabel                   ( O)          |<-- SubOptionMode.PREF
  * |  subOptionDescription                           |    (optional)
  * |                                                 |
  * +-------------------------------------------------+
@@ -51,7 +51,6 @@ import {ContentSettingProvider, DefaultContentSetting} from './site_settings_pre
  * @enum {string}
  */
 const SubOptionMode = {
-  COOKIES_SESSION_ONLY: 'cookies-session-only',
   PREF: 'pref',
   NONE: 'none',
 };
@@ -118,24 +117,11 @@ Polymer({
         return /** @type {DefaultContentSetting} */ ({});
       },
     },
-
-    /**
-     * Cookies and Flash settings have a sub-control that is used to mimic a
-     * tri-state value.
-     * @private {chrome.settingsPrivate.PrefObject}
-     */
-    subControlParams_: {
-      type: Object,
-      value() {
-        return /** @type {chrome.settingsPrivate.PrefObject} */ ({});
-      },
-    },
   },
 
   observers: [
     'onCategoryChanged_(category)',
-    'onChangePermissionControl_(category, controlParams_.value, ' +
-        'subControlParams_.value)',
+    'onChangePermissionControl_(category, controlParams_.value)',
   ],
 
   /** @override */
@@ -156,8 +142,7 @@ Polymer({
    */
   onChangePermissionControl_() {
     if (this.category === undefined ||
-        this.controlParams_.value === undefined ||
-        this.subControlParams_.value === undefined) {
+        this.controlParams_.value === undefined) {
       // Do nothing unless all dependencies are defined.
       return;
     }
@@ -205,16 +190,6 @@ Polymer({
         this.browserProxy.setDefaultValueForContentType(
             this.category,
             this.categoryEnabled ? ContentSetting.ASK : ContentSetting.BLOCK);
-        break;
-      case ContentSettingsTypes.COOKIES:
-        // This category is tri-state: "Allow", "Block", "Keep data until
-        // browser quits".
-        let value = ContentSetting.BLOCK;
-        if (this.categoryEnabled) {
-          value = this.subControlParams_.value ? ContentSetting.SESSION_ONLY :
-                                                 ContentSetting.ALLOW;
-        }
-        this.browserProxy.setDefaultValueForContentType(this.category, value);
         break;
       case ContentSettingsTypes.PLUGINS:
         // "Run important content" vs. "Block".
@@ -271,21 +246,6 @@ Polymer({
     // that observers will be notified of the change.
     this.controlParams_ = /** @type {chrome.settingsPrivate.PrefObject} */ (
         Object.assign({'value': prefValue}, basePref));
-
-    if (!!routes.COOKIES &&
-        !loadTimeData.getBoolean('privacySettingsRedesignEnabled')) {
-      assertNotReached(
-          'Cookie specific category logic should be removed when M82 settings' +
-          'redesign solidifies.');
-    } else {
-      const subPrefValue = this.category === ContentSettingsTypes.COOKIES &&
-          update.setting === ContentSetting.SESSION_ONLY;
-      // The subControlParams_ must be replaced (rather than just value changes)
-      // so that observers will be notified of the change.
-      this.subControlParams_ =
-          /** @type {chrome.settingsPrivate.PrefObject} */ (
-              Object.assign({'value': subPrefValue}, basePref));
-    }
   },
 
   /**
@@ -313,14 +273,6 @@ Polymer({
   isToggleDisabled_() {
     return this.category === ContentSettingsTypes.POPUPS &&
         loadTimeData.getBoolean('isGuest');
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
-  showCookiesSubOption_(subOptionMode) {
-    return (subOptionMode === SubOptionMode.COOKIES_SESSION_ONLY);
   },
 
   /**

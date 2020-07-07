@@ -247,6 +247,7 @@ TEST_F(PdfAccessibilityTreeTest, TestPdfAccessibilityTreeCreation) {
     link.url = kChromiumTestUrl;
     link.text_run_index = 0;
     link.text_run_count = 1;
+    link.index_in_page = 0;
     page_objects_.links.push_back(std::move(link));
   }
 
@@ -362,6 +363,7 @@ TEST_F(PdfAccessibilityTreeTest, TestOverlappingAnnots) {
     link.url = kChromiumTestUrl;
     link.text_run_index = 0;
     link.text_run_count = 3;
+    link.index_in_page = 0;
     page_objects_.links.push_back(std::move(link));
   }
 
@@ -371,6 +373,7 @@ TEST_F(PdfAccessibilityTreeTest, TestOverlappingAnnots) {
     link.url = kChromiumTestUrl;
     link.text_run_index = 1;
     link.text_run_count = 2;
+    link.index_in_page = 1;
     page_objects_.links.push_back(std::move(link));
   }
 
@@ -460,6 +463,7 @@ TEST_F(PdfAccessibilityTreeTest, TestHighlightCreation) {
     highlight.bounds = PP_MakeFloatRectFromXYWH(1.0f, 1.0f, 5.0f, 6.0f);
     highlight.text_run_index = 0;
     highlight.text_run_count = 2;
+    highlight.index_in_page = 0;
     highlight.color = kHighlightWhiteColor;
     highlight.note_text = kPopupNoteText;
     page_objects_.highlights.push_back(std::move(highlight));
@@ -680,6 +684,7 @@ TEST_F(PdfAccessibilityTreeTest, TestPreviousNextOnLine) {
     link.url = kChromiumTestUrl;
     link.text_run_index = 2;
     link.text_run_count = 2;
+    link.index_in_page = 0;
     page_objects_.links.push_back(std::move(link));
   }
 
@@ -874,6 +879,7 @@ TEST_F(PdfAccessibilityTreeTest, OutOfBoundLink) {
     ppapi::PdfAccessibilityLinkInfo link;
     link.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 0.0f, 0.0f);
     link.text_run_index = 3;
+    link.index_in_page = 0;
     link.text_run_count = 0;
     page_objects_.links.push_back(std::move(link));
   }
@@ -988,6 +994,7 @@ TEST_F(PdfAccessibilityTreeTest, UnsortedHighlightVector) {
     highlight.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 1.0f, 1.0f);
     highlight.text_run_index = 2;
     highlight.text_run_count = 0;
+    highlight.index_in_page = 0;
     page_objects_.highlights.push_back(std::move(highlight));
   }
 
@@ -997,6 +1004,7 @@ TEST_F(PdfAccessibilityTreeTest, UnsortedHighlightVector) {
     highlight.bounds = PP_MakeFloatRectFromXYWH(2.0f, 2.0f, 1.0f, 1.0f);
     highlight.text_run_index = 0;
     highlight.text_run_count = 1;
+    highlight.index_in_page = 1;
     page_objects_.highlights.push_back(std::move(highlight));
   }
 
@@ -1033,6 +1041,7 @@ TEST_F(PdfAccessibilityTreeTest, OutOfBoundHighlight) {
     highlight.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 1.0f, 1.0f);
     highlight.text_run_index = 3;
     highlight.text_run_count = 0;
+    highlight.index_in_page = 0;
     page_objects_.highlights.push_back(std::move(highlight));
   }
 

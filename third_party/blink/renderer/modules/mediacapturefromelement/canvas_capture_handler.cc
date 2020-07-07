@@ -13,9 +13,7 @@
 #include "base/rand_util.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "media/base/limits.h"
-#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
-#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -24,6 +22,7 @@
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/web_graphics_context_3d_provider_wrapper.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
@@ -511,25 +510,25 @@ void CanvasCaptureHandler::AddVideoCapturerSourceToVideoTrack(
     MediaStreamComponent** component) {
   uint8_t track_id_bytes[64];
   base::RandBytes(track_id_bytes, sizeof(track_id_bytes));
-  WebString track_id = Base64Encode(track_id_bytes);
+  String track_id = Base64Encode(track_id_bytes);
   media::VideoCaptureFormats preferred_formats = source->GetPreferredFormats();
-  blink::MediaStreamVideoSource* media_stream_source =
-      new blink::MediaStreamVideoCapturerSource(
-          frame, blink::WebPlatformMediaStreamSource::SourceStoppedCallback(),
-          std::move(source));
-  blink::WebMediaStreamSource webkit_source;
-  webkit_source.Initialize(track_id, blink::WebMediaStreamSource::kTypeVideo,
-                           track_id, false);
-  webkit_source.SetPlatformSource(base::WrapUnique(media_stream_source));
-  webkit_source.SetCapabilities(ComputeCapabilitiesForVideoSource(
+  auto stream_video_source = std::make_unique<MediaStreamVideoCapturerSource>(
+      frame, WebPlatformMediaStreamSource::SourceStoppedCallback(),
+      std::move(source));
+  auto* stream_video_source_ptr = stream_video_source.get();
+  auto* stream_source = MakeGarbageCollected<MediaStreamSource>(
+      track_id, MediaStreamSource::kTypeVideo, track_id, false);
+  stream_video_source->SetOwner(stream_source);
+  stream_source->SetPlatformSource(std::move(stream_video_source));
+  stream_source->SetCapabilities(ComputeCapabilitiesForVideoSource(
       track_id, preferred_formats,
       media::VideoFacingMode::MEDIA_VIDEO_FACING_NONE,
       false /* is_device_capture */));
 
-  *component = MakeGarbageCollected<MediaStreamComponent>(webkit_source);
+  *component = MakeGarbageCollected<MediaStreamComponent>(stream_source);
   (*component)
       ->SetPlatformTrack(std::make_unique<MediaStreamVideoTrack>(
-          media_stream_source,
+          stream_video_source_ptr,
           MediaStreamVideoSource::ConstraintsOnceCallback(), true));
 }
 

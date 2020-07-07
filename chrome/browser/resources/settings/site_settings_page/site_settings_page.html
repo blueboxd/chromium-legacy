@@ -7,28 +7,20 @@
         width: 100%;
       }
     </style>
-    <template is="dom-if" if="[[!privacySettingsRedesignEnabled_]]">
-      <div class="cr-row first no-min-height">
-        <h2 class="first">$i18n{siteSettingsAllSites}</h2>
-      </div>
-    </template>
-
-    <template is="dom-if" if="[[privacySettingsRedesignEnabled_]]">
-      <picture>
-        <source
-            srcset="chrome://settings/images/permissions_banner_dark.svg"
-            media="(prefers-color-scheme: dark">
-        <img id="banner" alt=""
-            src="chrome://settings/images/permissions_banner.svg">
-      </picture>
-      <div class="cr-row first">
-        <h2>$i18n{siteSettingsRecentPermissionsSectionLabel}</h2>
-      </div>
-      <settings-recent-site-permissions id="recentSitePermissions"
-          no-recent-permissions="{{noRecentSitePermissions_}}"
-          focus-config="[[focusConfig]]">
-      </settings-recent-site-permissions>
-    </template>
+    <picture>
+      <source
+          srcset="chrome://settings/images/permissions_banner_dark.svg"
+          media="(prefers-color-scheme: dark">
+      <img id="banner" alt=""
+          src="chrome://settings/images/permissions_banner.svg">
+    </picture>
+    <div class="cr-row first">
+      <h2>$i18n{siteSettingsRecentPermissionsSectionLabel}</h2>
+    </div>
+    <settings-recent-site-permissions id="recentSitePermissions"
+        no-recent-permissions="{{noRecentSitePermissions_}}"
+        focus-config="[[focusConfig]]">
+    </settings-recent-site-permissions>
 
     <cr-link-row data-route="SITE_SETTINGS_ALL" id="allSites"
         class$="[[getClassForSiteSettingsAllLink_(noRecentSitePermissions_)]]"
@@ -39,44 +31,35 @@
       <h2>$i18n{siteSettingsPermissions}</h2>
     </div>
 
-    <template is="dom-if" if="[[!privacySettingsRedesignEnabled_]]">
-      <settings-site-settings-list id="allSettingsList"
-          category-list="[[lists_.all]]"
+    <settings-site-settings-list id="basicPermissionsList"
+        category-list="[[lists_.permissionsBasic]]"
+        focus-config="[[focusConfig]]">
+    </settings-site-settings-list>
+    <cr-expand-button class="cr-row"
+        expanded="{{permissionsExpanded_}}">
+      <div>$i18n{siteSettingsPermissionsMore}</div>
+    </cr-expand-button>
+    <iron-collapse opened="[[permissionsExpanded_]]">
+      <settings-site-settings-list id="advancedPermissionsList"
+          category-list="[[lists_.permissionsAdvanced]]"
           focus-config="[[focusConfig]]">
       </settings-site-settings-list>
-    </template>
+    </iron-collapse>
 
-    <template is="dom-if" if="[[privacySettingsRedesignEnabled_]]">
-      <settings-site-settings-list id="basicPermissionsList"
-          category-list="[[lists_.permissionsBasic]]"
+    <div class="cr-row first line-only">
+      <h2>$i18n{siteSettingsContent}</h2>
+    </div>
+    <settings-site-settings-list id="basicContentList"
+        category-list="[[lists_.contentBasic]]"
+        focus-config="[[focusConfig]]">
+    </settings-site-settings-list>
+    <cr-expand-button id="expandContent" class="cr-row"
+        expanded="{{contentExpanded_}}">
+      <div>$i18n{siteSettingsContentMore}</div>
+    </cr-expand-button>
+    <iron-collapse opened="[[contentExpanded_]]">
+      <settings-site-settings-list id="advancedContentList"
+          category-list="[[lists_.contentAdvanced]]"
           focus-config="[[focusConfig]]">
       </settings-site-settings-list>
-      <cr-expand-button class="cr-row"
-          expanded="{{permissionsExpanded_}}">
-        <div>$i18n{siteSettingsPermissionsMore}</div>
-      </cr-expand-button>
-      <iron-collapse opened="[[permissionsExpanded_]]">
-        <settings-site-settings-list id="advancedPermissionsList"
-            category-list="[[lists_.permissionsAdvanced]]"
-            focus-config="[[focusConfig]]">
-        </settings-site-settings-list>
-      </iron-collapse>
-
-      <div class="cr-row first line-only">
-        <h2>$i18n{siteSettingsContent}</h2>
-      </div>
-      <settings-site-settings-list id="basicContentList"
-          category-list="[[lists_.contentBasic]]"
-          focus-config="[[focusConfig]]">
-      </settings-site-settings-list>
-      <cr-expand-button id="expandContent" class="cr-row"
-          expanded="{{contentExpanded_}}">
-        <div>$i18n{siteSettingsContentMore}</div>
-      </cr-expand-button>
-      <iron-collapse opened="[[contentExpanded_]]">
-        <settings-site-settings-list id="advancedContentList"
-            category-list="[[lists_.contentAdvanced]]"
-            focus-config="[[focusConfig]]">
-        </settings-site-settings-list>
-      </iron-collapse>
-    </template>
+    </iron-collapse>

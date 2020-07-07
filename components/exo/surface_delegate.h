@@ -44,6 +44,11 @@ class SurfaceDelegate {
   // Called when surface was requested to set a specific application ID label.
   virtual void OnSetApplicationId(const char* application_id) = 0;
 
+  // Whether to hide the shelf when fullscreen. If true, shelf is inaccessible
+  // (plain fullscreen). If false, shelf auto-hides and can be shown with a
+  // mouse gesture (immersive fullscreen).
+  virtual void SetUseImmersiveForFullscreen(bool value) = 0;
+
   // Called when the surface's application wants it to be activated.
   virtual void OnActivationRequested() = 0;
 

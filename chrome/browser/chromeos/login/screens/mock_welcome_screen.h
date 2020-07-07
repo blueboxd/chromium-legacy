@@ -20,9 +20,9 @@ class MockWelcomeScreen : public WelcomeScreen {
                     const base::RepeatingClosure& exit_callback);
   ~MockWelcomeScreen() override;
 
-  MOCK_METHOD0(ShowImpl, void());
-  MOCK_METHOD0(HideImpl, void());
-  MOCK_METHOD1(SetConfiguration, void(base::Value* configuration));
+  MOCK_METHOD(void, ShowImpl, ());
+  MOCK_METHOD(void, HideImpl, ());
+  MOCK_METHOD(void, SetConfiguration, (base::Value * configuration));
 
   void ExitScreen();
 
@@ -38,14 +38,14 @@ class MockWelcomeView : public WelcomeView {
   void Bind(WelcomeScreen* screen) override;
   void Unbind() override;
 
-  MOCK_METHOD1(MockBind, void(WelcomeScreen* screen));
-  MOCK_METHOD0(MockUnbind, void());
-  MOCK_METHOD0(Show, void());
-  MOCK_METHOD0(Hide, void());
-  MOCK_METHOD0(StopDemoModeDetection, void());
-  MOCK_METHOD0(ReloadLocalizedContent, void());
-  MOCK_METHOD1(SetInputMethodId, void(const std::string& input_method_id));
-  MOCK_METHOD1(SetTimezoneId, void(const std::string& timezone_id));
+  MOCK_METHOD(void, MockBind, (WelcomeScreen * screen));
+  MOCK_METHOD(void, MockUnbind, ());
+  MOCK_METHOD(void, Show, ());
+  MOCK_METHOD(void, Hide, ());
+  MOCK_METHOD(void, StopDemoModeDetection, ());
+  MOCK_METHOD(void, ReloadLocalizedContent, ());
+  MOCK_METHOD(void, SetInputMethodId, (const std::string& input_method_id));
+  MOCK_METHOD(void, SetTimezoneId, (const std::string& timezone_id));
 
  private:
   WelcomeScreen* screen_ = nullptr;

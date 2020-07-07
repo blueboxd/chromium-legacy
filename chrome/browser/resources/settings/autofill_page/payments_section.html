@@ -20,14 +20,12 @@
         sub-label="$i18n{enableCreditCardsSublabel}"
         pref="{{prefs.autofill.credit_card_enabled}}">
     </settings-toggle-button>
-    <template is="dom-if" if="[[privacySettingsRedesignEnabled_]]">
-      <settings-toggle-button id="canMakePaymentToggle"
-          aria-label="$i18n{canMakePaymentToggleLabel}"
-          label="$i18n{canMakePaymentToggleLabel}"
-          pref="{{prefs.payments.can_make_payment_enabled}}"
-          on-settings-boolean-control-change="onCanMakePaymentChange_">
-      </settings-toggle-button>
-    </template>
+    <settings-toggle-button id="canMakePaymentToggle"
+        aria-label="$i18n{canMakePaymentToggleLabel}"
+        label="$i18n{canMakePaymentToggleLabel}"
+        pref="{{prefs.payments.can_make_payment_enabled}}"
+        on-settings-boolean-control-change="onCanMakePaymentChange_">
+    </settings-toggle-button>
     <template is="dom-if"
         if="[[shouldShowFidoToggle_(
             prefs.autofill.credit_card_enabled.value,

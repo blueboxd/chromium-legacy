@@ -118,7 +118,6 @@ class ShellSurface : public ShellSurfaceBase, public ash::WindowStateObserver {
   // Overridden from ShellSurfaceBase:
   void SetWidgetBounds(const gfx::Rect& bounds) override;
   bool OnPreWidgetCommit() override;
-  void OnPostWidgetCommit() override;
 
  private:
   class ScopedAnimationsDisabled;

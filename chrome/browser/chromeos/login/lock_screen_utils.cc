@@ -72,6 +72,8 @@ void SetUserInputMethod(const AccountId& account_id,
 }
 
 std::string GetUserLastInputMethod(const AccountId& account_id) {
+  if (!account_id.is_valid())
+    return std::string();
   std::string input_method;
   if (user_manager::known_user::GetUserLastInputMethod(account_id,
                                                        &input_method)) {

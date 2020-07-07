@@ -22,6 +22,49 @@ void RetainElementAndExecuteCallback(
   std::move(callback).Run(status);
 }
 
+void OnScrollIntoViewForClickOrTap(
+    ActionDelegate* delegate,
+    ClickType click_type,
+    const ElementFinder::Result& element,
+    base::OnceCallback<void(const ClientStatus&)> callback,
+    const ClientStatus& scroll_status) {
+  if (!scroll_status.ok()) {
+    VLOG(1) << __func__ << " Failed to scroll to the element.";
+    std::move(callback).Run(scroll_status);
+    return;
+  }
+
+  delegate->ClickOrTapElement(element, click_type, std::move(callback));
+}
+
+void OnWaitForDocumentToBecomeInteractiveForClickOrTap(
+    ActionDelegate* delegate,
+    ClickType click_type,
+    const ElementFinder::Result& element,
+    base::OnceCallback<void(const ClientStatus&)> callback,
+    const ClientStatus& wait_status) {
+  if (!wait_status.ok()) {
+    VLOG(1) << __func__
+            << " Waiting for document to become interactive timed out.";
+    std::move(callback).Run(wait_status);
+    return;
+  }
+
+  delegate->ScrollIntoView(
+      element, base::BindOnce(&OnScrollIntoViewForClickOrTap, delegate,
+                              click_type, element, std::move(callback)));
+}
+
+void PerformClickOrTap(ActionDelegate* delegate,
+                       ClickType click_type,
+                       const ElementFinder::Result& element,
+                       base::OnceCallback<void(const ClientStatus&)> callback) {
+  delegate->WaitForDocumentToBecomeInteractive(
+      element,
+      base::BindOnce(&OnWaitForDocumentToBecomeInteractiveForClickOrTap,
+                     delegate, click_type, element, std::move(callback)));
+}
+
 void OnFindElementForClickOrTap(
     ActionDelegate* delegate,
     ClickType click_type,
@@ -34,10 +77,37 @@ void OnFindElementForClickOrTap(
     return;
   }
 
-  delegate->ClickOrTapElement(
-      *element, click_type,
-      base::BindOnce(&RetainElementAndExecuteCallback, std::move(element),
-                     std::move(callback)));
+  PerformClickOrTap(delegate, click_type, *element,
+                    base::BindOnce(&RetainElementAndExecuteCallback,
+                                   std::move(element), std::move(callback)));
+}
+
+void OnClickOrTapForSendKeyboardInput(
+    ActionDelegate* delegate,
+    const std::vector<UChar32> codepoints,
+    int delay_in_millis,
+    const ElementFinder::Result& element,
+    base::OnceCallback<void(const ClientStatus&)> callback,
+    const ClientStatus& click_status) {
+  if (!click_status.ok()) {
+    std::move(callback).Run(click_status);
+    return;
+  }
+
+  delegate->SendKeyboardInput(element, codepoints, delay_in_millis,
+                              std::move(callback));
+}
+
+void PerformSendKeyboardInput(
+    ActionDelegate* delegate,
+    const std::vector<UChar32> codepoints,
+    int delay_in_millis,
+    const ElementFinder::Result& element,
+    base::OnceCallback<void(const ClientStatus&)> callback) {
+  PerformClickOrTap(
+      delegate, ClickType::CLICK, element,
+      base::BindOnce(&OnClickOrTapForSendKeyboardInput, delegate, codepoints,
+                     delay_in_millis, element, std::move(callback)));
 }
 
 void OnFindElementForSendKeyboardInput(
@@ -54,8 +124,8 @@ void OnFindElementForSendKeyboardInput(
     return;
   }
 
-  delegate->SendKeyboardInput(
-      *element, codepoints, delay_in_millis,
+  PerformSendKeyboardInput(
+      delegate, codepoints, delay_in_millis, *element,
       base::BindOnce(&RetainElementAndExecuteCallback, std::move(element),
                      std::move(callback)));
 }
@@ -74,6 +144,10 @@ void OnFindElementForSetFieldValue(
     return;
   }
 
+  // TODO(b/158153191): This should reuse the callback chains in the util
+  //  instead of relying on the |WebController| to properly implement it.
+  //  This requires to extract more methods and some internal logic of
+  //  |SetFieldValue|.
   delegate->SetFieldValue(
       *element, value, fill_strategy, key_press_delay_in_millisecond,
       base::BindOnce(&RetainElementAndExecuteCallback, std::move(element),

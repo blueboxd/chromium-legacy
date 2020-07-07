@@ -57,13 +57,7 @@ FrameLoadRequest::FrameLoadRequest(LocalDOMWindow* origin_window,
     SetInputStartTime(input_event->TimeStamp());
 
   if (origin_window) {
-    {
-      v8::Isolate* isolate = origin_window->GetIsolate();
-      v8::HandleScope handle_scope(isolate);
-      v8::Local<v8::Context> v8_context = isolate->GetCurrentContext();
-      if (!v8_context.IsEmpty())
-        world_ = &DOMWrapperWorld::Current(isolate);
-    }
+    world_ = origin_window->GetCurrentWorld();
 
     DCHECK(!resource_request_.RequestorOrigin());
     resource_request_.SetRequestorOrigin(origin_window->GetSecurityOrigin());

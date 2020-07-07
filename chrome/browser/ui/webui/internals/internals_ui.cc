@@ -4,26 +4,39 @@
 
 #include "chrome/browser/ui/webui/internals/internals_ui.h"
 
-#include "chrome/browser/ui/webui/internals/query_tiles/query_tiles_internals_ui_message_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/dev_ui_browser_resources.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_data_source.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/ui/webui/internals/query_tiles/query_tiles_internals_ui_message_handler.h"
+#else
+#include "chrome/browser/ui/webui/internals/web_app/web_app_internals_page_handler_impl.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#endif  // defined(OS_ANDROID)
+
 InternalsUI::InternalsUI(content::WebUI* web_ui)
-    : content::WebUIController(web_ui) {
+    : ui::MojoWebUIController(web_ui, /*enable_chrome_send=*/true) {
   profile_ = Profile::FromWebUI(web_ui);
   source_ = content::WebUIDataSource::Create(chrome::kChromeUIInternalsHost);
 
   // Add your sub-URL internals WebUI here.
+#if defined(OS_ANDROID)
+  // chrome://internals/query-tiles
   AddQueryTilesInternals(web_ui);
+#else
+  // chrome://internals/web-app
+  WebAppInternalsPageHandlerImpl::AddPageResources(source_);
+#endif  // defined(OS_ANDROID)
 
   content::WebUIDataSource::Add(profile_, source_);
 }
 
 InternalsUI::~InternalsUI() = default;
 
+#if defined(OS_ANDROID)
 void InternalsUI::AddQueryTilesInternals(content::WebUI* web_ui) {
   source_->AddResourcePath("query_tiles_internals.js",
                            IDR_QUERY_TILES_INTERNALS_JS);
@@ -33,3 +46,14 @@ void InternalsUI::AddQueryTilesInternals(content::WebUI* web_ui) {
   web_ui->AddMessageHandler(
       std::make_unique<QueryTilesInternalsUIMessageHandler>(profile_));
 }
+#else   // defined(OS_ANDROID)
+void InternalsUI::BindInterface(
+    mojo::PendingReceiver<mojom::web_app_internals::WebAppInternalsPageHandler>
+        receiver) {
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<WebAppInternalsPageHandlerImpl>(profile_),
+      std::move(receiver));
+}
+#endif  // defined(OS_ANDROID)
+
+WEB_UI_CONTROLLER_TYPE_IMPL(InternalsUI)

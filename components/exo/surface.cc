@@ -524,6 +524,13 @@ void Surface::SetApplicationId(const char* application_id) {
     delegate_->OnSetApplicationId(application_id);
 }
 
+void Surface::SetUseImmersiveForFullscreen(bool value) {
+  TRACE_EVENT1("exo", "Surface::SetUseImmersiveForFullscreen", "value", value);
+
+  if (delegate_)
+    delegate_->SetUseImmersiveForFullscreen(value);
+}
+
 void Surface::SetColorSpace(gfx::ColorSpace color_space) {
   TRACE_EVENT1("exo", "Surface::SetColorSpace", "color_space",
                color_space.ToString());

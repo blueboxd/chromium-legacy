@@ -69,6 +69,10 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   {% endif %}{# local_dom_window_only #}
   {% endif %}{# not attribute.is_static #}
 
+  {% if interface_name == "Window" and attribute.has_cross_origin_getter %}
+  impl->ReportCoopAccess(info.GetIsolate(), "{{attribute.name}}");
+  {% endif %}
+
   {% if attribute.cached_attribute_validation_method %}
   // [CachedAttribute]
   {% if not attribute.private_property_is_shared_between_getter_and_setter %}

@@ -172,8 +172,8 @@ class COMPONENT_EXPORT(URL) Origin {
   // Copyable and movable.
   Origin(const Origin&);
   Origin& operator=(const Origin&);
-  Origin(Origin&&);
-  Origin& operator=(Origin&&);
+  Origin(Origin&&) noexcept;
+  Origin& operator=(Origin&&) noexcept;
 
   // Creates an Origin from a |scheme|, |host|, and |port|. All the parameters
   // must be valid and canonicalized. Returns nullopt if any parameter is not
@@ -338,8 +338,8 @@ class COMPONENT_EXPORT(URL) Origin {
     // moving it does not.
     Nonce(const Nonce&);
     Nonce& operator=(const Nonce&);
-    Nonce(Nonce&&);
-    Nonce& operator=(Nonce&&);
+    Nonce(Nonce&&) noexcept;
+    Nonce& operator=(Nonce&&) noexcept;
 
     // Note that operator<, used by maps type containers, will trigger |token_|
     // lazy-initialization. Equality comparisons do not.

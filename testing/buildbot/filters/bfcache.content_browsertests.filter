@@ -44,3 +44,7 @@
 -All/SitePerProcessBrowserTest.NavigateMainFrameToChildSite/*
 -All/SitePerProcessBrowserTest.RenderViewHostIsNotReusedAfterDelayedUnloadACK/*
 -All/SitePerProcessBrowserTest.TwoCrossSitePendingNavigationsAndSubframeWins/*
+
+# https://crbug.com/1062923
+# Need investigation.
+-RenderFrameHostImplBrowserTest.CheckIsCurrentBeforeAndAfterUnload

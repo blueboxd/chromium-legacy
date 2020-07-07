@@ -58,6 +58,7 @@ class SubSurface : public SurfaceDelegate, public SurfaceObserver {
   void OnSetParent(Surface* parent, const gfx::Point& position) override;
   void OnSetStartupId(const char* startup_id) override {}
   void OnSetApplicationId(const char* application_id) override {}
+  void SetUseImmersiveForFullscreen(bool value) override {}
   void OnActivationRequested() override {}
 
   // Overridden from SurfaceObserver:

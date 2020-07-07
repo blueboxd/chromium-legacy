@@ -107,9 +107,8 @@ struct CORE_EXPORT FrameLoadRequest {
   }
 
   // The javascript world in which this request initiated.
-  const DOMWrapperWorld& JavascriptWorld() const {
-    // Assume the main world if |world_| is not specified.
-    return world_ ? *world_ : DOMWrapperWorld::MainWorld();
+  const scoped_refptr<const DOMWrapperWorld>& JavascriptWorld() const {
+    return world_;
   }
 
   // The BlobURLToken that should be used when fetching the resource. This

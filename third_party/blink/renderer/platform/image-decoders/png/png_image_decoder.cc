@@ -240,17 +240,19 @@ void PNGImageDecoder::SetBitDepth() {
   png_infop info = reader_->InfoPtr();
   bit_depth_ = png_get_bit_depth(png, info);
   decode_to_half_float_ =
-      (bit_depth_ == 16) &&
-      (high_bit_depth_decoding_option_ == kHighBitDepthToHalfFloat) &&
-      // TODO(zakerinasab): https://crbug.com/874057
-      // Due to a lack of 16 bit APNG encoders, multi-frame 16 bit APNGs are not
-      // supported. In this case the decoder falls back to 8888 decode mode.
-      (repetition_count_ == kAnimationNone);
+      bit_depth_ == 16 &&
+      high_bit_depth_decoding_option_ == kHighBitDepthToHalfFloat &&
+      // TODO(crbug.com/874057): Implement support for 16-bit PNGs w/
+      // ImageFrame::kBlendAtopPreviousFrame.
+      repetition_count_ == kAnimationNone;
 }
 
 bool PNGImageDecoder::ImageIsHighBitDepth() {
   SetBitDepth();
-  return bit_depth_ == 16;
+  return bit_depth_ == 16 &&
+         // TODO(crbug.com/874057): Implement support for 16-bit PNGs w/
+         // ImageFrame::kBlendAtopPreviousFrame.
+         repetition_count_ == kAnimationNone;
 }
 
 bool PNGImageDecoder::SetSize(unsigned width, unsigned height) {

@@ -40,9 +40,9 @@ class LacrosManager : public session_manager::SessionManagerObserver {
 
   ~LacrosManager() override;
 
-  // Returns true if the binary is ready to launch. Typical usage is to check
-  // IsReady(), then if it returns false, call SetLoadCompleteCallback() to be
-  // notified when the download completes.
+  // Returns true if the binary is ready to launch or already launched.
+  // Typical usage is to check IsReady(), then if it returns false,
+  // call SetLoadCompleteCallback() to be notified when the download completes.
   bool IsReady() const;
 
   // Sets a callback to be called when the binary download completes. The
@@ -50,13 +50,49 @@ class LacrosManager : public session_manager::SessionManagerObserver {
   using LoadCompleteCallback = base::OnceCallback<void(bool success)>;
   void SetLoadCompleteCallback(LoadCompleteCallback callback);
 
-  // Starts the lacros-chrome binary.
+  // Opens the browser window in lacros-chrome.
+  // If lacros-chrome is not yet launched, it triggers to launch.
   // This needs to be called after loading. The condition can be checked
   // IsReady(), and if not yet, SetLoadCompletionCallback can be used
   // to wait for the loading.
+  // TODO(crbug.com/1101676): Notify callers the result of opening window
+  // request. Because of asynchronous operations crossing processes,
+  // there's no guarantee that the opening window request succeeds.
+  // Currently, its condition and result are completely hidden behind this
+  // class, so there's no way for callers to handle such error cases properly.
+  // This design often leads the flakiness behavior of the product and testing,
+  // so should be avoided.
   void Start();
 
  private:
+  enum class State {
+    // Lacros is not initialized yet.
+    // Lacros-chrome loading depends on user type, so it needs to wait
+    // for user session.
+    NOT_INITIALIZED,
+
+    // User session started, and now it's loading (downloading and installing)
+    // lacros-chrome.
+    LOADING,
+
+    // Lacros-chrome is unavailable. I.e., failed to load for some reason
+    // or disabled.
+    UNAVAILABLE,
+
+    // Lacros-chrome is loaded and ready for launching.
+    STOPPED,
+
+    // Lacros-chrome is launching.
+    STARTING,
+
+    // Mojo connection to lacros-chrome is established so, it's in
+    // the running state.
+    RUNNING,
+
+    // Lacros-chrome is being terminated soon.
+    TERMINATING,
+  };
+
   // Starting Lacros requires a hop to a background thread. The flow is
   // Start(), then StartBackground() in (the anonymous namespace),
   // then StartForeground().
@@ -69,12 +105,25 @@ class LacrosManager : public session_manager::SessionManagerObserver {
   void OnAshChromeServiceReceiverReceived(
       mojo::PendingReceiver<lacros::mojom::AshChromeService> pending_receiver);
 
+  // Called when the Mojo connection to lacros-chrome is disconnected.
+  // It may be "just a Mojo error" or "lacros-chrome crash".
+  // In either case, terminates lacros-chrome, because there's no longer a
+  // way to communicate with lacros-chrome.
+  void OnMojoDisconnected();
+
+  // Called when lacros-chrome is terminated and successfully wait(2)ed.
+  void OnLacrosChromeTerminated();
+
   // session_manager::SessionManagerObserver:
   // Starts to load the lacros-chrome executable.
   void OnUserSessionStarted(bool is_primary_user) override;
 
   // Called on load completion.
   void OnLoadComplete(const base::FilePath& path);
+
+  State state_ = State::NOT_INITIALIZED;
+
+  int num_pending_start_ = 0;
 
   // May be null in tests.
   scoped_refptr<component_updater::CrOSComponentManager> component_manager_;
@@ -88,9 +137,6 @@ class LacrosManager : public session_manager::SessionManagerObserver {
   LoadCompleteCallback load_complete_callback_;
 
   // Process handle for the lacros-chrome process.
-  // TODO(https://crbug.com/1091863): There is currently no notification for
-  // when lacros-chrome is killed, so the underlying pid may be pointing at a
-  // non-existent process, or a new, unrelated process with the same pid.
   base::Process lacros_process_;
 
   // Proxy to LacrosChromeService mojo service in lacros-chrome.

@@ -86,6 +86,7 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
+#include "chrome/browser/chromeos/login/wizard_context.h"
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -350,6 +351,7 @@ PrefService* WizardController::local_state_for_testing_ = nullptr;
 
 WizardController::WizardController()
     : screen_manager_(std::make_unique<ScreenManager>()),
+      wizard_context_(std::make_unique<WizardContext>()),
       network_state_helper_(std::make_unique<login::NetworkStateHelper>()) {
   AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
   if (accessibility_manager) {
@@ -651,7 +653,7 @@ void WizardController::ShowGaiaPasswordChangedScreen(
   if (current_screen_ != screen) {
     SetCurrentScreen(screen);
   } else {
-    screen->Show();
+    screen->Show(wizard_context_.get());
   }
 }
 
@@ -1447,7 +1449,7 @@ void WizardController::SetCurrentScreen(BaseScreen* new_current) {
   if (current_screen_ == new_current || GetOobeUI() == nullptr)
     return;
 
-  if (new_current && new_current->MaybeSkip())
+  if (new_current && new_current->MaybeSkip(wizard_context_.get()))
     return;
 
   if (current_screen_) {
@@ -1472,7 +1474,7 @@ void WizardController::SetCurrentScreen(BaseScreen* new_current) {
 
   UpdateStatusAreaVisibilityForScreen(current_screen_->screen_id());
   current_screen_->SetConfiguration(&oobe_configuration_);
-  current_screen_->Show();
+  current_screen_->Show(wizard_context_.get());
 }
 
 void WizardController::UpdateStatusAreaVisibilityForScreen(

@@ -320,11 +320,11 @@ bool LocalDOMWindow::ShouldInstallV8Extensions() const {
 }
 
 ContentSecurityPolicy* LocalDOMWindow::GetContentSecurityPolicyForWorld(
-    const DOMWrapperWorld& world) {
-  if (!world.IsIsolatedWorld())
+    const DOMWrapperWorld* world) {
+  if (!world || !world->IsIsolatedWorld())
     return GetContentSecurityPolicy();
 
-  int32_t world_id = world.GetWorldId();
+  int32_t world_id = world->GetWorldId();
   auto it = isolated_world_csp_map_->find(world_id);
   if (it != isolated_world_csp_map_->end())
     return it->value;

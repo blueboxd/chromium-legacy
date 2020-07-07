@@ -44,6 +44,9 @@ constexpr int BrowserNonClientFrameView::kMinimumDragHeight;
 BrowserNonClientFrameView::BrowserNonClientFrameView(BrowserFrame* frame,
                                                      BrowserView* browser_view)
     : frame_(frame), browser_view_(browser_view) {
+  DCHECK(frame_);
+  DCHECK(browser_view_);
+
   // The profile manager may by null in tests.
   if (g_browser_process->profile_manager()) {
     g_browser_process->profile_manager()->
@@ -94,7 +97,7 @@ bool BrowserNonClientFrameView::CanUserExitFullscreen() const {
 }
 
 bool BrowserNonClientFrameView::IsFrameCondensed() const {
-  return frame_ && (frame_->IsMaximized() || frame_->IsFullscreen());
+  return frame_->IsMaximized() || frame_->IsFullscreen();
 }
 
 bool BrowserNonClientFrameView::HasVisibleBackgroundTabShapes(

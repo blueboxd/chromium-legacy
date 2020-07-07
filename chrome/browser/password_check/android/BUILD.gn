@@ -32,6 +32,7 @@ android_library("public_java") {
     "//third_party/android_deps:androidx_preference_preference_java",
   ]
   sources = [
+    "java/src/org/chromium/chrome/browser/password_check/CompromisedCredential.java",
     "java/src/org/chromium/chrome/browser/password_check/PasswordCheck.java",
     "java/src/org/chromium/chrome/browser/password_check/PasswordCheckFragmentView.java",
   ]
@@ -40,6 +41,22 @@ android_library("public_java") {
 android_library("public_ui_java") {
   deps = []
   sources = [ "java/src/org/chromium/chrome/browser/password_check/PasswordCheckComponentUi.java" ]
+}
+
+junit_binary("password_check_junit_tests") {
+  testonly = true
+
+  sources = [ "junit/src/org/chromium/chrome/browser/password_check/PasswordCheckControllerTest.java" ]
+
+  deps = [
+    "//base:base_java",
+    "//base:base_junit_test_support",
+    "//chrome/browser/password_check/android:public_java",
+    "//chrome/browser/password_check/android/internal:internal_java",
+    "//third_party/hamcrest:hamcrest_java",
+    "//third_party/junit",
+    "//ui/android:ui_full_java",
+  ]
 }
 
 android_resources("java_resources") {

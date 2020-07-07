@@ -97,13 +97,8 @@ void AppServiceAppResult::GetContextMenuModel(GetMenuModelCallback callback) {
     return;
   }
 
-  if (base::FeatureList::IsEnabled(features::kAppServiceContextMenu)) {
-    context_menu_ = std::make_unique<AppServiceContextMenu>(
-        this, profile(), app_id(), controller());
-  } else {
-    context_menu_ = AppServiceAppItem::MakeAppContextMenu(
-        app_type_, this, profile(), app_id(), controller(), is_platform_app_);
-  }
+  context_menu_ = std::make_unique<AppServiceContextMenu>(
+      this, profile(), app_id(), controller());
   context_menu_->GetMenuModel(std::move(callback));
 }
 

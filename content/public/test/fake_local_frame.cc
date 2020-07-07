@@ -105,6 +105,10 @@ void FakeLocalFrame::GetSavableResourceLinks(
 #if defined(OS_MACOSX)
 void FakeLocalFrame::GetCharacterIndexAtPoint(const gfx::Point& point) {}
 void FakeLocalFrame::GetFirstRectForRange(const gfx::Range& range) {}
+void FakeLocalFrame::GetStringForRange(const gfx::Range& range,
+                                       GetStringForRangeCallback callback) {
+  std::move(callback).Run(nullptr, gfx::Point());
+}
 #endif
 
 void FakeLocalFrame::BindReportingObserver(

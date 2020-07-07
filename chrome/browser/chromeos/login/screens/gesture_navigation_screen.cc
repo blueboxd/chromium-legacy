@@ -60,7 +60,7 @@ void GestureNavigationScreen::GesturePageChange(const std::string& new_page) {
   current_page_ = new_page;
 }
 
-bool GestureNavigationScreen::MaybeSkip() {
+bool GestureNavigationScreen::MaybeSkip(WizardContext* context) {
   AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
   if (chrome_user_manager_util::IsPublicSessionOrEphemeralLogin() ||
       !ash::features::IsHideShelfControlsInTabletModeEnabled() ||

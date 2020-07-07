@@ -71,9 +71,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/browsing_data/content/browsing_data_helper.h"
-#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/content_settings/core/common/pref_names.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/favicon/core/favicon_driver_observer.h"
 #include "components/nacl/common/buildflags.h"
@@ -1390,24 +1388,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageNewTab) {
 
   // Now navigate in the new tab.
   NavigateToDestURLWithDisposition(WindowOpenDisposition::CURRENT_TAB, false);
-}
-
-class PrerenderIncognitoBrowserTest : public PrerenderBrowserTest {
- public:
-  void SetUpOnMainThread() override {
-    Profile* normal_profile = current_browser()->profile();
-    set_browser(OpenURLOffTheRecord(normal_profile, GURL("about:blank")));
-    PrerenderBrowserTest::SetUpOnMainThread();
-    current_browser()->profile()->GetPrefs()->SetInteger(
-        prefs::kCookieControlsMode,
-        static_cast<int>(content_settings::CookieControlsMode::kOff));
-  }
-};
-
-// Checks that prerendering works in incognito mode.
-IN_PROC_BROWSER_TEST_F(PrerenderIncognitoBrowserTest, PrerenderIncognito) {
-  PrerenderTestURL("/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
-  NavigateToDestURL();
 }
 
 class PrerenderOmniboxBrowserTest : public PrerenderBrowserTest {

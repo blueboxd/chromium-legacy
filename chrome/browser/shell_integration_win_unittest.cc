@@ -332,6 +332,24 @@ TEST_F(ShellIntegrationWinMigrateShortcutTest, MigrateChromeProxyTest) {
   base::win::ValidateShortcut(shortcuts_[1].path, shortcuts_[1].properties);
 }
 
+// This test verifies that MigrateTaskbarPins does a case-insensitive
+// comparison when comparing the shortcut target with the chrome exe path.
+TEST_F(ShellIntegrationWinMigrateShortcutTest, MigrateMixedCaseDirTest) {
+  base::win::ShortcutProperties temp_properties;
+  base::FilePath chrome_proxy_path(web_app::GetChromeProxyPath());
+  ASSERT_EQ(chrome_proxy_path.Extension(), FILE_PATH_LITERAL(".exe"));
+  temp_properties.set_target(
+      chrome_proxy_path.ReplaceExtension(FILE_PATH_LITERAL("EXE")));
+  temp_properties.set_app_id(L"Dumbo.Default");
+  ASSERT_NO_FATAL_FAILURE(
+      AddTestShortcutAndResetProperties(temp_dir_.GetPath(), &temp_properties));
+  MigrateTaskbarPinsCallback(temp_dir_.GetPath(), temp_dir_.GetPath());
+  // Verify that the shortcut was migrated, i.e., its app_id does not contain
+  // the default profile name.
+  shortcuts_[0].properties.set_app_id(chrome_app_id_);
+  base::win::ValidateShortcut(shortcuts_[0].path, shortcuts_[0].properties);
+}
+
 TEST(ShellIntegrationWinTest, GetAppModelIdForProfileTest) {
   const base::string16 base_app_id(install_static::GetBaseAppId());
 

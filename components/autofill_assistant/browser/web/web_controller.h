@@ -80,6 +80,17 @@ class WebController {
                            bool strict_mode,
                            ElementFinder::Callback callback);
 
+  // Scroll the |element| into view.
+  virtual void ScrollIntoView(
+      const ElementFinder::Result& element,
+      base::OnceCallback<void(const ClientStatus&)> callback);
+
+  // Wait for the |element|'s document to become interactive. This runs for
+  // a predefined number of turns.
+  virtual void WaitForDocumentToBecomeInteractive(
+      const ElementFinder::Result& element,
+      base::OnceCallback<void(const ClientStatus&)> callback);
+
   // Perform a mouse left button click or a touch tap on the element given by
   // |selector| and return the result through callback.
   virtual void ClickOrTapElement(
@@ -260,24 +271,13 @@ class WebController {
     autofill::ContentAutofillDriver* content_autofill_driver_;
   };
 
-  void OnWaitForDocumentToBecomeInteractiveForClickOrTap(
-      const ElementFinder::Result& target_element,
-      ClickType click_type,
-      base::OnceCallback<void(const ClientStatus&)> callback,
-      bool result);
-  void InternalClickOrTapElement(
-      const ElementFinder::Result& target_element,
-      ClickType click_type,
-      base::OnceCallback<void(const ClientStatus&)> callback);
-  void OnScrollIntoViewForClickOrTap(
-      const ElementFinder::Result& target_element,
-      ClickType click_type,
+  void OnJavaScriptResult(
       base::OnceCallback<void(const ClientStatus&)> callback,
       const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
-  void OnClickJS(base::OnceCallback<void(const ClientStatus&)> callback,
-                 const DevtoolsClient::ReplyStatus& reply_status,
-                 std::unique_ptr<runtime::CallFunctionOnResult> result);
+  void OnWaitForDocumentToBecomeInteractive(
+      base::OnceCallback<void(const ClientStatus&)> callback,
+      bool result);
   void TapOrClickOnCoordinates(
       ElementPositionGetter* getter_to_release,
       const std::string& node_frame_id,
@@ -386,21 +386,39 @@ class WebController {
           callback,
       const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
-  void OnClearFieldForSendKeyboardInput(
+  void OnClearFieldForSetFieldValue(
       const ElementFinder::Result& element,
       const std::vector<UChar32>& codepoints,
       int key_press_delay_in_millisecond,
       base::OnceCallback<void(const ClientStatus&)> callback,
       const ClientStatus& clear_status);
+  void OnWaitForDocumentToBecomeInteractiveForSetFieldValue(
+      const ElementFinder::Result& element,
+      const std::vector<UChar32>& codepoints,
+      int key_press_delay_in_millisecond,
+      base::OnceCallback<void(const ClientStatus&)> callback,
+      const ClientStatus& wait_status);
+  void OnScrollIntoViewForSetFieldValue(
+      const ElementFinder::Result& element,
+      const std::vector<UChar32>& codepoints,
+      int key_press_delay_in_millisecond,
+      base::OnceCallback<void(const ClientStatus&)> callback,
+      const ClientStatus& scroll_status);
+  void OnClickOrTapElementForSetFieldValue(
+      const ElementFinder::Result& element,
+      const std::vector<UChar32>& codepoints,
+      int key_press_delay_in_millisecond,
+      base::OnceCallback<void(const ClientStatus&)> callback,
+      const ClientStatus& click_status);
   void SelectFieldValueForReplace(
       const ElementFinder::Result& element,
       base::OnceCallback<void(const ClientStatus&)> callback);
-  void OnSelectFieldValueForDispatchKeys(
+  void OnSelectFieldValueForReplace(
       const ElementFinder::Result& element,
       base::OnceCallback<void(const ClientStatus&)> callback,
       const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
-  void OnFieldValueSelectedForDispatchKeys(
+  void OnFieldValueSelectedSetFieldValue(
       const ElementFinder::Result& element,
       const std::vector<UChar32>& codepoints,
       int key_press_delay_in_millisecond,
@@ -419,14 +437,10 @@ class WebController {
       size_t index,
       int delay_in_milli,
       base::OnceCallback<void(const ClientStatus&)> callback);
-  void InternalSetFieldValue(
+  void SetValueAttribute(
       const ElementFinder::Result& element,
       const std::string& value,
       base::OnceCallback<void(const ClientStatus&)> callback);
-  void OnSetValueAttribute(
-      base::OnceCallback<void(const ClientStatus&)> callback,
-      const DevtoolsClient::ReplyStatus& reply_status,
-      std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnFindElementForSetAttribute(
       const std::vector<std::string>& attribute,
       const std::string& value,
@@ -436,12 +450,6 @@ class WebController {
   void OnSetAttribute(base::OnceCallback<void(const ClientStatus&)> callback,
                       const DevtoolsClient::ReplyStatus& reply_status,
                       std::unique_ptr<runtime::CallFunctionOnResult> result);
-  void OnClickElementForSendKeyboardInput(
-      const ElementFinder::Result& target_element,
-      const std::vector<UChar32>& codepoints,
-      int delay_in_milli,
-      base::OnceCallback<void(const ClientStatus&)> callback,
-      const ClientStatus& click_status);
   void OnFindElementForGetOuterHtml(
       base::OnceCallback<void(const ClientStatus&, const std::string&)>
           callback,
@@ -483,12 +491,12 @@ class WebController {
       const UChar32 codepoint);
 
   // Waits for the document.readyState to be 'interactive' or 'complete'.
-  void WaitForDocumentToBecomeInteractive(
+  void InternalWaitForDocumentToBecomeInteractive(
       int remaining_rounds,
       const std::string& object_id,
       const std::string& node_frame_id,
       base::OnceCallback<void(bool)> callback);
-  void OnWaitForDocumentToBecomeInteractive(
+  void OnInternalWaitForDocumentToBecomeInteractive(
       int remaining_rounds,
       const std::string& object_id,
       const std::string& node_frame_id,

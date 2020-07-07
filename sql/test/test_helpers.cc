@@ -15,6 +15,7 @@
 #include "base/files/scoped_file.h"
 #include "base/threading/thread_restrictions.h"
 #include "sql/database.h"
+#include "sql/sql_features.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
@@ -76,6 +77,19 @@ namespace sql {
 namespace test {
 
 bool CorruptSizeInHeader(const base::FilePath& db_path) {
+  // Checkpoint the WAL file in Truncate mode before corrupting to ensure that
+  // any future transaction always touches the DB file and not just the WAL
+  // file.
+  if (base::FeatureList::IsEnabled(sql::features::kEnableWALModeByDefault)) {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    sql::Database db;
+    if (!db.Open(db_path))
+      return false;
+    if (!db.Execute("PRAGMA wal_checkpoint(TRUNCATE)"))
+      return false;
+    db.Close();
+  }
+
   // See http://www.sqlite.org/fileformat.html#database_header
   const size_t kHeaderSize = 100;
 

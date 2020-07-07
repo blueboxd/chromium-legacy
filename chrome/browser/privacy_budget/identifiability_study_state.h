@@ -16,7 +16,7 @@
 #include "third_party/blink/public/common/privacy_budget/identifiable_surface.h"
 
 namespace test_utils {
-class InspectableIdentifiabilityStudySettings;
+class InspectableIdentifiabilityStudyState;
 }  // namespace test_utils
 
 // Current state of the identifiability study.
@@ -85,7 +85,7 @@ class IdentifiabilityStudyState {
   static constexpr int kGeneratorVersion = 1;
 
  private:
-  friend class test_utils::InspectableIdentifiabilityStudySettings;
+  friend class test_utils::InspectableIdentifiabilityStudyState;
 
   using IdentifiableSurfaceSet =
       PrivacyBudgetSettingsProvider::IdentifiableSurfaceSet;

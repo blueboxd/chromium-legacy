@@ -36,11 +36,12 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
 
   const FragmentData& fragment_data = object.FirstFragment();
   DCHECK(fragment_data.HasLocalBorderBoxProperties());
-  // SPv1 compositing forces single fragment for composited elements.
+  // SPv1 compositing forces single fragment for directly composited elements.
   DCHECK(!fragment_data.NextFragment() ||
          // We create multiple fragments for composited repeating fixed-position
          // during printing.
-         object.GetDocument().Printing());
+         object.GetDocument().Printing() ||
+         !object.CanBeCompositedForDirectReasons());
 
   PhysicalOffset layout_snapped_paint_offset =
       fragment_data.PaintOffset() - paint_layer->SubpixelAccumulation();

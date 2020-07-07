@@ -215,6 +215,11 @@ class PLATFORM_EXPORT ThreadHeap {
     return not_fully_constructed_worklist_.get();
   }
 
+  NotFullyConstructedWorklist* GetPreviouslyNotFullyConstructedWorklist()
+      const {
+    return previously_not_fully_constructed_worklist_.get();
+  }
+
   WeakCallbackWorklist* GetWeakCallbackWorklist() const {
     return weak_callback_worklist_.get();
   }

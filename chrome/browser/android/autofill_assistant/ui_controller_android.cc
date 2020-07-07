@@ -29,7 +29,7 @@
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantModel_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantOverlayModel_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AutofillAssistantUiController_jni.h"
-#include "chrome/browser/android/autofill_assistant/generic_ui_controller_android.h"
+#include "chrome/browser/android/autofill_assistant/generic_ui_root_controller_android.h"
 #include "chrome/browser/android/autofill_assistant/ui_controller_android_utils.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
@@ -1767,13 +1767,13 @@ void UiControllerAndroid::ResetGenericUiControllers() {
   Java_AssistantGenericUiModel_setView(env, GetGenericUiModel(), nullptr);
 }
 
-std::unique_ptr<GenericUiControllerAndroid>
+std::unique_ptr<GenericUiRootControllerAndroid>
 UiControllerAndroid::CreateGenericUiControllerForProto(
     const GenericUserInterfaceProto& proto) {
   JNIEnv* env = AttachCurrentThread();
   auto jcontext =
       Java_AutofillAssistantUiController_getContext(env, java_object_);
-  return GenericUiControllerAndroid::CreateFromProto(
+  return GenericUiRootControllerAndroid::CreateFromProto(
       proto, base::android::ScopedJavaGlobalRef<jobject>(jcontext),
       generic_ui_delegate_.GetJavaObject(), ui_delegate_->GetEventHandler(),
       ui_delegate_->GetUserModel(), ui_delegate_->GetBasicInteractions());

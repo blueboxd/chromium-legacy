@@ -255,10 +255,6 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       base::FeatureList::IsEnabled(content_settings::kImprovedCookieControls));
 
   html_source->AddBoolean(
-      "privacySettingsRedesignEnabled",
-      base::FeatureList::IsEnabled(features::kPrivacySettingsRedesign));
-
-  html_source->AddBoolean(
       "safeBrowsingEnhancedEnabled",
       base::FeatureList::IsEnabled(safe_browsing::kEnhancedProtection));
 

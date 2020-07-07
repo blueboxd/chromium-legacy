@@ -1623,8 +1623,9 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 // Tests that video in Picture-in-Picture is paused when user presses
 // VKEY_MEDIA_PLAY_PAUSE key even if there's another media playing in a
 // foreground tab.
+// TODO(https://crbug.com/1070810) flaky test
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
-                       HandleMediaKeyPlayPause) {
+                       DISABLED_HandleMediaKeyPlayPause) {
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(kPictureInPictureWindowSizePage));

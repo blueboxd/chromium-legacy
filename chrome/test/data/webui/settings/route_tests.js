@@ -189,11 +189,11 @@ suite('route', function() {
 
     // Path with a slash.
     assertEquals(
-        routes.SITE_SETTINGS_COOKIES,
-        Router.getInstance().getRouteForPath('/content/cookies'));
+        routes.SITE_SETTINGS_SITE_DETAILS,
+        Router.getInstance().getRouteForPath('/content/siteDetails/'));
     assertEquals(
-        routes.SITE_SETTINGS_COOKIES,
-        Router.getInstance().getRouteForPath('/content/cookies/'));
+        routes.SITE_SETTINGS_SITE_DETAILS,
+        Router.getInstance().getRouteForPath('/content/siteDetails'));
   });
 
   test('isNavigableDialog', function() {

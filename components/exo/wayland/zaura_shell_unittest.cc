@@ -4,6 +4,8 @@
 
 #include "components/exo/wayland/zaura_shell.h"
 
+#include <aura-shell-server-protocol.h>
+
 #include <memory>
 
 #include "ash/session/session_controller_impl.h"
@@ -13,6 +15,7 @@
 #include "base/time/time.h"
 #include "components/exo/buffer.h"
 #include "components/exo/test/exo_test_base.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window_occlusion_tracker.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -54,6 +57,29 @@ class TestAuraSurface : public AuraSurface {
   int num_occlusion_updates_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestAuraSurface);
+};
+
+class MockSurfaceDelegate : public SurfaceDelegate {
+ public:
+  MOCK_METHOD(void, OnSurfaceCommit, (), (override));
+  MOCK_METHOD(bool, IsSurfaceSynchronized, (), (const, override));
+  MOCK_METHOD(bool, IsInputEnabled, (Surface * surface), (const, override));
+  MOCK_METHOD(void, OnSetFrame, (SurfaceFrameType type), (override));
+  MOCK_METHOD(void,
+              OnSetFrameColors,
+              (SkColor active_color, SkColor inactive_color),
+              (override));
+  MOCK_METHOD(void,
+              OnSetParent,
+              (Surface * parent, const gfx::Point& position),
+              (override));
+  MOCK_METHOD(void, OnSetStartupId, (const char* startup_id), (override));
+  MOCK_METHOD(void,
+              OnSetApplicationId,
+              (const char* application_id),
+              (override));
+  MOCK_METHOD(void, SetUseImmersiveForFullscreen, (bool value), (override));
+  MOCK_METHOD(void, OnActivationRequested, (), (override));
 };
 
 }  // namespace
@@ -274,6 +300,24 @@ TEST_F(ZAuraSurfaceTest, ZeroSizeWindowSendsZeroOcclusionFraction) {
   surface().Commit();
   surface().OnWindowOcclusionChanged();
   EXPECT_EQ(0.0f, aura_surface().last_sent_occlusion_fraction());
+}
+
+TEST_F(ZAuraSurfaceTest, CanSetFullscreenModeToPlain) {
+  MockSurfaceDelegate delegate;
+  wl_resource resource;
+  resource.data = &aura_surface();
+  surface().SetSurfaceDelegate(&delegate);
+  EXPECT_CALL(delegate, SetUseImmersiveForFullscreen(false));
+
+  aura_surface().SetFullscreenMode(ZAURA_SURFACE_FULLSCREEN_MODE_PLAIN);
+}
+
+TEST_F(ZAuraSurfaceTest, CanSetFullscreenModeToImmersive) {
+  MockSurfaceDelegate delegate;
+  surface().SetSurfaceDelegate(&delegate);
+  EXPECT_CALL(delegate, SetUseImmersiveForFullscreen(true));
+
+  aura_surface().SetFullscreenMode(ZAURA_SURFACE_FULLSCREEN_MODE_IMMERSIVE);
 }
 
 }  // namespace wayland

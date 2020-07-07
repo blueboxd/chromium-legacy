@@ -385,6 +385,10 @@ GURL URLRequestJob::ComputeReferrerForPolicy(
   return GURL();
 }
 
+int URLRequestJob::NotifyConnected() {
+  return request_->NotifyConnected();
+}
+
 void URLRequestJob::NotifyCertificateRequested(
     SSLCertRequestInfo* cert_request_info) {
   request_->NotifyCertificateRequested(cert_request_info);

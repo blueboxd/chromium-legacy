@@ -838,6 +838,12 @@ const char kCrossOriginOpenerPolicyAccessReportingName[] =
 const char kCrossOriginOpenerPolicyAccessReportingDescription[] =
     "Enables Cross Origin Opener Policy access reporting.";
 
+const char kCrossOriginIsolatedName[] = "crossOriginIsolated";
+const char kCrossOriginIsolatedDescription[] =
+    "Marks some BrowsingContext groups as \"crossOriginIsolated\". They can "
+    "only host documents using a compatible set of {Origin,COOP,COEP}, "
+    "effectively isolating.";
+
 const char kDisableKeepaliveFetchName[] = "Disable fetch with keepalive set";
 const char kDisableKeepaliveFetchDescription[] =
     "Disable fetch with keepalive set "

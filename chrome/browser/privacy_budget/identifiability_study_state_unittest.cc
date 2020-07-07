@@ -21,15 +21,14 @@
 
 namespace test_utils {
 
-// This class is a friend of IdentifiabilityStudySettings and can reach into the
+// This class is a friend of IdentifiabilityStudyState and can reach into the
 // internals. Use this as a last resort.
-class InspectableIdentifiabilityStudySettings
-    : public IdentifiabilityStudyState {
+class InspectableIdentifiabilityStudyState : public IdentifiabilityStudyState {
  public:
   using IdentifiabilityStudyState::IdentifiableSurfaceSet;
   using IdentifiabilityStudyState::IdentifiableSurfaceTypeSet;
 
-  explicit InspectableIdentifiabilityStudySettings(PrefService* pref_service)
+  explicit InspectableIdentifiabilityStudyState(PrefService* pref_service)
       : IdentifiabilityStudyState(pref_service) {}
 
   const IdentifiableSurfaceSet& active_surfaces() const {
@@ -77,15 +76,15 @@ std::string SurfaceListString(
 
 // Make names short
 using IdentifiableSurfaceSet =
-    test_utils::InspectableIdentifiabilityStudySettings::IdentifiableSurfaceSet;
+    test_utils::InspectableIdentifiabilityStudyState::IdentifiableSurfaceSet;
 using IdentifiableSurfaceTypeSet = test_utils::
-    InspectableIdentifiabilityStudySettings::IdentifiableSurfaceTypeSet;
+    InspectableIdentifiabilityStudyState::IdentifiableSurfaceTypeSet;
 
 }  // namespace
 
-class IdentifiabilityStudySettingsTest : public ::testing::Test {
+class IdentifiabilityStudyStateTest : public ::testing::Test {
  public:
-  IdentifiabilityStudySettingsTest() {
+  IdentifiabilityStudyStateTest() {
     // Uses FeatureLists. Hence needs to be initialized in the constructor lest
     // we add any multithreading tests here.
     auto parameters = test::ScopedPrivacyBudgetConfig::Parameters{};
@@ -103,7 +102,7 @@ class IdentifiabilityStudySettingsTest : public ::testing::Test {
   test::ScopedPrivacyBudgetConfig config_;
 };
 
-TEST_F(IdentifiabilityStudySettingsTest, InstantiateAndInitialize) {
+TEST_F(IdentifiabilityStudyStateTest, InstantiateAndInitialize) {
   auto settings = std::make_unique<IdentifiabilityStudyState>(pref_service());
 
   // Successful initialization should result in a new PRNG seed and setting the
@@ -113,7 +112,7 @@ TEST_F(IdentifiabilityStudySettingsTest, InstantiateAndInitialize) {
   EXPECT_NE(UINT64_C(0), pref_service()->GetUint64(prefs::kPrivacyBudgetSeed));
 }
 
-TEST_F(IdentifiabilityStudySettingsTest, ReInitializeWhenGenerationChanges) {
+TEST_F(IdentifiabilityStudyStateTest, ReInitializeWhenGenerationChanges) {
   pref_service()->SetInteger(prefs::kPrivacyBudgetGeneration,
                              kTestingGeneration - 1);
   pref_service()->SetUint64(prefs::kPrivacyBudgetSeed, kFakeSeed);
@@ -127,7 +126,7 @@ TEST_F(IdentifiabilityStudySettingsTest, ReInitializeWhenGenerationChanges) {
   EXPECT_NE(kFakeSeed, pref_service()->GetUint64(prefs::kPrivacyBudgetSeed));
 }
 
-TEST_F(IdentifiabilityStudySettingsTest, LoadsFromPrefs) {
+TEST_F(IdentifiabilityStudyStateTest, LoadsFromPrefs) {
   pref_service()->SetInteger(prefs::kPrivacyBudgetGeneration,
                              kTestingGeneration);
   pref_service()->SetUint64(prefs::kPrivacyBudgetSeed, kFakeSeed);
@@ -137,7 +136,7 @@ TEST_F(IdentifiabilityStudySettingsTest, LoadsFromPrefs) {
   pref_service()->SetString(prefs::kPrivacyBudgetRetiredSurfaces,
                             SurfaceListString({kBlockedTypeSurface1}));
   auto settings =
-      std::make_unique<test_utils::InspectableIdentifiabilityStudySettings>(
+      std::make_unique<test_utils::InspectableIdentifiabilityStudyState>(
           pref_service());
   EXPECT_EQ((IdentifiableSurfaceSet{kRegularSurface1, kRegularSurface2}),
             settings->active_surfaces());
@@ -145,7 +144,7 @@ TEST_F(IdentifiabilityStudySettingsTest, LoadsFromPrefs) {
             settings->retired_surfaces());
 }
 
-TEST_F(IdentifiabilityStudySettingsTest, ReconcileBlockedSurfaces) {
+TEST_F(IdentifiabilityStudyStateTest, ReconcileBlockedSurfaces) {
   pref_service()->SetInteger(prefs::kPrivacyBudgetGeneration,
                              kTestingGeneration);
   pref_service()->SetUint64(prefs::kPrivacyBudgetSeed, kFakeSeed);
@@ -154,7 +153,7 @@ TEST_F(IdentifiabilityStudySettingsTest, ReconcileBlockedSurfaces) {
       SurfaceListString(
           {kBlockedSurface1, kRegularSurface1, kRegularSurface2}));
   auto settings =
-      std::make_unique<test_utils::InspectableIdentifiabilityStudySettings>(
+      std::make_unique<test_utils::InspectableIdentifiabilityStudyState>(
           pref_service());
   EXPECT_EQ((IdentifiableSurfaceSet{kRegularSurface1, kRegularSurface2}),
             settings->active_surfaces());
@@ -162,7 +161,7 @@ TEST_F(IdentifiabilityStudySettingsTest, ReconcileBlockedSurfaces) {
             settings->retired_surfaces());
 }
 
-TEST_F(IdentifiabilityStudySettingsTest, ReconcileBlockedTypes) {
+TEST_F(IdentifiabilityStudyStateTest, ReconcileBlockedTypes) {
   pref_service()->SetInteger(prefs::kPrivacyBudgetGeneration,
                              kTestingGeneration);
   pref_service()->SetUint64(prefs::kPrivacyBudgetSeed, kFakeSeed);
@@ -171,7 +170,7 @@ TEST_F(IdentifiabilityStudySettingsTest, ReconcileBlockedTypes) {
       SurfaceListString(
           {kBlockedTypeSurface1, kRegularSurface1, kRegularSurface2}));
   auto settings =
-      std::make_unique<test_utils::InspectableIdentifiabilityStudySettings>(
+      std::make_unique<test_utils::InspectableIdentifiabilityStudyState>(
           pref_service());
   EXPECT_EQ((IdentifiableSurfaceSet{kRegularSurface1, kRegularSurface2}),
             settings->active_surfaces());
@@ -181,7 +180,7 @@ TEST_F(IdentifiabilityStudySettingsTest, ReconcileBlockedTypes) {
             pref_service()->GetString(prefs::kPrivacyBudgetRetiredSurfaces));
 }
 
-TEST_F(IdentifiabilityStudySettingsTest, AllowsActive) {
+TEST_F(IdentifiabilityStudyStateTest, AllowsActive) {
   pref_service()->SetInteger(prefs::kPrivacyBudgetGeneration,
                              kTestingGeneration);
   pref_service()->SetUint64(prefs::kPrivacyBudgetSeed, kFakeSeed);
@@ -190,7 +189,7 @@ TEST_F(IdentifiabilityStudySettingsTest, AllowsActive) {
       SurfaceListString(
           {kRegularSurface1, kRegularSurface2, kRegularSurface3}));
   auto settings =
-      std::make_unique<test_utils::InspectableIdentifiabilityStudySettings>(
+      std::make_unique<test_utils::InspectableIdentifiabilityStudyState>(
           pref_service());
   EXPECT_TRUE(settings->ShouldSampleSurface(kRegularSurface1));
   EXPECT_TRUE(settings->ShouldSampleSurface(kRegularSurface2));
@@ -200,7 +199,7 @@ TEST_F(IdentifiabilityStudySettingsTest, AllowsActive) {
             settings->active_surfaces());
 }
 
-TEST_F(IdentifiabilityStudySettingsTest, BlocksBlocked) {
+TEST_F(IdentifiabilityStudyStateTest, BlocksBlocked) {
   pref_service()->SetInteger(prefs::kPrivacyBudgetGeneration,
                              kTestingGeneration);
   pref_service()->SetUint64(prefs::kPrivacyBudgetSeed, kFakeSeed);
@@ -208,15 +207,15 @@ TEST_F(IdentifiabilityStudySettingsTest, BlocksBlocked) {
       prefs::kPrivacyBudgetActiveSurfaces,
       SurfaceListString({kRegularSurface1, kRegularSurface2}));
   auto settings =
-      std::make_unique<test_utils::InspectableIdentifiabilityStudySettings>(
+      std::make_unique<test_utils::InspectableIdentifiabilityStudyState>(
           pref_service());
   EXPECT_FALSE(settings->ShouldSampleSurface(kBlockedSurface1));
   EXPECT_FALSE(settings->ShouldSampleSurface(kBlockedTypeSurface1));
 }
 
-TEST_F(IdentifiabilityStudySettingsTest, UpdatesActive) {
+TEST_F(IdentifiabilityStudyStateTest, UpdatesActive) {
   auto settings =
-      std::make_unique<test_utils::InspectableIdentifiabilityStudySettings>(
+      std::make_unique<test_utils::InspectableIdentifiabilityStudyState>(
           pref_service());
   EXPECT_TRUE(settings->ShouldSampleSurface(kRegularSurface1));
   EXPECT_EQ((IdentifiableSurfaceSet{kRegularSurface1}),
@@ -226,7 +225,7 @@ TEST_F(IdentifiabilityStudySettingsTest, UpdatesActive) {
 }
 
 // Verify that the study parameters don't overflow.
-TEST(IdentifiabilityStudySettingsStandaloneTest, HighClamps) {
+TEST(IdentifiabilityStudyStateStandaloneTest, HighClamps) {
   auto params = test::ScopedPrivacyBudgetConfig::Parameters{};
   params.max_surfaces = features::kMaxIdentifiabilityStudyMaxSurfaces + 1;
   params.surface_selection_rate =
@@ -235,7 +234,7 @@ TEST(IdentifiabilityStudySettingsStandaloneTest, HighClamps) {
 
   TestingPrefServiceSimple pref_service;
   prefs::RegisterPrivacyBudgetPrefs(pref_service.registry());
-  test_utils::InspectableIdentifiabilityStudySettings settings(&pref_service);
+  test_utils::InspectableIdentifiabilityStudyState settings(&pref_service);
 
   EXPECT_EQ(features::kMaxIdentifiabilityStudyMaxSurfaces,
             settings.max_active_surfaces());
@@ -244,7 +243,7 @@ TEST(IdentifiabilityStudySettingsStandaloneTest, HighClamps) {
 }
 
 // Verify that the study parameters don't underflow.
-TEST(IdentifiabilityStudySettingsStandaloneTest, LowClamps) {
+TEST(IdentifiabilityStudyStateStandaloneTest, LowClamps) {
   auto params = test::ScopedPrivacyBudgetConfig::Parameters{};
   params.max_surfaces = -1;
   params.surface_selection_rate = -1;
@@ -252,13 +251,13 @@ TEST(IdentifiabilityStudySettingsStandaloneTest, LowClamps) {
 
   TestingPrefServiceSimple pref_service;
   prefs::RegisterPrivacyBudgetPrefs(pref_service.registry());
-  test_utils::InspectableIdentifiabilityStudySettings settings(&pref_service);
+  test_utils::InspectableIdentifiabilityStudyState settings(&pref_service);
 
   EXPECT_EQ(0, settings.max_active_surfaces());
   EXPECT_EQ(0, settings.surface_selection_rate());
 }
 
-TEST(IdentifiabilityStudySettingsStandaloneTest, Disabled) {
+TEST(IdentifiabilityStudyStateStandaloneTest, Disabled) {
   auto params = test::ScopedPrivacyBudgetConfig::Parameters{};
   params.enabled = false;
   params.surface_selection_rate = 1;
@@ -266,7 +265,7 @@ TEST(IdentifiabilityStudySettingsStandaloneTest, Disabled) {
 
   TestingPrefServiceSimple pref_service;
   prefs::RegisterPrivacyBudgetPrefs(pref_service.registry());
-  test_utils::InspectableIdentifiabilityStudySettings settings(&pref_service);
+  test_utils::InspectableIdentifiabilityStudyState settings(&pref_service);
 
   EXPECT_FALSE(settings.IsActive());
   EXPECT_FALSE(settings.ShouldSampleSurface(kRegularSurface1));

@@ -165,6 +165,11 @@ class Surface final : public ui::PropertyHandler {
   // Request that surface should have a specific application ID string.
   void SetApplicationId(const char* application_id);
 
+  // Whether to hide the shelf when fullscreen. If true, shelf is inaccessible
+  // (plain fullscreen). If false, shelf auto-hides and can be shown with a
+  // mouse gesture (immersive fullscreen).
+  void SetUseImmersiveForFullscreen(bool value);
+
   // This sets the color space for the buffer for this surface.
   void SetColorSpace(gfx::ColorSpace color_space);
 

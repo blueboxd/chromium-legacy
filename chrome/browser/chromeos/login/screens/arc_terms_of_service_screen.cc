@@ -73,7 +73,7 @@ ArcTermsOfServiceScreen::~ArcTermsOfServiceScreen() {
   }
 }
 
-bool ArcTermsOfServiceScreen::MaybeSkip() {
+bool ArcTermsOfServiceScreen::MaybeSkip(WizardContext* context) {
   if (!arc::IsArcTermsOfServiceOobeNegotiationNeeded()) {
     exit_callback_.Run(Result::NOT_APPLICABLE);
     return true;

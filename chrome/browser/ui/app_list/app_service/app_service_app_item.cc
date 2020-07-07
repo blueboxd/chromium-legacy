@@ -15,69 +15,12 @@
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_service/app_service_context_menu.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_context_menu.h"
-#include "chrome/browser/ui/app_list/crostini/crostini_app_context_menu.h"
 #include "chrome/browser/ui/app_list/extension_app_context_menu.h"
-#include "chrome/browser/ui/app_list/web_app_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/common/chrome_features.h"
 
 // static
 const char AppServiceAppItem::kItemType[] = "AppServiceAppItem";
-
-// static
-std::unique_ptr<app_list::AppContextMenu> AppServiceAppItem::MakeAppContextMenu(
-    apps::mojom::AppType app_type,
-    AppContextMenuDelegate* delegate,
-    Profile* profile,
-    const std::string& app_id,
-    AppListControllerDelegate* controller,
-    bool is_platform_app) {
-  // Terminal System App uses CrostiniAppContextMenu.
-  if (app_id == crostini::kCrostiniTerminalSystemAppId) {
-    return std::make_unique<CrostiniAppContextMenu>(profile, app_id,
-                                                    controller);
-  }
-
-  switch (app_type) {
-    case apps::mojom::AppType::kUnknown:
-    case apps::mojom::AppType::kBuiltIn:
-    case apps::mojom::AppType::kLacros:
-      return std::make_unique<app_list::AppContextMenu>(delegate, profile,
-                                                        app_id, controller);
-
-    case apps::mojom::AppType::kArc:
-      return std::make_unique<ArcAppContextMenu>(delegate, profile, app_id,
-                                                 controller);
-
-    case apps::mojom::AppType::kCrostini:
-      return std::make_unique<CrostiniAppContextMenu>(profile, app_id,
-                                                      controller);
-
-    case apps::mojom::AppType::kPluginVm:
-      return std::make_unique<app_list::AppContextMenu>(delegate, profile,
-                                                        app_id, controller);
-
-    case apps::mojom::AppType::kWeb:
-      if (base::FeatureList::IsEnabled(
-              features::kDesktopPWAsWithoutExtensions)) {
-        return std::make_unique<app_list::WebAppContextMenu>(
-            delegate, profile, app_id, controller);
-      }
-      // Otherwise deliberately fall through to fallback on Bookmark Apps.
-      FALLTHROUGH;
-
-    case apps::mojom::AppType::kExtension:
-      return std::make_unique<app_list::ExtensionAppContextMenu>(
-          delegate, profile, app_id, controller, is_platform_app);
-
-    case apps::mojom::AppType::kMacNative:
-      NOTREACHED() << "Should not be trying to make a menu for a native app";
-      return nullptr;
-  }
-
-  return nullptr;
-}
 
 AppServiceAppItem::AppServiceAppItem(
     Profile* profile,
@@ -165,13 +108,8 @@ const char* AppServiceAppItem::GetItemType() const {
 }
 
 void AppServiceAppItem::GetContextMenuModel(GetMenuModelCallback callback) {
-  if (base::FeatureList::IsEnabled(features::kAppServiceContextMenu)) {
-    context_menu_ = std::make_unique<AppServiceContextMenu>(
-        this, profile(), id(), GetController());
-  } else {
-    context_menu_ = MakeAppContextMenu(app_type_, this, profile(), id(),
-                                       GetController(), is_platform_app_);
-  }
+  context_menu_ = std::make_unique<AppServiceContextMenu>(this, profile(), id(),
+                                                          GetController());
 
   context_menu_->GetMenuModel(std::move(callback));
 }

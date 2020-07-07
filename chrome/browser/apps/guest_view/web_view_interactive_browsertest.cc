@@ -19,7 +19,6 @@
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
-#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
@@ -69,49 +68,6 @@ using guest_view::TestGuestViewManager;
 using guest_view::TestGuestViewManagerFactory;
 
 #if defined(OS_MACOSX)
-// The original TextInputClientMessageFilter is added during the initialization
-// phase of RenderProcessHost. The only chance we have to add the test filter
-// (so that it can receive the TextInputClientMac incoming IPC messages) is
-// during the call to RenderProcessWillLaunch() on ContentBrowserClient. This
-// class provides that for testing. The class also replaces the current client
-// and will reset the client back to the original one upon destruction.
-class BrowserClientForTextInputClientMac : public ChromeContentBrowserClient {
- public:
-  BrowserClientForTextInputClientMac()
-      : old_client_(content::SetBrowserClientForTesting(this)) {}
-  ~BrowserClientForTextInputClientMac() override {
-    content::SetBrowserClientForTesting(old_client_);
-  }
-
-  // ContentBrowserClient overrides.
-  void RenderProcessWillLaunch(
-      content::RenderProcessHost* process_host) override {
-    ChromeContentBrowserClient::RenderProcessWillLaunch(process_host);
-    filters_.push_back(
-        new content::TestTextInputClientMessageFilter(process_host));
-  }
-
-  // Retrieves the registered filter for the given RenderProcessHost. It will
-  // return false if the RenderProcessHost was initialized while a different
-  // instance of ContentBrowserClient was in action.
-  scoped_refptr<content::TestTextInputClientMessageFilter>
-  GetTextInputClientMessageFilterForProcess(
-      content::RenderProcessHost* process_host) const {
-    for (auto filter : filters_) {
-      if (filter->process() == process_host)
-        return filter;
-    }
-    return nullptr;
-  }
-
- private:
-  content::ContentBrowserClient* old_client_;
-  std::vector<scoped_refptr<content::TestTextInputClientMessageFilter>>
-      filters_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserClientForTextInputClientMac);
-};
-
 // This class observes the RenderWidgetHostViewCocoa corresponding to the outer
 // most WebContents provided for newly added subviews. The added subview
 // corresponds to a NSPopUpButtonCell which will be removed shortly after being
@@ -1518,22 +1474,15 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, TextSelection) {
 }
 
 // Verifies that asking for a word lookup from a guest will lead to a returned
-// IPC from the renderer containing the right selected word.
+// mojo callback from the renderer containing the right selected word.
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, WordLookup) {
-  // BrowserClientForTextInputClientMac needs to replace the
-  // ChromeContentBrowserClient after most things are initialized but before the
-  // WebContents is created.
-  BrowserClientForTextInputClientMac browser_client;
-
   SetupTest("web_view/text_selection",
             "/extensions/platform_apps/web_view/text_selection/guest.html");
   ASSERT_TRUE(guest_web_contents());
   ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(GetPlatformAppWindow()));
 
-  auto guest_message_filter =
-      browser_client.GetTextInputClientMessageFilterForProcess(
-          guest_web_contents()->GetMainFrame()->GetProcess());
-  ASSERT_TRUE(guest_message_filter);
+  content::TextInputTestLocalFrame text_input_local_frame;
+  text_input_local_frame.SetUp(guest_web_contents()->GetMainFrame());
 
   // Lookup some string through context menu.
   ContextMenuNotificationObserver menu_observer(IDC_CONTENT_CONTEXT_LOOK_UP);
@@ -1542,10 +1491,10 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, WordLookup) {
   SimulateRWHMouseClick(guest_web_contents()->GetRenderViewHost()->GetWidget(),
                         blink::WebMouseEvent::Button::kRight, 20, 20);
   // Wait for the response form the guest renderer.
-  guest_message_filter->WaitForStringFromRange();
+  text_input_local_frame.WaitForGetStringForRange();
 
   // Sanity check.
-  ASSERT_EQ("AAAA", guest_message_filter->string_from_range().substr(0, 4));
+  ASSERT_EQ("AAAA", text_input_local_frame.GetStringFromRange().substr(0, 4));
 }
 #endif
 

@@ -233,6 +233,8 @@ class MockNetworkTransaction
   void SetBeforeNetworkStartCallback(
       const BeforeNetworkStartCallback& callback) override;
 
+  void SetConnectedCallback(const ConnectedCallback& callback) override;
+
   void SetRequestHeadersCallback(RequestHeadersCallback callback) override {}
   void SetResponseHeadersCallback(ResponseHeadersCallback) override {}
 

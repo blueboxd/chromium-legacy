@@ -22,7 +22,7 @@
 #include "base/time/time.h"
 #include "base/version.h"
 #include "build/build_config.h"
-#include "chrome/browser/extensions/blacklist_check.h"
+#include "chrome/browser/extensions/blocklist_check.h"
 #include "chrome/browser/extensions/convert_user_script.h"
 #include "chrome/browser/extensions/convert_web_app.h"
 #include "chrome/browser/extensions/extension_assets_manager.h"

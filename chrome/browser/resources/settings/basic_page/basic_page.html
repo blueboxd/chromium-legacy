@@ -91,8 +91,8 @@
             <settings-autofill-page prefs="{{prefs}}"></settings-autofill-page>
           </settings-section>
         </template>
-        <template is="dom-if" if="[[showSafetyCheckPage_(
-            pageVisibility.safetyCheck)]]" restamp>
+        <template is="dom-if" if="[[showPage_(pageVisibility.safetyCheck)]]"
+            restamp>
           <settings-section page-title="$i18n{safetyCheckSectionTitle}"
               section="safetyCheck"
               id="safetyCheckSettingsSection">

@@ -10,6 +10,7 @@
 
 namespace blink {
 namespace {
+
 #define EXPECT_RANGE(expected_start, expected_count, iterator)              \
   EXPECT_EQ(expected_count, iterator.RepeatCount());                        \
   EXPECT_EQ(expected_start, iterator.RangeTrackStart());                    \
@@ -20,6 +21,10 @@ namespace {
   EXPECT_EQ(expected_count, iterator.RepeatCount());                        \
   EXPECT_EQ(expected_start + expected_count - 1, iterator.RangeTrackEnd()); \
   EXPECT_TRUE(iterator.IsRangeCollapsed());
+#define EXPECT_SET(expected_size, expected_count, iterator)    \
+  EXPECT_EQ(expected_size, iterator.CurrentSet().TrackSize()); \
+  EXPECT_EQ(expected_count, iterator.CurrentSet().TrackCount());
+
 class NGGridTrackCollectionBaseTest : public NGGridTrackCollectionBase {
  public:
   struct TestTrackRange {
@@ -53,7 +58,12 @@ class NGGridTrackCollectionBaseTest : public NGGridTrackCollectionBase {
   Vector<TestTrackRange> ranges_;
 };
 
-using NGGridTrackCollectionTest = NGLayoutTest;
+class NGGridTrackCollectionTest : public NGLayoutTest {
+ protected:
+  Vector<GridTrackSize> CreateTrackSizes(wtf_size_t track_count) {
+    return {track_count, GridTrackSize(Length::Auto())};
+  }
+};
 
 TEST_F(NGGridTrackCollectionTest, TestRangeIndexFromTrackNumber) {
   // Small case.
@@ -87,7 +97,7 @@ TEST_F(NGGridTrackCollectionTest, TestRangeIndexFromTrackNumber) {
 }
 
 TEST_F(NGGridTrackCollectionTest, TestRangeRepeatIteratorMoveNext) {
-  // [1-3] [4-13] [14 -18]
+  // [0-2] [3-12] [13-17]
   NGGridTrackCollectionBaseTest track_collection({3u, 10u, 5u});
   EXPECT_EQ(0u, track_collection.RangeIndexFromTrackNumber(0u));
 
@@ -120,52 +130,59 @@ TEST_F(NGGridTrackCollectionTest, TestNGGridTrackList) {
   ASSERT_EQ(0u, track_list.RepeaterCount());
   EXPECT_FALSE(track_list.HasAutoRepeater());
 
-  EXPECT_TRUE(track_list.AddRepeater(0, 2, 4));
+  EXPECT_TRUE(track_list.AddRepeater(CreateTrackSizes(2), 4));
   ASSERT_EQ(1u, track_list.RepeaterCount());
   EXPECT_EQ(8u, track_list.TotalTrackCount());
-  EXPECT_EQ(4u, track_list.RepeatCount(0, 77));
+  EXPECT_EQ(4u, track_list.RepeatCount(0, 4));
   EXPECT_EQ(2u, track_list.RepeatSize(0));
   EXPECT_FALSE(track_list.HasAutoRepeater());
 
-  EXPECT_TRUE(track_list.AddAutoRepeater(2, 3, AutoRepeatType::kAutoFill));
+  // Can't add an empty repeater to a list.
+  EXPECT_FALSE(track_list.AddAutoRepeater(CreateTrackSizes(0),
+                                          AutoRepeatType::kAutoFit));
+  EXPECT_FALSE(track_list.AddRepeater(CreateTrackSizes(3), 0));
+  ASSERT_EQ(1u, track_list.RepeaterCount());
+
+  EXPECT_TRUE(track_list.AddRepeater(
+      CreateTrackSizes(1), NGGridTrackCollectionBase::kMaxRangeIndex - 20));
   ASSERT_EQ(2u, track_list.RepeaterCount());
-  EXPECT_EQ(11u, track_list.TotalTrackCount());
-  EXPECT_EQ(77u, track_list.RepeatCount(1, 77));
-  EXPECT_EQ(3u, track_list.RepeatSize(1));
+  EXPECT_EQ(NGGridTrackCollectionBase::kMaxRangeIndex - 12u,
+            track_list.TotalTrackCount());
+  EXPECT_EQ(NGGridTrackCollectionBase::kMaxRangeIndex - 20u,
+            track_list.RepeatCount(1, 4));
+  EXPECT_EQ(1u, track_list.RepeatSize(1));
+  EXPECT_FALSE(track_list.HasAutoRepeater());
+
+  // Try to add a repeater that would overflow the total track count.
+  EXPECT_FALSE(track_list.AddRepeater(CreateTrackSizes(5), 7));
+  EXPECT_FALSE(track_list.AddRepeater(CreateTrackSizes(7), 5));
+  EXPECT_FALSE(track_list.AddAutoRepeater(CreateTrackSizes(31),
+                                          AutoRepeatType::kAutoFill));
+  ASSERT_EQ(2u, track_list.RepeaterCount());
+
+  EXPECT_TRUE(track_list.AddAutoRepeater(CreateTrackSizes(3),
+                                         AutoRepeatType::kAutoFit));
+  ASSERT_EQ(3u, track_list.RepeaterCount());
+  EXPECT_EQ(NGGridTrackCollectionBase::kMaxRangeIndex - 9u,
+            track_list.TotalTrackCount());
+  EXPECT_EQ(4u, track_list.RepeatCount(2, 4));
+  EXPECT_EQ(3u, track_list.RepeatSize(2));
   EXPECT_TRUE(track_list.HasAutoRepeater());
 
   // Can't add more than one auto repeater to a list.
-  EXPECT_FALSE(track_list.AddAutoRepeater(5, 3, AutoRepeatType::kAutoFill));
-
-  EXPECT_TRUE(track_list.AddRepeater(
-      5, NGGridTrackCollectionBase::kMaxRangeIndex - 20, 1));
-  ASSERT_EQ(3u, track_list.RepeaterCount());
-  EXPECT_EQ(NGGridTrackCollectionBase::kMaxRangeIndex - 9,
-            track_list.TotalTrackCount());
-  EXPECT_EQ(1u, track_list.RepeatCount(2, 77));
-  EXPECT_EQ(NGGridTrackCollectionBase::kMaxRangeIndex - 20,
-            track_list.RepeatSize(2));
-
-  // Try to add a repeater that would overflow the total track count.
-  EXPECT_FALSE(track_list.AddRepeater(
-      NGGridTrackCollectionBase::kMaxRangeIndex - 15u, 3, 10));
-  ASSERT_EQ(3u, track_list.RepeaterCount());
-
-  // Try to add a repeater that would overflow the track size in a repeater.
-  EXPECT_FALSE(
-      track_list.AddRepeater(NGGridTrackCollectionBase::kMaxRangeIndex - 15u,
-                             NGGridTrackCollectionBase::kMaxRangeIndex, 10));
+  EXPECT_FALSE(track_list.AddAutoRepeater(CreateTrackSizes(3),
+                                          AutoRepeatType::kAutoFill));
   ASSERT_EQ(3u, track_list.RepeaterCount());
 }
 
 TEST_F(NGGridTrackCollectionTest, TestNGGridBlockTrackCollection) {
   NGGridTrackList specified_tracks;
-  ASSERT_TRUE(specified_tracks.AddRepeater(1, 2, 4));
-  ASSERT_TRUE(
-      specified_tracks.AddAutoRepeater(3, 3, AutoRepeatType::kAutoFill));
+  ASSERT_TRUE(specified_tracks.AddRepeater(CreateTrackSizes(2), 4));
+  ASSERT_TRUE(specified_tracks.AddAutoRepeater(CreateTrackSizes(3),
+                                               AutoRepeatType::kAutoFill));
   ASSERT_EQ(2u, specified_tracks.RepeaterCount());
   NGGridBlockTrackCollection block_collection;
-  block_collection.SetSpecifiedTracks(specified_tracks, 3, NGGridTrackList());
+  block_collection.SetSpecifiedTracks(specified_tracks, NGGridTrackList(), 3);
   block_collection.FinalizeRanges();
 
   NGGridTrackCollectionBase::RangeRepeatIterator iterator(&block_collection,
@@ -180,12 +197,13 @@ TEST_F(NGGridTrackCollectionTest, TestNGGridBlockTrackCollection) {
 
 TEST_F(NGGridTrackCollectionTest, TestNGGridBlockTrackCollectionCollapsed) {
   NGGridTrackList specified_tracks;
-  ASSERT_TRUE(specified_tracks.AddRepeater(1, 2, 4));
-  ASSERT_TRUE(specified_tracks.AddAutoRepeater(3, 3, AutoRepeatType::kAutoFit));
-  ASSERT_TRUE(specified_tracks.AddRepeater(6, 3, 7));
+  ASSERT_TRUE(specified_tracks.AddRepeater(CreateTrackSizes(2), 4));
+  ASSERT_TRUE(specified_tracks.AddAutoRepeater(CreateTrackSizes(3),
+                                               AutoRepeatType::kAutoFit));
+  ASSERT_TRUE(specified_tracks.AddRepeater(CreateTrackSizes(3), 7));
   ASSERT_EQ(3u, specified_tracks.RepeaterCount());
   NGGridBlockTrackCollection block_collection;
-  block_collection.SetSpecifiedTracks(specified_tracks, 3, NGGridTrackList());
+  block_collection.SetSpecifiedTracks(specified_tracks, NGGridTrackList(), 3);
   block_collection.FinalizeRanges();
 
   NGGridTrackCollectionBase::RangeRepeatIterator iterator(&block_collection,
@@ -203,16 +221,16 @@ TEST_F(NGGridTrackCollectionTest, TestNGGridBlockTrackCollectionCollapsed) {
 
 TEST_F(NGGridTrackCollectionTest, TestNGGridBlockTrackCollectionImplicit) {
   NGGridTrackList specified_tracks;
-  ASSERT_TRUE(specified_tracks.AddRepeater(1, 2, 4));
-  ASSERT_TRUE(specified_tracks.AddRepeater(3, 3, 3));
-  ASSERT_TRUE(specified_tracks.AddRepeater(6, 3, 7));
+  ASSERT_TRUE(specified_tracks.AddRepeater(CreateTrackSizes(2), 4));
+  ASSERT_TRUE(specified_tracks.AddRepeater(CreateTrackSizes(3), 3));
+  ASSERT_TRUE(specified_tracks.AddRepeater(CreateTrackSizes(3), 7));
   ASSERT_EQ(3u, specified_tracks.RepeaterCount());
 
   NGGridTrackList implicit_tracks;
-  ASSERT_TRUE(implicit_tracks.AddRepeater(1, 8, 2));
+  ASSERT_TRUE(implicit_tracks.AddRepeater(CreateTrackSizes(8), 2));
 
   NGGridBlockTrackCollection block_collection;
-  block_collection.SetSpecifiedTracks(specified_tracks, 3, implicit_tracks);
+  block_collection.SetSpecifiedTracks(specified_tracks, implicit_tracks, 3);
   block_collection.EnsureTrackCoverage(3, 40);
   block_collection.EnsureTrackCoverage(3, 40);
   block_collection.FinalizeRanges();
@@ -238,6 +256,243 @@ TEST_F(NGGridTrackCollectionTest, TestNGGridBlockTrackCollectionImplicit) {
   EXPECT_RANGE(39u, 4u, iterator);
 
   EXPECT_FALSE(iterator.MoveToNextRange());
+}
+
+TEST_F(NGGridTrackCollectionTest,
+       TestNGGridLayoutAlgorithmTrackCollectionSetIterator) {
+  Vector<wtf_size_t> set_counts = {2, 5, 3, 11, 13, 7};
+
+  NGGridTrackList specified_tracks;
+  for (wtf_size_t set_count : set_counts)
+    ASSERT_TRUE(specified_tracks.AddRepeater(CreateTrackSizes(set_count), 1));
+  ASSERT_EQ(set_counts.size(), specified_tracks.RepeaterCount());
+
+  NGGridBlockTrackCollection block_collection;
+  block_collection.SetSpecifiedTracks(specified_tracks, NGGridTrackList(),
+                                      /* auto_repeat_count */ 0);
+  block_collection.FinalizeRanges();
+  NGGridLayoutAlgorithmTrackCollection algorithm_collection(block_collection);
+
+  wtf_size_t set_count = 0;
+  wtf_size_t range_count = 0;
+  NGGridTrackCollectionBase::RangeRepeatIterator range_iterator =
+      algorithm_collection.RangeIterator();
+
+  for (; !range_iterator.IsAtEnd(); ++range_count) {
+    EXPECT_RANGE(1u + set_count, set_counts[range_count], range_iterator);
+
+    wtf_size_t current_set_count = 0;
+    NGGridLayoutAlgorithmTrackCollection::SetIterator set_iterator =
+        algorithm_collection.IteratorForRange(range_iterator.RangeIndex());
+
+    for (; !set_iterator.IsAtEnd(); ++current_set_count) {
+      EXPECT_SET(GridTrackSize(Length::Auto()), 1u, set_iterator);
+      set_iterator.MoveToNextSet();
+    }
+
+    EXPECT_EQ(set_counts[range_count], current_set_count);
+    set_count += current_set_count;
+    range_iterator.MoveToNextRange();
+  }
+
+  EXPECT_EQ(set_counts.size(), range_count);
+  EXPECT_EQ(41u, set_count);
+}
+
+TEST_F(NGGridTrackCollectionTest,
+       TestNGGridLayoutAlgorithmTrackCollectionExplicitTracks) {
+  // We'll use fixed size tracks to differentiate between them by int value.
+  NGGridTrackList explicit_tracks;
+
+  // repeat(3, 1px 2px 3px)
+  Vector<GridTrackSize> track_sizes = {GridTrackSize(Length::Fixed(1)),
+                                       GridTrackSize(Length::Fixed(2)),
+                                       GridTrackSize(Length::Fixed(3))};
+  ASSERT_TRUE(explicit_tracks.AddRepeater(track_sizes, 3));
+
+  // repeat(auto-fit, 4px 5px)
+  track_sizes = {GridTrackSize(Length::Fixed(4)),
+                 GridTrackSize(Length::Fixed(5))};
+  ASSERT_TRUE(
+      explicit_tracks.AddAutoRepeater(track_sizes, AutoRepeatType::kAutoFit));
+  ASSERT_EQ(2u, explicit_tracks.RepeaterCount());
+
+  NGGridBlockTrackCollection block_collection;
+  block_collection.SetSpecifiedTracks(explicit_tracks, NGGridTrackList(),
+                                      /* auto_repeat_count */ 5);
+  block_collection.EnsureTrackCoverage(3, 4);
+  block_collection.EnsureTrackCoverage(13, 4);
+  block_collection.EnsureTrackCoverage(18, 3);
+  block_collection.EnsureTrackCoverage(23, 5);
+  block_collection.FinalizeRanges();
+
+  NGGridLayoutAlgorithmTrackCollection algorithm_collection(block_collection);
+  NGGridTrackCollectionBase::RangeRepeatIterator range_iterator =
+      algorithm_collection.RangeIterator();
+
+  EXPECT_RANGE(1u, 2u, range_iterator);
+  NGGridLayoutAlgorithmTrackCollection::SetIterator set_iterator =
+      algorithm_collection.IteratorForRange(range_iterator.RangeIndex());
+  EXPECT_SET(GridTrackSize(Length::Fixed(1)), 1u, set_iterator);
+  EXPECT_TRUE(set_iterator.MoveToNextSet());
+  EXPECT_SET(GridTrackSize(Length::Fixed(2)), 1u, set_iterator);
+  EXPECT_FALSE(set_iterator.MoveToNextSet());
+  EXPECT_TRUE(range_iterator.MoveToNextRange());
+
+  EXPECT_RANGE(3u, 4u, range_iterator);
+  set_iterator =
+      algorithm_collection.IteratorForRange(range_iterator.RangeIndex());
+  EXPECT_SET(GridTrackSize(Length::Fixed(3)), 2u, set_iterator);
+  EXPECT_TRUE(set_iterator.MoveToNextSet());
+  EXPECT_SET(GridTrackSize(Length::Fixed(1)), 1u, set_iterator);
+  EXPECT_TRUE(set_iterator.MoveToNextSet());
+  EXPECT_SET(GridTrackSize(Length::Fixed(2)), 1u, set_iterator);
+  EXPECT_FALSE(set_iterator.MoveToNextSet());
+  EXPECT_TRUE(range_iterator.MoveToNextRange());
+
+  EXPECT_RANGE(7u, 3u, range_iterator);
+  set_iterator =
+      algorithm_collection.IteratorForRange(range_iterator.RangeIndex());
+  EXPECT_SET(GridTrackSize(Length::Fixed(1)), 1u, set_iterator);
+  EXPECT_TRUE(set_iterator.MoveToNextSet());
+  EXPECT_SET(GridTrackSize(Length::Fixed(2)), 1u, set_iterator);
+  EXPECT_TRUE(set_iterator.MoveToNextSet());
+  EXPECT_SET(GridTrackSize(Length::Fixed(3)), 1u, set_iterator);
+  EXPECT_FALSE(set_iterator.MoveToNextSet());
+  EXPECT_TRUE(range_iterator.MoveToNextRange());
+
+  EXPECT_COLLAPSED_RANGE(10u, 3u, range_iterator);
+  set_iterator =
+      algorithm_collection.IteratorForRange(range_iterator.RangeIndex());
+  EXPECT_SET(GridTrackSize(Length::Fixed(0)), 3u, set_iterator);
+  EXPECT_FALSE(set_iterator.MoveToNextSet());
+  EXPECT_TRUE(range_iterator.MoveToNextRange());
+
+  EXPECT_RANGE(13u, 4u, range_iterator);
+  set_iterator =
+      algorithm_collection.IteratorForRange(range_iterator.RangeIndex());
+  EXPECT_SET(GridTrackSize(Length::Fixed(5)), 2u, set_iterator);
+  EXPECT_TRUE(set_iterator.MoveToNextSet());
+  EXPECT_SET(GridTrackSize(Length::Fixed(4)), 2u, set_iterator);
+  EXPECT_FALSE(set_iterator.MoveToNextSet());
+  EXPECT_TRUE(range_iterator.MoveToNextRange());
+
+  EXPECT_COLLAPSED_RANGE(17u, 1u, range_iterator);
+  set_iterator =
+      algorithm_collection.IteratorForRange(range_iterator.RangeIndex());
+  EXPECT_SET(GridTrackSize(Length::Fixed(0)), 1u, set_iterator);
+  EXPECT_FALSE(set_iterator.MoveToNextSet());
+  EXPECT_TRUE(range_iterator.MoveToNextRange());
+
+  EXPECT_RANGE(18u, 2u, range_iterator);
+  set_iterator =
+      algorithm_collection.IteratorForRange(range_iterator.RangeIndex());
+  EXPECT_SET(GridTrackSize(Length::Fixed(4)), 1u, set_iterator);
+  EXPECT_TRUE(set_iterator.MoveToNextSet());
+  EXPECT_SET(GridTrackSize(Length::Fixed(5)), 1u, set_iterator);
+  EXPECT_FALSE(set_iterator.MoveToNextSet());
+  EXPECT_TRUE(range_iterator.MoveToNextRange());
+
+  EXPECT_RANGE(20u, 1u, range_iterator);
+  set_iterator =
+      algorithm_collection.IteratorForRange(range_iterator.RangeIndex());
+  EXPECT_SET(GridTrackSize(Length::Auto()), 1u, set_iterator);
+  EXPECT_FALSE(set_iterator.MoveToNextSet());
+  EXPECT_TRUE(range_iterator.MoveToNextRange());
+
+  EXPECT_RANGE(21u, 2u, range_iterator);
+  set_iterator =
+      algorithm_collection.IteratorForRange(range_iterator.RangeIndex());
+  EXPECT_SET(GridTrackSize(Length::Auto()), 2u, set_iterator);
+  EXPECT_FALSE(set_iterator.MoveToNextSet());
+  EXPECT_TRUE(range_iterator.MoveToNextRange());
+
+  EXPECT_RANGE(23u, 5u, range_iterator);
+  set_iterator =
+      algorithm_collection.IteratorForRange(range_iterator.RangeIndex());
+  EXPECT_SET(GridTrackSize(Length::Auto()), 5u, set_iterator);
+  EXPECT_FALSE(set_iterator.MoveToNextSet());
+  EXPECT_FALSE(range_iterator.MoveToNextRange());
+}
+
+TEST_F(NGGridTrackCollectionTest,
+       TestNGGridLayoutAlgorithmTrackCollectionImplicitTracks) {
+  // We'll use fixed size tracks to differentiate between them by int value.
+  NGGridTrackList explicit_tracks, implicit_tracks;
+
+  // Explicit grid: 1px 2px 3px 4px
+  Vector<GridTrackSize> track_sizes = {
+      GridTrackSize(Length::Fixed(1)), GridTrackSize(Length::Fixed(2)),
+      GridTrackSize(Length::Fixed(3)), GridTrackSize(Length::Fixed(4))};
+  ASSERT_TRUE(explicit_tracks.AddRepeater(track_sizes, 1));
+  ASSERT_EQ(1u, explicit_tracks.RepeaterCount());
+
+  // Implicit grid: 5px 6px 7px
+  track_sizes = {GridTrackSize(Length::Fixed(5)),
+                 GridTrackSize(Length::Fixed(6)),
+                 GridTrackSize(Length::Fixed(7))};
+  ASSERT_TRUE(implicit_tracks.AddRepeater(track_sizes, 1));
+  ASSERT_EQ(1u, implicit_tracks.RepeaterCount());
+
+  NGGridBlockTrackCollection block_collection;
+  block_collection.SetSpecifiedTracks(explicit_tracks, implicit_tracks,
+                                      /* auto_repeat_count */ 0);
+  block_collection.EnsureTrackCoverage(3, 13);
+  block_collection.EnsureTrackCoverage(24, 2);
+  block_collection.FinalizeRanges();
+
+  NGGridLayoutAlgorithmTrackCollection algorithm_collection(block_collection);
+  NGGridTrackCollectionBase::RangeRepeatIterator range_iterator =
+      algorithm_collection.RangeIterator();
+
+  EXPECT_RANGE(1u, 2u, range_iterator);
+  NGGridLayoutAlgorithmTrackCollection::SetIterator set_iterator =
+      algorithm_collection.IteratorForRange(range_iterator.RangeIndex());
+  EXPECT_SET(GridTrackSize(Length::Fixed(1)), 1u, set_iterator);
+  EXPECT_TRUE(set_iterator.MoveToNextSet());
+  EXPECT_SET(GridTrackSize(Length::Fixed(2)), 1u, set_iterator);
+  EXPECT_FALSE(set_iterator.MoveToNextSet());
+  EXPECT_TRUE(range_iterator.MoveToNextRange());
+
+  EXPECT_RANGE(3u, 2u, range_iterator);
+  set_iterator =
+      algorithm_collection.IteratorForRange(range_iterator.RangeIndex());
+  EXPECT_SET(GridTrackSize(Length::Fixed(3)), 1u, set_iterator);
+  EXPECT_TRUE(set_iterator.MoveToNextSet());
+  EXPECT_SET(GridTrackSize(Length::Fixed(4)), 1u, set_iterator);
+  EXPECT_FALSE(set_iterator.MoveToNextSet());
+  EXPECT_TRUE(range_iterator.MoveToNextRange());
+
+  EXPECT_RANGE(5u, 11u, range_iterator);
+  set_iterator =
+      algorithm_collection.IteratorForRange(range_iterator.RangeIndex());
+  EXPECT_SET(GridTrackSize(Length::Fixed(5)), 4u, set_iterator);
+  EXPECT_TRUE(set_iterator.MoveToNextSet());
+  EXPECT_SET(GridTrackSize(Length::Fixed(6)), 4u, set_iterator);
+  EXPECT_TRUE(set_iterator.MoveToNextSet());
+  EXPECT_SET(GridTrackSize(Length::Fixed(7)), 3u, set_iterator);
+  EXPECT_FALSE(set_iterator.MoveToNextSet());
+  EXPECT_TRUE(range_iterator.MoveToNextRange());
+
+  EXPECT_RANGE(16u, 8u, range_iterator);
+  set_iterator =
+      algorithm_collection.IteratorForRange(range_iterator.RangeIndex());
+  EXPECT_SET(GridTrackSize(Length::Fixed(7)), 3u, set_iterator);
+  EXPECT_TRUE(set_iterator.MoveToNextSet());
+  EXPECT_SET(GridTrackSize(Length::Fixed(5)), 3u, set_iterator);
+  EXPECT_TRUE(set_iterator.MoveToNextSet());
+  EXPECT_SET(GridTrackSize(Length::Fixed(6)), 2u, set_iterator);
+  EXPECT_FALSE(set_iterator.MoveToNextSet());
+  EXPECT_TRUE(range_iterator.MoveToNextRange());
+
+  EXPECT_RANGE(24u, 2u, range_iterator);
+  set_iterator =
+      algorithm_collection.IteratorForRange(range_iterator.RangeIndex());
+  EXPECT_SET(GridTrackSize(Length::Fixed(6)), 1u, set_iterator);
+  EXPECT_TRUE(set_iterator.MoveToNextSet());
+  EXPECT_SET(GridTrackSize(Length::Fixed(7)), 1u, set_iterator);
+  EXPECT_FALSE(set_iterator.MoveToNextSet());
+  EXPECT_FALSE(range_iterator.MoveToNextRange());
 }
 
 }  // namespace

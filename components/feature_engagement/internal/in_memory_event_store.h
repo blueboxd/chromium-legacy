@@ -21,7 +21,7 @@ class InMemoryEventStore : public EventStore {
   ~InMemoryEventStore() override;
 
   // EventStore implementation.
-  void Load(const OnLoadedCallback& callback) override;
+  void Load(OnLoadedCallback callback) override;
   bool IsReady() const override;
   void WriteEvent(const Event& event) override;
   void DeleteEvent(const std::string& event_name) override;
@@ -29,7 +29,7 @@ class InMemoryEventStore : public EventStore {
  protected:
   // Posts the result of loading and sets up the ready state.
   // Protected and virtual for testing.
-  virtual void HandleLoadResult(const OnLoadedCallback& callback, bool success);
+  virtual void HandleLoadResult(OnLoadedCallback callback, bool success);
 
  private:
   // All events that this in-memory store was constructed with. This will be

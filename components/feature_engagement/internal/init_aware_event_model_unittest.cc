@@ -30,8 +30,7 @@ class MockEventModel : public EventModel {
   ~MockEventModel() override = default;
 
   // EventModel implementation.
-  MOCK_METHOD2(Initialize,
-               void(const OnModelInitializationFinished&, uint32_t));
+  MOCK_METHOD2(Initialize, void(OnModelInitializationFinished, uint32_t));
   MOCK_CONST_METHOD0(IsReady, bool());
   MOCK_CONST_METHOD1(GetEvent, Event*(const std::string&));
   MOCK_CONST_METHOD3(GetEventCount,
@@ -45,8 +44,8 @@ class MockEventModel : public EventModel {
 class InitAwareEventModelTest : public testing::Test {
  public:
   InitAwareEventModelTest() : mocked_model_(nullptr) {
-    load_callback_ = base::Bind(&InitAwareEventModelTest::OnModelInitialized,
-                                base::Unretained(this));
+    load_callback_ = base::BindOnce(
+        &InitAwareEventModelTest::OnModelInitialized, base::Unretained(this));
   }
 
   ~InitAwareEventModelTest() override = default;
@@ -135,8 +134,12 @@ TEST_F(InitAwareEventModelTest, QueuedIncrementEvent) {
 
   EventModel::OnModelInitializationFinished callback;
   EXPECT_CALL(*mocked_model_, Initialize(_, 2U))
-      .WillOnce(SaveArg<0>(&callback));
-  model_->Initialize(load_callback_, 2U);
+      .WillOnce(
+          [&callback](EventModel::OnModelInitializationFinished load_callback,
+                      uint32_t current_day) {
+            callback = std::move(load_callback);
+          });
+  model_->Initialize(std::move(load_callback_), 2U);
 
   {
     Sequence sequence;
@@ -147,7 +150,7 @@ TEST_F(InitAwareEventModelTest, QueuedIncrementEvent) {
         .Times(1)
         .InSequence(sequence);
 
-    callback.Run(true);
+    std::move(callback).Run(true);
     EXPECT_TRUE(load_success_.value());
   }
 
@@ -167,9 +170,14 @@ TEST_F(InitAwareEventModelTest, QueuedIncrementEventWithUnsuccessfulInit) {
   }
 
   EventModel::OnModelInitializationFinished callback;
+
   EXPECT_CALL(*mocked_model_, Initialize(_, 2U))
-      .WillOnce(SaveArg<0>(&callback));
-  model_->Initialize(load_callback_, 2U);
+      .WillOnce(
+          [&callback](EventModel::OnModelInitializationFinished load_callback,
+                      uint32_t current_day) {
+            callback = std::move(load_callback);
+          });
+  model_->Initialize(std::move(load_callback_), 2U);
 
   {
     Sequence sequence;
@@ -180,7 +188,7 @@ TEST_F(InitAwareEventModelTest, QueuedIncrementEventWithUnsuccessfulInit) {
         .Times(0)
         .InSequence(sequence);
 
-    callback.Run(false);
+    std::move(callback).Run(false);
     EXPECT_FALSE(load_success_.value());
     EXPECT_EQ(0U, model_->GetQueuedEventCountForTesting());
   }

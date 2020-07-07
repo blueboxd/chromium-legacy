@@ -135,15 +135,18 @@ void GetStringAtPointForRenderWidget(
   TextInputClientMac::GetInstance()->GetStringAtPoint(
       rwh, point,
       base::BindOnce(
-          base::RetainBlock(
-              ^(base::OnceCallback<void(const std::string&, const gfx::Point&)>
-                    callback,
-                ui::mojom::AttributedStringPtr attributed_string,
-                const gfx::Point& baseline_point) {
-                std::string string = base::SysNSStringToUTF8(
-                    [attributed_string.To<NSAttributedString*>() string]);
-                std::move(callback).Run(string, baseline_point);
-              }),
+          base::RetainBlock(^(
+              base::OnceCallback<void(const std::string&, const gfx::Point&)>
+                  callback,
+              ui::mojom::AttributedStringPtr attributed_string,
+              const gfx::Point& baseline_point) {
+            std::string string =
+                attributed_string
+                    ? base::SysNSStringToUTF8(
+                          [attributed_string.To<NSAttributedString*>() string])
+                    : std::string();
+            std::move(callback).Run(string, baseline_point);
+          }),
           std::move(result_callback)));
 }
 
@@ -155,15 +158,18 @@ void GetStringFromRangeForRenderWidget(
   TextInputClientMac::GetInstance()->GetStringFromRange(
       rwh, range,
       base::BindOnce(
-          base::RetainBlock(
-              ^(base::OnceCallback<void(const std::string&, const gfx::Point&)>
-                    callback,
-                ui::mojom::AttributedStringPtr attributed_string,
-                const gfx::Point& baseline_point) {
-                std::string string = base::SysNSStringToUTF8(
-                    [attributed_string.To<NSAttributedString*>() string]);
-                std::move(callback).Run(string, baseline_point);
-              }),
+          base::RetainBlock(^(
+              base::OnceCallback<void(const std::string&, const gfx::Point&)>
+                  callback,
+              ui::mojom::AttributedStringPtr attributed_string,
+              const gfx::Point& baseline_point) {
+            std::string string =
+                attributed_string
+                    ? base::SysNSStringToUTF8(
+                          [attributed_string.To<NSAttributedString*>() string])
+                    : std::string();
+            std::move(callback).Run(string, baseline_point);
+          }),
           std::move(result_callback)));
 }
 

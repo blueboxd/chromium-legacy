@@ -1129,6 +1129,8 @@ void ClientControlledShellSurface::OnPostWidgetCommit() {
     ash::PipPositioner::SaveSnapFraction(
         window_state, window_state->window()->GetBoundsInScreen());
   }
+
+  ShellSurfaceBase::OnPostWidgetCommit();
 }
 
 void ClientControlledShellSurface::OnSurfaceDestroying(Surface* surface) {

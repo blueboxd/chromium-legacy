@@ -13,7 +13,6 @@ import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {loadTimeData} from '../i18n_setup.js';
 import {Route, Router} from '../router.m.js';
 import {ContentSetting, ContentSettingsTypes} from '../site_settings/constants.js';
 import {SiteSettingsPrefsBrowserProxy, SiteSettingsPrefsBrowserProxyImpl} from '../site_settings/site_settings_prefs_browser_proxy.js';
@@ -119,18 +118,16 @@ Polymer({
       this.browserProxy_.observeProtocolHandlersEnabledState();
     }
 
-    if (loadTimeData.getBoolean('privacySettingsRedesignEnabled')) {
-      const hasCookies = this.categoryList.some(item => {
-        return item.id === ContentSettingsTypes.COOKIES;
-      });
-      if (hasCookies) {
-        // The cookies sub-label is provided by an update from C++.
-        this.browserProxy_.getCookieSettingDescription().then(
-            this.updateCookiesLabel_.bind(this));
-        this.addWebUIListener(
-            'cookieSettingDescriptionChanged',
-            this.updateCookiesLabel_.bind(this));
-      }
+    const hasCookies = this.categoryList.some(item => {
+      return item.id === ContentSettingsTypes.COOKIES;
+    });
+    if (hasCookies) {
+      // The cookies sub-label is provided by an update from C++.
+      this.browserProxy_.getCookieSettingDescription().then(
+          this.updateCookiesLabel_.bind(this));
+      this.addWebUIListener(
+          'cookieSettingDescriptionChanged',
+          this.updateCookiesLabel_.bind(this));
     }
   },
 
@@ -150,8 +147,7 @@ Polymer({
       return Promise.resolve();
     }
 
-    if (category === ContentSettingsTypes.COOKIES &&
-        loadTimeData.getBoolean('privacySettingsRedesignEnabled')) {
+    if (category === ContentSettingsTypes.COOKIES) {
       // Updates to the cookies label are handled by the
       // cookieSettingDescriptionChanged event listener.
       return Promise.resolve();

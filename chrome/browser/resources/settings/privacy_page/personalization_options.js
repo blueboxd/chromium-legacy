@@ -58,14 +58,6 @@ Polymer({
     showSignoutDialog_: Boolean,
 
     /** @private */
-    privacySettingsRedesignEnabled_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('privacySettingsRedesignEnabled');
-      },
-    },
-
-    /** @private */
     syncFirstSetupInProgress_: {
       type: Boolean,
       value: false,

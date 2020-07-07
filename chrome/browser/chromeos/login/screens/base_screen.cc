@@ -16,7 +16,8 @@ BaseScreen::BaseScreen(OobeScreenId screen_id,
 
 BaseScreen::~BaseScreen() {}
 
-void BaseScreen::Show() {
+void BaseScreen::Show(WizardContext* context) {
+  wizard_context_ = context;
   ShowImpl();
   is_hidden_ = false;
 }
@@ -24,9 +25,10 @@ void BaseScreen::Show() {
 void BaseScreen::Hide() {
   HideImpl();
   is_hidden_ = true;
+  wizard_context_ = nullptr;
 }
 
-bool BaseScreen::MaybeSkip() {
+bool BaseScreen::MaybeSkip(WizardContext* context) {
   return false;
 }
 

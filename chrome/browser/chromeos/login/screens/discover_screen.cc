@@ -42,7 +42,7 @@ DiscoverScreen::~DiscoverScreen() {
   view_->Bind(nullptr);
 }
 
-bool DiscoverScreen::MaybeSkip() {
+bool DiscoverScreen::MaybeSkip(WizardContext* context) {
   PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
   if (chrome_user_manager_util::IsPublicSessionOrEphemeralLogin() ||
       !chromeos::quick_unlock::IsPinEnabled(prefs) ||

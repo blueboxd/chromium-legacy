@@ -113,7 +113,7 @@ const base::Feature kSkiaDawn{"SkiaDawn", base::FEATURE_DISABLED_BY_DEFAULT};
 // Used to enable shared image mailbox and disable legacy texture mailbox on
 // webview.
 const base::Feature kEnableSharedImageForWebview{
-    "EnableSharedImageForWebview", base::FEATURE_DISABLED_BY_DEFAULT};
+    "EnableSharedImageForWebview", base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if defined(OS_ANDROID)
 bool IsAndroidSurfaceControlEnabled() {

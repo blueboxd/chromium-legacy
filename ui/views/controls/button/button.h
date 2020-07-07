@@ -324,6 +324,7 @@ class VIEWS_EXPORT Button : public InkDropHostView,
 
   void OnEnabledChanged();
 
+  // Called when the widget's "paint as active" state has changed.
   void WidgetPaintAsActiveChanged(Widget* widget, bool active);
 
   // The text shown in a tooltip.

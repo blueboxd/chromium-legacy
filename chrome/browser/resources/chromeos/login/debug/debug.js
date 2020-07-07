@@ -680,13 +680,13 @@ cr.define('cr.ui.login.debug', function() {
         {
           id: 'migration-failed',
           trigger: (screen) => {
-            screen.setUIState(2);
+            screen.setUIState(3);
           },
         },
         {
           id: 'not-enough-space',
           trigger: (screen) => {
-            screen.setUIState(3);
+            screen.setUIState(4);
             screen.setAvailableSpaceInString('1 GB');
             screen.setNecessarySpaceInString('2 GB');
           },

@@ -54,6 +54,10 @@ static void {{method.camel_case_name}}{{method.overload_index}}Method{{world_suf
   {% endif %}{# interface_name == 'Window' and not method.is_cross_origin #}
   {% endif %}{# not method.is_static #}
 
+  {% if interface_name == "Window" and method.is_cross_origin %}
+  impl->ReportCoopAccess(info.GetIsolate(), "{{method.name}}");
+  {% endif %}
+
   {# Security checks #}
   {% if method.is_check_security_for_return_value %}
   {{define_exception_state}}

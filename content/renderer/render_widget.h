@@ -65,10 +65,6 @@
 #include "ui/gfx/range/range.h"
 #include "ui/surface/transport_dib.h"
 
-#if defined(OS_MACOSX)
-#include "content/renderer/text_input_client_observer.h"
-#endif
-
 namespace IPC {
 class SyncMessageFilter;
 }
@@ -722,12 +718,6 @@ class CONTENT_EXPORT RenderWidget
   // A callback into the creator/opener of this widget, to be executed when
   // WebWidgetClient::Show() occurs.
   ShowCallback show_callback_;
-
-#if defined(OS_MACOSX)
-  // Responds to IPCs from TextInputClientMac regarding getting string at given
-  // position or range as well as finding character index at a given position.
-  std::unique_ptr<TextInputClientObserver> text_input_client_observer_;
-#endif
 
   // This field stores drag/drop related info for the event that is currently
   // being handled. If the current event results in starting a drag/drop

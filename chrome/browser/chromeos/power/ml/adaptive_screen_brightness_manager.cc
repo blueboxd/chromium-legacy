@@ -46,8 +46,7 @@ constexpr base::TimeDelta kUserInputEventsDuration =
     base::TimeDelta::FromMinutes(60);
 
 // Granularity of input events is per minute.
-constexpr int kNumUserInputEventsBuckets =
-    kUserInputEventsDuration / base::TimeDelta::FromMinutes(1);
+constexpr int kNumUserInputEventsBuckets = kUserInputEventsDuration.InMinutes();
 
 // Returns the focused visible browser unless no visible browser is focused,
 // then returns the topmost visible browser.

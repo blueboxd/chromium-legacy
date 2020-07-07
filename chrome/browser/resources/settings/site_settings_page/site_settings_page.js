@@ -115,11 +115,7 @@ function getCategoryItemMap() {
       disabledLabel: 'siteSettingsBlocked',
     },
     {
-      route: (function() {
-        return loadTimeData.getBoolean('privacySettingsRedesignEnabled') ?
-            routes.COOKIES :
-            routes.SITE_SETTINGS_COOKIES;
-      })(),
+      route: routes.COOKIES,
       id: Id.COOKIES,
       label: 'siteSettingsCookies',
       icon: 'settings:cookie',
@@ -353,45 +349,6 @@ Polymer({
     lists_: {
       type: Object,
       value: function() {
-        if (!loadTimeData.getBoolean('privacySettingsRedesignEnabled')) {
-          return {
-            all: buildItemListFromIds([
-              Id.COOKIES,
-              Id.GEOLOCATION,
-              Id.CAMERA,
-              Id.MIC,
-              Id.SENSORS,
-              Id.NOTIFICATIONS,
-              Id.JAVASCRIPT,
-              Id.PLUGINS,
-              Id.IMAGES,
-              Id.POPUPS,
-              Id.ADS,
-              Id.BACKGROUND_SYNC,
-              Id.SOUND,
-              Id.AUTOMATIC_DOWNLOADS,
-              Id.UNSANDBOXED_PLUGINS,
-              Id.PROTOCOL_HANDLERS,
-              Id.MIDI_DEVICES,
-              Id.ZOOM_LEVELS,
-              Id.USB_DEVICES,
-              Id.SERIAL_PORTS,
-              Id.BLUETOOTH_DEVICES,
-              Id.NATIVE_FILE_SYSTEM_WRITE,
-              Id.HID_DEVICES,
-              'pdfDocuments',
-              Id.PROTECTED_CONTENT,
-              Id.CLIPBOARD,
-              Id.PAYMENT_HANDLER,
-              Id.MIXEDSCRIPT,
-              Id.BLUETOOTH_SCANNING,
-              Id.AR,
-              Id.VR,
-              Id.WINDOW_PLACEMENT,
-            ]),
-          };
-        }
-
         return {
           permissionsBasic: buildItemListFromIds([
             Id.GEOLOCATION,
@@ -444,14 +401,6 @@ Polymer({
     },
 
     /** @private */
-    privacySettingsRedesignEnabled_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('privacySettingsRedesignEnabled');
-      },
-    },
-
-    /** @private */
     permissionsExpanded_: Boolean,
 
     /** @private */
@@ -485,9 +434,6 @@ Polymer({
    * @private
    */
   getClassForSiteSettingsAllLink_() {
-    return (this.privacySettingsRedesignEnabled_ &&
-            !this.noRecentSitePermissions_) ?
-        'hr' :
-        '';
+    return this.noRecentSitePermissions_ ? '' : 'hr';
   },
 });

@@ -455,11 +455,6 @@ void RenderWidget::Initialize(ShowCallback show_callback,
 
   show_callback_ = std::move(show_callback);
 
-#if defined(OS_MACOSX)
-  text_input_client_observer_ =
-      std::make_unique<TextInputClientObserver>(for_frame() ? this : nullptr);
-#endif
-
   webwidget_mouse_lock_target_.reset(new WebWidgetLockTarget(this));
   mouse_lock_dispatcher_.reset(new RenderWidgetMouseLockDispatcher(this));
 
@@ -504,11 +499,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
   // happened.
   if (IsForProvisionalFrame())
     return false;
-
-#if defined(OS_MACOSX)
-  if (IPC_MESSAGE_CLASS(message) == TextInputClientMsgStart)
-    return text_input_client_observer_->OnMessageReceived(message);
-#endif
 
   IPC_BEGIN_MESSAGE_MAP(RenderWidget, message)
     IPC_MESSAGE_HANDLER(WidgetMsg_DisableDeviceEmulation,

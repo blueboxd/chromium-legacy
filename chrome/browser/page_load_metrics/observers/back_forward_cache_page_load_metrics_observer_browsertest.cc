@@ -7,8 +7,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/browser/page_load_metrics/integration_tests/metric_integration_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/page_load_metrics/browser/observers/back_forward_cache_page_load_metrics_observer.h"
 #include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
@@ -18,13 +17,12 @@
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
-#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace {
 
 class BackForwardCachePageLoadMetricsObserverBrowserTest
-    : public InProcessBrowserTest {
+    : public MetricIntegrationTest {
  public:
   ~BackForwardCachePageLoadMetricsObserverBrowserTest() override = default;
 
@@ -34,19 +32,10 @@ class BackForwardCachePageLoadMetricsObserverBrowserTest
           {{"TimeToLiveInBackForwardCacheInSeconds", "3600"}}}},
         {});
 
-    InProcessBrowserTest::SetUpCommandLine(command_line);
-  }
-
-  void SetUpOnMainThread() override {
-    InProcessBrowserTest::SetUpOnMainThread();
-    host_resolver()->AddRule("*", "127.0.0.1");
+    MetricIntegrationTest::SetUpCommandLine(command_line);
   }
 
  protected:
-  content::WebContents* web_contents() {
-    return browser()->tab_strip_model()->GetActiveWebContents();
-  }
-
   content::RenderFrameHost* top_frame_host() {
     return web_contents()->GetMainFrame();
   }
@@ -58,14 +47,13 @@ class BackForwardCachePageLoadMetricsObserverBrowserTest
   }
 
   base::test::ScopedFeatureList feature_list_;
-  base::HistogramTester histogram_tester_;
 };
 
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(BackForwardCachePageLoadMetricsObserverBrowserTest,
                        FirstPaintAfterBackForwardCacheRestore) {
-  ASSERT_TRUE(embedded_test_server()->Start());
+  Start();
   GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
   GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
 
@@ -89,7 +77,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCachePageLoadMetricsObserverBrowserTest,
     EXPECT_FALSE(rfh_a->IsInBackForwardCache());
 
     waiter->Wait();
-    histogram_tester_.ExpectTotalCount(
+    histogram_tester().ExpectTotalCount(
         internal::kHistogramFirstPaintAfterBackForwardCacheRestore, 1);
   }
 
@@ -113,14 +101,14 @@ IN_PROC_BROWSER_TEST_F(BackForwardCachePageLoadMetricsObserverBrowserTest,
     EXPECT_FALSE(rfh_a->IsInBackForwardCache());
 
     waiter->Wait();
-    histogram_tester_.ExpectTotalCount(
+    histogram_tester().ExpectTotalCount(
         internal::kHistogramFirstPaintAfterBackForwardCacheRestore, 2);
   }
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCachePageLoadMetricsObserverBrowserTest,
                        FirstPaintAfterBackForwardCacheRestoreBackground) {
-  ASSERT_TRUE(embedded_test_server()->Start());
+  Start();
   GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
   GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
 
@@ -154,14 +142,14 @@ IN_PROC_BROWSER_TEST_F(BackForwardCachePageLoadMetricsObserverBrowserTest,
 
     // As the tab goes to the background before the first paint, the UMA is not
     // recorded.
-    histogram_tester_.ExpectTotalCount(
+    histogram_tester().ExpectTotalCount(
         internal::kHistogramFirstPaintAfterBackForwardCacheRestore, 0);
   }
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCachePageLoadMetricsObserverBrowserTest,
                        FirstInputDelayAfterBackForwardCacheRestoreBackground) {
-  ASSERT_TRUE(embedded_test_server()->Start());
+  Start();
   GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
   GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
 
@@ -173,7 +161,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCachePageLoadMetricsObserverBrowserTest,
   EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url_b));
   EXPECT_TRUE(rfh_a->IsInBackForwardCache());
 
-  histogram_tester_.ExpectTotalCount(
+  histogram_tester().ExpectTotalCount(
       internal::kHistogramFirstInputDelayAfterBackForwardCacheRestore, 0);
 
   // Go back to A.
@@ -193,7 +181,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCachePageLoadMetricsObserverBrowserTest,
 
     waiter->Wait();
 
-    histogram_tester_.ExpectTotalCount(
+    histogram_tester().ExpectTotalCount(
         internal::kHistogramFirstInputDelayAfterBackForwardCacheRestore, 1);
   }
 }

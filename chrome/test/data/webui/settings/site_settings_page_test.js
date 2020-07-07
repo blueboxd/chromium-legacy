@@ -4,7 +4,6 @@
 
 // clang-format off
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {ContentSetting, defaultSettingLabel, SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
 
@@ -24,12 +23,6 @@ suite('SiteSettingsPage', function() {
 
   /** @type {Array<string>} */
   const testLabels = ['test label 1', 'test label 2'];
-
-  suiteSetup(function() {
-    loadTimeData.overrideValues({
-      privacySettingsRedesignEnabled: false,
-    });
-  });
 
   function setupPage() {
     siteSettingsBrowserProxy = new TestSiteSettingsPrefsBrowserProxy();
@@ -66,24 +59,6 @@ suite('SiteSettingsPage', function() {
   });
 
   test('CookiesLinkRowSublabel', async function() {
-    loadTimeData.overrideValues({
-      privacySettingsRedesignEnabled: false,
-    });
-    setupPage();
-    const allSettingsList = /** @type {!SettingsSiteSettingsListElement} */ (
-        page.$$('#allSettingsList'));
-    await eventToPromise(
-        'site-settings-list-labels-updated-for-testing', allSettingsList);
-    assertEquals(
-        allSettingsList.i18n('siteSettingsCookiesAllowed'),
-        /** @type {!CrLinkRowElement} */
-        (allSettingsList.$$('#cookies')).subLabel);
-  });
-
-  test('CookiesLinkRowSublabel_Redesign', async function() {
-    loadTimeData.overrideValues({
-      privacySettingsRedesignEnabled: true,
-    });
     setupPage();
     await siteSettingsBrowserProxy.whenCalled('getCookieSettingDescription');
     flush();
@@ -96,19 +71,6 @@ suite('SiteSettingsPage', function() {
   });
 
   test('ProtectedContentRow', function() {
-    loadTimeData.overrideValues({
-      privacySettingsRedesignEnabled: false,
-    });
-    setupPage();
-    assertTrue(isChildVisible(
-        /** @type {!HTMLElement} */ (page.$$('#allSettingsList')),
-        '#protected-content'));
-  });
-
-  test('ProtectedContentRow_Redesign', function() {
-    loadTimeData.overrideValues({
-      privacySettingsRedesignEnabled: true,
-    });
     setupPage();
     page.$$('#expandContent').click();
     flush();

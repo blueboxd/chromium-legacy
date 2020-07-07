@@ -2144,6 +2144,21 @@
             ]
         }
     ],
+    "DesynchronizedScrolling": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "disable_features": [
+                        "SynchronizedScrolling"
+                    ]
+                }
+            ]
+        }
+    ],
     "DialMediaRouteProvider": [
         {
             "platforms": [
@@ -7795,6 +7810,24 @@
             ]
         }
     ],
+    "WebRTC-SendSideBwe-WithOverhead": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "linux",
+                "ios",
+                "android",
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled"
+                }
+            ]
+        }
+    ],
     "WebRTC-VP8ConferenceTemporalLayers": [
         {
             "platforms": [
@@ -7888,6 +7921,26 @@
                     },
                     "enable_features": [
                         "WebRtcHybridAgc"
+                    ]
+                }
+            ]
+        }
+    ],
+    "WebSocketReassembleShortMessages": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "DisabledBeta",
+                    "disable_features": [
+                        "WebSocketReassembleShortMessages"
                     ]
                 }
             ]

@@ -90,6 +90,14 @@ int AdjustJoint(int outline_width,
   }
 }
 
+void ApplyOutlineOffset(IntRect& rect, int offset) {
+  // A negative outline-offset should not cause the rendered outline shape to
+  // become smaller than twice the computed value of the outline-width, in each
+  // direction separately. See: https://drafts.csswg.org/css-ui/#outline-offset
+  rect.InflateX(std::max(offset, -rect.Width() / 2));
+  rect.InflateY(std::max(offset, -rect.Height() / 2));
+}
+
 void PaintComplexOutline(GraphicsContext& graphics_context,
                          const Vector<IntRect> rects,
                          const ComputedStyle& style,
@@ -99,10 +107,11 @@ void PaintComplexOutline(GraphicsContext& graphics_context,
   // Construct a clockwise path along the outer edge of the outline.
   SkRegion region;
   uint16_t width = style.OutlineWidthInt();
-  int outset = style.OutlineOffsetInt() + style.OutlineWidthInt();
+  int offset = style.OutlineOffsetInt();
   for (auto& r : rects) {
     IntRect rect = r;
-    rect.Inflate(outset);
+    ApplyOutlineOffset(rect, offset);
+    rect.Inflate(width);
     region.op(rect, SkRegion::kUnion_Op);
   }
   SkPath path;
@@ -204,8 +213,10 @@ void PaintSingleRectangleOutline(const PaintInfo& paint_info,
                                  const Color& color) {
   DCHECK(!style.OutlineStyleIsAuto());
 
-  PhysicalRect inner(rect);
-  inner.Inflate(LayoutUnit(style.OutlineOffsetInt()));
+  IntRect offset_rect = rect;
+  ApplyOutlineOffset(offset_rect, style.OutlineOffsetInt());
+
+  PhysicalRect inner(offset_rect);
   PhysicalRect outer(inner);
   outer.Inflate(LayoutUnit(style.OutlineWidthInt()));
   const BorderEdge common_edge_info(style.OutlineWidthInt(), color,

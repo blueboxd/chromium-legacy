@@ -114,7 +114,7 @@ void BrowsingDataQuotaHelperImpl::OnGetOriginsComplete(
   for (const auto& itr : *pending_hosts) {
     const std::string& host = itr.first;
     StorageType type = itr.second;
-    quota_manager_->GetHostUsage(
+    quota_manager_->GetHostUsageWithBreakdown(
         host, type,
         base::BindOnce(&BrowsingDataQuotaHelperImpl::GotHostUsage,
                        weak_factory_.GetWeakPtr(), quota_info, completion, host,
@@ -122,11 +122,13 @@ void BrowsingDataQuotaHelperImpl::OnGetOriginsComplete(
   }
 }
 
-void BrowsingDataQuotaHelperImpl::GotHostUsage(QuotaInfoMap* quota_info,
-                                               base::OnceClosure completion,
-                                               const std::string& host,
-                                               StorageType type,
-                                               int64_t usage) {
+void BrowsingDataQuotaHelperImpl::GotHostUsage(
+    QuotaInfoMap* quota_info,
+    base::OnceClosure completion,
+    const std::string& host,
+    StorageType type,
+    int64_t usage,
+    blink::mojom::UsageBreakdownPtr usage_breakdown) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   switch (type) {
     case StorageType::kTemporary:

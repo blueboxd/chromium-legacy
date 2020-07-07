@@ -3564,6 +3564,15 @@ TEST_F(AutofillMetricsTest, TypeOfEditedAutofilledFieldsUmaLogging) {
   // The aggregated histogram should have one count on accepted fields.
   histogram_tester.ExpectBucketCount(
       "Autofill.EditedAutofilledFieldAtSubmission.Aggregate", 1, 1);
+
+  // The autocomplete!=off histogram should have one count on accepted fields.
+  histogram_tester.ExpectBucketCount(
+      "Autofill.Autocomplete.NotOff.EditedAutofilledFieldAtSubmission.Address",
+      1, 1);
+
+  // The autocomplete!=off histogram should have no count on accepted fields.
+  histogram_tester.ExpectTotalCount(
+      "Autofill.Autocomplete.Off.EditedAutofilledFieldAtSubmission.Address", 0);
 }
 
 // Verify that when submitting an autofillable form, the proper number of edited
@@ -10677,6 +10686,10 @@ TEST_P(AutofillMetricsFunnelTest, LogFunnelMetrics) {
         "Autofill.KeyMetrics.FillingCorrectness.Address", 1, 1);
     histogram_tester.ExpectBucketCount(
         "Autofill.KeyMetrics.FillingAssistance.Address", 1, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.Autocomplete.NotOff.FillingAcceptance.Address", 1, 1);
+    histogram_tester.ExpectTotalCount(
+        "Autofill.Autocomplete.Off.FillingAcceptance.Address", 0);
   } else {
     histogram_tester.ExpectTotalCount(
         "Autofill.KeyMetrics.FillingReadiness.Address", 0);
@@ -10686,6 +10699,10 @@ TEST_P(AutofillMetricsFunnelTest, LogFunnelMetrics) {
         "Autofill.KeyMetrics.FillingCorrectness.Address", 0);
     histogram_tester.ExpectTotalCount(
         "Autofill.KeyMetrics.FillingAssistance.Address", 0);
+    histogram_tester.ExpectTotalCount(
+        "Autofill.Autocomplete.NotOff.FillingAcceptance.Address", 0);
+    histogram_tester.ExpectTotalCount(
+        "Autofill.Autocomplete.Off.FillingAcceptance.Address", 0);
   }
   if (user_accepted_suggestion) {
     histogram_tester.ExpectBucketCount(

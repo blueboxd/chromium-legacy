@@ -7,10 +7,13 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import android.content.Context;
 
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabCreationState;
+import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tasks.tab_groups.EmptyTabGroupModelFilterObserver;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
@@ -32,6 +35,7 @@ public class UndoGroupSnackbarController implements SnackbarManager.SnackbarCont
     private final SnackbarManager.SnackbarManageable mSnackbarManageable;
     private final TabGroupModelFilter.Observer mTabGroupModelFilterObserver;
     private final TabModelSelectorObserver mTabModelSelectorObserver;
+    private final TabModelSelectorTabModelObserver mTabModelSelectorTabModelObserver;
 
     private class TabUndoInfo {
         public final Tab tab;
@@ -84,6 +88,22 @@ public class UndoGroupSnackbarController implements SnackbarManager.SnackbarCont
         };
 
         mTabModelSelector.addObserver(mTabModelSelectorObserver);
+
+        mTabModelSelectorTabModelObserver =
+                new TabModelSelectorTabModelObserver(mTabModelSelector) {
+                    @Override
+                    public void didAddTab(
+                            Tab tab, @TabLaunchType int type, @TabCreationState int creationState) {
+                        mSnackbarManageable.getSnackbarManager().dismissSnackbars(
+                                UndoGroupSnackbarController.this);
+                    }
+
+                    @Override
+                    public void didCloseTab(int tabId, boolean incognito) {
+                        mSnackbarManageable.getSnackbarManager().dismissSnackbars(
+                                UndoGroupSnackbarController.this);
+                    }
+                };
     }
 
     /**
@@ -100,6 +120,7 @@ public class UndoGroupSnackbarController implements SnackbarManager.SnackbarCont
                      true))
                     .removeTabGroupObserver(mTabGroupModelFilterObserver);
         }
+        mTabModelSelectorTabModelObserver.destroy();
     }
 
     private void showUndoGroupSnackbar(List<TabUndoInfo> tabUndoInfo) {

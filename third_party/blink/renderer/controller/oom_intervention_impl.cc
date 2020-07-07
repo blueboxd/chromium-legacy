@@ -15,6 +15,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_for_context_dispose.h"
 #include "third_party/blink/renderer/controller/crash_memory_metrics_reporter_impl.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -68,7 +69,8 @@ void NavigateLocalAdsFrames(LocalFrame* frame) {
        child = child->Tree().TraverseNext(frame)) {
     if (auto* child_local_frame = DynamicTo<LocalFrame>(child)) {
       if (child_local_frame->IsAdSubframe()) {
-        FrameLoadRequest request(nullptr, ResourceRequest(BlankURL()));
+        FrameLoadRequest request(frame->DomWindow(),
+                                 ResourceRequest(BlankURL()));
         child_local_frame->Navigate(request, WebFrameLoadType::kStandard);
       }
     }

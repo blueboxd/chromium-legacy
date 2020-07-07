@@ -82,8 +82,8 @@ const char kShowOverdrawFeedback[] = "show-overdraw-feedback";
 const char kSlowDownCompositingScaleFactor[] =
     "slow-down-compositing-scale-factor";
 
-// Tint GL-composited color.
-const char kTintGlCompositedContent[] = "tint-gl-composited-content";
+// Tint composited color.
+const char kTintCompositedContent[] = "tint-composited-content";
 
 // Controls touch-optimized UI layout for top chrome.
 const char kTopChromeTouchUi[] = "top-chrome-touch-ui";

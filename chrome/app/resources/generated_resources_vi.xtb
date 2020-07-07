@@ -281,7 +281,6 @@
 <translation id="1340527397989195812">Sao lưu phương tiện từ thiết bị bằng ứng dụng Tệp.</translation>
 <translation id="1341988552785875222">Hình nền hiện tại do '<ph name="APP_NAME" />' đặt. Bạn có thể cần phải gỡ cài đặt '<ph name="APP_NAME" />' trước khi chọn hình nền khác.</translation>
 <translation id="1343865611738742294">Cấp cho các ứng dụng Linux quyền truy cập vào thiết bị USB. Linux sẽ không nhớ thiết bị USB sau khi bạn rút thiết bị ra.</translation>
-<translation id="1344143111673240412">Bạn cần chạy lại ứng dụng Parallels Desktop để thay đổi tùy chọn cài đặt máy ảnh</translation>
 <translation id="1347256498747320987">Cài đặt bản cập nhật và ứng dụng. Bằng việc tiếp tục, bạn đồng ý rằng thiết bị này cũng có thể tự động tải xuống và cài đặt các bản cập nhật cũng như ứng dụng từ Google, nhà mạng và nhà sản xuất thiết bị, có thể bằng cách sử dụng dữ liệu di động. Một vài ứng dụng có thể cung cấp tùy chọn mua hàng trong ứng dụng. <ph name="BEGIN_LINK1" />Tìm hiểu thêm<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">Sẽ bắt đầu cập nhật khi pin đạt đến mức <ph name="BATTERY_LEVEL" />%.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -1197,7 +1196,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="2470702053775288986">Tiện ích không được hỗ trợ đã bị tắt</translation>
 <translation id="2471469610750100598">Đen (mặc định)</translation>
 <translation id="2473195200299095979">Dịch trang này</translation>
-<translation id="2474848500897222119"><ph name="PRINTER_NAME" /> đã hết mực</translation>
 <translation id="2475982808118771221">Đã xảy ra lôi</translation>
 <translation id="2476578072172137802">Cài đặt trang web</translation>
 <translation id="2478176599153288112">Quyền của tệp phương tiện cho "<ph name="EXTENSION" />"</translation>
@@ -1503,7 +1501,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> sẽ dùng tùy chọn cài đặt proxy từ quản trị viên của bạn</translation>
 <translation id="2825758591930162672">Khoá Công cộng của Đối tượng</translation>
 <translation id="2828650939514476812">Kết nối với mạng Wi-Fi</translation>
-<translation id="28291580771888953">Hàng chờ của <ph name="PRINTER_NAME" /> đã đầy</translation>
 <translation id="2835547721736623118">Dịch vụ nhận dạng lời nói</translation>
 <translation id="2836269494620652131">Lỗi</translation>
 <translation id="2836635946302913370">Đăng nhập bằng tên người dùng này đã bị quản trị viên của bạn vô hiệu hóa.</translation>
@@ -2319,7 +2316,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="3839516600093027468">Luôn chặn <ph name="HOST" /> xem khay nhớ tạm</translation>
 <translation id="3841964634449506551">Mật khẩu không hợp lệ</translation>
 <translation id="3842552989725514455">Phông chữ Serif</translation>
-<translation id="3843058644024807390">Bạn cần chạy lại ứng dụng Parallels Desktop để thay đổi tùy chọn cài đặt micrô</translation>
+<translation id="3843464315703645664">Đã cho phép trong nội bộ</translation>
 <translation id="3846116211488856547">Tải các công cụ phát triển trang web, ứng dụng Android, v.v. Việc cài đặt Linux sẽ tải <ph name="DOWNLOAD_SIZE" /> dữ liệu xuống.</translation>
 <translation id="3847319713229060696">Giúp tăng cường bảo mật cho mọi người trên web</translation>
 <translation id="385051799172605136">Quay lại</translation>
@@ -2778,7 +2775,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="4453946976636652378">Tìm kiếm <ph name="SEARCH_ENGINE_NAME" /> hoặc nhập một URL</translation>
 <translation id="4459169140545916303">Hoạt động <ph name="DEVICE_LAST_ACTIVATED_TIME" /> ngày trước</translation>
 <translation id="4460014764210899310">Rã nhóm</translation>
-<translation id="4460343359907016103">Lỗi khi kết nối với <ph name="PRINTER_NAME" /></translation>
 <translation id="4462159676511157176">Máy chủ có tên tùy chỉnh</translation>
 <translation id="4465236939126352372">Giới hạn thời gian sử dụng <ph name="TIME" /> đã được đặt cho <ph name="APP_NAME" /></translation>
 <translation id="4465725236958772856">Mạng <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Do quản trị viên của bạn quản lý, Kết nối</translation>
@@ -3076,7 +3072,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="4864369630010738180">Đang đăng nhập...</translation>
 <translation id="4864805589453749318">Chọn cha mẹ sẽ cấp quyền thêm tài khoản trường học.</translation>
 <translation id="486635084936119914">Tự động mở một số loại tệp nhất định sau khi tải xuống</translation>
-<translation id="4869213010169296107"><ph name="PRINTER_NAME" /> bị thiếu khay giấy</translation>
 <translation id="48704129375571883">Thêm tính năng bổ sung</translation>
 <translation id="4870758487381879312">Nhập mật khẩu do quản trị viên cung cấp để lấy thông tin cấu hình</translation>
 <translation id="4870903493621965035">Không có thiết bị nào được ghép nối</translation>
@@ -3327,6 +3322,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="5184662919967270437">Đang cập nhật thiết bị của bạn</translation>
 <translation id="5185359571430619712">Xem lại các tiện ích</translation>
 <translation id="5185386675596372454">Phiên bản mới nhất của "<ph name="EXTENSION_NAME" />" đã bị tắt vì phiên bản đó yêu cầu nhiều giấy phép hơn.</translation>
+<translation id="5185500136143151980">Không có Internet</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5190926251776387065">Kích hoạt cổng</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> muốn tải nhiều tệp xuống</translation>
@@ -3483,7 +3479,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="5390112241331447203">Thêm tệp system_logs.txt được gửi trong báo cáo phản hồi.</translation>
 <translation id="5390677308841849479">Cam và đỏ đậm</translation>
 <translation id="5390743329570580756">Gửi cho</translation>
-<translation id="5395869306561378615"><ph name="PRINTER_NAME" /> đã bị tạm dừng</translation>
 <translation id="5397794290049113714">Bạn</translation>
 <translation id="5398572795982417028">Vượt quá phạm vi trang, giới hạn là <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">Đã chặn quảng cáo</translation>
@@ -3498,7 +3493,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="5417312524372586921">Chủ đề của trình duyệt</translation>
 <translation id="5419405654816502573">Voice Match</translation>
 <translation id="5420438158931847627">Xác định độ sắc nét của văn bản và hình ảnh</translation>
-<translation id="5421498071721257877"><ph name="PRINTER_NAME" /> gặp lỗi thiết bị</translation>
 <translation id="5422221874247253874">Điểm truy cập</translation>
 <translation id="5422781158178868512">Rất tiếc, thiết bị lưu trữ bên ngoài của bạn không thể nhận dạng được.</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3847,7 +3841,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="5852137567692933493">Khởi động lại và Powerwash</translation>
 <translation id="5854912040170951372">Lát pizza</translation>
 <translation id="5855267860608268405">Các mạng Wi-Fi đã biết</translation>
-<translation id="5855310969323666289">Cửa của <ph name="PRINTER_NAME" /> đang mở</translation>
 <translation id="5855643921295613558">0,6 giây</translation>
 <translation id="5856721540245522153">Bật tính năng gỡ lỗi</translation>
 <translation id="5857090052475505287">Thư mục Mới</translation>
@@ -3878,7 +3871,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="5877064549588274448">Kênh đã thay đổi. Hãy khởi động lại thiết bị để áp dụng thay đổi.</translation>
 <translation id="5877584842898320529">Máy in đã chọn không sử dụng được hoặc không được cài đặt chính xác. <ph name="BR" /> Hãy kiểm tra máy in hoặc thử chọn một máy in khác.</translation>
 <translation id="5882919346125742463">Mạng đã biết</translation>
-<translation id="5883716097305842571">Khay đầu ra của <ph name="PRINTER_NAME" /> sắp đầy</translation>
 <translation id="5884474295213649357">Tab này được kết nối với một thiết bị USB.</translation>
 <translation id="5886009770935151472">Ngón tay số 1</translation>
 <translation id="5889282057229379085">Số CA gián tiếp tối đa: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4444,7 +4436,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="6611972847767394631">Tìm các tab của bạn ở đây</translation>
 <translation id="6612358246767739896">Nội dung được bảo vệ</translation>
 <translation id="6615455863669487791">Hiển thị cho tôi</translation>
-<translation id="6617034477946102682">Không thể truy cập vào <ph name="PRINTER_NAME" /></translation>
 <translation id="6618097958368085618">Vẫn tiếp tục</translation>
 <translation id="6618744767048954150">Đang chạy</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
@@ -4861,7 +4852,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="7128151990937044829">Hiển thị một chỉ báo trên thanh địa chỉ khi thông báo bị chặn</translation>
 <translation id="7131040479572660648">Đọc dữ liệu của bạn trên <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> và <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Thêm tran&amp;g...</translation>
-<translation id="7131379856697962078">Khay đầu ra của <ph name="PRINTER_NAME" /> đã đầy</translation>
 <translation id="7133578150266914903">Quản trị viên đang hạ cấp hệ điều hành của thiết bị này (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">Thu nhỏ Văn bản</translation>
 <translation id="7135729336746831607">Bạn muốn bật Bluetooth?</translation>
@@ -4880,7 +4870,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="7152478047064750137">Tiện ích này không yêu cầu quyền đặc biệt</translation>
 <translation id="7154130902455071009">Thay đổi trang chủ của bạn thành: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">Ảnh hiện có từ máy ảnh hoặc tệp</translation>
-<translation id="715657691234357425"><ph name="PRINTER_NAME" /> sắp hết giấy</translation>
 <translation id="7165320105431587207">Không định cấu hình mạng được</translation>
 <translation id="716640248772308851">"<ph name="EXTENSION" />" có thể đọc hình ảnh, video và tệp âm thanh trong các vị trí đã chọn.</translation>
 <translation id="7167486101654761064">&amp;Luôn mở loại tệp này</translation>
@@ -4911,7 +4900,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="7197632491113152433">Chúng tôi tìm thấy <ph name="NUMBER_OF_APPS" /> ứng dụng từ tài khoản của bạn có thể dùng trên thiết bị này.</translation>
 <translation id="7199158086730159431">Nhận &amp;trợ giúp</translation>
 <translation id="7200083590239651963">Chọn cấu hình</translation>
-<translation id="7201042526153088083">Cài đặt ứng dụng và trò chơi từ Google Play trên <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;Tìm hiểu thêm&lt;/a&gt;</translation>
 <translation id="720110658997053098">Vĩnh viễn giữ thiết bị này ở chế độ kiosk</translation>
 <translation id="7201118060536064622">Đã xóa '<ph name="DELETED_ITEM_NAME" />'</translation>
 <translation id="7201420661433230412">Xem tệp</translation>
@@ -5217,7 +5205,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="7598466960084663009">Khởi động lại máy tính</translation>
 <translation id="7599527631045201165">Tên thiết bị là quá dài. Hãy nhập một tên ngắn hơn để thử lại.</translation>
 <translation id="7600965453749440009">Không bao giờ dịch <ph name="LANGUAGE" /></translation>
-<translation id="7601297144931396972"><ph name="PRINTER_NAME" /> bị kẹt giấy</translation>
 <translation id="760197030861754408">Truy cập <ph name="LANDING_PAGE" /> để kết nối.</translation>
 <translation id="7602079150116086782">Không có tab nào từ thiết bị khác</translation>
 <translation id="7602173054665172958">Quản lý lệnh in</translation>
@@ -5228,6 +5215,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="7609148976235050828">Vui lòng kết nối với Internet và thử lại.</translation>
 <translation id="7614260613810441905">Hỏi khi một trang web muốn chỉnh sửa các tệp hoặc thư mục trên thiết bị (khuyên dùng)</translation>
 <translation id="761530003705945209">Sao lưu vào Google Drive. Dễ dàng khôi phục dữ liệu hoặc chuyển đổi thiết bị bất cứ lúc nào. Nội dung sao lưu của bạn bao gồm các dữ liệu ứng dụng. Các bản sao lưu được tải lên Google và mã hóa bằng mật khẩu Tài khoản Google của bạn.</translation>
+<translation id="7615365294369022248">Đã xảy ra lỗi khi thêm một tài khoản</translation>
 <translation id="7616214729753637086">Đang đăng ký thiết bị...</translation>
 <translation id="7617263010641145920">Bật Cửa hàng Play</translation>
 <translation id="7617366389578322136">Đang kết nối với "<ph name="DEVICE_NAME" />"</translation>
@@ -5676,7 +5664,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
           <ph name="TIME" />. Dữ liệu này không bao gồm địa chỉ và phương thức thanh toán từ Google Pay.</translation>
 <translation id="81238879832906896">Hoa màu vàng và trắng</translation>
 <translation id="8124313775439841391">ONC được quản lý</translation>
-<translation id="8127535217699822294"><ph name="PRINTER_NAME" /> đã hết giấy</translation>
 <translation id="813082847718468539">Xem thông tin trang web</translation>
 <translation id="8131740175452115882">Xác nhận</translation>
 <translation id="8133676275609324831">&amp;Hiển thị trong thư mục</translation>
@@ -5775,7 +5762,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8254954272268479918">Tắt Linux (Thử nghiệm)</translation>
 <translation id="8255451560461371599">Không có hình nền</translation>
 <translation id="8256319818471787266">Cún con tinh nghịch</translation>
-<translation id="8256417822772703842"><ph name="PRINTER_NAME" /> sắp hết mực</translation>
 <translation id="8257950718085972371">Tiếp tục chặn quyền truy cập máy ảnh</translation>
 <translation id="8259239505248583312">Bắt đầu</translation>
 <translation id="8260864402787962391">Chuột</translation>
@@ -5956,7 +5942,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8487678622945914333">Phóng To</translation>
 <translation id="8490896350101740396">Các ứng dụng kiosk sau đây "<ph name="UPDATED_APPS" />" đã được cập nhật. Hãy khởi động lại thiết bị để hoàn tất quá trình cập nhật.</translation>
 <translation id="8493236660459102203">Micrô:</translation>
-<translation id="8495940850609851342"><ph name="PRINTER_NAME" /> đã bị dừng</translation>
 <translation id="8496717697661868878">Chạy Plugin này</translation>
 <translation id="8497219075884839166">Tiện ích Windows</translation>
 <translation id="8498214519255567734">Giúp bạn nhìn màn hình hoặc đọc dưới ánh sáng mờ dễ dàng hơn</translation>
@@ -6498,6 +6483,12 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="9157096865782046368">0,8 giây</translation>
 <translation id="9157697743260533322">Không thiết lập được cập nhật tự động cho tất cả người dùng (lỗi khởi chạy kiểm tra <ph name="ERROR_NUMBER" /></translation>
 <translation id="9158715103698450907">Rất tiếc!  Đã xảy ra sự cố giao tiếp mạng trong khi xác thực.  Vui lòng kiểm tra kết nối mạng của bạn và thử lại.</translation>
+<translation id="9159643062839240276">Hãy thử:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />Kiểm tra cáp mạng, modem và bộ định tuyến
+      <ph name="LIST_ITEM" />Kết nối lại Wi-Fi
+      <ph name="LIST_ITEM" />Chạy công cụ Chẩn đoán kết nối dành cho Chrome
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">Ảnh trong ảnh</translation>
 <translation id="9168436347345867845">Thực hiện sau</translation>
 <translation id="9169496697824289689">Xem phím tắt</translation>

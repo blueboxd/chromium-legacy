@@ -955,13 +955,6 @@ class ComputedStyle : public ComputedStyleBase,
   const AtomicString& TextEmphasisMarkString() const;
   LineLogicalSide GetTextEmphasisLineLogicalSide() const;
 
-  // caret-color
-  void SetCaretColor(const StyleAutoColor& color) {
-    SetCaretColorInternal(color.Resolve(Color()));
-    SetCaretColorIsCurrentColorInternal(color.IsCurrentColor());
-    SetCaretColorIsAutoInternal(color.IsAutoColor());
-  }
-
   // Font properties.
   CORE_EXPORT const Font& GetFont() const { return FontInternal(); }
   CORE_EXPORT void SetFont(const Font& font) { SetFontInternal(font); }
@@ -2646,11 +2639,6 @@ class ComputedStyle : public ComputedStyleBase,
   void SetInternalVisitedTextStrokeColor(const StyleColor& color) {
     SetInternalVisitedTextStrokeColorInternal(color);
   }
-  void SetInternalVisitedCaretColor(const StyleAutoColor& color) {
-    SetInternalVisitedCaretColorInternal(color.Resolve(Color()));
-    SetInternalVisitedCaretColorIsCurrentColorInternal(color.IsCurrentColor());
-    SetInternalVisitedCaretColorIsAutoInternal(color.IsAutoColor());
-  }
 
   static bool IsDisplayBlockContainer(EDisplay display) {
     return display == EDisplay::kBlock || display == EDisplay::kListItem ||
@@ -2718,13 +2706,7 @@ class ComputedStyle : public ComputedStyleBase,
   const StyleColor& BackgroundColor() const {
     return BackgroundColorInternal();
   }
-  StyleAutoColor CaretColor() const {
-    if (CaretColorIsCurrentColorInternal())
-      return StyleAutoColor::CurrentColor();
-    if (CaretColorIsAutoInternal())
-      return StyleAutoColor::AutoColor();
-    return StyleAutoColor(CaretColorInternal());
-  }
+  const StyleAutoColor& CaretColor() const { return CaretColorInternal(); }
   const StyleColor& GetColor() const { return ColorInternal(); }
   const StyleColor& ColumnRuleColor() const {
     return ColumnRuleColorInternal();
@@ -2743,12 +2725,8 @@ class ComputedStyle : public ComputedStyleBase,
   const StyleColor& InternalVisitedColor() const {
     return InternalVisitedColorInternal();
   }
-  StyleAutoColor InternalVisitedCaretColor() const {
-    if (InternalVisitedCaretColorIsCurrentColorInternal())
-      return StyleAutoColor::CurrentColor();
-    if (InternalVisitedCaretColorIsAutoInternal())
-      return StyleAutoColor::AutoColor();
-    return StyleAutoColor(InternalVisitedCaretColorInternal());
+  const StyleAutoColor& InternalVisitedCaretColor() const {
+    return InternalVisitedCaretColorInternal();
   }
   const StyleColor& InternalVisitedBackgroundColor() const {
     return InternalVisitedBackgroundColorInternal();

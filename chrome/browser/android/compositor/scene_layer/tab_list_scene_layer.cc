@@ -113,7 +113,6 @@ void TabListSceneLayer::PutTabLayer(
     jfloat height,
     jfloat content_width,
     jfloat content_height,
-    jfloat visible_content_height,
     jfloat shadow_x,
     jfloat shadow_y,
     jfloat shadow_width,
@@ -142,7 +141,6 @@ void TabListSceneLayer::PutTabLayer(
     jboolean show_tab_title,
     jint toolbar_textbox_resource_id,
     jint toolbar_textbox_background_color,
-    jfloat toolbar_textbox_alpha,
     jfloat toolbar_alpha,
     jfloat content_offset,
     jfloat side_border_scale,
@@ -184,12 +182,11 @@ void TabListSceneLayer::PutTabLayer(
         alpha, border_alpha, border_inner_shadow_alpha, contour_alpha,
         shadow_alpha, close_alpha, border_scale, saturation, brightness,
         close_btn_width, close_btn_asset_size, static_to_view_blend,
-        content_width, content_height, content_width, visible_content_height,
-        show_toolbar, default_theme_color, toolbar_background_color,
-        close_button_color, anonymize_toolbar, show_tab_title,
-        toolbar_textbox_resource_id, toolbar_textbox_background_color,
-        toolbar_textbox_alpha, toolbar_alpha, content_offset, side_border_scale,
-        inset_border);
+        content_width, content_height, content_width, show_toolbar,
+        default_theme_color, toolbar_background_color, close_button_color,
+        anonymize_toolbar, show_tab_title, toolbar_textbox_resource_id,
+        toolbar_textbox_background_color, toolbar_alpha, content_offset,
+        side_border_scale, inset_border);
   }
 
   gfx::RectF self(own_tree_->position(), gfx::SizeF(own_tree_->bounds()));

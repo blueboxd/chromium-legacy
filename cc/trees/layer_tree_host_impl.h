@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <set>
+#include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -29,6 +30,7 @@
 #include "cc/input/scrollbar_animation_controller.h"
 #include "cc/input/scrollbar_controller.h"
 #include "cc/layers/layer_collections.h"
+#include "cc/metrics/average_lag_tracking_manager.h"
 #include "cc/metrics/dropped_frame_counter.h"
 #include "cc/metrics/event_metrics.h"
 #include "cc/metrics/events_metrics_manager.h"
@@ -1127,6 +1129,11 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   void AllocateLocalSurfaceId();
 
+  // Log the AverageLag events from the frame identified by |frame_token| and
+  // the information in |details|.
+  void LogAverageLagEvents(uint32_t frame_token,
+                           const viz::FrameTimingDetails& details);
+
   const LayerTreeSettings settings_;
 
   // This is set to true only if:
@@ -1423,6 +1430,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // Responsible for storing animated custom property values and for
   // invalidating PaintWorklets as the property values change.
   AnimatedPaintWorkletTracker paint_worklet_tracker_;
+
+  AverageLagTrackingManager lag_tracking_manager_;
 
   // Helper for de-jelly logic.
   DeJellyState de_jelly_state_;

@@ -6,7 +6,7 @@
 #define ASH_SYSTEM_MESSAGE_CENTER_ASH_MESSAGE_CENTER_LOCK_SCREEN_CONTROLLER_H_
 
 #include "ash/ash_export.h"
-#include "ash/session/session_observer.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "base/optional.h"
 #include "components/account_id/account_id.h"
 #include "ui/message_center/lock_screen/lock_screen_controller.h"

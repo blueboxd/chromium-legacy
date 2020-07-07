@@ -245,6 +245,7 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   const base::OffsetAdjuster::Adjustments& GetHypertextAdjustments();
   size_t UTF16ToUnicodeOffsetInText(size_t utf16_offset);
   size_t UnicodeToUTF16OffsetInText(int unicode_offset);
+  int GetTextOffsetAtPoint(int x, int y, AtkCoordType atk_coord_type);
 
   // Called on a toplevel frame to set the document parent, which is the parent
   // of the toplevel document. This is used to properly express the ATK embeds

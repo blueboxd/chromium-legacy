@@ -16,6 +16,8 @@
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
+namespace infobars {
+
 ConfirmInfoBar::ConfirmInfoBar(std::unique_ptr<ConfirmInfoBarDelegate> delegate,
                                const ResourceIdMapper& resource_id_mapper)
     : InfoBarAndroid(std::move(delegate), resource_id_mapper) {}
@@ -77,3 +79,5 @@ void ConfirmInfoBar::ProcessButton(int action) {
                                             : delegate->Cancel())
     RemoveSelf();
 }
+
+}  // namespace infobars

@@ -20,6 +20,12 @@ class CORE_EXPORT LayoutOutsideListMarker final : public LayoutBlockFlow {
 
   const char* GetName() const override { return "LayoutOutsideListMarker"; }
 
+  bool IsMarkerImage() const;
+  LayoutUnit ListItemInlineStartOffset() const {
+    return list_item_inline_start_offset_;
+  }
+  void UpdateMargins();
+
   const ListMarker& Marker() const { return list_marker_; }
   ListMarker& Marker() { return list_marker_; }
 
@@ -29,6 +35,19 @@ class CORE_EXPORT LayoutOutsideListMarker final : public LayoutBlockFlow {
            LayoutBlockFlow::IsOfType(type);
   }
 
+  void UpdateLayout() override;
+
+  LayoutUnit LineHeight(
+      bool first_line,
+      LineDirectionMode,
+      LinePositionMode = kPositionOnContainingLine) const override;
+  LayoutUnit BaselinePosition(
+      FontBaseline,
+      bool first_line,
+      LineDirectionMode,
+      LinePositionMode = kPositionOnContainingLine) const override;
+
+  LayoutUnit list_item_inline_start_offset_;
   ListMarker list_marker_;
 };
 

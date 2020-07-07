@@ -34,9 +34,9 @@ requests to show compromosed credentials:
    `credentials`.
     1. The controller prepares and filters the `credentials` for display.
     2. The controller writes the prepared credentials into the [model](#Model)
-       as `SETTINGS_ITEMS`.
+       as `ITEMS`.
 2. The MCP picks up model changes.
-    1. The MCP identifies that the `SETTINGS_ITEMS` property was changed.
+    1. The MCP identifies that the `ITEMS` property was changed.
     2. The MCP uses a ViewBinder to bind each settings item to the
        corresponding view (e.g. a `COMPROMISED_CREDENTIAL` item id would create
        or reuse a TextView with a button of options).
@@ -56,10 +56,12 @@ static `PasswordCheckProperties` class.
 The model contains writable and readable properties. The readable properties are
 guaranteed to never change for the lifetime of the Password Check component:
 
- * **SETTINGS_ITEMS** which is the set of displayed credentials. The list
+ * **ITEMS** which is the set of displayed credentials. The list
    itself will be modified (credentials will be added and removed) but the
    object remains the same which allows to permanently bind it to a list
    adapter.
+ * **FRAGMET_EVENT_LISTENER** which is the listener that reacts to view events.
+   The mediator implements this interface.
 
 The writable properties change over the course of the components lifetime:
 
@@ -81,4 +83,12 @@ appearance. The controller consists of two parts:
 
 ## View
 
-The view contains all parts that are necessary to display the bottom sheet.
+The view contains all parts that are necessary to display the check UI. It
+consists of two parts:
+
+ * **PasswordCheckViewBinder** which maps model changes to the view. For the
+   Password Check component, the ViewBinder also supports an Adapter that binds
+   changes to the `ITEMS` property to the RecyclerView inside the
+   bottom sheet.
+ * **PasswordCheckSettingsView** which displays all visible elements. Since it
+   is a fragment that the SettignsLauncher needs to access, it is public.

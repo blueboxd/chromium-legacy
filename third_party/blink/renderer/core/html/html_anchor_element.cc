@@ -494,13 +494,13 @@ void HTMLAnchorElement::HandleClick(Event& event) {
   LocalFrame* frame = window->GetFrame();
   if (FastHasAttribute(html_names::kDownloadAttr) &&
       NavigationPolicyFromEvent(&event) != kNavigationPolicyDownload &&
-      GetDocument().GetSecurityOrigin()->CanReadContent(completed_url)) {
+      window->GetSecurityOrigin()->CanReadContent(completed_url)) {
     if (ShouldInterveneDownloadByFramePolicy(frame))
       return;
     request.SetSuggestedFilename(
         static_cast<String>(FastGetAttribute(html_names::kDownloadAttr)));
     request.SetRequestContext(mojom::RequestContextType::DOWNLOAD);
-    request.SetRequestorOrigin(GetDocument().GetSecurityOrigin());
+    request.SetRequestorOrigin(window->GetSecurityOrigin());
     frame->DownloadURL(request, network::mojom::blink::RedirectMode::kManual);
     return;
   }

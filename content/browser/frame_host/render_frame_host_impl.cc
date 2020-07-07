@@ -4622,6 +4622,21 @@ void RenderFrameHostImpl::DidChangeFramePolicy(
   }
 }
 
+void RenderFrameHostImpl::CapturePaintPreviewOfSubframe(
+    const gfx::Rect& clip_rect,
+    const base::UnguessableToken& guid) {
+  if (IsInactiveAndDisallowReactivation())
+    return;
+  // This should only be called on a subframe.
+  if (is_main_frame()) {
+    bad_message::ReceivedBadMessage(
+        GetProcess(), bad_message::RFH_SUBFRAME_CAPTURE_ON_MAIN_FRAME);
+    return;
+  }
+
+  delegate()->CapturePaintPreviewOfCrossProcessSubframe(clip_rect, guid, this);
+}
+
 void RenderFrameHostImpl::BindInterfaceProviderReceiver(
     mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
         interface_provider_receiver) {

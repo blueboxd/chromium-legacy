@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/session/session_observer.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/shutdown_reason.h"
 #include "ash/wallpaper/wallpaper_property.h"
 #include "ash/wm/lock_state_observer.h"

@@ -67,7 +67,15 @@ gfx::Rect GetSecondButtonBounds() {
                    ShelfConfig::Get()->control_size());
 }
 
-bool IsBackButtonShown() {
+bool IsBackButtonShown(bool horizontal_alignment) {
+  // Back button should only be shown in horizontal shelf.
+  // TODO(https://crbug.com/1102648): Horizontal shelf should be implied by
+  // tablet mode, but this may not be the case during tablet mode transition as
+  // shelf layout may get updated before the correct shelf alignment is set.
+  // Remove this when the linked bug is resolved.
+  if (!horizontal_alignment)
+    return false;
+
   // TODO(https://crbug.com/1058205): Test this behavior.
   if (ShelfConfig::Get()->is_virtual_keyboard_shown())
     return true;
@@ -333,7 +341,8 @@ void ShelfNavigationWidget::Delegate::UpdateOpaqueBackground() {
   opaque_background_.SetColor(ShelfConfig::Get()->GetShelfControlButtonColor());
 
   // Hide background if no buttons should be shown.
-  if (!IsHomeButtonShown() && !IsBackButtonShown()) {
+  if (!IsHomeButtonShown() &&
+      !IsBackButtonShown(shelf_->IsHorizontalAlignment())) {
     opaque_background_.SetVisible(false);
     return;
   }
@@ -478,7 +487,8 @@ void ShelfNavigationWidget::Initialize(aura::Window* container) {
 
 gfx::Size ShelfNavigationWidget::GetIdealSize() const {
   const int button_count =
-      (IsBackButtonShown() ? 1 : 0) + (IsHomeButtonShown() ? 1 : 0);
+      (IsBackButtonShown(shelf_->IsHorizontalAlignment()) ? 1 : 0) +
+      (IsHomeButtonShown() ? 1 : 0);
 
   if (button_count == 0)
     return gfx::Size();
@@ -546,7 +556,9 @@ void ShelfNavigationWidget::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 BackButton* ShelfNavigationWidget::GetBackButton() const {
-  return IsBackButtonShown() ? delegate_->back_button() : nullptr;
+  return IsBackButtonShown(shelf_->IsHorizontalAlignment())
+             ? delegate_->back_button()
+             : nullptr;
 }
 
 HomeButton* ShelfNavigationWidget::GetHomeButton() const {
@@ -577,7 +589,8 @@ gfx::Rect ShelfNavigationWidget::GetTargetBounds() const {
 }
 
 void ShelfNavigationWidget::UpdateLayout(bool animate) {
-  const bool back_button_shown = IsBackButtonShown();
+  const bool back_button_shown =
+      IsBackButtonShown(shelf_->IsHorizontalAlignment());
   const bool home_button_shown = IsHomeButtonShown();
 
   const ShelfLayoutManager* layout_manager = shelf_->shelf_layout_manager();

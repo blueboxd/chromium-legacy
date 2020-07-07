@@ -74,6 +74,9 @@ message HeartbeatRequest {
 
   // Indicates whether this request is the first heartbeat from a host instance.
   optional bool is_initial_heartbeat = 11;
+
+  // A hash of the local hostname of the machine.
+  optional string hostname = 12;
 }
 
 // Sent in response to a HeartbeatRequest.

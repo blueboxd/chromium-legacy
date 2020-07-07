@@ -45,18 +45,6 @@ class IdentifiabilityStudyState {
 
   ~IdentifiabilityStudyState();
 
-  // True if this client is included in the identifiability study.
-  //
-  // A client (i.e. a browser instance) participates in the study if all of the
-  // following are true:
-  //   * `kIdentifiabilityStudy` feature is enabled.
-  //   * `kIdentifiabilityStudyMaxSurfaces` is non-zero.
-  //
-  // In addition, none of this is relevant if UKM collection is disabled for the
-  // client. If that was the case, this class would not be instantiated in the
-  // first place.
-  bool IsActive() const { return settings_.IsActive(); }
-
   // Returns the active experiment generation as defined by the server-side
   // configuration.
   //
@@ -70,10 +58,6 @@ class IdentifiabilityStudyState {
   //
   // Calling this method may alter the state of the study settings.
   bool ShouldSampleSurface(blink::IdentifiableSurface surface);
-
-  // Returns true if the `surface` is blocked by configuration. Does not take
-  // into account whether the surface is included in the study or not.
-  bool IsSurfaceBlocked(blink::IdentifiableSurface surface) const;
 
   // A knob that we can use to split data sets from different versions of the
   // implementation where the differences could have material effects on the
@@ -98,8 +82,10 @@ class IdentifiabilityStudyState {
   using TypeSelectionRateMap =
       base::flat_map<blink::IdentifiableSurface::Type, int>;
 
-  static std::string EncodedValueFromSurfaces(
-      const IdentifiableSurfaceSet& surfaces);
+  // Initializes global study settings based on FeatureLists and FieldTrial
+  // lists. This step is required for enabling the study and must be called
+  // prior to constructing an `IdentifiabilityStudyState` object.
+  static void InitializeGlobalStudySettings();
 
   // Checks that the invariants hold. When DCHECK_IS_ON() this call is
   // expensive. Noop otherwise.
@@ -211,9 +197,6 @@ class IdentifiabilityStudyState {
   //
   //   * max_active_surfaces_ ≤ kIdentifiabilityStudyMaxSurfaces.
   const size_t max_active_surfaces_;
-
-  // Overall study state and per-surface and per-type blocking.
-  const PrivacyBudgetSettingsProvider settings_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 };

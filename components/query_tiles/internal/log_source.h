@@ -9,6 +9,7 @@
 
 #include "base/observer_list.h"
 #include "components/query_tiles/internal/log_sink.h"
+#include "components/query_tiles/internal/tile_group.h"
 #include "components/query_tiles/internal/tile_types.h"
 #include "components/query_tiles/logger.h"
 #include "net/base/backoff_entry.h"
@@ -27,11 +28,8 @@ class LogSource {
   // Returns the TileManager status.
   virtual TileGroupStatus GetGroupStatus() = 0;
 
-  // Returns a serialized string of group info.
-  virtual std::string GetGroupInfo() = 0;
-
-  // Returns formatted string of tiles proto data.
-  virtual std::string GetTilesProto() = 0;
+  // Returns the pointer of TileGroup holds in memory. Nullptr if not exists.
+  virtual TileGroup* GetTileGroup() = 0;
 };
 
 }  // namespace query_tiles

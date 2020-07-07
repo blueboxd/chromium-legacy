@@ -281,7 +281,6 @@
 <translation id="1340527397989195812">Δημιουργία αντιγράφων ασφαλείας μέσων από τη συσκευή με χρήση της εφαρμογής "Αρχεία".</translation>
 <translation id="1341988552785875222">Η τρέχουσα ταπετσαρία έχει οριστεί από το '<ph name="APP_NAME" />'. Ενδεχομένως να χρειαστεί να απεγκαταστήσετε το '<ph name="APP_NAME" />' πριν επιλέξετε μια διαφορετική ταπετσαρία.</translation>
 <translation id="1343865611738742294">Εκχωρήστε στις εφαρμογές Linux άδεια πρόσβασης σε συσκευές USB. Το Linux δεν θα θυμάται μια συσκευή USB μετά την αφαίρεσή της.</translation>
-<translation id="1344143111673240412">Η αλλαγή της ρύθμισης για την κάμερα απαιτεί την επανεκκίνηση του Parallels Desktop</translation>
 <translation id="1347256498747320987">Εγκατάσταση ενημερώσεων και εφαρμογών. Εάν συνεχίσετε, αποδέχεστε ότι αυτή η συσκευή ενδέχεται επίσης να κατεβάζει και να εγκαθιστά αυτόματα ενημερώσεις και εφαρμογές από την Google, την εταιρεία κινητής τηλεφωνίας και τον κατασκευαστή της συσκευής, πιθανόν με τη χρήση δεδομένων κινητής τηλεφωνίας. Ορισμένες από αυτές τις εφαρμογές μπορεί να προσφέρουν αγορές εντός εφαρμογής. <ph name="BEGIN_LINK1" />Μάθετε περισσότερα<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">Η ενημέρωση θα ξεκινήσει μόλις το επίπεδο της μπαταρίας φτάσει στο <ph name="BATTERY_LEVEL" />%.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -1197,7 +1196,6 @@
 <translation id="2470702053775288986">Απενεργοποίηση μη υποστηριζόμενων επεκτάσεων</translation>
 <translation id="2471469610750100598">Μαύρο (προεπιλογή)</translation>
 <translation id="2473195200299095979">Μετάφραση αυτής της σελίδας</translation>
-<translation id="2474848500897222119">Ο εκτυπωτής <ph name="PRINTER_NAME" /> δεν έχει μελάνι.</translation>
 <translation id="2475982808118771221">Παρουσιάστηκε σφάλμα</translation>
 <translation id="2476578072172137802">Ρυθμίσεις ιστότοπου</translation>
 <translation id="2478176599153288112">Άδειες αρχείων πολυμέσων για την επέκταση "<ph name="EXTENSION" />"</translation>
@@ -1503,7 +1501,6 @@
 <translation id="2824942875887026017">Το <ph name="IDS_SHORT_PRODUCT_NAME" /> χρησιμοποιεί ρυθμίσεις διακομιστή μεσολάβησης από τον διαχειριστή σας</translation>
 <translation id="2825758591930162672">Δημόσιο κλειδί υποκειμένου</translation>
 <translation id="2828650939514476812">Σύνδεση σε δίκτυο Wi-Fi</translation>
-<translation id="28291580771888953">Η ουρά του εκτυπωτή <ph name="PRINTER_NAME" /> έχει γεμίσει.</translation>
 <translation id="2835547721736623118">Υπηρεσία αναγνώρισης ομιλίας</translation>
 <translation id="2836269494620652131">Σφάλμα</translation>
 <translation id="2836635946302913370">Η σύνδεση με αυτό το όνομα χρήστη έχει απενεργοποιηθεί από τον διαχειριστή σας.</translation>
@@ -2319,7 +2316,7 @@
 <translation id="3839516600093027468">Να γίνεται πάντα αποκλεισμός της προβολής του προχείρου από <ph name="HOST" /></translation>
 <translation id="3841964634449506551">Μη έγκυρος κωδικός πρόσβασης</translation>
 <translation id="3842552989725514455">Γραμματοσειρά Serif</translation>
-<translation id="3843058644024807390">Η αλλαγή της ρύθμισης για το μικρόφωνο απαιτεί την επανεκκίνηση του Parallels Desktop</translation>
+<translation id="3843464315703645664">Επιτρέπεται εσωτερικά</translation>
 <translation id="3846116211488856547">Αποκτήστε εργαλεία για τον προγραμματισμό ιστοτόπων, εφαρμογών Android και άλλων στοιχείων. Με την εγκατάσταση του Linux, θα ληφθούν <ph name="DOWNLOAD_SIZE" /> δεδομένα.</translation>
 <translation id="3847319713229060696">Συμβάλλετε στη βελτίωση της ασφάλειας στον ιστό για όλους</translation>
 <translation id="385051799172605136">Πίσω</translation>
@@ -2778,7 +2775,6 @@
 <translation id="4453946976636652378">Αναζητήστε στο <ph name="SEARCH_ENGINE_NAME" /> ή πληκτρολογήστε κάποιο URL</translation>
 <translation id="4459169140545916303"><ph name="DEVICE_LAST_ACTIVATED_TIME" /> ημέρες πριν</translation>
 <translation id="4460014764210899310">Κατάργηση ομαδοποίησης</translation>
-<translation id="4460343359907016103">Σφάλμα κατά τη σύνδεση με τον εκτυπωτή <ph name="PRINTER_NAME" />.</translation>
 <translation id="4462159676511157176">Προσαρμοσμένοι διακομιστές ονομάτων</translation>
 <translation id="4465236939126352372">Έχει ρυθμιστεί χρονικό όριο <ph name="TIME" /> για την εφαρμογή <ph name="APP_NAME" /></translation>
 <translation id="4465725236958772856">Δίκτυο <ph name="NETWORK_INDEX" /> από <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Διαχειριζόμενο από τον διαχειριστή σας, Σύνδεση</translation>
@@ -3076,7 +3072,6 @@
 <translation id="4864369630010738180">Σύνδεση…</translation>
 <translation id="4864805589453749318">Επίλεξε τον γονέα σου που παραχωρεί την άδεια για την προσθήκη ενός σχολικού λογαριασμού.</translation>
 <translation id="486635084936119914">Άνοιγμα ορισμένων τύπων αρχείων αυτόματα μετά τη λήψη</translation>
-<translation id="4869213010169296107">Λείπει δίσκος από τον εκτυπωτή <ph name="PRINTER_NAME" />.</translation>
 <translation id="48704129375571883">Προσθήκη επιπλέον λειτουργιών</translation>
 <translation id="4870758487381879312">Καταχωρίστε τον κωδικό πρόσβασης που παρασχέθηκε από τον διαχειριστή, για να λάβετε πληροφορίες διαμόρφωσης</translation>
 <translation id="4870903493621965035">Δεν υπάρχουν συσκευές σε σύζευξη</translation>
@@ -3327,6 +3322,7 @@
 <translation id="5184662919967270437">Ενημέρωση της συσκευής σας</translation>
 <translation id="5185359571430619712">Επεκτάσεις κριτικής</translation>
 <translation id="5185386675596372454">Η τελευταία έκδοση του " <ph name="EXTENSION_NAME" /> "έχει απενεργοποιηθεί, επειδή απαιτούνται περισσότερα δικαιώματα.</translation>
+<translation id="5185500136143151980">Χωρίς σύνδεση στο διαδίκτυο</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5190926251776387065">Ενεργοποίηση θύρας</translation>
 <translation id="51918995459521422">Ο ιστότοπος <ph name="ORIGIN" /> θέλει να κατεβάσει πολλά αρχεία</translation>
@@ -3483,7 +3479,6 @@
 <translation id="5390112241331447203">Συμπερίληψη του αρχείου system_logs.txt που στάλθηκε στις αναφορές σχολίων.</translation>
 <translation id="5390677308841849479">Σκούρο κόκκινο και πορτοκαλί</translation>
 <translation id="5390743329570580756">Αποστολή για</translation>
-<translation id="5395869306561378615">Ο εκτυπωτής <ph name="PRINTER_NAME" /> τέθηκε σε παύση.</translation>
 <translation id="5397794290049113714">Εσείς</translation>
 <translation id="5398572795982417028">Η αναφορά της σελίδας βρίσκεται εκτός ορίων, το όριο είναι <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">Αποκλείστηκαν διαφημίσεις</translation>
@@ -3498,7 +3493,6 @@
 <translation id="5417312524372586921">Θέματα προγράμματος περιήγησης</translation>
 <translation id="5419405654816502573">Voice Match</translation>
 <translation id="5420438158931847627">Καθορίζει την οξύτητα του κειμένου και των εικόνων</translation>
-<translation id="5421498071721257877">Παρουσιάστηκε σφάλμα συσκευής στον εκτυπωτή <ph name="PRINTER_NAME" />.</translation>
 <translation id="5422221874247253874">Σημείο πρόσβασης</translation>
 <translation id="5422781158178868512">Λυπούμαστε, δεν ήταν δυνατή η αναγνώριση της εξωτερικής συσκευής αποθήκευσης.</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3848,7 +3842,6 @@
 <translation id="5852137567692933493">Επανεκκίνηση και Powerwash</translation>
 <translation id="5854912040170951372">Κομμάτι</translation>
 <translation id="5855267860608268405">Γνωστά δίκτυα Wi-Fi</translation>
-<translation id="5855310969323666289">Η πόρτα του εκτυπωτή <ph name="PRINTER_NAME" /> είναι ανοικτή.</translation>
 <translation id="5855643921295613558">0,6 δευτερόλεπτα</translation>
 <translation id="5856721540245522153">Ενεργοποίηση λειτουργιών εντοπισμού σφαλμάτων</translation>
 <translation id="5857090052475505287">Νέος φάκελος</translation>
@@ -3879,7 +3872,6 @@
 <translation id="5877064549588274448">Το κανάλι έχει αλλάξει. Επανεκκινήστε τη συσκευή σας για να εφαρμόσετε τις αλλαγές.</translation>
 <translation id="5877584842898320529">Ο επιλεγμένος εκτυπωτής δεν είναι διαθέσιμος ή δεν έχει εγκατασταθεί σωστά. <ph name="BR" /> Ελέγξτε τον εκτυπωτή σας ή δοκιμάστε να επιλέξετε άλλον εκτυπωτή.</translation>
 <translation id="5882919346125742463">Γνωστά δίκτυα</translation>
-<translation id="5883716097305842571">Η περιοχή εξόδου του εκτυπωτή <ph name="PRINTER_NAME" /> έχει γεμίσει σχεδόν.</translation>
 <translation id="5884474295213649357">Αυτή η καρτέλα είναι συνδεδεμένη σε μια συσκευή USB.</translation>
 <translation id="5886009770935151472">Δάκτυλο 1</translation>
 <translation id="5889282057229379085">Μέγιστος αριθμός ενδιάμεσων CA: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4445,7 +4437,6 @@
 <translation id="6611972847767394631">Βρείτε τις καρτέλες σας εδώ</translation>
 <translation id="6612358246767739896">Προστατ. περιεχ.</translation>
 <translation id="6615455863669487791">Εμφάνιση</translation>
-<translation id="6617034477946102682">Δεν είναι δυνατή η πρόσβαση στον εκτυπωτή <ph name="PRINTER_NAME" />.</translation>
 <translation id="6618097958368085618">Διατήρηση</translation>
 <translation id="6618744767048954150">Σε εξέλιξη</translation>
 <translation id="6619058681307408113">Daemon εκτυπωτή γραμμής (LPD)</translation>
@@ -4862,7 +4853,6 @@
 <translation id="7128151990937044829">Εμφάνιση κάποιας ένδειξης στη γραμμή διευθύνσεων για τις ειδοποιήσεις που έχουν αποκλειστεί</translation>
 <translation id="7131040479572660648">Ανάγνωση των δεδομένων σας στο <ph name="WEBSITE_1" />, στο <ph name="WEBSITE_2" /> και στο <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Προσθήκη σελί&amp;δας...</translation>
-<translation id="7131379856697962078">Η περιοχή εξόδου του εκτυπωτή <ph name="PRINTER_NAME" /> έχει γεμίσει.</translation>
 <translation id="7133578150266914903">Ο διαχειριστής σας κάνει επαναφορά σε αυτήν τη συσκευή (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">Σμίκρυνση κειμένου</translation>
 <translation id="7135729336746831607">Ενεργοποίηση Bluetooth;</translation>
@@ -4881,7 +4871,6 @@
 <translation id="7152478047064750137">Αυτή η επέκταση δεν απαιτεί ειδικές άδειες</translation>
 <translation id="7154130902455071009">Αλλαγή της σελίδας έναρξης σε: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">Υπάρχουσα φωτογραφία από την κάμερα ή το αρχείο</translation>
-<translation id="715657691234357425">Το χαρτί του εκτυπωτή <ph name="PRINTER_NAME" /> κοντεύει να τελειώσει.</translation>
 <translation id="7165320105431587207">Αποτυχία διαμόρφωσης δικτύου</translation>
 <translation id="716640248772308851">Η επέκταση "<ph name="EXTENSION" />" μπορεί να διαβάσει εικόνες, βίντεο και αρχεία ήχου στις επιλεγμένες τοποθεσίες.</translation>
 <translation id="7167486101654761064">&amp;Πάντα άνοιγμα αρχείων αυτού του τύπου</translation>
@@ -4912,7 +4901,6 @@
 <translation id="7197632491113152433">Εντοπίσαμε <ph name="NUMBER_OF_APPS" /> εφαρμογές από τον λογαριασμό σας, η χρήση των οποίων δεν είναι δυνατή σε αυτήν τη συσκευή.</translation>
 <translation id="7199158086730159431">Λάβετε β&amp;οήθεια</translation>
 <translation id="7200083590239651963">Επιλογή διαμόρφωσης</translation>
-<translation id="7201042526153088083">Εγκαταστήστε εφαρμογές και παιχνίδια από το Google Play στη συσκευή <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;Μάθετε περισσότερα&lt;/a&gt;</translation>
 <translation id="720110658997053098">Μόνιμη διατήρηση της παρούσας συσκευής σε λειτουργία Kiosk</translation>
 <translation id="7201118060536064622">Το "<ph name="DELETED_ITEM_NAME" />" διαγράφηκε</translation>
 <translation id="7201420661433230412">Προβολή αρχείων</translation>
@@ -5218,7 +5206,6 @@
 <translation id="7598466960084663009">Επανεκκινήστε τον υπολογιστή σας</translation>
 <translation id="7599527631045201165">Το όνομα συσκευής είναι πολύ μεγάλο. Εισαγάγετε ένα μικρότερο όνομα και προσπαθήστε ξανά.</translation>
 <translation id="7600965453749440009">Να μην γίνεται ποτέ μετάφραση από <ph name="LANGUAGE" /></translation>
-<translation id="7601297144931396972">Το χαρτί έχει κολλήσει στον εκτυπωτή <ph name="PRINTER_NAME" />.</translation>
 <translation id="760197030861754408">Μετάβαση στη σελίδα <ph name="LANDING_PAGE" /> για σύνδεση.</translation>
 <translation id="7602079150116086782">Δεν υπάρχουν καρτέλες από άλλες συσκευές</translation>
 <translation id="7602173054665172958">Διαχείριση εκτυπώσεων</translation>
@@ -5229,6 +5216,7 @@
 <translation id="7609148976235050828">Συνδεθείτε στο διαδίκτυο και δοκιμάστε ξανά.</translation>
 <translation id="7614260613810441905">Να γίνεται ερώτηση όταν ένας ιστότοπος θέλει να επεξεργαστεί αρχεία ή φακέλους στη συσκευή σας (συνιστάται)</translation>
 <translation id="761530003705945209">Δημιουργία αντιγράφων ασφαλείας στο Google Drive. Επαναφέρετε τα δεδομένα σας ή αλλάξτε συσκευή ανά πάσα στιγμή με ευκολία. Το αντίγραφο ασφαλείας συμπεριλαμβάνει τα δεδομένα εφαρμογών. Τα αντίγραφα ασφαλείας σας ανεβαίνουν στο Google και κρυπτογραφούνται χρησιμοποιώντας τον κωδικό πρόσβασης του Λογαριασμού σας Google.</translation>
+<translation id="7615365294369022248">Παρουσιάστηκε σφάλμα κατά την προσθήκη ενός λογαριασμού</translation>
 <translation id="7616214729753637086">Εγγραφή συσκευής…</translation>
 <translation id="7617263010641145920">Ενεργοποίηση Play Store</translation>
 <translation id="7617366389578322136">Σύνδεση σε "<ph name="DEVICE_NAME" />"</translation>
@@ -5677,7 +5665,6 @@
           <ph name="TIME" />. Αυτά τα δεδομένα δεν περιλαμβάνουν τρόπους πληρωμής και διευθύνσεις από το Google Pay.</translation>
 <translation id="81238879832906896">Κίτρινο και λευκό λουλούδι</translation>
 <translation id="8124313775439841391">ONC με ιδιότητες διαχείρισης</translation>
-<translation id="8127535217699822294">Το χαρτί του εκτυπωτή <ph name="PRINTER_NAME" /> τελείωσε.</translation>
 <translation id="813082847718468539">Προβολή πληροφοριών τοποθεσίας</translation>
 <translation id="8131740175452115882">Επιβεβαίωση</translation>
 <translation id="8133676275609324831">&amp;Εμφάνιση στο φάκελο</translation>
@@ -5776,7 +5763,6 @@
 <translation id="8254954272268479918">Τερματισμός Linux (beta)</translation>
 <translation id="8255451560461371599">Χωρίς φόντο</translation>
 <translation id="8256319818471787266">Ζωηρός</translation>
-<translation id="8256417822772703842">Το μελάνι του εκτυπωτή <ph name="PRINTER_NAME" /> κοντεύει να τελειώσει.</translation>
 <translation id="8257950718085972371">Να συνεχιστεί ο αποκλεισμός πρόσβασης στην κάμερα</translation>
 <translation id="8259239505248583312">Ας ξεκινήσουμε</translation>
 <translation id="8260864402787962391">Ποντίκι</translation>
@@ -5957,7 +5943,6 @@
 <translation id="8487678622945914333">Μεγέθυνση</translation>
 <translation id="8490896350101740396">Έχουν ενεργοποιηθεί οι παρακάτω εφαρμογές kiosk "<ph name="UPDATED_APPS" />". Επανεκκινήστε τη συσκευή για να ολοκληρωθεί η διαδικασία ενημέρωσης.</translation>
 <translation id="8493236660459102203">Μικρόφωνο:</translation>
-<translation id="8495940850609851342">Ο εκτυπωτής <ph name="PRINTER_NAME" /> σταμάτησε.</translation>
 <translation id="8496717697661868878">Εκτέλεση αυτής της προσθήκης</translation>
 <translation id="8497219075884839166">Βοηθητικά προγράμματα των Windows</translation>
 <translation id="8498214519255567734">Διευκολύνετε τη θέαση της οθόνης ή την ανάγνωση σε συνθήκες χαμηλού φωτισμού</translation>
@@ -6497,6 +6482,12 @@
 <translation id="9157096865782046368">0,8 δευτερόλεπτα</translation>
 <translation id="9157697743260533322">Αποτυχία ρύθμισης αυτόματων ενημερώσεων για όλους τους χρήστες (σφάλμα προληπτικής εκκίνησης: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Ωχ!  Προέκυψε κάποιο πρόβλημα σχετικά με την επικοινωνία του δικτύου κατά τη διάρκεια του ελέγχου ταυτότητας.  Ελέγξτε τη σύνδεση του δικτύου σας και δοκιμάστε ξανά.</translation>
+<translation id="9159643062839240276">Δοκιμάστε να κάνετε τα εξής:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />Ελέγξτε τα καλώδια, το μόντεμ και τον δρομολογητή.
+      <ph name="LIST_ITEM" />Επανασυνδεθείτε στο Wi-Fi.
+      <ph name="LIST_ITEM" />Εκτελέστε τα Διαγνωστικά στοιχεία συνδεσιμότητας Chrome.
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">Παράθεση εικόνων</translation>
 <translation id="9168436347345867845">Αργότερα</translation>
 <translation id="9169496697824289689">Προβολή συντομεύσεων πληκτρολογίου</translation>

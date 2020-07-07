@@ -31,7 +31,6 @@ class ExtensionInstallBlockedByParentDialogView
   ExtensionInstallBlockedByParentDialogView(
       chrome::ExtensionInstalledBlockedByParentDialogAction action,
       const extensions::Extension* extension,
-      gfx::NativeWindow window,
       base::OnceClosure done_callback);
   ExtensionInstallBlockedByParentDialogView(
       const ExtensionInstallBlockedByParentDialogView&) = delete;

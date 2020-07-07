@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
+#include "base/time/default_tick_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
@@ -127,13 +128,23 @@ void RecordA11yUserAction(const std::string& action_id) {
 // WelcomeScreen, public:
 
 // static
+std::string WelcomeScreen::GetResultString(Result result) {
+  switch (result) {
+    case Result::NEXT:
+      return "Next";
+    case Result::START_DEMO:
+      return "StartDemo";
+  }
+}
+
+// static
 WelcomeScreen* WelcomeScreen::Get(ScreenManager* manager) {
   return static_cast<WelcomeScreen*>(
       manager->GetScreen(WelcomeView::kScreenId));
 }
 
 WelcomeScreen::WelcomeScreen(WelcomeView* view,
-                             const base::RepeatingClosure& exit_callback)
+                             const ScreenExitCallback& exit_callback)
     : BaseScreen(WelcomeView::kScreenId, OobeScreenPriority::DEFAULT),
       view_(view),
       exit_callback_(exit_callback) {
@@ -275,7 +286,11 @@ void WelcomeScreen::ShowImpl() {
   // Automatically continue if we are using hands-off enrollment.
   if (WizardController::UsingHandsOffEnrollment()) {
     OnUserAction(kUserActionContinueButtonClicked);
-  } else if (view_) {
+    return;
+  }
+  demo_mode_detector_ = std::make_unique<DemoModeDetector>(
+      base::DefaultTickClock::GetInstance(), this);
+  if (view_) {
     view_->Show();
   }
 }
@@ -283,6 +298,7 @@ void WelcomeScreen::ShowImpl() {
 void WelcomeScreen::HideImpl() {
   if (view_)
     view_->Hide();
+  demo_mode_detector_.reset();
 }
 
 void WelcomeScreen::OnUserAction(const std::string& action_id) {
@@ -347,10 +363,13 @@ void WelcomeScreen::InputMethodChanged(
 // WelcomeScreen, private:
 
 void WelcomeScreen::OnContinueButtonPressed() {
-  if (view_) {
-    view_->StopDemoModeDetection();
-  }
-  exit_callback_.Run();
+  demo_mode_detector_.reset();
+  exit_callback_.Run(Result::NEXT);
+}
+
+void WelcomeScreen::OnShouldStartDemoMode() {
+  demo_mode_detector_.reset();
+  exit_callback_.Run(Result::START_DEMO);
 }
 
 void WelcomeScreen::OnLanguageChangedCallback(

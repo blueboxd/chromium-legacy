@@ -7,8 +7,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/ref_counted_delete_on_sequence.h"
-#include "content/public/browser/browser_thread.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/layout.h"
 
@@ -28,7 +26,7 @@ class Image;
 // public methods. Subclasses are expected to override all methods which should
 // provide non-default values.
 class CustomThemeSupplier
-    : public base::RefCountedDeleteOnSequence<CustomThemeSupplier> {
+    : public base::RefCountedThreadSafe<CustomThemeSupplier> {
  public:
   enum ThemeType {
     EXTENSION,
@@ -88,8 +86,7 @@ class CustomThemeSupplier
   }
 
  private:
-  friend class base::RefCountedDeleteOnSequence<CustomThemeSupplier>;
-  friend class base::DeleteHelper<CustomThemeSupplier>;
+  friend class base::RefCountedThreadSafe<CustomThemeSupplier>;
 
   ThemeType theme_type_;
   std::string extension_id_;

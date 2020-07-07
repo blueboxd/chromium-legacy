@@ -1251,6 +1251,13 @@ void av1_quantize_lp_c(const int16_t* coeff_ptr,
                        const int16_t* scan);
 #define av1_quantize_lp av1_quantize_lp_c
 
+void av1_resize_and_extend_frame_c(const YV12_BUFFER_CONFIG* src,
+                                   YV12_BUFFER_CONFIG* dst,
+                                   const InterpFilter filter,
+                                   const int phase,
+                                   const int num_planes);
+#define av1_resize_and_extend_frame av1_resize_and_extend_frame_c
+
 void av1_round_shift_array_c(int32_t* arr, int size, int bit);
 #define av1_round_shift_array av1_round_shift_array_c
 

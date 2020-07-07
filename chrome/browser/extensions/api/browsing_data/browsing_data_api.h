@@ -103,7 +103,7 @@ class BrowsingDataRemoverFunction
   BrowsingDataRemoverFunction();
 
   // BrowsingDataRemover::Observer interface method.
-  void OnBrowsingDataRemoverDone() override;
+  void OnBrowsingDataRemoverDone(uint64_t failed_data_types) override;
 
   // ExtensionFunction:
   ResponseAction Run() override;

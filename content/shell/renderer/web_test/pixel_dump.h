@@ -5,8 +5,6 @@
 #ifndef CONTENT_SHELL_RENDERER_WEB_TEST_PIXEL_DUMP_H_
 #define CONTENT_SHELL_RENDERER_WEB_TEST_PIXEL_DUMP_H_
 
-#include "base/callback_forward.h"
-
 class SkBitmap;
 
 namespace blink {
@@ -15,9 +13,9 @@ class WebLocalFrame;
 
 namespace content {
 
-// Asks |web_frame| to print itself and calls |callback| with the result.
-void PrintFrameAsync(blink::WebLocalFrame* web_frame,
-                     base::OnceCallback<void(const SkBitmap&)> callback);
+// Goes through a test-only path to dump the frame's pixel output as if it was
+// printed.
+SkBitmap PrintFrameToBitmap(blink::WebLocalFrame* web_frame);
 
 }  // namespace content
 

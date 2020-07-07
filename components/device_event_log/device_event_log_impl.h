@@ -75,6 +75,8 @@ class DEVICE_EVENT_LOG_EXPORT DeviceEventLogImpl {
   void ClearAll();
   void Clear(const base::Time& begin, const base::Time& end);
 
+  int GetCountByLevelForTesting(LogLevel level);
+
   // Called from device_event_log::AddEntry if the global instance has not been
   // created (or has already been destroyed). Logs to LOG(ERROR) or VLOG(1).
   static void SendToVLogOrErrorLog(const char* file,

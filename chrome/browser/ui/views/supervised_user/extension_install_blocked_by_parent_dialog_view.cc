@@ -39,10 +39,15 @@ void ShowExtensionInstallBlockedByParentDialog(
     base::OnceClosure done_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   auto dialog = std::make_unique<ExtensionInstallBlockedByParentDialogView>(
-      action, extension, web_contents->GetTopLevelNativeWindow(),
-      std::move(done_callback));
-  constrained_window::ShowWebModalDialogViews(dialog.release(), web_contents)
-      ->Show();
+      action, extension, std::move(done_callback));
+  gfx::NativeWindow parent_window =
+      web_contents ? web_contents->GetTopLevelNativeWindow() : nullptr;
+  views::Widget* widget =
+      parent_window ? constrained_window::CreateBrowserModalDialogViews(
+                          dialog.release(), parent_window)
+                    : views::DialogDelegate::CreateDialogWidget(
+                          dialog.release(), nullptr, nullptr);
+  widget->Show();
 }
 
 }  // namespace chrome
@@ -51,7 +56,6 @@ ExtensionInstallBlockedByParentDialogView::
     ExtensionInstallBlockedByParentDialogView(
         chrome::ExtensionInstalledBlockedByParentDialogAction action,
         const extensions::Extension* extension,
-        gfx::NativeWindow window,
         base::OnceClosure done_callback)
     : extension_(extension),
       action_(action),
@@ -83,7 +87,7 @@ gfx::Size ExtensionInstallBlockedByParentDialogView::CalculatePreferredSize()
 }
 
 ui::ModalType ExtensionInstallBlockedByParentDialogView::GetModalType() const {
-  return ui::MODAL_TYPE_CHILD;
+  return ui::MODAL_TYPE_WINDOW;
 }
 
 void ExtensionInstallBlockedByParentDialogView::ConfigureTitle() {

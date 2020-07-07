@@ -29,4 +29,8 @@ const base::Feature kV8ConcurrentInlining{"V8ConcurrentInlining",
 // Enable per-context marking worklists in V8 GC.
 const base::Feature kV8PerContextMarkingWorklist{
     "V8PerContextMarkingWorklist", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable flushing of the instruction cache for the embedded blob.
+const base::Feature kV8FlushEmbeddedBlobICache{
+    "kV8FlushEmbeddedBlobICache", base::FEATURE_DISABLED_BY_DEFAULT};
 }  // namespace features

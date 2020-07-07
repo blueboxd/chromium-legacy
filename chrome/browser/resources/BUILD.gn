@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chrome/browser/buildflags.gni")
 import("//chrome/common/features.gni")
 import("//chrome/test/base/js2gtest.gni")
 import("//chrome/test/include_js_tests.gni")
@@ -66,6 +67,9 @@ if (enable_js_type_check) {
     }
     if (enable_webui_tab_strip) {
       deps += [ "tab_strip:closure_compile" ]
+    }
+    if (enable_kaleidoscope) {
+      deps += [ "kaleidoscope:closure_compile" ]
     }
     if (is_android) {
       deps += [

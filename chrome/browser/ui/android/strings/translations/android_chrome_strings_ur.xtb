@@ -642,7 +642,6 @@
 <translation id="6154478581116148741">اس آلہ سے اپنے پاس ورڈز برآمد کرنے کے لئے ترتیبات میں اسکرین لاک آن کریں</translation>
 <translation id="6157392216611456285">‫<ph name="APP_NAME" /> منتخب کریں</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> ڈیٹا کی سیونگز</translation>
-<translation id="6192333916571137726">فائل ڈاؤن لوڈ کریں</translation>
 <translation id="6201345951596836663">لنک کاپی ہو گیا</translation>
 <translation id="6206830853671714236">ڈاؤن لوڈ کرنے کا وقت منتخب کریں</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> نہیں؟</translation>
@@ -877,6 +876,7 @@
 <translation id="8013372441983637696">‏اس آلہ سے اپنا Chrome ڈیٹا بھی صاف کریں</translation>
 <translation id="8015452622527143194">صفحہ پر موجود ہر چیز کو واپس ڈیفالٹ سائز پر کریں</translation>
 <translation id="8026334261755873520">براؤزنگ ڈیٹا صاف کریں</translation>
+<translation id="8027863900915310177">منتخب کریں کہ کہاں پر ڈاؤن لوڈ کرنا ہے</translation>
 <translation id="8035133914807600019">نیا فولڈر…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> دن باقی</translation>
 <translation id="804335162455518893">‏SD کارڈ نہیں ملا</translation>
@@ -928,7 +928,7 @@
 <translation id="8427875596167638501">پیش منظر ٹیب آدھا کھلا ہے</translation>
 <translation id="8428213095426709021">ترتیبات</translation>
 <translation id="8438566539970814960">تلاشوں اور براؤزنگ کو بہتر بنائیں</translation>
-<translation id="8442258441309440798">کوئی کہانیاں دستیاب نہیں ہیں</translation>
+<translation id="8442258441309440798">کوئی کہانی دستیاب نہیں ہے</translation>
 <translation id="8443209985646068659">‏Chrome اپ ڈیٹ ممکن نہیں</translation>
 <translation id="8445448999790540984">پاس ورڈز برآمد نہیں ہو سکتے</translation>
 <translation id="8461694314515752532">اپنے ذاتی مطابقت پذیر پاس فریز کے ساتھ مطابقت پذیر کردہ ڈیٹا کی مرموزکاری کریں</translation>

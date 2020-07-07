@@ -1466,6 +1466,10 @@
       origin_trial_feature_name: "Portals",
     },
     {
+      name: "PortalsDefaultActivation",
+      status: "test",
+    },
+    {
       name: "PreciseMemoryInfo",
     },
     // Prefer not using composited scrolling. Composited scrolling will still
@@ -1708,9 +1712,6 @@
     {
       name: "SmsReceiver",
       status: {"default": "experimental", "Android": "stable"},
-    },
-    {
-      name: "SquashAfterPaint",
     },
     // Used as argument in attribute of stable-release functions/interfaces
     // where a runtime-enabled feature name is required for correct IDL syntax.

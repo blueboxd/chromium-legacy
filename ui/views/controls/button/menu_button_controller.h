@@ -55,7 +55,6 @@ class VIEWS_EXPORT MenuButtonController : public ButtonController {
   bool OnKeyReleased(const ui::KeyEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   void UpdateAccessibleNodeData(ui::AXNodeData* node_data) override;
-  void OnStateChanged(Button::ButtonState old_state) override;
   bool IsTriggerableEvent(const ui::Event& event) override;
 
   // Calls TakeLock with is_sibling_menu_show as false and a nullptr to the
@@ -88,6 +87,9 @@ class VIEWS_EXPORT MenuButtonController : public ButtonController {
 
   void DecrementPressedLocked();
 
+  // Called if the button state changes while pressed lock is engaged.
+  void OnButtonStateChangedWhilePressedLocked();
+
   // Our listener. Not owned.
   ButtonListener* const listener_;
 
@@ -112,6 +114,9 @@ class VIEWS_EXPORT MenuButtonController : public ButtonController {
   // should return to it once the press is complete. This can happen if, e.g.,
   // we programmatically show a menu on a disabled button.
   bool should_disable_after_press_ = false;
+
+  // Subscribes to state changes on the button while pressed lock is engaged.
+  views::PropertyChangedSubscription state_changed_subscription_;
 
   base::WeakPtrFactory<MenuButtonController> weak_factory_{this};
 

@@ -32,6 +32,7 @@
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
 #include "chrome/browser/chromeos/login/screens/fingerprint_setup_screen.h"
 #include "chrome/browser/chromeos/login/screens/gesture_navigation_screen.h"
+#include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
 #include "chrome/browser/chromeos/login/screens/kiosk_autolaunch_screen.h"
 #include "chrome/browser/chromeos/login/screens/marketing_opt_in_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
@@ -40,6 +41,7 @@
 #include "chrome/browser/chromeos/login/screens/sync_consent_screen.h"
 #include "chrome/browser/chromeos/login/screens/terms_of_service_screen.h"
 #include "chrome/browser/chromeos/login/screens/update_screen.h"
+#include "chrome/browser/chromeos/login/screens/welcome_screen.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "components/account_id/account_id.h"
 
@@ -223,8 +225,8 @@ class WizardController {
 
   // Exit handlers:
   void OnWrongHWIDScreenExit();
-  void OnHidDetectionScreenExit();
-  void OnWelcomeScreenExit();
+  void OnHidDetectionScreenExit(HIDDetectionScreen::Result result);
+  void OnWelcomeScreenExit(WelcomeScreen::Result result);
   void OnNetworkScreenExit(NetworkScreen::Result result);
   bool ShowEulaOrArcTosAfterNetworkScreen();
   void OnEulaScreenExit(EulaScreen::Result result);
@@ -429,8 +431,6 @@ class WizardController {
 
   // Configuration (dictionary) for automating OOBE screens.
   base::Value oobe_configuration_{base::Value::Type::DICTIONARY};
-
-  BaseScreen* hid_screen_ = nullptr;
 
   bool is_initialized_ = false;
 

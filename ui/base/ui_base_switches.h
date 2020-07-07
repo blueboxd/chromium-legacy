@@ -31,7 +31,7 @@ COMPONENT_EXPORT(UI_BASE) extern const char kForceHighContrast[];
 COMPONENT_EXPORT(UI_BASE) extern const char kLang[];
 COMPONENT_EXPORT(UI_BASE) extern const char kShowOverdrawFeedback[];
 COMPONENT_EXPORT(UI_BASE) extern const char kSlowDownCompositingScaleFactor[];
-COMPONENT_EXPORT(UI_BASE) extern const char kTintGlCompositedContent[];
+COMPONENT_EXPORT(UI_BASE) extern const char kTintCompositedContent[];
 COMPONENT_EXPORT(UI_BASE) extern const char kTopChromeTouchUi[];
 COMPONENT_EXPORT(UI_BASE) extern const char kTopChromeTouchUiAuto[];
 COMPONENT_EXPORT(UI_BASE) extern const char kTopChromeTouchUiDisabled[];

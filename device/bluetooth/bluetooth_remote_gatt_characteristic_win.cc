@@ -152,9 +152,9 @@ void BluetoothRemoteGattCharacteristicWin::ReadRemoteCharacteristic(
       std::make_pair(std::move(callback), std::move(error_callback));
   task_manager_->PostReadGattCharacteristicValue(
       parent_service_->GetServicePath(), characteristic_info_.get(),
-      base::Bind(&BluetoothRemoteGattCharacteristicWin::
-                     OnReadRemoteCharacteristicValueCallback,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&BluetoothRemoteGattCharacteristicWin::
+                         OnReadRemoteCharacteristicValueCallback,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BluetoothRemoteGattCharacteristicWin::WriteRemoteCharacteristic(
@@ -186,9 +186,9 @@ void BluetoothRemoteGattCharacteristicWin::WriteRemoteCharacteristic(
   task_manager_->PostWriteGattCharacteristicValue(
       parent_service_->GetServicePath(), characteristic_info_.get(), value,
       flags,
-      base::Bind(&BluetoothRemoteGattCharacteristicWin::
-                     OnWriteRemoteCharacteristicValueCallback,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&BluetoothRemoteGattCharacteristicWin::
+                         OnWriteRemoteCharacteristicValueCallback,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BluetoothRemoteGattCharacteristicWin::DeprecatedWriteRemoteCharacteristic(
@@ -221,9 +221,9 @@ void BluetoothRemoteGattCharacteristicWin::DeprecatedWriteRemoteCharacteristic(
   task_manager_->PostWriteGattCharacteristicValue(
       parent_service_->GetServicePath(), characteristic_info_.get(), value,
       flags,
-      base::Bind(&BluetoothRemoteGattCharacteristicWin::
-                     OnWriteRemoteCharacteristicValueCallback,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&BluetoothRemoteGattCharacteristicWin::
+                         OnWriteRemoteCharacteristicValueCallback,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BluetoothRemoteGattCharacteristicWin::Update() {
@@ -232,9 +232,9 @@ void BluetoothRemoteGattCharacteristicWin::Update() {
   ++discovery_pending_count_;
   task_manager_->PostGetGattIncludedDescriptors(
       parent_service_->GetServicePath(), characteristic_info_.get(),
-      base::Bind(&BluetoothRemoteGattCharacteristicWin::
-                     OnGetIncludedDescriptorsCallback,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&BluetoothRemoteGattCharacteristicWin::
+                         OnGetIncludedDescriptorsCallback,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 uint16_t BluetoothRemoteGattCharacteristicWin::GetAttributeHandle() const {

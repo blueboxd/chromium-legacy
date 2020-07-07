@@ -174,9 +174,6 @@ class ASH_EXPORT SessionControllerImpl : public SessionController {
   // the active user profile prefs. Returns null early during startup.
   PrefService* GetActivePrefService() const;
 
-  void AddObserver(SessionObserver* observer);
-  void RemoveObserver(SessionObserver* observer);
-
   // Returns the ash notion of login status.
   // NOTE: Prefer GetSessionState() in new code because the concept of
   // SessionState more closes matches the state in chrome.
@@ -208,6 +205,8 @@ class ASH_EXPORT SessionControllerImpl : public SessionController {
   void RemoveSessionActivationObserverForAccountId(
       const AccountId& account_id,
       SessionActivationObserver* observer) override;
+  void AddObserver(SessionObserver* observer) override;
+  void RemoveObserver(SessionObserver* observer) override;
 
   // Test helpers.
   void ClearUserSessionsForTest();

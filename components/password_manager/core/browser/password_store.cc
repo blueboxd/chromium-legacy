@@ -53,8 +53,6 @@ namespace password_manager {
 
 namespace {
 
-const base::TimeDelta kSyncTaskTimeout = base::TimeDelta::FromSeconds(30);
-
 // Utility function to simplify removing logins prior a given |cutoff| data.
 // Runs |callback| with the result.
 //
@@ -529,6 +527,10 @@ void PasswordStore::SetUnsyncedCredentialsDeletionNotifier(
   deletion_notifier_ = std::move(notifier);
 }
 
+void PasswordStore::SetSyncTaskTimeoutForTest(base::TimeDelta timeout) {
+  sync_task_timeout_ = timeout;
+}
+
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 void PasswordStore::CheckReuse(const base::string16& input,
                                const std::string& domain,
@@ -998,7 +1000,8 @@ void PasswordStore::RemoveLoginsByURLAndTimeInternal(
     deletions_have_synced_timeout_.Reset(base::BindRepeating(
         &PasswordStore::NotifyDeletionsHaveSynced, this, /*success=*/false));
     background_task_runner_->PostDelayedTask(
-        FROM_HERE, deletions_have_synced_timeout_.callback(), kSyncTaskTimeout);
+        FROM_HERE, deletions_have_synced_timeout_.callback(),
+        sync_task_timeout_);
 
     // Do an immediate check for the case where there are already no unsynced
     // deletions.

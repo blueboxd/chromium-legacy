@@ -119,8 +119,7 @@ std::vector<bool> IppGetBools(ipp_attribute_t* attr) {
   std::vector<bool> ret;
   for (int i = 0; i < ippGetCount(attr); ++i) {
     // No decipherable failure condition for this libCUPS method.
-    bool v = ippGetBoolean(attr, i);
-    ret.emplace_back(v);
+    ret.push_back(ippGetBoolean(attr, i));
   }
   return ret;
 }
@@ -132,7 +131,7 @@ base::Optional<std::vector<int>> IppGetInts(ipp_attribute_t* attr) {
     if (!v) {
       return base::nullopt;
     }
-    ret.emplace_back(v);
+    ret.push_back(v);
   }
   return ret;
 }
@@ -390,7 +389,7 @@ ipp_parser::mojom::IppMessagePtr ConvertIppToMojo(ipp_t* ipp) {
         NOTREACHED();
     }
 
-    attributes.emplace_back(std::move(attrptr));
+    attributes.push_back(std::move(attrptr));
   }
 
   ret->attributes = std::move(attributes);

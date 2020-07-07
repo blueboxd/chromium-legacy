@@ -945,8 +945,8 @@ void AccessibleNode::appendChild(AccessibleNode* child,
   }
   child->parent_ = this;
 
-  if (!GetDocument()->GetSecurityOrigin()->CanAccess(
-          child->GetDocument()->GetSecurityOrigin())) {
+  if (!GetExecutionContext()->GetSecurityOrigin()->CanAccess(
+          child->GetExecutionContext()->GetSecurityOrigin())) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidAccessError,
         "Trying to access an AccessibleNode from a different origin.");

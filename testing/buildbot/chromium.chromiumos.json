@@ -895,6 +895,23 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test": "absl_hardening_tests",
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
         "test": "accessibility_unittests",
         "test_id_prefix": "ninja://ui/accessibility:accessibility_unittests/"
       },
@@ -2462,6 +2479,24 @@
       "gn_all"
     ],
     "gtest_tests": [
+      {
+        "isolate_profile_data": true,
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "absl_hardening_tests",
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
+      },
       {
         "isolate_profile_data": true,
         "merge": {

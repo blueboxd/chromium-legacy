@@ -1064,8 +1064,8 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         // Show the link to system settings since permission is disabled.
         ChromeBasePreference osWarning = new ChromeBasePreference(getStyledContext(), null);
         ChromeBasePreference osWarningExtra = new ChromeBasePreference(getStyledContext(), null);
-        mCategory.configurePermissionIsOffPreferences(
-                osWarning, osWarningExtra, getActivity(), true);
+        mCategory.configurePermissionIsOffPreferences(osWarning, osWarningExtra, getActivity(),
+                true, getSiteSettingsClient().getAppName());
         if (osWarning.getTitle() != null) {
             osWarning.setKey(SingleWebsiteSettings.PREF_OS_PERMISSIONS_WARNING);
             screen.addPreference(osWarning);

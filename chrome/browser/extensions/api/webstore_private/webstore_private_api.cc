@@ -589,7 +589,7 @@ bool WebstorePrivateBeginInstallWithManifest3Function::
 
   parent_permission_dialog_ =
       ParentPermissionDialog::CreateParentPermissionDialogForExtension(
-          profile, web_contents, web_contents->GetTopLevelNativeWindow(),
+          profile, web_contents->GetTopLevelNativeWindow(),
           gfx::ImageSkia::CreateFrom1xBitmap(icon_), dummy_extension_.get(),
           std::move(done_callback));
   parent_permission_dialog_->ShowDialog();

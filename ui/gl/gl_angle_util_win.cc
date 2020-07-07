@@ -100,8 +100,9 @@ Microsoft::WRL::ComPtr<IDCompositionDevice2> QueryDirectCompositionDevice(
     return dcomp_device;
 
   UINT data_size = sizeof(dcomp_device.Get());
-  HRESULT hr = d3d11_device->GetPrivateData(kDirectCompositionGUID, &data_size,
-                                            dcomp_device.GetAddressOf());
+  HRESULT hr =
+      d3d11_device->GetPrivateData(kDirectCompositionGUID, &data_size,
+                                   dcomp_device.ReleaseAndGetAddressOf());
   if (SUCCEEDED(hr) && dcomp_device)
     return dcomp_device;
 
@@ -119,14 +120,13 @@ Microsoft::WRL::ComPtr<IDCompositionDevice2> QueryDirectCompositionDevice(
     return dcomp_device;
 
   Microsoft::WRL::ComPtr<IDXGIDevice> dxgi_device;
-  d3d11_device.CopyTo(dxgi_device.GetAddressOf());
+  d3d11_device.As(&dxgi_device);
   Microsoft::WRL::ComPtr<IDCompositionDesktopDevice> desktop_device;
-  hr = create_device_function(dxgi_device.Get(),
-                              IID_PPV_ARGS(desktop_device.GetAddressOf()));
+  hr = create_device_function(dxgi_device.Get(), IID_PPV_ARGS(&desktop_device));
   if (FAILED(hr))
     return dcomp_device;
 
-  hr = desktop_device.CopyTo(dcomp_device.GetAddressOf());
+  hr = desktop_device.As(&dcomp_device);
   CHECK(SUCCEEDED(hr));
   d3d11_device->SetPrivateDataInterface(kDirectCompositionGUID,
                                         dcomp_device.Get());

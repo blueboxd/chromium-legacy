@@ -5,13 +5,16 @@
 #include "pdf/url_loader_wrapper_impl.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/check_op.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/http/http_util.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/logging.h"
 #include "ppapi/cpp/url_request_info.h"
 #include "ppapi/cpp/url_response_info.h"
@@ -99,21 +102,12 @@ bool IsDoubleEndLineAtEnd(const char* buffer, int size) {
 
 URLLoaderWrapperImpl::URLLoaderWrapperImpl(pp::Instance* plugin_instance,
                                            const pp::URLLoader& url_loader)
-    : plugin_instance_(plugin_instance),
-      url_loader_(url_loader),
-      callback_factory_(this) {
+    : plugin_instance_(plugin_instance), url_loader_(url_loader) {
   SetHeadersFromLoader();
 }
 
 URLLoaderWrapperImpl::~URLLoaderWrapperImpl() {
   Close();
-  // We should call callbacks to prevent memory leaks.
-  // The callbacks don't do anything, because the objects that created the
-  // callbacks have been destroyed.
-  if (!did_open_callback_.IsOptional())
-    did_open_callback_.RunAndClear(-1);
-  if (!did_read_callback_.IsOptional())
-    did_read_callback_.RunAndClear(-1);
 }
 
 int URLLoaderWrapperImpl::GetContentLength() const {
@@ -165,35 +159,35 @@ void URLLoaderWrapperImpl::OpenRange(const std::string& url,
                                      const std::string& referrer_url,
                                      uint32_t position,
                                      uint32_t size,
-                                     const pp::CompletionCallback& cc) {
-  did_open_callback_ = cc;
-  pp::CompletionCallback callback =
-      callback_factory_.NewCallback(&URLLoaderWrapperImpl::DidOpen);
+                                     ResultCallback callback) {
+  pp::CompletionCallback cc = PPCompletionCallbackFromResultCallback(
+      base::BindOnce(&URLLoaderWrapperImpl::DidOpen, weak_factory_.GetWeakPtr(),
+                     std::move(callback)));
   int rv = url_loader_.Open(
       MakeRangeRequest(plugin_instance_, url, referrer_url, position, size),
-      callback);
+      cc);
   if (rv != PP_OK_COMPLETIONPENDING)
-    callback.Run(rv);
+    cc.Run(rv);
 }
 
 void URLLoaderWrapperImpl::ReadResponseBody(char* buffer,
                                             int buffer_size,
-                                            const pp::CompletionCallback& cc) {
-  did_read_callback_ = cc;
+                                            ResultCallback callback) {
   buffer_ = buffer;
   buffer_size_ = buffer_size;
   read_starter_.Start(
       FROM_HERE, kReadDelayMs,
       base::BindOnce(&URLLoaderWrapperImpl::ReadResponseBodyImpl,
-                     base::Unretained(this)));
+                     base::Unretained(this), std::move(callback)));
 }
 
-void URLLoaderWrapperImpl::ReadResponseBodyImpl() {
-  pp::CompletionCallback callback =
-      callback_factory_.NewCallback(&URLLoaderWrapperImpl::DidRead);
-  int rv = url_loader_.ReadResponseBody(buffer_, buffer_size_, callback);
+void URLLoaderWrapperImpl::ReadResponseBodyImpl(ResultCallback callback) {
+  pp::CompletionCallback cc = PPCompletionCallbackFromResultCallback(
+      base::BindOnce(&URLLoaderWrapperImpl::DidRead, weak_factory_.GetWeakPtr(),
+                     std::move(callback)));
+  int rv = url_loader_.ReadResponseBody(buffer_, buffer_size_, cc);
   if (rv != PP_OK_COMPLETIONPENDING) {
-    callback.Run(rv);
+    cc.Run(rv);
   }
 }
 
@@ -255,12 +249,12 @@ void URLLoaderWrapperImpl::ParseHeaders() {
   }
 }
 
-void URLLoaderWrapperImpl::DidOpen(int32_t result) {
+void URLLoaderWrapperImpl::DidOpen(ResultCallback callback, int32_t result) {
   SetHeadersFromLoader();
-  did_open_callback_.RunAndClear(result);
+  std::move(callback).Run(result);
 }
 
-void URLLoaderWrapperImpl::DidRead(int32_t result) {
+void URLLoaderWrapperImpl::DidRead(ResultCallback callback, int32_t result) {
   if (multi_part_processed_) {
     // Reset this flag so we look inside the buffer in calls of DidRead for this
     // response only once.  Note that this code DOES NOT handle multi part
@@ -269,12 +263,12 @@ void URLLoaderWrapperImpl::DidRead(int32_t result) {
     is_multipart_ = false;
   }
   if (result <= 0 || !is_multipart_) {
-    did_read_callback_.RunAndClear(result);
+    std::move(callback).Run(result);
     return;
   }
   if (result <= 2) {
     // TODO(art-snake): Accumulate data for parse headers.
-    did_read_callback_.RunAndClear(result);
+    std::move(callback).Run(result);
     return;
   }
 
@@ -297,12 +291,12 @@ void URLLoaderWrapperImpl::DidRead(int32_t result) {
   result = length;
   if (result == 0) {
     // Continue receiving.
-    return ReadResponseBodyImpl();
+    return ReadResponseBodyImpl(std::move(callback));
   }
   DCHECK_GT(result, 0);
   memmove(buffer_, start, result);
 
-  did_read_callback_.RunAndClear(result);
+  std::move(callback).Run(result);
 }
 
 void URLLoaderWrapperImpl::SetHeadersFromLoader() {

@@ -7,8 +7,6 @@ import("//testing/test.gni")
 
 jumbo_source_set("latency") {
   sources = [
-    "average_lag_tracker.cc",
-    "average_lag_tracker.h",
     "latency_histogram_macros.h",
     "latency_info.cc",
     "latency_info.h",
@@ -33,10 +31,7 @@ jumbo_source_set("test_support") {
 }
 
 test("latency_unittests") {
-  sources = [
-    "average_lag_tracker_unittest.cc",
-    "latency_info_unittest.cc",
-  ]
+  sources = [ "latency_info_unittest.cc" ]
 
   deps = [
     ":latency",

@@ -692,13 +692,9 @@ def device_test(args, unknown_args):
   return test.run_test()
 
 
-def host_cmd(args, unknown_args):
-  if not args.cmd:
+def host_cmd(args, cmd_args):
+  if not cmd_args:
     raise TestFormatError('Must specify command to run on the host.')
-  elif unknown_args:
-    raise TestFormatError(
-        'Args "%s" unsupported. Is your host command correctly formatted?' %
-        (' '.join(unknown_args)))
   elif args.deploy_chrome and not args.path_to_outdir:
     raise TestFormatError(
         '--path-to-outdir must be specified if --deploy-chrome is passed.')
@@ -745,7 +741,7 @@ def host_cmd(args, unknown_args):
   cros_run_test_cmd += [
       '--host-cmd',
       '--',
-  ] + args.cmd
+  ] + cmd_args
 
   logging.info('Running the following command:')
   logging.info(' '.join(cros_run_test_cmd))
@@ -841,7 +837,6 @@ def main():
       action='store_true',
       help='Will deploy a locally built Chrome binary to the device before '
       'running the host-cmd.')
-  host_cmd_parser.add_argument('cmd', nargs=argparse.REMAINDER)
   # GTest args.
   # TODO(bpastene): Rename 'vm-test' arg to 'gtest'.
   gtest_parser = subparsers.add_parser(

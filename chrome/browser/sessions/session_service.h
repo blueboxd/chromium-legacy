@@ -15,7 +15,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
-#include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "base/token.h"
 #include "chrome/browser/defaults.h"
@@ -192,9 +191,7 @@ class SessionService : public sessions::CommandStorageManagerDelegate,
   // Fetches the contents of the last session, notifying the callback when
   // done. If the callback is supplied an empty vector of SessionWindows
   // it means the session could not be restored.
-  base::CancelableTaskTracker::TaskId GetLastSession(
-      sessions::GetLastSessionCallback callback,
-      base::CancelableTaskTracker* tracker);
+  void GetLastSession(sessions::GetLastSessionCallback callback);
 
   // CommandStorageManagerDelegate:
   bool ShouldUseDelayedSave() override;

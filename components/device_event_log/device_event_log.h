@@ -80,7 +80,8 @@
 
 #define DEVICE_LOG(type, level)                                            \
   ::device_event_log::internal::DeviceEventLogInstance(__FILE__, __LINE__, \
-                                                       type, level).stream()
+                                                       type, level)        \
+      .stream()
 #define DEVICE_PLOG(type, level)                                            \
   ::device_event_log::internal::DeviceEventSystemErrorLogInstance(          \
       __FILE__, __LINE__, type, level, ::logging::GetLastSystemErrorCode()) \
@@ -191,6 +192,8 @@ void DEVICE_EVENT_LOG_EXPORT Clear(const base::Time& begin,
                                    const base::Time& end);
 
 DEVICE_EVENT_LOG_EXPORT extern const LogLevel kDefaultLogLevel;
+
+int DEVICE_EVENT_LOG_EXPORT GetCountByLevelForTesting(LogLevel level);
 
 namespace internal {
 

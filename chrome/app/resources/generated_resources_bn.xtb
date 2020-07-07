@@ -281,7 +281,6 @@
 <translation id="1340527397989195812">ফাইল অ্যাপ ব্যবহার করে ডিভাইস থেকে মিডিয়া ব্যাক আপ নিন৷</translation>
 <translation id="1341988552785875222">বর্তমান ওয়ালপেপারটি '<ph name="APP_NAME" />' এর দ্বারা সেট করা। একটি ভিন্ন ওয়ালপেপার নির্বাচনের আগে আপনাকে '<ph name="APP_NAME" />' আনইনস্টল করার প্রয়োজন হতে পারে।</translation>
 <translation id="1343865611738742294">ইউএসবি ডিভাইস অ্যাক্সেস করার জন্য Linux অ্যাপকে অনুমতি দিন। ইউএসবি ডিভাইস সরিয়ে নিলে, Linux সেটির তথ্য সেভ করে রাখবে না।</translation>
-<translation id="1344143111673240412">ক্যামেরা সেটিংয়ে পরিবর্তন করতে প্যারালাল ডেস্কটপ আবার লঞ্চ করা প্রয়োজন</translation>
 <translation id="1347256498747320987">আপডেট ও অ্যাপ ইনস্টল করুন। চালিয়ে যাওয়ার মানে হল এই ডিভাইসটি নিজে থেকেই Google, আপনার পরিষেবা প্রদানকারী এবং আপনার ডিভাইসের প্রস্তুতকারকের ওয়েবসাইট থেকে হয়ত মোবাইল ডেটা ব্যবহার করে অ্যাপ এবং আপডেট ডাউনলোড করে ইনস্টল করতে পারে। এদের মধ্যে কয়েকটি অ্যাপে অ্যাপ-মধ্যস্থ কেনাকাটার সুবিধা থাকতে পারে। <ph name="BEGIN_LINK1" />আরও জানুন<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">ব্যাটারি <ph name="BATTERY_LEVEL" />% চার্জ হলে আপডেট শুরু হবে।</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" /> : <ph name="NETWORK_NAME" /></translation>
@@ -1196,7 +1195,6 @@
 <translation id="2470702053775288986">অসমর্থিত এক্সটেনশানগুলি নিষ্ক্রিয় করা আছে</translation>
 <translation id="2471469610750100598">কালো (ডিফল্ট)</translation>
 <translation id="2473195200299095979">এই পৃষ্ঠাটি অনুবাদ করুন</translation>
-<translation id="2474848500897222119"><ph name="PRINTER_NAME" /> প্রিন্টারে কালি নেই</translation>
 <translation id="2475982808118771221">একটি ত্রুটি ঘটেছে</translation>
 <translation id="2476578072172137802">সাইটের সেটিংস</translation>
 <translation id="2478176599153288112">"<ph name="EXTENSION" />" এর জন্য মিডিয়া-ফাইলের অনুমতি</translation>
@@ -1396,7 +1394,7 @@
 <translation id="2712173769900027643">অনুমতি নিন</translation>
 <translation id="2713444072780614174">সাদা</translation>
 <translation id="2714393097308983682">Google Play স্টোর</translation>
-<translation id="2714997332747470971">ব্যক্তিগত তথ্যের সাজেশন নিজের নাম, ঠিকানা বা ফোন নম্বরের মতো বিষয়গুলি সাজেস্ট করে আপনাকে দ্রুত লিখতে সাহায্য করে। আপনার অ্যাকাউন্টে আপনি শুধুমাত্র নিজের ব্যক্তিগত, পছন্দসই সাজেশনই দেখতে পাবেন।</translation>
+<translation id="2714997332747470971">ব্যক্তিগত তথ্যের সাজেশন ফিচারটি আপনার নাম, ঠিকানা বা ফোন নম্বরের মতো বিষয়গুলি সাজেস্ট করে আপনাকে দ্রুত লিখতে সাহায্য করে। আপনার অ্যাকাউন্টে শুধুমাত্র আপনিই নিজের ব্যক্তিগত, পছন্দসই সাজেশন দেখতে পাবেন।</translation>
 <translation id="2715751256863167692">এই আপগ্রেডটি আপনার Chromebook রিসেট করে এবং বর্তমান ব্যবহারকারীর ডেটা সরিয়ে দেয়।</translation>
 <translation id="2716986496990888774">এই সেটিং একজন অভিভাবক ম্যানেজ করেন।</translation>
 <translation id="2718395828230677721">নাইট লাইট</translation>
@@ -1502,7 +1500,6 @@
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> আপনার অ্যাডমিনিস্ট্রেটরের প্রক্সি সেটিংস ব্যবহার করছে</translation>
 <translation id="2825758591930162672">বিষয়ের সর্বজনীন কী</translation>
 <translation id="2828650939514476812">ওয়াই-ফাই নেটওয়ার্কের সাথে সংযোগ করুন</translation>
-<translation id="28291580771888953"><ph name="PRINTER_NAME" /> প্রিন্টারের সারিতে জায়গা নেই</translation>
 <translation id="2835547721736623118">স্পিচ শনাক্তকরণ পরিষেবা</translation>
 <translation id="2836269494620652131">ক্র্যাশ</translation>
 <translation id="2836635946302913370">আপনার অ্যাডমিনিস্ট্রেটর এই ইউজারনেম দিয়ে সাইন-ইন করা বন্ধ করেছে৷</translation>
@@ -2318,7 +2315,7 @@
 <translation id="3839516600093027468">ক্লিপবোর্ড দেখা থেকে <ph name="HOST" /> কে সবসময় ব্লক করুন</translation>
 <translation id="3841964634449506551">ভুল পাসওয়ার্ড লেখা হয়েছে</translation>
 <translation id="3842552989725514455">Serif হরফ</translation>
-<translation id="3843058644024807390">মাইক্রোফোন সেটিংয়ে পরিবর্তন করতে প্যারালাল ডেস্কটপ আবার লঞ্চ করা প্রয়োজন</translation>
+<translation id="3843464315703645664">অভ্যন্তরীণভাবে সাদাতালিকাভুক্ত</translation>
 <translation id="3846116211488856547">ওয়েবসাইট, Android অ্যাপ সহ অনেক কিছু ডেভেলপ করতে টুলগুলি পান। Linux ইনস্টল করলে <ph name="DOWNLOAD_SIZE" /> ডেটা ডাউনলোড হবে।</translation>
 <translation id="3847319713229060696">সকলের জন্য ওয়েবে নিরাপত্তা উন্নত করতে সাহায্য করে</translation>
 <translation id="385051799172605136">ফিরুন</translation>
@@ -2776,7 +2773,6 @@
 <translation id="4453946976636652378"><ph name="SEARCH_ENGINE_NAME" />-এ সার্চ করুন অথবা ইউআরএল টাইপ করুন</translation>
 <translation id="4459169140545916303"><ph name="DEVICE_LAST_ACTIVATED_TIME" /> দিন আগে ব্যবহার করা হয়েছে</translation>
 <translation id="4460014764210899310">আলাদা করুন</translation>
-<translation id="4460343359907016103"><ph name="PRINTER_NAME" />-এ কানেক্ট করতে সমস্যা হয়েছে</translation>
 <translation id="4462159676511157176">কাস্টম নাম সার্ভার</translation>
 <translation id="4465236939126352372"><ph name="APP_NAME" />-এর জন্য <ph name="TIME" /> টাইম লিমিট সেট করা হয়েছে</translation>
 <translation id="4465725236958772856"><ph name="NETWORK_COUNT" />টির মধ্যে <ph name="NETWORK_INDEX" /> নম্বর নেটওয়ার্ক, <ph name="NETWORK_NAME" />, আপনার অ্যাডমিনিস্ট্রেটর ম্যানেজ করে, কানেক্ট করুন</translation>
@@ -3074,7 +3070,6 @@
 <translation id="4864369630010738180">প্রবেশ করা হচ্ছে...</translation>
 <translation id="4864805589453749318">সেই অভিভাবককে বেছে নিন যিনি স্কুল অ্যাকাউন্ট যোগ করার জন্য অনুমতি দিয়েছেন।</translation>
 <translation id="486635084936119914">নির্দিষ্ট কিছু প্রকারের ফাইল ডাউনলোডের পরে স্বয়ংক্রিয়ভাবে খুলুন</translation>
-<translation id="4869213010169296107"><ph name="PRINTER_NAME" /> প্রিন্টারে একটি ট্রে নেই</translation>
 <translation id="48704129375571883">অতিরিক্ত বৈশিষ্ট্যগুলি যোগ করুন</translation>
 <translation id="4870758487381879312">কনফিগারেশনের তথ্য পেতে অ্যাডমিনের দেওয়া পাসওয়ার্ড লিখুন</translation>
 <translation id="4870903493621965035">কোনো ডিভাইস যুক্ত করা নেই</translation>
@@ -3325,6 +3320,7 @@
 <translation id="5184662919967270437">আপনার ডিভাইস আপডেট করা হচ্ছে</translation>
 <translation id="5185359571430619712">এক্সটেনশন পর্যালোচনা করুন</translation>
 <translation id="5185386675596372454">"<ph name="EXTENSION_NAME" />"-এর নতুনতম ভার্সনটি বন্ধ হয়েছে কারণ এটির আরও বেশি অনুমতির প্রয়োজন৷</translation>
+<translation id="5185500136143151980">ইন্টারনেট কানেকশন নেই</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5190926251776387065">পোর্ট চালু করুন</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> একাধিক ফাইল ডাউনলোড করতে চায়</translation>
@@ -3481,7 +3477,6 @@
 <translation id="5390112241331447203">যে system_logs.txt ফাইল পাঠানো হয়েছে সেটি মতামত জানানোর রিপোর্টে অন্তর্ভুক্ত করুন।</translation>
 <translation id="5390677308841849479">গাঢ় লাল ও কমলা</translation>
 <translation id="5390743329570580756">এর জন্য পাঠান</translation>
-<translation id="5395869306561378615"><ph name="PRINTER_NAME" /> প্রিন্টার পজ করা আছে</translation>
 <translation id="5397794290049113714">আপনি</translation>
 <translation id="5398572795982417028">পৃষ্ঠা সীমার বাইরের উল্লেখ, সীমা হলো <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">বিজ্ঞাপন ব্লক করা হয়েছে</translation>
@@ -3496,7 +3491,6 @@
 <translation id="5417312524372586921">ব্রাউজারের থিম</translation>
 <translation id="5419405654816502573">Voice match</translation>
 <translation id="5420438158931847627">টেক্সট এবং ছবির তীক্ষ্ণতা নির্ধারণ করে</translation>
-<translation id="5421498071721257877"><ph name="PRINTER_NAME" /> প্রিন্টারে ডিভাইস সংক্রান্ত সমস্যা আছে</translation>
 <translation id="5422221874247253874">অ্যাক্সেস পয়েন্ট</translation>
 <translation id="5422781158178868512">আপনার বাহ্যিক স্টোরেজের ডিভাইসটি শনাক্ত করা যায়নি৷</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3846,7 +3840,6 @@
 <translation id="5852137567692933493">পুনরায় আরম্ভ করুন এবং পাওয়ারওয়াশ করুন</translation>
 <translation id="5854912040170951372">স্লাইস</translation>
 <translation id="5855267860608268405">সেভ করা ওয়াই-ফাই নেটওয়ার্ক</translation>
-<translation id="5855310969323666289"><ph name="PRINTER_NAME" /> প্রিন্টারের দরজা খোলা আছে</translation>
 <translation id="5855643921295613558">০.৬ সেকেন্ড</translation>
 <translation id="5856721540245522153">ডিবাগিং বৈশিষ্ট্যাবলী চালু করুন</translation>
 <translation id="5857090052475505287">নতুন ফোল্ডার</translation>
@@ -3877,7 +3870,6 @@
 <translation id="5877064549588274448">চ্যানেল পরিবর্তিত হয়েছে৷ পরিবর্তনগুলি প্রয়োগ করার জন্য আপনার ডিভাইস আবার শুরু করুন৷</translation>
 <translation id="5877584842898320529">বেছে নেওয়া প্রিন্টারটি উপলভ্য নয় অথবা সেটি সঠিকভাবে ইনস্টল করা নেই। <ph name="BR" /> আপনার প্রিন্টারটি পরীক্ষা করুন অথবা অন্য একটি প্রিন্টার বেছে নিন।</translation>
 <translation id="5882919346125742463">পরিচিত নেটওয়ার্কগুলি</translation>
-<translation id="5883716097305842571"><ph name="PRINTER_NAME" /> প্রিন্টারের আউটপুট এরিয়া প্রায় ভর্তি হয়ে গেছে</translation>
 <translation id="5884474295213649357">এই ট্যাব একটি USB ডিভাইসের সাথে সংযুক্ত করা আছে।</translation>
 <translation id="5886009770935151472">আঙ্গুল ১</translation>
 <translation id="5889282057229379085">ইন্টারমিডিয়েট CAগুলির সর্বাধিক সংখ্যা: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4444,7 +4436,6 @@
 <translation id="6611972847767394631">এখানে আপনার ট্যাবগুলি দেখুন</translation>
 <translation id="6612358246767739896">সুরক্ষিত কন্টেন্ট</translation>
 <translation id="6615455863669487791">আমাকে দেখান</translation>
-<translation id="6617034477946102682"><ph name="PRINTER_NAME" /> প্রিন্টার কানেক্ট করা যাচ্ছে না</translation>
 <translation id="6618097958368085618">তবুও রাখতে চাই</translation>
 <translation id="6618744767048954150">চলছে</translation>
 <translation id="6619058681307408113">লাইন প্রিন্টার ডেমন (LPD)</translation>
@@ -4861,7 +4852,6 @@
 <translation id="7128151990937044829">বিজ্ঞপ্তি ব্লক করা থাকলে, অ্যাড্রেস বারে একটি সূচক দেখুন</translation>
 <translation id="7131040479572660648"><ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, এবং <ph name="WEBSITE_3" />-এ আপনার ডেটা পড়ে</translation>
 <translation id="713122686776214250">&amp;পৃষ্ঠা জুড়ুন...</translation>
-<translation id="7131379856697962078"><ph name="PRINTER_NAME" />' প্রিন্টারের আউটপুট এরিয়াতে জায়গা নেই</translation>
 <translation id="7133578150266914903">আপনার অ্যাডমিনিস্ট্রেটর আপনার এই ডিভাইসটি (<ph name="PROGRESS_PERCENT" />) রোল ব্যাক করছেন</translation>
 <translation id="7134098520442464001">পাঠ্যকে আরও ছোট করুন</translation>
 <translation id="7135729336746831607">ব্লুটুথ চালু করবেন?</translation>
@@ -4880,7 +4870,6 @@
 <translation id="7152478047064750137">এই এক্সটেনশনটির জন্য কোনও বিশেষ অনুমতির প্রয়োজন নেই</translation>
 <translation id="7154130902455071009">আপনার সূচনা পৃষ্ঠাকে এতে পরিবর্তন করুন: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">ক্যামেরা বা ফাইল থেকে বিদ্যমান ফটো</translation>
-<translation id="715657691234357425"><ph name="PRINTER_NAME" /> প্রিন্টারে কাগজ নেই</translation>
 <translation id="7165320105431587207">নেটওয়ার্ক কনফিগার করা যায়নি</translation>
 <translation id="716640248772308851">" <ph name="EXTENSION" /> " নির্দিষ্ট করা অবস্থানে ছবি, ভিডিও এবং সাউন্ড ফাইলগুলি পড়তে পারে৷</translation>
 <translation id="7167486101654761064">&amp;সবসময় এই ধরনের ফাইল খুলুন</translation>
@@ -4911,7 +4900,6 @@
 <translation id="7197632491113152433">আমরা আপনার অ্যাকাউন্ট থেকে <ph name="NUMBER_OF_APPS" />টি অ্যাপ পেয়েছি যা এই ডিভাইসে ব্যবহার করা যাবে।</translation>
 <translation id="7199158086730159431">সহায়তা পান</translation>
 <translation id="7200083590239651963">কনফিগারেশন বেছে নিন</translation>
-<translation id="7201042526153088083">আপনার <ph name="DEVICE_TYPE" />-এ Google Play থেকে অ্যাপ এবং গেম ইনস্টল করুন। &lt;a target="_blank" href="<ph name="URL" />"&gt;আরও জানুন&lt;/a&gt;</translation>
 <translation id="720110658997053098">স্থায়ীভাবে এই ডিভাইসটিকে কিয়স্ক মোডে রাখুন</translation>
 <translation id="7201118060536064622">'<ph name="DELETED_ITEM_NAME" />' মুছে ফেলা হয়েছে</translation>
 <translation id="7201420661433230412">ফাইলগুলি দেখুন</translation>
@@ -5217,7 +5205,6 @@
 <translation id="7598466960084663009">কম্পিউটার রিস্টার্ট করুন</translation>
 <translation id="7599527631045201165">ডিভাইসের নামটি খুব বড়। আবার চেষ্টা করার জন্য একটি ছোট নাম লিখুন।</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> কখনও অনুবাদ করবেন না</translation>
-<translation id="7601297144931396972"><ph name="PRINTER_NAME" /> প্রিন্টারের কাগজ আটকে গেছে</translation>
 <translation id="760197030861754408">সংযোগের জন্য <ph name="LANDING_PAGE" /> এ যান।</translation>
 <translation id="7602079150116086782">অন্য ডিভাইসগুলি থেকে কোনো ট্যাব নেই</translation>
 <translation id="7602173054665172958">প্রিন্ট করার কাজকর্মের ম্যানেজমেন্ট</translation>
@@ -5228,6 +5215,7 @@
 <translation id="7609148976235050828">ইন্টারনেটে কানেক্ট করে আবার চেষ্টা করুন।</translation>
 <translation id="7614260613810441905">কোনও সাইট আপনার ডিভাইসে থাকা ফাইল বা ফোল্ডার এডিট করতে চাইলে অনুমতি নিতে বলুন (সাজেস্ট করা হয়েছে)</translation>
 <translation id="761530003705945209">Google Drive-এ ব্যাক-আপ নিন। যেকোনও সময় সহজেই ডেটা রিস্টোর করুন অথবা অন্য ডিভাইস ব্যবহার করুন। আপনার ব্যাক-আপে অ্যাপ ডেটা থাকে। আপনার ব্যাক-আপ ডেটা Google-এ আপলোড করা হয় এবং আপনার Google অ্যাকাউন্টের পাসওয়ার্ড ব্যবহার করে সেগুলিকে এনক্রিপ্ট করা হয়।</translation>
+<translation id="7615365294369022248">অ্যাকাউন্ট যোগ করার সময় সমস্যা হয়েছে</translation>
 <translation id="7616214729753637086">ডিভাইস নথিভুক্ত করা হচ্ছে...</translation>
 <translation id="7617263010641145920">Play Store অ্যাপ চালু করুন</translation>
 <translation id="7617366389578322136">"<ph name="DEVICE_NAME" />" এ সংযুক্ত হচ্ছে</translation>
@@ -5674,7 +5662,6 @@
 <translation id="8123590694679414600">আপনার সিঙ্ক পাসফ্রেজ দিয়ে <ph name="TIME" />-এ ডেটা এনক্রিপ্ট করা হয়েছিল। এতে Google Pay-এর পেমেন্ট পদ্ধতি ও ঠিকানা অন্তর্ভুক্ত থাকে না।</translation>
 <translation id="81238879832906896">হলুদ এবং সাদা ফুল</translation>
 <translation id="8124313775439841391">ONC পরিচালিত করা হযেছে</translation>
-<translation id="8127535217699822294"><ph name="PRINTER_NAME" /> প্রিন্টারে কাগজ শেষ হয়ে গেছে</translation>
 <translation id="813082847718468539">সাইটের তথ্য দর্শন করুন</translation>
 <translation id="8131740175452115882">নিশ্চিত হন</translation>
 <translation id="8133676275609324831">&amp;ফোল্ডারে দেখান</translation>
@@ -5773,7 +5760,6 @@
 <translation id="8254954272268479918">Linux (বিটা) বন্ধ করুন</translation>
 <translation id="8255451560461371599">কোনও ব্যাকগ্রাউন্ড নেই</translation>
 <translation id="8256319818471787266">স্পার্কি</translation>
-<translation id="8256417822772703842"><ph name="PRINTER_NAME" /> প্রিন্টারে কম কালি আছে</translation>
 <translation id="8257950718085972371">ক্যামেরা অ্যাক্সেস অবরোধ করা অবিরত রাখুন</translation>
 <translation id="8259239505248583312">শুরু করা যাক</translation>
 <translation id="8260864402787962391">মাউস</translation>
@@ -5954,7 +5940,6 @@
 <translation id="8487678622945914333">জুম বাড়ান</translation>
 <translation id="8490896350101740396">নিম্নলিখিত কিয়স্ক অ্যাপগুলি "<ph name="UPDATED_APPS" />" আপডেট হয়েছে৷ আপডেট প্রসেস সম্পূর্ণ করতে অনুগ্রহ করে ডিভাইসটি রিবুট করুন৷</translation>
 <translation id="8493236660459102203">মাইক্রোফোন:</translation>
-<translation id="8495940850609851342"><ph name="PRINTER_NAME" /> প্রিন্টার বন্ধ হয়ে গেছে</translation>
 <translation id="8496717697661868878">এই প্লাগ-ইনটি চালান</translation>
 <translation id="8497219075884839166">Windows ইউটিলিটি</translation>
 <translation id="8498214519255567734">এটি ব্যবহার করলে আপনি কম আলোতেও স্বচ্ছন্দে স্ক্রিনের দিকে তাকাতে বা পড়তে পারবেন</translation>
@@ -6496,6 +6481,12 @@
 <translation id="9157096865782046368">০.৮ সেকেন্ড</translation>
 <translation id="9157697743260533322">সকল ব্যবহারকারীর জন্য স্বয়ংক্রিয় আপডেট সেট-আপ পারেনি (প্রিফ্লাইট লঞ্চ ত্রুটি: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">ওহো! যাচাইকরণের সময় একটি নেটওয়ার্ক যোগাযোগ সমস্যা ঘটেছে৷ অনুগ্রহ করে আপনার নেটওয়ার্ক সংযোগ পরীক্ষা করুন এবং আবার চেষ্টা করুন৷</translation>
+<translation id="9159643062839240276">ব্যবহার করে দেখুন:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />নেটওয়ার্কের তার, মোডেম, এবং রাউটার পরীক্ষা করুন
+      <ph name="LIST_ITEM" />ওয়াই-ফাইয়ে আবার কানেক্ট করুন
+      <ph name="LIST_ITEM" />Chrome কানেক্টিভিটি ডায়াগনস্টিক চালান
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">ছবির-মধ্যে-ছবি</translation>
 <translation id="9168436347345867845">এটি পরে করুন</translation>
 <translation id="9169496697824289689">কীবোর্ড শর্টকাটগুলি দেখুন</translation>

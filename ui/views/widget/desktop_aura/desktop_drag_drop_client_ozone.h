@@ -89,9 +89,13 @@ class VIEWS_EXPORT DesktopDragDropClientOzone
   // ui::WmDropHandler
   void OnDragEnter(const gfx::PointF& point,
                    std::unique_ptr<ui::OSExchangeData> data,
-                   int operation) override;
-  int OnDragMotion(const gfx::PointF& point, int operation) override;
-  void OnDragDrop(std::unique_ptr<ui::OSExchangeData> data) override;
+                   int operation,
+                   int modifiers) override;
+  int OnDragMotion(const gfx::PointF& point,
+                   int operation,
+                   int modifiers) override;
+  void OnDragDrop(std::unique_ptr<ui::OSExchangeData> data,
+                  int modifiers) override;
   void OnDragLeave() override;
 
   // aura::WindowObserver
@@ -111,7 +115,8 @@ class VIEWS_EXPORT DesktopDragDropClientOzone
   // is ready to accept OnDragUpdated or OnPerformDrop.  Returns nullptr if
   // drop is not possible.
   std::unique_ptr<ui::DropTargetEvent> UpdateTargetAndCreateDropEvent(
-      const gfx::PointF& point);
+      const gfx::PointF& point,
+      int modifiers);
 
   // Updates |drag_drop_delegate_| along with |window|.
   void UpdateDragDropDelegate(aura::Window* window);

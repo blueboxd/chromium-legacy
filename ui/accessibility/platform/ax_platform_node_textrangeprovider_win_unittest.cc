@@ -3616,6 +3616,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   text_data.AddTextStyle(ax::mojom::TextStyle::kItalic);
   text_data.SetTextPosition(ax::mojom::TextPosition::kSubscript);
   text_data.SetRestriction(ax::mojom::Restriction::kReadOnly);
+  text_data.SetTextAlign(ax::mojom::TextAlign::kCenter);
   text_data.SetName("some text");
 
   ui::AXNodeData heading_data;
@@ -3641,6 +3642,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   heading_text_data.SetTextDirection(ax::mojom::TextDirection::kRtl);
   heading_text_data.SetTextPosition(ax::mojom::TextPosition::kSuperscript);
   heading_text_data.AddState(ax::mojom::State::kEditable);
+  heading_text_data.SetTextAlign(ax::mojom::TextAlign::kJustify);
   heading_text_data.SetName("more text");
 
   ui::AXNodeData mark_data;
@@ -3659,6 +3661,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
                                  0xDEADBEEFU);
   mark_text_data.AddIntAttribute(ax::mojom::IntAttribute::kColor, 0xDEADC0DEU);
   mark_text_data.SetTextDirection(ax::mojom::TextDirection::kRtl);
+  mark_text_data.SetTextAlign(ax::mojom::TextAlign::kNone);
   mark_text_data.SetName("marked text");
 
   ui::AXNodeData list_data;
@@ -3952,6 +3955,18 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
                               UIA_IsReadOnlyAttributeId, expected_variant);
   expected_variant.Reset();
 
+  expected_variant.Set(HorizontalTextAlignment_Centered);
+  EXPECT_UIA_TEXTATTRIBUTE_EQ(text_range_provider,
+                              UIA_HorizontalTextAlignmentAttributeId,
+                              expected_variant);
+  expected_variant.Reset();
+
+  expected_variant.Set(HorizontalTextAlignment_Justified);
+  EXPECT_UIA_TEXTATTRIBUTE_EQ(heading_text_range_provider,
+                              UIA_HorizontalTextAlignmentAttributeId,
+                              expected_variant);
+  expected_variant.Reset();
+
   expected_variant.Set(true);
   EXPECT_UIA_TEXTATTRIBUTE_EQ(text_range_provider, UIA_IsSubscriptAttributeId,
                               expected_variant);
@@ -4113,8 +4128,6 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
                                         UIA_CaretBidiModeAttributeId);
   EXPECT_UIA_TEXTATTRIBUTE_NOTSUPPORTED(document_range_provider,
                                         UIA_CaretPositionAttributeId);
-  EXPECT_UIA_TEXTATTRIBUTE_NOTSUPPORTED(document_range_provider,
-                                        UIA_HorizontalTextAlignmentAttributeId);
   EXPECT_UIA_TEXTATTRIBUTE_NOTSUPPORTED(document_range_provider,
                                         UIA_IndentationFirstLineAttributeId);
   EXPECT_UIA_TEXTATTRIBUTE_NOTSUPPORTED(document_range_provider,

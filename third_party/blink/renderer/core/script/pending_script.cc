@@ -262,7 +262,7 @@ void PendingScript::ExecuteScriptBlockInternal(
     // <spec step="4.B.2">Run the module script given by the script's
     // script.</spec>
     script->RunScript(context_document->GetFrame(),
-                      element_document.GetSecurityOrigin());
+                      context_document->domWindow()->GetSecurityOrigin());
 
     // <spec step="4.A.4">Set the script element's node document's currentScript
     // attribute to old script element.</spec>

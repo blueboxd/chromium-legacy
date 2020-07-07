@@ -21,17 +21,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) FakeNetworkActivationHandler
   FakeNetworkActivationHandler();
   ~FakeNetworkActivationHandler() override;
 
-  // Parameters captured by calls to Activate() and CompleteActivation().
-  // Accessible to clients via activate_calls() and complete_activation_calls().
+  // Parameters captured by calls to CompleteActivation().
+  // Accessible to clients via complete_activation_calls().
   class ActivationParams {
    public:
-    // For Activate() calls.
-    ActivationParams(const std::string& service_path,
-                     const std::string& carrier,
-                     const base::Closure& success_callback,
-                     const network_handler::ErrorCallback& error_callback);
-
-    // For CompleteActivation() calls.
     ActivationParams(const std::string& service_path,
                      const base::Closure& success_callback,
                      const network_handler::ErrorCallback& error_callback);
@@ -41,10 +34,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) FakeNetworkActivationHandler
 
     const std::string& service_path() const { return service_path_; }
 
-    // Should only be called on ActivationParams objects corresponding to
-    // Activate() calls.
-    const std::string& carrier() const { return *carrier_; }
-
     void InvokeSuccessCallback() const;
     void InvokeErrorCallback(
         const std::string& error_name,
@@ -52,30 +41,21 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) FakeNetworkActivationHandler
 
    private:
     std::string service_path_;
-    base::Optional<std::string> carrier_;
     base::Closure success_callback_;
     network_handler::ErrorCallback error_callback_;
   };
 
-  const std::vector<ActivationParams>& activate_calls() const {
-    return activate_calls_;
-  }
   const std::vector<ActivationParams>& complete_activation_calls() const {
     return complete_activation_calls_;
   }
 
  private:
   // NetworkActivationHandler:
-  void Activate(const std::string& service_path,
-                const std::string& carrier,
-                const base::Closure& success_callback,
-                const network_handler::ErrorCallback& error_callback) override;
   void CompleteActivation(
       const std::string& service_path,
       const base::Closure& success_callback,
       const network_handler::ErrorCallback& error_callback) override;
 
-  std::vector<ActivationParams> activate_calls_;
   std::vector<ActivationParams> complete_activation_calls_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeNetworkActivationHandler);

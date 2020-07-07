@@ -932,6 +932,7 @@
 <translation id="2151576029659734873">अवैध ट्याब सूचकांक प्रवेश गरिएको छ।</translation>
 <translation id="2152281589789213846">आफ्नो प्रोफाइलमा प्रिन्टरहरू थप्नुहोस्</translation>
 <translation id="2154484045852737596">कार्ड सम्पादन गर्नुहोस्</translation>
+<translation id="2154697841132053118">बोली पत्ता लगाउँदै...</translation>
 <translation id="2154710561487035718">URL प्रतिलिपि गर्नुहोस्</translation>
 <translation id="2155772377859296191"><ph name="WIDTH" /> x <ph name="HEIGHT" /> जस्तो देखिन्छ</translation>
 <translation id="2156294658807918600">सेवातर्फका कर्मचारी: <ph name="SCRIPT_URL" /></translation>
@@ -1191,7 +1192,6 @@
 <translation id="2470702053775288986">असमर्थित एक्स्टेन्सनहरूलाई अक्षम बनाइयो</translation>
 <translation id="2471469610750100598">कालो (पूर्वनिर्धारित)</translation>
 <translation id="2473195200299095979">यो पृष्ठलाई अनुवाद गर्नुहोस्</translation>
-<translation id="2474848500897222119"><ph name="PRINTER_NAME" /> को मसी सकियो</translation>
 <translation id="2475982808118771221">त्रुटि भयो</translation>
 <translation id="2476578072172137802">साइट सेटिङ</translation>
 <translation id="2478176599153288112">"<ph name="EXTENSION" />" को लागि मिडिया</translation>
@@ -1368,6 +1368,7 @@
 <translation id="2682498795777673382">तपाईंका अभिभावकबाट प्राप्त अद्यावधिक</translation>
 <translation id="2683638487103917598">फोल्डरलाई क्रमबद्ध गरियो</translation>
 <translation id="2684004000387153598">जारी राख्न, ठिक छ नामक बटनमा क्लिक गर्नुहोस्, त्यसपछि आफ्नो इमेल ठेगानाको नयाँ प्रोफाइल सिर्जना गर्न व्यक्ति थप्नुहोस् नामक बटनमा क्लिक गर्नुहोस्।</translation>
+<translation id="2686222346846590368">यो <ph name="DEVICE_TYPE" /> का लागि यो नै सफ्टवेयर र सुरक्षासम्बन्धी अन्तिम स्वचालित अपडेट हो। भावी अपडेट प्राप्त गर्न अपग्रेड गरी नयाँ मोडेल प्रयोग गर्न थाल्नुहोस्। &lt;a target="_blank" href="<ph name="URL" />"&gt;थप जान्नुहोस्<ph name="LINK_END" /></translation>
 <translation id="2687403674020088961">सबै कुकीहरूमाथि रोक लगाउनुहोस् (सिफारिस गरिँदैन)</translation>
 <translation id="2687407218262674387">Google का सेवाका सर्तहरू</translation>
 <translation id="2688196195245426394">यन्त्रलाई सर्भरसँग दर्ता गर्नमा त्रुटि: <ph name="CLIENT_ERROR" />।</translation>
@@ -1390,6 +1391,7 @@
 <translation id="2712173769900027643">अनुमतिको लागि सोध्नुहोस्</translation>
 <translation id="2713444072780614174">सेतो</translation>
 <translation id="2714393097308983682">Google Play स्टोर</translation>
+<translation id="2714997332747470971">व्यक्तिगत जानकारीसम्बन्धी सिफारिसहरूले तपाईंको नाम, ठेगाना वा फोन नम्बर स्वतः टाइप गरेर तपाईंलाई अझ छिटो लेख्न मद्दत गर्छन्। तपाईंको खाताका हकमा दिइने निजी तथा वैयक्तीकृत सिफारिसहरू तपाईं मात्र देख्नुहुन्छ।</translation>
 <translation id="2715751256863167692">यो स्तरवृद्धिले तपाईंको Chromebook लाई रिसेट गरी हालको प्रयोगकर्ताको डेटा हटाउँछ।</translation>
 <translation id="2716986496990888774">कुनै अभिभावक यो सेटिङको व्यवस्थापन गर्नुहुन्छ।</translation>
 <translation id="2718395828230677721">रात्रि प्रकाश</translation>
@@ -1495,7 +1497,6 @@
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> ले तपाईंको प्रशासकका प्रोक्सी सेटिङ प्रयोग गरिरहेको छ</translation>
 <translation id="2825758591930162672">विषयको सार्वजनिक कुञ्जी</translation>
 <translation id="2828650939514476812">Wi-Fi नेटवर्कसँग जडान गर्नुहोस्</translation>
-<translation id="28291580771888953"><ph name="PRINTER_NAME" /> को कार्यसूची भरिएको छ</translation>
 <translation id="2835547721736623118">वाक् पहिचान सेवा</translation>
 <translation id="2836269494620652131">क्र्यास</translation>
 <translation id="2836635946302913370">यो प्रयोगकर्ता नामद्वारा साइन इन तपाईंको प्रशासकद्वारा असक्षम गरिएको छ।</translation>
@@ -1968,7 +1969,7 @@
 <translation id="3450157232394774192">निष्क्रिय स्थिति दखल प्रतिशत</translation>
 <translation id="3453612417627951340">प्राधिकरण आवश्यकता</translation>
 <translation id="3454157711543303649">सक्रिय गर्ने काम पूरा भयो</translation>
-<translation id="3454213325559396544">यो <ph name="DEVICE_TYPE" /> का लागि यो नै सफ्टवेयर र सुरक्षासम्बन्धी अन्तिम स्वचालित अद्यावधिक हो। भावी अद्यावधिकहरू प्राप्त गर्न स्तरवृद्धि गरी नयाँ मोडेल प्रयोग गर्न थाल्नुहोस्।</translation>
+<translation id="3454213325559396544">यो <ph name="DEVICE_TYPE" /> का लागि यो नै सफ्टवेयर र सुरक्षासम्बन्धी अन्तिम स्वचालित अद्यावधिक हो। भावी अपडेट प्राप्त गर्न  स्तरवृद्धि गरी नयाँ मोडेल प्रयोग गर्न थाल्नुहोस्।</translation>
 <translation id="3455436146814891176">इन्क्रिप्सन पासवर्ड सिंक गर्नुहोस्</translation>
 <translation id="345693547134384690">&amp;छविलाई नयाँ ट्याबमा खोल्ननुहोस्</translation>
 <translation id="3458451003193188688">नेटवर्कसम्बन्धी कुनै त्रुटिका कारण भर्चुअल मेसिन इन्स्टल गर्न सकिएन। कृपया फेरि प्रयास गर्नुहोस् वा आफ्ना एड्मिनसँग सम्पर्क गर्नुहोस्। त्रुटिको कोड: <ph name="ERROR_CODE" />।</translation>
@@ -2312,6 +2313,7 @@
 <translation id="3839516600093027468"><ph name="HOST" /> लाई क्लिपबोर्ड हेर्न सधैँ रोक लगाउनुहोस्</translation>
 <translation id="3841964634449506551">पासवर्ड मिलेन</translation>
 <translation id="3842552989725514455">सेरिफ फन्ट</translation>
+<translation id="3843464315703645664">आन्तरिक रूपमा श्वेतसूचीमा राखिएको</translation>
 <translation id="3846116211488856547">वेबसाइट, Android एप र थप कुराहरू विकास गर्ने उपकरणहरू प्राप्त गर्नुहोस्। Linux स्थापना गर्नुले <ph name="DOWNLOAD_SIZE" /> डेटा डाउनलोड हुने छ।</translation>
 <translation id="3847319713229060696">वेब प्रयोग गर्ने सम्पूर्ण प्रयोगकर्ताहरूलाई सुरक्षित रहन मद्दत गर्नुहोस्</translation>
 <translation id="385051799172605136">पछाडि जानुहोस्</translation>
@@ -2442,6 +2444,7 @@
 <translation id="3983769721878416534">क्लिक गर्नुभन्दा अघिको ढिलाइ</translation>
 <translation id="3984159763196946143">डेमो मोड सुरु गर्न सकिएन</translation>
 <translation id="3984431586879874039">यस साइटलाई तपाईंको सुरक्षा साँचो हेर्न दिने हो?</translation>
+<translation id="3986705137476756801">अहिलेका लागि लाइभ क्याप्सन अफ गर्नुहोस्</translation>
 <translation id="3987938432087324095">माफ गर्नुहोस्, तपाईंको कुरा स्पष्ट बुझिएन।</translation>
 <translation id="3988996860813292272">समय क्षेत्र चयन गर्नुहोस्</translation>
 <translation id="399179161741278232">आयात गरिएको</translation>
@@ -2768,7 +2771,6 @@
 <translation id="4453946976636652378"><ph name="SEARCH_ENGINE_NAME" /> खोज्नुहोस्‌ वा URL टाइप गर्नुहोस्</translation>
 <translation id="4459169140545916303"><ph name="DEVICE_LAST_ACTIVATED_TIME" /> दिन पहिले सक्रिय</translation>
 <translation id="4460014764210899310">समूह विघटन गर्नुहोस्</translation>
-<translation id="4460343359907016103"><ph name="PRINTER_NAME" /> मा कनेक्ट गर्ने क्रममा त्रुटि भयो</translation>
 <translation id="4462159676511157176">अनुकुल नाम सर्भरहरू</translation>
 <translation id="4465236939126352372"><ph name="APP_NAME" /> का हकमा <ph name="TIME" /> समय सीमा सेट गरिएको छ</translation>
 <translation id="4465725236958772856"><ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /> मध्ये नेटवर्क <ph name="NETWORK_INDEX" />तपाईंका प्रशासकले व्यवस्थित गर्नुभएको छ, जोड्नुहोस्</translation>
@@ -2886,6 +2888,7 @@
 <translation id="4608520674724523647">दर्ताको सफल चित्रण</translation>
 <translation id="4608703838363792434"><ph name="FILE_NAME" /> मा संवेदनशील सामग्री छ</translation>
 <translation id="4610162781778310380"><ph name="PLUGIN_NAME" /> मा त्रुटि भएको छ</translation>
+<translation id="4610178114344604329">व्यक्तिगत जानकारीसम्बन्धी सिफारिसहरू देखाइयोस्</translation>
 <translation id="4610637590575890427">के तपाईं <ph name="SITE" /> मा जान चाहनुहुन्छ?</translation>
 <translation id="4611114513649582138">डेटा जडान उपलब्ध छ</translation>
 <translation id="4613144866899789710">Linux को स्थापना रद्द गर्दै...</translation>
@@ -3065,7 +3068,6 @@
 <translation id="4864369630010738180">साइन इन गरिँदै...</translation>
 <translation id="4864805589453749318">विद्यालयको खाता थप्न अनुमति दिन लागिरहनुभएको अभिभावक चयन गर्नुहोस्।</translation>
 <translation id="486635084936119914">डाउनलोडपछि निश्चित प्रकारका फाइलहरू स्वतः खोल्नुहोस्</translation>
-<translation id="4869213010169296107"><ph name="PRINTER_NAME" /> मा ट्रे राखिएको छैन</translation>
 <translation id="48704129375571883">थप सुविधाहरू थप्नुहोस्</translation>
 <translation id="4870758487381879312">कन्फिगुरेसनसम्बन्धी जानकारी प्राप्त गर्न प्रशासकले उपलब्ध गराउनुभएको पासवर्ड प्रविष्टि गर्नुहोस्</translation>
 <translation id="4870903493621965035">जोडा बनाइएको कुनै यन्त्र छैन</translation>
@@ -3163,6 +3165,7 @@
 <translation id="4977942889532008999">पहुँच यकिन गर्नुहोस्</translation>
 <translation id="4980805016576257426">यस विस्तारमा मालवेयर छ।</translation>
 <translation id="4981449534399733132">तपाईंका सिंक गरिएका सबै यन्त्र र Google खाताबाट ब्राउजिङ डेटा खाली गर्न <ph name="BEGIN_LINK" />साइन इन गर्नुहोस्<ph name="END_LINK" />।</translation>
+<translation id="4982236238228587209">यन्त्रमा इन्स्टल गरिएको सफ्टवेयर</translation>
 <translation id="4986728572522335985">यसले सुरक्षा साँचोको PIN सहित यसमा रहेको सबै डेटा मेटाउने छ</translation>
 <translation id="4988526792673242964">पृष्ठहरू</translation>
 <translation id="49896407730300355">घडिको उल्टो दिशा&amp;तिर घुमाउनुहोस्</translation>
@@ -3315,6 +3318,7 @@
 <translation id="5184662919967270437">तपाईँको यन्त्रलाई अद्यावधिक गर्दै</translation>
 <translation id="5185359571430619712">एक्स्टेन्सनहरूको समीक्षा गर्नुहोस्</translation>
 <translation id="5185386675596372454">"<ph name="EXTENSION_NAME" />" को नयाँ संस्करणलाई अक्षम गरिएको छ किनकी यसलाई धेरै अनुमतिहरूको आवश्यकता पर्छ।</translation>
+<translation id="5185500136143151980">इन्टरनेट छैन</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5190926251776387065">पोर्ट सक्रिय गर्नुहोस्</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> एकभन्दा बढी फाइलहरू डाउनलोड गर्न चाहन्छ</translation>
@@ -3471,7 +3475,6 @@
 <translation id="5390112241331447203">फिडब्याक रिपोर्टमा संलग्न गरी पठाइएका system_logs.txt फाइल समावेश गरियोस्।</translation>
 <translation id="5390677308841849479">गाढा रातो र सुन्तले</translation>
 <translation id="5390743329570580756">निम्न कार्यका लागि पठाउनुहोस्</translation>
-<translation id="5395869306561378615"><ph name="PRINTER_NAME" /> केही समयका लागि रोकिएको छ</translation>
 <translation id="5397794290049113714">तपाइँ</translation>
 <translation id="5398572795982417028">सीमा बाहिरको पृष्ठ सन्दर्भ, सीमा <ph name="MAXIMUM_PAGE" /> हो</translation>
 <translation id="5398772614898833570">विज्ञापनहरूमाथि रोक लगाइयो</translation>
@@ -3486,7 +3489,6 @@
 <translation id="5417312524372586921">ब्राउजरका विषयवस्तुहरू</translation>
 <translation id="5419405654816502573">Voice Match</translation>
 <translation id="5420438158931847627">पाठ तथा छविहरूको तिखोपना निर्धारण गर्छ</translation>
-<translation id="5421498071721257877"><ph name="PRINTER_NAME" /> मा यन्त्रसम्बन्धी त्रुटि भएको छ</translation>
 <translation id="5422221874247253874">पहुँचको बिन्दु</translation>
 <translation id="5422781158178868512">माफ गर्नुहोस्, तपाइँको बाह्य भण्डारण चिनिन सकिएन।</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3835,7 +3837,6 @@
 <translation id="5852137567692933493">पुन: सुरु गर्नुहोस् र पावरसफाइ</translation>
 <translation id="5854912040170951372">स</translation>
 <translation id="5855267860608268405">ज्ञात Wi-Fi नेटवर्कहरू</translation>
-<translation id="5855310969323666289"><ph name="PRINTER_NAME" /> को ढोका खुला छ</translation>
 <translation id="5855643921295613558">०.६ सेकेन्ड</translation>
 <translation id="5856721540245522153">डिबग सुविधाहरू सक्षम गर्नुहोस्</translation>
 <translation id="5857090052475505287">नयाँ फोल्डर</translation>
@@ -3866,7 +3867,6 @@
 <translation id="5877064549588274448">च्यानल चार्ज गरियो। परिवर्तनहरू लागू गर्नको लागि तपाइँको यन्त्र पुन: सुरुवात गर्नुहोस्।</translation>
 <translation id="5877584842898320529">चयन गरिएको प्रिन्टर उपलब्ध छैन वा त्यसलाई राम्ररी स्थापना गरिएको छैन। <ph name="BR" /> आफ्नो प्रिन्टर जाँच्नुहोस् वा अर्को प्रिन्टर चयन गरी हेर्नुहोस्।</translation>
 <translation id="5882919346125742463">ज्ञात नेटवर्कहरू</translation>
-<translation id="5883716097305842571"><ph name="PRINTER_NAME" /> को आउटपुट एरिया भरिनै लागेको छ</translation>
 <translation id="5884474295213649357">यो ट्याब एउटा USB यन्त्रमा जडान गरिएको अवस्थामा छ।</translation>
 <translation id="5886009770935151472">औँला १</translation>
 <translation id="5889282057229379085">मध्यवर्ती CA हरूको अधिकतम सङ्ख्या: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4431,7 +4431,6 @@
 <translation id="6611972847767394631">आफ्ना ट्याबहरू यहाँ फेला पार्नुहोस्</translation>
 <translation id="6612358246767739896">संरक्षित सामग्री</translation>
 <translation id="6615455863669487791">मलाई देखाउनुहोस्</translation>
-<translation id="6617034477946102682"><ph name="PRINTER_NAME" /> मा कनेक्ट गर्न सकिएन</translation>
 <translation id="6618097958368085618">जे भए पनि राख्नुहोस्</translation>
 <translation id="6618744767048954150">जाँच हुँदै छ</translation>
 <translation id="6619058681307408113">लाइन प्रिन्टर डेमन (LPD)</translation>
@@ -4682,6 +4681,7 @@
 <translation id="6938381444925658529"><ph name="DOMAIN" /> का अनुसार तपाईंले म्याद सकिनुअघि नै अपडेट डाउनलोड गर्नु पर्ने हुन्छ। तपाईं इन्टरनेटमा कनेक्ट भएपछि अपडेट स्वत: डाउनलोड हुने छ।</translation>
 <translation id="6938386202199793006">तपाईंसँग १ प्रिन्टर छ।</translation>
 <translation id="6938789263968032501">मान्छेहरू</translation>
+<translation id="6939815295902433669">यन्त्रमा हानिकारक सफ्टवेयर छन् कि छैनन् हेर्नुहोस् र छन् भने हटाउनुहोस्</translation>
 <translation id="6941937518557314510">आफ्नो प्रमाणपत्र मार्फत <ph name="HOST_NAME" /> मा प्रमाणित ठहराउन <ph name="TOKEN_NAME" /> मा साइन इन गर्नुहोस्।</translation>
 <translation id="6943060957016121200">तात्कालिक टेदरिङ सक्षम पार्नुहोस्</translation>
 <translation id="6943176775188458830">प्रिन्टिङ रद्द गर्नुहोस्</translation>
@@ -4847,7 +4847,6 @@
 <translation id="7128151990937044829">सूचनाहरू देखाउन रोक लगाइएको बेला ठेगाना पट्टीमा एउटा सूचक देखाउनुहोस्</translation>
 <translation id="7131040479572660648"><ph name="WEBSITE_1" /> , <ph name="WEBSITE_2" /> , र <ph name="WEBSITE_3" />मा तपाईंको डेटा पढ्नुहोस्</translation>
 <translation id="713122686776214250">पृ&amp;ष्ठ थप्नुहोस् ...</translation>
-<translation id="7131379856697962078"><ph name="PRINTER_NAME" /> को आउटपुट एरिया भरिएको छ</translation>
 <translation id="7133578150266914903">तपाईंको प्रशासकले यो यन्त्रलाई पहिलेको स्थितिमा फर्काउँदै हुनुहुन्छ (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">पाठलाई अझ सानो बनाउनुहोस्</translation>
 <translation id="7135729336746831607">ब्लुटुथ सक्रिय पार्ने हो?</translation>
@@ -4866,7 +4865,6 @@
 <translation id="7152478047064750137">यस विस्तारलाई कुनै विशेष अनुमति चाहिँदैन</translation>
 <translation id="7154130902455071009">आफ्नो सुरुवात पृष्ठलाई यसमा परिवर्तन गर्नुहोस्: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">क्यामेरा वा फाइलको विद्यमान तस्बिर</translation>
-<translation id="715657691234357425"><ph name="PRINTER_NAME" /> मा कागज सकिनै लागेको छ</translation>
 <translation id="7165320105431587207">नेटवर्क कन्फिगर गर्न असफल</translation>
 <translation id="716640248772308851">"<ph name="EXTENSION" />" ले चेक गरिएको स्थानहरूमा छविहरू, भिडियो, र आवाज पढ्न सक्छ।</translation>
 <translation id="7167486101654761064">यस किसिमको फाइलहरू &amp;सधैं खोल्नुहोस्</translation>
@@ -4897,7 +4895,6 @@
 <translation id="7197632491113152433">हामीले यो यन्त्रमा प्रयोग गर्न सकिने तपाईंको खाताका <ph name="NUMBER_OF_APPS" /> एपहरू फेला पार्‍यौँ।</translation>
 <translation id="7199158086730159431">मद्द&amp;त पाउनुहोस्</translation>
 <translation id="7200083590239651963">कन्फिगुरेसन चयन गर्नुहोस्</translation>
-<translation id="7201042526153088083">Google Play बाट आफ्नो <ph name="DEVICE_TYPE" /> मा एप र गेमहरू स्थापना गर्नुहोस्। &lt;a target="_blank" href="<ph name="URL" />"&gt;थप जान्नुहोस्&lt;/a&gt;</translation>
 <translation id="720110658997053098">यो यन्त्रलाई सदाका लागि किओस्क मोडमा राख्नुहोस्</translation>
 <translation id="7201118060536064622">'<ph name="DELETED_ITEM_NAME" />' मेटियो</translation>
 <translation id="7201420661433230412">फाइलहरू हेर्ने</translation>
@@ -5153,6 +5150,7 @@
 <translation id="7522255036471229694">"Ok Google" भन्नुहोस्</translation>
 <translation id="7525067979554623046">सिर्जना गर्नुहोस्</translation>
 <translation id="7526658513669652747">{NUM_DOWNLOADS,plural, =1{थप १ वटा}other{थप {NUM_DOWNLOADS} वटा}}</translation>
+<translation id="7526989658317409655">प्लेसहोल्डर</translation>
 <translation id="7529411698175791732">आफ्नो इन्टरनेट जडान जाँच गर्नुहोस्। समस्या यथावत् रहिरहेमा साइन आउट गरेर पुन: साइन इन गरी हेर्नुहोस्।</translation>
 <translation id="7530016656428373557">वाट्स मा दर डिस्चार्ज गर्नुहोस्</translation>
 <translation id="7531779363494549572">सेटिङहरू &gt; एप तथा सूचनाहरू &gt; सूचनाहरू नामक विकल्पमा जानुहोस्।</translation>
@@ -5202,7 +5200,6 @@
 <translation id="7598466960084663009">कम्प्युटर पुनः सुरु गर्नुहोस्</translation>
 <translation id="7599527631045201165">यन्त्रको नाम निकै लामो छ। फेरि प्रयास गर्न छोटो नाम प्रविष्टि गर्नुहोस्।</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> कहिले पनि अनुवाद नगर्नुहोस्</translation>
-<translation id="7601297144931396972"><ph name="PRINTER_NAME" /> मा कागज अड्किएको छ</translation>
 <translation id="760197030861754408">जडान गर्न <ph name="LANDING_PAGE" /> मा जानुहोस्।</translation>
 <translation id="7602079150116086782">अन्य यन्त्रहरूका कुनै ट्याबहरू छैनन्</translation>
 <translation id="7602173054665172958">प्रिन्टको व्यवस्थापन</translation>
@@ -5213,6 +5210,7 @@
 <translation id="7609148976235050828">कृपया इन्टरनेटमा जडान गरी फेरि प्रयास गर्नुहोस्।</translation>
 <translation id="7614260613810441905">कुनै साइटले तपाईंको यन्त्रका फाइल वा फोल्डरहरू सम्पादन गर्न खोज्दा सोध्नुहोस् (सिफारिस गरिएको)</translation>
 <translation id="761530003705945209">Google ड्राइभमा ब्याकअप गर्नुहोस् जुनसुकै बेला सजिलैसँग आफ्नो डेटा पुनर्स्थापना गर्नुहोस् वा यन्त्र बदल्नुहोस्। तपाईंको ब्याकअपमा एपको डेटा समावेश हुन्छ। तपाईंका ब्याकअपहरू Google मा अपलोड गरी तपाईंको Google खाताको पासवर्ड प्रयोग गरेर इन्क्रिप्ट गरिन्छन्।</translation>
+<translation id="7615365294369022248">खाता थप्ने क्रममा कुनै त्रुटि भयो</translation>
 <translation id="7616214729753637086">यन्त्र दर्ता गर्दै...</translation>
 <translation id="7617263010641145920">Play Store अन गर्नुहोस्</translation>
 <translation id="7617366389578322136">"<ph name="DEVICE_NAME" />" मा जडान गरिँदै</translation>
@@ -5660,7 +5658,6 @@
           गरियो। यसअन्तर्गत Google Pay का भुक्तानी विधि र ठेगानाहरू समावेश हुँदैनन्।</translation>
 <translation id="81238879832906896">पहेँलो र सेतो फुल</translation>
 <translation id="8124313775439841391">व्यवस्थित ONC</translation>
-<translation id="8127535217699822294"><ph name="PRINTER_NAME" /> को कागज सकिएको छ</translation>
 <translation id="813082847718468539">साइट जानकारी हेर्नुहोस्</translation>
 <translation id="8131740175452115882">निश्चित</translation>
 <translation id="8133676275609324831">फोल्डरमा &amp;देखाउनुहोस्</translation>
@@ -5759,7 +5756,6 @@
 <translation id="8254954272268479918">Linux बन्द गर्नुहोस् (बिटा)</translation>
 <translation id="8255451560461371599">कुनै पनि पृष्ठभूमि छैन</translation>
 <translation id="8256319818471787266">स्पार्की</translation>
-<translation id="8256417822772703842"><ph name="PRINTER_NAME" /> को मसी सकिनै लागेको छ</translation>
 <translation id="8257950718085972371">क्यामेरा पहुँच ब्लक गर्ने कार्य जारी राख्नुहोस्</translation>
 <translation id="8259239505248583312">जाऔँ</translation>
 <translation id="8260864402787962391">माउस</translation>
@@ -5940,7 +5936,6 @@
 <translation id="8487678622945914333">जुम बढाउनुहोस्</translation>
 <translation id="8490896350101740396">निम्न kisok एपहरू " <ph name="UPDATED_APPS" /> "अद्यावधिक गरिएका छन्। अद्यावधिक प्रक्रिया पूरा गर्न यन्त्रलाई रिबुट गर्नुहोस्।</translation>
 <translation id="8493236660459102203">माइक्रोफोन:</translation>
-<translation id="8495940850609851342"><ph name="PRINTER_NAME" /> बन्द गरिए छ</translation>
 <translation id="8496717697661868878">यो प्लगइन चलाउनुहोस्</translation>
 <translation id="8497219075884839166">विन्डोका उपयोगिताहरू</translation>
 <translation id="8498214519255567734">आफ्नो स्क्रिनमा हेर्न अझ सजिलो बनाउनुहोस् वा मधुरो प्रकाशमा पढ्नुहोस्</translation>
@@ -6193,6 +6188,7 @@
 <translation id="8798441408945964110">प्रदायकको नाम</translation>
 <translation id="8800004011501252845">यसको लागि गन्तव्यहरू देखाउँदै</translation>
 <translation id="8800034312320686233">साइटले काम गरिरहेको छैन?</translation>
+<translation id="880069872639153240">आफूले टाइप गरिरहेका कुराका आधारमा इमोजीसम्बन्धी सिफारिसहरू प्राप्त गर्नुहोस्</translation>
 <translation id="8803953437405899238">एक क्लिकमै नयाँ ट्याब खोल्नुहोस्</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{ट्याब सारेर अर्को विन्डोमा लैजानुहोस्}other{ट्याबहरू सारेर अर्को विन्डोमा लैजानुहोस्}}</translation>
 <translation id="8805140816472474147">सिंक गर्न थाल्न सिंकसम्बन्धी सेटिङहरूको पुष्टि गर्नुहोस्।</translation>
@@ -6481,6 +6477,12 @@
 <translation id="9157096865782046368">०.८ सेकेन्ड</translation>
 <translation id="9157697743260533322">सबै प्रयोगकर्ताहरूका लागि स्वचालित अद्यावधिकहरूलाई सेटअप गर्न सकिएन (प्रिफ्लाइट लन्च सम्बन्धी त्रुटि: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">ओहो! प्रमाणीकरण दौरान एउटा नेटवर्क सञ्चारण समस्या उत्पन्न भयो।  कृपया आफ्नो नेटवर्क जडान जाँच्नुहोस् र पुन: प्रयास गर्नुहोस्।</translation>
+<translation id="9159643062839240276">निम्न कार्य गरी हेर्नुहोस्:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />इन्टरनेटको तार, मोडेम र राउटर जाँच्ने
+      <ph name="LIST_ITEM" />Wi-Fi मा पुनः कनेक्ट गर्ने
+      <ph name="LIST_ITEM" />Chrome को कनेक्टिभिटीसम्बन्धी निदान चलाउने
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">Picture in Picture</translation>
 <translation id="9168436347345867845">यो कार्य पछि गर्नुहोस्‌</translation>
 <translation id="9169496697824289689">किबोर्ड शर्टकटरहरू हेर्नुहोस्</translation>

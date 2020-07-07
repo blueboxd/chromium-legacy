@@ -11,8 +11,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/session/session_observer.h"
 #include "ash/wm/system_modal_container_event_filter_delegate.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"

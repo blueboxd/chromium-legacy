@@ -5,7 +5,8 @@
 #ifndef ASH_SYSTEM_UNIFIED_UNIFIED_MANAGED_DEVICE_VIEW_H_
 #define ASH_SYSTEM_UNIFIED_UNIFIED_MANAGED_DEVICE_VIEW_H_
 
-#include "ash/session/session_observer.h"
+#include "ash/ash_export.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/system/enterprise/enterprise_domain_observer.h"
 #include "base/macros.h"
 #include "ui/views/view.h"

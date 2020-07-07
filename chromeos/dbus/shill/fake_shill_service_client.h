@@ -62,10 +62,6 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillServiceClient
   void Remove(const dbus::ObjectPath& service_path,
               base::OnceClosure callback,
               ErrorCallback error_callback) override;
-  void ActivateCellularModem(const dbus::ObjectPath& service_path,
-                             const std::string& carrier,
-                             base::OnceClosure callback,
-                             ErrorCallback error_callback) override;
   void CompleteCellularActivation(const dbus::ObjectPath& service_path,
                                   base::OnceClosure callback,
                                   ErrorCallback error_callback) override;

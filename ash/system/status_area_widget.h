@@ -7,8 +7,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/login_status.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/session/session_observer.h"
 #include "ash/shelf/shelf_component.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"

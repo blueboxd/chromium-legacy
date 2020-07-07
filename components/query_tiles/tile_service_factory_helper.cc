@@ -91,9 +91,10 @@ std::unique_ptr<TileService> CreateTileService(
   // Wrap background task scheduler.
   auto policy = std::make_unique<net::BackoffEntry::Policy>();
   BuildBackoffPolicy(policy.get());
-  auto tile_background_task_scheduler = TileServiceScheduler::Create(
-      scheduler, pref_service, clock, base::DefaultTickClock::GetInstance(),
-      std::move(policy));
+  auto tile_background_task_scheduler =
+      std::make_unique<TileServiceSchedulerImpl>(
+          scheduler, pref_service, clock, base::DefaultTickClock::GetInstance(),
+          std::move(policy));
 
   auto tile_service_impl = std::make_unique<TileServiceImpl>(
       std::move(image_prefetcher), std::move(tile_manager),

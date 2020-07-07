@@ -22,6 +22,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.IntentUtils;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -586,13 +587,12 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
             int tabIndex = TabModelUtils.getTabIndexById(
                     chromeActivity.getTabModelSelector().getCurrentModel(), tab.getId());
             chromeActivity.getTabModelSelector().getCurrentModel().setIndex(
-                    tabIndex, TabSelectionType.FROM_USER);
-            // TODO(crbug.com/1092268): Add animation.
+                    tabIndex, TabSelectionType.FROM_OMNIBOX);
         } else {
             Intent newIntent = ChromeIntentUtil.createBringTabToFrontIntent(tab.getId());
             if (newIntent != null) {
                 newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                ContextUtils.getApplicationContext().startActivity(newIntent);
+                IntentUtils.safeStartActivity(ContextUtils.getApplicationContext(), newIntent);
             }
         }
 

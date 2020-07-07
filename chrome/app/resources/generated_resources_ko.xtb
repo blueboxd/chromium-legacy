@@ -281,7 +281,6 @@
 <translation id="1340527397989195812">파일 앱을 사용하여 기기의 미디어를 백업합니다.</translation>
 <translation id="1341988552785875222">현재 배경화면은 '<ph name="APP_NAME" />'에서 설정했습니다. 다른 배경화면을 선택하려면 '<ph name="APP_NAME" />'을(를) 제거해야 할 수도 있습니다.</translation>
 <translation id="1343865611738742294">Linux 앱에 USB 기기 액세스 권한을 부여합니다. Linux는 삭제된 USB 기기를 기억하지 않습니다.</translation>
-<translation id="1344143111673240412">카메라 설정을 변경하려면 Parallels Desktop을 다시 실행해야 합니다.</translation>
 <translation id="1347256498747320987">업데이트 및 앱을 설치합니다. 계속하면 이 기기에서 Google, 이동통신사, 기기 제조업체로부터 업데이트와 앱을 자동으로 다운로드하고 설치하는 데에도 동의하는 것으로 간주됩니다(이때 모바일 데이터가 사용될 수 있음). 일부 앱에서는 인앱 구매가 제공될 수도 있습니다. <ph name="BEGIN_LINK1" />자세히 알아보기<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">배터리 잔량이 <ph name="BATTERY_LEVEL" />%가 되면 업데이트가 시작됩니다.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -1197,7 +1196,6 @@
 <translation id="2470702053775288986">지원되지 않는 확장 프로그램이 사용 중지됨</translation>
 <translation id="2471469610750100598">검정(기본)</translation>
 <translation id="2473195200299095979">이 페이지 번역하기</translation>
-<translation id="2474848500897222119"><ph name="PRINTER_NAME" />에 잉크가 없음</translation>
 <translation id="2475982808118771221">오류가 발생했습니다.</translation>
 <translation id="2476578072172137802">사이트 설정</translation>
 <translation id="2478176599153288112">'<ph name="EXTENSION" />'의 미디어 파일 권한</translation>
@@ -1374,7 +1372,7 @@
 <translation id="2682498795777673382">보호자가 업데이트한 내용</translation>
 <translation id="2683638487103917598">폴더가 정렬됨</translation>
 <translation id="2684004000387153598">계속하려면 확인을 클릭한 다음 사용자 추가를 클릭하여 이메일 주소로 새로운 프로필을 만드세요.</translation>
-<translation id="2686222346846590368"><ph name="DEVICE_TYPE" /> 기기에 대한 마지막 자동 소프트웨어 및 보안 업데이트입니다. 향후 업데이트를 받으려면 최신 모델로 업그레이드하세요. &lt;a target="_blank" href="<ph name="URL" />"&gt;자세히 알아보기<ph name="LINK_END" /></translation>
+<translation id="2686222346846590368"><ph name="DEVICE_TYPE" />의 마지막 자동 소프트웨어 및 보안 업데이트입니다. 향후 업데이트를 받으려면 최신 모델로 업그레이드하세요. &lt;a target="_blank" href="<ph name="URL" />"&gt;자세히 알아보기<ph name="LINK_END" /></translation>
 <translation id="2687403674020088961">모든 쿠키 차단(권장되지 않음)</translation>
 <translation id="2687407218262674387">Google 서비스 약관</translation>
 <translation id="2688196195245426394">기기를 서버에 등록하는 중에 오류 발생: <ph name="CLIENT_ERROR" />.</translation>
@@ -1503,7 +1501,6 @@
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" />이(가) 관리자의 프록시 설정을 사용 중입니다.</translation>
 <translation id="2825758591930162672">대상의 공개 키</translation>
 <translation id="2828650939514476812">Wi-Fi 네트워크에 연결</translation>
-<translation id="28291580771888953"><ph name="PRINTER_NAME" />의 대기열이 가득 참</translation>
 <translation id="2835547721736623118">음성 인식 서비스</translation>
 <translation id="2836269494620652131">비정상 종료</translation>
 <translation id="2836635946302913370">해당 사용자 이름 로그인이 관리자에 의해 사용 중지되었습니다.</translation>
@@ -2319,7 +2316,7 @@
 <translation id="3839516600093027468"><ph name="HOST" />에서 클립보드를 볼 수 없도록 항상 차단</translation>
 <translation id="3841964634449506551">잘못된 비밀번호입니다.</translation>
 <translation id="3842552989725514455">Serif</translation>
-<translation id="3843058644024807390">마이크 설정을 변경하려면 Parallels Desktop을 다시 실행해야 합니다.</translation>
+<translation id="3843464315703645664">내부적으로 허용됨</translation>
 <translation id="3846116211488856547">웹사이트, Android 앱 등을 개발할 수 있는 도구를 이용해 보세요. Linux를 설치하면 <ph name="DOWNLOAD_SIZE" />의 데이터가 다운로드됩니다.</translation>
 <translation id="3847319713229060696">모든 웹 사용자를 위한 보안 개선에 참여</translation>
 <translation id="385051799172605136">뒤로</translation>
@@ -2776,7 +2773,6 @@
 <translation id="4453946976636652378"><ph name="SEARCH_ENGINE_NAME" />에서 검색하거나 URL을 입력하세요.</translation>
 <translation id="4459169140545916303"><ph name="DEVICE_LAST_ACTIVATED_TIME" />일 전에 사용</translation>
 <translation id="4460014764210899310">그룹 해제</translation>
-<translation id="4460343359907016103"><ph name="PRINTER_NAME" />에 연결 중 오류 발생</translation>
 <translation id="4462159676511157176">사용자 지정 네임서버</translation>
 <translation id="4465236939126352372"><ph name="APP_NAME" />에 <ph name="TIME" /> 시간 제한이 설정됨</translation>
 <translation id="4465725236958772856">네트워크 <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, 관리자가 관리함, 연결</translation>
@@ -3074,7 +3070,6 @@
 <translation id="4864369630010738180">로그인 중...</translation>
 <translation id="4864805589453749318">학교 계정을 추가할 수 있도록 권한을 부여할 부모님을 선택하세요.</translation>
 <translation id="486635084936119914">다운로드 후에 특정 파일 형식을 자동으로 열기</translation>
-<translation id="4869213010169296107"><ph name="PRINTER_NAME" />에 트레이가 없음</translation>
 <translation id="48704129375571883">추가 기능 추가</translation>
 <translation id="4870758487381879312">구성 정보를 가져오려면 관리자가 제공한 비밀번호를 입력하세요.</translation>
 <translation id="4870903493621965035">페어링된 기기가 없습니다.</translation>
@@ -3325,6 +3320,7 @@
 <translation id="5184662919967270437">기기 업데이트 중</translation>
 <translation id="5185359571430619712">확장 프로그램 검토</translation>
 <translation id="5185386675596372454">'<ph name="EXTENSION_NAME" />'의 최신 버전에 더 많은 권한이 필요하여 사용이 중지되었습니다.</translation>
+<translation id="5185500136143151980">인터넷 연결 없음</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" />(<ph name="DEVICE" />)</translation>
 <translation id="5190926251776387065">포트 활성화</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" />에서 여러 파일을 다운로드하려고 합니다.</translation>
@@ -3481,7 +3477,6 @@
 <translation id="5390112241331447203">전송된 system_logs.txt 파일을 의견 보고서에 포함합니다.</translation>
 <translation id="5390677308841849479">진한 빨간색 및 주황색</translation>
 <translation id="5390743329570580756">다음에 대해 보내기:</translation>
-<translation id="5395869306561378615"><ph name="PRINTER_NAME" /> 일시중지됨</translation>
 <translation id="5397794290049113714">나</translation>
 <translation id="5398572795982417028">페이지가 범위를 벗어난 경우 참고하세요. 한도는 <ph name="MAXIMUM_PAGE" />페이지입니다.</translation>
 <translation id="5398772614898833570">광고 차단됨</translation>
@@ -3496,7 +3491,6 @@
 <translation id="5417312524372586921">브라우저 테마</translation>
 <translation id="5419405654816502573">Voice Match</translation>
 <translation id="5420438158931847627">텍스트와 이미지의 선명도를 결정합니다.</translation>
-<translation id="5421498071721257877"><ph name="PRINTER_NAME" />에 기기 오류 발생</translation>
 <translation id="5422221874247253874">액세스포인트</translation>
 <translation id="5422781158178868512">죄송합니다. 외부 저장장치를 인식하지 못했습니다.</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3845,7 +3839,6 @@
 <translation id="5852137567692933493">다시 시작 및 Powerwash</translation>
 <translation id="5854912040170951372">피자왕</translation>
 <translation id="5855267860608268405">알려진 Wi-Fi 네트워크</translation>
-<translation id="5855310969323666289"><ph name="PRINTER_NAME" />의 도어가 열림</translation>
 <translation id="5855643921295613558">0.6초</translation>
 <translation id="5856721540245522153">디버깅 기능 사용</translation>
 <translation id="5857090052475505287">새 폴더</translation>
@@ -3876,7 +3869,6 @@
 <translation id="5877064549588274448">채널이 변경되었습니다. 변경사항을 적용하려면 기기를 다시 시작하세요.</translation>
 <translation id="5877584842898320529">선택한 프린터가 사용할 수 없거나 제대로 설치되어 있지 않습니다. <ph name="BR" /> 프린터를 확인하거나 다른 프린터를 선택해 보세요.</translation>
 <translation id="5882919346125742463">알려진 네트워크</translation>
-<translation id="5883716097305842571"><ph name="PRINTER_NAME" />의 출력 영역이 거의 가득 참</translation>
 <translation id="5884474295213649357">이 탭이 USB 기기에 연결되었습니다.</translation>
 <translation id="5886009770935151472">지문 1</translation>
 <translation id="5889282057229379085">중간 인증기관(CA)의 최대 개수: <ph name="NUM_INTERMEDIATE_CA" />개</translation>
@@ -4442,7 +4434,6 @@
 <translation id="6611972847767394631">여기에서 탭 찾아보기</translation>
 <translation id="6612358246767739896">보호된 콘텐츠</translation>
 <translation id="6615455863669487791">표시</translation>
-<translation id="6617034477946102682"><ph name="PRINTER_NAME" />에 연결할 수 없음</translation>
 <translation id="6618097958368085618">보관</translation>
 <translation id="6618744767048954150">실행 중</translation>
 <translation id="6619058681307408113">라인 프린터 데몬(LPD)</translation>
@@ -4859,7 +4850,6 @@
 <translation id="7128151990937044829">알림이 차단되면 주소 표시줄에 표시 아이콘 나타내기</translation>
 <translation id="7131040479572660648"><ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" />에서 데이터 읽기</translation>
 <translation id="713122686776214250">페이지 추가(&amp;G)...</translation>
-<translation id="7131379856697962078"><ph name="PRINTER_NAME" />의 출력 영역이 가득 참</translation>
 <translation id="7133578150266914903">관리자가 이 기기를 롤백하는 중(<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">텍스트 축소</translation>
 <translation id="7135729336746831607">블루투스를 사용 설정하시겠습니까?</translation>
@@ -4878,7 +4868,6 @@
 <translation id="7152478047064750137">이 확장 프로그램에는 특별한 권한이 필요하지 않습니다</translation>
 <translation id="7154130902455071009">다음으로 시작 페이지 변경: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">카메라 또는 파일의 기존 사진</translation>
-<translation id="715657691234357425"><ph name="PRINTER_NAME" />에 용지가 거의 없음</translation>
 <translation id="7165320105431587207">네트워크를 설정하지 못했습니다.</translation>
 <translation id="716640248772308851">'<ph name="EXTENSION" />'은(는) 선택된 위치에서 이미지, 동영상 및 사운드 파일을 읽을 수 있습니다.</translation>
 <translation id="7167486101654761064">해당 유형의 파일 항상 열기(&amp;A)</translation>
@@ -4909,7 +4898,6 @@
 <translation id="7197632491113152433">이 기기에서 사용할 수 있는 앱을 계정에서 <ph name="NUMBER_OF_APPS" />개 찾았습니다.</translation>
 <translation id="7199158086730159431">도움말 보기</translation>
 <translation id="7200083590239651963">설정 선택</translation>
-<translation id="7201042526153088083"><ph name="DEVICE_TYPE" />에서 Google Play 앱 및 게임을 설치하세요. &lt;a target="_blank" href="<ph name="URL" />"&gt;자세히 알아보기&lt;/a&gt;</translation>
 <translation id="720110658997053098">이 기기를 키오스크 모드로 영구 고정</translation>
 <translation id="7201118060536064622">'<ph name="DELETED_ITEM_NAME" />' 삭제됨</translation>
 <translation id="7201420661433230412">파일 보기</translation>
@@ -5215,7 +5203,6 @@
 <translation id="7598466960084663009">컴퓨터 다시 시작</translation>
 <translation id="7599527631045201165">기기 이름이 너무 깁니다. 더 짧은 이름을 입력하고 다시 시도해 보세요.</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> 번역 안함</translation>
-<translation id="7601297144931396972"><ph name="PRINTER_NAME" />에 용지 걸림</translation>
 <translation id="760197030861754408">연결하려면 <ph name="LANDING_PAGE" />(으)로 이동하세요.</translation>
 <translation id="7602079150116086782">다른 기기의 탭 없음</translation>
 <translation id="7602173054665172958">인쇄 관리</translation>
@@ -5226,6 +5213,7 @@
 <translation id="7609148976235050828">인터넷에 연결한 다음 다시 시도하세요.</translation>
 <translation id="7614260613810441905">사이트에서 기기의 파일 또는 폴더를 수정하려는 경우 확인 메시지 표시(권장)</translation>
 <translation id="761530003705945209">Google 드라이브에 백업합니다. 언제든지 간편하게 데이터를 복원하거나 다른 기기로 전환할 수 있습니다. 앱 데이터도 백업에 포함됩니다. 백업 항목은 Google에 업로드되며 내 Google 계정 비밀번호를 사용하여 암호화됩니다.</translation>
+<translation id="7615365294369022248">계정 추가 중 오류 발생</translation>
 <translation id="7616214729753637086">기기 등록 중...</translation>
 <translation id="7617263010641145920">Play 스토어 사용 설정</translation>
 <translation id="7617366389578322136">'<ph name="DEVICE_NAME" />'에 연결 중입니다.</translation>
@@ -5674,7 +5662,6 @@
           Google Pay의 결제 수단 및 주소는 암호화되지 않습니다.</translation>
 <translation id="81238879832906896">노란색과 흰색 꽃</translation>
 <translation id="8124313775439841391">관리되는 ONC</translation>
-<translation id="8127535217699822294"><ph name="PRINTER_NAME" />에 용지가 없음</translation>
 <translation id="813082847718468539">사이트 정보 보기</translation>
 <translation id="8131740175452115882">확인</translation>
 <translation id="8133676275609324831">폴더 열기(&amp;S)</translation>
@@ -5773,7 +5760,6 @@
 <translation id="8254954272268479918">Linux(베타) 종료</translation>
 <translation id="8255451560461371599">배경 없음</translation>
 <translation id="8256319818471787266">멍멍이</translation>
-<translation id="8256417822772703842"><ph name="PRINTER_NAME" />에 잉크 부족</translation>
 <translation id="8257950718085972371">카메라 액세스 계속 차단</translation>
 <translation id="8259239505248583312">시작하기</translation>
 <translation id="8260864402787962391">마우스</translation>
@@ -5954,7 +5940,6 @@
 <translation id="8487678622945914333">확대</translation>
 <translation id="8490896350101740396">다음 Kiosk 앱 '<ph name="UPDATED_APPS" />'이(가) 업데이트되었습니다. 기기를 재부팅하여 업데이트 절차를 완료하세요.</translation>
 <translation id="8493236660459102203">마이크:</translation>
-<translation id="8495940850609851342"><ph name="PRINTER_NAME" /> 중지됨</translation>
 <translation id="8496717697661868878">이 플러그인 실행</translation>
 <translation id="8497219075884839166">Windows 유틸리티</translation>
 <translation id="8498214519255567734">어두운 곳에서 화면을 보거나 읽기 편하도록 설정합니다.</translation>
@@ -6496,6 +6481,12 @@
 <translation id="9157096865782046368">0.8초</translation>
 <translation id="9157697743260533322">모든 사용자에 대해 자동 업데이트를 설정하지 못했습니다(프리플라이트 실행 오류: <ph name="ERROR_NUMBER" />).</translation>
 <translation id="9158715103698450907">인증하는 중에 네트워크 통신 문제가 발생했습니다.  네트워크 연결을 확인한 뒤 다시 시도해 주세요.</translation>
+<translation id="9159643062839240276">다음을 시도해 보세요.
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />네트워크 케이블, 모뎀, 라우터 확인
+      <ph name="LIST_ITEM" />Wi-Fi에 재연결
+      <ph name="LIST_ITEM" />Chrome 연결 진단 실행
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">PIP 모드</translation>
 <translation id="9168436347345867845">나중에</translation>
 <translation id="9169496697824289689">단축키 보기</translation>

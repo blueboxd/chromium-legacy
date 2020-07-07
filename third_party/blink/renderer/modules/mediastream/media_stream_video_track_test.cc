@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/modules/mediastream/mock_media_stream_video_sink.h"
 #include "third_party/blink/renderer/modules/mediastream/mock_media_stream_video_source.h"
 #include "third_party/blink/renderer/modules/mediastream/video_track_adapter_settings.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -46,12 +47,11 @@ const int kMockSourceHeight = 480;
 class MediaStreamVideoTrackTest
     : public testing::TestWithParam<ContentHintType> {
  public:
-  MediaStreamVideoTrackTest() : mock_source_(nullptr), source_started_(false) {}
-
-  ~MediaStreamVideoTrackTest() override {}
+  MediaStreamVideoTrackTest() = default;
+  ~MediaStreamVideoTrackTest() override = default;
 
   void TearDown() override {
-    blink_source_.Reset();
+    source_ = nullptr;
     WebHeap::CollectAllGarbageForTesting();
   }
 
@@ -89,17 +89,17 @@ class MediaStreamVideoTrackTest
 
  protected:
   virtual void InitializeSource() {
-    blink_source_.Reset();
+    source_ = nullptr;
     mock_source_ = new MockMediaStreamVideoSource(
         media::VideoCaptureFormat(
             gfx::Size(kMockSourceWidth, kMockSourceHeight), 30.0,
             media::PIXEL_FORMAT_I420),
         false);
-    blink_source_.Initialize(WebString::FromASCII("dummy_source_id"),
-                             WebMediaStreamSource::kTypeVideo,
-                             WebString::FromASCII("dummy_source_name"),
-                             false /* remote */);
-    blink_source_.SetPlatformSource(base::WrapUnique(mock_source_));
+    source_ = MakeGarbageCollected<MediaStreamSource>(
+        "dummy_source_id", MediaStreamSource::kTypeVideo, "dummy_source_name",
+        false /* remote */);
+    mock_source_->SetOwner(source_);
+    source_->SetPlatformSource(base::WrapUnique(mock_source_));
   }
 
   // Create a track that's associated with |mock_source_|.
@@ -132,17 +132,17 @@ class MediaStreamVideoTrackTest
   }
 
   void UpdateVideoSourceToRespondToRequestRefreshFrame() {
-    blink_source_.Reset();
+    source_ = nullptr;
     mock_source_ = new MockMediaStreamVideoSource(
         media::VideoCaptureFormat(
             gfx::Size(kMockSourceWidth, kMockSourceHeight), 30.0,
             media::PIXEL_FORMAT_I420),
         true);
-    blink_source_.Initialize(WebString::FromASCII("dummy_source_id"),
-                             WebMediaStreamSource::kTypeVideo,
-                             WebString::FromASCII("dummy_source_name"),
-                             false /* remote */);
-    blink_source_.SetPlatformSource(base::WrapUnique(mock_source_));
+    source_ = MakeGarbageCollected<MediaStreamSource>(
+        "dummy_source_id", MediaStreamSource::kTypeVideo, "dummy_source_name",
+        false /* remote */);
+    mock_source_->SetOwner(source_);
+    source_->SetPlatformSource(base::WrapUnique(mock_source_));
   }
 
   void DepleteIOCallbacks() {
@@ -155,14 +155,14 @@ class MediaStreamVideoTrackTest
   }
 
   MockMediaStreamVideoSource* mock_source() { return mock_source_; }
-  const WebMediaStreamSource& blink_source() const { return blink_source_; }
+  MediaStreamSource* stream_source() const { return source_; }
 
  private:
   ScopedTestingPlatformSupport<IOTaskRunnerTestingPlatformSupport> platform_;
-  WebMediaStreamSource blink_source_;
-  // |mock_source_| is owned by |webkit_source_|.
-  MockMediaStreamVideoSource* mock_source_;
-  bool source_started_;
+  Persistent<MediaStreamSource> source_;
+  // |mock_source_| is owned by |source_|.
+  MockMediaStreamVideoSource* mock_source_ = nullptr;
+  bool source_started_ = false;
 };
 
 TEST_F(MediaStreamVideoTrackTest, AddAndRemoveSink) {
@@ -290,8 +290,8 @@ TEST_F(MediaStreamVideoTrackTest, StopLastTrack) {
   sink1.ConnectToTrack(track1);
   EXPECT_EQ(WebMediaStreamSource::kReadyStateLive, sink1.state());
 
-  EXPECT_EQ(WebMediaStreamSource::kReadyStateLive,
-            blink_source().GetReadyState());
+  EXPECT_EQ(MediaStreamSource::kReadyStateLive,
+            stream_source()->GetReadyState());
 
   MockMediaStreamVideoSink sink2;
   WebMediaStreamTrack track2 = CreateTrack();
@@ -302,16 +302,16 @@ TEST_F(MediaStreamVideoTrackTest, StopLastTrack) {
       MediaStreamVideoTrack::GetVideoTrack(track1);
   native_track1->Stop();
   EXPECT_EQ(WebMediaStreamSource::kReadyStateEnded, sink1.state());
-  EXPECT_EQ(WebMediaStreamSource::kReadyStateLive,
-            blink_source().GetReadyState());
+  EXPECT_EQ(MediaStreamSource::kReadyStateLive,
+            stream_source()->GetReadyState());
   sink1.DisconnectFromTrack();
 
   MediaStreamVideoTrack* const native_track2 =
       MediaStreamVideoTrack::GetVideoTrack(track2);
   native_track2->Stop();
   EXPECT_EQ(WebMediaStreamSource::kReadyStateEnded, sink2.state());
-  EXPECT_EQ(WebMediaStreamSource::kReadyStateEnded,
-            blink_source().GetReadyState());
+  EXPECT_EQ(MediaStreamSource::kReadyStateEnded,
+            stream_source()->GetReadyState());
   sink2.DisconnectFromTrack();
 }
 

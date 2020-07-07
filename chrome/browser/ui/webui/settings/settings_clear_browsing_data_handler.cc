@@ -366,7 +366,7 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
   content::BrowsingDataRemover* remover =
       content::BrowserContext::GetBrowsingDataRemover(profile_);
 
-  base::OnceClosure callback =
+  base::OnceCallback<void(uint64_t)> callback =
       base::BindOnce(&ClearBrowsingDataHandler::OnClearingTaskFinished,
                      weak_ptr_factory_.GetWeakPtr(), webui_callback_id,
                      std::move(data_types), std::move(scoped_data_deletion));
@@ -387,7 +387,8 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
 void ClearBrowsingDataHandler::OnClearingTaskFinished(
     const std::string& webui_callback_id,
     const base::flat_set<BrowsingDataType>& data_types,
-    std::unique_ptr<AccountReconcilor::ScopedSyncedDataDeletion> deletion) {
+    std::unique_ptr<AccountReconcilor::ScopedSyncedDataDeletion> deletion,
+    uint64_t failed_data_types) {
   PrefService* prefs = profile_->GetPrefs();
   int notice_shown_times = prefs->GetInteger(
       browsing_data::prefs::kClearBrowsingDataHistoryNoticeShownTimes);
@@ -401,6 +402,8 @@ void ClearBrowsingDataHandler::OnClearingTaskFinished(
       notice_shown_times < kMaxTimesHistoryNoticeShown &&
       // 3. The selected data types contained browsing history.
       data_types.find(BrowsingDataType::HISTORY) != data_types.end();
+  // TODO(crbug.com/1099260): In case |failed_data_types| is non-empty, show a
+  // different notice!
 
   if (show_notice) {
     // Increment the preference.

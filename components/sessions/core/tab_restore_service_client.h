@@ -15,10 +15,6 @@
 
 class GURL;
 
-namespace base {
-class CancelableTaskTracker;
-}
-
 namespace gfx {
 class Rect;
 }
@@ -78,8 +74,7 @@ class SESSIONS_EXPORT TabRestoreServiceClient {
   // Fetches the contents of the last session, notifying the callback when
   // done. If the callback is supplied an empty vector of SessionWindows
   // it means the session could not be restored.
-  virtual void GetLastSession(GetLastSessionCallback callback,
-                              base::CancelableTaskTracker* tracker) = 0;
+  virtual void GetLastSession(GetLastSessionCallback callback) = 0;
 
   // Called when a tab is restored. |url| is the URL that the tab is currently
   // visiting.

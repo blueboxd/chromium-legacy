@@ -7,8 +7,8 @@
 #include <string>
 #include <utility>
 
+#include "content/browser/bluetooth/bluetooth_device_chooser_controller.h"
 #include "content/public/browser/bluetooth_chooser.h"
-#include "content/public/test/web_test_support_browser.h"
 #include "content/shell/common/web_test/fake_bluetooth_chooser.mojom.h"
 
 namespace content {
@@ -17,12 +17,14 @@ FakeBluetoothChooser::FakeBluetoothChooser(
     mojo::PendingReceiver<mojom::FakeBluetoothChooser> receiver,
     mojo::PendingAssociatedRemote<mojom::FakeBluetoothChooserClient> client)
     : receiver_(this, std::move(receiver)), client_(std::move(client)) {
-  SetTestBluetoothScanDuration(BluetoothTestScanDurationSetting::kNeverTimeout);
+  BluetoothDeviceChooserController::SetTestScanDurationForTesting(
+      BluetoothDeviceChooserController::TestScanDurationSetting::NEVER_TIMEOUT);
 }
 
 FakeBluetoothChooser::~FakeBluetoothChooser() {
-  SetTestBluetoothScanDuration(
-      BluetoothTestScanDurationSetting::kImmediateTimeout);
+  BluetoothDeviceChooserController::SetTestScanDurationForTesting(
+      BluetoothDeviceChooserController::TestScanDurationSetting::
+          IMMEDIATE_TIMEOUT);
 
   client_->OnEvent(mojom::FakeBluetoothChooserEvent::New(
       mojom::ChooserEventType::CHOOSER_CLOSED, /*origin=*/base::nullopt,

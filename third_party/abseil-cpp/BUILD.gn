@@ -82,9 +82,9 @@ group("absl_component_deps") {
     # gtest_enable_absl_printers is set to true (this is never done by
     # Chromium).
     public_deps += [
-        "//third_party/abseil-cpp/absl/debugging:failure_signal_handler",
-        "//third_party/abseil-cpp/absl/debugging:stacktrace",
-        "//third_party/abseil-cpp/absl/debugging:symbolize",
+      "//third_party/abseil-cpp/absl/debugging:failure_signal_handler",
+      "//third_party/abseil-cpp/absl/debugging:stacktrace",
+      "//third_party/abseil-cpp/absl/debugging:symbolize",
     ]
   }
   visibility = [ ":absl" ]
@@ -189,4 +189,19 @@ if (!is_component_build) {
       "//third_party/googletest:gtest_main",
     ]
   }
+}
+
+test("absl_hardening_tests") {
+  testonly = true
+  sources = [ "absl_hardening_test.cc" ]
+  deps = [
+    "//base/test:run_all_unittests",
+    "//third_party/abseil-cpp/absl/base:config",
+    "//third_party/abseil-cpp/absl/container:fixed_array",
+    "//third_party/abseil-cpp/absl/container:inlined_vector",
+    "//third_party/abseil-cpp/absl/strings",
+    "//third_party/abseil-cpp/absl/types:optional",
+    "//third_party/abseil-cpp/absl/types:span",
+    "//third_party/googletest:gtest",
+  ]
 }

@@ -768,7 +768,7 @@ std::string GetSourceAsString(::onc::ONCSource source) {
     case ::onc::ONC_SOURCE_USER_IMPORT:
       return "user import";
   }
-  NOTREACHED() << "unknown ONC source " << source;
+  NOTREACHED();
   return "unknown";
 }
 
@@ -1056,7 +1056,7 @@ NetworkTypePattern NetworkTypePatternFromOncType(const std::string& type) {
     return NetworkTypePattern::WiFi();
   if (type == ::onc::network_type::kWireless)
     return NetworkTypePattern::Wireless();
-  NOTREACHED() << "Unrecognized ONC type: " << type;
+  NET_LOG(ERROR) << "Unrecognized ONC type: " << type;
   return NetworkTypePattern::Default();
 }
 
@@ -1080,7 +1080,7 @@ base::Value ConvertOncProxySettingsToProxyConfig(
     const base::Value* manual_dict =
         onc_proxy_settings.FindKey(::onc::proxy::kManual);
     if (!manual_dict) {
-      NOTREACHED() << "Manual proxy missing dictionary";
+      NET_LOG(ERROR) << "Manual proxy missing dictionary";
       return base::Value();
     }
     std::string manual_spec;

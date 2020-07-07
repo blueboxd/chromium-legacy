@@ -28,9 +28,11 @@ import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.SnapScrollHelper;
 import org.chromium.chrome.browser.ntp.cards.SignInPromo;
 import org.chromium.chrome.browser.ntp.cards.promo.HomepagePromoController.HomepagePromoStateListener;
+import org.chromium.chrome.browser.ntp.cards.promo.HomepagePromoVariationManager;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeader;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
@@ -253,15 +255,58 @@ class FeedSurfaceMediator implements NewTabPageLayout.ScrollDelegate,
         // This is currently only relevant for the two panes start surface.
         stream.setStreamContentVisibility(mHasHeader ? mSectionHeader.isExpanded() : true);
 
-        if (SignInPromo.shouldCreatePromo()) {
-            mSignInPromo = new FeedSignInPromo(mSigninManager);
-            mSignInPromo.setCanShowPersonalizedSuggestions(suggestionsVisible);
-        }
-
-        mCoordinator.updateHeaderViews(mSignInPromo != null && mSignInPromo.isVisible());
+        initStreamHeaderViews();
 
         mMemoryPressureCallback = pressure -> mCoordinator.getStream().trim();
         MemoryPressureListener.addCallback(mMemoryPressureCallback);
+    }
+
+    private void initStreamHeaderViews() {
+        View homepagePromoView = null;
+        boolean signInPromoVisible = false;
+
+        if (!HomepagePromoVariationManager.getInstance().isSuppressingSignInPromo()) {
+            signInPromoVisible = createSignInPromoIfNeeded();
+            if (!signInPromoVisible) homepagePromoView = createHomepagePromoIfNeeded();
+        } else {
+            homepagePromoView = createHomepagePromoIfNeeded();
+            if (homepagePromoView == null) signInPromoVisible = createSignInPromoIfNeeded();
+        }
+
+        // Post processing - if HomepagePromo is showing, then we set the SignInPromo to null.
+        if (homepagePromoView != null && mSignInPromo != null) {
+            mSignInPromo.destroy();
+            mSignInPromo = null;
+        }
+
+        // We are not going to show two promos at the same time.
+        mCoordinator.updateHeaderViews(signInPromoVisible, homepagePromoView);
+    }
+
+    /**
+     * Create and setup the SignInPromo if necessary.
+     * @return Whether the SignPromo is visible.
+     */
+    private boolean createSignInPromoIfNeeded() {
+        if (!SignInPromo.shouldCreatePromo()) return false;
+        if (mSignInPromo == null) {
+            boolean suggestionsVisible =
+                    PrefServiceBridge.getInstance().getBoolean(Pref.ARTICLES_LIST_VISIBLE);
+
+            mSignInPromo = new FeedSignInPromo(mSigninManager);
+            mSignInPromo.setCanShowPersonalizedSuggestions(suggestionsVisible);
+        }
+        return mSignInPromo.isVisible();
+    }
+
+    private View createHomepagePromoIfNeeded() {
+        if (mCoordinator.getHomepagePromoController() == null) return null;
+
+        View homepagePromoView = mCoordinator.getHomepagePromoController().getPromoView();
+        if (homepagePromoView != null) {
+            mCoordinator.getHomepagePromoController().setHomepagePromoStateListener(this);
+        }
+        return homepagePromoView;
     }
 
     /** Clear any dependencies related to the {@link Stream}. */
@@ -508,7 +553,10 @@ class FeedSurfaceMediator implements NewTabPageLayout.ScrollDelegate,
 
     @Override
     public void onHomepagePromoStateChange() {
-        mCoordinator.updateHeaderViews(mSignInPromo != null && mSignInPromo.isVisible());
+        // If the homepage has status update, we'll not show the HomepagePromo again.
+        // There are cases where the user has their homepage reset to default. This is an edge case
+        // and we don't have to reflect that change immediately.
+        mCoordinator.updateHeaderViews(false, null);
     }
 
     // IdentityManager.Delegate interface.
@@ -542,7 +590,7 @@ class FeedSurfaceMediator implements NewTabPageLayout.ScrollDelegate,
             if (isVisible() == visible) return;
 
             super.setVisibilityInternal(visible);
-            mCoordinator.updateHeaderViews(visible);
+            mCoordinator.updateHeaderViews(visible, null);
             maybeUpdateSignInPromo();
         }
 

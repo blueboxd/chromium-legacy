@@ -281,7 +281,6 @@
 <translation id="1340527397989195812">‏با استفاده از برنامه Files از رسانه‌ دستگاه پشتیبان بگیرید.</translation>
 <translation id="1341988552785875222">کاغذدیواری کنونی توسط «<ph name="APP_NAME" />» تنظیم شده است. ممکن است لازم باشد قبل از انتخاب کاغذدیواری دیگری، «<ph name="APP_NAME" />» را حذف نصب کنید.</translation>
 <translation id="1343865611738742294">‏ارائه مجوز به برنامه‌های Linux برای دسترسی به دستگاه‌های USB. Linux بعد از برداشتن دستگاه USB، آن را به خاطر نمی‌سپارد.</translation>
-<translation id="1344143111673240412">‏برای اعمال تغییر ایجادشده در تنظیم دوربین باید Parallels Desktop را راه‌اندازی مجدد کنید</translation>
 <translation id="1347256498747320987">‏نصب به‌روزرسانی‌ها و برنامه‌ها. با ادامه دادن، موافقت می‌کنید که این دستگاه نیز بتواند به‌طور خودکار به‌روزرسانی‌ها و برنامه‌ها را از Google، شرکت مخابراتی و سازنده دستگاه (احتمالاً با استفاده از داده شبکه تلفن همراه) بارگیری و نصب کند. بعضی از این برنامه‌ها ممکن است خریدهای درون‌برنامه پیشنهاد دهند. <ph name="BEGIN_LINK1" />بیشتر بدانید<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">وقتی شارژ باتری به <ph name="BATTERY_LEVEL" />% رسید، به‌روزرسانی شروع خواهد شد.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -1194,7 +1193,6 @@
 <translation id="2470702053775288986">افزونه‌های پشتیبانی نشده غیرفعال شدند.</translation>
 <translation id="2471469610750100598">سیاه (پیش‌فرض)</translation>
 <translation id="2473195200299095979">ترجمه این صفحه</translation>
-<translation id="2474848500897222119"><ph name="PRINTER_NAME" /> جوهر تمام کرده است</translation>
 <translation id="2475982808118771221">یک خطا روی داد</translation>
 <translation id="2476578072172137802">تنظیمات سایت</translation>
 <translation id="2478176599153288112">مجوزهای فایل رسانه‌ای برای «<ph name="EXTENSION" />»</translation>
@@ -1500,7 +1498,6 @@
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> درحال استفاده از تنظیمات پراکسی از سرپرست شما است</translation>
 <translation id="2825758591930162672">کلید عمومی موضوع</translation>
 <translation id="2828650939514476812">‏اتصال به شبکه Wi-Fi</translation>
-<translation id="28291580771888953">صف پخش <ph name="PRINTER_NAME" /> پر است</translation>
 <translation id="2835547721736623118">سرویس تشخیص گفتار</translation>
 <translation id="2836269494620652131">خرابی</translation>
 <translation id="2836635946302913370">ورود به سیستم با این نام کاربری توسط سرپرست شما غیرفعال شده است.</translation>
@@ -2316,7 +2313,7 @@
 <translation id="3839516600093027468">دسترسی <ph name="HOST" /> به بریده‌‌دان همیشه مسدود باشد</translation>
 <translation id="3841964634449506551">گذرواژه نامعتبر است</translation>
 <translation id="3842552989725514455">‏قلم Serif</translation>
-<translation id="3843058644024807390">‏برای اعمال تغییر ایجادشده در میکروفون باید Parallels Desktop را راه‌اندازی مجدد کنید</translation>
+<translation id="3843464315703645664">به‌صورت داخلی در فهرست مجازها قرار گرفته است</translation>
 <translation id="3846116211488856547">‏دریافت ابزارهایی برای برنامه‌نویسی وب‌سایت، برنامه‌های Android و سایر موارد. با نصب Linux، <ph name="DOWNLOAD_SIZE" /> داده بارگیری خواهد شد.</translation>
 <translation id="3847319713229060696">کمک به بهبود امنیت برای همه کاربران وب</translation>
 <translation id="385051799172605136">بازگشت</translation>
@@ -2775,7 +2772,6 @@
 <translation id="4453946976636652378">جستجوی <ph name="SEARCH_ENGINE_NAME" /> یا تایپ نشانی وب</translation>
 <translation id="4459169140545916303">آخرین فعالیت: <ph name="DEVICE_LAST_ACTIVATED_TIME" /> روز قبل</translation>
 <translation id="4460014764210899310">لغو گروه‌بندی</translation>
-<translation id="4460343359907016103">خطا در اتصال به <ph name="PRINTER_NAME" /></translation>
 <translation id="4462159676511157176">سرورهای نام سفارشی</translation>
 <translation id="4465236939126352372"><ph name="TIME" /> محدودیت زمانی برای <ph name="APP_NAME" /> تنظیم شده است</translation>
 <translation id="4465725236958772856">شبکه <ph name="NETWORK_INDEX" /> از <ph name="NETWORK_COUNT" />، <ph name="NETWORK_NAME" />، تحت‌مدیریت سرپرست، اتصال</translation>
@@ -3073,7 +3069,6 @@
 <translation id="4864369630010738180">در حال ورود به سیستم...</translation>
 <translation id="4864805589453749318">ولی‌ای را که می‌خواهید به او اجازه دهید حساب محل تحصیل اضافه کند، انتخاب کنید.</translation>
 <translation id="486635084936119914">باز شدن خودکار برخی از انواع فایل بعد از بارگیری</translation>
-<translation id="4869213010169296107"><ph name="PRINTER_NAME" /> فاقد سینی است</translation>
 <translation id="48704129375571883">افزودن قابلیت‌های بیشتر</translation>
 <translation id="4870758487381879312">برای دریافت اطلاعات پیکربندی، گذرواژه ارائه‌شده توسط سرپرست را وارد کنید</translation>
 <translation id="4870903493621965035">دستگاه مرتبطی وجود ندارد</translation>
@@ -3324,6 +3319,7 @@
 <translation id="5184662919967270437">درحال به‌روزرسانی دستگاه</translation>
 <translation id="5185359571430619712">مرور افزونه‌ها</translation>
 <translation id="5185386675596372454">جدیدترین نسخه از "<ph name="EXTENSION_NAME" />" غیر فعال شده است زیرا به مجوزهای بیشتری نیاز دارد.</translation>
+<translation id="5185500136143151980">اتصال اینترنت وجود ندارد</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5190926251776387065">فعال کردن درگاه</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> می‌خواهد چند فایل را بارگیری کند</translation>
@@ -3480,7 +3476,6 @@
 <translation id="5390112241331447203">‏فایل system_logs.txt ارسال‌شده در گزارش‌های بازخورد اضافه شود.</translation>
 <translation id="5390677308841849479">قرمز تیره و نارنجی</translation>
 <translation id="5390743329570580756">ارسال برای</translation>
-<translation id="5395869306561378615"><ph name="PRINTER_NAME" /> موقتاً متوقف شده است</translation>
 <translation id="5397794290049113714">شما</translation>
 <translation id="5398572795982417028">ارجاع صفحه بیش از حد مجاز است، حداکثر مجاز <ph name="MAXIMUM_PAGE" /> است</translation>
 <translation id="5398772614898833570">آگهی‌ها مسدود شدند</translation>
@@ -3495,7 +3490,6 @@
 <translation id="5417312524372586921">طرح‌های زمینه مرورگر</translation>
 <translation id="5419405654816502573">Voice match</translation>
 <translation id="5420438158931847627">وضوح نوشتار یا تصاویر را تعیین می‌کند</translation>
-<translation id="5421498071721257877"><ph name="PRINTER_NAME" /> یک خطای دستگاه دارد</translation>
 <translation id="5422221874247253874">نقطه دسترسی</translation>
 <translation id="5422781158178868512">متأسفیم، دستگاه ذخیره‌سازی خارجی شما شناسایی نشد.</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3844,7 +3838,6 @@
 <translation id="5852137567692933493">‏راه‌اندازی مجدد و Powerwash</translation>
 <translation id="5854912040170951372">پیتزا</translation>
 <translation id="5855267860608268405">‏شبکه‌های Wi-Fi شناخته‌شده</translation>
-<translation id="5855310969323666289">در <ph name="PRINTER_NAME" /> باز است</translation>
 <translation id="5855643921295613558">۰٫۶ ثانیه</translation>
 <translation id="5856721540245522153">فعال کردن ویژگی‌های رفع اشکال</translation>
 <translation id="5857090052475505287">پوشهٔ جدید</translation>
@@ -3875,7 +3868,6 @@
 <translation id="5877064549588274448">کانال تغییر کرد. برای اعمال تغییرات دستگاه خود را مجدداً راه‌اندازی کنید.</translation>
 <translation id="5877584842898320529">چاپگر انتخابی موجود نیست یا به‌درستی نصب نشده است. <ph name="BR" /> چاپگر خود را بررسی کنید یا چاپگر دیگری را انتخاب کنید.</translation>
 <translation id="5882919346125742463">شبکه‌های شناخته‌شده</translation>
-<translation id="5883716097305842571">ناحیه خروجی <ph name="PRINTER_NAME" /> تقریباً پر است</translation>
 <translation id="5884474295213649357">‏این برگه به دستگاه USB متصل است.</translation>
 <translation id="5886009770935151472">انگشت ۱</translation>
 <translation id="5889282057229379085">‏حداکثر تعداد CA های متوسط: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4441,7 +4433,6 @@
 <translation id="6611972847767394631">برگه‌هایتان را در اینجا پیدا کنید</translation>
 <translation id="6612358246767739896">محتوای محافظت‌شده</translation>
 <translation id="6615455863669487791">به من نشان بده</translation>
-<translation id="6617034477946102682">دسترسی به <ph name="PRINTER_NAME" /> امکان‌پذیر نیست</translation>
 <translation id="6618097958368085618">درهرصورت حفظ شود</translation>
 <translation id="6618744767048954150">درحال اجرا</translation>
 <translation id="6619058681307408113">‏Line Printer Daemon‏ (LPD)</translation>
@@ -4858,7 +4849,6 @@
 <translation id="7128151990937044829">وقتی اعلان‌ها مسدود شده‌اند، نشانگری در نوار نشانی نشان داده شود</translation>
 <translation id="7131040479572660648">خواندن داده‌های شما در <ph name="WEBSITE_1" />، <ph name="WEBSITE_2" /> و <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">افزودن &amp;صفحه...</translation>
-<translation id="7131379856697962078">ناحیه خروجی <ph name="PRINTER_NAME" /> پر است</translation>
 <translation id="7133578150266914903">سرپرست درحال عقب‌گرد کردن این دستگاه است (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">متن را کوتاهتر کنید</translation>
 <translation id="7135729336746831607">بلوتوث روشن شود؟</translation>
@@ -4877,7 +4867,6 @@
 <translation id="7152478047064750137">این افزونه به مجوز خاصی نیاز ندارد</translation>
 <translation id="7154130902455071009">تغییر صفحه شروعتان به: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">عکس موجود از دوربین یا فایل</translation>
-<translation id="715657691234357425"><ph name="PRINTER_NAME" /> کاغذ کمی دارد</translation>
 <translation id="7165320105431587207">پیکربندی شبکه انجام نشد</translation>
 <translation id="716640248772308851">«<ph name="EXTENSION" />» می‌تواند تصاویر، ویدئوها و فایل‌های صوتی موجود در مکان‌های انتخاب شده را بخواند.</translation>
 <translation id="7167486101654761064">&amp;همیشه این نوع فایل‌ها باز شوند</translation>
@@ -4908,7 +4897,6 @@
 <translation id="7197632491113152433"><ph name="NUMBER_OF_APPS" /> برنامه از حسابتان پیدا کردیم که می‌توان در این دستگاه از آن‌ها استفاده کرد.</translation>
 <translation id="7199158086730159431">دریافت راهنمایی</translation>
 <translation id="7200083590239651963">انتخاب پیکربندی</translation>
-<translation id="7201042526153088083">‏برنامه‌ها و بازی‌ها را از Google Play در <ph name="DEVICE_TYPE" /> نصب کنید. &lt;a target="_blank" href="<ph name="URL" />"&gt;بیشتر بدانید&lt;/a&gt;</translation>
 <translation id="720110658997053098">این دستگاه همیشه در حالت کیوسک نگه داشته شود</translation>
 <translation id="7201118060536064622">«<ph name="DELETED_ITEM_NAME" />» حذف شد</translation>
 <translation id="7201420661433230412">مشاهده فایل‌ها</translation>
@@ -5214,7 +5202,6 @@
 <translation id="7598466960084663009">راه‌اندازی مجدد رایانه</translation>
 <translation id="7599527631045201165">نام دستگاه بسیار بلند است. نام کوتاه‌تری وارد کنید و دوباره امتحان کنید.</translation>
 <translation id="7600965453749440009">هرگز <ph name="LANGUAGE" /> ترجمه نشود</translation>
-<translation id="7601297144931396972">کاغذ <ph name="PRINTER_NAME" /> گیر کرده است</translation>
 <translation id="760197030861754408">رفتن به <ph name="LANDING_PAGE" /> جهت اتصال.</translation>
 <translation id="7602079150116086782">هیچ برگه‌ای از دستگاه‌های وجود ندارد</translation>
 <translation id="7602173054665172958">مدیریت چاپ</translation>
@@ -5225,6 +5212,7 @@
 <translation id="7609148976235050828">لطفاً به اینترنت متصل شوید و دوباره امتحان کنید.</translation>
 <translation id="7614260613810441905">وقتی سایتی می‌خواهد فایل‌ها یا پوشه‌های دستگاه را ویرایش کند سؤال شود (توصیه می‌شود)</translation>
 <translation id="761530003705945209">‏در Google Drive پشتیبان‌گیری کنید. به‌آسانی داده‌های خود را بازیابی کنید یا هرزمان خواستید دستگاهتان را عوض کنید. نسخه پشتیبان شما حاوی داده‌های برنامه است. داده‌های پشتیبان در Google بارگذاری می‌شود و بااستفاده از گذرواژه «حساب Google» رمزگذاری می‌شود.</translation>
+<translation id="7615365294369022248">هنگام افزودن حساب خطایی روی داد</translation>
 <translation id="7616214729753637086">درحال ثبت دستگاه...</translation>
 <translation id="7617263010641145920">‏روشن کردن «فروشگاه Play»</translation>
 <translation id="7617366389578322136">اتصال به «<ph name="DEVICE_NAME" />»</translation>
@@ -5673,7 +5661,6 @@
           این کار شامل روش‌های پرداخت و نشانی‌های موجود در Google Pay‌ نمی‌شود.</translation>
 <translation id="81238879832906896">گل زرد و سفید</translation>
 <translation id="8124313775439841391">‏ONC مدیریت شده</translation>
-<translation id="8127535217699822294"><ph name="PRINTER_NAME" /> کاغذ تمام کرده است</translation>
 <translation id="813082847718468539">مشاهدهٔ اطلاعات سایت</translation>
 <translation id="8131740175452115882">تأیید</translation>
 <translation id="8133676275609324831">&amp;نمایش در پوشه</translation>
@@ -5772,7 +5759,6 @@
 <translation id="8254954272268479918">‏خاموش کردن Linux (بتا)</translation>
 <translation id="8255451560461371599">بدون پس‌زمینه</translation>
 <translation id="8256319818471787266">سرزنده</translation>
-<translation id="8256417822772703842"><ph name="PRINTER_NAME" /> جوهر کمی دارد</translation>
 <translation id="8257950718085972371">ادامه مسدود کردن دسترسی به دوربین</translation>
 <translation id="8259239505248583312">بیایید شروع کنیم</translation>
 <translation id="8260864402787962391">ماوس</translation>
@@ -5953,7 +5939,6 @@
 <translation id="8487678622945914333">بزرگ‌نمایی</translation>
 <translation id="8490896350101740396">برنامه‌های کیوسک زیر «<ph name="UPDATED_APPS" />» به‌روز شده‌اند. لطفاً برای تکمیل فرآیند به‌روزرسانی دستگاه را مجدداً راه‌اندازی کنید.</translation>
 <translation id="8493236660459102203">میکروفن:</translation>
-<translation id="8495940850609851342"><ph name="PRINTER_NAME" /> متوقف شده است</translation>
 <translation id="8496717697661868878">اجرای این افزایه</translation>
 <translation id="8497219075884839166">‏امکانات WIndows</translation>
 <translation id="8498214519255567734">نگاه کردن به صفحه یا خواندن در نور کم را آسان‌تر می‌کند</translation>
@@ -6495,6 +6480,12 @@
 <translation id="9157096865782046368">۰٫۸ ثانیه</translation>
 <translation id="9157697743260533322">راه‌اندازی به‌روزرسانی‌های خودکار برای همه کاربران انجام نشد (خطای راه‌اندازی قبل از تولید: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">اوه! هنگام راستی‌آزمایی مشکلی در ارتباط شبکه رخ داد. لطفاً اتصال شبکه را بررسی کنید و دوباره امتحان کنید.</translation>
+<translation id="9159643062839240276">‏موارد زیر را امتحان کنید:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />بررسی کابل‌های شبکه، مودم، و رهیاب
+      <ph name="LIST_ITEM" />اتصال مجدد به Wi-Fi
+      <ph name="LIST_ITEM" />اجرای «تشخیص خطای قابلیت اتصال Chrome»
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">تصویر در تصویر</translation>
 <translation id="9168436347345867845">بعداً انجام شود</translation>
 <translation id="9169496697824289689">مشاهده میان‌برهای صفحه‌کلید</translation>

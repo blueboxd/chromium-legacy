@@ -354,12 +354,14 @@ public class SiteSettingsCategory {
      * @param activity The current activity.
      * @param specificCategory Whether the warnings refer to a single category or is an aggregate
      *                         for many permissions.
+     * @param appName The name of the app to use in warning strings.
      */
     public void configurePermissionIsOffPreferences(Preference osWarning, Preference osWarningExtra,
-            Activity activity, boolean specificCategory) {
+            Activity activity, boolean specificCategory, String appName) {
         Intent perAppIntent = getIntentToEnableOsPerAppPermission(activity);
         Intent globalIntent = getIntentToEnableOsGlobalPermission(activity);
-        String perAppMessage = getMessageForEnablingOsPerAppPermission(activity, !specificCategory);
+        String perAppMessage =
+                getMessageForEnablingOsPerAppPermission(activity, !specificCategory, appName);
         String globalMessage = getMessageForEnablingOsGlobalPermission(activity);
         String unsupportedMessage = getMessageIfNotSupported(activity);
 
@@ -491,7 +493,8 @@ public class SiteSettingsCategory {
      * Returns the message to display when per-app permission is blocked.
      * @param plural Whether it applies to one per-app permission or multiple.
      */
-    protected String getMessageForEnablingOsPerAppPermission(Activity activity, boolean plural) {
+    protected String getMessageForEnablingOsPerAppPermission(
+            Activity activity, boolean plural, String appName) {
         @ContentSettingsType
         int type = this.getContentSettingsType();
         int permission_string = R.string.android_permission_off;
@@ -507,7 +510,7 @@ public class SiteSettingsCategory {
             permission_string = R.string.android_notifications_permission_off;
         }
         return activity.getResources().getString(
-                plural ? R.string.android_permission_off_plural : permission_string);
+                plural ? R.string.android_permission_off_plural : permission_string, appName);
     }
 
     /**

@@ -8,6 +8,8 @@ import android.view.View;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.hamcrest.Matchers;
+
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -24,29 +26,16 @@ public final class RecyclerViewTestUtils {
 
     public static RecyclerView.ViewHolder waitForView(
             final RecyclerView recyclerView, final int position) {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                RecyclerView.ViewHolder viewHolder =
-                        recyclerView.findViewHolderForAdapterPosition(position);
+        CriteriaHelper.pollUiThread(() -> {
+            RecyclerView.ViewHolder viewHolder =
+                    recyclerView.findViewHolderForAdapterPosition(position);
 
-                if (viewHolder == null) {
-                    updateFailureReason("Cannot find view holder for position " + position + ".");
-                    return false;
-                }
-
-                if (viewHolder.itemView.getParent() == null) {
-                    updateFailureReason("The view is not attached for position " + position + ".");
-                    return false;
-                }
-
-                if (!viewHolder.itemView.isShown()) {
-                    updateFailureReason("The view is not visible for position " + position + ".");
-                    return false;
-                }
-
-                return true;
-            }
+            Criteria.checkThat("Cannot find view holder for position " + position + ".", viewHolder,
+                    Matchers.notNullValue());
+            Criteria.checkThat("The view is not attached for position " + position + ".",
+                    viewHolder.itemView.getParent(), Matchers.notNullValue());
+            Criteria.checkThat("The view is not visible for position " + position + ".",
+                    viewHolder.itemView.isShown(), Matchers.is(true));
         });
 
         waitForStableRecyclerView(recyclerView);
@@ -77,36 +66,17 @@ public final class RecyclerViewTestUtils {
     }
 
     public static void waitForStableRecyclerView(final RecyclerView recyclerView) {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                if (recyclerView.isComputingLayout()) {
-                    updateFailureReason("The recycler view is computing layout.");
-                    return false;
-                }
-
-                if (recyclerView.isLayoutFrozen()) {
-                    updateFailureReason("The recycler view layout is frozen.");
-                    return false;
-                }
-
-                if (recyclerView.isAnimating()) {
-                    updateFailureReason("The recycler view is animating.");
-                    return false;
-                }
-
-                if (recyclerView.isDirty()) {
-                    updateFailureReason("The recycler view is dirty.");
-                    return false;
-                }
-
-                if (recyclerView.isLayoutRequested()) {
-                    updateFailureReason("The recycler view has layout requested.");
-                    return false;
-                }
-
-                return true;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat("The recycler view is computing layout.",
+                    recyclerView.isComputingLayout(), Matchers.is(false));
+            Criteria.checkThat("The recycler view layout is frozen.", recyclerView.isLayoutFrozen(),
+                    Matchers.is(false));
+            Criteria.checkThat("The recycler view is animating.", recyclerView.isAnimating(),
+                    Matchers.is(false));
+            Criteria.checkThat(
+                    "The recycler view is dirty.", recyclerView.isDirty(), Matchers.is(false));
+            Criteria.checkThat("The recycler view has layout requested.",
+                    recyclerView.isLayoutRequested(), Matchers.is(false));
         });
     }
 
@@ -131,13 +101,8 @@ public final class RecyclerViewTestUtils {
             recyclerView.scrollToPosition(recyclerView.getAdapter().getItemCount() - 1);
         });
 
-        CriteriaHelper.pollUiThread(new Criteria(){
-            @Override
-            public boolean isSatisfied() {
-                // Wait until we can scroll no further.
-                // A positive parameter checks scrolling down, a negative one scrolling up.
-                return !recyclerView.canScrollVertically(1);
-            }
-        });
+        // Wait until we can scroll no further.
+        // A positive parameter checks scrolling down, a negative one scrolling up.
+        CriteriaHelper.pollUiThread(() -> !recyclerView.canScrollVertically(1));
     }
 }

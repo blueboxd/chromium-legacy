@@ -330,12 +330,6 @@ class CORE_EXPORT Document : public ContainerNode,
       mojom::blink::DocumentPolicyFeature feature);
 
   SecurityContext& GetSecurityContext() { return security_context_; }
-  const SecurityContext& GetSecurityContext() const {
-    return security_context_;
-  }
-
-  // Helpers for getting state off of SecurityContext.
-  const SecurityOrigin* GetSecurityOrigin() const;
 
   String addressSpaceForBindings(ScriptState*) const;
 

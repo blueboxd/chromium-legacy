@@ -55,7 +55,7 @@ def main():
     extracted_js = os.path.join(tmp_out_dir, 'polymer-extracted.js')
     node.RunNode([
         node_modules.PathToUglify(), extracted_js,
-        '--comments', '"/Copyright|license|LICENSE/"',
+        '--comments', '/Copyright|license|LICENSE/',
         '--output', extracted_js])
 
     # Copy generated bundled JS/HTML files back to the original location.

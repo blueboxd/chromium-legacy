@@ -40,9 +40,6 @@ class WelcomeView {
   // Unbinds model from the view.
   virtual void Unbind() = 0;
 
-  // Stops demo mode detection.
-  virtual void StopDemoModeDetection() = 0;
-
   // Reloads localized contents.
   virtual void ReloadLocalizedContent() = 0;
 
@@ -65,7 +62,6 @@ class WelcomeScreenHandler : public WelcomeView, public BaseScreenHandler {
   void Hide() override;
   void Bind(WelcomeScreen* screen) override;
   void Unbind() override;
-  void StopDemoModeDetection() override;
   void ReloadLocalizedContent() override;
   void SetInputMethodId(const std::string& input_method_id) override;
 

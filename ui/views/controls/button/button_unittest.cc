@@ -895,21 +895,24 @@ TEST_F(ButtonTest, ChangingHighlightStateNotifiesListener) {
   EXPECT_FALSE(button_observer()->highlighted());
 }
 
-// Verifies that ButtonObserver is notified when the button state is changed,
-// and that the |observed_button| is passed to observer correctly.
+// Verifies that ButtonObserver is notified when the button state is changed.
 TEST_F(ButtonTest, ClickingButtonNotifiesObserverOfStateChanges) {
   CreateButtonWithObserver();
   EXPECT_FALSE(button_observer()->state_changed());
+  EXPECT_EQ(Button::STATE_NORMAL, button()->GetState());
 
   event_generator()->MoveMouseTo(button()->GetBoundsInScreen().CenterPoint());
   event_generator()->PressLeftButton();
   EXPECT_TRUE(button_observer()->state_changed());
+  EXPECT_EQ(Button::STATE_PRESSED, button()->GetState());
 
   button_observer()->Reset();
   EXPECT_FALSE(button_observer()->state_changed());
+  EXPECT_EQ(Button::STATE_PRESSED, button()->GetState());
 
   event_generator()->ReleaseLeftButton();
   EXPECT_TRUE(button_observer()->state_changed());
+  EXPECT_EQ(Button::STATE_HOVERED, button()->GetState());
 }
 
 // Verifies the ButtonObserver is notified whenever Button::SetState() is
@@ -917,15 +920,19 @@ TEST_F(ButtonTest, ClickingButtonNotifiesObserverOfStateChanges) {
 TEST_F(ButtonTest, SetStateNotifiesObserver) {
   CreateButtonWithObserver();
   EXPECT_FALSE(button_observer()->state_changed());
+  EXPECT_EQ(Button::STATE_NORMAL, button()->GetState());
 
   button()->SetState(Button::STATE_HOVERED);
   EXPECT_TRUE(button_observer()->state_changed());
+  EXPECT_EQ(Button::STATE_HOVERED, button()->GetState());
 
   button_observer()->Reset();
   EXPECT_FALSE(button_observer()->state_changed());
+  EXPECT_EQ(Button::STATE_HOVERED, button()->GetState());
 
   button()->SetState(Button::STATE_NORMAL);
   EXPECT_TRUE(button_observer()->state_changed());
+  EXPECT_EQ(Button::STATE_NORMAL, button()->GetState());
 }
 
 }  // namespace views

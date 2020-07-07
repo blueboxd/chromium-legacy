@@ -5,8 +5,8 @@
 #ifndef ASH_SYSTEM_UNIFIED_IME_MODE_VIEW_H_
 #define ASH_SYSTEM_UNIFIED_IME_MODE_VIEW_H_
 
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
-#include "ash/session/session_observer.h"
 #include "ash/system/ime/ime_observer.h"
 #include "ash/system/model/locale_model.h"
 #include "ash/system/tray/tray_item_view.h"

@@ -85,5 +85,14 @@ class PasswordCheckProperties {
         int ERROR_UNKNOWN = 6;
     }
 
+    /**
+     * Returns the sheet item type for a given item.
+     * @param item An {@link MVCListAdapter.ListItem}.
+     * @return The {@link ItemType} of the given list item.
+     */
+    static @ItemType int getItemType(MVCListAdapter.ListItem item) {
+        return item.type;
+    }
+
     private PasswordCheckProperties() {}
 }

@@ -132,9 +132,7 @@ class TestRenderFrameObserver : public RenderFrameObserver {
     return static_cast<WebFrameTestProxy*>(render_frame());
   }
 
-  TestRunner* test_runner() {
-    return web_view_test_proxy_->test_interfaces()->GetTestRunner();
-  }
+  TestRunner* test_runner() { return web_view_test_proxy_->GetTestRunner(); }
 
   BlinkTestRunner* blink_test_runner() {
     return web_view_test_proxy_->blink_test_runner();
@@ -171,8 +169,8 @@ class TestRenderFrameObserver : public RenderFrameObserver {
       test_runner()->PrintMessage(description + " - didCommitLoadForFrame\n");
     }
 
-    // Looking for navigations to about:blank after a test completes.
     if (render_frame()->IsMainFrame()) {
+      // Looking for navigations to about:blank after a test completes.
       blink_test_runner()->DidCommitNavigationInMainFrame();
     }
   }
@@ -225,13 +223,18 @@ WebFrameTestProxy::WebFrameTestProxy(RenderFrameImpl::CreateParams params)
     : RenderFrameImpl(std::move(params)),
       web_view_test_proxy_(static_cast<WebViewTestProxy*>(render_view())) {}
 
-WebFrameTestProxy::~WebFrameTestProxy() = default;
+WebFrameTestProxy::~WebFrameTestProxy() {
+  TestRunner* test_runner = web_view_test_proxy_->GetTestRunner();
+  if (IsMainFrame())
+    test_runner->RemoveMainFrame(this);
+}
 
 void WebFrameTestProxy::Initialize() {
   RenderFrameImpl::Initialize();
 
-  TestInterfaces* interfaces = web_view_test_proxy_->test_interfaces();
-  TestRunner* test_runner = interfaces->GetTestRunner();
+  TestRunner* test_runner = web_view_test_proxy_->GetTestRunner();
+  if (IsMainFrame())
+    test_runner->AddMainFrame(this);
 
   GetWebFrame()->SetContentSettingsClient(test_runner->GetWebContentSettings());
 
@@ -252,6 +255,7 @@ void WebFrameTestProxy::Reset() {
   // TODO(crbug.com/936696): The RenderDocument project will cause us to replace
   // the main frame on each navigation, including to about:blank and then to the
   // next test. So resetting the frame or RenderWidget won't be meaningful then.
+  CHECK(IsMainFrame());
 
   if (IsMainFrame()) {
     GetWebFrame()->SetName(blink::WebString());
@@ -261,6 +265,8 @@ void WebFrameTestProxy::Reset() {
     // Resetting the internals object also overrides the WebPreferences, so we
     // have to sync them to WebKit again.
     render_view()->SetWebkitPreferences(render_view()->GetWebkitPreferences());
+
+    GetLocalRootWebWidgetTestProxy()->GetWebViewTestProxy()->Reset();
   }
   if (IsLocalRoot()) {
     GetLocalRootWebWidgetTestProxy()->Reset();
@@ -698,12 +704,9 @@ void WebFrameTestProxy::CheckIfAudioSinkExistsAndIsAuthorized(
 }
 
 void WebFrameTestProxy::DidClearWindowObject() {
-  TestInterfaces* interfaces = web_view_test_proxy_->test_interfaces();
-
   // These calls will install the various JS bindings for web tests into the
   // frame before JS has a chance to run.
   GCController::Install(GetWebFrame());
-  interfaces->Install(GetWebFrame());
   test_runner()->Install(this, spell_check_.get());
   web_view_test_proxy_->Install(GetWebFrame());
   GetLocalRootWebWidgetTestProxy()->Install(GetWebFrame());
@@ -769,7 +772,7 @@ void WebFrameTestProxy::BindReceiver(
 }
 
 TestRunner* WebFrameTestProxy::test_runner() {
-  return web_view_test_proxy_->test_interfaces()->GetTestRunner();
+  return web_view_test_proxy_->GetTestRunner();
 }
 
 BlinkTestRunner* WebFrameTestProxy::blink_test_runner() {

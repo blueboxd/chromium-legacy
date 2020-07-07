@@ -7,6 +7,7 @@ package org.chromium.chrome.test.util.browser;
 import android.annotation.TargetApi;
 import android.os.Build;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 
 import org.chromium.chrome.browser.ChromeActivity;
@@ -32,10 +33,10 @@ public class ThemeTestUtils {
 
     public static void waitForThemeColor(ChromeActivity activity, int expectedColor, long timeoutMs)
             throws ExecutionException, TimeoutException {
-        CriteriaHelper.pollUiThread(
-                Criteria.equals(expectedColor,
-                        () -> TabThemeColorHelper.getColor(activity.getActivityTab())),
-                timeoutMs, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(TabThemeColorHelper.getColor(activity.getActivityTab()),
+                    Matchers.is(expectedColor));
+        }, timeoutMs, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 
     /**

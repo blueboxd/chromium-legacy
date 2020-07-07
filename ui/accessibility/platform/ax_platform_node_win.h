@@ -1346,6 +1346,9 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   BulletStyle ComputeUIABulletStyle() const;
   // Helper to get the UIA StyleId enumeration for this node
   LONG ComputeUIAStyleId() const;
+  // Convert mojom TextAlign to UIA HorizontalTextAlignment enumeration
+  static base::Optional<HorizontalTextAlignment>
+  AXTextAlignToUIAHorizontalTextAlignment(ax::mojom::TextAlign text_align);
   // Converts IntAttribute::kHierarchicalLevel to UIA StyleId enumeration
   static LONG AXHierarchicalLevelToUIAStyleId(int32_t hierarchical_level);
   // Converts a ListStyle to UIA StyleId enumeration

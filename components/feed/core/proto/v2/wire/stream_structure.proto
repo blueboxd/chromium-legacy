@@ -20,15 +20,20 @@ message Cluster {
   // Empty for now as we don't support any custom information.
 }
 
-// Feature which is able to show actual content in a stream. This could be
-// inside or outside a card. Actual data on what to display will be sent on an
-// extension.
+message PrefetchMetadata {
+  optional string uri = 1;
+  optional string title = 2;
+  optional string image_url = 3;
+  repeated string additional_image_urls = 4;
+  optional string publisher = 5;
+  optional string favicon_url = 6;
+  optional string snippet = 7;
+  optional string badge_id = 8;
+}
+
 message Content {
-  optional bool is_ad = 3;
-
+  repeated PrefetchMetadata prefetch_metadata = 4;
   optional XSurfaceContent xsurface_content = 1000;
-
-  reserved 2;
 }
 
 // Opaque data to for rendering a piece of content.

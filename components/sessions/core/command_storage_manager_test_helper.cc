@@ -5,17 +5,11 @@
 #include "components/sessions/core/command_storage_manager_test_helper.h"
 
 #include "base/bind.h"
-#include "base/test/bind_test_util.h"
 #include "components/sessions/core/command_storage_backend.h"
 #include "components/sessions/core/command_storage_manager.h"
 #include "components/sessions/core/snapshotting_command_storage_backend.h"
 
 namespace sessions {
-namespace {
-bool IsCanceled() {
-  return false;
-}
-}  // namespace
 
 CommandStorageManagerTestHelper::CommandStorageManagerTestHelper(
     CommandStorageManager* command_storage_manager)
@@ -35,16 +29,11 @@ bool CommandStorageManagerTestHelper::ProcessedAnyCommands() {
          !command_storage_manager_->pending_commands().empty();
 }
 
-void CommandStorageManagerTestHelper::ReadLastSessionCommands(
-    std::vector<std::unique_ptr<SessionCommand>>* commands) {
-  static_cast<SnapshottingCommandStorageBackend*>(
-      command_storage_manager_->backend_.get())
-      ->ReadLastSessionCommands(
-          base::BindRepeating(&IsCanceled),
-          base::BindLambdaForTesting(
-              [&commands](std::vector<std::unique_ptr<SessionCommand>> result) {
-                *commands = std::move(result);
-              }));
+std::vector<std::unique_ptr<SessionCommand>>
+CommandStorageManagerTestHelper::ReadLastSessionCommands() {
+  return static_cast<SnapshottingCommandStorageBackend*>(
+             command_storage_manager_->backend_.get())
+      ->ReadLastSessionCommands();
 }
 
 scoped_refptr<base::SequencedTaskRunner>

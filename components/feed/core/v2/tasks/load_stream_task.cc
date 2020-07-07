@@ -141,6 +141,7 @@ void LoadStreamTask::QueryRequestComplete(
   if (!response_data.model_update_request)
     return Done(LoadStreamStatus::kProtoTranslationFailed);
 
+  loaded_new_content_from_network_ = true;
   stream_->GetStore()->OverwriteStream(
       std::make_unique<StreamModelUpdateRequest>(
           *response_data.model_update_request),
@@ -164,6 +165,7 @@ void LoadStreamTask::Done(LoadStreamStatus status) {
   result.final_status = status;
   result.load_type = load_type_;
   result.network_response_info = network_response_info_;
+  result.loaded_new_content_from_network = loaded_new_content_from_network_;
   std::move(done_callback_).Run(result);
   TaskComplete();
 }

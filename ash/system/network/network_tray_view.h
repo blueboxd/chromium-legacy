@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/session/session_observer.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/system/network/active_network_icon.h"
 #include "ash/system/network/network_icon_animation_observer.h"
 #include "ash/system/network/tray_network_state_observer.h"

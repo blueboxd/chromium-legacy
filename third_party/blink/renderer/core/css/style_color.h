@@ -53,21 +53,23 @@ class StyleColor {
     return color_keyword_ == CSSValueID::kCurrentcolor;
   }
   Color GetColor() const {
-    DCHECK(!IsCurrentColor());
+    DCHECK(IsNumeric());
     return color_;
   }
 
   Color Resolve(Color current_color) const {
+    DCHECK(IsCurrentColor() || IsNumeric());
     return IsCurrentColor() ? current_color : color_;
   }
 
   bool HasAlpha() const { return !IsCurrentColor() && color_.HasAlpha(); }
+  bool IsNumeric() const { return color_keyword_ == CSSValueID::kInvalid; }
 
   static Color ColorFromKeyword(CSSValueID, WebColorScheme color_scheme);
   static bool IsColorKeyword(CSSValueID);
   static bool IsSystemColor(CSSValueID);
 
- private:
+ protected:
   explicit StyleColor(CSSValueID keyword) : color_keyword_(keyword) {}
 
   Color color_;

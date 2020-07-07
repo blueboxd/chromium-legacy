@@ -39,7 +39,7 @@
 <translation id="1039337018183941703">चुकीची किंवा दूषित फाइल</translation>
 <translation id="1041175011127912238">हे पेज प्रतिसाद देत नाही</translation>
 <translation id="1041263367839475438">उपलब्ध असलेली डिव्हाइस</translation>
-<translation id="1042174272890264476">तुमचा कॉंप्युटर देखील <ph name="SHORT_PRODUCT_NAME" />च्या RLZ वाचनालयासह बिल्ट-इन आला आहे. एका विशिष्ट जाहिरात मोहीमेद्वारे चालविलेला शोध आणि <ph name="SHORT_PRODUCT_NAME" /> वापर मोजण्यासाठी RLZ एक अद्वितीय-नसलेला, वैयक्तिकरित्या-ओळखता न येणारा टॅग नियुक्त करते. <ph name="PRODUCT_NAME" /> मधील Google शोध क्वेरींमध्ये ही लेबल काहीवेळा दिसतात.</translation>
+<translation id="1042174272890264476">तुमचा कॉंप्युटर देखील <ph name="SHORT_PRODUCT_NAME" />च्या RLZ वाचनालयासह बिल्ट-इन आला आहे. एका विशिष्ट जाहिरात मोहीमेद्वारे चालविलेला शोध आणि <ph name="SHORT_PRODUCT_NAME" /> वापर मोजण्यासाठी RLZ एक अद्वितीय-नसलेला, वैयक्तिकरित्या-ओळखता न येणारा टॅग नियुक्त करते. <ph name="PRODUCT_NAME" /> मधील Google Search क्वेरींमध्ये ही लेबल काहीवेळा दिसतात.</translation>
 <translation id="1043818413152647937">तसेच या अ‍ॅप्समधून डेटा साफ करायचा?</translation>
 <translation id="1046635659603195359">असे दिसते की, तुम्ही दुसर्‍या डिव्हाइसवर आधीपासून Google असिस्टंटसह Voice Match सेट केले आहे. या डिव्हाइसवर आवाजाचा नमुना बनवण्यासाठी या मागील रेकॉर्डिंग वापरल्या जाऊ शकतात. याला एका मिनिटापेक्षा कमी वेळ लागेल.</translation>
 <translation id="104710386808485638">Linux रीस्टार्ट करायचे?</translation>
@@ -281,7 +281,6 @@
 <translation id="1340527397989195812">Files ॲप वापरून डिव्हाइसवरील मीडियाचा बॅकअप घ्या.</translation>
 <translation id="1341988552785875222">वर्तमान वॉलपेपर <ph name="APP_NAME" /> नी सेट केला आहे'. भिन्न वॉलपेपर निवडण्यापूर्वी तुम्हाला <ph name="APP_NAME" /> अनइंस्टॉल करण्‍याची आवश्‍यकता असेल.</translation>
 <translation id="1343865611738742294">USB डिव्हाइस ॲक्सेस करण्यासाठी Linux ला परवानगी द्या. USB डिव्हाइस काढून टाकल्यानंतर Linux ते लक्षात ठेवणार नाही.</translation>
-<translation id="1344143111673240412">कॅमेराच्या सेटिंगमधील या बदलासाठी Parallels Desktop पुन्हा लाँच करणे आवश्यक आहे</translation>
 <translation id="1347256498747320987">अपडेट आणि अ‍ॅप्स इंस्टॉल करा. पुढे सुरू ठेवून, तुम्ही सहमती देता की, हे डिव्हाइस शक्यतो मोबाइल डेटा वापरून Google, तुमचा वाहक आणि तुमच्या डिव्हाइसच्या निर्मात्याकडून अपडेट आणि ॲप्ससुद्धा आपोआप डाउनलोड आणि इंस्टॉल करू शकतो. यापैकी काही ॲप्स ॲपमधील खरेदी करण्याचा पर्याय देऊ शकतात. <ph name="BEGIN_LINK1" />अधिक जाणून घ्या<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">बॅटरी <ph name="BATTERY_LEVEL" />% पर्यंत पोहोचल्यावर अपडेट सुरू होईल.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -378,6 +377,7 @@
 <translation id="1468571364034902819">ही प्रोफाइल वापरू शकत नाही</translation>
 <translation id="1470084204649225129">{NUM_TABS,plural, =1{नवीन गट यामध्ये टॅब जोडा}other{नवीन गट यामध्ये टॅब जोडा}}</translation>
 <translation id="1472675084647422956">अधिक दर्शवा</translation>
+<translation id="1474785664565228650">मायक्रोफोनच्या सेटिंगमधील बदलासाठी Parallels Desktop पुन्हा लाँच करणे आवश्यक आहे. Parallels Desktop वर पुढे सुरू ठेवण्यासाठी पुन्हा लाँच करा.</translation>
 <translation id="1475502736924165259">आपल्याकडे फाईलवर प्रमाणपत्रे आहेत जी अन्य कोणत्याही श्रेणींसाठी योग्य नाहीत</translation>
 <translation id="1476088332184200792">तुमच्या डिव्हाइसवर कॉपी करा</translation>
 <translation id="1476607407192946488">&amp;भाषा सेटिंग्ज</translation>
@@ -1196,7 +1196,6 @@
 <translation id="2470702053775288986">असमर्थित विस्तार अक्षम</translation>
 <translation id="2471469610750100598">काळा (डीफॉल्ट)</translation>
 <translation id="2473195200299095979">या पृष्ठाचे भाषांतर करा</translation>
-<translation id="2474848500897222119"><ph name="PRINTER_NAME" /> मधील शाई संपली आहे</translation>
 <translation id="2475982808118771221">एक एरर आली आहे</translation>
 <translation id="2476578072172137802">साइट सेटिंग्ज</translation>
 <translation id="2478176599153288112">"<ph name="EXTENSION" />" साठी मीडिया-फाईल परवानग्या</translation>
@@ -1502,7 +1501,6 @@
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> तुमच्या अ‍ॅडमिनिस्ट्रेटरमधून प्रॉक्सी सेटिंग्ज वापरत आहे</translation>
 <translation id="2825758591930162672">विषयाची सार्वजनिक की</translation>
 <translation id="2828650939514476812">वाय-फाय नेटवर्कवर कनेक्ट करा</translation>
-<translation id="28291580771888953"><ph name="PRINTER_NAME" /> चा क्यू संपूर्ण भरला आहे</translation>
 <translation id="2835547721736623118">स्पीच रेकग्निशन सेवा</translation>
 <translation id="2836269494620652131">क्रॅश</translation>
 <translation id="2836635946302913370">या वापरकर्तानावासह साइन इन करणे तुमच्या ॲडमिनिस्ट्रेटरद्वारे अक्षम केले गेले आहे.</translation>
@@ -2318,7 +2316,7 @@
 <translation id="3839516600093027468"><ph name="HOST" /> ला क्लिपबोर्ड पाहण्यापासून नेहमी ब्लॉक करा</translation>
 <translation id="3841964634449506551">पासवर्ड चुकीचा आहे</translation>
 <translation id="3842552989725514455">Serif font</translation>
-<translation id="3843058644024807390">मायक्रोफोनच्या सेटिंगमधील या बदलासाठी Parallels Desktop पुन्हा लाँच करणे आवश्यक आहे</translation>
+<translation id="3843464315703645664">अंतर्गतरीत्या अनुमती दिलेली सूची</translation>
 <translation id="3846116211488856547">वेबसाइट, Android ॲप्स आणि बरेच काही विकसित करण्यासाठी टूल मिळवा. Linux इंस्टॉल केल्याने <ph name="DOWNLOAD_SIZE" /> डेटा डाउनलोड केला जाईल.</translation>
 <translation id="3847319713229060696">वेबवरील प्रत्येकासाठी सुरक्षिततेत सुधारणा करण्यात मदत करा</translation>
 <translation id="385051799172605136">मागील</translation>
@@ -2775,7 +2773,6 @@
 <translation id="4453946976636652378"><ph name="SEARCH_ENGINE_NAME" /> वर शोधा किंवा URL टाइप करा</translation>
 <translation id="4459169140545916303"><ph name="DEVICE_LAST_ACTIVATED_TIME" /> दिवसांपूर्वी ॲक्टिव्ह होते</translation>
 <translation id="4460014764210899310">गटामधून काढून टाका</translation>
-<translation id="4460343359907016103"><ph name="PRINTER_NAME" /> शी कनेक्ट करताना एरर आली</translation>
 <translation id="4462159676511157176">कस्टम नाव सर्व्हर</translation>
 <translation id="4465236939126352372"><ph name="APP_NAME" /> साठी सेट केलेली <ph name="TIME" /> ची वेळ मर्यादा</translation>
 <translation id="4465725236958772856"><ph name="NETWORK_COUNT" /> पैकी <ph name="NETWORK_INDEX" /> नेटवर्क, <ph name="NETWORK_NAME" />, तुमच्या अ‍ॅडमिनिस्ट्रेटरने व्यवस्थापित केलेले, कनेक्ट करा</translation>
@@ -2930,6 +2927,7 @@
 <translation id="4648499713050786492">कृपया एखाद्या व्यक्तीस जोडण्यापूर्वी तुमचे प्रोफाईल अनलॉक करा.</translation>
 <translation id="4650591383426000695">तुमचा फोन <ph name="DEVICE_TYPE" /> वरून डिस्कनेक्ट करा</translation>
 <translation id="4651484272688821107">डेमो मोड स्रोतांनी ऑनलाइन घटक लोड करता आला नाही.</translation>
+<translation id="4652935475563630866">कॅमेऱ्याच्या सेटिंगमधील बदलासाठी Parallels Desktop पुन्हा लाँच करणे आवश्यक आहे. Parallels Desktop वर पुढे सुरू ठेवण्यासाठी पुन्हा लाँच करा.</translation>
 <translation id="4653405415038586100">Linux कॉन्फिगर करताना एरर आली</translation>
 <translation id="465878909996028221">फक्त http, https आणि फाइल प्रोटोकॉलना ब्राउझर रीडिरेक्‍टला सपोर्ट करते.</translation>
 <translation id="4659077111144409915">प्राथमिक खाते</translation>
@@ -3073,7 +3071,6 @@
 <translation id="4864369630010738180">साइन इन करत आहे...</translation>
 <translation id="4864805589453749318">शाळा खाते जोडण्याची परवानगी देणार असलेले पालक निवडा.</translation>
 <translation id="486635084936119914">डाउनलोड केल्यानंतर काही फाईल प्रकार स्वयंचलितपणे उघडा</translation>
-<translation id="4869213010169296107"><ph name="PRINTER_NAME" /> मध्ये ट्रे आढळला नाही</translation>
 <translation id="48704129375571883">अतिरिक्त वैशिष्ट्ये जोडा</translation>
 <translation id="4870758487381879312">कॉन्फिगरेशन माहिती मिळवण्यासाठी ॲडमिनने पुरवलेला पासवर्ड एंटर करा</translation>
 <translation id="4870903493621965035">कोणतेही जोडणी केलेले डिव्हाइस नाहीत</translation>
@@ -3324,6 +3321,7 @@
 <translation id="5184662919967270437">तुमचे डिव्हाइस अपडेट करीत आहे</translation>
 <translation id="5185359571430619712">एक्स्टेंशनचे पुनरावलोकन करा</translation>
 <translation id="5185386675596372454">"<ph name="EXTENSION_NAME" />" ची नवीनतम आवृत्ती अक्षम केली गेली कारण यासाठी अधिक परवानग्या आवश्यक आहेत.</translation>
+<translation id="5185500136143151980">इंटरनेट नाही</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5190926251776387065">पोर्ट सुरू करा</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> ला एकाहून अधिक फाइल डाउनलोड करायच्या आहेत</translation>
@@ -3480,7 +3478,6 @@
 <translation id="5390112241331447203">फीडबॅक अहवालामध्ये पाठवलेल्या system_logs.txt फाइलचा समावेश करा.</translation>
 <translation id="5390677308841849479">गडद लाल आणि नारिंगी</translation>
 <translation id="5390743329570580756">यासाठी पाठवा</translation>
-<translation id="5395869306561378615"><ph name="PRINTER_NAME" /> थांबवले आहे</translation>
 <translation id="5397794290049113714">तुम्ही</translation>
 <translation id="5398572795982417028">निषिद्ध पृष्ठ संदर्भ, मर्यादा <ph name="MAXIMUM_PAGE" /> आहे</translation>
 <translation id="5398772614898833570">जाहिराती ब्लॉक केल्या</translation>
@@ -3495,7 +3492,6 @@
 <translation id="5417312524372586921">ब्राउझर थीम</translation>
 <translation id="5419405654816502573">Voice match</translation>
 <translation id="5420438158931847627">मजकूर आणि इमेजचे शार्पनेस निर्धारित करते</translation>
-<translation id="5421498071721257877"><ph name="PRINTER_NAME" /> मध्ये डिव्हाइस एरर आली</translation>
 <translation id="5422221874247253874">ॲक्सेस पॉइंट</translation>
 <translation id="5422781158178868512">सॉरी, तुमचे बाह्य स्टोरेज डिव्हाइस ओळखता आले नाही.</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3844,7 +3840,6 @@
 <translation id="5852137567692933493">रीस्टार्ट करा आणि पॉवरवॉश करा</translation>
 <translation id="5854912040170951372">तुकडा</translation>
 <translation id="5855267860608268405">ज्ञात वाय-फाय नेटवर्क</translation>
-<translation id="5855310969323666289"><ph name="PRINTER_NAME" /> चे दार उघडे आहे</translation>
 <translation id="5855643921295613558">०.६ सेकंद</translation>
 <translation id="5856721540245522153">डीबगिंग वैशिष्ट्ये सुरू करा</translation>
 <translation id="5857090052475505287">नवीन फोल्डर</translation>
@@ -3875,7 +3870,6 @@
 <translation id="5877064549588274448">चॅनेल बदलले. बदल लागू करण्यासाठी तुमचे डिव्हाइस रीस्टार्ट करा.</translation>
 <translation id="5877584842898320529">निवडलेले प्रिंटर उपलब्ध नाही किंवा योग्यरीत्या इंस्टॉल केलेले नाही. <ph name="BR" /> तुमचा प्रिंटर तपासा किंवा दुसरा प्रिंटर निवडून पहा.</translation>
 <translation id="5882919346125742463">ज्ञात नेटवर्क</translation>
-<translation id="5883716097305842571"><ph name="PRINTER_NAME" /> चा आउटपुट भाग जवळजवळ पूर्ण भरला आहे</translation>
 <translation id="5884474295213649357">हा टॅब USB डिव्हाइसशी कनेक्ट केला आहे.</translation>
 <translation id="5886009770935151472">पहिले बोट</translation>
 <translation id="5889282057229379085">कमाल इंटरमिजिएट CA संख्या: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4442,7 +4436,6 @@
 <translation id="6611972847767394631">येथे तुमचे टॅब शोधा</translation>
 <translation id="6612358246767739896">संरक्षित आशय</translation>
 <translation id="6615455863669487791">मला दर्शवा</translation>
-<translation id="6617034477946102682"><ph name="PRINTER_NAME" /> शी कनेक्ट करता आले नाही</translation>
 <translation id="6618097958368085618">तरीही राहू द्या</translation>
 <translation id="6618744767048954150">रन होत आहे</translation>
 <translation id="6619058681307408113">लाइन प्रिंटर डिमन (LPD)</translation>
@@ -4859,7 +4852,6 @@
 <translation id="7128151990937044829">सूचना ब्लॉक केल्यावर अ‍ॅड्रेस बारमध्ये इंडिकेटर दाखवा</translation>
 <translation id="7131040479572660648"><ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, आणि <ph name="WEBSITE_3" /> वर तुमचा डेटा वाचा</translation>
 <translation id="713122686776214250">पृ&amp;ष्ठ जोडा...</translation>
-<translation id="7131379856697962078"><ph name="PRINTER_NAME" /> चा आउटपुट भाग पूर्ण भरला आहे</translation>
 <translation id="7133578150266914903">तुमचा ॲडमिनिस्ट्रेटर हे डिव्हाइस रोल बॅक करत आहे (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">मजकूर लहान करा</translation>
 <translation id="7135729336746831607">ब्लूटूथ सुरू करायचे आहे का?</translation>
@@ -4878,7 +4870,6 @@
 <translation id="7152478047064750137">या एक्स्टेंशनला कोणत्याही विशिष्ट परवानग्यांची आवश्यकता नाही</translation>
 <translation id="7154130902455071009">तुमचे प्रारंभ पृष्ठ यावर बदला: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">कॅमेरा किंवा फाईल मधील विद्यमान फोटो</translation>
-<translation id="715657691234357425"><ph name="PRINTER_NAME" /> मध्ये कागद कमी आहे</translation>
 <translation id="7165320105431587207">नेटवर्क कॉन्फिगर करण्यात अयशस्वी</translation>
 <translation id="716640248772308851">"<ph name="EXTENSION" />" इमेज, व्हिडिओ आणि चेक केलेल्या स्थानांमधील ध्वनी फाइल वाचू शकते.</translation>
 <translation id="7167486101654761064">&amp;नेहमी या प्रकारच्या फाइल्स उघडा</translation>
@@ -4905,11 +4896,10 @@
 <translation id="7193051357671784796">हे ॲप तुमच्या संस्थेमध्ये जोडले गेले आहे. इंस्टॉल करणे पूर्ण करण्यासाठी ॲप रीस्टार्ट करा.</translation>
 <translation id="7193374945610105795"><ph name="ORIGIN" /> चे कोणतेही पासवर्ड सेव्ह केलेले नाहीत</translation>
 <translation id="7196913789568937443">Google ड्राइव्ह मध्ये बॅकअप घ्या. तुमचा डेटा कधीही सहजपणे रिस्टोअर करा किंवा डिव्हाइस बदला. तुमच्या बॅकअपमध्ये ॲप डेटाचा समावेश असतो. तुमचे बॅकअप Google वर अपलोड केले आहेत आणि ते तुमचा Google खाते पासवर्ड वापरून एंक्रिप्ट केले आहेत. <ph name="BEGIN_LINK1" />अधिक जाणून घ्या<ph name="END_LINK1" /></translation>
-<translation id="7197190419934240522">प्रत्येक वेळी ब्राउझ करताना Google शोध आणि Google स्मार्ट मिळवा</translation>
+<translation id="7197190419934240522">प्रत्येक वेळी ब्राउझ करताना Google Search आणि Google स्मार्ट मिळवा</translation>
 <translation id="7197632491113152433">आम्हाला या डिव्हाइसवर वापरता येतील अशी <ph name="NUMBER_OF_APPS" /> ॲप्स तुमच्या खात्यात सापडली आहेत.</translation>
 <translation id="7199158086730159431">म&amp;दत मिळवा</translation>
 <translation id="7200083590239651963">काँफिगरेशन निवडा</translation>
-<translation id="7201042526153088083">तुमच्या <ph name="DEVICE_TYPE" /> वर Google Play मधून अ‍ॅप्स आणि गेम इंस्टॉल करा. &lt;a target="_blank" href="<ph name="URL" />"&gt;अधिक जाणून घ्या&lt;/a&gt;</translation>
 <translation id="720110658997053098">हे डिव्हाइस कायमचे कियोस्क मोडमध्ये ठेवा</translation>
 <translation id="7201118060536064622">'<ph name="DELETED_ITEM_NAME" />' हटवले</translation>
 <translation id="7201420661433230412">फाइल पहा</translation>
@@ -5111,7 +5101,7 @@
 <translation id="7454548535253569100">पोर्टल: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="7456142309650173560">dev</translation>
 <translation id="7456847797759667638">स्थान उघडा...</translation>
-<translation id="7458168200501453431">Google शोध मध्ये वापरत असेलेले स्पेल चेकर वापरले जाते. तुम्ही ब्राउझरमध्ये टाइप करत असलेला मजकूर Google कडे पाठवला जातो.</translation>
+<translation id="7458168200501453431">Google Search मध्ये वापरत असेलेले स्पेल चेकर वापरले जाते. तुम्ही ब्राउझरमध्ये टाइप करत असलेला मजकूर Google कडे पाठवला जातो.</translation>
 <translation id="7460045493116006516">तुम्ही इंस्टॉल केलेली सध्याची थीम</translation>
 <translation id="7461924472993315131">पिन</translation>
 <translation id="746216226901520237">पुढील वेळेस तुमचा फोन तुमचे <ph name="DEVICE_TYPE" /> अनलॉक करेल. तुम्ही सेटिंग्जमधून Smart Lock बंद करू शकता.</translation>
@@ -5215,7 +5205,6 @@
 <translation id="7598466960084663009">काँप्युटर रीस्टार्ट करा</translation>
 <translation id="7599527631045201165">डिव्हाइस नाव खूप लांब आहे. पुन्हा प्रयत्न करण्यासाठी लहान नाव एंटर करा.</translation>
 <translation id="7600965453749440009">कधीही <ph name="LANGUAGE" /> चा भाषांतर करु नका</translation>
-<translation id="7601297144931396972"><ph name="PRINTER_NAME" /> चा कागद अडकला आहे</translation>
 <translation id="760197030861754408">कनेक्ट करण्यासाठी <ph name="LANDING_PAGE" /> वर जा.</translation>
 <translation id="7602079150116086782">अन्य डिव्हाइसेसवरील कोणतेही टॅब नाहीत</translation>
 <translation id="7602173054665172958">प्रिंट व्यवस्थापन</translation>
@@ -5226,6 +5215,7 @@
 <translation id="7609148976235050828">कृपया इंटरनेटशी कनेक्‍ट करा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="7614260613810441905">साइटला तुमच्या डिव्हाइसवरील फाइल किंवा फोल्डरचे संपादन करायचे असते तेव्हा विचारा (शिफारस केलेले)</translation>
 <translation id="761530003705945209">Google Drive वर बॅकअप घ्या. कधीही तुमचा डेटा सहजपणे रिस्टोअर करा किंवा डिव्हाइस स्विच करा. तुमच्या बॅकअपमध्ये अ‍ॅप डेटा समाविष्ट असतो. तुमचे बॅकअप Google वर अपलोड केले जातात आणि तुमचा Google खाते पासवर्ड वापरून एंक्रिप्ट केले जातात.</translation>
+<translation id="7615365294369022248">खाते जोडत असताना एक एरर आली होती</translation>
 <translation id="7616214729753637086">डिव्हाइसची नोंदणी करत आहे...</translation>
 <translation id="7617263010641145920">Play स्टोअर सुरू करा</translation>
 <translation id="7617366389578322136">"<ph name="DEVICE_NAME" />" यावर कनेक्ट करीत आहे</translation>
@@ -5672,7 +5662,6 @@ https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featu
           यामध्ये Google Pay वरील पेमेंट पद्धतींचा आणि पत्त्यांचा समावेश नसतो.</translation>
 <translation id="81238879832906896">पिवळे आणि पांढरे फूल</translation>
 <translation id="8124313775439841391">व्यवस्‍थापित ONC</translation>
-<translation id="8127535217699822294"><ph name="PRINTER_NAME" /> मधील कागद संपला आहे</translation>
 <translation id="813082847718468539">साइटची माहिती पहा</translation>
 <translation id="8131740175452115882">पुष्टी करा</translation>
 <translation id="8133676275609324831">फोल्डरमध्ये &amp;दर्शवा</translation>
@@ -5771,7 +5760,6 @@ https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featu
 <translation id="8254954272268479918">Linux (बीटा) बंद करा</translation>
 <translation id="8255451560461371599">कोणतीही बॅकग्राउंड नाही</translation>
 <translation id="8256319818471787266">चमचमते</translation>
-<translation id="8256417822772703842"><ph name="PRINTER_NAME" /> मध्ये शाई कमी आहे</translation>
 <translation id="8257950718085972371">कॅमेरा ॲक्सेस ब्लॉक करणे सुरू ठेवा</translation>
 <translation id="8259239505248583312">चला जाऊ या</translation>
 <translation id="8260864402787962391">माउस</translation>
@@ -5952,7 +5940,6 @@ https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featu
 <translation id="8487678622945914333">झूम इन करा</translation>
 <translation id="8490896350101740396">खालील कियोस्क अ‍ॅप्स "<ph name="UPDATED_APPS" />" अपडेट करण्यात आले आहेत. कृपया अपडेट प्रक्रिया पूर्ण करण्यासाठी डिव्हाइस रीबूट करा.</translation>
 <translation id="8493236660459102203">मायक्रोफोन:</translation>
-<translation id="8495940850609851342"><ph name="PRINTER_NAME" /> थांबला आहे</translation>
 <translation id="8496717697661868878">हे प्लगइन रन करा</translation>
 <translation id="8497219075884839166">Windows सुविधा</translation>
 <translation id="8498214519255567734">तुमच्या स्क्रीनकडे पाहणे किंवा मंद उजेडात वाचणे सोपे करते</translation>
@@ -6495,6 +6482,12 @@ https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featu
 <translation id="9157096865782046368">०.८ सेकंद</translation>
 <translation id="9157697743260533322">सर्व वापरकर्त्यांसाठी ऑटोमॅटिक अपडेट सेट करण्यात अयशस्वी झाले (प्रीफ्लाइट लाँच एरर: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">अरेरे! ऑथेंटिकेशनदरम्यान एक नेटवर्क संवाद समस्या आली. कृपया तुमचे नेटवर्क कनेक्शन तपासा आणि पुन्हा प्रयत्न करा.</translation>
+<translation id="9159643062839240276">हे करून पाहा:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />नेटवर्क केबल, मोडेम आणि राउटर तपासणे
+      <ph name="LIST_ITEM" />वाय-फाय पुन्हा कनेक्ट करणे
+      <ph name="LIST_ITEM" />Chrome कनेक्टिव्हिटी निदान रन करणे
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">चित्रात-चित्र</translation>
 <translation id="9168436347345867845">ते नंतर करा</translation>
 <translation id="9169496697824289689">कीबोर्ड शॉर्टकट पहा</translation>

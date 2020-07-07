@@ -23,10 +23,10 @@ export class ManageProfilesBrowserProxy {
   initializeMainView() {}
 
   /**
-   * Opens picked profile and closes the profile picker.
+   * Launches picked profile and closes the profile picker.
    * @param {string} profilePath
    */
-  openSelectedProfile(profilePath) {}
+  launchSelectedProfile(profilePath) {}
 }
 
 /** @implements {ManageProfilesBrowserProxy} */
@@ -37,8 +37,8 @@ export class ManageProfilesBrowserProxyImpl {
   }
 
   /** @override */
-  openSelectedProfile(profilePath) {
-    // TODO(msalama): Implement open selected profile.
+  launchSelectedProfile(profilePath) {
+    chrome.send('launchSelectedProfile', [profilePath]);
   }
 }
 

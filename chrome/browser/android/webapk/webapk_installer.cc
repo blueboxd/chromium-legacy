@@ -86,7 +86,7 @@ class CacheClearer : public content::BrowsingDataRemover::Observer {
                base::OnceClosure callback)
       : remover_(remover), install_callback_(std::move(callback)) {}
 
-  void OnBrowsingDataRemoverDone() override {
+  void OnBrowsingDataRemoverDone(uint64_t failed_data_types) override {
     std::move(install_callback_).Run();
     delete this;  // Matches the new in FreeCacheAsync()
   }

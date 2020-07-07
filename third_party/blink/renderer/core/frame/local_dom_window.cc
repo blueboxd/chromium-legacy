@@ -1019,18 +1019,15 @@ void LocalDOMWindow::DispatchMessageEventWithOriginCheck(
     std::unique_ptr<SourceLocation> location,
     const base::UnguessableToken& source_agent_cluster_id) {
   if (intended_target_origin) {
-    // Check target origin now since the target document may have changed since
-    // the timer was scheduled.
-    const SecurityOrigin* security_origin = document()->GetSecurityOrigin();
     bool valid_target =
-        intended_target_origin->IsSameOriginWith(security_origin);
+        intended_target_origin->IsSameOriginWith(GetSecurityOrigin());
 
     if (!valid_target) {
       String message = ExceptionMessages::FailedToExecute(
           "postMessage", "DOMWindow",
           "The target origin provided ('" + intended_target_origin->ToString() +
               "') does not match the recipient window's origin ('" +
-              document()->GetSecurityOrigin()->ToString() + "').");
+              GetSecurityOrigin()->ToString() + "').");
       auto* console_message = MakeGarbageCollected<ConsoleMessage>(
           mojom::ConsoleMessageSource::kSecurity,
           mojom::ConsoleMessageLevel::kError, message, std::move(location));
@@ -1050,11 +1047,7 @@ void LocalDOMWindow::DispatchMessageEventWithOriginCheck(
   if (event->IsOriginCheckRequiredToAccessData()) {
     scoped_refptr<SecurityOrigin> sender_security_origin =
         SecurityOrigin::Create(sender);
-
-    const SecurityOrigin* target_security_origin =
-        document()->GetSecurityOrigin();
-
-    if (!sender_security_origin->IsSameOriginWith(target_security_origin)) {
+    if (!sender_security_origin->IsSameOriginWith(GetSecurityOrigin())) {
       event = MessageEvent::CreateError(event->origin(), event->source());
     }
   }
@@ -1067,7 +1060,7 @@ void LocalDOMWindow::DispatchMessageEventWithOriginCheck(
     } else {
       scoped_refptr<SecurityOrigin> sender_origin =
           SecurityOrigin::Create(sender);
-      if (!sender_origin->IsSameOriginWith(document()->GetSecurityOrigin())) {
+      if (!sender_origin->IsSameOriginWith(GetSecurityOrigin())) {
         UseCounter::Count(
             document(),
             WebFeature::kMessageEventSharedArrayBufferSameAgentCluster);
@@ -1472,7 +1465,7 @@ void LocalDOMWindow::setDefaultStatus(const String& string) {
 }
 
 String LocalDOMWindow::origin() const {
-  return GetExecutionContext()->GetSecurityOrigin()->ToString();
+  return GetSecurityOrigin()->ToString();
 }
 
 Document* LocalDOMWindow::document() const {

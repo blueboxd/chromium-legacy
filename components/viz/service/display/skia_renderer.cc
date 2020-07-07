@@ -1683,8 +1683,7 @@ void SkiaRenderer::FlushBatchedQuads() {
                 batched_quad_state_.rounded_corner_bounds, nullptr);
 
   SkPaint paint;
-  if (settings_->tint_gl_composited_content &&
-      current_canvas_ == root_canvas_) {
+  if (settings_->tint_composited_content && current_canvas_ == root_canvas_) {
     paint.setColorFilter(TintCompositedContentColorTransformFilter());
   }
   paint.setFilterQuality(batched_quad_state_.filter_quality);
@@ -1721,8 +1720,7 @@ void SkiaRenderer::DrawColoredQuad(SkColor color,
     }
   }
 
-  if (settings_->tint_gl_composited_content &&
-      current_canvas_ == root_canvas_) {
+  if (settings_->tint_composited_content && current_canvas_ == root_canvas_) {
     color = TintCompositedContentColorTransformFilter()->filterColor(color);
   }
   // PrepareCanvasForRPDQ will have updated params->opacity and blend_mode to
@@ -1835,7 +1833,7 @@ void SkiaRenderer::DrawPictureQuad(const PictureDrawQuad* quad,
   // these represent the valid windows of content to show for the display list,
   // so they need to be used as a clip in Skia.
   SkRect visible_rect = gfx::RectFToSkRect(params->visible_rect);
-  SkPaint paint = params->paint(settings_->tint_gl_composited_content &&
+  SkPaint paint = params->paint(settings_->tint_composited_content &&
                                 current_canvas_ == root_canvas_);
 
   if (params->draw_region.has_value()) {
@@ -1908,7 +1906,7 @@ void SkiaRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
           : gfx::RectF(gfx::SizeF(quad->resource_size_in_pixels()));
 
   if (rpdq_params) {
-    SkPaint paint = params->paint(settings_->tint_gl_composited_content &&
+    SkPaint paint = params->paint(settings_->tint_composited_content &&
                                   current_canvas_ == root_canvas_);
     DrawSingleImage(image, valid_texel_bounds, rpdq_params, &paint, params);
   } else {
@@ -1961,7 +1959,7 @@ void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
   if (!batched_quads_.empty())
     FlushBatchedQuads();
 
-  SkPaint paint = params->paint(settings_->tint_gl_composited_content &&
+  SkPaint paint = params->paint(settings_->tint_composited_content &&
                                 current_canvas_ == root_canvas_);
 
   float quad_alpha;
@@ -2079,7 +2077,7 @@ void SkiaRenderer::DrawTileDrawQuad(const TileDrawQuad* quad,
   }
 
   if (rpdq_params) {
-    SkPaint paint = params->paint(settings_->tint_gl_composited_content &&
+    SkPaint paint = params->paint(settings_->tint_composited_content &&
                                   current_canvas_ == root_canvas_);
     DrawSingleImage(image, valid_texel_bounds, rpdq_params, &paint, params);
   } else {
@@ -2145,7 +2143,7 @@ void SkiaRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
   // Use provided, unclipped texture coordinates as the content area, which will
   // force coord clamping unless the geometry was clipped, or they span the
   // entire YUV image.
-  SkPaint paint = params->paint(settings_->tint_gl_composited_content &&
+  SkPaint paint = params->paint(settings_->tint_composited_content &&
                                 current_canvas_ == root_canvas_);
 
   sk_sp<SkColorFilter> color_filter =
@@ -2524,7 +2522,7 @@ void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
   if (!batched_quads_.empty())
     FlushBatchedQuads();
 
-  SkPaint paint = params->paint(settings_->tint_gl_composited_content &&
+  SkPaint paint = params->paint(settings_->tint_composited_content &&
                                 current_canvas_ == root_canvas_);
 
   DrawSingleImage(content_image.get(), valid_texel_bounds, &rpdq_params, &paint,

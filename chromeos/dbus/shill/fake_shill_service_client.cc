@@ -309,30 +309,6 @@ void FakeShillServiceClient::Remove(const dbus::ObjectPath& service_path,
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
 
-void FakeShillServiceClient::ActivateCellularModem(
-    const dbus::ObjectPath& service_path,
-    const std::string& carrier,
-    base::OnceClosure callback,
-    ErrorCallback error_callback) {
-  base::DictionaryValue* service_properties =
-      GetModifiableServiceProperties(service_path.value(), false);
-  if (!service_properties) {
-    LOG(ERROR) << "Service not found: " << service_path.value();
-    std::move(error_callback).Run("Error.InvalidService", "Invalid Service");
-  }
-  SetServiceProperty(service_path.value(), shill::kActivationStateProperty,
-                     base::Value(shill::kActivationStateActivating));
-  // Set Activated after a delay
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&FakeShillServiceClient::SetCellularActivated,
-                     weak_ptr_factory_.GetWeakPtr(), service_path,
-                     std::move(error_callback)),
-      GetInteractiveDelay());
-
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
-}
-
 void FakeShillServiceClient::CompleteCellularActivation(
     const dbus::ObjectPath& service_path,
     base::OnceClosure callback,

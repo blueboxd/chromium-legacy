@@ -25,7 +25,7 @@ ExternalVkImageSkiaRepresentation::ExternalVkImageSkiaRepresentation(
 }
 
 ExternalVkImageSkiaRepresentation::~ExternalVkImageSkiaRepresentation() {
-  DCHECK_EQ(access_mode_, kNone) << "Previoud access hasn't end yet.";
+  DCHECK_EQ(access_mode_, kNone) << "Previous access hasn't end yet.";
   DCHECK(end_access_semaphore_ == VK_NULL_HANDLE);
   backing_impl()->context_state()->EraseCachedSkSurface(this);
 }

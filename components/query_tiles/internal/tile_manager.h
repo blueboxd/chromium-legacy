@@ -47,8 +47,11 @@ class TileManager {
   virtual void SaveTiles(std::unique_ptr<TileGroup> tile_group,
                          TileGroupStatusCallback callback) = 0;
 
-  // Delete everything in db. Used for debugging and testing only.
+  // Delete everything in db. Used for debugging in WebUI only.
   virtual TileGroupStatus PurgeDb() = 0;
+
+  // Dump the group. Used for debugging in WebUI only.
+  virtual TileGroup* GetTileGroup() = 0;
 
   TileManager();
   virtual ~TileManager() = default;
@@ -56,8 +59,7 @@ class TileManager {
   TileManager(const TileManager& other) = delete;
   TileManager& operator=(const TileManager& other) = delete;
 
-  //-------Debug and Testing-----------------------------------------
-  virtual void GetTileGroupForTesting(TileGroup* group) = 0;
+  // ------------------------Testing------------------------
   virtual void SetAcceptLanguagesForTesting(
       const std::string& accept_languages) = 0;
 };

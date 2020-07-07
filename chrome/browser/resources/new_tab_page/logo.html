@@ -1,9 +1,15 @@
 <style include="cr-hidden-style">
   :host {
     --ntp-logo-height: 230px;
-    display: inline-block;
+    display: flex;
+    flex-direction: column;
     flex-shrink: 0;
+    justify-content: center;
     min-height: var(--ntp-logo-height);
+  }
+
+  :host([doodle-boxed_]) {
+    justify-content: flex-end;
   }
 
   #logo {
@@ -21,17 +27,6 @@
 
   :host(:not([single-colored])) #logo {
     background-image: url(chrome://resources/images/google_logo.svg);
-  }
-
-  #doodle {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    justify-content: center;
-  }
-
-  :host([doodle-boxed_]) #doodle {
-    justify-content: flex-end;
   }
 
   #imageDoodle {

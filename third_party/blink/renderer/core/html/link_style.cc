@@ -121,8 +121,8 @@ void LinkStyle::NotifyFinished(Resource* resource) {
   if (owner_->IsInDocumentTree())
     SetSheetTitle(owner_->title());
 
-  style_sheet->ParseAuthorStyleSheet(cached_style_sheet,
-                                     GetDocument().GetSecurityOrigin());
+  style_sheet->ParseAuthorStyleSheet(
+      cached_style_sheet, GetExecutionContext()->GetSecurityOrigin());
 
   loading_ = false;
   style_sheet->NotifyLoadedSheet(cached_style_sheet);
@@ -336,7 +336,7 @@ void LinkStyle::Process() {
       params.href.IsValid() && !params.href.IsEmpty()) {
     if (!owner_->ShouldLoadLink())
       return;
-    if (!GetDocument().GetSecurityOrigin()->CanDisplay(params.href))
+    if (!GetExecutionContext()->GetSecurityOrigin()->CanDisplay(params.href))
       return;
     if (!GetExecutionContext()
              ->GetContentSecurityPolicy()

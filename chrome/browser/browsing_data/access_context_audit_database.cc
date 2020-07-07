@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "sql/database.h"
+#include "sql/meta_table.h"
 #include "sql/recovery.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
@@ -16,6 +17,7 @@ const base::FilePath::CharType kDatabaseName[] =
     FILE_PATH_LITERAL("AccessContextAudit");
 const char kCookieTableName[] = "cookies";
 const char kStorageAPITableName[] = "originStorageAPIs";
+static const int kVersionNumber = 1;
 
 // Callback that is fired upon an SQLite error, attempts to automatically
 // recover the database if it appears possible to do so.
@@ -46,25 +48,51 @@ void DatabaseErrorCallback(sql::Database* db,
     DLOG(FATAL) << db->GetErrorMessage();
 }
 
+// Returns true if a cookie table already exists in |db|, but is missing the
+// is_persistent field.
+bool CookieTableMissingIsPersistent(sql::Database* db) {
+  std::string select = "SELECT sql FROM sqlite_master WHERE name = '";
+  select.append(kCookieTableName);
+  select.append("' AND type = 'table'");
+  sql::Statement statement(db->GetUniqueStatement(select.c_str()));
+
+  // Unable to step implies cookies table does not exist.
+  if (!statement.Step())
+    return false;
+
+  std::string cookies_schema = statement.ColumnString(0);
+  return cookies_schema.find("is_persistent") == std::string::npos;
+}
+
+// Removes all cookie records in |db| with is_persistent = false.
+bool DeleteNonPersistentCookies(sql::Database* db) {
+  std::string remove = "DELETE FROM ";
+  remove.append(kCookieTableName);
+  remove.append(" WHERE is_persistent != 1");
+  return db->Execute(remove.c_str());
+}
+
 }  // namespace
 
 AccessContextAuditDatabase::AccessRecord::AccessRecord(
-    const GURL& top_frame_origin,
+    const url::Origin& top_frame_origin,
     const std::string& name,
     const std::string& domain,
     const std::string& path,
-    const base::Time& last_access_time)
+    const base::Time& last_access_time,
+    bool is_persistent)
     : top_frame_origin(top_frame_origin),
       type(StorageAPIType::kCookie),
       name(name),
       domain(domain),
       path(path),
-      last_access_time(last_access_time) {}
+      last_access_time(last_access_time),
+      is_persistent(is_persistent) {}
 
 AccessContextAuditDatabase::AccessRecord::AccessRecord(
-    const GURL& top_frame_origin,
+    const url::Origin& top_frame_origin,
     const StorageAPIType& type,
-    const GURL& origin,
+    const url::Origin& origin,
     const base::Time& last_access_time)
     : top_frame_origin(top_frame_origin),
       type(type),
@@ -73,16 +101,20 @@ AccessContextAuditDatabase::AccessRecord::AccessRecord(
   DCHECK(type != StorageAPIType::kCookie);
 }
 
+AccessContextAuditDatabase::AccessRecord::~AccessRecord() = default;
+
 AccessContextAuditDatabase::AccessRecord::AccessRecord(
     const AccessRecord& other) = default;
 
-AccessContextAuditDatabase::AccessRecord::~AccessRecord() = default;
+AccessContextAuditDatabase::AccessRecord&
+AccessContextAuditDatabase::AccessRecord::operator=(const AccessRecord& other) =
+    default;
 
 AccessContextAuditDatabase::AccessContextAuditDatabase(
     const base::FilePath& path_to_database_dir)
     : db_file_path_(path_to_database_dir.Append(kDatabaseName)) {}
 
-void AccessContextAuditDatabase::Init() {
+void AccessContextAuditDatabase::Init(bool restore_non_persistent_cookies) {
   db_.set_histogram_tag("Access Context Audit");
 
   db_.set_error_callback(
@@ -90,19 +122,56 @@ void AccessContextAuditDatabase::Init() {
 
   // Cache values generated assuming ~5000 individual pieces of client storage
   // API data, each accessed in an average of 3 different contexts (complete
-  // speculation, most will be 1, some will be >50), with an average of 40bytes
-  // per audit entry.
+  // speculation, most will be 1, some will be >50), with an average of
+  // 40bytes per audit entry.
   // TODO(crbug.com/1083384): Revist these numbers.
   db_.set_page_size(4096);
   db_.set_cache_size(128);
 
   db_.set_exclusive_locking();
 
-  if (db_.Open(db_file_path_))
-    InitializeSchema();
+  if (!db_.Open(db_file_path_))
+    return;
+
+  // Scope database initialisation in a transaction.
+  sql::Transaction transaction(&db_);
+  if (!transaction.Begin())
+    return;
+
+  if (!meta_table_.Init(&db_, kVersionNumber, kVersionNumber))
+    return;
+
+  if (meta_table_.GetCompatibleVersionNumber() > kVersionNumber) {
+    LOG(ERROR) << "Access Context Audit database is too new, kVersionNumber"
+               << kVersionNumber << ", GetCompatibleVersionNumber="
+               << meta_table_.GetCompatibleVersionNumber();
+    // No error will have been caught by the SQLite error handler, manually
+    // shut the the database.
+    transaction.Rollback();
+    db_.Close();
+    return;
+  }
+
+  if (!InitializeSchema())
+    return;
+
+  if (!restore_non_persistent_cookies)
+    DeleteNonPersistentCookies(&db_);
+
+  transaction.Commit();
 }
 
 bool AccessContextAuditDatabase::InitializeSchema() {
+  if (CookieTableMissingIsPersistent(&db_)) {
+    // Simply remove the table in this case. Due to a flag misconfiguration this
+    // version of the table was pushed to all canary users for a short period.
+    // TODO(crbug.com/1102006): Remove this code before M86 branch point.
+    std::string drop_table = "DROP TABLE ";
+    drop_table.append(kCookieTableName);
+    if (!db_.Execute(drop_table.c_str()))
+      return false;
+  }
+
   std::string create_table;
   create_table.append("CREATE TABLE IF NOT EXISTS ");
   create_table.append(kCookieTableName);
@@ -112,6 +181,7 @@ bool AccessContextAuditDatabase::InitializeSchema() {
       "domain TEXT NOT NULL,"
       "path TEXT NOT NULL,"
       "access_utc INTEGER NOT NULL,"
+      "is_persistent INTEGER NOT NULL,"
       "PRIMARY KEY (top_frame_origin, name, domain, path))");
 
   if (!db_.Execute(create_table.c_str()))
@@ -142,8 +212,8 @@ void AccessContextAuditDatabase::AddRecords(
   insert.append("INSERT OR REPLACE INTO ");
   insert.append(kCookieTableName);
   insert.append(
-      "(top_frame_origin, name, domain, path, access_utc) "
-      "VALUES (?, ?, ?, ?, ?)");
+      "(top_frame_origin, name, domain, path, access_utc, is_persistent) "
+      "VALUES (?, ?, ?, ?, ?, ?)");
   sql::Statement insert_cookie(
       db_.GetCachedStatement(SQL_FROM_HERE, insert.c_str()));
 
@@ -158,23 +228,23 @@ void AccessContextAuditDatabase::AddRecords(
 
   for (const auto& record : records) {
     if (record.type == StorageAPIType::kCookie) {
-      insert_cookie.BindString(0, record.top_frame_origin.GetOrigin().spec());
+      insert_cookie.BindString(0, record.top_frame_origin.Serialize());
       insert_cookie.BindString(1, record.name);
       insert_cookie.BindString(2, record.domain);
       insert_cookie.BindString(3, record.path);
       insert_cookie.BindInt64(
           4,
           record.last_access_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
+      insert_cookie.BindBool(5, record.is_persistent);
 
       if (!insert_cookie.Run())
         return;
 
       insert_cookie.Reset(true);
     } else {
-      insert_storage_api.BindString(0,
-                                    record.top_frame_origin.GetOrigin().spec());
+      insert_storage_api.BindString(0, record.top_frame_origin.Serialize());
       insert_storage_api.BindInt(1, static_cast<int>(record.type));
-      insert_storage_api.BindString(2, record.origin.GetOrigin().spec());
+      insert_storage_api.BindString(2, record.origin.Serialize());
       insert_storage_api.BindInt64(
           3,
           record.last_access_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
@@ -200,7 +270,7 @@ void AccessContextAuditDatabase::RemoveRecord(const AccessRecord& record) {
         " WHERE top_frame_origin = ? AND name = ? AND domain = ? AND path = ?");
     remove_statement.Assign(
         db_.GetCachedStatement(SQL_FROM_HERE, remove.c_str()));
-    remove_statement.BindString(0, record.top_frame_origin.GetOrigin().spec());
+    remove_statement.BindString(0, record.top_frame_origin.Serialize());
     remove_statement.BindString(1, record.name);
     remove_statement.BindString(2, record.domain);
     remove_statement.BindString(3, record.path);
@@ -209,9 +279,9 @@ void AccessContextAuditDatabase::RemoveRecord(const AccessRecord& record) {
     remove.append(" WHERE top_frame_origin = ? AND type = ? AND origin = ?");
     remove_statement.Assign(
         db_.GetCachedStatement(SQL_FROM_HERE, remove.c_str()));
-    remove_statement.BindString(0, record.top_frame_origin.GetOrigin().spec());
+    remove_statement.BindString(0, record.top_frame_origin.Serialize());
     remove_statement.BindInt(1, static_cast<int>(record.type));
-    remove_statement.BindString(2, record.origin.GetOrigin().spec());
+    remove_statement.BindString(2, record.origin.Serialize());
   }
   remove_statement.Run();
 }
@@ -240,9 +310,10 @@ void AccessContextAuditDatabase::RemoveSessionOnlyRecords(
   sql::Statement select_storage_origins(
       db_.GetCachedStatement(SQL_FROM_HERE, select.c_str()));
 
-  std::vector<GURL> storage_origins;
+  std::vector<url::Origin> storage_origins;
   while (select_storage_origins.Step()) {
-    storage_origins.emplace_back(GURL(select_storage_origins.ColumnString(0)));
+    storage_origins.emplace_back(
+        url::Origin::Create(GURL(select_storage_origins.ColumnString(0))));
   }
 
   // Remove records for all cookie domains and storage origins for which the
@@ -276,10 +347,10 @@ void AccessContextAuditDatabase::RemoveSessionOnlyRecords(
   for (const auto& origin : storage_origins) {
     // TODO(crbug.com/1099164): Rename IsCookieSessionOnly to better convey
     //                          its actual functionality.
-    if (!cookie_settings->IsCookieSessionOnly(origin))
+    if (!cookie_settings->IsCookieSessionOnly(origin.GetURL()))
       continue;
 
-    remove_storage_apis.BindString(0, origin.spec());
+    remove_storage_apis.BindString(0, origin.Serialize());
     if (!remove_storage_apis.Run())
       return;
     remove_storage_apis.Reset(true);
@@ -305,7 +376,7 @@ void AccessContextAuditDatabase::RemoveAllRecordsForCookie(
 }
 
 void AccessContextAuditDatabase::RemoveAllRecordsForOriginStorage(
-    const GURL& origin,
+    const url::Origin& origin,
     StorageAPIType type) {
   std::string remove;
   remove.append("DELETE FROM ");
@@ -313,7 +384,7 @@ void AccessContextAuditDatabase::RemoveAllRecordsForOriginStorage(
   remove.append(" WHERE origin = ? AND type = ?");
   sql::Statement remove_statement(
       db_.GetCachedStatement(SQL_FROM_HERE, remove.c_str()));
-  remove_statement.BindString(0, origin.GetOrigin().spec());
+  remove_statement.BindString(0, origin.Serialize());
   remove_statement.BindInt(1, static_cast<int>(type));
   remove_statement.Run();
 }
@@ -324,17 +395,20 @@ AccessContextAuditDatabase::GetAllRecords() {
 
   std::string select;
   select.append(
-      "SELECT top_frame_origin, name, domain, path, access_utc FROM ");
+      "SELECT top_frame_origin, name, domain, path, access_utc, is_persistent "
+      "FROM ");
   select.append(kCookieTableName);
   sql::Statement select_cookies(
       db_.GetCachedStatement(SQL_FROM_HERE, select.c_str()));
 
   while (select_cookies.Step()) {
     records.emplace_back(
-        GURL(select_cookies.ColumnString(0)), select_cookies.ColumnString(1),
-        select_cookies.ColumnString(2), select_cookies.ColumnString(3),
+        url::Origin::Create(GURL(select_cookies.ColumnString(0))),
+        select_cookies.ColumnString(1), select_cookies.ColumnString(2),
+        select_cookies.ColumnString(3),
         base::Time::FromDeltaSinceWindowsEpoch(
-            base::TimeDelta::FromMicroseconds(select_cookies.ColumnInt64(4))));
+            base::TimeDelta::FromMicroseconds(select_cookies.ColumnInt64(4))),
+        select_cookies.ColumnBool(5));
   }
 
   select.clear();
@@ -345,9 +419,9 @@ AccessContextAuditDatabase::GetAllRecords() {
 
   while (select_storage_api.Step()) {
     records.emplace_back(
-        GURL(select_storage_api.ColumnString(0)),
+        url::Origin::Create(GURL(select_storage_api.ColumnString(0))),
         static_cast<StorageAPIType>(select_storage_api.ColumnInt(1)),
-        GURL(select_storage_api.ColumnString(2)),
+        url::Origin::Create(GURL(select_storage_api.ColumnString(2))),
         base::Time::FromDeltaSinceWindowsEpoch(
             base::TimeDelta::FromMicroseconds(
                 select_storage_api.ColumnInt64(3))));

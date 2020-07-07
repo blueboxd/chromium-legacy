@@ -459,13 +459,7 @@ TEST_F(ThemeServiceTest, UseDefaultTheme_DisableExtensionTest) {
   EXPECT_FALSE(service_->IsExtensionEnabled(scoper.extension_id()));
 }
 
-// TODO(https://crbug.com/1074297) flaky on TSan bots
-#if defined(THREAD_SANITIZER)
-#define MAYBE_OmniboxContrast DISABLED_OmniboxContrast
-#else
-#define MAYBE_OmniboxContrast OmniboxContrast
-#endif
-TEST_F(ThemeServiceTest, MAYBE_OmniboxContrast) {
+TEST_F(ThemeServiceTest, OmniboxContrast) {
   using TP = ThemeProperties;
   for (bool dark : {false, true}) {
     native_theme_.SetDarkMode(dark);

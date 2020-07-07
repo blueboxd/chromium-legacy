@@ -642,7 +642,6 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="6154478581116148741">Turn on screen lock in Settings to export your passwords from this device</translation>
 <translation id="6157392216611456285">Choose <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> data savings</translation>
-<translation id="6192333916571137726">Download File</translation>
 <translation id="6201345951596836663">Link copied</translation>
 <translation id="6206830853671714236">Choose when to download</translation>
 <translation id="6210748933810148297">Not <ph name="EMAIL" />?</translation>
@@ -877,6 +876,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8013372441983637696">Also clear your Chrome data from this device</translation>
 <translation id="8015452622527143194">Return everything on the page to default size</translation>
 <translation id="8026334261755873520">Clear browsing data</translation>
+<translation id="8027863900915310177">Choose where to download</translation>
 <translation id="8035133914807600019">New folder…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> days left</translation>
 <translation id="804335162455518893">SD card not found</translation>

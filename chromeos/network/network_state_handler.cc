@@ -1578,27 +1578,30 @@ void NetworkStateHandler::TechnologyListChanged() {
 void NetworkStateHandler::ManagedStateListChanged(
     ManagedState::ManagedType type) {
   SCOPED_NET_LOG_IF_SLOW();
-  if (type == ManagedState::MANAGED_TYPE_NETWORK) {
-    SortNetworkList(true /* ensure_cellular */);
-    UpdateNetworkStats();
-    NotifyIfActiveNetworksChanged();
-    NotifyNetworkListChanged();
-    UpdateManagedWifiNetworkAvailable();
-  } else if (type == ManagedState::MANAGED_TYPE_DEVICE) {
-    std::string devices;
-    for (auto iter = device_list_.begin(); iter != device_list_.end(); ++iter) {
-      if (iter != device_list_.begin())
-        devices += ", ";
-      devices += (*iter)->name();
-    }
-    NET_LOG(EVENT) << "DeviceList: " << devices;
-    // A change to the device list may affect the default Cellular network, so
-    // call SortNetworkList here.
-    SortNetworkList(true /* ensure_cellular */);
-    NotifyDeviceListChanged();
-  } else {
-    NOTREACHED();
+  switch (type) {
+    case ManagedState::MANAGED_TYPE_NETWORK:
+      SortNetworkList(true /* ensure_cellular */);
+      UpdateNetworkStats();
+      NotifyIfActiveNetworksChanged();
+      NotifyNetworkListChanged();
+      UpdateManagedWifiNetworkAvailable();
+      return;
+    case ManagedState::MANAGED_TYPE_DEVICE:
+      std::string devices;
+      for (auto iter = device_list_.begin(); iter != device_list_.end();
+           ++iter) {
+        if (iter != device_list_.begin())
+          devices += ", ";
+        devices += (*iter)->name();
+      }
+      NET_LOG(EVENT) << "DeviceList: " << devices;
+      // A change to the device list may affect the default Cellular network, so
+      // call SortNetworkList here.
+      SortNetworkList(true /* ensure_cellular */);
+      NotifyDeviceListChanged();
+      return;
   }
+  NOTREACHED();
 }
 
 void NetworkStateHandler::SortNetworkList(bool ensure_cellular) {
@@ -2084,7 +2087,7 @@ std::string NetworkStateHandler::GetTechnologyForType(
   if (type.MatchesType(kTypeTether))
     return kTypeTether;
 
-  NOTREACHED() << "Unexpected Type: " << type.ToDebugString();
+  NET_LOG(ERROR) << "Unexpected Type for technology: " << type.ToDebugString();
   return std::string();
 }
 

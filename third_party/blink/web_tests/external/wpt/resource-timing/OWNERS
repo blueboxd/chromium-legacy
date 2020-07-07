@@ -1,4 +1,6 @@
 # TEAM: speed-metrics-dev@chromium.org
 # COMPONENT: Blink>PerformanceAPIs>ResourceTiming
+# WPT-NOTIFY: true
 ksakamoto@chromium.org
 npm@chromium.org
+yoavweiss@chromium.org

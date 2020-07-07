@@ -9,14 +9,11 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/guid.h"
 #include "base/rand_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/query_tiles/internal/proto_conversion.h"
-#include "components/query_tiles/internal/stats.h"
 #include "components/query_tiles/internal/tile_config.h"
-#include "components/query_tiles/switches.h"
 
 namespace query_tiles {
 
@@ -45,6 +42,7 @@ void TileServiceImpl::OnTileManagerInitialized(SuccessCallback callback,
   bool success = (status == TileGroupStatus::kSuccess ||
                   status == TileGroupStatus::kNoTiles);
   DCHECK(callback);
+  scheduler_->SetDelegate(this);
   scheduler_->OnTileManagerInitialized(status);
   std::move(callback).Run(success);
 }
@@ -65,10 +63,7 @@ void TileServiceImpl::StartFetchForTiles(
   tile_fetcher_->StartFetchForTiles(base::BindOnce(
       &TileServiceImpl::OnFetchFinished, weak_ptr_factory_.GetWeakPtr(),
       is_from_reduced_mode, std::move(task_finished_callback)));
-
-  base::Time::Exploded local_explode;
-  base::Time::Now().LocalExplode(&local_explode);
-  stats::RecordExplodeOnFetchStarted(local_explode.hour);
+  scheduler_->OnFetchStarted();
 }
 
 void TileServiceImpl::CancelTask() {
@@ -114,6 +109,8 @@ void TileServiceImpl::OnTilesSaved(
     bool is_from_reduced_mode,
     BackgroundTaskFinishedCallback task_finished_callback,
     TileGroupStatus status) {
+  scheduler_->OnGroupDataSaved(status);
+
   if (status != TileGroupStatus::kSuccess) {
     std::move(task_finished_callback).Run(false /*reschedule*/);
     return;
@@ -130,6 +127,10 @@ void TileServiceImpl::OnPrefetchImagesDone(
     BackgroundTaskFinishedCallback task_finished_callback) {
   DCHECK(task_finished_callback);
   std::move(task_finished_callback).Run(false /*reschedule*/);
+}
+
+TileGroup* TileServiceImpl::GetTileGroup() {
+  return tile_manager_->GetTileGroup();
 }
 
 }  // namespace query_tiles

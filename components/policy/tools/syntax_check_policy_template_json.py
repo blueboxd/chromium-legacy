@@ -1357,8 +1357,9 @@ class PolicyTemplateChecker(object):
             MergeDict(new_released_platforms, new_rolling_out_platform),
             current_version, original_policy['name'])
 
-      self._CheckDeprecatedFutureField(original_policy, new_policy,
-                                       original_policy['name'])
+      if new_policy:
+        self._CheckDeprecatedFutureField(original_policy, new_policy,
+                                         original_policy['name'])
 
     # Check brand new policies:
     for new_policy_name in set(

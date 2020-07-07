@@ -127,7 +127,8 @@ void ColorPropertyFunctions::SetUnvisitedColor(const CSSProperty& property,
       style.SetBorderTopColor(color);
       return;
     case CSSPropertyID::kCaretColor:
-      return style.SetCaretColor(color);
+      style.SetCaretColor(StyleAutoColor(color));
+      return;
     case CSSPropertyID::kColor:
       style.SetColor(color);
       return;
@@ -178,7 +179,8 @@ void ColorPropertyFunctions::SetVisitedColor(const CSSProperty& property,
       style.SetInternalVisitedBorderTopColor(color);
       return;
     case CSSPropertyID::kCaretColor:
-      return style.SetInternalVisitedCaretColor(color);
+      style.SetInternalVisitedCaretColor(StyleAutoColor(color));
+      return;
     case CSSPropertyID::kColor:
       style.SetInternalVisitedColor(color);
       return;

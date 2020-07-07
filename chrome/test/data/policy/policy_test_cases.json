@@ -5577,6 +5577,30 @@
     ]
   },
 
+  "DeviceExternalPrintServers": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "DeviceExternalPrintServers": {
+            "url": "https://example.com/policyfile",
+            "hash": "deadbeefdeadbeefdeadbeef"
+          }
+        }
+      }
+    ]
+  },
+
+  "DeviceExternalPrintServersAllowlist": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "DeviceExternalPrintServersAllowlist": ["id4", "id7", "id10"]},
+        "prefs": { "cros.device.external_print_servers_allowlist": {} }
+      }
+    ]
+  },
+
   "TPMFirmwareUpdateSettings": {
     "os": ["chromeos"],
     "policy_pref_mapping_test": [

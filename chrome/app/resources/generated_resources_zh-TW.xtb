@@ -281,7 +281,6 @@
 <translation id="1340527397989195812">使用「檔案」應用程式備份裝置上的媒體。</translation>
 <translation id="1341988552785875222">目前使用的桌布是由「<ph name="APP_NAME" />」設定。您可能需要先解除安裝「<ph name="APP_NAME" />」，才能選用其他桌布。</translation>
 <translation id="1343865611738742294">請授權 Linux 應用程式存取 USB 裝置。移除後，Linux 將不會記住這部 USB 裝置。</translation>
-<translation id="1344143111673240412">必須重新啟動 Parallels Desktop，攝影機設定的變更才會生效</translation>
 <translation id="1347256498747320987">安裝更新和應用程式。如果您選擇繼續，即表示您允許這個裝置自動下載及安裝來自 Google、您的電信業者和裝置製造商的更新內容和應用程式，且下載程序可能會使用行動數據。這類應用程式中，有些可能會提供應用程式內購項目。<ph name="BEGIN_LINK1" />瞭解詳情<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">電池電量達到 <ph name="BATTERY_LEVEL" />% 後便會開始更新。</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />：<ph name="NETWORK_NAME" /></translation>
@@ -1196,7 +1195,6 @@
 <translation id="2470702053775288986">已停用不支援的擴充功能</translation>
 <translation id="2471469610750100598">黑色 (預設)</translation>
 <translation id="2473195200299095979">翻譯這個網頁</translation>
-<translation id="2474848500897222119">「<ph name="PRINTER_NAME" />」的墨水已用盡</translation>
 <translation id="2475982808118771221">發生錯誤</translation>
 <translation id="2476578072172137802">網站設定</translation>
 <translation id="2478176599153288112">「<ph name="EXTENSION" />」的媒體檔案權限</translation>
@@ -1373,7 +1371,7 @@
 <translation id="2682498795777673382">你的家長已更新設定</translation>
 <translation id="2683638487103917598">資料夾已排序</translation>
 <translation id="2684004000387153598">如要繼續操作，請依序點選 [確定] 和 [新增使用者]，為你的電子郵件地址建立新的設定檔。</translation>
-<translation id="2686222346846590368">這是這部 <ph name="DEVICE_TYPE" /> 最後一次自動更新軟體和安全性。如要取得後續更新，請升級為較新的型號。&lt;a target="_blank" href="<ph name="URL" />"&gt;瞭解詳情<ph name="LINK_END" /></translation>
+<translation id="2686222346846590368">這是這部 <ph name="DEVICE_TYPE" /> 最後一次自動安裝軟體和安全性更新程式。如要取得後續更新，請升級為較新的型號。&lt;a target="_blank" href="<ph name="URL" />"&gt;瞭解詳情<ph name="LINK_END" /></translation>
 <translation id="2687403674020088961">封鎖所有 Cookie (不建議)</translation>
 <translation id="2687407218262674387">Google 服務條款</translation>
 <translation id="2688196195245426394">向伺服器註冊裝置時發生錯誤：<ph name="CLIENT_ERROR" />。</translation>
@@ -1502,7 +1500,6 @@
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> 正在使用系統管理員的 Proxy 設定</translation>
 <translation id="2825758591930162672">主體的公開金鑰</translation>
 <translation id="2828650939514476812">連線至 Wi-Fi 網路</translation>
-<translation id="28291580771888953">「<ph name="PRINTER_NAME" />」的佇列已滿</translation>
 <translation id="2835547721736623118">語音辨識服務</translation>
 <translation id="2836269494620652131">當機</translation>
 <translation id="2836635946302913370">管理員已禁止使用這個使用者名稱登入。</translation>
@@ -2318,7 +2315,7 @@
 <translation id="3839516600093027468">一律禁止 <ph name="HOST" /> 讀取剪貼簿</translation>
 <translation id="3841964634449506551">密碼無效</translation>
 <translation id="3842552989725514455">Serif 字型</translation>
-<translation id="3843058644024807390">必須重新啟動 Parallels Desktop，麥克風設定的變更才會生效</translation>
+<translation id="3843464315703645664">已加入內部允許清單</translation>
 <translation id="3846116211488856547">取得網站開發工具、Android 應用程式等等。安裝 Linux 將下載 <ph name="DOWNLOAD_SIZE" /> 的資料。</translation>
 <translation id="3847319713229060696">協助我們改善所有人的網路安全性</translation>
 <translation id="385051799172605136">返回</translation>
@@ -2776,7 +2773,6 @@
 <translation id="4453946976636652378">執行 <ph name="SEARCH_ENGINE_NAME" /> 搜尋或輸入網址</translation>
 <translation id="4459169140545916303">上次使用時間：<ph name="DEVICE_LAST_ACTIVATED_TIME" /> 天前</translation>
 <translation id="4460014764210899310">取消分組</translation>
-<translation id="4460343359907016103">連線至「<ph name="PRINTER_NAME" />」時發生錯誤</translation>
 <translation id="4462159676511157176">自訂名稱伺服器</translation>
 <translation id="4465236939126352372">已為「<ph name="APP_NAME" />」設定 <ph name="TIME" />的時間限制</translation>
 <translation id="4465725236958772856">第 <ph name="NETWORK_INDEX" /> 個網路 (共 <ph name="NETWORK_COUNT" /> 個)，<ph name="NETWORK_NAME" />，由系統管理員管理，連線</translation>
@@ -3074,7 +3070,6 @@
 <translation id="4864369630010738180">登入中...</translation>
 <translation id="4864805589453749318">請選取要授予新增學校帳戶權限的家長。</translation>
 <translation id="486635084936119914">下載特定類型的檔案後自動開啟</translation>
-<translation id="4869213010169296107">「<ph name="PRINTER_NAME" />」缺少紙匣</translation>
 <translation id="48704129375571883">新增其他功能</translation>
 <translation id="4870758487381879312">輸入管理員提供的密碼即可取得設定資訊</translation>
 <translation id="4870903493621965035">沒有任何配對裝置</translation>
@@ -3325,6 +3320,7 @@
 <translation id="5184662919967270437">正在更新您的裝置</translation>
 <translation id="5185359571430619712">查看擴充功能</translation>
 <translation id="5185386675596372454">由於最新版本的 <ph name="EXTENSION_NAME" /> 需要更多權限，因此已經停用。</translation>
+<translation id="5185500136143151980">沒有網際網路連線</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5190926251776387065">啟用通訊埠</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> 想要下載多個檔案</translation>
@@ -3481,7 +3477,6 @@
 <translation id="5390112241331447203">納入透過使用狀況報告所傳送的 system_logs.txt 檔案。</translation>
 <translation id="5390677308841849479">深紅色與橘色</translation>
 <translation id="5390743329570580756">傳送連線類型</translation>
-<translation id="5395869306561378615">「<ph name="PRINTER_NAME" />」已暫停運作</translation>
 <translation id="5397794290049113714">你</translation>
 <translation id="5398572795982417028">參照的網頁超出範圍限制 (<ph name="MAXIMUM_PAGE" />)</translation>
 <translation id="5398772614898833570">已封鎖廣告</translation>
@@ -3496,7 +3491,6 @@
 <translation id="5417312524372586921">瀏覽器主題</translation>
 <translation id="5419405654816502573">Voice Match</translation>
 <translation id="5420438158931847627">決定文字和圖片的銳利度</translation>
-<translation id="5421498071721257877">「<ph name="PRINTER_NAME" />」發生裝置錯誤</translation>
 <translation id="5422221874247253874">存取點</translation>
 <translation id="5422781158178868512">很抱歉，系統無法識別你的外部儲存裝置。</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3845,7 +3839,6 @@
 <translation id="5852137567692933493">重新啟動並恢復原廠設定</translation>
 <translation id="5854912040170951372">披薩</translation>
 <translation id="5855267860608268405">已知的 Wi-Fi 網路</translation>
-<translation id="5855310969323666289">「<ph name="PRINTER_NAME" />」的蓋子處於開啟狀態</translation>
 <translation id="5855643921295613558">0.6 秒</translation>
 <translation id="5856721540245522153">啟用偵錯功能</translation>
 <translation id="5857090052475505287">新資料夾</translation>
@@ -3876,7 +3869,6 @@
 <translation id="5877064549588274448">版本已變更。請重新啟動裝置以套用變更。</translation>
 <translation id="5877584842898320529">選取的印表機無法使用或未正確安裝。<ph name="BR" />請檢查你的印表機，或改選其他印表機。</translation>
 <translation id="5882919346125742463">已知網路</translation>
-<translation id="5883716097305842571">「<ph name="PRINTER_NAME" />」的輸出紙匣幾乎已滿</translation>
 <translation id="5884474295213649357">這個分頁已連上 USB 裝置。</translation>
 <translation id="5886009770935151472">手指 1</translation>
 <translation id="5889282057229379085">中繼 CA 數目上限：<ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4442,7 +4434,6 @@
 <translation id="6611972847767394631">你可以在這裡找到已開啟的分頁</translation>
 <translation id="6612358246767739896">受保護內容</translation>
 <translation id="6615455863669487791">顯示</translation>
-<translation id="6617034477946102682">無法連上「<ph name="PRINTER_NAME" />」</translation>
 <translation id="6618097958368085618">確定保留</translation>
 <translation id="6618744767048954150">檢查中</translation>
 <translation id="6619058681307408113">線上印表機服務精靈 (LPD)</translation>
@@ -4772,7 +4763,7 @@
 <translation id="7022562585984256452">首頁已設定完成。</translation>
 <translation id="7025082428878635038">全新的手勢瀏覽功能正式登場</translation>
 <translation id="7025190659207909717">行動數據服務管理</translation>
-<translation id="7029307918966275733">未安裝 Crostini。請安裝 Crostini 以查看點數。</translation>
+<translation id="7029307918966275733">未安裝 Crostini。請安裝 Crostini 以查看開發人員名單。</translation>
 <translation id="7029809446516969842">密碼</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> - 已連線至序列埠</translation>
 <translation id="7031962166228839643">正在準備 TPM，請稍候 (這可能需要幾分鐘的時間)...</translation>
@@ -4859,7 +4850,6 @@
 <translation id="7128151990937044829">封鎖通知時，在網址列上顯示圖示</translation>
 <translation id="7131040479572660648">讀取你在 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 和 <ph name="WEBSITE_3" /> 上產生的資料</translation>
 <translation id="713122686776214250">新增網頁(&amp;G)...</translation>
-<translation id="7131379856697962078">「<ph name="PRINTER_NAME" />」的輸出紙匣已滿</translation>
 <translation id="7133578150266914903">你的管理員正在復原這個裝置 (進度：<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">縮小文字</translation>
 <translation id="7135729336746831607">要開啟藍牙功能嗎？</translation>
@@ -4878,7 +4868,6 @@
 <translation id="7152478047064750137">這個擴充功能不需要特殊權限</translation>
 <translation id="7154130902455071009">將你的起始網頁變更為：<ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">現有的相機相片或圖庫相片</translation>
-<translation id="715657691234357425">「<ph name="PRINTER_NAME" />」的紙張即將用盡</translation>
 <translation id="7165320105431587207">無法設定網路</translation>
 <translation id="716640248772308851">「<ph name="EXTENSION" />」對於勾選位置中的圖片、影片和聲音檔具有讀取權限。</translation>
 <translation id="7167486101654761064">一律開啟這類檔案(&amp;A)</translation>
@@ -4909,7 +4898,6 @@
 <translation id="7197632491113152433">你的帳戶中有 <ph name="NUMBER_OF_APPS" /> 個應用程式可在這部裝置上使用。</translation>
 <translation id="7199158086730159431">取得說明(&amp;E)</translation>
 <translation id="7200083590239651963">選取設定</translation>
-<translation id="7201042526153088083">在你的 <ph name="DEVICE_TYPE" /> 上透過 Google Play 安裝應用程式和遊戲。&lt;a target="_blank" href="<ph name="URL" />"&gt;瞭解詳情&lt;/a&gt;</translation>
 <translation id="720110658997053098">讓裝置永久使用 Kiosk 模式</translation>
 <translation id="7201118060536064622">已刪除「<ph name="DELETED_ITEM_NAME" />」</translation>
 <translation id="7201420661433230412">查看檔案</translation>
@@ -5215,7 +5203,6 @@
 <translation id="7598466960084663009">重新開機</translation>
 <translation id="7599527631045201165">裝置名稱過長。請輸入較短的名稱，然後再試一次。</translation>
 <translation id="7600965453749440009">一律不翻譯<ph name="LANGUAGE" /></translation>
-<translation id="7601297144931396972">「<ph name="PRINTER_NAME" />」發生卡紙</translation>
 <translation id="760197030861754408">如要連線，請前往 <ph name="LANDING_PAGE" />。</translation>
 <translation id="7602079150116086782">沒有在其他裝置上開啟的分頁</translation>
 <translation id="7602173054665172958">列印管理</translation>
@@ -5226,6 +5213,7 @@
 <translation id="7609148976235050828">請連上網際網路，然後再試一次。</translation>
 <translation id="7614260613810441905">網站必須先詢問你，才能編輯裝置上的檔案或資料夾 (建議使用)</translation>
 <translation id="761530003705945209">使用 Google 雲端硬碟備份你的資料。你隨時可以輕鬆還原資料或切換裝置。備份項目包含應用程式資料。備份內容會上傳到 Google，並使用你的 Google 帳戶密碼加密。</translation>
+<translation id="7615365294369022248">新增帳戶時發生錯誤</translation>
 <translation id="7616214729753637086">正在註冊裝置…</translation>
 <translation id="7617263010641145920">開啟 Play 商店</translation>
 <translation id="7617366389578322136">正在連線至「<ph name="DEVICE_NAME" />」</translation>
@@ -5673,7 +5661,6 @@
 <translation id="8123590694679414600">系統已採用你在 <ph name="TIME" />設定的同步通關密語針對資料進行加密處理。加密的資料不包括 Google Pay 的付款方式和地址。</translation>
 <translation id="81238879832906896">黃色和白色花朵</translation>
 <translation id="8124313775439841391">管理化 ONC</translation>
-<translation id="8127535217699822294">「<ph name="PRINTER_NAME" />」的紙張已用盡</translation>
 <translation id="813082847718468539">查看網站資訊</translation>
 <translation id="8131740175452115882">確認</translation>
 <translation id="8133676275609324831">在資料夾中顯示(&amp;S)</translation>
@@ -5772,7 +5759,6 @@
 <translation id="8254954272268479918">關閉 Linux (Beta 版)</translation>
 <translation id="8255451560461371599">無背景圖片</translation>
 <translation id="8256319818471787266">小黃</translation>
-<translation id="8256417822772703842">「<ph name="PRINTER_NAME" />」的墨水即將用盡</translation>
 <translation id="8257950718085972371">繼續封鎖存取攝影機</translation>
 <translation id="8259239505248583312">開始使用</translation>
 <translation id="8260864402787962391">滑鼠</translation>
@@ -5953,7 +5939,6 @@
 <translation id="8487678622945914333">放大</translation>
 <translation id="8490896350101740396">下列 Kiosk 應用程式「<ph name="UPDATED_APPS" />」已更新。請重新啟動裝置，以完成更新程序。</translation>
 <translation id="8493236660459102203">麥克風：</translation>
-<translation id="8495940850609851342">「<ph name="PRINTER_NAME" />」已停止運作</translation>
 <translation id="8496717697661868878">執行這個外掛程式</translation>
 <translation id="8497219075884839166">Windows 公用程式</translation>
 <translation id="8498214519255567734">讓你在光線昏暗的環境下更容易看清畫面內容或閱讀文字</translation>
@@ -6495,6 +6480,12 @@
 <translation id="9157096865782046368">0.8 秒</translation>
 <translation id="9157697743260533322">無法為所有使用者設定自動更新作業 (預先啟動錯誤：<ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">糟糕！驗證過程中發生網路通訊問題，請檢查你的網路連線，然後再試一次。</translation>
+<translation id="9159643062839240276">請嘗試下列方法：
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />檢查網路線、數據機和路由器
+      <ph name="LIST_ITEM" />重新連線至 Wi-Fi
+      <ph name="LIST_ITEM" />執行 Chrome 連線診斷工具
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">子母畫面</translation>
 <translation id="9168436347345867845">稍後再說</translation>
 <translation id="9169496697824289689">查看鍵盤快速鍵</translation>

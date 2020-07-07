@@ -469,24 +469,17 @@ ci.android_builder(
 
 ci.chromium_builder(
     name = 'android-official',
-    # TODO(https://crbug.com/1072012) Use the default console view and add
-    # main_console_view = settings.main_console_name once the build is green
-    console_view = 'chromium.fyi',
+    main_console_view = settings.main_console_name,
     console_view_entry = ci.console_view_entry(
         category = 'android',
         short_name = 'off',
     ),
     cores = 32,
-    # TODO: Change this back down to something reasonable once these builders
-    # have populated their cached by getting through the compile step
-    execution_timeout = 6 * time.hour,
 )
 
 ci.chromium_builder(
     name = 'fuchsia-official',
-    # TODO(https://crbug.com/1072012) Use the default console view and add
-    # main_console_view = settings.main_console_name once the build is green
-    console_view = 'chromium.fyi',
+    main_console_view = settings.main_console_name,
     console_view_entry = ci.console_view_entry(
         category = 'fuchsia',
         short_name = 'off',

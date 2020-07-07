@@ -62,6 +62,7 @@
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/fileapi/url_file_api.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -1482,8 +1483,8 @@ bool HTMLMediaElement::IsSafeToLoadURL(const KURL& url,
     return false;
   }
 
-  LocalFrame* frame = GetDocument().GetFrame();
-  if (!frame || !GetDocument().GetSecurityOrigin()->CanDisplay(url)) {
+  LocalDOMWindow* window = GetDocument().domWindow();
+  if (!window || !window->GetSecurityOrigin()->CanDisplay(url)) {
     if (action_if_invalid == kComplain) {
       GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
           mojom::ConsoleMessageSource::kSecurity,

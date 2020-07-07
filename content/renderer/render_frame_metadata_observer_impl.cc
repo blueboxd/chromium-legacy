@@ -58,11 +58,14 @@ void RenderFrameMetadataObserverImpl::OnRenderFrameSubmission(
     send_metadata |= force_send;
   }
 
+#if defined(OS_ANDROID)
   const bool send_root_scroll_offset_changed =
-      !send_metadata && last_render_frame_metadata_ &&
+      report_all_root_scrolls_enabled_ && !send_metadata &&
+      render_frame_metadata_observer_client_ && last_render_frame_metadata_ &&
       last_render_frame_metadata_->root_scroll_offset !=
           render_frame_metadata.root_scroll_offset &&
       render_frame_metadata.root_scroll_offset.has_value();
+#endif
 
   // Always cache the full metadata, so that it can correctly be sent upon
   // ReportAllFrameSubmissionsForTesting or on android, which notifies on any
@@ -103,11 +106,14 @@ void RenderFrameMetadataObserverImpl::OnRenderFrameSubmission(
             ? metadata_copy.local_surface_id_allocation->local_surface_id()
                   .ToString()
             : "null");
-  } else if (render_frame_metadata_observer_client_ &&
-             send_root_scroll_offset_changed) {
+  }
+
+#if defined(OS_ANDROID)
+  if (send_root_scroll_offset_changed) {
     render_frame_metadata_observer_client_->OnRootScrollOffsetChanged(
         *render_frame_metadata.root_scroll_offset);
   }
+#endif
 
   // Always cache the initial frame token, so that if a test connects later on
   // it can be notified of the initial state.

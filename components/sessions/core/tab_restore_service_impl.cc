@@ -17,6 +17,7 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
@@ -477,7 +478,7 @@ class TabRestoreServiceImpl::PersistenceDelegate
   std::vector<std::unique_ptr<Entry>> staging_entries_;
 
   // Used when loading previous tabs/session and open tabs/session.
-  base::CancelableTaskTracker cancelable_task_tracker_;
+  base::WeakPtrFactory<PersistenceDelegate> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PersistenceDelegate);
 };
@@ -602,9 +603,8 @@ void TabRestoreServiceImpl::PersistenceDelegate::LoadTabsFromLastSession() {
   load_state_ = LOADING;
   if (client_->HasLastSession()) {
     client_->GetLastSession(
-        base::BindRepeating(&PersistenceDelegate::OnGotPreviousSession,
-                            base::Unretained(this)),
-        &cancelable_task_tracker_);
+        base::BindOnce(&PersistenceDelegate::OnGotPreviousSession,
+                       weak_factory_.GetWeakPtr()));
   } else {
     load_state_ |= LOADED_LAST_SESSION;
   }
@@ -612,10 +612,9 @@ void TabRestoreServiceImpl::PersistenceDelegate::LoadTabsFromLastSession() {
   // Request the tabs closed in the last session. If the last session crashed,
   // this won't contain the tabs/window that were open at the point of the
   // crash (the call to GetLastSession above requests those).
-  command_storage_manager_->ScheduleGetLastSessionCommands(
+  command_storage_manager_->GetLastSessionCommands(
       base::BindOnce(&PersistenceDelegate::OnGotLastSessionCommands,
-                     base::Unretained(this)),
-      &cancelable_task_tracker_);
+                     weak_factory_.GetWeakPtr()));
 }
 
 void TabRestoreServiceImpl::PersistenceDelegate::DeleteLastSession() {

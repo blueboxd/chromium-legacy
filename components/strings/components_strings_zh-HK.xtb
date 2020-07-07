@@ -488,6 +488,7 @@
 <translation id="3005723025932146533">顯示儲存的複本</translation>
 <translation id="3008447029300691911">請輸入 <ph name="CREDIT_CARD" /> 的信用卡驗證碼 (CVC)。完成驗證後，系統會與這個網站共用您的信用卡資料。</translation>
 <translation id="3010559122411665027">清單項目「<ph name="ENTRY_INDEX" />」：<ph name="ERROR" /></translation>
+<translation id="3013266782169695070"><ph name="APP_NAME" /> 會收集診斷資料，以改善產品使用體驗。請查閱 <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" /> 以瞭解詳情。</translation>
 <translation id="301521992641321250">已自動封鎖</translation>
 <translation id="3016780570757425217">掌握您的位置</translation>
 <translation id="3023071826883856138">You4 (信封)</translation>

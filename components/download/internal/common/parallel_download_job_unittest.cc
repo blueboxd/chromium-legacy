@@ -131,7 +131,7 @@ class ParallelDownloadJobTest : public testing::Test {
     info.total_bytes = content_length;
     job_ = std::make_unique<ParallelDownloadJobForTest>(
         download_item_.get(),
-        base::Bind(&ParallelDownloadJobTest::CancelRequest,
+        base::BindOnce(&ParallelDownloadJobTest::CancelRequest,
                    base::Unretained(this)),
         info, request_count, min_slice_size, min_remaining_time);
     file_initialized_ = false;
@@ -418,7 +418,7 @@ TEST_F(ParallelDownloadJobTest, ParallelRequestNotCreatedUntilFileInitialized) {
       observer_factory.GetWeakPtr());
   CreateParallelJob(0, 100, DownloadItem::ReceivedSlices(), 2, 0, 0);
   job_->Start(download_file.get(),
-              base::Bind(&ParallelDownloadJobTest::OnFileInitialized,
+              base::BindRepeating(&ParallelDownloadJobTest::OnFileInitialized,
                          base::Unretained(this)),
               DownloadItem::ReceivedSlices());
   EXPECT_FALSE(file_initialized_);

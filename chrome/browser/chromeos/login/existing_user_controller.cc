@@ -78,7 +78,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/tpm_error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/wrong_hwid_screen_handler.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -566,7 +565,6 @@ void ExistingUserController::UpdateLoginDisplay(
   show_users_on_signin |= !filtered_users.empty();
   bool allow_new_user = true;
   cros_settings_->GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
-  GetLoginDisplay()->set_parent_window(GetNativeWindow());
   GetLoginDisplay()->Init(filtered_users, show_guest, show_users_on_signin,
                           allow_new_user);
   GetLoginDisplayHost()->OnPreferencesChanged();
@@ -868,18 +866,6 @@ void ExistingUserController::SetDisplayAndGivenName(
     const std::string& given_name) {
   display_name_ = base::UTF8ToUTF16(display_name);
   given_name_ = base::UTF8ToUTF16(given_name);
-}
-
-void ExistingUserController::ShowWrongHWIDScreen() {
-  GetLoginDisplayHost()->StartWizard(WrongHWIDScreenView::kScreenId);
-}
-
-void ExistingUserController::ShowUpdateRequiredScreen() {
-  GetLoginDisplayHost()->StartWizard(UpdateRequiredView::kScreenId);
-}
-
-void ExistingUserController::Signout() {
-  NOTREACHED();
 }
 
 bool ExistingUserController::IsUserWhitelisted(const AccountId& account_id) {
@@ -1610,7 +1596,7 @@ void ExistingUserController::ConfigureAutoLogin() {
   if (show_update_required_screen) {
     // Update required screen overrides public session auto login.
     StopAutoLoginTimer();
-    ShowUpdateRequiredScreen();
+    GetLoginDisplayHost()->StartWizard(UpdateRequiredView::kScreenId);
   } else if (public_session_auto_login_account_id_.is_valid()) {
     StartAutoLoginTimer();
   } else {

@@ -77,7 +77,7 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView {
   void UpdateWindowIcon() override;
   void UpdateWindowTitle() override;
   void SizeConstraintsChanged() override;
-  void PaintAsActiveChanged(bool active) override;
+  void PaintAsActiveChanged() override;
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;

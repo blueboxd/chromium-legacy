@@ -34,6 +34,7 @@
 
 #include "base/stl_util.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
@@ -45,8 +46,8 @@ static inline bool CanReferToParentFrameEncoding(
     const LocalFrame* frame,
     const LocalFrame* parent_frame) {
   return parent_frame &&
-         parent_frame->GetDocument()->GetSecurityOrigin()->CanAccess(
-             frame->GetDocument()->GetSecurityOrigin());
+         parent_frame->DomWindow()->GetSecurityOrigin()->CanAccess(
+             frame->DomWindow()->GetSecurityOrigin());
 }
 
 namespace {

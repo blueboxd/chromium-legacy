@@ -90,9 +90,9 @@ placed in `//chrome/test/data/xr/e2e_test_files/html`. The exact contents of
 your file will depend on your test, but you will likely be importing some or all
 of the following scripts from `//chrome/test/data/xr/e2e_test_files/resources`:
 
-* `webxr_e2e.js`/`webvr_e2e.js` - Sets up the necessary code to communicate back
+* `webxr_e2e.js` - Sets up the necessary code to communicate back
   and forth between Java and JavaScript
-* `webxr_boilerplate.js`/`webvr_boilerplate.js` - Handles the WebXR and WebVR
+* `webxr_boilerplate.js` - Handles the WebXR and WebVR
   boilerplate code, such as getting an XRDevice and setting up a canvas.
 
 Additionally, in order to use asserts in JavaScript, you must import
@@ -119,24 +119,7 @@ need to add before being able to write your test.
 ### Test Parameterization
 
 Test parameterization is how running a test multiple times in different
-activities is handled. However, it adds some amount of overhead to test runtime,
-so it's only enabled where it makes sense. If your new test class will only have
-VR Browser-related tests, you can skip parameterization. Otherwise, you'll want
-to enable it.
-
-#### Non-Parameterized
-
-See [`VrBrowserTransitionTest`][vr_browser_transition_test] for an example of a
-non-parameterized class. The general things you will need to do are:
-
-* Set the class' `@RunWith` to `ChromeJUnit4ClassRunner.class`.
-* Declare `mTestRule` as a `ChromeTabbedActivityVrTestRule`, annotate it with
-  `@Rule`, and initialize it where it's declared.
-* Declare `mVrBrowserTestFramework` as a `VrBrowserTestFramework` and initialize
-  it using `mTestRule` in a setup method annotated with `@Before`. You can do
-  the same with other types of test frameworks as necessary.
-
-#### Parameterized
+activities is handled. However, it adds some amount of overhead to test runtime.
 
 See [`WebXrVrTransitionTest`][webxr_vr_transition_test] for an example of a
 parameterized class. The general things you will need to are:

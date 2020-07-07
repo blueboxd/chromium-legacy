@@ -24,13 +24,8 @@ playback datasets that are necessary.
 ## Introduction
 
 This directory contains all the Java-side infrastructure for running
-instrumentation tests for XR (VR/Virtual Reality and AR/Augmented Reality)
-features currently in Chrome:
-
-* [WebVR](https://webvr.info/) - Experience VR content on the web
-* [WebXR](https://immersive-web.github.io/webxr-samples/explainer.html) -
-Successor to WebVR, experience VR and AR content on the web
-* VR Browser - Browse the 2D web from a VR headset
+instrumentation tests for [WebXR][webxr_spec]
+(VR/Virtual Reality and AR/Augmented Reality) features currently in Chrome.
 
 These tests are integration/end-to-end tests run in the full Chromium browser on
 actual Android devices.
@@ -43,9 +38,6 @@ testing.
 ### Subdirectories
 
 * `mock/` - Contains all the classes for mock implementations of XR classes.
-* `nfc_apk/` - Contains the code for the standalone APK for NFC simulation. Used
-by Telemetry tests, not instrumentation tests, but kept here since it uses code
-from `util/`.
 * `rules/` - Contains all the XR-specific JUnit4 rules for handling
 functionality such as running tests multiple times in different activities and
 handling the fake VR pose tracker service.
@@ -190,7 +182,7 @@ want to manually apply settings outside of a test, you can do so with
 
 See [adding_new_tests.md][adding_new_tests].
 
-
+[webxr_spec]: https://immersive-web.github.io/webxr-samples/explainer.html
 [shared_prefs_dir]:
 https://chromium.googlesource.com/chromium/src/+/master/chrome/android/shared_preference_files/test
 [html_dir]: https://chromium.googlesource.com/chromium/src/+/master/chrome/test/data/xr/e2e_test_files

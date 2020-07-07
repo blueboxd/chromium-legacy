@@ -38,8 +38,6 @@
 #include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "components/viz/common/resources/single_release_callback.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
-#include "third_party/blink/public/platform/web_runtime_features.h"
-#include "third_party/blink/public/web/blink.h"
 #include "ui/gfx/presentation_feedback.h"
 
 namespace base {

@@ -110,7 +110,8 @@ ContextFeaturesCache& ContextFeaturesCache::From(Document& document) {
 }
 
 void ContextFeaturesCache::ValidateAgainst(Document* document) {
-  String current_domain = document->GetSecurityOrigin()->Domain();
+  String current_domain =
+      document->GetExecutionContext()->GetSecurityOrigin()->Domain();
   if (current_domain == domain_)
     return;
   domain_ = current_domain;

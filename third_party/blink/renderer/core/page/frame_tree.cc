@@ -296,7 +296,7 @@ Frame* FrameTree::FindFrameForNavigationInternal(const AtomicString& name,
   // The embedder can return a frame from another agent cluster. Make sure
   // that the returned frame, if any, has explicitly allowed cross-agent
   // cluster access.
-  DCHECK(!named_frame || local_frame->GetDocument()
+  DCHECK(!named_frame || local_frame->DomWindow()
                              ->GetSecurityOrigin()
                              ->IsGrantedCrossAgentClusterAccess());
   return named_frame;

@@ -441,7 +441,9 @@ template <size_t N>
 }
 
 // A GoogleMock action to run a Closure.
-ACTION_P(InvokeClosure, closure) { closure.Run(); }
+ACTION_P(InvokeClosure, test_closure) {
+  test_closure->closure().Run();
+}
 
 // A FakeWebSocketStream whose ReadFrames() function returns data.
 class ReadableFakeWebSocketStream : public FakeWebSocketStream {
@@ -1692,7 +1694,7 @@ TEST_F(WebSocketChannelEventInterfaceTest,
     EXPECT_CALL(checkpoint, Call(1));
     EXPECT_CALL(*event_interface_,
                 OnDropChannel(false, kWebSocketErrorAbnormalClosure, _))
-        .WillOnce(InvokeClosure(completion.closure()));
+        .WillOnce(InvokeClosure(&completion));
   }
   CreateChannelAndConnectSuccessfully();
   // OneShotTimer is not very friendly to testing; there is no apparent way to
@@ -1727,7 +1729,7 @@ TEST_F(WebSocketChannelEventInterfaceTest,
     EXPECT_CALL(*event_interface_, OnClosingHandshake());
     EXPECT_CALL(*event_interface_,
                 OnDropChannel(false, kWebSocketErrorAbnormalClosure, _))
-        .WillOnce(InvokeClosure(completion.closure()));
+        .WillOnce(InvokeClosure(&completion));
   }
   CreateChannelAndConnectSuccessfully();
   channel_->SetClosingHandshakeTimeoutForTesting(
@@ -2718,8 +2720,7 @@ TEST_F(WebSocketChannelStreamTimeoutTest, ServerInitiatedCloseTimesOut) {
     EXPECT_CALL(*mock_stream_, WriteFramesInternal(EqualsFrames(expected), _))
         .WillOnce(Return(OK));
     EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(*mock_stream_, Close())
-        .WillOnce(InvokeClosure(completion.closure()));
+    EXPECT_CALL(*mock_stream_, Close()).WillOnce(InvokeClosure(&completion));
   }
 
   CreateChannelAndConnectSuccessfully();
@@ -2744,8 +2745,7 @@ TEST_F(WebSocketChannelStreamTimeoutTest, ClientInitiatedCloseTimesOut) {
     InSequence s;
     EXPECT_CALL(*mock_stream_, WriteFramesInternal(EqualsFrames(expected), _))
         .WillOnce(Return(OK));
-    EXPECT_CALL(*mock_stream_, Close())
-        .WillOnce(InvokeClosure(completion.closure()));
+    EXPECT_CALL(*mock_stream_, Close()).WillOnce(InvokeClosure(&completion));
   }
 
   CreateChannelAndConnectSuccessfully();
@@ -2787,8 +2787,7 @@ TEST_F(WebSocketChannelStreamTimeoutTest, ConnectionCloseTimesOut) {
     EXPECT_CALL(*mock_stream_, ReadFramesInternal(_, _))
         .WillOnce(Return(ERR_IO_PENDING));
     // The timeout happens and so WebSocketChannel closes the stream.
-    EXPECT_CALL(*mock_stream_, Close())
-        .WillOnce(InvokeClosure(completion.closure()));
+    EXPECT_CALL(*mock_stream_, Close()).WillOnce(InvokeClosure(&completion));
   }
 
   CreateChannelAndConnectSuccessfully();

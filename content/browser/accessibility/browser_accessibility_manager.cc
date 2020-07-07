@@ -996,7 +996,7 @@ BrowserAccessibility* BrowserAccessibilityManager::PreviousInTreeOrder(
 BrowserAccessibility* BrowserAccessibilityManager::PreviousTextOnlyObject(
     const BrowserAccessibility* object) {
   BrowserAccessibility* previous_object = PreviousInTreeOrder(object, false);
-  while (previous_object && !previous_object->IsTextOnlyObject())
+  while (previous_object && !previous_object->IsText())
     previous_object = PreviousInTreeOrder(previous_object, false);
 
   return previous_object;
@@ -1006,7 +1006,7 @@ BrowserAccessibility* BrowserAccessibilityManager::PreviousTextOnlyObject(
 BrowserAccessibility* BrowserAccessibilityManager::NextTextOnlyObject(
     const BrowserAccessibility* object) {
   BrowserAccessibility* next_object = NextInTreeOrder(object);
-  while (next_object && !next_object->IsTextOnlyObject())
+  while (next_object && !next_object->IsText())
     next_object = NextInTreeOrder(next_object);
 
   return next_object;
@@ -1119,9 +1119,9 @@ BrowserAccessibilityManager::FindTextOnlyObjectsInRange(
   if (!end_text_object->PlatformIsLeaf())
     end_text_object = end_text_object->PlatformDeepestLastChild();
 
-  if (!start_text_object->IsTextOnlyObject())
+  if (!start_text_object->IsText())
     start_text_object = NextTextOnlyObject(start_text_object);
-  if (!end_text_object->IsTextOnlyObject())
+  if (!end_text_object->IsText())
     end_text_object = PreviousTextOnlyObject(end_text_object);
 
   if (!start_text_object || !end_text_object)
@@ -1190,7 +1190,7 @@ base::string16 BrowserAccessibilityManager::GetTextForRange(
   const BrowserAccessibility* start_text_object = text_only_objects[0];
   // Figure out if the start and end positions have been reversed.
   const BrowserAccessibility* first_object = &start_object;
-  if (!first_object->IsTextOnlyObject())
+  if (!first_object->IsText())
     first_object = NextTextOnlyObject(first_object);
   if (!first_object || first_object != start_text_object)
     std::swap(start_offset, end_offset);
@@ -1258,7 +1258,7 @@ gfx::Rect BrowserAccessibilityManager::GetRootFrameInnerTextRangeBoundsRect(
 
   const BrowserAccessibility* current = first;
   do {
-    if (current->IsTextOnlyObject()) {
+    if (current->IsText()) {
       int len = static_cast<int>(current->GetInnerText().size());
       int start_char_index = 0;
       int end_char_index = len;

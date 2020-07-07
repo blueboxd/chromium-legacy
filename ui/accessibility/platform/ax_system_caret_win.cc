@@ -47,9 +47,7 @@ AXSystemCaretWin::~AXSystemCaretWin() {
 
 Microsoft::WRL::ComPtr<IAccessible> AXSystemCaretWin::GetCaret() const {
   Microsoft::WRL::ComPtr<IAccessible> caret_accessible;
-  HRESULT hr = caret_->QueryInterface(
-      IID_IAccessible,
-      reinterpret_cast<void**>(caret_accessible.GetAddressOf()));
+  HRESULT hr = caret_->QueryInterface(IID_PPV_ARGS(&caret_accessible));
   DCHECK(SUCCEEDED(hr));
   return caret_accessible;
 }

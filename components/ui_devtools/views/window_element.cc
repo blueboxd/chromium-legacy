@@ -91,6 +91,8 @@ WindowElement::GetCustomPropertiesForMatchedStyle() const {
   // change OcclusionState::UNKNOWN to UNKNOWN
   state_str = state_str.substr(state_str.find("::") + 2);
   cur_properties.emplace_back("occlusion-state", state_str);
+  cur_properties.emplace_back("is-visible",
+                              window_->IsVisible() ? "true" : "false");
   cur_properties.emplace_back("surface",
                               window_->GetSurfaceId().is_valid()
                                   ? window_->GetSurfaceId().ToString()

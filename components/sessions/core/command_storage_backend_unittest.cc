@@ -43,10 +43,6 @@ std::unique_ptr<sessions::SessionCommand> CreateCommandFromData(
   return command;
 }
 
-bool IsCanceled() {
-  return false;
-}
-
 }  // namespace
 
 class CommandStorageBackendTest : public testing::Test {
@@ -69,18 +65,6 @@ class CommandStorageBackendTest : public testing::Test {
         task_environment_.GetMainThreadTaskRunner(), path_);
   }
 
-  void ReadCurrentSessionCommands(
-      CommandStorageBackend* backend,
-      const std::vector<uint8_t>& crypto_key,
-      std::vector<std::unique_ptr<SessionCommand>>* commands) {
-    backend->ReadCurrentSessionCommands(
-        base::BindRepeating(&IsCanceled), crypto_key,
-        base::BindLambdaForTesting(
-            [&commands](std::vector<std::unique_ptr<SessionCommand>> result) {
-              *commands = std::move(result);
-            }));
-  }
-
   base::test::TaskEnvironment task_environment_;
   base::FilePath path_;
   base::ScopedTempDir temp_dir_;
@@ -98,7 +82,7 @@ TEST_F(CommandStorageBackendTest, SimpleReadWriteEncrypted) {
   // Read it back in.
   backend = nullptr;
   backend = CreateBackend();
-  ReadCurrentSessionCommands(backend.get(), key, &commands);
+  commands = backend->ReadCurrentSessionCommands(key);
 
   ASSERT_EQ(1U, commands.size());
   AssertCommandEqualsData(data, commands[0].get());
@@ -107,7 +91,7 @@ TEST_F(CommandStorageBackendTest, SimpleReadWriteEncrypted) {
   backend = nullptr;
   ++(key[0]);
   backend = CreateBackend();
-  ReadCurrentSessionCommands(backend.get(), key, &commands);
+  commands = backend->ReadCurrentSessionCommands(key);
   EXPECT_TRUE(commands.empty());
 }
 
@@ -134,7 +118,7 @@ TEST_F(CommandStorageBackendTest, RandomDataEncrypted) {
     SessionCommands commands;
     if (i != 0) {
       // Read previous data.
-      ReadCurrentSessionCommands(backend.get(), key, &commands);
+      commands = backend->ReadCurrentSessionCommands(key);
       ASSERT_EQ(i, commands.size());
       for (auto j = commands.begin(); j != commands.end(); ++j)
         AssertCommandEqualsData(data[j - commands.begin()], j->get());
@@ -172,7 +156,7 @@ TEST_F(CommandStorageBackendTest, BigDataEncrypted) {
   backend = nullptr;
   backend = CreateBackend();
 
-  ReadCurrentSessionCommands(backend.get(), key, &commands);
+  commands = backend->ReadCurrentSessionCommands(key);
   ASSERT_EQ(3U, commands.size());
   AssertCommandEqualsData(data[0], commands[0].get());
   AssertCommandEqualsData(data[1], commands[2].get());
@@ -197,8 +181,8 @@ TEST_F(CommandStorageBackendTest, EmptyCommandEncrypted) {
 
   backend = nullptr;
   backend = CreateBackend();
-  std::vector<std::unique_ptr<sessions::SessionCommand>> commands;
-  ReadCurrentSessionCommands(backend.get(), key2, &commands);
+  std::vector<std::unique_ptr<sessions::SessionCommand>> commands =
+      backend->ReadCurrentSessionCommands(key2);
   ASSERT_EQ(1U, commands.size());
   AssertCommandEqualsData(empty_command, commands[0].get());
 }
@@ -223,7 +207,7 @@ TEST_F(CommandStorageBackendTest, TruncateEncrypted) {
   // Read it back in.
   backend = nullptr;
   backend = CreateBackend();
-  ReadCurrentSessionCommands(backend.get(), key2, &commands);
+  commands = backend->ReadCurrentSessionCommands(key2);
 
   // And make sure we get back the expected data.
   ASSERT_EQ(1U, commands.size());
@@ -250,7 +234,7 @@ TEST_F(CommandStorageBackendTest, MaxSizeTypeEncrypted) {
   // Read it back in.
   backend = nullptr;
   backend = CreateBackend();
-  ReadCurrentSessionCommands(backend.get(), key, &commands);
+  commands = backend->ReadCurrentSessionCommands(key);
 
   // Encryption restricts the main size, and results in truncation.
   ASSERT_EQ(1U, commands.size());
@@ -275,7 +259,7 @@ TEST_F(CommandStorageBackendTest, MaxSizeType) {
   // Read it back in.
   backend = nullptr;
   backend = CreateBackend();
-  ReadCurrentSessionCommands(backend.get(), std::vector<uint8_t>(), &commands);
+  commands = backend->ReadCurrentSessionCommands({});
 
   ASSERT_EQ(1U, commands.size());
   auto expected_command = CreateCommandWithMaxSize();

@@ -209,6 +209,8 @@ COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kDeviceNativePrintersBlacklist[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kDeviceNativePrintersWhitelist[];
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+extern const char kDeviceExternalPrintServersAllowlist[];
 
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kTPMFirmwareUpdateSettings[];

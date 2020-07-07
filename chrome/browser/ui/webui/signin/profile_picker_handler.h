@@ -7,21 +7,40 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 // The handler for Javascript messages related to the profile picker main view.
-class ProfilePickerHandler : public content::WebUIMessageHandler {
+class ProfilePickerHandler : public content::WebUIMessageHandler,
+                             public ProfileAttributesStorage::Observer {
  public:
   ProfilePickerHandler();
   ~ProfilePickerHandler() override;
 
   // content::WebUIMessageHandler:
   void RegisterMessages() override;
+  void OnJavascriptAllowed() override;
+  void OnJavascriptDisallowed() override;
 
  private:
   void HandleMainViewInitialize(const base::ListValue* args);
+  void HandleLaunchSelectedProfile(const base::ListValue* args);
+
+  void OnSwitchToProfileComplete(Profile* profile,
+                                 Profile::CreateStatus profile_create_status);
   void PushProfilesList();
   base::Value GetProfilesList();
+
+  // ProfileAttributesStorage::Observer:
+  void OnProfileAdded(const base::FilePath& profile_path) override;
+  void OnProfileWasRemoved(const base::FilePath& profile_path,
+                           const base::string16& profile_name) override;
+  void OnProfileAvatarChanged(const base::FilePath& profile_path) override;
+  void OnProfileHighResAvatarLoaded(
+      const base::FilePath& profile_path) override;
+  void OnProfileNameChanged(const base::FilePath& profile_path,
+                            const base::string16& old_profile_name) override;
 
   base::WeakPtrFactory<ProfilePickerHandler> weak_factory_{this};
 

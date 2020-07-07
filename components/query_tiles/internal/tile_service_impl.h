@@ -28,7 +28,8 @@ class InitializableTileService : public TileService {
   ~InitializableTileService() override = default;
 };
 
-class TileServiceImpl : public InitializableTileService {
+class TileServiceImpl : public InitializableTileService,
+                        public TileServiceScheduler::Delegate {
  public:
   TileServiceImpl(std::unique_ptr<ImagePrefetcher> image_prefetcher,
                   std::unique_ptr<TileManager> tile_manager,
@@ -52,6 +53,9 @@ class TileServiceImpl : public InitializableTileService {
                           BackgroundTaskFinishedCallback callback) override;
   void CancelTask() override;
   void PurgeDb() override;
+
+  // TileServiceScheduler::Delegate implementation.
+  TileGroup* GetTileGroup() override;
 
   // Called when tile manager is initialized.
   void OnTileManagerInitialized(SuccessCallback callback,

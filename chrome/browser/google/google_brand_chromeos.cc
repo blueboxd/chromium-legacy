@@ -43,11 +43,11 @@ std::string ReadBrandFromFile() {
 }
 
 // For a valid |brand|, sets the brand code and runs |callback|.
-void SetBrand(const base::Closure& callback, const std::string& brand) {
+void SetBrand(base::OnceClosure callback, const std::string& brand) {
   if (!IsBrandValid(brand))
     return;
   g_browser_process->local_state()->SetString(prefs::kRLZBrand, brand);
-  callback.Run();
+  std::move(callback).Run();
 }
 
 // True if brand code has been cleared for the current session.
@@ -86,14 +86,14 @@ std::string GetRlzBrand() {
   return GetRlzBrandCode(GetBrand(), market_segment);
 }
 
-void InitBrand(const base::Closure& callback) {
+void InitBrand(base::OnceClosure callback) {
   ::chromeos::system::StatisticsProvider* provider =
       ::chromeos::system::StatisticsProvider::GetInstance();
   std::string brand;
   const bool found = provider->GetMachineStatistic(
       ::chromeos::system::kRlzBrandCodeKey, &brand);
   if (found && IsBrandValid(brand)) {
-    SetBrand(callback, brand);
+    SetBrand(std::move(callback), brand);
     return;
   }
 
@@ -101,7 +101,8 @@ void InitBrand(const base::Closure& callback) {
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::BindOnce(&ReadBrandFromFile), base::BindOnce(&SetBrand, callback));
+      base::BindOnce(&ReadBrandFromFile),
+      base::BindOnce(&SetBrand, std::move(callback)));
 }
 
 }  // namespace chromeos

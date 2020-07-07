@@ -183,6 +183,23 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test": "absl_hardening_tests",
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Mac-10.15"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
         "test": "accessibility_unittests",
         "test_id_prefix": "ninja://ui/accessibility:accessibility_unittests/"
       },
@@ -2526,6 +2543,17 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
+        "test": "absl_hardening_tests",
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
         "test": "accessibility_unittests",
         "test_id_prefix": "ninja://ui/accessibility:accessibility_unittests/"
       },
@@ -3604,6 +3632,24 @@
   },
   "Win10 Tests x64 1803": {
     "gtest_tests": [
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-17134"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "absl_hardening_tests",
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
+      },
       {
         "merge": {
           "args": [],
@@ -5722,6 +5768,53 @@
   },
   "android-code-coverage": {
     "gtest_tests": [
+      {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
+        "isolate_profile_data": true,
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "absl_hardening_tests"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "absl_hardening_tests",
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
+      },
       {
         "args": [
           "--gs-results-bucket=chromium-result-details",
@@ -9400,6 +9493,54 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
+            "absl_hardening_tests"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "PQ3A.190801.002",
+              "device_os_flavor": "google",
+              "device_os_type": "userdebug",
+              "device_type": "walleye",
+              "os": "Android"
+            }
+          ],
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "absl_hardening_tests",
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
+      },
+      {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
+        "isolate_profile_data": true,
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
             "android_browsertests"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
@@ -11917,6 +12058,25 @@
     ],
     "gtest_tests": [
       {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "inside_docker": "1",
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "absl_hardening_tests",
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
+      },
+      {
         "args": [
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
@@ -13118,6 +13278,27 @@
     "gtest_tests": [
       {
         "args": [
+          "--device=aemu"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "absl_hardening_tests",
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
+      },
+      {
+        "args": [
           "--device=aemu",
           "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
         ],
@@ -14298,6 +14479,27 @@
       "all"
     ],
     "gtest_tests": [
+      {
+        "args": [
+          "--device=aemu"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "absl_hardening_tests",
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
+      },
       {
         "args": [
           "--device=aemu",
@@ -15775,6 +15977,88 @@
   },
   "ios-asan": {
     "isolated_scripts": [
+      {
+        "args": [
+          "--platform",
+          "iPad Air 2",
+          "--version",
+          "13.4",
+          "--out-dir",
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11e146"
+        ],
+        "isolate_name": "absl_hardening_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "absl_hardening_tests_iPad Air 2 13.4",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/mac_toolchain/${platform}",
+              "location": ".",
+              "revision": "git_revision:796d2b92cff93fc2059623ce0a66284373ceea0a"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "os": "Mac-10.15"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "xcode_ios_11e146",
+              "path": "Xcode.app"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
+      },
+      {
+        "args": [
+          "--platform",
+          "iPhone X",
+          "--version",
+          "13.4",
+          "--out-dir",
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11e146"
+        ],
+        "isolate_name": "absl_hardening_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "absl_hardening_tests_iPhone X 13.4",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/mac_toolchain/${platform}",
+              "location": ".",
+              "revision": "git_revision:796d2b92cff93fc2059623ce0a66284373ceea0a"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "os": "Mac-10.15"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "xcode_ios_11e146",
+              "path": "Xcode.app"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
+      },
       {
         "args": [
           "--platform",
@@ -17583,6 +17867,90 @@
   },
   "ios-simulator-code-coverage": {
     "isolated_scripts": [
+      {
+        "args": [
+          "--platform",
+          "iPhone 6s",
+          "--version",
+          "12.4",
+          "--out-dir",
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11e146"
+        ],
+        "isolate_name": "absl_hardening_tests",
+        "isolate_profile_data": true,
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "absl_hardening_tests_iPhone 6s 12.4",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/mac_toolchain/${platform}",
+              "location": ".",
+              "revision": "git_revision:796d2b92cff93fc2059623ce0a66284373ceea0a"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "os": "Mac-10.15"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "xcode_ios_11e146",
+              "path": "Xcode.app"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
+      },
+      {
+        "args": [
+          "--platform",
+          "iPhone 6s",
+          "--version",
+          "13.4",
+          "--out-dir",
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11e146"
+        ],
+        "isolate_name": "absl_hardening_tests",
+        "isolate_profile_data": true,
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "absl_hardening_tests_iPhone 6s 13.4",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/mac_toolchain/${platform}",
+              "location": ".",
+              "revision": "git_revision:796d2b92cff93fc2059623ce0a66284373ceea0a"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "os": "Mac-10.15"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "xcode_ios_11e146",
+              "path": "Xcode.app"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
+      },
       {
         "args": [
           "--platform",
@@ -22277,6 +22645,47 @@
           "--xcode-build-version",
           "11e146"
         ],
+        "isolate_name": "absl_hardening_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "absl_hardening_tests_iPad Air 2 13.4",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/mac_toolchain/${platform}",
+              "location": ".",
+              "revision": "git_revision:796d2b92cff93fc2059623ce0a66284373ceea0a"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "os": "Mac-10.15"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "xcode_ios_11e146",
+              "path": "Xcode.app"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
+      },
+      {
+        "args": [
+          "--platform",
+          "iPad Air 2",
+          "--version",
+          "13.4",
+          "--out-dir",
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11e146"
+        ],
         "isolate_name": "base_unittests",
         "merge": {
           "args": [],
@@ -23544,6 +23953,92 @@
   },
   "ios-webkit-tot": {
     "isolated_scripts": [
+      {
+        "args": [
+          "--platform",
+          "iPad Air 2",
+          "--version",
+          "13.5",
+          "--args-json",
+          "{\"test_args\": [\"--run-with-custom-webkit\"]}",
+          "--out-dir",
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11e608c"
+        ],
+        "isolate_name": "absl_hardening_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "absl_hardening_tests_iPad Air 2 13.5",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/mac_toolchain/${platform}",
+              "location": ".",
+              "revision": "git_revision:796d2b92cff93fc2059623ce0a66284373ceea0a"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "os": "Mac-10.15"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "xcode_ios_11e608c",
+              "path": "Xcode.app"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
+      },
+      {
+        "args": [
+          "--platform",
+          "iPhone X",
+          "--version",
+          "13.5",
+          "--args-json",
+          "{\"test_args\": [\"--run-with-custom-webkit\"]}",
+          "--out-dir",
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11e608c"
+        ],
+        "isolate_name": "absl_hardening_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "absl_hardening_tests_iPhone X 13.5",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/mac_toolchain/${platform}",
+              "location": ".",
+              "revision": "git_revision:796d2b92cff93fc2059623ce0a66284373ceea0a"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "os": "Mac-10.15"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "xcode_ios_11e608c",
+              "path": "Xcode.app"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
+      },
       {
         "args": [
           "--platform",
@@ -26223,6 +26718,88 @@
       "all"
     ],
     "isolated_scripts": [
+      {
+        "args": [
+          "--platform",
+          "iPhone X",
+          "--version",
+          "12.4",
+          "--out-dir",
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11n700h"
+        ],
+        "isolate_name": "absl_hardening_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "absl_hardening_tests_iPhone X 12.4",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/mac_toolchain/${platform}",
+              "location": ".",
+              "revision": "git_revision:796d2b92cff93fc2059623ce0a66284373ceea0a"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "os": "Mac-10.15"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "xcode_ios_11n700h",
+              "path": "Xcode.app"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
+      },
+      {
+        "args": [
+          "--platform",
+          "iPhone X",
+          "--version",
+          "13.6",
+          "--out-dir",
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11n700h"
+        ],
+        "isolate_name": "absl_hardening_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "absl_hardening_tests_iPhone X 13.6",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/mac_toolchain/${platform}",
+              "location": ".",
+              "revision": "git_revision:796d2b92cff93fc2059623ce0a66284373ceea0a"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "os": "Mac-10.15"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "xcode_ios_11n700h",
+              "path": "Xcode.app"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
+      },
       {
         "args": [
           "--platform",
@@ -32286,6 +32863,88 @@
       {
         "args": [
           "--platform",
+          "iPhone 6s",
+          "--version",
+          "13.6",
+          "--out-dir",
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11n700h"
+        ],
+        "isolate_name": "absl_hardening_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "absl_hardening_tests_iPhone 6s 13.6",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/mac_toolchain/${platform}",
+              "location": ".",
+              "revision": "git_revision:796d2b92cff93fc2059623ce0a66284373ceea0a"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "os": "Mac-10.15"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "xcode_ios_11n700h",
+              "path": "Xcode.app"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
+      },
+      {
+        "args": [
+          "--platform",
+          "iPhone X",
+          "--version",
+          "12.4",
+          "--out-dir",
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "11n700h"
+        ],
+        "isolate_name": "absl_hardening_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "absl_hardening_tests_iPhone X 12.4",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/mac_toolchain/${platform}",
+              "location": ".",
+              "revision": "git_revision:796d2b92cff93fc2059623ce0a66284373ceea0a"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "os": "Mac-10.15"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "xcode_ios_11n700h",
+              "path": "Xcode.app"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
+      },
+      {
+        "args": [
+          "--platform",
           "iPad Air 2",
           "--version",
           "12.4",
@@ -37393,6 +38052,47 @@
       {
         "args": [
           "--platform",
+          "iPhone X",
+          "--version",
+          "14.0",
+          "--out-dir",
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "12a6159"
+        ],
+        "isolate_name": "absl_hardening_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "absl_hardening_tests_iPhone X 14.0",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/mac_toolchain/${platform}",
+              "location": ".",
+              "revision": "git_revision:796d2b92cff93fc2059623ce0a66284373ceea0a"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "os": "Mac-10.15"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "xcode_ios_12a6159",
+              "path": "Xcode.app"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
+      },
+      {
+        "args": [
+          "--platform",
           "iPad Air 2",
           "--version",
           "14.0",
@@ -40607,6 +41307,129 @@
       "all"
     ],
     "isolated_scripts": [
+      {
+        "args": [
+          "--platform",
+          "iPhone 6s",
+          "--version",
+          "13.6",
+          "--out-dir",
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "12a6159"
+        ],
+        "isolate_name": "absl_hardening_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "absl_hardening_tests_iPhone 6s 13.6",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/mac_toolchain/${platform}",
+              "location": ".",
+              "revision": "git_revision:796d2b92cff93fc2059623ce0a66284373ceea0a"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "os": "Mac-10.15"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "xcode_ios_12a6159",
+              "path": "Xcode.app"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
+      },
+      {
+        "args": [
+          "--platform",
+          "iPhone 6s",
+          "--version",
+          "14.0",
+          "--out-dir",
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "12a6159"
+        ],
+        "isolate_name": "absl_hardening_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "absl_hardening_tests_iPhone 6s 14.0",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/mac_toolchain/${platform}",
+              "location": ".",
+              "revision": "git_revision:796d2b92cff93fc2059623ce0a66284373ceea0a"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "os": "Mac-10.15"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "xcode_ios_12a6159",
+              "path": "Xcode.app"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
+      },
+      {
+        "args": [
+          "--platform",
+          "iPhone X",
+          "--version",
+          "12.4",
+          "--out-dir",
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "12a6159"
+        ],
+        "isolate_name": "absl_hardening_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "absl_hardening_tests_iPhone X 12.4",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/mac_toolchain/${platform}",
+              "location": ".",
+              "revision": "git_revision:796d2b92cff93fc2059623ce0a66284373ceea0a"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "os": "Mac-10.15"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "xcode_ios_12a6159",
+              "path": "Xcode.app"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
+      },
       {
         "args": [
           "--platform",
@@ -48124,6 +48947,23 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test": "absl_hardening_tests",
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
         "test": "angle_unittests",
         "test_id_prefix": "ninja://third_party/angle/src/tests:angle_unittests/"
       },
@@ -48844,6 +49684,26 @@
   },
   "linux-blink-heap-concurrent-marking-tsan-rel": {
     "gtest_tests": [
+      {
+        "args": [
+          "--enable-features=BlinkHeapConcurrentMarking"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "absl_hardening_tests",
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
+      },
       {
         "args": [
           "--enable-features=BlinkHeapConcurrentMarking"
@@ -49688,6 +50548,23 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test": "absl_hardening_tests",
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
         "test": "angle_unittests",
         "test_id_prefix": "ninja://third_party/angle/src/tests:angle_unittests/"
       },
@@ -50491,6 +51368,24 @@
       "gn_all"
     ],
     "gtest_tests": [
+      {
+        "isolate_profile_data": true,
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "absl_hardening_tests",
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
+      },
       {
         "isolate_profile_data": true,
         "merge": {
@@ -52189,6 +53084,23 @@
   },
   "linux-chromium-tests-staging-tests": {
     "gtest_tests": [
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "absl_hardening_tests",
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
+      },
       {
         "merge": {
           "args": [],
@@ -54124,6 +55036,24 @@
   },
   "linux-code-coverage": {
     "gtest_tests": [
+      {
+        "isolate_profile_data": true,
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "absl_hardening_tests",
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
+      },
       {
         "isolate_profile_data": true,
         "merge": {
@@ -56396,6 +57326,25 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test": "absl_hardening_tests",
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
+      },
+      {
+        "isolate_profile_data": true,
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "none",
+              "os": "Mac-10.13.6"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
         "test": "accessibility_unittests",
         "test_id_prefix": "ninja://ui/accessibility:accessibility_unittests/"
       },
@@ -57861,6 +58810,25 @@
   "mac-mojo-rel": {},
   "mac-osxbeta-rel": {
     "gtest_tests": [
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.16"
+            }
+          ],
+          "expiration": 21600,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "absl_hardening_tests",
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
+      },
       {
         "merge": {
           "args": [],
@@ -60000,6 +60968,19 @@
   },
   "win10-code-coverage": {
     "gtest_tests": [
+      {
+        "isolate_profile_data": true,
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "absl_hardening_tests",
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
+      },
       {
         "isolate_profile_data": true,
         "merge": {

@@ -281,7 +281,6 @@
 <translation id="1340527397989195812">Mag-back up ng media mula sa device gamit ang Files app.</translation>
 <translation id="1341988552785875222">Itinakda ng '<ph name="APP_NAME" />' ang wallpaper sa kasalukuyan. Maaaring kailanganin mong i-uninstall ang '<ph name="APP_NAME" />' bago ka pumili ng ibang wallpaper.</translation>
 <translation id="1343865611738742294">Bugyan ang mga Linux app ng pahintulot na i-access ang mga USB device. Hindi maaalala ng Linux ang isang USB device pagkatapos itong alisin.</translation>
-<translation id="1344143111673240412">Hinihingi ng pagbabago sa setting ng camera na ilunsad ulit ang Parallels Desktop</translation>
 <translation id="1347256498747320987">Mag-install ng mga update at app. Sa pamamagitan ng pagpapatuloy, sumasang-ayon kang maaari ding awtomatikong mag-download at mag-install ang device na ito ng mga update at app mula sa Google, iyong carrier, at manufacturer ng device mo, na posibleng gumamit ng cellular data. Maaaring nag-aalok ang ilan sa mga app na ito ng mga in-app na pagbili. <ph name="BEGIN_LINK1" />Matuto Pa<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">Magsisimula ang pag-update kapag umabot na ang baterya sa <ph name="BATTERY_LEVEL" />%.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -1197,7 +1196,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="2470702053775288986">Na-disable ang mga hindi sinusuportahang extension</translation>
 <translation id="2471469610750100598">Itim (default)</translation>
 <translation id="2473195200299095979">I-translate ang pahinang ito</translation>
-<translation id="2474848500897222119">Wala nang ink ang <ph name="PRINTER_NAME" /></translation>
 <translation id="2475982808118771221">May isang naganap na error</translation>
 <translation id="2476578072172137802">Mga Setting ng Site</translation>
 <translation id="2478176599153288112">Mga Pahintulot sa Media-File para sa "<ph name="EXTENSION" />"</translation>
@@ -1503,7 +1501,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="2824942875887026017">Ginagamit ng <ph name="IDS_SHORT_PRODUCT_NAME" /> ang mga setting ng proxy mula sa iyong administrator</translation>
 <translation id="2825758591930162672">Pampublikong Key ng Paksa</translation>
 <translation id="2828650939514476812">Kumonekta sa Wi-Fi network</translation>
-<translation id="28291580771888953">Puno ang queue ng <ph name="PRINTER_NAME" /></translation>
 <translation id="2835547721736623118">Serbisyo ng pagkilala sa speech</translation>
 <translation id="2836269494620652131">Nag-crash</translation>
 <translation id="2836635946302913370">Hindi pinagana ng iyong administrator ang pag-sign in gamit ang username na ito.</translation>
@@ -2319,7 +2316,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="3839516600093027468">Palaging i-block ang <ph name="HOST" /> sa pagtingin sa clipboard</translation>
 <translation id="3841964634449506551">Di-wasto ang password</translation>
 <translation id="3842552989725514455">Serif font</translation>
-<translation id="3843058644024807390">Hinihingi ng pagbabago sa setting ng mikropono na ilunsad ulit ang Parallels Desktop</translation>
+<translation id="3843464315703645664">Internal na na-allowlist</translation>
 <translation id="3846116211488856547">Kumuha ng mga tool sa paggawa ng mga website, Android app, at higit pa. Kapag na-install ang Linux, mada-download ang <ph name="DOWNLOAD_SIZE" /> ng data.</translation>
 <translation id="3847319713229060696">Tumulong na pahusayin ang seguridad sa web para sa lahat</translation>
 <translation id="385051799172605136">Bumalik</translation>
@@ -2778,7 +2775,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="4453946976636652378">Maghanap sa <ph name="SEARCH_ENGINE_NAME" /> o mag-type ng URL</translation>
 <translation id="4459169140545916303">Aktibo <ph name="DEVICE_LAST_ACTIVATED_TIME" /> (na) araw ang nakalipas</translation>
 <translation id="4460014764210899310">I-ungroup</translation>
-<translation id="4460343359907016103">Error sa pagkonekta sa <ph name="PRINTER_NAME" /></translation>
 <translation id="4462159676511157176">Custom na mga server ng pangalan</translation>
 <translation id="4465236939126352372"><ph name="TIME" /> ang limitasyon sa oras na itinakda para sa <ph name="APP_NAME" /></translation>
 <translation id="4465725236958772856">Network <ph name="NETWORK_INDEX" /> sa <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Pinapamahalaan ng iyong Administrator, Kumonekta</translation>
@@ -3076,7 +3072,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="4864369630010738180">Nagsa-sign in...</translation>
 <translation id="4864805589453749318">Piliin ang magulang na nagbibigay ng pahintulot na magdagdag ng pampaaralang account.</translation>
 <translation id="486635084936119914">Awtomatikong buksan ang ilang partikular na uri ng file pagkatapos ma-download</translation>
-<translation id="4869213010169296107">Walang tray ang <ph name="PRINTER_NAME" /></translation>
 <translation id="48704129375571883">Magdagdag ng mga karagdagang feature</translation>
 <translation id="4870758487381879312">Ilagay ang password na ibinigay ng admin para makuha ang impormasyon sa pag-configure</translation>
 <translation id="4870903493621965035">Walang nakapares na device</translation>
@@ -3327,6 +3322,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="5184662919967270437">Ina-update ang iyong device</translation>
 <translation id="5185359571430619712">Suriin ang mga extension</translation>
 <translation id="5185386675596372454">Hindi pinagana ang pinakabagong bersyon ng "<ph name="EXTENSION_NAME" />" dahil nangangailangan ito ng higit pang mga pahintulot.</translation>
+<translation id="5185500136143151980">Walang Internet</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5190926251776387065">I-activate ang port</translation>
 <translation id="51918995459521422">Gustong mag-download ng <ph name="ORIGIN" /> ng maraming file</translation>
@@ -3483,7 +3479,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="5390112241331447203">Isama ang file na system_logs.txt na ipinadala sa mga feedback report.</translation>
 <translation id="5390677308841849479">Dark red at orange</translation>
 <translation id="5390743329570580756">Magpadala para sa</translation>
-<translation id="5395869306561378615">Naka-pause ang <ph name="PRINTER_NAME" /></translation>
 <translation id="5397794290049113714">Ikaw</translation>
 <translation id="5398572795982417028">Lampas sa hangganan ang tinukoy na page, ang limitasyon ay <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">Na-block ang mga ad</translation>
@@ -3498,7 +3493,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="5417312524372586921">Mga tema ng browser</translation>
 <translation id="5419405654816502573">Voice match</translation>
 <translation id="5420438158931847627">Tumutukoy sa sharpness ng text at mga larawan</translation>
-<translation id="5421498071721257877">May error sa device sa <ph name="PRINTER_NAME" /></translation>
 <translation id="5422221874247253874">Access Point</translation>
 <translation id="5422781158178868512">Paumanhin, hindi makilala ang iyong panlabas na device sa storage.</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3847,7 +3841,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="5852137567692933493">I-restart at I-powerwash</translation>
 <translation id="5854912040170951372">Pizza</translation>
 <translation id="5855267860608268405">Mga kilalang Wi-Fi network</translation>
-<translation id="5855310969323666289">Bukas ang pinto ng <ph name="PRINTER_NAME" /></translation>
 <translation id="5855643921295613558">0.6 segundo</translation>
 <translation id="5856721540245522153">I-enable ang mga feature para sa pagde-debug</translation>
 <translation id="5857090052475505287">Bagong Folder</translation>
@@ -3878,7 +3871,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="5877064549588274448">Binago ang channel. I-restart ang iyong device upang ilapat ang mga pagbabago.</translation>
 <translation id="5877584842898320529">Hindi available o hindi naka-install nang tama ang napiling printer. <ph name="BR" /> Suriin ang iyong printer o subukang pumili ng ibang printer.</translation>
 <translation id="5882919346125742463">Mga Kilalang Network</translation>
-<translation id="5883716097305842571">Halos puno na ang output area ng <ph name="PRINTER_NAME" /></translation>
 <translation id="5884474295213649357">Nakakonekta ang tab na ito sa isang USB device.</translation>
 <translation id="5886009770935151472">Daliri 1</translation>
 <translation id="5889282057229379085">Maximum na bilang ng intermediate CAs: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4444,7 +4436,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="6611972847767394631">Hanapin ang iyong mga tab dito</translation>
 <translation id="6612358246767739896">Pinoprotektahang content</translation>
 <translation id="6615455863669487791">Ipakita sa akin</translation>
-<translation id="6617034477946102682">Hindi makakonekta sa <ph name="PRINTER_NAME" /></translation>
 <translation id="6618097958368085618">Panatilihin pa rin</translation>
 <translation id="6618744767048954150">Tumatakbo</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
@@ -4861,7 +4852,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="7128151990937044829">Magpakita ng indicator sa address bar kapag naka-block ang notification</translation>
 <translation id="7131040479572660648">Basahin ang iyong data sa <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> at <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Magdagdag ng Pahina...</translation>
-<translation id="7131379856697962078">Puno ang output area ng <ph name="PRINTER_NAME" /></translation>
 <translation id="7133578150266914903">Niro-roll back ng iyong administrator ang device na ito (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">Gawing Mas Maliit ang Teksto</translation>
 <translation id="7135729336746831607">I-on ang Bluetooth?</translation>
@@ -4880,7 +4870,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="7152478047064750137">Hindi nangangailangan ang extension na ito ng mga espesyal na pahintulot</translation>
 <translation id="7154130902455071009">Gawing ito ang iyong panimulang pahina: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">Kasalukuyang larawan mula sa camera o file</translation>
-<translation id="715657691234357425">Kaunti na ang papel ng <ph name="PRINTER_NAME" /></translation>
 <translation id="7165320105431587207">Nabigong ma-configure ang network</translation>
 <translation id="716640248772308851">Ang "<ph name="EXTENSION" />" ay nakakabasa ng mga larawan, video, at file ng tunog sa mga may check na lokasyon.</translation>
 <translation id="7167486101654761064">&amp;Laging buksan ang uri ng mga file na ito</translation>
@@ -4911,7 +4900,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="7197632491113152433">May nakita kaming <ph name="NUMBER_OF_APPS" /> (na) app mula sa iyong account na maaaring gamitin sa device na ito.</translation>
 <translation id="7199158086730159431">Humingi ng Tulong</translation>
 <translation id="7200083590239651963">Pumili ng configuration</translation>
-<translation id="7201042526153088083">Mag-install ng mga app at laro mula sa Google Play sa iyong <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;Matuto pa&lt;/a&gt;</translation>
 <translation id="720110658997053098">Permanenteng panatilihin sa kiosk mode ang device na ito</translation>
 <translation id="7201118060536064622">Na-delete ang '<ph name="DELETED_ITEM_NAME" />'</translation>
 <translation id="7201420661433230412">Tingnan ang mga file</translation>
@@ -5217,7 +5205,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="7598466960084663009">I-restart ang computer</translation>
 <translation id="7599527631045201165">Masyadong mahaba ang pangalan ng device. Maglagay ng mas maikling pangalan para subukang muli.</translation>
 <translation id="7600965453749440009">Huwag isalin kailanman ang <ph name="LANGUAGE" /></translation>
-<translation id="7601297144931396972">Naipit ang papel sa <ph name="PRINTER_NAME" /></translation>
 <translation id="760197030861754408">Pumunta sa <ph name="LANDING_PAGE" /> upang kumonekta.</translation>
 <translation id="7602079150116086782">Walang mga tab mula sa ibang mga device</translation>
 <translation id="7602173054665172958">Pamamahala ng pag-print</translation>
@@ -5228,6 +5215,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="7609148976235050828">Kumonekta sa internet at subukang muli.</translation>
 <translation id="7614260613810441905">Itanong kapag gusto ng site na mag-edit ng mga file o folder sa iyong device (inirerekomenda)</translation>
 <translation id="761530003705945209">I-back up sa Google Drive. Walang hirap na i-restore ang iyong data o magpalit ng device anumang oras. Kasama sa iyong backup ang data ng app. Ina-upload ang mga backup mo sa Google at ine-encrypt ang mga ito gamit ang password ng iyong Google Account.</translation>
+<translation id="7615365294369022248">Nagka-error sa pagdaragdag ng account</translation>
 <translation id="7616214729753637086">Ine-enroll ang device...</translation>
 <translation id="7617263010641145920">I-on ang Play Store</translation>
 <translation id="7617366389578322136">Kumokonekta sa "<ph name="DEVICE_NAME" />"</translation>
@@ -5676,7 +5664,6 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
           <ph name="TIME" />. Hindi kasama rito ang mga paraan ng pagbabayad at address mula sa Google Pay.</translation>
 <translation id="81238879832906896">Dilaw at puting bulaklak</translation>
 <translation id="8124313775439841391">Pinamamahalaang ONC</translation>
-<translation id="8127535217699822294">Wala nang papel ang <ph name="PRINTER_NAME" /></translation>
 <translation id="813082847718468539">Tingnan ang impormasyon ng site</translation>
 <translation id="8131740175452115882">Kumpirmahin</translation>
 <translation id="8133676275609324831">&amp;Ipakita sa folder</translation>
@@ -5775,7 +5762,6 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8254954272268479918">I-shut down ang Linux (Beta)</translation>
 <translation id="8255451560461371599">Walang background</translation>
 <translation id="8256319818471787266">Bantay</translation>
-<translation id="8256417822772703842">Kaunti na ang ink ng <ph name="PRINTER_NAME" /></translation>
 <translation id="8257950718085972371">Ipagpatuloy ang pag-block ng access sa camera</translation>
 <translation id="8259239505248583312">Tara na</translation>
 <translation id="8260864402787962391">Mouse</translation>
@@ -5957,7 +5943,6 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8487678622945914333">Mag-zoom In</translation>
 <translation id="8490896350101740396">Na-update ang mga sumusunod na kiosk app "<ph name="UPDATED_APPS" />." Mangyaring i-reboot ang device upang makumpleto ang proseso ng pag-update.</translation>
 <translation id="8493236660459102203">Mikropono:</translation>
-<translation id="8495940850609851342">Ihininto ang <ph name="PRINTER_NAME" /></translation>
 <translation id="8496717697661868878">Patakbuhin ang Plugin na Ito</translation>
 <translation id="8497219075884839166">Mga Utility ng Windows</translation>
 <translation id="8498214519255567734">Pinapadali nitong tumingin sa iyong screen o magbasa sa dilim</translation>
@@ -6500,6 +6485,12 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="9157096865782046368">0.8 segundo</translation>
 <translation id="9157697743260533322">Hindi na-set up ang mga awtomatikong pag-update para sa lahat ng user (error sa paglunsad ng preflight: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Naku! Nagkaroon ng problema sa pakikipag-ugnay sa network sa panahon ng pagpapatotoo. Mangyaring suriin ang iyong koneksyon sa network at subukang muli.</translation>
+<translation id="9159643062839240276">Subukan:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />Suriin ang mga network cable, modem, at router
+      <ph name="LIST_ITEM" />Kumonekta ulit sa Wi-Fi
+      <ph name="LIST_ITEM" />Patakbuhin ang Mga Diagnostic sa Pagkakakonekta ng Chrome
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">Picture in Picture</translation>
 <translation id="9168436347345867845">Gawin ito sa ibang pagkakataon</translation>
 <translation id="9169496697824289689">Tingnan ang mga keyboard shortcut</translation>

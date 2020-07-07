@@ -173,11 +173,6 @@ const int kGLSwitchesCopiedFromGpuProcessHostNumSwitches =
 
 namespace features {
 
-// Allow putting content with complex transforms (e.g. rotations) into an
-// overlay.
-const base::Feature kDirectCompositionComplexOverlays{
-    "DirectCompositionComplexOverlays", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Use IDXGIOutput::WaitForVBlank() to drive begin frames.
 const base::Feature kDirectCompositionGpuVSync{
     "DirectCompositionGpuVSync", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -186,10 +181,6 @@ const base::Feature kDirectCompositionGpuVSync{
 const base::Feature kDirectCompositionLowLatencyPresentation{
     "DirectCompositionLowLatencyPresentation",
     base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Allow using overlays for non-root render passes.
-const base::Feature kDirectCompositionNonrootOverlays{
-    "DirectCompositionNonrootOverlays", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Overrides preferred overlay format to NV12 instead of YUY2.
 const base::Feature kDirectCompositionPreferNV12Overlays{

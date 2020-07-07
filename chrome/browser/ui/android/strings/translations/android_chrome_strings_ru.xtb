@@ -168,6 +168,7 @@
 <translation id="2353636109065292463">Проверка подключения к Интернету</translation>
 <translation id="2359808026110333948">Продолжить</translation>
 <translation id="2369533728426058518">открыть вкладки</translation>
+<translation id="2377295302146152376">Браузеру Chrome не удалось проверить наличие обновлений.</translation>
 <translation id="2387895666653383613">Масштабирование текста</translation>
 <translation id="2394602618534698961">Здесь появляются скачанные файлы.</translation>
 <translation id="2407481962792080328">Эта функция включается, когда вы входите в аккаунт Google.</translation>
@@ -546,6 +547,7 @@
 <translation id="5441522332038954058">Перейти к адресной строке</translation>
 <translation id="5447201525962359567">Все данные сайтов, включая файлы cookie и другую информацию, хранящуюся на устройстве</translation>
 <translation id="545042621069398927">Ускорение скачивания…</translation>
+<translation id="5454513945794364671">Администратор отключил Безопасный просмотр.</translation>
 <translation id="5456381639095306749">Скачать страницу</translation>
 <translation id="548278423535722844">Показать на карте</translation>
 <translation id="5487521232677179737">Удалить данные</translation>
@@ -585,6 +587,7 @@
 <translation id="5732819098735351888">Скачивание начнется, когда будет установлено подключение по Wi-Fi.</translation>
 <translation id="5748802427693696783">Переключено на обычные вкладки</translation>
 <translation id="5749068826913805084">Для скачивания файлов браузеру Chrome требуется доступ к хранилищу.</translation>
+<translation id="5754350196967618083">Не удается обновить рекомендации</translation>
 <translation id="5763382633136178763">Вкладки в режиме инкогнито</translation>
 <translation id="5763514718066511291">Нажмите, чтобы скопировать URL этого приложения.</translation>
 <translation id="5765780083710877561">Описание:</translation>
@@ -639,7 +642,6 @@
 <translation id="6154478581116148741">Чтобы экспортировать пароли с этого устройства, включите блокировку экрана в настройках.</translation>
 <translation id="6157392216611456285">Выбрать <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720">Сэкономлено: <ph name="PERCENT" /></translation>
-<translation id="6192333916571137726">Скачивание файла</translation>
 <translation id="6201345951596836663">Ссылка скопирована.</translation>
 <translation id="6206830853671714236">Выберите, когда начать скачивание</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> не ваш аккаунт?</translation>
@@ -712,6 +714,7 @@
 <translation id="6656545060687952787">Чтобы выполнить поиск устройств, браузеру Chrome нужен доступ к геоданным. <ph name="BEGIN_LINK" />Обновить разрешения<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Пароль</translation>
 <translation id="6659594942844771486">Вкладка</translation>
+<translation id="666573598175432848">Доступна новая версия Chrome. Нажмите на этот элемент, чтобы перейти в Play Маркет.</translation>
 <translation id="666731172850799929">Открыть в <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Примечание о конфиденциальности Chrome</translation>
 <translation id="6671495933530132209">Копировать изображение</translation>
@@ -842,6 +845,7 @@
 <translation id="7772032839648071052">Подтвердите кодовую фразу</translation>
 <translation id="7772375229873196092">Закрыть вкладку "<ph name="APP_NAME" />"</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способ оплаты}one{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способ оплаты}few{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способа оплаты}many{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способов оплаты}other{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способа оплаты}}</translation>
+<translation id="7778840695157240389">Новый контент появится позже.</translation>
 <translation id="7791543448312431591">Добавить</translation>
 <translation id="780301667611848630">Спасибо, не надо</translation>
 <translation id="7810647596859435254">Открыть с помощью...</translation>
@@ -923,6 +927,7 @@
 <translation id="8427875596167638501">Вкладка предпросмотра открыта на половину высоты</translation>
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8438566539970814960">Помогать улучшить просмотр страниц и поиск</translation>
+<translation id="8442258441309440798">Нет рекомендаций</translation>
 <translation id="8443209985646068659">Не удалось обновить Chrome</translation>
 <translation id="8445448999790540984">Не удалось экспортировать пароли</translation>
 <translation id="8461694314515752532">Задать кодовую фразу для шифрования синхронизированных данных</translation>
@@ -974,6 +979,7 @@
 <translation id="8853345339104747198">Вкладка "<ph name="TAB_TITLE" />"</translation>
 <translation id="8854223127042600341">Посмотреть скачанные файлы</translation>
 <translation id="889338405075704026">Открыть настройки Chrome</translation>
+<translation id="8893398027601469503">У вас установлена последняя версия Chrome.</translation>
 <translation id="8909135823018751308">Поделиться...</translation>
 <translation id="8912362522468806198">Аккаунт Google</translation>
 <translation id="8920114477895755567">Недостаточно данных о родителях.</translation>

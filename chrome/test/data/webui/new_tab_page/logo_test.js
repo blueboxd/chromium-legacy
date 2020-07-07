@@ -166,6 +166,24 @@ function createSuite(themeModeDoodlesEnabled) {
     });
   });
 
+  [[1000, 500] /* too large */,
+   [100, 50] /* too small */,
+  ].forEach(([width, height]) => {
+    test(`${width}x${height} boxed doodle aligned correctly`, async () => {
+      // Act.
+      const logo = await createLogo(createImageDoodle(width, height));
+      logo.dark = true;
+      logo.backgroundColor = {value: 0xff0000ff};
+
+      // Assert.
+      assertEquals(230, logo.offsetHeight);
+      assertGE(160, $$(logo, '#image').offsetHeight);
+      const pos = getRelativePosition($$(logo, '#imageDoodle'), logo);
+      assertGE(pos.top, 8);
+      assertEquals(-30, pos.bottom);
+    });
+  });
+
   test('dark mode and no dark doodle shows logo', async () => {
     // Arrange.
     const doodle = createImageDoodle();

@@ -99,8 +99,9 @@ void BluetoothRemoteGattServiceWin::Update() {
   ++discovery_pending_count_;
   task_manager_->PostGetGattIncludedCharacteristics(
       service_path_, service_uuid_, service_attribute_handle_,
-      base::Bind(&BluetoothRemoteGattServiceWin::OnGetIncludedCharacteristics,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(
+          &BluetoothRemoteGattServiceWin::OnGetIncludedCharacteristics,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BluetoothRemoteGattServiceWin::OnGetIncludedCharacteristics(

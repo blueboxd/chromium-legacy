@@ -41,8 +41,8 @@
 #import "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_cells_constants.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_password_check_cell.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_password_check_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_check_cell.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_check_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/elements/enterprise_info_popover_view_controller.h"
@@ -190,7 +190,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   // The item related to the enterprise managed save password setting.
   TableViewInfoButtonItem* _managedSavePasswordItem;
   // The item related to the password check status.
-  SettingsPasswordCheckItem* _passwordProblemsItem;
+  SettingsCheckItem* _passwordProblemsItem;
   // The button to start password check.
   TableViewTextItem* _checkForProblemsItem;
   // The item related to the button for exporting passwords.
@@ -521,10 +521,9 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   return managedSavePasswordItem;
 }
 
-- (SettingsPasswordCheckItem*)passwordProblemsItem {
-  SettingsPasswordCheckItem* passwordProblemsItem =
-      [[SettingsPasswordCheckItem alloc]
-          initWithType:ItemTypePasswordCheckStatus];
+- (SettingsCheckItem*)passwordProblemsItem {
+  SettingsCheckItem* passwordProblemsItem =
+      [[SettingsCheckItem alloc] initWithType:ItemTypePasswordCheckStatus];
   passwordProblemsItem.enabled = NO;
   passwordProblemsItem.text = l10n_util::GetNSString(IDS_IOS_CHECK_PASSWORDS);
   passwordProblemsItem.detailText =
@@ -607,6 +606,9 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 - (void)savePasswordsSwitchChanged:(UISwitch*)switchView {
   // Update the setting.
   [_passwordManagerEnabled setValue:switchView.on];
+
+  // Update the item.
+  _savePasswordsItem.on = [_passwordManagerEnabled value];
 }
 
 // Called when the user clicks on the information button of the managed
@@ -911,7 +913,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   if (!_passwordProblemsItem)
     return;
 
-  _passwordProblemsItem.image = nil;
+  _passwordProblemsItem.trailingImage = nil;
   _passwordProblemsItem.enabled = YES;
   _passwordProblemsItem.indicatorHidden = YES;
   _passwordProblemsItem.accessoryType = UITableViewCellAccessoryNone;
@@ -920,7 +922,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 
   switch (state) {
     case PasswordCheckStateRunning: {
-      _passwordProblemsItem.image = nil;
+      _passwordProblemsItem.trailingImage = nil;
       _passwordProblemsItem.indicatorHidden = NO;
       break;
     }
@@ -933,8 +935,9 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
           l10n_util::GetNSString(IDS_IOS_CHECK_PASSWORDS_UNSAFE_STATE);
       UIImage* unSafeIconImage = [[UIImage imageNamed:@"settings_unsafe_state"]
           imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-      _passwordProblemsItem.image = unSafeIconImage;
-      _passwordProblemsItem.tintColor = [UIColor colorNamed:kRedColor];
+      _passwordProblemsItem.trailingImage = unSafeIconImage;
+      _passwordProblemsItem.trailingImageTintColor =
+          [UIColor colorNamed:kRedColor];
       _passwordProblemsItem.accessoryType =
           UITableViewCellAccessoryDisclosureIndicator;
       break;
@@ -944,8 +947,9 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
           imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
       _passwordProblemsItem.detailText =
           l10n_util::GetNSString(IDS_IOS_CHECK_PASSWORDS_SAFE_STATE);
-      _passwordProblemsItem.image = safeIconImage;
-      _passwordProblemsItem.tintColor = [UIColor colorNamed:kGreenColor];
+      _passwordProblemsItem.trailingImage = safeIconImage;
+      _passwordProblemsItem.trailingImageTintColor =
+          [UIColor colorNamed:kGreenColor];
       break;
     }
     case PasswordCheckStateDefault: {
@@ -1449,8 +1453,10 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 // Sets the save passwords switch item's enabled status to |enabled| and
 // reconfigures the corresponding cell.
 - (void)setSavePasswordsSwitchItemEnabled:(BOOL)enabled {
-  [_savePasswordsItem setEnabled:enabled];
-  [self reconfigureCellsForItems:@[ _savePasswordsItem ]];
+  if (_savePasswordsItem) {
+    [_savePasswordsItem setEnabled:enabled];
+    [self reconfigureCellsForItems:@[ _savePasswordsItem ]];
+  }
 }
 
 // Enables/disables search bar.

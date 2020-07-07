@@ -15,6 +15,7 @@
 <translation id="137466361146087520">Google Chrome (бета)</translation>
 <translation id="1399397803214730675">На компьютере уже установлена последняя версия браузера Google Chrome. Если он не работает, удалите его и установите снова.</translation>
 <translation id="1434626383986940139">Приложения Chrome Canary</translation>
+<translation id="1514913130539345610">Администратор отключил выполнение браузером Chrome проверки на наличие вредоносного ПО.</translation>
 <translation id="1553358976309200471">Обновить Chrome</translation>
 <translation id="1587223624401073077">Google Chrome использует камеру.</translation>
 <translation id="1587325591171447154">Chrome заблокировал файл <ph name="FILE_NAME" /> как опасный.</translation>
@@ -121,6 +122,7 @@
 <translation id="4458462641685292929">Google Chrome выполняет другую операцию. Повторите попытку позже.</translation>
 <translation id="4480040274068703980">Не удалось синхронизировать данные из-за ошибки входа в аккаунт.</translation>
 <translation id="4521185804071812304">Автоматически отправлять данные об использовании и диагностике в Google, чтобы помогать нам повышать производительность и улучшать функции Chrome OS (необязательно)</translation>
+<translation id="4552702433620284371">Браузеру Chrome не удается проверить ПО на вашем устройстве. Убедитесь, что устройство подключено к Интернету.</translation>
 <translation id="4561051373932531560">В Google Chrome вы можете нажать на любой номер телефона и позвонить на него через Skype!</translation>
 <translation id="4567424176335768812">Вы вошли с помощью аккаунта <ph name="USER_EMAIL_ADDRESS" />. Ваши закладки, история и другие настройки теперь доступны на всех устройствах, где вы используете этот аккаунт.</translation>
 <translation id="4571503333518166079">Открыть настройки уведомлений Chrome</translation>
@@ -241,6 +243,7 @@
 <translation id="8641606876632989680">Вы получите уведомление от Chrome, если войдете в аккаунт с паролем, который был раскрыт.</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">Кроме того, расширение изменило стартовую страницу Chrome.</translation>
+<translation id="8681614230122836773">Браузер Chrome обнаружил на вашем компьютере вредоносное ПО.</translation>
 <translation id="870251953148363156">Обновить &amp;Google Chrome</translation>
 <translation id="873133009373065397">Google Chrome не удалось определить или задать браузер по умолчанию</translation>
 <translation id="8823341990149967727">Версия Chrome устарела</translation>

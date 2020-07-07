@@ -12,7 +12,6 @@
 #include <memory>
 #include <string>
 
-#include "base/memory/weak_ptr.h"
 #include "media/base/cdm_context.h"
 #include "media/base/content_decryption_module.h"
 #include "media/base/media_export.h"
@@ -64,7 +63,8 @@ class MEDIA_EXPORT MediaFoundationCdm : public ContentDecryptionModule,
  private:
   ~MediaFoundationCdm() final;
 
-  void OnSessionId(int session_token,
+  // Returns whether the |session_id| is accepted by the |this|.
+  bool OnSessionId(int session_token,
                    std::unique_ptr<NewSessionCdmPromise> promise,
                    const std::string& session_id);
 
@@ -89,9 +89,6 @@ class MEDIA_EXPORT MediaFoundationCdm : public ContentDecryptionModule,
   std::map<std::string, std::unique_ptr<MediaFoundationCdmSession>> sessions_;
 
   Microsoft::WRL::ComPtr<IMFCdmProxy> cdm_proxy_;
-
-  // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<MediaFoundationCdm> weak_factory_{this};
 };
 
 }  // namespace media

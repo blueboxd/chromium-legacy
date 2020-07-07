@@ -240,6 +240,14 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode) {
                                sizeof(stress_per_context_marking_worklist) - 1);
   }
 
+  if (base::FeatureList::IsEnabled(features::kV8FlushEmbeddedBlobICache)) {
+    static const char experimental_flush_embedded_blob_icache[] =
+        "--experimental-flush-embedded-blob-icache";
+    v8::V8::SetFlagsFromString(
+        experimental_flush_embedded_blob_icache,
+        sizeof(experimental_flush_embedded_blob_icache) - 1);
+  }
+
   if (IsolateHolder::kStrictMode == mode) {
     static const char use_strict[] = "--use_strict";
     v8::V8::SetFlagsFromString(use_strict, sizeof(use_strict) - 1);

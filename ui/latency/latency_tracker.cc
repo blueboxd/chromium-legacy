@@ -308,11 +308,6 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
     DCHECK_AND_RETURN_ON_FAIL(found_component);
   }
 
-  if (!IsInertialScroll(latency) && input_modality == "Touch") {
-    average_lag_tracker_.AddLatencyInFrame(latency, gpu_swap_begin_timestamp,
-                                           scroll_name);
-  }
-
   // Inertial and scrollbar scrolls are excluded from Ukm metrics.
   if ((input_modality == "Touch" && !IsInertialScroll(latency)) ||
       input_modality == "Wheel") {

@@ -51,6 +51,7 @@ class LoadStreamTask : public offline_pages::Task {
     LoadType load_type;
     // Information about the network request, if one was made.
     base::Optional<NetworkResponseInfo> network_response_info;
+    bool loaded_new_content_from_network = false;
   };
 
   LoadStreamTask(LoadType load_type,
@@ -78,6 +79,7 @@ class LoadStreamTask : public offline_pages::Task {
   // Information to be stuffed in |Result|.
   LoadStreamStatus load_from_store_status_ = LoadStreamStatus::kNoStatus;
   base::Optional<NetworkResponseInfo> network_response_info_;
+  bool loaded_new_content_from_network_ = false;
 
   base::TimeTicks fetch_start_time_;
   base::OnceCallback<void(Result)> done_callback_;

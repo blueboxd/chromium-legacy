@@ -707,15 +707,6 @@ bool OmniboxFieldTrial::IsPedalSuggestionsEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kOmniboxPedalSuggestions);
 }
 
-bool OmniboxFieldTrial::IsHideSteadyStateUrlSchemeEnabled() {
-  return base::FeatureList::IsEnabled(omnibox::kHideSteadyStateUrlScheme);
-}
-
-bool OmniboxFieldTrial::IsHideSteadyStateUrlTrivialSubdomainsEnabled() {
-  return base::FeatureList::IsEnabled(
-      omnibox::kHideSteadyStateUrlTrivialSubdomains);
-}
-
 bool OmniboxFieldTrial::IsExperimentalKeywordModeEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kExperimentalKeywordMode);
 }

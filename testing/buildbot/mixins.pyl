@@ -207,6 +207,15 @@
       'service_account': 'chromium-tester@chops-service-accounts.iam.gserviceaccount.com',
     },
   },
+  # TODO(crbug.com/1057152): Add this mixin unconditionally for all CrOS device
+  # tests.
+  'cros_device_flash': {
+    '$mixin_append': {
+      'args': [
+        '--flash'
+      ],
+    },
+  },
   'dawn_end2end_gpu_test': {
     '$mixin_append': {
       'args': [

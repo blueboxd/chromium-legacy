@@ -15,6 +15,7 @@
 <translation id="137466361146087520">‏גרסת הביטא של Google Chrome</translation>
 <translation id="1399397803214730675">‏במחשב זה מותקנת כבר גירסה עדכנית יותר של Google Chrome. אם התוכנה אינה פועלת, הסר את ההתקנה של Google Chrome ונסה שוב.</translation>
 <translation id="1434626383986940139">‏אפליקציות Chrome – קאנארי</translation>
+<translation id="1514913130539345610">‏מנהל המערכת השבית את הבדיקה של Chrome לאיתור תוכנות מזיקות</translation>
 <translation id="1553358976309200471">‏כדאי לעדכן את Chrome</translation>
 <translation id="1587223624401073077">‏Google Chrome משתמש במצלמה שלך.</translation>
 <translation id="1587325591171447154">‏<ph name="FILE_NAME" /> מסוכן, ולכן Chrome חסם אותו.</translation>
@@ -121,6 +122,7 @@
 <translation id="4458462641685292929">‏מתבצעת כרגע פעולה אחרת ב-Google Chrome. נסה שוב מאוחר יותר.</translation>
 <translation id="4480040274068703980">‏מערכת ההפעלה של Chrome לא הצליחה לסנכרן את הנתונים שלך עקב שגיאה בתהליך הכניסה.</translation>
 <translation id="4521185804071812304">‏אופציונלי: שליחה אוטומטית של נתוני אבחון ושימוש אל Google תעזור לשפר את התכונות ואת הביצועים של Chrome OS.</translation>
+<translation id="4552702433620284371">‏Chrome לא הצליח לבדוק את התוכנות במכשיר שלך. יש לבדוק את החיבור לאינטרנט.</translation>
 <translation id="4561051373932531560">‏Google Chrome מאפשר לך ללחוץ על מספר טלפון באינטרנט ולהתקשר אליו באמצעות Skype!</translation>
 <translation id="4567424176335768812">נכנסת למערכת בתור <ph name="USER_EMAIL_ADDRESS" />. כעת אתה יכול לגשת אל הסימניות, ההיסטוריה והגדרות אחרות שלך בכל המכשירים שבהם אתה מחובר לחשבון.</translation>
 <translation id="4571503333518166079">‏מעבר אל הגדרות של הודעות ב-Chrome</translation>
@@ -242,6 +244,7 @@
 <translation id="8641606876632989680">‏אם מערכת Chrome תזהה שנכנסת עם סיסמה שנחשפה, היא תתריע לך על כך</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">‏הגדרה זו גם קובעת איזה דף מוצג כשאתה מפעיל את Chrome.</translation>
+<translation id="8681614230122836773">‏Chrome גילה תוכנות מזיקות במחשב שלך</translation>
 <translation id="870251953148363156">‏יש לעדכן את Google Chrome&amp;</translation>
 <translation id="873133009373065397">‏Google Chrome אינו יכול לקבוע או להגדיר את דפדפן ברירת המחדל</translation>
 <translation id="8823341990149967727">‏Chrome אינו מעודכן</translation>

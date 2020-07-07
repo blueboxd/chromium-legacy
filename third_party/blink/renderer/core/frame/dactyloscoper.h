@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -25,6 +26,7 @@ class CORE_EXPORT Dactyloscoper {
   static void Record(ExecutionContext*, WebFeature);
 
   static void RecordDirectSurface(ExecutionContext*, WebFeature, unsigned);
+  static void RecordDirectSurface(ExecutionContext*, WebFeature, String);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Dactyloscoper);

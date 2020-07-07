@@ -281,7 +281,6 @@
 <translation id="1340527397989195812">使用“文件”应用备份设备上的媒体。</translation>
 <translation id="1341988552785875222">当前壁纸是由“<ph name="APP_NAME" />”设置的。您可能需要先卸载“<ph name="APP_NAME" />”，然后才能选择其他壁纸。</translation>
 <translation id="1343865611738742294">授权 Linux 应用访问 USB 设备。Linux 不会记住已被拔出的 USB 设备。</translation>
-<translation id="1344143111673240412">对摄像头设置做出的更改要求重新启动 Parallels Desktop</translation>
 <translation id="1347256498747320987">安装更新和应用。继续操作即表示您同意此设备还可从 Google、您的运营商以及您设备的制造商处自动下载并安装更新和应用（可能会使用移动数据网络）。部分应用可能会提供应用内购商品。<ph name="BEGIN_LINK1" />了解详情<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">当电池电量达到 <ph name="BATTERY_LEVEL" />% 时将开始更新。</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />：<ph name="NETWORK_NAME" /></translation>
@@ -1193,7 +1192,6 @@
 <translation id="2470702053775288986">已停用不支持的扩展程序</translation>
 <translation id="2471469610750100598">黑色（默认）</translation>
 <translation id="2473195200299095979">翻译此页</translation>
-<translation id="2474848500897222119"><ph name="PRINTER_NAME" />的墨水已用完</translation>
 <translation id="2475982808118771221">出现错误</translation>
 <translation id="2476578072172137802">网站设置</translation>
 <translation id="2478176599153288112">“<ph name="EXTENSION" />”的媒体文件权限</translation>
@@ -1370,7 +1368,7 @@
 <translation id="2682498795777673382">您的家长已更新设置</translation>
 <translation id="2683638487103917598">文件夹内容已排序</translation>
 <translation id="2684004000387153598">要想继续，请点击“确定”，然后点击“添加用户”为您的电子邮件地址创建一份新个人资料。</translation>
-<translation id="2686222346846590368">这是最后一次为此 <ph name="DEVICE_TYPE" /> 提供自动的软件和安全更新。若要接收以后的更新，请升级至较新的型号。&lt;a target="_blank" href="<ph name="URL" />"&gt;了解详情<ph name="LINK_END" /></translation>
+<translation id="2686222346846590368">这是最后一次为此 <ph name="DEVICE_TYPE" /> 提供自动的软件和安全更新。如需接收以后的更新，请升级至较新的型号。&lt;a target="_blank" href="<ph name="URL" />"&gt;了解详情<ph name="LINK_END" /></translation>
 <translation id="2687403674020088961">阻止所有 Cookie（不建议）</translation>
 <translation id="2687407218262674387">Google 服务条款</translation>
 <translation id="2688196195245426394">向服务器注册设备时出错：<ph name="CLIENT_ERROR" />。</translation>
@@ -1393,7 +1391,7 @@
 <translation id="2712173769900027643">请求批准</translation>
 <translation id="2713444072780614174">白色</translation>
 <translation id="2714393097308983682">Google Play 商店</translation>
-<translation id="2714997332747470971">个人信息建议可提供与您的个人信息（例如名字、地址或电话号码）有关的建议，从而帮助您提高输入速度。只有您本人能看到系统私下为您的帐号提供的个性化建议。</translation>
+<translation id="2714997332747470971">个人信息建议可提供与您名字、地址或电话号码等个人信息有关的建议，帮助您提高输入速度。系统为您的帐号提供的私人专用个性化建议仅对您本人可见。</translation>
 <translation id="2715751256863167692">此项升级操作会重置您 Chromebook 的硬件并移除当前的用户数据。</translation>
 <translation id="2716986496990888774">此设置由家长管理。</translation>
 <translation id="2718395828230677721">护眼模式</translation>
@@ -1499,7 +1497,6 @@
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> 使用的是由您的管理员指定的代理设置</translation>
 <translation id="2825758591930162672">证书持有者的公共密钥</translation>
 <translation id="2828650939514476812">连接到 Wi-Fi 网络</translation>
-<translation id="28291580771888953"><ph name="PRINTER_NAME" />的队列已满</translation>
 <translation id="2835547721736623118">语音识别服务</translation>
 <translation id="2836269494620652131">崩溃</translation>
 <translation id="2836635946302913370">管理员已禁止使用此用户名登录。</translation>
@@ -2315,7 +2312,7 @@
 <translation id="3839516600093027468">始终禁止 <ph name="HOST" /> 查看剪贴板</translation>
 <translation id="3841964634449506551">密码无效</translation>
 <translation id="3842552989725514455">Serif 字体</translation>
-<translation id="3843058644024807390">对麦克风设置做出的更改要求重新启动 Parallels Desktop</translation>
+<translation id="3843464315703645664">已列入内部许可名单</translation>
 <translation id="3846116211488856547">获取用于开发网站、Android 应用等内容的工具。安装 Linux 会使系统下载 <ph name="DOWNLOAD_SIZE" /> 的数据。</translation>
 <translation id="3847319713229060696">帮助我们为所有人改善网络安全环境</translation>
 <translation id="385051799172605136">后退</translation>
@@ -2773,7 +2770,6 @@
 <translation id="4453946976636652378">在<ph name="SEARCH_ENGINE_NAME" />中搜索，或者输入一个网址</translation>
 <translation id="4459169140545916303"><ph name="DEVICE_LAST_ACTIVATED_TIME" /> 天前曾有活动</translation>
 <translation id="4460014764210899310">取消分组</translation>
-<translation id="4460343359907016103">连接到<ph name="PRINTER_NAME" />时出错</translation>
 <translation id="4462159676511157176">自定义域名服务器</translation>
 <translation id="4465236939126352372">为“<ph name="APP_NAME" />”设置了 <ph name="TIME" />的使用时限</translation>
 <translation id="4465725236958772856">第 <ph name="NETWORK_INDEX" /> 个网络（共 <ph name="NETWORK_COUNT" /> 个），<ph name="NETWORK_NAME" />，由您的管理员管理，连接</translation>
@@ -3071,7 +3067,6 @@
 <translation id="4864369630010738180">正在登录…</translation>
 <translation id="4864805589453749318">请选择让哪位家长授权您添加学校帐号。</translation>
 <translation id="486635084936119914">下载特定类型的文件后自动将其打开</translation>
-<translation id="4869213010169296107"><ph name="PRINTER_NAME" />缺少送纸盘</translation>
 <translation id="48704129375571883">添加其他功能</translation>
 <translation id="4870758487381879312">请输入管理员提供的密码以获取配置信息</translation>
 <translation id="4870903493621965035">没有已配对的设备</translation>
@@ -3322,6 +3317,7 @@
 <translation id="5184662919967270437">正在更新设备</translation>
 <translation id="5185359571430619712">查看扩展程序</translation>
 <translation id="5185386675596372454">由于最新版的“<ph name="EXTENSION_NAME" />”需要更多权限，因此已将其停用。</translation>
+<translation id="5185500136143151980">未连接到互联网</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5190926251776387065">启用此端口</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> 想下载多个文件</translation>
@@ -3478,7 +3474,6 @@
 <translation id="5390112241331447203">将所发送的 system_logs.txt 文件添加到反馈报告中。</translation>
 <translation id="5390677308841849479">深红色和橙色</translation>
 <translation id="5390743329570580756">为何发送</translation>
-<translation id="5395869306561378615"><ph name="PRINTER_NAME" />已暂停</translation>
 <translation id="5397794290049113714">您</translation>
 <translation id="5398572795982417028">页面引用超出范围，上限为 <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">广告已被拦截</translation>
@@ -3493,7 +3488,6 @@
 <translation id="5417312524372586921">浏览器主题背景</translation>
 <translation id="5419405654816502573">Voice Match</translation>
 <translation id="5420438158931847627">确定文字和图片的清晰度</translation>
-<translation id="5421498071721257877"><ph name="PRINTER_NAME" />发生了设备错误</translation>
 <translation id="5422221874247253874">接入点</translation>
 <translation id="5422781158178868512">抱歉，系统无法识别您的外部存储设备。</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3842,7 +3836,6 @@
 <translation id="5852137567692933493">重新启动，然后执行 Powerwash</translation>
 <translation id="5854912040170951372">比萨</translation>
 <translation id="5855267860608268405">已知的 WLAN 网络</translation>
-<translation id="5855310969323666289"><ph name="PRINTER_NAME" />的机盖未关好</translation>
 <translation id="5855643921295613558">0.6 秒</translation>
 <translation id="5856721540245522153">启用调试功能</translation>
 <translation id="5857090052475505287">新文件夹</translation>
@@ -3873,7 +3866,6 @@
 <translation id="5877064549588274448">版本已更改。请重新启动设备来应用这些变更。</translation>
 <translation id="5877584842898320529">所选打印机不可用或未正确安装。<ph name="BR" />请检查打印机，或尝试另选一台打印机。</translation>
 <translation id="5882919346125742463">已知网络</translation>
-<translation id="5883716097305842571"><ph name="PRINTER_NAME" />的输出区域快满了</translation>
 <translation id="5884474295213649357">此标签页已连接到 USB 设备。</translation>
 <translation id="5886009770935151472">手指 1</translation>
 <translation id="5889282057229379085">中级 CA 证书数目的上限为：<ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4439,7 +4431,6 @@
 <translation id="6611972847767394631">您可在此处找到自己的标签页</translation>
 <translation id="6612358246767739896">受保护的内容</translation>
 <translation id="6615455863669487791">显示图标</translation>
-<translation id="6617034477946102682">无法连接到<ph name="PRINTER_NAME" /></translation>
 <translation id="6618097958368085618">仍然保留</translation>
 <translation id="6618744767048954150">正在运行</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
@@ -4856,7 +4847,6 @@
 <translation id="7128151990937044829">当通知处于屏蔽状态时在地址栏中显示“已屏蔽”图标</translation>
 <translation id="7131040479572660648">读取您在 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 和 <ph name="WEBSITE_3" /> 上的数据</translation>
 <translation id="713122686776214250">添加网页(&amp;G)...</translation>
-<translation id="7131379856697962078"><ph name="PRINTER_NAME" />的输出区域已满</translation>
 <translation id="7133578150266914903">您的管理员正在回滚此设备 (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">缩小文字</translation>
 <translation id="7135729336746831607">要开启蓝牙吗？</translation>
@@ -4875,7 +4865,6 @@
 <translation id="7152478047064750137">此扩展程序无需任何特殊权限</translation>
 <translation id="7154130902455071009">将您的初始页更改为：<ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">相机或文件中的现有照片</translation>
-<translation id="715657691234357425"><ph name="PRINTER_NAME" />的纸张不足</translation>
 <translation id="7165320105431587207">无法配置网络</translation>
 <translation id="716640248772308851">“<ph name="EXTENSION" />”对于选中位置中的图片、视频及声音文件具有读取权限。</translation>
 <translation id="7167486101654761064">总是打开此类文件(&amp;A)</translation>
@@ -4906,7 +4895,6 @@
 <translation id="7197632491113152433">我们发现，您的帐号中有 <ph name="NUMBER_OF_APPS" /> 款可在此设备上使用的应用。</translation>
 <translation id="7199158086730159431">获取帮助(&amp;E)</translation>
 <translation id="7200083590239651963">选择配置</translation>
-<translation id="7201042526153088083">在 <ph name="DEVICE_TYPE" /> 上通过 Google Play 安装应用和游戏。&lt;a target="_blank" href="<ph name="URL" />"&gt;了解详情&lt;/a&gt;</translation>
 <translation id="720110658997053098">让此设备永久处于自助服务终端模式</translation>
 <translation id="7201118060536064622">已删除“<ph name="DELETED_ITEM_NAME" />”</translation>
 <translation id="7201420661433230412">查看文件</translation>
@@ -5212,7 +5200,6 @@
 <translation id="7598466960084663009">重新启动计算机</translation>
 <translation id="7599527631045201165">设备名称过长。请输入一个较短的名称以重试。</translation>
 <translation id="7600965453749440009">一律不翻译<ph name="LANGUAGE" /></translation>
-<translation id="7601297144931396972"><ph name="PRINTER_NAME" />卡纸了</translation>
 <translation id="760197030861754408">请前往 <ph name="LANDING_PAGE" /> 进行连接。</translation>
 <translation id="7602079150116086782">没有在其他设备打开的标签页</translation>
 <translation id="7602173054665172958">打印管理</translation>
@@ -5223,6 +5210,7 @@
 <translation id="7609148976235050828">请连接到互联网，然后重试。</translation>
 <translation id="7614260613810441905">在网站想要修改您设备上的文件或文件夹时先询问您（推荐）</translation>
 <translation id="761530003705945209">备份到 Google 云端硬盘。您随时可以轻松地恢复数据或更换设备。您的备份内容包含应用数据。您的备份内容将上传到 Google 并使用您的 Google 帐号密码进行加密。</translation>
+<translation id="7615365294369022248">添加帐号时出错</translation>
 <translation id="7616214729753637086">正在注册设备…</translation>
 <translation id="7617263010641145920">开启 Play 商店</translation>
 <translation id="7617366389578322136">正在连接“<ph name="DEVICE_NAME" />”</translation>
@@ -5670,7 +5658,6 @@
 <translation id="8123590694679414600">数据已于 <ph name="TIME" />使用您的同步密码加密。这并不包括 Google Pay 中的付款方式和地址。</translation>
 <translation id="81238879832906896">黄色和白色花朵</translation>
 <translation id="8124313775439841391">受管理的 ONC</translation>
-<translation id="8127535217699822294"><ph name="PRINTER_NAME" />的纸张已用完</translation>
 <translation id="813082847718468539">查看网站信息</translation>
 <translation id="8131740175452115882">确认</translation>
 <translation id="8133676275609324831">在文件夹中显示(&amp;S)</translation>
@@ -5769,7 +5756,6 @@
 <translation id="8254954272268479918">关闭 Linux 虚拟机（测试版）</translation>
 <translation id="8255451560461371599">无背景图片</translation>
 <translation id="8256319818471787266">狗狗</translation>
-<translation id="8256417822772703842"><ph name="PRINTER_NAME" />的墨水不足</translation>
 <translation id="8257950718085972371">继续禁止使用摄像头</translation>
 <translation id="8259239505248583312">开始使用</translation>
 <translation id="8260864402787962391">鼠标</translation>
@@ -5950,7 +5936,6 @@
 <translation id="8487678622945914333">放大</translation>
 <translation id="8490896350101740396">下列自助服务终端应用“<ph name="UPDATED_APPS" />”已更新完毕。请重启设备，以便完成更新流程。</translation>
 <translation id="8493236660459102203">麦克风：</translation>
-<translation id="8495940850609851342"><ph name="PRINTER_NAME" />已停止</translation>
 <translation id="8496717697661868878">运行此插件</translation>
 <translation id="8497219075884839166">Windows 实用程序</translation>
 <translation id="8498214519255567734">可让您更舒适地在黯淡的光线下查看屏幕或阅读文字</translation>
@@ -5977,7 +5962,7 @@
 <translation id="8529925957403338845">即时网络共享连接失败</translation>
 <translation id="8534656636775144800">糟糕！尝试加入该网域时出错了。请重试。</translation>
 <translation id="8535005006684281994">Netscape 证书续订网址</translation>
-<translation id="8536956381488731905">按键时发出提示音</translation>
+<translation id="8536956381488731905">按键音效</translation>
 <translation id="8538358978858059843">允许投射到云服务？</translation>
 <translation id="8539727552378197395">否（仅 Http）</translation>
 <translation id="8539766201049804895">升级</translation>
@@ -6203,7 +6188,7 @@
 <translation id="8798441408945964110">提供商名称</translation>
 <translation id="8800004011501252845">目前显示的是以下帐号的目标打印机：</translation>
 <translation id="8800034312320686233">网站无法正常运行？</translation>
-<translation id="880069872639153240">获取系统基于您输入的内容提供的表情符号建议</translation>
+<translation id="880069872639153240">根据您输入的内容，获取表情符号建议</translation>
 <translation id="8803953437405899238">只需点击一下，即可打开一个新标签页</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{将标签页移至另一个窗口}other{将标签页移至另一个窗口}}</translation>
 <translation id="8805140816472474147">请确认同步设置以开始同步。</translation>
@@ -6492,6 +6477,12 @@
 <translation id="9157096865782046368">0.8 秒</translation>
 <translation id="9157697743260533322">未能按您的要求为所有用户设置自动更新（启动预定流程时出错：<ph name="ERROR_NUMBER" />）</translation>
 <translation id="9158715103698450907">糟糕！系统在进行身份验证时发生了网络通信问题。请检查您的网络连接，然后重试。</translation>
+<translation id="9159643062839240276">请尝试：
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />检查网线、调制解调器和路由器
+      <ph name="LIST_ITEM" />重新连接到 Wi-Fi 网络
+      <ph name="LIST_ITEM" />运行 Chrome 连接诊断工具
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">画中画</translation>
 <translation id="9168436347345867845">以后再说</translation>
 <translation id="9169496697824289689">查看键盘快捷键</translation>

@@ -19,6 +19,7 @@
 #include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/lacros_buildflags.h"
 #include "components/metrics/cpu_metrics_provider.h"
 #include "components/metrics/delegating_provider.h"
 #include "components/metrics/environment_recorder.h"
@@ -167,7 +168,11 @@ TEST_F(MetricsLogTest, BasicRecord) {
   hardware->set_dll_base(reinterpret_cast<uint64_t>(CURRENT_MODULE()));
 #endif
 
+#if BUILDFLAG(IS_LACROS)
+  system_profile->mutable_os()->set_name("Lacros");
+#else
   system_profile->mutable_os()->set_name(base::SysInfo::OperatingSystemName());
+#endif
   system_profile->mutable_os()->set_version(
       base::SysInfo::OperatingSystemVersion());
 #if defined(OS_CHROMEOS)

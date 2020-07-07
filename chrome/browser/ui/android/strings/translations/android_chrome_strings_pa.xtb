@@ -168,6 +168,7 @@
 <translation id="2353636109065292463">ਤੁਹਾਡੇ ਇੰਟਰਨੈੱਟ ਕਨੈਕਸ਼ਨ ਦੀ ਜਾਂਚ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ</translation>
 <translation id="2359808026110333948">ਜਾਰੀ ਰੱਖੋ</translation>
 <translation id="2369533728426058518">ਟੈਬਾਂ ਖੋਲ੍ਹੋ</translation>
+<translation id="2377295302146152376">Chrome ਅੱਪਡੇਟਾਂ ਲਈ ਜਾਂਚ ਨਹੀਂ ਕਰ ਸਕਿਆ</translation>
 <translation id="2387895666653383613">ਟੈਕਸਟ ਸਕੇਲਿੰਗ</translation>
 <translation id="2394602618534698961">ਤੁਹਾਡੇ ਵੱਲੋਂ ਡਾਊਨਲੋਡ ਕੀਤੀਆਂ ਫ਼ਾਈਲਾਂ ਇੱਥੇ ਦਿਸਦੀਆਂ ਹਨ</translation>
 <translation id="2407481962792080328">ਜਦੋਂ ਤੁਸੀਂ ਆਪਣੇ Google ਖਾਤੇ ਵਿੱਚ ਸਾਈਨ-ਇਨ ਕਰਦੇ ਹੋ, ਤਾਂ ਇਹ ਵਿਸ਼ੇਸ਼ਤਾ ਚਾਲੂ ਹੋ ਜਾਂਦੀ ਹੈ</translation>
@@ -546,6 +547,7 @@
 <translation id="5441522332038954058">ਪਤਾ ਬਾਰ 'ਤੇ ਜਾਓ</translation>
 <translation id="5447201525962359567">ਸਾਰੀ ਸਾਈਟ ਸਟੋਰੇਜ, ਜਿਸ ਵਿੱਚ ਕੁਕੀਜ਼ ਅਤੇ ਹੋਰ ਸਥਾਨਕ ਤੌਰ 'ਤੇ ਸਟੋਰ ਕੀਤਾ ਡਾਟਾ ਸ਼ਾਮਲ ਹੈ</translation>
 <translation id="545042621069398927">ਤੁਹਾਡੇ ਡਾਊਨਲੋਡ ਦੀ ਗਤੀ ਵਧਾਈ ਜਾ ਰਹੀ ਹੈ।</translation>
+<translation id="5454513945794364671">ਤੁਹਾਡੇ ਪ੍ਰਸ਼ਾਸਕ ਨੇ ਸੁਰੱਖਿਅਤ ਬ੍ਰਾਊਜ਼ਿੰਗ ਨੂੰ ਬੰਦ ਕਰ ਦਿੱਤਾ ਹੈ</translation>
 <translation id="5456381639095306749">ਪੰਨਾ ਡਾਊਨਲੋਡ ਕਰੋ</translation>
 <translation id="548278423535722844">'ਨਕਸ਼ੇ ਐਪ' ਵਿੱਚ ਖੋਲ੍ਹੋ</translation>
 <translation id="5487521232677179737"> ਡਾਟਾ  ਸਾਫ਼ ਕਰੋ</translation>
@@ -585,6 +587,7 @@
 <translation id="5732819098735351888">ਵਾਈ-ਫਾਈ 'ਤੇ ਡਾਊਨਲੋਡ ਕਰਨਾ ਸ਼ੁਰੂ ਕੀਤਾ ਜਾਵੇਗਾ।</translation>
 <translation id="5748802427693696783">ਬਦਲਕੇ ਸਧਾਰਨ ਟੈਬਾਂ ਲਿਆਂਦੀਆਂ ਗਈਆਂ</translation>
 <translation id="5749068826913805084">ਫ਼ਾਈਲਾਂ ਡਾਉਨਲੋਡ ਕਰਨ ਲਈ Chrome ਨੂੰ ਸਟੋਰੋਜ ਤੱਕ ਪਹੁੰਚ ਦੀ ਲੋੜ ਹੁੰਦੀ ਹੈ।</translation>
+<translation id="5754350196967618083">Discover ਨੂੰ ਰਿਫ੍ਰੈਸ਼ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ</translation>
 <translation id="5763382633136178763">ਗੁਮਨਾਮ ਟੈਬਸ</translation>
 <translation id="5763514718066511291">ਇਸ ਐਪ ਲਈ URL ਕਾਪੀ ਕਰਨ ਲਈ ਟੈਪ ਕਰੋ</translation>
 <translation id="5765780083710877561">ਵਰਣਨ:</translation>
@@ -639,7 +642,6 @@
 <translation id="6154478581116148741">ਇਸ ਡੀਵਾਈਸ ਤੋਂ ਆਪਣੇ ਪਾਸਵਰਡ ਨਿਰਯਾਤ ਕਰਨ ਲਈ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਸਕ੍ਰੀਨ ਲੌਕ ਚਾਲੂ ਕਰੋ</translation>
 <translation id="6157392216611456285"><ph name="APP_NAME" /> ਚੁਣੋ</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> ਡਾਟਾ ਬਚਤਾਂ</translation>
-<translation id="6192333916571137726">ਫ਼ਾਈਲ ਡਾਊਨਲੋਡ ਕਰੋ</translation>
 <translation id="6201345951596836663">ਲਿੰਕ ਕਾਪੀ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="6206830853671714236">ਡਾਊਨਲੋਡ ਕਰਨ ਲਈ ਸਮਾਂ ਚੁਣੋ</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> ਨਹੀਂ ਹੋ?</translation>
@@ -712,6 +714,7 @@
 <translation id="6656545060687952787">ਡੀਵਾਈਸਾਂ ਲਈ ਸਕੈਨ ਕਰਨ ਲਈ Chrome ਨੂੰ ਟਿਕਾਣਾ ਪਹੁੰਚ ਦੀ ਲੋੜ ਹੈ। <ph name="BEGIN_LINK" />ਇਜਾਜ਼ਤਾਂ ਅੱਪਡੇਟ ਕਰੋ<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">ਪਾਸਵਰਡ</translation>
 <translation id="6659594942844771486">ਟੈਬ</translation>
+<translation id="666573598175432848">Chrome ਦਾ ਨਵਾਂ ਵਰਜਨ ਉਪਲਬਧ ਹੈ। Play ਸਟੋਰ 'ਤੇ ਜਾਣ ਲਈ ਇਸ ਤੱਤ 'ਤੇ ਟੈਪ ਕਰੋ।</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" /> ਵਿੱਚ ਖੋਲ੍ਹੋ</translation>
 <translation id="666981079809192359">Chrome ਪਰਦੇਦਾਰੀ ਨੋਟਿਸ</translation>
 <translation id="6671495933530132209">ਚਿੱਤਰ ਕਾਪੀ ਕਰੋ</translation>
@@ -842,6 +845,7 @@
 <translation id="7772032839648071052">ਪਾਸਫਰੇਜ਼ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ</translation>
 <translation id="7772375229873196092"><ph name="APP_NAME" /> ਨੂੰ ਬੰਦ ਕਰੋ</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ਅਤੇ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ਹੋਰ}one{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ਅਤੇ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ਹੋਰ}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ਅਤੇ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ਹੋਰ}}</translation>
+<translation id="7778840695157240389">ਨਵੀਆਂ ਕਹਾਣੀਆਂ ਲਈ ਬਾਅਦ ਵਿੱਚ ਵਾਪਸ ਜਾਂਚ ਕਰੋ</translation>
 <translation id="7791543448312431591">ਜੋੜੋ</translation>
 <translation id="780301667611848630">ਨਹੀਂ ਧੰਨਵਾਦ</translation>
 <translation id="7810647596859435254">ਇਸ ਨਾਲ ਖੋਲ੍ਹੋ...</translation>
@@ -923,6 +927,7 @@
 <translation id="8427875596167638501">ਪੂਰਵ-ਝਲਕ ਟੈਬ ਅੱਧੀ ਖੁੱਲ੍ਹੀ ਹੋਈ ਹੈ</translation>
 <translation id="8428213095426709021">ਸੈਟਿੰਗਾਂ</translation>
 <translation id="8438566539970814960">ਖੋਜਾਂ ਅਤੇ ਬ੍ਰਾਊਜ਼ਿੰਗ ਬਿਹਤਰ ਬਣਾਓ</translation>
+<translation id="8442258441309440798">ਕੋਈ ਕਹਾਣੀ ਉਪਲਬਧ ਨਹੀਂ ਹੈ</translation>
 <translation id="8443209985646068659">Chrome ਅੱਪਡੇਟ ਨਹੀਂ ਹੋਇਆ</translation>
 <translation id="8445448999790540984">ਪਾਸਵਰਡ ਨਿਰਯਾਤ ਨਹੀਂ ਕੀਤੇ ਜਾ ਸਕਦੇ</translation>
 <translation id="8461694314515752532">ਆਪਣੇ ਖੁਦ ਦੇ ਸਮਕਾਲੀਕਰਨ ਪਾਸਫਰੇਜ਼ ਨਾਲ ਸਮਕਾਲੀਕਿਰਤ ਡਾਟੇ ਨੂੰ ਇਨਕ੍ਰਿਪਟ ਕਰੋ</translation>
@@ -974,6 +979,7 @@
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, ਟੈਬ</translation>
 <translation id="8854223127042600341">ਆਪਣੀਆਂ ਆਫ਼ਲਾਈਨ ਫ਼ਾਈਲਾਂ ਦੇਖੋ</translation>
 <translation id="889338405075704026">Chrome ਸੈਟਿੰਗਾਂ 'ਤੇ ਜਾਓ</translation>
+<translation id="8893398027601469503">ਤੁਸੀਂ Chrome ਦਾ ਨਵੀਨਤਮ ਵਰਜਨ ਚਲਾ ਰਹੇ ਹੋ</translation>
 <translation id="8909135823018751308">ਸ਼ੇਅਰ ਕਰੋ…</translation>
 <translation id="8912362522468806198">Google ਖਾਤਾ</translation>
 <translation id="8920114477895755567">ਮਾਪਿਆਂ ਦੇ ਵੇਰਵਿਆਂ ਦੀ ਉਡੀਕ ਕਰ ਰਿਹਾ ਹੈ।</translation>

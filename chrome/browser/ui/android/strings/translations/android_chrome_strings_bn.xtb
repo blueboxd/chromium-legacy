@@ -644,7 +644,6 @@
 <translation id="6154478581116148741">এই ডিভাইস থেকে আপনার পাসওয়ার্ড এক্সপোর্ট করতে সেটিংসে স্ক্রিন লক চালু করুন</translation>
 <translation id="6157392216611456285"><ph name="APP_NAME" /> বেছে নিন</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> ডেটা সঞ্চয়</translation>
-<translation id="6192333916571137726">ফাইল ডাউনলোড করুন</translation>
 <translation id="6201345951596836663">লিঙ্ক কপি করা হয়েছে</translation>
 <translation id="6206830853671714236">কোন সময় ডাউনলোড করবেন, তা বেছে নিন</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> না?</translation>
@@ -717,7 +716,7 @@
 <translation id="6656545060687952787">ডিভাইস স্ক্যান করার জন্য Chrome এর স্থান এক্সেস প্রয়োজন। <ph name="BEGIN_LINK" />অনুমতি আপডেট করুন<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">পাসওয়ার্ড</translation>
 <translation id="6659594942844771486">ট্যাব</translation>
-<translation id="666573598175432848">Chrome-এর একটি নতুন সংস্করণ উপলভ্য রয়েছে। Play Store-এ যেতে এই এলিমেন্টে ট্যাপ করুন।</translation>
+<translation id="666573598175432848">Chrome-এর একটি নতুন ভার্সন উপলভ্য রয়েছে। Play Store-এ যেতে এই এলিমেন্টে ট্যাপ করুন।</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" /> এ খুলুন</translation>
 <translation id="666981079809192359">Chrome এর গোপনীয়তা বিজ্ঞপ্তি</translation>
 <translation id="6671495933530132209">ছবি কপি করুন</translation>
@@ -930,7 +929,7 @@
 <translation id="8427875596167638501">প্রিভিউ ট্যাব অর্ধেক খোলা আছে</translation>
 <translation id="8428213095426709021">সেটিংস</translation>
 <translation id="8438566539970814960">সার্চ এবং ব্রাউজিং অভিজ্ঞতা আরও উন্নত করুন</translation>
-<translation id="8442258441309440798">কোনও খবর উপলব্ধ নেই</translation>
+<translation id="8442258441309440798">কোনও খবর উপলভ্য নেই</translation>
 <translation id="8443209985646068659">Chrome আপডেট হচ্ছে না</translation>
 <translation id="8445448999790540984">পাসওয়ার্ড এক্সপোর্ট করা যাচ্ছে না</translation>
 <translation id="8461694314515752532">আপনার নিজস্ব সিঙ্ক পাসফ্রেজ দিয়ে সিঙ্ক করা ডেটা এনক্রিপ্ট করুন</translation>

@@ -93,6 +93,7 @@ class ServiceWorkerPaymentAppFinder
   friend class ServiceWorkerPaymentAppFinderBrowserTest;
   friend class PaymentRequestPlatformBrowserTestBase;
   friend class PaymentMethodViewControllerTest;
+  friend class PaymentHandlerIconRefetchTest;
 
   explicit ServiceWorkerPaymentAppFinder(content::RenderFrameHost* rfh);
 

@@ -173,7 +173,7 @@ class ExtensionAppsEnableFlow : public ExtensionEnableFlowDelegate {
 
     if (!flow_) {
       flow_ = std::make_unique<ExtensionEnableFlow>(profile_, app_id_, this);
-      flow_->StartForNativeWindow(nullptr);
+      flow_->Start();
     }
   }
 

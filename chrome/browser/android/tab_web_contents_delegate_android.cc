@@ -537,7 +537,7 @@ void TabWebContentsDelegateAndroid::PrintCrossProcessSubframe(
 #endif
 
 #if BUILDFLAG(ENABLE_PAINT_PREVIEW)
-void TabWebContentsDelegateAndroid::CapturePaintPreviewOfCrossProcessSubframe(
+void TabWebContentsDelegateAndroid::CapturePaintPreviewOfSubframe(
     content::WebContents* web_contents,
     const gfx::Rect& rect,
     const base::UnguessableToken& guid,

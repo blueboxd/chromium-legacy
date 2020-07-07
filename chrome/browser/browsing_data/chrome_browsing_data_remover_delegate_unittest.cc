@@ -44,6 +44,7 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/language/url_language_histogram_factory.h"
+#include "chrome/browser/password_manager/account_storage/account_password_store_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/permissions/adaptive_quiet_notification_permission_ui_enabler.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
@@ -84,6 +85,7 @@
 #include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
+#include "components/password_manager/core/browser/mock_password_sync_metadata_store.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -554,27 +556,56 @@ class ClearDomainReliabilityTester {
 class RemovePasswordsTester {
  public:
   explicit RemovePasswordsTester(TestingProfile* testing_profile) {
-    PasswordStoreFactory::GetInstance()->SetTestingFactoryAndUse(
+    PasswordStoreFactory::GetInstance()->SetTestingFactory(
         testing_profile,
         base::BindRepeating(
             &password_manager::BuildPasswordStore<
                 content::BrowserContext,
                 testing::NiceMock<password_manager::MockPasswordStore>>));
 
-    store_ = static_cast<password_manager::MockPasswordStore*>(
-        PasswordStoreFactory::GetInstance()
-            ->GetForProfile(testing_profile, ServiceAccessType::EXPLICIT_ACCESS)
+    profile_store_ = static_cast<password_manager::MockPasswordStore*>(
+        PasswordStoreFactory::GetForProfile(testing_profile,
+                                            ServiceAccessType::EXPLICIT_ACCESS)
             .get());
+
+    if (base::FeatureList::IsEnabled(
+            password_manager::features::kEnablePasswordsAccountStorage)) {
+      AccountPasswordStoreFactory::GetInstance()->SetTestingFactory(
+          testing_profile,
+          base::BindRepeating(
+              &password_manager::BuildPasswordStore<
+                  content::BrowserContext,
+                  testing::NiceMock<password_manager::MockPasswordStore>>));
+
+      account_store_ = static_cast<password_manager::MockPasswordStore*>(
+          AccountPasswordStoreFactory::GetForProfile(
+              testing_profile, ServiceAccessType::EXPLICIT_ACCESS)
+              .get());
+      ON_CALL(*account_store_, GetMetadataStore())
+          .WillByDefault(Return(&account_metadata_store_));
+    }
 
     OSCryptMocker::SetUp();
   }
 
   ~RemovePasswordsTester() { OSCryptMocker::TearDown(); }
 
-  password_manager::MockPasswordStore* store() { return store_; }
+  password_manager::MockPasswordStore* profile_store() {
+    return profile_store_;
+  }
+
+  password_manager::MockPasswordStore* account_store() {
+    return account_store_;
+  }
+
+  password_manager::MockPasswordSyncMetadataStore* account_metadata_store() {
+    return &account_metadata_store_;
+  }
 
  private:
-  password_manager::MockPasswordStore* store_;
+  password_manager::MockPasswordStore* profile_store_;
+  password_manager::MockPasswordStore* account_store_;
+  password_manager::MockPasswordSyncMetadataStore account_metadata_store_;
 
   DISALLOW_COPY_AND_ASSIGN(RemovePasswordsTester);
 };
@@ -1172,12 +1203,13 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
     TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
   }
 
-  ~ChromeBrowsingDataRemoverDelegateTest() override {}
+  ~ChromeBrowsingDataRemoverDelegateTest() override = default;
 
-  void BlockUntilBrowsingDataRemoved(const base::Time& delete_begin,
-                                     const base::Time& delete_end,
-                                     uint64_t remove_mask,
-                                     bool include_protected_origins) {
+  // Returns the set of data types for which the deletion failed.
+  uint64_t BlockUntilBrowsingDataRemoved(const base::Time& delete_begin,
+                                         const base::Time& delete_end,
+                                         uint64_t remove_mask,
+                                         bool include_protected_origins) {
     uint64_t origin_type_mask =
         content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB;
     if (include_protected_origins) {
@@ -1192,6 +1224,7 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
         &completion_observer);
     base::ThreadPoolInstance::Get()->FlushForTesting();
     completion_observer.BlockUntilCompletion();
+    return completion_observer.failed_data_types();
   }
 
   void BlockUntilOriginDataRemoved(
@@ -1435,7 +1468,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
   // Expect that passwords will be deleted, as they do not depend
   // on |prefs::kAllowDeletingBrowserHistory|.
   RemovePasswordsTester tester(GetProfile());
-  EXPECT_CALL(*tester.store(), RemoveLoginsByURLAndTimeImpl(_, _, _));
+  EXPECT_CALL(*tester.profile_store(), RemoveLoginsByURLAndTimeImpl(_, _, _));
 
   uint64_t removal_mask =
       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY |
@@ -1954,9 +1987,9 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemovePasswordStatistics) {
   RemovePasswordsTester tester(GetProfile());
   base::RepeatingCallback<bool(const GURL&)> empty_filter;
 
-  EXPECT_CALL(*tester.store(), RemoveStatisticsByOriginAndTimeImpl(
-                                   ProbablySameFilter(empty_filter),
-                                   base::Time(), base::Time::Max()));
+  EXPECT_CALL(*tester.profile_store(), RemoveStatisticsByOriginAndTimeImpl(
+                                           ProbablySameFilter(empty_filter),
+                                           base::Time(), base::Time::Max()));
   BlockUntilBrowsingDataRemoved(
       base::Time(), base::Time::Max(),
       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY, false);
@@ -1974,7 +2007,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
   builder->AddRegisterableDomain(kTestRegisterableDomain1);
   base::RepeatingCallback<bool(const GURL&)> filter = builder->BuildUrlFilter();
 
-  EXPECT_CALL(*tester.store(),
+  EXPECT_CALL(*tester.profile_store(),
               RemoveStatisticsByOriginAndTimeImpl(
                   ProbablySameFilter(filter), base::Time(), base::Time::Max()));
   BlockUntilOriginDataRemoved(
@@ -1987,12 +2020,66 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemovePasswordsByTimeOnly) {
   base::RepeatingCallback<bool(const GURL&)> filter =
       BrowsingDataFilterBuilder::BuildNoopFilter();
 
-  EXPECT_CALL(*tester.store(),
+  EXPECT_CALL(*tester.profile_store(),
               RemoveLoginsByURLAndTimeImpl(ProbablySameFilter(filter), _, _))
       .WillOnce(Return(password_manager::PasswordStoreChangeList()));
+
   BlockUntilBrowsingDataRemoved(
       base::Time(), base::Time::Max(),
       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PASSWORDS, false);
+}
+
+TEST_F(ChromeBrowsingDataRemoverDelegateTest,
+       RemovePasswordsByTimeOnly_WithAccountStore) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      password_manager::features::kEnablePasswordsAccountStorage);
+
+  RemovePasswordsTester tester(GetProfile());
+
+  EXPECT_CALL(*tester.profile_store(), RemoveLoginsByURLAndTimeImpl(_, _, _))
+      .WillOnce(Return(password_manager::PasswordStoreChangeList()));
+
+  EXPECT_CALL(*tester.account_store(), RemoveLoginsByURLAndTimeImpl(_, _, _))
+      .WillOnce(Return(password_manager::PasswordStoreChangeList()));
+  // For the account store, the remover delegate also waits until all the
+  // deletions have propagated to the Sync server. Pretend that happens
+  // immediately.
+  EXPECT_CALL(*tester.account_metadata_store(), HasUnsyncedDeletions())
+      .WillRepeatedly(Return(false));
+
+  BlockUntilBrowsingDataRemoved(
+      base::Time(), base::Time::Max(),
+      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PASSWORDS, false);
+}
+
+TEST_F(ChromeBrowsingDataRemoverDelegateTest,
+       RemovePasswordsByTimeOnly_WithAccountStore_Failure) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      password_manager::features::kEnablePasswordsAccountStorage);
+
+  RemovePasswordsTester tester(GetProfile());
+
+  EXPECT_CALL(*tester.profile_store(), RemoveLoginsByURLAndTimeImpl(_, _, _))
+      .WillOnce(Return(password_manager::PasswordStoreChangeList()));
+
+  EXPECT_CALL(*tester.account_store(), RemoveLoginsByURLAndTimeImpl(_, _, _))
+      .WillOnce(Return(password_manager::PasswordStoreChangeList()));
+  // For the account store, the remover delegate also waits until all the
+  // deletions have propagated to the Sync server. In this test, that never
+  // happens.
+  EXPECT_CALL(*tester.account_metadata_store(), HasUnsyncedDeletions())
+      .WillRepeatedly(Return(true));
+  // Bypass the (usually 30-second) timeout until the PasswordStore reports
+  // failure.
+  tester.account_store()->SetSyncTaskTimeoutForTest(base::TimeDelta());
+
+  uint64_t failed_data_types = BlockUntilBrowsingDataRemoved(
+      base::Time(), base::Time::Max(),
+      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PASSWORDS, false);
+  EXPECT_EQ(failed_data_types,
+            ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PASSWORDS);
 }
 
 // Disabled, since passwords are not yet marked as a filterable datatype.
@@ -2005,7 +2092,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
   builder->AddRegisterableDomain(kTestRegisterableDomain1);
   base::RepeatingCallback<bool(const GURL&)> filter = builder->BuildUrlFilter();
 
-  EXPECT_CALL(*tester.store(),
+  EXPECT_CALL(*tester.profile_store(),
               RemoveLoginsByURLAndTimeImpl(ProbablySameFilter(filter), _, _))
       .WillOnce(Return(password_manager::PasswordStoreChangeList()));
   BlockUntilOriginDataRemoved(
@@ -2019,9 +2106,8 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, DisableAutoSignIn) {
   base::RepeatingCallback<bool(const GURL&)> empty_filter =
       BrowsingDataFilterBuilder::BuildNoopFilter();
 
-  EXPECT_CALL(
-      *tester.store(),
-      DisableAutoSignInForOriginsImpl(ProbablySameFilter(empty_filter)))
+  EXPECT_CALL(*tester.profile_store(),
+              DisableAutoSignInForOriginsImpl(ProbablySameFilter(empty_filter)))
       .WillOnce(Return(password_manager::PasswordStoreChangeList()));
 
   BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
@@ -2035,11 +2121,10 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
   base::RepeatingCallback<bool(const GURL&)> empty_filter =
       BrowsingDataFilterBuilder::BuildNoopFilter();
 
-  EXPECT_CALL(*tester.store(), RemoveLoginsByURLAndTimeImpl(_, _, _))
+  EXPECT_CALL(*tester.profile_store(), RemoveLoginsByURLAndTimeImpl(_, _, _))
       .WillOnce(Return(password_manager::PasswordStoreChangeList()));
-  EXPECT_CALL(
-      *tester.store(),
-      DisableAutoSignInForOriginsImpl(ProbablySameFilter(empty_filter)))
+  EXPECT_CALL(*tester.profile_store(),
+              DisableAutoSignInForOriginsImpl(ProbablySameFilter(empty_filter)))
       .WillOnce(Return(password_manager::PasswordStoreChangeList()));
 
   BlockUntilBrowsingDataRemoved(
@@ -2054,9 +2139,10 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
   RemovePasswordsTester tester(GetProfile());
   base::RepeatingCallback<bool(const GURL&)> empty_filter;
 
-  EXPECT_CALL(*tester.store(), RemoveCompromisedCredentialsByUrlAndTimeImpl(
-                                   ProbablySameFilter(empty_filter),
-                                   base::Time(), base::Time::Max()));
+  EXPECT_CALL(
+      *tester.profile_store(),
+      RemoveCompromisedCredentialsByUrlAndTimeImpl(
+          ProbablySameFilter(empty_filter), base::Time(), base::Time::Max()));
   BlockUntilBrowsingDataRemoved(
       base::Time(), base::Time::Max(),
       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PASSWORDS, false);
@@ -2072,7 +2158,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
   builder->AddRegisterableDomain(kTestRegisterableDomain1);
   base::RepeatingCallback<bool(const GURL&)> filter = builder->BuildUrlFilter();
 
-  EXPECT_CALL(*tester.store(),
+  EXPECT_CALL(*tester.profile_store(),
               RemoveCompromisedCredentialsByUrlAndTimeImpl(
                   ProbablySameFilter(filter), base::Time(), base::Time::Max()));
   BlockUntilOriginDataRemoved(

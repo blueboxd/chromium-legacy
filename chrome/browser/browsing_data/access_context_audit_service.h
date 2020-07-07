@@ -31,13 +31,13 @@ class AccessContextAuditService
 
   // Records accesses for all cookies in |details| against |top_frame_origin|.
   void RecordCookieAccess(const net::CookieList& accessed_cookies,
-                          const GURL& top_frame_origin);
+                          const url::Origin& top_frame_origin);
 
   // Records access for |storage_origin|'s storage of |type| against
   // |top_frame_origin|.
-  void RecordStorageAPIAccess(const GURL& storage_origin,
+  void RecordStorageAPIAccess(const url::Origin& storage_origin,
                               AccessContextAuditDatabase::StorageAPIType type,
-                              const GURL& top_frame_origin);
+                              const url::Origin& top_frame_origin);
 
   // Queries database for all access context records, which are provided via
   // |callback|.

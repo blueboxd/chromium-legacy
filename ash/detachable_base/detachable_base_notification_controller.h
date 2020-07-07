@@ -8,7 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/detachable_base/detachable_base_handler.h"
 #include "ash/detachable_base/detachable_base_observer.h"
-#include "ash/session/session_observer.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "base/scoped_observer.h"
 
 namespace ash {

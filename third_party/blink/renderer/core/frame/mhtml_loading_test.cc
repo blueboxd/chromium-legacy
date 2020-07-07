@@ -99,12 +99,10 @@ TEST_F(MHTMLLoadingTest, CheckDomain) {
   ASSERT_TRUE(GetPage());
   LocalFrame* frame = To<LocalFrame>(GetPage()->MainFrame());
   ASSERT_TRUE(frame);
-  Document* document = frame->GetDocument();
-  ASSERT_TRUE(document);
 
   EXPECT_EQ(kFileURL, frame->DomWindow()->location()->toString());
 
-  const SecurityOrigin* origin = document->GetSecurityOrigin();
+  const SecurityOrigin* origin = frame->DomWindow()->GetSecurityOrigin();
   EXPECT_NE("localhost", origin->Domain().Ascii());
 }
 

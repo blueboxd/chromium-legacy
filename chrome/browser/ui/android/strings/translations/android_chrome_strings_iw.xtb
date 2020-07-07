@@ -168,6 +168,7 @@
 <translation id="2353636109065292463">בדיקת חיבור האינטרנט</translation>
 <translation id="2359808026110333948">המשך</translation>
 <translation id="2369533728426058518">כרטיסיות פתוחות</translation>
+<translation id="2377295302146152376">‏Chrome לא הצליח לבדוק אם יש עדכונים</translation>
 <translation id="2387895666653383613">שינוי גודל טקסט</translation>
 <translation id="2394602618534698961">קבצים שהורדת מופיעים כאן</translation>
 <translation id="2407481962792080328">‏התכונה הזו מופעלת בעת הכניסה לחשבון Google</translation>
@@ -546,6 +547,7 @@
 <translation id="5441522332038954058">מעבר לשורת כתובת האתר</translation>
 <translation id="5447201525962359567">‏כל נתוני האתר המאוחסנים, כולל קובצי Cookie ונתונים אחרים המאוחסנים באופן מקומי</translation>
 <translation id="545042621069398927">הדפדפן מאיץ את ההורדה.</translation>
+<translation id="5454513945794364671">מנהל המערכת כיבה את הגלישה הבטוחה</translation>
 <translation id="5456381639095306749">הורד דף זה</translation>
 <translation id="548278423535722844">פתח יישום מפות</translation>
 <translation id="5487521232677179737">ניקוי נתונים</translation>
@@ -585,6 +587,7 @@
 <translation id="5732819098735351888">‏ההורדה תתחיל בחיבור Wi-Fi.</translation>
 <translation id="5748802427693696783">הוחלף לכרטיסיות רגילות</translation>
 <translation id="5749068826913805084">‏לצורך הורדת קבצים, Chrome זקוק לגישה לאחסון.</translation>
+<translation id="5754350196967618083">‏לא ניתן לרענן את Discover</translation>
 <translation id="5763382633136178763">כרטיסיות גלישה בסתר</translation>
 <translation id="5763514718066511291">הקשה מעתיקה את כתובת האתר של האפליקציה הזו</translation>
 <translation id="5765780083710877561">תיאור:</translation>
@@ -639,7 +642,6 @@
 <translation id="6154478581116148741">יש להפעיל נעילת מסך ב'הגדרות' כדי לייצא את הסיסמאות מהמכשיר הזה</translation>
 <translation id="6157392216611456285">בוחרים ב-<ph name="APP_NAME" />.</translation>
 <translation id="6159335304067198720">חיסכון בצריכת נתונים בשיעור של <ph name="PERCENT" /></translation>
-<translation id="6192333916571137726">קובץ הורדה</translation>
 <translation id="6201345951596836663">הקישור הועתק</translation>
 <translation id="6206830853671714236">בחירת מועד ההורדה</translation>
 <translation id="6210748933810148297">אינך <ph name="EMAIL" />?</translation>
@@ -712,6 +714,7 @@
 <translation id="6656545060687952787">‏כדי לבצע סריקה לאיתור מכשירים ב-Chrome, יש צורך בגישה לנתוני מיקום. <ph name="BEGIN_LINK" />עדכן הרשאות<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">סיסמה</translation>
 <translation id="6659594942844771486">כרטיסייה</translation>
+<translation id="666573598175432848">‏קיימת גרסה חדשה של Chrome. אפשר להקיש על הרכיב הזה כדי לעבור לחנות Play.</translation>
 <translation id="666731172850799929">פתח ב-<ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">‏הודעת הפרטיות של Chrome</translation>
 <translation id="6671495933530132209">העתק את התמונה</translation>
@@ -842,6 +845,7 @@
 <translation id="7772032839648071052">אשר משפט-סיסמה</translation>
 <translation id="7772375229873196092">סגירת <ph name="APP_NAME" /></translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{‏<ph name="PAYMENT_METHOD_PREVIEW" />‎\u2026‎ ו-<ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> נוסף}two{‏<ph name="PAYMENT_METHOD_PREVIEW" />‎\u2026‎ ו-<ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> נוספים}many{‏<ph name="PAYMENT_METHOD_PREVIEW" />‎\u2026‎ ו-<ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> נוספים}other{‏<ph name="PAYMENT_METHOD_PREVIEW" />‎\u2026‎ ו-<ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> נוספים}}</translation>
+<translation id="7778840695157240389">בהמשך יהיו פה סיפורים חדשים</translation>
 <translation id="7791543448312431591">הוספה</translation>
 <translation id="780301667611848630">לא תודה</translation>
 <translation id="7810647596859435254">פתח באמצעות...</translation>
@@ -923,6 +927,7 @@
 <translation id="8427875596167638501">כרטיסיית התצוגה המקדימה פתוחה בחצי גובה המסך</translation>
 <translation id="8428213095426709021">הגדרות</translation>
 <translation id="8438566539970814960">שיפור החיפושים והגלישה</translation>
+<translation id="8442258441309440798">אין סיפורים זמינים</translation>
 <translation id="8443209985646068659">‏אי אפשר לעדכן את Chrome</translation>
 <translation id="8445448999790540984">אי אפשר לייצא סיסמאות</translation>
 <translation id="8461694314515752532">הצפנת נתונים מסונכרנים בעזרת ביטוי סיסמה אישי לסנכרון</translation>
@@ -974,6 +979,7 @@
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, כרטיסייה</translation>
 <translation id="8854223127042600341">הצגת הקבצים שזמינים ללא חיבור לאינטרנט.</translation>
 <translation id="889338405075704026">‏כניסה להגדרות Chrome</translation>
+<translation id="8893398027601469503">‏במחשב שלך פועלת הגרסה האחרונה של Chrome</translation>
 <translation id="8909135823018751308">שיתוף…</translation>
 <translation id="8912362522468806198">‏חשבון Google</translation>
 <translation id="8920114477895755567">ממתין לפרטי ההורים.</translation>

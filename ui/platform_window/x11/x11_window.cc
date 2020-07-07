@@ -117,6 +117,14 @@ bool CoalesceEventsIfNeeded(x11::Event* const x11_event,
   return false;
 }
 
+#if defined(USE_OZONE)
+int GetKeyModifiers(const XDragDropClient* client) {
+  if (!client)
+    return ui::XGetMaskAsEventFlags();
+  return client->current_modifier_state();
+}
+#endif  // defined(USE_OZONE)
+
 }  // namespace
 
 X11Window::X11Window(PlatformWindowDelegate* platform_window_delegate)
@@ -828,22 +836,24 @@ int X11Window::UpdateDrag(const gfx::Point& screen_point) {
   WmDropHandler* drop_handler = GetWmDropHandler(*this);
   if (!drop_handler)
     return DragDropTypes::DRAG_NONE;
+  DCHECK(drag_drop_client_);
+  auto* target_current_context = drag_drop_client_->target_current_context();
+  DCHECK(target_current_context);
   if (!notified_enter_) {
-    DCHECK(drag_drop_client_);
-    auto* target_current_context = drag_drop_client_->target_current_context();
-    DCHECK(target_current_context);
     drop_handler->OnDragEnter(
         gfx::PointF(screen_point),
         std::make_unique<ui::OSExchangeData>(
             std::make_unique<ui::XOSExchangeDataProvider>(
                 drag_drop_client_->xwindow(),
                 target_current_context->fetched_targets())),
-        ui::DragDropTypes::DRAG_COPY);
+        ui::DragDropTypes::DRAG_COPY,
+        GetKeyModifiers(target_current_context->source_client()));
     notified_enter_ = true;
   }
 
-  drag_operation_ = drop_handler->OnDragMotion(gfx::PointF(screen_point),
-                                               ui::DragDropTypes::DRAG_COPY);
+  drag_operation_ = drop_handler->OnDragMotion(
+      gfx::PointF(screen_point), ui::DragDropTypes::DRAG_COPY,
+      GetKeyModifiers(target_current_context->source_client()));
   return drag_operation_;
 }
 
@@ -878,7 +888,10 @@ int X11Window::PerformDrop() {
 
   // The drop data has been supplied on entering the window.  The drop handler
   // should have it since then.
-  drop_handler->OnDragDrop({});
+  auto* target_current_context = drag_drop_client_->target_current_context();
+  DCHECK(target_current_context);
+  drop_handler->OnDragDrop(
+      {}, GetKeyModifiers(target_current_context->source_client()));
   notified_enter_ = false;
   return drag_operation_;
 }

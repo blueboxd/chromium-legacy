@@ -121,7 +121,7 @@ void UserSessionInitializer::InitRlz(Profile* profile) {
           ->GetString()
           .empty()) {
     // Read brand code asynchronously from an OEM data and repost ourselves.
-    google_brand::chromeos::InitBrand(base::Bind(
+    google_brand::chromeos::InitBrand(base::BindOnce(
         &UserSessionInitializer::InitRlz, weak_factory_.GetWeakPtr(), profile));
     return;
   }

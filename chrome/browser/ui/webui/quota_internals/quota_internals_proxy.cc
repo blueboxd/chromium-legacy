@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/webui/quota_internals/quota_internals_handler.h"
 #include "chrome/browser/ui/webui/quota_internals/quota_internals_types.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "third_party/blink/public/mojom/quota/quota_types.mojom-forward.h"
 #include "url/origin.h"
 
 using blink::mojom::StorageType;
@@ -155,9 +156,11 @@ void QuotaInternalsProxy::DidDumpOriginInfoTable(
   ReportPerOriginInfo(origin_info);
 }
 
-void QuotaInternalsProxy::DidGetHostUsage(const std::string& host,
-                                          StorageType type,
-                                          int64_t usage) {
+void QuotaInternalsProxy::DidGetHostUsage(
+    const std::string& host,
+    StorageType type,
+    int64_t usage,
+    blink::mojom::UsageBreakdownPtr usage_breakdown) {
   DCHECK(type == StorageType::kTemporary || type == StorageType::kPersistent ||
          type == StorageType::kSyncable);
 
@@ -215,7 +218,7 @@ void QuotaInternalsProxy::VisitHost(const std::string& host, StorageType type) {
 void QuotaInternalsProxy::GetHostUsage(const std::string& host,
                                        StorageType type) {
   DCHECK(quota_manager_.get());
-  quota_manager_->GetHostUsage(
+  quota_manager_->GetHostUsageWithBreakdown(
       host, type,
       base::BindOnce(&QuotaInternalsProxy::DidGetHostUsage,
                      weak_factory_.GetWeakPtr(), host, type));

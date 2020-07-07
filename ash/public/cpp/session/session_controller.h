@@ -19,6 +19,7 @@ class AccountId;
 
 namespace ash {
 
+class SessionObserver;
 class SessionControllerClient;
 class SessionActivationObserver;
 
@@ -114,6 +115,10 @@ class ASH_PUBLIC_EXPORT SessionController {
   virtual void RemoveSessionActivationObserverForAccountId(
       const AccountId& account_id,
       SessionActivationObserver* observer) = 0;
+
+  // Adds/remove session observer.
+  virtual void AddObserver(SessionObserver* observer) = 0;
+  virtual void RemoveObserver(SessionObserver* observer) = 0;
 
  protected:
   SessionController();

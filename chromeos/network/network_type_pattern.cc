@@ -123,8 +123,8 @@ bool NetworkTypePattern::Equals(const NetworkTypePattern& other) const {
 bool NetworkTypePattern::MatchesType(
     const std::string& shill_network_type) const {
   if (shill_network_type.empty()) {
-    NOTREACHED() << "NetworkTypePattern: " << ToDebugString()
-                 << ": Can not match empty type.";
+    NET_LOG(ERROR) << "NetworkTypePattern: " << ToDebugString()
+                   << ": Can not match empty type.";
     return false;
   }
   return MatchesPattern(Primitive(shill_network_type));

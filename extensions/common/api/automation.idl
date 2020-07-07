@@ -1167,22 +1167,22 @@ enum EventMoveDirectionType {
     static void suspendMedia();
 
     // Scrolls this scrollable container backward.
-    static void scrollBackward(PerformActionCallback callback);
+    static void scrollBackward(optional PerformActionCallback callback);
 
     // Scrolls this scrollable container forward.
-    static void scrollForward(PerformActionCallback callback);
+    static void scrollForward(optional PerformActionCallback callback);
 
     // Scrolls this scrollable container up.
-    static void scrollUp(PerformActionCallback callback);
+    static void scrollUp(optional PerformActionCallback callback);
 
     // Scrolls this scrollable container down.
-    static void scrollDown(PerformActionCallback callback);
+    static void scrollDown(optional PerformActionCallback callback);
 
     // Scrolls this scrollable container left.
-    static void scrollLeft(PerformActionCallback callback);
+    static void scrollLeft(optional PerformActionCallback callback);
 
     // Scrolls this scrollable container right.
-    static void scrollRight(PerformActionCallback callback);
+    static void scrollRight(optional PerformActionCallback callback);
 
     // Adds a listener for the given event type and event phase.
     static void addEventListener(

@@ -268,28 +268,6 @@ TEST_F(ShillServiceClientTest, Remove) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(ShillServiceClientTest, ActivateCellularModem) {
-  const char kCarrier[] = "carrier";
-  // Create response.
-  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
-
-  // Set expectations.
-  PrepareForMethodCall(shill::kActivateCellularModemFunction,
-                       base::BindRepeating(&ExpectStringArgument, kCarrier),
-                       response.get());
-  // Call method.
-  base::MockCallback<base::OnceClosure> mock_closure;
-  base::MockCallback<ShillServiceClient::ErrorCallback> mock_error_callback;
-  client_->ActivateCellularModem(dbus::ObjectPath(kExampleServicePath),
-                                 kCarrier, mock_closure.Get(),
-                                 mock_error_callback.Get());
-  EXPECT_CALL(mock_closure, Run()).Times(1);
-  EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
-
-  // Run the message loop.
-  base::RunLoop().RunUntilIdle();
-}
-
 TEST_F(ShillServiceClientTest, GetWiFiPassphrase) {
   const char kPassphrase[] = "passphrase";
 

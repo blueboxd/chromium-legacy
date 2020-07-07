@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/mojom/ukm_interface.mojom.h"
+#include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
 
 PrivacyBudgetUkmEntryFilter::PrivacyBudgetUkmEntryFilter(
     IdentifiabilityStudyState* state)
@@ -19,12 +20,12 @@ PrivacyBudgetUkmEntryFilter::PrivacyBudgetUkmEntryFilter(
 bool PrivacyBudgetUkmEntryFilter::FilterEntry(
     ukm::mojom::UkmEntry* entry,
     base::flat_set<uint64_t>* removed_metric_hashes) const {
-  const bool enabled = identifiability_study_state_->IsActive();
-
   // We don't yet deal with any event other than Identifiability. All other
   // types of events pass through.
   if (entry->event_hash != ukm::builders::Identifiability::kEntryNameHash)
     return true;
+
+  const bool enabled = blink::IdentifiabilityStudySettings::Get()->IsActive();
 
   // If the study is not enabled, drop all identifiability events.
   if (!enabled || entry->metrics.empty())

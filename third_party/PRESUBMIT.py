@@ -135,7 +135,7 @@ def _CheckThirdPartyReadmesUpdated(input_api, output_api):
     not_shipped_match = not_shipped_pattern.search(contents)
     android_compatible_match = (
         license_android_compatible_pattern.search(contents))
-    if (not not_shipped_pattern and not android_compatible_match and
+    if (not not_shipped_match and not android_compatible_match and
         not LicenseIsCompatibleWithAndroid(input_api, license_match.group(1))):
       errors.append(output_api.PresubmitPromptWarning(
         'Cannot determine whether specified license is compatible with\n' +

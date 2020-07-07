@@ -199,6 +199,10 @@ const char kHostOfflineReasonPolicyChangeRequiresRestart[] =
     "POLICY_CHANGE_REQUIRES_RESTART";
 const char kHostOfflineReasonRemoteRestartHost[] = "REMOTE_RESTART_HOST";
 
+// The default email domain for Googlers. Used to determine whether the host's
+// email address is Google-internal or not.
+constexpr char kGooglerEmailDomain[] = "@google.com";
+
 }  // namespace
 
 namespace remoting {
@@ -1402,8 +1406,14 @@ void HostProcess::InitializeSignaling() {
       ftl_signal_strategy.get(),
       base::BindOnce(&HostProcess::OnAuthFailed, base::Unretained(this)));
   ftl_signaling_connector_->Start();
+
+  // Check if the host owner's email is Google-internal.
+  bool is_googler = base::EndsWith(host_owner_, kGooglerEmailDomain,
+                                   base::CompareCase::INSENSITIVE_ASCII);
+
   heartbeat_sender_ = std::make_unique<HeartbeatSender>(
-      this, host_id_, ftl_signal_strategy.get(), oauth_token_getter_.get());
+      this, host_id_, ftl_signal_strategy.get(), oauth_token_getter_.get(),
+      is_googler);
   signal_strategy_ = std::move(ftl_signal_strategy);
 }
 

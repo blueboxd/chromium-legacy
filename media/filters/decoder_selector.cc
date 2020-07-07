@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
@@ -20,6 +21,7 @@
 #include "media/base/cdm_context.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_log.h"
+#include "media/base/media_switches.h"
 #include "media/base/video_decoder.h"
 #include "media/filters/decoder_stream_traits.h"
 #include "media/filters/decrypting_demuxer_stream.h"
@@ -29,6 +31,11 @@ namespace media {
 namespace {
 
 const char kSelectDecoderTrace[] = "DecoderSelector::SelectDecoder";
+
+template <typename T>
+DecoderPriority UnspecifiedDecoderPriority(const T& /*config*/) {
+  return DecoderPriority::kUnspecified;
+}
 
 DecoderPriority GetDefaultVideoDecoderPriority(
     const VideoDecoderConfig& config) {
@@ -44,18 +51,19 @@ DecoderPriority GetDefaultVideoDecoderPriority(
              : DecoderPriority::kPreferPlatformDecoders;
 }
 
-DecoderPriority GetDefaultAudioDecoderPriority(
-    const AudioDecoderConfig& /*config*/) {
-  // Platform audio decoders are not currently prioritized or deprioritized
-  return DecoderPriority::kUnspecified;
-}
-
 void SetDefaultDecoderPriorityCB(VideoDecoderSelector::DecoderPriorityCB* out) {
-  *out = base::BindRepeating(GetDefaultVideoDecoderPriority);
+  if (base::FeatureList::IsEnabled(kResolutionBasedDecoderPriority)) {
+    *out = base::BindRepeating(GetDefaultVideoDecoderPriority);
+  } else {
+    *out = base::BindRepeating<DecoderPriority(const VideoDecoderConfig&)>(
+        UnspecifiedDecoderPriority);
+  }
 }
 
 void SetDefaultDecoderPriorityCB(AudioDecoderSelector::DecoderPriorityCB* out) {
-  *out = base::BindRepeating(GetDefaultAudioDecoderPriority);
+  // Platform audio decoders are not currently prioritized or deprioritized
+  *out = base::BindRepeating<DecoderPriority(const AudioDecoderConfig&)>(
+      UnspecifiedDecoderPriority);
 }
 
 }  // namespace

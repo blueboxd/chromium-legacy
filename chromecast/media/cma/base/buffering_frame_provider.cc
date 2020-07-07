@@ -52,18 +52,18 @@ BufferingFrameProvider::~BufferingFrameProvider() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-void BufferingFrameProvider::Read(const ReadCB& read_cb) {
+void BufferingFrameProvider::Read(ReadCB read_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   DCHECK(!read_cb.is_null());
-  read_cb_ = read_cb;
+  read_cb_ = std::move(read_cb);
 
   CompleteReadIfNeeded();
 
   RequestBufferIfNeeded();
 }
 
-void BufferingFrameProvider::Flush(const base::Closure& flush_cb) {
+void BufferingFrameProvider::Flush(base::OnceClosure flush_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Invalidate all the buffers that belong to this media timeline.
@@ -79,7 +79,7 @@ void BufferingFrameProvider::Flush(const base::Closure& flush_cb) {
   buffer_list_.clear();
   total_buffer_size_ = 0;
   read_cb_.Reset();
-  coded_frame_provider_->Flush(flush_cb);
+  coded_frame_provider_->Flush(std::move(flush_cb));
 }
 
 void BufferingFrameProvider::OnNewBuffer(
@@ -118,7 +118,7 @@ void BufferingFrameProvider::RequestBufferIfNeeded() {
 
   is_pending_request_ = true;
   coded_frame_provider_->Read(::media::BindToCurrentLoop(
-      base::Bind(&BufferingFrameProvider::OnNewBuffer, weak_this_)));
+      base::BindOnce(&BufferingFrameProvider::OnNewBuffer, weak_this_)));
 }
 
 void BufferingFrameProvider::CompleteReadIfNeeded() {

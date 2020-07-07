@@ -182,19 +182,16 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
     {NIGORI, "NIGORI", "nigori", "Encryption Keys",
      sync_pb::EntitySpecifics::kNigoriFieldNumber,
      ModelTypeForHistograms::kNigori},
-    {DEPRECATED_EXPERIMENTS, "EXPERIMENTS", "experiments", "Experiments",
-     sync_pb::EntitySpecifics::kExperimentsFieldNumber,
-     ModelTypeForHistograms::kDeprecatedExperiments},
 };
 
 static_assert(base::size(kModelTypeInfoMap) == ModelType::NUM_ENTRIES,
               "kModelTypeInfoMap should have ModelType::NUM_ENTRIES elements");
 
-static_assert(41 == syncer::ModelType::NUM_ENTRIES,
+static_assert(40 == syncer::ModelType::NUM_ENTRIES,
               "When adding a new type, update enum SyncModelTypes in enums.xml "
               "and suffix SyncModelType in histograms.xml.");
 
-static_assert(41 == syncer::ModelType::NUM_ENTRIES,
+static_assert(40 == syncer::ModelType::NUM_ENTRIES,
               "When adding a new type, update kAllocatorDumpNameAllowlist in "
               "base/trace_event/memory_infra_background_allowlist.cc.");
 
@@ -303,9 +300,6 @@ void AddDefaultFieldValue(ModelType type, sync_pb::EntitySpecifics* specifics) {
     case NIGORI:
       specifics->mutable_nigori();
       break;
-    case DEPRECATED_EXPERIMENTS:
-      specifics->mutable_experiments();
-      break;
     case WEB_APPS:
       specifics->mutable_web_app();
       break;
@@ -363,7 +357,7 @@ ModelType GetModelType(const sync_pb::SyncEntity& sync_entity) {
 }
 
 ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
-  static_assert(41 == ModelType::NUM_ENTRIES,
+  static_assert(40 == ModelType::NUM_ENTRIES,
                 "When adding new protocol types, the following type lookup "
                 "logic must be updated.");
   if (specifics.has_bookmark())
@@ -426,8 +420,6 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
     return USER_CONSENTS;
   if (specifics.has_nigori())
     return NIGORI;
-  if (specifics.has_experiments())
-    return DEPRECATED_EXPERIMENTS;
   if (specifics.has_send_tab_to_self())
     return SEND_TAB_TO_SELF;
   if (specifics.has_security_event())
@@ -447,7 +439,7 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
 }
 
 ModelTypeSet EncryptableUserTypes() {
-  static_assert(41 == ModelType::NUM_ENTRIES,
+  static_assert(40 == ModelType::NUM_ENTRIES,
                 "If adding an unencryptable type, remove from "
                 "encryptable_user_types below.");
   ModelTypeSet encryptable_user_types = UserTypes();

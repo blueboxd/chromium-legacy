@@ -129,7 +129,7 @@ TEST_F('ChromeVoxPanelTest', 'ActivateMenu', function() {
     this.fireMockEvent('ArrowRight')();
     this.assertActiveMenuItem(
         'panel_menu_speech', 'Announce Current Battery Status');
-  }, {isAsync: true});
+  });
 });
 
 TEST_F('ChromeVoxPanelTest', 'LinkMenu', function() {
@@ -142,7 +142,7 @@ TEST_F('ChromeVoxPanelTest', 'LinkMenu', function() {
     this.assertActiveMenuItem('role_link', 'apple Link');
     this.fireMockEvent('ArrowUp')();
     this.assertActiveMenuItem('role_link', 'banana Link');
-  }, {isAsync: true});
+  });
 });
 
 TEST_F('ChromeVoxPanelTest', 'FormControlsMenu', function() {
@@ -154,7 +154,7 @@ TEST_F('ChromeVoxPanelTest', 'FormControlsMenu', function() {
         this.assertActiveMenuItem('panel_menu_form_controls', 'OK Button');
         this.fireMockEvent('ArrowUp')();
         this.assertActiveMenuItem('panel_menu_form_controls', 'Cancel Button');
-      }, {isAsync: true});
+      });
 });
 
 TEST_F('ChromeVoxPanelTest', 'SearchMenu', function() {
@@ -170,7 +170,7 @@ TEST_F('ChromeVoxPanelTest', 'SearchMenu', function() {
     this.assertActiveSearchMenuItem('Jump To The Top Of The Page');
     this.fireMockEvent('ArrowDown')();
     this.assertActiveSearchMenuItem('Jump To Details');
-  }, {isAsync: true});
+  });
 });
 
 // TODO(crbug.com/1088438): flaky crashes.
@@ -198,7 +198,7 @@ TEST_F('ChromeVoxPanelTest', 'DISABLED_Gestures', function() {
 
         doGesture('swipeLeft1');
         await this.waitForMenu('panel_menu_jump');
-      }, {isAsync: true});
+      });
 });
 
 TEST_F('ChromeVoxPanelTest', 'InternationalFormControlsMenu', function() {

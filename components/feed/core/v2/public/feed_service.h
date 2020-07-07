@@ -34,6 +34,9 @@ class Record;
 namespace network {
 class SharedURLLoaderFactory;
 }  // namespace network
+namespace offline_pages {
+class PrefetchService;
+}  // namespace offline_pages
 namespace signin {
 class IdentityManager;
 }  // namespace signin
@@ -74,6 +77,7 @@ class FeedService : public KeyedService {
       std::unique_ptr<leveldb_proto::ProtoDatabase<feedstore::Record>> database,
       signin::IdentityManager* identity_manager,
       history::HistoryService* history_service,
+      offline_pages::PrefetchService* prefetch_service,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner,
       const std::string& api_key,

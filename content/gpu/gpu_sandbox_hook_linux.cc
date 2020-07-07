@@ -252,7 +252,8 @@ void AddArmGpuWhitelist(std::vector<BrokerFilePermission>* permissions) {
 
 // Need to look in vendor paths for custom vendor implementations.
 static const char* const kWhitelistedChromecastPaths[] = {
-    "/oem_cast_shlib/", "/system/vendor/lib/", "/system/lib/"};
+    "/oem_cast_shlib/", "/system/vendor/lib/", "/system/lib/",
+    "/system/chrome/lib/"};
 
 void AddChromecastArmGpuWhitelist(
     std::vector<BrokerFilePermission>* permissions) {
@@ -262,7 +263,9 @@ void AddChromecastArmGpuWhitelist(
 
   // Files needed by the ARM GPU userspace.
   static const char* const kReadOnlyLibraries[] = {"libGLESv2.so.2",
-                                                   "libEGL.so.1"};
+                                                   "libEGL.so.1",
+                                                   // Whitelist ANGLE libraries.
+                                                   "libGLESv2.so", "libEGL.so"};
 
   for (const char* library : kReadOnlyLibraries) {
     for (const char* path : kWhitelistedChromecastPaths) {

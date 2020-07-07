@@ -2080,6 +2080,21 @@ void LayerTreeHostImpl::DidPresentCompositorFrame(
     client_->NotifyThroughputTrackerResults(
         std::move(throughput_tracker_results));
   }
+
+  // Send all pending lag events waiting on the frame pointed by |frame_token|.
+  // It is posted as a task because LayerTreeHostImpl::DidPresentCompositorFrame
+  // is in the rendering critical path (it is called by AsyncLayerTreeFrameSink
+  // ::OnBeginFrame).
+  GetTaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&LayerTreeHostImpl::LogAverageLagEvents,
+                     weak_factory_.GetWeakPtr(), frame_token, details));
+}
+
+void LayerTreeHostImpl::LogAverageLagEvents(
+    uint32_t frame_token,
+    const viz::FrameTimingDetails& details) {
+  lag_tracking_manager_.DidPresentCompositorFrame(frame_token, details);
 }
 
 void LayerTreeHostImpl::DidNotNeedBeginFrame() {
@@ -2364,6 +2379,10 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
 
   auto compositor_frame = GenerateCompositorFrame(frame);
   frame->frame_token = compositor_frame.metadata.frame_token;
+
+  // Collect |latency_info| information for tracking
+  lag_tracking_manager_.CollectScrollEventsFromFrame(
+      frame->frame_token, compositor_frame.metadata.latency_info);
   layer_tree_frame_sink_->SubmitCompositorFrame(
       std::move(compositor_frame),
       /*hit_test_data_changed=*/false, debug_state_.show_hit_test_borders);

@@ -27,11 +27,11 @@ class MockFrameProvider : public CodedFrameProvider {
   void SetDelayFlush(bool delay_flush);
 
   // CodedFrameProvider implementation.
-  void Read(const ReadCB& read_cb) override;
-  void Flush(const base::Closure& flush_cb) override;
+  void Read(ReadCB read_cb) override;
+  void Flush(base::OnceClosure flush_cb) override;
 
  private:
-  void DoRead(const ReadCB& read_cb);
+  void DoRead(ReadCB read_cb);
 
   // Parameterization of the frame provider.
   // |delayed_task_pattern_| indicates the pattern for delivering frames,

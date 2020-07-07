@@ -46,17 +46,11 @@ SnapshottingCommandStorageBackend::SnapshottingCommandStorageBackend(
   // NOTE: this is invoked on the main thread, don't do file access here.
 }
 
-void SnapshottingCommandStorageBackend::ReadLastSessionCommands(
-    const base::CancelableTaskTracker::IsCanceledCallback& is_canceled,
-    GetCommandsCallback callback) {
-  if (is_canceled.Run())
-    return;
-
+std::vector<std::unique_ptr<SessionCommand>>
+SnapshottingCommandStorageBackend::ReadLastSessionCommands() {
   InitIfNecessary();
 
-  std::vector<std::unique_ptr<sessions::SessionCommand>> commands;
-  ReadCommandsFromFile(last_file_path_, std::vector<uint8_t>(), &commands);
-  std::move(callback).Run(std::move(commands));
+  return ReadCommandsFromFile(last_file_path_, std::vector<uint8_t>());
 }
 
 void SnapshottingCommandStorageBackend::DeleteLastSession() {

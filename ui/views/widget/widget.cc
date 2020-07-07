@@ -1035,9 +1035,8 @@ std::string Widget::GetName() const {
 std::unique_ptr<Widget::PaintAsActiveLock> Widget::LockPaintAsActive() {
   const bool was_paint_as_active = ShouldPaintAsActive();
   ++paint_as_active_refcount_;
-  const bool paint_as_active = ShouldPaintAsActive();
-  if (paint_as_active != was_paint_as_active)
-    UpdatePaintAsActiveState(paint_as_active);
+  if (ShouldPaintAsActive() != was_paint_as_active)
+    UpdatePaintAsActiveState();
   return std::make_unique<PaintAsActiveLockImpl>(
       weak_ptr_factory_.GetWeakPtr());
 }
@@ -1086,9 +1085,8 @@ bool Widget::OnNativeWidgetActivationChanged(bool active) {
 
   const bool was_paint_as_active = ShouldPaintAsActive();
   native_widget_active_ = active;
-  const bool paint_as_active = ShouldPaintAsActive();
-  if (paint_as_active != was_paint_as_active)
-    UpdatePaintAsActiveState(paint_as_active);
+  if (ShouldPaintAsActive() != was_paint_as_active)
+    UpdatePaintAsActiveState();
 
   return true;
 }
@@ -1625,17 +1623,16 @@ void Widget::UnlockPaintAsActive() {
   const bool was_paint_as_active = ShouldPaintAsActive();
   DCHECK_GT(paint_as_active_refcount_, 0U);
   --paint_as_active_refcount_;
-  const bool paint_as_active = ShouldPaintAsActive();
-  if (paint_as_active != was_paint_as_active)
-    UpdatePaintAsActiveState(paint_as_active);
+  if (ShouldPaintAsActive() != was_paint_as_active)
+    UpdatePaintAsActiveState();
 }
 
-void Widget::UpdatePaintAsActiveState(bool paint_as_active) {
+void Widget::UpdatePaintAsActiveState() {
   if (non_client_view_)
-    non_client_view_->frame_view()->PaintAsActiveChanged(paint_as_active);
+    non_client_view_->frame_view()->PaintAsActiveChanged();
 
   for (WidgetObserver& observer : observers_)
-    observer.OnWidgetPaintAsActiveChanged(this, paint_as_active);
+    observer.OnWidgetPaintAsActiveChanged(this);
 }
 
 void Widget::ClearFocusFromWidget() {

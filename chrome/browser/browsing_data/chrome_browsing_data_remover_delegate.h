@@ -174,12 +174,14 @@ class ChromeBrowsingDataRemoverDelegate
   bool MayRemoveDownloadHistory() override;
   std::vector<std::string> GetDomainsForDeferredCookieDeletion(
       uint64_t remove_mask) override;
-  void RemoveEmbedderData(const base::Time& delete_begin,
-                          const base::Time& delete_end,
-                          uint64_t remove_mask,
-                          content::BrowsingDataFilterBuilder* filter_builder,
-                          uint64_t origin_type_mask,
-                          base::OnceClosure callback) override;
+  void RemoveEmbedderData(
+      const base::Time& delete_begin,
+      const base::Time& delete_end,
+      uint64_t remove_mask,
+      content::BrowsingDataFilterBuilder* filter_builder,
+      uint64_t origin_type_mask,
+      base::OnceCallback<void(/*failed_data_types=*/uint64_t)> callback)
+      override;
 
 #if defined(OS_ANDROID)
   void OverrideWebappRegistryForTesting(
@@ -252,12 +254,20 @@ class ChromeBrowsingDataRemoverDelegate
 
   // Called by the closures returned by CreateTaskCompletionClosure().
   // Checks if all tasks have completed, and if so, calls callback_.
-  void OnTaskComplete(TracingDataType data_type);
+  void OnTaskComplete(TracingDataType data_type,
+                      uint64_t data_type_mask,
+                      bool success);
 
   // Increments the number of pending tasks by one, and returns a OnceClosure
   // that calls OnTaskComplete(). The Remover is complete once all the closures
   // created by this method have been invoked.
   base::OnceClosure CreateTaskCompletionClosure(TracingDataType data_type);
+  // Like CreateTaskCompletionClosure(), but allows tracking success/failure of
+  // the task. If |success = false| is passed to the callback, |data_type_mask|
+  // will be added to |failed_data_types_|.
+  base::OnceCallback<void(bool /* success */)> CreateTaskCompletionCallback(
+      TracingDataType data_type,
+      uint64_t data_type_mask);
 
   // Same as CreateTaskCompletionClosure() but guarantees that
   // OnTaskComplete() is called if the task is dropped. That can typically
@@ -301,10 +311,12 @@ class ChromeBrowsingDataRemoverDelegate
   base::Time delete_end_;
 
   // Completion callback to call when all data are deleted.
-  base::OnceClosure callback_;
+  base::OnceCallback<void(uint64_t)> callback_;
 
   // Records which tasks of a deletion are currently active.
   std::set<TracingDataType> pending_sub_tasks_;
+
+  uint64_t failed_data_types_ = 0;
 
   // Fires after some time to track slow tasks. Cancelled when all tasks
   // are finished.

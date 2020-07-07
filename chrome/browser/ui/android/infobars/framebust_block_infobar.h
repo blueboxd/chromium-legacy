@@ -21,7 +21,7 @@ class FramebustBlockMessageDelegate;
 // That InfoBar shows a link to the URL that was blocked if the user wants to
 // bypass the intervention, and a "OK" button to acknowledge and accept it.
 // See FramebustBlockInfoBar.java for UI specifics.
-class FramebustBlockInfoBar : public InfoBarAndroid {
+class FramebustBlockInfoBar : public infobars::InfoBarAndroid {
  public:
   ~FramebustBlockInfoBar() override;
 
@@ -32,7 +32,7 @@ class FramebustBlockInfoBar : public InfoBarAndroid {
   explicit FramebustBlockInfoBar(
       std::unique_ptr<FramebustBlockMessageDelegate> delegate);
 
-  // InfoBarAndroid:
+  // infobars::InfoBarAndroid:
   base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
       JNIEnv* env) override;
   void ProcessButton(int action) override;

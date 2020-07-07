@@ -47,8 +47,9 @@ class Metrics {
     DOMAIN_CHANGE_DURING_BROWSE_MODE = 21,
     BACK_BUTTON_CLICKED = 22,
     ONBOARDING_BACK_BUTTON_CLICKED = 23,
+    NAVIGATION_WHILE_RUNNING = 24,
 
-    kMaxValue = ONBOARDING_BACK_BUTTON_CLICKED
+    kMaxValue = NAVIGATION_WHILE_RUNNING
   };
 
   // The different ways that autofill assistant can stop.
@@ -230,6 +231,9 @@ class Metrics {
         break;
       case DropOutReason::ONBOARDING_BACK_BUTTON_CLICKED:
         out << "ONBOARDING_BACK_BUTTON_CLICKED";
+        break;
+      case DropOutReason::NAVIGATION_WHILE_RUNNING:
+        out << "NAVIGATION_WHILE_RUNNING";
         break;
         // Do not add default case to force compilation error for new values.
     }

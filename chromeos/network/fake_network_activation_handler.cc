@@ -11,16 +11,6 @@ namespace chromeos {
 
 FakeNetworkActivationHandler::ActivationParams::ActivationParams(
     const std::string& service_path,
-    const std::string& carrier,
-    const base::Closure& success_callback,
-    const network_handler::ErrorCallback& error_callback)
-    : service_path_(service_path),
-      carrier_(carrier),
-      success_callback_(success_callback),
-      error_callback_(error_callback) {}
-
-FakeNetworkActivationHandler::ActivationParams::ActivationParams(
-    const std::string& service_path,
     const base::Closure& success_callback,
     const network_handler::ErrorCallback& error_callback)
     : service_path_(service_path),
@@ -46,15 +36,6 @@ void FakeNetworkActivationHandler::ActivationParams::InvokeErrorCallback(
 FakeNetworkActivationHandler::FakeNetworkActivationHandler() = default;
 
 FakeNetworkActivationHandler::~FakeNetworkActivationHandler() = default;
-
-void FakeNetworkActivationHandler::Activate(
-    const std::string& service_path,
-    const std::string& carrier,
-    const base::Closure& success_callback,
-    const network_handler::ErrorCallback& error_callback) {
-  activate_calls_.emplace_back(service_path, carrier, success_callback,
-                               error_callback);
-}
 
 void FakeNetworkActivationHandler::CompleteActivation(
     const std::string& service_path,

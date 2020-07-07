@@ -7,7 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/first_run_helper.h"
-#include "ash/session/session_observer.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "base/callback.h"
 #include "base/macros.h"
 

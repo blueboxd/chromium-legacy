@@ -69,25 +69,22 @@ function setTextDirection(direction) {
 }
 
 // These classes must agree with the font classes in distilledpage.css.
-const fontFamilyClasses = ['sans-serif', 'serif', 'monospace'];
-function useFontFamily(fontFamily) {
-  fontFamilyClasses.forEach(
-      (element) =>
-          document.body.classList.toggle(element, element === fontFamily));
-}
-
-// These classes must agree with the theme classes in distilledpage.css.
 const themeClasses = ['light', 'dark', 'sepia'];
-function useTheme(theme) {
-  themeClasses.forEach(
-      (element) => document.body.classList.toggle(element, element === theme));
-  updateToolbarColor(theme);
+const fontFamilyClasses = ['sans-serif', 'serif', 'monospace'];
+
+// Get the currently applied appearance setting.
+function getAppearanceSetting(settingClasses) {
+  const cls = Array.from(document.body.classList)
+                  .find((cls) => settingClasses.includes(cls));
+  return cls ? cls : settingClasses[0];
 }
 
-function getPageTheme() {
-  const cls = Array.from(document.body.classList)
-                  .find((cls) => themeClasses.includes(cls));
-  return cls ? cls : themeClasses[0];
+function useTheme(theme) {
+  settingsDialog.useTheme(theme);
+}
+
+function useFontFamily(fontFamily) {
+  settingsDialog.useFontFamily(fontFamily);
 }
 
 function updateToolbarColor(theme) {
@@ -165,9 +162,6 @@ class FontSizeSlider {
 
 const fontSizeSlider = new FontSizeSlider(
     $('font-size-selection'), [14, 15, 16, 18, 20, 24, 28, 32, 40, 48]);
-
-// Set the toolbar color to match the page's theme.
-updateToolbarColor(getPageTheme());
 
 maybeSetWebFont();
 
@@ -437,10 +431,14 @@ class Pincher {
 const pincher = new Pincher;
 
 class SettingsDialog {
-  constructor(toggleElement, dialogElement, backdropElement) {
+  constructor(
+      toggleElement, dialogElement, backdropElement, themeFieldset,
+      fontFamilySelect) {
     this._toggleElement = toggleElement;
     this._dialogElement = dialogElement;
     this._backdropElement = backdropElement;
+    this._themeFieldset = themeFieldset;
+    this._fontFamilySelect = fontFamilySelect;
 
     this._toggleElement.addEventListener('click', this.toggle.bind(this));
     this._dialogElement.addEventListener('close', this.close.bind(this));
@@ -448,17 +446,25 @@ class SettingsDialog {
 
     $('close-settings-button').addEventListener('click', this.close.bind(this));
 
-    $('theme-selection').addEventListener('change', (e) => {
+    this._themeFieldset.addEventListener('change', (e) => {
       const newTheme = e.target.value;
-      useTheme(newTheme);
+      this.useTheme(newTheme);
       distiller.storeThemePref(themeClasses.indexOf(newTheme));
     });
 
-    $('font-family-selection').addEventListener('change', (e) => {
+    this._fontFamilySelect.addEventListener('change', (e) => {
       const newFontFamily = e.target.value;
-      useFontFamily(newFontFamily);
+      this.useFontFamily(newFontFamily);
       distiller.storeFontFamilyPref(fontFamilyClasses.indexOf(newFontFamily));
     });
+
+    // Appearance settings are loaded from user preferences, so on page load
+    // the controllers for these settings may need to be updated to reflect
+    // the active setting.
+    this._updateFontFamilyControls(getAppearanceSetting(fontFamilyClasses));
+    const selectedTheme = getAppearanceSetting(themeClasses);
+    this._updateThemeControls(selectedTheme);
+    updateToolbarColor(selectedTheme);
   }
 
   toggle() {
@@ -480,7 +486,33 @@ class SettingsDialog {
     this._backdropElement.style.display = 'none';
     this._dialogElement.close();
   }
+
+  useTheme(theme) {
+    themeClasses.forEach(
+        (element) =>
+            document.body.classList.toggle(element, element === theme));
+    this._updateThemeControls(theme);
+    updateToolbarColor(theme);
+  }
+
+  _updateThemeControls(theme) {
+    const queryString = `input[value=${theme}]`;
+    this._themeFieldset.querySelector(queryString).checked = true;
+  }
+
+  useFontFamily(fontFamily) {
+    fontFamilyClasses.forEach(
+        (element) =>
+            document.body.classList.toggle(element, element === fontFamily));
+    this._updateFontFamilyControls(fontFamily);
+  }
+
+  _updateFontFamilyControls(fontFamily) {
+    this._fontFamilySelect.selectedIndex =
+        fontFamilyClasses.indexOf(fontFamily);
+  }
 }
 
 const settingsDialog = new SettingsDialog(
-    $('settings-toggle'), $('settings-dialog'), $('dialog-backdrop'));
+    $('settings-toggle'), $('settings-dialog'), $('dialog-backdrop'),
+    $('theme-selection'), $('font-family-selection'));

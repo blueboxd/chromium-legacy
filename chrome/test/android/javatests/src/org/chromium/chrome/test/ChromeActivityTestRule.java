@@ -17,6 +17,7 @@ import android.support.test.rule.ActivityTestRule;
 import android.text.TextUtils;
 import android.view.Menu;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.runner.Description;
@@ -653,13 +654,12 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
     @SuppressWarnings("unchecked")
     public static <T extends ChromeActivity> T waitFor(final Class<T> expectedClass) {
         final Activity[] holder = new Activity[1];
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                holder[0] = ApplicationStatus.getLastTrackedFocusedActivity();
-                return holder[0] != null && expectedClass.isAssignableFrom(holder[0].getClass())
-                        && ((ChromeActivity) holder[0]).getActivityTab() != null;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            holder[0] = ApplicationStatus.getLastTrackedFocusedActivity();
+            Criteria.checkThat(holder[0], Matchers.notNullValue());
+            Criteria.checkThat(holder[0].getClass(), Matchers.typeCompatibleWith(expectedClass));
+            Criteria.checkThat(
+                    ((ChromeActivity) holder[0]).getActivityTab(), Matchers.notNullValue());
         });
         return (T) holder[0];
     }

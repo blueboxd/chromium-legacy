@@ -1700,9 +1700,9 @@ void LocalFrame::WasShown() {
 }
 
 bool LocalFrame::ClipsContent() const {
-  // A paint preview shouldn't clip to the viewport if it is the main frame or a
-  // root remote frame.
-  if (GetDocument()->IsPaintingPreview() && IsLocalRoot())
+  // A paint preview shouldn't clip to the viewport. Each frame paints to a
+  // separate canvas in full to allow scrolling.
+  if (GetDocument()->IsPaintingPreview())
     return false;
 
   if (IsMainFrame())

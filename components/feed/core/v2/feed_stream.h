@@ -25,6 +25,7 @@
 #include "components/feed/core/v2/stream_model.h"
 #include "components/feed/core/v2/tasks/load_more_task.h"
 #include "components/feed/core/v2/tasks/load_stream_task.h"
+#include "components/offline_pages/core/prefetch/suggestions_provider.h"
 #include "components/offline_pages/task/task_queue.h"
 
 class PrefService;
@@ -33,6 +34,10 @@ namespace base {
 class Clock;
 class TickClock;
 }  // namespace base
+
+namespace offline_pages {
+class PrefetchService;
+}  // namespace offline_pages
 
 namespace feed {
 class FeedNetwork;
@@ -95,6 +100,7 @@ class FeedStream : public FeedStreamApi,
              PrefService* profile_prefs,
              FeedNetwork* feed_network,
              FeedStore* feed_store,
+             offline_pages::PrefetchService* prefetch_service,
              const base::Clock* clock,
              const base::TickClock* tick_clock,
              const ChromeInfo& chrome_info);
@@ -235,16 +241,21 @@ class FeedStream : public FeedStreamApi,
   void SetIdleCallbackForTesting(base::RepeatingClosure idle_callback);
 
  private:
-  class ModelStoreChangeMonitor;
+  class OfflineSuggestionsProvider;
 
   base::WeakPtr<FeedStream> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }
 
+  void GetPrefetchSuggestions(
+      base::OnceCallback<void(std::vector<offline_pages::PrefetchSuggestion>)>
+          suggestions_callback);
+
   // A single function task to delete stored feed data and force a refresh.
   // To only be called from within a |Task|.
   void ForceRefreshForDebuggingTask();
 
+  void ScheduleModelUnloadIfNoSurfacesAttached();
   void AddUnloadModelIfNoSurfacesAttachedTask(int sequence_number);
   void UnloadModelIfNoSurfacesAttachedTask();
 
@@ -258,10 +269,11 @@ class FeedStream : public FeedStreamApi,
 
   // Unowned.
 
+  offline_pages::PrefetchService* prefetch_service_;
   RefreshTaskScheduler* refresh_task_scheduler_;
   MetricsReporter* metrics_reporter_;
   Delegate* delegate_;
-  PrefService* profile_prefs_;
+  PrefService* profile_prefs_;  // May be null.
   FeedNetwork* feed_network_;
   FeedStore* store_;
   const base::Clock* clock_;
@@ -275,6 +287,7 @@ class FeedStream : public FeedStreamApi,
   // attempts to load the model.
   bool model_loading_in_progress_ = false;
   std::unique_ptr<SurfaceUpdater> surface_updater_;
+  std::unique_ptr<OfflineSuggestionsProvider> offline_suggestions_provider_;
   // The stream model. Null if not yet loaded.
   // Internally, this should only be changed by |LoadModel()| and
   // |UnloadModel()|.

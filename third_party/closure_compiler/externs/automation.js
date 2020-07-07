@@ -512,9 +512,9 @@ chrome.automation.FindParams;
 
 /**
  * @typedef {{
- *   anchorObject: chrome.automation.AutomationNode,
+ *   anchorObject: AutomationNode,
  *   anchorOffset: number,
- *   focusObject: chrome.automation.AutomationNode,
+ *   focusObject: AutomationNode,
  *   focusOffset: number
  * }}
  * @see https://developer.chrome.com/extensions/automation#type-SetDocumentSelectionParams
@@ -1720,7 +1720,7 @@ chrome.automation.AutomationNode.prototype.suspendMedia = function() {};
 
 /**
  * Scrolls this scrollable container backward.
- * @param {function(boolean): void} callback Callback called for actions with a
+ * @param {function(boolean): void=} callback Callback called for actions with a
  *     response.
  * @see https://developer.chrome.com/extensions/automation#method-scrollBackward
  */
@@ -1728,7 +1728,7 @@ chrome.automation.AutomationNode.prototype.scrollBackward = function(callback) {
 
 /**
  * Scrolls this scrollable container forward.
- * @param {function(boolean): void} callback Callback called for actions with a
+ * @param {function(boolean): void=} callback Callback called for actions with a
  *     response.
  * @see https://developer.chrome.com/extensions/automation#method-scrollForward
  */
@@ -1736,7 +1736,7 @@ chrome.automation.AutomationNode.prototype.scrollForward = function(callback) {}
 
 /**
  * Scrolls this scrollable container up.
- * @param {function(boolean): void} callback Callback called for actions with a
+ * @param {function(boolean): void=} callback Callback called for actions with a
  *     response.
  * @see https://developer.chrome.com/extensions/automation#method-scrollUp
  */
@@ -1744,7 +1744,7 @@ chrome.automation.AutomationNode.prototype.scrollUp = function(callback) {};
 
 /**
  * Scrolls this scrollable container down.
- * @param {function(boolean): void} callback Callback called for actions with a
+ * @param {function(boolean): void=} callback Callback called for actions with a
  *     response.
  * @see https://developer.chrome.com/extensions/automation#method-scrollDown
  */
@@ -1752,7 +1752,7 @@ chrome.automation.AutomationNode.prototype.scrollDown = function(callback) {};
 
 /**
  * Scrolls this scrollable container left.
- * @param {function(boolean): void} callback Callback called for actions with a
+ * @param {function(boolean): void=} callback Callback called for actions with a
  *     response.
  * @see https://developer.chrome.com/extensions/automation#method-scrollLeft
  */
@@ -1760,7 +1760,7 @@ chrome.automation.AutomationNode.prototype.scrollLeft = function(callback) {};
 
 /**
  * Scrolls this scrollable container right.
- * @param {function(boolean): void} callback Callback called for actions with a
+ * @param {function(boolean): void=} callback Callback called for actions with a
  *     response.
  * @see https://developer.chrome.com/extensions/automation#method-scrollRight
  */

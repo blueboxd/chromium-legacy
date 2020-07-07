@@ -52,7 +52,7 @@ class DownloadProgressInfoBarDelegate : public infobars::InfoBarDelegate {
 
 DownloadProgressInfoBar::DownloadProgressInfoBar(
     std::unique_ptr<DownloadProgressInfoBarDelegate> delegate)
-    : InfoBarAndroid(
+    : infobars::InfoBarAndroid(
           std::move(delegate),
           base::BindRepeating(&ResourceMapper::MapToJavaDrawableId)) {}
 

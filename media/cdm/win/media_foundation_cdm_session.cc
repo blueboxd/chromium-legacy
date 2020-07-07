@@ -225,15 +225,17 @@ void MediaFoundationCdmSession::OnSessionMessage(
     const std::vector<uint8_t>& message) {
   DVLOG_FUNC(2);
 
-  if (session_id_.empty())
-    SetSessionId();
+  if (session_id_.empty() && !session_id_cb_) {
+    DLOG(ERROR) << "Unexpected session message";
+    return;
+  }
 
-  // Empty |session_id_| will be treated as failure by the caller.
-  if (session_id_cb_)
-    std::move(session_id_cb_).Run(session_id_);
+  // If |session_id_| has not been set, set it now.
+  if (session_id_.empty() && !SetSessionId())
+    return;
 
-  if (!session_id_.empty())
-    session_message_cb_.Run(session_id_, message_type, message);
+  DCHECK(!session_id_.empty());
+  session_message_cb_.Run(session_id_, message_type, message);
 }
 
 void MediaFoundationCdmSession::OnSessionKeysChange() {
@@ -265,16 +267,33 @@ void MediaFoundationCdmSession::OnSessionKeysChange() {
   }
 }
 
-void MediaFoundationCdmSession::SetSessionId() {
-  DCHECK(session_id_.empty());
+bool MediaFoundationCdmSession::SetSessionId() {
+  DCHECK(session_id_.empty() && session_id_cb_);
 
   base::win::ScopedCoMem<wchar_t> session_id;
   HRESULT hr = mf_cdm_session_->GetSessionId(&session_id);
-  if (FAILED(hr) || !session_id)
-    return;
+  if (FAILED(hr) || !session_id) {
+    bool success = std::move(session_id_cb_).Run("");
+    DCHECK(!success) << "Empty session ID should not be accepted";
+    return false;
+  }
 
-  session_id_ = base::UTF16ToUTF8(session_id.get());
-  DVLOG_FUNC(1) << "session_id_=" << session_id_;
+  auto session_id_str = base::UTF16ToUTF8(session_id.get());
+  if (session_id_str.empty()) {
+    bool success = std::move(session_id_cb_).Run("");
+    DCHECK(!success) << "Empty session ID should not be accepted";
+    return false;
+  }
+
+  bool success = std::move(session_id_cb_).Run(session_id_str);
+  if (!success) {
+    DLOG(ERROR) << "Session ID " << session_id_str << " rejected";
+    return false;
+  }
+
+  DVLOG_FUNC(1) << "session_id_=" << session_id_str;
+  session_id_ = session_id_str;
+  return true;
 }
 
 }  // namespace media

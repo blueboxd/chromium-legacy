@@ -642,7 +642,6 @@
 <translation id="6154478581116148741">Щоб експортувати паролі з цього пристрою, увімкніть блокування екрана</translation>
 <translation id="6157392216611456285">Вибрати <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720">Заощадження даних: <ph name="PERCENT" /></translation>
-<translation id="6192333916571137726">Завантажити файл</translation>
 <translation id="6201345951596836663">Посилання скопійовано</translation>
 <translation id="6206830853671714236">Виберіть, коли завантажити</translation>
 <translation id="6210748933810148297">Не <ph name="EMAIL" />?</translation>
@@ -877,6 +876,7 @@
 <translation id="8013372441983637696">Також видалити дані Chrome із цього пристрою</translation>
 <translation id="8015452622527143194">Відновити розміри всіх елементів за умовчанням</translation>
 <translation id="8026334261755873520">Очистити історію</translation>
+<translation id="8027863900915310177">Виберіть, куди завантажити файл</translation>
 <translation id="8035133914807600019">Нова папка…</translation>
 <translation id="8037750541064988519">Залишилося <ph name="DAYS" /> дн.</translation>
 <translation id="804335162455518893">Карту SD не знайдено</translation>

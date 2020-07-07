@@ -363,7 +363,7 @@ void ProfileResetter::OnTemplateURLServiceLoaded() {
     ResetDefaultSearchEngine();
 }
 
-void ProfileResetter::OnBrowsingDataRemoverDone() {
+void ProfileResetter::OnBrowsingDataRemoverDone(uint64_t failed_data_types) {
   cookies_remover_->RemoveObserver(this);
   cookies_remover_ = nullptr;
   MarkAsDone(COOKIES_AND_SITE_DATA);

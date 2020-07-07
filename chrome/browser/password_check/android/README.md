@@ -52,6 +52,16 @@ The public build and run target is `password_check_junit_tests`. Run them with:
 Although the entire suite should run in seconds, you can filter tests with `-f`.
 
 
+#### javatests/
+
+Contains View and Integration tests. These tests need an emulator which means
+that they run slowly but can test rendered Views.
+The public build and run target is `chrome_public_test_apk`. Run them with:
+
+``` bash
+./out/<OutDirectory>/bin/run_chrome_public_test_apk -f *PasswordCheck*
+```
+
 ## Example usage
 
 ``` java

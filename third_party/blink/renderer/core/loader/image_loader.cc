@@ -376,7 +376,7 @@ static void ConfigureRequest(
       element.FastGetAttribute(html_names::kCrossoriginAttr));
   if (cross_origin != kCrossOriginAttributeNotSet) {
     params.SetCrossOriginAccessControl(
-        element.GetDocument().GetSecurityOrigin(), cross_origin);
+        element.GetExecutionContext()->GetSecurityOrigin(), cross_origin);
   }
 
   if (RuntimeEnabledFeatures::PriorityHintsEnabled(
@@ -736,7 +736,7 @@ bool ImageLoader::ShouldLoadImmediately(const KURL& url) const {
             resource,
             GetCrossOriginAttributeValue(
                 element_->FastGetAttribute(html_names::kCrossoriginAttr)),
-            element_->GetDocument().GetSecurityOrigin())) {
+            element_->GetExecutionContext()->GetSecurityOrigin())) {
       return true;
     }
   }

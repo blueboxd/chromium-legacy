@@ -103,14 +103,14 @@ class TestClosure : public internal::TestCompletionCallbackBaseInternal {
  public:
   using internal::TestCompletionCallbackBaseInternal::WaitForResult;
 
-  TestClosure();
+  TestClosure() {}
   ~TestClosure() override;
 
-  const base::Closure& closure() const { return closure_; }
+  base::OnceClosure closure() {
+    return base::BindOnce(&TestClosure::DidSetResult, base::Unretained(this));
+  }
 
  private:
-  const base::Closure closure_;
-
   DISALLOW_COPY_AND_ASSIGN(TestClosure);
 };
 

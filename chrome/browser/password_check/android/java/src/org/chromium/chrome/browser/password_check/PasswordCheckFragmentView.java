@@ -8,6 +8,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.view.MenuItem;
 
+import androidx.annotation.VisibleForTesting;
 import androidx.preference.PreferenceFragmentCompat;
 
 /**
@@ -16,11 +17,25 @@ import androidx.preference.PreferenceFragmentCompat;
 public class PasswordCheckFragmentView extends PreferenceFragmentCompat {
     private PasswordCheckComponentUi mComponentDelegate;
 
+    /**
+     * The factory used to create components that connect to this fragment and provide data. It
+     * defaults to the {@link PasswordCheckComponentUiFactory} but can be replaced in tests.
+     */
+    interface ComponentFactory {
+        /**
+         * Returns a component that is connected to the given fragment and manipulates its data.
+         * @param fragmentView The fragment (usually {@code this}).
+         * @return A non-null {@link PasswordCheckComponentUi}.
+         */
+        PasswordCheckComponentUi create(PreferenceFragmentCompat fragmentView);
+    }
+    private static ComponentFactory sComponentFactory = PasswordCheckComponentUiFactory::create;
+
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         getActivity().setTitle(R.string.passwords_check_title);
         setPreferenceScreen(getPreferenceManager().createPreferenceScreen(getStyledContext()));
-        mComponentDelegate = PasswordCheckComponentUiFactory.create(this);
+        mComponentDelegate = sComponentFactory.create(this);
     }
 
     @Override
@@ -30,5 +45,10 @@ public class PasswordCheckFragmentView extends PreferenceFragmentCompat {
 
     private Context getStyledContext() {
         return getPreferenceManager().getContext();
+    }
+
+    @VisibleForTesting
+    static void setComponentFactory(ComponentFactory factory) {
+        sComponentFactory = factory;
     }
 }

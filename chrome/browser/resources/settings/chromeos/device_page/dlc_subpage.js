@@ -46,18 +46,9 @@ cr.define('settings', function() {
      * @private
      */
     onRemoveDlcClick_(e) {
-      const removeButton = this.shadowRoot.querySelector(`#${e.target.id}`);
-      removeButton.disabled = true;
-      this.browserProxy_.purgeDlc(e.target.getAttribute('data-dlc-id'))
-          .then(success => {
-            if (success) {
-              // No further action is necessary since the list will change via
-              // onDlcListChanged_().
-              return;
-            }
-            console.log(`Unable to purge DLC with ID ${e.target.id}`);
-            removeButton.disabled = false;
-          });
+      const item = this.$.list.items[e.target.dataset.index];
+      item.disabled = true;
+      this.browserProxy_.purgeDlc(item.id);
     },
 
     /**

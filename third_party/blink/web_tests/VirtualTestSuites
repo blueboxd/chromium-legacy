@@ -736,11 +736,6 @@
     "args": ["--disable-blink-features=ShadowDOMV0,CustomElementsV0,HTMLImports"]
   },
   {
-    "prefix": "form-controls-refresh-disabled",
-    "bases": ["fast/forms/"],
-    "args": ["--disable-features=FormControlsRefresh"]
-  },
-  {
     "prefix": "raw-clipboard",
     "bases": ["clipboard/async-clipboard",
               "external/wpt/clipboard-apis/clipboard-item.https.html"],

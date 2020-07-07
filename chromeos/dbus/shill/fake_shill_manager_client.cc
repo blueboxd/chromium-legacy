@@ -538,19 +538,30 @@ void FakeShillManagerClient::SetTechnologyInitializing(const std::string& type,
 
 void FakeShillManagerClient::SetTechnologyProhibited(const std::string& type,
                                                      bool prohibited) {
+  std::string prohibited_technologies =
+      GetStringValue(stub_properties_, shill::kProhibitedTechnologiesProperty);
+  std::vector<std::string> prohibited_list =
+      base::SplitString(prohibited_technologies, ",", base::TRIM_WHITESPACE,
+                        base::SPLIT_WANT_NONEMPTY);
+  std::set<std::string> prohibited_set(prohibited_list.begin(),
+                                       prohibited_list.end());
   if (prohibited) {
-    if (GetListProperty(shill::kProhibitedTechnologiesProperty)
-            ->AppendIfNotPresent(std::make_unique<base::Value>(type))) {
-      CallNotifyObserversPropertyChanged(
-          shill::kProhibitedTechnologiesProperty);
-    }
+    auto iter = prohibited_set.find(type);
+    if (iter != prohibited_set.end())
+      return;
+    prohibited_set.insert(type);
   } else {
-    if (GetListProperty(shill::kProhibitedTechnologiesProperty)
-            ->Remove(base::Value(type), nullptr)) {
-      CallNotifyObserversPropertyChanged(
-          shill::kProhibitedTechnologiesProperty);
-    }
+    auto iter = prohibited_set.find(type);
+    if (iter == prohibited_set.end())
+      return;
+    prohibited_set.erase(iter);
   }
+  prohibited_list =
+      std::vector<std::string>(prohibited_set.begin(), prohibited_set.end());
+  prohibited_technologies = base::JoinString(prohibited_list, ",");
+  stub_properties_.SetStringKey(shill::kProhibitedTechnologiesProperty,
+                                prohibited_technologies);
+  CallNotifyObserversPropertyChanged(shill::kProhibitedTechnologiesProperty);
 }
 
 void FakeShillManagerClient::AddGeoNetwork(

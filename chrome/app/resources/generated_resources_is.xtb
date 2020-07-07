@@ -281,7 +281,6 @@
 <translation id="1340527397989195812">Afrita efni tækisins með forritinu Skrár.</translation>
 <translation id="1341988552785875222">„<ph name="APP_NAME" />“ valdi núverandi veggfóður. Þú gætir þurft að fjarlægja „<ph name="APP_NAME" />“ áður en nýtt veggfóður er valið.</translation>
 <translation id="1343865611738742294">Veita Linux-forritum heimild til að opna USB-tæki. Linux man ekki eftir USB-tæki þegar það hefur verið fjarlægt.</translation>
-<translation id="1344143111673240412">Breytingin á myndavélarstillingu krefst þess að Parallels Desktop sé endurræst</translation>
 <translation id="1347256498747320987">Setja upp uppfærslur og forrit. Með því að halda áfram samþykkirðu að þetta tæki geti einnig sjálfkrafa sótt og sett upp uppfærslur og forrit frá Google, símafyrirtækinu þínu og framleiðanda tækisins, mögulega með því að nota farsímagögn. Einhver þessara forrita kunna að bjóða upp á innkaup í forriti. <ph name="BEGIN_LINK1" />Frekari upplýsingar<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">Uppfærsla hefst þegar rafhlaðan nær <ph name="BATTERY_LEVEL" />%.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -1197,7 +1196,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="2470702053775288986">Óstuddar viðbætur gerðar óvirkar</translation>
 <translation id="2471469610750100598">Svartur (sjálfgefið)</translation>
 <translation id="2473195200299095979">Þýða þessa síðu</translation>
-<translation id="2474848500897222119">Blekið er búið í <ph name="PRINTER_NAME" /></translation>
 <translation id="2475982808118771221">Villa kom upp</translation>
 <translation id="2476578072172137802">Stillingar vefsvæðis</translation>
 <translation id="2478176599153288112">Heimildir margmiðlunarskráa fyrir „<ph name="EXTENSION" />“</translation>
@@ -1503,7 +1501,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> er að nota stillingar staðgengilsþjóns frá kerfisstjóranum þínum</translation>
 <translation id="2825758591930162672">Opinber lykill viðfangs</translation>
 <translation id="2828650939514476812">Tengjast Wi-Fi neti</translation>
-<translation id="28291580771888953">Biðröð <ph name="PRINTER_NAME" /> er full</translation>
 <translation id="2835547721736623118">Raddgreiningarþjónusta</translation>
 <translation id="2836269494620652131">Hrun</translation>
 <translation id="2836635946302913370">Kerfisstjóri hefur lokað á innskráningu með þessu notandanafni.</translation>
@@ -2319,7 +2316,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="3839516600093027468">Koma alltaf í veg fyrir að <ph name="HOST" /> sjái klippiborðið</translation>
 <translation id="3841964634449506551">Rangt aðgangsorð</translation>
 <translation id="3842552989725514455">Serif-letur</translation>
-<translation id="3843058644024807390">Breytingin á hljóðnemastillingu krefst þess að Parallels Desktop sé endurræst</translation>
+<translation id="3843464315703645664">Innri hvítur listi</translation>
 <translation id="3846116211488856547">Fáðu verkfæri til að þróa vefsíður, Android forrit og fleira. Uppsetning Linux mun hlaða niður <ph name="DOWNLOAD_SIZE" /> af gögnum.</translation>
 <translation id="3847319713229060696">Hjálpaðu til við að auka öryggi allra á vefnum</translation>
 <translation id="385051799172605136">Til baka</translation>
@@ -2778,7 +2775,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="4453946976636652378">Leitaðu á <ph name="SEARCH_ENGINE_NAME" /> eða sláðu inn vefslóð</translation>
 <translation id="4459169140545916303">Virkt fyrir <ph name="DEVICE_LAST_ACTIVATED_TIME" /> dögum</translation>
 <translation id="4460014764210899310">Sundra hópi</translation>
-<translation id="4460343359907016103">Villa við tengingu við <ph name="PRINTER_NAME" /></translation>
 <translation id="4462159676511157176">Þjónar með sérsniðnu heiti</translation>
 <translation id="4465236939126352372"><ph name="TIME" /> tímamörk stillt fyrir <ph name="APP_NAME" /></translation>
 <translation id="4465725236958772856">Netkerfi <ph name="NETWORK_INDEX" /> af <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, stjórnað af kerfisstjóra, tengjast</translation>
@@ -3076,7 +3072,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="4864369630010738180">Skráir inn...</translation>
 <translation id="4864805589453749318">Veldu foreldrið sem gefur heimild til að bæta við skólareikningi.</translation>
 <translation id="486635084936119914">Opna tilteknar tegundir skráa sjálfkrafa að niðurhali loknu</translation>
-<translation id="4869213010169296107">Bakka vantar á <ph name="PRINTER_NAME" /></translation>
 <translation id="48704129375571883">Bæta við frekari eiginleikum</translation>
 <translation id="4870758487381879312">Sláðu inn aðgangsorð frá kerfisstjóra til að fá stillingaupplýsingar</translation>
 <translation id="4870903493621965035">Engin pöruð tæki</translation>
@@ -3327,6 +3322,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="5184662919967270437">Uppfærir tækið þitt</translation>
 <translation id="5185359571430619712">Fara yfir viðbætur</translation>
 <translation id="5185386675596372454">Nýjasta útgáfa <ph name="EXTENSION_NAME" /> hefur verið gerð óvirk því að hún krefst frekari heimilda.</translation>
+<translation id="5185500136143151980">Engin nettenging</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5190926251776387065">Virkja gátt</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> vill sækja margar skrár</translation>
@@ -3483,7 +3479,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="5390112241331447203">Hafa skrána system_logs.txt sem var send með í ábendingaskýrslum.</translation>
 <translation id="5390677308841849479">Dökkrauður og appelsínugulur</translation>
 <translation id="5390743329570580756">Senda fyrir</translation>
-<translation id="5395869306561378615">Hlé hefur verið gert á <ph name="PRINTER_NAME" /></translation>
 <translation id="5397794290049113714">Þú</translation>
 <translation id="5398572795982417028">Síðutilvísun er ekki innan réttra marka, hámarkið er <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">Lokað á auglýsingar</translation>
@@ -3498,7 +3493,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="5417312524372586921">Vafraþemu</translation>
 <translation id="5419405654816502573">Voice Match</translation>
 <translation id="5420438158931847627">Segir til um skerpu texta og mynda</translation>
-<translation id="5421498071721257877">Tækjavilla kom upp í <ph name="PRINTER_NAME" /></translation>
 <translation id="5422221874247253874">Aðgangsstaður</translation>
 <translation id="5422781158178868512">Því miður var ekki hægt að bera kennsl á ytri geymslumiðil.</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3847,7 +3841,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="5852137567692933493">Endurræsa og djúphreinsa</translation>
 <translation id="5854912040170951372">Jón Bakan</translation>
 <translation id="5855267860608268405">Þekkt Wi-Fi kerfi</translation>
-<translation id="5855310969323666289">Hurð <ph name="PRINTER_NAME" /> er opin</translation>
 <translation id="5855643921295613558">0,6 sekúndur</translation>
 <translation id="5856721540245522153">Virkja villuleitareiginleika</translation>
 <translation id="5857090052475505287">Ný mappa</translation>
@@ -3878,7 +3871,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="5877064549588274448">Skipt var um rás. Endurræstu tækið til að breytingarnar taki gildi.</translation>
 <translation id="5877584842898320529">Valinn prentari er ekki tiltækur eða ekki rétt uppsettur. <ph name="BR" /> Athugaðu prentarann eða prófaðu að velja annan prentara.</translation>
 <translation id="5882919346125742463">Þekkt netkerfi</translation>
-<translation id="5883716097305842571">Úttakssvæði <ph name="PRINTER_NAME" /> er næstum fullt</translation>
 <translation id="5884474295213649357">Þessi flipi er tengdur við USB-tæki.</translation>
 <translation id="5886009770935151472">Fingur 1</translation>
 <translation id="5889282057229379085">Hámarksfjöldi CA-millistigsvottorða: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4444,7 +4436,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="6611972847767394631">Finndu flipana þína hér</translation>
 <translation id="6612358246767739896">Varið efni</translation>
 <translation id="6615455863669487791">Sýnið mér</translation>
-<translation id="6617034477946102682">Ekki næst í <ph name="PRINTER_NAME" /></translation>
 <translation id="6618097958368085618">Halda samt</translation>
 <translation id="6618744767048954150">Í gangi</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
@@ -4861,7 +4852,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="7128151990937044829">Sýna tákn á veffangastikunni þegar lokað er á tilkynningar</translation>
 <translation id="7131040479572660648">Lesa gögnin þín á <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> og <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Bæta síðu við...</translation>
-<translation id="7131379856697962078">Úttakssvæði <ph name="PRINTER_NAME" /> er fullt</translation>
 <translation id="7133578150266914903">Kerfisstjórinn þinn er að færa þetta tæki aftur í eldri útgáfu (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">Minnka texta</translation>
 <translation id="7135729336746831607">Kveikja á Bluetooth?</translation>
@@ -4880,7 +4870,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="7152478047064750137">Þessi viðbót þarf engar sérstakar heimildir</translation>
 <translation id="7154130902455071009">Breyta upphafssíðunni í: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">Fyrirliggjandi mynd úr myndavél eða skrá</translation>
-<translation id="715657691234357425">Pappír vantar í <ph name="PRINTER_NAME" /></translation>
 <translation id="7165320105431587207">Ekki tókst að stilla netið</translation>
 <translation id="716640248772308851">„<ph name="EXTENSION" />“ getur lesið myndir, myndskeið og hljóðskrár á merktu stöðunum.</translation>
 <translation id="7167486101654761064">Opna &amp;alltaf skrár af þessari tegund</translation>
@@ -4911,7 +4900,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="7197632491113152433"><ph name="NUMBER_OF_APPS" /> forrit fundust á reikningnum þínum sem hægt er að nota í þessu tæki.</translation>
 <translation id="7199158086730159431">Fá hjálp</translation>
 <translation id="7200083590239651963">Velja stillingu</translation>
-<translation id="7201042526153088083">Settu upp forrit og leiki af Google Play í <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;Frekari upplýsingar&lt;/a&gt;</translation>
 <translation id="720110658997053098">Halda þessu tæki varanlega í sjálfsalastillingu</translation>
 <translation id="7201118060536064622">„<ph name="DELETED_ITEM_NAME" />“ var eytt</translation>
 <translation id="7201420661433230412">Skoða skrár</translation>
@@ -5217,7 +5205,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="7598466960084663009">Endurræsa tölvu</translation>
 <translation id="7599527631045201165">Heiti tækisins er of langt. Sláðu inn styttra heiti til að reyna aftur.</translation>
 <translation id="7600965453749440009">Þýða aldrei <ph name="LANGUAGE" /></translation>
-<translation id="7601297144931396972">Pappír er stíflaður í <ph name="PRINTER_NAME" /></translation>
 <translation id="760197030861754408">Farðu á <ph name="LANDING_PAGE" /> til að tengjast.</translation>
 <translation id="7602079150116086782">Engir flipar frá öðrum tækjum</translation>
 <translation id="7602173054665172958">Prentstjórnun</translation>
@@ -5228,6 +5215,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="7609148976235050828">Tengstu internetinu og reyndu aftur.</translation>
 <translation id="7614260613810441905">Spyrja þegar vefsvæði vill breyta skrám eða möppum í tækinu (ráðlagt)</translation>
 <translation id="761530003705945209">Taka afrit á Google Drive. Endurheimtu gögnin þín eða skiptu um tæki hvenær sem er. Öryggisafritið inniheldur forritsgögn. Öryggisafritunum þínum er hlaðið inn á Google og þau dulkóðuð með aðgangsorði Google reikningsins.</translation>
+<translation id="7615365294369022248">Villa koma upp við að bæta við reikningi</translation>
 <translation id="7616214729753637086">Skráir tæki...</translation>
 <translation id="7617263010641145920">Kveikja á Play Store</translation>
 <translation id="7617366389578322136">Tengist „<ph name="DEVICE_NAME" />“</translation>
@@ -5675,7 +5663,6 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
           <ph name="TIME" />. Þetta gildir ekki um greiðslumáta og heimilisföng af Google Pay.</translation>
 <translation id="81238879832906896">Gult og hvítt blóm</translation>
 <translation id="8124313775439841391">Stýrt ONC</translation>
-<translation id="8127535217699822294">Pappír vantar í <ph name="PRINTER_NAME" /></translation>
 <translation id="813082847718468539">Skoða upplýsingar um vefsvæði</translation>
 <translation id="8131740175452115882">Staðfesta</translation>
 <translation id="8133676275609324831">&amp;Sýna í möppu</translation>
@@ -5774,7 +5761,6 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="8254954272268479918">Slökkva á Linux (tilraunaútgáfa)</translation>
 <translation id="8255451560461371599">Enginn bakgrunnur</translation>
 <translation id="8256319818471787266">Lúkas</translation>
-<translation id="8256417822772703842">Lítið blek er í <ph name="PRINTER_NAME" /></translation>
 <translation id="8257950718085972371">Halda áfram að loka á aðgang að myndavél</translation>
 <translation id="8259239505248583312">Byrjum ballið</translation>
 <translation id="8260864402787962391">Mús</translation>
@@ -5955,7 +5941,6 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="8487678622945914333">Auka aðdrátt</translation>
 <translation id="8490896350101740396">Eftirfarandi sjálfsalaforrit, „<ph name="UPDATED_APPS" />,“ voru uppfærð. Endurræstu tækið til að ljúka uppfærslunni.</translation>
 <translation id="8493236660459102203">Hljóðnemi:</translation>
-<translation id="8495940850609851342"><ph name="PRINTER_NAME" /> stöðvaðist</translation>
 <translation id="8496717697661868878">Keyra þessa viðbót</translation>
 <translation id="8497219075884839166">Windows-hjálparforrit</translation>
 <translation id="8498214519255567734">Gerðu þér auðveldara að skoða og lesa á skjáinn í lítilli birtu</translation>
@@ -6497,6 +6482,12 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="9157096865782046368">0,8 sekúndur</translation>
 <translation id="9157697743260533322">Mistókst að setja upp sjálfvirkar uppfærslur fyrir alla notendur (undirbúningsræsivilla: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Úbbs! Vandamál í netsamskiptum kom upp við auðkenningu. Athugaðu nettenginguna og reyndu aftur.</translation>
+<translation id="9159643062839240276">Prófaðu að:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />Kanna netsnúrur, mótald og beini
+      <ph name="LIST_ITEM" />Tengjast Wi-Fi aftur
+      <ph name="LIST_ITEM" />Keyra tengingargreiningu Chrome
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">Mynd í mynd</translation>
 <translation id="9168436347345867845">Gera þetta seinna</translation>
 <translation id="9169496697824289689">Skoða flýtilykla</translation>

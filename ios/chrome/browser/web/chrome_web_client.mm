@@ -102,8 +102,8 @@ NSString* GetSafeBrowsingErrorPageHTML(web::WebState* web_state,
 }
 
 // Returns the lookalike error page HTML.
-NSString* GetLookalikeErrorPageHTML(web::WebState* web_state,
-                                    int64_t navigation_id) {
+NSString* GetLookalikeUrlErrorPageHtml(web::WebState* web_state,
+                                       int64_t navigation_id) {
   // Fetch the lookalike URL info from the WebState's container.
   LookalikeUrlContainer* container =
       LookalikeUrlContainer::FromWebState(web_state);
@@ -334,7 +334,7 @@ void ChromeWebClient::PrepareErrorPage(
     // Only kLookalikeUrlErrorCode is supported.
     DCHECK_EQ(kLookalikeUrlErrorCode, final_underlying_error.code);
     std::move(error_html_callback)
-        .Run(GetLookalikeErrorPageHTML(web_state, navigation_id));
+        .Run(GetLookalikeUrlErrorPageHtml(web_state, navigation_id));
   } else if (info.has_value()) {
     base::OnceCallback<void(bool)> proceed_callback;
     base::OnceCallback<void(NSString*)> blocking_page_callback =

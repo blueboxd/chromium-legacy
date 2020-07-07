@@ -362,6 +362,9 @@ void RenderWidgetTargeter::FoundFrameSinkId(
     TracingUmaTracker tracker,
     const viz::FrameSinkId& frame_sink_id,
     const gfx::PointF& transformed_location) {
+  if (!target)
+    return;
+
   tracker.StopAndRecord();
 
   uint32_t last_id = last_request_id_;

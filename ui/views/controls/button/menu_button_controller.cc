@@ -180,21 +180,6 @@ void MenuButtonController::UpdateAccessibleNodeData(ui::AXNodeData* node_data) {
     node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kOpen);
 }
 
-void MenuButtonController::OnStateChanged(LabelButton::ButtonState old_state) {
-  // State change occurs in IncrementPressedLocked() and
-  // DecrementPressedLocked().
-  if (pressed_lock_count_ != 0) {
-    // The button's state was changed while it was supposed to be locked in a
-    // pressed state. This shouldn't happen, but conceivably could if a caller
-    // tries to switch from enabled to disabled or vice versa while the button
-    // is pressed.
-    if (button()->state() == Button::STATE_NORMAL)
-      should_disable_after_press_ = false;
-    else if (button()->state() == Button::STATE_DISABLED)
-      should_disable_after_press_ = true;
-  }
-}
-
 bool MenuButtonController::IsTriggerableEvent(const ui::Event& event) {
   return ButtonController::IsTriggerableEvent(event) &&
          IsTriggerableEventType(event) && is_intentional_menu_trigger_;
@@ -308,7 +293,13 @@ void MenuButtonController::IncrementPressedLocked(
     const ui::LocatedEvent* event) {
   ++pressed_lock_count_;
   if (increment_pressed_lock_called_)
-    *(increment_pressed_lock_called_) = true;
+    *increment_pressed_lock_called_ = true;
+  if (!state_changed_subscription_) {
+    state_changed_subscription_ =
+        button()->AddStateChangedCallback(base::BindRepeating(
+            &MenuButtonController::OnButtonStateChangedWhilePressedLocked,
+            base::Unretained(this)));
+  }
   should_disable_after_press_ = button()->state() == Button::STATE_DISABLED;
   if (button()->state() != Button::STATE_PRESSED) {
     if (snap_ink_drop_to_activated)
@@ -327,6 +318,7 @@ void MenuButtonController::DecrementPressedLocked() {
   // If this was the last lock, manually reset state to the desired state.
   if (pressed_lock_count_ == 0) {
     menu_closed_time_ = TimeTicks::Now();
+    state_changed_subscription_.reset();
     LabelButton::ButtonState desired_state = Button::STATE_NORMAL;
     if (should_disable_after_press_) {
       desired_state = Button::STATE_DISABLED;
@@ -343,6 +335,17 @@ void MenuButtonController::DecrementPressedLocked() {
     if (button()->GetWidget() && button()->state() != Button::STATE_PRESSED)
       button()->AnimateInkDrop(InkDropState::DEACTIVATED, nullptr /* event */);
   }
+}
+
+void MenuButtonController::OnButtonStateChangedWhilePressedLocked() {
+  // The button's state was changed while it was supposed to be locked in a
+  // pressed state. This shouldn't happen, but conceivably could if a caller
+  // tries to switch from enabled to disabled or vice versa while the button is
+  // pressed.
+  if (button()->state() == Button::STATE_NORMAL)
+    should_disable_after_press_ = false;
+  else if (button()->state() == Button::STATE_DISABLED)
+    should_disable_after_press_ = true;
 }
 
 }  // namespace views

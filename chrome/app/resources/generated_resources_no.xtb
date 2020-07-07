@@ -281,7 +281,6 @@
 <translation id="1340527397989195812">Sikkerhetskopiér medier fra enheten ved hjelp av Filer-appen.</translation>
 <translation id="1341988552785875222">Den gjeldende bakgrunnen er stilt inn av «<ph name="APP_NAME" />». Det kan hende du må avinstallere «<ph name="APP_NAME" />» før du kan velge en annen bakgrunn.</translation>
 <translation id="1343865611738742294">Gi Linux-apper tilgang til USB-enheter. Linux husker ikke USB-enheter etter at de er fjernet.</translation>
-<translation id="1344143111673240412">Endringen i kamerainnstillingen krever omstart av Parallels Desktop</translation>
 <translation id="1347256498747320987">Installer oppdateringer og apper. Hvis du fortsetter, godtar du at denne enheten også kan laste ned og installere oppdateringer automatisk fra Google, operatøren din og produsenten av enheten. Dette bruker muligens mobildata. Noen av disse appene kan inneholde kjøp i app-funksjonalitet. <ph name="BEGIN_LINK1" />Finn ut mer<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">Oppdateringen starter når batteriet når <ph name="BATTERY_LEVEL" /> %.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -1194,7 +1193,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="2470702053775288986">Ustøttede utvidelser slått av</translation>
 <translation id="2471469610750100598">Svart (standard)</translation>
 <translation id="2473195200299095979">Oversett denne siden</translation>
-<translation id="2474848500897222119"><ph name="PRINTER_NAME" /> er tom for blekk</translation>
 <translation id="2475982808118771221">Det oppstod en feil</translation>
 <translation id="2476578072172137802">Nettstedsinnstillinger</translation>
 <translation id="2478176599153288112">Mediafilrettigheter for «<ph name="EXTENSION" />»</translation>
@@ -1500,7 +1498,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> bruker proxy-tjenerinnstillinger fra administratoren din</translation>
 <translation id="2825758591930162672">Enhetens offentlige nøkkel</translation>
 <translation id="2828650939514476812">Koble til Wi-Fi-nettverk</translation>
-<translation id="28291580771888953">Køen for <ph name="PRINTER_NAME" /> er full</translation>
 <translation id="2835547721736623118">Tjeneste for talegjenkjenning</translation>
 <translation id="2836269494620652131">Programstopp</translation>
 <translation id="2836635946302913370">Pålogging med dette brukernavnet er deaktivert av administratoren din.</translation>
@@ -2316,7 +2313,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="3839516600093027468">Blokkér alltid <ph name="HOST" /> fra å se utklippstavlen</translation>
 <translation id="3841964634449506551">Ugyldig passord</translation>
 <translation id="3842552989725514455">Med seriffer</translation>
-<translation id="3843058644024807390">Endringen i mikrofoninnstillingen krever omstart av Parallels Desktop</translation>
+<translation id="3843464315703645664">Står på intern godkjenningsliste</translation>
 <translation id="3846116211488856547">Skaff deg verktøy for å utvikle nettsteder, Android-apper med mer. Linux laster ned <ph name="DOWNLOAD_SIZE" /> med data.</translation>
 <translation id="3847319713229060696">Bidra til å gjøre nettet sikrere for alle</translation>
 <translation id="385051799172605136">Tilbake</translation>
@@ -2773,7 +2770,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4453946976636652378">Søk i <ph name="SEARCH_ENGINE_NAME" /> eller skriv inn en nettadresse</translation>
 <translation id="4459169140545916303">Aktiv for <ph name="DEVICE_LAST_ACTIVATED_TIME" /> dager siden</translation>
 <translation id="4460014764210899310">Fjern gruppering</translation>
-<translation id="4460343359907016103">Det oppsto en feil ved tilkobling til <ph name="PRINTER_NAME" /></translation>
 <translation id="4462159676511157176">Egendefinerte navnetjenere</translation>
 <translation id="4465236939126352372">En tidsgrense på <ph name="TIME" /> er angitt for <ph name="APP_NAME" /></translation>
 <translation id="4465725236958772856">Nettverk <ph name="NETWORK_INDEX" /> av <ph name="NETWORK_COUNT" /> – <ph name="NETWORK_NAME" /> – administreres av administratoren din – koble til</translation>
@@ -3071,7 +3067,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4864369630010738180">Logger på ...</translation>
 <translation id="4864805589453749318">Velg den forelderen som gir tillatelse til å legge til en skolekonto.</translation>
 <translation id="486635084936119914">Åpne visse filtyper automatisk når de lastes ned</translation>
-<translation id="4869213010169296107"><ph name="PRINTER_NAME" /> mangler en skuff</translation>
 <translation id="48704129375571883">Legg til flere funksjoner</translation>
 <translation id="4870758487381879312">Skriv inn passordet du fikk fra administratoren, for å få informasjon om oppsett</translation>
 <translation id="4870903493621965035">Ingen sammenkoblede enheter</translation>
@@ -3322,6 +3317,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="5184662919967270437">Oppdaterer enheten</translation>
 <translation id="5185359571430619712">Gå gjennom utvidelser</translation>
 <translation id="5185386675596372454">Den nyeste versjonen av <ph name="EXTENSION_NAME" /> er deaktivert fordi den krever ytterligere tillatelser.</translation>
+<translation id="5185500136143151980">Ingen internettilkobling</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5190926251776387065">Aktivér porten</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> ber om å laste ned flere filer</translation>
@@ -3478,7 +3474,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="5390112241331447203">Inkluder filen system_logs.txt som sendes i tilbakemeldingsrapporter.</translation>
 <translation id="5390677308841849479">Mørk rød og oransje</translation>
 <translation id="5390743329570580756">Send for</translation>
-<translation id="5395869306561378615"><ph name="PRINTER_NAME" /> er satt på pause</translation>
 <translation id="5397794290049113714">Deg</translation>
 <translation id="5398572795982417028">Sidereferansen ligger utenfor det gyldige området. Grensen er <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">Annonser er blokkert</translation>
@@ -3493,7 +3488,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="5417312524372586921">Nettlesertemaer</translation>
 <translation id="5419405654816502573">Voice Match</translation>
 <translation id="5420438158931847627">Bestemmer skarpheten på tekst og bilder</translation>
-<translation id="5421498071721257877"><ph name="PRINTER_NAME" /> har en enhetsfeil</translation>
 <translation id="5422221874247253874">Tilgangspunkt</translation>
 <translation id="5422781158178868512">Beklager, men den eksterne lagringsenheten din ble ikke gjenkjent.</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3842,7 +3836,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="5852137567692933493">Omstart og Powerwash</translation>
 <translation id="5854912040170951372">Pizzaelsker</translation>
 <translation id="5855267860608268405">Kjente Wi-Fi-nettverk</translation>
-<translation id="5855310969323666289">Luken til <ph name="PRINTER_NAME" /> er åpen</translation>
 <translation id="5855643921295613558">0,6 sekunder</translation>
 <translation id="5856721540245522153">Slå på feilsøkingsfunksjoner</translation>
 <translation id="5857090052475505287">Ny mappe</translation>
@@ -3873,7 +3866,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="5877064549588274448">Kanalen ble endret. Start enheten på nytt for å aktivere endringene.</translation>
 <translation id="5877584842898320529">Den valgte skriveren er ikke tilgjengelig, eller den er ikke installert på riktig måte. <ph name="BR" /> Kontrollér skriveren din, eller prøv å velge en annen skriver.</translation>
 <translation id="5882919346125742463">Kjente nettverk</translation>
-<translation id="5883716097305842571">Utskriftsområdet for <ph name="PRINTER_NAME" /> er nesten fullt</translation>
 <translation id="5884474295213649357">Denne fanen er koblet til en USB-enhet.</translation>
 <translation id="5886009770935151472">Finger 1</translation>
 <translation id="5889282057229379085">Maksimalt antall mellomliggende sertifiseringsinstanser: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4439,7 +4431,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="6611972847767394631">Se fanene dine her</translation>
 <translation id="6612358246767739896">Beskyttet innhold</translation>
 <translation id="6615455863669487791">Vis meg</translation>
-<translation id="6617034477946102682"><ph name="PRINTER_NAME" /> er ikke tilgjengelig</translation>
 <translation id="6618097958368085618">Behold likevel</translation>
 <translation id="6618744767048954150">Kjører</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
@@ -4856,7 +4847,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="7128151990937044829">Vis en indikator i adressefeltet når varsler blokkeres</translation>
 <translation id="7131040479572660648">Lesing av dataene dine på <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> og <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Legg til si&amp;de</translation>
-<translation id="7131379856697962078">Utskriftsområdet for <ph name="PRINTER_NAME" /> er fullt</translation>
 <translation id="7133578150266914903">Administratoren din tilbakestiller denne enheten til forrige versjon (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">Forminsk teksten</translation>
 <translation id="7135729336746831607">Vil du slå på Bluetooth?</translation>
@@ -4875,7 +4865,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="7152478047064750137">Denne utvidelsen krever ingen spesielle tillatelser</translation>
 <translation id="7154130902455071009">endre startsiden din til: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">Eksisterende bilde fra kamera eller fil</translation>
-<translation id="715657691234357425"><ph name="PRINTER_NAME" /> har lite papir</translation>
 <translation id="7165320105431587207">Kunne ikke konfigurere nettverket</translation>
 <translation id="716640248772308851">«<ph name="EXTENSION" />» kan lese bilder, videofiler og lydfiler i mappene som står oppført.</translation>
 <translation id="7167486101654761064">Åpne &amp;alltid filer av denne typen</translation>
@@ -4906,7 +4895,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="7197632491113152433">Vi fant <ph name="NUMBER_OF_APPS" /> apper i kontoen din som kan brukes på denne enheten.</translation>
 <translation id="7199158086730159431">Få hjelp</translation>
 <translation id="7200083590239651963">Velg konfigurasjon</translation>
-<translation id="7201042526153088083">Installer apper og spill fra Google Play på <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;Finn ut mer&lt;/a&gt;</translation>
 <translation id="720110658997053098">Behold denne enheten permanent i kioskmodus</translation>
 <translation id="7201118060536064622">«<ph name="DELETED_ITEM_NAME" />» er slettet</translation>
 <translation id="7201420661433230412">Se filer</translation>
@@ -5212,7 +5200,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="7598466960084663009">Start datamaskinen på nytt</translation>
 <translation id="7599527631045201165">Enhetsnavnet er for langt. Skriv inn et kortere navn eller prøv på nytt.</translation>
 <translation id="7600965453749440009">Oversett aldri <ph name="LANGUAGE" /></translation>
-<translation id="7601297144931396972">Papiret sitter fast i <ph name="PRINTER_NAME" /></translation>
 <translation id="760197030861754408">Gå til <ph name="LANDING_PAGE" /> for å koble til.</translation>
 <translation id="7602079150116086782">Ingen faner fra andre enheter</translation>
 <translation id="7602173054665172958">Utskriftsbehandling</translation>
@@ -5223,6 +5210,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="7609148976235050828">Koble til Internett og prøv på nytt.</translation>
 <translation id="7614260613810441905">Spør når nettsteder vil redigere filer eller mapper på enheten (anbefales)</translation>
 <translation id="761530003705945209">Sikkerhetskopiér til Google Disk. Gjenopprett dataene dine enkelt eller bytt enhet når som helst. Sikkerhetskopien din inkluderer appdata. Sikkerhetskopiene dine lastes opp til Google og krypteres med passordet til Google-kontoen din.</translation>
+<translation id="7615365294369022248">Det oppsto en feil da en konto skulle legges til</translation>
 <translation id="7616214729753637086">Registrerer enheten …</translation>
 <translation id="7617263010641145920">Slå på Play-butikken</translation>
 <translation id="7617366389578322136">Kobler til «<ph name="DEVICE_NAME" />»</translation>
@@ -5671,7 +5659,6 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
           <ph name="TIME" />. Dette inkluderer ikke betalingsmåter og adresser fra Google Pay.</translation>
 <translation id="81238879832906896">Gul og hvit blomst</translation>
 <translation id="8124313775439841391">Administrert ONC</translation>
-<translation id="8127535217699822294"><ph name="PRINTER_NAME" /> er tom for papir</translation>
 <translation id="813082847718468539">Vis nettstedsinformasjon</translation>
 <translation id="8131740175452115882">Bekreft</translation>
 <translation id="8133676275609324831">&amp;Vis i mappe</translation>
@@ -5770,7 +5757,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8254954272268479918">Slå av Linux (beta)</translation>
 <translation id="8255451560461371599">Ingen bakgrunn</translation>
 <translation id="8256319818471787266">Fido</translation>
-<translation id="8256417822772703842"><ph name="PRINTER_NAME" /> har lite blekk</translation>
 <translation id="8257950718085972371">Fortsett blokkering av kameratilgang</translation>
 <translation id="8259239505248583312">Sett i gang</translation>
 <translation id="8260864402787962391">Mus</translation>
@@ -5951,7 +5937,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8487678622945914333">Zoom inn</translation>
 <translation id="8490896350101740396">Kioskappene «<ph name="UPDATED_APPS" />» er oppdatert. Start opp enheten på nytt for å fullføre oppdateringsprosessen.</translation>
 <translation id="8493236660459102203">Mikrofon:</translation>
-<translation id="8495940850609851342"><ph name="PRINTER_NAME" /> er stoppet</translation>
 <translation id="8496717697661868878">Kjør dette programtillegget</translation>
 <translation id="8497219075884839166">Windows Verktøy</translation>
 <translation id="8498214519255567734">Gjør det lettere å se på skjermen og lese i svakt lys</translation>
@@ -6493,6 +6478,12 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="9157096865782046368">0,8 sekunder</translation>
 <translation id="9157697743260533322">Kunne ikke konfigurere automatiske oppdateringer for alle brukerne (feil ved start av forhåndskontroll: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Beklager. Det oppsto et kommunikasjonsproblem på nettverket under godkjenningen. Sjekk nettverksforbindelsen din, og prøv på nytt.</translation>
+<translation id="9159643062839240276">Prøv å
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />kontrollere nettverkskablene, modemet og ruteren
+      <ph name="LIST_ITEM" />koble til Wi-Fi på nytt
+      <ph name="LIST_ITEM" />kjøre Tilkoblingsdiagnostikk for Chrome
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">Bilde i bilde</translation>
 <translation id="9168436347345867845">Gjør det senere</translation>
 <translation id="9169496697824289689">Se tastaturets hurtigtaster</translation>

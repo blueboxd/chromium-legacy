@@ -119,7 +119,7 @@ bool TextTrackLoader::Load(const KURL& url,
         network::mojom::RequestMode::kSameOrigin);
   } else {
     cue_fetch_params.SetCrossOriginAccessControl(
-        GetDocument().GetSecurityOrigin(), cross_origin);
+        GetDocument().GetExecutionContext()->GetSecurityOrigin(), cross_origin);
   }
 
   ResourceFetcher* fetcher = GetDocument().Fetcher();

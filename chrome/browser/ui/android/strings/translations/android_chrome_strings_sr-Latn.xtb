@@ -642,7 +642,6 @@ Da biste promenili ovo podešavanje, <ph name="BEGIN_LINK" />resetujte sinhroniz
 <translation id="6154478581116148741">Uključite zaključavanje ekrana u Podešavanjima da biste izvezli lozinke sa uređaja</translation>
 <translation id="6157392216611456285">Izaberite <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> uštede podataka</translation>
-<translation id="6192333916571137726">Preuzmite datoteku</translation>
 <translation id="6201345951596836663">Link je kopiran</translation>
 <translation id="6206830853671714236">Izaberite vreme preuzimanja</translation>
 <translation id="6210748933810148297">Niste <ph name="EMAIL" />?</translation>
@@ -877,6 +876,7 @@ Na primer, neki veb-sajtovi mogu da odgovore na ovaj zahtev prikazivanjem oglasa
 <translation id="8013372441983637696">Obriši Chrome podatke i sa ovog uređaja</translation>
 <translation id="8015452622527143194">Vraćanje celokupnog prikaza stranice na podrazumevanu veličinu</translation>
 <translation id="8026334261755873520">Obrišite podatke pregledanja</translation>
+<translation id="8027863900915310177">Odaberite gde želite da preuzmete</translation>
 <translation id="8035133914807600019">Novi direktorijum...</translation>
 <translation id="8037750541064988519">Još <ph name="DAYS" /> dana</translation>
 <translation id="804335162455518893">SD kartica nije pronađena</translation>

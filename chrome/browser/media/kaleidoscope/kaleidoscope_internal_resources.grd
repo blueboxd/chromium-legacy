@@ -8,6 +8,13 @@
   </outputs>
   <release seq="1">
     <includes>
+      <!-- Public resources -->
+      <include name="IDR_KALEIDOSCOPE_SIDE_NAV_CONTAINER_JS" file="${root_gen_dir}/chrome/browser/resources/kaleidoscope/side_nav_container.js"
+        use_base_dir="false" type="BINDATA" />
+      <include name="IDR_KALEIDOSCOPE_TOOLBAR_JS" file="${root_gen_dir}/chrome/browser/resources/kaleidoscope/toolbar.js"
+        use_base_dir="false" type="BINDATA" />
+
+      <!-- Private resources -->
       <include name="IDR_KALEIDOSCOPE_CONTENT_CSS" file="internal/resources/content.css" type="chrome_html" flattenhtml="true" compress="gzip" />
       <include name="IDR_KALEIDOSCOPE_CONTENT_HTML" file="internal/resources/content.html" type="BINDATA" compress="gzip" />
       <include name="IDR_KALEIDOSCOPE_CONTENT_JS" file="${root_gen_dir}/chrome/browser/media/kaleidoscope/internal/resources/ks-content.js" use_base_dir="false" type="BINDATA" compress="gzip" />

@@ -895,7 +895,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_nodeInfo(
 
   if (owner()->IsDocument()) {
     *node_type = NODETYPE_DOCUMENT;
-  } else if (owner()->IsTextOnlyObject()) {
+  } else if (owner()->IsText()) {
     *node_type = NODETYPE_TEXT;
   } else {
     *node_type = NODETYPE_ELEMENT;

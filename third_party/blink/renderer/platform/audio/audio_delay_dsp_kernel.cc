@@ -142,7 +142,7 @@ static ALWAYS_INLINE __m128 WrapPositionVector(__m128 v_position,
   // Wrap the read position if it exceed the buffer length.
 
   // If buffer length < read_position, set cmp to 0xffffffff.  Otherwise zero.
-  __m128i cmp = _mm_cmplt_ps(v_buffer_length, v_position);
+  __m128 cmp = _mm_cmplt_ps(v_buffer_length, v_position);
 
   // Bitwise and buffer_length with cmp to get buffer_length or 0 depending on
   // whether read_position >= buffer length or not.  Then subtract from the

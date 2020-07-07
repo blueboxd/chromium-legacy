@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.compositor.scene_layer.TabListSceneLayer;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.components.browser_ui.widget.animation.Interpolators;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.resources.ResourceManager;
@@ -37,7 +38,10 @@ public class ToolbarSwipeLayout extends Layout {
     private static final boolean ANONYMIZE_NON_FOCUSED_TAB = true;
 
     // Unit is millisecond / screen.
-    private static final float ANIMATION_SPEED_SCREEN = 500.0f;
+    private static final float ANIMATION_SPEED_SCREEN_MS = 500.0f;
+
+    // The time duration of the animation for switch to tab, Unit is millisecond.
+    private static final long SWITCH_TO_TAB_DURATION_MS = 350;
 
     // This is the time step used to move the offset based on fling
     private static final float FLING_TIME_STEP = 1.0f / 30.0f;
@@ -140,11 +144,27 @@ public class ToolbarSwipeLayout extends Layout {
         // On RTL, edge-dragging to the left is the next tab.
         int toIndex = (LocalizationUtils.isLayoutRtl() ^ dragFromLeftEdge) ? fromIndex - 1
                                                                            : fromIndex + 1;
+
+        prepareSwipeTabAnimation(direction, fromIndex, toIndex);
+    }
+
+    /**
+     * Prepare the tabs sliding animations. This method need to be called before
+     * {@link #doTabSwitchAnimation(int, float, float, long)}.
+     * @param direction The direction of the slide.
+     * @param fromIndex The index of the tab which will be switched from.
+     * @param toIndex The index of the tab which will be switched to.
+     */
+    private void prepareSwipeTabAnimation(
+            @ScrollDirection int direction, int fromIndex, int toIndex) {
+        boolean dragFromLeftEdge = direction == ScrollDirection.RIGHT;
+
         int leftIndex = dragFromLeftEdge ? toIndex : fromIndex;
         int rightIndex = !dragFromLeftEdge ? toIndex : fromIndex;
         int leftTabId = Tab.INVALID_TAB_ID;
         int rightTabId = Tab.INVALID_TAB_ID;
 
+        TabModel model = mTabModelSelector.getCurrentModel();
         if (0 <= leftIndex && leftIndex < model.getCount()) {
             leftTabId = model.getTabAt(leftIndex).getId();
             mLeftTab = createLayoutTab(leftTabId, model.isIncognito(), NO_CLOSE_BUTTON, NEED_TITLE);
@@ -233,20 +253,33 @@ public class ToolbarSwipeLayout extends Layout {
 
         startHiding(mToTab.getId(), false);
 
-        // Animate gracefully the end of the swiping effect.
-        forceAnimationToFinish();
         float start = mOffsetTarget;
         float end = offsetTo;
-        long duration = (long) (ANIMATION_SPEED_SCREEN * Math.abs(start - end) / getWidth());
-        if (duration > 0) {
-            CompositorAnimator offsetAnimation =
-                    CompositorAnimator.ofFloat(getAnimationHandler(), start, end, duration, null);
-            offsetAnimation.addUpdateListener(animator -> {
-                mOffset = animator.getAnimatedValue();
-                mOffsetTarget = mOffset;
-            });
-            offsetAnimation.start();
-        }
+        long duration = (long) (ANIMATION_SPEED_SCREEN_MS * Math.abs(start - end) / getWidth());
+        doTabSwitchAnimation(mToTab.getId(), start, end, duration);
+    }
+
+    /**
+     * Perform the tabs sliding animations. {@link #prepareSwipeTabAnimation(int, int, int)} need to
+     * be called before calling this method.
+     * @param tabId The id of the tab which will be switched to.
+     * @param start The start point of X coordinate for the animation.
+     * @param end The end point of X coordinate for the animation.
+     * @param duration The animation duration in millisecond.
+     */
+    private void doTabSwitchAnimation(int tabId, float start, float end, long duration) {
+        // Animate gracefully the end of the swiping effect.
+        forceAnimationToFinish();
+
+        if (duration <= 0) return;
+
+        CompositorAnimator offsetAnimation =
+                CompositorAnimator.ofFloat(getAnimationHandler(), start, end, duration, null);
+        offsetAnimation.addUpdateListener(animator -> {
+            mOffset = animator.getAnimatedValue();
+            mOffsetTarget = mOffset;
+        });
+        offsetAnimation.start();
     }
 
     public void swipeCancelled(long time) {
@@ -358,5 +391,26 @@ public class ToolbarSwipeLayout extends Layout {
         mSceneLayer.pushLayers(getContext(), contentViewport, contentViewport, this,
                 layerTitleCache, tabContentManager, resourceManager, fullscreenManager,
                 SceneLayer.INVALID_RESOURCE_ID, 0, 0);
+    }
+
+    /**
+     * Perform the tabs sliding animations. If the new tab's index is smaller than the old one, new
+     * tab slide in from left, and old one slide out to right, and vice versa.
+     * @param toTabId The id of the next tab which will be switched to.
+     * @param fromTabId The id of the previous tab which will be switched out.
+     */
+    public void switchToTab(int toTabId, int fromTabId) {
+        int fromTabIndex =
+                TabModelUtils.getTabIndexById(mTabModelSelector.getCurrentModel(), fromTabId);
+        int toTabIndex =
+                TabModelUtils.getTabIndexById(mTabModelSelector.getCurrentModel(), toTabId);
+        prepareSwipeTabAnimation(
+                fromTabIndex < toTabIndex ? ScrollDirection.LEFT : ScrollDirection.RIGHT,
+                fromTabIndex, toTabIndex);
+
+        mToTab = fromTabIndex < toTabIndex ? mRightTab : mLeftTab;
+        float end = fromTabIndex < toTabIndex ? -getWidth() : getWidth();
+        startHiding(toTabId, false);
+        doTabSwitchAnimation(toTabId, 0f, end, SWITCH_TO_TAB_DURATION_MS);
     }
 }

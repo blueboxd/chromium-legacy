@@ -198,21 +198,6 @@ class MobileActivator : public NetworkStateHandlerObserver {
   PlanActivationState PickNextOnlineState(const NetworkState* network) const;
   PlanActivationState PickNextOfflineState(const NetworkState* network) const;
 
-  // Callback used to handle an activation error.
-  void HandleActivationFailure(
-      const std::string& service_path,
-      PlanActivationState new_state,
-      const std::string& error_name,
-      std::unique_ptr<base::DictionaryValue> error_data);
-
-  // Request cellular activation for |network|.
-  // On success, |success_callback| will be called.
-  // On failure, |error_callback| will be called.
-  virtual void RequestCellularActivation(
-      const NetworkState* network,
-      const base::Closure& success_callback,
-      const network_handler::ErrorCallback& error_callback);
-
   // Changes internal state.
   virtual void ChangeState(const NetworkState* network,
                            PlanActivationState new_state,
@@ -247,9 +232,6 @@ class MobileActivator : public NetworkStateHandlerObserver {
   std::string device_path_;
   // True if activation process has been terminated.
   bool terminated_;
-  // True if an asynchronous activation request was dispatched to Shill
-  // but the success or failure of the request is yet unknown.
-  bool pending_activation_request_;
   // Connection retry counter.
   int connection_retry_count_;
   // Counters for how many times we've tried each OTASP step.

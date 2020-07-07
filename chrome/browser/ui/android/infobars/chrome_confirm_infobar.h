@@ -11,7 +11,7 @@ class TabAndroid;
 
 // Chrome-specific convenience specialization of ConfirmInfoBar that supplies
 // Chrome-level parameters.
-class ChromeConfirmInfoBar : public ConfirmInfoBar {
+class ChromeConfirmInfoBar : public infobars::ConfirmInfoBar {
  public:
   explicit ChromeConfirmInfoBar(
       std::unique_ptr<ConfirmInfoBarDelegate> delegate);

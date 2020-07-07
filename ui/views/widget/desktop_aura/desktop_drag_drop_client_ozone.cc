@@ -178,7 +178,7 @@ void DesktopDragDropClientOzone::DragCancel() {
 }
 
 bool DesktopDragDropClientOzone::IsDragDropInProgress() {
-  return bool(drag_context_) && bool(drag_context_->quit_closure);
+  return drag_context_ && !drag_context_->quit_closure.is_null();
 }
 
 void DesktopDragDropClientOzone::AddObserver(
@@ -194,7 +194,8 @@ void DesktopDragDropClientOzone::RemoveObserver(
 void DesktopDragDropClientOzone::OnDragEnter(
     const gfx::PointF& point,
     std::unique_ptr<ui::OSExchangeData> data,
-    int operation) {
+    int operation,
+    int modifiers) {
   last_drag_point_ = point;
   drag_operation_ = operation;
 
@@ -204,11 +205,12 @@ void DesktopDragDropClientOzone::OnDragEnter(
     return;
 
   data_to_drop_ = std::move(data);
-  UpdateTargetAndCreateDropEvent(point);
+  UpdateTargetAndCreateDropEvent(point, modifiers);
 }
 
 int DesktopDragDropClientOzone::OnDragMotion(const gfx::PointF& point,
-                                             int operation) {
+                                             int operation,
+                                             int modifiers) {
   last_drag_point_ = point;
   drag_operation_ = operation;
 
@@ -219,14 +221,15 @@ int DesktopDragDropClientOzone::OnDragMotion(const gfx::PointF& point,
   // Ask the delegate what operation it would accept for the current data.
   int client_operation = ui::DragDropTypes::DRAG_NONE;
   std::unique_ptr<ui::DropTargetEvent> event =
-      UpdateTargetAndCreateDropEvent(point);
+      UpdateTargetAndCreateDropEvent(point, modifiers);
   if (drag_drop_delegate_ && event)
     client_operation = drag_drop_delegate_->OnDragUpdated(*event);
   return client_operation;
 }
 
 void DesktopDragDropClientOzone::OnDragDrop(
-    std::unique_ptr<ui::OSExchangeData> data) {
+    std::unique_ptr<ui::OSExchangeData> data,
+    int modifiers) {
   // If we didn't have |data_to_drop_|, then |drag_drop_delegate_| had never
   // been updated, and now it needs to receive deferred enter and update events
   // before handling the actual drop.
@@ -239,7 +242,7 @@ void DesktopDragDropClientOzone::OnDragDrop(
     data_to_drop_ = std::move(data);
 
   // This will call the delegate's OnDragEntered if needed.
-  auto event = UpdateTargetAndCreateDropEvent(last_drag_point_);
+  auto event = UpdateTargetAndCreateDropEvent(last_drag_point_, modifiers);
   if (drag_drop_delegate_ && event) {
     if (posponed_enter_and_update) {
       // TODO(https://crbug.com/1014860): deal with drop refusals.
@@ -328,7 +331,8 @@ void DesktopDragDropClientOzone::QuitRunLoop() {
 
 std::unique_ptr<ui::DropTargetEvent>
 DesktopDragDropClientOzone::UpdateTargetAndCreateDropEvent(
-    const gfx::PointF& location) {
+    const gfx::PointF& location,
+    int modifiers) {
   const gfx::Point point(location.x(), location.y());
   aura::Window* window = GetTargetWindow(root_window_, point);
   if (!window) {
@@ -356,6 +360,7 @@ DesktopDragDropClientOzone::UpdateTargetAndCreateDropEvent(
   auto event = std::make_unique<ui::DropTargetEvent>(
       *data_to_drop_, target_location, gfx::PointF(root_location),
       drag_operation_);
+  event->set_flags(modifiers);
   if (delegate_has_changed)
     drag_drop_delegate_->OnDragEntered(*event);
   return event;

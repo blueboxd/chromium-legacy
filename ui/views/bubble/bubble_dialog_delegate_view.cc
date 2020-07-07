@@ -250,8 +250,8 @@ class BubbleDialogDelegate::BubbleWidgetObserver : public WidgetObserver {
     owner_->OnWidgetActivationChanged(widget, active);
   }
 
-  void OnWidgetPaintAsActiveChanged(Widget* widget, bool as_active) override {
-    owner_->OnBubbleWidgetPaintAsActiveChanged(as_active);
+  void OnWidgetPaintAsActiveChanged(Widget* widget) override {
+    owner_->OnBubbleWidgetPaintAsActiveChanged();
   }
 
  private:
@@ -437,8 +437,8 @@ void BubbleDialogDelegate::OnAnchorWidgetBoundsChanged() {
     SizeToContents();
 }
 
-void BubbleDialogDelegate::OnBubbleWidgetPaintAsActiveChanged(bool as_active) {
-  if (!as_active) {
+void BubbleDialogDelegate::OnBubbleWidgetPaintAsActiveChanged() {
+  if (!GetWidget()->ShouldPaintAsActive()) {
     paint_as_active_lock_.reset();
     return;
   }

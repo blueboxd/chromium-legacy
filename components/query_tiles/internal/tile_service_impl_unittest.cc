@@ -32,23 +32,27 @@ namespace {
 class MockTileManager : public TileManager {
  public:
   MockTileManager() = default;
-  MOCK_METHOD1(Init, void(TileGroupStatusCallback));
-  MOCK_METHOD1(GetTiles, void(GetTilesCallback));
-  MOCK_METHOD2(GetTile, void(const std::string&, TileCallback));
-  MOCK_METHOD2(SaveTiles,
-               void(std::unique_ptr<TileGroup>, TileGroupStatusCallback));
-  MOCK_METHOD1(SetAcceptLanguagesForTesting, void(const std::string&));
-  MOCK_METHOD0(PurgeDb, TileGroupStatus());
-  MOCK_METHOD1(GetTileGroupForTesting, void(TileGroup*));
+  MOCK_METHOD(void, Init, (TileGroupStatusCallback));
+  MOCK_METHOD(void, GetTiles, (GetTilesCallback));
+  MOCK_METHOD(void, GetTile, (const std::string&, TileCallback));
+  MOCK_METHOD(void,
+              SaveTiles,
+              (std::unique_ptr<TileGroup>, TileGroupStatusCallback));
+  MOCK_METHOD(void, SetAcceptLanguagesForTesting, (const std::string&));
+  MOCK_METHOD(TileGroupStatus, PurgeDb, ());
+  MOCK_METHOD(TileGroup*, GetTileGroup, ());
 };
 
 class MockTileServiceScheduler : public TileServiceScheduler {
  public:
   MockTileServiceScheduler() = default;
-  MOCK_METHOD1(OnFetchCompleted, void(TileInfoRequestStatus));
-  MOCK_METHOD1(OnTileManagerInitialized, void(TileGroupStatus));
-  MOCK_METHOD0(CancelTask, void());
-  MOCK_METHOD1(OnDbPurged, void(TileGroupStatus));
+  MOCK_METHOD(void, OnFetchStarted, ());
+  MOCK_METHOD(void, OnFetchCompleted, (TileInfoRequestStatus));
+  MOCK_METHOD(void, OnTileManagerInitialized, (TileGroupStatus));
+  MOCK_METHOD(void, CancelTask, ());
+  MOCK_METHOD(void, OnDbPurged, (TileGroupStatus));
+  MOCK_METHOD(void, OnGroupDataSaved, (TileGroupStatus));
+  MOCK_METHOD(void, SetDelegate, (TileServiceScheduler::Delegate*));
 };
 
 class MockImagePrefetcher : public ImagePrefetcher {

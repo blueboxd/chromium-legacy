@@ -91,9 +91,6 @@ class SigninScreenHandlerDelegate {
   // Returns true if sign in is in progress.
   virtual bool IsSigninInProgress() const = 0;
 
-  // Signs out if the screen is currently locked.
-  virtual void Signout() = 0;
-
   // --------------- Shared with login display methods.
   // Notify the delegate when the sign-in UI is finished loading.
   virtual void OnSigninScreenReady() = 0;

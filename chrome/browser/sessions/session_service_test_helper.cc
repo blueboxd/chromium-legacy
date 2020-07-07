@@ -57,10 +57,10 @@ void SessionServiceTestHelper::SetForceBrowserNotAliveWithNoWindows(
 void SessionServiceTestHelper::ReadWindows(
     std::vector<std::unique_ptr<sessions::SessionWindow>>* windows,
     SessionID* active_window_id) {
-  std::vector<std::unique_ptr<sessions::SessionCommand>> read_commands;
   sessions::CommandStorageManagerTestHelper test_helper(
       service_->GetCommandStorageManagerForTest());
-  test_helper.ReadLastSessionCommands(&read_commands);
+  std::vector<std::unique_ptr<sessions::SessionCommand>> read_commands =
+      test_helper.ReadLastSessionCommands();
   RestoreSessionFromCommands(read_commands, windows, active_window_id);
   service()->RemoveUnusedRestoreWindows(windows);
 }

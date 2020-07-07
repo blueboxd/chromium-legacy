@@ -20,7 +20,6 @@ import org.junit.Assert;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 
@@ -211,13 +210,7 @@ public class ContextMenuUtils {
         });
 
         if (expectedActivity != null) {
-            CriteriaHelper.pollInstrumentationThread(
-                    new Criteria("Activity did not regain focus.") {
-                        @Override
-                        public boolean isSatisfied() {
-                            return expectedActivity.hasWindowFocus();
-                        }
-                    });
+            CriteriaHelper.pollInstrumentationThread(expectedActivity::hasWindowFocus);
         }
 
         if (expectedIntentPackage != null) {

@@ -281,7 +281,6 @@
 <translation id="1340527397989195812">Cadangkan media dari perangkat menggunakan aplikasi File.</translation>
 <translation id="1341988552785875222">Wallpaper saat ini disetel oleh '<ph name="APP_NAME" />'. Anda mungkin perlu meng-uninstal '<ph name="APP_NAME" />' sebelum memilih wallpaper lainnya.</translation>
 <translation id="1343865611738742294">Berikan izin aplikasi ke Linux untuk mengakses perangkat USB. Linux tidak akan mengingat perangkat USB setelah perangkat tersebut dilepas.</translation>
-<translation id="1344143111673240412">Perubahan pada setelan kamera mengharuskan Desktop Paralel diluncurkan kembali</translation>
 <translation id="1347256498747320987">Instal update &amp; aplikasi. Dengan melanjutkan, artinya Anda menyetujui bahwa perangkat ini juga dapat mendownload serta menginstal update dan aplikasi secara otomatis dari Google, operator, dan produsen perangkat, yang kemungkinan menggunakan kuota. Sebagian aplikasi ini mungkin menawarkan pembelian dalam aplikasi. <ph name="BEGIN_LINK1" />Pelajari Lebih Lanjut<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">Update akan dimulai jika baterai mencapai <ph name="BATTERY_LEVEL" />%.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -1197,7 +1196,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="2470702053775288986">Ekstensi yang tidak didukung dinonaktifkan</translation>
 <translation id="2471469610750100598">Hitam (default)</translation>
 <translation id="2473195200299095979">Terjemahkan halaman ini</translation>
-<translation id="2474848500897222119">Tinta <ph name="PRINTER_NAME" /> habis</translation>
 <translation id="2475982808118771221">Terjadi kesalahan</translation>
 <translation id="2476578072172137802">Setelan Situs</translation>
 <translation id="2478176599153288112">Izin File-Media untuk "<ph name="EXTENSION" />"</translation>
@@ -1503,7 +1501,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> menggunakan setelan proxy dari administrator Anda</translation>
 <translation id="2825758591930162672">Kunci Publik Subjek</translation>
 <translation id="2828650939514476812">Tersambung ke jaringan Wi-Fi</translation>
-<translation id="28291580771888953">Antrean <ph name="PRINTER_NAME" /> penuh</translation>
 <translation id="2835547721736623118">Layanan pengenalan ucapan</translation>
 <translation id="2836269494620652131">Kerusakan</translation>
 <translation id="2836635946302913370">Login dengan nama pengguna ini telah dinonaktifkan oleh administrator Anda.</translation>
@@ -2319,7 +2316,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="3839516600093027468">Selalu blokir <ph name="HOST" /> dari melihat papan klip</translation>
 <translation id="3841964634449506551">Sandi tidak valid</translation>
 <translation id="3842552989725514455">Font Serif</translation>
-<translation id="3843058644024807390">Perubahan pada setelan mikrofon mengharuskan Desktop Paralel diluncurkan kembali</translation>
+<translation id="3843464315703645664">Daftar yang diizinkan secara internal</translation>
 <translation id="3846116211488856547">Dapatkan fitur untuk mengembangkan situs, aplikasi Android, dan lainnya. Menginstal Linux akan mendownload <ph name="DOWNLOAD_SIZE" /> data.</translation>
 <translation id="3847319713229060696">Bantu sempurnakan keamanan di web untuk semuanya</translation>
 <translation id="385051799172605136">Mundur</translation>
@@ -2778,7 +2775,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="4453946976636652378">Telusuri <ph name="SEARCH_ENGINE_NAME" /> atau ketik URL</translation>
 <translation id="4459169140545916303">Aktif <ph name="DEVICE_LAST_ACTIVATED_TIME" /> hari lalu</translation>
 <translation id="4460014764210899310">Pisahkan</translation>
-<translation id="4460343359907016103">Error saat menghubungkan ke <ph name="PRINTER_NAME" /></translation>
 <translation id="4462159676511157176">Server nama khusus</translation>
 <translation id="4465236939126352372">Batas waktu <ph name="TIME" /> ditetapkan untuk <ph name="APP_NAME" /></translation>
 <translation id="4465725236958772856">Jaringan <ph name="NETWORK_INDEX" /> dari <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Dikelola oleh Administrator Anda, Sambungkan</translation>
@@ -3076,7 +3072,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="4864369630010738180">Login...</translation>
 <translation id="4864805589453749318">Pilih orang tua yang memberikan izin untuk menambahkan akun sekolah.</translation>
 <translation id="486635084936119914">Buka jenis file tertentu secara otomatis setelah didownload</translation>
-<translation id="4869213010169296107">Tidak ada baki kertas di <ph name="PRINTER_NAME" /></translation>
 <translation id="48704129375571883">Tambahkan fitur tambahan</translation>
 <translation id="4870758487381879312">Masukkan sandi yang disediakan admin untuk mendapatkan info konfigurasi</translation>
 <translation id="4870903493621965035">Tidak ada perangkat yang dihubungkan</translation>
@@ -3327,6 +3322,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="5184662919967270437">Memperbarui perangkat</translation>
 <translation id="5185359571430619712">Tinjau ekstensi</translation>
 <translation id="5185386675596372454">Versi terbaru dari "<ph name="EXTENSION_NAME" />" telah dinonaktifkan karena versi tersebut memerlukan tingkat izin yang lebih tinggi.</translation>
+<translation id="5185500136143151980">Tidak ada internet</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5190926251776387065">Aktifkan port</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> ingin mendownload beberapa file</translation>
@@ -3483,7 +3479,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="5390112241331447203">Sertakan file system_logs.txt yang dikirimkan di laporan masukan.</translation>
 <translation id="5390677308841849479">Merah tua dan oranye tua</translation>
 <translation id="5390743329570580756">Kirim untuk</translation>
-<translation id="5395869306561378615"><ph name="PRINTER_NAME" /> dijeda</translation>
 <translation id="5397794290049113714">Anda</translation>
 <translation id="5398572795982417028">Di luar referensi halaman batas, batasannya adalah <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">Iklan diblokir</translation>
@@ -3498,7 +3493,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="5417312524372586921">Tema browser</translation>
 <translation id="5419405654816502573">Voice match</translation>
 <translation id="5420438158931847627">Menentukan ketajaman teks dan gambar</translation>
-<translation id="5421498071721257877">Terjadi error perangkat di <ph name="PRINTER_NAME" /></translation>
 <translation id="5422221874247253874">Titik Akses</translation>
 <translation id="5422781158178868512">Maaf, perangkat penyimpanan eksternal Anda tidak dapat dikenali.</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3847,7 +3841,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="5852137567692933493">Mulai Ulang dan Powerwash</translation>
 <translation id="5854912040170951372">Pizza</translation>
 <translation id="5855267860608268405">Jaringan Wi-Fi yang dikenal</translation>
-<translation id="5855310969323666289">Tutup <ph name="PRINTER_NAME" /> terbuka</translation>
 <translation id="5855643921295613558">0,6 detik</translation>
 <translation id="5856721540245522153">Aktifkan fitur debug</translation>
 <translation id="5857090052475505287">Folder Baru</translation>
@@ -3878,7 +3871,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="5877064549588274448">Saluran diubah. Mulai ulang perangkat Anda untuk menerapkan perubahan.</translation>
 <translation id="5877584842898320529">Printer yang dipilih tidak tersedia atau tidak terinstal dengan benar. <ph name="BR" /> Periksa printer atau coba pilih printer lain.</translation>
 <translation id="5882919346125742463">Jaringan yang Dikenal</translation>
-<translation id="5883716097305842571">Penampung hasil cetak <ph name="PRINTER_NAME" /> hampir penuh</translation>
 <translation id="5884474295213649357">Tab ini terhubung dengan perangkat USB.</translation>
 <translation id="5886009770935151472">Jari 1</translation>
 <translation id="5889282057229379085">Jumlah maksimum CA perantara: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4444,7 +4436,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="6611972847767394631">Temukan tab Anda di sini</translation>
 <translation id="6612358246767739896">Konten dilindungi</translation>
 <translation id="6615455863669487791">Tunjukkan</translation>
-<translation id="6617034477946102682"><ph name="PRINTER_NAME" /> tidak dapat dijangkau</translation>
 <translation id="6618097958368085618">Tetap Lanjutkan</translation>
 <translation id="6618744767048954150">Sedang berjalan</translation>
 <translation id="6619058681307408113">Daemon Printer Baris (LPD)</translation>
@@ -4861,7 +4852,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="7128151990937044829">Tampilkan indikator dalam kolom URL saat notifikasi diblokir</translation>
 <translation id="7131040479572660648">Membaca data Anda di <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, dan <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Tambahkan la&amp;man...</translation>
-<translation id="7131379856697962078">Penampung hasil cetak <ph name="PRINTER_NAME" /> penuh</translation>
 <translation id="7133578150266914903">Administrator sedang memulihkan perangkat ini (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">Perkecil Teks</translation>
 <translation id="7135729336746831607">Aktifkan Bluetooth?</translation>
@@ -4880,7 +4870,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="7152478047064750137">Ekstensi ini tidak memerlukan izin khusus</translation>
 <translation id="7154130902455071009">Ubah halaman awal Anda menjadi: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">Foto yang sudah ada dari kamera atau file</translation>
-<translation id="715657691234357425">Kertas <ph name="PRINTER_NAME" /> hampir habis</translation>
 <translation id="7165320105431587207">Gagal mengonfigurasi jaringan</translation>
 <translation id="716640248772308851">"<ph name="EXTENSION" />" dapat membaca file gambar, video, dan suara di lokasi yang dicentang.</translation>
 <translation id="7167486101654761064">Sel&amp;alu buka file jenis ini</translation>
@@ -4911,7 +4900,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="7197632491113152433">Kami menemukan <ph name="NUMBER_OF_APPS" /> aplikasi dari akun Anda yang dapat digunakan di perangkat ini.</translation>
 <translation id="7199158086730159431">Dapatkan Bantuan</translation>
 <translation id="7200083590239651963">Pilih konfigurasi</translation>
-<translation id="7201042526153088083">Instal aplikasi dan game dari Google Play di <ph name="DEVICE_TYPE" /> Anda. &lt;a target="_blank" href="<ph name="URL" />"&gt;Pelajari lebih lanjut&lt;/a&gt;</translation>
 <translation id="720110658997053098">Simpan perangkat ini dalam mode kios secara permanen</translation>
 <translation id="7201118060536064622">'<ph name="DELETED_ITEM_NAME" />' dihapus</translation>
 <translation id="7201420661433230412">Lihat file</translation>
@@ -5217,7 +5205,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="7598466960084663009">Nyalakan ulang komputer</translation>
 <translation id="7599527631045201165">Nama perangkat terlalu panjang. Masukkan nama yang lebih pendek untuk mencoba lagi.</translation>
 <translation id="7600965453749440009">Jangan pernah terjemahkan bahasa <ph name="LANGUAGE" /></translation>
-<translation id="7601297144931396972">Kertas <ph name="PRINTER_NAME" /> macet</translation>
 <translation id="760197030861754408">Buka <ph name="LANDING_PAGE" /> untuk terhubung.</translation>
 <translation id="7602079150116086782">Tidak ada tab dari perangkat lainnya</translation>
 <translation id="7602173054665172958">Pengelolaan cetak</translation>
@@ -5228,6 +5215,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="7609148976235050828">Sambungkan ke internet dan coba lagi.</translation>
 <translation id="7614260613810441905">Tanyakan saat situs ingin mengedit file atau folder di perangkat Anda (direkomendasikan)</translation>
 <translation id="761530003705945209">Cadangkan ke Google Drive. Pulihkan data Anda atau beralih perangkat kapan saja dengan mudah. Cadangan Anda mencakup data aplikasi. Cadangan Anda diupload ke Google dan dienkripsi menggunakan sandi Akun Google Anda.</translation>
+<translation id="7615365294369022248">Terjadi error saat menambahkan akun</translation>
 <translation id="7616214729753637086">Mendaftarkan perangkat...</translation>
 <translation id="7617263010641145920">Aktifkan Play Store</translation>
 <translation id="7617366389578322136">Menyambungkan ke "<ph name="DEVICE_NAME" />"</translation>
@@ -5676,7 +5664,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <ph name="TIME" />. Data ini tidak mencakup alamat dan metode pembayaran dari Google Pay.</translation>
 <translation id="81238879832906896">Bunga kuning dan putih</translation>
 <translation id="8124313775439841391">ONC yang dikelola</translation>
-<translation id="8127535217699822294">Kertas <ph name="PRINTER_NAME" /> habis</translation>
 <translation id="813082847718468539">Lihat informasi situs</translation>
 <translation id="8131740175452115882">Konfirmasi</translation>
 <translation id="8133676275609324831">&amp;Tampilkan dalam folder</translation>
@@ -5775,7 +5762,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8254954272268479918">Matikan Linux (Beta)</translation>
 <translation id="8255451560461371599">Tidak ada latar belakang</translation>
 <translation id="8256319818471787266">Bleki</translation>
-<translation id="8256417822772703842">Tinta <ph name="PRINTER_NAME" /> hampir habis</translation>
 <translation id="8257950718085972371">Terus blokir akses kamera</translation>
 <translation id="8259239505248583312">Ayo mulai!</translation>
 <translation id="8260864402787962391">Mouse</translation>
@@ -5956,7 +5942,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8487678622945914333">Perbesar</translation>
 <translation id="8490896350101740396">Aplikasi kios "<ph name="UPDATED_APPS" />" berikut telah diperbarui. Booting ulang perangkat untuk menyelesaikan proses pembaruan.</translation>
 <translation id="8493236660459102203">Mikrofon:</translation>
-<translation id="8495940850609851342"><ph name="PRINTER_NAME" /> berhenti</translation>
 <translation id="8496717697661868878">Jalankan Plugin Ini</translation>
 <translation id="8497219075884839166">Windows Utilities</translation>
 <translation id="8498214519255567734">Memudahkan Anda melihat layar atau membaca saat cahaya redup</translation>
@@ -6498,6 +6483,12 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="9157096865782046368">0,8 detik</translation>
 <translation id="9157697743260533322">Gagal menyiapkan pembaruan otomatis untuk semua pengguna (terjadi kesalahan saat peluncuran preflight: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Ups! Terjadi masalah komunikasi jaringan selama autentikasi. Periksa koneksi jaringan Anda dan coba lagi.</translation>
+<translation id="9159643062839240276">Coba:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />Periksa kabel jaringan, modem, dan router
+      <ph name="LIST_ITEM" />Hubungkan ulang ke Wi-Fi
+      <ph name="LIST_ITEM" />Jalankan Diagnosis Konektivitas Chrome
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">Picture-in-Picture</translation>
 <translation id="9168436347345867845">Nanti saja</translation>
 <translation id="9169496697824289689">Lihat pintasan keyboard</translation>

@@ -137,22 +137,26 @@ void PaintPreviewRecorderImpl::CapturePaintPreviewInternal(
   frame->DispatchBeforePrintEvent();
 
   DCHECK_EQ(is_main_frame_, params->is_main_frame);
-  gfx::Rect bounds;
-  if (is_main_frame_ || params->clip_rect == gfx::Rect(0, 0, 0, 0)) {
+  // Default to using the clip rect.
+  gfx::Rect bounds = gfx::Rect(params->clip_rect.size());
+  if (bounds.IsEmpty() || params->clip_rect_is_hint) {
+    // If the clip rect is empty or only a hint try to use the document size.
     auto size = frame->DocumentSize();
+    gfx::Rect document_rect = gfx::Rect(0, 0, size.width, size.height);
+    if (!document_rect.IsEmpty())
+      bounds = document_rect;
 
-    // |size| may be 0 if a tab is captured prior to layout finishing. This
-    // shouldn't occur often, if at all, in normal usage. However, this may
-    // occur during tests. Capturing prior to layout is non-sensical as the
-    // canvas size cannot be deremined so just abort.
-    if (size.height == 0 || size.width == 0) {
+    if (bounds.IsEmpty()) {
+      // |bounds| may be empty if a capture is triggered prior to geometry
+      // being finalized and no clip rect was provided. If this happens there
+      // are no valid dimensions for the canvas and an abort is needed.
+      //
+      // This should only happen in tests or if a capture is triggered
+      // immediately after a navigation finished.
       std::move(callback).Run(mojom::PaintPreviewStatus::kCaptureFailed,
                               std::move(response));
       return;
     }
-    bounds = gfx::Rect(0, 0, size.width, size.height);
-  } else {
-    bounds = gfx::Rect(params->clip_rect.size());
   }
 
   auto tracker = std::make_unique<PaintPreviewTracker>(

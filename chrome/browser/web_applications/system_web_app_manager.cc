@@ -522,6 +522,10 @@ void SystemWebAppManager::SetUpdatePolicyForTesting(UpdatePolicy policy) {
   update_policy_ = policy;
 }
 
+void SystemWebAppManager::ResetOnAppsSynchronizedForTesting() {
+  on_apps_synchronized_ = std::make_unique<base::OneShotEvent>();
+}
+
 // static
 bool SystemWebAppManager::IsEnabled() {
   return base::FeatureList::IsEnabled(features::kSystemWebApps);

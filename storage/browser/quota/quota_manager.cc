@@ -1153,15 +1153,6 @@ void QuotaManager::GetGlobalUsage(StorageType type,
   GetUsageTracker(type)->GetGlobalUsage(std::move(callback));
 }
 
-void QuotaManager::GetHostUsage(const std::string& host,
-                                StorageType type,
-                                UsageCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  LazyInitialize();
-  DCHECK(GetUsageTracker(type));
-  GetUsageTracker(type)->GetHostUsage(host, std::move(callback));
-}
-
 void QuotaManager::GetHostUsageWithBreakdown(
     const std::string& host,
     StorageType type,

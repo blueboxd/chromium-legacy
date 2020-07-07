@@ -1752,7 +1752,7 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffersInternal(
   context_state_->UpdateSkiaOwnedMemorySize();
 #if BUILDFLAG(ENABLE_VULKAN)
   if (is_using_vulkan())
-    gpu::ReportQueueSubmitPerSwapBuffers();
+    gpu::ReportUMAPerSwapBuffers();
 #endif
 }
 

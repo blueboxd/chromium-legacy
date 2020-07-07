@@ -7,9 +7,12 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/check.h"
+#include "pdf/ppapi_migration/callback.h"
 #include "pdf/url_loader_wrapper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -86,38 +89,38 @@ class TestURLLoader : public URLLoaderWrapper {
       open_byte_range_ = open_byte_range;
     }
 
-    bool IsWaitRead() const { return !did_read_callback_.IsOptional(); }
-    bool IsWaitOpen() const { return !did_open_callback_.IsOptional(); }
+    bool IsWaitRead() const { return !did_read_callback_.is_null(); }
+    bool IsWaitOpen() const { return !did_open_callback_.is_null(); }
     char* buffer() const { return buffer_; }
     int buffer_size() const { return buffer_size_; }
 
-    void SetReadCallback(const pp::CompletionCallback& read_callback,
+    void SetReadCallback(ResultCallback read_callback,
                          char* buffer,
                          int buffer_size) {
-      did_read_callback_ = read_callback;
+      did_read_callback_ = std::move(read_callback);
       buffer_ = buffer;
       buffer_size_ = buffer_size;
     }
 
-    void SetOpenCallback(const pp::CompletionCallback& open_callback,
+    void SetOpenCallback(ResultCallback open_callback,
                          gfx::Range req_byte_range) {
-      did_open_callback_ = open_callback;
+      did_open_callback_ = std::move(open_callback);
       set_open_byte_range(req_byte_range);
     }
 
     void CallOpenCallback(int result) {
       DCHECK(IsWaitOpen());
-      did_open_callback_.RunAndClear(result);
+      std::move(did_open_callback_).Run(result);
     }
 
     void CallReadCallback(int result) {
       DCHECK(IsWaitRead());
-      did_read_callback_.RunAndClear(result);
+      std::move(did_read_callback_).Run(result);
     }
 
    private:
-    pp::CompletionCallback did_open_callback_;
-    pp::CompletionCallback did_read_callback_;
+    ResultCallback did_open_callback_;
+    ResultCallback did_read_callback_;
     char* buffer_ = nullptr;
     int buffer_size_ = 0;
 
@@ -171,14 +174,15 @@ class TestURLLoader : public URLLoaderWrapper {
                  const std::string& referrer_url,
                  uint32_t position,
                  uint32_t size,
-                 const pp::CompletionCallback& cc) override {
-    data_->SetOpenCallback(cc, gfx::Range(position, position + size));
+                 ResultCallback callback) override {
+    data_->SetOpenCallback(std::move(callback),
+                           gfx::Range(position, position + size));
   }
 
   void ReadResponseBody(char* buffer,
                         int buffer_size,
-                        const pp::CompletionCallback& cc) override {
-    data_->SetReadCallback(cc, buffer, buffer_size);
+                        ResultCallback callback) override {
+    data_->SetReadCallback(std::move(callback), buffer, buffer_size);
   }
 
   bool GetDownloadProgress(int64_t* bytes_received,

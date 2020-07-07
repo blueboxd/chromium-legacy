@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/system/sys_info.h"
-#include "base/time/default_tick_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/common/pref_names.h"
@@ -32,16 +31,15 @@ void DemoModeDetector::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterInt64Pref(prefs::kTimeOnOobe, 0);
 }
 
-DemoModeDetector::DemoModeDetector()
-    : tick_clock_(base::DefaultTickClock::GetInstance()) {
+DemoModeDetector::DemoModeDetector(const base::TickClock* clock,
+                                   Observer* observer)
+    : observer_(observer), tick_clock_(clock) {
+  DCHECK(observer_);
   SetupTimeouts();
+  InitDetection();
 }
 
 DemoModeDetector::~DemoModeDetector() {}
-
-void DemoModeDetector::SetTickClockForTest(const base::TickClock* test_clock) {
-  tick_clock_ = test_clock;
-}
 
 void DemoModeDetector::InitDetection() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -77,11 +75,6 @@ void DemoModeDetector::InitDetection() {
     StartOobeTimer();
 }
 
-void DemoModeDetector::StopDetection() {
-  oobe_timer_.Stop();
-  idle_detector_.reset();
-}
-
 void DemoModeDetector::StartIdleDetection() {
   if (!idle_detector_) {
     auto callback = base::BindRepeating(&DemoModeDetector::OnIdle,
@@ -102,7 +95,7 @@ void DemoModeDetector::OnIdle() {
   if (demo_launched_)
     return;
   demo_launched_ = true;
-  LoginDisplayHost::default_host()->StartDemoAppLaunch();
+  observer_->OnShouldStartDemoMode();
 }
 
 void DemoModeDetector::OnOobeTimerUpdate() {

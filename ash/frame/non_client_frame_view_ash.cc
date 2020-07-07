@@ -307,7 +307,7 @@ void NonClientFrameViewAsh::SizeConstraintsChanged() {
   header_view_->UpdateCaptionButtons();
 }
 
-void NonClientFrameViewAsh::PaintAsActiveChanged(bool active) {
+void NonClientFrameViewAsh::PaintAsActiveChanged() {
   // The icons differ between active and inactive.
   header_view_->SchedulePaint();
   frame_->non_client_view()->Layout();

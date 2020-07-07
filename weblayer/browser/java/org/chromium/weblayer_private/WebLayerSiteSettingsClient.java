@@ -86,6 +86,11 @@ public class WebLayerSiteSettingsClient
         return null;
     }
 
+    @Override
+    public String getAppName() {
+        return WebLayerImpl.getClientApplicationName();
+    }
+
     // ManagedPrefrenceDelegate implementation:
     // A no-op because WebLayer doesn't support managed preferences.
 

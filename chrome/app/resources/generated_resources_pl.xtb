@@ -281,7 +281,6 @@
 <translation id="1340527397989195812">Wykonaj kopię zapasową multimediów zapisanych na urządzeniu, używając aplikacji Pliki.</translation>
 <translation id="1341988552785875222">Aktualna tapeta została ustawiona przez aplikacje lub rozszerzenie „<ph name="APP_NAME" />”. Przed wybraniem innej tapety konieczne może być odinstalowanie aplikacja lub rozszerzenia „<ph name="APP_NAME" />”.</translation>
 <translation id="1343865611738742294">Przyznaj aplikacjom na Linuksa dostęp do urządzeń USB. Linux nie będzie pamiętać urządzenia USB po jego odłączeniu.</translation>
-<translation id="1344143111673240412">Zmiana ustawienia kamery wymaga ponownego uruchomienia aplikacji Parallels Desktop</translation>
 <translation id="1347256498747320987">Instalowanie aktualizacji i aplikacji. Przechodząc dalej, zgadzasz się, że urządzenie może też automatycznie pobierać i instalować aktualizacje oraz aplikacje od Google, Twojego operatora i producenta urządzenia oraz że może się to odbywać z użyciem komórkowej transmisji danych. Niektóre z tych aplikacji mogą oferować zakupy w aplikacji. <ph name="BEGIN_LINK1" />Więcej informacji<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">Aktualizacja się uruchomi, gdy bateria naładuje się do <ph name="BATTERY_LEVEL" />%.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -1193,7 +1192,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="2470702053775288986">Wyłączono nieobsługiwane rozszerzenia</translation>
 <translation id="2471469610750100598">Czarny (domyślny)</translation>
 <translation id="2473195200299095979">Przetłumacz tę stronę</translation>
-<translation id="2474848500897222119">W drukarce <ph name="PRINTER_NAME" /> skończył się tusz</translation>
 <translation id="2475982808118771221">Wystąpił błąd</translation>
 <translation id="2476578072172137802">Ustawienia witryn</translation>
 <translation id="2478176599153288112">Uprawnienia pliku multimedialnego dla rozszerzenia „<ph name="EXTENSION" />”</translation>
@@ -1499,7 +1497,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> używa ustawień serwera proxy określonych przez administratora</translation>
 <translation id="2825758591930162672">Klucz publiczny podmiotu</translation>
 <translation id="2828650939514476812">Połącz z siecią Wi-Fi</translation>
-<translation id="28291580771888953">Kolejka drukarki <ph name="PRINTER_NAME" /> jest pełna</translation>
 <translation id="2835547721736623118">Usługa rozpoznawania mowy</translation>
 <translation id="2836269494620652131">Awaria</translation>
 <translation id="2836635946302913370">Możliwość logowania przy użyciu tej nazwy użytkownika została wyłączona przez administratora.</translation>
@@ -2315,7 +2312,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="3839516600093027468">Zawsze blokuj stronie <ph name="HOST" /> dostęp do schowka</translation>
 <translation id="3841964634449506551">Nieprawidłowe hasło</translation>
 <translation id="3842552989725514455">Czcionka szeryfowa</translation>
-<translation id="3843058644024807390">Zmiana ustawienia mikrofonu wymaga ponownego uruchomienia aplikacji Parallels Desktop</translation>
+<translation id="3843464315703645664">Dozwolone wewnętrznie</translation>
 <translation id="3846116211488856547">Pobierz narzędzia do tworzenia stron internetowych, aplikacji na Androida itp. Instalacja Linuksa spowoduje pobranie <ph name="DOWNLOAD_SIZE" /> danych.</translation>
 <translation id="3847319713229060696">Pomóż poprawić bezpieczeństwo wszystkich użytkowników internetu</translation>
 <translation id="385051799172605136">Wstecz</translation>
@@ -2774,7 +2771,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="4453946976636652378">Wyszukaj w <ph name="SEARCH_ENGINE_NAME" /> lub wpisz URL</translation>
 <translation id="4459169140545916303">Aktywność: <ph name="DEVICE_LAST_ACTIVATED_TIME" /> dni temu</translation>
 <translation id="4460014764210899310">Rozgrupuj</translation>
-<translation id="4460343359907016103">Błąd podczas łączenia z drukarką <ph name="PRINTER_NAME" /></translation>
 <translation id="4462159676511157176">Własne serwery nazw</translation>
 <translation id="4465236939126352372">Ustawiono limit czasu <ph name="TIME" /> dla aplikacji <ph name="APP_NAME" /></translation>
 <translation id="4465725236958772856">Sieć <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, zarządzana przez administratora, połącz</translation>
@@ -3072,7 +3068,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="4864369630010738180">Loguję...</translation>
 <translation id="4864805589453749318">Wybierz rodzica, który zezwala na dodanie konta szkolnego.</translation>
 <translation id="486635084936119914">Automatycznie otwieraj określone typy plików po pobraniu</translation>
-<translation id="4869213010169296107">W drukarce <ph name="PRINTER_NAME" /> brakuje tacy</translation>
 <translation id="48704129375571883">Dodaj inne funkcje</translation>
 <translation id="4870758487381879312">Wpisz hasło uzyskane od administratora, by uzyskać dane do konfiguracji</translation>
 <translation id="4870903493621965035">Brak sparowanych urządzeń</translation>
@@ -3323,6 +3318,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="5184662919967270437">Aktualizuję urządzenie</translation>
 <translation id="5185359571430619712">Sprawdź rozszerzenia</translation>
 <translation id="5185386675596372454">Najnowsza wersja rozszerzenia „<ph name="EXTENSION_NAME" />” została wyłączona, ponieważ wymaga więcej uprawnień.</translation>
+<translation id="5185500136143151980">Brak internetu</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5190926251776387065">Aktywuj port</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> chce pobrać wiele plików</translation>
@@ -3479,7 +3475,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="5390112241331447203">Uwzględnij plik system_logs.txt przesłany razem z opiniami.</translation>
 <translation id="5390677308841849479">Ciemnoczerwono-pomarańczowy</translation>
 <translation id="5390743329570580756">Wyślij do:</translation>
-<translation id="5395869306561378615">Drukarka <ph name="PRINTER_NAME" /> została wstrzymana</translation>
 <translation id="5397794290049113714">Ty</translation>
 <translation id="5398572795982417028">Odwołanie do strony spoza zakresu, limit to <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">Reklamy zostały zablokowane</translation>
@@ -3494,7 +3489,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="5417312524372586921">Motywy przeglądarki</translation>
 <translation id="5419405654816502573">Voice Match</translation>
 <translation id="5420438158931847627">Wpływa na ostrość tekstu i grafiki</translation>
-<translation id="5421498071721257877">Drukarka <ph name="PRINTER_NAME" /> zgłasza błąd urządzenia</translation>
 <translation id="5422221874247253874">Punkt dostępu</translation>
 <translation id="5422781158178868512">Nie można rozpoznać urządzenia zewnętrznej pamięci masowej.</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3843,7 +3837,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="5852137567692933493">Uruchom ponownie i wykonaj Powerwash</translation>
 <translation id="5854912040170951372">Kawałek pizzy</translation>
 <translation id="5855267860608268405">Zapisane sieci komórkowe</translation>
-<translation id="5855310969323666289">Drukarka <ph name="PRINTER_NAME" /> jest otwarta</translation>
 <translation id="5855643921295613558">0,6 s</translation>
 <translation id="5856721540245522153">Włącz funkcje debugowania</translation>
 <translation id="5857090052475505287">Nowy folder</translation>
@@ -3874,7 +3867,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="5877064549588274448">Kanał został zmieniony. Aby zastosować zmiany, uruchom ponownie urządzenie.</translation>
 <translation id="5877584842898320529">Wybrana drukarka jest niedostępna lub nieprawidłowo zainstalowana. <ph name="BR" /> Sprawdź ją lub wybierz inną.</translation>
 <translation id="5882919346125742463">Znane sieci</translation>
-<translation id="5883716097305842571">Obszar odbioru drukarki <ph name="PRINTER_NAME" /> jest prawie pełny</translation>
 <translation id="5884474295213649357">Ta karta jest połączona z urządzeniem USB.</translation>
 <translation id="5886009770935151472">Palec 1</translation>
 <translation id="5889282057229379085">Maksymalna liczba pośrednich urzędów certyfikacji: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4440,7 +4432,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="6611972847767394631">Tu znajdziesz karty</translation>
 <translation id="6612358246767739896">Treść chroniona</translation>
 <translation id="6615455863669487791">Pokaż mi</translation>
-<translation id="6617034477946102682">Drukarka <ph name="PRINTER_NAME" /> jest nieosiągalna</translation>
 <translation id="6618097958368085618">Zachowaj mimo to</translation>
 <translation id="6618744767048954150">W toku</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
@@ -4857,7 +4848,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="7128151990937044829">Jeśli powiadomienia są blokowane, pokaż wskaźnik na pasku adresu</translation>
 <translation id="7131040479572660648">Odczyt Twoich danych na stronie <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> i <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Dodaj &amp;stronę</translation>
-<translation id="7131379856697962078">Obszar odbioru drukarki <ph name="PRINTER_NAME" /> jest zapełniony</translation>
 <translation id="7133578150266914903">Administrator przywraca wcześniejszą wersję oprogramowania na tym urządzeniu (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">Pomniejsz tekst</translation>
 <translation id="7135729336746831607">Włączyć Bluetooth?</translation>
@@ -4876,7 +4866,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="7152478047064750137">To rozszerzenie nie wymaga specjalnych uprawnień</translation>
 <translation id="7154130902455071009">Zmiana strony startowej na: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">Istniejące zdjęcie z kamery lub pliku</translation>
-<translation id="715657691234357425">W drukarce <ph name="PRINTER_NAME" /> kończy się papier</translation>
 <translation id="7165320105431587207">Nie można skonfigurować sieci</translation>
 <translation id="716640248772308851">„<ph name="EXTENSION" />” może odczytywać pliki graficzne, wideo i dźwiękowe ze sprawdzonych lokalizacji.</translation>
 <translation id="7167486101654761064">&amp;Zawsze otwieraj pliki tego typu</translation>
@@ -4907,7 +4896,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="7197632491113152433">Na tym urządzeniu możesz używać <ph name="NUMBER_OF_APPS" /> aplikacji, które znaleźliśmy na Twoim koncie.</translation>
 <translation id="7199158086730159431">Uzyskaj p&amp;omoc</translation>
 <translation id="7200083590239651963">Wybierz konfigurację</translation>
-<translation id="7201042526153088083">Instaluj aplikacje i gry z Google Play na urządzeniu <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;Więcej informacji&lt;/a&gt;</translation>
 <translation id="720110658997053098">Trwale utrzymuj to urządzenie w trybie kiosku</translation>
 <translation id="7201118060536064622">Element „<ph name="DELETED_ITEM_NAME" />” został usunięty</translation>
 <translation id="7201420661433230412">Wyświetl pliki</translation>
@@ -5213,7 +5201,6 @@ Jeśli Twoje dziecko nie używa w szkole Chromebooka lub jeśli wolisz zarządz
 <translation id="7598466960084663009">Uruchom ponownie komputer</translation>
 <translation id="7599527631045201165">Nazwa urządzenia jest zbyt długa. Spróbuj jeszcze raz, wpisując krótszą nazwę.</translation>
 <translation id="7600965453749440009">Nigdy nie tłumacz z języka: <ph name="LANGUAGE" /></translation>
-<translation id="7601297144931396972">W drukarce <ph name="PRINTER_NAME" /> zaciął się papier</translation>
 <translation id="760197030861754408">Wejdź na <ph name="LANDING_PAGE" />, by połączyć.</translation>
 <translation id="7602079150116086782">Brak kart z innych urządzeń</translation>
 <translation id="7602173054665172958">Zarządzanie drukowaniem</translation>
@@ -5224,6 +5211,7 @@ Jeśli Twoje dziecko nie używa w szkole Chromebooka lub jeśli wolisz zarządz
 <translation id="7609148976235050828">Połącz się z internetem i spróbuj ponownie.</translation>
 <translation id="7614260613810441905">Pytaj, gdy witryna chce edytować pliki lub foldery na urządzeniu (zalecane)</translation>
 <translation id="761530003705945209">Twórz kopie zapasowe na Dysku Google. W dowolnej chwili możesz w prosty sposób przywrócić dane lub używać ich na innym urządzeniu. Kopia zapasowa zawiera dane aplikacji. Kopie zapasowe są szyfrowane z użyciem hasła do Twojego konta Google i przesyłane do Google.</translation>
+<translation id="7615365294369022248">Podczas dodawania konta wystąpił błąd</translation>
 <translation id="7616214729753637086">Rejestruję urządzenie…</translation>
 <translation id="7617263010641145920">Włącz Sklep Play</translation>
 <translation id="7617366389578322136">Łączę się z urządzeniem „<ph name="DEVICE_NAME" />”</translation>
@@ -5672,7 +5660,6 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
           Nie obejmuje to form płatności ani adresów w Google Pay.</translation>
 <translation id="81238879832906896">Żółto-biały kwiat</translation>
 <translation id="8124313775439841391">Zarządzana konfiguracja ONC</translation>
-<translation id="8127535217699822294">W drukarce <ph name="PRINTER_NAME" /> skończył się papier</translation>
 <translation id="813082847718468539">Wyświetl informacje o witrynie</translation>
 <translation id="8131740175452115882">Potwierdź</translation>
 <translation id="8133676275609324831">&amp;Pokaż w folderze</translation>
@@ -5771,7 +5758,6 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8254954272268479918">Wyłącz Linuksa (Beta)</translation>
 <translation id="8255451560461371599">Bez tła</translation>
 <translation id="8256319818471787266">Tofik</translation>
-<translation id="8256417822772703842">W drukarce <ph name="PRINTER_NAME" /> kończy się tusz</translation>
 <translation id="8257950718085972371">Nadal blokuj dostęp do kamery</translation>
 <translation id="8259239505248583312">Rozpocznij</translation>
 <translation id="8260864402787962391">Mysz</translation>
@@ -5952,7 +5938,6 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8487678622945914333">Powiększ</translation>
 <translation id="8490896350101740396">Zaktualizowano aplikacje kiosku: „<ph name="UPDATED_APPS" />”. Uruchom ponownie urządzenie, by zakończyć proces aktualizacji.</translation>
 <translation id="8493236660459102203">Mikrofon:</translation>
-<translation id="8495940850609851342">Drukarka <ph name="PRINTER_NAME" /> została zatrzymana</translation>
 <translation id="8496717697661868878">Uruchom wtyczkę</translation>
 <translation id="8497219075884839166">Narzędzia Windows</translation>
 <translation id="8498214519255567734">Dzięki tej funkcji oczy mniej się męczą podczas patrzenia na ekran lub czytania przy słabym oświetleniu</translation>
@@ -6494,6 +6479,12 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="9157096865782046368">0,8 s</translation>
 <translation id="9157697743260533322">Nie można skonfigurować automatycznych aktualizacji dla wszystkich użytkowników (błąd uruchomienia procesu wstępnego: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Ups! Podczas uwierzytelniania wystąpił problem z komunikacją sieciową. Sprawdź połączenie z siecią i spróbuj ponownie.</translation>
+<translation id="9159643062839240276">Wykonaj te czynności:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />Sprawdź kable sieciowe, modem i router.
+      <ph name="LIST_ITEM" />Połącz się ponownie z Wi-Fi.
+      <ph name="LIST_ITEM" />Uruchom Chrome Connectivity Diagnostics.
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">Obraz w obrazie</translation>
 <translation id="9168436347345867845">Później</translation>
 <translation id="9169496697824289689">Pokaż skróty klawiszowe</translation>

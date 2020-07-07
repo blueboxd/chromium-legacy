@@ -15,7 +15,6 @@ import org.chromium.chrome.browser.infobar.translate.TranslateMenu;
 import org.chromium.chrome.browser.infobar.translate.TranslateTabLayout;
 import org.chromium.components.infobars.InfoBar;
 import org.chromium.components.infobars.InfoBarCompactLayout;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
@@ -64,12 +63,8 @@ public class TranslateUtil {
      */
     public static void clickMenuButtonAndAssertMenuShown(final TranslateCompactInfoBar infoBar) {
         clickMenuButton(infoBar);
-        CriteriaHelper.pollInstrumentationThread(new Criteria("Overflow menu did not show") {
-            @Override
-            public boolean isSatisfied() {
-                return infoBar.isShowingOverflowMenuForTesting();
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(
+                infoBar::isShowingOverflowMenuForTesting, "Overflow menu did not show");
     }
 
     /**
@@ -79,12 +74,8 @@ public class TranslateUtil {
             Instrumentation instrumentation, final TranslateCompactInfoBar infoBar) {
         invokeOverflowMenuActionSync(
                 instrumentation, infoBar, TranslateMenu.ID_OVERFLOW_MORE_LANGUAGE);
-        CriteriaHelper.pollInstrumentationThread(new Criteria("Language menu did not show") {
-            @Override
-            public boolean isSatisfied() {
-                return infoBar.isShowingLanguageMenuForTesting();
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(
+                infoBar::isShowingLanguageMenuForTesting, "Language menu did not show");
     }
 
     /**

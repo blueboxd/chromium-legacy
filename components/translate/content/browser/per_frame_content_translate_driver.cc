@@ -453,8 +453,13 @@ void PerFrameContentTranslateDriver::OnFrameTranslated(
   }
 
   if (--stats_.pending_request_count == 0) {
-    OnPageTranslated(cancelled, original_lang, translated_lang,
-                     stats_.main_frame_error);
+    // Post the callback on the thread's task runner in case the
+    // info bar is in the process of going away.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&ContentTranslateDriver::OnPageTranslated,
+                                  weak_pointer_factory_.GetWeakPtr(), cancelled,
+                                  original_lang, translated_lang,
+                                  stats_.main_frame_error));
     stats_.Report();
     stats_.Clear();
   }

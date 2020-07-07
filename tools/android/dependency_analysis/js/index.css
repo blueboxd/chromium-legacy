@@ -18,13 +18,13 @@
   flex-direction: row;
 }
 
-#selected-node-details {
+.selected-node-details {
   display: flex;
   flex-direction: column;
   min-width: 400px;
 }
 
-#url-generator {
+.url-generator {
   display: flex;
   flex-direction: row;
 }
@@ -34,7 +34,7 @@
   flex-direction: column;
 }
 
-#filter-items {
+.filter-items {
   overflow: hidden;
   overflow-y: scroll;
   min-width: 100px;

@@ -56,6 +56,12 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
     /** Provides current tab. */
     private final Supplier<Tab> mCurrentTab;
 
+    /** Access to the current state of the browser controls. */
+    private final BrowserControlsStateProvider mBrowserControlsStateProvider;
+
+    /** A means of accessing the current viewport mode. */
+    private final Supplier<Integer> mViewportModeSupplier;
+
     /**
      * @param context An Android context to use.
      * @param provider A LayoutProvider for accessing the current layout.
@@ -64,33 +70,33 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
      * @param currentTab A supplier for the current tab.
      */
     public ToolbarSceneLayer(Context context, LayoutProvider provider, LayoutRenderHost renderHost,
-            ControlContainer toolbarContainer, Supplier<Tab> currentTab) {
+            ControlContainer toolbarContainer, Supplier<Tab> currentTab,
+            BrowserControlsStateProvider browserControlsStateProvider,
+            Supplier<Integer> viewportModeSupplier) {
         mContext = context;
         mLayoutProvider = provider;
         mRenderHost = renderHost;
         mToolbarContainer = toolbarContainer;
         mCurrentTab = currentTab;
+        mBrowserControlsStateProvider = browserControlsStateProvider;
+        mViewportModeSupplier = viewportModeSupplier;
     }
 
     /**
      * Update the toolbar and progress bar layers.
      *
      * @param browserControlsBackgroundColor The background color of the browser controls.
-     * @param browserControlsUrlBarAlpha The alpha of the URL bar.
-     * @param browserControlsStateProvider A BrowserControlsStateProvider instance.
      * @param resourceManager A ResourceManager for loading static resources.
      * @param forceHideAndroidBrowserControls True if the Android browser controls are being hidden.
      * @param viewportMode The sizing mode of the viewport being drawn in.
      * @param isTablet If the device is a tablet.
-     * @param windowHeight The height of the window.
      */
-    private void update(int browserControlsBackgroundColor, float browserControlsUrlBarAlpha,
-            BrowserControlsStateProvider browserControlsStateProvider,
-            ResourceManager resourceManager, boolean forceHideAndroidBrowserControls,
-            @ViewportMode int viewportMode, boolean isTablet, float windowHeight) {
+    private void update(int browserControlsBackgroundColor, ResourceManager resourceManager,
+            boolean forceHideAndroidBrowserControls, @ViewportMode int viewportMode,
+            boolean isTablet) {
         if (!DeviceClassManager.enableFullscreen()) return;
 
-        if (browserControlsStateProvider == null) return;
+        if (mBrowserControlsStateProvider == null) return;
         if (!isTablet && mToolbarContainer != null) {
             if (mProgressBarDrawingInfo == null) mProgressBarDrawingInfo = new DrawingInfo();
             mToolbarContainer.getProgressBarDrawingInfo(mProgressBarDrawingInfo);
@@ -98,12 +104,8 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
             assert mProgressBarDrawingInfo == null;
         }
 
-        // Texture is always used unless it is completely off-screen.
-        boolean useTexture =
-                !BrowserControlsUtils.areBrowserControlsOffScreen(browserControlsStateProvider)
-                && viewportMode != ViewportMode.ALWAYS_FULLSCREEN;
         boolean drawControlsAsTexture =
-                BrowserControlsUtils.drawControlsAsTexture(browserControlsStateProvider);
+                BrowserControlsUtils.drawControlsAsTexture(mBrowserControlsStateProvider);
         boolean showShadow = drawControlsAsTexture || forceHideAndroidBrowserControls;
 
         int textBoxColor = ToolbarColors.getTextBoxColorForToolbarBackground(
@@ -117,8 +119,7 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
         // positioned at the bottom of the top controls regardless of the total height.
         ToolbarSceneLayerJni.get().updateToolbarLayer(mNativePtr, ToolbarSceneLayer.this,
                 resourceManager, R.id.control_container, browserControlsBackgroundColor,
-                textBoxResourceId, browserControlsUrlBarAlpha, textBoxColor,
-                browserControlsStateProvider.getContentOffset(), windowHeight, useTexture,
+                textBoxResourceId, textBoxColor, mBrowserControlsStateProvider.getContentOffset(),
                 showShadow);
 
         if (mProgressBarDrawingInfo == null) return;
@@ -165,23 +166,19 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
         boolean forceHideBrowserControlsAndroidView =
                 mLayoutProvider.getActiveLayout().forceHideBrowserControlsAndroidView();
         @ViewportMode
-        int viewportMode = mLayoutProvider.getActiveLayout().getViewportMode();
+        int viewportMode = mViewportModeSupplier.get();
 
-        // In Chrome modern design, the url bar is always opaque since it is drawn in the
-        // compositor.
-        float alpha = 1;
-
-        update(mRenderHost.getBrowserControlsBackgroundColor(mContext.getResources()), alpha,
-                mLayoutProvider.getFullscreenManager(), resourceManager,
-                forceHideBrowserControlsAndroidView, viewportMode,
-                DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext), viewport.height());
+        update(mRenderHost.getBrowserControlsBackgroundColor(mContext.getResources()),
+                resourceManager, forceHideBrowserControlsAndroidView, viewportMode,
+                DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext));
 
         return this;
     }
 
     @Override
     public boolean isSceneOverlayTreeShowing() {
-        return true;
+        return !BrowserControlsUtils.areBrowserControlsOffScreen(mBrowserControlsStateProvider)
+                && mViewportModeSupplier.get() != ViewportMode.ALWAYS_FULLSCREEN;
     }
 
     @Override
@@ -238,8 +235,7 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
                 long nativeToolbarSceneLayer, ToolbarSceneLayer caller, SceneLayer contentTree);
         void updateToolbarLayer(long nativeToolbarSceneLayer, ToolbarSceneLayer caller,
                 ResourceManager resourceManager, int resourceId, int toolbarBackgroundColor,
-                int urlBarResourceId, float urlBarAlpha, int urlBarColor, float contentOffset,
-                float viewHeight, boolean visible, boolean showShadow);
+                int urlBarResourceId, int urlBarColor, float contentOffset, boolean showShadow);
         void updateProgressBar(long nativeToolbarSceneLayer, ToolbarSceneLayer caller,
                 int progressBarX, int progressBarY, int progressBarWidth, int progressBarHeight,
                 int progressBarColor, int progressBarBackgroundX, int progressBarBackgroundY,

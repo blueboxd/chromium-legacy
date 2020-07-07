@@ -4,8 +4,8 @@
 
 #include "chrome/browser/nearby_sharing/client/nearby_share_api_call_flow_impl.h"
 
-#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/nearby_sharing/logging/logging.h"
 #include "net/base/net_errors.h"
 #include "net/base/url_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -153,10 +153,10 @@ void NearbyShareApiCallFlowImpl::ProcessApiCallFailure(
     error = NearbyShareRequestError::kOffline;
   }
 
-  LOG(ERROR) << "API call failed, error code: "
-             << net::ErrorToString(net_error);
+  NS_LOG(ERROR) << "API call failed, error code: "
+                << net::ErrorToString(net_error);
   if (body)
-    VLOG(1) << "API failure response body: " << *body;
+    NS_LOG(VERBOSE) << "API failure response body: " << *body;
 
   std::move(error_callback_).Run(*error);
 }

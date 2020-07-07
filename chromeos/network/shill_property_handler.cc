@@ -13,6 +13,7 @@
 #include "base/bind_helpers.h"
 #include "base/format_macros.h"
 #include "base/macros.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chromeos/dbus/shill/shill_device_client.h"
@@ -33,10 +34,10 @@ const size_t kMaxObserved = 100;
 
 const base::ListValue* GetListValue(const std::string& key,
                                     const base::Value& value) {
-  const base::ListValue* vlist = NULL;
+  const base::ListValue* vlist = nullptr;
   if (!value.GetAsList(&vlist)) {
     NET_LOG(ERROR) << "Error parsing key as list: " << key;
-    return NULL;
+    return nullptr;
   }
   return vlist;
 }
@@ -54,34 +55,37 @@ class ShillPropertyObserver : public ShillPropertyChangedObserver {
   typedef base::Callback<void(ManagedState::ManagedType type,
                               const std::string& service,
                               const std::string& name,
-                              const base::Value& value)> Handler;
+                              const base::Value& value)>
+      Handler;
 
   ShillPropertyObserver(ManagedState::ManagedType type,
                         const std::string& path,
                         const Handler& handler)
       : type_(type), path_(path), handler_(handler) {
-    if (type_ == ManagedState::MANAGED_TYPE_NETWORK) {
-      DVLOG(2) << "ShillPropertyObserver: Network: " << path;
-      ShillServiceClient::Get()->AddPropertyChangedObserver(
-          dbus::ObjectPath(path_), this);
-    } else if (type_ == ManagedState::MANAGED_TYPE_DEVICE) {
-      DVLOG(2) << "ShillPropertyObserver: Device: " << path;
-      ShillDeviceClient::Get()->AddPropertyChangedObserver(
-          dbus::ObjectPath(path_), this);
-    } else {
-      NOTREACHED();
+    switch (type_) {
+      case ManagedState::MANAGED_TYPE_NETWORK:
+        DVLOG(2) << "ShillPropertyObserver: Network: " << path;
+        ShillServiceClient::Get()->AddPropertyChangedObserver(
+            dbus::ObjectPath(path_), this);
+        break;
+      case ManagedState::MANAGED_TYPE_DEVICE:
+        DVLOG(2) << "ShillPropertyObserver: Device: " << path;
+        ShillDeviceClient::Get()->AddPropertyChangedObserver(
+            dbus::ObjectPath(path_), this);
+        break;
     }
   }
 
   ~ShillPropertyObserver() override {
-    if (type_ == ManagedState::MANAGED_TYPE_NETWORK) {
-      ShillServiceClient::Get()->RemovePropertyChangedObserver(
-          dbus::ObjectPath(path_), this);
-    } else if (type_ == ManagedState::MANAGED_TYPE_DEVICE) {
-      ShillDeviceClient::Get()->RemovePropertyChangedObserver(
-          dbus::ObjectPath(path_), this);
-    } else {
-      NOTREACHED();
+    switch (type_) {
+      case ManagedState::MANAGED_TYPE_NETWORK:
+        ShillServiceClient::Get()->RemovePropertyChangedObserver(
+            dbus::ObjectPath(path_), this);
+        break;
+      case ManagedState::MANAGED_TYPE_DEVICE:
+        ShillDeviceClient::Get()->RemovePropertyChangedObserver(
+            dbus::ObjectPath(path_), this);
+        break;
     }
   }
 
@@ -279,19 +283,21 @@ void ShillPropertyHandler::RequestProperties(ManagedState::ManagedType type,
 
   NET_LOG(DEBUG) << "Request Properties for: " << NetworkPathId(path);
   pending_updates_[type].insert(path);
-  if (type == ManagedState::MANAGED_TYPE_NETWORK) {
-    ShillServiceClient::Get()->GetProperties(
-        dbus::ObjectPath(path),
-        base::BindOnce(&ShillPropertyHandler::GetPropertiesCallback,
-                       AsWeakPtr(), type, path));
-  } else if (type == ManagedState::MANAGED_TYPE_DEVICE) {
-    ShillDeviceClient::Get()->GetProperties(
-        dbus::ObjectPath(path),
-        base::BindOnce(&ShillPropertyHandler::GetPropertiesCallback,
-                       AsWeakPtr(), type, path));
-  } else {
-    NOTREACHED();
+  switch (type) {
+    case ManagedState::MANAGED_TYPE_NETWORK:
+      ShillServiceClient::Get()->GetProperties(
+          dbus::ObjectPath(path),
+          base::BindOnce(&ShillPropertyHandler::GetPropertiesCallback,
+                         AsWeakPtr(), type, path));
+      return;
+    case ManagedState::MANAGED_TYPE_DEVICE:
+      ShillDeviceClient::Get()->GetProperties(
+          dbus::ObjectPath(path),
+          base::BindOnce(&ShillPropertyHandler::GetPropertiesCallback,
+                         AsWeakPtr(), type, path));
+      return;
   }
+  NOTREACHED();
 }
 
 void ShillPropertyHandler::OnPropertyChanged(const std::string& key,
@@ -320,7 +326,8 @@ void ShillPropertyHandler::ManagerPropertiesCallback(
 
 void ShillPropertyHandler::CheckPendingStateListUpdates(
     const std::string& key) {
-  // Once there are no pending updates, signal the state list changed callbacks.
+  // Once there are no pending updates, signal the state list changed
+  // callbacks.
   if ((key.empty() || key == shill::kServiceCompleteListProperty) &&
       pending_updates_[ManagedState::MANAGED_TYPE_NETWORK].size() == 0) {
     listener_->ManagedStateListChanged(ManagedState::MANAGED_TYPE_NETWORK);
@@ -369,9 +376,9 @@ void ShillPropertyHandler::ManagerPropertyChanged(const std::string& key,
     if (vlist)
       UpdateUninitializedTechnologies(*vlist);
   } else if (key == shill::kProhibitedTechnologiesProperty) {
-    const base::ListValue* vlist = GetListValue(key, value);
-    if (vlist)
-      UpdateProhibitedTechnologies(*vlist);
+    std::string prohibited_technologies;
+    if (value.GetAsString(&prohibited_technologies))
+      UpdateProhibitedTechnologies(prohibited_technologies);
   } else if (key == shill::kProfilesProperty) {
     listener_->ProfileListChanged();
   } else if (key == shill::kCheckPortalListProperty) {
@@ -426,8 +433,9 @@ void ShillPropertyHandler::UpdateObserved(ManagedState::ManagedType type,
     } else {
       // Create an observer for future updates.
       observer = std::make_unique<ShillPropertyObserver>(
-          type, path, base::Bind(&ShillPropertyHandler::PropertyChangedCallback,
-                                 AsWeakPtr()));
+          type, path,
+          base::Bind(&ShillPropertyHandler::PropertyChangedCallback,
+                     AsWeakPtr()));
     }
     auto result =
         new_observed.insert(std::make_pair(path, std::move(observer)));
@@ -473,8 +481,8 @@ void ShillPropertyHandler::UpdateEnabledTechnologies(
     return;
   enabled_technologies_.swap(new_enabled_technologies);
 
-  // If any entries in |disabling_technologies_| are disabled, remove them from
-  // the disabling list.
+  // If any entries in |disabling_technologies_| are disabled, remove them
+  // from the disabling list.
   for (auto it = disabling_technologies_.begin();
        it != disabling_technologies_.end();) {
     base::Value technology_value(*it);
@@ -509,11 +517,11 @@ void ShillPropertyHandler::UpdateUninitializedTechnologies(
 }
 
 void ShillPropertyHandler::UpdateProhibitedTechnologies(
-    const base::ListValue& technologies) {
-  NET_LOG(EVENT) << "ProhibitedTechnologies:" << technologies;
-  std::set<std::string> new_prohibited_technologies;
-  for (const base::Value& technology : technologies.GetList())
-    new_prohibited_technologies.insert(technology.GetString());
+    const std::string& technologies) {
+  std::vector<std::string> prohibited_list = base::SplitString(
+      technologies, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  std::set<std::string> new_prohibited_technologies(prohibited_list.begin(),
+                                                    prohibited_list.end());
   if (new_prohibited_technologies == prohibited_technologies_)
     return;
   prohibited_technologies_.swap(new_prohibited_technologies);
@@ -588,12 +596,15 @@ void ShillPropertyHandler::PropertyChangedCallback(
     RequestIPConfigsList(type, path, value);
   }
 
-  if (type == ManagedState::MANAGED_TYPE_NETWORK)
-    listener_->UpdateNetworkServiceProperty(path, key, value);
-  else if (type == ManagedState::MANAGED_TYPE_DEVICE)
-    listener_->UpdateDeviceProperty(path, key, value);
-  else
-    NOTREACHED();
+  switch (type) {
+    case ManagedState::MANAGED_TYPE_NETWORK:
+      listener_->UpdateNetworkServiceProperty(path, key, value);
+      return;
+    case ManagedState::MANAGED_TYPE_DEVICE:
+      listener_->UpdateDeviceProperty(path, key, value);
+      return;
+  }
+  NOTREACHED();
 }
 
 void ShillPropertyHandler::RequestIPConfig(

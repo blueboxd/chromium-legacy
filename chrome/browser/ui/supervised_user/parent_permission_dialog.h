@@ -17,10 +17,6 @@
 
 class Profile;
 
-namespace content {
-class WebContents;
-}
-
 namespace extensions {
 class Extension;
 }
@@ -75,14 +71,12 @@ class ParentPermissionDialog {
 
   // Creates a ParentPermissionDialog.
   // |profile| is the child user's profile.
-  // |web_contents| is the web_contents of the initiator.
-  // |window| is the window to which the dialog will be modal.
+  // |window| is the window to which the dialog will be modal. Can be nullptr.
   // |icon| will be displayed to the side of |message|.
   // |message| will be displayed in the body of the dialog.
   // |done_callback| will be called  on dialog completion.
   static std::unique_ptr<ParentPermissionDialog> CreateParentPermissionDialog(
       Profile* profile,
-      content::WebContents* web_contents,
       gfx::NativeWindow window,
       const gfx::ImageSkia& icon,
       const base::string16& message,
@@ -91,14 +85,12 @@ class ParentPermissionDialog {
   // Creates a ParentPermissionDialog customized for the installation of the
   // specified |extension|.
   // |profile| is the child user's profile.
-  // |web_contents| is the web_contents of the initiator.
-  // |window| is the window to which the dialog will be modal.
+  // |window| is the window to which the dialog will be modal. Can be nullptr.
   // |icon| will be used as a backup in case |extension| doesn't have a loaded
   // |done_callback| will be called  on dialog completion.
   static std::unique_ptr<ParentPermissionDialog>
   CreateParentPermissionDialogForExtension(
       Profile* profile,
-      content::WebContents* web_contents,
       gfx::NativeWindow window,
       const gfx::ImageSkia& icon,
       const extensions::Extension* extension,

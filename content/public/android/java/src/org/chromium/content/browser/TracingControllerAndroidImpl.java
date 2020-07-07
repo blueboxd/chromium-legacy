@@ -13,6 +13,7 @@ import android.text.TextUtils;
 import android.util.Pair;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.annotations.CalledByNative;
@@ -134,8 +135,8 @@ public class TracingControllerAndroidImpl implements TracingControllerAndroid {
             // (Not a huge problem if it isn't unique, we'll just append more data.)
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd-HHmmss", Locale.US);
             formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-            File dir =
-                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+            Context context = ContextUtils.getApplicationContext();
+            File dir = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
             File file = new File(dir, "chrome-profile-results-" + formatter.format(new Date()));
             return file.getPath();
         }

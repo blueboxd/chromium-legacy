@@ -40,10 +40,6 @@ std::unique_ptr<sessions::SessionCommand> CreateCommandFromData(
   return command;
 }
 
-bool IsCanceled() {
-  return false;
-}
-
 }  // namespace
 
 class SnapshottingCommandStorageBackendTest : public testing::Test {
@@ -68,17 +64,6 @@ class SnapshottingCommandStorageBackendTest : public testing::Test {
         sessions::SnapshottingCommandStorageManager::SESSION_RESTORE, path_);
   }
 
-  void ReadLastSessionCommands(
-      SnapshottingCommandStorageBackend* backend,
-      std::vector<std::unique_ptr<SessionCommand>>* commands) {
-    backend->ReadLastSessionCommands(
-        base::BindRepeating(&IsCanceled),
-        base::BindLambdaForTesting(
-            [&commands](std::vector<std::unique_ptr<SessionCommand>> result) {
-              *commands = std::move(result);
-            }));
-  }
-
   base::test::TaskEnvironment task_environment_;
   // Path used in testing.
   base::FilePath path_;
@@ -96,7 +81,7 @@ TEST_F(SnapshottingCommandStorageBackendTest, SimpleReadWrite) {
   // Read it back in.
   backend = nullptr;
   backend = CreateBackend();
-  ReadLastSessionCommands(backend.get(), &commands);
+  commands = backend->ReadLastSessionCommands();
 
   ASSERT_EQ(1U, commands.size());
   AssertCommandEqualsData(data, commands[0].get());
@@ -105,13 +90,13 @@ TEST_F(SnapshottingCommandStorageBackendTest, SimpleReadWrite) {
 
   backend = nullptr;
   backend = CreateBackend();
-  ReadLastSessionCommands(backend.get(), &commands);
+  commands = backend->ReadLastSessionCommands();
 
   ASSERT_EQ(0U, commands.size());
 
   // Make sure we can delete.
   backend->DeleteLastSession();
-  ReadLastSessionCommands(backend.get(), &commands);
+  commands = backend->ReadLastSessionCommands();
   ASSERT_EQ(0U, commands.size());
 }
 
@@ -137,7 +122,7 @@ TEST_F(SnapshottingCommandStorageBackendTest, RandomData) {
     SessionCommands commands;
     if (i != 0) {
       // Read previous data.
-      ReadLastSessionCommands(backend.get(), &commands);
+      commands = backend->ReadLastSessionCommands();
       ASSERT_EQ(i, commands.size());
       for (auto j = commands.begin(); j != commands.end(); ++j)
         AssertCommandEqualsData(data[j - commands.begin()], j->get());
@@ -173,7 +158,7 @@ TEST_F(SnapshottingCommandStorageBackendTest, BigData) {
   backend = nullptr;
   backend = CreateBackend();
 
-  ReadLastSessionCommands(backend.get(), &commands);
+  commands = backend->ReadLastSessionCommands();
   ASSERT_EQ(3U, commands.size());
   AssertCommandEqualsData(data[0], commands[0].get());
   AssertCommandEqualsData(data[1], commands[2].get());
@@ -195,8 +180,7 @@ TEST_F(SnapshottingCommandStorageBackendTest, EmptyCommand) {
   backend->AppendCommands(std::move(empty_commands), true);
   backend->MoveCurrentSessionToLastSession();
 
-  SessionCommands commands;
-  ReadLastSessionCommands(backend.get(), &commands);
+  SessionCommands commands = backend->ReadLastSessionCommands();
   ASSERT_EQ(1U, commands.size());
   AssertCommandEqualsData(empty_command, commands[0].get());
   commands.clear();
@@ -219,7 +203,7 @@ TEST_F(SnapshottingCommandStorageBackendTest, Truncate) {
   // Read it back in.
   backend = nullptr;
   backend = CreateBackend();
-  ReadLastSessionCommands(backend.get(), &commands);
+  commands = backend->ReadLastSessionCommands();
 
   // And make sure we get back the expected data.
   ASSERT_EQ(1U, commands.size());

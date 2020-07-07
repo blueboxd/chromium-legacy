@@ -40,7 +40,12 @@ LookalikeUrlBlockingPage::LookalikeUrlBlockingPage(
   // chrome://interstitials) leaks memory, so don't create it here.
 }
 
-LookalikeUrlBlockingPage::~LookalikeUrlBlockingPage() = default;
+LookalikeUrlBlockingPage::~LookalikeUrlBlockingPage() {
+  // Update metrics when the interstitial is closed or user navigates away.
+  ReportUkmForLookalikeUrlBlockingPageIfNeeded(
+      source_id_, match_type_,
+      LookalikeUrlBlockingPageUserAction::kCloseOrBack);
+}
 
 bool LookalikeUrlBlockingPage::ShouldCreateNewNavigation() const {
   return true;
@@ -49,6 +54,13 @@ bool LookalikeUrlBlockingPage::ShouldCreateNewNavigation() const {
 void LookalikeUrlBlockingPage::PopulateInterstitialStrings(
     base::DictionaryValue* load_time_data) const {
   CHECK(load_time_data);
+
+  // Set a value if backwards navigation is not available, used
+  // to change the button text to 'Close page' when there is no
+  // suggested URL.
+  if (!controller_->CanGoBack()) {
+    load_time_data->SetBoolean("cant_go_back", true);
+  }
 
   PopulateLookalikeUrlBlockingPageStrings(load_time_data, safe_url_);
 }
@@ -84,13 +96,7 @@ void LookalikeUrlBlockingPage::HandleScriptCommand(
     ReportUkmForLookalikeUrlBlockingPageIfNeeded(
         source_id_, match_type_,
         LookalikeUrlBlockingPageUserAction::kAcceptSuggestion);
-    // If the interstitial doesn't have a suggested URL (e.g. punycode
-    // interstitial), close the tab.
-    if (!safe_url_.is_valid()) {
-      controller_->Close();
-    } else {
       controller_->GoBack();
-    }
   } else if (command == security_interstitials::CMD_PROCEED) {
     controller_->metrics_helper()->RecordUserDecision(
         security_interstitials::MetricsHelper::PROCEED);

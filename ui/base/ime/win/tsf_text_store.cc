@@ -962,7 +962,7 @@ bool TSFTextStore::GetDisplayAttribute(TfGuidAtom guid_atom,
 
   Microsoft::WRL::ComPtr<ITfDisplayAttributeInfo> display_attribute_info;
   if (FAILED(display_attribute_manager_->GetDisplayAttributeInfo(
-          guid, display_attribute_info.GetAddressOf(), nullptr))) {
+          guid, &display_attribute_info, nullptr))) {
     return false;
   }
   // Display Attribute can be null so query for attributes only when its
@@ -982,8 +982,8 @@ bool TSFTextStore::GetCompositionStatus(
   DCHECK(spans);
   const GUID* rgGuids[2] = {&GUID_PROP_COMPOSING, &GUID_PROP_ATTRIBUTE};
   Microsoft::WRL::ComPtr<ITfReadOnlyProperty> track_property;
-  if (FAILED(context->TrackProperties(rgGuids, 2, nullptr, 0,
-                                      track_property.GetAddressOf()))) {
+  if (FAILED(
+          context->TrackProperties(rgGuids, 2, nullptr, 0, &track_property))) {
     return false;
   }
 
@@ -991,11 +991,10 @@ bool TSFTextStore::GetCompositionStatus(
   spans->clear();
   Microsoft::WRL::ComPtr<ITfRange> start_to_end_range;
   Microsoft::WRL::ComPtr<ITfRange> end_range;
-  if (FAILED(context->GetStart(read_only_edit_cookie,
-                               start_to_end_range.GetAddressOf()))) {
+  if (FAILED(context->GetStart(read_only_edit_cookie, &start_to_end_range))) {
     return false;
   }
-  if (FAILED(context->GetEnd(read_only_edit_cookie, end_range.GetAddressOf())))
+  if (FAILED(context->GetEnd(read_only_edit_cookie, &end_range)))
     return false;
   if (FAILED(start_to_end_range->ShiftEndToRange(
           read_only_edit_cookie, end_range.Get(), TF_ANCHOR_END))) {
@@ -1003,15 +1002,14 @@ bool TSFTextStore::GetCompositionStatus(
   }
 
   Microsoft::WRL::ComPtr<IEnumTfRanges> ranges;
-  if (FAILED(track_property->EnumRanges(read_only_edit_cookie,
-                                        ranges.GetAddressOf(),
+  if (FAILED(track_property->EnumRanges(read_only_edit_cookie, &ranges,
                                         start_to_end_range.Get()))) {
     return false;
   }
 
   while (true) {
     Microsoft::WRL::ComPtr<ITfRange> range;
-    if (ranges->Next(1, range.GetAddressOf(), nullptr) != S_OK)
+    if (ranges->Next(1, &range, nullptr) != S_OK)
       break;
     base::win::ScopedVariant value;
     Microsoft::WRL::ComPtr<IEnumTfPropertyValue> enum_prop_value;
@@ -1040,7 +1038,7 @@ bool TSFTextStore::GetCompositionStatus(
     }
 
     Microsoft::WRL::ComPtr<ITfRangeACP> range_acp;
-    range.CopyTo(range_acp.GetAddressOf());
+    range.As(&range_acp);
     LONG start_pos, length;
     range_acp->GetExtent(&start_pos, &length);
     if (!is_composition) {

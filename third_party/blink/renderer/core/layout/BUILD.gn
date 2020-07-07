@@ -550,6 +550,8 @@ blink_core_sources("layout") {
     "ng/table/layout_ng_table_section.cc",
     "ng/table/layout_ng_table_section.h",
     "ng/table/layout_ng_table_section_interface.h",
+    "ng/table/ng_table_borders.cc",
+    "ng/table/ng_table_borders.h",
     "ng/table/ng_table_layout_algorithm_helpers.cc",
     "ng/table/ng_table_layout_algorithm_helpers.h",
     "ng/table/ng_table_layout_algorithm_types.cc",

@@ -132,8 +132,8 @@ StyleImage* CSSImageSetValue::CacheImage(
     FetchParameters params(std::move(resource_request), options);
 
     if (cross_origin != kCrossOriginAttributeNotSet) {
-      params.SetCrossOriginAccessControl(document.GetSecurityOrigin(),
-                                         cross_origin);
+      params.SetCrossOriginAccessControl(
+          document.GetExecutionContext()->GetSecurityOrigin(), cross_origin);
     }
 
     cached_image_ = MakeGarbageCollected<StyleFetchedImageSet>(

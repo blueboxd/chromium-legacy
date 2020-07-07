@@ -70,6 +70,8 @@ class TestSessionController : public ash::SessionController {
   void RemoveSessionActivationObserverForAccountId(
       const AccountId& account_id,
       ash::SessionActivationObserver* observer) override;
+  void AddObserver(ash::SessionObserver* observer) override;
+  void RemoveObserver(ash::SessionObserver* observer) override;
 
  private:
   base::Optional<ash::SessionInfo> last_session_info_;

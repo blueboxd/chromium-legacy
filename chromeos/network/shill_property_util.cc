@@ -283,7 +283,7 @@ bool CopyIdentifyingProperties(const base::DictionaryValue& service_properties,
     // Ethernet and EthernetEAP don't have any additional identifying
     // properties.
   } else {
-    NOTREACHED() << "Unsupported network type " << type;
+    NET_LOG(ERROR) << "Unsupported network type " << type;
     success = false;
   }
   if (!success) {

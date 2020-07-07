@@ -293,7 +293,7 @@ class NotifierViewCheckbox : public views::Checkbox {
   SkColor GetIconImageColor(int icon_state) const override {
     if (icon_state & IconState::CHECKED) {
       return AshColorProvider::Get()->GetContentLayerColor(
-          ContentLayerType::kButtonIconColorProminent, AshColorMode::kDark);
+          ContentLayerType::kIconColorProminent, AshColorMode::kDark);
     }
     return views::Checkbox::GetIconImageColor(icon_state);
   }

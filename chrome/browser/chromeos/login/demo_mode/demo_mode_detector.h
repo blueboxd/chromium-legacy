@@ -23,29 +23,34 @@ namespace chromeos {
 // Should be initialized on OOBE start.
 class DemoModeDetector {
  public:
-  DemoModeDetector();
-  virtual ~DemoModeDetector();
+  // Interface for notification that device stayed in demo mode long enough
+  // to trigger Demo mode.
+  class Observer {
+   public:
+    virtual void OnShouldStartDemoMode() {}
+    virtual ~Observer() = default;
+  };
 
-  void InitDetection();
-  void StopDetection();
+  DemoModeDetector(const base::TickClock* clock, Observer* observer);
+  virtual ~DemoModeDetector();
 
   // Registers the preference for derelict state.
   static void RegisterPrefs(PrefRegistrySimple* registry);
-
-  // Sets an alternative clock for testing purposes.
-  void SetTickClockForTest(const base::TickClock* test_clock);
 
   static const base::TimeDelta kDerelictDetectionTimeout;
   static const base::TimeDelta kDerelictIdleTimeout;
   static const base::TimeDelta kOobeTimerUpdateInterval;
 
  private:
+  void InitDetection();
   void StartIdleDetection();
   void StartOobeTimer();
   void OnIdle();
   void OnOobeTimerUpdate();
   void SetupTimeouts();
   bool IsDerelict();
+
+  Observer* observer_;
 
   // Total time this machine has spent on OOBE.
   base::TimeDelta time_on_oobe_;

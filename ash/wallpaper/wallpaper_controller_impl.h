@@ -13,11 +13,11 @@
 
 #include "ash/ash_export.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/public/cpp/wallpaper_controller.h"
 #include "ash/public/cpp/wallpaper_info.h"
 #include "ash/public/cpp/wallpaper_types.h"
-#include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_color_calculator_observer.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_resizer_observer.h"

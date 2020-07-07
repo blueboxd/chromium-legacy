@@ -10,7 +10,7 @@
 #include "ash/ash_export.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/docked_magnifier_controller.h"
-#include "ash/session/session_observer.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ui/base/ime/ime_bridge_observer.h"
 #include "ui/base/ime/input_method_observer.h"
 #include "ui/events/event_handler.h"

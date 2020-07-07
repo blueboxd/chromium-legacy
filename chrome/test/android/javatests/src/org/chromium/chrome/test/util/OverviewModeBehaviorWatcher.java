@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.test.util;
 
+import org.hamcrest.Matchers;
+
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
@@ -19,23 +21,6 @@ public class OverviewModeBehaviorWatcher {
     private final OverviewModeObserver mOverviewModeObserver;
     private boolean mWaitingForShow;
     private boolean mWaitingForHide;
-
-    private final Criteria mCriteria = new Criteria() {
-        @Override
-        public boolean isSatisfied() {
-            if (mWaitingForShow) {
-                updateFailureReason(
-                        "OverviewModeObserver#onOverviewModeFinishedShowing() not called.");
-                return false;
-            }
-            if (mWaitingForHide) {
-                updateFailureReason(
-                        "OverviewModeObserver#onOverviewModeFinishedHiding() not called.");
-                return false;
-            }
-            return true;
-        }
-    };
 
     /**
      * Creates an instance of an {@link OverviewModeBehaviorWatcher}.  Note that at this point
@@ -72,7 +57,14 @@ public class OverviewModeBehaviorWatcher {
      */
     public void waitForBehavior() {
         try {
-            CriteriaHelper.pollUiThread(mCriteria);
+            CriteriaHelper.pollUiThread(() -> {
+                Criteria.checkThat(
+                        "OverviewModeObserver#onOverviewModeFinishedShowing() not called.",
+                        mWaitingForShow, Matchers.is(false));
+                Criteria.checkThat(
+                        "OverviewModeObserver#onOverviewModeFinishedHiding() not called.",
+                        mWaitingForHide, Matchers.is(false));
+            });
         } finally {
             mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
         }

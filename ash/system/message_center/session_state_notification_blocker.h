@@ -6,7 +6,7 @@
 #define ASH_SYSTEM_MESSAGE_CENTER_SESSION_STATE_NOTIFICATION_BLOCKER_H_
 
 #include "ash/ash_export.h"
-#include "ash/session/session_observer.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "base/macros.h"
 #include "ui/message_center/notification_blocker.h"
 

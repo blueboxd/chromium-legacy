@@ -65,9 +65,6 @@ class ASH_EXPORT AshColorProvider {
 
     // Base layer is opaque.
     kOpaque,
-
-    // Base layer is red. e.g, the "sign out" button inside status area.
-    kRed,
   };
 
   // Types of Controls layer.
@@ -75,22 +72,33 @@ class ASH_EXPORT AshColorProvider {
     kHairlineBorderColor,
     kControlBackgroundColorActive,
     kControlBackgroundColorInactive,
+    kControlBackgroundColorAlert,
+    kControlBackgroundColorWarning,
+    kControlBackgroundColorPositive,
     kFocusRingColor,
   };
 
   enum class ContentLayerType {
     kSeparatorColor,
+
     kTextColorPrimary,
     kTextColorSecondary,
+    kTextColorAlert,
+    kTextColorWarning,
+    kTextColorPositive,
+
     kIconColorPrimary,
     kIconColorSecondary,
-    kIconAlert,
-    // Color for prominent icon button, e.g, "Add connection" icon button inside
+    kIconColorAlert,
+    kIconColorWarning,
+    kIconColorPositive,
+    // Color for prominent icon, e.g, "Add connection" icon button inside
     // VPN detailed view.
-    kButtonIconColorProminent,
+    kIconColorProminent,
 
     // The default color for button labels.
     kButtonLabelColor,
+    kButtonLabelColorPrimary,
 
     // Color for system menu icon buttons with inverted dark mode colors, e.g,
     // FeaturePodIconButton

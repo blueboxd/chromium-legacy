@@ -7,6 +7,7 @@ package org.chromium.chrome.test.util.browser.sync;
 import android.content.Context;
 import android.util.Pair;
 
+import org.hamcrest.Matchers;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -75,50 +76,38 @@ public final class SyncTestUtil {
      * Waits for sync to become active.
      */
     public static void waitForSyncActive() {
-        CriteriaHelper.pollUiThread(new Criteria("Timed out waiting for sync to become active.") {
-            @Override
-            public boolean isSatisfied() {
-                return ProfileSyncService.get().isSyncActive();
-            }
-        }, TIMEOUT_MS, INTERVAL_MS);
+        CriteriaHelper.pollUiThread(()
+                                            -> ProfileSyncService.get().isSyncActive(),
+                "Timed out waiting for sync to become active.", TIMEOUT_MS, INTERVAL_MS);
     }
 
     /**
      * Waits for sync machinery to become active.
      */
     public static void waitForSyncTransportActive() {
-        CriteriaHelper.pollUiThread(
-                new Criteria("Timed out waiting for sync transport state to become active.") {
-                    @Override
-                    public boolean isSatisfied() {
-                        return ProfileSyncService.get().isTransportStateActive();
-                    }
-                },
-                TIMEOUT_MS, INTERVAL_MS);
+        CriteriaHelper.pollUiThread(()
+                                            -> ProfileSyncService.get().isTransportStateActive(),
+                "Timed out waiting for sync transport state to become active.", TIMEOUT_MS,
+                INTERVAL_MS);
     }
 
     /**
      * Waits for sync's engine to be initialized.
      */
     public static void waitForEngineInitialized() {
-        CriteriaHelper.pollUiThread(
-                new Criteria("Timed out waiting for sync's engine to initialize.") {
-                    @Override
-                    public boolean isSatisfied() {
-                        return ProfileSyncService.get().isEngineInitialized();
-                    }
-                },
-                TIMEOUT_MS, INTERVAL_MS);
+        CriteriaHelper.pollUiThread(()
+                                            -> ProfileSyncService.get().isEngineInitialized(),
+                "Timed out waiting for sync's engine to initialize.", TIMEOUT_MS, INTERVAL_MS);
     }
 
     /**
      * Waits for sync being in the desired TrustedVaultKeyRequired state.
      */
     public static void waitForTrustedVaultKeyRequired(boolean desiredValue) {
-        CriteriaHelper.pollUiThread(
-                Criteria.equals(
-                        desiredValue, () -> ProfileSyncService.get().isTrustedVaultKeyRequired()),
-                TIMEOUT_MS, INTERVAL_MS);
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(ProfileSyncService.get().isTrustedVaultKeyRequired(),
+                    Matchers.is(desiredValue));
+        }, TIMEOUT_MS, INTERVAL_MS);
     }
 
     /**
@@ -138,12 +127,8 @@ public final class SyncTestUtil {
     public static void triggerSyncAndWaitForCompletion() {
         final long oldSyncTime = getCurrentSyncTime();
         triggerSync();
-        CriteriaHelper.pollInstrumentationThread(new Criteria(
-                "Timed out waiting for sync cycle to complete.") {
-            @Override
-            public boolean isSatisfied() {
-                return getCurrentSyncTime() > oldSyncTime;
-            }
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(getCurrentSyncTime(), Matchers.greaterThan(oldSyncTime));
         }, TIMEOUT_MS, INTERVAL_MS);
     }
 

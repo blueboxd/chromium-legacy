@@ -53,17 +53,17 @@ constexpr auto kFakeSeed = UINT64_C(9);
 constexpr auto kBlockedType1 =
     blink::IdentifiableSurface::Type::kCanvasReadback;
 
-// Sample surfaces.
+// Sample surfaces. "Regular" means that the surface is not blocked and its type
+// is not blocked.
 constexpr auto kRegularSurface1 =
-    blink::IdentifiableSurface::FromMetricHash(256 + 3);
+    blink::IdentifiableSurface::FromMetricHash(3 << 8);
 constexpr auto kRegularSurface2 =
-    blink::IdentifiableSurface::FromMetricHash(256 + 4);
+    blink::IdentifiableSurface::FromMetricHash(4 << 8);
 constexpr auto kRegularSurface3 =
-    blink::IdentifiableSurface::FromMetricHash(256 + 5);
+    blink::IdentifiableSurface::FromMetricHash(5 << 8);
+
 constexpr auto kBlockedTypeSurface1 =
-    blink::IdentifiableSurface::FromTypeAndInput(
-        blink::IdentifiableSurface::Type::kCanvasReadback,
-        1);  // = 258
+    blink::IdentifiableSurface::FromTypeAndInput(kBlockedType1, 1);  // = 258
 
 std::string SurfaceListString(
     std::initializer_list<blink::IdentifiableSurface> list) {
@@ -267,7 +267,6 @@ TEST(IdentifiabilityStudyStateStandaloneTest, Disabled) {
   prefs::RegisterPrivacyBudgetPrefs(pref_service.registry());
   test_utils::InspectableIdentifiabilityStudyState settings(&pref_service);
 
-  EXPECT_FALSE(settings.IsActive());
   EXPECT_FALSE(settings.ShouldSampleSurface(kRegularSurface1));
   EXPECT_FALSE(settings.ShouldSampleSurface(kRegularSurface2));
   EXPECT_FALSE(settings.ShouldSampleSurface(kRegularSurface3));

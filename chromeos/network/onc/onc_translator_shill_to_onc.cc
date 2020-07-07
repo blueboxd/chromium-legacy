@@ -20,6 +20,7 @@
 #include "chromeos/network/onc/onc_translator.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "chromeos/network/shill_property_util.h"
+#include "components/device_event_log/device_event_log.h"
 #include "components/onc/onc_constants.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
@@ -282,17 +283,18 @@ void ShillToONCTranslator::TranslateOpenVPN() {
           shill_str, field_signature->value_signature->onc_type);
 
       if (translated.is_none()) {
-        LOG(ERROR) << "Shill property '" << shill_property_name
-                   << "' with value " << *shill_value
-                   << " couldn't be converted to base::Value::Type "
-                   << field_signature->value_signature->onc_type << ": "
-                   << GetName();
+        NET_LOG(ERROR) << "Shill property '" << shill_property_name
+                       << "' with value " << *shill_value
+                       << " couldn't be converted to base::Value::Type "
+                       << field_signature->value_signature->onc_type << ": "
+                       << GetName();
       } else {
         onc_object_->SetKey(onc_field_name, std::move(translated));
       }
     } else {
-      LOG(ERROR) << "Shill property '" << shill_property_name << "' has value "
-                 << *shill_value << ", but expected a string: " << GetName();
+      NET_LOG(ERROR) << "Shill property '" << shill_property_name
+                     << "' has value " << *shill_value
+                     << ", but expected a string: " << GetName();
     }
   }
 }
@@ -747,7 +749,7 @@ void ShillToONCTranslator::TranslateAndAddNestedObject(
   const OncFieldSignature* field_signature =
       GetFieldSignature(*onc_signature_, onc_field_name);
   if (!field_signature) {
-    NOTREACHED() << "Unable to find signature for field: " << onc_field_name;
+    NET_LOG(ERROR) << "Unable to find signature for field: " << onc_field_name;
     return;
   }
   ShillToONCTranslator nested_translator(dictionary, onc_source_,
@@ -774,9 +776,9 @@ void ShillToONCTranslator::TranslateAndAddListOfObjects(
   const OncFieldSignature* field_signature =
       GetFieldSignature(*onc_signature_, onc_field_name);
   if (field_signature->value_signature->onc_type != base::Value::Type::LIST) {
-    LOG(ERROR) << "ONC Field name: '" << onc_field_name << "' has type '"
-               << field_signature->value_signature->onc_type
-               << "', expected: base::Value::Type::LIST: " << GetName();
+    NET_LOG(ERROR) << "ONC Field name: '" << onc_field_name << "' has type '"
+                   << field_signature->value_signature->onc_type
+                   << "', expected: base::Value::Type::LIST: " << GetName();
     return;
   }
   DCHECK(field_signature->value_signature->onc_array_entry_signature);
@@ -832,12 +834,13 @@ void ShillToONCTranslator::CopyProperty(
   }
 
   if (shill_value->type() != field_signature->value_signature->onc_type) {
-    LOG(ERROR) << "Shill property '" << shill_property_name << "' with value "
-               << *shill_value << " has base::Value::Type "
-               << shill_value->type() << " but ONC field '"
-               << field_signature->onc_field_name << "' requires type "
-               << field_signature->value_signature->onc_type << ": "
-               << GetName();
+    NET_LOG(ERROR) << "Shill property '" << shill_property_name
+                   << "' with value " << *shill_value
+                   << " has base::Value::Type " << shill_value->type()
+                   << " but ONC field '" << field_signature->onc_field_name
+                   << "' requires type "
+                   << field_signature->value_signature->onc_type << ": "
+                   << GetName();
     return;
   }
 
@@ -859,8 +862,9 @@ void ShillToONCTranslator::TranslateWithTableAndSet(
     onc_object_->SetKey(onc_field_name, base::Value(onc_value));
     return;
   }
-  LOG(ERROR) << "Shill property '" << shill_property_name << "' with value "
-             << shill_value << " couldn't be translated to ONC: " << GetName();
+  NET_LOG(ERROR) << "Shill property '" << shill_property_name << "' with value "
+                 << shill_value
+                 << " couldn't be translated to ONC: " << GetName();
 }
 
 std::string ShillToONCTranslator::GetName() {

@@ -42,6 +42,7 @@
 #include "components/feed/core/v2/test/proto_printer.h"
 #include "components/feed/core/v2/test/stream_builder.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
+#include "components/offline_pages/core/prefetch/stub_prefetch_service.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -400,6 +401,31 @@ class TestMetricsReporter : public MetricsReporter {
   base::Optional<TriggerType> refresh_trigger_type;
 };
 
+class TestPrefetchService : public offline_pages::StubPrefetchService {
+ public:
+  TestPrefetchService() = default;
+  // offline_pages::StubPrefetchService.
+  void SetSuggestionProvider(
+      offline_pages::SuggestionsProvider* suggestions_provider) override {
+    suggestions_provider_ = suggestions_provider;
+  }
+  void NewSuggestionsAvailable() override {
+    ++new_suggestions_available_call_count_;
+  }
+
+  // Test functionality.
+  offline_pages::SuggestionsProvider* suggestions_provider() {
+    return suggestions_provider_;
+  }
+  int NewSuggestionsAvailableCallCount() const {
+    return new_suggestions_available_call_count_;
+  }
+
+ private:
+  offline_pages::SuggestionsProvider* suggestions_provider_ = nullptr;
+  int new_suggestions_available_call_count_ = 0;
+};
+
 class FeedStreamTest : public testing::Test, public FeedStream::Delegate {
  public:
   void SetUp() override {
@@ -445,8 +471,9 @@ class FeedStreamTest : public testing::Test, public FeedStream::Delegate {
     chrome_info.version = base::Version({99, 1, 9911, 2});
     stream_ = std::make_unique<FeedStream>(
         &refresh_scheduler_, metrics_reporter_.get(), this, &profile_prefs_,
-        &network_, store_.get(), task_environment_.GetMockClock(),
-        task_environment_.GetMockTickClock(), chrome_info);
+        &network_, store_.get(), &prefetch_service_,
+        task_environment_.GetMockClock(), task_environment_.GetMockTickClock(),
+        chrome_info);
 
     WaitForIdleTaskQueue();  // Wait for any initialization.
     stream_->SetWireResponseTranslatorForTesting(&response_translator_);
@@ -514,6 +541,7 @@ class FeedStreamTest : public testing::Test, public FeedStream::Delegate {
           /*file_path=*/{},
           task_environment_.GetMainThreadTaskRunner()));
   FakeRefreshTaskScheduler refresh_scheduler_;
+  TestPrefetchService prefetch_service_;
   std::unique_ptr<FeedStream> stream_;
   bool is_eula_accepted_ = true;
   bool is_offline_ = false;
@@ -558,6 +586,8 @@ TEST_F(FeedStreamTest, BackgroundRefreshSuccess) {
   TestSurface surface(stream_.get());
   WaitForIdleTaskQueue();
   EXPECT_EQ("loading -> 2 slices", surface.DescribeUpdates());
+  // Verify that prefetch service was informed.
+  EXPECT_EQ(1, prefetch_service_.NewSuggestionsAvailableCallCount());
 }
 
 TEST_F(FeedStreamTest, BackgroundRefreshNotAttemptedWhenModelIsLoading) {
@@ -846,6 +876,7 @@ TEST_F(FeedStreamTest, LoadFromNetworkFailsDueToProtoTranslation) {
 
   EXPECT_EQ(LoadStreamStatus::kProtoTranslationFailed,
             metrics_reporter_->load_stream_status);
+  EXPECT_EQ(0, prefetch_service_.NewSuggestionsAvailableCallCount());
 }
 
 TEST_F(FeedStreamTest, DoNotLoadFromNetworkWhenOffline) {
@@ -1044,6 +1075,8 @@ TEST_F(FeedStreamTest, LoadMoreAppendsContent) {
   TestSurface surface(stream_.get());
   WaitForIdleTaskQueue();
   ASSERT_EQ("loading -> 2 slices", surface.DescribeUpdates());
+  EXPECT_EQ(1, prefetch_service_.NewSuggestionsAvailableCallCount());
+
   // Load page 2.
   response_translator_.InjectResponse(MakeTypicalNextPageState(2));
   CallbackReceiver<bool> callback;
@@ -1051,6 +1084,8 @@ TEST_F(FeedStreamTest, LoadMoreAppendsContent) {
   WaitForIdleTaskQueue();
   ASSERT_EQ(base::Optional<bool>(true), callback.GetResult());
   EXPECT_EQ("2 slices +spinner -> 4 slices", surface.DescribeUpdates());
+  EXPECT_EQ(2, prefetch_service_.NewSuggestionsAvailableCallCount());
+
   // Load page 3.
   response_translator_.InjectResponse(MakeTypicalNextPageState(3));
   stream_->LoadMore(surface.GetSurfaceId(), callback.Bind());
@@ -1058,6 +1093,7 @@ TEST_F(FeedStreamTest, LoadMoreAppendsContent) {
   WaitForIdleTaskQueue();
   ASSERT_EQ(base::Optional<bool>(true), callback.GetResult());
   EXPECT_EQ("4 slices +spinner -> 6 slices", surface.DescribeUpdates());
+  EXPECT_EQ(3, prefetch_service_.NewSuggestionsAvailableCallCount());
 }
 
 TEST_F(FeedStreamTest, LoadMorePersistsData) {
@@ -1523,6 +1559,83 @@ TEST_F(FeedStreamTest, ModelUnloadsAfterSecondTimeout) {
   task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(2));
   WaitForIdleTaskQueue();
   EXPECT_FALSE(stream_->GetModel());
+}
+
+TEST_F(FeedStreamTest, ProvidesPrefetchSuggestionsWhenModelLoaded) {
+  // Setup by triggering a model load.
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
+  // Because we loaded from the network,
+  // PrefetchService::NewSuggestionsAvailable() should have been called.
+  EXPECT_EQ(1, prefetch_service_.NewSuggestionsAvailableCallCount());
+
+  CallbackReceiver<std::vector<offline_pages::PrefetchSuggestion>> callback;
+  prefetch_service_.suggestions_provider()->GetCurrentArticleSuggestions(
+      callback.Bind());
+  WaitForIdleTaskQueue();
+
+  ASSERT_TRUE(callback.GetResult());
+  const std::vector<offline_pages::PrefetchSuggestion>& suggestions =
+      callback.GetResult().value();
+
+  ASSERT_EQ(2UL, suggestions.size());
+  EXPECT_EQ("http://content0/", suggestions[0].article_url);
+  EXPECT_EQ("title0", suggestions[0].article_title);
+  EXPECT_EQ("publisher0", suggestions[0].article_attribution);
+  EXPECT_EQ("snippet0", suggestions[0].article_snippet);
+  EXPECT_EQ("http://image0/", suggestions[0].thumbnail_url);
+  EXPECT_EQ("http://favicon0/", suggestions[0].favicon_url);
+
+  EXPECT_EQ("http://content1/", suggestions[1].article_url);
+}
+
+TEST_F(FeedStreamTest, ProvidesPrefetchSuggestionsWhenModelNotLoaded) {
+  store_->OverwriteStream(MakeTypicalInitialModelState(), base::DoNothing());
+
+  CallbackReceiver<std::vector<offline_pages::PrefetchSuggestion>> callback;
+  prefetch_service_.suggestions_provider()->GetCurrentArticleSuggestions(
+      callback.Bind());
+  WaitForIdleTaskQueue();
+
+  ASSERT_FALSE(stream_->GetModel());
+  ASSERT_TRUE(callback.GetResult());
+  const std::vector<offline_pages::PrefetchSuggestion>& suggestions =
+      callback.GetResult().value();
+
+  ASSERT_EQ(2UL, suggestions.size());
+  EXPECT_EQ("http://content0/", suggestions[0].article_url);
+  EXPECT_EQ("http://content1/", suggestions[1].article_url);
+  EXPECT_EQ(0, prefetch_service_.NewSuggestionsAvailableCallCount());
+}
+
+TEST_F(FeedStreamTest, ScrubsUrlsInProvidedPrefetchSuggestions) {
+  {
+    auto initial_state = MakeTypicalInitialModelState();
+    initial_state->content[0].mutable_prefetch_metadata(0)->set_uri(
+        "?notavalidurl?");
+    initial_state->content[0].mutable_prefetch_metadata(0)->set_image_url(
+        "?asdf?");
+    initial_state->content[0].mutable_prefetch_metadata(0)->set_favicon_url(
+        "?hi?");
+    initial_state->content[0].mutable_prefetch_metadata(0)->clear_uri();
+    store_->OverwriteStream(std::move(initial_state), base::DoNothing());
+  }
+
+  CallbackReceiver<std::vector<offline_pages::PrefetchSuggestion>> callback;
+  prefetch_service_.suggestions_provider()->GetCurrentArticleSuggestions(
+      callback.Bind());
+  WaitForIdleTaskQueue();
+
+  ASSERT_TRUE(callback.GetResult());
+  const std::vector<offline_pages::PrefetchSuggestion>& suggestions =
+      callback.GetResult().value();
+
+  ASSERT_EQ(2UL, suggestions.size());
+  EXPECT_EQ("", suggestions[0].article_url.possibly_invalid_spec());
+  EXPECT_EQ("", suggestions[0].thumbnail_url.possibly_invalid_spec());
+  EXPECT_EQ("", suggestions[0].favicon_url.possibly_invalid_spec());
 }
 
 }  // namespace

@@ -674,14 +674,6 @@ class PixelTestPages(object):
         # test with the code path that's enabled with battery power.
         '--disable_vp_scaling=1'
     ]
-    browser_args_Nonroot = browser_args + [
-        '--enable-features=DirectCompositionNonrootOverlays,' +
-        'DirectCompositionUnderlays'
-    ]
-    browser_args_Complex = browser_args + [
-        '--enable-features=DirectCompositionComplexOverlays,' +
-        'DirectCompositionNonrootOverlays,' + 'DirectCompositionUnderlays'
-    ]
     browser_args_YUY2 = browser_args + [
         '--disable-features=DirectCompositionPreferNV12Overlays'
     ]
@@ -808,17 +800,6 @@ class PixelTestPages(object):
                       test_rect=[0, 0, 960, 540],
                       browser_args=browser_args,
                       other_args={'zero_copy': True},
-                      matching_algorithm=strict_dc_sobel_algorithm),
-        # Surprisingly stable, does not need inexact matching at this time.
-        PixelTestPage('pixel_video_nonroot.html',
-                      base_name + '_DirectComposition_Nonroot',
-                      test_rect=[0, 0, 240, 136],
-                      browser_args=browser_args_Nonroot),
-        PixelTestPage('pixel_video_complex_overlays.html',
-                      base_name + '_DirectComposition_ComplexOverlays',
-                      test_rect=[0, 0, 240, 136],
-                      browser_args=browser_args_Complex,
-                      other_args={'video_is_rotated': True},
                       matching_algorithm=strict_dc_sobel_algorithm),
         PixelTestPage('pixel_video_mp4_rounded_corner.html',
                       base_name + '_DirectComposition_Video_MP4_Rounded_Corner',

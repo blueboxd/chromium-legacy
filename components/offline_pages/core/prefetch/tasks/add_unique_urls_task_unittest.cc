@@ -90,11 +90,13 @@ TEST_F(AddUniqueUrlsTaskTest, StoreFailure) {
 }
 
 TEST_F(AddUniqueUrlsTaskTest, AddTaskInEmptyStore) {
-  std::vector<PrefetchURL> urls;
   PrefetchURL url1 = PrefetchURL1();
   url1.thumbnail_url = GURL(kTestThumbnailURL);
-  urls.push_back(url1);
-  urls.push_back(PrefetchURL2());
+  // The third URL is empty, so it won't be added.
+  PrefetchURL url3 = PrefetchURL3();
+  url3.url = GURL();
+  std::vector<PrefetchURL> urls = {url1, PrefetchURL2(), url3};
+
   RunTask(std::make_unique<AddUniqueUrlsTask>(dispatcher(), store(),
                                               kTestNamespace, urls));
 

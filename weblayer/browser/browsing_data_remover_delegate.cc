@@ -37,7 +37,7 @@ void BrowsingDataRemoverDelegate::RemoveEmbedderData(
     uint64_t remove_mask,
     content::BrowsingDataFilterBuilder* filter_builder,
     uint64_t origin_type_mask,
-    base::OnceClosure callback) {
+    base::OnceCallback<void(uint64_t)> callback) {
   // Note: if history is ever added to WebLayer, also remove isolated origins
   // when history is cleared.
   if (remove_mask & DATA_TYPE_ISOLATED_ORIGINS) {
@@ -48,7 +48,7 @@ void BrowsingDataRemoverDelegate::RemoveEmbedderData(
     // list of isolated sites is not directly exposed to users, though, and
     // will be cleared on next restart.
   }
-  std::move(callback).Run();
+  std::move(callback).Run(/*failed_data_types=*/0);
 }
 
 }  // namespace weblayer

@@ -20,23 +20,31 @@ class OSExchangeData;
 
 class WM_PLATFORM_EXPORT WmDropHandler {
  public:
-  // Notifies that dragging is entered to the window. |point| is in the
-  // coordinate space of the PlatformWindow.
+  // Notifies that drag has entered the window.
+  // |point| is in the coordinate space of the PlatformWindow.
+  // |operation| contains bitmask of ui::DragDropTypes suggested by the source.
+  // |modifiers| contains bitmask of ui::EventFlags that accompany the event.
   virtual void OnDragEnter(const gfx::PointF& point,
                            std::unique_ptr<OSExchangeData> data,
-                           int operation) = 0;
+                           int operation,
+                           int modifiers) = 0;
 
-  // Notifies that dragging is moved. |widget_out| will be set with the
-  // widget located at |point|. |point| is in the coordinate space of the
-  // PlatformWindow. It returns the operation selected by client and the
-  // returned value should be from ui::DragDropTypes.
-  virtual int OnDragMotion(const gfx::PointF& point, int operation) = 0;
+  // Notifies that drag location has changed.
+  // |point| is in the coordinate space of the PlatformWindow.
+  // |operation| contains bitmask of ui::DragDropTypes suggested by the source.
+  // |modifiers| contains bitmask of ui::EventFlags that accompany the event.
+  // Returns one of ui::DragDropTypes values selected by the client.
+  virtual int OnDragMotion(const gfx::PointF& point,
+                           int operation,
+                           int modifiers) = 0;
 
   // Notifies that dragged data is dropped. When it doesn't deliver
   // the dragged data on OnDragEnter, it should put it to |data|. The location
   // of the drop is the location of the latest DragEnter/DragMotion. If
   // OSExchangeData is provided on OnDragEnter, the |data| should be same as it.
-  virtual void OnDragDrop(std::unique_ptr<ui::OSExchangeData> data) = 0;
+  // |modifiers| contains bitmask of ui::EventFlags that accompany the event.
+  virtual void OnDragDrop(std::unique_ptr<ui::OSExchangeData> data,
+                          int modifiers) = 0;
 
   // Notifies that dragging is left.
   virtual void OnDragLeave() = 0;

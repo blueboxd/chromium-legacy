@@ -30,7 +30,7 @@ Polymer({
 
   /** @private */
   onProfileClick_() {
-    this.manageProfilesBrowserProxy_.openSelectedProfile(
+    this.manageProfilesBrowserProxy_.launchSelectedProfile(
         this.profileState.profilePath);
   },
 

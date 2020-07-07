@@ -16,6 +16,7 @@ import org.mockito.MockitoAnnotations;
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
@@ -60,6 +61,7 @@ public class CriticalPersistedTabDataTest {
 
     @SmallTest
     @Test
+    @DisabledTest(message = "https://crbug.com/1101760")
     public void testEncryptedSaveRestoreDelete() throws InterruptedException {
         testSaveRestoreDelete(true);
     }

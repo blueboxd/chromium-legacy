@@ -182,7 +182,6 @@ if (support_web_tests) {
       "//content/test:blink_test_browser_support",
       "//content/test:mojo_web_test_bindings",
       "//content/test:test_support",
-      "//content/test:web_test_support_browser",
       "//device/bluetooth:fake_bluetooth",
       "//device/bluetooth:mocks",
       "//device/bluetooth/public/mojom:fake_bluetooth_interfaces",

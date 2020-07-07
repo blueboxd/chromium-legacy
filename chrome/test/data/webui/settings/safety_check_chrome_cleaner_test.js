@@ -98,7 +98,7 @@ suite('SafetyCheckChromeCleanerUiTests', function() {
     assertSafetyCheckChild({
       page: page,
       iconStatus: SafetyCheckIconStatus.RUNNING,
-      label: 'Unwanted software protection',
+      label: 'Device software',
     });
   });
 
@@ -116,7 +116,7 @@ suite('SafetyCheckChromeCleanerUiTests', function() {
           assertSafetyCheckChild({
             page: page,
             iconStatus: SafetyCheckIconStatus.SAFE,
-            label: 'Unwanted software protection',
+            label: 'Device software',
           });
           break;
         default:
@@ -140,9 +140,9 @@ suite('SafetyCheckChromeCleanerUiTests', function() {
           assertSafetyCheckChild({
             page: page,
             iconStatus: SafetyCheckIconStatus.INFO,
-            label: 'Unwanted software protection',
+            label: 'Device software',
             buttonLabel: 'Review',
-            buttonAriaLabel: 'Review unwanted software',
+            buttonAriaLabel: 'Review device software',
           });
           expectChromeCleanerRouteButtonClickActions();
           break;
@@ -163,9 +163,9 @@ suite('SafetyCheckChromeCleanerUiTests', function() {
           assertSafetyCheckChild({
             page: page,
             iconStatus: SafetyCheckIconStatus.WARNING,
-            label: 'Unwanted software protection',
+            label: 'Device software',
             buttonLabel: 'Review',
-            buttonAriaLabel: 'Review unwanted software',
+            buttonAriaLabel: 'Review device software',
             buttonClass: 'action-button',
           });
           expectChromeCleanerRouteButtonClickActions();
@@ -184,7 +184,7 @@ suite('SafetyCheckChromeCleanerUiTests', function() {
     assertSafetyCheckChild({
       page: page,
       iconStatus: SafetyCheckIconStatus.INFO,
-      label: 'Unwanted software protection',
+      label: 'Device software',
       buttonLabel: 'Restart computer',
       buttonAriaLabel: 'Restart computer',
       buttonClass: 'action-button',
@@ -202,7 +202,7 @@ suite('SafetyCheckChromeCleanerUiTests', function() {
     assertSafetyCheckChild({
       page: page,
       iconStatus: SafetyCheckIconStatus.INFO,
-      label: 'Unwanted software protection',
+      label: 'Device software',
     });
   });
 });

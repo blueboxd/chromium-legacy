@@ -287,6 +287,7 @@ TEST_F(TranslateBubbleViewTest, AlwaysTranslateCheckboxShortcut) {
   PressButton(TranslateBubbleView::BUTTON_ID_ALWAYS_TRANSLATE);
   EXPECT_TRUE(mock_model_->should_always_translate_);
   EXPECT_EQ(1, mock_model_->set_always_translate_called_count_);
+  EXPECT_TRUE(bubble_->always_translate_checkbox_->GetChecked());
 }
 
 TEST_F(TranslateBubbleViewTest, AlwaysTranslateCheckboxAndCloseButton) {
@@ -434,6 +435,16 @@ TEST_F(TranslateBubbleViewTest, AlwaysTranslateLanguageMenuItem) {
   EXPECT_TRUE(mock_model_->ShouldAlwaysTranslate());
   EXPECT_TRUE(mock_model_->translate_called_);
 
+  // Toggle ShouldAlwaysTranslate and make sure Translation doesn't happen
+  // again.
+  mock_model_->translate_called_ = false;
+  // Revert Always Translate.
+  bubble_->options_menu_model_->ActivatedAt(index);
+  EXPECT_FALSE(mock_model_->translate_called_);
+  // Recheck Always Translate.
+  bubble_->options_menu_model_->ActivatedAt(index);
+  EXPECT_FALSE(mock_model_->translate_called_);
+
   // Go back to untranslated page, since the *language* should still always
   // be translated (and this "untranslate" is temporary) the option should now
   // be checked and it should be possible to disable it from the menu.
@@ -448,7 +459,6 @@ TEST_F(TranslateBubbleViewTest, AlwaysTranslateLanguageMenuItem) {
   // not currently in a translated state and nothing needs to be reverted.
   // translate_called_ is set back to false just to make sure it's not being
   // called again.
-  mock_model_->translate_called_ = false;
   bubble_->options_menu_model_->ActivatedAt(index);
   EXPECT_FALSE(mock_model_->ShouldAlwaysTranslate());
   EXPECT_FALSE(mock_model_->translate_called_);
@@ -496,4 +506,17 @@ TEST_F(TranslateBubbleViewTest, TabSelectedAfterTranslation) {
   bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE);
   EXPECT_EQ(bubble_->tabbed_pane_->GetSelectedTabIndex(),
             static_cast<size_t>(1));
+}
+
+TEST_F(TranslateBubbleViewTest, ShowOriginalUpdatesViewState) {
+  CreateAndShowBubble();
+  // Translate.
+  bubble_->TabSelectedAt(1);
+  EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_TRANSLATING,
+            bubble_->GetViewState());
+
+  // Show Original.
+  bubble_->TabSelectedAt(0);
+  EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE,
+            bubble_->GetViewState());
 }

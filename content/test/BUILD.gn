@@ -801,26 +801,6 @@ if (is_android) {
   }
 }
 
-static_library("web_test_support_browser") {
-  testonly = true
-
-  # See comment at the top of //content/BUILD.gn for why this is disabled in
-  # component builds.
-  if (is_component_build) {
-    check_includes = false
-  }
-
-  sources = [
-    "../public/test/web_test_support_browser.h",
-    "web_test_support_browser.cc",
-  ]
-  deps = [
-    "//content/browser:for_content_tests",  # For non-component builds.
-    "//content/public/browser",  # For component builds.
-    "//net:test_support",
-  ]
-}
-
 static_library("blink_test_browser_support") {
   testonly = true
 

@@ -9,8 +9,10 @@
 #error Probe service convertors should only be included in unofficial builds.
 #endif
 
+#include <cstdint>
 #include <vector>
 
+#include "base/check.h"
 #include "chromeos/components/telemetry_extension_ui/mojom/probe_service.mojom-forward.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd_probe.mojom-forward.h"
 
@@ -20,12 +22,6 @@ namespace probe_service_converters {
 // This file contains helper functions used by ProbeService to convert its
 // types to/from cros_healthd ProbeService types.
 
-cros_healthd::mojom::ProbeCategoryEnum Convert(
-    health::mojom::ProbeCategoryEnum input);
-
-std::vector<cros_healthd::mojom::ProbeCategoryEnum> Convert(
-    const std::vector<health::mojom::ProbeCategoryEnum>& input);
-
 health::mojom::ErrorType Convert(cros_healthd::mojom::ErrorType type);
 
 health::mojom::ProbeErrorPtr Convert(cros_healthd::mojom::ProbeErrorPtr input);
@@ -33,6 +29,10 @@ health::mojom::ProbeErrorPtr Convert(cros_healthd::mojom::ProbeErrorPtr input);
 health::mojom::DoubleValuePtr Convert(double input);
 
 health::mojom::Int64ValuePtr Convert(int64_t input);
+
+health::mojom::UInt32ValuePtr Convert(uint32_t input);
+
+health::mojom::UInt64ValuePtr Convert(uint64_t input);
 
 health::mojom::UInt64ValuePtr Convert(
     cros_healthd::mojom::UInt64ValuePtr input);
@@ -43,8 +43,33 @@ health::mojom::BatteryInfoPtr Convert(
 health::mojom::BatteryResultPtr Convert(
     cros_healthd::mojom::BatteryResultPtr input);
 
+health::mojom::NonRemovableBlockDeviceInfoPtr Convert(
+    cros_healthd::mojom::NonRemovableBlockDeviceInfoPtr input);
+
+health::mojom::NonRemovableBlockDeviceResultPtr Convert(
+    cros_healthd::mojom::NonRemovableBlockDeviceResultPtr input);
+
+health::mojom::CachedVpdInfoPtr Convert(
+    cros_healthd::mojom::CachedVpdInfoPtr input);
+
+health::mojom::CachedVpdResultPtr Convert(
+    cros_healthd::mojom::CachedVpdResultPtr input);
+
 health::mojom::TelemetryInfoPtr Convert(
     cros_healthd::mojom::TelemetryInfoPtr input);
+
+template <class OutputT, class InputT>
+std::vector<OutputT> ConvertPtrVector(std::vector<InputT> input) {
+  std::vector<OutputT> output;
+  for (auto&& element : input) {
+    DCHECK(!element.is_null());
+    output.push_back(Convert(std::move(element)));
+  }
+  return output;
+}
+
+std::vector<cros_healthd::mojom::ProbeCategoryEnum> ConvertCategoryVector(
+    const std::vector<health::mojom::ProbeCategoryEnum>& input);
 
 }  // namespace probe_service_converters
 }  // namespace chromeos

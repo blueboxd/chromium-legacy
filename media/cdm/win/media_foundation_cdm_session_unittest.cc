@@ -81,7 +81,7 @@ class MediaFoundationCdmSessionTest : public testing::Test {
           }));
       COM_EXPECT_CALL(mf_cdm_session_, GetSessionId(_))
           .WillOnce(DoAll(SetArgPointee<0>(session_id), Return(S_OK)));
-      EXPECT_CALL(session_id_cb, Run(_));
+      EXPECT_CALL(session_id_cb, Run(_)).WillOnce(Return(true));
       EXPECT_CALL(cdm_client_,
                   OnSessionMessage(_, CdmMessageType::LICENSE_REQUEST,
                                    license_request));

@@ -247,18 +247,18 @@ bool GLImageDXGI::InitializeHandle(base::win::ScopedHandle handle,
     return false;
 
   Microsoft::WRL::ComPtr<ID3D11Device1> d3d11_device1;
-  if (FAILED(d3d11_device.CopyTo(d3d11_device1.GetAddressOf())))
+  if (FAILED(d3d11_device.As(&d3d11_device1)))
     return false;
 
-  if (FAILED(d3d11_device1->OpenSharedResource1(
-          handle.Get(), IID_PPV_ARGS(texture_.GetAddressOf())))) {
+  if (FAILED(d3d11_device1->OpenSharedResource1(handle.Get(),
+                                                IID_PPV_ARGS(&texture_)))) {
     return false;
   }
   D3D11_TEXTURE2D_DESC desc;
   texture_->GetDesc(&desc);
   if (desc.ArraySize <= level_)
     return false;
-  if (FAILED(texture_.CopyTo(keyed_mutex_.GetAddressOf())))
+  if (FAILED(texture_.As(&keyed_mutex_)))
     return false;
 
   handle_ = std::move(handle);
@@ -303,8 +303,8 @@ bool CopyingGLImageDXGI::Initialize() {
   desc.CPUAccessFlags = 0;
   desc.MiscFlags = 0;
 
-  HRESULT hr = d3d11_device_->CreateTexture2D(
-      &desc, nullptr, decoder_copy_texture_.GetAddressOf());
+  HRESULT hr =
+      d3d11_device_->CreateTexture2D(&desc, nullptr, &decoder_copy_texture_);
   if (FAILED(hr)) {
     DLOG(ERROR) << "CreateTexture2D failed: " << std::hex << hr;
     return false;
@@ -328,14 +328,14 @@ bool CopyingGLImageDXGI::Initialize() {
     return false;
   }
 
-  d3d11_device_.CopyTo(video_device_.GetAddressOf());
+  d3d11_device_.As(&video_device_);
   Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
-  d3d11_device_->GetImmediateContext(context.GetAddressOf());
-  context.CopyTo(video_context_.GetAddressOf());
+  d3d11_device_->GetImmediateContext(&context);
+  context.As(&video_context_);
 
 #if DCHECK_IS_ON()
   Microsoft::WRL::ComPtr<ID3D10Multithread> multithread;
-  d3d11_device_.CopyTo(multithread.GetAddressOf());
+  d3d11_device_.As(&multithread);
   DCHECK(multithread->GetMultithreadProtected());
 #endif  // DCHECK_IS_ON()
 
@@ -348,7 +348,7 @@ bool CopyingGLImageDXGI::InitializeVideoProcessor(
   output_view_.Reset();
 
   Microsoft::WRL::ComPtr<ID3D11Device> processor_device;
-  video_processor->GetDevice(processor_device.GetAddressOf());
+  video_processor->GetDevice(&processor_device);
   DCHECK_EQ(d3d11_device_.Get(), processor_device.Get());
 
   d3d11_processor_ = video_processor;
@@ -359,7 +359,7 @@ bool CopyingGLImageDXGI::InitializeVideoProcessor(
   Microsoft::WRL::ComPtr<ID3D11VideoProcessorOutputView> output_view;
   HRESULT hr = video_device_->CreateVideoProcessorOutputView(
       decoder_copy_texture_.Get(), enumerator_.Get(), &output_view_desc,
-      output_view_.GetAddressOf());
+      &output_view_);
   if (FAILED(hr)) {
     DLOG(ERROR) << "Failed to get output view";
     return false;
@@ -377,7 +377,7 @@ bool CopyingGLImageDXGI::BindTexImage(unsigned target) {
 
   DCHECK(video_device_);
   Microsoft::WRL::ComPtr<ID3D11Device> texture_device;
-  texture_->GetDevice(texture_device.GetAddressOf());
+  texture_->GetDevice(&texture_device);
   DCHECK_EQ(d3d11_device_.Get(), texture_device.Get());
 
   D3D11_VIDEO_PROCESSOR_INPUT_VIEW_DESC input_view_desc = {0};
@@ -386,8 +386,7 @@ bool CopyingGLImageDXGI::BindTexImage(unsigned target) {
   input_view_desc.Texture2D.MipSlice = 0;
   Microsoft::WRL::ComPtr<ID3D11VideoProcessorInputView> input_view;
   HRESULT hr = video_device_->CreateVideoProcessorInputView(
-      texture_.Get(), enumerator_.Get(), &input_view_desc,
-      input_view.GetAddressOf());
+      texture_.Get(), enumerator_.Get(), &input_view_desc, &input_view);
   if (FAILED(hr)) {
     DLOG(ERROR) << "Failed to create video processor input view.";
     return false;

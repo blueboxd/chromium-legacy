@@ -489,29 +489,21 @@ static scoped_refptr<StaticBitmapImage> CropImageAndApplyColorSpaceConversion(
   scoped_refptr<StaticBitmapImage> result = image;
   if (src_rect != img_rect) {
     auto paint_image = result->PaintImageForCurrentFrame();
-    if (result->IsTextureBacked()) {
-      auto image_info = paint_image.GetSkImage()->imageInfo().makeWH(
-          src_rect.Width(), src_rect.Height());
-      auto resource_provider =
-          CreateProvider(image->ContextProviderWrapper(), image_info, result,
-                         true /* fallback_to_software*/);
-      if (!resource_provider)
-        return nullptr;
-      cc::PaintFlags paint;
-      resource_provider->Canvas()->drawImageRect(
-          paint_image,
-          SkRect::MakeXYWH(src_rect.X(), src_rect.Y(), src_rect.Width(),
-                           src_rect.Height()),
-          SkRect::MakeWH(src_rect.Width(), src_rect.Height()), &paint,
-          SkCanvas::kStrict_SrcRectConstraint);
-      result = resource_provider->Snapshot(image->CurrentFrameOrientation());
-    } else {
-      result = UnacceleratedStaticBitmapImage::Create(
-          cc::PaintImageBuilder::WithCopy(std::move(paint_image))
-              .make_subset(src_rect)
-              .TakePaintImage(),
-          image->CurrentFrameOrientation());
-    }
+    auto image_info = paint_image.GetSkImage()->imageInfo().makeWH(
+        src_rect.Width(), src_rect.Height());
+    auto resource_provider =
+        CreateProvider(image->ContextProviderWrapper(), image_info, result,
+                       true /* fallback_to_software*/);
+    if (!resource_provider)
+      return nullptr;
+    cc::PaintFlags paint;
+    resource_provider->Canvas()->drawImageRect(
+        paint_image,
+        SkRect::MakeXYWH(src_rect.X(), src_rect.Y(), src_rect.Width(),
+                         src_rect.Height()),
+        SkRect::MakeWH(src_rect.Width(), src_rect.Height()), &paint,
+        SkCanvas::kStrict_SrcRectConstraint);
+    result = resource_provider->Snapshot(image->CurrentFrameOrientation());
   }
 
   // down-scaling has higher priority than other tasks, up-scaling has lower.

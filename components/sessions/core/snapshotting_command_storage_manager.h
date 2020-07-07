@@ -11,7 +11,6 @@
 #include "components/sessions/core/sessions_export.h"
 
 namespace base {
-class CancelableTaskTracker;
 class FilePath;
 }  // namespace base
 
@@ -48,11 +47,10 @@ class SESSIONS_EXPORT SnapshottingCommandStorageManager
   // Deletes the last session.
   void DeleteLastSession();
 
-  // Uses the backend to load the last session commands from disc. |callback|
-  // gets called once the data has arrived.
-  base::CancelableTaskTracker::TaskId ScheduleGetLastSessionCommands(
-      GetCommandsCallback callback,
-      base::CancelableTaskTracker* tracker);
+  // Uses the backend to load the last session commands from disk. |callback|
+  // is called once the data has arrived, and may be called after this is
+  // deleted.
+  void GetLastSessionCommands(GetCommandsCallback callback);
 
  private:
   SnapshottingCommandStorageBackend* GetSnapshottingBackend();

@@ -22,11 +22,12 @@
 #include "content/public/browser/web_contents.h"
 
 NearOomInfoBar::NearOomInfoBar(InterventionDelegate* delegate)
-    : InfoBarAndroid(std::make_unique<InterventionInfoBarDelegate>(
-                         infobars::InfoBarDelegate::InfoBarIdentifier::
-                             NEAR_OOM_INFOBAR_ANDROID,
-                         delegate),
-                     base::BindRepeating(&ResourceMapper::MapToJavaDrawableId)),
+    : infobars::InfoBarAndroid(
+          std::make_unique<InterventionInfoBarDelegate>(
+              infobars::InfoBarDelegate::InfoBarIdentifier::
+                  NEAR_OOM_INFOBAR_ANDROID,
+              delegate),
+          base::BindRepeating(&ResourceMapper::MapToJavaDrawableId)),
       delegate_(delegate) {
   DCHECK(delegate_);
 }

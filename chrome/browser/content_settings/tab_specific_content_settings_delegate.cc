@@ -164,7 +164,8 @@ void TabSpecificContentSettingsDelegate::OnCookieAccessAllowed(
           Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
   if (access_context_audit_service)
     access_context_audit_service->RecordCookieAccess(
-        accessed_cookies, web_contents()->GetLastCommittedURL().GetOrigin());
+        accessed_cookies,
+        url::Origin::Create(web_contents()->GetLastCommittedURL()));
 #endif  // !defined(OS_ANDROID)
 }
 

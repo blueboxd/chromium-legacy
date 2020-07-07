@@ -281,7 +281,6 @@
 <translation id="1340527397989195812">Файлдар қолданбасын пайдаланып құрылғыдағы мультимедианың сақтық көшірмесін жасаңыз.</translation>
 <translation id="1341988552785875222">Қазіргі тұсқағазды "<ph name="APP_NAME" />" орнатты. Басқа тұсқағаз таңдау үшін "<ph name="APP_NAME" />" жою қажет болуы мүмкін.</translation>
 <translation id="1343865611738742294">Linux қолданбаларына USB құрылғыларына кіруге рұқсат ету. Linux жүйесі ажыратылған USB құрылғысын есте сақтамайды.</translation>
-<translation id="1344143111673240412">Камераның параметріне өзгеріс енгізілгендіктен, Parallels Desktop қайта іске қосылуы қажет.</translation>
 <translation id="1347256498747320987">Жаңа нұсқалар мен қолданбаларды орнату. Жалғастыру арқылы бұл құрылғының Google қызметінен, оператордан және құрылғы өндірушісінен жаңа нұсқалар мен қолданбаларды автоматты түрде жүктеп алуына және орнатуына келісім бересіз (ұялы деректер пайдаланылуы мүмкін). Бұл қолданбалардың кейбірінде қолданба арқылы сатып алу ұсынылуы мүмкін. <ph name="BEGIN_LINK1" />Толығырақ<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">Батарея заряды <ph name="BATTERY_LEVEL" />% болғанда ғана жаңарту басталады.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -1194,7 +1193,6 @@
 <translation id="2470702053775288986">Қолдау көрсетілмейтін кеңейтімдер өшірілген</translation>
 <translation id="2471469610750100598">Қара (әдепкі)</translation>
 <translation id="2473195200299095979">Осы бетті аудару</translation>
-<translation id="2474848500897222119"><ph name="PRINTER_NAME" /> принтерінде сия таусылды.</translation>
 <translation id="2475982808118771221">Қате орын алды</translation>
 <translation id="2476578072172137802">Сайт параметрлері</translation>
 <translation id="2478176599153288112">"<ph name="EXTENSION" />" үшін мультимедиа файлының рұқсаттары</translation>
@@ -1500,7 +1498,6 @@
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> әкімші ұсынған прокси параметрлерін пайдаланып жатыр.</translation>
 <translation id="2825758591930162672">Субъектінің ортақ кілті</translation>
 <translation id="2828650939514476812">Wi-Fi желісіне қосылу</translation>
-<translation id="28291580771888953"><ph name="PRINTER_NAME" /> принтерінде басып шығару кезегі толық.</translation>
 <translation id="2835547721736623118">Айтылған сөзді тану қызметі</translation>
 <translation id="2836269494620652131">Бұзылу</translation>
 <translation id="2836635946302913370">Бұл пайдаланушы атымен кіру мүмкіндігін әкімші өшірген.</translation>
@@ -2316,7 +2313,7 @@
 <translation id="3839516600093027468"><ph name="HOST" /> хостының буферді көруіне әрқашан тыйым салу</translation>
 <translation id="3841964634449506551">Құпия сөз жарамсыз.</translation>
 <translation id="3842552989725514455">Serif қаріпі</translation>
-<translation id="3843058644024807390">Микрофонның параметріне өзгеріс енгізілгендіктен, Parallels Desktop қайта іске қосылуы қажет.</translation>
+<translation id="3843464315703645664">Ішкі қолданысқа рұқсат етілген</translation>
 <translation id="3846116211488856547">Веб-сайттарды, Android қолданбаларын, т.б. әзірлеуге арналған құралдарды алыңыз. Linux жүйесін орнату кезінде <ph name="DOWNLOAD_SIZE" /> дерек жүктеп алынады.</translation>
 <translation id="3847319713229060696">Интернеттің барлық пайдаланушылары үшін қауіпсіздікті жақсартуға көмектеседі.</translation>
 <translation id="385051799172605136">Артқа</translation>
@@ -2775,7 +2772,6 @@
 <translation id="4453946976636652378"><ph name="SEARCH_ENGINE_NAME" /> браузерінен іздеңіз не URL мекенжайын енгізіңіз</translation>
 <translation id="4459169140545916303"><ph name="DEVICE_LAST_ACTIVATED_TIME" /> күн бұрын қосылған.</translation>
 <translation id="4460014764210899310">Топты тарату</translation>
-<translation id="4460343359907016103"><ph name="PRINTER_NAME" /> принтеріне жалғанбады.</translation>
 <translation id="4462159676511157176">Реттелетін атау серверлері</translation>
 <translation id="4465236939126352372"><ph name="APP_NAME" /> қолданбасы үшін шектелген уақыт: <ph name="TIME" /></translation>
 <translation id="4465725236958772856"><ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" /> желі, <ph name="NETWORK_NAME" />, әкімші басқарады, мазмұн</translation>
@@ -3073,7 +3069,6 @@
 <translation id="4864369630010738180">Жүйеге кіруде…</translation>
 <translation id="4864805589453749318">Оқу есептік жазбасын енгізуге рұқсат беретін ата-ананы таңдаңыз.</translation>
 <translation id="486635084936119914">Белгілі бір файл түрлерін жүктеп алғаннан кейін автоматты түрде ашу</translation>
-<translation id="4869213010169296107"><ph name="PRINTER_NAME" /> принтерінде науа жоқ.</translation>
 <translation id="48704129375571883">Қосымша мүмкіндіктерді қосу</translation>
 <translation id="4870758487381879312">Конфигурация туралы ақпарат алу үшін әкімші берген құпия сөзді енгізіңіз</translation>
 <translation id="4870903493621965035">Ешқандай құрылғы жұпталмаған</translation>
@@ -3324,6 +3319,7 @@
 <translation id="5184662919967270437">Құрылғыны жаңарту</translation>
 <translation id="5185359571430619712">Кеңейтімдерді қарау</translation>
 <translation id="5185386675596372454">"<ph name="EXTENSION_NAME" />" ең жаңа нұсқасы өшірілді, себебі ол қосымша рұқсаттарды талап етеді.</translation>
+<translation id="5185500136143151980">Интернет жоқ</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5190926251776387065">Портты іске қосу</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> бірнеше файл жүктеп алғысы келеді</translation>
@@ -3480,7 +3476,6 @@
 <translation id="5390112241331447203">Пікір есептерінде жіберілген system_logs.txt файлын қамту.</translation>
 <translation id="5390677308841849479">Қою қызыл және сарғылт</translation>
 <translation id="5390743329570580756">Келесі үшін жіберу:</translation>
-<translation id="5395869306561378615"><ph name="PRINTER_NAME" /> принтерінің жұмысы кідіртілді.</translation>
 <translation id="5397794290049113714">Сіз</translation>
 <translation id="5398572795982417028">Беттің ауқымынан шығу анықтамасы, ең көбі: <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">Жарнамалар бөгелді</translation>
@@ -3495,7 +3490,6 @@
 <translation id="5417312524372586921">Браузер тақырыптары</translation>
 <translation id="5419405654816502573">Voice Match</translation>
 <translation id="5420438158931847627">Мәтін мен суреттердің анықтығын белгілейді</translation>
-<translation id="5421498071721257877"><ph name="PRINTER_NAME" /> принтерінде құрылғы қатесі тіркелді.</translation>
 <translation id="5422221874247253874">Кіру нүктесі</translation>
 <translation id="5422781158178868512">Өкінішке орай, сыртқы жад құрылғыңызды анықтау мүмкін емес.</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3844,7 +3838,6 @@
 <translation id="5852137567692933493">Қайта іске қосу және Powerwash</translation>
 <translation id="5854912040170951372">Пицца</translation>
 <translation id="5855267860608268405">Белгілі Wi-Fi желілері</translation>
-<translation id="5855310969323666289"><ph name="PRINTER_NAME" /> принтерінің есігі ашық.</translation>
 <translation id="5855643921295613558">0,6 секунд</translation>
 <translation id="5856721540245522153">Түзету мүмкіндіктерін қосу</translation>
 <translation id="5857090052475505287">Жаңа қалта</translation>
@@ -3875,7 +3868,6 @@
 <translation id="5877064549588274448">Арна өзгерді. Өзгерістерді қолдану үшін құрылғыңызды қайта іске қосыңыз.</translation>
 <translation id="5877584842898320529">Таңдалған принтер жоқ немесе дұрыс реттелмеген. <ph name="BR" /> Принтерді тексеріңіз немесе басқасын таңдаңыз.</translation>
 <translation id="5882919346125742463">Сақталған желілер</translation>
-<translation id="5883716097305842571"><ph name="PRINTER_NAME" /> принтерінің шығыс науасы толуға жақын.</translation>
 <translation id="5884474295213649357">Бұл қойынды USB құрылғысына қосылған.</translation>
 <translation id="5886009770935151472">1-ші саусақ</translation>
 <translation id="5889282057229379085">Аралық CA сертификаттарының максималды саны: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4441,7 +4433,6 @@
 <translation id="6611972847767394631">Қойындыларыңыз осы жерде</translation>
 <translation id="6612358246767739896">Қорғалған мазмұн</translation>
 <translation id="6615455863669487791">Маған көрсету</translation>
-<translation id="6617034477946102682"><ph name="PRINTER_NAME" /> принтері қолжетімді емес.</translation>
 <translation id="6618097958368085618">Сақтала берсін</translation>
 <translation id="6618744767048954150">Жұмыс істеп тұр</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
@@ -4858,7 +4849,6 @@
 <translation id="7128151990937044829">Хабарландыруға тыйым салынған кезде мекенжай жолағында индикатор көрсету</translation>
 <translation id="7131040479572660648"><ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> және <ph name="WEBSITE_3" /> сайттарындағы деректеріңізді оқу</translation>
 <translation id="713122686776214250">Б&amp;ет қосу…</translation>
-<translation id="7131379856697962078"><ph name="PRINTER_NAME" /> принтерінің шығыс науасы толық.</translation>
 <translation id="7133578150266914903">Әкімші құрылғыны қалпына келтіруде (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">Мәтінді кішірейту</translation>
 <translation id="7135729336746831607">Bluetooth функциясы қосылсын ба?</translation>
@@ -4877,7 +4867,6 @@
 <translation id="7152478047064750137">Бұл кеңейтім үшін арнайы рұқсаттар қажет емес</translation>
 <translation id="7154130902455071009">Бастапқы бетті келесіге өзгерту: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">Камерадан немесе файлдан алынған бар суреттер</translation>
-<translation id="715657691234357425"><ph name="PRINTER_NAME" /> принтерінде қағаз таусылайын деп жатыр.</translation>
 <translation id="7165320105431587207">Желіні реттеу мүмкін емес</translation>
 <translation id="716640248772308851">"<ph name="EXTENSION" />" кеңейтімі таңдалған орындардағы кескіндерді, бейнені және дыбыстық файлдарды оқи алады.</translation>
 <translation id="7167486101654761064">&amp;Түрі осындай файлдарды әрқашан ашу</translation>
@@ -4908,7 +4897,6 @@
 <translation id="7197632491113152433">Есептік жазбаңыздан осы құрылғыда пайдалануға болатын <ph name="NUMBER_OF_APPS" /> қолданба табылды.</translation>
 <translation id="7199158086730159431">К&amp;өмек алу</translation>
 <translation id="7200083590239651963">Конфигурацияны таңдау</translation>
-<translation id="7201042526153088083">Google Play дүкеніндегі қолданбалар мен ойындарды <ph name="DEVICE_TYPE" /> құрылғысына орнатыңыз. &lt;a target="_blank" href="<ph name="URL" />"&gt;Толығырақ&lt;/a&gt;</translation>
 <translation id="720110658997053098">Бұл құрылғыны киоск режимінде тұрақты сақтау</translation>
 <translation id="7201118060536064622">"<ph name="DELETED_ITEM_NAME" />" жойылды</translation>
 <translation id="7201420661433230412">Файлдарды көру</translation>
@@ -5214,7 +5202,6 @@
 <translation id="7598466960084663009">Компьютерді қайта іске қосу</translation>
 <translation id="7599527631045201165">Құрылғының атауы тым ұзын. Қысқасын енгізіп, қайта көріңіз.</translation>
 <translation id="7600965453749440009">Ешқашан <ph name="LANGUAGE" /> тіліне аудармау</translation>
-<translation id="7601297144931396972"><ph name="PRINTER_NAME" /> принтерінде қағаз кептеліп қалды.</translation>
 <translation id="760197030861754408">Қосылу үшін өтіңіз: <ph name="LANDING_PAGE" />.</translation>
 <translation id="7602079150116086782">Басқа құрылғылардан қойындылар жоқ</translation>
 <translation id="7602173054665172958">Басып шығаруды басқару</translation>
@@ -5225,6 +5212,7 @@
 <translation id="7609148976235050828">Интернетке қосылып, әрекетті қайталап көріңіз.</translation>
 <translation id="7614260613810441905">Сайт құрылғыдағы файлдарды немесе қалталарды өзгерткісі келгенде сұрау (ұсынылады)</translation>
 <translation id="761530003705945209">Google Drive жадына сақтық көшірме жасау. Деректерді қалпына келтіруге немесе құрылғыны кез келген уақытта ауыстыруға болады. Сақтық көшірмеге қолданба туралы дерек кіреді. Сақтық көшірмелер Google-ға жүктеп салынады және Google есептік жазбаңыздың құпия сөзі арқылы шифрланады.</translation>
+<translation id="7615365294369022248">Есептік жазбаны енгізу кезінде қате шықты</translation>
 <translation id="7616214729753637086">Құрылғы тіркелуде ...</translation>
 <translation id="7617263010641145920">Play Store қызметін қосу</translation>
 <translation id="7617366389578322136">"<ph name="DEVICE_NAME" />" құрылғысына қосылуда</translation>
@@ -5672,7 +5660,6 @@
           Google Pay қызметіндегі төлеу әдістері мен мекенжайлар құпия фразамен шифрланбайды.</translation>
 <translation id="81238879832906896">Сары және ақ гүл</translation>
 <translation id="8124313775439841391">Басқарылатын ONC</translation>
-<translation id="8127535217699822294"><ph name="PRINTER_NAME" /> принтерінде қағаз таусылды.</translation>
 <translation id="813082847718468539">Сайт ақпаратын көру</translation>
 <translation id="8131740175452115882">Растау</translation>
 <translation id="8133676275609324831">&amp;Қалтада көрсету</translation>
@@ -5771,7 +5758,6 @@
 <translation id="8254954272268479918">Linux (бета нұсқасы) виртуалды құрылғысын жабу</translation>
 <translation id="8255451560461371599">Фонсыз</translation>
 <translation id="8256319818471787266">Sparky</translation>
-<translation id="8256417822772703842"><ph name="PRINTER_NAME" /> принтерінде сия таусылайын деп жатыр.</translation>
 <translation id="8257950718085972371">Камераны пайдалануға салынған тыйымды сақтау</translation>
 <translation id="8259239505248583312">Кеттік!</translation>
 <translation id="8260864402787962391">Тінтуір</translation>
@@ -5952,7 +5938,6 @@
 <translation id="8487678622945914333">Үлкейту</translation>
 <translation id="8490896350101740396">Келесі киоск қолданбалары "<ph name="UPDATED_APPS" />" жаңартылды. Жаңарту процесін аяқтау үшін құрылғыны қайта іске қосыңыз.</translation>
 <translation id="8493236660459102203">Микрофон:</translation>
-<translation id="8495940850609851342"><ph name="PRINTER_NAME" /> принтерінің жұмысы тоқтатылды.</translation>
 <translation id="8496717697661868878">Бұл плагинді іске қосу</translation>
 <translation id="8497219075884839166">Windows утилиталары</translation>
 <translation id="8498214519255567734">Күңгірт жарық жағдайында экранға қарауды немесе одан оқуды оңайлатады</translation>
@@ -6494,6 +6479,12 @@
 <translation id="9157096865782046368">0,8 секунд</translation>
 <translation id="9157697743260533322">Барлық пайдаланушылар үшін автоматты жаңартулар орнатылмады (алдын ала орнату қатесі: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Аутентификация барысында желі байланысы қатесі орын алды.  Желі байланысын тексеріп, әрекетті қайталаңыз.</translation>
+<translation id="9159643062839240276">Мына әрекеттерді орындап көріңіз:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />Желі кабельдерін, модемді және маршрутизаторды тексеру
+      <ph name="LIST_ITEM" />Wi-Fi желісін қайта жалғау
+      <ph name="LIST_ITEM" />Chrome Connectivity Diagnostics құралын іске қосу
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">Суреттегі сурет</translation>
 <translation id="9168436347345867845">Кейінірек</translation>
 <translation id="9169496697824289689">Пернелер тіркесімін көру</translation>

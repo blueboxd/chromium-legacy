@@ -28,17 +28,17 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/web_contents.h"
 #include "extensions/browser/image_loader.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
-#include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "google_apis/gaia/gaia_constants.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_types.h"
@@ -257,11 +257,8 @@ struct ParentPermissionDialogView::Params {
   // The user's profile
   Profile* profile = nullptr;
 
-  // The parent window to this window.
+  // The parent window to this window. This member may be nullptr.
   gfx::NativeWindow window = nullptr;
-
-  // The web contents that initiated the dialog.
-  content::WebContents* web_contents = nullptr;
 
   // The callback to call on completion.
   ParentPermissionDialog::DoneCallback done_callback;
@@ -530,7 +527,10 @@ void ParentPermissionDialogView::ShowDialogInternal() {
   CreateContents();
   chrome::RecordDialogCreation(chrome::DialogIdentifier::PARENT_PERMISSION);
   views::Widget* widget =
-      constrained_window::CreateBrowserModalDialogViews(this, params_->window);
+      params_->window
+          ? constrained_window::CreateBrowserModalDialogViews(this,
+                                                              params_->window)
+          : views::DialogDelegate::CreateDialogWidget(this, nullptr, nullptr);
   widget->Show();
 
   if (test_view_observer)
@@ -581,23 +581,15 @@ void ParentPermissionDialogView::OnExtensionIconLoaded(
 
 void ParentPermissionDialogView::LoadExtensionIcon() {
   DCHECK(params_->extension);
-  extensions::ExtensionResource image = extensions::IconsInfo::GetIconResource(
-      params_->extension, extension_misc::EXTENSION_ICON_LARGE,
-      ExtensionIconSet::MATCH_BIGGER);
 
   // Load the image asynchronously. The response will be sent to
   // OnExtensionIconLoaded.
   extensions::ImageLoader* loader =
       extensions::ImageLoader::Get(params_->profile);
-
-  std::vector<extensions::ImageLoader::ImageRepresentation> images_list;
-  images_list.push_back(extensions::ImageLoader::ImageRepresentation(
-      image, extensions::ImageLoader::ImageRepresentation::NEVER_RESIZE,
-      gfx::Size(),
-      ui::GetScaleFactorForNativeView(params_->web_contents->GetNativeView())));
-
-  loader->LoadImagesAsync(
-      params_->extension, images_list,
+  loader->LoadImageAtEveryScaleFactorAsync(
+      params_->extension,
+      gfx::Size(extension_misc::EXTENSION_ICON_LARGE,
+                extension_misc::EXTENSION_ICON_LARGE),
       base::BindOnce(&ParentPermissionDialogView::OnExtensionIconLoaded,
                      weak_factory_.GetWeakPtr()));
 }
@@ -808,7 +800,6 @@ void ParentPermissionDialogImpl::OnParentPermissionDialogViewDestroyed() {
 std::unique_ptr<ParentPermissionDialog>
 ParentPermissionDialog::CreateParentPermissionDialog(
     Profile* profile,
-    content::WebContents* web_contents,
     gfx::NativeWindow window,
     const gfx::ImageSkia& icon,
     const base::string16& message,
@@ -817,7 +808,6 @@ ParentPermissionDialog::CreateParentPermissionDialog(
   params->message = message;
   params->icon = icon;
   params->profile = profile;
-  params->web_contents = web_contents;
   params->window = window;
   params->done_callback = std::move(done_callback);
 
@@ -828,7 +818,6 @@ ParentPermissionDialog::CreateParentPermissionDialog(
 std::unique_ptr<ParentPermissionDialog>
 ParentPermissionDialog::CreateParentPermissionDialogForExtension(
     Profile* profile,
-    content::WebContents* web_contents,
     gfx::NativeWindow window,
     const gfx::ImageSkia& icon,
     const extensions::Extension* extension,
@@ -837,7 +826,6 @@ ParentPermissionDialog::CreateParentPermissionDialogForExtension(
   params->extension = extension;
   params->icon = icon;
   params->profile = profile;
-  params->web_contents = web_contents;
   params->window = window;
   params->done_callback = std::move(done_callback);
 

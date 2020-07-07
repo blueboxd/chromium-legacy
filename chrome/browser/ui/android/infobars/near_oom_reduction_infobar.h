@@ -19,7 +19,7 @@ class InterventionDelegate;
 // Communicates to the user about the intervention performed by the browser to
 // limit the page's memory usage. See NearOomReductionInfoBar.java for UI
 // specifics, and NearOomMessageDelegate for behavior specifics.
-class NearOomReductionInfoBar : public InfoBarAndroid {
+class NearOomReductionInfoBar : public infobars::InfoBarAndroid {
  public:
   ~NearOomReductionInfoBar() override;
 
@@ -29,7 +29,7 @@ class NearOomReductionInfoBar : public InfoBarAndroid {
  private:
   explicit NearOomReductionInfoBar(InterventionDelegate* delegate);
 
-  // InfoBarAndroid:
+  // infobars::InfoBarAndroid:
   base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
       JNIEnv* env) override;
   void OnLinkClicked(JNIEnv* env,

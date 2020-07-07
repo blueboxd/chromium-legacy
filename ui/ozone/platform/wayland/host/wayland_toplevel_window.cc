@@ -254,9 +254,11 @@ void WaylandToplevelWindow::OnDragEnter(const gfx::PointF& point,
 
   // Wayland sends locations in DIP so they need to be translated to
   // physical pixels.
+  // TODO(crbug.com/1102857): get the real event modifier here.
   drop_handler->OnDragEnter(
       gfx::ScalePoint(point, buffer_scale(), buffer_scale()), std::move(data),
-      operation);
+      operation,
+      /*modifiers=*/0);
 }
 
 int WaylandToplevelWindow::OnDragMotion(const gfx::PointF& point,
@@ -267,15 +269,18 @@ int WaylandToplevelWindow::OnDragMotion(const gfx::PointF& point,
 
   // Wayland sends locations in DIP so they need to be translated to
   // physical pixels.
+  // TODO(crbug.com/1102857): get the real event modifier here.
   return drop_handler->OnDragMotion(
-      gfx::ScalePoint(point, buffer_scale(), buffer_scale()), operation);
+      gfx::ScalePoint(point, buffer_scale(), buffer_scale()), operation,
+      /*modifiers=*/0);
 }
 
 void WaylandToplevelWindow::OnDragDrop(std::unique_ptr<OSExchangeData> data) {
   WmDropHandler* drop_handler = GetWmDropHandler(*this);
   if (!drop_handler)
     return;
-  drop_handler->OnDragDrop(std::move(data));
+  // TODO(crbug.com/1102857): get the real event modifier here.
+  drop_handler->OnDragDrop(std::move(data), /*modifiers=*/0);
 }
 
 void WaylandToplevelWindow::OnDragLeave() {

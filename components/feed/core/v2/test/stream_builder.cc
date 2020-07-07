@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/feed/core/v2/proto_util.h"
 #include "components/feed/core/v2/protocol_translator.h"
@@ -94,6 +95,17 @@ feedstore::Content MakeContent(int id_number) {
   feedstore::Content result;
   *result.mutable_content_id() = MakeContentContentId(id_number);
   result.set_frame("f:" + base::NumberToString(id_number));
+  feedwire::PrefetchMetadata& prefetch_metadata =
+      *result.add_prefetch_metadata();
+
+  std::string suffix = base::NumberToString(id_number);
+  prefetch_metadata.set_uri("http://content" + suffix);
+  prefetch_metadata.set_title("title" + suffix);
+  prefetch_metadata.set_publisher("publisher" + suffix);
+  prefetch_metadata.set_snippet("snippet" + suffix);
+  prefetch_metadata.set_image_url("http://image" + suffix);
+  prefetch_metadata.set_favicon_url("http://favicon" + suffix);
+
   return result;
 }
 

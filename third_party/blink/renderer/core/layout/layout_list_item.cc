@@ -227,6 +227,8 @@ bool LayoutListItem::PrepareForBlockDirectionAlign(
 
     if (marker->IsListMarkerForNormalContent())
       ToLayoutListMarker(marker)->UpdateMarginsAndContent();
+    else if (marker->IsOutsideListMarkerForCustomContent())
+      ToLayoutOutsideListMarker(marker)->UpdateMargins();
     return true;
   }
   return false;
@@ -299,6 +301,8 @@ bool LayoutListItem::UpdateMarkerLocation() {
     // block.
     if (marker->IsListMarkerForNormalContent())
       ToLayoutListMarker(marker)->UpdateMarginsAndContent();
+    else if (marker->IsOutsideListMarkerForCustomContent())
+      ToLayoutOutsideListMarker(marker)->UpdateMargins();
     return true;
   }
 
@@ -386,8 +390,9 @@ void LayoutListItem::AlignMarkerInBlockDirection() {
     // instead. BaselinePosition is workable when marker is an image.
     // However, when marker is text, BaselinePosition contains lineheight
     // information. So use marker_font_metrics.Ascent when marker is text.
-    bool is_image = marker->IsListMarkerForNormalContent() &&
-                    ToLayoutListMarker(marker)->IsImage();
+    bool is_image = marker->IsListMarkerForNormalContent()
+                        ? ToLayoutListMarker(marker)->IsImage()
+                        : ToLayoutOutsideListMarker(marker)->IsMarkerImage();
     if (is_image) {
       offset -= marker_inline_box->BaselinePosition(marker_root.BaselineType());
     } else {
@@ -451,9 +456,10 @@ void LayoutListItem::UpdateOverflow() {
   // TODO(jchaffraix): Propagating the overflow to the line boxes seems
   // pretty wrong (https://crbug.com/554160).
   // FIXME: Need to account for relative positioning in the layout overflow.
-  LayoutUnit marker_line_offset = marker->IsListMarkerForNormalContent()
-                                      ? ToLayoutListMarker(marker)->LineOffset()
-                                      : LayoutUnit(0);
+  LayoutUnit marker_line_offset =
+      marker->IsListMarkerForNormalContent()
+          ? ToLayoutListMarker(marker)->LineOffset()
+          : ToLayoutOutsideListMarker(marker)->ListItemInlineStartOffset();
   if (StyleRef().IsLeftToRightDirection()) {
     marker_line_offset =
         std::min(marker_line_offset,

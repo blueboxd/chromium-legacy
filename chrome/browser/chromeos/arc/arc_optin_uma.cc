@@ -63,15 +63,15 @@ void UpdateEnabledStateByUserTypeUMA() {
 }
 
 void UpdateOptInActionUMA(OptInActionType type) {
-  UMA_HISTOGRAM_ENUMERATION("Arc.OptInAction", type);
+  base::UmaHistogramEnumeration("Arc.OptInAction", type);
 }
 
 void UpdateOptInCancelUMA(OptInCancelReason reason) {
-  UMA_HISTOGRAM_ENUMERATION("Arc.OptInCancel", reason);
+  base::UmaHistogramEnumeration("Arc.OptInCancel", reason);
 }
 
 void UpdateOptInFlowResultUMA(OptInFlowResult result) {
-  UMA_HISTOGRAM_ENUMERATION("Arc.OptInResult", result);
+  base::UmaHistogramEnumeration("Arc.OptInResult", result);
 }
 
 void UpdateProvisioningResultUMA(ProvisioningResult result,
@@ -82,7 +82,7 @@ void UpdateProvisioningResultUMA(ProvisioningResult result,
 }
 
 void UpdateSecondarySigninResultUMA(ProvisioningResult result) {
-  UMA_HISTOGRAM_ENUMERATION("Arc.Secondary.Signin.Result", result);
+  base::UmaHistogramEnumeration("Arc.Secondary.Signin.Result", result);
 }
 
 void UpdateProvisioningTiming(const base::TimeDelta& elapsed_time,
@@ -180,7 +180,7 @@ void UpdateSilentAuthCodeUMA(OptInSilentAuthCode state) {
 
 void UpdateSupervisionTransitionResultUMA(
     mojom::SupervisionChangeStatus result) {
-  UMA_HISTOGRAM_ENUMERATION("Arc.Supervision.Transition.Result", result);
+  base::UmaHistogramEnumeration("Arc.Supervision.Transition.Result", result);
 }
 
 void UpdateReauthorizationSilentAuthCodeUMA(OptInSilentAuthCode state) {

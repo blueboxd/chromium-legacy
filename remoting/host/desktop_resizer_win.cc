@@ -46,6 +46,8 @@ class DesktopResizerWin : public DesktopResizer {
   void RestoreResolution(const ScreenResolution& original) override;
 
  private:
+  void UpdateBestModeForResolution(const DEVMODE& current_mode,
+                                   const DEVMODE& candidate_mode);
   static bool IsResizeSupported();
 
   // Calls EnumDisplaySettingsEx() for the primary monitor.
@@ -92,50 +94,18 @@ std::list<ScreenResolution> DesktopResizerWin::GetSupportedResolutions(
       !IsModeValid(current_mode))
     return std::list<ScreenResolution>();
 
-  std::list<ScreenResolution> resolutions;
   best_mode_for_resolution_.clear();
   for (DWORD i = 0; ; ++i) {
     DEVMODE candidate_mode;
     if (!GetPrimaryDisplayMode(i, EDS_ROTATEDMODE, &candidate_mode))
       break;
-
-    // Ignore modes missing the fields that we expect.
-    if (!IsModeValid(candidate_mode))
-      continue;
-
-    // Ignore modes with differing bits-per-pixel.
-    if (candidate_mode.dmBitsPerPel != current_mode.dmBitsPerPel)
-      continue;
-
-    // If there are multiple modes with the same dimensions:
-    // - Prefer the modes which match the current rotation.
-    // - Among those, prefer modes which match the current frequency.
-    // - Otherwise, prefer modes with a higher frequency.
-    ScreenResolution candidate_resolution = GetModeResolution(candidate_mode);
-    if (best_mode_for_resolution_.count(candidate_resolution) != 0) {
-      DEVMODE best_mode = best_mode_for_resolution_[candidate_resolution];
-
-      if ((candidate_mode.dmDisplayOrientation !=
-           current_mode.dmDisplayOrientation) &&
-          (best_mode.dmDisplayOrientation ==
-           current_mode.dmDisplayOrientation)) {
-        continue;
-      }
-
-      if ((candidate_mode.dmDisplayFrequency !=
-           current_mode.dmDisplayFrequency) &&
-          (best_mode.dmDisplayFrequency >=
-           candidate_mode.dmDisplayFrequency)) {
-        continue;
-      }
-    } else {
-      // If we haven't seen this resolution before, add it to those we return.
-      resolutions.push_back(candidate_resolution);
-    }
-
-    best_mode_for_resolution_[candidate_resolution] = candidate_mode;
+    UpdateBestModeForResolution(current_mode, candidate_mode);
   }
 
+  std::list<ScreenResolution> resolutions;
+  for (const auto& kv : best_mode_for_resolution_) {
+    resolutions.push_back(kv.first);
+  }
   return resolutions;
 }
 
@@ -154,6 +124,58 @@ void DesktopResizerWin::RestoreResolution(const ScreenResolution& original) {
   DWORD result = ChangeDisplaySettings(nullptr, 0);
   if (result != DISP_CHANGE_SUCCESSFUL)
     LOG(ERROR) << "RestoreResolution failed: " << result;
+}
+
+void DesktopResizerWin::UpdateBestModeForResolution(
+    const DEVMODE& current_mode,
+    const DEVMODE& candidate_mode) {
+  // Ignore modes missing the fields that we expect.
+  if (!IsModeValid(candidate_mode)) {
+    LOG(INFO) << "Ignoring mode " << candidate_mode.dmPelsWidth << "x"
+              << candidate_mode.dmPelsHeight << ": invalid fields " << std::hex
+              << candidate_mode.dmFields;
+    return;
+  }
+
+  // Ignore modes with differing bits-per-pixel.
+  if (candidate_mode.dmBitsPerPel != current_mode.dmBitsPerPel) {
+    LOG(INFO) << "Ignoring mode " << candidate_mode.dmPelsWidth << "x"
+              << candidate_mode.dmPelsHeight << ": mismatched BPP: expected "
+              << current_mode.dmFields << " but got "
+              << candidate_mode.dmFields;
+    return;
+  }
+
+  // If there are multiple modes with the same dimensions:
+  // - Prefer the modes which match the current rotation.
+  // - Among those, prefer modes which match the current frequency.
+  // - Otherwise, prefer modes with a higher frequency.
+  ScreenResolution candidate_resolution = GetModeResolution(candidate_mode);
+  if (best_mode_for_resolution_.count(candidate_resolution) != 0) {
+    DEVMODE best_mode = best_mode_for_resolution_[candidate_resolution];
+
+    if ((candidate_mode.dmDisplayOrientation !=
+         current_mode.dmDisplayOrientation) &&
+        (best_mode.dmDisplayOrientation == current_mode.dmDisplayOrientation)) {
+      LOG(INFO) << "Ignoring mode " << candidate_mode.dmPelsWidth << "x"
+                << candidate_mode.dmPelsHeight
+                << ": mode with matching orientation already found.";
+      return;
+    }
+
+    if ((candidate_mode.dmDisplayFrequency !=
+         current_mode.dmDisplayFrequency) &&
+        (best_mode.dmDisplayFrequency >= candidate_mode.dmDisplayFrequency)) {
+      LOG(INFO) << "Ignoring mode " << candidate_mode.dmPelsWidth << "x"
+                << candidate_mode.dmPelsHeight
+                << ": mode with matching or higher frequency already found.";
+      return;
+    }
+  }
+
+  // If we haven't seen this resolution before, or if it's a better match than
+  // one we enumerated previously, save it.
+  best_mode_for_resolution_[candidate_resolution] = candidate_mode;
 }
 
 // static

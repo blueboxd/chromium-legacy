@@ -7,7 +7,7 @@
 
 #include "ash/accessibility/accessibility_observer.h"
 #include "ash/ash_export.h"
-#include "ash/session/session_observer.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "base/macros.h"
 #include "ui/views/controls/image_view.h"

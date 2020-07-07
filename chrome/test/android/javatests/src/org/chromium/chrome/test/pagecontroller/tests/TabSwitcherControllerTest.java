@@ -6,6 +6,7 @@ package org.chromium.chrome.test.pagecontroller.tests;
 
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -50,11 +51,8 @@ public class TabSwitcherControllerTest {
     }
 
     private void waitForTabCount(final int count) {
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mController.getNumberOfOpenTabs() == count;
-            }
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(mController.getNumberOfOpenTabs(), Matchers.is(count));
         });
     }
 

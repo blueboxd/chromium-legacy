@@ -377,7 +377,8 @@ static __m128 v_wrap_virtual_index(__m128 x,
 
   // cmplt(a,b) returns 0xffffffff (-1) if a < b and 0 if not.  So cmp is -1 or
   // 0 depending on whether r < f, which is what we need to compute floor(r).
-  const __m128i cmp = _mm_cmplt_ps(r, _mm_cvtepi32_ps(f));
+  const __m128i cmp =
+      reinterpret_cast<__m128i>(_mm_cmplt_ps(r, _mm_cvtepi32_ps(f)));
 
   // This subtracts 1 if needed to get floor(r).
   f = _mm_add_epi32(f, cmp);

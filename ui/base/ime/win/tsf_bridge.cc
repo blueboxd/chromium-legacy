@@ -156,9 +156,8 @@ TSFBridgeImpl::~TSFBridgeImpl() {
     Microsoft::WRL::ComPtr<ITfContext> context;
     Microsoft::WRL::ComPtr<ITfSource> source;
     if (it->second.cookie != TF_INVALID_COOKIE &&
-        SUCCEEDED(
-            it->second.document_manager->GetBase(context.GetAddressOf())) &&
-        SUCCEEDED(context.CopyTo(source.GetAddressOf()))) {
+        SUCCEEDED(it->second.document_manager->GetBase(&context)) &&
+        SUCCEEDED(context.As(&source))) {
       source->UnadviseSink(it->second.cookie);
     }
   }
@@ -193,8 +192,7 @@ bool TSFBridgeImpl::Initialize() {
   // managed per thread, so that it is enough to set this value at once. This
   // value does not affect other language's IME behaviors.
   Microsoft::WRL::ComPtr<ITfCompartmentMgr> thread_compartment_manager;
-  if (FAILED(
-          thread_manager_.CopyTo(thread_compartment_manager.GetAddressOf()))) {
+  if (FAILED(thread_manager_.As(&thread_compartment_manager))) {
     DVLOG(1) << "Failed to get ITfCompartmentMgr.";
     return false;
   }
@@ -202,7 +200,7 @@ bool TSFBridgeImpl::Initialize() {
   Microsoft::WRL::ComPtr<ITfCompartment> sentence_compartment;
   if (FAILED(thread_compartment_manager->GetCompartment(
           GUID_COMPARTMENT_KEYBOARD_INPUTMODE_SENTENCE,
-          sentence_compartment.GetAddressOf()))) {
+          &sentence_compartment))) {
     DVLOG(1) << "Failed to get sentence compartment.";
     return false;
   }
@@ -446,9 +444,8 @@ bool TSFBridgeImpl::InitializeDocumentMapInternal() {
     DWORD* cookie_ptr = use_null_text_store ? nullptr : &cookie;
     scoped_refptr<TSFTextStore> text_store =
         use_null_text_store ? nullptr : new TSFTextStore();
-    if (!CreateDocumentManager(text_store.get(),
-                               document_manager.GetAddressOf(),
-                               context.GetAddressOf(), cookie_ptr))
+    if (!CreateDocumentManager(text_store.get(), &document_manager, &context,
+                               cookie_ptr))
       return false;
     if ((input_type == TEXT_INPUT_TYPE_PASSWORD) &&
         !InitializeDisabledContext(context.Get()))
@@ -470,9 +467,8 @@ bool TSFBridgeImpl::InitializeDisabledContext(ITfContext* context) {
   }
 
   Microsoft::WRL::ComPtr<ITfCompartment> disabled_compartment;
-  if (FAILED(compartment_mgr->GetCompartment(
-          GUID_COMPARTMENT_KEYBOARD_DISABLED,
-          disabled_compartment.GetAddressOf()))) {
+  if (FAILED(compartment_mgr->GetCompartment(GUID_COMPARTMENT_KEYBOARD_DISABLED,
+                                             &disabled_compartment))) {
     DVLOG(1) << "Failed to get keyboard disabled compartment.";
     return false;
   }
@@ -486,7 +482,7 @@ bool TSFBridgeImpl::InitializeDisabledContext(ITfContext* context) {
 
   Microsoft::WRL::ComPtr<ITfCompartment> empty_context;
   if (FAILED(compartment_mgr->GetCompartment(GUID_COMPARTMENT_EMPTYCONTEXT,
-                                             empty_context.GetAddressOf()))) {
+                                             &empty_context))) {
     DVLOG(1) << "Failed to get empty context compartment.";
     return false;
   }
@@ -507,8 +503,7 @@ bool TSFBridgeImpl::IsFocused(ITfDocumentMgr* document_manager) {
     return false;
   }
   Microsoft::WRL::ComPtr<ITfDocumentMgr> focused_document_manager;
-  if (FAILED(
-          thread_manager_->GetFocus(focused_document_manager.GetAddressOf())))
+  if (FAILED(thread_manager_->GetFocus(&focused_document_manager)))
     return false;
   return focused_document_manager.Get() == document_manager;
 }
@@ -538,7 +533,7 @@ void TSFBridgeImpl::UpdateAssociateFocus() {
   Microsoft::WRL::ComPtr<ITfDocumentMgr> previous_focus;
   thread_manager_->AssociateFocus(attached_window_handle_,
                                   document->document_manager.Get(),
-                                  previous_focus.GetAddressOf());
+                                  &previous_focus);
 }
 
 void TSFBridgeImpl::ClearAssociateFocus() {
@@ -550,7 +545,7 @@ void TSFBridgeImpl::ClearAssociateFocus() {
     return;
   Microsoft::WRL::ComPtr<ITfDocumentMgr> previous_focus;
   thread_manager_->AssociateFocus(attached_window_handle_, nullptr,
-                                  previous_focus.GetAddressOf());
+                                  &previous_focus);
 }
 
 TSFBridgeImpl::TSFDocument* TSFBridgeImpl::GetAssociatedDocument() {

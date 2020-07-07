@@ -765,8 +765,10 @@ void ChromeBrowserMainPartsWin::RegisterApplicationRestart(
       RESTART_NO_CRASH | RESTART_NO_HANG | RESTART_NO_PATCH);
   if (FAILED(hr)) {
     if (hr == E_INVALIDARG) {
-      LOG(WARNING) << "Command line too long for RegisterApplicationRestart: "
-                   << command_line_string;
+      if (!parsed_command_line.HasSwitch(switches::kBrowserTest)) {
+        LOG(WARNING) << "Command line too long for RegisterApplicationRestart: "
+                     << command_line_string;
+      }
     } else {
       NOTREACHED() << "RegisterApplicationRestart failed. hr: " << hr
                    << ", command_line: " << command_line_string;

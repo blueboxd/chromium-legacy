@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/wtf/uuid.h"
 
 namespace blink {
@@ -229,11 +230,11 @@ void MediaElementEventListener::Invoke(ExecutionContext* context,
   UpdateSources(context);
 }
 
-void DidStopMediaStreamSource(const WebMediaStreamSource& source) {
-  if (source.IsNull())
+void DidStopMediaStreamSource(MediaStreamSource* source) {
+  if (!source)
     return;
-  blink::WebPlatformMediaStreamSource* const platform_source =
-      source.GetPlatformSource();
+  WebPlatformMediaStreamSource* const platform_source =
+      source->GetPlatformSource();
   DCHECK(platform_source);
   platform_source->StopSource();
 }

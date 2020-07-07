@@ -26,11 +26,9 @@ class FeedStream;
 class LoadMoreTask : public offline_pages::Task {
  public:
   struct Result {
-    Result() = default;
-    explicit Result(LoadStreamStatus a_final_status)
-        : final_status(a_final_status) {}
     // Final status of loading the stream.
     LoadStreamStatus final_status = LoadStreamStatus::kNoStatus;
+    bool loaded_new_content_from_network = false;
   };
 
   LoadMoreTask(FeedStream* stream,
@@ -52,6 +50,8 @@ class LoadMoreTask : public offline_pages::Task {
   FeedStream* stream_;  // Unowned.
   base::TimeTicks fetch_start_time_;
   std::unique_ptr<UploadActionsTask> upload_actions_task_;
+
+  bool loaded_new_content_from_network_ = false;
 
   base::OnceCallback<void(Result)> done_callback_;
   base::WeakPtrFactory<LoadMoreTask> weak_ptr_factory_{this};

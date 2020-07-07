@@ -1199,6 +1199,16 @@ void DecodeExternalDataPolicies(
     }
   }
 
+  if (policy.has_external_print_servers()) {
+    const em::DeviceExternalPrintServersProto& container(
+        policy.external_print_servers());
+    if (container.has_external_policy()) {
+      SetExternalDataDevicePolicy(key::kDeviceExternalPrintServers,
+                                  container.external_policy(),
+                                  external_data_manager, policies);
+    }
+  }
+
   if (policy.has_device_wilco_dtc_configuration()) {
     const em::DeviceWilcoDtcConfigurationProto& container(
         policy.device_wilco_dtc_configuration());
@@ -1451,6 +1461,18 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     policies->Set(key::kDeviceNativePrintersWhitelist, POLICY_LEVEL_MANDATORY,
                   POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
                   std::move(whitelist), nullptr);
+  }
+
+  if (policy.has_external_print_servers_allowlist()) {
+    const em::DeviceExternalPrintServersAllowlistProto& container(
+        policy.external_print_servers_allowlist());
+    base::Value allowlist(base::Value::Type::LIST);
+    for (const auto& entry : container.allowlist())
+      allowlist.Append(entry);
+
+    policies->Set(key::kDeviceExternalPrintServersAllowlist,
+                  POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                  POLICY_SOURCE_CLOUD, std::move(allowlist), nullptr);
   }
 
   if (policy.has_tpm_firmware_update_settings()) {

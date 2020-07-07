@@ -932,6 +932,7 @@
 <translation id="2151576029659734873">અમાન્ય ટૅબ અનુક્રમણિકા દાખલ કરી.</translation>
 <translation id="2152281589789213846">તમારી પ્રોફાઇલમાં પ્રિન્ટર ઉમેરો</translation>
 <translation id="2154484045852737596">કાર્ડમાં ફેરફાર કરો</translation>
+<translation id="2154697841132053118">સ્પીચની ભાળ મેળવી રહ્યાં છીએ…</translation>
 <translation id="2154710561487035718">URL ની કૉપિ કરો</translation>
 <translation id="2155772377859296191"><ph name="WIDTH" /> x <ph name="HEIGHT" /> જેવું લાગે છે</translation>
 <translation id="2156294658807918600">સર્વિસ વર્કર: <ph name="SCRIPT_URL" /></translation>
@@ -1191,7 +1192,6 @@
 <translation id="2470702053775288986">અસમર્થિત એક્સ્ટેન્શન્સ અક્ષમ કર્યાં</translation>
 <translation id="2471469610750100598">કાળો (ડિફૉલ્ટ)</translation>
 <translation id="2473195200299095979">આ પૃષ્ઠનો અનુવાદ કરો</translation>
-<translation id="2474848500897222119"><ph name="PRINTER_NAME" />માં શાહી પૂરી થઈ ગઈ છે</translation>
 <translation id="2475982808118771221">કોઈ ભૂલ આવી છે</translation>
 <translation id="2476578072172137802">સાઇટ સેટિંગ્સ</translation>
 <translation id="2478176599153288112">"<ph name="EXTENSION" />" માટે મીડિયા-ફાઇલ પરવાનગીઓ</translation>
@@ -1368,6 +1368,7 @@
 <translation id="2682498795777673382">તમારા માતાપિતા પાસે અપડેટ કરાવો</translation>
 <translation id="2683638487103917598">ફોલ્ડર સૉર્ટ કર્યુ</translation>
 <translation id="2684004000387153598">ચાલુ રાખવા માટે, ઓકે ક્લિક કરો, પછી તમારા ઇમેઇલ ઍડ્રેસ માટે નવી પ્રોફાઇલ બનાવવા માટે વ્યક્તિ ઉમેરો પર ક્લિક કરો.</translation>
+<translation id="2686222346846590368">આ <ph name="DEVICE_TYPE" /> માટે આ છેલ્લું ઑટોમૅટિક સૉફ્ટવેર અને સુરક્ષા અપડેટ છે. ભાવિ અપડેટ મેળવવા માટે, નવા મૉડલ પર અપગ્રેડ કરો. &lt;a target="_blank" href="<ph name="URL" />"&gt;વધુ જાણો<ph name="LINK_END" /></translation>
 <translation id="2687403674020088961">બધી કુકીને બ્લૉક કરો (સુઝાવ આપતા નથી)</translation>
 <translation id="2687407218262674387">Googleની સેવાની શરતો</translation>
 <translation id="2688196195245426394">સર્વર સાથે ઉપકરણની નોંધણી કરતી વખતે ભૂલ: <ph name="CLIENT_ERROR" />.</translation>
@@ -1390,6 +1391,7 @@
 <translation id="2712173769900027643">પરવાનગી માગો</translation>
 <translation id="2713444072780614174">શ્વેત</translation>
 <translation id="2714393097308983682">Google Play સ્ટોર</translation>
+<translation id="2714997332747470971">વ્યક્તિગત માહિતીના સૂચનો તમને તમારું નામ, સરનામું અથવા ફોન નંબર જેવા સૂચનો વડે વધુ ઝડપથી લખવામાં સહાય કરી શકે છે. માત્ર તમે જ તમારા એકાઉન્ટ માટેના ખાનગી તેમજ વ્યક્તિગત કરેલા સૂચનો જોઈ શકો છો.</translation>
 <translation id="2715751256863167692">આ અપગ્રેડ તમારી Chromebookને રીસેટ કરે છે અને હાલનો વપરાશકર્તા ડેટા કાઢી નાખે છે.</translation>
 <translation id="2716986496990888774">આ સેટિંગને માતાપિતા મેનેજ કરે છે.</translation>
 <translation id="2718395828230677721">રાત્રિ પ્રકાશ</translation>
@@ -1495,7 +1497,6 @@
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> તમારા વ્યવસ્થાપકનાં પ્રૉક્સી સેટિંગનો ઉપયોગ કરી રહ્યું છે</translation>
 <translation id="2825758591930162672">વિષયની સાર્વજનિક કી</translation>
 <translation id="2828650939514476812">વાઇ-ફાઇ નેટવર્ક પર કનેક્ટ કરો</translation>
-<translation id="28291580771888953"><ph name="PRINTER_NAME" />ની કતાર ભરાઈ ગઈ છે</translation>
 <translation id="2835547721736623118">વાણી ઓળખ સેવા</translation>
 <translation id="2836269494620652131">ક્રૅશ</translation>
 <translation id="2836635946302913370">તમારા વ્યવસ્થાપક દ્વારા આ વપરાશકર્તા સાથે સાઇન ઇન કરવું અક્ષમ કરવામાં આવ્યું છે.</translation>
@@ -2311,6 +2312,7 @@
 <translation id="3839516600093027468"><ph name="HOST" />ને હંમેશા ક્લિપબોર્ડ જોવાથી બ્લૉક કરો</translation>
 <translation id="3841964634449506551">પાસવર્ડ અમાન્ય</translation>
 <translation id="3842552989725514455">Serif ફૉન્ટ</translation>
+<translation id="3843464315703645664">આંતરિક રીતે વ્હાઇટલિસ્ટેડ</translation>
 <translation id="3846116211488856547">વેબસાઇટ, Android ઍપ અને બીજા ઘણા માટે વિકાસના સાધનો મેળવો. Linux ઇન્સ્ટૉલ કરવાથી <ph name="DOWNLOAD_SIZE" /> ડેટા ડાઉનલોડ થશે.</translation>
 <translation id="3847319713229060696">વેબ પરની દરેક વ્યક્તિ માટે સુરક્ષાને બહેતર બનાવવા સહાય કરો</translation>
 <translation id="385051799172605136">પાછળ</translation>
@@ -2442,6 +2444,7 @@
 <translation id="3983769721878416534">ક્લિક કરતાં પહેલાં વિલંબ</translation>
 <translation id="3984159763196946143">ડેમો મોડ શરૂ કરી શકાયો નથી</translation>
 <translation id="3984431586879874039">આ સાઇટને તમારો સુરક્ષા કોડ જોવાની મંજૂરી આપીએ?</translation>
+<translation id="3986705137476756801">હાલ પૂરતું, લાઇવ કૅપ્શનની સુવિધા બંધ કરો</translation>
 <translation id="3987938432087324095">માફ કરશો, તે સમજાયું ન હતું.</translation>
 <translation id="3988996860813292272">સમયઝોન પસંદ કરો</translation>
 <translation id="399179161741278232">આયાત કરેલા</translation>
@@ -2768,7 +2771,6 @@
 <translation id="4453946976636652378"><ph name="SEARCH_ENGINE_NAME" /> શોધો અથવા URL ટાઇપ કરો</translation>
 <translation id="4459169140545916303"><ph name="DEVICE_LAST_ACTIVATED_TIME" /> દિવસ પહેલાં સક્રિય</translation>
 <translation id="4460014764210899310">અલગ થયેલું ગ્રૂપ</translation>
-<translation id="4460343359907016103"><ph name="PRINTER_NAME" />ને કનેક્ટ કરતી વખતે ભૂલ આવી</translation>
 <translation id="4462159676511157176">કસ્ટમ નામ સર્વર્સ</translation>
 <translation id="4465236939126352372"><ph name="APP_NAME" /> માટે <ph name="TIME" />ની સમય મર્યાદા સેટ કરી છે</translation>
 <translation id="4465725236958772856"><ph name="NETWORK_COUNT" />માંથી નેટવર્ક <ph name="NETWORK_INDEX" />, <ph name="NETWORK_NAME" />, તમારા વ્યવસ્થાપક દ્વારા મેનેજ કરવામાં આવે છે, કનેક્ટ કરો</translation>
@@ -2886,6 +2888,7 @@
 <translation id="4608520674724523647">સફળ નોંધણીનું ચિત્ર</translation>
 <translation id="4608703838363792434"><ph name="FILE_NAME" />માં સંવેદનશીલ કન્ટેન્ટ છે</translation>
 <translation id="4610162781778310380"><ph name="PLUGIN_NAME" />માં એક ભૂલ આવી છે</translation>
+<translation id="4610178114344604329">વ્યક્તિગત માહિતીના સૂચનો બતાવો</translation>
 <translation id="4610637590575890427">શું તમારી ઈચ્છા <ph name="SITE" /> પર જવાની હતી?</translation>
 <translation id="4611114513649582138">ડેટા કનેક્શન ઉપલબ્ધ</translation>
 <translation id="4613144866899789710">Linuxનું ઇન્સ્ટૉલેશન રદ કરી રહ્યાં છીએ...</translation>
@@ -3065,7 +3068,6 @@
 <translation id="4864369630010738180">સાઇન ઇન થઈ રહ્યું છે...</translation>
 <translation id="4864805589453749318">સ્કૂલ એકાઉન્ટ ઉમેરવાની પરવાનગી આપી રહ્યાં છે તે માતાપિતાને પસંદ કરો.</translation>
 <translation id="486635084936119914">ડાઉનલોડ કર્યા પછી કેટલાક ફાઇલ પ્રકારોને આપમેળે ખોલો</translation>
-<translation id="4869213010169296107"><ph name="PRINTER_NAME" />માં ટ્રે ખૂટે છે</translation>
 <translation id="48704129375571883">વધારાની સુવિધાઓ ઉમેરો</translation>
 <translation id="4870758487381879312">ગોઠવણીની માહિતી મેળવવા માટે, વ્યવસ્થાપક દ્વારા અપાયેલો પાસવર્ડ દાખલ કરો</translation>
 <translation id="4870903493621965035">કોઈ જોડી કરેલા ઉપકરણો નથી</translation>
@@ -3163,6 +3165,7 @@
 <translation id="4977942889532008999">ઍક્સેસની પુષ્ટિ કરો</translation>
 <translation id="4980805016576257426">આ એક્સટેન્શનમાં માલવેર છે.</translation>
 <translation id="4981449534399733132">તમારા બધા સિંક કરેલા ડિવાઇસ અને તમારા Google એકાઉન્ટમાંથી બ્રાઉઝિંગ ડેટા સાફ કરવા માટે, <ph name="BEGIN_LINK" />સાઇન ઇન કરો<ph name="END_LINK" />.</translation>
+<translation id="4982236238228587209">ડિવાઇસનું સૉફ્ટવેર</translation>
 <translation id="4986728572522335985">સિક્યુરિટી કીના પિન સહિત, તેના પરના બધા ડેટાને આ ડિલીટ કરશે</translation>
 <translation id="4988526792673242964">પૃષ્ઠો</translation>
 <translation id="49896407730300355">ઘ&amp;ડિયાળની વિપરિત દિશામાં ફેરવો</translation>
@@ -3315,6 +3318,7 @@
 <translation id="5184662919967270437">તમારા ઉપકરણને અપડેટ કરી રહ્યાં છે</translation>
 <translation id="5185359571430619712">એક્સ્ટેંશનનો રિવ્યૂ કરો</translation>
 <translation id="5185386675596372454">"<ph name="EXTENSION_NAME" />"નું સૌથી નવું વર્ઝન બંધ કરવામાં આવ્યું છે, કારણ કે એને વધુ પરવાનગીઓની જરૂર છે.</translation>
+<translation id="5185500136143151980">ઇન્ટરનેટ ઍક્સેસ નથી</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5190926251776387065">પોર્ટ સક્રિય કરો</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> એકથી વધુ ફાઇલો ડાઉનલોડ કરવા માગે છે</translation>
@@ -3471,7 +3475,6 @@
 <translation id="5390112241331447203">પ્રતિસાદના રિપોર્ટમાં મોકલેલી system_logs.txt ફાઇલનો સમાવેશ કરો.</translation>
 <translation id="5390677308841849479">ઘેરો લાલ અને નારંગી</translation>
 <translation id="5390743329570580756">આ માટે મોકલો</translation>
-<translation id="5395869306561378615"><ph name="PRINTER_NAME" /> થોભાવ્યું છે</translation>
 <translation id="5397794290049113714">તમે</translation>
 <translation id="5398572795982417028">વધુ પડતો મોટો પૃષ્ઠ સંદર્ભ, મર્યાદા <ph name="MAXIMUM_PAGE" /> છે</translation>
 <translation id="5398772614898833570">જાહેરાતો અવરોધિત કરી</translation>
@@ -3486,7 +3489,6 @@
 <translation id="5417312524372586921">બ્રાઉઝરની થીમ</translation>
 <translation id="5419405654816502573">Voice Match</translation>
 <translation id="5420438158931847627">ટેક્સ્ટ અને છબીઓની તીવ્રતા નિર્ધારિત કરે છે</translation>
-<translation id="5421498071721257877"><ph name="PRINTER_NAME" />માં ડિવાઇસ ભૂલ આવી છે</translation>
 <translation id="5422221874247253874">ઍક્સેસ પૉઇન્ટ</translation>
 <translation id="5422781158178868512">માફ કરશો, તમારો બાહ્ય સ્ટોરેજ ઉપકરણ ઓળખી શકાયું નથી.</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3836,7 +3838,6 @@
 <translation id="5852137567692933493">પુનઃપ્રારંભ કરો અને પાવરવૉશ કરો</translation>
 <translation id="5854912040170951372">સ્લાઇસ</translation>
 <translation id="5855267860608268405">જાણીતા વાઇ-ફાઇ નેટવર્ક</translation>
-<translation id="5855310969323666289"><ph name="PRINTER_NAME" />નો દરવાજો ખુલ્લો છે</translation>
 <translation id="5855643921295613558">0.6 સેકન્ડ</translation>
 <translation id="5856721540245522153">ડિબગિંગ સુવિધાઓ ચાલુ કરો</translation>
 <translation id="5857090052475505287">નવું ફોલ્ડર</translation>
@@ -3867,7 +3868,6 @@
 <translation id="5877064549588274448">ચેનલ બદલી. ફેરફારો લાગુ કરવા માટે તમારા ઉપકરણને પુનઃપ્રારંભ કરો.</translation>
 <translation id="5877584842898320529">પસંદ કરેલું પ્રિન્ટર ઉપલબ્ધ નથી અથવા યોગ્ય રીતે ઇન્સ્ટૉલ થયેલું નથી. <ph name="BR" /> તમારા પ્રિન્ટરને ચેક કરો અથવા બીજા પ્રિન્ટરને અજમાવી જુઓ.</translation>
 <translation id="5882919346125742463">જાણીતા નેટવર્ક્સ</translation>
-<translation id="5883716097305842571"><ph name="PRINTER_NAME" />નો આઉટપુટ વિસ્તાર લગભગ ભરાઈ ગયો છે</translation>
 <translation id="5884474295213649357">આ ટૅબ USB ઉપકરણ સાથે કનેક્ટ થયેલ છે.</translation>
 <translation id="5886009770935151472">આંગળી 1</translation>
 <translation id="5889282057229379085">ઇન્ટરમિડિયેટ CA ની મહત્તમ સંખ્યા: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4434,7 +4434,6 @@ USB ડિવાઇસ</translation>
 <translation id="6611972847767394631">તમારા ટૅબ અહીં મેળવો</translation>
 <translation id="6612358246767739896">સુરક્ષિત કન્ટેન્ટ</translation>
 <translation id="6615455863669487791">મને બતાવો</translation>
-<translation id="6617034477946102682"><ph name="PRINTER_NAME" />થી કનેક્ટ થઈ શકતું નથી</translation>
 <translation id="6618097958368085618">તો પણ રાખો</translation>
 <translation id="6618744767048954150">હજીપણ તપાસ થઈ રહી છે</translation>
 <translation id="6619058681307408113">લાઇન પ્રિન્ટર ડેમન (LPD)</translation>
@@ -4685,6 +4684,7 @@ USB ડિવાઇસ</translation>
 <translation id="6938381444925658529">તમે સમયસીમા સમાપ્ત થાય એ પહેલાં અપડેટને ડાઉનલોડ કરો તે <ph name="DOMAIN" /> માટે જરૂરી છે. તમે જ્યારે ઇન્ટરનેટથી કનેક્ટ થશો, ત્યારે અપડેટ ઑટોમૅટિક રીતે ડાઉનલોડ થશે.</translation>
 <translation id="6938386202199793006">તમારી પાસે 1 સાચવેલું પ્રિન્ટર છે.</translation>
 <translation id="6938789263968032501">લોકો</translation>
+<translation id="6939815295902433669">ડિવાઇસના સૉફ્ટવેરનો રિવ્યૂ કરો</translation>
 <translation id="6941937518557314510">તમારા પ્રમાણપત્ર સાથે <ph name="HOST_NAME" /> ને અધિકૃત કરવા માટે કૃપા કરીને <ph name="TOKEN_NAME" /> પર સાઇન ઇન કરો.</translation>
 <translation id="6943060957016121200">ઝટપટ ઇન્ટરનેટ શેર કરવાની સુવિધા ચાલુ કરો</translation>
 <translation id="6943176775188458830">છાપવાનું રદ કરો</translation>
@@ -4850,7 +4850,6 @@ USB ડિવાઇસ</translation>
 <translation id="7128151990937044829">નોટિફિકેશન બ્લૉક કરેલું હોય ત્યારે ઍડ્રેસ બારમાં સૂચક બતાવો</translation>
 <translation id="7131040479572660648"><ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> અને <ph name="WEBSITE_3" /> પર તમારો ડેટા વાંચી શકે છે</translation>
 <translation id="713122686776214250">પૃ&amp;ષ્ઠ ઉમેરો...</translation>
-<translation id="7131379856697962078"><ph name="PRINTER_NAME" />નો આઉટપુટ વિસ્તાર ભરાઈ ગયો છે</translation>
 <translation id="7133578150266914903">તમારા વ્યવસ્થાપક આ ઉપકરણને રોલ બૅક કરી રહ્યા છે (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">ટેક્સ્ટને વધુ નાનો બનાવો</translation>
 <translation id="7135729336746831607">બ્લૂટૂથ ચાલુ કરીએ?</translation>
@@ -4869,7 +4868,6 @@ USB ડિવાઇસ</translation>
 <translation id="7152478047064750137">આ એક્સટેન્શનને કોઈ વિશિષ્ટ પરવાનગીઓની જરૂર નથી</translation>
 <translation id="7154130902455071009">તમારા પ્રારંભ પૃષ્ઠને આ પર બદલો: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">કૅમેરા અથવા ફાઇલમાંથી અસ્તિત્વમાંનો ફોટો</translation>
-<translation id="715657691234357425"><ph name="PRINTER_NAME" />માં કાગળ ઓછા છે</translation>
 <translation id="7165320105431587207">નેટવર્ક ગોઠવવામાં નિષ્ફળ</translation>
 <translation id="716640248772308851">"<ph name="EXTENSION" />" આ તપાસાયેલા સ્થાનોમાં ફોટા, વીડિયો અને સાઉન્ડ ફાઇલોને વાંચી શકે છે.</translation>
 <translation id="7167486101654761064">આ પ્રકારની ફાઇલો &amp;હંમેશા ખોલો</translation>
@@ -4900,7 +4898,6 @@ USB ડિવાઇસ</translation>
 <translation id="7197632491113152433">અમને તમારા એકાઉન્ટમાંથી આ ડિવાઇસ પર ઉપયોગ કરી શકાય તેવી <ph name="NUMBER_OF_APPS" /> ઍપ મળી છે.</translation>
 <translation id="7199158086730159431">સહાય મેળવો</translation>
 <translation id="7200083590239651963">ગોઠવણી પસંદ કરો</translation>
-<translation id="7201042526153088083">Google Playમાંથી તમારા <ph name="DEVICE_TYPE" /> પર ઍપ અને ગેમ ઇન્સ્ટૉલ કરો. &lt;a target="_blank" href="<ph name="URL" />"&gt;વધુ જાણો&lt;/a&gt;</translation>
 <translation id="720110658997053098">આ ઉપકરણને કાયમ માટે કિઓસ્ક મોડમાં રાખો</translation>
 <translation id="7201118060536064622">'<ph name="DELETED_ITEM_NAME" />' ડિલીટ કર્યું</translation>
 <translation id="7201420661433230412">ફાઇલો જુઓ</translation>
@@ -5156,6 +5153,7 @@ USB ડિવાઇસ</translation>
 <translation id="7522255036471229694">"Ok Google" કહો</translation>
 <translation id="7525067979554623046">બનાવો</translation>
 <translation id="7526658513669652747">{NUM_DOWNLOADS,plural, =1{અન્ય 1}one{અન્ય {NUM_DOWNLOADS}}other{અન્ય {NUM_DOWNLOADS}}}</translation>
+<translation id="7526989658317409655">પ્લેસહોલ્ડર</translation>
 <translation id="7529411698175791732">તમારું ઇન્ટરનેટ કનેક્શન તપાસો. જો સમસ્યા ચાલુ રહે, તો સાઇન આઉટ કરો અને ફરીથી સાઇન ઇન કરવાનો પ્રયાસ કરો.</translation>
 <translation id="7530016656428373557">ડિસ્ચાર્જ દર વોટ્સમાં</translation>
 <translation id="7531779363494549572">સેટિંગ &gt; ઍપ અને નોટિફિકેશન &gt; નોટિફિકેશન પર જાઓ.</translation>
@@ -5205,7 +5203,6 @@ USB ડિવાઇસ</translation>
 <translation id="7598466960084663009">કમ્પ્યુટર ફરી શરૂ કરો</translation>
 <translation id="7599527631045201165">ઉપકરણનું નામ ખૂબ લાબું છે. ફરી પ્રયત્ન કરવા માટે થોડું ટૂંકું નામ લખો.</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> નું ક્યારેય અનુવાદ કરશો નહીં</translation>
-<translation id="7601297144931396972"><ph name="PRINTER_NAME" />નું કાગળ જામ થઈ ગયું છે</translation>
 <translation id="760197030861754408">કનેક્ટ કરવા માટે <ph name="LANDING_PAGE" /> પર જાઓ.</translation>
 <translation id="7602079150116086782">અન્ય ડિવાઇસમાંથી કોઈ ટેબ નથી</translation>
 <translation id="7602173054665172958">પ્રિન્ટ મેનેજમેન્ટ</translation>
@@ -5216,6 +5213,7 @@ USB ડિવાઇસ</translation>
 <translation id="7609148976235050828">કૃપા કરીને ઇન્ટરનેટથી કનેક્ટ થાઓ અને ફરી પ્રયાસ કરો.</translation>
 <translation id="7614260613810441905">કોઈ સાઇટ તમારા ડિવાઇસમાંની ફાઇલો કે ફોલ્ડરોમાં ફેરફાર કરવા માગે ત્યારે પૂછવામાં આવે (સુઝાવ આપેલો છે)</translation>
 <translation id="761530003705945209">Google ડ્રાઇવ પર બૅકઅપ લો. તમારો ડેટા સરળતાથી પાછો મેળવો અથવા ડિવાઇસને કોઈપણ સમયે સ્વિચ કરો. તમારા બૅકઅપમાં ઍપનો ડેટા શામેલ છે. તમારું બૅકઅપ Google પર અપલોડ કરવામાં આવે છે અને તમારા Google એકાઉન્ટ પાસવર્ડનો ઉપયોગ કરીને એન્ક્રિપ્ટ કરવામાં આવે છે.</translation>
+<translation id="7615365294369022248">તમારું એકાઉન્ટ ઉમેરતી વખતે ભૂલ આવી હતી</translation>
 <translation id="7616214729753637086">ઉપકરણની નોંધણી કરી રહ્યું છે...</translation>
 <translation id="7617263010641145920">Play સ્ટોર ચાલુ કરો</translation>
 <translation id="7617366389578322136">"<ph name="DEVICE_NAME" />" થી કનેક્ટ કરી રહ્યું છે</translation>
@@ -5658,7 +5656,6 @@ USB ડિવાઇસ</translation>
           આમાં Google Payની ચુકવણી પદ્ધતિઓ અને ઍડ્રેસ સામેલ હોતા નથી.</translation>
 <translation id="81238879832906896">પીળા અને સફેદ ફૂલ</translation>
 <translation id="8124313775439841391">સંચાલિત ONC</translation>
-<translation id="8127535217699822294"><ph name="PRINTER_NAME" />માં કાગળ પૂરા થઈ ગયા છે</translation>
 <translation id="813082847718468539">સ્થાન માહિતી જુઓ</translation>
 <translation id="8131740175452115882">પુષ્ટિ કરો</translation>
 <translation id="8133676275609324831">ફોલ્ડરમાં બતાવો</translation>
@@ -5757,7 +5754,6 @@ USB ડિવાઇસ</translation>
 <translation id="8254954272268479918">Linux (બીટા) બંધ કરો</translation>
 <translation id="8255451560461371599">કોઈ બૅકગ્રાઉન્ડ ટાઇલ નથી</translation>
 <translation id="8256319818471787266">સ્પાર્કી</translation>
-<translation id="8256417822772703842"><ph name="PRINTER_NAME" />માં શાહી ઓછી થઈ ગઈ છે</translation>
 <translation id="8257950718085972371">કૅમેરાની ઍક્સેસને અવરોધિત કરવાનું ચાલુ રાખો</translation>
 <translation id="8259239505248583312">ચાલો જઈએ</translation>
 <translation id="8260864402787962391">માઉસ</translation>
@@ -5938,7 +5934,6 @@ USB ડિવાઇસ</translation>
 <translation id="8487678622945914333">ઝૂમ વધારો</translation>
 <translation id="8490896350101740396">નીચેની કિઓસ્ક ઍપ્લિકેશનો "<ph name="UPDATED_APPS" />" અપડેટ કરવામાં આવી છે. અપડેટ પ્રક્રિયા પૂર્ણ કરવા માટે કૃપા કરીને ઉપકરણ રીબૂટ કરો.</translation>
 <translation id="8493236660459102203">માઇક્રોફોન:</translation>
-<translation id="8495940850609851342"><ph name="PRINTER_NAME" /> બંધ થઈ ગયું છે</translation>
 <translation id="8496717697661868878">આ પ્લગિન ચલાવો</translation>
 <translation id="8497219075884839166">વિંડોની ઉપયોગીતાઓ</translation>
 <translation id="8498214519255567734">ઓછા પ્રકાશમાં તમારી સ્ક્રીન પર જોવાનું અથવા વાંચવાનું સરળ બનાવે છે</translation>
@@ -6191,6 +6186,7 @@ USB ડિવાઇસ</translation>
 <translation id="8798441408945964110">પ્રદાતાનું નામ</translation>
 <translation id="8800004011501252845">આના માટે ગંતવ્યો બતાવી રહ્યું છે</translation>
 <translation id="8800034312320686233">સાઇટ કામ નથી કરતી?</translation>
+<translation id="880069872639153240">તમે ટાઇપ કરી રહ્યાં હો, તેના આધારે ઇમોજીના સૂચનો મેળવો</translation>
 <translation id="8803953437405899238">એક નવી ટૅબ એક ક્લિકમાં ખોલો</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{ટૅબને બીજી વિંડોમાં ખસેડો}one{ટૅબને બીજી વિંડોમાં ખસેડો}other{ટૅબને બીજી વિંડોમાં ખસેડો}}</translation>
 <translation id="8805140816472474147">સમન્વયન શરૂ કરવા સમન્વયન સેટિંગ્સની પુષ્ટિ કરો.</translation>
@@ -6479,6 +6475,12 @@ USB ડિવાઇસ</translation>
 <translation id="9157096865782046368">0.8 સેકન્ડ</translation>
 <translation id="9157697743260533322">તમામ વપરાશકર્તાઓ માટે સ્વચલિત અપડેટ્સને સેટ કરવામાં નિષ્ફળ થયાં (પ્રીફ્લાઇટ લોંચની ભૂલ: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">અરે! નેટવર્ક સંચાર સમસ્યા પ્રમાણીકરણ દરમિયાન આવી છે. કૃપા કરીને તમારું નેટવર્ક કનેક્શન તપાસો અને ફરી પ્રયાસ કરો.</translation>
+<translation id="9159643062839240276">આ અજમાવો:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />નેટવર્ક કેબલ, મૉડેમ અને રાઉટર ચેક કરો
+      <ph name="LIST_ITEM" />વાઇ-ફાઇ સાથે ફરીથી કનેક્ટ કરો
+      <ph name="LIST_ITEM" />Chrome Connectivity Diagnostics સાધન ચલાવો
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">ચિત્ર-માં-ચિત્ર</translation>
 <translation id="9168436347345867845">આ પછીથી કરો</translation>
 <translation id="9169496697824289689">કીબોર્ડ શૉર્ટકટ જુઓ</translation>

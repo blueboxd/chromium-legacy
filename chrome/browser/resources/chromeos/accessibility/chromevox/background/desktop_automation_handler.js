@@ -17,6 +17,7 @@ goog.require('editing.TextEditHandler');
 
 goog.scope(function() {
 const AutomationNode = chrome.automation.AutomationNode;
+const Dir = constants.Dir;
 const EventType = chrome.automation.EventType;
 const RoleType = chrome.automation.RoleType;
 const StateType = chrome.automation.StateType;
@@ -206,7 +207,7 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
       this.textEditHandler_ = null;
     }
 
-    const node = evt.target;
+    let node = evt.target;
 
     // Discard focus events on embeddedObject and webView.
     if (node.role == RoleType.EMBEDDED_OBJECT ||
@@ -215,7 +216,15 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
     }
 
     if (node.role == RoleType.UNKNOWN) {
-      return;
+      // Ideally, we'd get something more meaningful than focus on an unknown
+      // node, but this does sometimes occur. Sync downward to a more reasonable
+      // target.
+      node = AutomationUtil.findNodePre(
+          node, Dir.FORWARD, AutomationPredicate.object);
+
+      if (!node) {
+        return;
+      }
     }
 
     if (!node.root) {

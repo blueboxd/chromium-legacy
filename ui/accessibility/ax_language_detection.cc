@@ -234,9 +234,9 @@ void AXLanguageDetectionManager::DetectLanguages() {
 // Will not check feature flag.
 void AXLanguageDetectionManager::DetectLanguagesForSubtree(
     AXNode* subtree_root) {
-  // Only perform detection for kStaticText(s).
+  // Only perform detection for kStaticText nodes.
   //
-  // Do not visit the children of kStaticText(s) as they don't have
+  // Do not visit the children of kStaticText nodes as they don't have
   // interesting children for language detection.
   //
   // Since kInlineTextBox(es) contain text from their parent, any detection on
@@ -473,7 +473,7 @@ void AXLanguageDetectionObserver::OnAtomicUpdateFinished(
   DCHECK(tree->language_detection_manager);
 
   // Perform Detect and Label for each node changed or created.
-  // We currently only consider kStaticText for detection.
+  // We currently only consider nodes with a role of kStaticText for detection.
   //
   // Note that language inheritance is now handled by AXNode::GetLanguage.
   //

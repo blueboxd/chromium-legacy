@@ -625,6 +625,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
       EarlyTouchpadFlingCancelationOnInertialGSUAckNotConsumed);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostDelegatedInkMetadataTest,
                            FlagGetsSetFromRenderFrameMetadata);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostInputEventRouterTest,
+                           QueryResultAfterChildViewDead);
 
   void SynchronizeVisualProperties();
 

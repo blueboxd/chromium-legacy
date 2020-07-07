@@ -1186,7 +1186,6 @@
 <translation id="247051149076336810">የፋይል ማጋራት ዩአርኤል</translation>
 <translation id="2470702053775288986">የማይደገፉ ቅጥያዎች ተሰናክለዋል</translation>
 <translation id="2473195200299095979">ይህን ገጽ መተርጎም</translation>
-<translation id="2474848500897222119"><ph name="PRINTER_NAME" /> ቀለም ጨርሷል</translation>
 <translation id="2475982808118771221">ስህተት ተከስቷል</translation>
 <translation id="2476578072172137802">የጣቢያ ቅንብሮች</translation>
 <translation id="2478176599153288112">የ«<ph name="EXTENSION" />» ማህደረ መረጃ ፋይል ፍቃዶች</translation>
@@ -1489,7 +1488,6 @@
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> ከእርስዎ አስተዳዳሪ የወኪል ቅንብሮችን እየተጠቀመ ነው</translation>
 <translation id="2825758591930162672">የርዕሰ ጉዳዩ ህዝባዊ ቁልፍ</translation>
 <translation id="2828650939514476812">ወደ Wi-Fi አውታረ መረብ አገናኝ</translation>
-<translation id="28291580771888953">የ<ph name="PRINTER_NAME" /> ወረፋ ሙሉ ነው</translation>
 <translation id="2835547721736623118">የንግግር ማወቂያ አገልግሎት</translation>
 <translation id="2836269494620652131">ብልሽት</translation>
 <translation id="2836635946302913370">በዚህ ተጠቃሚ ስም መግባት በአስተዳዳሪዎ ተሰናክሏል።</translation>
@@ -2756,7 +2754,6 @@
 <translation id="4453946976636652378"><ph name="SEARCH_ENGINE_NAME" /> ላይ ይፈልጉ ወይም ዩአርኤል ይተይቡ</translation>
 <translation id="4459169140545916303">ገባሪ ከ<ph name="DEVICE_LAST_ACTIVATED_TIME" /> ቀናት በፊት</translation>
 <translation id="4460014764210899310">ነጥል</translation>
-<translation id="4460343359907016103">ከ<ph name="PRINTER_NAME" /> ጋር መገናኘት ላይ ስሕተት</translation>
 <translation id="4462159676511157176">የብጁ ስም አገልጋዮች</translation>
 <translation id="4465236939126352372">ለ<ph name="APP_NAME" /> የ<ph name="TIME" /> የጊዜ ገደብ ተቀናብሯል</translation>
 <translation id="4465725236958772856">አውታረመረብ <ph name="NETWORK_INDEX" /> ከ<ph name="NETWORK_COUNT" />፣ <ph name="NETWORK_NAME" />፣ በእርስዎ አስተዳዳሪ የሚተዳደር፣ አገናኝ</translation>
@@ -3050,7 +3047,6 @@
 <translation id="4864369630010738180">በመግባት ላይ...</translation>
 <translation id="4864805589453749318">የትምህርት ቤት መለያ ለማከል ፈቃድ እየሰጠ ያለውን ወላጅ ይምረጡ።</translation>
 <translation id="486635084936119914">ካወረዱ በኋላ የተወሰኑ የፋይል አይነቶችን ክፈት</translation>
-<translation id="4869213010169296107"><ph name="PRINTER_NAME" /> ትሪ ይጎድለዋል</translation>
 <translation id="48704129375571883">ተጨማሪ ባህሪያትን ያክሉ</translation>
 <translation id="4870758487381879312">የውቅረት መረጃን ለማግኘት በአስተዳዳሪ የቀረበውን የይለፍ ቃል ያስገቡ</translation>
 <translation id="4870903493621965035">ምንም የተጣመሩ መሣሪያዎች የሉም</translation>
@@ -3453,7 +3449,6 @@
 <translation id="5390100381392048184">ጣቢያዎች ድምጽ እንዲያጫውቱ ፍቀድ</translation>
 <translation id="5390677308841849479">ጥቆር ያለ ቀይ እና ብርቱካናማ</translation>
 <translation id="5390743329570580756">ላክ ለ</translation>
-<translation id="5395869306561378615"><ph name="PRINTER_NAME" /> ባለበት ቆሟል</translation>
 <translation id="5397794290049113714">እርስዎ</translation>
 <translation id="5398572795982417028">ከወሰን ውጪ ያለ ገጽ ማጣቀሻ፣ ገደቡ <ph name="MAXIMUM_PAGE" /> ነው</translation>
 <translation id="5398772614898833570">ማስታወቂያዎች ታግደዋል</translation>
@@ -3468,7 +3463,6 @@
 <translation id="5417312524372586921">የአሳሽ ገጽታዎች</translation>
 <translation id="5419405654816502573">Voice match</translation>
 <translation id="5420438158931847627">የጽሑፍ እና ምስሎትች ጠርዝ ጥራትነትን ይወስናል</translation>
-<translation id="5421498071721257877"><ph name="PRINTER_NAME" /> የመሣሪያ ስሕተት አለው</translation>
 <translation id="5422221874247253874">የመዳረሻ ነጥብ</translation>
 <translation id="5422781158178868512">ይቅርታ፣ የውጫዊ ማከማቻ መሣሪያዎ ሊታወቅ አልቻለም።</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3816,7 +3810,6 @@
 <translation id="5852137567692933493">ዳግም አስጀምር እና ፓወርዋሽ አድርግ</translation>
 <translation id="5854912040170951372">Slice</translation>
 <translation id="5855267860608268405">የታወቁ የWi-Fi አውታረ መረቦች</translation>
-<translation id="5855310969323666289">የ<ph name="PRINTER_NAME" /> በር ክፍት ነው</translation>
 <translation id="5855643921295613558">0.6 ሰከንዶች</translation>
 <translation id="5856721540245522153">የማረሚያ ባህሪያትን ያንቁ</translation>
 <translation id="5857090052475505287">አዲስ አቃፊ</translation>
@@ -3846,7 +3839,6 @@
 <translation id="5877064549588274448">ሰርጥ ተለውጧል። ለውጦችን ለመተግበር መሳሪያዎን ዳግም ያስጀምሩ።</translation>
 <translation id="5877584842898320529">የተመረጠው አታሚ የለም ወይም በትክክል አልተጫነም። <ph name="BR" /> አታሚዎን ይፈትሹት ወይም ሌላ አታሚ ለመምረጥ ይሞክሩ።</translation>
 <translation id="5882919346125742463">የታወቁ አውታረ መረቦች</translation>
-<translation id="5883716097305842571">የ<ph name="PRINTER_NAME" /> የግቤት አካባቢ ሊሞላ ትንሽ ነው የሚቀረው</translation>
 <translation id="5884474295213649357">ይህ ትር ከአንድ የዩኤስቢ መሣሪያ ጋር የተገናኘ ነው።</translation>
 <translation id="5886009770935151472">ጣት 1</translation>
 <translation id="5889282057229379085">ከፍተኛ የመሃከለኛ CAዎች ብዛት፦ <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4409,7 +4401,6 @@
 <translation id="6611972847767394631">የእርስዎን ትሮች እዚህ ያግኙ</translation>
 <translation id="6612358246767739896">ጥበቃ የሚደረግለት ይዘት</translation>
 <translation id="6615455863669487791">አሳየኝ</translation>
-<translation id="6617034477946102682"><ph name="PRINTER_NAME" /> የማይደረስበት ነው</translation>
 <translation id="6618097958368085618">ለማንኛውም አስቀምጥ</translation>
 <translation id="6618744767048954150">በማሄድ ላይ</translation>
 <translation id="6619058681307408113">የመስመር ህትመት ዴሞን (LPD)</translation>
@@ -4822,7 +4813,6 @@
 <translation id="7128151990937044829">ማሳወቂያ ሲታገድ በአድራሻ አሞሌ ውስጥ አመልካችን አሳይ</translation>
 <translation id="7131040479572660648">የእርስዎን ውሂብ በ<ph name="WEBSITE_1" />፣ በ<ph name="WEBSITE_2" />፣ እና በ<ph name="WEBSITE_3" /> ላይ ያንብቡ</translation>
 <translation id="713122686776214250">&amp;ገጽ አክል...</translation>
-<translation id="7131379856697962078">የ<ph name="PRINTER_NAME" /> ውጽዓት አካባቢ ሙሉ ነው</translation>
 <translation id="7133578150266914903">የእርስዎን አስተዳዳሪ ይህን መሣሪያ (<ph name="PROGRESS_PERCENT" />) እየቀነሰው ነው</translation>
 <translation id="7134098520442464001">ጽሑፍ አሳንስ</translation>
 <translation id="7135729336746831607">ብሉቱዝ ይብራ?</translation>
@@ -4841,7 +4831,6 @@
 <translation id="7152478047064750137">ይህ ቅጥያ ምንም ልዩ ፈቃዶችን አይፈልግም</translation>
 <translation id="7154130902455071009">የመጀመሪያ ገጽዎን ወደሚከተለው ይቀይሩ፦ <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">ነባር ፎቶ ከካሜራ ወይም ከፋይል</translation>
-<translation id="715657691234357425"><ph name="PRINTER_NAME" /> ያለው ወረቀት ዝቅተኛ ነው</translation>
 <translation id="7165320105431587207">አውታረ መረቡን ማዋቀር አልተሳካም</translation>
 <translation id="716640248772308851">«<ph name="EXTENSION" />» ምልክት በተደረገባቸው አካባቢዎች ውስጥ ምስሎችን፣ ቪዲዮ እና የድምጽ ፋይሎችን ማንበብ ይችላል።</translation>
 <translation id="7167486101654761064">&amp;ሁልጊዜ እንዲህ አይነት ፋይሎችን ክፈት</translation>
@@ -4872,7 +4861,6 @@
 <translation id="7197632491113152433">በዚህ መሣሪያ ላይ መጠቀም የሚቻሉ <ph name="NUMBER_OF_APPS" /> መተግበሪያዎችን ከመለያዎ አግኝተናል።</translation>
 <translation id="7199158086730159431">እ&amp;ገዛ አግኝ</translation>
 <translation id="7200083590239651963">ውቅረትን ይምረጡ</translation>
-<translation id="7201042526153088083">በእርስዎ <ph name="DEVICE_TYPE" /> ላይ መተግበሪያዎችን እና ጨዋታዎችን ከGoogle Play ይጫኑ። &lt;a target="_blank" href="<ph name="URL" />"&gt;የበለጠ ለመረዳት&lt;/a&gt;</translation>
 <translation id="720110658997053098">ይህን መሣሪያ እስከመጨረሻው በኪዮስክ ሁነታ አቆየው</translation>
 <translation id="7201118060536064622">«<ph name="DELETED_ITEM_NAME" />» ተሰርዟል</translation>
 <translation id="7201420661433230412">ፋይሎችን ይመልከቱ</translation>
@@ -5175,7 +5163,6 @@
 <translation id="7598466960084663009">ኮምፒውተርን ዳግም አስነሳ</translation>
 <translation id="7599527631045201165">የመሣሪያ ስሙ በጣም ረጅም ነው። እንደገና ለመሞከር ያጠረ ስም ያስገቡ።</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" />ን በጭራሽ አትተርጉም</translation>
-<translation id="7601297144931396972">የ<ph name="PRINTER_NAME" /> ወረቀት ተቀርቅሯል</translation>
 <translation id="760197030861754408">ለመገናኘት ወደ <ph name="LANDING_PAGE" /> ይሂዱ።</translation>
 <translation id="7602079150116086782">ከሌሎች መሣሪያዎች ምንም ትሮች የሉም</translation>
 <translation id="7602173054665172958">የህትመት አስተዳደር</translation>
@@ -5636,7 +5623,6 @@ nil</translation>
 <translation id="8123590694679414600">ውሂብ <ph name="TIME" /> ላይ በነበረው የስምረት ይለፍ ሐረግዎ የተመሠጠረ ነው። ይህ ከGoogle Pay የመክፈያ ዘዴዎችን እና አድራሻዎችን አያካትትም።</translation>
 <translation id="81238879832906896">ቢጫ እና ነጭ አበባ</translation>
 <translation id="8124313775439841391">የሚቀናበር ONC</translation>
-<translation id="8127535217699822294"><ph name="PRINTER_NAME" /> ወረቀት ጨርሷል</translation>
 <translation id="813082847718468539">የጣቢያ መረጃን ይመልከቱ</translation>
 <translation id="8131740175452115882">አረጋግጥ</translation>
 <translation id="8133676275609324831">&amp;በአቃፊ ውስጥ አሳይ</translation>
@@ -5735,7 +5721,6 @@ nil</translation>
 <translation id="8254954272268479918">Linux (ቅድመ-ይሁንታ)ን ዝጋ</translation>
 <translation id="8255451560461371599">ምንም ጀርባ የለም</translation>
 <translation id="8256319818471787266">Sparky</translation>
-<translation id="8256417822772703842"><ph name="PRINTER_NAME" /> ቀለሙ ዝቅተኛ ነው</translation>
 <translation id="8257950718085972371">የካሜራ መዳረሻ ማገዱን ቀጥል</translation>
 <translation id="8259239505248583312">እንሂድ</translation>
 <translation id="8260864402787962391">መዳፊት</translation>
@@ -5916,7 +5901,6 @@ nil</translation>
 <translation id="8487678622945914333">አጉላ</translation>
 <translation id="8490896350101740396">የሚከተሉት የkiosk መተግበሪያዎች «<ph name="UPDATED_APPS" />» ዘምነዋል። የዝመና ሂደቱን ለማጠናቀቅ እባክዎ መሣሪያውን እንደገና ያስነሱ።</translation>
 <translation id="8493236660459102203">ማይክሮፎን፦</translation>
-<translation id="8495940850609851342"><ph name="PRINTER_NAME" /> ቆሟል</translation>
 <translation id="8496717697661868878">ይህን ተሰኪ አሂድ</translation>
 <translation id="8497219075884839166">የWindows መገልገያዎች</translation>
 <translation id="8498214519255567734">ማያ ገጽዎን በደበዘዘ ብርሃን ላይ መመልከት ወይም ማንበብ ቀላል ያድርጉት</translation>

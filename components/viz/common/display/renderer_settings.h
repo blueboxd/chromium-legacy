@@ -29,7 +29,7 @@ class VIZ_COMMON_EXPORT RendererSettings {
   bool partial_swap_enabled = false;
   bool should_clear_root_render_pass = true;
   bool release_overlay_resources_after_gpu_query = false;
-  bool tint_gl_composited_content = false;
+  bool tint_composited_content = false;
   bool show_overdraw_feedback = false;
   bool show_aggregated_damage = false;
   bool use_skia_renderer = false;

@@ -90,6 +90,7 @@ const char* const kKnownSettings[] = {
     kDeviceNativePrintersAccessMode,
     kDeviceNativePrintersBlacklist,
     kDeviceNativePrintersWhitelist,
+    kDeviceExternalPrintServersAllowlist,
     kDevicePowerwashAllowed,
     kDeviceQuirksDownloadEnabled,
     kDeviceRebootOnUserSignout,
@@ -895,6 +896,16 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     for (const auto& id : proto.whitelist())
       list.Append(id);
     new_values_cache->SetValue(kDeviceNativePrintersWhitelist, std::move(list));
+  }
+
+  if (policy.has_external_print_servers_allowlist()) {
+    base::Value list(base::Value::Type::LIST);
+    const em::DeviceExternalPrintServersAllowlistProto& proto(
+        policy.external_print_servers_allowlist());
+    for (const auto& id : proto.allowlist())
+      list.Append(id);
+    new_values_cache->SetValue(kDeviceExternalPrintServersAllowlist,
+                               std::move(list));
   }
 
   if (policy.has_device_reboot_on_user_signout()) {

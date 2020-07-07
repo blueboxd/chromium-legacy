@@ -112,7 +112,7 @@ class SiteDataClearer : public BrowsingDataRemover::Observer {
 
  private:
   // BrowsingDataRemover::Observer:
-  void OnBrowsingDataRemoverDone() override {
+  void OnBrowsingDataRemoverDone(uint64_t failed_data_types) override {
     DCHECK(pending_task_count_);
     if (--pending_task_count_)
       return;

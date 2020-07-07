@@ -22,6 +22,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -362,7 +363,7 @@ class OpenSystemSettingsHelper {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     // Make sure all the registry watchers have fired.
     if (--registry_watcher_count_ == 0) {
-      UMA_HISTOGRAM_MEDIUM_TIMES(
+      base::UmaHistogramMediumTimes(
           "DefaultBrowser.SettingsInteraction.RegistryWatcherDuration",
           base::TimeTicks::Now() - start_time_);
 
@@ -376,7 +377,7 @@ class OpenSystemSettingsHelper {
   void ConcludeInteraction(ConcludeReason conclude_reason) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-    UMA_HISTOGRAM_ENUMERATION(
+    base::UmaHistogramEnumeration(
         "DefaultBrowser.SettingsInteraction.ConcludeReason", conclude_reason,
         NUM_CONCLUDE_REASON_TYPES);
     std::move(on_finished_callback_).Run();
@@ -450,7 +451,9 @@ class IsPinnedToTaskbarHelper {
                           const ResultCallback& result_callback);
 
   void OnConnectionError();
-  void OnIsPinnedToTaskbarResult(bool succeeded, bool is_pinned_to_taskbar);
+  void OnIsPinnedToTaskbarResult(bool succeeded,
+                                 bool is_pinned_to_taskbar,
+                                 bool is_pinned_to_taskbar_verb_check);
 
   mojo::Remote<chrome::mojom::UtilWin> remote_util_win_;
 
@@ -496,10 +499,12 @@ void IsPinnedToTaskbarHelper::OnConnectionError() {
 
 void IsPinnedToTaskbarHelper::OnIsPinnedToTaskbarResult(
     bool succeeded,
-    bool is_pinned_to_taskbar) {
+    bool is_pinned_to_taskbar,
+    bool is_pinned_to_taskbar_verb_check) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  result_callback_.Run(succeeded, is_pinned_to_taskbar);
+  result_callback_.Run(succeeded, is_pinned_to_taskbar,
+                       is_pinned_to_taskbar_verb_check);
   delete this;
 }
 

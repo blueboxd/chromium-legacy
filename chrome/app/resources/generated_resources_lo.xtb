@@ -281,7 +281,6 @@
 <translation id="1340527397989195812">ສໍາຮອງ​ມີ​ເດຍ​ຈາກ​ອຸ​ປະ​ກອນ​ດ້ວຍ​ການ​ໃຊ້​ແອັບ​ໄຟ​ລ໌.</translation>
 <translation id="1341988552785875222">ພາບ​ພື້ນ​ຫຼັງ​ປະ​ຈຸ​ບັນ​ຖືກ​ຕັ້ງ​ເປັນ '<ph name="APP_NAME" />'. ທ່ານ​ອາດ​ຈະ​ໄດ້​ຖອນ​ຕິດ​ຕັ້ງ '<ph name="APP_NAME" />' ກ່ອນ​ທີ່​ຈະ​ເລືອກ​ພາບ​ພື້ນ​ຫຼັງ​ອື່ນ.</translation>
 <translation id="1343865611738742294">ອະນຸຍາດໃຫ້ແອັບ Linux ເຂົ້າເຖິງອຸປະກອນ USB. Linux ຈະບໍ່ຈື່ອຸປະກອນ USB ຫຼັງຈາກທີ່ລຶບມັນອອກແລ້ວ.</translation>
-<translation id="1344143111673240412">ການປ່ຽນແປງການຕັ້ງຄ່າກ້ອງຖ່າຍຮູບກຳນົດໃຫ້ Parallels Desktop ເລີ່ມເປີດໃຊ້ໃໝ່</translation>
 <translation id="1347256498747320987">ຕິດຕັ້ງການອັບເດດ ແລະ ແອັບ. ໂດຍການສືບຕໍ່, ແມ່ນຖືວ່າທ່ານເຫັນດີວ່າອຸປະກອນນີ້ອາດຈະດາວໂຫຼດ ແລະ ຕິດຕັ້ງການອັບເດດ ແລະ ແອັບໂດຍອັດຕະໂນມັດຈາກ Google, ຜູ້ໃຫ້ບໍລິການຂອງທ່ານ ແລະ ຜູ້ຜະລິດອຸປະກອນຂອງທ່ານໄດ້ເຊັ່ນກັນ, ໂດຍເປັນໄປໄດ້ວ່າອາດຈະໃຊ້ຂໍ້ມູນມືຖື. ບາງແອັບເຫຼົ່ານີ້ອາດມີການຊື້ໃນແອັບ. <ph name="BEGIN_LINK1" />ສຶກສາເພີ່ມເຕີມ<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">ການອັບເດດຈະເລີ່ມຕົ້ນເມື່ອແບັດເຕີຣີຮອດ <ph name="BATTERY_LEVEL" />%.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -1195,7 +1194,6 @@
 <translation id="2470702053775288986">ປິດໃຊ້ງານສ່ວນຂະຫຍາຍທີ່ບໍ່ຮອງຮັບ</translation>
 <translation id="2471469610750100598">ສີດຳ (ຄ່າເລີ່ມຕົ້ນ)</translation>
 <translation id="2473195200299095979">ແປ​​ຫນ້າ​ນີ້</translation>
-<translation id="2474848500897222119"><ph name="PRINTER_NAME" /> ນ້ຳໝຶກໝົດແລ້ວ</translation>
 <translation id="2475982808118771221">ເກີດຄວາມຜິດພາດຂຶ້ນ.</translation>
 <translation id="2476578072172137802">ການຕັ້ງຄ່າເວັບໄຊທ໌</translation>
 <translation id="2478176599153288112">ການ​ອະ​ນຸ​ຍາດໄຟລ໌ມີເດຍສໍາ​ລັບ "<ph name="EXTENSION" />"</translation>
@@ -1501,7 +1499,6 @@
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> ກຳລັງໃຊ້ການຕັ້ງຄ່າພຣັອກຊີຈາກຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານ</translation>
 <translation id="2825758591930162672">ປຸ່ມທົ່ວໄປຂອງຫົວຂໍ້</translation>
 <translation id="2828650939514476812">​ເຊື່ອມ​ຕໍ່ກັບເຄືອ​ຂ່າຍ Wi​-Fi</translation>
-<translation id="28291580771888953"><ph name="PRINTER_NAME" /> ຄິວເຕັມ</translation>
 <translation id="2835547721736623118">ການບໍລິການຈຳແນກສຽງເວົ້າ</translation>
 <translation id="2836269494620652131">ການ​ຂັດຂ້ອງ</translation>
 <translation id="2836635946302913370">ການລົງຊື່ເຂົ້າໃຊ້ດ້ວຍຊື່ຜູ້ໃຊ້ນີ້ຖືກປິດໃຊ້ງານໂດຍຜູ້ຄວບຄຸມຂອງທ່ານ.</translation>
@@ -2317,7 +2314,7 @@
 <translation id="3839516600093027468">ບລັອກບໍ່ໃຫ້ <ph name="HOST" /> ເຫັນຄລິບບອດທຸກເທື່ອ</translation>
 <translation id="3841964634449506551">ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ</translation>
 <translation id="3842552989725514455">ຟອນ Serif</translation>
-<translation id="3843058644024807390">ການປ່ຽນການຕັ້ງຄ່າໄມໂຄຣໂຟນກຳນົດໃຫ້ Parallels Desktop ເລີ່ມເປີດໃຊ້ໃໝ່.</translation>
+<translation id="3843464315703645664">ເປັນລາຍການທີ່ອະນຸຍາດພາຍໃນ</translation>
 <translation id="3846116211488856547">ດາວໂຫຼດເຄື່ອງມືສຳລັບພັດທະນາເວັບໄຊ, ແອັບ Android ແລະ ອື່ນໆອີກ. ການຕິດຕັ້ງ Linux ຈະດາວໂຫຼດຂໍ້ມູນ <ph name="DOWNLOAD_SIZE" />.</translation>
 <translation id="3847319713229060696">ຊ່ວຍປັບປຸງຄວາມປອດໄພໃນເວັັບໄຊສຳລັບທຸກຄົນ</translation>
 <translation id="385051799172605136">ກັບ​ຄືນ​</translation>
@@ -2776,7 +2773,6 @@
 <translation id="4453946976636652378">ຊອກຫາ <ph name="SEARCH_ENGINE_NAME" /> ຫຼື ພິມ URL</translation>
 <translation id="4459169140545916303">ເຂົ້າໃຊ້ເມື່ອ <ph name="DEVICE_LAST_ACTIVATED_TIME" /> ມື້ກ່ອນ</translation>
 <translation id="4460014764210899310">ຍົກເລີກການຈັດກຸ່ມ</translation>
-<translation id="4460343359907016103">ເກີດຜິດພາດໃນການເຊື່ອມຕໍ່ກັບ <ph name="PRINTER_NAME" /></translation>
 <translation id="4462159676511157176">ເຊີບເວີຊື່ກໍານົດເອງ</translation>
 <translation id="4465236939126352372">ຕັ້ງຄ່າຂີດຈຳກັດເວລາ <ph name="TIME" /> ສຳລັບ <ph name="APP_NAME" /> ແລ້ວ</translation>
 <translation id="4465725236958772856">ເຄືອຂ່າຍທີ <ph name="NETWORK_INDEX" /> ຈາກທັງໝົດ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, ຈັດການໂດຍຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານ, ເຊື່ອມຕໍ່</translation>
@@ -3074,7 +3070,6 @@
 <translation id="4864369630010738180">ກຳລັງເຂົ້າສູ່ລະບົບ...</translation>
 <translation id="4864805589453749318">ເລືອກພໍ່ແມ່ທີ່ກຳລັງໃຫ້ການອະນຸຍາດໃຫ້ເພີ່ມບັນຊີໂຮງຮຽນ.</translation>
 <translation id="486635084936119914">ເປີດໄຟລ໌ປະເພດສະເພາະໂດຍອັດຕະໂນມັດຫຼັງຈາກດາວໂຫຼດແລ້ວ</translation>
-<translation id="4869213010169296107"><ph name="PRINTER_NAME" /> ບໍ່ມີຖາດໃສ່ເຈ້ຍ</translation>
 <translation id="48704129375571883">ເພີ່ມຄຸນສົມບັດເພີ່ມເຕີມ</translation>
 <translation id="4870758487381879312">ປ້ອນລະຫັດຜ່ານທີ່ຜູ້ເບິ່ງແຍງລະບົບສະໜອງໃຫ້ເພື່ອຮັບຂໍ້ມູນການກຳນົດຄ່າ</translation>
 <translation id="4870903493621965035">ບໍ່ມີອຸປະກອນທີ່ຈັບຄູ່ແລ້ວ</translation>
@@ -3325,6 +3320,7 @@
 <translation id="5184662919967270437">ກໍາລັງອັບເດດອຸ​ປະ​ກອນ​ຂອງ​ທ່ານ</translation>
 <translation id="5185359571430619712">ກວດເບິ່ງສ່ວນຂະຫຍາຍ</translation>
 <translation id="5185386675596372454">ລຸ້ນໃໝ່ສຸດຂອງ "<ph name="EXTENSION_NAME" />" ໄດ້ປິດໃຊ້ງານ ເພາະວ່າມັນຕ້ອງການໃຫ້ມີການອະນຸຍາດເພີ່ມເຕີມ.</translation>
+<translation id="5185500136143151980">ບໍ່ມີອິນເຕີເນັດ</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5190926251776387065">ເປີດນຳໃຊ້ຜອດ</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> ຕ້ອງການດາວໂຫຼດຫຼາຍໄຟລ໌</translation>
@@ -3481,7 +3477,6 @@
 <translation id="5390112241331447203">ຮວມເອົາໄຟລ໌ system_logs.txt ທີ່ສົ່ງຢູ່ໃນລາຍງານຄຳຕິຊົມ.</translation>
 <translation id="5390677308841849479">ສີແດງເຂັ້ມ ແລະ ສີສົ້ມ</translation>
 <translation id="5390743329570580756">ສົ່ງສຳລັບ</translation>
-<translation id="5395869306561378615">ຢຸດ <ph name="PRINTER_NAME" /> ຊົ່ວຄາວຢູ່</translation>
 <translation id="5397794290049113714">ທ່ານ</translation>
 <translation id="5398572795982417028">ເກີນຂອບເຂດການອ້າງອີງໜ້າ, ຂີດຈຳກັດແມ່ນ <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">ບລັອກໂຄສະນາໄວ້ແລ້ວ</translation>
@@ -3496,7 +3491,6 @@
 <translation id="5417312524372586921">ສີສັນໜ້າຕາໂປຣແກຣມທ່ອງເວັບ</translation>
 <translation id="5419405654816502573">Voice Match</translation>
 <translation id="5420438158931847627">ກຳນົດຄວາມຄົມຊັດຂອງຂໍ້ຄວາມ ແລະ ຮູບພາບ</translation>
-<translation id="5421498071721257877"><ph name="PRINTER_NAME" /> ມີຂໍ້ຜິດພາດຂອງອຸປະກອນ</translation>
 <translation id="5422221874247253874">ຈຸດ​ເຂົ້າເຖິງ</translation>
 <translation id="5422781158178868512">ຂໍອະໄພ, ບໍ່ສາມາດຮັບຮູ້ອຸປະກອນເກັບຂໍ້ມູນທາງນອກຂອງທ່ານໄດ້.</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3845,7 +3839,6 @@
 <translation id="5852137567692933493">ເລີ່ມຕົ້ນໃໝ່ ແລະລ້າງໝົດ</translation>
 <translation id="5854912040170951372">ປ່ຽງ</translation>
 <translation id="5855267860608268405">ເຄືອຂ່າຍ Wi-Fi ທີ່ຮູ້ຈັກ</translation>
-<translation id="5855310969323666289">ຝາຂອງ <ph name="PRINTER_NAME" /> ເປີດຢູ່</translation>
 <translation id="5855643921295613558">0.6 ວິນາທີ</translation>
 <translation id="5856721540245522153">ເປີດ​ໃຊ້​ງານ​ຄຸນສົມບັດ​ແກ້​ໄຂ​ບັນ​ຫາ</translation>
 <translation id="5857090052475505287">ໂຟລເດີ​ໃຫມ່</translation>
@@ -3876,7 +3869,6 @@
 <translation id="5877064549588274448">ປ່ຽນຊ່ອງແລ້ວ. ປິດເປີດເຄື່ອງຂອງທ່ານໃໝ່ ເພື່ອນໍາໃຊ້ການປ່ຽນແປງ.</translation>
 <translation id="5877584842898320529">ເຄື່ອງພິມທີ່ເລືອກໄວ້ບໍ່ສາມາດໃຊ້ໄດ້ ຫຼື ບໍ່ໄດ້ຕິດຕັ້ງຢ່າງຖືກຕ້ອງ. <ph name="BR" /> ກວດເບິ່ງເຄື່ອງພິມຂອງທ່ານ ຫຼື ລອງເລືອກເຄື່ອງພິມອື່ນ.</translation>
 <translation id="5882919346125742463">ເຄືອຂ່າຍທີ່ຮູ້ຈັກ</translation>
-<translation id="5883716097305842571">ພື້ນທີ່ສຳລັບເຈ້ຍອອກຂອງ <ph name="PRINTER_NAME" /> ເກືອບເຕັມແລ້ວ</translation>
 <translation id="5884474295213649357">ແຖບນີ້ຖືກເຊື່ອມຕໍ່ກັບອຸປະກອນ USB.</translation>
 <translation id="5886009770935151472">ນິ້ວ 1</translation>
 <translation id="5889282057229379085">ຈໍານວນ CAs ປານກາງສູງສຸດ: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4442,7 +4434,6 @@
 <translation id="6611972847767394631">ຊອກຫາແຖບຂອງທ່ານຢູ່ທີ່ນີ້</translation>
 <translation id="6612358246767739896">ເນື້ອ​ໃນ​ທີ່ຖືກ​ປົກ​ປ້ອງ</translation>
 <translation id="6615455863669487791">ສະ​ແດງຂ້ອຍ</translation>
-<translation id="6617034477946102682"><ph name="PRINTER_NAME" /> ບໍ່ສາມາດເຂົ້າເຖິງໄດ້</translation>
 <translation id="6618097958368085618">ຢືນຢັນໃຫ້ເກັບໄວ້</translation>
 <translation id="6618744767048954150">ກຳລັງເປີດ</translation>
 <translation id="6619058681307408113">ເຄື່ອງພິມແດມອນແບບໃຊ້ສາຍ (LPD)</translation>
@@ -4859,7 +4850,6 @@
 <translation id="7128151990937044829">ສະແດງຕົວຊີ້ບອກສະຖານະໃນແຖບທີ່ຢູ່ເມື່ອມີການບລັອກການແຈ້ງເຕືອນ</translation>
 <translation id="7131040479572660648">ອ່ານ​ຂໍ້​ມູນ​ຂອງ​ທ່ານ​ຢູ່​ເທິງ <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, ແລະ <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">ເພີ່ມໜ້າ...</translation>
-<translation id="7131379856697962078">ພື້ນທີ່ສຳລັບເຈ້ຍອອກຂອງ <ph name="PRINTER_NAME" /> ເຕັມແລ້ວ</translation>
 <translation id="7133578150266914903">ຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານກຳລັງຍ້ອນກັບອຸປະກອນນີ້ (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">ເຮັດ​ຂໍ້​ຄວາມ​ໃຫ້​ນ້ອຍລົງ</translation>
 <translation id="7135729336746831607">ເປີດ Bluetooth ບໍ?</translation>
@@ -4878,7 +4868,6 @@
 <translation id="7152478047064750137">ສ່ວນຂະຫຍາຍນີ້ບໍ່ຈຳເປັນຕ້ອງມີການອະນຸຍາດພິເສດໃດໆ</translation>
 <translation id="7154130902455071009">ປ່ຽນໜ້າເລີ່ມຕົ້ນຂອງທ່ານເປັນ​: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">ຮູບຖ່າຍທີ່ມີຢູ່ຈາກກ້ອງຖ່າຍຮູບ ຫຼື ໄຟລ໌</translation>
-<translation id="715657691234357425"><ph name="PRINTER_NAME" /> ມີເຈ້ຍເຫຼືອໜ້ອຍ</translation>
 <translation id="7165320105431587207">ປັບຕັ້ງເຄືອ​ຂ່າຍບໍ່ສໍາເລັດ</translation>
 <translation id="716640248772308851">"<ph name="EXTENSION" />" ສາມາດອ່ານໄຟລ໌ຮູບ, ວິດີໂອ, ແລະສຽງຢູ່ໃນຢູ່ໃນທີ່ຕັ້ງທີ່ໝາຍແລ້ວໄດ້.</translation>
 <translation id="7167486101654761064">ເປີດໄຟລ໌ປະເພດນີ້ທຸກຄັ້ງ</translation>
@@ -4909,7 +4898,6 @@
 <translation id="7197632491113152433">ພວກເຮົາພົບ <ph name="NUMBER_OF_APPS" /> ແອັບຈາກບັນຊີຂອງທ່ານທີ່ສາມາດໃຊ້ໃນອຸປະກອນນີ້ໄດ້.</translation>
 <translation id="7199158086730159431">ເອົາການຊ່ວຍເຫຼືອ</translation>
 <translation id="7200083590239651963">ເລືອກການກຳນົດຄ່າ</translation>
-<translation id="7201042526153088083">ຕິດຕັ້ງແອັບ ແລະ ເກມຈາກ Google Play ໃນ <ph name="DEVICE_TYPE" /> ຂອງທ່ານ. &lt;a target="_blank" href="<ph name="URL" />"&gt;ສຶກສາເພີ່ມເຕີມ&lt;/a&gt;</translation>
 <translation id="720110658997053098">ຮັກສາອຸປະກອນນີ້ຢູ່ໃນໂໝດ kiosk ຢ່າງຖາວອນ</translation>
 <translation id="7201118060536064622">ລຶບ '<ph name="DELETED_ITEM_NAME" />' ແລ້ວ</translation>
 <translation id="7201420661433230412">ເບິ່ງໄຟລ໌</translation>
@@ -5215,7 +5203,6 @@
 <translation id="7598466960084663009">ປິດເປີດຄອມພິວເຕີຄືນໃໝ່</translation>
 <translation id="7599527631045201165">ຊື່ອຸປະກອນຍາວເກີນໄປ. ປ້ອນຊື່ທີ່ສັ້ນກວ່າເພື່ອລອງໃໝ່.</translation>
 <translation id="7600965453749440009">ຢ່າແປ <ph name="LANGUAGE" /></translation>
-<translation id="7601297144931396972"><ph name="PRINTER_NAME" /> ເຈ້ຍຕິດ</translation>
 <translation id="760197030861754408">ໄປ​ທີ່ <ph name="LANDING_PAGE" /> ເພື່ອ​ເຊື່ອມ​ຕໍ່.</translation>
 <translation id="7602079150116086782">ບໍ່ມີແຖບຈາກອຸປະກອນອື່ນ</translation>
 <translation id="7602173054665172958">ການຈັດການການພິມ</translation>
@@ -5226,6 +5213,7 @@
 <translation id="7609148976235050828">ກະລຸນາເຊື່ອມຕໍ່ກັບອິນເຕີເນັດ ແລ້ວລອງໃໝ່.</translation>
 <translation id="7614260613810441905">ຖາມເມື່ອເວັບໄຊຕ້ອງການແກ້ໄຂໄຟລ໌ ຫຼື ໂຟນເດີໃນອຸປະກອນຂອງທ່ານ (ແນະນຳ)</translation>
 <translation id="761530003705945209">ສຳຮອງຂໍ້ມູນໄວ້ໃນ Google Drive ກູ້ຄືນຂໍ້ມູນຂອງທ່ານໄດ້ຢ່າງງ່າຍດາຍ ຫຼື ປ່ຽນອຸປະກອນໄດ້ທຸກເວລາ. ການສຳຮອງຂໍ້ມູນຂອງທ່ານຮວມເອົາຂໍ້ມູນແອັບ. ຂໍ້ມູນທີ່ສຳຮອງໄວ້ຂອງທ່ານຖືກອັບໂຫຼດໄວ້ໃນ Google ແລະ ເຂົ້າລະຫັດໄວ້ໂດຍໃຊ້ລະຫັດຜ່ານບັນຊີ Google ຂອງທ່ານ.</translation>
+<translation id="7615365294369022248">ມີຂໍ້ຜິດພາດໃນການເພີ່ມບັນຊີ</translation>
 <translation id="7616214729753637086">ກຳລັງຈົດທະບຽນອຸປະກອນ...</translation>
 <translation id="7617263010641145920">ເປີດ Play Store</translation>
 <translation id="7617366389578322136">ກຳລັງເຊື່ອມຕໍ່ກັບ "<ph name="DEVICE_NAME" />"</translation>
@@ -5672,7 +5660,6 @@
           <ph name="TIME" />. ນີ້ບໍ່ຮວມເອົາວິທີການຈ່າຍເງິນ ແລະ ທີ່ຢູ່ຈາກ Google Pay.</translation>
 <translation id="81238879832906896">ດອກໄມ້ສີເຫຼືອງ ແລະ ສີຂາວ</translation>
 <translation id="8124313775439841391">ONC ຈັດ​ການ​ແລ້ວ</translation>
-<translation id="8127535217699822294"><ph name="PRINTER_NAME" /> ເຈ້ຍໝົດ</translation>
 <translation id="813082847718468539">ເບິ່ງຂໍ້ມູນເວັບໄຊທ໌</translation>
 <translation id="8131740175452115882">ຢືນ​ຢັນ</translation>
 <translation id="8133676275609324831">ສະ​ແດງ​ຢູ່​ໃນ​ໂຟລ​ເດີ</translation>
@@ -5771,7 +5758,6 @@
 <translation id="8254954272268479918">ປິດເຄື່ອງ Linux (ເບຕ້າ)</translation>
 <translation id="8255451560461371599">ບໍ່ມີພາບພື້ນຫຼັງ</translation>
 <translation id="8256319818471787266">ມີປະກາຍໄຟ</translation>
-<translation id="8256417822772703842"><ph name="PRINTER_NAME" /> ມີນໍ້າມຶກເຫຼືອໜ້ອຍ</translation>
 <translation id="8257950718085972371">ສືບ​ຕໍ່ບລັອກການເຂົ້າຫາກ້ອງຖ່າຍຮູບ</translation>
 <translation id="8259239505248583312">ເລີ່ມກັນເລີຍ</translation>
 <translation id="8260864402787962391">ເມົາສ໌</translation>
@@ -5952,7 +5938,6 @@
 <translation id="8487678622945914333">ຊຸມເຂົ້າ</translation>
 <translation id="8490896350101740396">ແອັບ kiosk "<ph name="UPDATED_APPS" />" ຕໍ່​ໄປ​ນີ້​ໄດ້​ຮັບ​ການ​ອັບ​ເດດ​ແລ້ວ. ກະ​ລຸ​ນາ​ປິດເປີດອຸ​ປະ​ກອນ​ໃໝ່ ເພື່ອ​ດຳ​ເນີນ​ຂັ້ນ​ຕອນ​ອັບ​ເດດ​ໃຫ້​ສຳ​ເລັດ.</translation>
 <translation id="8493236660459102203">ໄມໂຄຣໂຟນ:</translation>
-<translation id="8495940850609851342"><ph name="PRINTER_NAME" /> ຢຸດເຮັດວຽກ</translation>
 <translation id="8496717697661868878">ແລ່ນປລັກອິນນີ້</translation>
 <translation id="8497219075884839166">Windows Utilities</translation>
 <translation id="8498214519255567734">ເຮັດໃຫ້ມັນງ່າຍກວ່າໃນການເບິ່ງໜ້າຈໍຂອງທ່ານ ຫຼື ອ່ານໃນແສງທີ່ມືດ</translation>
@@ -6494,6 +6479,12 @@
 <translation id="9157096865782046368">0.8 ວິນາທີ</translation>
 <translation id="9157697743260533322">ຕັ້ງຄ່າການອັບເດດອັດຕະໂນມັດສຳລັບຜູ້ໃຊ້ທຸກຄົນບໍ່ສຳເລັດ (ຄວາມຜິດພາດການເປີດໃຊ້ preflight: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">ອຸ້ຍ! ເກີດບັນຫາການສື່ສານເຄືອຂ່າຍຂຶ້ນໃນລະຫວ່າງການຮັບຮອງ. ກະລຸນາກວດເບິ່ງການເຊື່ອມຕໍ່ເຄືອຂ່າຍຂອງທ່ານ ແລະລອງໃໝ່ອີກ.</translation>
+<translation id="9159643062839240276">ລອງ:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />ກວດເບິ່ງສາຍເຊື່ອມຕໍ່ເຄືອຂ່າຍ, ໂມເດັມ ແລະ ເຣົາເຕີ
+      <ph name="LIST_ITEM" />ກຳລັງເຊື່ອມຕໍ່ກັບ Wi-Fi ຄືນໃໝ່
+      <ph name="LIST_ITEM" />ກຳລັງເອີ້ນໃຊ້ການວິເຄາະການເຊື່ອມຕໍ່ Chrome
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">ສະແດງຜົນຫຼາຍຢ່າງພ້ອມກັນ</translation>
 <translation id="9168436347345867845">ເຮັດໃນພາຍຫຼັງ</translation>
 <translation id="9169496697824289689">ເບິ່ງທາງລັດຄີບອດ</translation>

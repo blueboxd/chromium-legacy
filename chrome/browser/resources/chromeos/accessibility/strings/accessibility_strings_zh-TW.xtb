@@ -307,7 +307,7 @@
 <translation id="3270069636408109001">沒有下一個表格</translation>
 <translation id="3273791280096244679">儲存標籤</translation>
 <translation id="3283583562490372694">未勾選</translation>
-<translation id="3286372614333682499">直向</translation>
+<translation id="3286372614333682499">肖像</translation>
 <translation id="3286390186030710347">滑桿</translation>
 <translation id="3300348286427369683">支援 RTF 格式：ChromeVox 現在支援 RTF 格式欄位，包括跳轉指令、點字游標路徑、選取等等。</translation>
 <translation id="3307886118343381874">前往表格結尾</translation>
@@ -812,7 +812,7 @@
 <translation id="743783356331413498">範例</translation>
 <translation id="7439060726180460871">目錄</translation>
 <translation id="744163271241493234">pwded</translation>
-<translation id="7484805699335881122">讀到元素類型以及加引號、加刪除線、粗體、加括號或大寫的文字時變更音調。</translation>
+<translation id="7484805699335881122">朗讀元素類型、引號內文字、刪除的文字、粗體文字、括號內文字或大寫文字時變更音調。</translation>
 <translation id="7491962110804786152">分頁</translation>
 <translation id="7505149250476994901">在字母前讀出「大寫」</translation>
 <translation id="7518543783849163354">如要暫時停止 ChromeVox 互動朗讀，請按下 Control 鍵。</translation>

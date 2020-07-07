@@ -15,7 +15,7 @@
 
 InstallableAmbientBadgeInfoBar::InstallableAmbientBadgeInfoBar(
     std::unique_ptr<InstallableAmbientBadgeInfoBarDelegate> delegate)
-    : InfoBarAndroid(
+    : infobars::InfoBarAndroid(
           std::move(delegate),
           base::BindRepeating(&ResourceMapper::MapToJavaDrawableId)) {}
 

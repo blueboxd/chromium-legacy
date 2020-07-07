@@ -168,6 +168,7 @@ Arama yapmak için herhangi bir kelimeye dokunun. Aramanızı hassaslaştırmak 
 <translation id="2353636109065292463">İnternet bağlantınızı kontrol etme</translation>
 <translation id="2359808026110333948">Devam et</translation>
 <translation id="2369533728426058518">sekmeleri aç</translation>
+<translation id="2377295302146152376">Chrome, güncellemeleri denetleyemedi</translation>
 <translation id="2387895666653383613">Metin ölçekleme</translation>
 <translation id="2394602618534698961">İndirdiğiniz dosyalar burada görünür</translation>
 <translation id="2407481962792080328">Google Hesabınızda oturum açtığınızda bu özellik devreye girer</translation>
@@ -546,6 +547,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5441522332038954058">Adres çubuğuna gider</translation>
 <translation id="5447201525962359567">Çerezler ve yerel olarak depolanmış diğer veriler de dahil olmak üzere tüm site depolama alanı</translation>
 <translation id="545042621069398927">İndirme işleminiz hızlandırılıyor.</translation>
+<translation id="5454513945794364671">Yöneticiniz Güvenli Tarama'yı kapattı</translation>
 <translation id="5456381639095306749">Sayfayı indir</translation>
 <translation id="548278423535722844">Haritalar uygulamasında aç</translation>
 <translation id="5487521232677179737">Verileri temizle</translation>
@@ -585,6 +587,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5732819098735351888">İndirme kablosuz bağlantı üzerinden başlatılacak.</translation>
 <translation id="5748802427693696783">Standart sekmelere geçildi</translation>
 <translation id="5749068826913805084">Dosya indirmek için Chrome'un depolama alanına erişmesi gerekiyor.</translation>
+<translation id="5754350196967618083">Keşfet yenilenemiyor</translation>
 <translation id="5763382633136178763">Gizli mod sekmeleri</translation>
 <translation id="5763514718066511291">Bu uygulamanın URL'sini kopyalamak için dokunun</translation>
 <translation id="5765780083710877561">Açıklama:</translation>
@@ -639,7 +642,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="6154478581116148741">Bu cihazdaki şifrelerinizi dışarı aktarmak için Ayarlar'da ekran kilidini açın</translation>
 <translation id="6157392216611456285"><ph name="APP_NAME" /> uygulamasını seçin</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> veri tasarrufu</translation>
-<translation id="6192333916571137726">Dosyayı indir</translation>
 <translation id="6201345951596836663">Bağlantı Kopyalandı</translation>
 <translation id="6206830853671714236">İndirmenin ne zaman yapılacağını seçin</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> değil misiniz?</translation>
@@ -712,6 +714,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="6656545060687952787">Chrome'un cihazları taraması için konuma erişmesi gerekiyor. <ph name="BEGIN_LINK" />İzinleri güncelleyin<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Şifre</translation>
 <translation id="6659594942844771486">Sekme</translation>
+<translation id="666573598175432848">Chrome'un yeni bir sürümü mevcut. Play Store'a gitmek için bu öğeye dokunun.</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" /> uygulamasında aç</translation>
 <translation id="666981079809192359">Chrome Gizlilik Uyarısı</translation>
 <translation id="6671495933530132209">Resmi kopyala</translation>
@@ -842,6 +845,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="7772032839648071052">Parolayı onayla</translation>
 <translation id="7772375229873196092"><ph name="APP_NAME" /> penceresini kapat</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ve <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ödeme yöntemi daha}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ve <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ödeme yöntemi daha}}</translation>
+<translation id="7778840695157240389">Yeni hikaye için daha sonra tekrar kontrol edin</translation>
 <translation id="7791543448312431591">Ekle</translation>
 <translation id="780301667611848630">Hayır, teşekkürler</translation>
 <translation id="7810647596859435254">Birlikte aç…</translation>
@@ -917,12 +921,13 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="8364299278605033898">Popüler web sitelerini görün</translation>
 <translation id="8368027906805972958">Bilinmeyen veya desteklenmeyen cihaz (<ph name="DEVICE_ID" />)</translation>
 <translation id="8393700583063109961">İleti gönder</translation>
-<translation id="8407396331882458341">1. <ph name="APP_NAME" /> uygulamasını seçin\n2. "Her Zaman" seçeneğine dokunun</translation>
+<translation id="8407396331882458341">1. <ph name="APP_NAME" /> uygulamasını seçin\n2. "Her zaman" seçeneğine dokunun</translation>
 <translation id="8413126021676339697">Tüm geçmişi göster</translation>
 <translation id="8425213833346101688">Değiştir</translation>
 <translation id="8427875596167638501">Önizleme sekmesi yarım açık</translation>
 <translation id="8428213095426709021">Ayarlar</translation>
 <translation id="8438566539970814960">Aramaları ve göz atmayı daha iyi yap</translation>
+<translation id="8442258441309440798">Kullanılabilir hikaye yok</translation>
 <translation id="8443209985646068659">Chrome güncellenemiyor</translation>
 <translation id="8445448999790540984">Şifreler dışa aktarılamıyor</translation>
 <translation id="8461694314515752532">Senkronize edilen verileri senkronizasyon parolanızı kullanarak şifrele</translation>
@@ -974,6 +979,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, sekme</translation>
 <translation id="8854223127042600341">Çevrimdışı dosyalarınızı görün</translation>
 <translation id="889338405075704026">Chrome ayarlarına git</translation>
+<translation id="8893398027601469503">Chrome'un son sürümünü çalıştırıyorsunuz</translation>
 <translation id="8909135823018751308">Paylaş…</translation>
 <translation id="8912362522468806198">Google Hesabı</translation>
 <translation id="8920114477895755567">Ebeveyn ayrıntıları bekleniyor.</translation>

@@ -642,7 +642,6 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="6154478581116148741">Uključite zaključavanje ekrana u Postavkama da izvezete lozinke s ovog uređaja</translation>
 <translation id="6157392216611456285">Odaberite aplikaciju <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> uštede podataka</translation>
-<translation id="6192333916571137726">Preuzimanje fajla</translation>
 <translation id="6201345951596836663">Link je kopiran</translation>
 <translation id="6206830853671714236">Odaberite kada preuzeti</translation>
 <translation id="6210748933810148297">Vi niste <ph name="EMAIL" />?</translation>
@@ -846,7 +845,7 @@ Naprimjer, neke web lokacije mogu reagirati na ovaj zahtjev prikazivanjem oglasa
 <translation id="7772032839648071052">Potvrdite pristupni izraz</translation>
 <translation id="7772375229873196092">Zatvori <ph name="APP_NAME" /></translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 i još <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 i još <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}few{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 i još <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 i još <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
-<translation id="7778840695157240389">Provjerite kasnije za nove priče</translation>
+<translation id="7778840695157240389">Provjerite nove priče kasnije</translation>
 <translation id="7791543448312431591">Dodaj</translation>
 <translation id="780301667611848630">Ne, hvala</translation>
 <translation id="7810647596859435254">Otvori koristeći…</translation>
@@ -877,6 +876,7 @@ Naprimjer, neke web lokacije mogu reagirati na ovaj zahtjev prikazivanjem oglasa
 <translation id="8013372441983637696">Također obriši Chrome podatke s ovog uređaja</translation>
 <translation id="8015452622527143194">Sve što je na stranici vratiti na zadanu veličinu</translation>
 <translation id="8026334261755873520">Obrišite podatke pregledanja</translation>
+<translation id="8027863900915310177">Odaberite mjesto preuzimanja</translation>
 <translation id="8035133914807600019">Novi folder…</translation>
 <translation id="8037750541064988519">Preostalo dana: <ph name="DAYS" /></translation>
 <translation id="804335162455518893">SD kartica nije pronađena</translation>

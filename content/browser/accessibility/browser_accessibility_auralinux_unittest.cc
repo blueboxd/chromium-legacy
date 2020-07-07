@@ -763,4 +763,59 @@ TEST_F(BrowserAccessibilityAuraLinuxTest, TextAtkStaticTextChange) {
   EXPECT_STREQ(base::UTF16ToUTF8(div_node->GetHypertext()).c_str(), "Text2");
 }
 
+TEST_F(BrowserAccessibilityAuraLinuxTest, TestAtkTextGetOffesetAtPoint) {
+  ui::AXNodeData static_text1;
+  static_text1.id = 1;
+  static_text1.role = ax::mojom::Role::kStaticText;
+  static_text1.SetName("Hello");
+  static_text1.child_ids = {2};
+
+  ui::AXNodeData inline_box1;
+  inline_box1.id = 2;
+  inline_box1.role = ax::mojom::Role::kInlineTextBox;
+  inline_box1.SetName("Hello");
+  inline_box1.relative_bounds.bounds = gfx::RectF(0, 50, 25, 30);
+  std::vector<int32_t> character_offsets1;
+  // The width of each character is 5px.
+  character_offsets1.push_back(5);
+  character_offsets1.push_back(10);
+  character_offsets1.push_back(15);
+  character_offsets1.push_back(20);
+  character_offsets1.push_back(25);
+  inline_box1.AddIntListAttribute(
+      ax::mojom::IntListAttribute::kCharacterOffsets, character_offsets1);
+  inline_box1.AddIntListAttribute(ax::mojom::IntListAttribute::kWordStarts,
+                                  std::vector<int32_t>{0});
+  inline_box1.AddIntListAttribute(ax::mojom::IntListAttribute::kWordEnds,
+                                  std::vector<int32_t>{5});
+
+  std::unique_ptr<BrowserAccessibilityManager> manager(
+      BrowserAccessibilityManager::Create(
+          MakeAXTreeUpdate(static_text1, inline_box1),
+          test_browser_accessibility_delegate_.get()));
+
+  ASSERT_NE(nullptr, manager->GetRoot());
+  BrowserAccessibilityAuraLinux* ax_root =
+      ToBrowserAccessibilityAuraLinux(manager->GetRoot());
+  ASSERT_NE(nullptr, ax_root);
+
+  AtkObject* root_atk_object = ax_root->GetNode()->GetNativeViewAccessible();
+  g_object_ref(root_atk_object);
+  AtkText* atk_text = ATK_TEXT(root_atk_object);
+  ASSERT_TRUE(ATK_IS_TEXT(atk_text));
+
+  int x, y, width, height;
+  char* text = atk_text_get_text(atk_text, 0, -1);
+  int root_text_length = g_utf8_strlen(text, -1);
+  g_free(text);
+  for (int offset = 0; offset < root_text_length; offset++) {
+    atk_text_get_character_extents(atk_text, offset, &x, &y, &width, &height,
+                                   ATK_XY_SCREEN);
+    int result = atk_text_get_offset_at_point(atk_text, x, y, ATK_XY_SCREEN);
+    ASSERT_EQ(offset, result);
+  }
+  g_object_unref(root_atk_object);
+  manager.reset();
+}
+
 }  // namespace content

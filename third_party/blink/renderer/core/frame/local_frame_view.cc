@@ -38,6 +38,7 @@
 #include "cc/layers/picture_layer.h"
 #include "cc/tiles/frame_viewer_instrumentation.h"
 #include "cc/trees/layer_tree_host.h"
+#include "components/paint_preview/common/paint_preview_tracker.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
@@ -145,6 +146,7 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/graphics_layer_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
@@ -3792,10 +3794,49 @@ IntPoint LocalFrameView::SoonToBeRemovedUnscaledViewportToContents(
   return ConvertFromRootFrame(point_in_root_frame);
 }
 
+void LocalFrameView::CapturePaintPreview(GraphicsContext& context,
+                                         const IntSize& paint_offset) const {
+  // Ensure a recording canvas is properly created.
+  DrawingRecorder recorder(context, *GetFrame().OwnerLayoutObject(),
+                           DisplayItem::kDocumentBackground);
+  context.Save();
+  context.Translate(paint_offset.Width(), paint_offset.Height());
+  DCHECK(context.Canvas());
+
+  auto* tracker = context.Canvas()->GetPaintPreviewTracker();
+  DCHECK(tracker);  // |tracker| must exist or there is a bug upstream.
+
+  HTMLFrameOwnerElement* owner =
+      DynamicTo<HTMLFrameOwnerElement>(GetFrame().Owner());
+  DCHECK(owner);
+
+  // Local frames should always have a valid embedding token.
+  base::Optional<base::UnguessableToken> maybe_embedding_token =
+      owner->GetEmbeddingToken();
+  DCHECK(maybe_embedding_token.has_value());
+
+  // Create a placeholder ID that maps to an embedding token.
+  context.Canvas()->recordCustomData(tracker->CreateContentForRemoteFrame(
+      FrameRect(), maybe_embedding_token.value()));
+  context.Restore();
+
+  // Send a request to the browser to trigger a capture of the frame.
+  GetFrame().GetLocalFrameHostRemote().CapturePaintPreviewOfSubframe(
+      FrameRect(), tracker->Guid());
+}
+
 void LocalFrameView::Paint(GraphicsContext& context,
                            const GlobalPaintFlags global_paint_flags,
                            const CullRect& cull_rect,
                            const IntSize& paint_offset) const {
+  // When capturing a Paint Preview we want to capture scrollable embedded
+  // content separately. Paint should stop here and ask the browser to
+  // coordinate painting such frames as a separate task.
+  if (context.IsPaintingPreview() && LayoutViewport()->ScrollsOverflow()) {
+    CapturePaintPreview(context, paint_offset);
+    return;
+  }
+
   // |paint_offset| is not used because paint properties of the contents will
   // ensure the correct location.
   PaintInternal(context, global_paint_flags, cull_rect);

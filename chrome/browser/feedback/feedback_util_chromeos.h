@@ -17,7 +17,7 @@ namespace feedback_util {
 // Sends a system log feedback from the given |profile| with the
 // given |description|. |callback| will be invoked when the feedback is sent.
 // If |send_tab_titles| is true, include open tab titles in the report.
-using SendSysLogFeedbackCallback = base::Callback<void(bool)>;
+using SendSysLogFeedbackCallback = base::RepeatingCallback<void(bool)>;
 void SendSysLogFeedback(Profile* profile,
                         const std::string& description,
                         const SendSysLogFeedbackCallback& callback,

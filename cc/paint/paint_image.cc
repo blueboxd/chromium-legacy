@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <sstream>
+#include <utility>
 
 #include "base/atomic_sequence_num.h"
 #include "base/hash/hash.h"
@@ -60,8 +61,6 @@ bool PaintImage::operator==(const PaintImage& other) const {
   if (animation_type_ != other.animation_type_)
     return false;
   if (completion_state_ != other.completion_state_)
-    return false;
-  if (subset_rect_ != other.subset_rect_)
     return false;
   if (is_multipart_ != other.is_multipart_)
     return false;
@@ -123,30 +122,6 @@ gpu::Mailbox PaintImage::GetMailbox() const {
   return texture_backing_->GetMailbox();
 }
 
-PaintImage PaintImage::MakeSubset(const gfx::Rect& subset) const {
-  DCHECK(!subset.IsEmpty());
-
-  // If the subset is the same as the image bounds, we can return the same
-  // image.
-  gfx::Rect bounds(width(), height());
-  if (bounds == subset)
-    return *this;
-
-  DCHECK(bounds.Contains(subset))
-      << "Subset should not be greater than the image bounds";
-  PaintImage result(*this);
-  result.subset_rect_ = subset;
-  // Store the subset from the original image.
-  result.subset_rect_.Offset(subset_rect_.x(), subset_rect_.y());
-
-  // Creating the |cached_sk_image_| using the SkImage from the original
-  // PaintImage is an optimization to allow re-use of the original decode for
-  // image subsets in skia, for cases that rely on skia's image decode cache.
-  result.cached_sk_image_ =
-      GetRasterSkImage()->makeSubset(gfx::RectToSkIRect(subset));
-  return result;
-}
-
 void PaintImage::CreateSkImage() {
   DCHECK(!cached_sk_image_);
 
@@ -165,19 +140,11 @@ void PaintImage::CreateSkImage() {
   } else if (texture_backing_) {
     cached_sk_image_ = texture_backing_->GetAcceleratedSkImage();
   }
-
-  if (!subset_rect_.IsEmpty() && cached_sk_image_) {
-    cached_sk_image_ =
-        cached_sk_image_->makeSubset(gfx::RectToSkIRect(subset_rect_));
-  }
 }
 
 SkISize PaintImage::GetSupportedDecodeSize(
     const SkISize& requested_size) const {
-  // TODO(vmpstr): In some cases we do not support decoding to any other
-  // size than the original. See the comment in CanDecodeFromGenerator()
-  // for more detail.
-  if (CanDecodeFromGenerator())
+  if (paint_image_generator_)
     return paint_image_generator_->GetSupportedDecodeSize(requested_size);
   return SkISize::Make(width(), height());
 }
@@ -194,10 +161,7 @@ bool PaintImage::Decode(void* memory,
   // We only support decode to supported decode size.
   DCHECK(info->dimensions() == GetSupportedDecodeSize(info->dimensions()));
 
-  // TODO(vmpstr): In some cases we do not support decoding to any other
-  // size than the original. See the comment in CanDecodeFromGenerator()
-  // for more detail. For now, fallback to DecodeFromSkImage().
-  if (CanDecodeFromGenerator()) {
+  if (paint_image_generator_) {
     return DecodeFromGenerator(memory, info, std::move(color_space),
                                frame_index, client_id);
   }
@@ -212,7 +176,7 @@ bool PaintImage::DecodeYuv(
     const SkYUVASizeInfo& yuva_size_info,
     SkYUVAIndex plane_indices[SkYUVAIndex::kIndexCount]) const {
   DCHECK(plane_indices != nullptr);
-  DCHECK(CanDecodeFromGenerator());
+  DCHECK(paint_image_generator_);
   const uint32_t lazy_pixel_ref = unique_id();
   return paint_image_generator_->GetYUVA8Planes(
       yuva_size_info, plane_indices, planes, frame_index, lazy_pixel_ref);
@@ -223,7 +187,7 @@ bool PaintImage::DecodeFromGenerator(void* memory,
                                      sk_sp<SkColorSpace> color_space,
                                      size_t frame_index,
                                      GeneratorClientId client_id) const {
-  DCHECK(CanDecodeFromGenerator());
+  DCHECK(paint_image_generator_);
   // First convert the info to have the requested color space, since the decoder
   // will convert this for us.
   *info = info->makeColorSpace(std::move(color_space));
@@ -231,15 +195,6 @@ bool PaintImage::DecodeFromGenerator(void* memory,
   return paint_image_generator_->GetPixels(*info, memory, info->minRowBytes(),
                                            frame_index, client_id,
                                            lazy_pixel_ref);
-}
-
-// TODO(vmpstr): If we're using a subset_rect_ then the info specifies the
-// requested size relative to the subset. However, the generator isn't aware
-// of this subsetting and would need a size that is relative to the original
-// image size. We could still implement this case, but we need to convert the
-// requested size into the space of the original image.
-bool PaintImage::CanDecodeFromGenerator() const {
-  return paint_image_generator_ && subset_rect_.IsEmpty();
 }
 
 bool PaintImage::DecodeFromSkImage(void* memory,
@@ -270,7 +225,7 @@ bool PaintImage::ShouldAnimate() const {
 PaintImage::FrameKey PaintImage::GetKeyForFrame(size_t frame_index) const {
   DCHECK_LT(frame_index, FrameCount());
 
-  return FrameKey(GetContentIdForFrame(frame_index), frame_index, subset_rect_);
+  return FrameKey(GetContentIdForFrame(frame_index), frame_index);
 }
 
 PaintImage::ContentId PaintImage::GetContentIdForFrame(
@@ -355,7 +310,7 @@ bool PaintImage::IsYuv(SkYUVASizeInfo* yuva_size_info,
   }
   // ImageDecoder will fill out the value of |yuv_color_space| depending on
   // the codec's specification.
-  return CanDecodeFromGenerator() &&
+  return paint_image_generator_ &&
          paint_image_generator_->QueryYUVA8(yuva_size_info, plane_indices,
                                             yuv_color_space);
 }
@@ -396,8 +351,6 @@ sk_sp<SkImage> PaintImage::GetSkImageForFrame(
   sk_sp<SkImage> image =
       SkImage::MakeFromGenerator(std::make_unique<SkiaPaintImageGenerator>(
           paint_image_generator_, index, client_id));
-  if (!subset_rect_.IsEmpty())
-    image = image->makeSubset(gfx::RectToSkIRect(subset_rect_));
   return image;
 }
 
@@ -409,35 +362,18 @@ std::string PaintImage::ToString() const {
       << " id_: " << id_
       << " animation_type_: " << static_cast<int>(animation_type_)
       << " completion_state_: " << static_cast<int>(completion_state_)
-      << " subset_rect_: " << subset_rect_.ToString()
       << " is_multipart_: " << is_multipart_ << " is YUV: " << IsYuv();
   return str.str();
 }
 
-PaintImage::FrameKey::FrameKey(ContentId content_id,
-                               size_t frame_index,
-                               gfx::Rect subset_rect)
-    : content_id_(content_id),
-      frame_index_(frame_index),
-      subset_rect_(subset_rect) {
-  size_t original_hash = base::HashInts(static_cast<uint64_t>(content_id_),
-                                        static_cast<uint64_t>(frame_index_));
-  if (subset_rect_.IsEmpty()) {
-    hash_ = original_hash;
-  } else {
-    size_t subset_hash =
-        base::HashInts(static_cast<uint64_t>(
-                           base::HashInts(subset_rect_.x(), subset_rect_.y())),
-                       static_cast<uint64_t>(base::HashInts(
-                           subset_rect_.width(), subset_rect_.height())));
-    hash_ = base::HashInts(original_hash, subset_hash);
-  }
+PaintImage::FrameKey::FrameKey(ContentId content_id, size_t frame_index)
+    : content_id_(content_id), frame_index_(frame_index) {
+  hash_ = base::HashInts(static_cast<uint64_t>(content_id_),
+                         static_cast<uint64_t>(frame_index_));
 }
 
 bool PaintImage::FrameKey::operator==(const FrameKey& other) const {
-  return content_id_ == other.content_id_ &&
-         frame_index_ == other.frame_index_ &&
-         subset_rect_ == other.subset_rect_;
+  return content_id_ == other.content_id_ && frame_index_ == other.frame_index_;
 }
 
 bool PaintImage::FrameKey::operator!=(const FrameKey& other) const {
@@ -447,8 +383,7 @@ bool PaintImage::FrameKey::operator!=(const FrameKey& other) const {
 std::string PaintImage::FrameKey::ToString() const {
   std::ostringstream str;
   str << "content_id: " << content_id_ << ","
-      << "frame_index: " << frame_index_ << ","
-      << "subset_rect: " << subset_rect_.ToString();
+      << "frame_index: " << frame_index_;
   return str.str();
 }
 

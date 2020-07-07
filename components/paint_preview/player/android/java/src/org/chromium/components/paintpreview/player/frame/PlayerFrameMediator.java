@@ -63,18 +63,7 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
      * Contains scaled clip rects corresponding to this frame's sub-frames.
      */
     private final List<Rect> mSubFrameScaledRects = new ArrayList<>();
-    /**
-     * Contains views for currently visible sub-frames according to {@link #mViewPort}.
-     */
-    private final List<View> mVisibleSubFrameViews = new ArrayList<>();
-    /**
-     * Contains scaled clip rects for currently visible sub-frames according to {@link #mViewPort}.
-     */
-    private final List<Rect> mVisibleSubFrameScaledRects = new ArrayList<>();
-    /**
-     * Contains mediators for currently visible sub-frames according to {@link #mViewPort}.
-     */
-    private final List<PlayerFrameMediator> mVisibleSubFrameMediators = new ArrayList<>();
+
     private final PropertyModel mModel;
     private final PlayerCompositorDelegate mCompositorDelegate;
     private final OverScroller mScroller;
@@ -115,8 +104,6 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
             OverScroller scroller, UnguessableToken frameGuid, int contentWidth, int contentHeight,
             int initialScrollX, int initialScrollY) {
         mModel = model;
-        mModel.set(PlayerFrameProperties.SUBFRAME_VIEWS, mVisibleSubFrameViews);
-        mModel.set(PlayerFrameProperties.SUBFRAME_RECTS, mVisibleSubFrameScaledRects);
         mModel.set(PlayerFrameProperties.SCALE_MATRIX, mBitmapScaleMatrix);
 
         mCompositorDelegate = compositorDelegate;
@@ -140,6 +127,8 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
         mSubFrameRects.add(clipRect);
         mSubFrameMediators.add(mediator);
         mSubFrameScaledRects.add(new Rect());
+        mModel.set(PlayerFrameProperties.SUBFRAME_VIEWS, mSubFrameViews);
+        mModel.set(PlayerFrameProperties.SUBFRAME_RECTS, mSubFrameScaledRects);
     }
 
     @Override
@@ -148,8 +137,6 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
         if (!mBitmapScaleMatrix.isIdentity()) {
             mViewportRect.set(mViewportRect.left, mViewportRect.top, mViewportRect.left + width,
                     mViewportRect.top + height);
-            // Set scale factor to 0 so subframes get the correct scale factor on scale completion.
-            mScaleFactor = 0;
             return;
         }
 
@@ -167,6 +154,18 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
         setBitmapScaleMatrixInternal(matrix, scaleFactor);
     }
 
+    /**
+     * Resets the scale factor post scale.
+     */
+    @VisibleForTesting
+    void resetScaleFactor() {
+        // Set scale factor to 0 so subframes get the correct scale factor on scale completion.
+        mScaleFactor = 0;
+        for (int i = 0; i < mSubFrameViews.size(); i++) {
+            mSubFrameMediators.get(i).resetScaleFactor();
+        }
+    }
+
     private void setBitmapScaleMatrixInternal(Matrix matrix, float scaleFactor) {
         float[] matrixValues = new float[9];
         matrix.getValues(matrixValues);
@@ -174,17 +173,22 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
         Matrix childBitmapScaleMatrix = new Matrix();
         childBitmapScaleMatrix.setScale(
                 matrixValues[Matrix.MSCALE_X], matrixValues[Matrix.MSCALE_Y]);
-        for (PlayerFrameMediator subFrameMediator : mVisibleSubFrameMediators) {
-            subFrameMediator.setBitmapScaleMatrix(childBitmapScaleMatrix, scaleFactor);
+        for (int i = 0; i < mSubFrameViews.size(); i++) {
+            if (mSubFrameViews.get(i).getVisibility() != View.VISIBLE) continue;
+
+            mSubFrameMediators.get(i).setBitmapScaleMatrix(childBitmapScaleMatrix, scaleFactor);
         }
         mModel.set(PlayerFrameProperties.SCALE_MATRIX, mBitmapScaleMatrix);
     }
 
-    public void forceRedraw() {
+    @VisibleForTesting
+    void forceRedraw() {
         mInitialScaleFactor = ((float) mViewportRect.width()) / ((float) mContentWidth);
         moveViewport(0, 0, (mScaleFactor == 0f) ? mInitialScaleFactor : mScaleFactor);
-        for (PlayerFrameMediator subFrameMediator : mVisibleSubFrameMediators) {
-            subFrameMediator.forceRedraw();
+        for (int i = 0; i < mSubFrameViews.size(); i++) {
+            if (mSubFrameViews.get(i).getVisibility() != View.VISIBLE) continue;
+
+            mSubFrameMediators.get(i).forceRedraw();
         }
     }
 
@@ -284,23 +288,23 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
     }
 
     private void updateSubFrames(Rect viewport, float scaleFactor) {
-        mVisibleSubFrameViews.clear();
-        mVisibleSubFrameScaledRects.clear();
-        mVisibleSubFrameMediators.clear();
         for (int i = 0; i < mSubFrameRects.size(); i++) {
             Rect subFrameScaledRect = mSubFrameScaledRects.get(i);
             scaleRect(mSubFrameRects.get(i), subFrameScaledRect, scaleFactor);
-            if (Rect.intersects(subFrameScaledRect, viewport)) {
-                int transformedLeft = subFrameScaledRect.left - viewport.left;
-                int transformedTop = subFrameScaledRect.top - viewport.top;
-                subFrameScaledRect.set(transformedLeft, transformedTop,
-                        transformedLeft + subFrameScaledRect.width(),
-                        transformedTop + subFrameScaledRect.height());
-                mVisibleSubFrameViews.add(mSubFrameViews.get(i));
-                mVisibleSubFrameScaledRects.add(subFrameScaledRect);
-                mVisibleSubFrameMediators.add(mSubFrameMediators.get(i));
+            if (!Rect.intersects(subFrameScaledRect, viewport)) {
+                mSubFrameViews.get(i).setVisibility(View.GONE);
+                continue;
             }
+
+            int transformedLeft = subFrameScaledRect.left - viewport.left;
+            int transformedTop = subFrameScaledRect.top - viewport.top;
+            subFrameScaledRect.set(transformedLeft, transformedTop,
+                    transformedLeft + subFrameScaledRect.width(),
+                    transformedTop + subFrameScaledRect.height());
+            mSubFrameViews.get(i).setVisibility(View.VISIBLE);
         }
+        mModel.set(PlayerFrameProperties.SUBFRAME_RECTS, mSubFrameScaledRects);
+        mModel.set(PlayerFrameProperties.SUBFRAME_VIEWS, mSubFrameViews);
     }
 
     private void scaleRect(Rect inRect, Rect outRect, float scaleFactor) {
@@ -576,9 +580,14 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
         mViewportRect.set(newXRounded, newYRounded, newXRounded + mViewportRect.width(),
                 newYRounded + mViewportRect.height());
 
+        for (int i = 0; i < mSubFrameViews.size(); i++) {
+            mSubFrameMediators.get(i).resetScaleFactor();
+        }
         moveViewport(0, 0, finalScaleFactor);
-        for (PlayerFrameMediator subFrameMediator : mVisibleSubFrameMediators) {
-            subFrameMediator.forceRedraw();
+        for (int i = 0; i < mSubFrameViews.size(); i++) {
+            if (mSubFrameViews.get(i).getVisibility() != View.VISIBLE) continue;
+
+            mSubFrameMediators.get(i).forceRedraw();
         }
 
         return true;

@@ -219,11 +219,6 @@ void LocationBarModelTest::NavigateAndCheckElided(const GURL& url) {
 
 // Test URL display.
 TEST_F(LocationBarModelTest, ShouldDisplayURL) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures({omnibox::kHideSteadyStateUrlScheme,
-                                 omnibox::kHideSteadyStateUrlTrivialSubdomains},
-                                {});
-
   AddTab(browser(), GURL(url::kAboutBlankURL));
 
   for (const TestItem& test_item : TestItems()) {
@@ -231,56 +226,6 @@ TEST_F(LocationBarModelTest, ShouldDisplayURL) {
         test_item.url,
         base::ASCIIToUTF16(test_item.expected_formatted_full_url),
         base::ASCIIToUTF16(test_item.expected_elided_url_for_display));
-  }
-}
-
-// Tests every combination of Steady State Elision flags.
-TEST_F(LocationBarModelTest, SteadyStateElisionsFlags) {
-  AddTab(browser(), GURL(url::kAboutBlankURL));
-
-  // Hide Scheme and Hide Trivial Subdomains both Disabled.
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitWithFeatures(
-        {}, {omnibox::kHideSteadyStateUrlScheme,
-             omnibox::kHideSteadyStateUrlTrivialSubdomains});
-    NavigateAndCheckText(GURL("https://www.google.com/"),
-                         base::ASCIIToUTF16("https://www.google.com"),
-                         base::ASCIIToUTF16("https://www.google.com"));
-  }
-
-  // Only Hide Scheme Enabled.
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitWithFeatures(
-        {omnibox::kHideSteadyStateUrlScheme},
-        {omnibox::kHideSteadyStateUrlTrivialSubdomains});
-    NavigateAndCheckText(GURL("https://www.google.com/"),
-                         base::ASCIIToUTF16("https://www.google.com"),
-                         base::ASCIIToUTF16("www.google.com"));
-  }
-
-  // Only Hide Trivial Subdomains Enabled.
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitWithFeatures(
-        {omnibox::kHideSteadyStateUrlTrivialSubdomains},
-        {omnibox::kHideSteadyStateUrlScheme});
-    NavigateAndCheckText(GURL("https://www.google.com/"),
-                         base::ASCIIToUTF16("https://www.google.com"),
-                         base::ASCIIToUTF16("https://google.com"));
-  }
-
-  // Hide Scheme and Hide Trivial Subdomains both Enabled.
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitWithFeatures(
-        {omnibox::kHideSteadyStateUrlScheme,
-         omnibox::kHideSteadyStateUrlTrivialSubdomains},
-        {});
-    NavigateAndCheckText(GURL("https://www.google.com/"),
-                         base::ASCIIToUTF16("https://www.google.com"),
-                         base::ASCIIToUTF16("google.com"));
   }
 }
 

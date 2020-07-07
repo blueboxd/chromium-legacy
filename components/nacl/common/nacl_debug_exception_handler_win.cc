@@ -20,11 +20,11 @@ class DebugExceptionHandler : public base::PlatformThread::Delegate {
   DebugExceptionHandler(base::Process nacl_process,
                         const std::string& startup_info,
                         scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                        const base::Callback<void(bool)>& on_connected)
+                        base::RepeatingCallback<void(bool)> on_connected)
       : nacl_process_(std::move(nacl_process)),
         startup_info_(startup_info),
         task_runner_(task_runner),
-        on_connected_(on_connected) {}
+        on_connected_(std::move(on_connected)) {}
 
   void ThreadMain() override {
     // In the Windows API, the set of processes being debugged is
@@ -70,7 +70,7 @@ void NaClStartDebugExceptionHandlerThread(
     base::Process nacl_process,
     const std::string& startup_info,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    const base::Callback<void(bool)>& on_connected) {
+    const base::RepeatingCallback<void(bool)>& on_connected) {
   // The new PlatformThread will take ownership of the
   // DebugExceptionHandler object, which will delete itself on exit.
   DebugExceptionHandler* handler = new DebugExceptionHandler(

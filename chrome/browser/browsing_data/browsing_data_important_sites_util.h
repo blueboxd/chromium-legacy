@@ -23,7 +23,7 @@ void Remove(uint64_t remove_mask,
             browsing_data::TimePeriod time_period,
             std::unique_ptr<content::BrowsingDataFilterBuilder> filter_builder,
             content::BrowsingDataRemover* remover,
-            base::OnceClosure callback);
+            base::OnceCallback<void(uint64_t)> callback);
 
 }  // namespace browsing_data_important_sites_util
 

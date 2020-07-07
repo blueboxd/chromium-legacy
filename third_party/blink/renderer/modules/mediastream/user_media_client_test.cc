@@ -685,10 +685,8 @@ TEST_F(UserMediaClientTest, GenerateTwoMediaStreamsWithSameSource) {
   EXPECT_EQ(desc1_audio_components[0]->Source()->Id(),
             desc2_audio_components[0]->Source()->Id());
 
-  EXPECT_EQ(MediaStreamAudioSource::From(
-                WebMediaStreamSource(desc1_audio_components[0]->Source())),
-            MediaStreamAudioSource::From(
-                WebMediaStreamSource(desc2_audio_components[0]->Source())));
+  EXPECT_EQ(MediaStreamAudioSource::From(desc1_audio_components[0]->Source()),
+            MediaStreamAudioSource::From(desc2_audio_components[0]->Source()));
 }
 
 // Test that the same source object is not used if two MediaStreams are
@@ -713,10 +711,8 @@ TEST_F(UserMediaClientTest, GenerateTwoMediaStreamsWithDifferentSources) {
   EXPECT_NE(desc1_audio_components[0]->Source()->Id(),
             desc2_audio_components[0]->Source()->Id());
 
-  EXPECT_NE(MediaStreamAudioSource::From(
-                WebMediaStreamSource(desc1_audio_components[0]->Source())),
-            MediaStreamAudioSource::From(
-                WebMediaStreamSource(desc2_audio_components[0]->Source())));
+  EXPECT_NE(MediaStreamAudioSource::From(desc1_audio_components[0]->Source()),
+            MediaStreamAudioSource::From(desc2_audio_components[0]->Source()));
 }
 
 TEST_F(UserMediaClientTest, StopLocalTracks) {

@@ -14,6 +14,40 @@
 
 namespace media {
 
+class MockMFCdmFactory
+    : public Microsoft::WRL::RuntimeClass<
+          Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
+          IMFContentDecryptionModuleFactory> {
+ public:
+  MockMFCdmFactory();
+  ~MockMFCdmFactory() override;
+
+  // IMFContentDecryptionModuleFactory methods
+  MOCK_STDCALL_METHOD2(IsTypeSupported,
+                       BOOL(LPCWSTR key_system, LPCWSTR content_type));
+  MOCK_STDCALL_METHOD4(CreateContentDecryptionModuleAccess,
+                       HRESULT(LPCWSTR key_system,
+                               IPropertyStore** configurations,
+                               DWORD num_configurations,
+                               IMFContentDecryptionModuleAccess** cdm_access));
+};
+
+class MockMFCdmAccess
+    : public Microsoft::WRL::RuntimeClass<
+          Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
+          IMFContentDecryptionModuleAccess> {
+ public:
+  MockMFCdmAccess();
+  ~MockMFCdmAccess() override;
+
+  // IMFContentDecryptionModuleAccess methods
+  MOCK_STDCALL_METHOD2(CreateContentDecryptionModule,
+                       HRESULT(IPropertyStore* properties,
+                               IMFContentDecryptionModule** cdm));
+  MOCK_STDCALL_METHOD1(GetConfiguration, HRESULT(IPropertyStore** config));
+  MOCK_STDCALL_METHOD1(GetKeySystem, HRESULT(LPWSTR* key_system));
+};
+
 class MockMFCdm
     : public Microsoft::WRL::RuntimeClass<
           Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,

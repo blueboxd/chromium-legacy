@@ -118,7 +118,7 @@ HTMLImportChild* HTMLImportsController::Load(const Document& parent_document,
   }
 
   scoped_refptr<const SecurityOrigin> security_origin =
-      TreeRoot()->GetSecurityOrigin();
+      TreeRoot()->GetExecutionContext()->GetSecurityOrigin();
   ResourceFetcher* fetcher = parent->GetDocument()->Fetcher();
 
   if (parent->GetDocument()->ImportsController()) {

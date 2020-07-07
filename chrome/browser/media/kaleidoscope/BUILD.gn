@@ -22,6 +22,7 @@ if (enable_kaleidoscope) {
       "//chrome/browser/media/kaleidoscope/internal:kaleidoscope_strings",
       "//chrome/browser/media/kaleidoscope/internal/resources:content",
       "//chrome/browser/media/kaleidoscope/mojom:mojom_js",
+      "//chrome/browser/resources/kaleidoscope:web_components",
       "//url/mojom:url_mojom_gurl_js",
     ]
   }

@@ -156,7 +156,11 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     protected class LayoutManagerTabModelObserver implements TabModelObserver {
         @Override
         public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
-            if (tab.getId() != lastId) tabSelected(tab.getId(), lastId, tab.isIncognito());
+            if (type == TabSelectionType.FROM_OMNIBOX) {
+                switchToTab(tab, lastId);
+            } else if (tab.getId() != lastId) {
+                tabSelected(tab.getId(), lastId, tab.isIncognito());
+            }
             mCurrentTab = tab;
         }
 
@@ -386,8 +390,11 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
             ContextualSearchManagementDelegate contextualSearchDelegate,
             DynamicResourceLoader dynamicResourceLoader) {
         LayoutRenderHost renderHost = mHost.getLayoutRenderHost();
-        mToolbarOverlay = new ToolbarSceneLayer(
-                mContext, this, renderHost, controlContainer, () -> mCurrentTab);
+        mToolbarOverlay = new ToolbarSceneLayer(mContext, this, renderHost, controlContainer,
+                () -> mCurrentTab, getFullscreenManager(),
+                () -> getActiveLayout() != null
+                        ? getActiveLayout().getViewportMode()
+                        : Layout.ViewportMode.USE_PREVIOUS_BROWSER_CONTROLS_STATE);
 
         // Initialize Layouts
         mStaticLayout.onFinishNativeInitialization();
@@ -985,5 +992,15 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     @VisibleForTesting
     public LayoutTab getLayoutTabForTesting(int tabId) {
         return mTabCache.get(tabId);
+    }
+
+    /**
+     * Should be called when a tab switch event is triggered, only can switch to the Tab which in
+     * the current TabModel.
+     * @param tab        The tab that will be switched to.
+     * @param lastTabId  The id of the tab that was switched from.
+     */
+    protected void switchToTab(Tab tab, int lastTabId) {
+        tabSelected(tab.getId(), lastTabId, tab.isIncognito());
     }
 }

@@ -211,4 +211,13 @@ public class OmniboxSuggestionBuilderForTest {
         mRelevance = relevance;
         return this;
     }
+
+    /**
+     * @param type Suggestion type.
+     * @return Omnibox suggestion builder.
+     */
+    public OmniboxSuggestionBuilderForTest setType(@OmniboxSuggestionType int type) {
+        mType = type;
+        return this;
+    }
 }

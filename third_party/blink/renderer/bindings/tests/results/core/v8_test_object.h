@@ -362,6 +362,7 @@ class V8TestObject {
   CORE_EXPORT static void HighEntropyAttributeWithMeasureAsAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void HighEntropyReadonlyAttributeWithMeasureAsAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void HighEntropyDirectUnsignedLongAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void HighEntropyDirectDomStringAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void TestInterfaceAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void TestInterfaceAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void SizeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);

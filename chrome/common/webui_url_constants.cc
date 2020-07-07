@@ -326,6 +326,7 @@ const char kChromeUIDiscardsURL[] = "chrome://discards/";
 const char kChromeUIHatsHost[] = "hats";
 const char kChromeUIHatsURL[] = "chrome://hats/";
 const char kChromeUIProfilePickerHost[] = "profile-picker";
+const char kChromeUIProfilePickerUrl[] = "chrome://profile-picker/";
 #endif
 
 #if !defined(OS_ANDROID)

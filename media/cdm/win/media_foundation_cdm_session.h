@@ -35,17 +35,24 @@ class MEDIA_EXPORT MediaFoundationCdmSession {
 
   // EME MediaKeySession methods. Returns S_OK on success, otherwise forwards
   // the HRESULT from IMFContentDecryptionModuleSession.
-  // Note on GenerateRequest():
-  // - Returns S_OK, which has two cases:
-  //   * If |session_id_| is successfully set, |session_id_cb| will be run
-  //     followed by the session message.
-  //   * Otherwise, |session_id_cb| will be run with an empty session ID to
-  //     indicate error. No session message in this case.
-  // - Otherwise, no callbacks will be run.
-  using SessionIdCB = base::OnceCallback<void(const std::string&)>;
+
+  // Callback to pass the session ID to the caller. The return value indicates
+  // whether the session ID is accepted by the caller. If returns false, the
+  // session ID is rejected by the caller (e.g. empty of duplicate session IDs),
+  // and |this| could be destructed immediately by the caller.
+  using SessionIdCB = base::OnceCallback<bool(const std::string&)>;
+
+  // Creates session ID and generates requests. Returns an error HRESULT on
+  // immediate failure, in which case no callbacks will be run. Otherwise,
+  // returns S_OK, with the following two cases:
+  // - If |session_id_| is successfully set, |session_id_cb| will be run with
+  // |session_id_| followed by the session message via |session_message_cb_|.
+  // - Otherwise, |session_id_cb| will be run with an empty session ID to
+  // indicate error. No session message in this case.
   HRESULT GenerateRequest(EmeInitDataType init_data_type,
                           const std::vector<uint8_t>& init_data,
                           SessionIdCB session_id_cb);
+
   HRESULT Load(const std::string& session_id);
   HRESULT Update(const std::vector<uint8_t>& response);
   HRESULT Close();
@@ -57,8 +64,9 @@ class MEDIA_EXPORT MediaFoundationCdmSession {
                         const std::vector<uint8_t>& message);
   void OnSessionKeysChange();
 
-  // Sets |session_id_|, which could be empty on failure.
-  void SetSessionId();
+  // Sets |session_id_| and returns whether the operation succeeded.
+  // Note: |this| could already been destructed if false is returned.
+  bool SetSessionId();
 
   // Callbacks for firing session events.
   SessionMessageCB session_message_cb_;

@@ -111,9 +111,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
 
   bool IsIgnored() const;
 
-  // Returns true if this object is used only for representing text.
-  bool IsTextOnlyObject() const;
-
   bool IsLineBreakObject() const;
 
   // See AXNode::IsLeaf().
@@ -535,6 +532,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   bool ShouldIgnoreHoveredStateForTesting() override;
   bool IsOffscreen() const override;
   bool IsMinimized() const override;
+  bool IsText() const override;
   bool IsWebContent() const override;
   bool HasVisibleCaretOrSelection() const override;
   ui::AXPlatformNode* GetTargetNodeForRelation(

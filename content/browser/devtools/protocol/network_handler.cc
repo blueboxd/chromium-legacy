@@ -1068,7 +1068,7 @@ class DevtoolsClearCacheObserver
   }
 
   ~DevtoolsClearCacheObserver() override { remover_->RemoveObserver(this); }
-  void OnBrowsingDataRemoverDone() override {
+  void OnBrowsingDataRemoverDone(uint64_t failed_data_types) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     callback_->sendSuccess();
     delete this;

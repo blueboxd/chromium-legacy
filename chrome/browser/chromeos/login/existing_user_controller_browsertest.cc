@@ -168,9 +168,6 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
     EXPECT_CALL(*mock_login_display_host_, GetLoginDisplay())
         .Times(AnyNumber())
         .WillRepeatedly(Return(mock_login_display_.get()));
-    EXPECT_CALL(*mock_login_display_host_, GetNativeWindow())
-        .Times(1)
-        .WillOnce(ReturnNull());
     EXPECT_CALL(*mock_login_display_host_, OnPreferencesChanged()).Times(1);
     EXPECT_CALL(*mock_login_display_, Init(_, true, true, true)).Times(1);
   }
@@ -391,9 +388,6 @@ class ExistingUserControllerPublicSessionTest
     EXPECT_CALL(*mock_login_display_host_, GetLoginDisplay())
         .Times(AnyNumber())
         .WillRepeatedly(Return(mock_login_display_.get()));
-    EXPECT_CALL(*mock_login_display_host_.get(), GetNativeWindow())
-        .Times(AnyNumber())
-        .WillRepeatedly(ReturnNull());
     EXPECT_CALL(*mock_login_display_host_.get(), OnPreferencesChanged())
         .Times(AnyNumber());
     EXPECT_CALL(*mock_login_display_, Init(_, _, _, _)).Times(AnyNumber());
@@ -867,9 +861,6 @@ class ExistingUserControllerActiveDirectoryUserWhitelistTest
     EXPECT_CALL(*mock_login_display_host_, GetLoginDisplay())
         .Times(AnyNumber())
         .WillRepeatedly(Return(mock_login_display_.get()));
-    EXPECT_CALL(*mock_login_display_host_, GetNativeWindow())
-        .Times(1)
-        .WillOnce(ReturnNull());
     EXPECT_CALL(*mock_login_display_host_, OnPreferencesChanged()).Times(1);
     EXPECT_CALL(*mock_login_display_, Init(_, true, true, false)).Times(1);
   }

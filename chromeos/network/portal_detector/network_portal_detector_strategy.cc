@@ -138,19 +138,14 @@ std::unique_ptr<PortalDetectorStrategy> PortalDetectorStrategy::CreateById(
     Delegate* delegate) {
   switch (id) {
     case STRATEGY_ID_LOGIN_SCREEN:
-      return std::unique_ptr<PortalDetectorStrategy>(
-          new LoginScreenStrategy(delegate));
+      return std::make_unique<LoginScreenStrategy>(delegate);
     case STRATEGY_ID_ERROR_SCREEN:
-      return std::unique_ptr<PortalDetectorStrategy>(
-          new ErrorScreenStrategy(delegate));
+      return std::make_unique<ErrorScreenStrategy>(delegate);
     case STRATEGY_ID_SESSION:
-      return std::unique_ptr<PortalDetectorStrategy>(
-          new SessionStrategy(delegate));
-    default:
-      NOTREACHED();
-      return std::unique_ptr<PortalDetectorStrategy>(
-          static_cast<PortalDetectorStrategy*>(nullptr));
+      return std::make_unique<SessionStrategy>(delegate);
   }
+  NOTREACHED();
+  return nullptr;
 }
 
 base::TimeDelta PortalDetectorStrategy::GetDelayTillNextAttempt() {

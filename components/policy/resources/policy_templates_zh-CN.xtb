@@ -99,9 +99,6 @@
           如果未设置此政策，可屏蔽的混合内容将被屏蔽，同时可选的可屏蔽混合内容将被升级，而且用户将能设置例外情况以允许在特定网站上显示此类内容。
 
           要详细了解有效网址格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
-<translation id="1135264353752122851">配置允许在 <ph name="PRODUCT_OS_NAME" />用户会话中使用哪些键盘布局。
-
-      如果设置了此政策，用户只能从此政策指定的输入法中选择其一。如果未设置此政策或将此政策设为空列表，用户则可选择任一受支持的输入法。如果此政策不允许使用当前输入法，这一输入法便会切换到硬件键盘布局（如果允许）或此列表中的第一个有效条目。系统将会忽略此列表中所有无效或不受支持的输入法。</translation>
 <translation id="1138294736309071213">此政策仅在零售模式下有效。
 
       确定在零售模式设备的登录屏幕上显示屏幕保护程序之前的闲置时间。
@@ -126,7 +123,7 @@
       如果您设置了此政策，用户便无法更改它。如果您未设置此政策，高对比度模式会处于关闭状态，但用户可随时开启它。</translation>
 <translation id="1197437816436565375">您无法强制 Android 应用使用代理。一小部分代理设置已可供 Android 应用使用，此类应用可能会主动选择使用这些设置。有关详情，请参阅 <ph name="PROXY_MODE_POLICY_NAME" /> 政策。</translation>
 <translation id="1198183996903759302">如果此政策设为 True（或者 <ph name="HARDWARE_ACCELERATION_MODE_ENABLED_POLICY_NAME" /> 设为 False），网页会无法访问 WebGL API，而且插件会无法使用 Pepper 3D API。
-      如果此政策设为 False 或未设置，网页会使用 WebGL API，而且插件会使用 Pepper 3D API，但浏览器的默认设置可能仍然需要传递命令行参数才能使用这些 API。</translation>
+      如果此政策设为 False 或未设置，网页可以使用 WebGL API，而且插件可以使用 Pepper 3D API，但浏览器的默认设置可能仍然要求在使用这些 API 前先传递命令行参数。</translation>
 <translation id="1198465924256827162">发送设备状态上传内容的频率（以毫秒为单位）。
 
       如果此政策未设置，默认频率为 3 小时。允许的最低频率为 60 秒。</translation>
@@ -185,11 +182,6 @@
 
       如果未设置此政策，系统将会采用默认行为（即：不允许通过那些使用客户端证书的连接来聚合任何 HTTP/2 连接）。</translation>
 <translation id="1354424209129232709">上限：</translation>
-<translation id="1354452738176731363">如果将此政策设为 false，用户登录后将无法在设备上使用音频输出。
-
-      此政策会影响所有类型的音频输出（而不仅仅是内置扬声器）。音频辅助功能也受此政策约束。如果用户需要使用屏幕阅读器，请勿启用此政策。
-
-      如果不设置此政策或将其设为 true，用户将可以在其设备上使用所有支持的音频输出。</translation>
 <translation id="1359553908012294236">如果此政策设为 true 或未配置，<ph name="PRODUCT_NAME" /> 将允许使用访客身份登录。访客身份是指 <ph name="PRODUCT_NAME" /> 个人资料，使用此类个人资料登录后，所有窗口均处于隐身模式。
 
       如果此政策设为 false，<ph name="PRODUCT_NAME" /> 将禁止使用访客个人资料登录。</translation>
@@ -216,6 +208,11 @@
 <translation id="1426170570389588560">设置打印任务元数据的存储时间段（天）</translation>
 <translation id="1426410128494586442">是</translation>
 <translation id="1427655258943162134">代理服务器的地址或网址</translation>
+<translation id="142825088795991909">通过设置此政策，您可以创建一个网址格式列表，从而指定哪些网站可以显示通知。
+
+      如果您不设置此政策，系统会为所有网站应用 <ph name="DEFAULT_JAVA_SCRIPT_SETTING_POLICY_NAME" />（若已设置）。否则，系统会应用用户的个人设置。
+
+      如需详细了解有效的<ph name="URL_LABEL" />格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="1435659902881071157">设备级网络配置</translation>
 <translation id="1438739959477268107">默认的密钥生成设置</translation>
 <translation id="1449083855104537880">如果此政策设为 True，无障碍选项将会显示在系统任务栏菜单中。如果此政策设为 False，这些选项就不会显示在菜单中。
@@ -303,6 +300,15 @@
 <translation id="1575015449587326319">OnFileDownloaded Chrome Enterprise Connector 的配置政策</translation>
 <translation id="1583248206450240930">默认情况下使用“<ph name="PRODUCT_FRAME_NAME" />”</translation>
 <translation id="1588240398285670601">浏览器设置</translation>
+<translation id="1588456836529393506">通过设置此政策，您可以创建一个网址格式列表，从而指定自动授权哪些网站访问具有给定供应商 ID 和产品 ID 的 USB 设备。每个列表项都必须包含设备和网址，此政策才会有效。设备部分中的每项都可包含供应商 ID 和产品 ID 字段。被省略的任何 ID 都会被视为通配符，但例外情况是：如果未指定供应商 ID，便无法指定产品 ID。否则，此政策将会无效。
+
+      USB 权限模型会使用请求网址（发出请求的网站的网址）和嵌入网址（顶级框架网站的网址）来授权请求网址访问相应 USB 设备。如果发出请求的网站是在 iframe 中加载的，请求网址可能会与嵌入网址不同。因此，“urls”字段最多可包含 2 个以英文逗号分隔的字符串，以分别指定请求网址和嵌入网址。如果仅指定了 1 个网址，系统将会在请求网址与这个网址相符（无论嵌入网址的状态为何）时授权该网站访问相应 USB 设备。“urls”字段中的网址必须是有效网址，否则系统会忽略此政策。
+
+      如果您不设置此政策，系统会应用 <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME" />（若已设置）。否则，系统会应用用户的个人设置。
+
+      此政策中的网址格式不应与通过 <ph name="WEB_USB_BLOCKED_FOR_URLS_POLICY_NAME" /> 配置的网址格式冲突。如果它们存在冲突，此政策优先于 <ph name="WEB_USB_BLOCKED_FOR_URLS_POLICY_NAME" /> 和 <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME" />。
+
+      此政策的值和 <ph name="DEVICE_WEB_USB_ALLOW_DEVICES_FOR_URLS_POLICY_NAME" /> 的值会合并。</translation>
 <translation id="1599424828227887013">在 Android 设备上为指定的来源启用网站隔离功能</translation>
 <translation id="159946228300522107">如果此政策设为 True，Chrome 会在首次运行时将所显示的第一个窗口最大化。
 
@@ -368,7 +374,7 @@
 
       如果此政策未设置（或设为 True），系统将会发送下载的文件以供安全浏览功能进行分析，即使来源可信也是如此。
 
-      请注意，这些限制适用于从网页内容以及“下载链接…”上下文菜单选项触发的下载内容，但不适用于保存/下载当前显示的页面，也不适用于通过打印选项另存为 PDF 文件。
+      请注意，这些限制适用于从网页内容以及“下载链接…”上下文菜单选项触发的下载，但不适用于保存/下载当前显示的页面，也不适用于通过打印选项另存为 PDF 文件。
 
       此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 专业版或企业版实例，以及通过 MDM 进行管理或通过 MCX 加入网域的 macOS 实例。</translation>
 <translation id="1700811900332333712">允许设备请求 Powerwash</translation>
@@ -480,7 +486,7 @@
 
       如果此政策设为 False 或未设置，<ph name="PRODUCT_NAME" /> 不会在 <ph name="PRODUCT_NAME" /> 19 和更高版本中执行在线撤消检查。
 
-      请注意：<ph name="OCSP_CRL_LABEL" /> 检查并不会有助于增强安全性。</translation>
+      请注意：<ph name="OCSP_CRL_LABEL" /> 检查并不能有效增强安全性。</translation>
 <translation id="1906888171268104594">控制是否要将使用情况指标和诊断数据（包括崩溃报告）反馈给 Google。
 
       如果此政策设为 true，<ph name="PRODUCT_OS_NAME" />将会报告使用情况指标和诊断数据。
@@ -708,17 +714,17 @@
 
       此政策不适用于自助服务终端应用 - 这类应用会自动完成迁移。如果此政策未设置，相应设备则会具有与将此政策设为“DisallowArc”时相同的行为方式。</translation>
 <translation id="2195032660890227692">此政策已在 <ph name="PRODUCT_NAME" /> 中移除，并已由 <ph name="ARC_BR_POLICY_NAME" /> 取代。</translation>
-<translation id="219720814106081560">如果已启用或未配置（默认），则系统会在收到视频捕获设备使用请求时提示用户；但对于 VideoCaptureAllowedUrls 列表中配置的网址，系统不会提示用户，而是直接授予访问权限。
-
-      如果此政策已停用，则系统一律不提示用户，只有 VideoCaptureAllowedUrls 中配置的网址可以使用视频捕获设备。
-
-      此政策会影响所有类型的视频输入（而不仅仅是内置摄像头）。</translation>
 <translation id="2197625019569762163">如果此政策设为 true，登录屏幕上会默认显示数字键盘以用于输入密码。用户仍能切换到常规键盘。
 
       如果您设置了此政策，用户便无法更改它。如果此政策未设置或设为 false，它将不会产生任何效力。</translation>
 <translation id="2201555246697292490">配置本地消息传递主机白名单</translation>
 <translation id="2204753382813641270">控制任务栏是否自动隐藏</translation>
 <translation id="2208976000652006649">在使用 POST 的搜索网址中所需的参数</translation>
+<translation id="221019813387144689">通过设置此政策，您可以创建一个网址格式列表，从而指定哪些网站无法显示通知。
+
+      如果您不设置此政策，系统会为所有网站应用 <ph name="DEFAULT_JAVA_SCRIPT_SETTING_POLICY_NAME" />（若已设置）。否则，系统会应用用户的个人设置。
+
+      如需详细了解有效的<ph name="URL_LABEL" />格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="2215238871726750562">如果此政策设为 True，系统会阻止浏览器窗口在会话开始时启动。
 
       如果此政策设为 False 或未设置，系统会允许窗口启动。
@@ -737,6 +743,11 @@
 <translation id="2223598546285729819">默认通知设置</translation>
 <translation id="2231817271680715693">首次运行时，从默认浏览器导入浏览记录</translation>
 <translation id="2236488539271255289">不允许任何网站设置本地数据</translation>
+<translation id="2240793533242059248">通过设置此政策，您可以创建一个网址格式列表，从而指定哪些网站无法打开弹出式窗口。
+
+      如果您不设置此政策，系统会为所有网站应用 <ph name="DEFAULT_POPUPS_SETTING_POLICY_NAME" />（若已设置）。否则，系统会应用用户的个人设置。
+
+      如需详细了解有效的<ph name="URL_LABEL" />格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="2241498944622759244">该功能从未被发布，所以此政策已被弃用。如果此政策设为 true 或未设置，<ph name="PRODUCT_NAME" /> 将会根据当前网页来建议相关网页。
       这些建议是系统从 Google 服务器远程获取的。
 
@@ -745,15 +756,6 @@
 <translation id="2267288258868218403">禁止上传不受支持的文件类型</translation>
 <translation id="2269319728625047531">在登录期间允许显示同步同意声明</translation>
 <translation id="2270747976331889601">为本地信任锚启用 TLS 1.3 安全功能。</translation>
-<translation id="2274864612594831715">通过此政策，您可以启用虚拟键盘作为Chrome操作系统上的输入设备。用户无法覆盖此政策。
-
-      如果此政策设为true，屏幕上的虚拟键盘将始终处于启用状态。
-
-      如果此政策设为false，屏幕上的虚拟键盘将始终处于停用状态。
-
-      如果您设置了此政策，用户将无法对其进行更改或覆盖。不过，用户仍可以启用/停用辅助屏幕键盘，该键盘的优先级高于此政策控制的虚拟键盘。请参见控制辅助屏幕键盘的|VirtualKeyboardEnabled|政策。
-
-      如果此政策未设置，屏幕键盘最初会处于停用状态，但用户随时可启用它。此外，您还可以使用试探法来确定何时显示该键盘。</translation>
 <translation id="2281496157391382819"> 控制 <ph name="PRODUCT_OS_NAME" />上受管理访客会话的隐私权警告。
 
       如果此政策设为 False，系统会停用登录屏幕上的隐私权警告和受管理访客会话中的自动启动通知。
@@ -975,7 +977,6 @@
 
           如果未设置此政策，则“插入符号突出显示”最初会处于停用状态，但用户可以随时启用该功能。</translation>
 <translation id="2509919237512982967">在 M84 之前的版本中使用旧版表单控件。</translation>
-<translation id="2514328368635166290">指定默认搜索服务提供商的首选图标网址。此政策是可选的，如果未设置，搜索服务提供商就不会显示任何图标。要实施此政策，必须启用“DefaultSearchProviderEnabled”政策。</translation>
 <translation id="2516600974234263142">在 <ph name="PRODUCT_NAME" /> 中启用打印功能，并禁止用户更改此设置。
 
       如果已启用或未配置此设置，用户就可以进行打印。
@@ -1021,13 +1022,6 @@
           您可以按以下格式指定 Google 的即搜即得结果网址：<ph name="GOOGLE_INSTANT_SEARCH_URL" />。
 
           仅当“DefaultSearchProviderEnabled”政策处于启用状态时，此政策才能发挥作用。</translation>
-<translation id="2569647487017692047">如果此政策设为 false，<ph name="PRODUCT_OS_NAME" />将停用蓝牙功能，并且用户无法重新启用该功能。
-
-      如果此政策设为 true 或未设置，用户将能够随意启用或停用蓝牙功能。
-
-      如果您设置了此政策，用户将无法更改或覆盖您的设置。
-
-      启用蓝牙功能后，用户必须先退出然后重新登录才能使更改生效（停用蓝牙功能后，无需执行此操作）。</translation>
 <translation id="2571066091915960923">启用或停用数据压缩代理，并防止用户更改该设置。
 
       如果您启用或停用了该设置，用户将无法更改或覆盖该设置。
@@ -1071,15 +1065,17 @@
 
       此政策对用户能否在各台设备上配置打印机没有影响。它旨在对各用户的打印机配置进行补充。
       </translation>
+<translation id="2632538643061793322">通过设置此政策，您可以创建一个网址格式列表，从而指定哪些网站可以请求用户授权其访问 USB 设备。
+
+      如果您不设置此政策，系统会为所有网站应用 <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME" />（若已设置）。否则，系统会应用用户的个人设置。
+
+      网址格式不得与 <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME" /> 冲突。如果某个网址与这两项政策都相符，系统将不会以任一项政策为准。
+
+      如需详细了解有效的<ph name="URL_LABEL" />格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="2633084400146331575">启用语音反馈</translation>
 <translation id="2647069081229792812">启用或停用书签修改功能</translation>
 <translation id="2649896281375932517">由用户决定</translation>
 <translation id="2650049181907741121">当用户合上屏幕时执行的操作</translation>
-<translation id="2655233147335439767">指定要在执行默认搜索时使用的搜索引擎网址。该网址应包含字符串“<ph name="SEARCH_TERM_MARKER" />”，系统会在用户进行查询时将该字符串替换为用户搜索的字词。
-
-          您可以按以下格式指定 Google 的搜索网址：<ph name="GOOGLE_SEARCH_URL" />。
-
-          “DefaultSearchProviderEnabled”政策处于启用状态时，必须设置此选项，并且只有在这种情况下此选项才能发挥作用。</translation>
 <translation id="2658653824183107970">使用旧版 <ph name="CORS" /> 实现方案（而非新版 <ph name="CORS" />）</translation>
 <translation id="2659019163577049044">如果此设置处于启用状态，用户将能够设置他们的设备，以便在手机和 Chromebook 之间同步短信。请注意：此政策处于启用状态时，如果用户想要使用短信同步功能，必须完成一个设置流程，以便明确选择启用这项功能。设置流程完成后，用户将能够在 Chromebook 上收发短信。
 
@@ -1094,7 +1090,6 @@
 
       如果此政策设为 False 或未设置，系统则会将隐私权警告通知固定在屏幕上，直到用户关闭它为止。</translation>
 <translation id="2672012807430078509">控制是否允许将 NTLM 作为 SMB 装载功能的身份验证协议</translation>
-<translation id="267596348720209223">指定搜索服务提供商支持的字符编码。编码是指类似于 UTF-8、GB2312 和 ISO-8859-1 的代码页名称，并按此顺序进行尝试。此政策是可选的，如果未设置，将使用默认值 UTF-8。要实施此政策，必须先启用“DefaultSearchProviderEnabled”政策。</translation>
 <translation id="2678503605767349615">必需的设备级客户端证书</translation>
 <translation id="268577405881275241">启用数据压缩代理功能</translation>
 <translation id="2691668238491124549">通过设置此政策（仅当推荐您这样做时），您可将系统为受管理自助服务终端推荐的语言区域移至列表顶部，并使它们按照在此政策中的显示顺序排列。系统会预先选择所推荐的第一个语言区域。
@@ -1260,7 +1255,7 @@
       如果未设置此政策，系统将会默认使用 <ph name="PRINTERS_ALLOW_ALL" />。
       </translation>
 <translation id="2908277604670530363">可同时连接到代理服务器的连接数上限</translation>
-<translation id="2921222258441684334">如果此政策设为 1，系统会默认允许网站跟踪用户的实际位置。如果此政策设为 2，系统会默认禁止此类跟踪。您可通过设置此政策，让网站每当想跟踪用户的实际位置时都先询问用户的意见。
+<translation id="2921222258441684334">如果此政策设为 1，系统会默认允许网站跟踪用户的实际位置。如果此政策设为 2，系统会默认禁止此类跟踪。您可通过设置此政策，让网站在每次想要跟踪用户的实际位置时都先询问用户的意见。
 
       如果此政策未设置，则意味着 <ph name="ASK_GEOLOCATION_POLICY_NAME" /> 政策适用，但用户可以更改此设置。</translation>
 <translation id="2952347049958405264">限制：</translation>
@@ -1345,9 +1340,9 @@
       在 <ph name="PRODUCT_NAME" /> 版本 81 及更高版本中，如果未设置此政策，系统将会仅在常规会话中启用静默身份验证。</translation>
 <translation id="3021288356473993647">此政策旨在控制实时网址检查以识别不安全的网址。
 
-      如果此政策未设置或已停用，系统会应用消费者级别的安全浏览检查功能。消费者级别的安全浏览检查功能或许仍包含实时查找，具体取决于“改善搜索和浏览体验”设置的值以及 UrlKeyedAnonymizedDataCollectionEnabled 政策的值。
+      如果此政策未设置或设为“已停用”，系统会应用个人用户的安全浏览检查设置。个人用户的安全浏览检查设置或许仍包含实时查找，具体取决于“改善搜索和浏览体验”设置的值以及 UrlKeyedAnonymizedDataCollectionEnabled 政策的值。
 
-      如果此政策已启用，根据针对企业的服务条款，网址会被发送以供实时扫描。这会致使 Chrome 将网址发送给 Google Cloud 或您选择的第三方进行实时检查。消费者版本的安全浏览实时查找功能将被关闭。
+      如果此政策设为“已启用”，系统会根据《Chrome 企业版服务条款》，发送网址以供实时扫描。这会致使 Chrome 将网址发送给 Google Cloud 或您选择的第三方进行实时检查。个人用户版的安全浏览实时查找功能将被关闭。
 
       此政策只能通过 Google 管理控制台进行设置。</translation>
 <translation id="3021562480854470924">指定允许回滚到的里程碑的数量</translation>
@@ -1601,11 +1596,6 @@
 <translation id="3435796032110614169">允许删除打印任务记录</translation>
 <translation id="3437924696598384725">允许用户管理 VPN 连接</translation>
 <translation id="3459509316159669723">打印</translation>
-<translation id="3460784402832014830">指定搜索引擎用于提供新标签页的网址。
-
-          该政策为可选政策。如果未设置，将不会提供任何新标签页。
-
-          该政策只有在启用了“DefaultSearchProviderEnabled”政策的情况下才有效。</translation>
 <translation id="3461279434465463233">报告电源状态</translation>
 <translation id="346731943813722404">指定是否仅在会话内察觉到首个用户活动后才开始计算电源管理延迟和会话长度限制。
 
@@ -1665,11 +1655,6 @@
       如果此政策未设置，密码保护服务将只保护 Google 密码，但用户能够更改该设置。</translation>
 <translation id="3502555714327823858">允许所有双面打印模式</translation>
 <translation id="350443680860256679">配置 ARC</translation>
-<translation id="3504791027627803580">指定用于提供图片搜索结果的搜索引擎网址。系统将使用 GET 方法发送搜索请求。如果设置了 DefaultSearchProviderImageURLPostParams 政策，那么图片搜索请求会改用 POST 方式。
-
-          此为可选政策。如果未设置此政策，将无法使用图片搜索。
-
-          此政策只在启用了“DefaultSearchProviderEnabled”政策的前提下才会生效。</translation>
 <translation id="350797926066071931">启用翻译</translation>
 <translation id="3508047333410537654">在登录屏幕上启用“单声道音频”</translation>
 <translation id="3513655665999652754">Quirks Server 可提供硬件方面的配置文件（例如 ICC 显示配置文件），以调整显示器校准。
@@ -1854,13 +1839,6 @@
 
       如果未指定，则不会修改变体种子网址。</translation>
 <translation id="3863409707075047163">启用最低 SSL 版本</translation>
-<translation id="3864020628639910082">指定用于提供搜索建议的搜索引擎网址。该网址应包含字符串“<ph name="SEARCH_TERM_MARKER" />”，系统会在用户进行查询时将该字符串替换为用户输入的文字。
-
-          此政策是可选的，如果未设置，系统将不会使用任何搜索建议网址。
-
-          您可以按以下格式指定 Google 的搜索建议网址：<ph name="GOOGLE_SUGGEST_SEARCH_URL" />。
-
-          仅当“DefaultSearchProviderEnabled”政策处于启用状态时，此政策才能发挥作用。</translation>
 <translation id="3864129983143201415">配置可在用户会话中使用的语言</translation>
 <translation id="3866249974567520381">说明</translation>
 <translation id="386723261607812952">设置登录屏幕上启用的放大镜类型</translation>
@@ -2191,7 +2169,7 @@
 
       如果您不设置此政策，系统会为所有网站使用 <ph name="DEFAULT_COOKIES_SETTINGS_POLICY_NAME" />（若已设置）。否则，系统会应用用户的个人设置。
 
-      虽然不涉及应优先执行哪项政策，请也查看一下 <ph name="COOKIES_BLOCKED_FOR_URLS_POLICY_NAME" /> 和 <ph name="COOKIES_SESSION_ONLY_FOR_URLS_POLICY_NAME" />。这 3 项政策中的网址格式不得存在冲突。
+      请另外查看一下 <ph name="COOKIES_BLOCKED_FOR_URLS_POLICY_NAME" /> 和 <ph name="COOKIES_SESSION_ONLY_FOR_URLS_POLICY_NAME" />（这三项政策并无优先级差异）。这 3 项政策中的网址格式不得存在冲突。
 
       如需详细了解有效的 <ph name="URL_LABEL" /> 格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="4243336580717651045">对 <ph name="PRODUCT_NAME" /> 启用以网址为键的匿名化数据收集功能，并阻止用户更改此设置。
@@ -2211,11 +2189,6 @@
 
       如果使用此政策，则只有那些具有与此政策中所列值匹配的 ID 的打印机才可供用户使用。ID 必须与 <ph name="BULK_PRINTERS_POLICY" /> 中指定的文件内的“id”或“guid”字段相符。
       </translation>
-<translation id="427632463972968153">指定通过 POST 执行图片搜索时使用的参数。该参数由以英文逗号分隔的名称/值对组成。如果值为模板参数（例如上例中的 {imageThumbnail}），那么系统会将其替换成真正的缩略图数据。
-
-          此为可选政策。如果未设置此政策，系统将使用 GET 方法发送图片搜索请求。
-
-          此政策只在启用了“DefaultSearchProviderEnabled”政策的前提下才会生效。</translation>
 <translation id="4285674129118156176">允许独立用户使用 ARC</translation>
 <translation id="4298509794364745131">指定可以在 <ph name="PRODUCT_OS_NAME" />锁定屏幕上作为备注应用启用的应用列表。
 
@@ -2418,6 +2391,11 @@
 
       如果未设置或启用了此政策，系统会执行 DNS 拦截检查。如果明确停用了此政策，系统便不会执行 DNS 拦截检查。</translation>
 <translation id="4703402283970867140">启用智能调暗模式，以最大限度地推迟屏幕变暗时间</translation>
+<translation id="4715049077430924642">通过设置此政策，您可以创建一个网址格式列表，从而指定哪些网站无法运行 JavaScript。
+
+      如果您不设置此政策，系统会为所有网站应用 <ph name="DEFAULT_JAVA_SCRIPT_SETTING_POLICY_NAME" />（若已设置）。否则，系统会应用用户的个人设置。
+
+      如需详细了解有效的<ph name="URL_LABEL" />格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="4722122254122249791">为指定的来源启用网站隔离功能</translation>
 <translation id="4722399051042571387">如果设为 false，用户将无法设置安全系数低且易于猜中的 PIN 码。
 
@@ -2490,11 +2468,6 @@
       如果此政策设为 false 或未设置，系统将不会报告操作系统更新信息。如果此政策设为 true，系统将会报告操作系统更新信息。</translation>
 <translation id="4858735034935305895">允许全屏模式</translation>
 <translation id="4861767323695239729">配置可在用户会话中使用的输入法</translation>
-<translation id="4869603341164509842">系统会将此列表中的网址格式与请求网址的安全来源进行比对。如果找到了匹配项，系统将允许相应网址使用视频捕获设备，并且不会给予提示。
-
-      要详细了解有效网址格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。
-
-      注意：在 45 版之前，只有在自助服务终端模式下此政策才受支持。</translation>
 <translation id="487460824085252184">自动迁移，不询问用户是否同意。</translation>
 <translation id="4874982543810021567">禁止这些网站使用 WebUSB</translation>
 <translation id="4876805738539874299">启用最高 SSL 版本</translation>
@@ -2503,11 +2476,6 @@
 
       如果此政策设为“disabled”或未设置，<ph name="PRODUCT_NAME" /> 将不会报告不安全事件。
       </translation>
-<translation id="4897928009230106190">指定通过 POST 提供搜索建议时使用的参数。该参数由以英文逗号分隔的名称/值对组成。如果值为模板参数（例如上例中的 {searchTerms}），那么系统会将其替换成真正的搜索字词数据。
-
-          此为可选政策。如果未设置此政策，系统将使用 GET 方法发送搜索建议请求。
-
-          此政策只在启用了“DefaultSearchProviderEnabled”政策的前提下才会生效。</translation>
 <translation id="489803897780524242">此参数可控制是否为默认搜索服务提供商替换搜索字词</translation>
 <translation id="4899708173828500852">启用安全浏览</translation>
 <translation id="4906194810004762807">设备策略的更新频率</translation>
@@ -2883,11 +2851,13 @@
 <translation id="5405289061476885481">配置允许在 <ph name="PRODUCT_OS_NAME" />登录屏幕上使用哪些键盘布局。
 
       如果此政策设为一个输入法标识符列表，登录屏幕上将会提供所有已指定的输入法以供选用。系统将会预先选择所指定的第一种输入法。当登录屏幕上显示已激活的用户操作大图标时，屏幕上除了会提供通过此政策指定的各种输入法外，还会提供相应用户最近一次用过的输入法。如果此政策未设置，系统则会根据显示登录屏幕时使用的语言区域提供登录屏幕上的输入法。系统将会忽略无效的输入法标识符。</translation>
-<translation id="5412057811596122582">如果启用或未配置此政策（默认），则系统会在收到音频捕获设备使用请求时提示用户；但对于 AudioCaptureAllowedUrls 列表中配置的网址，系统不会提示用户，而是直接授予访问权限。
+<translation id="5416064504563346617">通过设置此政策，您可以创建一个网址格式列表，从而指定哪些网站无法请求用户授权其访问 USB 设备。
 
-      如果停用此政策，则系统一律不提示用户，只有 AudioCaptureAllowedUrls 中配置的网址可以使用音频捕获设备。
+      如果您不设置此政策，系统会为所有网站应用 <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME" />（若已设置）。否则，系统会应用用户的个人设置。
 
-      此政策会影响所有类型的音频输入（而不仅仅是内置麦克风）。</translation>
+      网址格式不能与 <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME" /> 冲突。如果某个网址与这两项政策都相符，系统将不会以任一项政策为准。
+
+      如需详细了解有效的<ph name="URL_LABEL" />格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="5417906792459853336">此政策旨在报告与设备的应用清单及使用情况有关的信息。
 
       如果此政策设为 false 或未设置，系统将不会报告这些信息。
@@ -3007,6 +2977,11 @@
 <translation id="554903022911579950">Kerberos</translation>
 <translation id="555022085242359084">在登录屏幕上启用高对比度模式</translation>
 <translation id="555077880566103058">允许所有网站自动运行 <ph name="FLASH_PLUGIN_NAME" /> 插件</translation>
+<translation id="5557502336096594554">通过设置此政策，您可以创建一个网址格式列表，从而指定哪些网站可以打开弹出式窗口。
+
+      如果您不设置此政策，系统会为所有网站应用 <ph name="DEFAULT_POPUPS_SETTING_POLICY_NAME" />（若已设置）。否则，系统会应用用户的个人设置。
+
+      如需详细了解有效的<ph name="URL_LABEL" />格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="5559079916187891399">此政策对 Android 应用没有任何影响。</translation>
 <translation id="5560039246134246593">在提取 <ph name="PRODUCT_NAME" /> 中的变体种子的方法中添加参数。
 
@@ -3256,19 +3231,6 @@
 <translation id="5893553533827140852">如果启用此设置，系统将通过远程主机连接经由代理处理gnubby身份验证请求。
 
           如果您已停用或未配置此设置，那么系统将不会经由代理处理gnubby身份验证请求。</translation>
-<translation id="5893688850352887219">允许使用默认的搜索服务提供商。
-
-          如果您启用了此设置，当用户在多功能框中输入的内容不是网址时，系统将会执行默认搜索。
-
-          您可以通过设置其余的默认搜索政策来指定要使用的默认搜索服务提供商。如果您不设置这些政策，用户便可自行选择默认提供商。
-
-          如果您停用了此设置，当用户在多功能框中输入的内容不是网址时，系统将不会执行任何搜索。
-
-          如果您启用或停用了此设置，用户将无法在 <ph name="PRODUCT_NAME" /> 中更改或覆盖此设置。
-
-          如果您不设置此政策，系统将启用默认的搜索服务提供商，而且用户可以设置搜索服务提供商列表。
-
-          此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 专业版或企业版实例，以及通过 MDM 进行管理或通过 MCX 加入网域的 macOS 实例。</translation>
 <translation id="5897913798715600338">使用快速充电技术为电池充电。</translation>
 <translation id="5898486742390981550">如果有多个用户同时登录，则只有主要用户可以使用 Android 应用。</translation>
 <translation id="5901427587865226597">仅限双面打印</translation>
@@ -3303,7 +3265,7 @@
 <translation id="5961137303188584693">设备的内置 NIC MAC 地址</translation>
 <translation id="5966615072639944554">允许扩展程序使用 Remote Attestation API</translation>
 <translation id="5983708779415553259">非任何内容包内的网站的默认行为</translation>
-<translation id="599133751116473806">启用后，<ph name="PRODUCT_NAME" /> 功能会发送精细的请求标头，从中提供关于用户浏览器和环境的信息。
+<translation id="599133751116473806">启用后，<ph name="PRODUCT_NAME" /> 功能会发送精细的请求标头，在其中提供关于用户浏览器和环境的信息。
 
       这是一项附加功能，但如果某些网站限制了请求中可包含的字符，新标头可能会导致这些网站无法正常运作。
 
@@ -3347,9 +3309,6 @@
 <translation id="6070667616071269965">设备登录屏幕键盘布局</translation>
 <translation id="6074963268421707432">不允许任何网站显示桌面通知</translation>
 <translation id="6074964551275531965">设置一个时间段以用于显示更新通知</translation>
-<translation id="6076099373507468537">定义可从其内核驱动程序分离以便直接通过网络应用内的 chrome.usb API 使用的 USB 设备列表。列表中的条目是成对的用于标识特定硬件的 USB 供应商标识符和产品标识符。
-
-      如果此政策未配置，则分离式 USB 设备列表为空。</translation>
 <translation id="607726879389885889">此政策用于控制 <ph name="PRODUCT_NAME" /> 在以下情况下的行为：用户尝试上传或下载的文件太大（50MB 或更大），无法发送给服务器进行恶意软件扫描或敏感数据保护扫描。此限制仅适用于需要扫描的文件，是否需要扫描取决于 <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />、<ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> 以及用于控制已启用检查功能的网域列表的政策。
 
       如果此政策未设置或设为“无”，则 <ph name="PRODUCT_NAME" /> 允许用户上传或下载任何大小的文件。
@@ -3519,11 +3478,9 @@
       如果设置了此政策，则只要用户未与登录屏幕互动的持续时间达到了指定的时长，系统就会自动登录指定的自助服务终端。必须已配置设备本地帐号（请参阅 |DeviceLocalAccounts|）。
 
       如果未设置此政策，系统将不会自动登录。</translation>
-<translation id="6353901068939575220">指定通过 POST 搜索网址时使用的参数。该参数由以英文逗号分隔的名称/值对组成。如果值为模板参数（例如上例中的 {searchTerms}），那么系统会将其替换成真正的搜索字词数据。
+<translation id="6366574325767783825">如果此政策设为 True 或未设置，<ph name="PRODUCT_NAME" /> 将会接受作为 Signed HTTP Exchange (SXG) 提供的网络内容。
 
-          此为可选政策。如果未设置此政策，系统将使用 GET 方法发送搜索请求。
-
-          此政策只在启用了“DefaultSearchProviderEnabled”政策的前提下才会生效。</translation>
+      如果此政策设为 False，系统会阻止加载 Signed HTTP Exchange (SXG)。</translation>
 <translation id="6368011194414932347">配置主页网址</translation>
 <translation id="6368403635025849609">在这些网站上允许 JavaScript</translation>
 <translation id="6372105930898423193">允许重新启用 AppCache 功能，即使此功能默认处于关闭状态。</translation>
@@ -3805,7 +3762,6 @@
       注意：这项政策仅适用于 Android 版 Chrome，且运行 Chrome 的设备一定要有超过 1GB 的 RAM。若要在非 Android 平台上应用此政策，请改用 SitePerProcess。
       </translation>
 <translation id="6922884955650325312">禁止 <ph name="FLASH_PLUGIN_NAME" /> 插件运行</translation>
-<translation id="6923366716660828830">指定默认搜索服务提供商的名称。如果留空或未设置，系统就会使用由搜索网址指定的主机名。要考虑此政策，必须先启用“DefaultSearchProviderEnabled”政策。</translation>
 <translation id="6923731550900440989">在登录屏幕上启用“插入符号突出显示”</translation>
 <translation id="6924223708804692571">强制停用语言拼写检查。该列表中未识别的语言将被忽略。
 
@@ -3866,7 +3822,7 @@
       如果选择“U2F”，集成的双重身份验证将会按照 FIDO U2F 规范发挥作用。
 
       如果选择“U2F_EXTENDED”，集成的双重身份验证将不仅会提供 U2F 功能，还会提供一些扩展功能以便进行个人验证。</translation>
-<translation id="7002040773317582266">已为主框架网址启用实时检查功能。</translation>
+<translation id="7002040773317582266">已为主帧网址启用实时检查功能。</translation>
 <translation id="7003334574344702284">如果启用此政策，就会强制从先前的默认浏览器导入已保存的密码，还会影响导入对话框。如果停用此政策，就不会导入已保存的密码。如果未设置此政策，系统就会询问用户是否导入已保存的密码，或者系统自动进行导入。</translation>
 <translation id="7003746348783715221">“<ph name="PRODUCT_NAME" />”偏好设置</translation>
 <translation id="7008308728445338159">启用 DNS 拦截检查功能</translation>
@@ -4019,7 +3975,7 @@
 
       如果 <ph name="PRODUCT_NAME" /> 是以“后台模式”运行，会话可能会保持进行中的状态，直到用户退出浏览器（而不仅仅是关闭最后一个窗口）。若要详细了解如何配置此行为，请参阅 <ph name="BACKGROUND_MODE_ENABLED_POLICY_NAME" />。
 
-      虽然不涉及应优先执行哪项政策，请也查看一下 <ph name="COOKIES_BLOCKED_FOR_URLS_POLICY_NAME" /> 和 <ph name="COOKIES_ALLOWED_FOR_URLS_POLICY_NAME" />。这 3 项政策中的网址格式不得存在冲突。
+      请另外查看一下 <ph name="COOKIES_BLOCKED_FOR_URLS_POLICY_NAME" /> 和 <ph name="COOKIES_ALLOWED_FOR_URLS_POLICY_NAME" />（这三项政策并无优先级差异）。这 3 项政策中的网址格式不得存在冲突。
 
       如需详细了解有效的 <ph name="URL_LABEL" /> 格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="7173856672248996428">临时个人资料</translation>
@@ -4037,6 +3993,11 @@
 
       如果此政策设为 False，用户、应用和扩展程序均无法进入全屏模式。</translation>
 <translation id="718126088895133062">此政策旨在为该设备指定 <ph name="PLUGIN_VM_NAME" /> 许可用户 ID。</translation>
+<translation id="7184811651721788735">通过设置此政策，您可以创建一个网址格式列表，从而指定哪些网站无法运行 <ph name="FLASH_PLUGIN_NAME" /> 插件。
+
+      如果您不设置此政策，系统会为所有网站应用 <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" />（若已设置）。否则，系统会应用用户的个人设置。
+
+      如需详细了解有效的网址格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。不过，从 M85 开始，此政策已不再支持以下类型的格式：主机名含有“*”/“[*.]”通配符。</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="7187447094921703950">启用用电高峰转移电源管理政策。
 
@@ -4115,11 +4076,6 @@
 
       如果未设置此政策，默认情况下，受企业管理的用户不能使用即时网络共享功能，不受管理的用户则能够使用即时网络共享功能。</translation>
 <translation id="7295019613773647480">启用受监管用户</translation>
-<translation id="7301543427086558500">指定可用于从搜索引擎提取搜索字词的备选网址列表。网址应当包含字符串“<ph name="SEARCH_TERM_MARKER" />”，以便提取搜索字词。
-
-          此策略是可选的。如果未设置此策略，系统将不会使用备选网址提取搜索字词。
-
-          要实施此策略，必须启用“DefaultSearchProviderEnabled”策略。</translation>
 <translation id="7302043767260300182">使用交流电源供电时的屏幕锁定延迟时间</translation>
 <translation id="731208205557053914">报告 VPD 信息</translation>
 <translation id="7323896582714668701">适用于 <ph name="PRODUCT_NAME" />的其他命令行参数</translation>
@@ -4269,6 +4225,13 @@
 <translation id="759957074386651883">安全浏览设置</translation>
 <translation id="7604169113182304895">Android 应用可能会主动选择采纳该列表。您无法强制此类应用采纳该列表。</translation>
 <translation id="7612157962821894603">在 <ph name="PRODUCT_NAME" /> 启动时应用于整个系统的设置</translation>
+<translation id="7614443356666150520">通过设置此政策，您可以创建一个网址格式列表，从而指定哪些网站无法显示图片。
+
+      如果您不设置此政策，系统会为所有网站应用 <ph name="DEFAULT_IMAGE_SETTING_ENABLED_POLICY_NAME" />（若已设置）。否则，系统会应用用户的个人设置。
+
+       如需详细了解有效的 <ph name="URL_LABEL" /> 格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。
+
+       请注意，先前我们误在 Android 设备上启用了此政策，但我们从未在 Android 设备上为这项功能提供完整支持。</translation>
 <translation id="7614663184588396421">已停用协议架构的列表</translation>
 <translation id="7617319494457709698">此政策指定了允许使用 <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> 函数 <ph name="CHALLENGE_USER_KEY_FUNCTION" /> 进行远程认证的扩展程序。只有添加到此列表中的扩展程序才能使用该 API。
 
@@ -4366,7 +4329,7 @@
 <translation id="7724161903134898864">如果此政策设为 1，系统会允许网站显示弹出式窗口。如果此政策设为 2，系统会禁止网站显示弹出式窗口。
 
       如果此政策未设置，则意味着 <ph name="BLOCK_POPUPS_POLICY_NAME" /> 政策适用，但用户可以更改此设置。</translation>
-<translation id="7724592140967451156">如果此政策设为 True，系统会阻止并非来自浏览器地址栏所含网域的网页元素设置 Cookie。如果此政策设为 False，系统会允许这些元素设置 Cookie，并阻止用户更改此设置。
+<translation id="7724592140967451156">如果此政策设为 True，系统会阻止来自浏览器地址栏中的网域之外的网页元素设置 Cookie。如果此政策设为 False，系统会允许这些元素设置 Cookie，并阻止用户更改此设置。
 
       如果此政策未设置，系统会启用第三方 Cookie，但用户可以更改此设置。</translation>
 <translation id="7731026922044991970">将所有网站上的 Cookie 都恢复为旧版 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 行为</translation>
@@ -4458,7 +4421,7 @@
 
       如果 <ph name="PRODUCT_NAME" /> 是以“后台模式”运行，会话可能会保持进行中的状态，直到用户退出浏览器（而不仅仅是关闭最后一个窗口）。若要详细了解如何配置此行为，请参阅 <ph name="BACKGROUND_MODE_ENABLED_POLICY_NAME" />。
 
-      虽然不涉及应优先执行哪项政策，请也查看一下 <ph name="COOKIES_BLOCKED_FOR_URLS_POLICY_NAME" /> 和 <ph name="COOKIES_ALLOWED_FOR_URLS_POLICY_NAME" />。这 3 项政策中的网址格式不得存在冲突。</translation>
+      请另外查看一下 <ph name="COOKIES_BLOCKED_FOR_URLS_POLICY_NAME" /> 和 <ph name="COOKIES_ALLOWED_FOR_URLS_POLICY_NAME" />（这三项政策并无优先级差异）。这 3 项政策中的网址格式不得存在冲突。</translation>
 <translation id="7889788745439330797">控制用户是否可以添加 Kerberos 帐号。
 
           如果启用了或未设置此政策，则用户可以通过“用户设置”页面的“Kerberos 帐号”设置添加 Kerberos 帐号。用户对自己添加的帐号拥有完全控制权，可以修改或移除这些帐号。
@@ -4591,8 +4554,8 @@
 <translation id="8101381354936029836">政策原子组：</translation>
 <translation id="8101937907822293485">允许向 Google 报告与 <ph name="PRODUCT_NAME" /> 的使用情况和崩溃情况相关的匿名数据，并禁止用户更改此设置。
 
-      如果您启用了此设置，系统将会向 Google 发送与该浏览器的使用情况和崩溃情况相关的匿名数据报告。如果您停用了此设置，系统将不会向 Google 发送此类信息。无论您是启用了还是停用了此设置，用户都无法更改或覆盖它。
-      如果此政策未设置，系统将会采用用户在安装/首次运行该浏览器时选择的设置。
+      如果您启用了此设置，系统将会向 Google 发送与使用情况和崩溃情况相关的匿名数据报告。如果您停用了此设置，系统将不会向 Google 发送此类信息。无论您是启用还是停用此设置，用户都无法更改或覆盖它。
+      如果此政策未设置，系统将会采用用户在安装/首次运行时选择的设置。
 
       此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 专业版或企业版实例，以及通过 MDM 进行管理或通过 MCX 加入网域的 macOS 实例。
 
@@ -4674,6 +4637,11 @@
 <translation id="8217516105848565518">此政策已被弃用。请改用 RemoteAccessHostDomainList。</translation>
 <translation id="8244171102276095471">在 TLS 中启用 RC4 加密套件</translation>
 <translation id="8244525275280476362">政策失效后的最大提取延迟</translation>
+<translation id="8251411417369363637">如果此政策设为 True，允许运行 <ph name="FLASH_PLUGIN_NAME" /> 的网站中内嵌的所有 <ph name="FLASH_PLUGIN_NAME" /> 内容（包括其他来源的内容或不重要的内容）都会运行。
+
+      如果此政策设为 False 或未设置，系统可能会屏蔽其他来源的 <ph name="FLASH_PLUGIN_NAME" /> 内容或不重要的内容。
+
+      请注意：如需控制哪些网站可以运行 <ph name="FLASH_PLUGIN_NAME" />，请参阅 <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" />、<ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> 和 <ph name="PLUGINS_BLOCKED_FOR_URLS_POLICY_NAME" /> 政策。</translation>
 <translation id="8256688113167012935">控制 <ph name="PRODUCT_OS_NAME" />在登录屏幕上为相应的设备本地帐号显示的帐号名。
 
       如果设置了此策略，登录屏幕将为相应的设备本地帐号使用图片式登录选择器中指定的字符串。
@@ -4906,6 +4874,11 @@
           如果您设置了此政策，用户便无法更改或覆盖它。
 
           如果未设置此政策，默认情况下，无障碍功能快捷方式会处于启用状态。</translation>
+<translation id="8520951634679398426">通过设置此政策，您可以创建一个网址格式列表，从而指定哪些网站可以运行 JavaScript。
+
+      如果您不设置此政策，系统会为所有网站应用 <ph name="DEFAULT_JAVA_SCRIPT_SETTING_POLICY_NAME" />（若已设置）。否则，系统会应用用户的个人设置。
+
+      如需详细了解有效的<ph name="URL_LABEL" />格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="8525526490824335042">Linux 容器</translation>
 <translation id="8537051350735478658">如果此政策设为 True，系统会在 <ph name="PRODUCT_NAME" /> 地址栏中显示搜索建议。如果此政策设为 False，系统会停用此类搜索建议功能。
 
@@ -4999,12 +4972,14 @@
       如果此政策设为 true，系统将会报告设备的蓝牙信息。</translation>
 <translation id="8703488928438047864">报告主板状态</translation>
 <translation id="8704831857353097849">已停用插件的列表</translation>
+<translation id="8705895771006864851">如果此政策设为 True，<ph name="PRODUCT_NAME" /> 将会显示一个集成式翻译工具栏，并会在一旦用户右键点击鼠标即会出现的上下文菜单中显示一个翻译选项，以便适时地向用户提供翻译功能。将此政策设为 False 会关闭所有内置的翻译功能。
+
+      如果您设置了此政策，用户将无法更改这项功能。如果此政策未设置，用户便可以更改此设置。</translation>
 <translation id="8708284670795912158">将此政策设为 True 会允许 <ph name="PRODUCT_NAME" /> 自动播放媒体。将此政策设为 False 会阻止 <ph name="PRODUCT_NAME" /> 自动播放媒体。
 
        默认情况下，<ph name="PRODUCT_NAME" /> 不会自动播放媒体。但是，对于某些网址格式，您可以使用 <ph name="AUTOPLAY_WHITELIST_POLICY_NAME" /> 政策更改此设置。
 
       如果此政策在 <ph name="PRODUCT_NAME" /> 运行期间发生了更改，相应更改将仅适用于新打开的标签页。</translation>
-<translation id="8711086062295757690">指定关键字，该关键字在多功能框中作为快捷方式来触发针对此提供商的搜索。此政策是可选的，如果未设置，就没有任何关键字可激活搜索服务提供商。要实施此政策，必须先启用“DefaultSearchProviderEnabled”政策。</translation>
 <translation id="8733448613597049197">启用 <ph name="PRODUCT_NAME" /> 的安全浏览扩展报告功能，并禁止用户更改此设置。
 
       扩展报告功能可向 Google 服务器发送一些系统信息和网页内容，以协助检测危险应用和网站。
@@ -5111,11 +5086,6 @@
 
       如果您不设置此政策，或者输入了空字符串，设备会使用当前有效的时区，但用户可以更改它。</translation>
 <translation id="8876188741456358123">替换默认双面打印模式。如果这种模式不适用，则忽略此政策。</translation>
-<translation id="8878850056189891727">系统会将此列表中的网址格式与请求网址的安全来源进行比对。如果找到了匹配项，系统将允许相应网址使用音频捕获设备，并且不会给予提示。
-
-      要详细了解有效网址格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。
-
-      注意：在 45 版之前，只有在自助服务终端模式下此政策才受支持。</translation>
 <translation id="8882006618241293596">禁止这些网站运行 <ph name="FLASH_PLUGIN_NAME" /> 插件</translation>
 <translation id="8892286064305622118"><ph name="PLUGIN_VM_NAME" /> 所需的可用磁盘空间</translation>
 <translation id="8906768759089290519">启用访客模式</translation>
@@ -5221,6 +5191,9 @@
 
       此政策的值应以秒为单位。</translation>
 <translation id="9021334785554745279">要针对其检查下载内容是否违反敏感数据保护规则的网址格式</translation>
+<translation id="9030094532108679680">通过设置此政策（仅当建议您这样做时），您可以注册一个协议处理程序列表以与用户注册的协议处理程序列表合并，从而同时使用这两组协议处理程序。“protocol”属性应设为“mailto”之类的协议，“URL”属性应设为处理该协议的应用所采用的网址格式。该格式可以包含 %s（将会替换为被处理的网址）。
+
+      用户无法卸载由政策注册的协议处理程序，但可通过安装新的默认处理程序来更改由政策安装的协议处理程序。</translation>
 <translation id="9035086760683255833">启用“键盘焦点突出显示”无障碍功能。
 
           此功能负责突出显示通过键盘操作成为焦点的对象。
@@ -5264,6 +5237,11 @@
       如果您设置了此政策，那么无论用户是否指定了 --disk-cache-size 标记，<ph name="PRODUCT_NAME" /> 都会使用您所提供的缓存大小。（小于几兆字节的值都会四舍五入。）
 
       如果您未设置此政策，<ph name="PRODUCT_NAME" /> 会使用默认大小。用户可以使用 --disk-cache-size 标记更改此设置。</translation>
+<translation id="9062348747995618422">通过设置此政策，您可以创建一个网址格式列表，从而指定哪些网站可以运行 <ph name="FLASH_PLUGIN_NAME" /> 插件。
+
+      如果您不设置此政策，系统会为所有网站应用 <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" />（若已设置）。否则，系统会应用用户的个人设置。
+
+      如需详细了解有效的网址格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。不过，从 M85 开始，此政策已不再支持以下类型的格式：主机名含有“*”/“[*.]”通配符。</translation>
 <translation id="9077227880520270584">设备本地帐号自动登录计时器</translation>
 <translation id="9084985621503260744">指定视频活动是否影响电源管理</translation>
 <translation id="9088433379343318874">启用受监管用户内容提供方</translation>

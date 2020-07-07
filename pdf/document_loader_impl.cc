@@ -10,6 +10,8 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/check_op.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_math.h"
@@ -63,8 +65,7 @@ void DocumentLoaderImpl::Chunk::Clear() {
   chunk_data.reset();
 }
 
-DocumentLoaderImpl::DocumentLoaderImpl(Client* client)
-    : client_(client), loader_factory_(this) {}
+DocumentLoaderImpl::DocumentLoaderImpl(Client* client) : client_(client) {}
 
 DocumentLoaderImpl::~DocumentLoaderImpl() = default;
 
@@ -257,9 +258,9 @@ void DocumentLoaderImpl::ContinueDownload() {
 
   loader_ = client_->CreateURLLoader();
 
-  loader_->OpenRange(
-      url_, url_, start, length,
-      loader_factory_.NewCallback(&DocumentLoaderImpl::DidOpenPartial));
+  loader_->OpenRange(url_, url_, start, length,
+                     base::BindOnce(&DocumentLoaderImpl::DidOpenPartial,
+                                    weak_factory_.GetWeakPtr()));
 }
 
 void DocumentLoaderImpl::DidOpenPartial(int32_t result) {
@@ -298,7 +299,7 @@ void DocumentLoaderImpl::DidOpenPartial(int32_t result) {
 void DocumentLoaderImpl::ReadMore() {
   loader_->ReadResponseBody(
       buffer_, sizeof(buffer_),
-      loader_factory_.NewCallback(&DocumentLoaderImpl::DidRead));
+      base::BindOnce(&DocumentLoaderImpl::DidRead, weak_factory_.GetWeakPtr()));
 }
 
 void DocumentLoaderImpl::DidRead(int32_t result) {

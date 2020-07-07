@@ -39,8 +39,10 @@
 <translation id="428217921675623177">Задания печати удаляются после хранения в течение 90 дней</translation>
 <translation id="4429881212383817840">Срок действия билета Kerberos истекает</translation>
 <translation id="445059817448385655">Старый пароль</translation>
+<translation id="4627232916386272576">Файл "<ph name="DOCUMENT_TITLE" />", принтер "<ph name="PRINTER_NAME" />", дата – <ph name="CREATION_TIME" />, напечатано страниц: <ph name="PRINTED_PAGE_NUMBER" /> из <ph name="TOTAL_PAGE_NUMBER" />. Чтобы отменить задание печати, нажмите клавишу "Ввод".</translation>
 <translation id="467510802200863975">Пароли не совпадают.</translation>
 <translation id="4731797938093519117">Родительский доступ</translation>
+<translation id="4808449224298348341">Отменено задание печати файла "<ph name="DOCUMENT_TITLE" />"</translation>
 <translation id="4890353053343094602">Смените пароль как можно скорее.</translation>
 <translation id="4932733599132424254">Дата</translation>
 <translation id="5212543919916444558">Я не нашла на экране ничего подходящего.

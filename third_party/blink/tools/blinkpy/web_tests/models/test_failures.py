@@ -140,7 +140,11 @@ class AbstractTestResultType(object):
             artifacts_abspath = self.filesystem.join(
                 self.result_directory, typ_artifacts.ArtifactsSubDirectory(),
                 artifact_filename)
-            if not self.filesystem.exists(artifacts_abspath):
+            # If a test has multiple stderr results, keep that of the last
+            # failure, which is useful for debugging flaky tests with
+            # --iterations=n or --repeat-each=n.
+            if (force_overwrite or self.result != ResultType.Pass
+                    or not self.filesystem.exists(artifacts_abspath)):
                 self._write_to_artifacts(
                     typ_artifacts,
                     'stderr',
@@ -201,9 +205,6 @@ class FailureTimeout(AbstractTestResultType):
     def __init__(self, actual_driver_output, is_reftest=False):
         super(FailureTimeout, self).__init__(actual_driver_output, None)
         self.is_reftest = is_reftest
-
-    def create_artifacts(self, typ_artifacts, force_overwrite=False):
-        pass
 
     def message(self):
         return 'test timed out'

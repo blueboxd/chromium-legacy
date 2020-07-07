@@ -378,7 +378,7 @@ BrowserAccessibilityAndroid::GetSoleInterestingNodeFromSubtree() const {
 }
 
 bool BrowserAccessibilityAndroid::AreInlineTextBoxesLoaded() const {
-  if (GetRole() == ax::mojom::Role::kStaticText)
+  if (IsText())
     return InternalChildCount() > 0;
 
   // Return false if any descendant needs to load inline text boxes.
@@ -1724,7 +1724,7 @@ void BrowserAccessibilityAndroid::GetSuggestions(
   BrowserAccessibility* node = InternalGetFirstChild();
   int start_offset = 0;
   while (node && node != this) {
-    if (node->IsTextOnlyObject()) {
+    if (node->IsText()) {
       const std::vector<int32_t>& marker_types =
           node->GetData().GetIntListAttribute(
               ax::mojom::IntListAttribute::kMarkerTypes);
@@ -1801,7 +1801,7 @@ bool BrowserAccessibilityAndroid::HasOnlyTextChildren() const {
   // This is called from IsLeaf, so don't call PlatformChildCount
   // from within this!
   for (auto it = InternalChildrenBegin(); it != InternalChildrenEnd(); ++it) {
-    if (!it->IsTextOnlyObject())
+    if (!it->IsText())
       return false;
   }
   return true;
@@ -1812,8 +1812,7 @@ bool BrowserAccessibilityAndroid::HasOnlyTextAndImageChildren() const {
   // from within this!
   for (auto it = InternalChildrenBegin(); it != InternalChildrenEnd(); ++it) {
     BrowserAccessibility* child = it.get();
-    if (child->GetRole() != ax::mojom::Role::kStaticText &&
-        !ui::IsImageOrVideo(child->GetRole())) {
+    if (!child->IsText() && !ui::IsImageOrVideo(child->GetRole())) {
       return false;
     }
   }

@@ -25,9 +25,11 @@ class BrowsingDataRemoverCompletionObserver
 
   void BlockUntilCompletion();
 
+  uint64_t failed_data_types() { return failed_data_types_; }
+
  protected:
   // BrowsingDataRemover::Observer:
-  void OnBrowsingDataRemoverDone() override;
+  void OnBrowsingDataRemoverDone(uint64_t failed_data_types) override;
 
  private:
   void FlushForTestingComplete();
@@ -39,6 +41,10 @@ class BrowsingDataRemoverCompletionObserver
   // Tracks when BrowsingDataRemover::Observer::OnBrowsingDataRemoverDone() is
   // called.
   bool browsing_data_remover_done_ = false;
+
+  // Stores the |failed_data_types| mask passed into
+  // OnBrowsingDataRemoverDone().
+  uint64_t failed_data_types_ = 0;
 
   base::RunLoop run_loop_;
   ScopedObserver<BrowsingDataRemover, BrowsingDataRemover::Observer> observer_;

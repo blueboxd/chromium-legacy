@@ -82,6 +82,9 @@ extern const char kConversionMeasurementApiDescription[];
 extern const char kConversionMeasurementDebugModeName[];
 extern const char kConversionMeasurementDebugModeDescription[];
 
+extern const char kEnableBluetoothSerialPortProfileInSerialApiName[];
+extern const char kEnableBluetoothSerialPortProfileInSerialApiDescription[];
+
 extern const char kEnableClipboardProviderImageSuggestionsName[];
 extern const char kEnableClipboardProviderImageSuggestionsDescription[];
 
@@ -1236,8 +1239,8 @@ extern const char kTabHoverCardImagesDescription[];
 extern const char kTabOutlinesInLowContrastThemesName[];
 extern const char kTabOutlinesInLowContrastThemesDescription[];
 
-extern const char kTintGlCompositedContentName[];
-extern const char kTintGlCompositedContentDescription[];
+extern const char kTintCompositedContentName[];
+extern const char kTintCompositedContentDescription[];
 
 extern const char kTLS13HardeningForLocalAnchorsName[];
 extern const char kTLS13HardeningForLocalAnchorsDescription[];

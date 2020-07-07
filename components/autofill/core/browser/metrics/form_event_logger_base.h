@@ -13,7 +13,6 @@
 #include "components/autofill/core/browser/metrics/form_events.h"
 #include "components/autofill/core/browser/sync_utils.h"
 #include "components/autofill/core/common/form_field_data.h"
-#include "components/autofill/core/common/signatures.h"
 
 namespace autofill {
 
@@ -111,6 +110,7 @@ class FormEventLoggerBase {
   bool has_logged_user_hide_suggestions_ = false;
   bool has_logged_suggestions_shown_ = false;
   bool has_logged_suggestion_filled_ = false;
+  bool has_logged_autocomplete_off_ = false;
   bool has_logged_will_submit_ = false;
   bool has_logged_submitted_ = false;
   bool logged_suggestion_filled_was_server_data_ = false;

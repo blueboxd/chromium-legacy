@@ -8,7 +8,7 @@
 #import <UIKit/UIKit.h>
 
 // A UIViewController instance designed to contain an instance of
-// BrowserViewController ("BVC") as a child. Since the BVC itself is often
+// BrowserViewController ("BVC") as a child. Since the BVC itself often
 // implements a great deal of custom logic around handling view controller
 // presentation and other features, this containing view controller handles
 // forwarding calls to the BVC instance where needed.

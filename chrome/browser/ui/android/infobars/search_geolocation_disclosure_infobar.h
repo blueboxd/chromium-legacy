@@ -11,14 +11,14 @@
 
 class SearchGeolocationDisclosureInfoBarDelegate;
 
-class SearchGeolocationDisclosureInfoBar : public InfoBarAndroid {
+class SearchGeolocationDisclosureInfoBar : public infobars::InfoBarAndroid {
  public:
   explicit SearchGeolocationDisclosureInfoBar(
       std::unique_ptr<SearchGeolocationDisclosureInfoBarDelegate> delegate);
   ~SearchGeolocationDisclosureInfoBar() override;
 
  private:
-  // InfoBarAndroid:
+  // infobars::InfoBarAndroid:
   base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
       JNIEnv* env) override;
   void OnLinkClicked(JNIEnv* env,

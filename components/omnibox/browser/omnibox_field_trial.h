@@ -400,13 +400,6 @@ bool IsLooseMaxLimitOnDedicatedRowsEnabled();
 // Returns true if the #omnibox-pedal-suggestions feature is enabled.
 bool IsPedalSuggestionsEnabled();
 
-// Returns true if either the steady-state elision flag for scheme is enabled.
-bool IsHideSteadyStateUrlSchemeEnabled();
-
-// Returns true if either the steady-state elision flag for trivial
-// subdomains is enabled.
-bool IsHideSteadyStateUrlTrivialSubdomainsEnabled();
-
 // Simply a convenient wrapper for testing a flag. Used downstream for an
 // assortment of keyword mode experiments.
 bool IsExperimentalKeywordModeEnabled();

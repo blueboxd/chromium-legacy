@@ -14,7 +14,7 @@
 #include "ash/ambient/ui/ambient_view_delegate.h"
 #include "ash/ash_export.h"
 #include "ash/public/cpp/ambient/ambient_ui_model.h"
-#include "ash/session/session_observer.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/system/power/power_status.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"

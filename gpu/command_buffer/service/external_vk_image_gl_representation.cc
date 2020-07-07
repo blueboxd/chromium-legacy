@@ -179,6 +179,16 @@ GLuint ExternalVkImageGLRepresentationShared::ImportVkSemaphoreIntoGL(
     SemaphoreHandle handle) {
   if (!handle.is_valid())
     return 0;
+  RecordImportingVKSemaphoreIntoGL();
+  base::ScopedClosureRunner uma_runner(base::BindOnce(
+      [](base::Time time) {
+        UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+            "GPU.Vulkan.ImportVkSemaphoreIntoGL", base::Time::Now() - time,
+            base::TimeDelta::FromMicroseconds(1),
+            base::TimeDelta::FromMicroseconds(200), 50);
+      },
+      base::Time::Now()));
+
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   if (handle.vk_handle_type() !=
       VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT) {
@@ -192,7 +202,6 @@ GLuint ExternalVkImageGLRepresentationShared::ImportVkSemaphoreIntoGL(
   api->glGenSemaphoresEXTFn(1, &gl_semaphore);
   api->glImportSemaphoreFdEXTFn(gl_semaphore, GL_HANDLE_TYPE_OPAQUE_FD_EXT,
                                 fd.release());
-
   return gl_semaphore;
 #elif defined(OS_WIN)
   if (handle.vk_handle_type() !=

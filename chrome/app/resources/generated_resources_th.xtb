@@ -281,7 +281,6 @@
 <translation id="1340527397989195812">สำรองสื่อจากอุปกรณ์โดยใช้แอป Files</translation>
 <translation id="1341988552785875222">วอลเปเปอร์ปัจจุบันตั้งค่าโดย "<ph name="APP_NAME" />" คุณอาจต้องถอนการติดตั้ง "<ph name="APP_NAME" />" ก่อนที่จะเลือกวอลเปเปอร์อื่น</translation>
 <translation id="1343865611738742294">ให้สิทธิ์แอป Linux เข้าถึงอุปกรณ์ USB Linux จะไม่จำอุปกรณ์ USB หลังจากที่นำอุปกรณ์ดังกล่าวออก</translation>
-<translation id="1344143111673240412">ต้องเปิด Parallels Desktop อีกครั้งเพื่อให้การเปลี่ยนแปลงการตั้งค่ากล้องมีผล</translation>
 <translation id="1347256498747320987">ติดตั้งอัปเดตและแอป การดำเนินการต่อเป็นการยอมรับว่าอุปกรณ์นี้อาจใช้อินเทอร์เน็ตมือถือดาวน์โหลดและติดตั้งอัปเดตและแอปจาก Google ผู้ให้บริการ และผู้ผลิตอุปกรณ์โดยอัตโนมัติด้วย แอปเหล่านี้บางแอปอาจเสนอการซื้อในแอป <ph name="BEGIN_LINK1" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">อัปเดตจะเริ่มขึ้นเมื่อแบตเตอรี่ถึง <ph name="BATTERY_LEVEL" />%</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -1197,7 +1196,6 @@
 <translation id="2470702053775288986">ปิดใช้ส่วนขยายที่ไม่สนับสนุนแล้ว</translation>
 <translation id="2471469610750100598">ดำ (ค่าเริ่มต้น)</translation>
 <translation id="2473195200299095979">แปลหน้านี้</translation>
-<translation id="2474848500897222119"><ph name="PRINTER_NAME" /> หมึกหมด</translation>
 <translation id="2475982808118771221">มีข้อผิดพลาดเกิดขึ้น</translation>
 <translation id="2476578072172137802">การตั้งค่าเว็บไซต์</translation>
 <translation id="2478176599153288112">สิทธิ์ไฟล์สื่อสำหรับ "<ph name="EXTENSION" />"</translation>
@@ -1503,7 +1501,6 @@
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> ใช้การตั้งค่าพร็อกซีจากผู้ดูแลระบบของคุณ</translation>
 <translation id="2825758591930162672">คีย์สาธารณะของหัวเรื่อง</translation>
 <translation id="2828650939514476812">เชื่อมต่อเครือข่าย Wi-Fi</translation>
-<translation id="28291580771888953"><ph name="PRINTER_NAME" /> คิวเต็ม</translation>
 <translation id="2835547721736623118">บริการการรู้จำคำพูด</translation>
 <translation id="2836269494620652131">ขัดข้อง</translation>
 <translation id="2836635946302913370">ผู้ดูแลระบบของคุณปิดใช้งานการลงชื่อเข้าใช้ด้วยชื่อผู้ใช้นี้</translation>
@@ -2319,7 +2316,7 @@
 <translation id="3839516600093027468">บล็อก <ph name="HOST" /> ไม่ให้ดูคลิปบอร์ดเสมอ</translation>
 <translation id="3841964634449506551">รหัสผ่านไม่ถูกต้อง</translation>
 <translation id="3842552989725514455">แบบอักษร Serif</translation>
-<translation id="3843058644024807390">ต้องเปิด Parallels Desktop อีกครั้งเพื่อให้การเปลี่ยนแปลงการตั้งค่าไมโครโฟนมีผล</translation>
+<translation id="3843464315703645664">เป็นรายการที่อนุญาตภายใน</translation>
 <translation id="3846116211488856547">รับเครื่องมือสำหรับพัฒนาเว็บไซต์, แอป Android และอื่นๆ การติดตั้ง Linux จะดาวน์โหลดข้อมูลขนาด <ph name="DOWNLOAD_SIZE" /></translation>
 <translation id="3847319713229060696">ช่วยปรับปรุงความปลอดภัยในอินเทอร์เน็ตให้กับทุกคน</translation>
 <translation id="385051799172605136">กลับ</translation>
@@ -2778,7 +2775,6 @@
 <translation id="4453946976636652378">ค้นหาใน <ph name="SEARCH_ENGINE_NAME" /> หรือพิมพ์ URL</translation>
 <translation id="4459169140545916303">ใช้งานเมื่อ <ph name="DEVICE_LAST_ACTIVATED_TIME" /> วันที่ผ่านมา</translation>
 <translation id="4460014764210899310">ยกเลิกการจัดกลุ่ม</translation>
-<translation id="4460343359907016103">เกิดข้อผิดพลาดในการเชื่อมต่อกับ <ph name="PRINTER_NAME" /></translation>
 <translation id="4462159676511157176">เซิร์ฟเวอร์ชื่อที่กำหนดเอง</translation>
 <translation id="4465236939126352372">จำกัดเวลาการใช้ <ph name="APP_NAME" /> ไว้ที่ <ph name="TIME" /></translation>
 <translation id="4465725236958772856">เครือข่ายที่ <ph name="NETWORK_INDEX" /> จาก <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, จัดการโดยผู้ดูแลระบบ, เชื่อมต่อ</translation>
@@ -3076,7 +3072,6 @@
 <translation id="4864369630010738180">กำลังลงชื่อเข้าใช้...</translation>
 <translation id="4864805589453749318">เลือกผู้ปกครองที่จะให้สิทธิ์ในการเพิ่มบัญชีโรงเรียน</translation>
 <translation id="486635084936119914">เปิดไฟล์บางประเภทโดยอัตโนมัติหลังจากที่ดาวน์โหลดมา</translation>
-<translation id="4869213010169296107"><ph name="PRINTER_NAME" /> ไม่มีถาดใส่กระดาษ</translation>
 <translation id="48704129375571883">เพิ่มฟีเจอร์</translation>
 <translation id="4870758487381879312">ป้อนรหัสผ่านที่ผู้ดูแลระบบให้เพื่อดูข้อมูลการกำหนดค่า</translation>
 <translation id="4870903493621965035">ไม่มีอุปกรณ์ที่จับคู่</translation>
@@ -3327,6 +3322,7 @@
 <translation id="5184662919967270437">กำลังอัปเดตอุปกรณ์</translation>
 <translation id="5185359571430619712">ตรวจสอบส่วนขยาย</translation>
 <translation id="5185386675596372454">รุ่นใหม่ล่าสุดของ "<ph name="EXTENSION_NAME" />" ถูกปิดใช้งาน เนื่องจากต้องได้รับการอนุญาตมากกว่านี้</translation>
+<translation id="5185500136143151980">ไม่มีอินเทอร์เน็ต</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5190926251776387065">เปิดใช้งานพอร์ต</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> ต้องการดาวน์โหลดหลายไฟล์</translation>
@@ -3483,7 +3479,6 @@
 <translation id="5390112241331447203">รวมไฟล์ system_logs.txt ที่ส่งในรายงานความคิดเห็น</translation>
 <translation id="5390677308841849479">สีแดงเข้มและสีส้ม</translation>
 <translation id="5390743329570580756">ส่งสำหรับ</translation>
-<translation id="5395869306561378615"><ph name="PRINTER_NAME" /> หยุดชั่วคราว</translation>
 <translation id="5397794290049113714">คุณ</translation>
 <translation id="5398572795982417028">การอ้างอิงหน้าอยู่นอกขอบเขต จำกัดไว้ที่ <ph name="MAXIMUM_PAGE" /> หน้า</translation>
 <translation id="5398772614898833570">บล็อกโฆษณา</translation>
@@ -3498,7 +3493,6 @@
 <translation id="5417312524372586921">ธีมของเบราว์เซอร์</translation>
 <translation id="5419405654816502573">Voice Match</translation>
 <translation id="5420438158931847627">กำหนดความคมชัดของข้อความและรูปภาพ</translation>
-<translation id="5421498071721257877"><ph name="PRINTER_NAME" /> มีข้อผิดพลาดของอุปกรณ์</translation>
 <translation id="5422221874247253874">จุดเข้าใช้งาน</translation>
 <translation id="5422781158178868512">ขออภัย ระบบไม่รู้จักอุปกรณ์จัดเก็บข้อมูลภายนอกของคุณ</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3847,7 +3841,6 @@
 <translation id="5852137567692933493">รีสตาร์ทและ Powerwash</translation>
 <translation id="5854912040170951372">สไลซ์</translation>
 <translation id="5855267860608268405">เครือข่าย Wi-Fi ที่รู้จัก</translation>
-<translation id="5855310969323666289">ฝาของ <ph name="PRINTER_NAME" /> เปิดอยู่</translation>
 <translation id="5855643921295613558">0.6 วินาที</translation>
 <translation id="5856721540245522153">เปิดใช้ฟีเจอร์การแก้ไขข้อบกพร่อง</translation>
 <translation id="5857090052475505287">โฟลเดอร์ใหม่</translation>
@@ -3878,7 +3871,6 @@
 <translation id="5877064549588274448">เปลี่ยนช่องแล้ว รีสตาร์ทอุปกรณ์เพื่อใช้การเปลี่ยนแปลง</translation>
 <translation id="5877584842898320529">เครื่องพิมพ์ที่เลือกไว้ไม่พร้อมใช้งานหรือไม่ได้ติดตั้งไว้อย่างถูกต้อง <ph name="BR" /> โปรดตรวจสอบเครื่องพิมพ์หรือลองเลือกเครื่องพิมพ์อื่น</translation>
 <translation id="5882919346125742463">เครือข่ายที่รู้จัก</translation>
-<translation id="5883716097305842571">พื้นที่สำหรับกระดาษออกของ <ph name="PRINTER_NAME" /> ใกล้เต็มแล้ว</translation>
 <translation id="5884474295213649357">แท็บนี้เชื่อมต่อกับอุปกรณ์ USB อยู่</translation>
 <translation id="5886009770935151472">นิ้วที่ 1</translation>
 <translation id="5889282057229379085">จำนวนสูงสุดของ CA ระดับกลาง: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4444,7 +4436,6 @@
 <translation id="6611972847767394631">ค้นหาแท็บของคุณที่นี่</translation>
 <translation id="6612358246767739896">เนื้อหาที่ได้รับความคุ้มครอง</translation>
 <translation id="6615455863669487791">แสดงให้ฉันเห็น</translation>
-<translation id="6617034477946102682">เข้าถึง <ph name="PRINTER_NAME" /> ไม่ได้</translation>
 <translation id="6618097958368085618">อย่างไรก็เก็บไว้</translation>
 <translation id="6618744767048954150">กำลังดำเนินการ</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
@@ -4861,7 +4852,6 @@
 <translation id="7128151990937044829">แสดงสัญญาณบอกสถานะในแถบที่อยู่เมื่อมีการบล็อกการแจ้งเตือน</translation>
 <translation id="7131040479572660648">อ่านข้อมูลบน <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> และ <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">เพิ่มห&amp;น้า...</translation>
-<translation id="7131379856697962078">พื้นที่สำหรับกระดาษออกของ <ph name="PRINTER_NAME" /> เต็มแล้ว</translation>
 <translation id="7133578150266914903">ผู้ดูแลระบบกำลังคืนค่าสถานะของอุปกรณ์เครื่องนี้ (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">ทำให้ข้อความเล็กลง</translation>
 <translation id="7135729336746831607">เปิดบลูทูธไหม</translation>
@@ -4880,7 +4870,6 @@
 <translation id="7152478047064750137">ส่วนขยายนี้ไม่จำเป็นต้องมีสิทธิ์พิเศษ</translation>
 <translation id="7154130902455071009">เปลี่ยนหน้าเริ่มต้นของคุณเป็น: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">รูปภาพที่มีอยู่จากกล้องหรือไฟล์</translation>
-<translation id="715657691234357425"><ph name="PRINTER_NAME" /> มีกระดาษเหลือน้อย</translation>
 <translation id="7165320105431587207">ล้มเหลวในการกำหนดค่าเครือข่าย</translation>
 <translation id="716640248772308851">"<ph name="EXTENSION" />" สามารถอ่านรูปภาพ วิดีโอ และไฟล์เสียงในตำแหน่งที่เลือก</translation>
 <translation id="7167486101654761064">เปิดไฟล์ประเภทนี้เ&amp;สมอ</translation>
@@ -4911,7 +4900,6 @@
 <translation id="7197632491113152433">เราพบแอป <ph name="NUMBER_OF_APPS" /> แอปจากบัญชีของคุณที่ใช้ในอุปกรณ์นี้ได้</translation>
 <translation id="7199158086730159431">รั&amp;บความช่วยเหลือ</translation>
 <translation id="7200083590239651963">เลือกการกำหนดค่า</translation>
-<translation id="7201042526153088083">ติดตั้งแอปและเกมจาก Google Play ใน <ph name="DEVICE_TYPE" /> &lt;a target="_blank" href="<ph name="URL" />"&gt;ดูข้อมูลเพิ่มเติม&lt;/a&gt;</translation>
 <translation id="720110658997053098">เก็บอุปกรณ์นี้ไว้ในโหมดคีออสก์อย่างถาวร</translation>
 <translation id="7201118060536064622">ลบ "<ph name="DELETED_ITEM_NAME" />" แล้ว</translation>
 <translation id="7201420661433230412">ดูไฟล์</translation>
@@ -5217,7 +5205,6 @@
 <translation id="7598466960084663009">รีสตาร์ทคอมพิวเตอร์</translation>
 <translation id="7599527631045201165">ชื่ออุปกรณ์ยาวเกินไป ป้อนชื่ออุปกรณ์ที่สั้นลงเพื่อลองอีกครั้ง</translation>
 <translation id="7600965453749440009">ไม่ต้องแปลภาษา<ph name="LANGUAGE" /></translation>
-<translation id="7601297144931396972"><ph name="PRINTER_NAME" /> กระดาษติด</translation>
 <translation id="760197030861754408">ไปที่ <ph name="LANDING_PAGE" /> เพื่อเชื่อมต่อ</translation>
 <translation id="7602079150116086782">ไม่มีแท็บจากอุปกรณ์อื่น</translation>
 <translation id="7602173054665172958">การจัดการการพิมพ์</translation>
@@ -5228,6 +5215,7 @@
 <translation id="7609148976235050828">โปรดเชื่อมต่ออินเทอร์เน็ตและลองอีกครั้ง</translation>
 <translation id="7614260613810441905">ถามเมื่อเว็บไซต์ต้องการแก้ไขไฟล์หรือโฟลเดอร์ในอุปกรณ์ (แนะนำ)</translation>
 <translation id="761530003705945209">สำรองข้อมูลไปที่ Google ไดรฟ์ กู้คืนข้อมูลหรือเปลี่ยนอุปกรณ์ได้ง่ายๆ ทุกเมื่อ ข้อมูลสำรองจะมีข้อมูลแอปอยู่ด้วย ข้อมูลสำรองดังกล่าวจะอัปโหลดขึ้น Google และเข้ารหัสโดยใช้รหัสผ่านบัญชี Google</translation>
+<translation id="7615365294369022248">เกิดข้อผิดพลาดในการเพิ่มบัญชี</translation>
 <translation id="7616214729753637086">กำลังลงทะเบียนอุปกรณ์...</translation>
 <translation id="7617263010641145920">เปิด Play Store</translation>
 <translation id="7617366389578322136">กำลังเชื่อมต่อกับ "<ph name="DEVICE_NAME" />"</translation>
@@ -5676,7 +5664,6 @@
           <ph name="TIME" /> ข้อมูลนี้ไม่รวมถึงวิธีการชำระเงินและที่อยู่จาก Google Pay</translation>
 <translation id="81238879832906896">ดอกไม้สีเหลืองแซมขาว</translation>
 <translation id="8124313775439841391">ONC ที่มีการจัดการ</translation>
-<translation id="8127535217699822294"><ph name="PRINTER_NAME" /> กระดาษหมด</translation>
 <translation id="813082847718468539">ดูข้อมูลเว็บไซต์</translation>
 <translation id="8131740175452115882">ยืนยัน</translation>
 <translation id="8133676275609324831">แ&amp;สดงในโฟลเดอร์</translation>
@@ -5775,7 +5762,6 @@
 <translation id="8254954272268479918">ปิด Linux (เบต้า)</translation>
 <translation id="8255451560461371599">ไม่มีพื้นหลัง</translation>
 <translation id="8256319818471787266">สปาร์กกี้</translation>
-<translation id="8256417822772703842"><ph name="PRINTER_NAME" /> มีหมึกเหลือน้อย</translation>
 <translation id="8257950718085972371">บล็อกการเข้าถึงกล้องต่อไป</translation>
 <translation id="8259239505248583312">เริ่มเลย</translation>
 <translation id="8260864402787962391">เมาส์</translation>
@@ -5956,7 +5942,6 @@
 <translation id="8487678622945914333">ขยาย</translation>
 <translation id="8490896350101740396">แอปคีออสก์ต่อไปนี้ "<ph name="UPDATED_APPS" />" ได้รับการอัปเดตแล้ว โปรดรีบูตอุปกรณ์เพื่อดำเนินการอัปเดตให้เสร็จสมบูรณ์</translation>
 <translation id="8493236660459102203">ไมโครโฟน:</translation>
-<translation id="8495940850609851342"><ph name="PRINTER_NAME" /> หยุดทำงาน</translation>
 <translation id="8496717697661868878">เรียกใช้ปลั๊กอินนี้</translation>
 <translation id="8497219075884839166">ยูทิลิตีของ Windows</translation>
 <translation id="8498214519255567734">ช่วยให้มองหรืออ่านหน้าจอในแสงสลัวได้ดีขึ้น</translation>
@@ -6498,6 +6483,12 @@
 <translation id="9157096865782046368">0.8 วินาที</translation>
 <translation id="9157697743260533322">ไม่สามารถตั้งค่าการอัปเดตอัตโนมัติสำหรับผู้ใช้ทุกคน (ข้อผิดพลาดในการเปิดใช้การตรวจสอบล่วงหน้า: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">อ๊ะ! เกิดปัญหาในการสื่อสารกับเครือข่ายในระหว่างการตรวจสอบสิทธิ์ โปรดตรวจสอบการเชื่อมต่อเครือข่ายของคุณและลองอีกครั้ง</translation>
+<translation id="9159643062839240276">ลองทำดังนี้
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />ตรวจสอบสายเครือข่าย โมเด็ม และเราเตอร์
+      <ph name="LIST_ITEM" />เชื่อมต่อ Wi-Fi อีกครั้ง
+      <ph name="LIST_ITEM" />เรียกใช้การวินิจฉัยการเชื่อมต่อของ Chrome
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">การแสดงภาพซ้อนภาพ</translation>
 <translation id="9168436347345867845">ข้ามไปก่อน</translation>
 <translation id="9169496697824289689">ดูแป้นพิมพ์ลัด</translation>

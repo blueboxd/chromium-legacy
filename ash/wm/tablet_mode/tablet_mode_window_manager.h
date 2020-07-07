@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/session/session_observer.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/splitview/split_view_controller.h"

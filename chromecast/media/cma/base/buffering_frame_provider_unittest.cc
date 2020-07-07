@@ -102,9 +102,8 @@ void BufferingFrameProviderTest::Configure(
 }
 
 void BufferingFrameProviderTest::Start() {
-  frame_consumer_->Start(
-      base::Bind(&BufferingFrameProviderTest::OnTestCompleted,
-                 base::Unretained(this)));
+  frame_consumer_->Start(base::BindOnce(
+      &BufferingFrameProviderTest::OnTestCompleted, base::Unretained(this)));
 }
 
 void BufferingFrameProviderTest::OnTestTimeout() {

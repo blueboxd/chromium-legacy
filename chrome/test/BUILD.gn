@@ -1136,8 +1136,8 @@ if (!is_android) {
       "../browser/safe_browsing/test_safe_browsing_database_helper.cc",
       "../browser/safe_browsing/test_safe_browsing_database_helper.h",
       "../browser/safe_xml_parser_browsertest.cc",
+      "../browser/search/local_ntp_navigation_browsertest.cc",
       "../browser/search/ntp_custom_background_enabled_policy_handler_browsertest.cc",
-      "../browser/search/ntp_navigation_browsertest.cc",
       "../browser/search_engines/template_url_scraper_browsertest.cc",
       "../browser/secure_origin_allowlist_browsertest.cc",
       "../browser/serial/chrome_serial_browsertest.cc",
@@ -1232,6 +1232,8 @@ if (!is_android) {
       "../browser/ui/extensions/application_launch_browsertest.cc",
       "../browser/ui/extensions/blocked_action_bubble_browsertest.cc",
       "../browser/ui/extensions/extension_enable_flow_browsertest.cc",
+      "../browser/ui/extensions/extension_enable_flow_test_delegate.cc",
+      "../browser/ui/extensions/extension_enable_flow_test_delegate.h",
       "../browser/ui/extensions/extension_message_bubble_browsertest.cc",
       "../browser/ui/extensions/extension_message_bubble_browsertest.h",
       "../browser/ui/extensions/hosted_app_browsertest.cc",
@@ -2009,6 +2011,7 @@ if (!is_android) {
         "../browser/ui/views/payments/modifiers_browsertest.cc",
         "../browser/ui/views/payments/order_summary_view_controller_browsertest.cc",
         "../browser/ui/views/payments/payment_handler_change_payment_method_browsertest.cc",
+        "../browser/ui/views/payments/payment_handler_icon_refetch_browsertest.cc",
         "../browser/ui/views/payments/payment_handler_window_size_browsertest.cc",
         "../browser/ui/views/payments/payment_method_view_controller_browsertest.cc",
         "../browser/ui/views/payments/payment_request_blob_url_browsertest.cc",
@@ -2348,6 +2351,7 @@ if (!is_android) {
         "../browser/chromeos/login/web_kiosk_controller_browsertest.cc",
         "../browser/chromeos/login/webview_login_browsertest.cc",
         "../browser/chromeos/login/wizard_controller_browsertest.cc",
+        "../browser/chromeos/net/device_event_log_error_browsertest.cc",
         "../browser/chromeos/net/network_portal_detector_impl_browsertest.cc",
         "../browser/chromeos/network_change_manager_client_browsertest.cc",
         "../browser/chromeos/platform_keys/platform_keys_service_browsertest.cc",
@@ -2940,13 +2944,13 @@ group("performance_test_suite") {
 
   data_deps = [
     "//base:base_perftests",
-    "//chrome/test:angle_perftests",
     "//components:components_perftests",
     "//components/tracing:tracing_perftests",
     "//gpu:command_buffer_perftests",
     "//gpu:gpu_perftests",
     "//media:media_perftests",
     "//testing:run_perf_test",
+    "//third_party/angle/src/tests:angle_perftests",
   ]
 
   if (build_dawn_tests) {
@@ -2988,22 +2992,6 @@ group("performance_weblayer_test_suite") {
 group("telemetry_perf_webview_tests") {
   testonly = true
   deps = [ "//chrome/test:telemetry_perf_tests" ]
-}
-
-group("standalone_angle_unittests") {
-  testonly = true
-
-  # TODO(jmadill): Move into ANGLE. http://anglebug.com/3162
-  data = [ "//testing/scripts/run_gtest_angle_test.py" ]
-  data_deps = [ "//third_party/angle/src/tests:standalone_angle_unittests" ]
-}
-
-group("angle_perftests") {
-  testonly = true
-  data_deps = [ "//testing:run_perf_test" ]
-  if (is_win || is_linux || is_android) {
-    data_deps += [ "//third_party/angle/src/tests:angle_perftests" ]
-  }
 }
 
 if (is_mac) {

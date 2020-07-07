@@ -152,8 +152,7 @@ enum ModelType {
   // ---- Control Types ----
   // An object representing a set of Nigori keys.
   NIGORI,
-  DEPRECATED_EXPERIMENTS,
-  LAST_REAL_MODEL_TYPE = DEPRECATED_EXPERIMENTS,
+  LAST_REAL_MODEL_TYPE = NIGORI,
 
   NUM_ENTRIES,
 };
@@ -198,7 +197,7 @@ enum class ModelTypeForHistograms {
   kHistoryDeleteDirectices = 16,
   kNigori = 17,
   kDeviceInfo = 18,
-  kDeprecatedExperiments = 19,
+  // kDeprecatedExperiments = 19,
   // kDeprecatedSyncedNotifications = 20,
   kPriorityPreferences = 21,
   kDictionary = 22,
@@ -257,9 +256,9 @@ constexpr ModelTypeSet ProtocolTypes() {
       DEPRECATED_FAVICON_IMAGES, DEPRECATED_FAVICON_TRACKING, DEVICE_INFO,
       PRIORITY_PREFERENCES, SUPERVISED_USER_SETTINGS, APP_LIST,
       SUPERVISED_USER_WHITELISTS, ARC_PACKAGE, PRINTERS, READING_LIST,
-      USER_EVENTS, NIGORI, DEPRECATED_EXPERIMENTS, USER_CONSENTS,
-      SEND_TAB_TO_SELF, SECURITY_EVENTS, WEB_APPS, WIFI_CONFIGURATIONS,
-      OS_PREFERENCES, OS_PRIORITY_PREFERENCES, SHARING_MESSAGE);
+      USER_EVENTS, NIGORI, USER_CONSENTS, SEND_TAB_TO_SELF, SECURITY_EVENTS,
+      WEB_APPS, WIFI_CONFIGURATIONS, OS_PREFERENCES, OS_PRIORITY_PREFERENCES,
+      SHARING_MESSAGE);
 }
 
 // These are the normal user-controlled types. This is to distinguish from

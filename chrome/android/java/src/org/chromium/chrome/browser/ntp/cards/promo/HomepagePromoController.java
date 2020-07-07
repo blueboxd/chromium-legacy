@@ -63,17 +63,21 @@ public class HomepagePromoController implements HomepageStateListener {
      * @param context Context from the activity.
      * @param snackbarManager SnackbarManager used to display snackbar.
      * @param tracker Tracker for the feature engagement system.
-     * @param listener Listener to be notified when the promo should be removed from the parent
-     *         view.
      */
-    public HomepagePromoController(Context context, SnackbarManager snackbarManager,
-            Tracker tracker, HomepagePromoStateListener listener) {
+    public HomepagePromoController(
+            Context context, SnackbarManager snackbarManager, Tracker tracker) {
         mContext = context;
         mSnackbarController = new HomepagePromoSnackbarController(context, snackbarManager);
 
         // Inform event of creation.
         mTracker = tracker;
+    }
 
+    /**
+     * @param listener Listener to be notified when the promo should be removed from the parent
+     *         view.
+     */
+    public void setHomepagePromoStateListener(@Nullable HomepagePromoStateListener listener) {
         mStateListener = listener;
     }
 

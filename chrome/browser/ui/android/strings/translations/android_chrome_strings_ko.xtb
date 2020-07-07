@@ -642,7 +642,6 @@
 <translation id="6154478581116148741">이 기기에서 비밀번호를 내보내려면 설정에서 화면 잠금을 사용 설정하세요</translation>
 <translation id="6157392216611456285"><ph name="APP_NAME" /> 선택</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> 데이터 절약</translation>
-<translation id="6192333916571137726">다운로드 파일</translation>
 <translation id="6201345951596836663">링크 복사됨</translation>
 <translation id="6206830853671714236">다운로드 시간 선택</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" />이(가) 아닌가요?</translation>
@@ -846,7 +845,7 @@
 <translation id="7772032839648071052">암호 확인</translation>
 <translation id="7772375229873196092"><ph name="APP_NAME" /> 닫기</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" /> 외 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />개}other{<ph name="PAYMENT_METHOD_PREVIEW" /> 외 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />개}}</translation>
-<translation id="7778840695157240389">나중에 다시 새 스토리 확인하기</translation>
+<translation id="7778840695157240389">나중에 다시 새 스토리를 확인하세요.</translation>
 <translation id="7791543448312431591">추가</translation>
 <translation id="780301667611848630">아니요, 괜찮습니다.</translation>
 <translation id="7810647596859435254">연결 프로그램...</translation>

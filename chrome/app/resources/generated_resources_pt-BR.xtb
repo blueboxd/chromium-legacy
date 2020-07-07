@@ -281,7 +281,6 @@
 <translation id="1340527397989195812">Fazer backup de mídia do dispositivo usando o aplicativo Arquivos.</translation>
 <translation id="1341988552785875222">O plano de fundo atual está definido por "<ph name="APP_NAME" />". Talvez seja necessário desinstalar "<ph name="APP_NAME" />" antes de selecionar um plano de fundo diferente.</translation>
 <translation id="1343865611738742294">Conceder aos apps Linux permissão para acessar dispositivos USB. O Linux não terá informações do dispositivo USB depois que ele for removido.</translation>
-<translation id="1344143111673240412">A mudança na configuração da câmera exige que você reinicie o Parallels Desktop</translation>
 <translation id="1347256498747320987">Instalar atualizações e apps. Ao continuar, você aceita que este dispositivo também pode fazer automaticamente o download e a instalação de atualizações e apps do Google, da operadora e do fabricante do dispositivo, possivelmente usando dados da rede celular. Alguns desses apps podem oferecer compras dentro deles. <ph name="BEGIN_LINK1" />Saiba mais<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">A atualização é iniciada quando a bateria chega a <ph name="BATTERY_LEVEL" />%.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -378,6 +377,7 @@
 <translation id="1468571364034902819">Não é possível usar esse perfil</translation>
 <translation id="1470084204649225129">{NUM_TABS,plural, =1{Adicionar guia ao novo grupo}one{Adicionar guia ao novo grupo}other{Adicionar guias ao novo grupo}}</translation>
 <translation id="1472675084647422956">Mostrar mais</translation>
+<translation id="1474785664565228650">A mudança na configuração do microfone exige que você reinicialize o Parallels Desktop. Faça isso para continuar.</translation>
 <translation id="1475502736924165259">Você tem certificados no arquivo que não correspondem a nenhuma das outras categorias</translation>
 <translation id="1476088332184200792">Copiar para o dispositivo</translation>
 <translation id="1476607407192946488">&amp;Configurações de idioma</translation>
@@ -1197,7 +1197,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2470702053775288986">Extensões incompatíveis desativadas</translation>
 <translation id="2471469610750100598">Preto (padrão)</translation>
 <translation id="2473195200299095979">Traduzir esta página</translation>
-<translation id="2474848500897222119">A <ph name="PRINTER_NAME" /> está sem tinta</translation>
 <translation id="2475982808118771221">Ocorreu um erro</translation>
 <translation id="2476578072172137802">Configurações do site</translation>
 <translation id="2478176599153288112">Permissões de arquivos de mídia para "<ph name="EXTENSION" />"</translation>
@@ -1503,7 +1502,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2824942875887026017">O <ph name="IDS_SHORT_PRODUCT_NAME" /> está usando as configurações de proxy do seu administrador</translation>
 <translation id="2825758591930162672">Chave pública do requerente</translation>
 <translation id="2828650939514476812">Conectar à rede Wi-Fi</translation>
-<translation id="28291580771888953">A fila da <ph name="PRINTER_NAME" /> está cheia</translation>
 <translation id="2835547721736623118">Serviço de reconhecimento de fala</translation>
 <translation id="2836269494620652131">Falha</translation>
 <translation id="2836635946302913370">O login com este nome foi desativado pelo administrador.</translation>
@@ -2320,7 +2318,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="3839516600093027468">Sempre impedir que <ph name="HOST" /> veja a área de transferência</translation>
 <translation id="3841964634449506551">Senha inválida</translation>
 <translation id="3842552989725514455">Fonte Serif</translation>
-<translation id="3843058644024807390">A mudança na configuração do microfone exige que você reinicie o Parallels Desktop</translation>
+<translation id="3843464315703645664">Na lista de permissões interna</translation>
 <translation id="3846116211488856547">Tenha ferramentas para desenvolver sites, apps Android e muito mais. A instalação do Linux causará o download de <ph name="DOWNLOAD_SIZE" /> de dados.</translation>
 <translation id="3847319713229060696">Ajudar a melhorar a segurança para todos na Web</translation>
 <translation id="385051799172605136">Voltar</translation>
@@ -2779,7 +2777,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4453946976636652378">Pesquisar no <ph name="SEARCH_ENGINE_NAME" /> ou digitar URL</translation>
 <translation id="4459169140545916303">Ativado há <ph name="DEVICE_LAST_ACTIVATED_TIME" /> dias</translation>
 <translation id="4460014764210899310">Desagrupar</translation>
-<translation id="4460343359907016103">Erro ao conectar a <ph name="PRINTER_NAME" /></translation>
 <translation id="4462159676511157176">Servidores de nome personalizados</translation>
 <translation id="4465236939126352372">Tempo limite de <ph name="TIME" /> definido para <ph name="APP_NAME" /></translation>
 <translation id="4465725236958772856">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, gerenciada pelo seu administrador, conectar</translation>
@@ -2934,6 +2931,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4648499713050786492">Desbloqueie seu perfil antes de adicionar uma pessoa.</translation>
 <translation id="4650591383426000695">Desconecte seu smartphone do <ph name="DEVICE_TYPE" /></translation>
 <translation id="4651484272688821107">Não foi possível carregar o componente on-line com recursos do modo de demonstração.</translation>
+<translation id="4652935475563630866">A mudança na configuração da câmera exige que você reinicialize o Parallels Desktop. Faça isso para continuar.</translation>
 <translation id="4653405415038586100">Erro ao configurar o Linux</translation>
 <translation id="465878909996028221">Apenas os protocolos http, https e file são compatíveis com redirecionamentos do navegador.</translation>
 <translation id="4659077111144409915">Conta principal</translation>
@@ -3077,7 +3075,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4864369630010738180">Fazendo login...</translation>
 <translation id="4864805589453749318">Selecione o pai/mãe que está concedendo a permissão para adicionar a conta escolar.</translation>
 <translation id="486635084936119914">Abrir alguns tipos de arquivo automaticamente depois do download</translation>
-<translation id="4869213010169296107">A <ph name="PRINTER_NAME" /> está sem bandeja</translation>
 <translation id="48704129375571883">Adicionar mais recursos</translation>
 <translation id="4870758487381879312">Digite a senha fornecida pelo administrador para receber informações de configuração</translation>
 <translation id="4870903493621965035">Nenhum dispositivo pareado</translation>
@@ -3328,6 +3325,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="5184662919967270437">Atualizando o dispositivo</translation>
 <translation id="5185359571430619712">Revisar extensões</translation>
 <translation id="5185386675596372454">A versão mais recente de "<ph name="EXTENSION_NAME" />" foi desativada porque requer mais permissões.</translation>
+<translation id="5185500136143151980">Sem Internet</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5190926251776387065">Ativar porta</translation>
 <translation id="51918995459521422">Solicitação do download de vários arquivos feita por <ph name="ORIGIN" /></translation>
@@ -3484,7 +3482,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="5390112241331447203">Incluir o arquivo system_logs.txt enviado nos relatórios de feedback.</translation>
 <translation id="5390677308841849479">Vermelho-escuro e laranja</translation>
 <translation id="5390743329570580756">Enviar para</translation>
-<translation id="5395869306561378615">A <ph name="PRINTER_NAME" /> está pausada</translation>
 <translation id="5397794290049113714">Você</translation>
 <translation id="5398572795982417028">Referência de página fora do limite, que é <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">Anúncios bloqueados</translation>
@@ -3499,7 +3496,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="5417312524372586921">Temas do navegador</translation>
 <translation id="5419405654816502573">Voice Match</translation>
 <translation id="5420438158931847627">Determina a nitidez de textos e imagens</translation>
-<translation id="5421498071721257877">A <ph name="PRINTER_NAME" /> tem um erro</translation>
 <translation id="5422221874247253874">Ponto de acesso</translation>
 <translation id="5422781158178868512">Seu dispositivo de armazenamento externo não foi reconhecido.</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3849,7 +3845,6 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5852137567692933493">Reiniciar e executar PowerWash</translation>
 <translation id="5854912040170951372">Pepperoni</translation>
 <translation id="5855267860608268405">Redes Wi-Fi conhecidas</translation>
-<translation id="5855310969323666289">A porta da <ph name="PRINTER_NAME" /> está aberta</translation>
 <translation id="5855643921295613558">0,6 segundo</translation>
 <translation id="5856721540245522153">Ativar recursos de depuração</translation>
 <translation id="5857090052475505287">Nova pasta</translation>
@@ -3880,7 +3875,6 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5877064549588274448">Canal alterado. Reinicie o dispositivo para aplicar as alterações.</translation>
 <translation id="5877584842898320529">A impressora selecionada não está disponível ou não foi instalada corretamente. <ph name="BR" /> Verifique a impressora ou selecione outra.</translation>
 <translation id="5882919346125742463">Redes conhecidas</translation>
-<translation id="5883716097305842571">A área de saída da <ph name="PRINTER_NAME" /> está quase cheia</translation>
 <translation id="5884474295213649357">Esta guia está conectada a um dispositivo USB.</translation>
 <translation id="5886009770935151472">Dedo 1</translation>
 <translation id="5889282057229379085">Número máximo de autoridades de certificação intermediárias: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4447,7 +4441,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6611972847767394631">Veja suas guias aqui</translation>
 <translation id="6612358246767739896">Conteúdo protegido</translation>
 <translation id="6615455863669487791">Exibir</translation>
-<translation id="6617034477946102682">A <ph name="PRINTER_NAME" /> está inacessível</translation>
 <translation id="6618097958368085618">Manter assim mesmo</translation>
 <translation id="6618744767048954150">Em execução</translation>
 <translation id="6619058681307408113">Daemon de impressora de linha (LPD)</translation>
@@ -4864,7 +4857,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7128151990937044829">Mostrar um indicador na barra de endereço quando notificações forem bloqueadas</translation>
 <translation id="7131040479572660648">Leia seus dados em <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> e <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Adicionar pá&amp;gina...</translation>
-<translation id="7131379856697962078">A área de saída da <ph name="PRINTER_NAME" /> está cheia</translation>
 <translation id="7133578150266914903">O administrador está revertendo este dispositivo (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">Diminuir o texto</translation>
 <translation id="7135729336746831607">Ativar o Bluetooth?</translation>
@@ -4883,7 +4875,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7152478047064750137">Esta extensão não requer permissões especiais</translation>
 <translation id="7154130902455071009">Alterar sua página inicial para: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">Foto existente na câmera ou em arquivo</translation>
-<translation id="715657691234357425">A <ph name="PRINTER_NAME" /> está com pouco papel</translation>
 <translation id="7165320105431587207">Falha ao configurar rede</translation>
 <translation id="716640248772308851">"<ph name="EXTENSION" />" pode ler imagens, vídeos e arquivos de som nos locais marcados.</translation>
 <translation id="7167486101654761064">&amp;Sempre abrir arquivos deste tipo</translation>
@@ -4914,7 +4905,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7197632491113152433">Encontramos <ph name="NUMBER_OF_APPS" /> apps da sua conta que podem ser usados neste dispositivo.</translation>
 <translation id="7199158086730159431">Conseguir &amp;ajuda</translation>
 <translation id="7200083590239651963">Selecionar configuração</translation>
-<translation id="7201042526153088083">Instale apps e jogos do Google Play no <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;Saiba mais&lt;/a&gt;</translation>
 <translation id="720110658997053098">Manter este dispositivo permanentemente no modo quiosque</translation>
 <translation id="7201118060536064622">'<ph name="DELETED_ITEM_NAME" />' excluído</translation>
 <translation id="7201420661433230412">Visualizar arquivos</translation>
@@ -5220,7 +5210,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7598466960084663009">Reiniciar o computador</translation>
 <translation id="7599527631045201165">O nome do dispositivo é muito longo. Digite um nome mais curto para tentar novamente.</translation>
 <translation id="7600965453749440009">Nunca traduzir do <ph name="LANGUAGE" /></translation>
-<translation id="7601297144931396972">O papel da <ph name="PRINTER_NAME" /> está preso</translation>
 <translation id="760197030861754408">Acesse <ph name="LANDING_PAGE" /> para se conectar.</translation>
 <translation id="7602079150116086782">Nenhuma guia de outros dispositivos</translation>
 <translation id="7602173054665172958">Gerenciamento de impressão</translation>
@@ -5231,6 +5220,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7609148976235050828">Conecte-se à Internet e tente novamente.</translation>
 <translation id="7614260613810441905">Perguntar quando um site quiser editar arquivos ou pastas do dispositivo (recomendado)</translation>
 <translation id="761530003705945209">Fazer backup no Google Drive Restaure seus dados ou troque de dispositivo a qualquer momento com facilidade. Seu backup inclui dados do app. Seus backups são enviados para o Google e criptografados usando a senha da sua Conta do Google.</translation>
+<translation id="7615365294369022248">Ocorreu um erro ao adicionar uma conta</translation>
 <translation id="7616214729753637086">Registrando dispositivo…</translation>
 <translation id="7617263010641145920">Ativar a Play Store</translation>
 <translation id="7617366389578322136">Conectando-se a "<ph name="DEVICE_NAME" />"</translation>
@@ -5679,7 +5669,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
           <ph name="TIME" />. Isso não inclui formas de pagamento e endereços do Google Pay.</translation>
 <translation id="81238879832906896">Flor amarela e branca</translation>
 <translation id="8124313775439841391">ONC gerenciado</translation>
-<translation id="8127535217699822294">A <ph name="PRINTER_NAME" /> está sem papel</translation>
 <translation id="813082847718468539">Visualizar informações do site</translation>
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8133676275609324831">&amp;Mostrar na pasta</translation>
@@ -5778,7 +5767,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8254954272268479918">Desligar o Linux (Beta)</translation>
 <translation id="8255451560461371599">Sem plano de fundo</translation>
 <translation id="8256319818471787266">Totó</translation>
-<translation id="8256417822772703842">A <ph name="PRINTER_NAME" /> está com pouca tinta</translation>
 <translation id="8257950718085972371">Continuar bloqueando o acesso à câmera</translation>
 <translation id="8259239505248583312">Vamos lá</translation>
 <translation id="8260864402787962391">Mouse</translation>
@@ -5959,7 +5947,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8487678622945914333">Aproximar</translation>
 <translation id="8490896350101740396">Os aplicativos de quiosque "<ph name="UPDATED_APPS" />" a seguir foram atualizados. Reinicie o dispositivo para concluir o processo de atualização.</translation>
 <translation id="8493236660459102203">Microfone:</translation>
-<translation id="8495940850609851342">A <ph name="PRINTER_NAME" /> foi interrompida</translation>
 <translation id="8496717697661868878">Executar este plug-in</translation>
 <translation id="8497219075884839166">Utilitários do Windows</translation>
 <translation id="8498214519255567734">Facilita olhar para a tela ou ler com pouca luz</translation>
@@ -6501,6 +6488,12 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="9157096865782046368">0,8 segundo</translation>
 <translation id="9157697743260533322">Falha ao configurar atualizações automáticas para todos os usuários (erro de inicialização de simulação: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Ops!  Ocorreu um problema de comunicação de rede durante a autenticação. Verifica sua conexão de rede e tente novamente.</translation>
+<translation id="9159643062839240276">Tente o seguinte:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />Verifique os cabos de rede, o modem e o roteador.
+      <ph name="LIST_ITEM" />Reconecte-se ao Wi-Fi.
+      <ph name="LIST_ITEM" />Execute o Chrome Connectivity Diagnostics.
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">Picture-in-picture</translation>
 <translation id="9168436347345867845">Mais tarde</translation>
 <translation id="9169496697824289689">Ver atalhos de teclado</translation>

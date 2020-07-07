@@ -503,4 +503,55 @@ public class DropdownItemViewInfoListBuilderUnitTest {
         mBuilder.buildDropdownViewInfoList(result);
         Assert.assertFalse(mBuilder.hasFullyConcealedElements());
     }
+
+    @NativeJavaTestFeatures.Enable(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
+    @CalledByNativeJavaTest
+    public void grouping_verifySpecializedSuggestionsAreNotIncludedInGrouping() {
+        mBuilder.onNativeInitialized();
+        final int viewHeight = 10;
+        final OmniboxSuggestionBuilderForTest builder =
+                OmniboxSuggestionBuilderForTest
+                        .searchWithType(OmniboxSuggestionType.SEARCH_WHAT_YOU_TYPED)
+                        .setIsSearch(false) // Pretend all specialized suggestions are URLs so that
+                                            // these would get demoted.
+                        .setRelevance(1);
+
+        final OmniboxSuggestion defaultSuggestion = builder.build();
+        final OmniboxSuggestion tileSuggestion =
+                builder.setType(OmniboxSuggestionType.TILE_SUGGESTION).build();
+        final OmniboxSuggestion clipboardTextSuggestion =
+                builder.setType(OmniboxSuggestionType.CLIPBOARD_TEXT).build();
+        final OmniboxSuggestion clipboardImageSuggestion =
+                builder.setType(OmniboxSuggestionType.CLIPBOARD_IMAGE).build();
+        final OmniboxSuggestion clipboardUrlSuggestion =
+                builder.setType(OmniboxSuggestionType.CLIPBOARD_URL).build();
+
+        final OmniboxSuggestion searchSuggestion =
+                builder.setRelevance(100)
+                        .setIsSearch(true)
+                        .setType(OmniboxSuggestionType.SEARCH_SUGGEST)
+                        .build();
+        final OmniboxSuggestion urlSuggestion =
+                builder.setRelevance(100).setIsSearch(false).build();
+
+        final List<Pair<OmniboxSuggestion, SuggestionProcessor>> pairs = Arrays.asList(
+                new Pair(defaultSuggestion, null), // Default match, never participates in grouping.
+                new Pair(clipboardUrlSuggestion, null), // Clipboard, specialized suggestion.
+                new Pair(tileSuggestion, null), // Query tiles, specialized suggestion.
+                new Pair(clipboardTextSuggestion, null), // Clipboard, specialized suggestion.
+                new Pair(clipboardImageSuggestion, null), // Clipboard, specialized suggestion.
+                new Pair(searchSuggestion, null), new Pair(searchSuggestion, null),
+                new Pair(urlSuggestion, null), new Pair(urlSuggestion, null),
+                new Pair(searchSuggestion, null), new Pair(searchSuggestion, null));
+
+        final List<Pair<OmniboxSuggestion, SuggestionProcessor>> expected = Arrays.asList(
+                // Specialized suggestions are in the same order as received.
+                pairs.get(0), pairs.get(1), pairs.get(2), pairs.get(3), pairs.get(4),
+                // Other suggestions get grouped.
+                pairs.get(5), pairs.get(6), pairs.get(9), pairs.get(10), pairs.get(7),
+                pairs.get(8));
+
+        mBuilder.groupSuggestionsBySearchVsURL(pairs, pairs.size());
+        verifyListsMatch(expected, pairs);
+    }
 }

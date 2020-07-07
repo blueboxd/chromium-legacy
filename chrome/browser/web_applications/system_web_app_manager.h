@@ -197,6 +197,8 @@ class SystemWebAppManager {
 
   void SetUpdatePolicyForTesting(UpdatePolicy policy);
 
+  void ResetOnAppsSynchronizedForTesting();
+
   // Updates each system app either disabled/not disabled.
   void OnAppsPolicyChanged();
 

@@ -64,8 +64,8 @@
             </div>
           </div>
           <cr-button
-              data-dlc-id$="[[item.id]]"
-              id="remove-button-[[index]]"
+              disabled="[[item.disabled]]"
+              data-index$="[[index]]"
               on-click="onRemoveDlcClick_"
               tabindex$="[[tabIndex]]"
               aria-describedby$="name[[index]] size[[index]]

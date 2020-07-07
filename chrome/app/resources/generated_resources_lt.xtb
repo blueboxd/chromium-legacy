@@ -281,7 +281,6 @@
 <translation id="1340527397989195812">Sukurkite atsarginę įrenginio medijos kopiją naudodami programą „Failai“.</translation>
 <translation id="1341988552785875222">Dabartinį ekrano foną nustatė „<ph name="APP_NAME" />“. Kad galėtumėte pasirinkti kitą ekrano foną, gali reikėti pašalinti „<ph name="APP_NAME" />“.</translation>
 <translation id="1343865611738742294">„Linux“ programoms suteikiamas leidimas pasiekti USB įrenginius. Pašalinto USB įrenginio „Linux“ neprisimins.</translation>
-<translation id="1344143111673240412">Buvo pakeistas fotoaparato nustatymas, todėl reikia iš naujo paleisti „Parallels Desktop“</translation>
 <translation id="1347256498747320987">Įdiekite naujinius ir programas. Tęsdami sutinkate, kad šis įrenginys taip pat gali automatiškai atsisiųsti ir įdiegti naujinius bei programas iš „Google“, operatoriaus ir įrenginio gamintojo (gali būti naudojami mobiliojo ryšio duomenys). Kai kurios programos gali siūlyti įsigyti pirkinių programoje. <ph name="BEGIN_LINK1" />Sužinokite daugiau<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">Atnaujinimo procesas prasidės, kai akumuliatoriaus įkrovos lygis bus <ph name="BATTERY_LEVEL" /> %.</translation>
 <translation id="1353686479385938207">„<ph name="PROVIDER_NAME" />“: „<ph name="NETWORK_NAME" />“</translation>
@@ -1197,7 +1196,6 @@ Jei nenorite, dabar atsijunkite, kad šios paskyros pakeitimai būtų matomi ši
 <translation id="2470702053775288986">Nepalaikomi plėtiniai išjungti</translation>
 <translation id="2471469610750100598">Juodas (numatytasis)</translation>
 <translation id="2473195200299095979">Išversti šį puslapį</translation>
-<translation id="2474848500897222119">Baigėsi spausdintuvo „<ph name="PRINTER_NAME" />“ rašalas</translation>
 <translation id="2475982808118771221">Įvyko klaida</translation>
 <translation id="2476578072172137802">Svetainės nustatymai</translation>
 <translation id="2478176599153288112">Medijos failo leidimai, susiję su plėtiniu „<ph name="EXTENSION" />“</translation>
@@ -1503,7 +1501,6 @@ Jei nenorite, dabar atsijunkite, kad šios paskyros pakeitimai būtų matomi ši
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> naudoja administratoriaus tarpinio serverio nustatymus</translation>
 <translation id="2825758591930162672">Subjekto privatusis raktas</translation>
 <translation id="2828650939514476812">Prisijungti prie „Wi-Fi“ tinklo</translation>
-<translation id="28291580771888953">Spausdintuvo „<ph name="PRINTER_NAME" />“ eilė pilna</translation>
 <translation id="2835547721736623118">Kalbos atpažinimo paslauga</translation>
 <translation id="2836269494620652131">Strigtis</translation>
 <translation id="2836635946302913370">Prisijungimas šiuo naudotojo vardu neleidžiamas administratoriaus.</translation>
@@ -2319,7 +2316,7 @@ Jei nenorite, dabar atsijunkite, kad šios paskyros pakeitimai būtų matomi ši
 <translation id="3839516600093027468">Niekada neleisti <ph name="HOST" /> peržiūrėti iškarpinės</translation>
 <translation id="3841964634449506551">Netinkamas slaptažodis</translation>
 <translation id="3842552989725514455">Šriftas „Serif“</translation>
-<translation id="3843058644024807390">Buvo pakeistas mikrofono nustatymas, todėl reikia iš naujo paleisti „Parallels Desktop“</translation>
+<translation id="3843464315703645664">Vidinis leidžiamųjų sąrašas</translation>
 <translation id="3846116211488856547">Gaukite svetainių, „Android“ programų ir kt. kūrimo įrankius. Įdiegiant „Linux“ bus atsisiųsta <ph name="DOWNLOAD_SIZE" /> duomenų.</translation>
 <translation id="3847319713229060696">Pagalba didinant visų naudotojų saugą žiniatinklyje</translation>
 <translation id="385051799172605136">Atgal</translation>
@@ -2778,7 +2775,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="4453946976636652378">Ieškokite „<ph name="SEARCH_ENGINE_NAME" />“ arba įveskite URL</translation>
 <translation id="4459169140545916303">Aktyvus prieš <ph name="DEVICE_LAST_ACTIVATED_TIME" /> d.</translation>
 <translation id="4460014764210899310">Išgrupuoti</translation>
-<translation id="4460343359907016103">Klaida prisijungiant prie spausdintuvo „<ph name="PRINTER_NAME" />“</translation>
 <translation id="4462159676511157176">Tinkintų pavadinimų serveriai</translation>
 <translation id="4465236939126352372">Programai „<ph name="APP_NAME" />“ nustatytas <ph name="TIME" /> laiko apribojimas</translation>
 <translation id="4465725236958772856"><ph name="NETWORK_INDEX" /> tinklas iš <ph name="NETWORK_COUNT" />, „<ph name="NETWORK_NAME" />“, tvarko administratorius, prisijungti</translation>
@@ -3076,7 +3072,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="4864369630010738180">Prisijungiama...</translation>
 <translation id="4864805589453749318">Pasirinkite vieną iš tėvų, kuris suteikia leidimą pridėti mokyklos paskyrą.</translation>
 <translation id="486635084936119914">Automatiškai atidaryti tam tikrų tipų failus, kai jie atsisiunčiami</translation>
-<translation id="4869213010169296107">Spausdintuve „<ph name="PRINTER_NAME" />“ nėra dėklo</translation>
 <translation id="48704129375571883">Pridėti papildomų funkcijų</translation>
 <translation id="4870758487381879312">Kad gautumėte konfigūravimo informacijos, įveskite administratoriaus suteiktą slaptažodį</translation>
 <translation id="4870903493621965035">Nėra jokių susietų įrenginių</translation>
@@ -3327,6 +3322,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="5184662919967270437">Įrenginys atnaujinamas</translation>
 <translation id="5185359571430619712">Peržiūrėti plėtinius</translation>
 <translation id="5185386675596372454">Naujausia „<ph name="EXTENSION_NAME" />“ versija buvo išjungta, nes jai reikia daugiau leidimų.</translation>
+<translation id="5185500136143151980">Nėra interneto ryšio</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5190926251776387065">Suaktyvinti prievadą</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> nori atsisiųsti kelis failus</translation>
@@ -3483,7 +3479,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="5390112241331447203">Yra failas „system_logs.txt“, išsiųstas atsiliepimų ataskaitose.</translation>
 <translation id="5390677308841849479">Tamsiai raudona ir oranžinė</translation>
 <translation id="5390743329570580756">Siųsti</translation>
-<translation id="5395869306561378615">Spausdintuvas „<ph name="PRINTER_NAME" />“ pristabdytas</translation>
 <translation id="5397794290049113714">Jūs</translation>
 <translation id="5398572795982417028">Puslapio už diapazono ribų nuoroda (apribojimas :<ph name="MAXIMUM_PAGE" />)</translation>
 <translation id="5398772614898833570">Skelbimai užblokuoti</translation>
@@ -3498,7 +3493,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="5417312524372586921">Naršyklės temos</translation>
 <translation id="5419405654816502573">Voice Match</translation>
 <translation id="5420438158931847627">Nustatomas teksto ir vaizdų ryškumas</translation>
-<translation id="5421498071721257877">Įvyko su spausdintuvu „<ph name="PRINTER_NAME" />“ susijusi įrenginio klaida</translation>
 <translation id="5422221874247253874">Prieigos taškas</translation>
 <translation id="5422781158178868512">Apgailestaujame, tačiau jūsų išorinis atmintinės įrenginys yra neatpažįstamas.</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3848,7 +3842,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="5852137567692933493">Paleisti iš naujo ir naudoti „Powerwash“</translation>
 <translation id="5854912040170951372">Gabaliukas</translation>
 <translation id="5855267860608268405">Žinomi „Wi-Fi“ tinklai</translation>
-<translation id="5855310969323666289">Spausdintuvo „<ph name="PRINTER_NAME" />“ durelės atidarytos</translation>
 <translation id="5855643921295613558">0,6 sek.</translation>
 <translation id="5856721540245522153">Įgalinti derinimo funkcijas</translation>
 <translation id="5857090052475505287">Naujas aplankas</translation>
@@ -3879,7 +3872,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="5877064549588274448">Kanalas pakeistas. Kad pritaikytumėte pakeitimus, iš naujo paleiskite įrenginį.</translation>
 <translation id="5877584842898320529">Pasirinktas spausdintuvas nepasiekiamas arba netinkamai įdiegtas. <ph name="BR" /> Patikrinkite spausdintuvą arba pabandykite pasirinkti kitą spausdintuvą.</translation>
 <translation id="5882919346125742463">Žinomi tinklai</translation>
-<translation id="5883716097305842571">Spausdintuvo „<ph name="PRINTER_NAME" />“ išvesties sritis beveik pilna</translation>
 <translation id="5884474295213649357">Šis skirtukas susietas su USB įrenginiu.</translation>
 <translation id="5886009770935151472">Pirmas pirštas</translation>
 <translation id="5889282057229379085">Didžiausias tarpinių CA skaičius: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4445,7 +4437,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6611972847767394631">Čia rasite savo skirtukus</translation>
 <translation id="6612358246767739896">Apsaugotas turinys</translation>
 <translation id="6615455863669487791">Rodyti</translation>
-<translation id="6617034477946102682">Spausdintuvas „<ph name="PRINTER_NAME" />“ nepasiekiamas</translation>
 <translation id="6618097958368085618">Vis tiek palikti</translation>
 <translation id="6618744767048954150">Vykdoma</translation>
 <translation id="6619058681307408113">Eilutinio spausdintuvo paslaugų teikimo sistema (LPD)</translation>
@@ -4862,7 +4853,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="7128151990937044829">Rodyti indikatorių adreso juostoje, kai blokuojamas pranešimas</translation>
 <translation id="7131040479572660648">Skaityti duomenis svetainėse <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> ir <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Pridėti pu&amp;slapį...</translation>
-<translation id="7131379856697962078">Spausdintuvo „<ph name="PRINTER_NAME" />“ išvesties sritis pilna</translation>
 <translation id="7133578150266914903">Administratorius atkuria šį įrenginį (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">Sumažinti tekstą</translation>
 <translation id="7135729336746831607">Įjungti „Bluetooth“?</translation>
@@ -4881,7 +4871,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="7152478047064750137">Šiam plėtiniui nereikia specialių leidimų</translation>
 <translation id="7154130902455071009">Pakeiskite pradžios puslapį į: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">Esama nuotrauka iš fotoaparato arba failo</translation>
-<translation id="715657691234357425">Spausdintuve „<ph name="PRINTER_NAME" />“ yra mažai popieriaus</translation>
 <translation id="7165320105431587207">Nepavyko sukonfigūruoti tinklo</translation>
 <translation id="716640248772308851">„<ph name="EXTENSION" />“ patikrintose vietose gali nuskaityti vaizdus, vaizdo įrašus ir garso failus.</translation>
 <translation id="7167486101654761064">&amp;Visada atidaryti tokio tipo failus</translation>
@@ -4912,7 +4901,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="7197632491113152433">Radome <ph name="NUMBER_OF_APPS" /> progr. iš jūsų paskyros, kurias galima naudoti šiame įrenginyje.</translation>
 <translation id="7199158086730159431">Gauti pagalbos</translation>
 <translation id="7200083590239651963">Konfigūracijos pasirinkimas</translation>
-<translation id="7201042526153088083">Diekite programas ir žaidimus iš „Google Play“ įrenginyje „<ph name="DEVICE_TYPE" />“. &lt;a target="_blank" href="<ph name="URL" />"&gt;Sužinokite daugiau&lt;/a&gt;</translation>
 <translation id="720110658997053098">Įgalinti nuolatinį šio įrenginio veikimą viešojo terminalo režimu</translation>
 <translation id="7201118060536064622">„<ph name="DELETED_ITEM_NAME" />“ ištrintas (-a)</translation>
 <translation id="7201420661433230412">Peržiūrėti failus</translation>
@@ -5218,7 +5206,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="7598466960084663009">Iš naujo paleisti kompiuterį</translation>
 <translation id="7599527631045201165">Įrenginio pavadinimas per ilgas. Įveskite trumpesnį pavadinimą ir bandykite dar kartą.</translation>
 <translation id="7600965453749440009">Niekada neversti <ph name="LANGUAGE" /></translation>
-<translation id="7601297144931396972">Spausdintuve „<ph name="PRINTER_NAME" />“ užstrigo popierius</translation>
 <translation id="760197030861754408">Eikite į <ph name="LANDING_PAGE" />, kad prisijungtumėte.</translation>
 <translation id="7602079150116086782">Nėra kitų įrenginių skirtukų</translation>
 <translation id="7602173054665172958">Spausdinimo valdymas</translation>
@@ -5229,6 +5216,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="7609148976235050828">Prisijunkite prie interneto ir bandykite dar kartą.</translation>
 <translation id="7614260613810441905">Klausti, kai svetainė nori redaguoti įrenginyje esančius failus ar aplankus (rekomenduojama)</translation>
 <translation id="761530003705945209">Sukurkite atsarginę kopiją „Google“ diske. Lengvai atkurkite duomenis arba perjunkite įrenginį bet kuriuo metu. Į atsarginę kopiją įtraukiami programų duomenys. Atsarginės kopijos įkeliamos į sistemą „Google“ ir šifruojamos naudojant „Google“ paskyros slaptažodį.</translation>
+<translation id="7615365294369022248">Pridedant paskyrą įvyko klaida</translation>
 <translation id="7616214729753637086">Registruojamas įrenginys...</translation>
 <translation id="7617263010641145920">Įjungti „Play“ parduotuvę</translation>
 <translation id="7617366389578322136">Prisijungiama prie „<ph name="DEVICE_NAME" />“</translation>
@@ -5677,7 +5665,6 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
           slaptafrazę. Neįtraukiami mokėjimo metodai ir adresai iš „Google Pay“.</translation>
 <translation id="81238879832906896">Geltonos ir baltos spalvos gėlė</translation>
 <translation id="8124313775439841391">Tvarkoma ONC</translation>
-<translation id="8127535217699822294">Spausdintuve „<ph name="PRINTER_NAME" />“ baigėsi popierius</translation>
 <translation id="813082847718468539">Žiūrėti svetainės informaciją</translation>
 <translation id="8131740175452115882">Patvirtinti</translation>
 <translation id="8133676275609324831">&amp;Rodyti aplanke</translation>
@@ -5776,7 +5763,6 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="8254954272268479918">Išjungti „Linux“ (beta)</translation>
 <translation id="8255451560461371599">Be fono</translation>
 <translation id="8256319818471787266">Žaismingasis</translation>
-<translation id="8256417822772703842">Spausdintuve „<ph name="PRINTER_NAME" />“ mažai rašalo</translation>
 <translation id="8257950718085972371">Ir toliau blokuoti prieigą prie fotoaparato</translation>
 <translation id="8259239505248583312">Pradėti</translation>
 <translation id="8260864402787962391">Pelė</translation>
@@ -5957,7 +5943,6 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="8487678622945914333">Artinti</translation>
 <translation id="8490896350101740396">Buvo atnaujintos šios viešojo terminalo programos: <ph name="UPDATED_APPS" />. Paleiskite įrenginį iš naujo, kad užbaigtumėte atnaujinimo procesą.</translation>
 <translation id="8493236660459102203">Mikrofonas:</translation>
-<translation id="8495940850609851342">Spausdintuvas „<ph name="PRINTER_NAME" />“ sustabdytas</translation>
 <translation id="8496717697661868878">Paleisti šį papildinį</translation>
 <translation id="8497219075884839166">„Windows“ paslaugų programos</translation>
 <translation id="8498214519255567734">Padaryti, kad būtų patogiau žiūrėti į ekraną ar skaityti prietemoje</translation>
@@ -6499,6 +6484,12 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="9157096865782046368">0,8 sek.</translation>
 <translation id="9157697743260533322">Nepavyko nustatyti automatinių naujinių visiems naudotojams (išankstinio paleidimo klaida: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Deja, nustatant tapatybę iškilo tinklo ryšio problema. Patikrinkite tinklo ryšį ir bandykite dar kartą.</translation>
+<translation id="9159643062839240276">Pabandykite:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />patikrinti tinklo laidus, modemą ir maršruto parinktuvą;
+      <ph name="LIST_ITEM" />iš naujo prisijungti prie „Wi-Fi“;
+      <ph name="LIST_ITEM" />vykdyti „Chrome“ ryšio diagnostiką.
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">Vaizdas vaizde</translation>
 <translation id="9168436347345867845">Atlikti vėliau</translation>
 <translation id="9169496697824289689">Peržiūrėti sparčiuosius klavišus</translation>

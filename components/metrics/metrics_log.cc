@@ -24,6 +24,7 @@
 #include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/lacros_buildflags.h"
 #include "components/metrics/delegating_provider.h"
 #include "components/metrics/environment_recorder.h"
 #include "components/metrics/histogram_encoder.h"
@@ -208,7 +209,13 @@ void MetricsLog::RecordCoreSystemProfile(
 #endif
 
   metrics::SystemProfileProto::OS* os = system_profile->mutable_os();
+#if BUILDFLAG(IS_LACROS)
+  // The Lacros browser runs on Chrome OS, but reports a special OS name to
+  // differentiate itself from the built-in ash browser + window manager binary.
+  os->set_name("Lacros");
+#else
   os->set_name(base::SysInfo::OperatingSystemName());
+#endif
   os->set_version(base::SysInfo::OperatingSystemVersion());
 
 // On ChromeOS, KernelVersion refers to the Linux kernel version and

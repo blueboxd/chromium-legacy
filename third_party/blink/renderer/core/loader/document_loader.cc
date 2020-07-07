@@ -529,7 +529,7 @@ void DocumentLoader::FillNavigationParamsForErrorPage(
   // This is only used for renderer-side enforcement of CSP and the
   // document origin used here is the origin of the document that was blocked.
   params->origin_to_commit =
-      frame_->GetDocument()->GetSecurityOrigin()->DeriveNewOpaqueOrigin();
+      frame_->DomWindow()->GetSecurityOrigin()->DeriveNewOpaqueOrigin();
 }
 
 void DocumentLoader::SetHistoryItemStateForCommit(
@@ -964,7 +964,7 @@ mojom::CommitResult DocumentLoader::CommitSameDocumentNavigation(
   // asynchronously to minimize the navigator's ability to execute timing
   // attacks.
   if (origin_window && !origin_window->GetSecurityOrigin()->CanAccess(
-                           frame_->GetDocument()->GetSecurityOrigin())) {
+                           frame_->DomWindow()->GetSecurityOrigin())) {
     frame_->GetTaskRunner(TaskType::kInternalLoading)
         ->PostTask(
             FROM_HERE,
@@ -1622,7 +1622,7 @@ void DocumentLoader::CommitNavigation() {
         FrameLoaderStateMachine::kCommittedFirstRealLoad);
   }
 
-  Document* previous_document = frame_->GetDocument();
+  LocalDOMWindow* previous_window = frame_->DomWindow();
 
   // In some rare cases, we'll re-use a LocalDOMWindow for a new Document. For
   // example, when a script calls window.open("..."), the browser gives
@@ -1679,10 +1679,9 @@ void DocumentLoader::CommitNavigation() {
   }
 
   bool should_clear_window_name =
-      previous_document && frame_->IsMainFrame() &&
-      !frame_->Loader().Opener() &&
-      !document->GetSecurityOrigin()->IsSameOriginWith(
-          previous_document->GetSecurityOrigin());
+      previous_window && frame_->IsMainFrame() && !frame_->Loader().Opener() &&
+      !frame_->DomWindow()->GetSecurityOrigin()->IsSameOriginWith(
+          previous_window->GetSecurityOrigin());
   if (should_clear_window_name) {
     // TODO(andypaicu): experimentalSetNullName will just record the fact
     // that the name would be nulled and if the name is accessed after we will
@@ -1697,8 +1696,10 @@ void DocumentLoader::CommitNavigation() {
     document->SetBaseURLOverride(archive_->MainResource()->Url());
   }
 
-  if (commit_reason_ == CommitReason::kXSLT)
-    DocumentXSLT::From(*document).SetTransformSourceDocument(previous_document);
+  if (commit_reason_ == CommitReason::kXSLT) {
+    DocumentXSLT::From(*document).SetTransformSourceDocument(
+        previous_window->document());
+  }
 
   DidInstallNewDocument(document);
 

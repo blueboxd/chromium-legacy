@@ -14,6 +14,7 @@
 #include "chrome/browser/android/feed/v2/refresh_task_scheduler_impl.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/offline_pages/prefetch/prefetch_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -23,6 +24,7 @@
 #include "components/feed/core/proto/v2/store.pb.h"
 #include "components/feed/core/v2/public/feed_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/offline_pages/core/offline_page_feature.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -65,6 +67,7 @@ FeedServiceFactory::FeedServiceFactory()
   DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(HistoryServiceFactory::GetInstance());
   DependsOn(background_task::BackgroundTaskSchedulerFactory::GetInstance());
+  DependsOn(offline_pages::PrefetchServiceFactory::GetInstance());
 }
 
 FeedServiceFactory::~FeedServiceFactory() = default;
@@ -96,6 +99,12 @@ KeyedService* FeedServiceFactory::BuildServiceInstanceFor(
   chrome_info.version = base::Version({CHROME_VERSION});
   chrome_info.channel = chrome::GetChannel();
 
+  offline_pages::PrefetchService* prefetch_service = nullptr;
+  if (offline_pages::IsPrefetchingOfflinePagesEnabled()) {
+    prefetch_service = offline_pages::PrefetchServiceFactory::GetForKey(
+        profile->GetProfileKey());
+  }
+
   return new FeedService(
       std::make_unique<FeedServiceDelegateImpl>(),
       std::make_unique<RefreshTaskSchedulerImpl>(
@@ -108,7 +117,7 @@ KeyedService* FeedServiceFactory::BuildServiceInstanceFor(
       identity_manager,
       HistoryServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::IMPLICIT_ACCESS),
-
+      prefetch_service,
       storage_partition->GetURLLoaderFactoryForBrowserProcess(),
       background_task_runner, api_key, chrome_info);
 }

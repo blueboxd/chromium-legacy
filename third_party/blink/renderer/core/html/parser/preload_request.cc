@@ -6,6 +6,7 @@
 
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
@@ -56,7 +57,7 @@ std::unique_ptr<PreloadRequest> PreloadRequest::CreateIfNeeded(
 }
 
 Resource* PreloadRequest::Start(Document* document) {
-  DCHECK(IsMainThread());
+  DCHECK(document->domWindow());
 
   FetchInitiatorInfo initiator_info;
   initiator_info.name = AtomicString(initiator_name_);
@@ -90,19 +91,17 @@ Resource* PreloadRequest::Start(Document* document) {
   options.initiator_info = initiator_info;
   FetchParameters params(std::move(resource_request), options);
 
+  auto* origin = document->domWindow()->GetSecurityOrigin();
   if (resource_type_ == ResourceType::kImportResource) {
-    params.SetCrossOriginAccessControl(document->GetSecurityOrigin(),
-                                       kCrossOriginAttributeAnonymous);
+    params.SetCrossOriginAccessControl(origin, kCrossOriginAttributeAnonymous);
   }
 
   if (script_type_ == mojom::ScriptType::kModule) {
     DCHECK_EQ(resource_type_, ResourceType::kScript);
     params.SetCrossOriginAccessControl(
-        document->GetSecurityOrigin(),
-        ScriptLoader::ModuleScriptCredentialsMode(cross_origin_));
+        origin, ScriptLoader::ModuleScriptCredentialsMode(cross_origin_));
   } else if (cross_origin_ != kCrossOriginAttributeNotSet) {
-    params.SetCrossOriginAccessControl(document->GetSecurityOrigin(),
-                                       cross_origin_);
+    params.SetCrossOriginAccessControl(origin, cross_origin_);
   }
 
   params.SetDefer(defer_);

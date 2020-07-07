@@ -22,7 +22,7 @@ InfoBarService::~InfoBarService() {}
 #if defined(OS_ANDROID)
 std::unique_ptr<infobars::InfoBar> InfoBarService::CreateConfirmInfoBar(
     std::unique_ptr<ConfirmInfoBarDelegate> delegate) {
-  return std::make_unique<ConfirmInfoBar>(
+  return std::make_unique<infobars::ConfirmInfoBar>(
       std::move(delegate), base::BindRepeating(&MapToJavaDrawableId));
 }
 #endif  // if defined(OS_ANDROID)

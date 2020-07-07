@@ -99,9 +99,6 @@
          如果不設定這項政策，可封鎖的混合內容將遭到封鎖，且系統會升級選擇性可封鎖混合內容。使用者可以設定例外網站，允許特定網站顯示可封鎖的混合內容。
 
           如果想進一步瞭解有效的網址模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
-<translation id="1135264353752122851">設定可供 <ph name="PRODUCT_OS_NAME" />使用者工作階段使用的鍵盤配置。
-
-      如果設定這項政策，使用者就只能選取這項政策指定的其中一種輸入法。如果設定這項政策，或是將這項政策設為空白清單，則使用者可以選取所有支援的輸入法。如果目前的輸入法遭到這項政策禁止，則會切換成硬體鍵盤配置 (如果允許的話) 或這份清單中第一個有效的項目。這份清單中無效或不支援的輸入法會全部遭到忽略。</translation>
 <translation id="1138294736309071213">這項政策只會在零售模式下啟用。
 
       決定螢幕保護程式顯示前的閒置時間是否要顯示在零售模式下的裝置登入畫面上。
@@ -188,11 +185,6 @@
 
 如果你未設定這項政策，則系統預設行為會是不允許使用用戶端憑證的連線合併 HTTP/2 連線。</translation>
 <translation id="1354424209129232709">上限：</translation>
-<translation id="1354452738176731363">如果將這項政策設為 False，使用者登入後將無法透過裝置時輸出音訊。
-
-      這項政策會影響所有類型的音訊輸出設備，而不僅限於內建喇叭。語音無障礙功能也會受到限制。如果使用者需要使用螢幕閱讀器，請勿啟用這項政策。
-
-      如果將這項政策設為 True 或不設定，則使用者可以在裝置上使用系統支援的所有音訊輸出設備。</translation>
 <translation id="1359553908012294236">如果將這項政策設為 True 或未設定，<ph name="PRODUCT_NAME" /> 會啟用訪客登入。訪客登入是 <ph name="PRODUCT_NAME" /> 設定檔，其中的所有視窗都處於無痕模式。
 
       如果將這項政策設為 False，<ph name="PRODUCT_NAME" /> 將會禁止啟動訪客設定檔。</translation>
@@ -219,6 +211,11 @@
 <translation id="1426170570389588560">設定儲存列印工作中繼資料的時間範圍 (以天為單位)</translation>
 <translation id="1426410128494586442">是</translation>
 <translation id="1427655258943162134">Proxy 伺服器的地址或網址</translation>
+<translation id="142825088795991909">你可以透過這項政策設定網址模式清單，用於指定可顯示通知的網站。
+
+      如果未設定這項政策，系統會針對所有網站套用 <ph name="DEFAULT_JAVA_SCRIPT_SETTING_POLICY_NAME" /> 政策 (如果已設定)。否則系統會套用使用者的個人設定。
+
+      如果想進一步瞭解有效的<ph name="URL_LABEL" />模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="1435659902881071157">裝置層級網路設定</translation>
 <translation id="1438739959477268107">預設金鑰產生設定</translation>
 <translation id="1449083855104537880">將這項政策設為 True 時，系統匣選單中會顯示無障礙工具選項。如果將這項政策設為 False，選單中不會顯示無障礙工具選項。
@@ -299,6 +296,15 @@
 <translation id="1575015449587326319">OnFileDownloaded Chrome Enterprise Connector 的配置政策</translation>
 <translation id="1583248206450240930">根據預設使用 <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="1588240398285670601">瀏覽器設定</translation>
+<translation id="1588456836529393506">你可以透過這項政策建立網址模式清單，用於指定哪些網站會自動取得權限，可以存取具有指定廠商和產品 ID 的 USB 裝置。每一個清單項目都必須包含裝置和網址，這項政策才會生效。裝置中的每個項目可以包含廠商 ID 和產品 ID 欄位。如省略任何 ID，系統將視作萬用字元處理，但以下情況例外：如果未指定廠商 ID，也不可指定產品 ID。否則，這項政策將不會生效。
+
+      USB 權限模型會使用要求網址以及頂層頁框網站的嵌入網址，允許要求網址存取 USB 裝置。當要求網站在 iframe 中載入時，要求網址可能與嵌入網址不同。因此，「urls」欄位最多可包含 2 個字串 (以半形逗號分隔)，以指定這些網址。如果只指定一個網址，當要求網站的網址與這個網址相符時，不論其是否為嵌入網址，系統都會授予相應 USB 裝置的存取權。「urls」中的網址必須是有效網址，否則系統會忽略這項政策。
+
+        如果未設定這項政策，系統會套用 <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME" /> 政策 (如果已設定)。否則系統會套用使用者的個人設定。
+
+      這項政策中的網址模式不可與透過 <ph name="WEB_USB_BLOCKED_FOR_URLS_POLICY_NAME" /> 政策設定的網址模式衝突。如果發生衝突，這項政策的優先順序高於 <ph name="WEB_USB_BLOCKED_FOR_URLS_POLICY_NAME" /> 和 <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME" /> 政策。
+
+      這項政策和 <ph name="DEVICE_WEB_USB_ALLOW_DEVICES_FOR_URLS_POLICY_NAME" /> 政策的值會合併。</translation>
 <translation id="1599424828227887013">在 Android 裝置上為指定來源啟用網站隔離</translation>
 <translation id="159946228300522107">如果將這項政策設為 True，Chrome 首次執行時會將第一個顯示的視窗最大化。
 
@@ -712,20 +718,17 @@
 
       這項政策不適用於資訊站應用程式 (這類應用程式會自動遷移)。如果未設定這項政策，裝置行為會與選擇「DisallowArc」時相同。</translation>
 <translation id="2195032660890227692">這項政策已在 <ph name="PRODUCT_NAME" /> 68 中遭到移除，並已由 <ph name="ARC_BR_POLICY_NAME" /> 取代。</translation>
-<translation id="219720814106081560">如果啟用或不設定這項政策 (預設值)，系統會提示使用者
-      授予錄影權限，但如果網址已列在 VideoCaptureAllowedUrls
-      的許可清單內，系統會直接授予權限，而不會提示使用者。
-
-      如果停用這項政策，系統一律不會提示使用者；只有列在
-      VideoCaptureAllowedUrls 清單內的網址才能進行錄影。
-
-      這項政策會影響所有類型的影片輸入設備，而不僅限於內建攝影機。</translation>
 <translation id="2197625019569762163">將這項政策設為 True 時，系統預設會在登入畫面顯示數字鍵盤，方便使用者輸入密碼。使用者仍可切換為普通鍵盤。
 
       如果設定這項政策，使用者將無法變更。如果不設定或將其設為 False，這項政策將不會生效。</translation>
 <translation id="2201555246697292490">設定內建訊息傳遞許可清單</translation>
 <translation id="2204753382813641270">控制檔案櫃自動隱藏功能</translation>
 <translation id="2208976000652006649">使用 POST 的搜尋網址參數</translation>
+<translation id="221019813387144689">你可以透過這項政策設定網址模式清單，用於指定無法顯示通知的網站。
+
+      如果未設定這項政策，系統會針對所有網站套用 <ph name="DEFAULT_JAVA_SCRIPT_SETTING_POLICY_NAME" /> 政策 (如果已設定)。否則系統會套用使用者的個人設定。
+
+      如果想進一步瞭解有效的<ph name="URL_LABEL" />模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="2215238871726750562">如果將這項政策設為 True，系統不會在工作階段開始時啟動瀏覽器視窗。
 
       如果將這項政策設為 False 或不設定，系統將可啟動視窗。
@@ -744,6 +747,11 @@
 <translation id="2223598546285729819">預設通知設定</translation>
 <translation id="2231817271680715693">第一次執行時從預設瀏覽器匯入瀏覽記錄</translation>
 <translation id="2236488539271255289">不允許任何網站設定本機資料</translation>
+<translation id="2240793533242059248">你可以透過這項政策設定網址模式清單，用於指定無法開啟彈出式視窗的網站。
+
+      如果未設定這項政策，系統會針對所有網站套用 <ph name="DEFAULT_POPUPS_SETTING_POLICY_NAME" /> 政策 (如果已設定)。否則系統會套用使用者的個人設定。
+
+      如果想進一步瞭解有效的<ph name="URL_LABEL" />模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="2241498944622759244">此功能從未推出，因此這項政策目前已淘汰。如果將這項政策設為 True 或不設定，<ph name="PRODUCT_NAME" /> 會提供與目前網頁相關的網頁建議。
       這些建議擷取自遠端的 Google 伺服器。
       如果設為 False，則系統不會進行擷取，也不會顯示建議。</translation>
@@ -751,15 +759,6 @@
 <translation id="2267288258868218403">禁止上傳不支援的檔案類型</translation>
 <translation id="2269319728625047531">在登入期間允許顯示同步處理同意聲明</translation>
 <translation id="2270747976331889601">啟用本機信任錨點的傳輸層安全標準 (TLS) 1.3 安全功能。</translation>
-<translation id="2274864612594831715">這項政策可設定在 Chrome 作業系統中啟用虛擬鍵盤做為輸入裝置。使用者無法覆寫這項政策。
-
-      如果你將這項政策設為 True，虛擬螢幕小鍵盤會持續啟用。
-
-      如果設為 False，虛擬螢幕小鍵盤會持續停用。
-
-      如果你設定了這項政策，使用者便無法加以變更或覆寫。不過，使用者仍然可以啟用/停用無障礙螢幕小鍵盤，且使用者設定的優先順序高於這項政策所控制的虛擬鍵盤。如要控制無障礙螢幕小鍵盤，請參閱 |VirtualKeyboardEnabled| 政策。
-
-      如未設定這項政策，螢幕小鍵盤會先設為停用，但使用者可隨時啟用。系統也會使用啟發式演算法規則判斷螢幕小鍵盤的顯示時機。</translation>
 <translation id="2281496157391382819"> 控管 <ph name="PRODUCT_OS_NAME" />上受管理訪客工作階段的隱私權警告訊息。
 
       如果將這項政策設為 False, 系統會在受管理訪客工作階段中，停用登入畫面上的隱私權警告訊息和自動啟動通知。
@@ -981,7 +980,6 @@
 
           如果未設定這項政策，系統預設會停用插入點醒目顯示功能，但使用者隨時可以啟用這項功能。</translation>
 <translation id="2509919237512982967">使用舊版表單控制項，直到 M84 版為止。</translation>
-<translation id="2514328368635166290">指定預設搜尋引擎的最愛圖示網址。這項政策是選擇性的，如果未設定，系統就不會顯示搜尋引擎的圖示。只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
 <translation id="2516600974234263142">啟用 <ph name="PRODUCT_NAME" /> 的列印功能，並且禁止使用者變更這項設定。
 
       不論這項政策處於啟用或未設定的狀態，使用者都可以進行列印。
@@ -1028,13 +1026,6 @@
           您可以使用以下形式指定 Google 的互動智慧搜尋結果網址：<ph name="GOOGLE_INSTANT_SEARCH_URL" />。
 
           只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
-<translation id="2569647487017692047">如果將這項政策設為 false，<ph name="PRODUCT_OS_NAME" />會停用藍牙功能，且使用者無法重新啟用。
-
-      如果將這項政策設為 true 或不予設定，使用者可以視需要啟用或停用藍牙功能。
-
-      設定這項政策後，使用者無法變更或覆寫政策。
-
-      啟用藍牙功能後，使用者必須登出後再重新登入，變更才會生效 (停用藍牙功能時不需如此)。</translation>
 <translation id="2571066091915960923">啟用或停用資料壓縮 Proxy 功能，並且防止使用者變更這項設定。
 
       只要你啟用或停用這項設定，使用者即無法變更或覆寫這項設定。
@@ -1078,15 +1069,16 @@
 
       這項政策旨在補足個別使用者的印表機設定， 對使用者能否在個別裝置上設定印表機沒有影響。
       </translation>
+<translation id="2632538643061793322">你可以透過這項政策建立網址模式清單，用於指定可要求使用者授予 USB 裝置存取權的網站。
+
+      如果未設定這項政策，系統會針對所有網站套用 <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME" /> 政策 (如果已設定)。否則系統會套用使用者的個人設定。
+      網址模式不得與 <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME" /> 政策衝突。如果網址同時符合兩項政策，系統不會優先採用任何一項政策。
+
+      如果想進一步瞭解有效的<ph name="URL_LABEL" />模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="2633084400146331575">啟用互動朗讀</translation>
 <translation id="2647069081229792812">允許或禁止編輯書籤</translation>
 <translation id="2649896281375932517">讓使用者決定</translation>
 <translation id="2650049181907741121">使用者蓋上螢幕時所採取的動作</translation>
-<translation id="2655233147335439767">指定執行預設搜尋時使用的搜尋引擎網址。網址應包含 <ph name="SEARCH_TERM_MARKER" /> 字串，使用者搜尋時輸入的文字會取代這條字串。
-
-          您可以使用以下格式指定 Google 的搜尋網址：<ph name="GOOGLE_SEARCH_URL" />。
-
-          啟用「DefaultSearchProviderEnabled」政策時必須設定這個選項，系統也只會在這種情況下遵循這項政策。</translation>
 <translation id="2658653824183107970">使用舊版 <ph name="CORS" /> 模式，而不使用新版 <ph name="CORS" /></translation>
 <translation id="2659019163577049044">如果你啟用這項設定，使用者就可以自行設定裝置，讓簡訊在手機和 Chromebook 上保持同步。請注意，如果你允許這項政策，使用者必須完成設定流程來明確選擇啟用這項功能。設定流程完成後，使用者就可以在自己的 Chromebook 上收發簡訊。
 
@@ -1101,7 +1093,6 @@
 
       如果將這項政策設為 False 或不予設定，系統會持續顯示隱私權警告通知，直到使用者關閉為止。</translation>
 <translation id="2672012807430078509">控管是否要為 SMB 掛接功能啟用 NTLM 驗證通訊協定</translation>
-<translation id="267596348720209223">指定搜尋引擎支援的字元編碼。編碼就是 UTF-8、GB2312 和 ISO-8859-1 等字碼頁名稱。系統會以提供的順序來測試。這項政策是選擇性的，如果未設定，預設會使用的是 UTF-8。只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
 <translation id="2678503605767349615">必須提供裝置通用用戶端憑證</translation>
 <translation id="268577405881275241">啟用資料壓縮 Proxy 功能</translation>
 <translation id="2691668238491124549">如果設定了這項政策 (只能設為「建議」)，系統會將受管理工作階段的建議語言代碼移至清單頂端，並按照政策中顯示的順序排列。系統會預先選取第一個建議語言代碼。
@@ -1606,11 +1597,6 @@
 <translation id="3435796032110614169">允許刪除列印工作的歷史記錄</translation>
 <translation id="3437924696598384725">允許使用者管理 VPN 連線</translation>
 <translation id="3459509316159669723">列印</translation>
-<translation id="3460784402832014830">指定搜尋引擎用於提供新分頁的網址。
-
-          這項政策是選擇性的，如果未設定，系統將不會提供新分頁。
-
-          只有在啟用「DefaultSearchProviderEnabled」時，系統才會遵循這項政策。</translation>
 <translation id="3461279434465463233">回報電源狀態</translation>
 <translation id="346731943813722404">指定是否延遲管理電源，以及是否在發現工作階段中產生第一個使用者活動後，才開始執行工作階段長度限制。
 
@@ -1669,11 +1655,6 @@
       如果不設定這項政策，則密碼保護服務只會保護 Google 密碼，但使用者可以變更這項設定。</translation>
 <translation id="3502555714327823858">允許所有雙面列印模式</translation>
 <translation id="350443680860256679">設定 ARC</translation>
-<translation id="3504791027627803580">指定用來提供圖片搜尋的搜尋引擎網址。系統將使用 GET 方法傳送搜尋要求。如果設定 DefaultSearchProviderImageURLPostParams 政策，系統就會使用 POST 方法傳送圖片搜尋要求。
-
-          這項政策是選擇性的，如果未設定，就不能使用圖片搜尋。
-
-          只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
 <translation id="350797926066071931">啟用翻譯</translation>
 <translation id="3508047333410537654">在登入畫面上啟用單聲道音訊</translation>
 <translation id="3513655665999652754">Quirks Server 會提供特定硬體的設定檔，例如可調整螢幕校正功能的
@@ -1858,13 +1839,6 @@
 
       如果未指定這項政策，則系統不會修改變異版本種子網址。</translation>
 <translation id="3863409707075047163">啟用最低版本的 SSL</translation>
-<translation id="3864020628639910082">指定用於提供搜尋建議的搜尋引擎網址。網址應包含 <ph name="SEARCH_TERM_MARKER" /> 字串，使用者輸入的查詢文字會取代這個字串。
-
-          這是選用政策，如果未設定，系統就不會使用建議網址。
-
-          您可以使用以下形式指定 Google 的建議網址：<ph name="GOOGLE_SUGGEST_SEARCH_URL" />。
-
-          只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
 <translation id="3864129983143201415">設定可在使用者工作階段中使用的語言</translation>
 <translation id="3866249974567520381">說明</translation>
 <translation id="386723261607812952">設定登入畫面上的放大鏡類型</translation>
@@ -2211,11 +2185,6 @@
 
       一旦設定了這項政策，使用者就只能使用 ID 符合本政策值的印表機，且 ID 必須和 <ph name="BULK_PRINTERS_POLICY" /> 指定檔案中的「id」或「guid」欄位相符。
       </translation>
-<translation id="427632463972968153">指定使用 POST 執行圖片搜尋時所用的參數，其包含以逗號分隔的名稱/數值配對。如果數值為範本參數 (例如上例中的 {imageThumbnail})，系統將會以實際圖片的縮圖資料替代這個數值。
-
-          這項政策是選擇性的，如果未設定，系統將使用 GET 方法圖片搜尋要求。
-
-          只有在啟用「DefaultSearchProviderEnabled」時，系統才會遵循這項政策。</translation>
 <translation id="4285674129118156176">允許無關聯的使用者使用 ARC</translation>
 <translation id="4298509794364745131">指定可在「<ph name="PRODUCT_OS_NAME" />」螢幕鎖定畫面中做為筆記應用程式使用的應用程式清單。
 
@@ -2418,6 +2387,11 @@
 
       如果不設定這項政策或設為啟用，系統會執行 DNS 攔截檢查。如果明確指定停用這項政策，系統就不會執行 DNS 攔截檢查。</translation>
 <translation id="4703402283970867140">啟用智慧型調光模式來延長使用時間，直到螢幕變暗為止</translation>
+<translation id="4715049077430924642">你可以透過這項政策設定網址模式清單，用於指定無法執行 JavaScript 的網站。
+
+      如果未設定這項政策，系統會針對所有網站套用 <ph name="DEFAULT_JAVA_SCRIPT_SETTING_POLICY_NAME" /> 政策 (如果已設定)。否則系統會套用使用者的個人設定。
+
+      如果想進一步瞭解有效的<ph name="URL_LABEL" />模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="4722122254122249791">為指定來源啟用網站隔離</translation>
 <translation id="4722399051042571387">如果設為 False，使用者將無法設定系統判定強度不足而容易被破解的 PIN。
 
@@ -2490,11 +2464,6 @@
       如果將這項政策設為 False 或不予設定，系統將不會回報作業系統的更新資訊。如果設為 True，則系統會回報作業系統的更新資訊。</translation>
 <translation id="4858735034935305895">允許全螢幕模式</translation>
 <translation id="4861767323695239729">設定可在使用者工作階段中使用的輸入法</translation>
-<translation id="4869603341164509842">系統會將這份清單中的模式與要求網址的安全性來源進行比對。如果找到相符項目，系統會授權網址存取影片擷取裝置，並且不會提示使用者。
-
-      如果想進一步瞭解有效的網址模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。
-
-      注意：在第 45 版以下版本中，這項政策僅支援 Kiosk 模式。</translation>
 <translation id="487460824085252184">自動遷移，不要求使用者同意。</translation>
 <translation id="4874982543810021567">在這些網站上封鎖 WebUSB</translation>
 <translation id="4876805738539874299">已啟用 SSL 最高版本</translation>
@@ -2503,11 +2472,6 @@
 
       如果不設定這項政策或設為停用，<ph name="PRODUCT_NAME" /> 將不會回報不安全的事件。
       </translation>
-<translation id="4897928009230106190">指定使用 POST 提供搜尋建議時所用的參數，其包含以逗號分隔的名稱/數值配對。如果數值為範本參數 (例如上例中的 {searchTerms})，系統將會以實際的搜尋字詞資料替代這個數值。
-
-          這項政策是選擇性的，如果未設定，系統將使用 GET 方法傳送搜尋建議要求。
-
-          只有在啟用「DefaultSearchProviderEnabled」時，系統才會遵循這項政策。</translation>
 <translation id="489803897780524242">可使用這個參數來決定是否要為預設搜尋服務商提供替代搜尋字詞。</translation>
 <translation id="4899708173828500852">啟用安全瀏覽</translation>
 <translation id="4906194810004762807">裝置政策的重新整理頻率</translation>
@@ -2888,14 +2852,13 @@
 <translation id="5405289061476885481">設定 <ph name="PRODUCT_OS_NAME" /> 登入畫面可使用的鍵盤配置。
 
       如果將這項政策設為輸入法識別碼清單，登入畫面即可顯示指定的輸入法。系統會預先選取第一個指定的輸入法。在特定使用者視窗的登入畫面中，除了這項政策指定的輸入法之外，還會提供使用者最後一次使用的輸入法。如果未設定這項政策，系統會根據登入畫面顯示的語言代碼提供登入畫面的輸入法。如果值不是有效的輸入法識別碼，則會遭到忽略。</translation>
-<translation id="5412057811596122582">如果啟用或不設定這項政策 (預設值)，系統會提示使用者授予
-      音訊擷取權限；但如果該網址已在 AudioCaptureAllowedUrls 中設為允許的網址，
-      則系統會直接授予權限，而不會提示使用者。
+<translation id="5416064504563346617">你可以透過這項政策建立網址模式清單，用於指定無法要求使用者授予 USB 裝置存取權的網站。
 
-      如果停用這項政策，系統將一律不提示使用者，且只有已在 
-      AudioCaptureAllowedUrls 中設為允許的網址才能執行音訊擷取。
+      如果未設定這項政策，系統會針對所有網站套用 <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME" /> 政策 (如果已設定)。否則系統會套用使用者的個人設定。
 
-      這項政策會影響所有類型的音訊輸入裝置，而不僅限於內建麥克風。</translation>
+      網址模式不得與 <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME" /> 政策衝突。如果網址同時符合兩項政策，系統不會優先採用任何一項政策。
+
+      如果想進一步瞭解有效的<ph name="URL_LABEL" />模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="5417906792459853336">回報裝置的應用程式清單和使用狀況資訊。
 
       如果將這項政策設為 False 或未設定，系統將不會回報這項資訊。
@@ -3015,6 +2978,11 @@
 <translation id="554903022911579950">Kerberos</translation>
 <translation id="555022085242359084">在登入畫面上啟用高對比模式</translation>
 <translation id="555077880566103058">允許所有網站自動執行 <ph name="FLASH_PLUGIN_NAME" /> 外掛程式</translation>
+<translation id="5557502336096594554">你可以透過這項政策設定網址模式清單，用於指定可開啟彈出式視窗的網站。
+
+      如果未設定這項政策，系統會針對所有網站套用 <ph name="DEFAULT_POPUPS_SETTING_POLICY_NAME" /> 政策 (如果已設定)。否則系統會套用使用者的個人設定。
+
+      如果想進一步瞭解有效的<ph name="URL_LABEL" />模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="5559079916187891399">這項政策對 Android 應用程式沒有影響。</translation>
 <translation id="5560039246134246593">在 <ph name="PRODUCT_NAME" /> 中擷取變異版本種子時新增參數。
 
@@ -3265,19 +3233,6 @@
 <translation id="5893553533827140852">啟用這項設定時，系統將透過遠端主機連線以 Proxy 處理 gnubby 驗證要求。
 
           如果停用或不設定這項設定，系統將不會以 Proxy 處理 gnubby 驗證要求。</translation>
-<translation id="5893688850352887219">啟用預設的搜尋引擎。
-
-          如果啟用這項設定，使用者在網址列中輸入非網址的文字時，系統就會透過預設搜尋引擎執行搜尋。
-
-          設定其餘的預設搜尋政策，即可指定要使用的預設搜尋引擎。如果將其餘的預設搜尋政策保留空白，使用者將可自行選擇預設搜尋引擎。
-
-          如果停用這項設定，則使用者在網址列中輸入非網址的文字時，系統不會執行任何搜尋作業。
-
-          無論是啟用還是停用這項政策，使用者都無法在 <ph name="PRODUCT_NAME" /> 中變更或覆寫這項設定。
-
-          如果未設定這項政策，系統會啟用預設搜尋引擎，且使用者將可設定搜尋引擎清單。
-
-          這項政策僅適用於已加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體、或是已註冊裝置管理服務的 Windows 10 專業版或企業版執行個體，以及已透過行動裝置管理 (MDM) 所管理或已透過 MCX 加入某個網域的 macOS 執行個體。</translation>
 <translation id="5897913798715600338">使用快速充電技術為電池充電。</translation>
 <translation id="5898486742390981550">如有多位使用者同時登入，只有主要使用者可以使用 Android 應用程式。</translation>
 <translation id="5901427587865226597">僅限雙面列印</translation>
@@ -3357,9 +3312,6 @@
 <translation id="6070667616071269965">裝置登入畫面鍵盤配置</translation>
 <translation id="6074963268421707432">不允許任何網站顯示桌面通知</translation>
 <translation id="6074964551275531965">設定更新通知的時間範圍</translation>
-<translation id="6076099373507468537">定義可從核心驅動程式卸離的 USB 裝置 (以便直接在網頁應用程式中透過 chrome.usb API 使用) 清單。清單中的項目必須是一組 USB 供應商識別碼和產品識別碼，用於識別特定硬體。
-
-      如果未設定這項政策，卸離式 USB 裝置清單就不會顯示任何項目。</translation>
 <translation id="607726879389885889">當使用者嘗試上傳或下載的檔案過大 (50 MB 以上)，無法傳送給系統進行惡意軟體或機密資料保護掃描時，這項政策可控管 <ph name="PRODUCT_NAME" /> 採取的動作。
 如果 <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />、<ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> 或控管已啟用檢查功能的網域清單政策判斷檔案需要掃描，系統才會套用這項限制。
 
@@ -3531,11 +3483,9 @@
       如果設定這項政策，系統會在使用者於登入畫面停止互動後的一段時間過後，自動登入指定工作階段。你必須已設定裝置本機帳戶 (請參閱 |DeviceLocalAccounts|)。
 
       如果未設定這項政策，系統不會自動登入。</translation>
-<translation id="6353901068939575220">指定使用 POST 搜尋網址時所用的參數，包含以逗號分隔的名稱/數值配對。如果數值為範本參數 (例如上例中的 {searchTerms})，系統將會以實際的搜尋字詞資料替代這個數值。
+<translation id="6366574325767783825">如果將這項政策設為 True 或不設定，<ph name="PRODUCT_NAME" /> 將接受透過 Signed HTTP Exchange 提供的網路內容。
 
-          這項政策是選擇性的，如果未設定，系統將使用 GET 方法傳送搜尋要求。
-
-          只有在啟用「DefaultSearchProviderEnabled」時，系統才會遵循這項政策。</translation>
+      如果將這項政策設為 False，系統將無法載入 Signed HTTP Exchange。</translation>
 <translation id="6368011194414932347">設定首頁網址</translation>
 <translation id="6368403635025849609">允許這些網站的 JavaScript</translation>
 <translation id="6372105930898423193">允許重新啟用 AppCache 功能 (即使預設值為停用)。</translation>
@@ -3814,7 +3764,6 @@
       注意：這項政策僅適用於 Android 裝置上的 Chrome，而且裝置一定要有超過 1GB 的 RAM。如要在非 Android 平台上套用這項政策，請使用 SitePerProcess。
       </translation>
 <translation id="6922884955650325312">封鎖 <ph name="FLASH_PLUGIN_NAME" /> 外掛程式</translation>
-<translation id="6923366716660828830">指定預設搜尋引擎名稱。如果名稱欄位留空或未設定，系統會使用搜尋網址指定的主機名稱。只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
 <translation id="6923731550900440989">在登入畫面上啟用插入點醒目顯示功能</translation>
 <translation id="6924223708804692571">這項政策會強制停用指定語言的拼字檢查功能。系統會忽略該清單中無法辨識的語言。
 
@@ -4047,6 +3996,11 @@
 
       如果將這項政策設為 False，使用者、應用程式和擴充功能將無法進入全螢幕模式。</translation>
 <translation id="718126088895133062">這項政策會為這部裝置指定 <ph name="PLUGIN_VM_NAME" /> 授權使用者 ID。</translation>
+<translation id="7184811651721788735">你可以透過這項政策設定網址模式清單，用於指定無法執行 <ph name="FLASH_PLUGIN_NAME" /> 外掛程式的網站。
+
+      如果未設定這項政策，系統會針對所有網站套用 <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> 政策 (如果已設定)。否則系統會套用使用者的個人設定。
+
+      如果想進一步瞭解有效的網址模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。不過，從 M85 版開始，系統針對這項政策已停止支援主機中包含「*」和「[*.]」萬用字元的模式。</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="7187447094921703950">啟用「用電尖峰轉移」電源管理政策。
 
@@ -4125,11 +4079,6 @@
 
       如果不設定這項政策，在預設情況下，受企業管理的使用者將無法使用 Smart Lock 登入功能，其他一般的使用者則可使用這項登入功能。</translation>
 <translation id="7295019613773647480">啟用受監管的使用者</translation>
-<translation id="7301543427086558500">指定替代網址清單，以供系統從搜尋引擎擷取搜尋字詞。網址中必須包含「<ph name="SEARCH_TERM_MARKER" />」字串，才能擷取搜尋字詞。
-
-          你不一定要設定這項政策。在未設定的情況下，系統不會使用任何替代網址擷取搜尋字詞。
-
-          只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
 <translation id="7302043767260300182">在 AC 供電環境下執行時的螢幕鎖定延遲時間</translation>
 <translation id="731208205557053914">回報 VPD 資訊</translation>
 <translation id="7323896582714668701"><ph name="PRODUCT_NAME" /> 額外命令列參數</translation>
@@ -4279,6 +4228,13 @@
 <translation id="759957074386651883">安全瀏覽設定</translation>
 <translation id="7604169113182304895">Android 應用程式可以選擇是否使用這份清單，你無法強制套用。</translation>
 <translation id="7612157962821894603">要在 <ph name="PRODUCT_NAME" /> 啟動時套用的全系統設定</translation>
+<translation id="7614443356666150520">你可以透過這項政策設定網址模式清單，用於指定無法顯示圖片的網站。
+
+      如果未設定這項政策，系統會針對所有網站套用 <ph name="DEFAULT_IMAGE_SETTING_ENABLED_POLICY_NAME" /> 政策 (如果已設定)。否則系統會套用使用者的個人設定。
+
+      如果想進一步瞭解有效的<ph name="URL_LABEL" />模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。
+
+      請注意，先前我們誤在 Android 裝置上啟用這項政策，但這項功能從未針對 Android 裝置提供完整支援。</translation>
 <translation id="7614663184588396421">停用的通訊協定機制清單</translation>
 <translation id="7617319494457709698">這項政策可讓你指定允許從遠端使用 <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> 函式「<ph name="CHALLENGE_USER_KEY_FUNCTION" />」證明身分的擴充功能。只有加入這份清單的擴充功能可以使用該 API。
 
@@ -4677,6 +4633,11 @@
 <translation id="8217516105848565518">這項政策已遭到淘汰，請改用 RemoteAccessHostDomainList。</translation>
 <translation id="8244171102276095471">在傳輸層安全標準 (TLS) 中啟用 RC4 加密套件</translation>
 <translation id="8244525275280476362">政策失效後的最大擷取延遲</translation>
+<translation id="8251411417369363637">如果將這項政策設為 True，系統會在允許 <ph name="FLASH_PLUGIN_NAME" /> 的網站上執行所有內嵌的 <ph name="FLASH_PLUGIN_NAME" /> 內容，包括來自其他來源的內容或檔案較小的內容。
+
+      如果將這項政策設為 False 或不設定，系統可能會封鎖來自其他來源或檔案較小的 <ph name="FLASH_PLUGIN_NAME" /> 內容。
+
+      注意：如要控管哪些網站可執行 <ph name="FLASH_PLUGIN_NAME" />，請參閱這些政策：<ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" />、<ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> 和 <ph name="PLUGINS_BLOCKED_FOR_URLS_POLICY_NAME" />。</translation>
 <translation id="8256688113167012935">控制 <ph name="PRODUCT_OS_NAME" /> 在登入畫面上顯示的帳戶名稱，以表示相對應的裝置本機帳戶。
 
       如果你設定這項政策，登入畫面就會使用指定的字串，在圖像化的登入選擇器中表示相對應的裝置本機帳戶。
@@ -4909,6 +4870,11 @@
           設好這項政策後，使用者即無法變更或覆寫設定。
 
           如果不設定這項政策，系統在預設狀態下會啟用無障礙功能快速鍵。</translation>
+<translation id="8520951634679398426">你可以透過這項政策設定網址模式清單，用於指定可執行 JavaScript 的網站。
+
+      如果未設定這項政策，系統會針對所有網站套用 <ph name="DEFAULT_JAVA_SCRIPT_SETTING_POLICY_NAME" /> 政策 (如果已設定)。否則系統會套用使用者的個人設定。
+
+      如果想進一步瞭解有效的<ph name="URL_LABEL" />模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="8525526490824335042">Linux 容器</translation>
 <translation id="8537051350735478658">如果將這項政策設為 True，系統會在 <ph name="PRODUCT_NAME" /> 的網址列中啟用搜尋建議功能。如果將這項政策設為 False，系統會停用這類搜尋建議功能。
 
@@ -5010,12 +4976,14 @@
       如果設為 True，系統會回報裝置的藍牙資訊。</translation>
 <translation id="8703488928438047864">回報主機板狀態</translation>
 <translation id="8704831857353097849">停用的外掛程式清單</translation>
+<translation id="8705895771006864851">如果將這項政策設為 True，系統會適時在 <ph name="PRODUCT_NAME" /> 中顯示整合式翻譯工具列，為使用者提供翻譯功能。使用者也可以按一下滑鼠右鍵開啟內容選單，選擇其中的翻譯選項。如果將這項政策設為 False，系統會關閉所有內建的翻譯功能。
+
+      如果設定這項政策，使用者將無法變更此功能。如果不設定，使用者將可變更這項設定。</translation>
 <translation id="8708284670795912158">如果將這項政策設為 True，<ph name="PRODUCT_NAME" /> 即可自動播放媒體。如果將這項政策設為 False，<ph name="PRODUCT_NAME" /> 不會自動播放媒體。
 
        根據預設，<ph name="PRODUCT_NAME" /> 不會自動播放媒體。不過，你可以針對特定網址模式，使用 <ph name="AUTOPLAY_WHITELIST_POLICY_NAME" /> 政策來變更這項設定。
 
       如果這項政策在 <ph name="PRODUCT_NAME" /> 執行時有所變動，變更只會套用到新開啟的分頁。</translation>
-<translation id="8711086062295757690">指定關鍵字，這是網址列用來為這個引擎觸發搜尋的捷徑。這項政策是選擇性的，如果未設定，就沒有關鍵字會啟動搜尋引擎。只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
 <translation id="8733448613597049197">啟用 <ph name="PRODUCT_NAME" /> 安全瀏覽模式的進階回報功能，並禁止使用者變更這項設定。
 
       進階回報功能會將部分系統資訊和網頁內容傳送至 Google 伺服器，協助偵測危險的應用程式和網站。
@@ -5123,11 +5091,6 @@
 
       如果未設定或輸入空白字串，裝置會使用目前採用的時區，但使用者可以變更這項設定。</translation>
 <translation id="8876188741456358123">覆寫預設的雙面列印模式。如果設定的模式不適用，系統會忽略這項政策。</translation>
-<translation id="8878850056189891727">系統會將這份清單中的模式與要求網址的安全性來源進行比對。如果找到相符項目，系統會授權網址存取音訊擷取裝置，並且不會提示使用者。
-
-      如果想進一步瞭解有效的網址模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。
-
-      注意：在第 45 版以下版本中，這項政策僅支援 Kiosk 模式。</translation>
 <translation id="8882006618241293596">禁止在這些網站上執行 <ph name="FLASH_PLUGIN_NAME" /> 外掛程式</translation>
 <translation id="8892286064305622118"><ph name="PLUGIN_VM_NAME" /> 需要的可用磁碟空間</translation>
 <translation id="8906768759089290519">啟用訪客模式</translation>
@@ -5237,6 +5200,9 @@
 
       指定政策值時，請以秒為單位進行設定。</translation>
 <translation id="9021334785554745279">根據機密資料保護規則檢查下載內容的網址模式</translation>
+<translation id="9030094532108679680">你可以透過這項政策 (只能設為「建議」) 註冊通訊協定處理常式的清單，其中的通訊協定處理常式會與使用者所註冊的合併，二種皆可供使用。請設定配置屬性 (通訊協定)，例如 mailto，並針對處理配置的應用程式設定網址模式屬性 (網址)。模式可包含 %s，由受處理的網址取代。
+
+      使用者無法移除透過政策註冊的通訊協定處理常式，但可透過安裝新的預設處理常式，來變更透過政策安裝的通訊協定處理常式。</translation>
 <translation id="9035086760683255833">啟用鍵盤焦點醒目顯示無障礙功能。
 
           這項功能可以醒目顯示鍵盤聚焦的物件。
@@ -5280,6 +5246,11 @@
       如果設定這項政策，無論使用者是否指定 --disk-cache-size 旗標，<ph name="PRODUCT_NAME" /> 都會使用你提供的快取大小 (MB 以下的值會進位為 MB)。
 
       如果未設定，<ph name="PRODUCT_NAME" /> 會使用預設大小，使用者可透過 --disk-cache-size 旗標來變更這項設定。</translation>
+<translation id="9062348747995618422">你可以透過這項政策設定網址模式清單，用於指定可執行 <ph name="FLASH_PLUGIN_NAME" /> 外掛程式的網站。
+
+      如果未設定這項政策，系統會針對所有網站套用 <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> 政策 (如果已設定)。否則系統會套用使用者的個人設定。
+
+      如果想進一步瞭解有效的網址模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。不過，從 M85 版開始，系統針對這項政策已停止支援主機中包含「*」和「[*.]」萬用字元的模式。</translation>
 <translation id="9077227880520270584">裝置本機帳戶自動登入計時器</translation>
 <translation id="9084985621503260744">指定會影響電源管理的視訊活動</translation>
 <translation id="9088433379343318874">啟用受監管的使用者內容提供者</translation>

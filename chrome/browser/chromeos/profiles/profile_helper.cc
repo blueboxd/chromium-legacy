@@ -148,7 +148,7 @@ class ProfileHelperImpl : public ProfileHelper,
 
  private:
   // BrowsingDataRemover::Observer implementation:
-  void OnBrowsingDataRemoverDone() override;
+  void OnBrowsingDataRemoverDone(uint64_t failed_data_types) override;
 
   // OAuth2LoginManager::Observer overrides.
   void OnSessionRestoreStateChanged(
@@ -638,7 +638,7 @@ void ProfileHelperImpl::OnSigninProfileCleared() {
 ////////////////////////////////////////////////////////////////////////////////
 // ProfileHelper, content::BrowsingDataRemover::Observer implementation:
 
-void ProfileHelperImpl::OnBrowsingDataRemoverDone() {
+void ProfileHelperImpl::OnBrowsingDataRemoverDone(uint64_t failed_data_types) {
   LOG_ASSERT(browsing_data_remover_);
   browsing_data_remover_->RemoveObserver(this);
   browsing_data_remover_ = nullptr;

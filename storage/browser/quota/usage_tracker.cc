@@ -24,13 +24,6 @@ void DidGetGlobalUsageForLimitedGlobalUsage(UsageCallback callback,
   std::move(callback).Run(total_global_usage - global_unlimited_usage);
 }
 
-void StripUsageWithBreakdownCallback(
-    UsageCallback callback,
-    int64_t usage,
-    blink::mojom::UsageBreakdownPtr usage_breakdown) {
-  std::move(callback).Run(usage);
-}
-
 }  // namespace
 
 struct UsageTracker::AccumulateInfo {
@@ -126,14 +119,6 @@ void UsageTracker::GetGlobalUsage(GlobalUsageCallback callback) {
 
   // Fire the sentinel as we've now called GetGlobalUsage for all clients.
   accumulator.Run(0, 0);
-}
-
-void UsageTracker::GetHostUsage(const std::string& host,
-                                UsageCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  UsageTracker::GetHostUsageWithBreakdown(
-      host,
-      base::BindOnce(&StripUsageWithBreakdownCallback, std::move(callback)));
 }
 
 void UsageTracker::GetHostUsageWithBreakdown(

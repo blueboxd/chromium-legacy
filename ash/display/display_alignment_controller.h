@@ -9,7 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/session/session_observer.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "base/containers/flat_map.h"
 #include "ui/events/event_handler.h"
 

@@ -46,4 +46,19 @@ void Dactyloscoper::RecordDirectSurface(ExecutionContext* context,
   }
 }
 
+void Dactyloscoper::RecordDirectSurface(ExecutionContext* context,
+                                        WebFeature feature,
+                                        String str) {
+  auto* window = DynamicTo<LocalDOMWindow>(context);
+  if (!window)
+    return;
+  if (str.IsEmpty())
+    return;
+  Document* document = window->document();
+  IdentifiabilityMetricBuilder(document->UkmSourceID())
+      .SetWebfeature(feature,
+                     str.Is8Bit() ? str.Span8() : as_bytes(str.Span16()))
+      .Record(document->UkmRecorder());
+}
+
 }  // namespace blink

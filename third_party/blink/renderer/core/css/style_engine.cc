@@ -673,8 +673,10 @@ RuleSet* StyleEngine::RuleSetForSheet(CSSStyleSheet& sheet) {
     return nullptr;
 
   AddRuleFlags add_rule_flags = kRuleHasNoSpecialState;
-  if (document_->GetSecurityOrigin()->CanRequest(sheet.BaseURL()))
+  if (document_->GetExecutionContext()->GetSecurityOrigin()->CanRequest(
+          sheet.BaseURL())) {
     add_rule_flags = kRuleHasDocumentSecurityOrigin;
+  }
   return &sheet.Contents()->EnsureRuleSet(*media_query_evaluator_,
                                           add_rule_flags);
 }

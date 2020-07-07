@@ -27,6 +27,7 @@ class ImageButton;
 class SlideOutController;
 }  // namespace views
 
+class MediaNotificationAudioDeviceSelectorView;
 class MediaNotificationContainerObserver;
 
 // MediaNotificationContainerImplView holds a media notification for display
@@ -145,6 +146,8 @@ class MediaNotificationContainerImplView
 
   DismissButton* dismiss_button_ = nullptr;
   media_message_center::MediaNotificationViewImpl* view_ = nullptr;
+  MediaNotificationAudioDeviceSelectorView* audio_device_selector_view_ =
+      nullptr;
 
   SkColor foreground_color_;
   SkColor background_color_;

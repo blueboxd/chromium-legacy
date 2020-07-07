@@ -14,7 +14,9 @@ namespace sessions {
 class SerializedNavigationEntry;
 }
 
-class TabAndroid;
+namespace content {
+class WebContents;
+}
 
 // Stores state for a WebContents, including its navigation history.
 class WebContentsState {
@@ -23,7 +25,7 @@ class WebContentsState {
       const sessions::SerializedNavigationEntry& entry)>;
 
   static base::android::ScopedJavaLocalRef<jobject>
-  GetContentsStateAsByteBuffer(JNIEnv* env, TabAndroid* tab);
+  GetContentsStateAsByteBuffer(JNIEnv* env, content::WebContents* web_contents);
 
   // Returns a new buffer without the navigations matching |predicate|.
   // Returns null if no deletions happened.

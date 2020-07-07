@@ -151,6 +151,7 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
 
   // Get whether this node is a minimized window.
   bool IsMinimized() const override;
+  bool IsText() const override;
 
   // Get whether this node is in web content.
   bool IsWebContent() const override;

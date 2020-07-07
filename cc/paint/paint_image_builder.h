@@ -5,6 +5,8 @@
 #ifndef CC_PAINT_PAINT_IMAGE_BUILDER_H_
 #define CC_PAINT_PAINT_IMAGE_BUILDER_H_
 
+#include <utility>
+
 #include "cc/paint/paint_export.h"
 #include "cc/paint/paint_image.h"
 #include "cc/paint/paint_image_generator.h"
@@ -95,12 +97,6 @@ class CC_PAINT_EXPORT PaintImageBuilder {
     return std::move(*this);
   }
 
-  // Makes the PaintImage represent a subset of the original image. The
-  // subset must be non-empty and lie within the image bounds.
-  PaintImageBuilder&& make_subset(const gfx::Rect& subset) {
-    paint_image_ = paint_image_.MakeSubset(subset);
-    return std::move(*this);
-  }
   PaintImageBuilder&& set_decoding_mode(
       PaintImage::DecodingMode decoding_mode) {
     paint_image_.decoding_mode_ = decoding_mode;

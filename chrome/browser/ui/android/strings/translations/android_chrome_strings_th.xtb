@@ -642,7 +642,6 @@
 <translation id="6154478581116148741">เปิดล็อกหน้าจอใน "การตั้งค่า" เพื่อส่งออกรหัสผ่านจากอุปกรณ์นี้</translation>
 <translation id="6157392216611456285">เลือก <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720">ประหยัดอินเทอร์เน็ต <ph name="PERCENT" /></translation>
-<translation id="6192333916571137726">ดาวน์โหลดไฟล์</translation>
 <translation id="6201345951596836663">คัดลอกลิงก์แล้ว</translation>
 <translation id="6206830853671714236">เลือกเวลาที่จะดาวน์โหลด</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> ไม่ใช่บัญชีที่ฉันจะใช้</translation>
@@ -922,7 +921,7 @@
 <translation id="8364299278605033898">ดูเว็บไซต์ยอดนิยม</translation>
 <translation id="8368027906805972958">อุปกรณ์ที่ไม่รู้จักหรือไม่รองรับ (<ph name="DEVICE_ID" />)</translation>
 <translation id="8393700583063109961">ส่งข้อความ</translation>
-<translation id="8407396331882458341">1. เลือก <ph name="APP_NAME" />\n2. แตะ "ได้เสมอ"</translation>
+<translation id="8407396331882458341">1. เลือก <ph name="APP_NAME" />\n2. แตะ "ทุกครั้ง"</translation>
 <translation id="8413126021676339697">แสดงประวัติการเข้าชมทั้งหมด</translation>
 <translation id="8425213833346101688">เปลี่ยน</translation>
 <translation id="8427875596167638501">แท็บแสดงตัวอย่างเปิดอยู่ครึ่งเดียว</translation>

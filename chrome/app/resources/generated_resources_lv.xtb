@@ -281,7 +281,6 @@
 <translation id="1340527397989195812">Dublējiet multividi no savas ierīces, izmantojot lietotni “Faili”.</translation>
 <translation id="1341988552785875222">Pašreizējo fona tapeti iestatīja <ph name="APP_NAME" />. Iespējams, jums būs jāatinstalē <ph name="APP_NAME" />, lai varētu atlasīt citu fona tapeti.</translation>
 <translation id="1343865611738742294">Piešķiriet Linux lietotnēm atļauju piekļūt USB ierīcēm. Pēc USB ierīces noņemšanas operētājsistēmā Linux netiks saglabāti šīs ierīces dati.</translation>
-<translation id="1344143111673240412">Lai kameras iestatījuma izmaiņas stātos spēkā, ir atkārtoti jāpalaiž programmatūra Parallels Desktop</translation>
 <translation id="1347256498747320987">Instalēt atjauninājumus un lietotnes. Turpinot jūs piekrītat, ka šī ierīce var automātiski lejupielādēt un instalēt atjauninājumus un lietotnes, ko nodrošina Google, jūsu mobilo sakaru operators un ierīces ražotājs. Var tikt izmantoti mobilie dati. Dažās lietotnēs var tikt piedāvāti pirkumi. <ph name="BEGIN_LINK1" />Uzziniet vairāk.<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">Atjaunināšana tiks sākta, kad akumulatora uzlādes līmenis būs <ph name="BATTERY_LEVEL" />%.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -1197,7 +1196,6 @@ Varat pārvaldīt šī konta iestatījumus, savā ierīcē instalējot lietotni 
 <translation id="2470702053775288986">Tika atspējoti neatbalstīti paplašinājumi</translation>
 <translation id="2471469610750100598">Melna (noklusējums)</translation>
 <translation id="2473195200299095979">Tulkot šo lapu</translation>
-<translation id="2474848500897222119"><ph name="PRINTER_NAME" /> ir iztērējis visu tinti</translation>
 <translation id="2475982808118771221">Radās kļūda</translation>
 <translation id="2476578072172137802">Vietnes iestatījumi</translation>
 <translation id="2478176599153288112">Multivides faila atļaujas paplašinājumam “<ph name="EXTENSION" />”</translation>
@@ -1503,7 +1501,6 @@ Varat pārvaldīt šī konta iestatījumus, savā ierīcē instalējot lietotni 
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> izmanto jūsu administratora starpniekservera iestatījumus</translation>
 <translation id="2825758591930162672">Subjekta publiskā atslēga</translation>
 <translation id="2828650939514476812">Izveidojiet savienojumu ar Wi-Fi tīklu</translation>
-<translation id="28291580771888953"><ph name="PRINTER_NAME" /> brīdina: rinda ir pilna</translation>
 <translation id="2835547721736623118">Runas atpazīšanas pakalpojums</translation>
 <translation id="2836269494620652131">Avārija</translation>
 <translation id="2836635946302913370">Administrators ir atspējojis iespēju pierakstīties, izmantojot šo lietotājvārdu.</translation>
@@ -2319,7 +2316,7 @@ Servera ziņojums: <ph name="SERVER_MSG" /></translation>
 <translation id="3839516600093027468">Vienmēr bloķēt starpliktuves satura rādīšanu vietnei <ph name="HOST" /></translation>
 <translation id="3841964634449506551">Parole ir nederīga</translation>
 <translation id="3842552989725514455">Serif fonts</translation>
-<translation id="3843058644024807390">Lai mikrofona iestatījuma izmaiņas stātos spēkā, ir atkārtoti jāpalaiž programmatūra Parallels Desktop</translation>
+<translation id="3843464315703645664">Iekšējā atļaušanas sarakstā</translation>
 <translation id="3846116211488856547">Iegūstiet vietņu, Android lietotņu izstrādes rīkus un citus rīkus. Instalējot Linux, tiks lejupielādēts šāds datu apjoms: <ph name="DOWNLOAD_SIZE" />.</translation>
 <translation id="3847319713229060696">Palīdzēt uzlabot drošību tīmeklī visiem lietotājiem</translation>
 <translation id="385051799172605136">Atpakaļ</translation>
@@ -2778,7 +2775,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="4453946976636652378">Meklējiet <ph name="SEARCH_ENGINE_NAME" /> meklētājprogrammā vai ierakstiet URL</translation>
 <translation id="4459169140545916303">Aktīvs pirms <ph name="DEVICE_LAST_ACTIVATED_TIME" /> dienām</translation>
 <translation id="4460014764210899310">Atcelt grupēšanu</translation>
-<translation id="4460343359907016103">Veidojot savienojumu ar printeri <ph name="PRINTER_NAME" />, radās kļūda</translation>
 <translation id="4462159676511157176">Pielāgoti nosaukumu serveri</translation>
 <translation id="4465236939126352372">Lietotnei <ph name="APP_NAME" /> ir iestatīts laika ierobežojums: <ph name="TIME" />.</translation>
 <translation id="4465725236958772856"><ph name="NETWORK_INDEX" />. tīkls no <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, pārvalda jūsu administrators, savienojums</translation>
@@ -3076,7 +3072,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="4864369630010738180">Pierakstīšanās...</translation>
 <translation id="4864805589453749318">Atlasiet vienu no vecākiem, kurš piešķir atļauju pievienot mācību iestādes kontu.</translation>
 <translation id="486635084936119914">Automātiski atvērt noteikta veida failus pēc to lejupielādes</translation>
-<translation id="4869213010169296107"><ph name="PRINTER_NAME" /> brīdina: trūkst paliktņa</translation>
 <translation id="48704129375571883">Pievienot papildu funkcijas</translation>
 <translation id="4870758487381879312">Ievadiet administratora piešķirto paroli, lai iegūtu konfigurācijas informāciju</translation>
 <translation id="4870903493621965035">Nav pārī savienotu ierīču</translation>
@@ -3327,6 +3322,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="5184662919967270437">Notiek ierīces atjaunināšana</translation>
 <translation id="5185359571430619712">Pārskatīt paplašinājumus</translation>
 <translation id="5185386675596372454"><ph name="EXTENSION_NAME" /> jaunākā versija ir atspējota, jo tai ir nepieciešams vairāk atļauju.</translation>
+<translation id="5185500136143151980">Nav interneta savienojuma</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5190926251776387065">Aktivizēt portu</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> vēlas lejupielādēt vairākus failus</translation>
@@ -3483,7 +3479,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="5390112241331447203">Iekļaut atsauksmju ziņojumos nosūtīto failu system_logs.txt.</translation>
 <translation id="5390677308841849479">Tumši sarkana un oranža</translation>
 <translation id="5390743329570580756">Sūtīt šim:</translation>
-<translation id="5395869306561378615"><ph name="PRINTER_NAME" /> ir īslaicīgi pārtraucis darbību</translation>
 <translation id="5397794290049113714">Jūs</translation>
 <translation id="5398572795982417028">Lapas atsauce ārpus diapazona, ierobežojums: <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">Reklāmu rādīšana bloķēta</translation>
@@ -3498,7 +3493,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="5417312524372586921">Pārlūka motīvi</translation>
 <translation id="5419405654816502573">Voice Match</translation>
 <translation id="5420438158931847627">Regulē teksta un attēlu asumu</translation>
-<translation id="5421498071721257877"><ph name="PRINTER_NAME" /> brīdina: radusies ierīces kļūda</translation>
 <translation id="5422221874247253874">Piekļuves punkts</translation>
 <translation id="5422781158178868512">Diemžēl jūsu ārējo atmiņas ierīci nevarēja atpazīt.</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3847,7 +3841,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="5852137567692933493">Restartēt un aktivizēt funkciju Powerwash</translation>
 <translation id="5854912040170951372">Pica</translation>
 <translation id="5855267860608268405">Zināmie Wi-Fi tīkli</translation>
-<translation id="5855310969323666289"><ph name="PRINTER_NAME" /> brīdina: durtiņas ir atvērtas</translation>
 <translation id="5855643921295613558">0,6 sekundes</translation>
 <translation id="5856721540245522153">Atkļūdošanas funkciju iespējošana</translation>
 <translation id="5857090052475505287">Jauna mape</translation>
@@ -3878,7 +3871,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="5877064549588274448">Kanāls tika mainīts. Lai lietotu izmaiņas, restartējiet ierīci.</translation>
 <translation id="5877584842898320529">Atlasītais printeris nav pieejams vai nav instalēts pareizi. <ph name="BR" /> Pārbaudiet savu printeri vai pamēģiniet atlasīt citu printeri.</translation>
 <translation id="5882919346125742463">Zināmie tīkli</translation>
-<translation id="5883716097305842571"><ph name="PRINTER_NAME" /> brīdina: izvades apgabals ir gandrīz pilns</translation>
 <translation id="5884474295213649357">Šī cilne ir piesaistīta USB ierīcei.</translation>
 <translation id="5886009770935151472">1. pirksts</translation>
 <translation id="5889282057229379085">Vidējā līmeņa CA maksimālais skaits: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4444,7 +4436,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="6611972847767394631">Jūsu cilnes ir pieejamas šeit</translation>
 <translation id="6612358246767739896">Aizsargāts saturs</translation>
 <translation id="6615455863669487791">Rādīt man</translation>
-<translation id="6617034477946102682"><ph name="PRINTER_NAME" /> nav sasniedzams</translation>
 <translation id="6618097958368085618">Tik un tā paturēt</translation>
 <translation id="6618744767048954150">Notiek pārbaude</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
@@ -4861,7 +4852,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="7128151990937044829">Rādīt adreses joslā indikatoru, kad paziņojumi tiek bloķēti</translation>
 <translation id="7131040479572660648">Lasīt jūsu datus vietnēs <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> un <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Pievienot &amp;lapu...</translation>
-<translation id="7131379856697962078"><ph name="PRINTER_NAME" /> brīdina: izvades apgabals ir pilns</translation>
 <translation id="7133578150266914903">Administrators šajā ierīcē veic atriti (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">Samazināt tekstu</translation>
 <translation id="7135729336746831607">Vai ieslēgt Bluetooth?</translation>
@@ -4880,7 +4870,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="7152478047064750137">Šim paplašinājumam nav nepieciešamas īpašas atļaujas.</translation>
 <translation id="7154130902455071009">Mainiet savu sākumlapu uz šo: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">Esošs fotoattēls no kameras vai faila</translation>
-<translation id="715657691234357425"><ph name="PRINTER_NAME" /> ir iztērējis visu papīru</translation>
 <translation id="7165320105431587207">Neizdevās konfigurēt tīklu</translation>
 <translation id="716640248772308851">“<ph name="EXTENSION" />” var lasīt attēlus, videoklipus un skaņu failus atzīmētajās vietās.</translation>
 <translation id="7167486101654761064">Vienmēr atvērt šī veida failus</translation>
@@ -4911,7 +4900,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="7197632491113152433">Mēs atradām <ph name="NUMBER_OF_APPS" /> lietotni(-es) jūsu kontā, ko var izmantot šajā ierīcē.</translation>
 <translation id="7199158086730159431">Saņemt p&amp;alīdzību</translation>
 <translation id="7200083590239651963">Konfigurācijas atlasīšana</translation>
-<translation id="7201042526153088083">Instalējiet lietotnes un spēles no pakalpojuma Google Play <ph name="DEVICE_TYPE" /> ierīcē. &lt;a target="_blank" href="<ph name="URL" />"&gt;Uzzināt vairāk&lt;/a&gt;</translation>
 <translation id="720110658997053098">Pastāvīgi turēt ierīcei ieslēgtu kioska režīmu</translation>
 <translation id="7201118060536064622">Vienums “<ph name="DELETED_ITEM_NAME" />” ir izdzēsts.</translation>
 <translation id="7201420661433230412">Skatīt failus</translation>
@@ -5217,7 +5205,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="7598466960084663009">Restartēt datoru</translation>
 <translation id="7599527631045201165">Ierīces nosaukums ir pārāk garš. Lai mēģinātu vēlreiz, ievadiet īsāku nosaukumu.</translation>
 <translation id="7600965453749440009">Nekad netulkot saturu, kas rakstīts <ph name="LANGUAGE" /> valodā</translation>
-<translation id="7601297144931396972"><ph name="PRINTER_NAME" /> brīdina: papīrs ir iesprūdis</translation>
 <translation id="760197030861754408">Lai izveidotu savienojumu, pārejiet uz šo lapu: <ph name="LANDING_PAGE" />.</translation>
 <translation id="7602079150116086782">Nav ciļņu no citām ierīcēm</translation>
 <translation id="7602173054665172958">Drukāšanas pārvaldība</translation>
@@ -5228,6 +5215,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="7609148976235050828">Izveidojiet savienojumu ar internetu un mēģiniet vēlreiz.</translation>
 <translation id="7614260613810441905">Vaicāt, ja vietne vēlas rediģēt ierīces failus vai mapes (ieteicams)</translation>
 <translation id="761530003705945209">Datu dublēšana Google diskā. Varēsiet jebkurā laikā ērti atjaunot savus datus vai mainīt ierīci. Dublējumā ir ietverti arī lietotņu dati. Jūsu dublējumi tiek augšupielādēti Google serveros un šifrēti, izmantojot jūsu Google konta paroli.</translation>
+<translation id="7615365294369022248">Pievienojot kontu, radās kļūda</translation>
 <translation id="7616214729753637086">Notiek ierīces reģistrēšana...</translation>
 <translation id="7617263010641145920">Play veikala ieslēgšana</translation>
 <translation id="7617366389578322136">Notiek savienojuma izveide ar ierīci <ph name="DEVICE_NAME" />.</translation>
@@ -5675,7 +5663,6 @@ Glabājiet atslēgas failu drošā vietā. Tas būs vajadzīgs, lai izveidotu ja
           <ph name="TIME" />). Tajā nav iekļauti maksājumu veidi un adreses no pakalpojuma Google Pay.</translation>
 <translation id="81238879832906896">Dzeltens un balts zieds</translation>
 <translation id="8124313775439841391">Pārvaldītais ONC</translation>
-<translation id="8127535217699822294"><ph name="PRINTER_NAME" /> ir iztērējis visu papīru</translation>
 <translation id="813082847718468539">Skatīt informāciju par vietni</translation>
 <translation id="8131740175452115882">Apstiprināt</translation>
 <translation id="8133676275609324831">Rādīt ma&amp;pē</translation>
@@ -5774,7 +5761,6 @@ Glabājiet atslēgas failu drošā vietā. Tas būs vajadzīgs, lai izveidotu ja
 <translation id="8254954272268479918">Izslēgt Linux (Beta)</translation>
 <translation id="8255451560461371599">Bez fona</translation>
 <translation id="8256319818471787266">Džeris</translation>
-<translation id="8256417822772703842"><ph name="PRINTER_NAME" /> brīdina: atlicis maz tintes</translation>
 <translation id="8257950718085972371">Turpināt piekļuves bloķēšanu kamerai</translation>
 <translation id="8259239505248583312">Aiziet!</translation>
 <translation id="8260864402787962391">Pele</translation>
@@ -5955,7 +5941,6 @@ Glabājiet atslēgas failu drošā vietā. Tas būs vajadzīgs, lai izveidotu ja
 <translation id="8487678622945914333">Tuvināt</translation>
 <translation id="8490896350101740396">Tika atjauninātas šādas Kioska lietotnes: “<ph name="UPDATED_APPS" />”. Lūdzu, atkārtoti palaidiet ierīci, lai pabeigtu atjaunināšanas procesu.</translation>
 <translation id="8493236660459102203">Mikrofons:</translation>
-<translation id="8495940850609851342"><ph name="PRINTER_NAME" /> ir apturējis darbību</translation>
 <translation id="8496717697661868878">Izpildīt šo spraudni</translation>
 <translation id="8497219075884839166">Windows utilītprogrammas</translation>
 <translation id="8498214519255567734">Atvieglojiet skatīšanos ekrānā vai lasīšanu blāvā apgaismojumā</translation>
@@ -6497,6 +6482,12 @@ Glabājiet atslēgas failu drošā vietā. Tas būs vajadzīgs, lai izveidotu ja
 <translation id="9157096865782046368">0,8 sekundes</translation>
 <translation id="9157697743260533322">Neizdevās iestatīt automātiskos atjauninājumus visiem lietotājiem (pirmslidojuma palaišanas kļūda: <ph name="ERROR_NUMBER" />).</translation>
 <translation id="9158715103698450907">Hmm... Autentificēšanas laikā radās tīkla komunikācijas problēma. Lūdzu, pārbaudiet tīkla savienojumu un mēģiniet vēlreiz.</translation>
+<translation id="9159643062839240276">Izmēģiniet tālāk norādītās darbības.
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />Pārbaudiet tīkla kabeļus, modemu un maršrutētāju.
+      <ph name="LIST_ITEM" />Atkārtoti izveidojiet savienojumu ar Wi-Fi tīklu.
+      <ph name="LIST_ITEM" />Veiciet Chrome savienojamības diagnostiku.
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">Attēls attēlā</translation>
 <translation id="9168436347345867845">Vēlāk</translation>
 <translation id="9169496697824289689">Skatīt īsinājumtaustiņus</translation>

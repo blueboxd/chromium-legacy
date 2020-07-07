@@ -87,6 +87,12 @@ const char kConversionMeasurementDebugModeDescription[] =
     "reporting delays and noise. Only works if the Conversion Measurement API "
     "is already enabled.";
 
+const char kEnableBluetoothSerialPortProfileInSerialApiName[] =
+    "Enable Bluetooth Serial Port Profile in Serial API";
+const char kEnableBluetoothSerialPortProfileInSerialApiDescription[] =
+    "When enabled, Bluetooth Serial Port Profile devices will be enumerated "
+    "for use with the Serial API.";
+
 const char kEnableClipboardProviderImageSuggestionsName[] =
     "Omnibox clipboard image search suggestions";
 const char kEnableClipboardProviderImageSuggestionsDescription[] =
@@ -2135,9 +2141,9 @@ const char kTabOutlinesInLowContrastThemesDescription[] =
     "Expands the range of situations in which tab outline strokes are "
     "displayed, improving accessiblity in dark and incognito mode.";
 
-const char kTintGlCompositedContentName[] = "Tint GL-composited content";
-const char kTintGlCompositedContentDescription[] =
-    "Tint contents composited using GL with a shade of red to help debug and "
+const char kTintCompositedContentName[] = "Tint composited content";
+const char kTintCompositedContentDescription[] =
+    "Tint contents composited using Viz with a shade of red to help debug and "
     "study overlay support.";
 
 const char kTLS13HardeningForLocalAnchorsName[] =

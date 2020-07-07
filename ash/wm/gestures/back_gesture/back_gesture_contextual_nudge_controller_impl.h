@@ -7,9 +7,9 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/back_gesture_contextual_nudge_controller.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
-#include "ash/session/session_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"

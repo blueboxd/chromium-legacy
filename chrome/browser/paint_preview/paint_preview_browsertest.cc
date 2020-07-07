@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -27,6 +28,37 @@
 #include "url/gurl.h"
 
 namespace paint_preview {
+
+namespace {
+
+base::FilePath ProtoPathToFilePath(const base::StringPiece& proto_path) {
+#if defined(OS_WIN)
+  return base::FilePath(base::UTF8ToUTF16(proto_path));
+#else
+  return base::FilePath(proto_path);
+#endif
+}
+
+// Check that |path| points to a valid SkPicture. Don't bother checking the
+// contents as this is non-trivial and could change. Instead check that
+// the SkPicture can be read correctly and has a cull rect of at least |size|.
+void EnsureSkPictureIsValid(const base::FilePath& path,
+                            size_t expected_subframe_count,
+                            const gfx::Size& size = gfx::Size(1, 1)) {
+  base::ScopedAllowBlockingForTesting scoped_blocking;
+  EXPECT_TRUE(base::PathExists(path));
+  FileRStream rstream(
+      base::File(path, base::File::FLAG_OPEN | base::File::FLAG_READ));
+  DeserializationContext ctx;
+  auto deserial_procs = MakeDeserialProcs(&ctx);
+  auto skp = SkPicture::MakeFromStream(&rstream, &deserial_procs);
+  EXPECT_NE(skp, nullptr);
+  EXPECT_GE(skp->cullRect().width(), 0);
+  EXPECT_GE(skp->cullRect().height(), 0);
+  EXPECT_EQ(ctx.size(), expected_subframe_count);
+}
+
+}  // namespace
 
 // Test harness for a integration test of paint previews. In this test:
 // - Each RenderFrame has an instance of PaintPreviewRecorder attached.
@@ -63,8 +95,24 @@ class PaintPreviewBrowserTest : public InProcessBrowserTest {
     return browser()->tab_strip_model()->GetActiveWebContents();
   }
 
-  void LoadPage(const GURL& url) {
+  void LoadPage(const GURL& url) const {
     ui_test_utils::NavigateToURL(browser(), url);
+  }
+
+  void LoadHtml(const base::StringPiece& html) const {
+    std::string base64_html;
+    base::Base64Encode(html, &base64_html);
+    GURL url(std::string("data:text/html;base64,") + base64_html);
+    ui_test_utils::NavigateToURL(browser(), url);
+  }
+
+  PaintPreviewClient::PaintPreviewParams MakeParams() const {
+    PaintPreviewClient::PaintPreviewParams params;
+    params.document_guid = base::UnguessableToken::Create();
+    params.is_main_frame = true;
+    params.root_dir = temp_dir_.GetPath();
+    params.max_per_capture_size = 0;
+    return params;
   }
 
   void WaitForLoadStopWithoutSuccessCheck() {
@@ -92,13 +140,8 @@ class PaintPreviewBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(PaintPreviewBrowserTest, CaptureFrame) {
   LoadPage(http_server_.GetURL("a.com", "/cross_site_iframe_factory.html?a"));
   ukm::TestAutoSetUkmRecorder ukm_recorder;
+  auto params = MakeParams();
 
-  base::UnguessableToken guid = base::UnguessableToken::Create();
-  PaintPreviewClient::PaintPreviewParams params;
-  params.document_guid = guid;
-  params.is_main_frame = true;
-  params.root_dir = temp_dir_.GetPath();
-  params.max_per_capture_size = 0;
   base::RunLoop loop;
 
   CreateClient();
@@ -117,27 +160,11 @@ IN_PROC_BROWSER_TEST_F(PaintPreviewBrowserTest, CaptureFrame) {
             EXPECT_EQ(proto->root_frame().content_id_to_embedding_tokens_size(),
                       0);
             EXPECT_TRUE(proto->root_frame().is_main_frame());
-#if defined(OS_WIN)
-            base::FilePath path = base::FilePath(
-                base::UTF8ToUTF16(proto->root_frame().file_path()));
-#else
-            base::FilePath path =
-                base::FilePath(proto->root_frame().file_path());
-#endif
-            {
-              base::ScopedAllowBlockingForTesting scoped_blocking;
-              EXPECT_TRUE(base::PathExists(path));
-              FileRStream rstream(base::File(
-                  path, base::File::FLAG_OPEN | base::File::FLAG_READ));
-              // Check that the result is a valid SkPicture. Don't bother
-              // checking the contents as this could change depending on how
-              // page rendering changes and is possibly unstable. nullptr is
-              // safe for serial procs as there are no iframes to deserialize.
-              EXPECT_NE(SkPicture::MakeFromStream(&rstream, nullptr), nullptr);
-            }
+            EnsureSkPictureIsValid(
+                ProtoPathToFilePath(proto->root_frame().file_path()), 0);
             quit.Run();
           },
-          loop.QuitClosure(), guid));
+          loop.QuitClosure(), params.document_guid));
   loop.Run();
 
   auto entries = ukm_recorder.GetEntriesByName(
@@ -145,16 +172,12 @@ IN_PROC_BROWSER_TEST_F(PaintPreviewBrowserTest, CaptureFrame) {
   EXPECT_EQ(1u, entries.size());
 }
 
-IN_PROC_BROWSER_TEST_F(PaintPreviewBrowserTest, CaptureMainFrameWithSubframe) {
+IN_PROC_BROWSER_TEST_F(PaintPreviewBrowserTest,
+                       CaptureMainFrameWithCrossProcessSubframe) {
   LoadPage(
       http_server_.GetURL("a.com", "/cross_site_iframe_factory.html?a(b)"));
+  auto params = MakeParams();
 
-  base::UnguessableToken guid = base::UnguessableToken::Create();
-  PaintPreviewClient::PaintPreviewParams params;
-  params.document_guid = guid;
-  params.is_main_frame = true;
-  params.root_dir = temp_dir_.GetPath();
-  params.max_per_capture_size = 0;
   base::RunLoop loop;
 
   CreateClient();
@@ -176,43 +199,105 @@ IN_PROC_BROWSER_TEST_F(PaintPreviewBrowserTest, CaptureMainFrameWithSubframe) {
             EXPECT_EQ(proto->subframes(0).content_id_to_embedding_tokens_size(),
                       0);
             EXPECT_FALSE(proto->subframes(0).is_main_frame());
-#if defined(OS_WIN)
-            base::FilePath main_path = base::FilePath(
-                base::UTF8ToUTF16(proto->root_frame().file_path()));
-            base::FilePath subframe_path = base::FilePath(
-                base::UTF8ToUTF16(proto->subframes(0).file_path()));
-#else
-            base::FilePath main_path =
-                base::FilePath(proto->root_frame().file_path());
-            base::FilePath subframe_path =
-                base::FilePath(proto->subframes(0).file_path());
-#endif
-            {
-              base::ScopedAllowBlockingForTesting scoped_blocking;
-              EXPECT_TRUE(base::PathExists(main_path));
-              EXPECT_TRUE(base::PathExists(subframe_path));
-              FileRStream rstream_main(base::File(
-                  main_path, base::File::FLAG_OPEN | base::File::FLAG_READ));
-              // Check that the result is a valid SkPicture. Don't bother
-              // checking the contents as this could change depending on how
-              // page rendering changes and is possibly unstable.
-              DeserializationContext ctx;
-              auto deserial_procs = MakeDeserialProcs(&ctx);
-              EXPECT_NE(
-                  SkPicture::MakeFromStream(&rstream_main, &deserial_procs),
-                  nullptr);
-              FileRStream rstream_subframe(
-                  base::File(subframe_path,
-                             base::File::FLAG_OPEN | base::File::FLAG_READ));
-              ctx.clear();
-              deserial_procs = MakeDeserialProcs(&ctx);
-              EXPECT_NE(
-                  SkPicture::MakeFromStream(&rstream_subframe, &deserial_procs),
-                  nullptr);
-            }
+            EnsureSkPictureIsValid(
+                ProtoPathToFilePath(proto->root_frame().file_path()), 1);
+            EnsureSkPictureIsValid(
+                ProtoPathToFilePath(proto->subframes(0).file_path()), 0);
             quit.Run();
           },
-          loop.QuitClosure(), guid));
+          loop.QuitClosure(), params.document_guid));
+  loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(PaintPreviewBrowserTest,
+                       CaptureMainFrameWithScrollableSameProcessSubframe) {
+  std::string html = R"(<html>
+                          <iframe
+                            srcdoc="<div
+                                      style='width: 300px;
+                                             height: 300px;
+                                             background-color: #ff0000'>
+                                      &nbsp;
+                                    </div>"
+                            title="subframe"
+                            width="100px"
+                            height="100px">
+                          </iframe>
+                        </html>)";
+  LoadHtml(html);
+  auto params = MakeParams();
+
+  base::RunLoop loop;
+  CreateClient();
+  auto* client = PaintPreviewClient::FromWebContents(GetWebContents());
+  WaitForLoadStopWithoutSuccessCheck();
+  client->CapturePaintPreview(
+      params, GetWebContents()->GetMainFrame(),
+      base::BindOnce(
+          [](base::RepeatingClosure quit, base::UnguessableToken expected_guid,
+             base::UnguessableToken guid, mojom::PaintPreviewStatus status,
+             std::unique_ptr<PaintPreviewProto> proto) {
+            EXPECT_EQ(guid, expected_guid);
+            EXPECT_EQ(status, mojom::PaintPreviewStatus::kOk);
+            EXPECT_TRUE(proto->has_root_frame());
+            EXPECT_EQ(proto->subframes_size(), 1);
+            EXPECT_EQ(proto->root_frame().content_id_to_embedding_tokens_size(),
+                      1);
+            EXPECT_TRUE(proto->root_frame().is_main_frame());
+            EXPECT_EQ(proto->subframes(0).content_id_to_embedding_tokens_size(),
+                      0);
+            EXPECT_FALSE(proto->subframes(0).is_main_frame());
+            EnsureSkPictureIsValid(
+                ProtoPathToFilePath(proto->root_frame().file_path()), 1);
+            EnsureSkPictureIsValid(
+                ProtoPathToFilePath(proto->subframes(0).file_path()), 0,
+                gfx::Size(300, 300));
+            quit.Run();
+          },
+          loop.QuitClosure(), params.document_guid));
+  loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(PaintPreviewBrowserTest,
+                       CaptureMainFrameWithNonScrollableSameProcessSubframe) {
+  std::string html = R"(<html>
+                          <iframe
+                            srcdoc="<div
+                                      style='width: 50px;
+                                             height: 50px;
+                                             background-color: #ff0000'>
+                                      &nbsp;
+                                    </div>"
+                            title="subframe"
+                            width="100px"
+                            height="100px">
+                          </iframe>
+                        </html>)";
+  LoadHtml(html);
+  auto params = MakeParams();
+
+  base::RunLoop loop;
+  CreateClient();
+  auto* client = PaintPreviewClient::FromWebContents(GetWebContents());
+  WaitForLoadStopWithoutSuccessCheck();
+  client->CapturePaintPreview(
+      params, GetWebContents()->GetMainFrame(),
+      base::BindOnce(
+          [](base::RepeatingClosure quit, base::UnguessableToken expected_guid,
+             base::UnguessableToken guid, mojom::PaintPreviewStatus status,
+             std::unique_ptr<PaintPreviewProto> proto) {
+            EXPECT_EQ(guid, expected_guid);
+            EXPECT_EQ(status, mojom::PaintPreviewStatus::kOk);
+            EXPECT_TRUE(proto->has_root_frame());
+            EXPECT_EQ(proto->subframes_size(), 0);
+            EXPECT_EQ(proto->root_frame().content_id_to_embedding_tokens_size(),
+                      0);
+            EXPECT_TRUE(proto->root_frame().is_main_frame());
+            EnsureSkPictureIsValid(
+                ProtoPathToFilePath(proto->root_frame().file_path()), 0);
+            quit.Run();
+          },
+          loop.QuitClosure(), params.document_guid));
   loop.Run();
 }
 

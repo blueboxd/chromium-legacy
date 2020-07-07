@@ -110,7 +110,7 @@ void ProfilePickerView::Init(Profile* system_profile) {
       views::HWNDForWidget(GetWidget()));
 #endif
 
-  web_view_->LoadInitialURL(GURL(chrome::kChromeUIMdUserManagerUrl));
+  web_view_->LoadInitialURL(GURL(chrome::kChromeUIProfilePickerUrl));
   GetWidget()->Show();
   web_view_->RequestFocus();
   initialized_ = InitState::kDone;

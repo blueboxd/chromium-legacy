@@ -342,9 +342,8 @@ TEST_F(TileManagerTest, GetTileGroup) {
   test::ResetTestGroup(&expected);
   InitWithData(TileGroupStatus::kSuccess, {expected});
 
-  TileGroup actual;
-  manager()->GetTileGroupForTesting(&actual);
-  EXPECT_TRUE(test::AreTileGroupsIdentical(actual, expected));
+  TileGroup* actual = manager()->GetTileGroup();
+  EXPECT_TRUE(test::AreTileGroupsIdentical(*actual, expected));
 }
 
 }  // namespace

@@ -1901,6 +1901,21 @@
             ]
         }
     ],
+    "CupsIppPrintingBackend": [
+        {
+            "platforms": [
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "CupsIppPrintingBackend"
+                    ]
+                }
+            ]
+        }
+    ],
     "D3D11VideoDecoder": [
         {
             "platforms": [

@@ -50,6 +50,7 @@ void LookalikeUrlTabHelper::ShouldAllowResponse(
     return;
   }
 
+  // TODO(crbug.com/1058898): Create container and ReleaseInterstitialParams.
   // Get stored interstitial parameters early. Doing so ensures that a
   // navigation to an irrelevant (for this interstitial's purposes) URL such as
   // chrome://settings while the lookalike interstitial is being shown clears
@@ -60,10 +61,6 @@ void LookalikeUrlTabHelper::ShouldAllowResponse(
   // If, after this, the user somehow ends up on site.tld with a reload (e.g.
   // with ReloadType::ORIGINAL_REQUEST_URL), this will correctly not show an
   // interstitial.
-  LookalikeUrlContainer* lookalike_container =
-      LookalikeUrlContainer::FromWebState(web_state());
-  std::unique_ptr<LookalikeUrlContainer::InterstitialParams>
-      interstitial_params = lookalike_container->ReleaseInterstitialParams();
 
   GURL response_url = net::GURLWithNSURL(response.URL);
 
@@ -80,6 +77,11 @@ void LookalikeUrlTabHelper::ShouldAllowResponse(
     std::move(callback).Run(CreateAllowDecision());
     return;
   }
+
+  // TODO(crbug.com/1058898): If this is a reload and if the current
+  // URL is the last URL of the stored redirect chain, the interstitial
+  // was probably reloaded. Stop the reload and navigate back to the
+  // original lookalike URL so that the full checks are exercised again.
 
   const DomainInfo navigated_domain = GetDomainInfo(response_url);
   // Empty domain_and_registry happens on private domains.
@@ -115,6 +117,8 @@ void LookalikeUrlTabHelper::ShouldAllowResponse(
     replace_host.SetHostStr(suggested_domain);
     const GURL suggested_url =
         response_url.ReplaceComponents(replace_host).GetWithEmptyPath();
+    LookalikeUrlContainer* lookalike_container =
+        LookalikeUrlContainer::FromWebState(web_state());
     lookalike_container->SetLookalikeUrlInfo(suggested_url, response_url,
                                              match_type);
 

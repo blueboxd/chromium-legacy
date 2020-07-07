@@ -660,8 +660,8 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
         } else {
             Preference osWarning = findPreference(PREF_OS_PERMISSIONS_WARNING);
             Preference osWarningExtra = findPreference(PREF_OS_PERMISSIONS_WARNING_EXTRA);
-            categoryWithWarning.configurePermissionIsOffPreferences(
-                    osWarning, osWarningExtra, getActivity(), false);
+            categoryWithWarning.configurePermissionIsOffPreferences(osWarning, osWarningExtra,
+                    getActivity(), false, getSiteSettingsClient().getAppName());
             if (osWarning.getTitle() == null) {
                 preferenceScreen.removePreference(osWarning);
             } else if (osWarningExtra.getTitle() == null) {

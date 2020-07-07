@@ -16,14 +16,14 @@
 #include "components/infobars/android/infobar_android.h"
 
 // The Android infobar that notifies that the generated password was saved.
-class GeneratedPasswordSavedInfoBar : public InfoBarAndroid {
+class GeneratedPasswordSavedInfoBar : public infobars::InfoBarAndroid {
  public:
   explicit GeneratedPasswordSavedInfoBar(
       std::unique_ptr<GeneratedPasswordSavedInfoBarDelegateAndroid> delegate);
   ~GeneratedPasswordSavedInfoBar() override;
 
  private:
-  // InfoBarAndroid implementation:
+  // infobars::InfoBarAndroid implementation:
   base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
       JNIEnv* env) override;
   void OnLinkClicked(JNIEnv* env,

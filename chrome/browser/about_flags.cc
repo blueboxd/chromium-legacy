@@ -157,6 +157,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/device/public/cpp/device_features.h"
+#include "services/device/public/cpp/serial/serial_switches.h"
 #include "services/media_session/public/cpp/features.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
@@ -1488,6 +1489,9 @@ const FeatureEntry::FeatureParam kHomepagePromoCardCompact[] = {
     {"promo-card-variation", "Compact"}};
 const FeatureEntry::FeatureParam kHomepagePromoCardSlim[] = {
     {"promo-card-variation", "Slim"}};
+const FeatureEntry::FeatureParam kHomepagePromoCardSuppressing[] = {
+    {"promo-card-variation", "Compact"},
+    {"suppressing_sign_in_promo", "true"}};
 
 const FeatureEntry::FeatureVariation kHomepagePromoCardVariations[] = {
     {"Large", kHomepagePromoCardLarge, base::size(kHomepagePromoCardLarge),
@@ -1495,7 +1499,9 @@ const FeatureEntry::FeatureVariation kHomepagePromoCardVariations[] = {
     {"Compact", kHomepagePromoCardCompact,
      base::size(kHomepagePromoCardCompact), nullptr},
     {"Slim", kHomepagePromoCardSlim, base::size(kHomepagePromoCardSlim),
-     nullptr}};
+     nullptr},
+    {"Compact_SuppressingSignInPromo", kHomepagePromoCardSuppressing,
+     base::size(kHomepagePromoCardSuppressing), nullptr}};
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
@@ -1983,10 +1989,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"overlay-strategies", flag_descriptions::kOverlayStrategiesName,
      flag_descriptions::kOverlayStrategiesDescription, kOsAll,
      MULTI_VALUE_TYPE(kOverlayStrategiesChoices)},
-    {"tint-gl-composited-content",
-     flag_descriptions::kTintGlCompositedContentName,
-     flag_descriptions::kTintGlCompositedContentDescription, kOsAll,
-     SINGLE_VALUE_TYPE(switches::kTintGlCompositedContent)},
+    {"tint-composited-content", flag_descriptions::kTintCompositedContentName,
+     flag_descriptions::kTintCompositedContentDescription, kOsAll,
+     SINGLE_VALUE_TYPE(switches::kTintCompositedContent)},
     {"show-overdraw-feedback", flag_descriptions::kShowOverdrawFeedbackName,
      flag_descriptions::kShowOverdrawFeedbackDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kShowOverdrawFeedback)},
@@ -3553,17 +3558,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxUIElideToRegistrableDomainName,
      flag_descriptions::kOmniboxUIElideToRegistrableDomainDescription,
      kOsDesktop, FEATURE_VALUE_TYPE(omnibox::kElideToRegistrableDomain)},
-
-    {"omnibox-ui-hide-steady-state-url-scheme",
-     flag_descriptions::kOmniboxUIHideSteadyStateUrlSchemeName,
-     flag_descriptions::kOmniboxUIHideSteadyStateUrlSchemeDescription, kOsAll,
-     FEATURE_VALUE_TYPE(omnibox::kHideSteadyStateUrlScheme)},
-
-    {"omnibox-ui-hide-steady-state-url-trivial-subdomains",
-     flag_descriptions::kOmniboxUIHideSteadyStateUrlTrivialSubdomainsName,
-     flag_descriptions::
-         kOmniboxUIHideSteadyStateUrlTrivialSubdomainsDescription,
-     kOsAll, FEATURE_VALUE_TYPE(omnibox::kHideSteadyStateUrlTrivialSubdomains)},
 
     {"omnibox-ui-reveal-steady-state-url-path-query-and-ref-on-hover",
      flag_descriptions::
@@ -5418,7 +5412,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHomepagePromoCardDescription, kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kHomepagePromoCard,
                                     kHomepagePromoCardVariations,
-                                    "HomepagePromoCard")},
+                                    "HomepagePromoAndroid")},
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
@@ -5796,6 +5790,12 @@ const FeatureEntry kFeatureEntries[] = {
     {"schemeful-same-site", flag_descriptions::kSchemefulSameSiteName,
      flag_descriptions::kSchemefulSameSiteDescription, kOsAll,
      FEATURE_VALUE_TYPE(net::features::kSchemefulSameSite)},
+
+    {"enable-bluetooth-spp-in-serial-api",
+     flag_descriptions::kEnableBluetoothSerialPortProfileInSerialApiName,
+     flag_descriptions::kEnableBluetoothSerialPortProfileInSerialApiDescription,
+     kOsAll,
+     SINGLE_VALUE_TYPE(switches::kEnableBluetoothSerialPortProfileInSerialApi)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

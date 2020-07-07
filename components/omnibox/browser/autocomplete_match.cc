@@ -1234,6 +1234,13 @@ bool AutocompleteMatch::TryRichAutocompletion(
   if (!OmniboxFieldTrial::IsRichAutocompletionEnabled())
     return false;
 
+  // If the appropriate param is enabled, titles should be shown in the omnibox
+  // regardless of whether the suggestion can be the default. By default,
+  // secondary text should be displayed unless we autocomplete the secondary
+  // text, in which case |fill_into_edit_additional_text| will be overridden.
+  if (OmniboxFieldTrial::RichAutocompletionShowTitles())
+    fill_into_edit_additional_text = secondary_text;
+
   if (input.prevent_inline_autocomplete())
     return false;
 
@@ -1246,8 +1253,6 @@ bool AutocompleteMatch::TryRichAutocompletion(
   if (base::StartsWith(primary_text_lower, input_text_lower,
                        base::CompareCase::SENSITIVE)) {
     // |fill_into_edit| should already be set to |primary_text|.
-    if (OmniboxFieldTrial::RichAutocompletionShowTitles())
-      fill_into_edit_additional_text = secondary_text;
     inline_autocompletion = primary_text.substr(input_text_lower.length());
     allowed_to_be_default_match = true;
     RecordAdditionalInfo("autocompletion", "primary & prefix");
@@ -1273,8 +1278,6 @@ bool AutocompleteMatch::TryRichAutocompletion(
   size_t primary_find_index = primary_text_lower.find(input_text_lower);
   if (primary_find_index != base::string16::npos) {
     // |fill_into_edit| should already be set to |primary_text|.
-    if (OmniboxFieldTrial::RichAutocompletionShowTitles())
-      fill_into_edit_additional_text = secondary_text;
     inline_autocompletion =
         primary_text.substr(primary_find_index + input_text_lower.length());
     prefix_autocompletion = primary_text.substr(0, primary_find_index);

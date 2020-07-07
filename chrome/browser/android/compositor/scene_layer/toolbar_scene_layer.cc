@@ -36,11 +36,8 @@ void ToolbarSceneLayer::UpdateToolbarLayer(
     jint toolbar_resource_id,
     jint toolbar_background_color,
     jint url_bar_resource_id,
-    jfloat url_bar_alpha,
     jint url_bar_color,
     jfloat content_offset,
-    jfloat view_height,
-    bool visible,
     bool show_shadow) {
   // If the toolbar layer has not been created yet, create it.
   if (!toolbar_layer_) {
@@ -51,13 +48,9 @@ void ToolbarSceneLayer::UpdateToolbarLayer(
     layer_->AddChild(toolbar_layer_->layer());
   }
 
-  toolbar_layer_->layer()->SetHideLayerAndSubtree(!visible);
-  if (visible) {
-    toolbar_layer_->PushResource(toolbar_resource_id, toolbar_background_color,
-                                 false, url_bar_color, url_bar_resource_id,
-                                 url_bar_alpha, view_height, content_offset,
-                                 false, !show_shadow);
-  }
+  toolbar_layer_->PushResource(toolbar_resource_id, toolbar_background_color,
+                               false, url_bar_color, url_bar_resource_id,
+                               content_offset, false, !show_shadow);
 }
 
 void ToolbarSceneLayer::UpdateProgressBar(JNIEnv* env,

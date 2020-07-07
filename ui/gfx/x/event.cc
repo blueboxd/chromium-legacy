@@ -16,6 +16,7 @@
 #include <cstring>
 
 #include "base/check_op.h"
+#include "base/memory/scoped_refptr.h"
 #include "ui/gfx/x/connection.h"
 #include "ui/gfx/x/xproto.h"
 #include "ui/gfx/x/xproto_internal.h"
@@ -62,7 +63,21 @@ Event::Event(scoped_refptr<base::RefCountedMemory> event_bytes,
     if ((xcb_event->response_type & ~kSendEventMask) ==
         x11::GeGenericEvent::opcode) {
       auto* ge = reinterpret_cast<xcb_ge_event_t*>(xcb_event);
-      memmove(&ge->full_sequence, &ge[1], ge->length * 4);
+      constexpr size_t ge_length = sizeof(xcb_raw_generic_event_t);
+      constexpr size_t offset = sizeof(ge->full_sequence);
+      size_t extended_length = ge->length * 4;
+      if (extended_length < ge_length) {
+        // If the additional data is smaller than the fixed size event, shift
+        // the additional data to the left.
+        memmove(&ge->full_sequence, &ge[1], extended_length);
+      } else {
+        // Otherwise shift the fixed size event to the right.
+        char* addr = reinterpret_cast<char*>(xcb_event);
+        memmove(addr + offset, addr, ge_length);
+        event_bytes = base::MakeRefCounted<OffsetRefCountedMemory>(
+            event_bytes, offset, ge_length + extended_length);
+        xcb_event = reinterpret_cast<xcb_generic_event_t*>(addr + offset);
+      }
     }
   }
 

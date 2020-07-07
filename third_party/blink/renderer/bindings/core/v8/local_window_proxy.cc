@@ -185,7 +185,7 @@ void LocalWindowProxy::Initialize() {
   if (world_->IsMainWorld()) {
     // ActivityLogger for main world is updated within updateDocumentInternal().
     UpdateDocumentInternal();
-    origin = GetFrame()->GetDocument()->GetSecurityOrigin();
+    origin = GetFrame()->DomWindow()->GetSecurityOrigin();
   } else {
     UpdateActivityLogger();
     origin = world_->IsolatedWorldSecurityOrigin();
@@ -402,7 +402,7 @@ void LocalWindowProxy::SetSecurityToken(const SecurityOrigin* origin) {
 
   if (world_->IsIsolatedWorld()) {
     const SecurityOrigin* frame_security_origin =
-        GetFrame()->GetDocument()->GetSecurityOrigin();
+        GetFrame()->DomWindow()->GetSecurityOrigin();
     String frame_security_token = frame_security_origin->ToTokenForFastCheck();
     // We need to check the return value of domainWasSetInDOM() on the
     // frame's SecurityOrigin because, if that's the case, only
@@ -445,7 +445,7 @@ void LocalWindowProxy::UpdateDocument() {
 void LocalWindowProxy::UpdateDocumentInternal() {
   UpdateActivityLogger();
   UpdateDocumentProperty();
-  UpdateSecurityOrigin(GetFrame()->GetDocument()->GetSecurityOrigin());
+  UpdateSecurityOrigin(GetFrame()->DomWindow()->GetSecurityOrigin());
 }
 
 // GetNamedProperty(), Getter(), NamedItemAdded(), and NamedItemRemoved()

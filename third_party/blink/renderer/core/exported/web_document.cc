@@ -85,7 +85,10 @@ WebURL WebDocument::Url() const {
 WebSecurityOrigin WebDocument::GetSecurityOrigin() const {
   if (!ConstUnwrap<Document>())
     return WebSecurityOrigin();
-  return WebSecurityOrigin(ConstUnwrap<Document>()->GetSecurityOrigin());
+  ExecutionContext* context = ConstUnwrap<Document>()->GetExecutionContext();
+  if (!context)
+    return WebSecurityOrigin();
+  return WebSecurityOrigin(context->GetSecurityOrigin());
 }
 
 bool WebDocument::IsSecureContext() const {

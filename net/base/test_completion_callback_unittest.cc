@@ -24,12 +24,12 @@ namespace {
 
 const int kMagicResult = 8888;
 
-void CallClosureAfterCheckingResult(const base::Closure& closure,
+void CallClosureAfterCheckingResult(base::OnceClosure closure,
                                     bool* did_check_result,
                                     int result) {
   DCHECK_EQ(result, kMagicResult);
   *did_check_result = true;
-  closure.Run();
+  std::move(closure).Run();
 }
 
 // ExampleEmployer is a toy version of HostResolver

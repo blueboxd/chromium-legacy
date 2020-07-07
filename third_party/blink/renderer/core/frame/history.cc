@@ -336,7 +336,7 @@ void History::StateObjectAdded(scoped_refptr<SerializedScriptValue> data,
   }
 
   KURL full_url = UrlForState(url_string);
-  if (!CanChangeToUrl(full_url, GetFrame()->GetDocument()->GetSecurityOrigin(),
+  if (!CanChangeToUrl(full_url, GetFrame()->DomWindow()->GetSecurityOrigin(),
                       GetFrame()->GetDocument()->Url())) {
     // We can safely expose the URL to JavaScript, as a) no redirection takes
     // place: JavaScript already had this URL, b) JavaScript can only access a
@@ -344,7 +344,7 @@ void History::StateObjectAdded(scoped_refptr<SerializedScriptValue> data,
     exception_state.ThrowSecurityError(
         "A history state object with URL '" + full_url.ElidedString() +
         "' cannot be created in a document with origin '" +
-        GetFrame()->GetDocument()->GetSecurityOrigin()->ToString() +
+        GetFrame()->DomWindow()->GetSecurityOrigin()->ToString() +
         "' and URL '" + GetFrame()->GetDocument()->Url().ElidedString() + "'.");
     return;
   }

@@ -12,6 +12,7 @@ import android.os.Handler;
 import android.os.PowerManager;
 import android.util.Pair;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 
 import org.chromium.base.ActivityState;
@@ -30,7 +31,6 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -88,55 +88,46 @@ public class ApplicationTestUtils {
         waitUntilChromeInForeground();
     }
 
+    private static String getVisibleActivitiesError() {
+        List<Pair<Activity, Integer>> visibleActivities = new ArrayList<>();
+        for (Activity activity : ApplicationStatus.getRunningActivities()) {
+            @ActivityState
+            int activityState = ApplicationStatus.getStateForActivity(activity);
+            if (activityState != ActivityState.DESTROYED
+                    && activityState != ActivityState.STOPPED) {
+                visibleActivities.add(Pair.create(activity, activityState));
+            }
+        }
+        if (visibleActivities.isEmpty()) {
+            return "No visible activities, application status response is suspect.";
+        } else {
+            StringBuilder error = new StringBuilder("Unexpected visible activities: ");
+            for (Pair<Activity, Integer> visibleActivityState : visibleActivities) {
+                Activity activity = visibleActivityState.first;
+                error.append(String.format(Locale.US, "\n\tActivity: %s, State: %d, Intent: %s",
+                        activity.getClass().getSimpleName(), visibleActivityState.second,
+                        activity.getIntent()));
+            }
+            return error.toString();
+        }
+    }
+
     /** Waits until Chrome is in the background. */
     public static void waitUntilChromeInBackground() {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                int state = ApplicationStatus.getStateForApplication();
-                boolean retVal = state == ApplicationState.HAS_STOPPED_ACTIVITIES
-                        || state == ApplicationState.HAS_DESTROYED_ACTIVITIES;
-                if (!retVal) updateVisibleActivitiesError();
-                return retVal;
-            }
-
-            private void updateVisibleActivitiesError() {
-                List<Pair<Activity, Integer>> visibleActivities = new ArrayList<>();
-                for (Activity activity : ApplicationStatus.getRunningActivities()) {
-                    @ActivityState
-                    int activityState = ApplicationStatus.getStateForActivity(activity);
-                    if (activityState != ActivityState.DESTROYED
-                            && activityState != ActivityState.STOPPED) {
-                        visibleActivities.add(Pair.create(activity, activityState));
-                    }
-                }
-                if (visibleActivities.isEmpty()) {
-                    updateFailureReason(
-                            "No visible activities, application status response is suspect.");
-                } else {
-                    StringBuilder error = new StringBuilder("Unexpected visible activities: ");
-                    for (Pair<Activity, Integer> visibleActivityState : visibleActivities) {
-                        Activity activity = visibleActivityState.first;
-                        error.append(
-                                String.format(Locale.US, "\n\tActivity: %s, State: %d, Intent: %s",
-                                        activity.getClass().getSimpleName(),
-                                        visibleActivityState.second, activity.getIntent()));
-                    }
-                    updateFailureReason(error.toString());
-                }
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            int state = ApplicationStatus.getStateForApplication();
+            Criteria.checkThat(getVisibleActivitiesError(), state,
+                    Matchers.anyOf(Matchers.equalTo(ApplicationState.HAS_STOPPED_ACTIVITIES),
+                            Matchers.equalTo(ApplicationState.HAS_DESTROYED_ACTIVITIES)));
         });
     }
 
     /** Waits until Chrome is in the foreground. */
     public static void waitUntilChromeInForeground() {
-        CriteriaHelper.pollInstrumentationThread(
-                Criteria.equals(ApplicationState.HAS_RUNNING_ACTIVITIES, new Callable<Integer>() {
-                    @Override
-                    public Integer call() {
-                        return ApplicationStatus.getStateForApplication();
-                    }
-                }));
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(ApplicationStatus.getStateForApplication(),
+                    Matchers.is(ApplicationState.HAS_RUNNING_ACTIVITIES));
+        });
     }
 
     /** Waits until the given activity transitions to the given state. */
@@ -184,18 +175,14 @@ public class ApplicationTestUtils {
      */
     public static void assertWaitForPageScaleFactorMatch(
             final ChromeActivity activity, final float expectedScale) {
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                Tab tab = activity.getActivityTab();
-                if (tab == null) return false;
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Tab tab = activity.getActivityTab();
+            Criteria.checkThat(tab, Matchers.notNullValue());
 
-                Coordinates coord = Coordinates.createFor(tab.getWebContents());
-                float scale = coord.getPageScaleFactor();
-                updateFailureReason(
-                        "Expecting scale factor of: " + expectedScale + ", got: " + scale);
-                return Math.abs(scale - expectedScale) < FLOAT_EPSILON;
-            }
+            Coordinates coord = Coordinates.createFor(tab.getWebContents());
+            float scale = coord.getPageScaleFactor();
+            Criteria.checkThat(
+                    (double) expectedScale, Matchers.is(Matchers.closeTo(scale, FLOAT_EPSILON)));
         });
     }
 

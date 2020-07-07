@@ -521,12 +521,4 @@ void CoreOobeHandler::HandleUpdateOobeUIState(int state) {
   }
 }
 
-void CoreOobeHandler::InitDemoModeDetection() {
-  demo_mode_detector_.InitDetection();
-}
-
-void CoreOobeHandler::StopDemoModeDetection() {
-  demo_mode_detector_.StopDetection();
-}
-
 }  // namespace chromeos

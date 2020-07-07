@@ -111,7 +111,7 @@ class GraphView {
     /** @private @type {?OnNodeClickedCallback} */
     this.onNodeClicked_ = null;
 
-    const svg = d3.select('svg');
+    const svg = d3.select('#graph-svg');
     const graphGroup = svg.append('g'); // Contains entire graph (for zoom/pan).
     const svgDefs = svg.append('defs');
 

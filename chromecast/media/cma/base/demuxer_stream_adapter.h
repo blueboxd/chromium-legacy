@@ -41,17 +41,17 @@ class DemuxerStreamAdapter : public CodedFrameProvider {
   ~DemuxerStreamAdapter() override;
 
   // CodedFrameProvider implementation.
-  void Read(const ReadCB& read_cb) override;
-  void Flush(const base::Closure& flush_cb) override;
+  void Read(ReadCB read_cb) override;
+  void Flush(base::OnceClosure flush_cb) override;
 
  private:
   void ResetMediaTaskRunner();
 
-  void ReadInternal(const ReadCB& read_cb);
-  void RequestBuffer(const ReadCB& read_cb);
+  void ReadInternal(ReadCB read_cb);
+  void RequestBuffer(ReadCB read_cb);
 
   // Callback invoked from the demuxer stream to signal a buffer is ready.
-  void OnNewBuffer(const ReadCB& read_cb,
+  void OnNewBuffer(ReadCB read_cb,
                    ::media::DemuxerStream::Status status,
                    scoped_refptr<::media::DecoderBuffer> input);
 
@@ -77,7 +77,7 @@ class DemuxerStreamAdapter : public CodedFrameProvider {
 
   // In case of a pending flush operation, this is the callback
   // that is invoked when flush is completed.
-  base::Closure flush_cb_;
+  base::OnceClosure flush_cb_;
 
   // Audio/video configuration that applies to the next frame.
   ::media::AudioDecoderConfig audio_config_;

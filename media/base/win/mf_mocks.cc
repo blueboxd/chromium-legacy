@@ -6,6 +6,12 @@
 
 namespace media {
 
+MockMFCdmFactory::MockMFCdmFactory() = default;
+MockMFCdmFactory::~MockMFCdmFactory() = default;
+
+MockMFCdmAccess::MockMFCdmAccess() = default;
+MockMFCdmAccess::~MockMFCdmAccess() = default;
+
 MockMFCdm::MockMFCdm() = default;
 MockMFCdm::~MockMFCdm() = default;
 

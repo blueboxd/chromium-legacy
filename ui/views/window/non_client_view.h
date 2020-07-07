@@ -93,7 +93,7 @@ class VIEWS_EXPORT NonClientFrameView : public View,
   virtual void SizeConstraintsChanged() = 0;
 
   // Called when whether the non-client view should paint as active has changed.
-  virtual void PaintAsActiveChanged(bool active);
+  virtual void PaintAsActiveChanged();
 
   // View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;

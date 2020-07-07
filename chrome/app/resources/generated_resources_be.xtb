@@ -281,7 +281,6 @@
 <translation id="1340527397989195812">Стварыце рэзервовыя копіі файлаў мультымедыя з прылады з дапамогай праграмы "Файлы".</translation>
 <translation id="1341988552785875222">Бягучыя шпалеры зададзены праграмай "<ph name="APP_NAME" />". Перш чым выбіраць іншыя шпалеры, можа спатрэбіцца выдаліць праграму "<ph name="APP_NAME" />".</translation>
 <translation id="1343865611738742294">Даць праграмам Linux доступ да прылад USB. Linux будзе забываць выдаленыя прылады USB.</translation>
-<translation id="1344143111673240412">Для змянення налад камеры патрабуецца перазапуск Parallels Desktop</translation>
 <translation id="1347256498747320987">Усталёўка абнаўленняў і праграм. Працягваючы, вы дазваляеце гэтай прыладзе аўтаматычна спампоўваць і ўсталёўваць абнаўленні і праграмы ад Google, вашага аператара і вытворцы прылады, у тым ліку праз сотавую перадачу даных. Некаторыя з гэтых праграм могуць прапаноўваць платнае змесціва. <ph name="BEGIN_LINK1" />Даведацца больш<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">Абнаўленне пачнецца, калі акумулятар будзе зараджаны на <ph name="BATTERY_LEVEL" />%.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -1197,7 +1196,6 @@
 <translation id="2470702053775288986">Пашырэнні, якія не падтрымліваюцца, выключаны</translation>
 <translation id="2471469610750100598">Чорны (стандартна)</translation>
 <translation id="2473195200299095979">Перакласці гэту старонку</translation>
-<translation id="2474848500897222119">У прынтары "<ph name="PRINTER_NAME" />" скончылася чарніла</translation>
 <translation id="2475982808118771221">Адбылася памылка</translation>
 <translation id="2476578072172137802">Налады сайта</translation>
 <translation id="2478176599153288112">Дазволы выкарыстання мультымедыйных файлаў для пашырэння "<ph name="EXTENSION" />"</translation>
@@ -1503,7 +1501,6 @@
 <translation id="2824942875887026017">У <ph name="IDS_SHORT_PRODUCT_NAME" /> выкарыстоўваюцца налады проксі-сервера, зададзеныя адміністратарам</translation>
 <translation id="2825758591930162672">Адкрыты ключ суб'екта</translation>
 <translation id="2828650939514476812">Падключэнне да сеткі Wi-Fi</translation>
-<translation id="28291580771888953">Чарга друку на прынтары "<ph name="PRINTER_NAME" />" запоўнена</translation>
 <translation id="2835547721736623118">Сэрвіс распазнавання маўлення</translation>
 <translation id="2836269494620652131">Збой</translation>
 <translation id="2836635946302913370">Уваход пад гэтым іменем карыстальніка выключаны адміністратарам.</translation>
@@ -2319,7 +2316,7 @@
 <translation id="3839516600093027468">Заўсёды блакіраваць хосту <ph name="HOST" /> доступ да буфера абмену</translation>
 <translation id="3841964634449506551">Пароль няправільны</translation>
 <translation id="3842552989725514455">Шрыфт з засечкамі</translation>
-<translation id="3843058644024807390">Для змянення налад мікрафона патрабуецца перазапуск Parallels Desktop</translation>
+<translation id="3843464315703645664">Ва ўнутраным белым спісе</translation>
 <translation id="3846116211488856547">Вы атрымаеце інструменты для распрацоўкі вэб-сайтаў, праграм Android і іншага. Каб усталяваць Linux, трэба будзе спампаваць <ph name="DOWNLOAD_SIZE" /> даных.</translation>
 <translation id="3847319713229060696">Дапамагаць павышаць бяспеку ў інтэрнэце для ўсіх</translation>
 <translation id="385051799172605136">Назад</translation>
@@ -2778,7 +2775,6 @@
 <translation id="4453946976636652378">Шукайце праз <ph name="SEARCH_ENGINE_NAME" /> або ўвядзіце URL-адрас</translation>
 <translation id="4459169140545916303">Апошнія дзеянні: <ph name="DEVICE_LAST_ACTIVATED_TIME" /> сут таму</translation>
 <translation id="4460014764210899310">Разгрупаваць</translation>
-<translation id="4460343359907016103">Памылка падключэння да прынтара "<ph name="PRINTER_NAME" />"</translation>
 <translation id="4462159676511157176">Карыстальніцкія серверы даменных імён</translation>
 <translation id="4465236939126352372">Абмежаванне часу (<ph name="TIME" />) зададзена для праграмы "<ph name="APP_NAME" />"</translation>
 <translation id="4465725236958772856">Сетка <ph name="NETWORK_INDEX" /> з <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, знаходзіцца пад кіраваннем адміністратара, падключыцца</translation>
@@ -3076,7 +3072,6 @@
 <translation id="4864369630010738180">Уваход...</translation>
 <translation id="4864805589453749318">Выберыце, хто з бацькоў дае дазвол дадаць навучальны ўліковы запіс.</translation>
 <translation id="486635084936119914">Аўтаматычна адкрываць пэўныя тыпы файлаў пасля спампоўвання</translation>
-<translation id="4869213010169296107">Прынтар "<ph name="PRINTER_NAME" />" не мае латка</translation>
 <translation id="48704129375571883">Дадаць дадатковыя функцыі</translation>
 <translation id="4870758487381879312">Каб атрымаць звесткі пра канфігурацыю, увядзіце атрыманы ад адміністратара пароль</translation>
 <translation id="4870903493621965035">Няма спалучаных прылад</translation>
@@ -3327,6 +3322,7 @@
 <translation id="5184662919967270437">Ідзе абнаўленне прылады</translation>
 <translation id="5185359571430619712">Прагледзець налады пашырэнняў</translation>
 <translation id="5185386675596372454">Новая версія пашырэння "<ph name="EXTENSION_NAME" />" была выключана, бо яна патрабуе дадатковых дазволаў.</translation>
+<translation id="5185500136143151980">Няма падключэння да інтэрнэту</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5190926251776387065">Уключыць порт</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> запытвае дазвол на спампоўку некалькіх файлаў</translation>
@@ -3483,7 +3479,6 @@
 <translation id="5390112241331447203">Дадаць файл system_logs.txt, які быў адпраўлены ў водгуках-справаздачах.</translation>
 <translation id="5390677308841849479">Цёмна-чырвоны і аранжавы</translation>
 <translation id="5390743329570580756">Адправіць</translation>
-<translation id="5395869306561378615">Работа прынтара "<ph name="PRINTER_NAME" />" прыпынена</translation>
 <translation id="5397794290049113714">Вы</translation>
 <translation id="5398572795982417028">Спасылка на старонку па-за межамі, максімальная колькасць старонак: <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">Рэклама заблакіравана</translation>
@@ -3498,7 +3493,6 @@
 <translation id="5417312524372586921">Тэмы браўзера</translation>
 <translation id="5419405654816502573">Voice Match</translation>
 <translation id="5420438158931847627">Вызначае рэзкасць тэксту і відарысаў</translation>
-<translation id="5421498071721257877">Памылка прылады "<ph name="PRINTER_NAME" />"</translation>
 <translation id="5422221874247253874">Пункт доступу</translation>
 <translation id="5422781158178868512">На жаль, знешняе сховішча распазнаць не ўдалося.</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3847,7 +3841,6 @@
 <translation id="5852137567692933493">Перазапусціць і скінуць налады функцыяй Powerwash</translation>
 <translation id="5854912040170951372">Кавалак піцы</translation>
 <translation id="5855267860608268405">Вядомыя сеткі Wi-Fi</translation>
-<translation id="5855310969323666289">Вечка прынтара "<ph name="PRINTER_NAME" />" адкрыта</translation>
 <translation id="5855643921295613558">0,6 секунды</translation>
 <translation id="5856721540245522153">Уключыць функцыі адладкі</translation>
 <translation id="5857090052475505287">Новая папка</translation>
@@ -3878,7 +3871,6 @@
 <translation id="5877064549588274448">Канал зменены. Перазапусціце прыладу, каб змены прымяніліся.</translation>
 <translation id="5877584842898320529">Выбраны прынтар недаступны або ўсталяваны няправільна. <ph name="BR" /> Праверце прынтар або выберыце іншы.</translation>
 <translation id="5882919346125742463">Вядомыя сеткі</translation>
-<translation id="5883716097305842571">Выхадны латок прынтара "<ph name="PRINTER_NAME" />" амаль запоўнены</translation>
 <translation id="5884474295213649357">Гэта ўкладка падключана да прылады USB.</translation>
 <translation id="5886009770935151472">Палец 1</translation>
 <translation id="5889282057229379085">Максімальная колькасць прамежкавых ЦС: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4444,7 +4436,6 @@
 <translation id="6611972847767394631">Вашы ўкладкі можна знайсці тут</translation>
 <translation id="6612358246767739896">Абароненае змесціва</translation>
 <translation id="6615455863669487791">Паказаць</translation>
-<translation id="6617034477946102682">Прынтар "<ph name="PRINTER_NAME" />" недаступны</translation>
 <translation id="6618097958368085618">Захаваць усё роўна</translation>
 <translation id="6618744767048954150">Выконваецца</translation>
 <translation id="6619058681307408113">Праграма кіравання радковымі прынтарамі (LPD)</translation>
@@ -4861,7 +4852,6 @@
 <translation id="7128151990937044829">Паказваць індыкатар у адрасным радку пры блакіраванні апавяшчэнняў</translation>
 <translation id="7131040479572660648">Прагляд вашых даных на вэб-сайтах <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> і <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Дадаць ста&amp;ронку...</translation>
-<translation id="7131379856697962078">Выхадны латок прынтара "<ph name="PRINTER_NAME" />" запоўнены</translation>
 <translation id="7133578150266914903">Адміністратар робіць адкат гэтай прылады (<ph name="PROGRESS_PERCENT" />).</translation>
 <translation id="7134098520442464001">Паменшыць тэкст</translation>
 <translation id="7135729336746831607">Уключыць Bluetooth?</translation>
@@ -4880,7 +4870,6 @@
 <translation id="7152478047064750137">Пашырэнне не патрабуе спецыяльных дазволаў</translation>
 <translation id="7154130902455071009">Змяніць пачатковую старонку на наступную: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">Існуючае фота з камеры або файла</translation>
-<translation id="715657691234357425">У прынтары "<ph name="PRINTER_NAME" />" мала паперы</translation>
 <translation id="7165320105431587207">Не ўдалося наладзіць сетку</translation>
 <translation id="716640248772308851">"<ph name="EXTENSION" />" можа чытаць відарысы, відэа- і аўдыяфайлы ў адзначаных месцах.</translation>
 <translation id="7167486101654761064">&amp;Заўсёды адкрываць файлы гэтага тыпу</translation>
@@ -4911,7 +4900,6 @@
 <translation id="7197632491113152433">Мы знайшлі ў вашым уліковым запісе праграмы (<ph name="NUMBER_OF_APPS" /> шт.), якія можна выкарыстоўваць на гэтай прыладзе.</translation>
 <translation id="7199158086730159431">Атрымаць д&amp;аведку</translation>
 <translation id="7200083590239651963">Выберыце канфігурацыю</translation>
-<translation id="7201042526153088083">Усталёўвайце праграмы і гульні з Google Play на сваёй прыладзе <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;Даведацца больш&lt;/a&gt;</translation>
 <translation id="720110658997053098">Заўсёды ўжываць на гэтай прыладзе рэжым кіёска</translation>
 <translation id="7201118060536064622"><ph name="DELETED_ITEM_NAME" /> – выдалена</translation>
 <translation id="7201420661433230412">Праглядзець файлы</translation>
@@ -5217,7 +5205,6 @@
 <translation id="7598466960084663009">Перазапусціць камп'ютар</translation>
 <translation id="7599527631045201165">Назва прылады занадта доўгая. Увядзіце карацейшую назву, каб паўтарыць спробу.</translation>
 <translation id="7600965453749440009">Ніколі не перакладаць з мовы: <ph name="LANGUAGE" /></translation>
-<translation id="7601297144931396972">У прынтары "<ph name="PRINTER_NAME" />" захрасла папера</translation>
 <translation id="760197030861754408">Каб падключыцца, перайдзіце на старонку <ph name="LANDING_PAGE" />.</translation>
 <translation id="7602079150116086782">Няма ўкладак з іншых прылад</translation>
 <translation id="7602173054665172958">Кіраванне друкам</translation>
@@ -5228,6 +5215,7 @@
 <translation id="7609148976235050828">Падключыцеся да інтэрнэту і паўтарыце спробу.</translation>
 <translation id="7614260613810441905">Запытваць дазвол на змяненне сайтамі файлаў ці папак на прыладзе (рэкамендуецца)</translation>
 <translation id="761530003705945209">Рэзервовае капіраванне на Google Дыск. Лёгка аднаўляйце даныя і пераносьце іх на іншыя прылады. У рэзервовую копію ўваходзяць даныя праграм. Рэзервовыя копіі запампоўваюцца ў Google і шыфруюцца пад паролем ад вашага Уліковага запісу Google.</translation>
+<translation id="7615365294369022248">Пры дадаванні ўліковага запісу ўзнікла памылка.</translation>
 <translation id="7616214729753637086">Прылада рэгіструецца...</translation>
 <translation id="7617263010641145920">Уключыць Краму Play</translation>
 <translation id="7617366389578322136">Ідзе падключэнне да прылады "<ph name="DEVICE_NAME" />"</translation>
@@ -5675,7 +5663,6 @@
           <ph name="TIME" />. Шыфраванне не распаўсюджваецца на спосабы аплаты і адрасы з Google Pay.</translation>
 <translation id="81238879832906896">Жоўта-белая кветка</translation>
 <translation id="8124313775439841391">ONC пад кіраваннем</translation>
-<translation id="8127535217699822294">У прынтары "<ph name="PRINTER_NAME" />" скончылася папера</translation>
 <translation id="813082847718468539">Прагляд звестак пра сайт</translation>
 <translation id="8131740175452115882">Пацвердзіць</translation>
 <translation id="8133676275609324831">&amp;Паказаць у папцы</translation>
@@ -5774,7 +5761,6 @@
 <translation id="8254954272268479918">Выключыць Linux (бэта-версія)</translation>
 <translation id="8255451560461371599">Без фону</translation>
 <translation id="8256319818471787266">Спаркі</translation>
-<translation id="8256417822772703842">У прынтары "<ph name="PRINTER_NAME" />" мала чарніла</translation>
 <translation id="8257950718085972371">Працягваць блакіраваць доступ да камеры</translation>
 <translation id="8259239505248583312">Пачаць</translation>
 <translation id="8260864402787962391">Мыш</translation>
@@ -5955,7 +5941,6 @@
 <translation id="8487678622945914333">Павялічыць</translation>
 <translation id="8490896350101740396">Наступныя праграмы-кіёскі былі абноўлены: <ph name="UPDATED_APPS" />. Каб завяршыць працэс абнаўлення, перазагрузіце прыладу.</translation>
 <translation id="8493236660459102203">Мікрафон:</translation>
-<translation id="8495940850609851342">Работа прынтара "<ph name="PRINTER_NAME" />" спынена</translation>
 <translation id="8496717697661868878">Запусціць гэту ўбудову</translation>
 <translation id="8497219075884839166">Утыліты Windows</translation>
 <translation id="8498214519255567734">Пры ўключанай функцыі зручней глядзець на экран пры цьмяным асвятленні</translation>
@@ -6497,6 +6482,12 @@
 <translation id="9157096865782046368">0,8 секунды</translation>
 <translation id="9157697743260533322">Не ўдалося задаць аўтаматычныя абнаўленні для ўсіх карыстальнікаў (памылка падрыхтоўкі да запуску: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Памылка.  Падчас аўтэнтыфікацыі адбылася памылка сувязі з сеткай.  Праверце падключэнне да сеткі і паўтарыце спробу.</translation>
+<translation id="9159643062839240276">Паспрабуйце зрабіць наступнае:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />праверыць сеткавыя кабелі, мадэм і маршрутызатар;
+      <ph name="LIST_ITEM" />паўторна падключыцца да Wi-Fi;
+      <ph name="LIST_ITEM" />запусціць Дыягностыку падключэнняў Chrome.
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">Відарыс у відарысе</translation>
 <translation id="9168436347345867845">Пазней</translation>
 <translation id="9169496697824289689">Паказаць спалучэнні клавіш</translation>

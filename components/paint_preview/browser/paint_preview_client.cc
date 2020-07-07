@@ -218,6 +218,9 @@ mojom::PaintPreviewCaptureParamsPtr PaintPreviewClient::CreateMojoParams(
       mojom::PaintPreviewCaptureParams::New();
   mojo_params->guid = params.document_guid;
   mojo_params->clip_rect = params.clip_rect;
+  // For now treat all clip rects as hints only. This API should be exposed
+  // when clip_rects are used intentionally to limit capture time.
+  mojo_params->clip_rect_is_hint = true;
   mojo_params->is_main_frame = params.is_main_frame;
   mojo_params->file = std::move(file);
   mojo_params->max_capture_size = params.max_per_capture_size;

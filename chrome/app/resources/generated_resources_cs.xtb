@@ -281,7 +281,6 @@
 <translation id="1340527397989195812">Zálohujte média ze zařízení pomocí aplikace Soubory.</translation>
 <translation id="1341988552785875222">Aktuální tapetu nastavila aplikace <ph name="APP_NAME" />. Je možné, že před výběrem jiné tapety bude nutné aplikaci <ph name="APP_NAME" /> odinstalovat.</translation>
 <translation id="1343865611738742294">Udělte linuxovým aplikacím oprávnění k používání zařízení USB. Po odebrání si Linux nebude zařízení USB pamatovat.</translation>
-<translation id="1344143111673240412">Změna nastavení kamery vyžaduje restart nástroje Parallels Desktop</translation>
 <translation id="1347256498747320987">Instalace aktualizací a aplikací. Pokračováním vyjadřujete souhlas s tím, že toto zařízení může také automaticky stahovat a instalovat aktualizace a aplikace od společnosti Google, operátora a výrobce zařízení, a v případě potřeby k tomu smí používat mobilní datové připojení. Některé z těchto aplikací mohou nabízet nákupy v aplikaci. <ph name="BEGIN_LINK1" />Další informace<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">Aktualizace bude zahájena, až baterie dosáhne <ph name="BATTERY_LEVEL" /> %.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -1196,7 +1195,6 @@ Chcete-li spravovat nastavení tohoto účtu, nainstalujte si do zařízení apl
 <translation id="2470702053775288986">Nepodporovaná rozšíření byla zakázána</translation>
 <translation id="2471469610750100598">Černá (výchozí)</translation>
 <translation id="2473195200299095979">Přeložit tuto stránku</translation>
-<translation id="2474848500897222119">V tiskárně <ph name="PRINTER_NAME" /> došel inkoust</translation>
 <translation id="2475982808118771221">Došlo k chybě</translation>
 <translation id="2476578072172137802">Nastavení webu</translation>
 <translation id="2478176599153288112">Oprávnění souborů médií pro rozšíření <ph name="EXTENSION" /></translation>
@@ -1502,7 +1500,6 @@ Chcete-li spravovat nastavení tohoto účtu, nainstalujte si do zařízení apl
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> používá nastavení serveru proxy od vašeho administrátora</translation>
 <translation id="2825758591930162672">Veřejný klíč subjektu</translation>
 <translation id="2828650939514476812">Připojit k síti Wi-Fi</translation>
-<translation id="28291580771888953">Fronta tiskárny <ph name="PRINTER_NAME" /> je plná</translation>
 <translation id="2835547721736623118">Služba rozpoznávání řeči</translation>
 <translation id="2836269494620652131">Selhání</translation>
 <translation id="2836635946302913370">Přihlášení pomocí tohoto uživatelského jména bylo správcem zakázáno.</translation>
@@ -2318,7 +2315,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="3839516600093027468">Webu <ph name="HOST" /> přístup ke schránce vždy blokovat</translation>
 <translation id="3841964634449506551">Neplatné heslo</translation>
 <translation id="3842552989725514455">Patkové písmo</translation>
-<translation id="3843058644024807390">Změna nastavení mikrofonu vyžaduje restart nástroje Parallels Desktop</translation>
+<translation id="3843464315703645664">Na interním seznamu povolených</translation>
 <translation id="3846116211488856547">Získejte nástroje k vývoji webů, aplikací pro Android apod. Při instalaci systému Linux se stáhne <ph name="DOWNLOAD_SIZE" /> dat.</translation>
 <translation id="3847319713229060696">Pomáhat se zlepšováním bezpečnosti internetu pro všechny</translation>
 <translation id="385051799172605136">Zpět</translation>
@@ -2776,7 +2773,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4453946976636652378">Zadejte dotaz pro vyhledávač <ph name="SEARCH_ENGINE_NAME" /> nebo adresu URL</translation>
 <translation id="4459169140545916303">Aktivní před <ph name="DEVICE_LAST_ACTIVATED_TIME" /> dny</translation>
 <translation id="4460014764210899310">Zrušit seskupení</translation>
-<translation id="4460343359907016103">Při připojování k tiskárně <ph name="PRINTER_NAME" /> došlo k chybě</translation>
 <translation id="4462159676511157176">Vlastní názvové servery</translation>
 <translation id="4465236939126352372">Pro aplikaci <ph name="APP_NAME" /> byl nastaven časový limit <ph name="TIME" /></translation>
 <translation id="4465725236958772856">Síť <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, spravováno administrátorem, připojit</translation>
@@ -3074,7 +3070,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4864369630010738180">Přihlašování...</translation>
 <translation id="4864805589453749318">Vyberte, který rodič uděluje oprávnění k přidání školního účtu.</translation>
 <translation id="486635084936119914">Určité typy souborů po stažení automaticky otevírat</translation>
-<translation id="4869213010169296107">V tiskárně <ph name="PRINTER_NAME" /> chybí zásobník</translation>
 <translation id="48704129375571883">Přidat další funkce</translation>
 <translation id="4870758487381879312">Chcete-li získat informace o konfiguraci, zadejte heslo poskytnuté administrátorem</translation>
 <translation id="4870903493621965035">Žádná spárovaná zařízení</translation>
@@ -3325,6 +3320,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="5184662919967270437">Aktualizace zařízení</translation>
 <translation id="5185359571430619712">Zkontrolovat rozšíření</translation>
 <translation id="5185386675596372454">Nejnovější verze rozšíření <ph name="EXTENSION_NAME" /> byla zakázána, protože vyžaduje další oprávnění.</translation>
+<translation id="5185500136143151980">Nejste připojeni k internetu</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5190926251776387065">Aktivovat port</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> se pokouší stáhnout několik souborů</translation>
@@ -3481,7 +3477,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="5390112241331447203">Zahrnout soubor system_logs.txt odesílaný ve zprávách zpětné vazby.</translation>
 <translation id="5390677308841849479">Tmavě červená a oranžová</translation>
 <translation id="5390743329570580756">Komu odesílat</translation>
-<translation id="5395869306561378615">Tiskárna <ph name="PRINTER_NAME" /> je pozastavená</translation>
 <translation id="5397794290049113714">Vy</translation>
 <translation id="5398572795982417028">Odkaz na stránku mimo rozsah, limit je <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">Byly zablokovány reklamy</translation>
@@ -3496,7 +3491,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="5417312524372586921">Motivy prohlížeče</translation>
 <translation id="5419405654816502573">Voice Match</translation>
 <translation id="5420438158931847627">Určuje ostrost textu a obrázků</translation>
-<translation id="5421498071721257877">U tiskárny <ph name="PRINTER_NAME" /> došlo k chybě zařízení</translation>
 <translation id="5422221874247253874">Přístupový bod</translation>
 <translation id="5422781158178868512">Je nám líto, externí paměťové zařízení nelze rozpoznat.</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3845,7 +3839,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="5852137567692933493">Restartovat a použít funkci Powerwash</translation>
 <translation id="5854912040170951372">Svačinka</translation>
 <translation id="5855267860608268405">Známé sítě Wi-Fi</translation>
-<translation id="5855310969323666289">Dvířka tiskárny <ph name="PRINTER_NAME" /> jsou otevřená</translation>
 <translation id="5855643921295613558">0,6 sekundy</translation>
 <translation id="5856721540245522153">Aktivovat funkce ladění</translation>
 <translation id="5857090052475505287">Nová složka</translation>
@@ -3876,7 +3869,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="5877064549588274448">Verze byla změněna. Změny se projeví po restartování zařízení.</translation>
 <translation id="5877584842898320529">Zvolená tiskárna není k dispozici nebo není správně nainstalovaná. <ph name="BR" /> Zkontrolujte tiskárnu nebo vyberte jinou.</translation>
 <translation id="5882919346125742463">Známé sítě</translation>
-<translation id="5883716097305842571">Výstupní oblast tiskárny <ph name="PRINTER_NAME" /> je téměř plná</translation>
 <translation id="5884474295213649357">Tato karta je připojena k zařízení USB.</translation>
 <translation id="5886009770935151472">Prst 1</translation>
 <translation id="5889282057229379085">Maximální počet zprostředkujících certifikačních autorit: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4442,7 +4434,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="6611972847767394631">Zde naleznete své karty</translation>
 <translation id="6612358246767739896">Chráněný obsah</translation>
 <translation id="6615455863669487791">Ukázat</translation>
-<translation id="6617034477946102682">Tiskárna <ph name="PRINTER_NAME" /> není dostupná</translation>
 <translation id="6618097958368085618">Přesto ponechat</translation>
 <translation id="6618744767048954150">Probíhá</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
@@ -4859,7 +4850,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="7128151990937044829">Zobrazovat na adresním řádku indikátor zablokovaných oznámení</translation>
 <translation id="7131040479572660648">Čtení vašich dat na webech <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> a <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Přidat strá&amp;nku...</translation>
-<translation id="7131379856697962078">Výstupní oblast tiskárny <ph name="PRINTER_NAME" /> je plná</translation>
 <translation id="7133578150266914903">Administrátor v tomto zařízení obnovuje předchozí verzi systému (<ph name="PROGRESS_PERCENT" />).</translation>
 <translation id="7134098520442464001">Zmenšit text</translation>
 <translation id="7135729336746831607">Zapnout Bluetooth?</translation>
@@ -4878,7 +4868,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="7152478047064750137">Toto rozšíření nevyžaduje žádná speciální oprávnění.</translation>
 <translation id="7154130902455071009">Změnit úvodní stránku na: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">Stávající fotka z fotoaparátu nebo souboru</translation>
-<translation id="715657691234357425">V tiskárně <ph name="PRINTER_NAME" /> dochází papír</translation>
 <translation id="7165320105431587207">Konfigurace sítě se nezdařila</translation>
 <translation id="716640248772308851">Rozšíření <ph name="EXTENSION" /> může číst obrázky, video a zvukové soubory v povolených umístěních.</translation>
 <translation id="7167486101654761064">Vždy otevírat soubory tohoto typu</translation>
@@ -4909,7 +4898,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="7197632491113152433">Ve vašem účtu jsme našli aplikace, které lze použít na tomto zařízení, celkem <ph name="NUMBER_OF_APPS" />.</translation>
 <translation id="7199158086730159431">Zobrazit nápovědu</translation>
 <translation id="7200083590239651963">Vyberte konfiguraci</translation>
-<translation id="7201042526153088083">Instalujte do svého zařízení <ph name="DEVICE_TYPE" /> aplikace a hry z Google Play. &lt;a target="_blank" href="<ph name="URL" />"&gt;Další informace&lt;/a&gt;</translation>
 <translation id="720110658997053098">Trvale toto zařízení ponechat v režimu veřejného terminálu</translation>
 <translation id="7201118060536064622">Položka „<ph name="DELETED_ITEM_NAME" />“ byla smazána</translation>
 <translation id="7201420661433230412">Zobrazit soubory</translation>
@@ -5215,7 +5203,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="7598466960084663009">Restartovat počítač</translation>
 <translation id="7599527631045201165">Název zařízení je příliš dlouhý. Zadejte kratší název a zkuste to znovu.</translation>
 <translation id="7600965453749440009">Jazyk <ph name="LANGUAGE" /> nikdy nepřekládat</translation>
-<translation id="7601297144931396972">V tiskárně <ph name="PRINTER_NAME" /> se zasekl papír</translation>
 <translation id="760197030861754408">Chcete-li zařízení připojit, přejděte na stránku <ph name="LANDING_PAGE" />.</translation>
 <translation id="7602079150116086782">Žádné karty z jiných zařízení</translation>
 <translation id="7602173054665172958">Správa tisku</translation>
@@ -5226,6 +5213,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="7609148976235050828">Připojte se k internetu a zkuste to znovu</translation>
 <translation id="7614260613810441905">Zeptat se, když chce web upravit soubory nebo složky v zařízení (doporučeno)</translation>
 <translation id="761530003705945209">Zálohování na Disk Google. Snadno obnovte svá data nebo kdykoliv přejděte na jiné zařízení. Záloha zahrnuje data aplikací. Zálohy se nahrávají do Googlu a šifrují pomocí hesla účtu Google.</translation>
+<translation id="7615365294369022248">Při přidávání účtu došlo k chybě</translation>
 <translation id="7616214729753637086">Registrace zařízení...</translation>
 <translation id="7617263010641145920">Zapnout Obchod Play</translation>
 <translation id="7617366389578322136">Připojování k zařízení <ph name="DEVICE_NAME" /></translation>
@@ -5673,7 +5661,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8123590694679414600">Data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro synchronizaci. Toto šifrování se nevztahuje na platební metody a adresy z Google Pay.</translation>
 <translation id="81238879832906896">Žluto-bílá květina</translation>
 <translation id="8124313775439841391">Spravovaná ONC</translation>
-<translation id="8127535217699822294">V tiskárně <ph name="PRINTER_NAME" /> došel papír</translation>
 <translation id="813082847718468539">Zobrazit informace o stránkách</translation>
 <translation id="8131740175452115882">Potvrdit</translation>
 <translation id="8133676275609324831">Zobrazit ve &amp;složce</translation>
@@ -5772,7 +5759,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8254954272268479918">Ukončit Linux (beta)</translation>
 <translation id="8255451560461371599">Bez pozadí</translation>
 <translation id="8256319818471787266">Štěně</translation>
-<translation id="8256417822772703842">V tiskárně <ph name="PRINTER_NAME" /> dochází inkoust</translation>
 <translation id="8257950718085972371">Blokovat přístup ke kameře i nadále</translation>
 <translation id="8259239505248583312">Jdeme na to</translation>
 <translation id="8260864402787962391">Myš</translation>
@@ -5953,7 +5939,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8487678622945914333">Přiblížit</translation>
 <translation id="8490896350101740396">Byly aktualizovány následující terminálové aplikace: <ph name="UPDATED_APPS" />. Chcete-li proces aktualizace dokončit, restartujte zařízení.</translation>
 <translation id="8493236660459102203">Mikrofon:</translation>
-<translation id="8495940850609851342">Tiskárna <ph name="PRINTER_NAME" /> je zastavená</translation>
 <translation id="8496717697661868878">Spustit plugin</translation>
 <translation id="8497219075884839166">Nástroje Windows</translation>
 <translation id="8498214519255567734">Usnadnit čtení a sledování obrazovky při tlumeném osvětlení</translation>
@@ -6495,6 +6480,12 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="9157096865782046368">0,8 sekundy</translation>
 <translation id="9157697743260533322">Nastavení automatických aktualizací pro všechny uživatele se nezdařilo (chyba předběžného spuštění: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Jejda! Během ověřování došlo k problému s komunikací se sítí. Zkontrolujte prosím připojení k síti a zkuste to znovu.</translation>
+<translation id="9159643062839240276">Zkuste:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />Zkontrolovat síťové kabely, modem a router
+      <ph name="LIST_ITEM" />Znovu se připojit k Wi-Fi
+      <ph name="LIST_ITEM" />Spustit Diagnostiku připojení Chrome
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">Obraz v obraze</translation>
 <translation id="9168436347345867845">Později</translation>
 <translation id="9169496697824289689">Zobrazit klávesové zkratky</translation>

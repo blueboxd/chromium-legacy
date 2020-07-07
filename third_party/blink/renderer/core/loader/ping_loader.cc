@@ -34,7 +34,6 @@
 #include "base/feature_list.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/web_url_request.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -210,7 +209,7 @@ bool SendBeaconCommon(LocalFrame* frame,
 
   frame->Client()->DidDispatchPingLoader(request.Url());
   Resource* resource =
-      RawResource::Fetch(params, frame->GetDocument()->Fetcher(), nullptr);
+      RawResource::Fetch(params, frame->DomWindow()->Fetcher(), nullptr);
   return resource->GetStatus() != ResourceStatus::kLoadError;
 }
 
@@ -232,11 +231,11 @@ void PingLoader::SendLinkAuditPing(LocalFrame* frame,
                              AtomicString(destination_url.GetString()));
   scoped_refptr<const SecurityOrigin> ping_origin =
       SecurityOrigin::Create(ping_url);
-  if (ProtocolIs(frame->GetDocument()->Url().GetString(), "http") ||
-      frame->GetDocument()->GetSecurityOrigin()->CanAccess(ping_origin.get())) {
+  if (ProtocolIs(frame->DomWindow()->Url().GetString(), "http") ||
+      frame->DomWindow()->GetSecurityOrigin()->CanAccess(ping_origin.get())) {
     request.SetHttpHeaderField(
         http_names::kPingFrom,
-        AtomicString(frame->GetDocument()->Url().GetString()));
+        AtomicString(frame->DomWindow()->Url().GetString()));
   }
 
   request.SetKeepalive(true);
@@ -248,7 +247,7 @@ void PingLoader::SendLinkAuditPing(LocalFrame* frame,
       fetch_initiator_type_names::kPing;
 
   frame->Client()->DidDispatchPingLoader(ping_url);
-  RawResource::Fetch(params, frame->GetDocument()->Fetcher(), nullptr);
+  RawResource::Fetch(params, frame->DomWindow()->Fetcher(), nullptr);
 }
 
 void PingLoader::SendViolationReport(LocalFrame* frame,
@@ -262,14 +261,14 @@ void PingLoader::SendViolationReport(LocalFrame* frame,
   request.SetCredentialsMode(network::mojom::CredentialsMode::kSameOrigin);
   request.SetRequestContext(mojom::RequestContextType::CSP_REPORT);
   request.SetRequestDestination(network::mojom::RequestDestination::kReport);
-  request.SetRequestorOrigin(frame->GetDocument()->GetSecurityOrigin());
+  request.SetRequestorOrigin(frame->DomWindow()->GetSecurityOrigin());
   request.SetRedirectMode(network::mojom::RedirectMode::kError);
   FetchParameters params(std::move(request));
   params.MutableOptions().initiator_info.name =
       fetch_initiator_type_names::kViolationreport;
 
   frame->Client()->DidDispatchPingLoader(report_url);
-  RawResource::Fetch(params, frame->GetDocument()->Fetcher(), nullptr);
+  RawResource::Fetch(params, frame->DomWindow()->Fetcher(), nullptr);
 }
 
 bool PingLoader::SendBeacon(LocalFrame* frame,

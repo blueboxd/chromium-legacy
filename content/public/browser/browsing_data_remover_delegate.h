@@ -51,13 +51,16 @@ class BrowsingDataRemoverDelegate {
   // Whether the embedder allows the removal of download history.
   virtual bool MayRemoveDownloadHistory() = 0;
 
-  // Removes embedder-specific data.
-  virtual void RemoveEmbedderData(const base::Time& delete_begin,
-                                  const base::Time& delete_end,
-                                  uint64_t remove_mask,
-                                  BrowsingDataFilterBuilder* filter_builder,
-                                  uint64_t origin_type_mask,
-                                  base::OnceClosure callback) = 0;
+  // Removes embedder-specific data. Once done, calls the |callback| and passes
+  // back any data types for which the deletion failed (which will always be a
+  // subset of the |remove_mask|).
+  virtual void RemoveEmbedderData(
+      const base::Time& delete_begin,
+      const base::Time& delete_end,
+      uint64_t remove_mask,
+      BrowsingDataFilterBuilder* filter_builder,
+      uint64_t origin_type_mask,
+      base::OnceCallback<void(/*failed_data_types=*/uint64_t)> callback) = 0;
 };
 
 }  // namespace content

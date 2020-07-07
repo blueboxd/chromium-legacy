@@ -69,13 +69,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, DISABLED_TabMuted) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "muted.html")) << message_;
 }
 
-// Flaky on windows: http://crbug.com/238667
-#if defined(OS_WIN)
-#define MAYBE_Tabs2 DISABLED_Tabs2
-#else
-#define MAYBE_Tabs2 Tabs2
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, MAYBE_Tabs2) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, Tabs2) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "crud2.html")) << message_;
 }
 

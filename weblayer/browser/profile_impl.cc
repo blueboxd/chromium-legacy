@@ -133,7 +133,7 @@ class ProfileImpl::DataClearer : public content::BrowsingDataRemover::Observer {
     remover_->RemoveAndReply(from_time, to_time, mask, origin_types, this);
   }
 
-  void OnBrowsingDataRemoverDone() override {
+  void OnBrowsingDataRemoverDone(uint64_t failed_data_types) override {
     std::move(callback_).Run();
     delete this;
   }

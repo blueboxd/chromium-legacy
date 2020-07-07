@@ -138,10 +138,6 @@ bool AppLaunchSigninScreen::IsUserSigninCompleted() const {
   return false;
 }
 
-void AppLaunchSigninScreen::Signout() {
-  NOTREACHED();
-}
-
 void AppLaunchSigninScreen::OnAuthFailure(const AuthFailure& error) {
   LOG(ERROR) << "Unlock failure: " << error.reason();
   webui_handler_->ClearAndEnablePassword();

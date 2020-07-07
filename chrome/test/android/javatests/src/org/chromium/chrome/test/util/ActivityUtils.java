@@ -16,6 +16,7 @@ import androidx.core.app.ActivityOptionsCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 
 import org.chromium.base.ApplicationStatus;
@@ -159,18 +160,15 @@ public class ActivityUtils {
             AppCompatActivity activity, String fragmentTag) {
         String failureReason =
                 String.format("Could not locate the fragment with tag '%s'", fragmentTag);
-        CriteriaHelper.pollInstrumentationThread(new Criteria(failureReason) {
-            @Override
-            public boolean isSatisfied() {
-                Fragment fragment =
-                        activity.getSupportFragmentManager().findFragmentByTag(fragmentTag);
-                if (fragment == null) return false;
-                if (fragment instanceof DialogFragment) {
-                    DialogFragment dialogFragment = (DialogFragment) fragment;
-                    return dialogFragment.getDialog() != null
-                            && dialogFragment.getDialog().isShowing();
-                }
-                return fragment.getView() != null;
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Fragment fragment = activity.getSupportFragmentManager().findFragmentByTag(fragmentTag);
+            Criteria.checkThat(fragment, Matchers.notNullValue());
+            if (fragment instanceof DialogFragment) {
+                DialogFragment dialogFragment = (DialogFragment) fragment;
+                Criteria.checkThat(dialogFragment.getDialog(), Matchers.notNullValue());
+                Criteria.checkThat(dialogFragment.getDialog().isShowing(), Matchers.is(true));
+            } else {
+                Criteria.checkThat(fragment.getView(), Matchers.notNullValue());
             }
         }, ACTIVITY_START_TIMEOUT_MS, CONDITION_POLL_INTERVAL_MS);
         return (T) activity.getSupportFragmentManager().findFragmentByTag(fragmentTag);
@@ -190,13 +188,8 @@ public class ActivityUtils {
     @SuppressWarnings("unchecked")
     public static <T extends Fragment> T waitForFragmentToAttach(
             final SettingsActivity activity, final Class<T> fragmentClass) {
-        String failureReason = String.format(
-                "Could not find fragment of type %s", fragmentClass.getCanonicalName());
-        CriteriaHelper.pollInstrumentationThread(new Criteria(failureReason) {
-            @Override
-            public boolean isSatisfied() {
-                return fragmentClass.isInstance(activity.getMainFragment());
-            }
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(activity.getMainFragment(), Matchers.instanceOf(fragmentClass));
         }, ACTIVITY_START_TIMEOUT_MS, CONDITION_POLL_INTERVAL_MS);
         return (T) activity.getMainFragment();
     }

@@ -5,7 +5,7 @@
 #ifndef ASH_DISPLAY_DISPLAY_SHUTDOWN_OBSERVER_H_
 #define ASH_DISPLAY_DISPLAY_SHUTDOWN_OBSERVER_H_
 
-#include "ash/session/session_observer.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "base/macros.h"
 
 namespace display {

@@ -95,4 +95,9 @@ void AssistantCardElement::Process(ProcessingCallback callback) {
   processor_->Process();
 }
 
+bool AssistantCardElement::Compare(const AssistantUiElement& other) const {
+  return other.type() == AssistantUiElementType::kCard &&
+         static_cast<const AssistantCardElement&>(other).html() == html_;
+}
+
 }  // namespace ash

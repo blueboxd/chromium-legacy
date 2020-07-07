@@ -97,6 +97,8 @@ void FormEventLoggerBase::OnDidShowSuggestions(
     OnSuggestionsShownOnce();
   }
 
+  has_logged_autocomplete_off_ |= field.autocomplete_attribute == "off";
+
   RecordShowSuggestions();
 }
 
@@ -272,6 +274,11 @@ void FormEventLoggerBase::RecordFunnelAndKeyMetrics() {
           has_logged_suggestion_filled_);
       key_metrics_rows << Tr{} << "FillingAcceptance"
                        << has_logged_suggestion_filled_;
+      UmaHistogramBoolean(
+          base::StrCat({"Autofill.Autocomplete.",
+                        (has_logged_autocomplete_off_ ? "Off" : "NotOff"),
+                        ".FillingAcceptance.", form_type_name_.c_str()}),
+          has_logged_suggestion_filled_);
     }
     if (has_logged_suggestion_filled_) {
       // Whether a filled form and submitted form required no fixes to filled

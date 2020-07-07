@@ -12,14 +12,6 @@ var feedUrl = decodeURIComponent(queryString[0]);
 // This extension's ID.
 var extension_id = chrome.i18n.getMessage("@@extension_id");
 
-// During testing, we cannot load the iframe and stylesheet from an external
-// source, so we allow loading them synchronously and stuff the frame with the
-// results. Since this is only allowed during testing, it isn't supported for
-// the official extension ID.
-var synchronousRequest =
-    extension_id != "nlbjncdgjeocebhnmkbbbdekmmmcbfjd" ?
-        queryString[1] == "synchronous" : false;
-
 // The XMLHttpRequest object that tries to load and parse the feed, and (if
 // testing) also the style sheet and the frame js.
 var req;
@@ -96,38 +88,19 @@ function main() {
   crypto.getRandomValues(tokenArray);
   token = [].join.call(tokenArray);
 
-  // Now fetch the data.
+  styleSheet = "<link rel='stylesheet' type='text/css' href='" +
+                   chrome.extension.getURL("style.css") + "'>";
+  frameScript = window.domAutomationController !== undefined ? "<script src='" +
+                    chrome.extension.getURL("test_support.js") +
+                    "'></" + "script>" : "";
+  frameScript += "<script src='" + chrome.extension.getURL("iframe.js") +
+                     "'></" + "script>";
+
+  // Now fetch the feed data.
   req = new XMLHttpRequest();
-  if (synchronousRequest) {
-    // Tests that load the html page directly through a file:// url don't have
-    // access to the js and css from the frame so we must load them first and
-    // inject them into the src for the iframe.
-    req.open("GET", "style.css", false);
-    req.send(null);
-
-    styleSheet = "<style>" + req.responseText + "</style>";
-
-    req.open("GET", "iframe.js", false);
-    req.send(null);
-
-    if (req.responseText.indexOf('//') != -1) {
-      console.log('Error: Single-line comment(s) found in iframe.js');
-    } else {
-      frameScript = "<script>" +
-                    req.responseText +
-                    "<" + "/script>";
-    }
-  } else {
-    // Normal loading just requires links to the css and the js file.
-    styleSheet = "<link rel='stylesheet' type='text/css' href='" +
-                    chrome.extension.getURL("style.css") + "'>";
-    frameScript = "<script src='" + chrome.extension.getURL("iframe.js") +
-                  "'></" + "script>";
-  }
-
   req.onload = handleResponse;
   req.onerror = handleError;
-  req.open("GET", feedUrl, !synchronousRequest);
+  req.open("GET", feedUrl, true);
   // Not everyone sets the mime type correctly, which causes handleResponse
   // to fail to XML parse the response text from the server. By forcing
   // it to text/xml we avoid this.
@@ -157,6 +130,10 @@ function handleFeedParsingFailed(error) {
   // The tests always expect an IFRAME, so add one showing the error.
   var html = "<body><span id=\"error\" class=\"item_desc\">" + error +
                "</span></body>";
+  if (window.domAutomationController) {
+    html += "<script src='" + chrome.extension.getURL("test_send_error.js") +
+                     "'></" + "script>";
+  }
 
   var error_frame = createFrame('error', html);
   var itemsTag = document.getElementById('items');
@@ -164,15 +141,12 @@ function handleFeedParsingFailed(error) {
 }
 
 function createFrame(frame_id, html) {
-  // During testing, we stuff the iframe with the script directly, so we relax
-  // the policy on running scripts under that scenario.
-  var csp = synchronousRequest ?
-      '<meta http-equiv="content-security-policy" ' +
-          'content="object-src \'none\'">' :
-      '<meta http-equiv="content-security-policy" ' +
+  var csp = '<meta http-equiv="content-security-policy" ' +
           'content="object-src \'none\'; script-src \'self\'">';
   frame = document.createElement('iframe');
   frame.id = frame_id;
+  frame.name = "preview";
+  frame.sandbox = "allow-scripts";
   frame.src = "data:text/html;charset=utf-8,<html>" + csp +
               "<!--Token:" + extension_id + token +
               "-->" + html + "</html>";

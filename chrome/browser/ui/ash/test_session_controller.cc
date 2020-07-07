@@ -76,3 +76,7 @@ void TestSessionController::AddSessionActivationObserverForAccountId(
 void TestSessionController::RemoveSessionActivationObserverForAccountId(
     const AccountId& account_id,
     ash::SessionActivationObserver* observer) {}
+
+void TestSessionController::AddObserver(ash::SessionObserver* observer) {}
+
+void TestSessionController::RemoveObserver(ash::SessionObserver* observer) {}

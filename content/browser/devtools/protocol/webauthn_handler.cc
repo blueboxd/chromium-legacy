@@ -288,6 +288,18 @@ Response WebAuthnHandler::SetUserVerified(const String& authenticator_id,
   return Response::Success();
 }
 
+Response WebAuthnHandler::SetAutomaticPresenceSimulation(
+    const String& authenticator_id,
+    bool enabled) {
+  VirtualAuthenticator* authenticator;
+  Response response = FindAuthenticator(authenticator_id, &authenticator);
+  if (!response.IsSuccess())
+    return response;
+
+  authenticator->SetUserPresence(enabled);
+  return Response::Success();
+}
+
 Response WebAuthnHandler::FindAuthenticator(
     const String& id,
     VirtualAuthenticator** out_authenticator) {

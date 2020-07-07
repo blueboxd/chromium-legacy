@@ -233,19 +233,13 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
 
         mTracker = TrackerFactory.getTrackerForProfile(profile);
 
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.HOMEPAGE_PROMO_CARD)) {
+            mHomepagePromoController =
+                    new HomepagePromoController(mActivity, mSnackbarManager, mTracker);
+        }
+
         // Mediator should be created before any Stream changes.
         mMediator = new FeedSurfaceMediator(this, snapScrollHelper, mPageNavigationDelegate);
-
-        // Add the homepage promo card when the feed is enabled and the feature is enabled. A null
-        // mStream object means that the feed is disabled. The intialization of the mStream object
-        // is handled during the construction of the FeedSurfaceMediator where there might be cases
-        // where the mStream object remains null because the feed is disabled, in which case the
-        // homepage promo card cannot be added to the feed even if the feature is enabled.
-        if (mStream != null && ChromeFeatureList.isEnabled(ChromeFeatureList.HOMEPAGE_PROMO_CARD)) {
-            mHomepagePromoController =
-                    new HomepagePromoController(mActivity, mSnackbarManager, mTracker, mMediator);
-            mMediator.onHomepagePromoStateChange();
-        }
 
         mUserEducationHelper = new UserEducationHelper(mActivity, mHandler);
     }
@@ -449,8 +443,10 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
         return mSigninPromoView;
     }
 
-    /** Update header views in the Stream. */
-    void updateHeaderViews(boolean isSignInPromoVisible) {
+    /**
+     *  Update header views in the Stream.
+     *  */
+    void updateHeaderViews(boolean isSignInPromoVisible, View homepagePromoView) {
         if (mStream == null) return;
 
         List<Header> headers = new ArrayList<>();
@@ -459,13 +455,9 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
             headers.add(new NonDismissibleHeader(mNtpHeader));
         }
 
-        // TODO(wenyufu): check Finch flag for whether sign-in takes precedence over homepage promo
-        if (!isSignInPromoVisible && mHomepagePromoController != null) {
-            View promoView = mHomepagePromoController.getPromoView();
-            if (promoView != null) {
-                mHomepagePromoView = promoView;
-                headers.add(new HomepagePromoHeader());
-            }
+        if (homepagePromoView != null) {
+            mHomepagePromoView = homepagePromoView;
+            headers.add(new HomepagePromoHeader());
         }
 
         if (mSectionHeaderView != null) {
@@ -517,6 +509,10 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
 
     UserEducationHelper getUserEducationHelper() {
         return mUserEducationHelper;
+    }
+
+    HomepagePromoController getHomepagePromoController() {
+        return mHomepagePromoController;
     }
 
     @VisibleForTesting

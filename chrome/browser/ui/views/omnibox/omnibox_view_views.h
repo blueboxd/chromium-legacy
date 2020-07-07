@@ -183,6 +183,10 @@ class OmniboxViewViews : public OmniboxView,
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsHideOnInteractionTest,
                            SameDocNavigations);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsHideOnInteractionTest,
+                           SameDocNavigationDuringAnimation);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsHideOnInteractionTest,
+                           UserInteractionDuringAnimation);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsHideOnInteractionTest,
                            SubframeNavigations);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsRevealOnHoverTest,
                            AlwaysShowFullURLs);
@@ -228,16 +232,6 @@ class OmniboxViewViews : public OmniboxView,
 
     // Returns true if the animation is currently running.
     bool IsAnimating();
-
-    // Returns true if the animation is currently running or has run since its
-    // creation. In contrast to IsAnimating(), this is useful for animations
-    // that should only run once in their lifetime (e.g., we animate to simplify
-    // the URL after user interaction, but only for the first user interaction
-    // on each navigation).
-    //
-    // TODO(https://crbug.com/1099875): this is an artifact of an old animation
-    // implementation and is no longer needed.
-    bool HasStarted();
 
     // Returns the bounds to which the animation is eliding, as passed in to
     // Start().
@@ -473,20 +467,21 @@ class OmniboxViewViews : public OmniboxView,
   // when the mouse hovers or exits the omnibox.
   std::unique_ptr<ElideAnimation> hover_elide_or_unelide_animation_;
   // When ShouldHidePathQueryRefOnInteraction() is enabled, we don't
-  // create any animations until a navigation finishes. At that point, we
-  // unelide the URL if it was a full cross-document navigation, and create
-  // |elide_after_interaction_animation_| to elide the URL once the
-  // user interacts with the page. If ShouldRevealPathQueryRefOnHover() is also
-  // enabled, we defer the creation of |hover_elide_or_unelide_animation_| until
-  // the user interacts with the page; its creation is deferred to avoid
-  // flickering the URL in and out as the user hovers over the omnibox before
-  // they've interacted with the page. After the first user interaction,
+  // create any animations until the user interacts with the page. When a
+  // navigation finishes, we unelide the URL if it was a full cross-document
+  // navigation. Once the user interacts with the page, we create and run
+  // |elide_after_interaction_animation_| to elide the URL. If
+  // ShouldRevealPathQueryRefOnHover() is also enabled, we defer the creation of
+  // |hover_elide_or_unelide_animation_| until the user interacts with the page
+  // as well, since we don't want to do any hover animations until the URL has
+  // been elided after user interaction. After the first user interaction,
   // |elide_after_interaction_animation_| doesn't run again until it's
-  // re-created for the next navigation, and |hover_elide_or_unelide_animation_|
-  // behaves as described above for the rest of the navigation. There are 2
-  // separate animations (one for after-interaction and one hovering) so that
-  // the state of the after-interaction animation can be queried to avoid
-  // flickering the URL after multiple user interactions.
+  // re-created after the next navigation, and
+  // |hover_elide_or_unelide_animation_| behaves as described above for the rest
+  // of the navigation. There are 2 separate animations (one for
+  // after-interaction and one hovering) so that the state of the
+  // after-interaction animation can be queried to know when the user has or has
+  // not already interacted with the page.
   std::unique_ptr<ElideAnimation> elide_after_interaction_animation_;
 
   // Selection persisted across temporary text changes, like popup suggestions.

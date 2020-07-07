@@ -192,6 +192,13 @@ View::~View() {
   if (parent_)
     parent_->RemoveChildView(this);
 
+  // Need to remove layout manager before deleting children because if we do not
+  // it is possible for layout-related calls (e.g. CalculatePreferredSize()) to
+  // be called on this view during one of the callbacks below. Since most
+  // layout managers access child view properties, this would result in a
+  // use-after-free error.
+  layout_manager_.reset();
+
   {
     internal::ScopedChildrenLock lock(this);
     for (auto* child : children_) {

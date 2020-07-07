@@ -14,10 +14,15 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
+#include "chrome/common/buildflags.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
+
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+#include "extensions/browser/supervised_user_extensions_delegate.h"
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 class ExtensionEnableFlowDelegate;
 
@@ -69,6 +74,17 @@ class ExtensionEnableFlow : public content::NotificationObserver,
   // Creates an ExtensionInstallPrompt in |prompt_|.
   void CreatePrompt();
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  // Called when the user dismisses the Parent Permission Dialog.
+  void OnParentPermissionDialogDone(
+      extensions::SupervisedUserExtensionsDelegate::ParentPermissionDialogResult
+          result);
+
+  // Called when the user dismisses the Extension Install Blocked By Parent
+  // Dialog.
+  void OnBlockedByParentDialogDone();
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
+
   // Starts/stops observing extension load notifications.
   void StartObserving();
   void StopObserving();
@@ -84,6 +100,8 @@ class ExtensionEnableFlow : public content::NotificationObserver,
   void OnExtensionUninstalled(content::BrowserContext* browser_context,
                               const extensions::Extension* extension,
                               extensions::UninstallReason reason) override;
+
+  void EnableExtension();
 
   void InstallPromptDone(ExtensionInstallPrompt::Result result);
 

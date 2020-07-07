@@ -74,7 +74,8 @@ class ClearBrowsingDataHandler : public SettingsPageUIHandler,
   void OnClearingTaskFinished(
       const std::string& webui_callback_id,
       const base::flat_set<browsing_data::BrowsingDataType>& data_types,
-      std::unique_ptr<AccountReconcilor::ScopedSyncedDataDeletion> deletion);
+      std::unique_ptr<AccountReconcilor::ScopedSyncedDataDeletion> deletion,
+      uint64_t failed_data_types);
 
   // Initializes the dialog UI. Called by JavaScript when the DOM is ready.
   void HandleInitialize(const base::ListValue* args);

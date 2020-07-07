@@ -16,7 +16,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/demo_mode/demo_mode_detector.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/oobe_configuration.h"
 #include "chrome/browser/chromeos/login/version_info_updater.h"
@@ -69,8 +68,6 @@ class CoreOobeView {
   virtual void ShowDeviceResetScreen() = 0;
   virtual void ShowEnableAdbSideloadingScreen() = 0;
   virtual void ShowEnableDebuggingScreen() = 0;
-  virtual void InitDemoModeDetection() = 0;
-  virtual void StopDemoModeDetection() = 0;
   virtual void UpdateKeyboardState() = 0;
 };
 
@@ -146,8 +143,6 @@ class CoreOobeHandler : public BaseWebUIHandler,
   void ShowEnableAdbSideloadingScreen() override;
   void ShowEnableDebuggingScreen() override;
 
-  void InitDemoModeDetection() override;
-  void StopDemoModeDetection() override;
   void UpdateKeyboardState() override;
 
   // ash::TabletModeObserver:
@@ -208,8 +203,6 @@ class CoreOobeHandler : public BaseWebUIHandler,
 
   // Help application used for help dialogs.
   scoped_refptr<HelpAppLauncher> help_app_;
-
-  DemoModeDetector demo_mode_detector_;
 
   mojo::Remote<ash::mojom::CrosDisplayConfigController> cros_display_config_;
 

@@ -61,7 +61,8 @@ class BrowsingDataQuotaHelperImpl : public BrowsingDataQuotaHelper {
                     base::OnceClosure completion,
                     const std::string& host,
                     blink::mojom::StorageType type,
-                    int64_t usage);
+                    int64_t usage,
+                    blink::mojom::UsageBreakdownPtr usage_breakdown);
 
   // Called when all QuotaManager::GetHostUsage requests are complete.
   void OnGetHostsUsageComplete(FetchResultCallback callback,

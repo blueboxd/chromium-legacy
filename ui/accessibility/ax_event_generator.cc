@@ -152,11 +152,11 @@ void AXEventGenerator::OnNodeDataChanged(AXTree* tree,
   DCHECK_EQ(tree_, tree);
   // Fire CHILDREN_CHANGED events when the list of children updates.
   // Internally we store inline text box nodes as children of a static text
-  // node, which enables us to determine character bounds and line layout.
-  // We don't expose those to platform APIs, though, so suppress
-  // CHILDREN_CHANGED events on static text nodes.
+  // node or a line break node, which enables us to determine character bounds
+  // and line layout. We don't expose those to platform APIs, though, so
+  // suppress CHILDREN_CHANGED events on static text nodes.
   if (new_node_data.child_ids != old_node_data.child_ids &&
-      new_node_data.role != ax::mojom::Role::kStaticText) {
+      !ui::IsText(new_node_data.role)) {
     AXNode* node = tree_->GetFromId(new_node_data.id);
     tree_events_[node].emplace(Event::CHILDREN_CHANGED,
                                ax::mojom::EventFrom::kNone,

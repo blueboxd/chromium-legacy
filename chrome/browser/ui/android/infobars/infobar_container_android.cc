@@ -49,7 +49,8 @@ void InfoBarContainerAndroid::PlatformSpecificAddInfoBar(
     infobars::InfoBar* infobar,
     size_t position) {
   DCHECK(infobar);
-  InfoBarAndroid* android_bar = static_cast<InfoBarAndroid*>(infobar);
+  infobars::InfoBarAndroid* android_bar =
+      static_cast<infobars::InfoBarAndroid*>(infobar);
   if (!android_bar) {
     // TODO(bulach): CLANK: implement other types of InfoBars.
     NOTIMPLEMENTED() << "CLANK: infobar identifier "
@@ -60,7 +61,8 @@ void InfoBarContainerAndroid::PlatformSpecificAddInfoBar(
   AttachJavaInfoBar(android_bar);
 }
 
-void InfoBarContainerAndroid::AttachJavaInfoBar(InfoBarAndroid* android_bar) {
+void InfoBarContainerAndroid::AttachJavaInfoBar(
+    infobars::InfoBarAndroid* android_bar) {
   if (android_bar->HasSetJavaInfoBar())
     return;
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -91,13 +93,14 @@ void InfoBarContainerAndroid::AttachJavaInfoBar(InfoBarAndroid* android_bar) {
 void InfoBarContainerAndroid::PlatformSpecificReplaceInfoBar(
     infobars::InfoBar* old_infobar,
     infobars::InfoBar* new_infobar) {
-  static_cast<InfoBarAndroid*>(new_infobar)->PassJavaInfoBar(
-      static_cast<InfoBarAndroid*>(old_infobar));
+  static_cast<infobars::InfoBarAndroid*>(new_infobar)
+      ->PassJavaInfoBar(static_cast<infobars::InfoBarAndroid*>(old_infobar));
 }
 
 void InfoBarContainerAndroid::PlatformSpecificRemoveInfoBar(
     infobars::InfoBar* infobar) {
-  InfoBarAndroid* android_infobar = static_cast<InfoBarAndroid*>(infobar);
+  infobars::InfoBarAndroid* android_infobar =
+      static_cast<infobars::InfoBarAndroid*>(infobar);
   android_infobar->CloseJavaInfoBar();
 }
 

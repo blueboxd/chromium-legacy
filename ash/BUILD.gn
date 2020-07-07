@@ -647,8 +647,6 @@ component("ash") {
     "session/session_activation_observer_holder.h",
     "session/session_controller_impl.cc",
     "session/session_controller_impl.h",
-    "session/session_observer.cc",
-    "session/session_observer.h",
     "session/teleport_warning_dialog.cc",
     "session/teleport_warning_dialog.h",
     "shelf/assistant_overlay.cc",

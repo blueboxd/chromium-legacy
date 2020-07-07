@@ -19,7 +19,7 @@ namespace send_tab_to_self {
 // Communicates to the user that a tab was shared from another device. See
 // SendTabToSelfInfoBar.java for UI specifics, and SendTabToSelfInfobarDelegate
 // for behavior specifics.
-class SendTabToSelfInfoBar : public InfoBarAndroid {
+class SendTabToSelfInfoBar : public infobars::InfoBarAndroid {
  public:
   ~SendTabToSelfInfoBar() override;
   // |delegate| must remain alive while showing this info bar.
@@ -30,7 +30,7 @@ class SendTabToSelfInfoBar : public InfoBarAndroid {
  private:
   explicit SendTabToSelfInfoBar(
       std::unique_ptr<SendTabToSelfInfoBarDelegate> delegate);
-  // InfoBarAndroid:
+  // infobars::InfoBarAndroid:
   base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
       JNIEnv* env) override;
   void OnLinkClicked(JNIEnv* env,

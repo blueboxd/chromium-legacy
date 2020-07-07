@@ -23,9 +23,12 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/clipboard/clipboard_reader.h"
+#include "third_party/blink/renderer/modules/clipboard/clipboard_writer.h"
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/blink/renderer/platform/scheduler/public/worker_pool.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 // There are 2 clipboard permissions defined in the spec:
@@ -234,28 +237,19 @@ void ClipboardPromise::HandleReadWithPermission(PermissionStatus status) {
   if (is_raw_) {
     RawSystemClipboard* raw_system_clipboard =
         GetLocalFrame()->GetRawSystemClipboard();
-    raw_system_clipboard->ReadAvailableFormatNames(
-        WTF::Bind(&ClipboardPromise::OnReadAvailableRawFormatNames,
-                  WrapPersistent(this)));
+    raw_system_clipboard->ReadAvailableFormatNames(WTF::Bind(
+        &ClipboardPromise::OnReadAvailableFormatNames, WrapPersistent(this)));
     return;
   }
   SystemClipboard* system_clipboard = GetLocalFrame()->GetSystemClipboard();
   Vector<String> available_types = system_clipboard->ReadAvailableTypes();
-  clipboard_item_data_.ReserveInitialCapacity(available_types.size());
-  for (String& type_to_read : available_types) {
-    ClipboardReader* reader =
-        ClipboardReader::Create(system_clipboard, type_to_read);
-    if (reader) {
-      clipboard_item_data_.emplace_back(std::move(type_to_read),
-                                        reader->ReadFromSystem());
-    }
-  }
-  ResolveRead();
+  OnReadAvailableFormatNames(available_types);
 }
 
 void ClipboardPromise::ResolveRead() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(GetExecutionContext());
+
   if (!clipboard_item_data_.size()) {
     script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kDataError, "No valid data on clipboard."));
@@ -270,7 +264,7 @@ void ClipboardPromise::ResolveRead() {
   script_promise_resolver_->Resolve(clipboard_items);
 }
 
-void ClipboardPromise::OnReadAvailableRawFormatNames(
+void ClipboardPromise::OnReadAvailableFormatNames(
     const Vector<String>& format_names) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!GetExecutionContext())
@@ -281,10 +275,10 @@ void ClipboardPromise::OnReadAvailableRawFormatNames(
     clipboard_item_data_.emplace_back(format_name,
                                       /* Placeholder value. */ nullptr);
   }
-  ReadNextRawRepresentation();
+  ReadNextRepresentation();
 }
 
-void ClipboardPromise::ReadNextRawRepresentation() {
+void ClipboardPromise::ReadNextRepresentation() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!GetExecutionContext())
     return;
@@ -295,9 +289,20 @@ void ClipboardPromise::ReadNextRawRepresentation() {
 
   String format_name =
       clipboard_item_data_[clipboard_representation_index_].first;
-  GetLocalFrame()->GetRawSystemClipboard()->Read(
-      format_name,
-      WTF::Bind(&ClipboardPromise::OnRawRead, WrapPersistent(this)));
+  if (is_raw_) {
+    GetLocalFrame()->GetRawSystemClipboard()->Read(
+        format_name,
+        WTF::Bind(&ClipboardPromise::OnRawRead, WrapPersistent(this)));
+    return;
+  }
+
+  ClipboardReader* clipboard_reader = ClipboardReader::Create(
+      GetLocalFrame()->GetSystemClipboard(), format_name, this);
+  if (!clipboard_reader) {
+    OnRead(nullptr);
+    return;
+  }
+  clipboard_reader->Read();
 }
 
 void ClipboardPromise::OnRawRead(mojo_base::BigBuffer data) {
@@ -317,7 +322,14 @@ void ClipboardPromise::OnRawRead(mojo_base::BigBuffer data) {
   }
   clipboard_item_data_[clipboard_representation_index_].second = blob;
   ++clipboard_representation_index_;
-  ReadNextRawRepresentation();
+  ReadNextRepresentation();
+}
+
+void ClipboardPromise::OnRead(Blob* blob) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  clipboard_item_data_[clipboard_representation_index_].second = blob;
+  ++clipboard_representation_index_;
+  ReadNextRepresentation();
 }
 
 void ClipboardPromise::HandleReadTextWithPermission(PermissionStatus status) {

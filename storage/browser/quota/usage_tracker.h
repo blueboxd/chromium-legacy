@@ -53,7 +53,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) UsageTracker
 
   void GetGlobalLimitedUsage(UsageCallback callback);
   void GetGlobalUsage(GlobalUsageCallback callback);
-  void GetHostUsage(const std::string& host, UsageCallback callback);
   void GetHostUsageWithBreakdown(const std::string& host,
                                  UsageWithBreakdownCallback callback);
   void UpdateUsageCache(QuotaClientType client_type,

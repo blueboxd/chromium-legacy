@@ -41,5 +41,17 @@ message FeedAction {
     // The duration for the action in milliseconds. In case of view actions this
     // is the duration for which the content is considered "viewed".
     optional int64 duration_ms = 3;
+
+    enum ActionOrigin {
+      UNKNOWN_ORIGIN = 0;
+      // Action generated from the current session on the client.
+      CLIENT_SESSION = 1;
+      // Action was previously cached on the client.
+      CLIENT_CACHE = 2;
+    }
+
+    // Where the action came from on the client.
+    // Optional: This field is purely for diagnostics.
+    optional ActionOrigin action_origin = 4;
   }
 }

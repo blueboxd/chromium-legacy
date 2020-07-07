@@ -17,22 +17,6 @@ namespace extensions {
 
 class SupervisedUserExtensionsDelegate {
  public:
-  virtual ~SupervisedUserExtensionsDelegate() = default;
-
-  // Returns true if |context| represents a supervised child account.
-  virtual bool IsChild(content::BrowserContext* context) const = 0;
-
-  // Returns true if |context| represents a supervised child account
-  // who may install extensions with parent permission.
-  virtual bool IsSupervisedChildWhoMayInstallExtensions(
-      content::BrowserContext* context) const = 0;
-
-  // Returns true if the current child user is allowed to install the specified
-  // |extension|.
-  virtual bool IsExtensionAllowedByParent(
-      const extensions::Extension& extension,
-      content::BrowserContext* context) const = 0;
-
   // Result of the parent permission dialog invocation.
   enum class ParentPermissionDialogResult {
     kParentPermissionReceived,
@@ -43,24 +27,29 @@ class SupervisedUserExtensionsDelegate {
   using ParentPermissionDialogDoneCallback =
       base::OnceCallback<void(ParentPermissionDialogResult)>;
 
-  // Shows a parent permission dialog for |extension| and call |done_callback|
-  // when it completes.
-  virtual void ShowParentPermissionDialogForExtension(
+  virtual ~SupervisedUserExtensionsDelegate() = default;
+
+  // Returns true if |context| represents a supervised child account.
+  virtual bool IsChild(content::BrowserContext* context) const = 0;
+
+  // Returns true if the parent has already approved the |extension|.
+  virtual bool IsExtensionAllowedByParent(
       const extensions::Extension& extension,
-      content::BrowserContext* context,
-      content::WebContents* contents,
-      ParentPermissionDialogDoneCallback done_callback) = 0;
+      content::BrowserContext* context) const = 0;
 
-  // Shows a dialog indicating that |extension| has been blocked and call
-  // |done_callback| when it completes.
-  virtual void ShowExtensionEnableBlockedByParentDialogForExtension(
-      const extensions::Extension* extension,
-      content::WebContents* contents,
-      base::OnceClosure done_callback) = 0;
-
-  // Records UMA metrics for supervised users trying to install or enable an
-  // extension when this action is blocked by the parent.
-  virtual void RecordExtensionEnableBlockedByParentDialogUmaMetric() = 0;
+  // If the current user is a child, the child user has a custodian/parent, the
+  // kSupervisedUserInitiatedExtensionInstall feature flag is enabled, and the
+  // parent has enabled the "Permissions for sites, apps and extensions" toggle,
+  // then display the Parent Permission Dialog and call
+  // |parent_permission_callback|. Otherwise, display the Extension Install
+  // Blocked by Parent Dialog and call |error_callback|. The two paths are
+  // mutually exclusive.
+  virtual void PromptForParentPermissionOrShowError(
+      const extensions::Extension& extension,
+      content::BrowserContext* browser_context,
+      content::WebContents* web_contents,
+      ParentPermissionDialogDoneCallback parent_permission_callback,
+      base::OnceClosure error_callback) = 0;
 };
 
 }  // namespace extensions

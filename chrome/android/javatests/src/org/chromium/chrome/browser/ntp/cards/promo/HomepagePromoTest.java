@@ -8,6 +8,7 @@ import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.instanceOf;
@@ -54,7 +55,10 @@ import org.chromium.chrome.browser.ntp.cards.SignInPromo;
 import org.chromium.chrome.browser.ntp.cards.promo.HomepagePromoUtils.HomepagePromoAction;
 import org.chromium.chrome.browser.partnercustomizations.BasePartnerBrowserCustomizationIntegrationTestRule;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.Pref;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.HomeButton;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
@@ -62,6 +66,7 @@ import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
+import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.browser_ui.widget.promo.PromoCardCoordinator.LayoutStyle;
@@ -80,7 +85,8 @@ import org.chromium.content_public.browser.test.util.TouchCommon;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @EnableFeatures(ChromeFeatureList.HOMEPAGE_PROMO_CARD)
-@Features.DisableFeatures(ChromeFeatureList.QUERY_TILES)
+@Features.
+DisableFeatures({ChromeFeatureList.QUERY_TILES, ChromeFeatureList.REPORT_FEED_USER_ACTIONS})
 public class HomepagePromoTest {
     public static final String PARTNER_HOMEPAGE_URL = "http://127.0.0.1:8000/foo.html";
     public static final String CUSTOM_TEST_URL = "http://127.0.0.1:8000/bar.html";
@@ -203,7 +209,8 @@ public class HomepagePromoTest {
         SharedPreferencesManager.getInstance().writeBoolean(
                 ChromePreferenceKeys.SIGNIN_PROMO_NTP_PROMO_DISMISSED, true);
 
-        mActivityTestRule.loadUrlInNewTab(UrlConstants.NTP_URL);
+        mActivityTestRule.loadUrlInNewTab("about:blank");
+        launchNewTabPage();
         Assert.assertNull("SignInPromo should be dismissed.",
                 mActivityTestRule.getActivity().findViewById(R.id.signin_promo_view_container));
 
@@ -214,6 +221,105 @@ public class HomepagePromoTest {
         Assert.assertEquals("Promo created should be recorded once.", 1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         METRICS_HOMEPAGE_PROMO, HomepagePromoAction.CREATED));
+    }
+
+    @Test
+    @SmallTest
+    public void testSetUp_SuppressingSignInPromo() {
+        // Adding another check in case Mockito does not prepare the mock correctly.
+        Mockito.doReturn(true).when(mMockVariationManager).isSuppressingSignInPromo();
+        Assert.assertTrue(mMockVariationManager.isSuppressingSignInPromo());
+
+        launchNewTabPage();
+
+        Assert.assertTrue("Homepage Promo should match creation criteria.",
+                HomepagePromoUtils.shouldCreatePromo(null));
+
+        View homepagePromo = mActivityTestRule.getActivity().findViewById(R.id.homepage_promo);
+        Assert.assertNotNull("Homepage promo should be added to NTP.", homepagePromo);
+        Assert.assertEquals(
+                "Homepage promo should be visible.", View.VISIBLE, homepagePromo.getVisibility());
+
+        Assert.assertEquals("Promo created should be recorded once.", 1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        METRICS_HOMEPAGE_PROMO, HomepagePromoAction.CREATED));
+
+        // Dismiss the HomepagePromo in shared preference, then load another NTP page.
+        HomepagePromoUtils.setPromoDismissedInSharedPreference(true);
+        mActivityTestRule.loadUrlInNewTab("about:blank");
+        launchNewTabPage();
+
+        Assert.assertNotNull("SignInPromo should be displayed on the screen.",
+                mActivityTestRule.getActivity().findViewById(R.id.signin_promo_view_container));
+        Assert.assertFalse("Homepage Promo should not match creation criteria.",
+                HomepagePromoUtils.shouldCreatePromo(null));
+        Assert.assertNull("Homepage promo should not show on the screen.",
+                mActivityTestRule.getActivity().findViewById(R.id.homepage_promo));
+    }
+
+    @Test
+    @SmallTest
+    public void testToggleFeed_WithSignIn() {
+        // Test to toggle stream when HomepagePromo is hide. Toggle feed should hide promo still.
+        launchNewTabPage();
+
+        Assert.assertNull("Homepage promo should not show for this NTP visit.",
+                mActivityTestRule.getActivity().findViewById(R.id.homepage_promo));
+        Assert.assertNotNull("SignInPromo should be displayed on the screen.",
+                mActivityTestRule.getActivity().findViewById(R.id.signin_promo_view_container));
+
+        NewTabPage ntp = getNewTabPage();
+        RecyclerView recyclerView =
+                (RecyclerView) ntp.getCoordinatorForTesting().getStreamForTesting().getView();
+
+        toggleFeedHeader(NTP_HEADER_POSITION + 1, recyclerView, false);
+
+        Assert.assertNull("Homepage promo should not show for this NTP visit.",
+                mActivityTestRule.getActivity().findViewById(R.id.homepage_promo));
+        Assert.assertNull("SignInPromo should be hidden from the screen.",
+                mActivityTestRule.getActivity().findViewById(R.id.signin_promo_view_container));
+
+        toggleFeedHeader(NTP_HEADER_POSITION + 1, recyclerView, true);
+
+        Assert.assertNull("Homepage promo should not show for this NTP visit.",
+                mActivityTestRule.getActivity().findViewById(R.id.homepage_promo));
+        Assert.assertNotNull("SignInPromo should be displayed on the screen.",
+                mActivityTestRule.getActivity().findViewById(R.id.signin_promo_view_container));
+    }
+
+    @Test
+    @SmallTest
+    public void testToggleFeed_WithHomepage() {
+        // Test to toggle NTP when feed is hidden.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            PrefServiceBridge.getInstance().setBoolean(Pref.ARTICLES_LIST_VISIBLE, false);
+        });
+        launchNewTabPage();
+
+        Assert.assertNotNull("Homepage promo should show.",
+                mActivityTestRule.getActivity().findViewById(R.id.homepage_promo));
+        Assert.assertNull("SignInPromo should not displayed on the screen as feed collapse.",
+                mActivityTestRule.getActivity().findViewById(R.id.signin_promo_view_container));
+
+        NewTabPage ntp = getNewTabPage();
+        RecyclerView recyclerView =
+                (RecyclerView) ntp.getCoordinatorForTesting().getStreamForTesting().getView();
+        int feedHeaderPosition = NTP_HEADER_POSITION + 2;
+
+        // As HomepagePromo exists, feed header is at
+        toggleFeedHeader(feedHeaderPosition, recyclerView, true);
+
+        Assert.assertNotNull("Homepage promo should keep being displayed.",
+                mActivityTestRule.getActivity().findViewById(R.id.homepage_promo));
+        Assert.assertNull("SignInPromo should be hidden from the screen for this NTP visit.",
+                mActivityTestRule.getActivity().findViewById(R.id.signin_promo_view_container));
+
+        toggleFeedHeader(feedHeaderPosition, recyclerView, false);
+
+        Assert.assertNotNull("Homepage promo should keep being displayed.",
+                mActivityTestRule.getActivity().findViewById(R.id.homepage_promo));
+        Assert.assertNull("SignInPromo should be hidden from the screen for this NTP visit.",
+                mActivityTestRule.getActivity().findViewById(R.id.signin_promo_view_container));
     }
 
     /**
@@ -254,7 +360,8 @@ public class HomepagePromoTest {
         Mockito.verify(mTracker, times(1)).dismissed(FeatureConstants.HOMEPAGE_PROMO_CARD_FEATURE);
 
         // Load to NTP one more time. The promo should not show.
-        mActivityTestRule.loadUrlInNewTab(UrlConstants.NTP_URL);
+        mActivityTestRule.loadUrlInNewTab("about:blank");
+        launchNewTabPage();
         Assert.assertNull("Homepage promo should not be added to NTP.",
                 mActivityTestRule.getActivity().findViewById(R.id.homepage_promo));
     }
@@ -401,5 +508,33 @@ public class HomepagePromoTest {
 
     private void setVariationForTests(@LayoutStyle int variation) {
         Mockito.when(mMockVariationManager.getLayoutVariation()).thenReturn(variation);
+    }
+
+    private void launchNewTabPage() {
+        mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
+        Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        NewTabPageTestUtils.waitForNtpLoaded(tab);
+    }
+
+    private NewTabPage getNewTabPage() {
+        Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        NewTabPageTestUtils.waitForNtpLoaded(tab);
+
+        Assert.assertTrue(tab.getNativePage() instanceof NewTabPage);
+        return (NewTabPage) tab.getNativePage();
+    }
+
+    private void toggleFeedHeader(int feedHeaderPosition, ViewGroup rootView, boolean expanded) {
+        onView(instanceOf(RecyclerView.class))
+                .perform(RecyclerViewActions.scrollToPosition(feedHeaderPosition),
+                        RecyclerViewActions.actionOnItemAtPosition(feedHeaderPosition, click()));
+
+        // Scroll to the same position in case the refresh brings the section header out of the
+        // screen.
+        onView(instanceOf(RecyclerView.class))
+                .perform(RecyclerViewActions.scrollToPosition(feedHeaderPosition));
+        waitForView(rootView,
+                allOf(withId(R.id.header_status),
+                        withText(expanded ? R.string.hide : R.string.show)));
     }
 }

@@ -139,12 +139,14 @@ AppContainerProfileBase::AppContainerProfileBase(const Sid& package_sid)
 AppContainerProfileBase::~AppContainerProfileBase() {}
 
 void AppContainerProfileBase::AddRef() {
-  ::InterlockedIncrement(&ref_count_);
+  // ref_count starts at 0 for this class so can increase from 0 (once).
+  CHECK(::InterlockedIncrement(&ref_count_) > 0);
 }
 
 void AppContainerProfileBase::Release() {
-  LONG ref_count = ::InterlockedDecrement(&ref_count_);
-  if (ref_count == 0) {
+  LONG result = ::InterlockedDecrement(&ref_count_);
+  CHECK(result >= 0);
+  if (result == 0) {
     delete this;
   }
 }

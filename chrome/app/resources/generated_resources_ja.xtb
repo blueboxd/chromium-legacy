@@ -281,7 +281,6 @@
 <translation id="1340527397989195812">ファイルアプリを使用してデバイスからメディアをバックアップします。</translation>
 <translation id="1341988552785875222">現在の壁紙は「<ph name="APP_NAME" />」により設定されています。別の壁紙を選択する前に「<ph name="APP_NAME" />」のアンインストールが必要となる場合があります。</translation>
 <translation id="1343865611738742294">Linux アプリに USB デバイスへのアクセスを許可します。USB デバイスを取り外した後は、Linux にデバイスのデータは残りません。</translation>
-<translation id="1344143111673240412">カメラの設定を変更するには、Parallels Desktop を再起動する必要があります</translation>
 <translation id="1347256498747320987">アップデートとアプリをインストールします。続行すると、このデバイスで Google、携帯通信会社、デバイスの製造元からのアップデートやアプリが自動的にダウンロードおよびインストールされることについても同意したと見なされます（ダウンロードの際にはモバイルデータ通信が使用される可能性もあります）。また、こうしたアプリの一部ではアプリ内購入をすすめられる場合があります。<ph name="BEGIN_LINK1" />詳細<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">更新は、<ph name="BATTERY_LEVEL" />% まで充電されたときに開始されます。</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -1197,7 +1196,6 @@
 <translation id="2470702053775288986">サポートされていない拡張機能が無効</translation>
 <translation id="2471469610750100598">黒（デフォルト）</translation>
 <translation id="2473195200299095979">このページを翻訳</translation>
-<translation id="2474848500897222119"><ph name="PRINTER_NAME" /> のインクがありません</translation>
 <translation id="2475982808118771221">エラーが発生しました</translation>
 <translation id="2476578072172137802">サイトの設定</translation>
 <translation id="2478176599153288112">「<ph name="EXTENSION" />」のメディアファイル権限</translation>
@@ -1503,7 +1501,6 @@
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> は管理者により指定されたプロキシ設定を使用しています</translation>
 <translation id="2825758591930162672">サブジェクトの公開鍵</translation>
 <translation id="2828650939514476812">Wi-Fi ネットワークへの接続</translation>
-<translation id="28291580771888953"><ph name="PRINTER_NAME" /> のキューに空きがありません</translation>
 <translation id="2835547721736623118">音声認識サービス</translation>
 <translation id="2836269494620652131">クラッシュ</translation>
 <translation id="2836635946302913370">このユーザー名でのログインは、管理者によって無効にされています。</translation>
@@ -2319,7 +2316,7 @@
 <translation id="3839516600093027468"><ph name="HOST" /> によるクリップボードへのアクセスを常にブロックする</translation>
 <translation id="3841964634449506551">パスワードが無効です</translation>
 <translation id="3842552989725514455">Serif フォント</translation>
-<translation id="3843058644024807390">マイクの設定を変更するには、Parallels Desktop を再起動する必要があります</translation>
+<translation id="3843464315703645664">内部で許可リストに登録済み</translation>
 <translation id="3846116211488856547">ウェブサイト、Android アプリなどの開発に役立つツールをご利用ください。Linux をインストールする際には <ph name="DOWNLOAD_SIZE" /> のデータがダウンロードされます。</translation>
 <translation id="3847319713229060696">すべてのユーザーのウェブ上のセキュリティ強化に協力する</translation>
 <translation id="385051799172605136">戻る</translation>
@@ -2778,7 +2775,6 @@
 <translation id="4453946976636652378"><ph name="SEARCH_ENGINE_NAME" /> で検索するか、URL を入力してください</translation>
 <translation id="4459169140545916303">最終同期: <ph name="DEVICE_LAST_ACTIVATED_TIME" /> 日前</translation>
 <translation id="4460014764210899310">グループを解除</translation>
-<translation id="4460343359907016103"><ph name="PRINTER_NAME" /> への接続中にエラーが発生しました</translation>
 <translation id="4462159676511157176">カスタム ネーム サーバー</translation>
 <translation id="4465236939126352372"><ph name="APP_NAME" /> の使用時間制限が <ph name="TIME" /> に設定されました</translation>
 <translation id="4465725236958772856"><ph name="NETWORK_INDEX" /> 番目のネットワーク（全 <ph name="NETWORK_COUNT" /> 件）、<ph name="NETWORK_NAME" />、管理者によって管理、接続</translation>
@@ -3076,7 +3072,6 @@
 <translation id="4864369630010738180">ログインしています...</translation>
 <translation id="4864805589453749318">学校用アカウントを追加する権限を付与している保護者を選択してください。</translation>
 <translation id="486635084936119914">ダウンロード後に特定の種類のファイルを自動的に開きます</translation>
-<translation id="4869213010169296107"><ph name="PRINTER_NAME" /> のトレイがありません</translation>
 <translation id="48704129375571883">その他の機能を追加</translation>
 <translation id="4870758487381879312">設定情報を取得するには管理者から提供されたパスワードを入力してください</translation>
 <translation id="4870903493621965035">ペア設定されたデバイスはありません</translation>
@@ -3327,6 +3322,7 @@
 <translation id="5184662919967270437">デバイスを更新しています</translation>
 <translation id="5185359571430619712">拡張機能を確認</translation>
 <translation id="5185386675596372454">「<ph name="EXTENSION_NAME" />」の最新バージョンは、さらに許可が必要なため無効になっています。</translation>
+<translation id="5185500136143151980">インターネットに接続されていません</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" />（<ph name="DEVICE" />）</translation>
 <translation id="5190926251776387065">ポートを有効にする</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> で複数のファイルがダウンロードされようとしています</translation>
@@ -3483,7 +3479,6 @@
 <translation id="5390112241331447203">送信された system_logs.txt ファイルをフィードバック レポートに含める。</translation>
 <translation id="5390677308841849479">暗い赤とオレンジ</translation>
 <translation id="5390743329570580756">送信先</translation>
-<translation id="5395869306561378615"><ph name="PRINTER_NAME" /> は一時停止中です</translation>
 <translation id="5397794290049113714">あなた</translation>
 <translation id="5398572795982417028">範囲外のページを参照しています。上限は <ph name="MAXIMUM_PAGE" /> です。</translation>
 <translation id="5398772614898833570">広告がブロックされました</translation>
@@ -3498,7 +3493,6 @@
 <translation id="5417312524372586921">ブラウザのテーマ</translation>
 <translation id="5419405654816502573">Voice Match</translation>
 <translation id="5420438158931847627">テキストと画像をどの程度鮮明に表示するかを指定します</translation>
-<translation id="5421498071721257877"><ph name="PRINTER_NAME" /> にデバイスエラーが発生しています</translation>
 <translation id="5422221874247253874">アクセス ポイント</translation>
 <translation id="5422781158178868512">外部ストレージ デバイスを認識できませんでした。</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3847,7 +3841,6 @@
 <translation id="5852137567692933493">再起動して Powerwash を実行する</translation>
 <translation id="5854912040170951372">スライス</translation>
 <translation id="5855267860608268405">既知の Wi-Fi ネットワーク</translation>
-<translation id="5855310969323666289"><ph name="PRINTER_NAME" /> のフタが開いています</translation>
 <translation id="5855643921295613558">0.6秒</translation>
 <translation id="5856721540245522153">デバッグ機能を有効にする</translation>
 <translation id="5857090052475505287">新しいフォルダ</translation>
@@ -3878,7 +3871,6 @@
 <translation id="5877064549588274448">チャンネルが変更されました。変更を適用するには、デバイスを再起動してください。</translation>
 <translation id="5877584842898320529">選択したプリンタは利用できないか、正しくインストールされていません。<ph name="BR" />プリンタを確認するか、別のプリンタを選択してみてください。</translation>
 <translation id="5882919346125742463">既知のネットワーク</translation>
-<translation id="5883716097305842571"><ph name="PRINTER_NAME" /> の出力エリアにほとんど空きがありません</translation>
 <translation id="5884474295213649357">このタブは USB デバイスに接続されています。</translation>
 <translation id="5886009770935151472">指 1</translation>
 <translation id="5889282057229379085">中間認証局の最大数: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4444,7 +4436,6 @@
 <translation id="6611972847767394631">ここからタブを確認できます</translation>
 <translation id="6612358246767739896">保護されたコンテンツ</translation>
 <translation id="6615455863669487791">表示</translation>
-<translation id="6617034477946102682"><ph name="PRINTER_NAME" /> にアクセスできません</translation>
 <translation id="6618097958368085618">続行する</translation>
 <translation id="6618744767048954150">実行中</translation>
 <translation id="6619058681307408113">ラインプリンタ デーモン（LPD）</translation>
@@ -4861,7 +4852,6 @@
 <translation id="7128151990937044829">通知がブロックされたときにアドレスバーにインジケーターを表示する</translation>
 <translation id="7131040479572660648"><ph name="WEBSITE_1" />、<ph name="WEBSITE_2" />、<ph name="WEBSITE_3" /> でのユーザーデータの読み取り</translation>
 <translation id="713122686776214250">ページを追加(&amp;G)...</translation>
-<translation id="7131379856697962078"><ph name="PRINTER_NAME" /> の出力エリアに空きがありません</translation>
 <translation id="7133578150266914903">管理者がこのデバイスをロールバックしています（<ph name="PROGRESS_PERCENT" />）</translation>
 <translation id="7134098520442464001">テキストを縮小する</translation>
 <translation id="7135729336746831607">Bluetooth をオンにしますか？</translation>
@@ -4880,7 +4870,6 @@
 <translation id="7152478047064750137">この拡張機能に特別な権限は必要ありません</translation>
 <translation id="7154130902455071009">スタート ページを次に変更します: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">カメラやファイルに保存されている写真</translation>
-<translation id="715657691234357425"><ph name="PRINTER_NAME" /> の紙残量が少なくなっています</translation>
 <translation id="7165320105431587207">ネットワークを設定できませんでした</translation>
 <translation id="716640248772308851">「<ph name="EXTENSION" />」はチェックした場所にある画像、動画、音声の各ファイルを読み取ることができます。</translation>
 <translation id="7167486101654761064">この種類のファイルは常に開く(&amp;A)</translation>
@@ -4911,7 +4900,6 @@
 <translation id="7197632491113152433">お使いのアカウントから、このデバイスで使用できるアプリが <ph name="NUMBER_OF_APPS" /> 個見つかりました。</translation>
 <translation id="7199158086730159431">ヘルプ(&amp;E)</translation>
 <translation id="7200083590239651963">設定の選択</translation>
-<translation id="7201042526153088083">Google Play のアプリとゲームを <ph name="DEVICE_TYPE" /> にインストールします。&lt;a target="_blank" href="<ph name="URL" />"&gt;詳細&lt;/a&gt;</translation>
 <translation id="720110658997053098">このデバイスをキオスクモードに固定する</translation>
 <translation id="7201118060536064622">「<ph name="DELETED_ITEM_NAME" />」が削除されました</translation>
 <translation id="7201420661433230412">ファイルを表示する</translation>
@@ -5217,7 +5205,6 @@
 <translation id="7598466960084663009">パソコンを再起動</translation>
 <translation id="7599527631045201165">デバイス名が長すぎます。短い名前を入力して、もう一度お試しください。</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" />を翻訳しない</translation>
-<translation id="7601297144931396972"><ph name="PRINTER_NAME" /> が紙詰まりを起こしています</translation>
 <translation id="760197030861754408"><ph name="LANDING_PAGE" /> で接続してください。</translation>
 <translation id="7602079150116086782">他のデバイスからのタブなし</translation>
 <translation id="7602173054665172958">印刷の管理</translation>
@@ -5228,6 +5215,7 @@
 <translation id="7609148976235050828">インターネットに接続して、もう一度お試しください。</translation>
 <translation id="7614260613810441905">サイトがデバイスのファイルやフォルダを編集しようとしたときに確認する（推奨）</translation>
 <translation id="761530003705945209">Google ドライブにデータをバックアップします。これにより、いつでも簡単にデータを復元したりデバイスを切り替えたりできます。バックアップ内容にはアプリのデータが含まれます。バックアップ データは Google にアップロードされ、Google アカウントのパスワードを使って暗号化されます。</translation>
+<translation id="7615365294369022248">アカウントの追加中にエラーが発生しました</translation>
 <translation id="7616214729753637086">デバイスを登録しています...</translation>
 <translation id="7617263010641145920">Play ストアをオンにする</translation>
 <translation id="7617366389578322136">「<ph name="DEVICE_NAME" />」に接続しています</translation>
@@ -5676,7 +5664,6 @@
           なお、Google Pay のお支払い方法と住所はこれには含まれていません。</translation>
 <translation id="81238879832906896">黄色と白の花</translation>
 <translation id="8124313775439841391">管理対象 ONC</translation>
-<translation id="8127535217699822294"><ph name="PRINTER_NAME" /> の紙がありません</translation>
 <translation id="813082847718468539">サイト情報を表示</translation>
 <translation id="8131740175452115882">確認</translation>
 <translation id="8133676275609324831">フォルダを開く(&amp;S)</translation>
@@ -5775,7 +5762,6 @@
 <translation id="8254954272268479918">Linux（ベータ版）を終了</translation>
 <translation id="8255451560461371599">背景なし</translation>
 <translation id="8256319818471787266">スパーキー</translation>
-<translation id="8256417822772703842"><ph name="PRINTER_NAME" /> のインク残量が少なくなっています</translation>
 <translation id="8257950718085972371">カメラへのアクセスを引き続きブロックする</translation>
 <translation id="8259239505248583312">続行</translation>
 <translation id="8260864402787962391">マウス</translation>
@@ -5956,7 +5942,6 @@
 <translation id="8487678622945914333">拡大</translation>
 <translation id="8490896350101740396">キオスクアプリ「<ph name="UPDATED_APPS" />」を更新しました。更新処理を完了するためにデバイスを再起動してください。</translation>
 <translation id="8493236660459102203">マイク:</translation>
-<translation id="8495940850609851342"><ph name="PRINTER_NAME" /> は停止中です</translation>
 <translation id="8496717697661868878">このプラグインを実行する</translation>
 <translation id="8497219075884839166">Windows ユーティリティ</translation>
 <translation id="8498214519255567734">薄明かりの下でも画面を見やすくします</translation>
@@ -6498,6 +6483,12 @@
 <translation id="9157096865782046368">0.8秒</translation>
 <translation id="9157697743260533322">すべてのユーザーで自動更新を行うよう設定できませんでした（プリフライト開始エラー: <ph name="ERROR_NUMBER" />）</translation>
 <translation id="9158715103698450907">認証時にネットワーク通信の問題が発生しました。ネットワーク接続を確認して、もう一度お試しください。</translation>
+<translation id="9159643062839240276">以下をお試しください。
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />ネットワーク ケーブル、モデム、ルーターを確認する
+      <ph name="LIST_ITEM" />Wi-Fi に接続しなおす
+      <ph name="LIST_ITEM" />Chrome Connectivity Diagnostics を実行する
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">ピクチャー イン ピクチャー</translation>
 <translation id="9168436347345867845">後で行う</translation>
 <translation id="9169496697824289689">キーボード ショートカットの表示</translation>

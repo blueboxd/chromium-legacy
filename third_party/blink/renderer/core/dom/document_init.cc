@@ -311,11 +311,8 @@ scoped_refptr<SecurityOrigin> DocumentInit::GetDocumentOrigin() const {
     // If we are a page popup in LayoutTests ensure we use the popup
     // owner's security origin so the tests can possibly access the
     // document via internals API.
-    document_origin = GetFrame()
-                          ->PagePopupOwner()
-                          ->GetDocument()
-                          .GetSecurityOrigin()
-                          ->IsolatedCopy();
+    auto* owner_context = GetFrame()->PagePopupOwner()->GetExecutionContext();
+    document_origin = owner_context->GetSecurityOrigin()->IsolatedCopy();
   } else if (owner_document_ && owner_document_->domWindow()) {
     document_origin = owner_document_->domWindow()->GetMutableSecurityOrigin();
   } else {
@@ -383,7 +380,7 @@ scoped_refptr<SecurityOrigin> DocumentInit::GetDocumentOrigin() const {
 DocumentInit& DocumentInit::WithOwnerDocument(Document* owner_document) {
   DCHECK(!owner_document_);
   DCHECK(!initiator_origin_ || !owner_document ||
-         owner_document->GetSecurityOrigin() == initiator_origin_);
+         owner_document->domWindow()->GetSecurityOrigin() == initiator_origin_);
   owner_document_ = owner_document;
   return *this;
 }
@@ -392,7 +389,7 @@ DocumentInit& DocumentInit::WithInitiatorOrigin(
     scoped_refptr<const SecurityOrigin> initiator_origin) {
   DCHECK(!initiator_origin_);
   DCHECK(!initiator_origin || !owner_document_ ||
-         owner_document_->GetSecurityOrigin() == initiator_origin);
+         owner_document_->domWindow()->GetSecurityOrigin() == initiator_origin);
   initiator_origin_ = std::move(initiator_origin);
   return *this;
 }

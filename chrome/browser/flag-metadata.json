@@ -1312,6 +1312,11 @@
     "expiry_milestone": 86
   },
   {
+    "name": "enable-bluetooth-spp-in-serial-api",
+    "owners": [ "mattreynolds", "odejesush", "vickymin@google.com" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "enable-breakpad-upload-no-delay",
     "owners": [ "olivierrobin" ],
     "expiry_milestone": 82
@@ -2187,7 +2192,7 @@
   {
     "name": "enable-skia-renderer",
     "owners": [ "backer", "kylechar" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 90
   },
   {
     "name": "enable-speculative-service-worker-start-on-query-input",
@@ -3501,16 +3506,6 @@
     "expiry_milestone": 89
   },
   {
-    "name": "omnibox-ui-hide-steady-state-url-scheme",
-    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "omnibox-ui-hide-steady-state-url-trivial-subdomains",
-    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "omnibox-ui-max-autocomplete-matches",
     "owners": [ "jdonnelly", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 85
@@ -4303,7 +4298,7 @@
     "expiry_milestone": 90
   },
   {
-    "name": "tint-gl-composited-content",
+    "name": "tint-composited-content",
     "owners": [ "chromeos-gfx@google.com" ],
     // This flag is used for QA & development on ChromeOS, which has no way to
     // customize switches.

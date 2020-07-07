@@ -67,7 +67,7 @@ class SurveyInfoBarDelegate : public infobars::InfoBarDelegate {
 };
 
 SurveyInfoBar::SurveyInfoBar(std::unique_ptr<SurveyInfoBarDelegate> delegate)
-    : InfoBarAndroid(
+    : infobars::InfoBarAndroid(
           std::move(delegate),
           base::BindRepeating(&ResourceMapper::MapToJavaDrawableId)) {}
 

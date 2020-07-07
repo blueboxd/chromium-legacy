@@ -18,7 +18,7 @@ class TranslateInfoBarDelegate;
 }
 
 class TranslateCompactInfoBar
-    : public InfoBarAndroid,
+    : public infobars::InfoBarAndroid,
       public translate::TranslateInfoBarDelegate::Observer {
  public:
   explicit TranslateCompactInfoBar(
@@ -59,7 +59,7 @@ class TranslateCompactInfoBar
       translate::TranslateInfoBarDelegate* delegate) override;
 
  private:
-  // InfoBarAndroid:
+  // infobars::InfoBarAndroid:
   base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
       JNIEnv* env) override;
   void ProcessButton(int action) override;

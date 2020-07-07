@@ -203,10 +203,6 @@ bool BrowserAccessibility::IsIgnored() const {
   return node()->IsIgnored();
 }
 
-bool BrowserAccessibility::IsTextOnlyObject() const {
-  return node()->IsText();
-}
-
 bool BrowserAccessibility::IsLineBreakObject() const {
   return node()->IsLineBreak();
 }
@@ -552,11 +548,11 @@ gfx::Rect BrowserAccessibility::GetRootFrameHypertextRangeBoundsRect(
       // Child objects are of length one, since they are represented by a single
       // embedded object character. The exception is text-only objects.
       int child_length_in_parent = 1;
-      if (child->IsTextOnlyObject())
+      if (child->IsText())
         child_length_in_parent = static_cast<int>(child->GetHypertext().size());
       if (start < child_length_in_parent) {
         gfx::Rect child_rect;
-        if (child->IsTextOnlyObject()) {
+        if (child->IsText()) {
           child_rect = child->GetRootFrameHypertextRangeBoundsRect(
               start, len, clipping_behavior, offscreen_result);
         } else {
@@ -1224,6 +1220,10 @@ bool BrowserAccessibility::IsMinimized() const {
   return false;
 }
 
+bool BrowserAccessibility::IsText() const {
+  return node()->IsText();
+}
+
 bool BrowserAccessibility::IsWebContent() const {
   return true;
 }
@@ -1545,8 +1545,7 @@ bool BrowserAccessibility::IsLeaf() const {
   // children. The only exception to enforce leafiness is when the button has
   // a single text child and to prevent screen readers from double speak.
   if (GetRole() == ax::mojom::Role::kButton) {
-    return InternalChildCount() == 1 &&
-           InternalGetFirstChild()->IsTextOnlyObject();
+    return InternalChildCount() == 1 && InternalGetFirstChild()->IsText();
   }
   return node()->IsLeaf();
 }
@@ -2159,7 +2158,7 @@ std::string BrowserAccessibility::GetInheritedFontFamilyName() const {
 ui::TextAttributeMap BrowserAccessibility::GetSpellingAndGrammarAttributes()
     const {
   ui::TextAttributeMap spelling_attributes;
-  if (IsTextOnlyObject()) {
+  if (IsText()) {
     const std::vector<int32_t>& marker_types =
         GetIntListAttribute(ax::mojom::IntListAttribute::kMarkerTypes);
     const std::vector<int>& marker_starts =
@@ -2282,7 +2281,7 @@ ui::TextAttributeMap BrowserAccessibility::ComputeTextAttributeMap(
       }
     }
 
-    if (child->IsTextOnlyObject()) {
+    if (child->IsText()) {
       const ui::TextAttributeMap spelling_attributes =
           child->GetSpellingAndGrammarAttributes();
       MergeSpellingAndGrammarIntoTextAttributes(spelling_attributes,

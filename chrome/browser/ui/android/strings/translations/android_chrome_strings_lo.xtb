@@ -642,7 +642,6 @@
 <translation id="6154478581116148741">ເປີດການລັອກໜ້າຈໍໃນການຕັ້ງຄ່າເພື່ອສົ່ງອອກລະຫັດຜ່ານຂອງທ່ານຈາກອຸປະກອນນີ້</translation>
 <translation id="6157392216611456285">ເລືອກ <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> ການປະ​ຢັດ​ຂໍ້​ມູນ</translation>
-<translation id="6192333916571137726">ດາວໂຫລດໄຟລ໌</translation>
 <translation id="6201345951596836663">ສຳເນົາລິ້ງແລ້ວ</translation>
 <translation id="6206830853671714236">ເລືອກວ່າຈະດາວໂຫຼດເມື່ອໃດ</translation>
 <translation id="6210748933810148297">ບໍ່ແມ່ນ <ph name="EMAIL" /> ບໍ?</translation>
@@ -922,7 +921,7 @@
 <translation id="8364299278605033898">ເບິ່ງເວັບໄຊຍອດນິຍົມ</translation>
 <translation id="8368027906805972958">ອຸປະກອນທີ່ບໍ່ຮູ້ຈັກ ຫຼື ບໍ່ຮອງຮັບ (<ph name="DEVICE_ID" />)</translation>
 <translation id="8393700583063109961">ສົ່ງຂໍ້ຄວາມ</translation>
-<translation id="8407396331882458341">1. ເລືອກ <ph name="APP_NAME" />\n2. ແຕະ “ທຸກເທື່ອ”</translation>
+<translation id="8407396331882458341">1. ເລືອກ <ph name="APP_NAME" />\n2. ແຕະ “ທຸກຄັ້ງ”</translation>
 <translation id="8413126021676339697">ສະ​ແດງ​ປະຫວັດທັງໝົດ</translation>
 <translation id="8425213833346101688">ປ່ຽນ​ແປງ</translation>
 <translation id="8427875596167638501">ແຖບສະແດງຕົວຢ່າງເປີດເຄິ່ງໜຶ່ງ</translation>

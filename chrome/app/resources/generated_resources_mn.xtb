@@ -281,7 +281,6 @@
 <translation id="1340527397989195812">Files app ашиглан төхөөрөмжөөс мэдээллийг хуулан авч хадгалах.</translation>
 <translation id="1341988552785875222">Одоогийн ханын зургийг '<ph name="APP_NAME" />'-с тохируулсан. Та өөр ханын зураг сонгохдоо '<ph name="APP_NAME" />'-г идэвхгүй болгох шаардлагатай.</translation>
 <translation id="1343865611738742294">Linux аппад USB төхөөрөмжид хандах зөвшөөрөл өгнө үү. USB төхөөрөмжийг салгасны дараа Linux үүнийг санахгүй.</translation>
-<translation id="1344143111673240412">Камерын тохиргоон дахь өөрчлөлт нь Parallels Desktop-г дахин ачаалахыг шаарддаг</translation>
 <translation id="1347256498747320987">Шинэчлэлтүүд болон аппуудыг суулгах. Үргэлжлүүлснээр та энэ төхөөрөмж нь Google, таны оператор компани, таны төхөөрөмжийн үйлдвэрлэгчээс шинэчлэлтүүд болон аппуудыг мөн адил автоматаар татаж, суулгаж (мобайл дата ашиглаж болзошгүй) болохыг зөвшөөрч байна. Эдгээр аппын зарим нь аппын худалдан авалтыг санал болгож болзошгүй. <ph name="BEGIN_LINK1" />Нэмэлт мэдээлэл авах<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">Батерейны түвшин <ph name="BATTERY_LEVEL" />% болох үед шинэчлэлтийг эхлүүлнэ.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -1192,7 +1191,6 @@
 <translation id="2470702053775288986">Дэмжигдээгүй өргөтгөл идэвхгүй болсон</translation>
 <translation id="2471469610750100598">Хар (өгөгдмөл)</translation>
 <translation id="2473195200299095979">Энэ хуудсыг орчуул</translation>
-<translation id="2474848500897222119"><ph name="PRINTER_NAME" />-н хор дууссан байна</translation>
 <translation id="2475982808118771221">Алдаа гарлаа</translation>
 <translation id="2476578072172137802">Сайтын тохиргоо</translation>
 <translation id="2478176599153288112">"<ph name="EXTENSION" />"-ийн Медиа-Файл зөвшөөрөл</translation>
@@ -1498,7 +1496,6 @@
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> таны администраторын прокси тохиргоог ашиглаж байна</translation>
 <translation id="2825758591930162672">Субьектийн нийтийн түлхүүр</translation>
 <translation id="2828650939514476812">Wi-Fi сүлжээнд холбогдох</translation>
-<translation id="28291580771888953"><ph name="PRINTER_NAME" />-н дараалал дүүрсэн байна</translation>
 <translation id="2835547721736623118">Яриа таних үйлчилгээ</translation>
 <translation id="2836269494620652131">Эвдрэл</translation>
 <translation id="2836635946302913370">Энэ хэрэглэгчийн нэрээр нэвтрэхийг администратор хориглосон байна.</translation>
@@ -2314,7 +2311,7 @@
 <translation id="3839516600093027468"><ph name="HOST" />-г түр санах ой харахыг тогтмол хориглох</translation>
 <translation id="3841964634449506551">Нууц үг буруу байна</translation>
 <translation id="3842552989725514455">Шовх үзүүртэй үгсийн фонт</translation>
-<translation id="3843058644024807390">Микрофоны тохиргоон дахь өөрчлөлт нь Parallels Desktop-г дахин ачаалахыг шаарддаг</translation>
+<translation id="3843464315703645664">Дотооддоо зөвшөөрсөн жагсаалт</translation>
 <translation id="3846116211488856547">Вэб сайт, Android апп болон бусад зүйлийг хөгжүүлэхэд зориулсан хэрэгслийг аваарай. Linux-г суулгаснаар <ph name="DOWNLOAD_SIZE" /> өгөгдөл татаж авах болно.</translation>
 <translation id="3847319713229060696">Хүн бүрийн төлөө вэбийн аюулгүй байдлыг сайжруулахад туслах</translation>
 <translation id="385051799172605136">Буцах</translation>
@@ -2772,7 +2769,6 @@
 <translation id="4453946976636652378"><ph name="SEARCH_ENGINE_NAME" />-г хайх эсвэл URL оруулах</translation>
 <translation id="4459169140545916303"><ph name="DEVICE_LAST_ACTIVATED_TIME" /> өдрийн өмнөөс идэвхтэй</translation>
 <translation id="4460014764210899310">Бүлгийг болих</translation>
-<translation id="4460343359907016103"><ph name="PRINTER_NAME" />-д холбогдоход алдаа гарлаа</translation>
 <translation id="4462159676511157176">Стандарт нэртэй серверүүд</translation>
 <translation id="4465236939126352372"><ph name="APP_NAME" />-д <ph name="TIME" />-н цагийн хязгаар тохируулсан</translation>
 <translation id="4465725236958772856">Сүлжээ: <ph name="NETWORK_COUNT" />-н <ph name="NETWORK_INDEX" />, <ph name="NETWORK_NAME" />, таны администратор удирддаг, холбогдох</translation>
@@ -3070,7 +3066,6 @@
 <translation id="4864369630010738180">Нэвтэрч байна…</translation>
 <translation id="4864805589453749318">Сургуулийн бүртгэл нэмэх зөвшөөрөл олгож буй эцэг эхээ сонгоно уу.</translation>
 <translation id="486635084936119914">Татаж авсны дараа тодорхой файлын хэлбэрийг автоматаар нээх</translation>
-<translation id="4869213010169296107"><ph name="PRINTER_NAME" />-н цаасны тэвш байхгүй байна</translation>
 <translation id="48704129375571883">Нэмэлт онцлог нэмэх</translation>
 <translation id="4870758487381879312">Тохируулгын мэдээллийг авахын тулд админы өгсөн нууц үгийг оруулна уу</translation>
 <translation id="4870903493621965035">Холбосон төхөөрөмж алга</translation>
@@ -3321,6 +3316,7 @@
 <translation id="5184662919967270437">Таны төхөөрөмжийг шинэчилж байна</translation>
 <translation id="5185359571430619712">Өргөтгөлүүдийг шалгах</translation>
 <translation id="5185386675596372454"><ph name="EXTENSION_NAME" />-ийн хамгийн сүүлийн хувилбар нь олон зөвшөөрөл шаарддаг учир идэвхгүй болсон байна.</translation>
+<translation id="5185500136143151980">Интернэт алга</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> ( <ph name="DEVICE" /> )</translation>
 <translation id="5190926251776387065">Портыг идэвхжүүлэх</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> хэд хэдэн файл татах хүсэлтэй байна</translation>
@@ -3477,7 +3473,6 @@
 <translation id="5390112241331447203">Санал хүсэлтийн тайланд илгээсэн system_logs.txt файлыг багтаана.</translation>
 <translation id="5390677308841849479">Бараан улаан ба улбар шар</translation>
 <translation id="5390743329570580756">Дараахад илгээх</translation>
-<translation id="5395869306561378615"><ph name="PRINTER_NAME" />-г түр зогсоосон</translation>
 <translation id="5397794290049113714">Та</translation>
 <translation id="5398572795982417028">Хуудасны лавлагааны хязгаар болох <ph name="MAXIMUM_PAGE" />-с хэтэрсэн байна</translation>
 <translation id="5398772614898833570">Зарыг блоклосон</translation>
@@ -3492,7 +3487,6 @@
 <translation id="5417312524372586921">Хөтчийн загвар</translation>
 <translation id="5419405654816502573">Voice match</translation>
 <translation id="5420438158931847627">Текст болон зургийн хурцлалтыг тодорхойлдог</translation>
-<translation id="5421498071721257877"><ph name="PRINTER_NAME" />-д төхөөрөмжийн алдаа гарсан байна</translation>
 <translation id="5422221874247253874">Хандах цэг</translation>
 <translation id="5422781158178868512">Уучлаарай, таны мэдээлэл хадгалах төхөөрөмжийг танихгүй байна.</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3842,7 +3836,6 @@
 <translation id="5852137567692933493">Дахин асаах эсвэл үйлдвэрийн тохиргоонд нь буцааж оруулах</translation>
 <translation id="5854912040170951372">Slice</translation>
 <translation id="5855267860608268405">Мэдэгдэж байгаа Wi-Fi сүлжээнүүд</translation>
-<translation id="5855310969323666289"><ph name="PRINTER_NAME" />-н таг онгорхой байна</translation>
 <translation id="5855643921295613558">0.6 секунд</translation>
 <translation id="5856721540245522153">Вирусны эсрэг программыг идэвхжүүлэх</translation>
 <translation id="5857090052475505287">Шинэ хавтас</translation>
@@ -3873,7 +3866,6 @@
 <translation id="5877064549588274448">Суваг өөрчлөгдсөн. Өөрчлөлтийг хадгалахын тулд төхөөрөмжийг дахин унтрааж асаана уу.</translation>
 <translation id="5877584842898320529">Сонгосон хэвлэгч боломжгүй эсвэл буруу суулгасан байна. <ph name="BR" /> Хэвлэгчээ шалгах эсвэл өөр хэвлэгч сонгож үзнэ үү.</translation>
 <translation id="5882919346125742463">Мэдэгдэж байгаа сүлжээ</translation>
-<translation id="5883716097305842571"><ph name="PRINTER_NAME" />-н гаралтын хэсэг бараг дүүрсэн байна</translation>
 <translation id="5884474295213649357">Энэ чихтэй хуудас USB төхөөрөмжид холбогдсон байна.</translation>
 <translation id="5886009770935151472">Хуруу 1</translation>
 <translation id="5889282057229379085">Завсрын Cas-ийн хамгийн их тоо: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4438,7 +4430,6 @@
 <translation id="6611972847767394631">Эндээс табуудаа олоорой</translation>
 <translation id="6612358246767739896">Хамгаалагдсан агуулга</translation>
 <translation id="6615455863669487791">Надад үзүүлнэ үү</translation>
-<translation id="6617034477946102682"><ph name="PRINTER_NAME" />-д холбогдох боломжгүй байна</translation>
 <translation id="6618097958368085618">Ямар ч үед хадгалах</translation>
 <translation id="6618744767048954150">Ажиллуулж байна</translation>
 <translation id="6619058681307408113">Шугам хэвлэгчийн Дэмон (LPD)</translation>
@@ -4855,7 +4846,6 @@
 <translation id="7128151990937044829">Мэдэгдлийг хориглох үед хаяг оруулах хэсэгт заалтыг харуулах</translation>
 <translation id="7131040479572660648"><ph name="WEBSITE_1" /> , <ph name="WEBSITE_2" /> болон <ph name="WEBSITE_3" /> дээрх өөрийнхөө мэдээллийг уншина уу</translation>
 <translation id="713122686776214250">Хуудас нэмэх...</translation>
-<translation id="7131379856697962078"><ph name="PRINTER_NAME" />-н гаралтын хэсэг дүүрсэн байна</translation>
 <translation id="7133578150266914903">Таны админ энэ төхөөрөмжийг буцаан шилжүүлж байна (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">Текстийг хэмжээг бууруул</translation>
 <translation id="7135729336746831607">Bluetooth-г асаах уу?</translation>
@@ -4874,7 +4864,6 @@
 <translation id="7152478047064750137">Энэ өргөтгөл ямар нэгэн тусгай зөвшөөрөл шаарддаггүй</translation>
 <translation id="7154130902455071009">Өөрийн эхлэх хуудсыг :<ph name="START_PAGE" /> болгож өөрчлөх</translation>
 <translation id="7155171745945906037">Камер эсвэл файлд байгаа зураг</translation>
-<translation id="715657691234357425"><ph name="PRINTER_NAME" />-н цаас бага байна</translation>
 <translation id="7165320105431587207">Сүлжээг тохируулж чадсангүй</translation>
 <translation id="716640248772308851">"<ph name="EXTENSION" />" нь шалгасан байрлал дахь зураг, видео бичлэг болон дууны файлуудыг уншиж чадна.</translation>
 <translation id="7167486101654761064">&amp; Үргэлж энэ төрлийн файлыг нээх</translation>
@@ -4905,7 +4894,6 @@
 <translation id="7197632491113152433">Таны бүртгэлээс энэ төхөөрөмж дээр ашиглах боломжтой <ph name="NUMBER_OF_APPS" /> апп олдлоо.</translation>
 <translation id="7199158086730159431">Тусламж хүсэх</translation>
 <translation id="7200083590239651963">Тохируулга сонгох</translation>
-<translation id="7201042526153088083"><ph name="DEVICE_TYPE" /> дээрээ Google Play-с апп, тоглоом суулгах. &lt;a target="_blank" href="<ph name="URL" />"&gt;Нэмэлт мэдээлэл авах&lt;/a&gt;</translation>
 <translation id="720110658997053098">Энэ төхөөрөмжийг kiosk горимоор бүрмөсөн тохируулах</translation>
 <translation id="7201118060536064622">'<ph name="DELETED_ITEM_NAME" />'-г устгасан</translation>
 <translation id="7201420661433230412">Файл харах</translation>
@@ -5211,7 +5199,6 @@
 <translation id="7598466960084663009">Компьютерийг дахин эхлүүлэх</translation>
 <translation id="7599527631045201165">Төхөөрөмжийн нэр хэт урт байна. Дахин оролдохын тулд богино нэр оруулна уу.</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" />-ийг хэзээ ч бүү хөрвүүл</translation>
-<translation id="7601297144931396972"><ph name="PRINTER_NAME" />-н цаас гацсан байна</translation>
 <translation id="760197030861754408">Холбохын тулд <ph name="LANDING_PAGE" />-д очно уу.</translation>
 <translation id="7602079150116086782">Бусад төхөөрөмжөөс ирсэн цонх байхгүй байна</translation>
 <translation id="7602173054665172958">Хэвлэлийн удирдлага</translation>
@@ -5222,6 +5209,7 @@
 <translation id="7609148976235050828">Интернэтэд холбогдоод дахин оролдоно уу.</translation>
 <translation id="7614260613810441905">Сайт таны төхөөрөмжийн файл эсвэл фолдерыг засах хүсэлтэй үед асуух (санал болгосон)</translation>
 <translation id="761530003705945209">Google Драйвд хуулбарлана уу. Өгөгдлөө амархан сэргээх эсвэл хүссэн үедээ төхөөрөмж хооронд сэлгэнэ үү. Таны нөөцлөлтөд аппын өгөгдөл багтана. Таны нөөцлөлтийг Google-д байршуулдаг бөгөөд таны Google Бүртгэлийн нууц үгийг ашиглан шифрлэдэг.</translation>
+<translation id="7615365294369022248">Бүртгэл нэмэхэд алдаа гарлаа</translation>
 <translation id="7616214729753637086">Төхөөрөмжийг бүртгүүлж байна...</translation>
 <translation id="7617263010641145920">Play Store-г асаах</translation>
 <translation id="7617366389578322136">"<ph name="DEVICE_NAME" />" руу холбогдож байна</translation>
@@ -5666,7 +5654,6 @@
 <translation id="8123590694679414600">Өгөгөдлийг таны синкийн нэвтрэх үгтэй <ph name="TIME" />-д шифрлэсэн байна. Үүнд Google Pay-н төлбөрийн хэрэгслүүд болон хаягуудыг агуулдаггүй.</translation>
 <translation id="81238879832906896">Шар, цагаан цэцэг</translation>
 <translation id="8124313775439841391">Managed ONC</translation>
-<translation id="8127535217699822294"><ph name="PRINTER_NAME" />-н цаас дууссан байна</translation>
 <translation id="813082847718468539">Сайтын мэдээллийг үзэх</translation>
 <translation id="8131740175452115882">Батлах</translation>
 <translation id="8133676275609324831">&amp;Хавтсанд харуулах</translation>
@@ -5765,7 +5752,6 @@
 <translation id="8254954272268479918">Linux (Бэта)-г унтраах</translation>
 <translation id="8255451560461371599">Арын дэвсгэр байхгүй</translation>
 <translation id="8256319818471787266">Sparky</translation>
-<translation id="8256417822772703842"><ph name="PRINTER_NAME" />-н хор бага байна</translation>
 <translation id="8257950718085972371">Камерын хандалтыг хаах</translation>
 <translation id="8259239505248583312">Эхэлцгээе</translation>
 <translation id="8260864402787962391">Хулгана</translation>
@@ -5946,7 +5932,6 @@
 <translation id="8487678622945914333">Томруулж харах</translation>
 <translation id="8490896350101740396">Дараах киоск апп-ууд "<ph name="UPDATED_APPS" />" шинэчлэгдсэн байна. Шинэчлэх үйл явцыг дуусгахын тулд төхөөрөмжийг унтрааж асаах хэрэгтэй.</translation>
 <translation id="8493236660459102203">Микрофон:</translation>
-<translation id="8495940850609851342"><ph name="PRINTER_NAME" /> зогссон байна</translation>
 <translation id="8496717697661868878">Энэ нэмэлт өргөтгөлийг ажиллуул</translation>
 <translation id="8497219075884839166">Windows хэрэгсэл</translation>
 <translation id="8498214519255567734">Дэлгэцээ бүдэг гэрэлтэй үед харах эсвэл уншихад илүү хялбар болгоно</translation>
@@ -6486,6 +6471,12 @@
 <translation id="9157096865782046368">0.8 секунд</translation>
 <translation id="9157697743260533322">Бүх хэрэглэгчид зориулсан автоматаар шинэчлэх тохируулга амжилтгүй боллоо (шалгалт эхлүүлэлтийн алдаа: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Өө! Таниулах явцад сүлжээнд алдаа гарлаа. Сүлжээнийхээ холболтыг шалгаад дахин оролдоно уу.</translation>
+<translation id="9159643062839240276">Оролдож үзэх:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />Сүлжээний кабель, модем болон рүүтэрийг шалгах
+      <ph name="LIST_ITEM" />Wi-Fi-д дахин холбогдох
+      <ph name="LIST_ITEM" />Chrome холбоосны оношилгоог ажиллуулах
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">Дэлгэцэн доторх дэлгэц</translation>
 <translation id="9168436347345867845">Үүнийг дараа хийх</translation>
 <translation id="9169496697824289689">Компьютерын гарын богино холбоосыг үзэх</translation>

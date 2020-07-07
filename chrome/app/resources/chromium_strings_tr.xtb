@@ -16,6 +16,7 @@
 <translation id="1774152462503052664">Chromium'un arka planda çalışmasına izin ver</translation>
 <translation id="1779356040007214683">Chromium'u daha güvenli bir hale getirmek için <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> altında listelenmeyen ve bilginiz dışında eklenmiş olabilecek bazı uzantıları devre dışı bıraktık.</translation>
 <translation id="1808667845054772817">Chromium'u yeniden yükle</translation>
+<translation id="1865035435995743337">Chromium, cihaz yazılımınızı kontrol edemiyor. İnternet bağlantınızı kontrol etmeyi deneyin.</translation>
 <translation id="1881322772814446296">Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Chromium profilinizi denetleme izni veriyorsunuz. Uygulamalarınız, yer işaretleriniz, geçmişiniz, şifreleriniz ve diğer ayarlarınız gibi Chromium verileriniz kalıcı olarak <ph name="USER_NAME" /> ile bağlantılandırılacaktır. Google Hesapları Hesap Özeti'ni kullanarak bu verileri silebilecek, ancak bu verileri başka bir hesapla ilişkilendiremeyeceksiniz. İsterseniz mevcut Chromium verilerinizi ayrı tutmak için yeni bir profil oluşturabilirsiniz. <ph name="LEARN_MORE" /></translation>
 <translation id="1911763535808217981">Bu özelliği kapatarak Chromium'da oturum açmadan Gmail gibi Google sitelerinde oturum açabilirsiniz</translation>
 <translation id="1929939181775079593">Chromium yanıt vermiyor. Şimdi yeniden başlatılsın mı?</translation>
@@ -112,6 +113,7 @@
 <translation id="5480860683791598150">Konumunuzu bu siteyle paylaşabilmek için Chromium'un konum bilgilerinize erişmesi gerekiyor</translation>
 <translation id="549669000822060376">Chromium en son sistem güncellemelerini yüklerken lütfen bekleyin.</translation>
 <translation id="5496810170689441661">Chromium şifreleri düzenlemeye çalışıyor. Buna izin vermek için Windows şifrenizi yazın.</translation>
+<translation id="5556694182460963866">Yöneticiniz Chromium'un zararlı yazılım kontrolünü devre dışı bıraktı</translation>
 <translation id="5623402015214259806">{0,plural, =0{Bir Chromium güncellemesi var}=1{Bir Chromium güncellemesi var}other{# gün önce kullanıma sunulmuş bir Chromium güncellemesi var}}</translation>
 <translation id="5631814766731275228">Chromium adı ve resmi</translation>
 <translation id="5634636535844844681">Chromium, Windows 7 veya daha sonraki bir sürümü gerektirir.</translation>
@@ -192,6 +194,7 @@ Chromium ayarlarınızı kurtaramıyor.</translation>
       Chromium OS ayarlarınıza<ph name="LINK_END" /> bakın</translation>
 <translation id="761356813943268536">Chromium kameranızı ve mikrofonunuzu kullanıyor.</translation>
 <translation id="7617377681829253106">Chromium daha da iyi bir hale geldi</translation>
+<translation id="7628001322379820951">Chromium, bilgisayarınızda zararlı yazılım buldu</translation>
 <translation id="7686590090926151193">Chromium varsayılan tarayıcınız değil</translation>
 <translation id="7689606757190482937">Chromium'u cihazlarınız arasında senkronize edin ve kişiselleştirin</translation>
 <translation id="7729447699958282447">Senkronizasyon alan adınızda kullanılamadığından Chromium, verilerinizi senkronize edemedi.</translation>

@@ -5,7 +5,7 @@
 #ifndef ASH_SYSTEM_MODEL_SESSION_LENGTH_LIMIT_MODEL_H_
 #define ASH_SYSTEM_MODEL_SESSION_LENGTH_LIMIT_MODEL_H_
 
-#include "ash/session/session_observer.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"

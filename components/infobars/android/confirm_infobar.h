@@ -11,6 +11,8 @@
 #include "components/infobars/android/infobar_android.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 
+namespace infobars {
+
 class ConfirmInfoBar : public InfoBarAndroid {
  public:
   ConfirmInfoBar(std::unique_ptr<ConfirmInfoBarDelegate> delegate,
@@ -33,5 +35,7 @@ class ConfirmInfoBar : public InfoBarAndroid {
  private:
   DISALLOW_COPY_AND_ASSIGN(ConfirmInfoBar);
 };
+
+}  // namespace infobars
 
 #endif  // COMPONENTS_INFOBARS_ANDROID_CONFIRM_INFOBAR_H_

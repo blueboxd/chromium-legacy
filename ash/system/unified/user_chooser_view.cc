@@ -247,7 +247,7 @@ UserItemButton::UserItemButton(int user_index,
   capture_icon_->SetImage(gfx::CreateVectorIcon(
       kSystemTrayRecordingIcon,
       AshColorProvider::Get()->GetContentLayerColor(
-          ContentLayerType::kIconAlert, AshColorMode::kDark)));
+          ContentLayerType::kIconColorAlert, AshColorMode::kDark)));
   if (!has_close_button) {
     // Add a padding with the same size as the close button,
     // so as to align all media indicators in a column.

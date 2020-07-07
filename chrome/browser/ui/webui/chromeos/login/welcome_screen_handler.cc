@@ -88,7 +88,6 @@ void WelcomeScreenHandler::Show() {
       "isDeveloperMode", base::CommandLine::ForCurrentProcess()->HasSwitch(
                              chromeos::switches::kSystemDevMode));
   ShowScreenWithData(kScreenId, &welcome_screen_params);
-  core_oobe_view_->InitDemoModeDetection();
 }
 
 void WelcomeScreenHandler::Hide() {}
@@ -101,10 +100,6 @@ void WelcomeScreenHandler::Bind(WelcomeScreen* screen) {
 void WelcomeScreenHandler::Unbind() {
   screen_ = nullptr;
   BaseScreenHandler::SetBaseScreen(nullptr);
-}
-
-void WelcomeScreenHandler::StopDemoModeDetection() {
-  core_oobe_view_->StopDemoModeDetection();
 }
 
 void WelcomeScreenHandler::ReloadLocalizedContent() {

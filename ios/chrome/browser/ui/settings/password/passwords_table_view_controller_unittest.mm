@@ -22,7 +22,7 @@
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #include "ios/chrome/browser/passwords/password_check_observer_bridge.h"
 #include "ios/chrome/browser/passwords/save_passwords_consumer.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_password_check_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_check_item.h"
 #import "ios/chrome/browser/ui/settings/password/password_details_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_consumer.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
@@ -545,11 +545,11 @@ TEST_P(PasswordsTableViewControllerTest, PasswordCheckStateDisabled) {
   CheckDetailItemTextWithIds(IDS_IOS_CHECK_PASSWORDS,
                              IDS_IOS_CHECK_PASSWORDS_DESCRIPTION,
                              GetSectionIndex(PasswordCheck), 0);
-  SettingsPasswordCheckItem* checkPassword =
+  SettingsCheckItem* checkPassword =
       GetTableViewItem(GetSectionIndex(PasswordCheck), 0);
   EXPECT_FALSE(checkPassword.enabled);
   EXPECT_TRUE(checkPassword.indicatorHidden);
-  EXPECT_FALSE(checkPassword.image);
+  EXPECT_FALSE(checkPassword.trailingImage);
 }
 
 // Test verifies default state of password check cell.
@@ -564,11 +564,11 @@ TEST_P(PasswordsTableViewControllerTest, PasswordCheckStateDefault) {
   CheckDetailItemTextWithIds(IDS_IOS_CHECK_PASSWORDS,
                              IDS_IOS_CHECK_PASSWORDS_DESCRIPTION,
                              GetSectionIndex(PasswordCheck), 0);
-  SettingsPasswordCheckItem* checkPassword =
+  SettingsCheckItem* checkPassword =
       GetTableViewItem(GetSectionIndex(PasswordCheck), 0);
   EXPECT_TRUE(checkPassword.enabled);
   EXPECT_TRUE(checkPassword.indicatorHidden);
-  EXPECT_FALSE(checkPassword.image);
+  EXPECT_FALSE(checkPassword.trailingImage);
 }
 
 // Test verifies running state of password check cell.
@@ -583,11 +583,11 @@ TEST_P(PasswordsTableViewControllerTest, PasswordCheckStateRunning) {
   CheckDetailItemTextWithIds(IDS_IOS_CHECK_PASSWORDS,
                              IDS_IOS_CHECK_PASSWORDS_DESCRIPTION,
                              GetSectionIndex(PasswordCheck), 0);
-  SettingsPasswordCheckItem* checkPassword =
+  SettingsCheckItem* checkPassword =
       GetTableViewItem(GetSectionIndex(PasswordCheck), 0);
   EXPECT_TRUE(checkPassword.enabled);
   EXPECT_FALSE(checkPassword.indicatorHidden);
-  EXPECT_FALSE(checkPassword.image);
+  EXPECT_FALSE(checkPassword.trailingImage);
 }
 
 // Test verifies tapping start with no saved passwords has no effect.

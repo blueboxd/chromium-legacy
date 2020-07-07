@@ -100,9 +100,6 @@ public class TabListSceneLayer extends SceneLayer {
 
             int defaultThemeColor = ChromeColors.getDefaultThemeColor(res, useIncognitoColors);
 
-            // In the modern design, the text box is always drawn opaque in the compositor.
-            float textBoxAlpha = 1.f;
-
             int closeButtonColor = useIncognitoColors
                     ? Color.WHITE
                     : ApiCompatibilityUtils.getColor(res, R.color.default_icon_color_secondary);
@@ -126,7 +123,7 @@ public class TabListSceneLayer extends SceneLayer {
                     t.isCloseButtonOnRight(), t.getRenderX() * dpToPx, t.getRenderY() * dpToPx,
                     t.getScaledContentWidth() * dpToPx, t.getScaledContentHeight() * dpToPx,
                     t.getOriginalContentWidth() * dpToPx, t.getOriginalContentHeight() * dpToPx,
-                    contentViewport.height(), t.getClippedX() * dpToPx, t.getClippedY() * dpToPx,
+                    t.getClippedX() * dpToPx, t.getClippedY() * dpToPx,
                     Math.min(t.getClippedWidth(), t.getScaledContentWidth()) * dpToPx,
                     Math.min(t.getClippedHeight(), t.getScaledContentHeight()) * dpToPx,
                     t.getTiltXPivotOffset() * dpToPx, t.getTiltYPivotOffset() * dpToPx,
@@ -138,7 +135,7 @@ public class TabListSceneLayer extends SceneLayer {
                     t.getBrightness(), t.showToolbar(), defaultThemeColor,
                     t.getToolbarBackgroundColor(), closeButtonColor, t.anonymizeToolbar(),
                     t.isTitleNeeded(), urlBarBackgroundId, t.getTextBoxBackgroundColor(),
-                    textBoxAlpha, t.getToolbarAlpha(), fullscreenManager.getContentOffset(),
+                    t.getToolbarAlpha(), fullscreenManager.getContentOffset(),
                     t.getSideBorderScale(), t.insetBorderVertical());
         }
         TabListSceneLayerJni.get().finishBuildingFrame(mNativePtr, TabListSceneLayer.this);
@@ -203,17 +200,16 @@ public class TabListSceneLayer extends SceneLayer {
                 int backLogoResourceId, int borderResourceId, int borderInnerShadowResourceId,
                 boolean canUseLiveLayer, int tabBackgroundColor, int backLogoColor,
                 boolean incognito, boolean isPortrait, float x, float y, float width, float height,
-                float contentWidth, float contentHeight, float visibleContentHeight, float shadowX,
-                float shadowY, float shadowWidth, float shadowHeight, float pivotX, float pivotY,
-                float rotationX, float rotationY, float alpha, float borderAlpha,
-                float borderInnerShadowAlpha, float contourAlpha, float shadowAlpha,
-                float closeAlpha, float closeBtnWidth, float closeBtnAssetSize,
-                float staticToViewBlend, float borderScale, float saturation, float brightness,
-                boolean showToolbar, int defaultThemeColor, int toolbarBackgroundColor,
-                int closeButtonColor, boolean anonymizeToolbar, boolean showTabTitle,
-                int toolbarTextBoxResource, int toolbarTextBoxBackgroundColor,
-                float toolbarTextBoxAlpha, float toolbarAlpha, float contentOffset,
-                float sideBorderScale, boolean insetVerticalBorder);
+                float contentWidth, float contentHeight, float shadowX, float shadowY,
+                float shadowWidth, float shadowHeight, float pivotX, float pivotY, float rotationX,
+                float rotationY, float alpha, float borderAlpha, float borderInnerShadowAlpha,
+                float contourAlpha, float shadowAlpha, float closeAlpha, float closeBtnWidth,
+                float closeBtnAssetSize, float staticToViewBlend, float borderScale,
+                float saturation, float brightness, boolean showToolbar, int defaultThemeColor,
+                int toolbarBackgroundColor, int closeButtonColor, boolean anonymizeToolbar,
+                boolean showTabTitle, int toolbarTextBoxResource, int toolbarTextBoxBackgroundColor,
+                float toolbarTextBoxAlpha, float contentOffset, float sideBorderScale,
+                boolean insetVerticalBorder);
 
         void putBackgroundLayer(long nativeTabListSceneLayer, TabListSceneLayer caller,
                 int resourceId, float alpha, int topOffset);

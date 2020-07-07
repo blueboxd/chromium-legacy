@@ -281,7 +281,6 @@
 <translation id="1340527397989195812">Պահուստավորել սարքի վրայի մեդիա ֆայլերը Ֆայլեր հավելվածի միջոցով:</translation>
 <translation id="1341988552785875222">Այս պաստառը դրել է «<ph name="APP_NAME" />» հավելվածը: Այլ պաստառ ընտրելու համար անհրաժեշտ է հեռացնել «<ph name="APP_NAME" />» հավելվածը:</translation>
 <translation id="1343865611738742294">Լինուքսի հավելվածներին հասանելի դարձրեք USB սարքերը: Երբ USB սարքը հեռացվի, Լինուքսը չի պահի այն:</translation>
-<translation id="1344143111673240412">Տեսախցիկի կարգավորման փոփոխության համար անհրաժեշտ է վերագործարկել Parallels Desktop-ը</translation>
 <translation id="1347256498747320987">Թարմացումների ու հավելվածների տեղադրում։ Շարունակելով՝ դուք համաձայնում եք, որ սարքը կարող է ավտոմատ ներբեռնել և տեղադրել թարմացումներ ու հավելվածներ Google-ից, ձեր օպերատորից և սարքի արտադրողից (հնարավոր է բջջային ինտերնետի միջոցով): Որոշ հավելվածներում կառաջարկվի վճարովի բովանդակություն: <ph name="BEGIN_LINK1" />Իմանալ ավելին<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">Թարմացումը կսկսվի, երբ մարտկոցը լիցքավորված լինի <ph name="BATTERY_LEVEL" />%:</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />, <ph name="NETWORK_NAME" /></translation>
@@ -1197,7 +1196,6 @@
 <translation id="2470702053775288986">Չաջակցվող ընդլայնումներն անջատված են</translation>
 <translation id="2471469610750100598">Սև (կանխադրված)</translation>
 <translation id="2473195200299095979">Թարգմանել այս էջը</translation>
-<translation id="2474848500897222119">«<ph name="PRINTER_NAME" />» տպիչի թանաքը սպառվում է</translation>
 <translation id="2475982808118771221">Սխալ առաջացավ</translation>
 <translation id="2476578072172137802">Կայքի կարգավորումներ</translation>
 <translation id="2478176599153288112">Մեդիա ֆայլերի օգտագործման թույլտվություններ «<ph name="EXTENSION" />»-ի համար</translation>
@@ -1503,7 +1501,6 @@
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" />-ն օգտագործում է ձեր ադմինիստրատորի միջնորդ սերվերի կարգավորումները</translation>
 <translation id="2825758591930162672">Սուբյեկտի հանրային բանալին</translation>
 <translation id="2828650939514476812">Միացեք Wi-Fi ցանցի</translation>
-<translation id="28291580771888953">«<ph name="PRINTER_NAME" />» տպիչի հերթացանկը լցվել է</translation>
 <translation id="2835547721736623118">Խոսքի ճանաչման ծառայություն</translation>
 <translation id="2836269494620652131">Խափանում</translation>
 <translation id="2836635946302913370">Այս օգտանունով մուտքը կասեցվել է ձեր ադմինիստրատորի կողմից:</translation>
@@ -2319,7 +2316,7 @@
 <translation id="3839516600093027468">Միշտ արգելափակել <ph name="HOST" /> կայքի մուտքը սեղմատախտակին</translation>
 <translation id="3841964634449506551">Գաղտնաբառը սխալ է</translation>
 <translation id="3842552989725514455">Serif տառատեսակ</translation>
-<translation id="3843058644024807390">Խոսափողի կարգավորման փոփոխության համար անհրաժեշտ է վերագործարկել Parallels Desktop-ը</translation>
+<translation id="3843464315703645664">Թույլատրված է ներքին օգտագործման համար</translation>
 <translation id="3846116211488856547">Ստացեք գործիքներ, որոնցով կարող եք մշակել կայքեր, Android հավելվածներ և այլն: Linux-ի տեղադրման դեպքում կներբեռնվեն <ph name="DOWNLOAD_SIZE" /> ծավալով տվյալներ:</translation>
 <translation id="3847319713229060696">Օգնեք բարելավել համացանցից օգտվողների անվտանգությունը</translation>
 <translation id="385051799172605136">Հետ</translation>
@@ -2778,7 +2775,6 @@
 <translation id="4453946976636652378">Որոնեք <ph name="SEARCH_ENGINE_NAME" />-ում կամ մուտքագրեք URL-ը</translation>
 <translation id="4459169140545916303">Ակտիվ է եղել <ph name="DEVICE_LAST_ACTIVATED_TIME" /> օր առաջ</translation>
 <translation id="4460014764210899310">Ապախմբավորել</translation>
-<translation id="4460343359907016103">Չհաջողվեց միանալ «<ph name="PRINTER_NAME" />» տպիչին</translation>
 <translation id="4462159676511157176">Անունների այլ սերվերներ</translation>
 <translation id="4465236939126352372">Նշված է <ph name="TIME" /> սահմանաչափ <ph name="APP_NAME" /> հավելվածի համար</translation>
 <translation id="4465725236958772856">Ցանց <ph name="NETWORK_INDEX" />՝ <ph name="NETWORK_COUNT" />-ից, <ph name="NETWORK_NAME" />, կառավարվում է ձեր ադմինիստրատորի կողմից, կապակցում</translation>
@@ -3076,7 +3072,6 @@
 <translation id="4864369630010738180">Մուտք...</translation>
 <translation id="4864805589453749318">Ընտրեք ծնողին, որը ուսումնական հաշիվ ավելացնելու թույլտվություն է տալիս։</translation>
 <translation id="486635084936119914">Ֆայլերի որոշակի տեսակներ ներբեռնումից հետո ավտոմատ բացել</translation>
-<translation id="4869213010169296107">«<ph name="PRINTER_NAME" />» տպիչի թղթի դարակը բացակայում է</translation>
 <translation id="48704129375571883">Ավելացնել լրացուցիչ գործառույթներ</translation>
 <translation id="4870758487381879312">Մուտքագրեք ադմինիստրատորի տրամադրած գաղտնաբառը՝ կազմաձևման մասին տեղեկությունները տեսնելու համար</translation>
 <translation id="4870903493621965035">Զուգակցված սարքեր չկան</translation>
@@ -3328,6 +3323,7 @@
 <translation id="5184662919967270437">Սարքի թարմացում</translation>
 <translation id="5185359571430619712">Ստուգել ընդլայնումները</translation>
 <translation id="5185386675596372454">«<ph name="EXTENSION_NAME" />»-ի նոր տարբերակն անջատվել է, քանի որ նրա համար լրացուցիչ թույլտվություններ են պահանջվում:</translation>
+<translation id="5185500136143151980">Կապ չկա</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5190926251776387065">Ակտիվացնել միացքը</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> հավելվածն ուզում է ներբեռնել մի քանի ֆայլ</translation>
@@ -3486,7 +3482,6 @@
 <translation id="5390112241331447203">Ներառել system_logs.txt ֆայլը, որն ուղարկվում է կարծիքի հաշվետվություններում։</translation>
 <translation id="5390677308841849479">Մուգ կարմիր և նարնջագույն</translation>
 <translation id="5390743329570580756">Ուղարկել</translation>
-<translation id="5395869306561378615">«<ph name="PRINTER_NAME" />» տպիչի աշխատանքը դադարեցված է</translation>
 <translation id="5397794290049113714">Դուք</translation>
 <translation id="5398572795982417028">Դուրս է էջի համարակալման սահմաններից, թույլատրելի սահմանաչափն է <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">Գովազդն արգելափակված է</translation>
@@ -3501,7 +3496,6 @@
 <translation id="5417312524372586921">Դիտարկիչի թեմաներ</translation>
 <translation id="5419405654816502573">Voice Match</translation>
 <translation id="5420438158931847627">Սահմանում է տեքստի և պատկերների հստակությունը</translation>
-<translation id="5421498071721257877">«<ph name="PRINTER_NAME" />» տպիչը սարքային խնդիր ունի</translation>
 <translation id="5422221874247253874">Մուտքի կետ</translation>
 <translation id="5422781158178868512">Ձեր արտաքին պահեստի սարքը չի ճանաչվում:</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3850,7 +3844,6 @@
 <translation id="5852137567692933493">Վերագործարկում և Powerwash</translation>
 <translation id="5854912040170951372">Պիցցա</translation>
 <translation id="5855267860608268405">Հայտնի Wi-Fi ցանցեր</translation>
-<translation id="5855310969323666289">«<ph name="PRINTER_NAME" />» տպիչի դռնակը բացված է</translation>
 <translation id="5855643921295613558">0,6 վայրկյան</translation>
 <translation id="5856721540245522153">Միացնել վրիպազերծման գործառույթները</translation>
 <translation id="5857090052475505287">Նոր պանակ</translation>
@@ -3881,7 +3874,6 @@
 <translation id="5877064549588274448">Վարկածը փոխվել է: Փոփոխությունները կիրառելու համար վերագործարկեք սարքը:</translation>
 <translation id="5877584842898320529">Նշված տպիչը հասանելի չէ կամ ճիշտ չէ տեղադրված: <ph name="BR" /> Ստուգեք ձեր տպիչը կամ փորձեք ընտրել մեկ այլ տպիչ:</translation>
 <translation id="5882919346125742463">Պահված ցանցեր</translation>
-<translation id="5883716097305842571">«<ph name="PRINTER_NAME" />» տպիչի ելքային դարակը գրեթե լցված է</translation>
 <translation id="5884474295213649357">Այս ներդիրը միացված է USB սարքին:</translation>
 <translation id="5886009770935151472">Մատ 1</translation>
 <translation id="5889282057229379085">Միջանկյալ հավաստագրման կենտրոնների առավելագույն քանակը՝ <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4447,7 +4439,6 @@
 <translation id="6611972847767394631">Ձեր ներդիրներն այստեղ են</translation>
 <translation id="6612358246767739896">Պաշտպանված բովանդակություն</translation>
 <translation id="6615455863669487791">Ցույց տալ</translation>
-<translation id="6617034477946102682">«<ph name="PRINTER_NAME" />» տպիչն անհասանելի է</translation>
 <translation id="6618097958368085618">Տեղադրել</translation>
 <translation id="6618744767048954150">Ստուգումն ընթացքում է</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
@@ -4864,7 +4855,6 @@
 <translation id="7128151990937044829">Ցույց տալ արգելափակման ցուցիչը հասցեագոտում, երբ ծանուցումներն արգելափակված են</translation>
 <translation id="7131040479572660648">Կարդալ ձեր տվյալները <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> և <ph name="WEBSITE_3" /> կայքերում</translation>
 <translation id="713122686776214250">Հավելել է&amp;ջ...</translation>
-<translation id="7131379856697962078">«<ph name="PRINTER_NAME" />» տպիչի ելքային դարակը լցված է</translation>
 <translation id="7133578150266914903">Ձեր ադմինիստրատորը վերակայում է այս սարքը (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">Փոքրացնել տեքստը</translation>
 <translation id="7135729336746831607">Միացնե՞լ Bluetooth-ը</translation>
@@ -4883,7 +4873,6 @@
 <translation id="7152478047064750137">Այս ընդլայնումը հատուկ թույլտվություն չի պահանջում</translation>
 <translation id="7154130902455071009">Դարձնել <ph name="START_PAGE" />-ը սկզբնական էջը</translation>
 <translation id="7155171745945906037">Առկա լուսանկար խցիկից կամ ֆայլից</translation>
-<translation id="715657691234357425">«<ph name="PRINTER_NAME" />» տպիչի թուղթը սպառվել է</translation>
 <translation id="7165320105431587207">Չհաջողվեց կազմաձևել ցանցը</translation>
 <translation id="716640248772308851">«<ph name="EXTENSION" />» ընդլայնումը կարող է նշված պանակներում կարդալ պատկերները, տեսանյութերը և ձայնային ֆայլերը:</translation>
 <translation id="7167486101654761064">&amp;Միշտ բացել այս տեսակի ֆայլերը</translation>
@@ -4914,7 +4903,6 @@
 <translation id="7197632491113152433">Ձեր հաշվում գտնվել է <ph name="NUMBER_OF_APPS" /> հավելված, որոնք կարող են օգտագործվել այս սարքում:</translation>
 <translation id="7199158086730159431">Ստանալ օ&amp;գնություն</translation>
 <translation id="7200083590239651963">Ընտրեք կարգավորումը</translation>
-<translation id="7201042526153088083"><ph name="DEVICE_TYPE" /> սարքում տեղադրեք հավելվածներ ու խաղեր Google Play-ից։ &lt;a target="_blank" href="<ph name="URL" />"&gt;Իմանալ ավելին&lt;/a&gt;</translation>
 <translation id="720110658997053098">Մշտապես պահել այս սարքը կրպակի ռեժիմում</translation>
 <translation id="7201118060536064622">«<ph name="DELETED_ITEM_NAME" />» տարրը ջնջվեց</translation>
 <translation id="7201420661433230412">Դիտել ֆայլերը</translation>
@@ -5220,7 +5208,6 @@
 <translation id="7598466960084663009">Վերագործարկել համակարգիչը</translation>
 <translation id="7599527631045201165">Սարքի անունը չափազանց երկար է: Մուտքագրեք ավելի կարճ անուն՝ նորից փորձելու համար:</translation>
 <translation id="7600965453749440009">Երբեք չթարգմանել <ph name="LANGUAGE" /> էջերը</translation>
-<translation id="7601297144931396972">«<ph name="PRINTER_NAME" />» տպիչում թուղթ է լռվել</translation>
 <translation id="760197030861754408">Անցեք <ph name="LANDING_PAGE" />՝ միանալու համար:</translation>
 <translation id="7602079150116086782">Այլ սարքերից ներդիրներ չկան</translation>
 <translation id="7602173054665172958">Տպելու առաջադրանքների կառավարում</translation>
@@ -5231,6 +5218,7 @@
 <translation id="7609148976235050828">Միացեք համացանցին և նորից փորձեք:</translation>
 <translation id="7614260613810441905">Հարցնել, երբ որևէ կայք ուզենա փոփոխել ձեր սարքի ֆայլերը և պանակները (խորհուրդ է տրվում)</translation>
 <translation id="761530003705945209">Կրկնօրինակ Google Drive-ում։ Ցանկացած ժամանակ հեշտությամբ վերականգնեք ձեր տվյալները կամ տեղափոխեք մեկ այլ սարք։ Պահուստավորումը ներառում է հավելվածների տվյալները։ Կրկնօրինակները վերբեռնվում են Google և գաղտնագրվում ձեր Google հաշվի գաղտնաբառի միջոցով։</translation>
+<translation id="7615365294369022248">Չհաջողվեց ավելացնել հաշիվը</translation>
 <translation id="7616214729753637086">Սարքի գրանցում…</translation>
 <translation id="7617263010641145920">Միացնել Play Խանութը</translation>
 <translation id="7617366389578322136">Միացում «<ph name="DEVICE_NAME" />» սարքին</translation>
@@ -5677,7 +5665,6 @@
           <ph name="TIME" />-ին։ Գաղտնագրումը չի կիրառվում վճարման եղանակների և Google Pay-ի հասցեների համար։</translation>
 <translation id="81238879832906896">Դեղին ու սպիտակ ծաղիկ</translation>
 <translation id="8124313775439841391">Կառավարվող ONC</translation>
-<translation id="8127535217699822294">«<ph name="PRINTER_NAME" />» տպիչի թուղթը սպառվել է</translation>
 <translation id="813082847718468539">Դիտել կայքի տեղեկությունները</translation>
 <translation id="8131740175452115882">Հաստատել</translation>
 <translation id="8133676275609324831">&amp;Ցույց տալ պանակում</translation>
@@ -5776,7 +5763,6 @@
 <translation id="8254954272268479918">Անջատել Լինուքսը (բետա)</translation>
 <translation id="8255451560461371599">Առանց ֆոնի</translation>
 <translation id="8256319818471787266">Ռեքս</translation>
-<translation id="8256417822772703842">«<ph name="PRINTER_NAME" />» տպիչի թանաքը սպառվում է</translation>
 <translation id="8257950718085972371">Շարունակել արգելափակել խցիկի օգտագործումը</translation>
 <translation id="8259239505248583312">Սկսել</translation>
 <translation id="8260864402787962391">Մկնիկ</translation>
@@ -5957,7 +5943,6 @@
 <translation id="8487678622945914333">Zoom In</translation>
 <translation id="8490896350101740396">Թարմացվել են հետևյալ kiosk հավելվածները՝ «<ph name="UPDATED_APPS" />»: Թարմացումն ավարտելու համար վերագործարկեք սարքը:</translation>
 <translation id="8493236660459102203">Խոսափող`</translation>
-<translation id="8495940850609851342">«<ph name="PRINTER_NAME" />» տպիչի աշխատանքը կանգնեցվել է</translation>
 <translation id="8496717697661868878">Գործարկել այս փլագինը</translation>
 <translation id="8497219075884839166">Windows-ի օժանդակ ծրագրեր</translation>
 <translation id="8498214519255567734">Թույլ է տալիս ավելի հանգիստ նայել էկրանին և կարդալ թույլ լուսավորության պայմաններում</translation>
@@ -6499,6 +6484,12 @@
 <translation id="9157096865782046368">0,8 վայրկյան</translation>
 <translation id="9157697743260533322">Չհաջողվեց կարգավորել ավտոմատ թարմացումները բոլոր օգտատերերի համար (սխալ՝ <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Իսկորոշման ժամանակ ցանցի խնդիր առաջացավ: Ստուգեք համացանցի կապակցումը և կրկին փորձեք:</translation>
+<translation id="9159643062839240276">Փորձեք՝
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />Ստուգել ցանցային մալուխը, մոդեմը և երթուղիչը
+      <ph name="LIST_ITEM" />Նորից միանալ Wi-Fi-ին
+      <ph name="LIST_ITEM" />Աշխատացնել Chrome-ի կապի ախտորոշումը
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">Նկար նկարի մեջ</translation>
 <translation id="9168436347345867845">Ավելի ուշ</translation>
 <translation id="9169496697824289689">Դիտել ստեղնաշարի դյուրանցումները</translation>

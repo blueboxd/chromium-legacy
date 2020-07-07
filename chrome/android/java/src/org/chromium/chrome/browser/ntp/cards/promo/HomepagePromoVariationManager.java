@@ -123,6 +123,14 @@ public class HomepagePromoVariationManager {
     }
 
     /**
+     * @return Whether the homepage promo has a higher priority than SignInPromo.
+     */
+    public boolean isSuppressingSignInPromo() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.HOMEPAGE_PROMO_CARD, "suppressing_sign_in_promo", false);
+    }
+
+    /**
      * If the user has ever seen the homepage promo, add a synthetic tag to the user.
      */
     public void tagSyntheticHomepagePromoSeenGroup() {

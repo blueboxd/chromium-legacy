@@ -281,7 +281,6 @@
 <translation id="1340527397989195812">Realizar una copia de seguridad del contenido multimedia desde el dispositivo mediante la aplicación Archivos</translation>
 <translation id="1341988552785875222">"<ph name="APP_NAME" />" estableció el fondo de pantalla actual. Es posible que tengas que desinstalar "<ph name="APP_NAME" />" antes de seleccionar un fondo de pantalla diferente.</translation>
 <translation id="1343865611738742294">Concédeles a las apps de Linux acceso a dispositivos USB. Linux no recuerda los dispositivos USB después de quitarlos.</translation>
-<translation id="1344143111673240412">Es necesario que reinicies Parallels Desktop para aplicar los cambios en la configuración de la cámara</translation>
 <translation id="1347256498747320987">Instala actualizaciones y apps. Al continuar, aceptas que este dispositivo también descargue e instale automáticamente actualizaciones y apps de Google, tu administrador y el fabricante del dispositivo, posiblemente a través de datos móviles. Es posible que algunas de estas apps ofrezcan compras directas desde la aplicación. <ph name="BEGIN_LINK1" />Más información<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">La actualización comenzará cuando el nivel de la batería alcance el <ph name="BATTERY_LEVEL" />%.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -1194,7 +1193,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2470702053775288986">Extensiones no admitidas inhabilitadas</translation>
 <translation id="2471469610750100598">Negro (predeterminado)</translation>
 <translation id="2473195200299095979">Traducir esta página</translation>
-<translation id="2474848500897222119"><ph name="PRINTER_NAME" /> se quedó sin tinta</translation>
 <translation id="2475982808118771221">Se ha producido un error</translation>
 <translation id="2476578072172137802">Configuración del sitio</translation>
 <translation id="2478176599153288112">Permisos de archivo de medios para "<ph name="EXTENSION" />"</translation>
@@ -1500,7 +1498,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> usa la configuración de proxy de tu administrador</translation>
 <translation id="2825758591930162672">Clave pública del sujeto</translation>
 <translation id="2828650939514476812">Conectarse a la red Wi-Fi</translation>
-<translation id="28291580771888953">La cola de <ph name="PRINTER_NAME" /> está completa</translation>
 <translation id="2835547721736623118">Servicio de reconocimiento de voz</translation>
 <translation id="2836269494620652131">Fallo</translation>
 <translation id="2836635946302913370">El administrador ha inhabilitado el inicio de sesión para este nombre de usuario.</translation>
@@ -2316,7 +2313,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3839516600093027468">Nunca permitir que <ph name="HOST" /> vea el portapapeles</translation>
 <translation id="3841964634449506551">La contraseña no es válida</translation>
 <translation id="3842552989725514455">Fuente Serif</translation>
-<translation id="3843058644024807390">Es necesario que reinicies Parallels Desktop para aplicar los cambios en la configuración del micrófono</translation>
+<translation id="3843464315703645664">Permiso otorgado de manera interna</translation>
 <translation id="3846116211488856547">Obtén herramientas para desarrollar sitios web, apps de Android y mucho más. Si instalas Linux, se descargarán <ph name="DOWNLOAD_SIZE" /> de datos.</translation>
 <translation id="3847319713229060696">Ayudar a mejorar la seguridad en la Web para todos los usuarios</translation>
 <translation id="385051799172605136">Atrás</translation>
@@ -2775,7 +2772,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4453946976636652378">Buscar en <ph name="SEARCH_ENGINE_NAME" /> o escribir una URL</translation>
 <translation id="4459169140545916303">Activo hace <ph name="DEVICE_LAST_ACTIVATED_TIME" /> días</translation>
 <translation id="4460014764210899310">Desagrupar</translation>
-<translation id="4460343359907016103">Se produjo un error al conectar a <ph name="PRINTER_NAME" /></translation>
 <translation id="4462159676511157176">Servidores de nombres personalizados</translation>
 <translation id="4465236939126352372">Límite de tiempo establecido para <ph name="APP_NAME" />: <ph name="TIME" /></translation>
 <translation id="4465725236958772856">Red <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, administrada por tu administrador, conectar</translation>
@@ -3073,7 +3069,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4864369630010738180">Accediendo</translation>
 <translation id="4864805589453749318">Selecciona el padre o madre que otorga permiso para agregar una cuenta de una institución educativa.</translation>
 <translation id="486635084936119914">Abre determinados tipos de archivo después de descargarlos</translation>
-<translation id="4869213010169296107">Falta una bandeja de <ph name="PRINTER_NAME" /></translation>
 <translation id="48704129375571883">Agregar funciones adicionales</translation>
 <translation id="4870758487381879312">Ingresar la contraseña que proporcionó el administrador para obtener información sobre la configuración</translation>
 <translation id="4870903493621965035">Sin dispositivos sincronizados</translation>
@@ -3324,6 +3319,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5184662919967270437">Actualizando tu dispositivo</translation>
 <translation id="5185359571430619712">Revisa las extensiones</translation>
 <translation id="5185386675596372454">Se ha desactivado la versión más reciente de "<ph name="EXTENSION_NAME" />" porque requiere más permisos.</translation>
+<translation id="5185500136143151980">No hay conexión a Internet</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5190926251776387065">Activar puerto</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> quiere descargar varios archivos</translation>
@@ -3480,7 +3476,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5390112241331447203">Incluye el archivo system_logs.txt que se envía en los informes de comentarios.</translation>
 <translation id="5390677308841849479">Rojo oscuro y naranja</translation>
 <translation id="5390743329570580756">Enviar para</translation>
-<translation id="5395869306561378615">Se pausó <ph name="PRINTER_NAME" /></translation>
 <translation id="5397794290049113714">Tú</translation>
 <translation id="5398572795982417028">Referencia de página fuera de los límites; el valor máximo es <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">Anuncios bloqueados</translation>
@@ -3495,7 +3490,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5417312524372586921">Temas del navegador</translation>
 <translation id="5419405654816502573">Voice Match</translation>
 <translation id="5420438158931847627">Determina la nitidez del texto y las imágenes</translation>
-<translation id="5421498071721257877"><ph name="PRINTER_NAME" /> tiene un error de dispositivo</translation>
 <translation id="5422221874247253874">Punto de acceso</translation>
 <translation id="5422781158178868512">Lo sentimos, tu dispositivo de almacenamiento externo no se reconoció.</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3844,7 +3838,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5852137567692933493">Reiniciar y aplicar Powerwash</translation>
 <translation id="5854912040170951372">Porción</translation>
 <translation id="5855267860608268405">Redes Wi-Fi conocidas</translation>
-<translation id="5855310969323666289">La tapa de <ph name="PRINTER_NAME" /> está abierta</translation>
 <translation id="5855643921295613558">0.6 segundos</translation>
 <translation id="5856721540245522153">Habilitar funciones de depuración</translation>
 <translation id="5857090052475505287">Nueva carpeta</translation>
@@ -3875,7 +3868,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5877064549588274448">Se cambió el canal. Reinicia el dispositivo para aplicar los cambios.</translation>
 <translation id="5877584842898320529">La impresora seleccionada no está disponible o no se instaló correctamente. <ph name="BR" /> Comprueba tu impresora o selecciona otra.</translation>
 <translation id="5882919346125742463">Redes conocidas</translation>
-<translation id="5883716097305842571">La bandeja de salida de <ph name="PRINTER_NAME" /> está casi completa</translation>
 <translation id="5884474295213649357">Esta pestaña está conectada a un dispositivo USB.</translation>
 <translation id="5886009770935151472">Dedo 1</translation>
 <translation id="5889282057229379085">Cantidad máxima de certificados intermedios: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4441,7 +4433,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6611972847767394631">Encuentra tus pestañas aquí</translation>
 <translation id="6612358246767739896">Contenido protegido</translation>
 <translation id="6615455863669487791">Mostrarme</translation>
-<translation id="6617034477946102682">No se puede acceder a <ph name="PRINTER_NAME" /></translation>
 <translation id="6618097958368085618">Conservar de todos modos</translation>
 <translation id="6618744767048954150">En ejecución</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
@@ -4858,7 +4849,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="7128151990937044829">Mostrar un indicador en la barra de direcciones cuando las notificaciones estén bloqueadas</translation>
 <translation id="7131040479572660648">Leer los datos en <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> y <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Agregar pá&amp;gina...</translation>
-<translation id="7131379856697962078">La bandeja de salida de <ph name="PRINTER_NAME" /> está completa</translation>
 <translation id="7133578150266914903">El administrador está restableciendo este dispositivo (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">Reducir el tamaño del texto</translation>
 <translation id="7135729336746831607">¿Quieres activar la conexión Bluetooth?</translation>
@@ -4877,7 +4867,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="7152478047064750137">Esta extensión no requiere permisos especiales</translation>
 <translation id="7154130902455071009">Cambiar la página de inicio por <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">Foto existente de la cámara o archivo</translation>
-<translation id="715657691234357425"><ph name="PRINTER_NAME" /> tiene pocas hojas</translation>
 <translation id="7165320105431587207">Error al configurar la red</translation>
 <translation id="716640248772308851">"<ph name="EXTENSION" />" puede leer archivos de video, sonido e imágenes en las ubicaciones seleccionadas.</translation>
 <translation id="7167486101654761064">&amp;Abrir siempre archivos de este tipo</translation>
@@ -4908,7 +4897,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="7197632491113152433">Encontramos <ph name="NUMBER_OF_APPS" /> apps de tu cuenta que pueden usarse en este dispositivo.</translation>
 <translation id="7199158086730159431">Obtener ayuda</translation>
 <translation id="7200083590239651963">Seleccionar configuración</translation>
-<translation id="7201042526153088083">Instala apps y juegos de Google Play en tu <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;Más información&lt;/a&gt;</translation>
 <translation id="720110658997053098">Mantener este dispositivo en modo kiosco de forma permanente</translation>
 <translation id="7201118060536064622">Se borró "<ph name="DELETED_ITEM_NAME" />"</translation>
 <translation id="7201420661433230412">Ver archivos</translation>
@@ -5214,7 +5202,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="7598466960084663009">Reiniciar la computadora</translation>
 <translation id="7599527631045201165">El nombre del dispositivo es demasiado largo. Ingresa uno más corto y vuelve a intentarlo.</translation>
 <translation id="7600965453749440009">Nunca traducir <ph name="LANGUAGE" /></translation>
-<translation id="7601297144931396972">Se atascó el papel de <ph name="PRINTER_NAME" /></translation>
 <translation id="760197030861754408">Accede a <ph name="LANDING_PAGE" /> para conectarte.</translation>
 <translation id="7602079150116086782">No hay pestañas de otros dispositivos.</translation>
 <translation id="7602173054665172958">Administración de impresiones</translation>
@@ -5225,6 +5212,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="7609148976235050828">Conéctate a Internet y vuelve a intentarlo.</translation>
 <translation id="7614260613810441905">Preguntar cuando un sitio quiera editar archivos o carpetas de tu dispositivo (recomendado)</translation>
 <translation id="761530003705945209">Crea una copia de seguridad en Google Drive. Restaura tus datos o cambia de dispositivo en cualquier momento con facilidad. Se incluyen datos de apps. Se suben las copias de seguridad a Google y se encriptan con la contraseña de tu Cuenta de Google.</translation>
+<translation id="7615365294369022248">Se produjo un error al agregar una cuenta</translation>
 <translation id="7616214729753637086">Registrando dispositivo…</translation>
 <translation id="7617263010641145920">Activar Play Store</translation>
 <translation id="7617366389578322136">Conectando a "<ph name="DEVICE_NAME" />"</translation>
@@ -5331,7 +5319,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="7737115349420013392">Vinculando con "<ph name="DEVICE_NAME" />"…</translation>
 <translation id="7737238973539693982">Borrar Linux (Beta)</translation>
 <translation id="7740996059027112821">Estándar</translation>
-<translation id="774377079771918250">Elige dónde guardarlo</translation>
+<translation id="774377079771918250">Elige dónde guardarla</translation>
 <translation id="7744047395460924128">Ver tu historial de impresión</translation>
 <translation id="7744192722284567281">Se encontró en una violación de la seguridad de los datos</translation>
 <translation id="7750228210027921155">Pantalla en pantalla</translation>
@@ -5673,7 +5661,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
           <ph name="TIME" />. No se incluyen formas de pago ni direcciones de Google Pay.</translation>
 <translation id="81238879832906896">Flor amarilla y blanca</translation>
 <translation id="8124313775439841391">ONC administrado</translation>
-<translation id="8127535217699822294"><ph name="PRINTER_NAME" /> no tiene papel</translation>
 <translation id="813082847718468539">Consulta la información del sitio</translation>
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8133676275609324831">Mo&amp;strar en carpeta</translation>
@@ -5772,7 +5759,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8254954272268479918">Cerrar Linux (Beta)</translation>
 <translation id="8255451560461371599">Sin imagen de fondo</translation>
 <translation id="8256319818471787266">Bobby</translation>
-<translation id="8256417822772703842"><ph name="PRINTER_NAME" /> tiene poca tinta</translation>
 <translation id="8257950718085972371">Seguir bloqueando el acceso a la cámara</translation>
 <translation id="8259239505248583312">Comenzar</translation>
 <translation id="8260864402787962391">Mouse</translation>
@@ -5953,7 +5939,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8487678622945914333">Acercar</translation>
 <translation id="8490896350101740396">Se actualizaron las siguientes aplicaciones de kiosco "<ph name="UPDATED_APPS" />". Reinicia el dispositivo para completar el proceso de actualización.</translation>
 <translation id="8493236660459102203">Micrófono:</translation>
-<translation id="8495940850609851342">Se detuvo <ph name="PRINTER_NAME" /></translation>
 <translation id="8496717697661868878">Ejecutar este complemento</translation>
 <translation id="8497219075884839166">Utilidades de Windows</translation>
 <translation id="8498214519255567734">Te permite ver o leer mejor en lugares con luz tenue</translation>
@@ -6495,6 +6480,12 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="9157096865782046368">0.8 segundos</translation>
 <translation id="9157697743260533322">No se pudieron configurar actualizaciones automáticas para todos los usuarios (error de inicio preliminar: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Se produjo un problema de comunicación de red durante la autenticación. Verifica tu conexión de red y vuelve a intentarlo.</translation>
+<translation id="9159643062839240276">Prueba lo siguiente:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />Revisa los cables de red, el módem y el router
+      <ph name="LIST_ITEM" />Vuelve a conectarte a la red Wi-Fi
+      <ph name="LIST_ITEM" />Ejecuta el Diagnóstico de conectividad de Chrome
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">Pantalla en pantalla</translation>
 <translation id="9168436347345867845">Hacerlo más tarde</translation>
 <translation id="9169496697824289689">Ver combinaciones de teclas para acceso directo</translation>

@@ -1,4 +1,3 @@
-#include "base/debug/stack_trace.h"
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -8,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <clocale>
 #include <limits>
 #include <utility>
 
@@ -31,7 +31,6 @@
 #include "content/shell/renderer/web_test/blink_test_helpers.h"
 #include "content/shell/renderer/web_test/blink_test_runner.h"
 #include "content/shell/renderer/web_test/layout_dump.h"
-#include "content/shell/renderer/web_test/mock_content_settings_client.h"
 #include "content/shell/renderer/web_test/mock_web_document_subresource_filter.h"
 #include "content/shell/renderer/web_test/pixel_dump.h"
 #include "content/shell/renderer/web_test/spell_check_client.h"
@@ -52,6 +51,7 @@
 #include "third_party/blink/public/mojom/app_banner/app_banner.mojom.h"
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/public/platform/web_cache.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_isolated_world_ids.h"
 #include "third_party/blink/public/platform/web_isolated_world_info.h"
@@ -72,6 +72,7 @@
 #include "third_party/blink/public/web/web_security_policy.h"
 #include "third_party/blink/public/web/web_serialized_script_value.h"
 #include "third_party/blink/public/web/web_settings.h"
+#include "third_party/blink/public/web/web_testing_support.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -666,7 +667,7 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("setAudioData", &TestRunnerBindings::SetAudioData)
       .SetMethod("setBackingScaleFactor",
                  &TestRunnerBindings::SetBackingScaleFactor)
-      // Change the bluetooth test data while running a web test.
+      // Set the bluetooth adapter while running a web test.
       .SetMethod("setBluetoothFakeAdapter",
                  &TestRunnerBindings::SetBluetoothFakeAdapter)
       // If |enable| is true, makes the Bluetooth chooser record its input and
@@ -915,7 +916,7 @@ void TestRunnerBindings::WaitForPolicyDelegate() {
 int TestRunnerBindings::WindowCount() {
   if (invalid_)
     return 0;
-  return runner_->WindowCount();
+  return runner_->InProcessWindowCount();
 }
 
 void TestRunnerBindings::SetTabKeyCyclesThroughElements(
@@ -1495,7 +1496,10 @@ void TestRunnerBindings::SetStorageAllowed(bool allowed) {
 void TestRunnerBindings::SetPluginsAllowed(bool allowed) {
   if (invalid_)
     return;
-  runner_->SetPluginsAllowed(allowed);
+  // This only modifies the local process, and is used to verify behaviour based
+  // on settings, but does not test propagation of settings across renderers.
+  blink::WebView* web_view = GetWebFrame()->View();
+  web_view->GetSettings()->SetPluginsEnabled(allowed);
 }
 
 void TestRunnerBindings::SetAllowRunningOfInsecureContent(bool allowed) {
@@ -1685,7 +1689,7 @@ void TestRunnerBindings::SetBluetoothFakeAdapter(
     v8::Local<v8::Function> v8_callback) {
   if (invalid_)
     return;
-  runner_->blink_test_runner_->SetBluetoothFakeAdapter(
+  runner_->GetBluetoothFakeAdapterSetter().Set(
       adapter_name, WrapV8Closure(std::move(v8_callback)));
 }
 
@@ -1801,9 +1805,9 @@ void TestRunnerBindings::SimulateWebContentIndexDelete(const std::string& id) {
 }
 
 void TestRunnerBindings::SetHighlightAds() {
-  blink::WebView* web_view = GetWebFrame()->View();
   if (invalid_)
     return;
+  blink::WebView* web_view = GetWebFrame()->View();
   web_view->GetSettings()->SetHighlightAds(true);
 }
 
@@ -1867,33 +1871,24 @@ void TestRunnerBindings::GetManifestThen(v8::Local<v8::Function> v8_callback) {
       base::BindOnce(GetManifestReply, WrapV8Callback(std::move(v8_callback))));
 }
 
-static void CapturePrintingPixelsThenReply(
-    base::WeakPtr<TestRunnerBindings> test_runner,
-    blink::WebLocalFrame* frame,
-    BoundV8Callback callback,
-    const SkBitmap& bitmap) {
-  if (!test_runner)  // This guards the validity of the |frame|.
+void TestRunnerBindings::CapturePrintingPixelsThen(
+    v8::Local<v8::Function> v8_callback) {
+  if (invalid_)
     return;
+  SkBitmap bitmap = PrintFrameToBitmap(GetWebFrame());
 
   v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
 
   // ConvertBitmapToV8() requires a v8::Context.
-  v8::Local<v8::Context> context = frame->MainWorldScriptContext();
+  v8::Local<v8::Context> context = GetWebFrame()->MainWorldScriptContext();
   CHECK(!context.IsEmpty());
   v8::Context::Scope context_scope(context);
 
-  std::move(callback).Run(ConvertBitmapToV8(context_scope, bitmap));
-}
-
-void TestRunnerBindings::CapturePrintingPixelsThen(
-    v8::Local<v8::Function> v8_callback) {
-  if (invalid_)
-    return;
-  PrintFrameAsync(GetWebFrame(),
-                  base::BindOnce(&CapturePrintingPixelsThenReply,
-                                 weak_ptr_factory_.GetWeakPtr(), GetWebFrame(),
-                                 WrapV8Callback(std::move(v8_callback))));
+  WrapV8Callback(std::move(v8_callback))
+      .Run({
+          ConvertBitmapToV8(context_scope, bitmap),
+      });
 }
 
 void TestRunnerBindings::CheckForLeakedWindows() {
@@ -2103,7 +2098,7 @@ std::string TestRunnerBindings::TooltipText() {
 int TestRunnerBindings::WebHistoryItemCount() {
   if (invalid_)
     return 0;
-  return runner_->web_history_item_count_;
+  return frame_->render_view()->GetLocalSessionHistoryLengthForTesting();
 }
 
 void TestRunnerBindings::ForceNextWebGLContextCreationToFail() {
@@ -2196,9 +2191,13 @@ void TestRunner::WorkQueue::ProcessWork() {
 TestRunner::TestRunner(TestInterfaces* interfaces)
     : work_queue_(this),
       test_interfaces_(interfaces),
-      mock_content_settings_client_(std::make_unique<MockContentSettingsClient>(
-          this,
-          &web_test_runtime_flags_)) {}
+      mock_content_settings_client_(this, &web_test_runtime_flags_) {
+  // NOTE: please don't put feature specific enable flags here,
+  // instead add them to runtime_enabled_features.json5.
+  //
+  // Stores state to be restored after each test.
+  blink::WebTestingSupport::SaveRuntimeFeatures();
+}
 
 TestRunner::~TestRunner() = default;
 
@@ -2210,6 +2209,7 @@ void TestRunner::Install(WebFrameTestProxy* frame,
       IsFramePartOfMainTestWindow(frame->GetWebFrame()));
   mock_screen_orientation_client_.OverrideAssociatedInterfaceProviderForFrame(
       frame->GetWebFrame());
+  gamepad_controller_.Install(frame->GetWebFrame());
 }
 
 void TestRunner::SetDelegate(BlinkTestRunner* blink_test_runner) {
@@ -2222,12 +2222,18 @@ void TestRunner::SetMainView(blink::WebView* web_view) {
     SetV8CacheDisabled(true);
 }
 
-void TestRunner::Reset() {
+void TestRunner::Reset(WebFrameTestProxy* main_frame) {
+  if (main_frame)
+    main_frame->Reset();
+
   loading_frames_.clear();
   web_test_runtime_flags_.Reset();
   mock_screen_orientation_client_.ResetData();
+  gamepad_controller_.Reset();
   drag_image_.reset();
 
+  blink::WebTestingSupport::ResetRuntimeFeatures();
+  blink::WebCache::Clear();
   blink::WebSecurityPolicy::ClearOriginAccessList();
 #if defined(OS_LINUX) || defined(OS_FUCHSIA)
   blink::WebFontRenderStyle::SetSubpixelPositioning(false);
@@ -2251,7 +2257,6 @@ void TestRunner::Reset() {
   clear_referrer_ = false;
 
   platform_name_ = "chromium";
-  web_history_item_count_ = 0;
 
   weak_factory_.InvalidateWeakPtrs();
   work_queue_.Reset();
@@ -2354,25 +2359,21 @@ bool TestRunner::CanDumpPixelsFromRenderer() const {
          web_test_runtime_flags_.is_printing();
 }
 
-void TestRunner::DumpPixelsAsync(
-    content::RenderView* render_view,
-    base::OnceCallback<void(const SkBitmap&)> callback) {
+SkBitmap TestRunner::DumpPixelsInRenderer(content::RenderView* render_view) {
   auto* view_proxy = static_cast<WebViewTestProxy*>(render_view);
   DCHECK(view_proxy->GetWebView()->MainFrame());
   DCHECK(CanDumpPixelsFromRenderer());
 
   if (web_test_runtime_flags_.dump_drag_image()) {
-    if (!drag_image_.isNull()) {
-      std::move(callback).Run(drag_image_);
-    } else {
-      // This means the test called dumpDragImage but did not initiate a drag.
-      // Return a blank image so that the test fails.
-      SkBitmap bitmap;
-      bitmap.allocN32Pixels(1, 1);
-      bitmap.eraseColor(0);
-      std::move(callback).Run(bitmap);
-    }
-    return;
+    if (!drag_image_.isNull())
+      return drag_image_;
+
+    // This means the test called dumpDragImage but did not initiate a drag.
+    // Return a blank image so that the test fails.
+    SkBitmap bitmap;
+    bitmap.allocN32Pixels(1, 1);
+    bitmap.eraseColor(0);
+    return bitmap;
   }
 
   blink::WebLocalFrame* frame =
@@ -2385,19 +2386,16 @@ void TestRunner::DumpPixelsAsync(
     if (frame_to_print && frame_to_print->IsWebLocalFrame())
       target_frame = frame_to_print->ToWebLocalFrame();
   }
-  PrintFrameAsync(target_frame, std::move(callback));
+  return PrintFrameToBitmap(target_frame);
 }
 
 void TestRunner::ReplicateWebTestRuntimeFlagsChanges(
     const base::DictionaryValue& changed_values) {
-  if (test_is_running_) {
-    web_test_runtime_flags_.tracked_dictionary().ApplyUntrackedChanges(
-        changed_values);
+  if (!test_is_running_)
+    return;
 
-    bool allowed = web_test_runtime_flags_.plugins_allowed();
-    for (WebViewTestProxy* window : test_interfaces_->GetWindowList())
-      window->GetWebView()->GetSettings()->SetPluginsEnabled(allowed);
-  }
+  web_test_runtime_flags_.tracked_dictionary().ApplyUntrackedChanges(
+      changed_values);
 }
 
 bool TestRunner::HasCustomTextDump(std::string* custom_text_dump) const {
@@ -2445,8 +2443,8 @@ bool TestRunner::CanOpenWindows() const {
   return web_test_runtime_flags_.can_open_windows();
 }
 
-blink::WebContentSettingsClient* TestRunner::GetWebContentSettings() const {
-  return mock_content_settings_client_.get();
+blink::WebContentSettingsClient* TestRunner::GetWebContentSettings() {
+  return &mock_content_settings_client_;
 }
 
 bool TestRunner::ShouldDumpBackForwardList() const {
@@ -2506,8 +2504,6 @@ void TestRunner::RemoveLoadingFrame(blink::WebFrame* frame) {
   web_test_runtime_flags_.set_have_loading_frame(false);
   OnWebTestRuntimeFlagsChanged();
 
-  web_history_item_count_ = blink_test_runner_->NavigationEntryCount();
-
   // No more new work after the first complete load.
   work_queue_.set_frozen(true);
   // Inform the work queue that any load it started is done, in case it is
@@ -2560,6 +2556,14 @@ void TestRunner::FinishTestIfReady() {
   // No tasks left to run, all frames are done loading from previous tasks,
   // and we're not waiting for NotifyDone(), so the test is done.
   blink_test_runner_->TestFinished();
+}
+
+void TestRunner::AddMainFrame(WebFrameTestProxy* frame) {
+  main_frames_.insert(frame);
+}
+
+void TestRunner::RemoveMainFrame(WebFrameTestProxy* frame) {
+  main_frames_.erase(frame);
 }
 
 blink::WebFrame* TestRunner::MainFrame() const {
@@ -2759,8 +2763,8 @@ void TestRunner::WaitForPolicyDelegate() {
   OnWebTestRuntimeFlagsChanged();
 }
 
-int TestRunner::WindowCount() {
-  return test_interfaces_->GetWindowList().size();
+int TestRunner::InProcessWindowCount() {
+  return main_frames_.size();
 }
 
 void TestRunner::AddOriginAccessAllowListEntry(
@@ -2953,15 +2957,6 @@ void TestRunner::SetScriptsAllowed(bool allowed) {
 
 void TestRunner::SetStorageAllowed(bool allowed) {
   web_test_runtime_flags_.set_storage_allowed(allowed);
-  OnWebTestRuntimeFlagsChanged();
-}
-
-void TestRunner::SetPluginsAllowed(bool allowed) {
-  web_test_runtime_flags_.set_plugins_allowed(allowed);
-
-  for (WebViewTestProxy* window : test_interfaces_->GetWindowList())
-    window->GetWebView()->GetSettings()->SetPluginsEnabled(allowed);
-
   OnWebTestRuntimeFlagsChanged();
 }
 
@@ -3224,6 +3219,22 @@ TestRunner::GetWebTestClientRemote() {
 
 void TestRunner::HandleWebTestClientDisconnected() {
   web_test_client_remote_.reset();
+}
+
+mojom::WebTestBluetoothFakeAdapterSetter&
+TestRunner::GetBluetoothFakeAdapterSetter() {
+  if (!bluetooth_fake_adapter_setter_) {
+    RenderThread::Get()->BindHostReceiver(
+        bluetooth_fake_adapter_setter_.BindNewPipeAndPassReceiver());
+    bluetooth_fake_adapter_setter_.set_disconnect_handler(base::BindOnce(
+        &TestRunner::HandleBluetoothFakeAdapterSetterDisconnected,
+        base::Unretained(this)));
+  }
+  return *bluetooth_fake_adapter_setter_;
+}
+
+void TestRunner::HandleBluetoothFakeAdapterSetterDisconnected() {
+  bluetooth_fake_adapter_setter_.reset();
 }
 
 }  // namespace content

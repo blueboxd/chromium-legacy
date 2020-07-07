@@ -22,7 +22,6 @@
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_types.h"
 #include "ui/views/view_class_properties.h"
-#include "ui/views/widget/widget_observer.h"
 
 struct ExtensionsToolbarContainer::DropInfo {
   DropInfo(ToolbarActionsModel::ActionId action_id, size_t index);

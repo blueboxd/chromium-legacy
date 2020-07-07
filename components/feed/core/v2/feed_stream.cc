@@ -30,9 +30,11 @@
 #include "components/feed/core/v2/stream_model.h"
 #include "components/feed/core/v2/surface_updater.h"
 #include "components/feed/core/v2/tasks/clear_all_task.h"
+#include "components/feed/core/v2/tasks/get_prefetch_suggestions_task.h"
 #include "components/feed/core/v2/tasks/load_stream_task.h"
 #include "components/feed/core/v2/tasks/upload_actions_task.h"
 #include "components/feed/core/v2/tasks/wait_for_store_initialize_task.h"
+#include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "components/offline_pages/task/closure_task.h"
 #include "components/prefs/pref_service.h"
 
@@ -50,6 +52,28 @@ void PopulateDebugStreamData(const LoadStreamTask::Result& load_result,
 }
 
 }  // namespace
+
+// offline_pages::SuggestionsProvider.
+class FeedStream::OfflineSuggestionsProvider
+    : public offline_pages::SuggestionsProvider {
+ public:
+  explicit OfflineSuggestionsProvider(FeedStream* stream) : stream_(stream) {}
+  virtual ~OfflineSuggestionsProvider() = default;
+  OfflineSuggestionsProvider(const OfflineSuggestionsProvider&) = delete;
+  OfflineSuggestionsProvider& operator=(const OfflineSuggestionsProvider&) =
+      delete;
+  void GetCurrentArticleSuggestions(
+      SuggestionCallback suggestions_callback) override {
+    stream_->GetPrefetchSuggestions(std::move(suggestions_callback));
+  }
+
+  // These signals aren't used for v2.
+  void ReportArticleListViewed() override {}
+  void ReportArticleViewed(GURL article_url) override {}
+
+ private:
+  FeedStream* stream_;
+};
 
 RefreshResponseData FeedStream::WireResponseTranslator::TranslateWireResponse(
     feedwire::Response response,
@@ -88,10 +112,12 @@ FeedStream::FeedStream(RefreshTaskScheduler* refresh_task_scheduler,
                        PrefService* profile_prefs,
                        FeedNetwork* feed_network,
                        FeedStore* feed_store,
+                       offline_pages::PrefetchService* prefetch_service,
                        const base::Clock* clock,
                        const base::TickClock* tick_clock,
                        const ChromeInfo& chrome_info)
-    : refresh_task_scheduler_(refresh_task_scheduler),
+    : prefetch_service_(prefetch_service),
+      refresh_task_scheduler_(refresh_task_scheduler),
       metrics_reporter_(metrics_reporter),
       delegate_(delegate),
       profile_prefs_(profile_prefs),
@@ -107,6 +133,13 @@ FeedStream::FeedStream(RefreshTaskScheduler* refresh_task_scheduler,
   wire_response_translator_ = &default_translator;
 
   surface_updater_ = std::make_unique<SurfaceUpdater>(metrics_reporter_);
+
+  if (prefetch_service_) {
+    offline_suggestions_provider_ =
+        std::make_unique<OfflineSuggestionsProvider>(this);
+    prefetch_service_->SetSuggestionProvider(
+        offline_suggestions_provider_.get());
+  }
 
   // Inserting this task first ensures that |store_| is initialized before
   // it is used.
@@ -149,6 +182,9 @@ void FeedStream::InitialStreamLoadComplete(LoadStreamTask::Result result) {
   model_loading_in_progress_ = false;
 
   surface_updater_->LoadStreamComplete(model_ != nullptr, result.final_status);
+
+  if (result.loaded_new_content_from_network && prefetch_service_)
+    prefetch_service_->NewSuggestionsAvailable();
 }
 
 void FeedStream::OnEnterBackground() {
@@ -166,13 +202,18 @@ void FeedStream::AttachSurface(SurfaceInterface* surface) {
 void FeedStream::DetachSurface(SurfaceInterface* surface) {
   metrics_reporter_->SurfaceClosed(surface->GetSurfaceId());
   surface_updater_->SurfaceRemoved(surface);
-  if (!surface_updater_->HasSurfaceAttached()) {
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&FeedStream::AddUnloadModelIfNoSurfacesAttachedTask,
-                       GetWeakPtr(), unload_on_detach_sequence_number_),
-        GetFeedConfig().model_unload_timeout);
-  }
+  ScheduleModelUnloadIfNoSurfacesAttached();
+}
+
+void FeedStream::ScheduleModelUnloadIfNoSurfacesAttached() {
+  if (surface_updater_->HasSurfaceAttached())
+    return;
+
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&FeedStream::AddUnloadModelIfNoSurfacesAttachedTask,
+                     GetWeakPtr(), unload_on_detach_sequence_number_),
+      GetFeedConfig().model_unload_timeout);
 }
 
 void FeedStream::AddUnloadModelIfNoSurfacesAttachedTask(int sequence_number) {
@@ -239,6 +280,9 @@ void FeedStream::LoadMoreComplete(LoadMoreTask::Result result) {
   for (auto& callback : moved_callbacks) {
     std::move(callback).Run(success);
   }
+
+  if (result.loaded_new_content_from_network)
+    prefetch_service_->NewSuggestionsAvailable();
 }
 
 void FeedStream::ExecuteOperations(
@@ -286,6 +330,13 @@ void FeedStream::ProcessThereAndBackAgain(base::StringPiece data) {
     *action_msg.mutable_action_payload() = std::move(msg.action_payload());
     UploadAction(std::move(action_msg), /*upload_now=*/true, base::DoNothing());
   }
+}
+
+void FeedStream::GetPrefetchSuggestions(
+    base::OnceCallback<void(std::vector<offline_pages::PrefetchSuggestion>)>
+        suggestions_callback) {
+  task_queue_.AddTask(std::make_unique<GetPrefetchSuggestionsTask>(
+      this, std::move(suggestions_callback)));
 }
 
 DebugStreamData FeedStream::GetDebugStreamData() {
@@ -472,6 +523,9 @@ void FeedStream::ExecuteRefreshTask() {
 
 void FeedStream::BackgroundRefreshComplete(LoadStreamTask::Result result) {
   metrics_reporter_->OnBackgroundRefresh(result.final_status);
+  if (result.loaded_new_content_from_network && prefetch_service_)
+    prefetch_service_->NewSuggestionsAvailable();
+
   refresh_task_scheduler_->RefreshTaskComplete();
 }
 
@@ -494,6 +548,7 @@ void FeedStream::LoadModel(std::unique_ptr<StreamModel> model) {
   model_ = std::move(model);
   model_->SetStoreObserver(this);
   surface_updater_->SetModel(model_.get());
+  ScheduleModelUnloadIfNoSurfacesAttached();
 }
 
 void FeedStream::SetRequestSchedule(RequestSchedule schedule) {

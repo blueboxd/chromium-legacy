@@ -374,6 +374,10 @@ const char kDeviceNativePrintersBlacklist[] =
 const char kDeviceNativePrintersWhitelist[] =
     "cros.device.native_printers_whitelist";
 
+// List of print servers ids that are allowed. List of strings.
+const char kDeviceExternalPrintServersAllowlist[] =
+    "cros.device.external_print_servers_allowlist";
+
 // A dictionary containing parameters controlling the TPM firmware update
 // functionality.
 const char kTPMFirmwareUpdateSettings[] = "cros.tpm_firmware_update_settings";

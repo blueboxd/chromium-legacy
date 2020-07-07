@@ -642,7 +642,6 @@
 <translation id="6154478581116148741">Вклучете го заклучувањето на екранот во „Поставки“ за да ги извезете лозинките од уредов</translation>
 <translation id="6157392216611456285">Изберете <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> заштеда на податоци</translation>
-<translation id="6192333916571137726">Преземете ја датотеката</translation>
 <translation id="6201345951596836663">Линкот е копиран</translation>
 <translation id="6206830853671714236">Изберете кога да се преземе</translation>
 <translation id="6210748933810148297">Не сте <ph name="EMAIL" />?</translation>
@@ -846,7 +845,7 @@
 <translation id="7772032839648071052">Потврди лозинка</translation>
 <translation id="7772375229873196092">Затвори <ph name="APP_NAME" /></translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />… и уште <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" />… и уште <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />… и уште <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
-<translation id="7778840695157240389">Проверете подоцна дали има нови стории</translation>
+<translation id="7778840695157240389">Проверете подоцна дали има нови статии</translation>
 <translation id="7791543448312431591">Додај</translation>
 <translation id="780301667611848630">Не, фала</translation>
 <translation id="7810647596859435254">Отвори со…</translation>
@@ -928,7 +927,7 @@
 <translation id="8427875596167638501">Картичката за преглед е отворена на половина екран</translation>
 <translation id="8428213095426709021">Поставки</translation>
 <translation id="8438566539970814960">Подобрете ги пребарувањата и прелистувањето</translation>
-<translation id="8442258441309440798">Нема достапни стории</translation>
+<translation id="8442258441309440798">Нема достапни статии</translation>
 <translation id="8443209985646068659">Chrome не може да се аж.</translation>
 <translation id="8445448999790540984">Не може да се извезат лозинките</translation>
 <translation id="8461694314515752532">Шифрирајте ги синхронизираните податоци со сопствената лозинка за синхронизација</translation>

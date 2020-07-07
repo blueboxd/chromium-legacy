@@ -48,7 +48,7 @@ class VIEWS_EXPORT CustomFrameView : public NonClientFrameView,
   void UpdateWindowIcon() override;
   void UpdateWindowTitle() override;
   void SizeConstraintsChanged() override;
-  void PaintAsActiveChanged(bool active) override;
+  void PaintAsActiveChanged() override;
 
   // Overridden from View:
   void OnPaint(gfx::Canvas* canvas) override;

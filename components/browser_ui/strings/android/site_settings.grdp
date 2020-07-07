@@ -121,10 +121,10 @@
     Managed by app
   </message>
   <message name="IDS_ANDROID_PERMISSION_OFF" desc="Text at the top of the Website list, explaining to the user that a permission, such as the location service, is turned off. Contains a link to the settings menu to change it.">
-    Turn on permission for Chrome in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Android Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
+    Turn on permission for <ph name="APP_NAME">%1$s<ex>Chrome</ex></ph> in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Android Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
   </message>
   <message name="IDS_ANDROID_PERMISSION_OFF_PLURAL" desc="Text at the top of the Website list, explaining to the user that multiple permissions, such as the location service, are turned off. Contains a link to the settings menu to change it.">
-    Turn on permissions for Chrome in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Android Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
+    Turn on permissions for <ph name="APP_NAME">%1$s<ex>Chrome</ex></ph> in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Android Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
   </message>
   <message name="IDS_WEBSITE_SETTINGS_EMBEDDED_ON" desc="String used to indicate the embedder origin of a site">
     Embedded on <ph name="WEBSITE_URL">%1$s<ex>google.com</ex></ph>
@@ -252,7 +252,7 @@
     Block sites from creating a 3D map of your surroundings or tracking camera position
   </message>
   <message name="IDS_ANDROID_AR_CAMERA_PERMISSION_OFF" desc="The message to show when the camera permission needs to be turned on in Android settings in order to use Augmented Reality.">
-    To let Chrome use AR, also turn on camera in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Android Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
+    To let <ph name="APP_NAME">%1$s<ex>Chrome</ex></ph> use AR, also turn on camera in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Android Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
   </message>
 
   <!-- Automatic downloads -->
@@ -294,7 +294,7 @@
     Access your camera
   </message>
   <message name="IDS_ANDROID_CAMERA_PERMISSION_OFF" desc="The message to show when the camera permission needs to be turned on not just in Chrome, but also in Android settings.">
-    To let Chrome access your camera, also turn on camera in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Android Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
+    To let <ph name="APP_NAME">%1$s<ex>Chrome</ex></ph> access your camera, also turn on camera in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Android Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
   </message>
 
   <!-- Clipboard -->
@@ -372,7 +372,7 @@
     Location access is off for this device. Turn it on in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Android Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
   </message>
   <message name="IDS_ANDROID_LOCATION_PERMISSION_OFF" desc="The message to show when the location permission needs to be turned on not just in Chrome, but also in Android settings.">
-    To let Chrome access your location, also turn on location in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Android Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
+    To let <ph name="APP_NAME">%1$s<ex>Chrome</ex></ph> access your location, also turn on location in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Android Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
   </message>
 
   <!-- Microphone -->
@@ -384,7 +384,7 @@
     Ask first before allowing sites to use your microphone (recommended)
   </message>
   <message name="IDS_ANDROID_MICROPHONE_PERMISSION_OFF" desc="The message to show when the microphone permission needs to be turned on not just in Chrome, but also in Android settings.">
-    To let Chrome access your microphone, also turn on microphone in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Android Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
+    To let <ph name="APP_NAME">%1$s<ex>Chrome</ex></ph> access your microphone, also turn on microphone in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Android Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
   </message>
 
   <!-- Motion/Light sensors -->
@@ -432,7 +432,7 @@
     Managed by <ph name="APP_NAME">%1$s<ex>Notification App Name</ex></ph>
   </message>
   <message name="IDS_ANDROID_NOTIFICATIONS_PERMISSION_OFF" desc="The message to show when the notifications permission needs to be turned on not just in Chrome, but also in Android settings.">
-    To let Chrome send you notifications, also turn on notifications in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Android Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
+    To let <ph name="APP_NAME">%1$s<ex>Chrome</ex></ph> send you notifications, also turn on notifications in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Android Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
   </message>
   <message name="IDS_WEBSITE_NOTIFICATION_SETTINGS" desc="Accessibility string for the notification settings">
     Open notification settings

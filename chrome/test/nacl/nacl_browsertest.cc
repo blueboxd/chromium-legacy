@@ -78,7 +78,13 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, Maybe_PPAPICore, {
   RunNaClIntegrationTest(FILE_PATH_LITERAL("ppapi_ppb_core.html"));
 })
 
-NACL_BROWSER_TEST_F(NaClBrowserTest, PPAPIPPBInstance, {
+// TODO(1059468): Flaky on Win7 (32).
+#if defined(OS_WIN) && defined(ARCH_CPU_32_BITS)
+#define MAYBE_PPAPIPPBInstance DISABLED_PPAPIPPBInstance
+#else
+#define MAYBE_PPAPIPPBInstance PPAPIPPBInstance
+#endif
+NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_PPAPIPPBInstance, {
   RunNaClIntegrationTest(FILE_PATH_LITERAL("ppapi_ppb_instance.html"));
 })
 
@@ -362,8 +368,13 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnaclDebug,
       "pnacl_debug_url.html?nmf_file=pnacl_no_debug.nmf"));
 }
 
-IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl,
-                       MAYBE_PNACL(PnaclDebugURLFlagOff)) {
+// TODO(1059468): Flaky on Win7 (32).
+#if defined(OS_WIN) && defined(ARCH_CPU_32_BITS)
+#define MAYBE_PnaclDebugURLFlagOff DISABLED_PnaclDebugURLFlagOff
+#else
+#define MAYBE_PnaclDebugURLFlagOff MAYBE_PNACL(PnaclDebugURLFlagOff)
+#endif
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl, MAYBE_PnaclDebugURLFlagOff) {
   RunLoadTest(FILE_PATH_LITERAL(
       "pnacl_debug_url.html?nmf_file=pnacl_has_debug_flag_off.nmf"));
 }
@@ -437,8 +448,15 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl,
   RunLoadTest(FILE_PATH_LITERAL("pnacl_options.html?use_nmf=o_large"));
 }
 
+// TODO(1059468): Flaky on Win7 (32).
+#if defined(OS_WIN) && defined(ARCH_CPU_32_BITS)
+#define MAYBE_PnaclDyncodeSyscallDisabled DISABLED_PnaclDyncodeSyscallDisabled
+#else
+#define MAYBE_PnaclDyncodeSyscallDisabled \
+  MAYBE_PNACL(PnaclDyncodeSyscallDisabled)
+#endif
 IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl,
-                       MAYBE_PNACL(PnaclDyncodeSyscallDisabled)) {
+                       MAYBE_PnaclDyncodeSyscallDisabled) {
   RunNaClIntegrationTest(FILE_PATH_LITERAL(
       "pnacl_dyncode_syscall_disabled.html"));
 }

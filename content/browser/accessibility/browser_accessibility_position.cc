@@ -46,7 +46,7 @@ bool BrowserAccessibilityPosition::IsInTextObject() const {
   if (IsNullPosition())
     return false;
   DCHECK(GetAnchor());
-  return GetAnchor()->IsTextOnlyObject();
+  return GetAnchor()->IsText();
 }
 
 bool BrowserAccessibilityPosition::IsInWhiteSpace() const {
@@ -170,7 +170,7 @@ bool BrowserAccessibilityPosition::IsEmbeddedObjectInParent() const {
 #if defined(OS_WIN) || BUILDFLAG(USE_ATK)
   // Not all objects in the internal accessibility tree are exposed to platform
   // APIs.
-  return !IsNullPosition() && !GetAnchor()->IsTextOnlyObject() &&
+  return !IsNullPosition() && !GetAnchor()->IsText() &&
          !GetAnchor()->IsChildOfLeaf();
 #else
   return false;

@@ -94,7 +94,7 @@ class ProfileResetter : public content::BrowsingDataRemover::Observer {
   void ResetLanguages();
 
   // BrowsingDataRemover::Observer:
-  void OnBrowsingDataRemoverDone() override;
+  void OnBrowsingDataRemoverDone(uint64_t failed_data_types) override;
 
   // Callback for when TemplateURLService has loaded.
   void OnTemplateURLServiceLoaded();

@@ -1,0 +1,182 @@
+diff -ru xcbproto/src/randr.xml src/src/randr.xml
+--- xcbproto/src/randr.xml	2020-07-06 16:37:24.662098082 -0700
++++ src/src/randr.xml	2020-07-06 16:31:26.724467001 -0700
+@@ -803,64 +803,6 @@
+ 		<item name="Lease">           <value>6</value></item>
+ 	</enum>
+ 
+-	<struct name="CrtcChange">
+-		<field type="TIMESTAMP" name="timestamp" />
+-		<field type="WINDOW" name="window" />
+-		<field type="CRTC" name="crtc" />
+-		<field type="MODE" name="mode" />
+-		<field type="CARD16" name="rotation" mask="Rotation" />
+-		<pad bytes="2" />
+-		<field type="INT16" name="x" />
+-		<field type="INT16" name="y" />
+-		<field type="CARD16" name="width" />
+-		<field type="CARD16" name="height" />
+-	</struct>
+-
+-	<struct name="OutputChange">
+-		<field type="TIMESTAMP" name="timestamp" />
+-		<field type="TIMESTAMP" name="config_timestamp" />
+-		<field type="WINDOW" name="window" />
+-		<field type="OUTPUT" name="output" />
+-		<field type="CRTC" name="crtc" />
+-		<field type="MODE" name="mode" />
+-		<field type="CARD16" name="rotation" mask="Rotation" />
+-		<field type="CARD8" name="connection" enum="Connection" />
+-		<field type="CARD8" name="subpixel_order" enum="SubPixel" />
+-	</struct>
+-
+-	<struct name="OutputProperty">
+-		<field type="WINDOW" name="window" />
+-		<field type="OUTPUT" name="output" />
+-		<field type="ATOM" name="atom" />
+-		<field type="TIMESTAMP" name="timestamp" />
+-		<field type="CARD8" name="status" enum="Property" />
+-		<pad bytes="11" />
+-	</struct>
+-
+-	<!-- New in version 1.4 -->
+-
+-	<struct name="ProviderChange">
+-		<field type="TIMESTAMP" name="timestamp" />
+-		<field type="WINDOW" name="window" />
+-		<field type="PROVIDER" name="provider" />
+-		<pad bytes="16" />
+-	</struct>
+-
+-	<struct name="ProviderProperty">
+-		<field type="WINDOW" name="window" />
+-		<field type="PROVIDER" name="provider" />
+-		<field type="ATOM" name="atom" />
+-		<field type="TIMESTAMP" name="timestamp" />
+-		<field type="CARD8" name="state" />
+-		<pad bytes="11" />
+-	</struct>
+-
+-	<struct name="ResourceChange">
+-		<field type="TIMESTAMP" name="timestamp" />
+-		<field type="WINDOW" name="window" />
+-		<pad bytes="20" />
+-	</struct>
+-
+ 	<!-- New in version 1.5 -->
+ 
+ 	<struct name="MonitorInfo">
+@@ -929,26 +871,87 @@
+ 	  <field type="BYTE" name="terminate" />
+ 	</request>
+ 
+-	<struct name="LeaseNotify">
+-		<field type="TIMESTAMP" name="timestamp" />
+-		<field type="WINDOW" name="window" />
+-		<field type="LEASE" name="lease" />
+-		<field type="CARD8" name="created" />
+-		<pad bytes="15" />
+-	</struct>
+-
+-	<union name="NotifyData">
+-		<field type="CrtcChange"       name="cc" />
+-		<field type="OutputChange"     name="oc" />
+-		<field type="OutputProperty"   name="op" />
+-		<field type="ProviderChange"   name="pc" />
+-		<field type="ProviderProperty" name="pp" />
+-		<field type="ResourceChange"   name="rc" />
+-		<field type="LeaseNotify"      name="lc" />
+-	</union>
+-
+ 	<event name="Notify" number="1">
+ 		<field type="CARD8" name="subCode" enum="Notify" />
+-		<field type="NotifyData" name="u" />
++		<switch name="data">
++			<fieldref>subCode</fieldref>
++
++			<!-- New in version 1.2 -->
++
++			<case name="cc">
++				<enumref ref="Notify">CrtcChange</enumref>
++				<field type="TIMESTAMP" name="timestamp" />
++				<field type="WINDOW" name="window" />
++				<field type="CRTC" name="crtc" />
++				<field type="MODE" name="mode" />
++				<field type="CARD16" name="rotation" mask="Rotation" />
++				<pad bytes="2" />
++				<field type="INT16" name="x" />
++				<field type="INT16" name="y" />
++				<field type="CARD16" name="width" />
++				<field type="CARD16" name="height" />
++			</case>
++
++			<case name="oc">
++				<enumref ref="Notify">OutputChange</enumref>
++				<field type="TIMESTAMP" name="timestamp" />
++				<field type="TIMESTAMP" name="config_timestamp" />
++				<field type="WINDOW" name="window" />
++				<field type="OUTPUT" name="output" />
++				<field type="CRTC" name="crtc" />
++				<field type="MODE" name="mode" />
++				<field type="CARD16" name="rotation" mask="Rotation" />
++				<field type="CARD8" name="connection" enum="Connection" />
++				<field type="CARD8" name="subpixel_order" enum="SubPixel" />
++			</case>
++
++			<case name="op">
++				<enumref ref="Notify">OutputProperty</enumref>
++				<field type="WINDOW" name="window" />
++				<field type="OUTPUT" name="output" />
++				<field type="ATOM" name="atom" />
++				<field type="TIMESTAMP" name="timestamp" />
++				<field type="CARD8" name="status" enum="Property" />
++				<pad bytes="11" />
++			</case>
++
++			<!-- New in version 1.4 -->
++
++			<case name="pc">
++				<enumref ref="Notify">ProviderChange</enumref>
++				<field type="TIMESTAMP" name="timestamp" />
++				<field type="WINDOW" name="window" />
++				<field type="PROVIDER" name="provider" />
++				<pad bytes="16" />
++			</case>
++
++			<case name="pp">
++				<enumref ref="Notify">ProviderProperty</enumref>
++				<field type="WINDOW" name="window" />
++				<field type="PROVIDER" name="provider" />
++				<field type="ATOM" name="atom" />
++				<field type="TIMESTAMP" name="timestamp" />
++				<field type="CARD8" name="state" />
++				<pad bytes="11" />
++			</case>
++
++			<case name="rc">
++				<enumref ref="Notify">ResourceChange</enumref>
++				<field type="TIMESTAMP" name="timestamp" />
++				<field type="WINDOW" name="window" />
++				<pad bytes="20" />
++			</case>
++
++			<!-- new in 1.6 -->
++
++			<case name="lc">
++				<enumref ref="Notify">Lease</enumref>
++				<field type="TIMESTAMP" name="timestamp" />
++				<field type="WINDOW" name="window" />
++				<field type="LEASE" name="lease" />
++				<field type="CARD8" name="created" />
++				<pad bytes="15" />
++			</case>
++		</switch>
+ 	</event>
+ </xcb>
+Only in src/xcbgen: align.pyc
+Only in src/xcbgen: error.pyc
+Only in src/xcbgen: expr.pyc
+Only in src/xcbgen: __init__.pyc
+Only in src/xcbgen: matcher.pyc
+Only in src/xcbgen: state.pyc
+Only in src/xcbgen: xtypes.pyc

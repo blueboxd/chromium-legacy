@@ -177,4 +177,9 @@ public class ChromeSiteSettingsClient implements SiteSettingsClient {
     public String getChannelIdForOrigin(String origin) {
         return SiteChannelsManager.getInstance().getChannelIdForOrigin(origin);
     }
+
+    @Override
+    public String getAppName() {
+        return mContext.getString(R.string.app_name);
+    }
 }

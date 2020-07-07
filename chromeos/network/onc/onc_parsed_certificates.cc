@@ -226,10 +226,8 @@ bool OncParsedCertificates::ParseCertificate(
           onc_certificate);
     case CertificateType::kClient:
       return ParseClientCertificate(guid, onc_certificate);
-    default:
-      NOTREACHED();
-      return false;
   }
+  NOTREACHED();
   return false;
 }
 

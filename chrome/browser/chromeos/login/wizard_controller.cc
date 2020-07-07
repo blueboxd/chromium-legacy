@@ -544,7 +544,6 @@ std::vector<std::unique_ptr<BaseScreen>> WizardController::CreateScreens() {
   if (CanShowHIDDetectionScreen()) {
     append(std::make_unique<chromeos::HIDDetectionScreen>(
         oobe_ui->GetView<HIDDetectionScreenHandler>(),
-        oobe_ui->GetCoreOobeView(),
         base::BindRepeating(&WizardController::OnHidDetectionScreenExit,
                             weak_factory_.GetWeakPtr())));
   }
@@ -835,16 +834,28 @@ void WizardController::OnWrongHWIDScreenExit() {
   OnDeviceModificationCanceled();
 }
 
-void WizardController::OnHidDetectionScreenExit() {
-  OnScreenExit(HIDDetectionView::kScreenId, kDefaultExitReason);
+void WizardController::OnHidDetectionScreenExit(
+    HIDDetectionScreen::Result result) {
+  OnScreenExit(HIDDetectionView::kScreenId,
+               HIDDetectionScreen::GetResultString(result));
+
+  if (result == HIDDetectionScreen::Result::START_DEMO) {
+    LoginDisplayHost::default_host()->StartDemoAppLaunch();
+    return;
+  }
 
   // Check for tests configuration.
   if (!StartupUtils::IsOobeCompleted())
     ShowWelcomeScreen();
 }
 
-void WizardController::OnWelcomeScreenExit() {
-  OnScreenExit(WelcomeView::kScreenId, kDefaultExitReason);
+void WizardController::OnWelcomeScreenExit(WelcomeScreen::Result result) {
+  OnScreenExit(WelcomeView::kScreenId, WelcomeScreen::GetResultString(result));
+
+  if (result == WelcomeScreen::Result::START_DEMO) {
+    LoginDisplayHost::default_host()->StartDemoAppLaunch();
+    return;
+  }
 
   ShowNetworkScreen();
 }
@@ -1611,7 +1622,6 @@ void WizardController::AdvanceToScreen(OobeScreenId screen_id) {
   } else {
     if (is_out_of_box_) {
       if (CanShowHIDDetectionScreen()) {
-        hid_screen_ = GetScreen(HIDDetectionView::kScreenId);
         base::Callback<void(bool)> on_check =
             base::Bind(&WizardController::OnHIDScreenNecessityCheck,
                        weak_factory_.GetWeakPtr());

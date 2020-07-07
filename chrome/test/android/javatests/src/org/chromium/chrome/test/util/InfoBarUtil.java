@@ -8,7 +8,6 @@ import android.view.View;
 
 import org.chromium.chrome.R;
 import org.chromium.components.infobars.InfoBar;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
@@ -75,11 +74,6 @@ public class InfoBarUtil {
      * Waits until the specified InfoBar list contains no info bars.
      */
     public static void waitUntilNoInfoBarsExist(final List<InfoBar> infoBars) {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return infoBars.isEmpty();
-            }
-        });
+        CriteriaHelper.pollUiThread(infoBars::isEmpty);
     }
 }

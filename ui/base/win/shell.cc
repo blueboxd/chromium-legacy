@@ -83,8 +83,7 @@ bool PreventWindowFromPinning(HWND hwnd) {
   DCHECK(hwnd);
 
   Microsoft::WRL::ComPtr<IPropertyStore> pps;
-  if (FAILED(
-          SHGetPropertyStoreForWindow(hwnd, IID_PPV_ARGS(pps.GetAddressOf()))))
+  if (FAILED(SHGetPropertyStoreForWindow(hwnd, IID_PPV_ARGS(&pps))))
     return false;
 
   return base::win::SetBooleanValueForPropertyStore(
@@ -102,8 +101,7 @@ void SetAppDetailsForWindow(const base::string16& app_id,
   DCHECK(hwnd);
 
   Microsoft::WRL::ComPtr<IPropertyStore> pps;
-  if (FAILED(
-          SHGetPropertyStoreForWindow(hwnd, IID_PPV_ARGS(pps.GetAddressOf()))))
+  if (FAILED(SHGetPropertyStoreForWindow(hwnd, IID_PPV_ARGS(&pps))))
     return;
 
   if (!app_id.empty())
@@ -152,8 +150,7 @@ void ClearWindowPropertyStore(HWND hwnd) {
   DCHECK(hwnd);
 
   Microsoft::WRL::ComPtr<IPropertyStore> pps;
-  if (FAILED(
-          SHGetPropertyStoreForWindow(hwnd, IID_PPV_ARGS(pps.GetAddressOf()))))
+  if (FAILED(SHGetPropertyStoreForWindow(hwnd, IID_PPV_ARGS(&pps))))
     return;
 
   DWORD property_count;

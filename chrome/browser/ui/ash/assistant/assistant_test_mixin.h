@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/ash/assistant/test_support/fake_s3_server.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 
@@ -56,6 +57,8 @@ class AssistantTestMixin : public InProcessBrowserTestMixin {
   void SetUpOnMainThread() override;
   void TearDownOnMainThread() override;
 
+  void DisableFakeS3Server();
+
   // Starts the Assistant service and wait until it is ready to process
   // queries. Should be called as the first action in every test.
   void StartAssistantAndWaitForReady(
@@ -98,6 +101,12 @@ class AssistantTestMixin : public InProcessBrowserTestMixin {
   void ExpectCardResponse(const std::string& expected_response,
                           base::TimeDelta wait_timeout = kDefaultWaitTimeout);
 
+  // Waits until an error response is rendered that contains the given text. If
+  // |expected_response| is not received in |wait_timeout|, this will fail the
+  // test.
+  void ExpectErrorResponse(const std::string& expected_response,
+                           base::TimeDelta wait_timeout = kDefaultWaitTimeout);
+
   // Waits until a text response is rendered that contains the given text.
   // If |expected_response| is not received in |wait_timeout|, this will fail
   // the test.
@@ -126,6 +135,10 @@ class AssistantTestMixin : public InProcessBrowserTestMixin {
 
   // Returns true if the Assistant UI is currently visible.
   bool IsVisible();
+
+  // Watches the view hierarchy for change and fails if
+  // a view is updated / deleted / added before wait_timeout time elapses.
+  void ExpectNoChange(base::TimeDelta wait_timeout = kDefaultWaitTimeout);
 
  private:
   PrefService* GetUserPreferences();

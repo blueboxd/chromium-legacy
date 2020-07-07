@@ -200,12 +200,6 @@ bool OmniboxViewViews::ElideAnimation::IsAnimating() {
   return animation_ && animation_->is_animating();
 }
 
-bool OmniboxViewViews::ElideAnimation::HasStarted() {
-  // |animation_| is created when Start() is called, so the animation has been
-  // run if and only if |animation_| exists.
-  return !!animation_;
-}
-
 const gfx::Range& OmniboxViewViews::ElideAnimation::GetElideToBounds() const {
   return elide_to_bounds_;
 }
@@ -1298,6 +1292,10 @@ bool OmniboxViewViews::OnMousePressed(const ui::MouseEvent& event) {
 
   bool handled = views::Textfield::OnMousePressed(event);
 
+  // Reset next double click length
+  if (event.GetClickCount() == 1)
+    next_double_click_selection_len_ = 0;
+
   if (!select_all_on_mouse_release_) {
     if (UnapplySteadyStateElisions(UnelisionGesture::OTHER)) {
       // This ensures that when the user makes a double-click partial select, we
@@ -1305,7 +1303,7 @@ bool OmniboxViewViews::OnMousePressed(const ui::MouseEvent& event) {
       // selection, which is on mousedown.
       TextChanged();
       filter_drag_events_for_unelision_ = true;
-    } else if (event.GetClickCount() == 1) {
+    } else if (event.GetClickCount() == 1 && event.IsLeftMouseButton()) {
       // Select the current word and record it for later. Selection will be
       // immediately reset to cursor position, so no need to clean up. This is
       // done to handle an edge case where the wrong word is selected on a
@@ -1324,11 +1322,8 @@ bool OmniboxViewViews::OnMousePressed(const ui::MouseEvent& event) {
           next_double_click_selection_offset_ =
               offset + GetCursorPosition() - next_double_click_selection_len_;
         }
-      } else {
-        // Clear length so we don't try to use it again on later double clicks.
-        next_double_click_selection_len_ = 0;
       }
-    } else if (event.GetClickCount() == 2) {
+    } else if (event.GetClickCount() == 2 && event.IsLeftMouseButton()) {
       // If the user double clicked and we unelided between the first and second
       // click, offset double click.
       if (next_double_click_selection_len_ != 0) {
@@ -1686,8 +1681,8 @@ void OmniboxViewViews::OnBlur() {
       }
     } else if (OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction()) {
       // When hide-on-interaction is enabled, this method ensures that, once the
-      // omnibox is blurred, the URL is visible and that the animation is
-      // created so that the URL will be animated to the simplified domain the
+      // omnibox is blurred, the URL is visible and that the animation state is
+      // set so that the URL will be animated to the simplified domain the
       // next time the user interacts with the page.
       ResetToHideOnInteraction();
     }
@@ -1718,11 +1713,26 @@ void OmniboxViewViews::DidFinishNavigation(
   }
 
   if (navigation->IsSameDocument() || !navigation->IsInMainFrame()) {
-    // If we've already elided to the simplified domain, make sure the full URL
-    // is not re-shown for same-document or subframe navigations.
+    // Handling same-document or non-main-frame navigations is a bit tricky
+    // because they shouldn't change the current elision/unelision state:
+    // - If the user hadn't interacted with the previous page, then we don't
+    // need to do anything: the URL is already unelided and we're waiting for a
+    // user interaction to animate it to the simplified domain.
+    // - If the user interacted with the page, and we are currently animating to
+    // the simplified domain as a result, we want to let the animation run
+    // undisturbed, eventually ending up in the elided state.
+    // - If the user interacted with the page, and we have already finished
+    // animating to the simplified domain, then make sure we stay in the elided
+    // state, showing only the simplified domain. This is an abrupt elision,
+    // rather than an animation, because we don't want there to be any visible
+    // change in the URL from the user's perspective.
+    //
+    // |elide_after_interaction_animation_| is only created after the user
+    // interacts with the page (in DidGetUserInteraction()), so we use its
+    // existence to determine whether the user has interacted with the page yet
+    // or not.
     if (IsURLEligibleForSimplifiedDomainEliding() &&
         elide_after_interaction_animation_ &&
-        elide_after_interaction_animation_->HasStarted() &&
         !elide_after_interaction_animation_->IsAnimating()) {
       ElideToSimplifiedDomain();
     }
@@ -1747,17 +1757,22 @@ void OmniboxViewViews::DidGetUserInteraction(
   // designed to draw the user's attention and suggest that they can return to
   // the omnibox to uncover the full URL.
 
-  // This elision animation should only run once per navigation. It is
-  // recreated for the next navigation in DidFinishNavigation.
+  // If the animation already exists, we've already processed a user interaction
+  // on this navigation and elided to the simplified domain (or are in the
+  // process of doing so). There's no need to do anything in this case.
   if (IsURLEligibleForSimplifiedDomainEliding() &&
-      !elide_after_interaction_animation_->HasStarted()) {
+      !elide_after_interaction_animation_) {
     GetRenderText()->SetElideBehavior(gfx::NO_ELIDE);
+    elide_after_interaction_animation_ =
+        std::make_unique<ElideAnimation>(this, GetRenderText());
+    std::make_unique<ElideAnimation>(this, GetRenderText());
     elide_after_interaction_animation_->Start(GetSimplifiedDomainBounds(),
                                               0 /* delay_ms */);
   }
   // Now that the URL is being elided, create the animation to bring it back on
   // hover (if enabled via field trial).
-  if (OmniboxFieldTrial::ShouldRevealPathQueryRefOnHover()) {
+  if (OmniboxFieldTrial::ShouldRevealPathQueryRefOnHover() &&
+      !hover_elide_or_unelide_animation_) {
     hover_elide_or_unelide_animation_ =
         std::make_unique<ElideAnimation>(this, GetRenderText());
   }
@@ -2276,12 +2291,11 @@ void OmniboxViewViews::ResetToHideOnInteraction() {
       model()->ShouldPreventElision()) {
     return;
   }
-  // Delete the hover elide/unelide animation; it'll get recreated in
-  // DidGetUserInteraction() if reveal-on-hover is enabled. We don't want to
-  // unelide while the unelided URL is already showing.
+  // Delete the animations; they'll get recreated in DidGetUserInteraction().
+  // This prevents us from running any animations until the user interacts with
+  // the page.
   hover_elide_or_unelide_animation_.reset();
-  elide_after_interaction_animation_ =
-      std::make_unique<ElideAnimation>(this, GetRenderText());
+  elide_after_interaction_animation_.reset();
   if (IsURLEligibleForSimplifiedDomainEliding())
     UnelideFromSimplifiedDomain();
 }

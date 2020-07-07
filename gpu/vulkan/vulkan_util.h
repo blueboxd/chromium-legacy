@@ -80,7 +80,10 @@ VKAPI_ATTR VkResult VKAPI_CALL QueueSubmitHook(VkQueue queue,
                                                const VkSubmitInfo* pSubmits,
                                                VkFence fence);
 
-COMPONENT_EXPORT(VULKAN) void ReportQueueSubmitPerSwapBuffers();
+COMPONENT_EXPORT(VULKAN)
+VKAPI_ATTR void RecordImportingVKSemaphoreIntoGL();
+
+COMPONENT_EXPORT(VULKAN) void ReportUMAPerSwapBuffers();
 
 COMPONENT_EXPORT(VULKAN)
 bool CheckVulkanCompabilities(const VulkanInfo& vulkan_info,

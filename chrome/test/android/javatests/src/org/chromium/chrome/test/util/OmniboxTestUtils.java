@@ -8,6 +8,7 @@ import android.content.Context;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 
 import org.chromium.chrome.browser.omnibox.LocationBarLayout;
@@ -257,16 +258,10 @@ public class OmniboxTestUtils {
         if (gainFocus) {
             // During early startup (before completion of its first onDraw), the UrlBar
             // is not focusable. Tests have to wait for that to happen before trying to focus it.
-            CriteriaHelper.pollUiThread(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    boolean shown = urlBar.isShown();
-                    boolean focusable = urlBar.isFocusable();
-                    updateFailureReason(String.format(Locale.US,
-                            "UrlBar is invalid state - shown: %b, focusable: %b", shown,
-                            focusable));
-                    return shown && focusable;
-                }
+            CriteriaHelper.pollUiThread(() -> {
+                Criteria.checkThat("UrlBar not shown.", urlBar.isShown(), Matchers.is(true));
+                Criteria.checkThat(
+                        "UrlBar not focusable.", urlBar.isFocusable(), Matchers.is(true));
             });
 
             TouchCommon.singleClickView(urlBar);
@@ -282,17 +277,11 @@ public class OmniboxTestUtils {
      * @param active Whether the UrlBar is expected to have focus or not.
      */
     public static void waitForFocusAndKeyboardActive(final UrlBar urlBar, final boolean active) {
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                if (doesUrlBarHaveFocus(urlBar) != active) {
-                    updateFailureReason("URL Bar did not have expected focus: " + active);
-                    return false;
-                }
-                updateFailureReason(
-                        "The keyboard did not reach the expected active state: " + active);
-                return isKeyboardActiveForView(urlBar) == active;
-            }
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat("URL Bar did not have expected focus", doesUrlBarHaveFocus(urlBar),
+                    Matchers.is(active));
+            Criteria.checkThat("Keyboard did not reach expected state",
+                    isKeyboardActiveForView(urlBar), Matchers.is(active));
         });
     }
 
@@ -313,26 +302,16 @@ public class OmniboxTestUtils {
      */
     public static void waitForOmniboxSuggestions(
             final LocationBarLayout locationBar, long maxPollTimeMs) {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                OmniboxSuggestionsDropdown suggestionsDropdown =
-                        AutocompleteCoordinatorTestUtils.getSuggestionsDropdown(
-                                locationBar.getAutocompleteCoordinator());
-                if (suggestionsDropdown == null) {
-                    updateFailureReason("suggestionList is null");
-                    return false;
-                }
-                if (!suggestionsDropdown.getViewGroup().isShown()) {
-                    updateFailureReason("suggestionList is not shown");
-                    return false;
-                }
-                if (suggestionsDropdown.getItemCount() == 0) {
-                    updateFailureReason("suggestionList has no entries");
-                    return false;
-                }
-                return true;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            OmniboxSuggestionsDropdown suggestionsDropdown =
+                    AutocompleteCoordinatorTestUtils.getSuggestionsDropdown(
+                            locationBar.getAutocompleteCoordinator());
+            Criteria.checkThat(
+                    "suggestion list is null", suggestionsDropdown, Matchers.notNullValue());
+            Criteria.checkThat("suggestion list is not shown",
+                    suggestionsDropdown.getViewGroup().isShown(), Matchers.is(true));
+            Criteria.checkThat("suggestion list has no entries", suggestionsDropdown.getItemCount(),
+                    Matchers.greaterThan(0));
         }, maxPollTimeMs, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 
@@ -343,15 +322,13 @@ public class OmniboxTestUtils {
      */
     public static void waitForOmniboxSuggestions(
             final LocationBarLayout locationBar, final int expectedCount) {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                OmniboxSuggestionsDropdown suggestionsDropdown =
-                        AutocompleteCoordinatorTestUtils.getSuggestionsDropdown(
-                                locationBar.getAutocompleteCoordinator());
-                return suggestionsDropdown != null && suggestionsDropdown.getViewGroup().isShown()
-                        && suggestionsDropdown.getItemCount() == expectedCount;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            OmniboxSuggestionsDropdown suggestionsDropdown =
+                    AutocompleteCoordinatorTestUtils.getSuggestionsDropdown(
+                            locationBar.getAutocompleteCoordinator());
+            Criteria.checkThat(suggestionsDropdown, Matchers.notNullValue());
+            Criteria.checkThat(suggestionsDropdown.getViewGroup().isShown(), Matchers.is(true));
+            Criteria.checkThat(suggestionsDropdown.getItemCount(), Matchers.is(expectedCount));
         });
     }
 }

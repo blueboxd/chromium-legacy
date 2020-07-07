@@ -95,7 +95,7 @@ TEST_F(PolicyMapTest, SetAndGet) {
       ExternalDataFetcher::Equals(entry->external_data_fetcher.get(),
                                   CreateExternalDataFetcher("dummy").get()));
   map.Set(kTestPolicyName1, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE,
-          POLICY_SOURCE_ENTERPRISE_DEFAULT, nullptr, nullptr);
+          POLICY_SOURCE_ENTERPRISE_DEFAULT, base::nullopt, nullptr);
   EXPECT_FALSE(map.GetValue(kTestPolicyName1));
   entry = map.Get(kTestPolicyName1);
   ASSERT_TRUE(entry != nullptr);
@@ -209,7 +209,7 @@ TEST_F(PolicyMapTest, MergeFrom) {
   a.Set(kTestPolicyName2, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         POLICY_SOURCE_CLOUD, base::Value(true), nullptr);
   a.Set(kTestPolicyName3, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_ENTERPRISE_DEFAULT, nullptr,
+        POLICY_SOURCE_ENTERPRISE_DEFAULT, base::nullopt,
         CreateExternalDataFetcher("a"));
   a.Set(kTestPolicyName4, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
         POLICY_SOURCE_CLOUD, base::Value(false), nullptr);
@@ -228,7 +228,7 @@ TEST_F(PolicyMapTest, MergeFrom) {
   b.Set(kTestPolicyName2, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         POLICY_SOURCE_CLOUD, base::Value(false), nullptr);
   b.Set(kTestPolicyName3, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_ENTERPRISE_DEFAULT, nullptr,
+        POLICY_SOURCE_ENTERPRISE_DEFAULT, base::nullopt,
         CreateExternalDataFetcher("b"));
   b.Set(kTestPolicyName4, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE,
         POLICY_SOURCE_DEVICE_LOCAL_ACCOUNT_OVERRIDE, base::Value(true),
@@ -265,7 +265,7 @@ TEST_F(PolicyMapTest, MergeFrom) {
   c.GetMutable(kTestPolicyName2)
       ->AddConflictingPolicy(b.Get(kTestPolicyName2)->DeepCopy());
   c.Set(kTestPolicyName3, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_ENTERPRISE_DEFAULT, nullptr,
+        POLICY_SOURCE_ENTERPRISE_DEFAULT, base::nullopt,
         CreateExternalDataFetcher("a"));
   c.GetMutable(kTestPolicyName3)->AddWarning(IDS_POLICY_CONFLICT_DIFF_VALUE);
   c.GetMutable(kTestPolicyName3)
@@ -796,11 +796,11 @@ TEST_F(PolicyMapTest, GetDifferingKeys) {
   a.Set(kTestPolicyName1, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
         POLICY_SOURCE_CLOUD, base::Value("google.com"), nullptr);
   a.Set(kTestPolicyName2, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_CLOUD, nullptr, CreateExternalDataFetcher("dummy"));
+        POLICY_SOURCE_CLOUD, base::nullopt, CreateExternalDataFetcher("dummy"));
   a.Set(kTestPolicyName3, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         POLICY_SOURCE_CLOUD, base::Value(true), nullptr);
   a.Set(kTestPolicyName4, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_CLOUD, nullptr, CreateExternalDataFetcher("a"));
+        POLICY_SOURCE_CLOUD, base::nullopt, CreateExternalDataFetcher("a"));
   a.Set(kTestPolicyName5, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
         POLICY_SOURCE_CLOUD, base::Value(false), nullptr);
   a.Set(kTestPolicyName6, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE,
@@ -812,11 +812,11 @@ TEST_F(PolicyMapTest, GetDifferingKeys) {
   b.Set(kTestPolicyName1, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
         POLICY_SOURCE_CLOUD, base::Value("google.com"), nullptr);
   b.Set(kTestPolicyName2, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_CLOUD, nullptr, CreateExternalDataFetcher("dummy"));
+        POLICY_SOURCE_CLOUD, base::nullopt, CreateExternalDataFetcher("dummy"));
   b.Set(kTestPolicyName3, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         POLICY_SOURCE_CLOUD, base::Value(false), nullptr);
   b.Set(kTestPolicyName4, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_CLOUD, nullptr, CreateExternalDataFetcher("b"));
+        POLICY_SOURCE_CLOUD, base::nullopt, CreateExternalDataFetcher("b"));
   b.Set(kTestPolicyName5, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
         POLICY_SOURCE_CLOUD, base::Value(false), nullptr);
   b.Set(kTestPolicyName6, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,

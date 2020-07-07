@@ -407,7 +407,6 @@ void ShelfLayoutManager::InitObservers() {
   shell->AddShellObserver(this);
   SplitViewController::Get(shelf_widget_->GetNativeWindow())->AddObserver(this);
   ShelfConfig::Get()->AddObserver(this);
-  Shell::Get()->tablet_mode_controller()->AddObserver(this);
   shell->overview_controller()->AddObserver(this);
   shell->app_list_controller()->AddObserver(this);
   shell->lock_state_controller()->AddObserver(this);
@@ -435,7 +434,6 @@ void ShelfLayoutManager::PrepareForShutdown() {
   // Stop observing changes to avoid updating a partially destructed shelf.
   Shell::Get()->activation_client()->RemoveObserver(this);
   ShelfConfig::Get()->RemoveObserver(this);
-  Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
 
   // DesksController could be null when virtual desks feature is not enabled.
   if (DesksController::Get())
@@ -1178,16 +1176,6 @@ void ShelfLayoutManager::OnShelfConfigUpdated() {
   SetState(state_.visibility_state);
   LayoutShelf(/*animate=*/true);
   MaybeUpdateShelfBackground(AnimationChangeType::IMMEDIATE);
-  UpdateContextualNudges();
-}
-
-void ShelfLayoutManager::OnTabletModeStarted() {
-  LayoutShelf(/*animate=*/true);
-  UpdateContextualNudges();
-}
-
-void ShelfLayoutManager::OnTabletModeEnded() {
-  LayoutShelf(/*animate=*/true);
   UpdateContextualNudges();
 }
 

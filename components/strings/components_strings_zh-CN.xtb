@@ -1867,7 +1867,7 @@
 <translation id="893332455753468063">添加名称</translation>
 <translation id="8943282376843390568">绿黄色</translation>
 <translation id="8957210676456822347">强制门户授权</translation>
-<translation id="8958582951173503172">当 Chrome 企业版接口标记了安全性事件时，系统会向您的管理员发送与相应事件有关的数据。这些数据可能包括您在 Chrome 中所访网页的网址、文件名或元数据，以及您在登录设备和 Chrome 时使用的用户名。</translation>
+<translation id="8958582951173503172">当 Chrome 企业版接口标记了安全性事件时，系统会向您的管理员发送与相应事件有关的数据。这些数据可能包括您在 Chrome 中访问的网页的网址、文件名或元数据，以及您在登录设备和 Chrome 时使用的用户名。</translation>
 <translation id="8962950042226115166">可疑网站</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />建议：<ph name="MARKUP_2" />确保有数据网络连接<ph name="MARKUP_3" />稍后重新加载此网页<ph name="MARKUP_4" />检查您输入的地址是否正确<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">保存卡片</translation>
@@ -1907,7 +1907,7 @@
 <translation id="9103872766612412690"><ph name="SITE" /> 通常会使用加密技术来保护您的信息。Chromium 此次尝试连接到 <ph name="SITE" /> 时，此网站发回了异常的错误凭据。这可能是因为有攻击者在试图冒充 <ph name="SITE" />，或 Wi-Fi 登录屏幕中断了此次连接。请放心，您的信息仍然是安全的，因为 Chromium 尚未进行任何数据交换便停止了连接。</translation>
 <translation id="9106062320799175032">添加帐单邮寄地址</translation>
 <translation id="9114524666733003316">正在确认信用卡…</translation>
-<translation id="9114581008513152754">此浏览器不由某个公司或其他组织管理。此设备上的活动可能会在 Chrome 外部受管理。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
+<translation id="9114581008513152754">此浏览器并未由某个公司或其他组织管理。此设备上的活动可能在接受 Chrome 外部的管理。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="9119042192571987207">已上传</translation>
 <translation id="9128870381267983090">连接到网络</translation>
 <translation id="9137013805542155359">显示原始网页</translation>
@@ -1915,7 +1915,7 @@
 <translation id="9148088599418889305">选择送货方式</translation>
 <translation id="9148507642005240123">撤消修改(&amp;U)</translation>
 <translation id="9150045010208374699">使用您的摄像头</translation>
-<translation id="9150685862434908345">您的管理员可以远程更改您的浏览器设置。此设备上的活动也可能会在 Chrome 外部受管理。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
+<translation id="9150685862434908345">您的管理员可以远程更改您的浏览器设置。此设备上的活动可能也在接受 Chrome 外部的管理。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="9154194610265714752">已更新</translation>
 <translation id="9157595877708044936">正在设置...</translation>
 <translation id="9158625974267017556">C6 (Envelope)</translation>

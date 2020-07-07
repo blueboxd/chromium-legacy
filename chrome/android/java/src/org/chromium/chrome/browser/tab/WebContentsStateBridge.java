@@ -62,11 +62,11 @@ public class WebContentsStateBridge {
 
     /**
      * Returns the WebContents' state as a ByteBuffer.
-     * @param tab Tab to pickle.
+     * @param webContents WebContents to pickle.
      * @return ByteBuffer containing the state of the WebContents.
      */
-    public static ByteBuffer getContentsStateAsByteBuffer(Tab tab) {
-        return WebContentsStateBridgeJni.get().getContentsStateAsByteBuffer(tab);
+    public static ByteBuffer getContentsStateAsByteBuffer(WebContents webContents) {
+        return WebContentsStateBridgeJni.get().getContentsStateAsByteBuffer(webContents);
     }
 
     /** @return Title currently being displayed in the saved state's current entry. */
@@ -86,7 +86,7 @@ public class WebContentsStateBridge {
     public interface Natives {
         WebContents restoreContentsFromByteBuffer(
                 ByteBuffer buffer, int savedStateVersion, boolean initiallyHidden);
-        ByteBuffer getContentsStateAsByteBuffer(Tab tab);
+        ByteBuffer getContentsStateAsByteBuffer(WebContents webcontents);
         ByteBuffer deleteNavigationEntries(ByteBuffer state, int saveStateVersion, long predicate);
         ByteBuffer createSingleNavigationStateAsByteBuffer(String url, String referrerUrl,
                 int referrerPolicy, Origin initiatorOrigin, boolean isIncognito);

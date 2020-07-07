@@ -4,7 +4,7 @@ components:
     workerType: ci
     schedulerId: taskcluster-github
     deadline: "24 hours"
-    image: webplatformtests/wpt:0.37
+    image: webplatformtests/wpt:0.40
     maxRunTime: 7200
     artifacts:
       public/results:
@@ -487,3 +487,11 @@ tasks:
       schedule-if:
         run-job:
           - wptrunner_infrastructure
+
+  - sink-task:
+      description: >-
+        Sink task for all other tasks; indicates success
+      use:
+        - wpt-base
+      command: "./wpt tc-sink-task"
+      requires: all-resolved

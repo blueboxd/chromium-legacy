@@ -2659,3 +2659,42 @@ TEST_F('ChromeVoxBackgroundTest', 'HoverSkipsContainers', function() {
             .replay();
       });
 });
+
+TEST_F('ChromeVoxBackgroundTest', 'FocusOnUnknown', function() {
+  const mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(
+      `
+    <p>start</p>
+    <div role="group" tabindex=0>
+      <p>hello<p>
+    </div>
+    <div role="group" tabindex=0></div>
+  `,
+      function(root) {
+        const [group1, group2] = root.findAll({role: RoleType.GROUP});
+        assertNotNullNorUndefined(group1);
+        assertNotNullNorUndefined(group2);
+        Object.defineProperty(group1, 'role', {
+          get() {
+            return chrome.automation.RoleType.UNKNOWN;
+          }
+        });
+        Object.defineProperty(group2, 'role', {
+          get() {
+            return chrome.automation.RoleType.UNKNOWN;
+          }
+        });
+
+        const evt2 = new CustomAutomationEvent(EventType.FOCUS, group2, '', []);
+        const currentRange = ChromeVoxState.instance.currentRange;
+        DesktopAutomationHandler.instance.onFocus(evt2);
+        assertEquals(currentRange, ChromeVoxState.instance.currentRange);
+
+        const evt1 = new CustomAutomationEvent(EventType.FOCUS, group1, '', []);
+        mockFeedback
+            .call(DesktopAutomationHandler.instance.onFocus.bind(
+                DesktopAutomationHandler.instance, evt1))
+            .expectSpeech('hello')
+            .replay();
+      });
+});

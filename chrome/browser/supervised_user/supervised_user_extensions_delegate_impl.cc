@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/supervised_user/supervised_user_extensions_metrics_recorder.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/supervised_user/parent_permission_dialog.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_dialog_auto_confirm.h"
 
 namespace {
 
@@ -54,18 +56,7 @@ bool SupervisedUserExtensionsDelegateImpl::IsChild(
     content::BrowserContext* context) const {
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForBrowserContext(context);
-
   return supervised_user_service->IsChild();
-}
-
-bool SupervisedUserExtensionsDelegateImpl::
-    IsSupervisedChildWhoMayInstallExtensions(
-        content::BrowserContext* context) const {
-  SupervisedUserService* supervised_user_service =
-      SupervisedUserServiceFactory::GetForBrowserContext(context);
-
-  return supervised_user_service->IsChild() &&
-         supervised_user_service->CanInstallExtensions();
 }
 
 bool SupervisedUserExtensionsDelegateImpl::IsExtensionAllowedByParent(
@@ -73,8 +64,36 @@ bool SupervisedUserExtensionsDelegateImpl::IsExtensionAllowedByParent(
     content::BrowserContext* context) const {
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForBrowserContext(context);
-  return IsSupervisedChildWhoMayInstallExtensions(context) &&
-         supervised_user_service->IsExtensionAllowed(extension);
+  return supervised_user_service->IsExtensionAllowed(extension);
+}
+
+void SupervisedUserExtensionsDelegateImpl::PromptForParentPermissionOrShowError(
+    const extensions::Extension& extension,
+    content::BrowserContext* browser_context,
+    content::WebContents* web_contents,
+    ParentPermissionDialogDoneCallback parent_permission_callback,
+    base::OnceClosure error_callback) {
+  DCHECK(IsChild(browser_context));
+  DCHECK(!IsExtensionAllowedByParent(extension, browser_context));
+
+  // Supervised users who can install extensions still require parent permission
+  // for installation or enablement. If the user isn't allowed to install
+  // extensions at all, then we will just show a "blocked" dialog.
+  if (CanInstallExtensions(browser_context)) {
+    ShowParentPermissionDialogForExtension(
+        extension, browser_context, web_contents,
+        std::move(parent_permission_callback));
+  } else {
+    ShowExtensionEnableBlockedByParentDialogForExtension(
+        extension, web_contents, std::move(error_callback));
+  }
+}
+
+bool SupervisedUserExtensionsDelegateImpl::CanInstallExtensions(
+    content::BrowserContext* context) const {
+  SupervisedUserService* supervised_user_service =
+      SupervisedUserServiceFactory::GetForBrowserContext(context);
+  return supervised_user_service->CanInstallExtensions();
 }
 
 void SupervisedUserExtensionsDelegateImpl::
@@ -86,31 +105,32 @@ void SupervisedUserExtensionsDelegateImpl::
   ParentPermissionDialog::DoneCallback inner_done_callback = base::BindOnce(
       &::OnParentPermissionDialogComplete, std::move(done_callback));
 
+  gfx::NativeWindow parent_window =
+      contents ? contents->GetTopLevelNativeWindow() : nullptr;
   parent_permission_dialog_ =
       ParentPermissionDialog::CreateParentPermissionDialogForExtension(
-          Profile::FromBrowserContext(context), contents,
-          contents->GetTopLevelNativeWindow(), gfx::ImageSkia(), &extension,
-          std::move(inner_done_callback));
+          Profile::FromBrowserContext(context), parent_window, gfx::ImageSkia(),
+          &extension, std::move(inner_done_callback));
   parent_permission_dialog_->ShowDialog();
 }
 
 void SupervisedUserExtensionsDelegateImpl::
     ShowExtensionEnableBlockedByParentDialogForExtension(
-        const extensions::Extension* extension,
+        const extensions::Extension& extension,
         content::WebContents* contents,
         base::OnceClosure done_callback) {
-  DCHECK(contents);
-
-  chrome::ShowExtensionInstallBlockedByParentDialog(
-      chrome::ExtensionInstalledBlockedByParentDialogAction::kEnable, extension,
-      contents, std::move(done_callback));
-}
-
-void SupervisedUserExtensionsDelegateImpl::
-    RecordExtensionEnableBlockedByParentDialogUmaMetric() {
   SupervisedUserExtensionsMetricsRecorder::RecordEnablementUmaMetrics(
       SupervisedUserExtensionsMetricsRecorder::EnablementState::
           kFailedToEnable);
+  if (ScopedTestDialogAutoConfirm::GetAutoConfirmValue() !=
+      ScopedTestDialogAutoConfirm::NONE) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(done_callback));
+    return;
+  }
+  chrome::ShowExtensionInstallBlockedByParentDialog(
+      chrome::ExtensionInstalledBlockedByParentDialogAction::kEnable,
+      &extension, contents, std::move(done_callback));
 }
 
 }  // namespace extensions

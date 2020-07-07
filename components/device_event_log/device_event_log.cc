@@ -87,6 +87,10 @@ void Clear(const base::Time& begin, const base::Time& end) {
     g_device_event_log->Clear(begin, end);
 }
 
+int GetCountByLevelForTesting(LogLevel level) {
+  return g_device_event_log->GetCountByLevelForTesting(level);
+}
+
 namespace internal {
 
 DeviceEventLogInstance::DeviceEventLogInstance(const char* file,

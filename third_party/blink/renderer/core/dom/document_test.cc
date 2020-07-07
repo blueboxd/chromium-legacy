@@ -535,40 +535,6 @@ TEST_F(DocumentTest, StyleVersion) {
   EXPECT_NE(previous_style_version, GetDocument().StyleVersion());
 }
 
-TEST_F(DocumentTest, EnforceSandboxFlags) {
-  NavigateTo(KURL("http://example.test/"), {{http_names::kContentSecurityPolicy,
-                                             "sandbox allow-same-origin"}});
-  EXPECT_FALSE(GetDocument().GetSecurityOrigin()->IsOpaque());
-  EXPECT_FALSE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
-
-  NavigateTo(KURL("http://example.test/"),
-             {{http_names::kContentSecurityPolicy, "sandbox"}});
-  EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsOpaque());
-  EXPECT_FALSE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
-
-  // A unique origin does not bypass secure context checks unless it
-  // is also potentially trustworthy.
-  url::ScopedSchemeRegistryForTests scoped_registry;
-  url::AddStandardScheme("very-special-scheme", url::SCHEME_WITH_HOST);
-  SchemeRegistry::RegisterURLSchemeBypassingSecureContextCheck(
-      "very-special-scheme");
-  NavigateTo(KURL("very-special-scheme://example.test"),
-             {{http_names::kContentSecurityPolicy, "sandbox"}});
-  EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsOpaque());
-  EXPECT_FALSE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
-
-  SchemeRegistry::RegisterURLSchemeAsSecure("very-special-scheme");
-  NavigateTo(KURL("very-special-scheme://example.test"),
-             {{http_names::kContentSecurityPolicy, "sandbox"}});
-  EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsOpaque());
-  EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
-
-  NavigateTo(KURL("https://example.test"),
-             {{http_names::kContentSecurityPolicy, "sandbox"}});
-  EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsOpaque());
-  EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
-}
-
 TEST_F(DocumentTest, SynchronousMutationNotifier) {
   auto& observer =
       *MakeGarbageCollected<TestSynchronousMutationObserver>(GetDocument());

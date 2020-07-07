@@ -281,7 +281,6 @@
 <translation id="1340527397989195812">Feu una còpia de seguretat dels fitxers multimèdia del dispositiu mitjançant l'aplicació Fitxers.</translation>
 <translation id="1341988552785875222"><ph name="APP_NAME" /> ha definit el fons de pantalla actual. És possible que hàgiu de desinstal·lar <ph name="APP_NAME" /> per poder seleccionar-ne un altre.</translation>
 <translation id="1343865611738742294">Concedeix permís a les aplicacions de Linux per accedir als dispositius USB. Linux no recordarà els dispositius USB després d'extreure'ls.</translation>
-<translation id="1344143111673240412">El canvi en la configuració de la càmera requereix reiniciar Parallels Desktop</translation>
 <translation id="1347256498747320987">Instal·la actualitzacions i aplicacions. En continuar, acceptes que aquest dispositiu també pugui baixar i instal·lar automàticament actualitzacions i aplicacions de Google, de l'operador de telefonia mòbil i del fabricant del dispositiu, i que és possible que ho faci utilitzant dades mòbils. Pot ser que algunes d'aquestes aplicacions ofereixin compres des de l'aplicació. <ph name="BEGIN_LINK1" />Més informació<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">L'actualització començarà quan hi hagi un <ph name="BATTERY_LEVEL" />% de bateria.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -1196,7 +1195,6 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="2470702053775288986">Extensions no compatibles desactivades</translation>
 <translation id="2471469610750100598">Negre (opció predeterminada)</translation>
 <translation id="2473195200299095979">Tradueix aquesta pàgina</translation>
-<translation id="2474848500897222119"><ph name="PRINTER_NAME" /> s'ha quedat sense tinta</translation>
 <translation id="2475982808118771221">S'ha produït un error</translation>
 <translation id="2476578072172137802">Configuració del lloc web</translation>
 <translation id="2478176599153288112">Permisos de fitxer multimèdia per a "<ph name="EXTENSION" />"</translation>
@@ -1502,7 +1500,6 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> està fent servir la configuració del servidor intermediari del teu administrador</translation>
 <translation id="2825758591930162672">Clau pública del subjecte</translation>
 <translation id="2828650939514476812">Connectar a una xarxa Wi-Fi</translation>
-<translation id="28291580771888953"><ph name="PRINTER_NAME" /> té la cua plena</translation>
 <translation id="2835547721736623118">Servei de reconeixement de parla</translation>
 <translation id="2836269494620652131">Bloqueig</translation>
 <translation id="2836635946302913370">L'administrador ha desactivat l'inici de sessió amb aquest nom d'usuari.</translation>
@@ -2318,7 +2315,7 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="3839516600093027468">No permetis mai que <ph name="HOST" /> vegi el porta-retalls</translation>
 <translation id="3841964634449506551">La contrasenya no és vàlida</translation>
 <translation id="3842552989725514455">Tipus de lletra Serif</translation>
-<translation id="3843058644024807390">El canvi en la configuració del micròfon requereix reiniciar Parallels Desktop</translation>
+<translation id="3843464315703645664">Inclòs internament a la llista de permesos</translation>
 <translation id="3846116211488856547">Obtén eines per desenvolupar llocs web i aplicacions d'Android, entre d'altres. En instal·lar Linux, es baixaran <ph name="DOWNLOAD_SIZE" /> de dades.</translation>
 <translation id="3847319713229060696">Ajuda a millorar la seguretat al web per a tothom</translation>
 <translation id="385051799172605136">Enrere</translation>
@@ -2776,7 +2773,6 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="4453946976636652378">Cerca <ph name="SEARCH_ENGINE_NAME" /> o escriu un URL</translation>
 <translation id="4459169140545916303">Actiu fa <ph name="DEVICE_LAST_ACTIVATED_TIME" /> dies</translation>
 <translation id="4460014764210899310">Desagrupa</translation>
-<translation id="4460343359907016103">S'ha produït un error en connectar-se a <ph name="PRINTER_NAME" /></translation>
 <translation id="4462159676511157176">Servidors de noms personalitzats</translation>
 <translation id="4465236939126352372">S'ha establert <ph name="TIME" /> com a límit de temps per a <ph name="APP_NAME" /></translation>
 <translation id="4465725236958772856">Xarxa <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, gestionada per l'administrador, connecta</translation>
@@ -3074,7 +3070,6 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="4864369630010738180">S'està iniciant la sessió...</translation>
 <translation id="4864805589453749318">Selecciona quin dels teus pares concedeix el permís per afegir un compte de centre educatiu.</translation>
 <translation id="486635084936119914">Obre alguns tipus de fitxer automàticament després de baixar-los</translation>
-<translation id="4869213010169296107">Falta una safata a <ph name="PRINTER_NAME" /></translation>
 <translation id="48704129375571883">Afegeix funcions addicionals</translation>
 <translation id="4870758487381879312">Introdueix la contrasenya proporcionada per l'administrador a fi d'obtenir informació de configuració</translation>
 <translation id="4870903493621965035">No hi ha cap dispositiu vinculat</translation>
@@ -3325,6 +3320,7 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="5184662919967270437">S'està actualitzant el dispositiu</translation>
 <translation id="5185359571430619712">Revisa les extensions</translation>
 <translation id="5185386675596372454">La darrera versió de "<ph name="EXTENSION_NAME" />" s'ha desactivat perquè necessita més permisos.</translation>
+<translation id="5185500136143151980">Sense connexió a Internet</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5190926251776387065">Activa el port</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> vol baixar diversos fitxers</translation>
@@ -3482,7 +3478,6 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="5390112241331447203">Inclou el fitxer system_logs.txt que s'envia en els informes de suggeriments.</translation>
 <translation id="5390677308841849479">Vermell fosc i taronja</translation>
 <translation id="5390743329570580756">Envia per a</translation>
-<translation id="5395869306561378615"><ph name="PRINTER_NAME" /> s'ha posat en pausa</translation>
 <translation id="5397794290049113714">Usuari</translation>
 <translation id="5398572795982417028">La pàgina indicada no respecta el límit de <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">Anuncis bloquejats</translation>
@@ -3497,7 +3492,6 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="5417312524372586921">Temes del navegador</translation>
 <translation id="5419405654816502573">Voice Match</translation>
 <translation id="5420438158931847627">Determina la nitidesa del text i les imatges</translation>
-<translation id="5421498071721257877"><ph name="PRINTER_NAME" /> presenta un error de dispositiu</translation>
 <translation id="5422221874247253874">Punt d'accés</translation>
 <translation id="5422781158178868512">El dispositiu d'emmagatzematge extern no s'ha pogut reconèixer.</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3847,7 +3841,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="5852137567692933493">Reinicia i utilitza Powerwash</translation>
 <translation id="5854912040170951372">Pizza</translation>
 <translation id="5855267860608268405">Xarxes Wi-Fi conegudes</translation>
-<translation id="5855310969323666289"><ph name="PRINTER_NAME" /> té la porta oberta</translation>
 <translation id="5855643921295613558">0,6 segons</translation>
 <translation id="5856721540245522153">Activar les funcions de depuració</translation>
 <translation id="5857090052475505287">Carpeta nova</translation>
@@ -3878,7 +3871,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="5877064549588274448">El canal ha canviat. Reinicieu el dispositiu perquè s'apliquin els canvis.</translation>
 <translation id="5877584842898320529">La impressora seleccionada no està disponible o no s'ha instal·lat correctament.<ph name="BR" />Comprova la impressora o prova de seleccionar-ne una altra.</translation>
 <translation id="5882919346125742463">Xarxes conegudes</translation>
-<translation id="5883716097305842571"><ph name="PRINTER_NAME" /> té l'àrea de sortida quasi plena</translation>
 <translation id="5884474295213649357">Aquesta pestanya està connectada a un dispositiu USB</translation>
 <translation id="5886009770935151472">Dit 1</translation>
 <translation id="5889282057229379085">Nombre màxim de CA intermèdies: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4444,7 +4436,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6611972847767394631">Aquí trobaràs les teves pestanyes</translation>
 <translation id="6612358246767739896">Contingut protegit</translation>
 <translation id="6615455863669487791">Mostra-m'ho</translation>
-<translation id="6617034477946102682">No es pot accedir a <ph name="PRINTER_NAME" /></translation>
 <translation id="6618097958368085618">Desa de totes maneres</translation>
 <translation id="6618744767048954150">Comprovació en curs</translation>
 <translation id="6619058681307408113">Protocol Line Printer Daemon (LPD)</translation>
@@ -4861,7 +4852,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7128151990937044829">Mostra un indicador a la barra d'adreces quan les notificacions estan bloquejades</translation>
 <translation id="7131040479572660648">Llegir les dades dels llocs <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> i <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Afegeix la pà&amp;gina...</translation>
-<translation id="7131379856697962078"><ph name="PRINTER_NAME" /> té l'àrea de sortida plena</translation>
 <translation id="7133578150266914903">L'administrador està canviant la versió del dispositiu a una d'anterior (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">Fa el text més petit</translation>
 <translation id="7135729336746831607">Vols activar el Bluetooth?</translation>
@@ -4880,7 +4870,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7152478047064750137">Aquesta extensió no requereix cap permís especial</translation>
 <translation id="7154130902455071009">Canvia la pàgina d'inici per: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">Foto existent de la càmera o d'un fitxer</translation>
-<translation id="715657691234357425"><ph name="PRINTER_NAME" /> s'està quedant sense paper</translation>
 <translation id="7165320105431587207">No s'ha pogut configurar la xarxa</translation>
 <translation id="716640248772308851">"<ph name="EXTENSION" />" pot llegir imatges, vídeos i fitxers d'àudio de les ubicacions marcades.</translation>
 <translation id="7167486101654761064">&amp;Obre sempre els fitxers d'aquest tipus</translation>
@@ -4911,7 +4900,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7197632491113152433">Hem trobat <ph name="NUMBER_OF_APPS" /> aplicacions al compte que es poden utilitzar en aquest dispositiu.</translation>
 <translation id="7199158086730159431">Obtén a&amp;juda</translation>
 <translation id="7200083590239651963">Selecciona la configuració</translation>
-<translation id="7201042526153088083">Instal·la aplicacions i jocs de Google Play al dispositiu <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;Més informació&lt;/a&gt;</translation>
 <translation id="720110658997053098">Activa permanentment el mode quiosc en aquest dispositiu</translation>
 <translation id="7201118060536064622">S'ha suprimit <ph name="DELETED_ITEM_NAME" /></translation>
 <translation id="7201420661433230412">Visualitza els fitxers</translation>
@@ -5217,7 +5205,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7598466960084663009">Reinicia l'ordinador</translation>
 <translation id="7599527631045201165">El nom del dispositiu és massa llarg. Introdueix-ne un de més curt per tornar-ho a provar.</translation>
 <translation id="7600965453749440009">No tradueixis mai de: <ph name="LANGUAGE" /></translation>
-<translation id="7601297144931396972"><ph name="PRINTER_NAME" /> té paper encallat</translation>
 <translation id="760197030861754408">Aneu a <ph name="LANDING_PAGE" /> per connectar-vos-hi.</translation>
 <translation id="7602079150116086782">Cap pestanya d'altres dispositius</translation>
 <translation id="7602173054665172958">Gestió de la impressió</translation>
@@ -5228,6 +5215,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7609148976235050828">Connecta't a Internet i torna-ho a provar.</translation>
 <translation id="7614260613810441905">Pregunta'm quan un lloc web vulgui editar els fitxers o les carpetes del dispositiu (opció recomanada)</translation>
 <translation id="761530003705945209">Crea còpies de seguretat a Google Drive. Canvia de dispositiu o restaura'n les dades fàcilment en qualsevol moment. La còpia de seguretat inclou dades d'aplicacions. Les còpies de seguretat es pengen a Google i s'encripten amb la contrasenya del teu Compte de Google.</translation>
+<translation id="7615365294369022248">S'ha produït un error en afegir un compte</translation>
 <translation id="7616214729753637086">S'està registrant el dispositiu...</translation>
 <translation id="7617263010641145920">Activa Play Store</translation>
 <translation id="7617366389578322136">S'està connectant al dispositiu <ph name="DEVICE_NAME" /></translation>
@@ -5675,7 +5663,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8123590694679414600">Les dades es van encriptar el dia <ph name="TIME" /> amb la teva frase de contrasenya de sincronització. No inclouen les formes de pagament ni les adreces de Google Pay.</translation>
 <translation id="81238879832906896">Flor groga i blanca</translation>
 <translation id="8124313775439841391">ONC gestionat</translation>
-<translation id="8127535217699822294"><ph name="PRINTER_NAME" /> s'ha quedat sense paper</translation>
 <translation id="813082847718468539">Mostra la informació del lloc web</translation>
 <translation id="8131740175452115882">Confirma</translation>
 <translation id="8133676275609324831">&amp;Mostra a la carpeta</translation>
@@ -5774,7 +5761,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8254954272268479918">Tanca Linux (versió beta)</translation>
 <translation id="8255451560461371599">Sense fons</translation>
 <translation id="8256319818471787266">Gosset</translation>
-<translation id="8256417822772703842"><ph name="PRINTER_NAME" /> s'està quedant sense tinta</translation>
 <translation id="8257950718085972371">Continua bloquejant l'accés a la càmera</translation>
 <translation id="8259239505248583312">Som-hi</translation>
 <translation id="8260864402787962391">Ratolí</translation>
@@ -5956,7 +5942,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8487678622945914333">Amplia</translation>
 <translation id="8490896350101740396">S'han actualitzat les aplicacions de Quiosc següents: <ph name="UPDATED_APPS" />. Reinicieu el dispositiu per completar el procés d'actualització.</translation>
 <translation id="8493236660459102203">Micròfon:</translation>
-<translation id="8495940850609851342"><ph name="PRINTER_NAME" /> s'ha aturat</translation>
 <translation id="8496717697661868878">Executa aquest connector</translation>
 <translation id="8497219075884839166">Utilitats per a Windows</translation>
 <translation id="8498214519255567734">Facilita mirar la pantalla o llegir-hi amb poca llum</translation>
@@ -6498,6 +6483,12 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="9157096865782046368">0,8 segons</translation>
 <translation id="9157697743260533322">No s'han pogut configurar les actualitzacions automàtiques per a tots els usuaris (error de llançament preliminar: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">S'ha produït un problema de comunicació de xarxa durant l'autenticació. Comproveu la connexió a la xarxa i torneu-ho a provar.</translation>
+<translation id="9159643062839240276">Prova de fer el següent:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />Comprova els cables de la xarxa, el mòdem i l'encaminador.
+      <ph name="LIST_ITEM" />Torna't a connectar a la Wi‑Fi.
+      <ph name="LIST_ITEM" />Executa Diagnòstic de connectivitat de Chrome.
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">Pantalla en pantalla</translation>
 <translation id="9168436347345867845">Fes-ho més tard</translation>
 <translation id="9169496697824289689">Mostra les tecles de drecera</translation>

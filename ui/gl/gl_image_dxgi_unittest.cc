@@ -54,12 +54,11 @@ class GLImageDXGITestDelegate : public GLImageTestDelegateBase {
         QueryD3D11DeviceObjectFromANGLE();
 
     Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
-    HRESULT hr = d3d11_device->CreateTexture2D(&desc, &initial_data,
-                                               texture.GetAddressOf());
+    HRESULT hr = d3d11_device->CreateTexture2D(&desc, &initial_data, &texture);
     EXPECT_HRESULT_SUCCEEDED(hr);
 
     Microsoft::WRL::ComPtr<IDXGIResource1> dxgi_resource;
-    hr = texture.CopyTo(dxgi_resource.GetAddressOf());
+    hr = texture.As(&dxgi_resource);
     EXPECT_HRESULT_SUCCEEDED(hr);
 
     HANDLE handle = nullptr;

@@ -43,8 +43,7 @@ class VIEWS_EXPORT WidgetObserver : public base::CheckedObserver {
 
   // Called when the widget transitions from a state in which it should render
   // as active to one in which it should render as inactive or vice-versa.
-  virtual void OnWidgetPaintAsActiveChanged(Widget* widget,
-                                            bool paint_as_active) {}
+  virtual void OnWidgetPaintAsActiveChanged(Widget* widget) {}
 
   virtual void OnWidgetVisibilityChanging(Widget* widget, bool visible) {}
   virtual void OnWidgetVisibilityChanged(Widget* widget, bool visible) {}

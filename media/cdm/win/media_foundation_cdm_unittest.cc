@@ -63,7 +63,8 @@ class MediaFoundationCdmTest : public testing::Test {
   void SetGenerateRequestExpectations(
       ComPtr<MockMFCdmSession> mf_cdm_session,
       const char* session_id,
-      IMFContentDecryptionModuleSessionCallbacks** mf_cdm_session_callbacks) {
+      IMFContentDecryptionModuleSessionCallbacks** mf_cdm_session_callbacks,
+      bool expect_message = true) {
     std::vector<uint8_t> license_request = StringToVector("request");
 
     // Session ID to return. Will be released by |mf_cdm_session_|.
@@ -85,9 +86,11 @@ class MediaFoundationCdmTest : public testing::Test {
     COM_EXPECT_CALL(mf_cdm_session, GetSessionId(_))
         .WillOnce(DoAll(SetArgPointee<0>(mf_session_id), Return(S_OK)));
 
-    EXPECT_CALL(cdm_client_,
-                OnSessionMessage(session_id, CdmMessageType::LICENSE_REQUEST,
-                                 license_request));
+    if (expect_message) {
+      EXPECT_CALL(cdm_client_,
+                  OnSessionMessage(session_id, CdmMessageType::LICENSE_REQUEST,
+                                   license_request));
+    }
   }
 
   void CreateSessionAndGenerateRequest() {
@@ -220,6 +223,46 @@ TEST_F(MediaFoundationCdmTest,
 
   task_environment_.RunUntilIdle();
   EXPECT_TRUE(session_id_.empty());
+}
+
+// Duplicate session IDs cause session creation failure.
+TEST_F(MediaFoundationCdmTest,
+       CreateSessionAndGenerateRequest_DuplicateSessionId) {
+  std::vector<uint8_t> init_data = StringToVector("init_data");
+
+  auto mf_cdm_session_1 = MakeComPtr<MockMFCdmSession>();
+  auto mf_cdm_session_2 = MakeComPtr<MockMFCdmSession>();
+  ComPtr<IMFContentDecryptionModuleSessionCallbacks> mf_cdm_session_callbacks_1;
+  ComPtr<IMFContentDecryptionModuleSessionCallbacks> mf_cdm_session_callbacks_2;
+
+  COM_EXPECT_CALL(mf_cdm_,
+                  CreateSession(MF_MEDIAKEYSESSION_TYPE_TEMPORARY, _, _))
+      .WillOnce(DoAll(SaveComPtr<1>(&mf_cdm_session_callbacks_1),
+                      SetComPointee<2>(mf_cdm_session_1.Get()), Return(S_OK)))
+      .WillOnce(DoAll(SaveComPtr<1>(&mf_cdm_session_callbacks_2),
+                      SetComPointee<2>(mf_cdm_session_2.Get()), Return(S_OK)));
+
+  // In both sessions we return kSessionId. Session 1 succeeds. Session 2 fails
+  // because of duplicate session ID.
+  SetGenerateRequestExpectations(mf_cdm_session_1, kSessionId,
+                                 &mf_cdm_session_callbacks_1);
+  SetGenerateRequestExpectations(mf_cdm_session_2, kSessionId,
+                                 &mf_cdm_session_callbacks_2,
+                                 /*expect_message=*/false);
+  std::string session_id_1;
+  std::string session_id_2;
+  cdm_->CreateSessionAndGenerateRequest(
+      CdmSessionType::kTemporary, EmeInitDataType::WEBM, init_data,
+      std::make_unique<MockCdmSessionPromise>(/*expect_success=*/true,
+                                              &session_id_1));
+  cdm_->CreateSessionAndGenerateRequest(
+      CdmSessionType::kTemporary, EmeInitDataType::WEBM, init_data,
+      std::make_unique<MockCdmSessionPromise>(/*expect_success=*/false,
+                                              &session_id_2));
+
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(session_id_1, kSessionId);
+  EXPECT_TRUE(session_id_2.empty());
 }
 
 // LoadSession() is not implemented.

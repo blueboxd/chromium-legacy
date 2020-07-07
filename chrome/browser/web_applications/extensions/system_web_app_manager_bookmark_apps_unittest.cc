@@ -190,7 +190,9 @@ TEST_F(SystemWebAppManagerTestBookmarkApps, Enabled) {
   EXPECT_FALSE(apps_to_install.empty());
 }
 
-// Test that changing the set of System Apps uninstalls apps.
+// Deprecated. See corresponding
+// SystemWebAppManagerTest.UninstallAppInstalledInPreviousSession test for web
+// apps. Test that changing the set of System Apps uninstalls apps.
 TEST_F(SystemWebAppManagerTestBookmarkApps,
        UninstallAppInstalledInPreviousSession) {
   // Simulate System Apps and a regular app that were installed in the
@@ -222,6 +224,8 @@ TEST_F(SystemWebAppManagerTestBookmarkApps,
             pending_app_manager()->uninstall_requests());
 }
 
+// Deprecated. See corresponding SystemWebAppManagerTest.AlwaysUpdate test for
+// web apps.
 TEST_F(SystemWebAppManagerTestBookmarkApps, AlwaysUpdate) {
   system_web_app_manager()->SetUpdatePolicy(
       SystemWebAppManager::UpdatePolicy::kAlwaysUpdate);
@@ -265,6 +269,8 @@ TEST_F(SystemWebAppManagerTestBookmarkApps, AlwaysUpdate) {
   EXPECT_EQ(5u, pending_app_manager()->install_requests().size());
 }
 
+// Deprecated. See corresponding SystemWebAppManagerTest.UpdateOnVersionChange
+// test for web apps.
 TEST_F(SystemWebAppManagerTestBookmarkApps, UpdateOnVersionChange) {
   const std::vector<ExternalInstallOptions>& install_requests =
       pending_app_manager()->install_requests();
@@ -350,6 +356,8 @@ TEST_F(SystemWebAppManagerTestBookmarkApps, UpdateOnVersionChange) {
   EXPECT_TRUE(IsInstalled(AppUrl3()));
 }
 
+// Deprecated. See corresponding SystemWebAppManagerTest.UpdateOnLocaleChange
+// test for web apps.
 TEST_F(SystemWebAppManagerTestBookmarkApps, UpdateOnLocaleChange) {
   const std::vector<ExternalInstallOptions>& install_requests =
       pending_app_manager()->install_requests();

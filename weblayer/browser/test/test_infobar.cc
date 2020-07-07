@@ -30,8 +30,8 @@ class TestInfoBarDelegate : public infobars::InfoBarDelegate {
 };
 
 TestInfoBar::TestInfoBar(std::unique_ptr<TestInfoBarDelegate> delegate)
-    : InfoBarAndroid(std::move(delegate),
-                     base::BindRepeating(&MapToJavaDrawableId)) {}
+    : infobars::InfoBarAndroid(std::move(delegate),
+                               base::BindRepeating(&MapToJavaDrawableId)) {}
 
 TestInfoBar::~TestInfoBar() {}
 

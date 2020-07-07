@@ -6,6 +6,7 @@
 
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -134,7 +135,7 @@ bool MaybeDisallowFetchForDocWrittenScript(FetchParameters& params,
   // page content, whereas cross-origin scripts inserted via document.write
   // are likely to be third party content.
   String request_host = params.Url().Host();
-  String document_host = document.GetSecurityOrigin()->Domain();
+  String document_host = document.domWindow()->GetSecurityOrigin()->Domain();
 
   bool same_site = false;
   if (request_host == document_host)
@@ -159,7 +160,8 @@ bool MaybeDisallowFetchForDocWrittenScript(FetchParameters& params,
     // same scheme while deciding whether or not to block the script as is done
     // in other cases of "same site" usage. On the other hand we do not want to
     // block more scripts than necessary.
-    if (params.Url().Protocol() != document.GetSecurityOrigin()->Protocol()) {
+    if (params.Url().Protocol() !=
+        document.domWindow()->GetSecurityOrigin()->Protocol()) {
       document.Loader()->DidObserveLoadingBehavior(
           LoadingBehaviorFlag::
               kLoadingBehaviorDocumentWriteBlockDifferentScheme);
@@ -219,7 +221,8 @@ void PossiblyFetchBlockedDocWriteScript(
   EmitErrorBlocked(resource->Url(), element_document);
 
   FetchParameters params(options.CreateFetchParameters(
-      resource->Url(), element_document.GetSecurityOrigin(), cross_origin,
+      resource->Url(),
+      element_document.GetExecutionContext()->GetSecurityOrigin(), cross_origin,
       resource->Encoding(), FetchParameters::kIdleLoad));
   AddHeader(&params);
   ScriptResource::Fetch(params, element_document.Fetcher(), nullptr,

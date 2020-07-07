@@ -471,6 +471,15 @@ void DeviceEventLogImpl::Clear(const base::Time& begin, const base::Time& end) {
   entries_.erase(begin_it, end_rev_it.base());
 }
 
+int DeviceEventLogImpl::GetCountByLevelForTesting(LogLevel level) {
+  int count = 0;
+  for (const auto& entry : entries_) {
+    if (entry.log_level == level)
+      ++count;
+  }
+  return count;
+}
+
 DeviceEventLogImpl::LogEntry::LogEntry(const char* filedesc,
                                        int file_line,
                                        LogType log_type,

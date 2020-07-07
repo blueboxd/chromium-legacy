@@ -322,14 +322,13 @@ void BrowserNonClientFrameViewAsh::UpdateWindowTitle() {
 
 void BrowserNonClientFrameViewAsh::SizeConstraintsChanged() {}
 
-void BrowserNonClientFrameViewAsh::PaintAsActiveChanged(bool active) {
-  BrowserNonClientFrameView::PaintAsActiveChanged(active);
+void BrowserNonClientFrameViewAsh::PaintAsActiveChanged() {
+  BrowserNonClientFrameView::PaintAsActiveChanged();
 
   UpdateProfileIcons();
 
-  const bool should_paint_as_active = ShouldPaintAsActive();
   if (frame_header_)
-    frame_header_->SetPaintAsActive(should_paint_as_active);
+    frame_header_->SetPaintAsActive(ShouldPaintAsActive());
 }
 
 void BrowserNonClientFrameViewAsh::OnPaint(gfx::Canvas* canvas) {

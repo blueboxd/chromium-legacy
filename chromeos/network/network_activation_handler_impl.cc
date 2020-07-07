@@ -23,21 +23,6 @@ NetworkActivationHandlerImpl::NetworkActivationHandlerImpl() = default;
 
 NetworkActivationHandlerImpl::~NetworkActivationHandlerImpl() = default;
 
-void NetworkActivationHandlerImpl::Activate(
-    const std::string& service_path,
-    const std::string& carrier,
-    const base::Closure& success_callback,
-    const network_handler::ErrorCallback& error_callback) {
-  NET_LOG(USER) << "ActivateNetwork: " << NetworkPathId(service_path)
-                << ": Carrier: " << carrier;
-  ShillServiceClient::Get()->ActivateCellularModem(
-      dbus::ObjectPath(service_path), carrier,
-      base::BindOnce(&NetworkActivationHandlerImpl::HandleShillSuccess,
-                     AsWeakPtr(), success_callback),
-      base::BindOnce(&network_handler::ShillErrorCallbackFunction,
-                     kErrorShillError, service_path, error_callback));
-}
-
 void NetworkActivationHandlerImpl::CompleteActivation(
     const std::string& service_path,
     const base::Closure& success_callback,

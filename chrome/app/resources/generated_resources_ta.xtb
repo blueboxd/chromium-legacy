@@ -281,7 +281,6 @@
 <translation id="1340527397989195812">Files ஆப்ஸைப் பயன்படுத்தி சாதனத்திலிருந்து மீடியாவைக் காப்புப்பிரதி எடுக்கவும்.</translation>
 <translation id="1341988552785875222">தற்போதைய வால்பேப்பர் '<ph name="APP_NAME" />' ஆல் அமைக்கப்பட்டது. வேறு வால்பேப்பரைத் தேர்ந்தெடுப்பதற்கு முன் நீங்கள் '<ph name="APP_NAME" />'ஐ நிறுவல் நீக்க வேண்டிய தேவை ஏற்படலாம்.</translation>
 <translation id="1343865611738742294">USB சாதனங்களை அணுகுவதற்கான அனுமதியை Linux ஆப்ஸிற்கு வழங்கும். அகற்றப்பட்ட USB சாதனத்தை Linux நினைவில் வைத்திருக்காது.</translation>
-<translation id="1344143111673240412">கேமரா அமைப்பில் செய்த மாற்றத்தைச் செயல்படுத்த Parallels Desktopபை மீண்டும் தொடங்க வேண்டும்</translation>
 <translation id="1347256498747320987">புதுப்பிப்புகளையும் ஆப்ஸையும் நிறுவும். தொடர்வதன் மூலம், இந்தச் சாதனம் Google, உங்கள் மொபைல் நிறுவனம் மற்றும் இந்தச் சாதனத்தின் உற்பத்தியாளர் ஆகியோரிடமிருந்து வரும் புதுப்பிப்புகளையும் ஆப்ஸையும் மொபைல் டேட்டாவைப் பயன்படுத்தி தானாகவே பதிவிறக்கி, நிறுவக்கூடும் என்பதை ஏற்கிறீர்கள். இவற்றில் சில ஆப்ஸில் ஆப்ஸ் சார்ந்த வாங்குதல்களும் வழங்கப்படலாம். <ph name="BEGIN_LINK1" />மேலும் அறிக<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">பேட்டரி <ph name="BATTERY_LEVEL" />%ஐ அடையும் போது, புதுப்பிக்கத் தொடங்கும்.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -1197,7 +1196,6 @@
 <translation id="2470702053775288986">ஆதரிக்கப்படாத நீட்டிப்புகள் முடக்கப்பட்டன</translation>
 <translation id="2471469610750100598">கருப்பு (இயல்பு)</translation>
 <translation id="2473195200299095979">இந்தப் பக்கத்தை மொழிபெயர்</translation>
-<translation id="2474848500897222119"><ph name="PRINTER_NAME" /> இல் மை தீர்ந்துவிட்டது</translation>
 <translation id="2475982808118771221">ஒரு பிழை ஏற்பட்டது</translation>
 <translation id="2476578072172137802">தள அமைப்புகள்</translation>
 <translation id="2478176599153288112">"<ph name="EXTENSION" />" க்கான மீடியா-கோப்பு அனுமதிகள்</translation>
@@ -1503,7 +1501,6 @@
 <translation id="2824942875887026017">உங்கள் நிர்வாகியிடமிருந்து பெற்ற ப்ராக்ஸி அமைப்புகளை <ph name="IDS_SHORT_PRODUCT_NAME" /> பயன்படுத்துகிறது</translation>
 <translation id="2825758591930162672">பொருளின் பொது விசை</translation>
 <translation id="2828650939514476812">வைஃபை நெட்வொர்க்குடன் இணை</translation>
-<translation id="28291580771888953"><ph name="PRINTER_NAME" /> வரிசை நிரம்பிவிட்டது</translation>
 <translation id="2835547721736623118">பேச்சு அறிதல் சேவை</translation>
 <translation id="2836269494620652131">செயலிழப்பு</translation>
 <translation id="2836635946302913370">இந்தப் பயனர்பெயரில் உள்நுழைவது, உங்களின் நிர்வாகியால் முடக்கப்பட்டுள்ளது.</translation>
@@ -2319,7 +2316,7 @@
 <translation id="3839516600093027468"><ph name="HOST" />, கிளிப்போர்டைப் பார்ப்பதை எப்போதும் தடைசெய்</translation>
 <translation id="3841964634449506551">தவறான கடவுச்சொல்</translation>
 <translation id="3842552989725514455">Serif எழுத்துரு</translation>
-<translation id="3843058644024807390">மைக்ரோஃபோன் அமைப்பில் செய்த மாற்றத்தைச் செயல்படுத்த Parallels Desktopபை மீண்டும் தொடங்க வேண்டும்</translation>
+<translation id="3843464315703645664">உலாவியில் பயன்படுத்த அனுமதிக்கப்பட்டது</translation>
 <translation id="3846116211488856547">இணையதளங்கள், Android ஆப்ஸ் மற்றும் பலவற்றை உருவாக்கத் தேவையான கருவிகளைப் பெறுக. Linuxஸை நிறுவ, <ph name="DOWNLOAD_SIZE" /> டேட்டா பயன்படுத்தப்படும்.</translation>
 <translation id="3847319713229060696">வலையைப் பயன்படுத்தும் அனைவருக்கும் பாதுகாப்பை மேம்படுத்த உதவுங்கள்</translation>
 <translation id="385051799172605136">முந்தைய பக்கம்</translation>
@@ -2778,7 +2775,6 @@
 <translation id="4453946976636652378"><ph name="SEARCH_ENGINE_NAME" />ஐத் தேடுக அல்லது URLஐ உள்ளிடுக</translation>
 <translation id="4459169140545916303">கடைசியாக <ph name="DEVICE_LAST_ACTIVATED_TIME" /> நாட்களுக்கு முன்பு பயன்படுத்தியுள்ளார்</translation>
 <translation id="4460014764210899310">குழுவைப் பிரி</translation>
-<translation id="4460343359907016103"><ph name="PRINTER_NAME" /> உடன் இணைப்பதில் பிழை</translation>
 <translation id="4462159676511157176">பிரத்தியேகப் பெயர் சேவையகங்கள்</translation>
 <translation id="4465236939126352372"><ph name="APP_NAME" />க்கு அமைக்கப்பட்ட நேர வரம்பு: <ph name="TIME" /></translation>
 <translation id="4465725236958772856">நெட்வொர்க்: <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, உங்கள் நிர்வாகி நிர்வகிக்கிறார், இணை</translation>
@@ -3076,7 +3072,6 @@
 <translation id="4864369630010738180">உள்நுழைகிறீர்கள்...</translation>
 <translation id="4864805589453749318">பள்ளிக் கணக்கைச் சேர்க்க அனுமதி வழங்கும் பெற்றோரைத் தேர்ந்தெடுக்கவும்.</translation>
 <translation id="486635084936119914">பதிவிறக்கிய பின்னர், சில கோப்பு வகைகளைத் தானாகவே திறக்கும்</translation>
-<translation id="4869213010169296107"><ph name="PRINTER_NAME" /> இல் டிரே இல்லை</translation>
 <translation id="48704129375571883">கூடுதல் அம்சங்களைச் சேர்</translation>
 <translation id="4870758487381879312">உள்ளமைவுத் தகவலைப் பெற நிர்வாகி வழங்கிய கடவுச்சொல்லை உள்ளிடவும்</translation>
 <translation id="4870903493621965035">இணைத்த சாதனங்கள் இல்லை</translation>
@@ -3327,6 +3322,7 @@
 <translation id="5184662919967270437">சாதனத்தைப் புதுப்பிக்கிறது</translation>
 <translation id="5185359571430619712">நீட்டிப்புகளை சரிபார்க்கும்</translation>
 <translation id="5185386675596372454">"<ph name="EXTENSION_NAME" />" இன் புதிய பதிப்பு முடக்கப்பட்டது, ஏனெனில் அதற்கு கூடுதல் அனுமதி தேவை.</translation>
+<translation id="5185500136143151980">இணைய இணைப்பு இல்லை</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5190926251776387065">போர்ட்டைச் செயல்படுத்து</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> பல கோப்புகளைப் பதிவிறக்க விரும்புகிறது</translation>
@@ -3483,7 +3479,6 @@
 <translation id="5390112241331447203">கருத்து அறிக்கைகளில் அனுப்பிய system_logs.txt கோப்பினைச் சேர்க்கும்.</translation>
 <translation id="5390677308841849479">அடர் சிவப்பு &amp; ஆரஞ்சு</translation>
 <translation id="5390743329570580756">இதற்காக அனுப்பு:</translation>
-<translation id="5395869306561378615"><ph name="PRINTER_NAME" /> இடைநிறுத்தப்பட்டது</translation>
 <translation id="5397794290049113714">நீங்கள்</translation>
 <translation id="5398572795982417028">பக்க வரம்பை மீறிவிட்டது, அதிகபட்ச வரம்பு <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">விளம்பரங்கள் தடுக்கப்பட்டன</translation>
@@ -3498,7 +3493,6 @@
 <translation id="5417312524372586921">உலாவித் தீம்கள்</translation>
 <translation id="5419405654816502573">Voice match</translation>
 <translation id="5420438158931847627">உரை மற்றும் படங்களின் கூர்மையைத் தீர்மானிக்கிறது</translation>
-<translation id="5421498071721257877"><ph name="PRINTER_NAME" /> இல் சாதனப் பிழை உள்ளது</translation>
 <translation id="5422221874247253874">ஆக்சஸ் பாயிண்ட்</translation>
 <translation id="5422781158178868512">வெளிப்புற சேகரிப்பு சாதனத்தை அறிய முடியவில்லை. மன்னிக்கவும்.</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3848,7 +3842,6 @@
 <translation id="5852137567692933493">மீண்டும் தொடங்கி, பவர்வாஷ் செய்க</translation>
 <translation id="5854912040170951372">ஸ்லைஸ்</translation>
 <translation id="5855267860608268405">தெரிந்த வைஃபை நெட்வொர்க்குகள்</translation>
-<translation id="5855310969323666289"><ph name="PRINTER_NAME" /> இன் மூடி திறந்திருக்கிறது</translation>
 <translation id="5855643921295613558">0.6 வினாடிகள்</translation>
 <translation id="5856721540245522153">பிழைத் திருத்த அம்சங்களை இயக்குதல்</translation>
 <translation id="5857090052475505287">புதிய கோப்புறை</translation>
@@ -3879,7 +3872,6 @@
 <translation id="5877064549588274448">சேனல் மாற்றப்பட்டது. மாற்றங்களைச் செயல்படுத்த உங்கள் சாதனத்தை மீண்டும் தொடங்கவும்.</translation>
 <translation id="5877584842898320529">தேர்ந்தெடுத்த பிரிண்டர் இல்லை அல்லது சரியாக நிறுவப்படவில்லை.<ph name="BR" /> பிரிண்டரைச் சரிபார்க்கவும் அல்லது மற்றொரு பிரிண்டரைத் தேர்ந்தெடுக்கவும்.</translation>
 <translation id="5882919346125742463">தெரிந்த நெட்வொர்க்குகள்</translation>
-<translation id="5883716097305842571"><ph name="PRINTER_NAME" /> இல் பிரிண்ட் வெளியே வரும் டிரே கிட்டத்தட்ட நிரம்பிவிட்டது</translation>
 <translation id="5884474295213649357">இந்தத் தாவல் USB சாதனத்துடன் இணைக்கப்பட்டுள்ளது.</translation>
 <translation id="5886009770935151472">விரல் 1</translation>
 <translation id="5889282057229379085">அதிகபட்ச எண்ணிக்கையிலான இடைப்பட்ட CAகள்: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4445,7 +4437,6 @@
 <translation id="6611972847767394631">உங்கள் தாவல்களை இங்கே காணலாம்</translation>
 <translation id="6612358246767739896">பாதுகாக்கப்பட்ட உள்ளடக்கம்</translation>
 <translation id="6615455863669487791">எனக்கு காண்பி</translation>
-<translation id="6617034477946102682"><ph name="PRINTER_NAME" /> ஐ அணுக முடியவில்லை</translation>
 <translation id="6618097958368085618">பரவாயில்லை, வைத்திரு</translation>
 <translation id="6618744767048954150">சோதனை செய்கிறது</translation>
 <translation id="6619058681307408113">லைன் பிரிண்டர் டீமன் (LPD)</translation>
@@ -4862,7 +4853,6 @@
 <translation id="7128151990937044829">அறிவிப்புகள் தடுக்கப்படும்போது முகவரிப் பட்டியில் இண்டிக்கேட்டர் ஒன்றைக் காட்டு</translation>
 <translation id="7131040479572660648">உங்கள் தரவை <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> மற்றும் <ph name="WEBSITE_3" /> இல் படித்தல்</translation>
 <translation id="713122686776214250">பக்&amp;கத்தைச் சேர்...</translation>
-<translation id="7131379856697962078"><ph name="PRINTER_NAME" /> இல் பிரிண்ட் வெளியே வரும் டிரே நிரம்பிவிட்டது</translation>
 <translation id="7133578150266914903">உங்கள் நிர்வாகி இந்தச் சாதனத்தை மீட்டமைக்கிறார் (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">உரையைச் சிறிதாக்குக </translation>
 <translation id="7135729336746831607">புளூடூத்தை இயக்கவா?</translation>
@@ -4881,7 +4871,6 @@
 <translation id="7152478047064750137">இந்த நீட்டிப்பிற்குச் சிறப்பு அனுமதிகள் தேவையில்லை</translation>
 <translation id="7154130902455071009">உங்கள் தொடக்கப் பக்கத்தை இதற்கு மாற்றவும்: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">கேமரா அல்லது கோப்பிலிருக்கும் படம்</translation>
-<translation id="715657691234357425"><ph name="PRINTER_NAME" /> இல் தாள் குறைவாக உள்ளது</translation>
 <translation id="7165320105431587207">நெட்வொர்க் உள்ளமைவு தோல்வியடைந்தது</translation>
 <translation id="716640248772308851">தேர்வுசெய்யப்பட்ட இடங்களில் உள்ள படங்கள், வீடியோ மற்றும் ஒலி கோப்புகள் ஆகியவற்றை "<ph name="EXTENSION" />" ஆல் படிக்க முடியும்.</translation>
 <translation id="7167486101654761064">&amp;எப்போதும் இந்த வகை கோப்புகளைத் திற</translation>
@@ -4912,7 +4901,6 @@
 <translation id="7197632491113152433">உங்கள் கணக்கிலிருந்து, இந்தச் சாதனத்தில் பயன்படுத்தக் கூடிய <ph name="NUMBER_OF_APPS" /> ஆப்ஸைக் கண்டறிந்துள்ளோம்.</translation>
 <translation id="7199158086730159431">உதவி பெறுக</translation>
 <translation id="7200083590239651963">உள்ளமைவைத் தேர்ந்தெடுக்கவும்</translation>
-<translation id="7201042526153088083">Google Playயிலிருந்து உங்கள் <ph name="DEVICE_TYPE" /> சாதனத்தில் ஆப்ஸையும் கேம்களையும் நிறுவலாம். &lt;a target="_blank" href="<ph name="URL" />"&gt;மேலும் அறிக&lt;/a&gt;</translation>
 <translation id="720110658997053098">இந்தச் சாதனத்தை, கியோஸ்க் பயன்முறையில் நிரந்தரமாக வைத்திரு</translation>
 <translation id="7201118060536064622">'<ph name="DELETED_ITEM_NAME" />' நீக்கப்பட்டது</translation>
 <translation id="7201420661433230412">கோப்புகளைப் பார்</translation>
@@ -5218,7 +5206,6 @@
 <translation id="7598466960084663009">கம்ப்யூட்டரை மீண்டும் தொடங்கு</translation>
 <translation id="7599527631045201165">சாதனப் பெயர் மிக நீளமாக உள்ளது. மீண்டும் முயல, சிறிய பெயரை உள்ளிடவும்.</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> ஐ எப்போதும் மொழிபெயர்க்க வேண்டாம்</translation>
-<translation id="7601297144931396972"><ph name="PRINTER_NAME" /> இல் தாள் சிக்கிக் கொண்டது</translation>
 <translation id="760197030861754408">இணைக்க, <ph name="LANDING_PAGE" />க்குச் செல்லவும்.</translation>
 <translation id="7602079150116086782">பிற சாதனங்களின் தாவல்கள் எதுவுமில்லை</translation>
 <translation id="7602173054665172958">அச்சுப் பணி நிர்வாகம்</translation>
@@ -5229,6 +5216,7 @@
 <translation id="7609148976235050828">இணையத்துடன் இணைத்து, மீண்டும் முயலவும்.</translation>
 <translation id="7614260613810441905">எனது சாதனத்திலுள்ள கோப்புகளையோ கோப்புறைகளையோ ஒரு தளம் மாற்ற விரும்பும்போது அனுமதி கேள் (பரிந்துரைக்கப்படுகிறது)</translation>
 <translation id="761530003705945209">Google Driveவிற்குக் காப்புப் பிரதி எடுக்கவும். எப்போது வேண்டுமானாலும் உங்கள் தரவை எளிதாக மீட்டெடுக்கலாம் அல்லது சாதனத்தை மாற்றலாம். ஆப்ஸ் தரவும் உங்கள் காப்புப் பிரதியில் அடங்கும். உங்களின் காப்புப்பிரதிகள் Googleளுக்குப் பதிவேற்றப்பட்டு Google கணக்கின் கடவுச்சொல்லைப் பயன்படுத்தி என்க்ரிப்ஷன் செய்யப்படுகின்றன.</translation>
+<translation id="7615365294369022248">கணக்கைச் சேர்க்கும்போது பிழை ஏற்பட்டது</translation>
 <translation id="7616214729753637086">சாதனத்தைப் பதிவுசெய்கிறது...</translation>
 <translation id="7617263010641145920">Play ஸ்டோரை இயக்கு</translation>
 <translation id="7617366389578322136">"<ph name="DEVICE_NAME" />" சாதனத்துடன் இணைக்கிறது</translation>
@@ -5677,7 +5665,6 @@
           இதில் Google Payயிலுள்ள கட்டண முறைகளும் முகவரிகளும் சேர்க்கப்படவில்லை.</translation>
 <translation id="81238879832906896">மஞ்சள் வெள்ளை மலர்</translation>
 <translation id="8124313775439841391">நிர்வகிக்கப்படும் ONC</translation>
-<translation id="8127535217699822294"><ph name="PRINTER_NAME" /> இல் தாள் தீர்ந்துவிட்டது</translation>
 <translation id="813082847718468539">தள விவரங்களைக் காண்க</translation>
 <translation id="8131740175452115882">உறுதிப்படுத்து</translation>
 <translation id="8133676275609324831">கோப்புறையில் &amp;காண்பி</translation>
@@ -5776,7 +5763,6 @@
 <translation id="8254954272268479918">Linuxஸை (பீட்டா) நிறுத்து</translation>
 <translation id="8255451560461371599">பின்புலம் இல்லை</translation>
 <translation id="8256319818471787266">ஸ்பார்க்கி</translation>
-<translation id="8256417822772703842"><ph name="PRINTER_NAME" /> இல் மை குறைவாக உள்ளது</translation>
 <translation id="8257950718085972371">கேமரா அணுகலைத் தொடர்ந்து தடு</translation>
 <translation id="8259239505248583312">தொடங்குக</translation>
 <translation id="8260864402787962391">சுட்டி</translation>
@@ -5957,7 +5943,6 @@
 <translation id="8487678622945914333">பெரிதாக்கு</translation>
 <translation id="8490896350101740396">பின்வரும் கியோஸ்க் ஆப்ஸ் "<ph name="UPDATED_APPS" />" புதுப்பிக்கப்பட்டன. புதுப்பிப்பு செயல்முறையை நிறைவுசெய்ய சாதனத்தை மறுதொடக்கம் செய்யவும்.</translation>
 <translation id="8493236660459102203">மைக்ரோஃபோன்:</translation>
-<translation id="8495940850609851342"><ph name="PRINTER_NAME" /> நிறுத்தப்பட்டது</translation>
 <translation id="8496717697661868878">இந்தச் செருகுநிரலை இயக்கு</translation>
 <translation id="8497219075884839166">Windows கருவிகள்</translation>
 <translation id="8498214519255567734">மங்கலான ஒளியில் திரையைப் பார்ப்பதை அல்லது படிப்பதை எளிதாக்கும்</translation>
@@ -6499,6 +6484,12 @@
 <translation id="9157096865782046368">0.8 வினாடிகள்</translation>
 <translation id="9157697743260533322">அனைத்து பயனர்களுக்கும் தானியங்கு புதுப்பிப்புகளை அமைக்க முடியவில்லை (ப்ரீஃபிளைட் செயலாக்கப் பிழை: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">அச்சச்சோ!  அங்கீகரிப்பின்போது நெட்வொர்க்கைத் தொடர்புகொள்வதில் சிக்கல் ஏற்பட்டது. உங்கள் நெட்வொர்க் இணைப்பைச் சோதித்து மீண்டும் முயலவும்.</translation>
+<translation id="9159643062839240276">இவற்றைச் செய்து பாருங்கள்:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />நெட்வொர்க் கேபிள்கள், மோடம், ரூட்டர் ஆகியவற்றின் இணைப்புநிலையைச் சரிபார்ப்பது
+      <ph name="LIST_ITEM" />வைஃபையுடன் மீண்டும் இணைப்பது
+      <ph name="LIST_ITEM" />Chrome இணைப்புநிலை சரிபார்ப்பை இயக்குவது
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">பிக்ச்சர்-இன்-பிக்ச்சர்</translation>
 <translation id="9168436347345867845">பின்னர் செய்யலாம்</translation>
 <translation id="9169496697824289689">விசைப்பலகைக் குறுக்குவழிகளைக் காட்டு</translation>

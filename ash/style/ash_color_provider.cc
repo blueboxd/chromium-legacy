@@ -210,8 +210,6 @@ SkColor AshColorProvider::GetBaseLayerColorImpl(BaseLayerType type,
       return SkColorSetA(GetBackgroundColor(color_mode), transparent_alpha);
     case BaseLayerType::kOpaque:
       return GetBackgroundColor(color_mode);
-    case BaseLayerType::kRed:
-      return IsLightMode(color_mode) ? gfx::kGoogleRed600 : gfx::kGoogleRed300;
   }
 }
 
@@ -233,6 +231,18 @@ SkColor AshColorProvider::GetControlsLayerColorImpl(
       light_color = gfx::kGoogleBlue600;
       dark_color = gfx::kGoogleBlue300;
       break;
+    case ControlsLayerType::kControlBackgroundColorAlert:
+      light_color = gfx::kGoogleRed600;
+      dark_color = gfx::kGoogleRed300;
+      break;
+    case ControlsLayerType::kControlBackgroundColorWarning:
+      light_color = gfx::kGoogleYellow600;
+      dark_color = gfx::kGoogleYellow300;
+      break;
+    case ControlsLayerType::kControlBackgroundColorPositive:
+      light_color = gfx::kGoogleGreen600;
+      dark_color = gfx::kGoogleGreen300;
+      break;
   }
   return IsLightMode(color_mode) ? light_color : dark_color;
 }
@@ -252,23 +262,47 @@ SkColor AshColorProvider::GetContentLayerColorImpl(
     case ContentLayerType::kTextColorSecondary:
       return cros_colors::ResolveColor(ColorName::kDefaultTextColorSecondary,
                                        color_mode);
+    case ContentLayerType::kTextColorAlert:
+      light_color = gfx::kGoogleRed600;
+      dark_color = gfx::kGoogleRed300;
+      break;
+    case ContentLayerType::kTextColorWarning:
+      light_color = gfx::kGoogleYellow600;
+      dark_color = gfx::kGoogleYellow300;
+      break;
+    case ContentLayerType::kTextColorPositive:
+      light_color = gfx::kGoogleGreen600;
+      dark_color = gfx::kGoogleGreen300;
+      break;
     case ContentLayerType::kIconColorPrimary:
       return cros_colors::ResolveColor(ColorName::kDefaultIconColorPrimary,
                                        color_mode);
     case ContentLayerType::kIconColorSecondary:
       light_color = dark_color = gfx::kGoogleGrey500;
       break;
-    case ContentLayerType::kIconAlert:
+    case ContentLayerType::kIconColorAlert:
       light_color = gfx::kGoogleRed600;
       dark_color = gfx::kGoogleRed300;
       break;
-    case ContentLayerType::kButtonIconColorProminent:
+    case ContentLayerType::kIconColorWarning:
+      light_color = gfx::kGoogleYellow600;
+      dark_color = gfx::kGoogleYellow300;
+      break;
+    case ContentLayerType::kIconColorPositive:
+      light_color = gfx::kGoogleGreen600;
+      dark_color = gfx::kGoogleGreen300;
+      break;
+    case ContentLayerType::kIconColorProminent:
     case ContentLayerType::kSliderThumbColorEnabled:
       return cros_colors::ResolveColor(ColorName::kDefaultIconColorProminent,
                                        color_mode);
     case ContentLayerType::kButtonLabelColor:
       light_color = gfx::kGoogleGrey700;
       dark_color = gfx::kGoogleGrey200;
+      break;
+    case ContentLayerType::kButtonLabelColorPrimary:
+      light_color = gfx::kGoogleRed900;
+      dark_color = gfx::kGoogleRed200;
       break;
     case ContentLayerType::kSliderThumbColorDisabled:
       light_color = gfx::kGoogleGrey600;

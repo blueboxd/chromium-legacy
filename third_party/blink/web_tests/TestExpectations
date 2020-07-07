@@ -256,6 +256,9 @@ crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/abspos-008.tentative.
 # It is not clear if this test is correct. https://github.com/w3c/csswg-drafts/issues/5151
 crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/abspos-004.tentative.html [ Failure ]
 
+# Incorrect blending with foreignObject and svg descendants.
+crbug.com/1102803 external/wpt/svg/extensibility/foreignObject/isolation-with-svg.html [ Failure ]
+
 # Display locking failures
 
 crbug.com/849459 fragmentation/repeating-thead-under-repeating-thead.html [ Failure ]
@@ -1372,7 +1375,6 @@ crbug.com/929098 virtual/dark-color-scheme/external/wpt/css/css-color-adjust/ren
 # ====== Form Controls Refresh (chrome://flags/#form-controls-refresh) failures from here ======
 
 crbug.com/1057518 virtual/controls-refresh/month-picker/month-picker-appearance-step.html [ Skip ]
-crbug.com/1057518 [ Mac ] virtual/form-controls-refresh-disabled/* [ Skip ]
 
 # ======
 # From this point until the end of the Form Controls Refresh section, these are
@@ -1649,9 +1651,6 @@ crbug.com/766135 fast/dom/Window/redirect-with-timer.html [ Timeout Pass ]
 # Ref tests that needs investigation.
 crbug.com/404597 fast/forms/long-text-in-input.html [ Skip ]
 crbug.com/552494 virtual/prefer_compositing_to_lcd_text/scrollbars/overflow-scrollbar-combinations.html [ Pass Failure ]
-
-# These are copied from elsewhere in this file, for the virtual/form-controls-refresh-disabled suite:
-crbug.com/954349 virtual/form-controls-refresh-disabled/fast/forms/autofocus-in-sandbox-with-allow-scripts.html [ Timeout Failure ]
 
 crbug.com/1056027 [ Fuchsia ] virtual/text-antialias/small-caps-aat.html [ Skip ]
 crbug.com/1057339 [ Fuchsia ] virtual/text-antialias/international/rtl-mark.html [ Skip ]
@@ -2659,6 +2658,8 @@ crbug.com/1100119 [ Mac ] external/wpt/css/css-pseudo/active-selection-054.html 
 crbug.com/1018465 external/wpt/css/css-pseudo/active-selection-056.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.14 ] external/wpt/svg/extensibility/foreignObject/foreign-object-scale-scroll.html [ Failure ]
+crbug.com/626703 [ Mac10.15 ] external/wpt/svg/extensibility/foreignObject/foreign-object-scale-scroll.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/mediaqueries/mq-gamut-004.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/mediaqueries/mq-gamut-004.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/mediaqueries/mq-gamut-004.html [ Failure ]
@@ -2674,57 +2675,6 @@ crbug.com/626703 [ Win ] external/wpt/css/mediaqueries/mq-range-001.html [ Failu
 crbug.com/626703 [ Linux ] external/wpt/wasm/jsapi/functions/incumbent.html [ Crash ]
 crbug.com/626703 [ Mac ] external/wpt/wasm/jsapi/functions/incumbent.html [ Crash ]
 crbug.com/626703 [ Win ] external/wpt/wasm/jsapi/functions/incumbent.html [ Crash ]
-crbug.com/626703 [ Mac10.10 ] virtual/cascade/external/wpt/css/css-paint-api/registered-property-value-015.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cascade/external/wpt/css/css-paint-api/idlharness.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/fetch-request-redirect.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/postmessage-to-client-message-queue.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cascade/external/wpt/css/css-variables/css-vars-custom-property-inheritance.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/Service-Worker-Allowed-header.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cascade/external/wpt/css/css-typed-om/the-stylepropertymap/properties/table-layout.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/ServiceWorkerGlobalScope/isSecureContext.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cache-storage-sequence/external/wpt/service-workers/cache-storage/serviceworker/cache-keys-attributes-for-service-worker.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cascade/external/wpt/css/css-typed-om/the-stylepropertymap/computed/computed.tentative.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/onactivate-script-error.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/navigate-window.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/fetch-canvas-tainting-image.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cascade/external/wpt/css/css-typed-om/stylevalue-normalization/normalize-numeric.tentative.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cascade/external/wpt/css/css-typed-om/factory-frequency.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/fetch-mixed-content-to-inscope.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/unregister-controller.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cascade/external/wpt/css/css-typed-om/the-stylepropertymap/properties/image-rendering.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cascade/external/wpt/css/css-typed-om/stylevalue-subclasses/cssUnparsedValue-iterable.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/import-scripts-updated-flag.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cascade/external/wpt/css/css-scoping/shadow-host-removal-invalidation.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cascade/external/wpt/css/css-typed-om/the-stylepropertymap/properties/scroll-margin.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cascade/external/wpt/css/css-properties-values-api/at-property-typedom.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/extendable-event-waituntil.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cascade/external/wpt/css/css-cascade/unset-val-001.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/xhr-response-url.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/resource-timing-cross-origin.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cascade/external/wpt/css/css-typed-om/the-stylepropertymap/inline/getAll-shorthand.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/clients-get-cross-origin.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/sandboxed-iframe-fetch-event.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/ServiceWorkerGlobalScope/extendable-message-event.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cascade/external/wpt/css/css-logical/logical-box-size.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cache-storage-sequence/external/wpt/service-workers/idlharness.https.any.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/navigation-preload/request-headers.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cascade/external/wpt/css/css-scoping/shadow-reassign-dynamic-004.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cascade/external/wpt/css/css-paint-api/paint-function-arguments.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/claim-using-registration.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/navigation-preload/get-state.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/ServiceWorkerGlobalScope/extendable-message-event-constructor.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cascade/external/wpt/css/css-scoping/css-scoping-shadow-slotted-nested.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/update-result.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cascade/external/wpt/css/css-typed-om/the-stylepropertymap/properties/shape-rendering.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/navigation-preload/resource-timing.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cors/external/wpt/cors/redirect-userinfo.htm [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cascade/external/wpt/css/css-properties-values-api/typedom.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cascade/external/wpt/css/css-typed-om/the-stylepropertymap/properties/text-decoration-color.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/register-closed-window.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/fetch-waits-for-activate.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/about-blank-replacement.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/fetch-response-taint.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/service-worker-csp-script.https.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-pseudo/textpath-selection-011.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-pseudo/textpath-selection-011.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-pseudo/textpath-selection-011.html [ Failure ]
@@ -5320,10 +5270,6 @@ crbug.com/1047176 [ Win7 ] fast/forms/suggestion-picker/datetimelocal-suggestion
 crbug.com/1047176 [ Win7 ] fast/forms/suggestion-picker/month-suggestion-picker-mouse-operations.html [ Pass Failure Timeout ]
 crbug.com/1047176 [ Win7 ] fast/forms/suggestion-picker/time-suggestion-picker-mouse-operations.html [ Pass Failure Timeout ]
 crbug.com/1047176 crbug.com/1100783 [ Win7 ] fast/forms/suggestion-picker/week-suggestion-picker-mouse-operations.html [ Pass Failure Timeout ]
-crbug.com/1100785 [ Win7 ] virtual/form-controls-refresh-disabled/fast/forms/suggestion-picker/month-suggestion-picker-mouse-operations.html [ Pass Failure Timeout ]
-crbug.com/1100785 [ Win7 ] virtual/form-controls-refresh-disabled/fast/forms/suggestion-picker/date-suggestion-picker-mouse-operations.html [ Pass Failure Timeout ]
-crbug.com/1100785 [ Win7 ] virtual/form-controls-refresh-disabled/fast/forms/suggestion-picker/time-suggestion-picker-mouse-operations.html [ Pass Failure Timeout ]
-crbug.com/1100785 [ Win7 ] virtual/form-controls-refresh-disabled/fast/forms/suggestion-picker/week-suggestion-picker-mouse-operations.html [ Pass Failure Timeout ]
 
 # Sheriff 2018-03-02
 crbug.com/818076 http/tests/devtools/oopif/oopif-elements-navigate-in.js [ Failure Pass ]

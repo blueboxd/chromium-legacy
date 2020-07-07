@@ -984,10 +984,6 @@ bool Document::DocumentPolicyFeatureObserved(
   return false;
 }
 
-const SecurityOrigin* Document::GetSecurityOrigin() const {
-  return GetSecurityContext().GetSecurityOrigin();
-}
-
 String Document::addressSpaceForBindings(ScriptState* script_state) const {
   // "public" is the lowest-privilege value.
   if (!script_state->ContextIsValid())
@@ -3417,8 +3413,9 @@ void Document::open(LocalDOMWindow* entered_window,
   // If |document|'s origin is not same origin to the origin of the responsible
   // document specified by the entry settings object, then throw a
   // "SecurityError" DOMException.
-  if (entered_window && !GetSecurityOrigin()->IsSameOriginWith(
-                            entered_window->GetSecurityOrigin())) {
+  if (entered_window && GetExecutionContext() &&
+      !GetExecutionContext()->GetSecurityOrigin()->IsSameOriginWith(
+          entered_window->GetSecurityOrigin())) {
     exception_state.ThrowSecurityError(
         "Can only call open() on same-origin documents.");
     return;
@@ -4250,8 +4247,9 @@ void Document::write(const String& text,
   if (entered_window && !entered_window->GetFrame())
     return;
 
-  if (entered_window && !GetSecurityOrigin()->IsSameOriginWith(
-                            entered_window->GetSecurityOrigin())) {
+  if (entered_window && GetExecutionContext() &&
+      !GetExecutionContext()->GetSecurityOrigin()->IsSameOriginWith(
+          entered_window->GetSecurityOrigin())) {
     exception_state.ThrowSecurityError(
         "Can only call write() on same-origin documents.");
     return;
@@ -4536,8 +4534,11 @@ void Document::ProcessBaseElement() {
           "'" + base_element_url.Protocol() +
               "' URLs may not be used as base URLs for a document."));
     }
-    if (!GetSecurityOrigin()->CanRequest(base_element_url))
+    if (GetExecutionContext() &&
+        !GetExecutionContext()->GetSecurityOrigin()->CanRequest(
+            base_element_url)) {
       UseCounter::Count(*this, WebFeature::kBaseWithCrossOriginHref);
+    }
   }
 
   if (base_element_url != base_element_url_ &&
@@ -5755,7 +5756,7 @@ String Document::cookie(ExceptionState& exception_state) const {
       exception_state.ThrowSecurityError("Access is denied for this document.");
     }
     return String();
-  } else if (GetSecurityOrigin()->IsLocal()) {
+  } else if (dom_window_->GetSecurityOrigin()->IsLocal()) {
     CountUse(WebFeature::kFileAccessedCookies);
   }
 
@@ -5780,7 +5781,7 @@ void Document::setCookie(const String& value, ExceptionState& exception_state) {
       exception_state.ThrowSecurityError("Access is denied for this document.");
     }
     return;
-  } else if (GetSecurityOrigin()->IsLocal()) {
+  } else if (dom_window_->GetSecurityOrigin()->IsLocal()) {
     UseCounter::Count(*this, WebFeature::kFileAccessedCookies);
   }
 
@@ -5803,7 +5804,9 @@ const AtomicString& Document::referrer() const {
 }
 
 String Document::domain() const {
-  return GetSecurityOrigin()->Domain();
+  return GetExecutionContext()
+             ? GetExecutionContext()->GetSecurityOrigin()->Domain()
+             : String();
 }
 
 void Document::setDomain(const String& raw_domain,
@@ -5833,10 +5836,10 @@ void Document::setDomain(const String& raw_domain,
   }
 
   if (SchemeRegistry::IsDomainRelaxationForbiddenForURLScheme(
-          GetSecurityOrigin()->Protocol())) {
-    exception_state.ThrowSecurityError("Assignment is forbidden for the '" +
-                                       GetSecurityOrigin()->Protocol() +
-                                       "' scheme.");
+          dom_window_->GetSecurityOrigin()->Protocol())) {
+    exception_state.ThrowSecurityError(
+        "Assignment is forbidden for the '" +
+        dom_window_->GetSecurityOrigin()->Protocol() + "' scheme.");
     return;
   }
 
@@ -5855,12 +5858,12 @@ void Document::setDomain(const String& raw_domain,
   }
 
   scoped_refptr<SecurityOrigin> new_origin =
-      GetSecurityOrigin()->IsolatedCopy();
+      dom_window_->GetSecurityOrigin()->IsolatedCopy();
   new_origin->SetDomainFromDOM(new_domain);
   OriginAccessEntry access_entry(
       *new_origin, network::mojom::CorsDomainMatchMode::kAllowSubdomains);
   network::cors::OriginAccessEntry::MatchResult result =
-      access_entry.MatchesOrigin(*GetSecurityOrigin());
+      access_entry.MatchesOrigin(*dom_window_->GetSecurityOrigin());
   if (result == network::cors::OriginAccessEntry::kDoesNotMatchOrigin) {
     exception_state.ThrowSecurityError(
         "'" + new_domain + "' is not a suffix of '" + domain() + "'.");
@@ -5876,7 +5879,7 @@ void Document::setDomain(const String& raw_domain,
 
   if (GetFrame()) {
     UseCounter::Count(*this,
-                      GetSecurityOrigin()->Port() == 0
+                      dom_window_->GetSecurityOrigin()->Port() == 0
                           ? WebFeature::kDocumentDomainSetWithDefaultPort
                           : WebFeature::kDocumentDomainSetWithNonDefaultPort);
     bool was_cross_origin_to_main_frame =
@@ -5919,7 +5922,8 @@ void Document::setDomain(const String& raw_domain,
         child_local_frame->View()->CrossOriginToParentFrameChanged();
     }
 
-    GetFrame()->GetScriptController().UpdateSecurityOrigin(GetSecurityOrigin());
+    GetFrame()->GetScriptController().UpdateSecurityOrigin(
+        dom_window_->GetSecurityOrigin());
   }
 }
 
@@ -6016,7 +6020,9 @@ void Document::PermissionServiceConnectionError() {
 
 ScriptPromise Document::hasStorageAccess(ScriptState* script_state) {
   const bool has_access =
-      TopFrameOrigin() && !GetSecurityOrigin()->IsOpaque() && CookiesEnabled();
+      TopFrameOrigin() && GetExecutionContext() &&
+      !GetExecutionContext()->GetSecurityOrigin()->IsOpaque() &&
+      CookiesEnabled();
   ScriptPromiseResolver* resolver =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
 
@@ -6060,7 +6066,7 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
     return promise;
   }
 
-  if (GetSecurityOrigin()->IsOpaque()) {
+  if (dom_window_->GetSecurityOrigin()->IsOpaque()) {
     AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::blink::ConsoleMessageSource::kSecurity,
         mojom::blink::ConsoleMessageLevel::kError,
@@ -7101,7 +7107,6 @@ FontMatchingMetrics* Document::GetFontMatchingMetrics() {
 }
 
 void Document::InitSecurityContext(const DocumentInit& initializer) {
-  DCHECK(GetSecurityOrigin());
   // If the CSP was provided by the DocumentLoader or is from ImportsController
   // it doesn't need to be bound right now. ImportsController takes a reference
   // to a tree_root document's CSP which is already bound. Document construction
@@ -7198,8 +7203,9 @@ void Document::InitDNSPrefetch() {
   Settings* settings = GetSettings();
 
   have_explicitly_disabled_dns_prefetch_ = false;
-  is_dns_prefetch_enabled_ = settings && settings->GetDNSPrefetchingEnabled() &&
-                             GetSecurityOrigin()->Protocol() == "http";
+  is_dns_prefetch_enabled_ =
+      settings && settings->GetDNSPrefetchingEnabled() &&
+      GetSecurityContext().GetSecurityOrigin()->Protocol() == "http";
 
   // Inherit DNS prefetch opt-out from parent frame
   if (Document* parent = ParentDocument()) {

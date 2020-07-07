@@ -177,7 +177,7 @@ void CustomFrameView::SizeConstraintsChanged() {
   LayoutWindowControls();
 }
 
-void CustomFrameView::PaintAsActiveChanged(bool active) {
+void CustomFrameView::PaintAsActiveChanged() {
   SchedulePaint();
 }
 

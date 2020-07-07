@@ -191,7 +191,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ShillPropertyHandler
   void UpdateAvailableTechnologies(const base::ListValue& technologies);
   void UpdateEnabledTechnologies(const base::ListValue& technologies);
   void UpdateUninitializedTechnologies(const base::ListValue& technologies);
-  void UpdateProhibitedTechnologies(const base::ListValue& technologies);
+  void UpdateProhibitedTechnologies(const std::string& technologies);
 
   void EnableTechnologyFailed(
       const std::string& technology,

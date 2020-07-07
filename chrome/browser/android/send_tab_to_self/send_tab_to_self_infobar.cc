@@ -24,7 +24,7 @@ namespace send_tab_to_self {
 
 SendTabToSelfInfoBar::SendTabToSelfInfoBar(
     std::unique_ptr<SendTabToSelfInfoBarDelegate> delegate)
-    : InfoBarAndroid(
+    : infobars::InfoBarAndroid(
           std::move(delegate),
           base::BindRepeating(&ResourceMapper::MapToJavaDrawableId)) {}
 

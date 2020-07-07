@@ -13,7 +13,6 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.contextmenu.ContextMenuHelper;
 import org.chromium.chrome.browser.contextmenu.RevampedContextMenuCoordinator;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 
@@ -113,13 +112,7 @@ public class RevampedContextMenuUtils {
         instrumentation.runOnMainSync(() -> menuCoordinator.clickListItemForTesting(itemId));
 
         if (activity != null) {
-            CriteriaHelper.pollInstrumentationThread(
-                    new Criteria("Activity did not regain focus.") {
-                        @Override
-                        public boolean isSatisfied() {
-                            return activity.hasWindowFocus();
-                        }
-                    });
+            CriteriaHelper.pollInstrumentationThread(activity::hasWindowFocus);
         }
     }
 }

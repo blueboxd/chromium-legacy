@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/nearby_sharing/logging/logging.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_prefs.h"
 #include "chrome/browser/nearby_sharing/webrtc_signaling_messenger.h"
 #include "chrome/browser/profiles/profile.h"
@@ -188,15 +189,15 @@ void NearbyProcessManager::BindSharingProcess(
 void NearbyProcessManager::GetBluetoothAdapter(
     location::nearby::connections::mojom::NearbyConnectionsHost::
         GetBluetoothAdapterCallback callback) {
-  DVLOG(1) << __func__
-           << " Request for Bluetooth "
-              "adapter received on the browser process.";
+  NS_LOG(VERBOSE) << __func__
+                  << " Request for Bluetooth "
+                     "adapter received on the browser process.";
   if (device::BluetoothAdapterFactory::IsBluetoothSupported()) {
     device::BluetoothAdapterFactory::Get()->GetAdapter(
         base::BindOnce(&NearbyProcessManager::OnGetBluetoothAdapter,
                        base::Unretained(this), std::move(callback)));
   } else {
-    DVLOG(1)
+    NS_LOG(VERBOSE)
         << __func__
         << " Bluetooth is not supported on this device, returning NullRemote";
     std::move(callback).Run(/*adapter=*/mojo::NullRemote());
@@ -270,7 +271,7 @@ void NearbyProcessManager::OnNearbyConnections(
     mojo::PendingReceiver<NearbyConnectionsMojom> receiver,
     mojo::PendingRemote<NearbyConnectionsMojom> remote) {
   if (!mojo::FusePipes(std::move(receiver), std::move(remote))) {
-    LOG(WARNING) << "Failed to initialize Nearby Connections process";
+    NS_LOG(WARNING) << "Failed to initialize Nearby Connections process";
     StopProcess(active_profile_);
     return;
   }
@@ -304,7 +305,7 @@ void NearbyProcessManager::OnNearbySharingDecoder(
     mojo::PendingReceiver<NearbySharingDecoderMojom> receiver,
     mojo::PendingRemote<NearbySharingDecoderMojom> remote) {
   if (!mojo::FusePipes(std::move(receiver), std::move(remote))) {
-    LOG(WARNING) << "Failed to initialize Nearby Sharing Decoder process";
+    NS_LOG(WARNING) << "Failed to initialize Nearby Sharing Decoder process";
     StopProcess(active_profile_);
     return;
   }
@@ -317,7 +318,8 @@ void NearbyProcessManager::OnGetBluetoothAdapter(
     location::nearby::connections::mojom::NearbyConnectionsHost::
         GetBluetoothAdapterCallback callback,
     scoped_refptr<device::BluetoothAdapter> adapter) {
-  DVLOG(1) << __func__ << " Got adapter instance, returning to utility process";
+  NS_LOG(VERBOSE) << __func__
+                  << " Got adapter instance, returning to utility process";
   mojo::PendingRemote<bluetooth::mojom::Adapter> pending_adapter;
   mojo::MakeSelfOwnedReceiver(std::make_unique<bluetooth::Adapter>(adapter),
                               pending_adapter.InitWithNewPipeAndPassReceiver());

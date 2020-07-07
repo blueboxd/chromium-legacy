@@ -27,8 +27,10 @@ void BrowsingDataRemoverCompletionObserver::BlockUntilCompletion() {
   run_loop_.Run();
 }
 
-void BrowsingDataRemoverCompletionObserver::OnBrowsingDataRemoverDone() {
+void BrowsingDataRemoverCompletionObserver::OnBrowsingDataRemoverDone(
+    uint64_t failed_data_types) {
   browsing_data_remover_done_ = true;
+  failed_data_types_ = failed_data_types;
   observer_.RemoveAll();
   QuitRunLoopWhenTasksComplete();
 }

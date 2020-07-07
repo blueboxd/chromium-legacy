@@ -93,7 +93,9 @@ struct AntiVirusProduct {
 // process address space that we don't want to load in the main process.
 interface UtilWin {
   // Returns the pinned state of the current executable.
-  IsPinnedToTaskbar() => (bool succeeded, bool is_pinned_to_taskbar);
+  IsPinnedToTaskbar() => (bool succeeded,
+                          bool is_pinned_to_taskbar,
+                          bool is_pinned_to_taskbar_verb_check);
 
   // Executes a select file operation that can be executed on a utility process.
   // |owner|:

@@ -70,7 +70,7 @@ class BrowserNonClientFrameViewAsh
   void UpdateWindowIcon() override;
   void UpdateWindowTitle() override;
   void SizeConstraintsChanged() override;
-  void PaintAsActiveChanged(bool active) override;
+  void PaintAsActiveChanged() override;
 
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;

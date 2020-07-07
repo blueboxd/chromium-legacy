@@ -22,6 +22,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -597,7 +599,12 @@ SkColor GetContrastingColorForBackground(SkColor bg_color,
 }  // namespace internal
 
 BrowserThemePack::~BrowserThemePack() {
-  if (!data_pack_.get()) {
+  if (data_pack_) {
+    auto task_runner = base::ThreadPool::CreateSequencedTaskRunner(
+        {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+    DCHECK(task_runner);
+    task_runner->DeleteSoon(FROM_HERE, data_pack_.release());
+  } else {
     delete header_;
     delete [] tints_;
     delete [] colors_;

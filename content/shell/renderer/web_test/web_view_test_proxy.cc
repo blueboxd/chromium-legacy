@@ -79,16 +79,6 @@ void WebViewTestProxy::Reset() {
 
   // Resets things on the WebView that TestRunnerBindings can modify.
   GetTestRunner()->ResetWebView(this);
-
-  for (blink::WebFrame* frame = GetWebView()->MainFrame(); frame;
-       frame = frame->TraverseNext()) {
-    if (frame->IsWebLocalFrame()) {
-      RenderFrame* render_frame =
-          RenderFrame::FromWebFrame(frame->ToWebLocalFrame());
-      auto* frame_proxy = static_cast<WebFrameTestProxy*>(render_frame);
-      frame_proxy->Reset();
-    }
-  }
 }
 
 void WebViewTestProxy::Install(blink::WebLocalFrame* frame) {

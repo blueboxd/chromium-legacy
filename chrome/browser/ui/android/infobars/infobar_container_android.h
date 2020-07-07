@@ -16,7 +16,9 @@
 #include "base/macros.h"
 #include "components/infobars/core/infobar_container.h"
 
+namespace infobars {
 class InfoBarAndroid;
+}
 
 class InfoBarContainerAndroid : public infobars::InfoBarContainer {
  public:
@@ -43,7 +45,7 @@ class InfoBarContainerAndroid : public infobars::InfoBarContainer {
 
   // Create the Java equivalent of |android_bar| and add it to the java
   // container.
-  void AttachJavaInfoBar(InfoBarAndroid* android_bar);
+  void AttachJavaInfoBar(infobars::InfoBarAndroid* android_bar);
 
   // We're owned by the java infobar, need to use a weak ref so it can destroy
   // us.

@@ -95,6 +95,12 @@ Polymer({
     storedAccounts_: Array,
     // </if>
 
+    /** @type {!Map<string, (string|Function)>} */
+    focusConfig: {
+      type: Object,
+      observer: 'focusConfigChanged_',
+    },
+
     /** Preferences state. */
     prefs: {
       type: Object,
@@ -307,6 +313,26 @@ Polymer({
    * @private
    */
   setPasswordExceptionsListener_: null,
+
+  /**
+   * @param {!Map<string, string>} newConfig
+   * @param {?Map<string, string>} oldConfig
+   * @private
+   */
+  focusConfigChanged_(newConfig, oldConfig) {
+    // focusConfig is set only once on the parent, so this observer should
+    // only fire once.
+    assert(!oldConfig);
+
+    // Populate the |focusConfig| map of the parent <settings-autofill-page>
+    // element, with additional entries that correspond to subpage trigger
+    // elements residing in this element's Shadow DOM.
+    if (this.enablePasswordCheck_) {
+      this.focusConfig.set(assert(routes.CHECK_PASSWORDS).path, () => {
+        focusWithoutInk(assert(this.$$('#icon')));
+      });
+    }
+  },
 
   /** @override */
   attached() {

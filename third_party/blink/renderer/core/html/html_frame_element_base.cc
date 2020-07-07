@@ -170,7 +170,7 @@ HTMLFrameElementBase::GetOriginForFeaturePolicy() const {
   // origin when constructing the container policy.
   KURL url = GetDocument().CompleteURL(url_);
   if (Document::ShouldInheritSecurityOriginFromOwner(url))
-    return GetDocument().GetSecurityOrigin();
+    return GetExecutionContext()->GetSecurityOrigin();
 
   // Other frames should use the origin defined by the absolute URL (this will
   // be a unique origin for data: URLs)

@@ -520,6 +520,7 @@ WebTestControlHost::~WebTestControlHost() {
 }
 
 bool WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
+  TRACE_EVENT0("shell", "WebTestControlHost::PrepareForWebTest");
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   current_working_directory_ = test_info.current_working_directory;
   expected_pixel_hash_ = test_info.expected_pixel_hash;
@@ -555,6 +556,8 @@ bool WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
   RenderViewHost* main_render_view_host = nullptr;
 
   if (!main_window_) {
+    TRACE_EVENT0("shell",
+                 "WebTestControlHost::PrepareForWebTest::CreateMainWindow");
     main_window_ = content::Shell::CreateNewWindow(
         browser_context, GURL(url::kAboutBlankURL), nullptr, window_size);
     WebContentsObserver::Observe(main_window_->web_contents());
@@ -599,13 +602,16 @@ bool WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
   // headless mode.
   main_window_->ActivateContents(main_window_->web_contents());
 
-  // Round-trip through the InputHandler mojom interface to the compositor
-  // thread, in order to ensure that any input events (moving the mouse at the
-  // start of the test, focus coming from ActivateContents() above, etc) are
-  // handled and bounced if appropriate to the main thread, before we continue
-  // and start the test. This will ensure they are handled on the main thread
-  // before the test runs, which would otherwise race against them.
-  main_render_view_host->GetWidget()->FlushForTesting();
+  {
+    TRACE_EVENT0("shell", "WebTestControlHost::PrepareForWebTest::Flush");
+    // Round-trip through the InputHandler mojom interface to the compositor
+    // thread, in order to ensure that any input events (moving the mouse at the
+    // start of the test, focus coming from ActivateContents() above, etc) are
+    // handled and bounced if appropriate to the main thread, before we continue
+    // and start the test. This will ensure they are handled on the main thread
+    // before the test runs, which would otherwise race against them.
+    main_render_view_host->GetWidget()->FlushForTesting();
+  }
 
   if (is_devtools_js_test) {
     if (!secondary_window_) {
@@ -639,6 +645,7 @@ bool WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
 }
 
 bool WebTestControlHost::ResetBrowserAfterWebTest() {
+  TRACE_EVENT0("shell", "WebTestControlHost::ResetBrowserAfterWebTest");
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Close any windows opened by the test to avoid them polluting the next

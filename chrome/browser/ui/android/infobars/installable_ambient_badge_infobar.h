@@ -14,7 +14,7 @@
 class InstallableAmbientBadgeInfoBarDelegate;
 
 // An infobar shown to users when they visit a progressive web app.
-class InstallableAmbientBadgeInfoBar : public InfoBarAndroid {
+class InstallableAmbientBadgeInfoBar : public infobars::InfoBarAndroid {
  public:
   explicit InstallableAmbientBadgeInfoBar(
       std::unique_ptr<InstallableAmbientBadgeInfoBarDelegate> delegate);
@@ -26,7 +26,7 @@ class InstallableAmbientBadgeInfoBar : public InfoBarAndroid {
  private:
   InstallableAmbientBadgeInfoBarDelegate* GetDelegate();
 
-  // InfoBarAndroid:
+  // infobars::InfoBarAndroid:
   base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
       JNIEnv* env) override;
   void ProcessButton(int action) override;

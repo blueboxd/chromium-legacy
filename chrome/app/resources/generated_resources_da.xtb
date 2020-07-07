@@ -281,7 +281,6 @@
 <translation id="1340527397989195812">Sikkerhedskopiér medier fra enheden ved hjælp af appen Filer.</translation>
 <translation id="1341988552785875222">Den nuværende baggrund er konfigureret af "<ph name="APP_NAME" />". Det kan være nødvendigt at afinstallere "<ph name="APP_NAME" />", inden du vælger en anden baggrund.</translation>
 <translation id="1343865611738742294">Giv Linux-apps adgang til USB-enheder. Linux husker ikke en USB-enhed, når den er fjernet.</translation>
-<translation id="1344143111673240412">Ændringen af kameraindstillingen kræver, at Parallels Desktop genstartes</translation>
 <translation id="1347256498747320987">Installer opdateringer og apps. Hvis du fortsætter, accepterer du, at denne enhed også kan downloade og installere opdateringer og apps automatisk fra Google, dit mobilselskab og producenten af din enhed. Dette kan ske ved hjælp af mobildata. Nogle af disse apps tilbyder muligvis køb i appen. <ph name="BEGIN_LINK1" />Få flere oplysninger<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">Opdateringen starter, når batteriniveauet er på <ph name="BATTERY_LEVEL" /> %.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -1197,7 +1196,6 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2470702053775288986">Understøttede udvidelser er blevet deaktiveret</translation>
 <translation id="2471469610750100598">Sort (standard)</translation>
 <translation id="2473195200299095979">Oversæt denne side</translation>
-<translation id="2474848500897222119"><ph name="PRINTER_NAME" /> er løbet tør for blæk</translation>
 <translation id="2475982808118771221">Der opstod en fejl</translation>
 <translation id="2476578072172137802">Indstillinger for websites</translation>
 <translation id="2478176599153288112">Mediefiltilladelser for "<ph name="EXTENSION" />"</translation>
@@ -1503,7 +1501,6 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> anvender proxyindstillinger fra din administrator</translation>
 <translation id="2825758591930162672">Emnets offentlige nøgle</translation>
 <translation id="2828650939514476812">Opret forbindelse til Wi-Fi-netværk</translation>
-<translation id="28291580771888953">Køen til <ph name="PRINTER_NAME" /> er fuld</translation>
 <translation id="2835547721736623118">Tjeneste til talegenkendelse</translation>
 <translation id="2836269494620652131">Nedbrud</translation>
 <translation id="2836635946302913370">Login med dette brugernavn er blevet deaktiveret af din administrator.</translation>
@@ -2319,7 +2316,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="3839516600093027468">Bloker altid <ph name="HOST" /> fra at se udklipsholderen</translation>
 <translation id="3841964634449506551">Adgangskoden er ugyldig</translation>
 <translation id="3842552989725514455">Serif-skrifttype</translation>
-<translation id="3843058644024807390">Ændringen af mikrofonindstillingen kræver, at Parallels Desktop genstartes</translation>
+<translation id="3843464315703645664">På intern tilladelsesliste</translation>
 <translation id="3846116211488856547">Få værktøjer til at udvikle websites, Android-apps og meget mere. Når du installerer Linux, downloades <ph name="DOWNLOAD_SIZE" /> data.</translation>
 <translation id="3847319713229060696">Vær med til at forbedre sikkerheden på nettet for alle</translation>
 <translation id="385051799172605136">Tilbage</translation>
@@ -2778,7 +2775,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4453946976636652378">Søg på <ph name="SEARCH_ENGINE_NAME" />, eller angiv en webadresse</translation>
 <translation id="4459169140545916303">Aktiv for <ph name="DEVICE_LAST_ACTIVATED_TIME" /> dage siden</translation>
 <translation id="4460014764210899310">Ophæv gruppering</translation>
-<translation id="4460343359907016103">Der kunne ikke oprettes forbindelse til <ph name="PRINTER_NAME" /></translation>
 <translation id="4462159676511157176">Tilpassede navneservere</translation>
 <translation id="4465236939126352372">En tidsgrænse på <ph name="TIME" /> blev indstillet for <ph name="APP_NAME" /></translation>
 <translation id="4465725236958772856">Netværk <ph name="NETWORK_INDEX" /> af <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, administreret af din administrator, opret forbindelse</translation>
@@ -3076,7 +3072,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4864369630010738180">Logger ind...</translation>
 <translation id="4864805589453749318">Vælg den forælder, der giver tilladelse til at tilføje en skolekonto.</translation>
 <translation id="486635084936119914">Åbn bestemte filtyper automatisk efter download</translation>
-<translation id="4869213010169296107"><ph name="PRINTER_NAME" /> mangler en bakke</translation>
 <translation id="48704129375571883">Tilføj yderligere funktioner</translation>
 <translation id="4870758487381879312">Angiv adgangskoden fra administratoren for at få konfigurationsoplysninger</translation>
 <translation id="4870903493621965035">Ingen parrede enheder</translation>
@@ -3327,6 +3322,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5184662919967270437">Opdaterer din enhed</translation>
 <translation id="5185359571430619712">Se udvidelser</translation>
 <translation id="5185386675596372454">Den nyeste version af "<ph name="EXTENSION_NAME" />" er blevet deaktiveret, fordi den kræver flere tilladelser.</translation>
+<translation id="5185500136143151980">Der er ingen internetforbindelse</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5190926251776387065">Aktivér port</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> vil downloade flere filer</translation>
@@ -3483,7 +3479,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5390112241331447203">Medtag system_logs.txt-filen i feedbackrapporterne.</translation>
 <translation id="5390677308841849479">Mørkerød og orange</translation>
 <translation id="5390743329570580756">Send til</translation>
-<translation id="5395869306561378615"><ph name="PRINTER_NAME" /> er sat på pause</translation>
 <translation id="5397794290049113714">Dig</translation>
 <translation id="5398572795982417028">Sidereferencen er ugyldig. Grænsen er <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">Annoncer er blokeret</translation>
@@ -3498,7 +3493,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5417312524372586921">Browsertemaer</translation>
 <translation id="5419405654816502573">Voice Match</translation>
 <translation id="5420438158931847627">Bestemmer skarpheden af tekst og billeder</translation>
-<translation id="5421498071721257877"><ph name="PRINTER_NAME" /> har en enhedsfejl</translation>
 <translation id="5422221874247253874">Adgangspunkt</translation>
 <translation id="5422781158178868512">Vi beklager, men din eksterne lagerenhed kunne ikke genkendes.</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3847,7 +3841,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5852137567692933493">Genstart og Powerwash</translation>
 <translation id="5854912040170951372">Pepperoni</translation>
 <translation id="5855267860608268405">Kendte Wi-Fi-netværk</translation>
-<translation id="5855310969323666289">Dækslet til <ph name="PRINTER_NAME" /> er åbent</translation>
 <translation id="5855643921295613558">0,6 sekunder</translation>
 <translation id="5856721540245522153">Aktivér fejlretningsfunktioner</translation>
 <translation id="5857090052475505287">Ny mappe</translation>
@@ -3878,7 +3871,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5877064549588274448">Kanalen er ændret. Genstart din enhed for at anvende ændringerne.</translation>
 <translation id="5877584842898320529">Den valgte printer er enten ikke tilgængelig eller ikke installeret korrekt.<ph name="BR" />Tjek din printer, eller vælg en anden printer.</translation>
 <translation id="5882919346125742463">Kendte netværk</translation>
-<translation id="5883716097305842571">Udbakken til papir på <ph name="PRINTER_NAME" /> er næsten fuld</translation>
 <translation id="5884474295213649357">Denne fane er sluttet til en USB-enhed.</translation>
 <translation id="5886009770935151472">Finger 1</translation>
 <translation id="5889282057229379085">Maksimalt antal mellemliggende CA'er: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4445,7 +4437,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6611972847767394631">Find dine faner her</translation>
 <translation id="6612358246767739896">Beskyttet indhold</translation>
 <translation id="6615455863669487791">Vis mig</translation>
-<translation id="6617034477946102682">Der er ingen forbindelse til <ph name="PRINTER_NAME" /></translation>
 <translation id="6618097958368085618">Behold alligevel</translation>
 <translation id="6618744767048954150">Kører</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
@@ -4775,7 +4766,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7022562585984256452">Din startside er blevet konfigureret.</translation>
 <translation id="7025082428878635038">En ny måde at navigere på ved hjælp af bevægelser</translation>
 <translation id="7025190659207909717">Administration af mobildatatjeneste</translation>
-<translation id="7029307918966275733">Crostini er ikke installeret. Installer Crostini for at se kreditter.</translation>
+<translation id="7029307918966275733">Crostini er ikke installeret. Installer Crostini for at se krediteringer.</translation>
 <translation id="7029809446516969842">Adgangskoder</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> – tilsluttet en serieport</translation>
 <translation id="7031962166228839643">TPM forberedes. Vent lidt (dette kan tage et par minutter)...</translation>
@@ -4862,7 +4853,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7128151990937044829">Vis en indikator i adresselinjen, når en notifikation blokeres</translation>
 <translation id="7131040479572660648">Læs dine data på <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> og <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Tilføj side...</translation>
-<translation id="7131379856697962078">Udbakken til papir på <ph name="PRINTER_NAME" /> er fuld</translation>
 <translation id="7133578150266914903">Din administrator gendanner en tidligere version på denne enhed (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">Gør teksten mindre</translation>
 <translation id="7135729336746831607">Vil du aktivere Bluetooth?</translation>
@@ -4881,7 +4871,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7152478047064750137">Denne udvidelse kræver ikke nogen særlige tilladelser</translation>
 <translation id="7154130902455071009">Skifte din startside til: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">Eksisterende billede fra kamera eller fil</translation>
-<translation id="715657691234357425"><ph name="PRINTER_NAME" /> løber snart tør for papir</translation>
 <translation id="7165320105431587207">Netværket kunne ikke konfigureres</translation>
 <translation id="716640248772308851">"<ph name="EXTENSION" />" har læserettigheder til billed-, video- og lydfiler på de markerede placeringer.</translation>
 <translation id="7167486101654761064">&amp;Åbn altid filer af denne type</translation>
@@ -4912,7 +4901,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7197632491113152433">Vi fandt <ph name="NUMBER_OF_APPS" /> apps på din konto, der kan bruges på denne enhed.</translation>
 <translation id="7199158086730159431">Få H&amp;jælp</translation>
 <translation id="7200083590239651963">Vælg konfiguration</translation>
-<translation id="7201042526153088083">Installer apps og spil fra Google Play på din <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;Få flere oplysninger&lt;/a&gt;</translation>
 <translation id="720110658997053098">Lad kiosktilstand forblive aktiveret på denne enhed</translation>
 <translation id="7201118060536064622">"<ph name="DELETED_ITEM_NAME" />" er slettet</translation>
 <translation id="7201420661433230412">Få vist filer</translation>
@@ -5218,7 +5206,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7598466960084663009">Genstart computer</translation>
 <translation id="7599527631045201165">Enhedsnavnet er for langt. Angiv et kortere navn for at prøve igen.</translation>
 <translation id="7600965453749440009">Oversæt aldrig <ph name="LANGUAGE" /></translation>
-<translation id="7601297144931396972">Papiret sidder fast i <ph name="PRINTER_NAME" /></translation>
 <translation id="760197030861754408">Gå til <ph name="LANDING_PAGE" /> for at tilslutte.</translation>
 <translation id="7602079150116086782">Ingen faner fra andre enheder</translation>
 <translation id="7602173054665172958">Udskriftsstyring</translation>
@@ -5229,6 +5216,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7609148976235050828">Opret forbindelse til internettet, og prøv igen.</translation>
 <translation id="7614260613810441905">Spørg, når et website vil redigere filer eller mapper på din enhed (anbefales)</translation>
 <translation id="761530003705945209">Sikkerhedskopiér i Google Drev. Gendan nemt dine data, eller skift enhed når som helst. Din backup omfatter appdata. Dine backups uploades til Google og krypteres ved hjælp af adgangskoden til din Google-konto.</translation>
+<translation id="7615365294369022248">Der opstod en fejl under tilføjelsen af kontoen</translation>
 <translation id="7616214729753637086">Tilmelder enhed...</translation>
 <translation id="7617263010641145920">Slå Play Butik til</translation>
 <translation id="7617366389578322136">Opretter forbindelse til "<ph name="DEVICE_NAME" />"</translation>
@@ -5676,7 +5664,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
           <ph name="TIME" />. Dette omfatter ikke betalingsmetoder og adresser fra Google Pay.</translation>
 <translation id="81238879832906896">Gul og hvid blomst</translation>
 <translation id="8124313775439841391">Administreret ONC</translation>
-<translation id="8127535217699822294"><ph name="PRINTER_NAME" /> er løbet tør for papir</translation>
 <translation id="813082847718468539">Se websiteoplysninger</translation>
 <translation id="8131740175452115882">Bekræft</translation>
 <translation id="8133676275609324831">&amp;Vis i mappe</translation>
@@ -5775,7 +5762,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8254954272268479918">Luk Linux (beta)</translation>
 <translation id="8255451560461371599">Ingen baggrund</translation>
 <translation id="8256319818471787266">Fido</translation>
-<translation id="8256417822772703842"><ph name="PRINTER_NAME" /> løber snart tør for blæk</translation>
 <translation id="8257950718085972371">Fortsæt blokering af kameraadgang</translation>
 <translation id="8259239505248583312">Start</translation>
 <translation id="8260864402787962391">Mus</translation>
@@ -5956,7 +5942,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8487678622945914333">Zoom ind</translation>
 <translation id="8490896350101740396">Følgende terminalapps "<ph name="UPDATED_APPS" />" er opdateret. Genstart din enhed for at fuldføre opdateringsprocessen.</translation>
 <translation id="8493236660459102203">Mikrofon:</translation>
-<translation id="8495940850609851342"><ph name="PRINTER_NAME" /> blev stoppet</translation>
 <translation id="8496717697661868878">Kør dette plugin</translation>
 <translation id="8497219075884839166">Windows-værktøjer</translation>
 <translation id="8498214519255567734">Gør din skærm mere behagelig at læse eller se på i svag belysning</translation>
@@ -6499,6 +6484,12 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="9157096865782046368">0,8 sekunder</translation>
 <translation id="9157697743260533322">Automatiske opdateringer kunne ikke konfigureres for alle brugere (fejl ved forhåndsopstart: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Ups! Der opstod et problem med netværkskommunikationen under godkendelsen. Kontrollér din netværksforbindelse, og prøv igen.</translation>
+<translation id="9159643062839240276">Prøv følgende:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />Tjek netværkskabler, modem og router
+      <ph name="LIST_ITEM" />Genopret Wi-Fi-forbindelsen
+      <ph name="LIST_ITEM" />Kør Chrome Forbindelsesdiagnose
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">Integreret billede</translation>
 <translation id="9168436347345867845">Gør det senere</translation>
 <translation id="9169496697824289689">Se tastaturgenveje</translation>

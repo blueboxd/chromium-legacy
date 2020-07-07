@@ -14,12 +14,16 @@
 
 #include "base/callback_forward.h"
 #include "base/containers/circular_deque.h"
+#include "base/containers/flat_set.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "content/shell/common/web_test/web_test.mojom.h"
+#include "content/shell/common/web_test/web_test_bluetooth_fake_adapter_setter.mojom.h"
+#include "content/shell/renderer/web_test/gamepad_controller.h"
+#include "content/shell/renderer/web_test/mock_content_settings_client.h"
 #include "content/shell/renderer/web_test/mock_screen_orientation_client.h"
 #include "content/shell/renderer/web_test/web_test_runtime_flags.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
@@ -38,7 +42,6 @@ class WebContentSettingsClient;
 class WebFrame;
 class WebLocalFrame;
 class WebString;
-class WebTextCheckClient;
 class WebView;
 }  // namespace blink
 
@@ -54,7 +57,6 @@ class Arguments;
 
 namespace content {
 class BlinkTestRunner;
-class MockContentSettingsClient;
 class MockScreenOrientationClient;
 class RenderFrame;
 class SpellCheckClient;
@@ -84,8 +86,9 @@ class TestRunner {
   void SetDelegate(BlinkTestRunner*);
   void SetMainView(blink::WebView*);
 
-  // Resets state on the TestRunner for the next test.
-  void Reset();
+  // Resets state across the whole renderer process for the next test.
+  void Reset(WebFrameTestProxy* main_frame);
+
   // Resets state on the |web_view_test_proxy| for the next test.
   void ResetWebView(WebViewTestProxy* web_view_test_proxy);
   // Resets state on the |web_widget_test_proxy| for the next test.
@@ -102,13 +105,14 @@ class TestRunner {
   // the middle of blink call stacks that have inconsistent state.
   void FinishTestIfReady();
 
+  // Track the set of all main frames in the process, which is also the set of
+  // windows rooted in this process.
+  void AddMainFrame(WebFrameTestProxy* frame);
+  void RemoveMainFrame(WebFrameTestProxy* frame);
+
   // Returns a mock WebContentSettings that is used for web tests. An
   // embedder should use this for all WebViews it creates.
-  blink::WebContentSettingsClient* GetWebContentSettings() const;
-
-  // Returns a mock WebTextCheckClient that is used for web tests. An
-  // embedder should use this for all WebLocalFrames it creates.
-  blink::WebTextCheckClient* GetWebTextCheckClient() const;
+  blink::WebContentSettingsClient* GetWebContentSettings();
 
   // After BlinkTestRunner::TestFinished was invoked, the following methods
   // can be used to determine what kind of dump the main WebViewTestProxy can
@@ -134,14 +138,13 @@ class TestRunner {
   bool ShouldDumpSelectionRect() const;
 
   // Returns false if the browser should capture the pixel output, true if it
-  // can be done locally in the renderer via DumpPixelsAsync().
+  // can be done locally in the renderer via DumpPixelsInRenderer().
   bool CanDumpPixelsFromRenderer() const;
 
   // Snapshots the content of |render_view| using the mode requested by the
   // current test and calls |callback| with the result.  Caller needs to ensure
   // that |render_view| stays alive until |callback| is called.
-  void DumpPixelsAsync(content::RenderView* render_view,
-                       base::OnceCallback<void(const SkBitmap&)> callback);
+  SkBitmap DumpPixelsInRenderer(content::RenderView* render_view);
 
   // Replicates changes to web test runtime flags (i.e. changes that happened in
   // another renderer). See also BlinkTestRunner::OnWebTestRuntimeFlagsChanged.
@@ -321,10 +324,9 @@ class TestRunner {
   // Delays completion of the test until the policy delegate runs.
   void WaitForPolicyDelegate();
 
-  // TODO(danakj): This is the count of in-process RenderViewHosts, not the
-  // count of windows. It's only a window count if the page is entire in one
-  // site and any page opened in a window has only a single site each.
-  int WindowCount();
+  // This is the count of windows which have their main frame in this renderer
+  // process. A cross-origin window would not appear in this count.
+  int InProcessWindowCount();
 
   // Allows web tests to manage origins' allow list.
   void AddOriginAccessAllowListEntry(const std::string& source_origin,
@@ -432,7 +434,6 @@ class TestRunner {
   void SetImagesAllowed(bool allowed);
   void SetScriptsAllowed(bool allowed);
   void SetStorageAllowed(bool allowed);
-  void SetPluginsAllowed(bool allowed);
   void SetAllowRunningOfInsecureContent(bool allowed);
   void DumpPermissionClientCallbacks();
 
@@ -512,15 +513,17 @@ class TestRunner {
   void HandleWebTestClientDisconnected();
   mojo::AssociatedRemote<mojom::WebTestClient> web_test_client_remote_;
 
+  mojom::WebTestBluetoothFakeAdapterSetter& GetBluetoothFakeAdapterSetter();
+  void HandleBluetoothFakeAdapterSetterDisconnected();
+  mojo::Remote<mojom::WebTestBluetoothFakeAdapterSetter>
+      bluetooth_fake_adapter_setter_;
+
   bool test_is_running_ = false;
 
   WorkQueue work_queue_;
 
   // Bound variable to return the name of this platform (chromium).
   std::string platform_name_;
-
-  // Bound variable counting the number of top URLs visited.
-  int web_history_item_count_ = 0;
 
   // Flags controlling what content gets dumped as a layout text result.
   WebTestRuntimeFlags web_test_runtime_flags_;
@@ -549,6 +552,7 @@ class TestRunner {
   TestInterfaces* test_interfaces_;
   BlinkTestRunner* blink_test_runner_ = nullptr;
   blink::WebView* main_view_ = nullptr;
+  base::flat_set<WebFrameTestProxy*> main_frames_;
 
   // This is non empty when a load is in progress.
   std::vector<blink::WebFrame*> loading_frames_;
@@ -562,12 +566,9 @@ class TestRunner {
   // test that was not waiting for NotifyDone() at all.
   bool did_notify_done_ = false;
 
-  // WebContentSettingsClient mock object.
-  std::unique_ptr<MockContentSettingsClient> mock_content_settings_client_;
-
-  bool use_mock_theme_ = false;
-
+  MockContentSettingsClient mock_content_settings_client_;
   MockScreenOrientationClient mock_screen_orientation_client_;
+  GamepadController gamepad_controller_;
 
   // Captured drag image.
   SkBitmap drag_image_;

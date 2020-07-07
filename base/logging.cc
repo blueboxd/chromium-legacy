@@ -28,7 +28,6 @@
 #include <io.h>
 #include <windows.h>
 typedef HANDLE FileHandle;
-typedef HANDLE MutexHandle;
 // Windows warns on using write().  It prefers _write().
 #define write(fd, buf, count) _write(fd, buf, static_cast<unsigned int>(count))
 // Windows doesn't define STDERR_FILENO.  Define it here.
@@ -81,7 +80,6 @@ typedef HANDLE MutexHandle;
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include <errno.h>
 #include <paths.h>
-#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -89,7 +87,6 @@ typedef HANDLE MutexHandle;
 #include "base/process/process_handle.h"
 #define MAX_PATH PATH_MAX
 typedef FILE* FileHandle;
-typedef pthread_mutex_t* MutexHandle;
 #endif
 
 #include <algorithm>
@@ -118,7 +115,7 @@ typedef pthread_mutex_t* MutexHandle;
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/synchronization/lock_impl.h"
+#include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
 #include "base/vlog.h"
 
@@ -246,72 +243,11 @@ PathString GetDefaultLogFile() {
 // We don't need locks on Windows for atomically appending to files. The OS
 // provides this functionality.
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
-// This class acts as a wrapper for locking the logging files.
-// LoggingLock::Init() should be called from the main thread before any logging
-// is done. Then whenever logging, be sure to have a local LoggingLock
-// instance on the stack. This will ensure that the lock is unlocked upon
-// exiting the frame.
-// LoggingLocks can not be nested.
-class LoggingLock {
- public:
-  LoggingLock() {
-    LockLogging();
-  }
 
-  ~LoggingLock() {
-    UnlockLogging();
-  }
-
-  static void Init(LogLockingState lock_log, const PathChar* new_log_file) {
-    if (initialized)
-      return;
-    lock_log_file = lock_log;
-
-    if (lock_log_file != LOCK_LOG_FILE)
-      log_lock = new base::internal::LockImpl();
-
-    initialized = true;
-  }
-
- private:
-  static void LockLogging() {
-    if (lock_log_file == LOCK_LOG_FILE) {
-      pthread_mutex_lock(&log_mutex);
-    } else {
-      // use the lock
-      log_lock->Lock();
-    }
-  }
-
-  static void UnlockLogging() {
-    if (lock_log_file == LOCK_LOG_FILE) {
-      pthread_mutex_unlock(&log_mutex);
-    } else {
-      log_lock->Unlock();
-    }
-  }
-
-  // The lock is used if log file locking is false. It helps us avoid problems
-  // with multiple threads writing to the log file at the same time.  Use
-  // LockImpl directly instead of using Lock, because Lock makes logging calls.
-  static base::internal::LockImpl* log_lock;
-
-  // When we don't use a lock, we are using a global mutex. We need to do this
-  // because LockFileEx is not thread safe.
-  static pthread_mutex_t log_mutex;
-
-  static bool initialized;
-  static LogLockingState lock_log_file;
-};
-
-// static
-bool LoggingLock::initialized = false;
-// static
-base::internal::LockImpl* LoggingLock::log_lock = nullptr;
-// static
-LogLockingState LoggingLock::lock_log_file = LOCK_LOG_FILE;
-
-pthread_mutex_t LoggingLock::log_mutex = PTHREAD_MUTEX_INITIALIZER;
+base::Lock& GetLoggingLock() {
+  static base::NoDestructor<base::Lock> lock;
+  return *lock;
+}
 
 #endif  // OS_POSIX || OS_FUCHSIA
 
@@ -459,8 +395,7 @@ bool BaseInitLoggingImpl(const LoggingSettings& settings) {
     return true;
 
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
-  LoggingLock::Init(settings.lock_log, settings.log_file_path);
-  LoggingLock logging_lock;
+  base::AutoLock guard(GetLoggingLock());
 #endif
 
   // Calling InitLogging twice or after some log call has already opened the
@@ -863,8 +798,7 @@ LogMessage::~LogMessage() {
     // the lock. This is why InitLogging should be called from the main
     // thread at the beginning of execution.
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
-    LoggingLock::Init(LOCK_LOG_FILE, nullptr);
-    LoggingLock logging_lock;
+    base::AutoLock guard(GetLoggingLock());
 #endif
     if (InitializeLogFileHandle()) {
 #if defined(OS_WIN)
@@ -1073,7 +1007,7 @@ ErrnoLogMessage::~ErrnoLogMessage() {
 
 void CloseLogFile() {
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
-  LoggingLock logging_lock;
+  base::AutoLock guard(GetLoggingLock());
 #endif
   CloseLogFileUnlocked();
 }

@@ -90,21 +90,6 @@
       'Linux FYI GPU TSAN Release',
     ],
   },
-  'base_unittests': {
-    'modifications': {
-      # TODO(crbug.com/1057152): Turn on flashing for all CrOS device tests.
-      'chromeos-eve-chrome': {
-        'args': [
-          '--flash',
-        ],
-      },
-      'chromeos-kevin-chrome': {
-        'args': [
-          '--flash',
-        ],
-      },
-    },
-  },
   'blink_web_tests': {
     'remove_from': [
       'Win 7 Tests x64 (1)',  # 64-bit win is unsupported by the layout tests.

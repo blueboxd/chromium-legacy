@@ -16,6 +16,7 @@ GIN_EXPORT extern const base::Feature kV8OffThreadFinalization;
 GIN_EXPORT extern const base::Feature kV8LazyFeedbackAllocation;
 GIN_EXPORT extern const base::Feature kV8ConcurrentInlining;
 GIN_EXPORT extern const base::Feature kV8PerContextMarkingWorklist;
+GIN_EXPORT extern const base::Feature kV8FlushEmbeddedBlobICache;
 
 }  // namespace features
 

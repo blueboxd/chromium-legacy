@@ -229,9 +229,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
                               QuotaCallback callback);
   void GetGlobalUsage(blink::mojom::StorageType type,
                       GlobalUsageCallback callback);
-  void GetHostUsage(const std::string& host,
-                    blink::mojom::StorageType type,
-                    UsageCallback callback);
   void GetHostUsageWithBreakdown(const std::string& host,
                                  blink::mojom::StorageType type,
                                  UsageWithBreakdownCallback callback);

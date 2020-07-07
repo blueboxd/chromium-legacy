@@ -98,9 +98,6 @@
           Bu politika ayarlanmadan bırakılırsa engellenebilir karma içerik engellenir ve isteğe bağlı olarak engellenebilir karma içerik yükseltilir, ayrıca kullanıcıların belirli sitelerde buna izin vermek üzere istisnalar ayarlamasına izin verilir.
 
           Geçerli URL kalıpları hakkında ayrıntılı bilgi için https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns adresine bakabilirsiniz.</translation>
-<translation id="1135264353752122851"><ph name="PRODUCT_OS_NAME" /> kullanıcı oturumları için izin verilecek klavye düzenlerini yapılandırır.
-
-      Bu politika ayarlanırsa, kullanıcı yalnızca bu politika tarafından belirlenen giriş yöntemlerinden birini kullanabilir. Bu politika yapılandırılmaz veya liste boş olarak ayarlanırsa, kullanıcı desteklenen tüm giriş yöntemlerini seçebilir. Geçerli giriş yöntemine bu politikada izin verilmiyorsa, giriş yöntemi donanım klavye düzenine (izin veriliyorsa) veya bu listedeki ilk geçerli girişe ayarlanır. Bu listedeki geçersiz veya desteklenmeyen giriş yöntemleri yoksayılır.</translation>
 <translation id="1138294736309071213">Bu politika sadece perakende modunda etkindir.
 
      Perakende modunda oturum açma ekranında ekran koruyucunun devreye girmesi için geçecek süreyi belirler.
@@ -186,11 +183,6 @@
 
       Bu politika ayarlanmadan bırakılırsa, istemci sertifikaları kullanan bağlantılarda HTTP/2 bağlantı birleşmesine izin vermeme varsayılan davranışı kullanılır.</translation>
 <translation id="1354424209129232709">Maksimum:</translation>
-<translation id="1354452738176731363">Bu politika false (yanlış) değerine ayarlanırsa kullanıcı giriş yapmış durumdayken cihazda ses çıkışı kullanılamaz.
-
-      Bu politika sadece dahili hoparlörleri değil, her tür ses çıkışını etkiler. Bu politikayla, sesli erişilebilirlik özellikleri de engellenebilir. Kullanıcı için ekran okuyucu gerekliyse bu politikayı etkinleştirmeyin.
-
-      Bu ayar true (doğru) değerine ayarlanırsa veya yapılandırılmazsa kullanıcılar cihazlarında desteklenen tüm ses çıkışlarını kullanabilirler.</translation>
 <translation id="1359553908012294236">Bu politika doğru seçeneğine ayarlanırsa veya yapılandırılmazsa <ph name="PRODUCT_NAME" />, misafir modunda giriş yapılmasına izin verir. Misafir modunda girişler, tüm pencerelerin gizli modda açıldığı <ph name="PRODUCT_NAME" /> profilleridir.
 
       Bu politika yanlış seçeneğine ayarlanırsa, <ph name="PRODUCT_NAME" /> misafir profillerinin başlatılmasına izin vermez.</translation>
@@ -734,13 +726,6 @@ Bu politikayı devre dışı bırakırsanız web sayfasını URL yoluyla belirli
 
       Bu politika kiosk uygulamaları için geçerli değildir; bunlar otomatik olarak taşınır. Bu politika ayarlanmadan bırakılırsa, cihaz "DisallowArc" değeri seçilmiş gibi davranır.</translation>
 <translation id="2195032660890227692">Bu politika <ph name="PRODUCT_NAME" /> 68 sürümünde kaldırılmış ve yerine <ph name="ARC_BR_POLICY_NAME" /> kullanılmaya başlanmıştır.</translation>
-<translation id="219720814106081560">Bu politika etkinleştirilirse veya yapılandırılmazsa (varsayılan) kullanıcıdan
-      video yakalama için erişim izni istenir
-      (VideoCaptureAllowedUrls listesinde yapılandırılan URL'ler hariçtir; bu URL'ler için istek yapılmadan erişim izni verilir).
-
-      Bu politika devre dışı bırakıldığında, kullanıcıya hiç soru sorulmaz ve video yakalama yalnızca VideoCaptureAllowedUrls içinde yapılandırılmış olan URL'ler için kullanılabilir.
-
-      Bu politika sadece dahili kamerayı değil, her tür video girişini etkiler.</translation>
 <translation id="2197625019569762163">Bu politika true (doğru) değerine ayarlanırsa giriş ekranında şifre girilirken varsayılan olarak sayısal klavye görüntülenir. Kullanıcılar isterlerse normal klavyeye geçebilirler.
 
       Bu politikayı ayarlarsanız kullanıcılar değiştiremez. Bu politika ayarlanmazsa veya false (yanlış) değerine ayarlanırsa hiçbir etkisi olmaz.</translation>
@@ -773,15 +758,6 @@ Bu politikayı devre dışı bırakırsanız web sayfasını URL yoluyla belirli
 <translation id="2267288258868218403">Desteklenmeyen dosya türlerinin yüklenmesini engelle</translation>
 <translation id="2269319728625047531">Oturum açma sırasında Senkronizasyon İzni'nin görüntülenmesini etkinleştir</translation>
 <translation id="2270747976331889601">Yerel güven bağlantıları için bir TLS 1.3 güvenlik özelliği etkinleştirir.</translation>
-<translation id="2274864612594831715">Bu politika, ChromeOS'de sanal klavyenin bir giriş cihazı olarak etkinleştirilmesini yapılandırır. Kullanıcılar bu politikayı geçersiz kılamaz.
-
-      Politika doğru değerine ayarlanırsa dokunmatik sanal klavye her zaman etkinleştirilir.
-
-      Yanlış değerine ayarlanırsa dokunmatik sanal klavye her zaman devre dışı olur.
-
-      Bu politikayı ayarlarsanız kullanıcılar politikayı değiştiremez veya geçersiz kılamaz. Bununla birlikte, kullanıcılar bu politikanın kontrol ettiği sanal klavyeye göre önceliğe sahip olan bir erişilebilirlik özellikli dokunmatik klavyeyi etkinleştirebilir/devre dışı bırakabilirler. Erişilebilirlik özellikli dokunmatik klavyeyi kontrol etmek için |VirtualKeyboardEnabled| politikasına bakın.
-
-      Bu politika ayarlanmadan bırakılırsa dokunmatik klavye başlangıçta devre dışı bırakılır, ancak daha sonra istendiğinde kullanıcı tarafından etkinleştirilebilir. Klavyenin ne zaman görüntüleneceğine karar verilmesi için sezgisel kurallar da kullanılabilir.</translation>
 <translation id="2281496157391382819"> Misafir oturumundayken <ph name="PRODUCT_OS_NAME" /> için gizlilik uyarısını kontrol eder.
 
       Bu politika False (Yanlış) değerine ayarlanırsa giriş ekranındaki gizlilik uyarılarını ve misafir oturumundayken otomatik başlatma bildirimini devre dışı bırakır.
@@ -1003,11 +979,6 @@ Bu politika ayarlanmadan bırakılırsa gizlilik ekranı başta devre dışı b�
 
           Bu politika ayarlanmadan bırakılırsa metin imlecini vurgulama başlangıçta devre dışıdır ancak istenildiğinde kullanıcı tarafından etkinleştirilebilir.</translation>
 <translation id="2509919237512982967">M84'e kadar Eski Form Kontrollerini kullanın.</translation>
-<translation id="2514328368635166290">Varsayılan arama sağlayıcının favori simge URL'sini belirtir.
-
-          Bu politika isteğe bağlıdır. Ayarlanmazsa, arama sağlayıcı için herhangi bir simge sunulmaz.
-
-          Bu politika, yalnızca 'DefaultSearchProviderEnabled' politikası etkinleştirilirse uygulanır.</translation>
 <translation id="2516600974234263142"><ph name="PRODUCT_NAME" /> ürününde yazdırmayı etkinleştirir ve kullanıcıların bu ayarı değiştirmelerini önler.
 
       Bu ayar etkinleştirilirse veya yapılandırılmazsa kullanıcılar yazdırabilir.
@@ -1053,13 +1024,6 @@ Bu politika ayarlanmadan bırakılırsa gizlilik ekranı başta devre dışı b�
           Google'ın anında arama sonuçları URL'si şu şekilde belirtilebilir: <ph name="GOOGLE_INSTANT_SEARCH_URL" />
 
           Bu politikaya yalnızca "DefaultSearchProviderEnabled" politikası etkinleştirilirse uyulur.</translation>
-<translation id="2569647487017692047">Bu politika yanlış (false) değerine ayarlanırsa <ph name="PRODUCT_OS_NAME" />, Bluetooth'u devre dışı bırakır ve kullanıcı bu özelliği tekrar etkinleştiremez.
-
-      Bu politika doğru (true) değerine ayarlanır veya ayarlanmadan bırakılırsa kullanıcı Bluetooth'u istediği gibi etkinleştirebilir ya da devre dışı bırakabilir.
-
-      Bu politika ayarlandığında, kullanıcı bunu değiştiremez ya da geçersiz kılamaz.
-
-      Kullanıcı Bluetooth'u etkinleştirdikten sonra, yapılan değişikliklerin geçerli olması için oturumu kapatıp tekrar açmalıdır (Bluetooth devre dışı bırakıldığında buna gerek yoktur).</translation>
 <translation id="2571066091915960923">Veri sıkıştırma proxy'sini etkinleştirir veya devre dışı bırakır ve kullanıcıların bu ayarı değiştirmesini önler.
 
       Bu ayarı etkinleştirir veya devre dışı bırakırsanız, kullanıcılar bu ayarı değiştiremez veya geçersiz kılamaz.
@@ -1107,11 +1071,6 @@ Bu politika ayarlanmazsa <ph name="PRODUCT_NAME" /> varsayılan 10.000 milisaniy
 <translation id="2647069081229792812">Yer işareti düzenlemesini etkinleştir veya devre dışı bırak</translation>
 <translation id="2649896281375932517">Kullanıcıların karar vermesine izin ver</translation>
 <translation id="2650049181907741121">Kullanıcı kapağı kapattığında yapılacak işlem</translation>
-<translation id="2655233147335439767">Bir varsayılan arama gerçekleştirilirken kullanılan arama motorunun URL'sini belirtir. URL, "<ph name="SEARCH_TERM_MARKER" />" dizesini içermelidir. Sorgu sırasında, kullanıcının aradığı terimler bu dizenin yerini alır.
-
-            Google'ın arama URL'si şu şekilde belirtilebilir: <ph name="GOOGLE_SEARCH_URL" />
-
-          , "DefaultSearchProviderEnabled" politikası etkinleştirildiğinde bu seçenek ayarlanmalıdır ve yalnızca bu durumda uygulanır.</translation>
 <translation id="2658653824183107970">Yeni <ph name="CORS" /> yerine eski <ph name="CORS" /> uygulamasını kullan</translation>
 <translation id="2659019163577049044">Bu ayar etkinleştirilirse kullanıcıların cihazlarını kurarak telefonları ve Chromebook'ları arasında SMS mesajlarını senkronize etmelerine izin verilir. Bu politikaya izin verilirse kullanıcıların bir kurulum akışını tamamlayarak bu özelliği açık bir şekilde etkinleştirmeleri gerekeceğini unutmayın. Kurulum akışı tamamlandıktan sonra, kullanıcılar kendi Chromebook'larından SMS mesajları gönderip alabilirler.
 
@@ -1126,11 +1085,6 @@ Bu politika ayarlanmazsa <ph name="PRODUCT_NAME" /> varsayılan 10.000 milisaniy
 
       Bu politika False (Yanlış) değerine ayarlanırsa veya ayarlanmadan bırakılırsa gizlilik uyarısı bildirimi kullanıcı kapatana kadar sabitlenir.</translation>
 <translation id="2672012807430078509">NTLM'nin SMB ekleme için kimlik doğrulama protokolü olarak etkinleştirilmesini kontrol eder</translation>
-<translation id="267596348720209223">Arama sağlayıcısı tarafından desteklenen karakter kodlamalarını belirtir. Kodlamalar, UTF-8, GB2312 ve ISO-8859-1 gibi kod sayfası adlarıdır. Bunlar, sağlandıkları sırada denenirler.
-
-          Bu politika isteğe bağlıdır. Ayarlanmazsa, varsayılan değer olan UTF-8 kullanılır.
-
-          Bu politika, yalnızca 'DefaultSearchProviderEnabled' politikası etkinleştirilirse dikkate alınır.</translation>
 <translation id="2678503605767349615">Cihaz genelinde gerekli İstemci Sertifikaları</translation>
 <translation id="268577405881275241">Veri sıkıştırma proxy özelliğini etkinleştir</translation>
 <translation id="2691668238491124549">Politikayı (yalnızca önerildiği gibi) ayarlarsanız yönetilen bir oturum için önerilen yerel ayarlar politikada göründükleri sıraya göre listenin başına taşınır. Önerilen ilk yerel ayar önceden seçilmiştir.
@@ -1646,11 +1600,6 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
 <translation id="3435796032110614169">Yazdırma işleri geçmişinin silinmesine izin ver</translation>
 <translation id="3437924696598384725">Kullanıcının VPN bağlantılarını yönetmesine izin verme</translation>
 <translation id="3459509316159669723">Yazdırma</translation>
-<translation id="3460784402832014830">Bir arama motorunun yeni bir sekme sayfası sağlamak için kullandığı URL'yi belirtir.
-
-          Bu politika isteğe bağlıdır. Ayarlanmazsa hiçbir yeni sekme sayfası sağlanmaz.
-
-          Bu politika sadece "DefaultSearchProviderEnabled" politikası etkinleştirilmişse geçerli olur.</translation>
 <translation id="3461279434465463233">Güç durumunu bildir</translation>
 <translation id="346731943813722404">Bir oturumda güç yönetimi gecikmelerinin ve oturum süresi sınırının sadece kullanıcı ilk etkinliğinin gözlenmesinden sonra çalışmaya başlayıp başlamayacağını belirler.
 
@@ -1711,11 +1660,6 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
       Bu politika ayarlanmadan bırakılırsa, şifre koruma hizmeti yalnızca Google şifrelerini korur, ancak kullanıcı bu ayarı değiştirebilir.</translation>
 <translation id="3502555714327823858">Tüm dupleks modlara izin ver</translation>
 <translation id="350443680860256679">ARC'yi yapılandır</translation>
-<translation id="3504791027627803580">Resim araması sağlamak için kullanılacak arama motorunun URL'sini belirtir. Arama istekleri GET yöntemi kullanılarak gönderilir. DefaultSearchProviderImageURLPostParams politikası ayarlanırsa, resim araması istekleri GET yöntemi yerine POST yöntemini kullanır.
-
-          Bu politika isteğe bağlıdır. Ayarlanmazsa, resim araması kullanılmaz.
-
-          Bu politika sadece "DefaultSearchProviderEnabled" politikası etkinleştirilmişse dikkate alınır.</translation>
 <translation id="350797926066071931">Google Çeviri'yi etkinleştir</translation>
 <translation id="3508047333410537654">Giriş ekranında mono sesi etkinleştir</translation>
 <translation id="3513655665999652754">Quirks Server, monitör kalibrasyonunu ayarlamaya yönelik
@@ -1902,13 +1846,6 @@ Bu politika yanlış seçeneğine ayarlanırsa kiosk oturum bilgileri rapor edil
 
       Belirtilmezse, Varyasyonlar çekirdeği URL'sinde değişiklik yapmaz.</translation>
 <translation id="3863409707075047163">Minimum SSL sürümü etkinleştirildi</translation>
-<translation id="3864020628639910082">Arama önerileri sağlamak için kullanılan arama motorunun URL'sini belirtir. URL, "<ph name="SEARCH_TERM_MARKER" />" dizesini içermelidir. Sorgu sırasında bu dizenin yerini, kullanıcının o zamana kadar girmiş olduğu metin alacaktır.
-
-          Bu politika isteğe bağlıdır. Ayarlanmazsa, herhangi bir öneri URL'si kullanılmaz.
-
-          Google'ın öneri URL'si şu şekilde belirtilebilir: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />
-
-          Bu politikaya yalnızca "DefaultSearchProviderEnabled" politikası etkinleştirildiğinde uyulur.</translation>
 <translation id="3864129983143201415">Kullanıcı oturumunda izin verilen dilleri yapılandır</translation>
 <translation id="3866249974567520381">Açıklama</translation>
 <translation id="386723261607812952">Giriş ekranında ekran büyüteci türünü ayarla</translation>
@@ -2263,11 +2200,6 @@ politikayı geçersiz kılamaz.
 
       Bu politika kullanılırsa, kullanıcı yalnızca kimlikleri bu politikadaki değerlerle eşleşen yazıcıları kullanabilir. Kimliklerin, <ph name="BULK_PRINTERS_POLICY" /> politikasında belirtilen dosyadaki "id" veya "guid" alanlarına karşılık gelmesi gerekir.
       </translation>
-<translation id="427632463972968153">POST ile resim araması yaparken kullanılacak parametreleri belirtir. Virgülle ayrılmış ad/değer çiftlerini içeren bir listeden oluşur. Bir değer, yukarıdaki örnekteki {imageThumbnail} gibi bir şablon parametresi ise, gerçek resmin küçük resim verisiyle değiştirilir.
-
-          Bu politika isteğe bağlıdır. Ayarlanmazsa, resim araması isteği GET yöntemiyle gönderilir.
-
-          Bu politika sadece "DefaultSearchProviderEnabled" politikası etkinleştirilmişse dikkate alınır.</translation>
 <translation id="4285674129118156176">Bağlı olmayan kullanıcıların ARC'yi kullanmasına izin ver</translation>
 <translation id="4298509794364745131"><ph name="PRODUCT_OS_NAME" /> kilit ekranında not alma uygulaması olarak etkinleştirilebilen uygulamaların listesini belirtir.
 
@@ -2551,11 +2483,6 @@ politikayı geçersiz kılamaz.
       Bu politika false (yanlış) değerine ayarlanırsa veya ayarlanmadan bırakılırsa OS güncelleme bilgileri bildirilmez. Politika true (doğru) değerine ayarlanırsa OS güncelleme bilgileri bildirilir.</translation>
 <translation id="4858735034935305895">Tam ekran moduna izin ver</translation>
 <translation id="4861767323695239729">Kullanıcı oturumunda izin verilen giriş yöntemlerini yapılandır</translation>
-<translation id="4869603341164509842">Bu listedeki kalıpların, istek yapan URL'nin güvenlik kaynağı ile eşleşip eşleşmediğine bakılır.  Bir eşleşme bulunursa herhangi bir istemde bulunulmadan görüntü yakalama cihazlarına erişim izni verilir.
-
-      Geçerli URL kalıpları hakkında ayrıntılı bilgi için https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns adresine bakabilirsiniz.
-
-      NOT: Sürüm 45'e kadar bu politika sadece Kiosk modunda destekleniyordu.</translation>
 <translation id="487460824085252184">Otomatik olarak taşı, kullanıcıdan onay isteme.</translation>
 <translation id="4874982543810021567">Bu sitelerde WebUSB'yi engelle</translation>
 <translation id="4876805738539874299">Etkinleştirilen maksimum SSL sürümü</translation>
@@ -2564,11 +2491,6 @@ politikayı geçersiz kılamaz.
 
       Bu politika hiç ayarlanmazsa veya devre dışı olarak ayarlanırsa <ph name="PRODUCT_NAME" /> güvenli olmayan etkinlikleri bildirmeyecektir.
       </translation>
-<translation id="4897928009230106190">POST ile öneri araması yaparken kullanılan parametreleri belirtir. Virgülle ayrılmış ad/değer çiftlerini içeren bir listeden oluşur. Bir değer, yukarıdaki örnekteki {searchTerms} gibi bir şablon parametresi ise gerçek arama terimleri verisiyle değiştirilir.
-
-          Bu politika isteğe bağlıdır. Ayarlanmazsa, öneri araması isteği, GET yöntemi kullanılarak gönderilir.
-
-          Bu politika sadece is "DefaultSearchProviderEnabled" politikası etkinleştirilmişse dikkate alınır.</translation>
 <translation id="489803897780524242">Varsayılan arama sağlayıcısı için arama terimi yerleştirmeyi kontrol eden parametre</translation>
 <translation id="4899708173828500852">Güvenli Taramayı etkinleştir</translation>
 <translation id="4906194810004762807">Aygıt Politikası için yenileme hızı</translation>
@@ -2957,14 +2879,6 @@ politikayı geçersiz kılamaz.
 <translation id="5405289061476885481"><ph name="PRODUCT_OS_NAME" /> oturum açma ekranında hangi klavye düzenlerine izin verileceğini yapılandırır.
 
       Bu politika bir giriş yöntemi tanımlayıcıları listesine ayarlanırsa belirtilen giriş yöntemleri oturum açma ekranında kullanılabilir. Belirtilen ilk giriş yöntemi önceden seçilir. Oturum açma ekranında bir kullanıcı simgesine odaklanılmışken, kullanıcının kullandığı son giriş yöntemi de bu politikada belirtilen giriş yöntemlerine ek olarak gösterilir. Bu politika ayarlanmazsa oturum açma ekranındaki giriş yöntemleri, oturum açma ekranının görüntülendiği yerel ayardan türetilir. Geçerli giriş yöntemi tanımlayıcıları olmayan değerler yok sayılır.</translation>
-<translation id="5412057811596122582">Bu politika etkinleştirilirse veya yapılandırılmazsa (varsayılan) kullanıcıdan ses
-      yakalama için erişim izni istenir (AudioCaptureAllowedUrls
-      listesinde yapılandırılan URL'ler hariçtir; bu URL'ler için istek yapılmadan erişim izni verilir).
-
-      Bu politika devre dışı bırakıldığında, kullanıcıya hiç soru sorulmaz ve ses yakalama
-      yalnızca AudioCaptureAllowedUrls içinde yapılandırılmış olan URL'ler için kullanılabilir.
-
-      Bu politika yalnızca dahili mikrofonu değil, her tür ses girişini etkiler.</translation>
 <translation id="5417906792459853336">Cihazın uygulama envanteri ve kullanımı için bilgi raporlayın.
 
       Bu politika false (yanlış) değerine ayarlanırsa veya ayarlanmadan bırakılırsa bilgi raporlanmaz.
@@ -3346,19 +3260,6 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 <translation id="5893553533827140852">Bu ayar etkinleştirilirse gnubby kimlik doğrulama isteklerinde uzaktan ana bilgisayar bağlantısı üzerinden proxy kullanılır.
 
           Bu ayar devre dışı bırakılır veya yapılandırılmazsa gnubby kimlik doğrulama isteklerinde proxy kullanılmaz.</translation>
-<translation id="5893688850352887219">Bir varsayılan arama sağlayıcısının kullanılabilmesini sağlar.
-
-          Bu ayarı etkinleştirirseniz kullanıcı çok amaçlı adres çubuğuna URL olmayan bir metin yazdığında bir varsayılan arama gerçekleştirilir.
-
-          Geri kalan varsayılan arama politikalarını ayarlayarak kullanılacak varsayılan arama sağlayıcısını belirtebilirsiniz. Bunlar boş bırakılırsa kullanıcı varsayılan sağlayıcısını seçebilir.
-
-          Bu ayarı devre dışı bırakırsanız kullanıcı çok amaçlı adres çubuğuna URL olmayan metin girdiğinde arama gerçekleştirilmez.
-
-          Bu ayarı etkinleştirir veya devre dışı bırakırsanız, kullanıcılar bunu <ph name="PRODUCT_NAME" /> içinde değiştiremez veya geçersiz kılamazlar.
-
-          Bu politika ayarlanmadan bırakılırsa varsayılan arama sağlayıcı etkinleşir ve kullanıcı, arama sağlayıcı listesini ayarlayabilir.
-
-          Bu politika yalnızca bir <ph name="MS_AD_NAME" /> alan adına katılmış Windows örneklerinde veya cihaz yönetimine kaydolmuş Windows 10 Pro ya da Enterprise örneklerinde ve MDM ile çalışan veya MCX aracılığıyla bir alan adına katılmış macOS örneklerinde kullanılabilir.</translation>
 <translation id="5897913798715600338">Pili hızlı şarj teknolojisiyle şarj et.</translation>
 <translation id="5898486742390981550">Birden fazla kullanıcı giriş yaptığında, yalnızca birincil kullanıcı Android uygulamalarını kullanabilir.</translation>
 <translation id="5901427587865226597">Yalnızca dupleks yazdır</translation>
@@ -3437,9 +3338,6 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 <translation id="6070667616071269965">Cihaz oturum açma ekranı klavye düzenleri</translation>
 <translation id="6074963268421707432">Hiçbir sitenin masaüstü bildirimi göstermesine izin verme</translation>
 <translation id="6074964551275531965">Güncelleme bildirimlerinin dönemini ayarla</translation>
-<translation id="6076099373507468537">chrome.usb API'sı aracılığıyla doğrudan bir web uygulaması içinde kullanılması için çekirdek sürücüsünden çıkarılmasına izin verilen USB cihazlarının listesini tanımlar. Girişler, belirli bir donanımı tanımlamak için kullanılan USB Tedarikçi Tanımlayıcısı ve Ürün Tanımlayıcısı çiftlerinden oluşmaktadır.
-
-      Bu politika yapılandırılmazsa, çıkarılabilecek USB cihazları listesi boş olur.</translation>
 <translation id="607726879389885889">Bu politika, bir kullanıcı kötü amaçlı yazılım veya hassas verileri koruma taraması amaçlı göndermek için fazla büyük (50 MB veya daha büyük) dosyaları indirmeyi veya yüklemeyi denediğinde <ph name="PRODUCT_NAME" /> ürününün nasıl davranacağını denetler.  Bu sınırlama, yalnızca <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> ve denetimlerin etkinleştirilmiş olduğu alan adları listesini denetleyen politikalar tarafından belirlendiği şekilde tarama gerektiren dosyalar için geçerlidir.
 
       Bu politika ayarlanmazsa veya “Hiçbiri” olarak ayarlanırsa <ph name="PRODUCT_NAME" /> kullanıcının tüm boyutlarda dosyaları indirmesine veya yüklemesine izin verir.
@@ -3612,11 +3510,6 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
       Bu politika ayarlanırsa, giriş ekranında kullanıcı etkileşimi olmadan bir süre geçtikten sonra, belirlenen oturuma otomatik olarak giriş yapılır. Cihaz yerel hesabının önceden yapılandırılmış olması gerekir (bkz. |DeviceLocalAccounts|).
 
       Bu politika ayarlanmazsa otomatik giriş yapılmaz.</translation>
-<translation id="6353901068939575220">POST ile bir URL ararken kullanılacak parametreleri belirtir. Virgülle ayrılmış ad/değer çiftlerini içeren bir listeden oluşur. Bir değer, yukarıdaki örnekteki {searchTerms} gibi bir şablon parametresi ise, gerçek arama terimleri verisiyle değiştirilir.
-
-          Bu politika isteğe bağlıdır. Ayarlanmazsa, arama isteği GET yöntemi kullanılarak gönderilir.
-
-          Bu politika sadece is "DefaultSearchProviderEnabled" politikası etkinleştirilmişse dikkate alınır.</translation>
 <translation id="6368011194414932347">Ana sayfa URL'sini yapılandır</translation>
 <translation id="6368403635025849609">Bu sitelerde JavaScript'e izin ver</translation>
 <translation id="6372105930898423193">AppCache özelliğinin, varsayılan olarak kapalı olsa bile yeniden etkinleştirilmesine olanak tanır.</translation>
@@ -3900,9 +3793,6 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
       NOT: Bu politika yalnızca 1 GB'tan daha fazla RAM'e sahip cihazlarda çalıştırılan Android işletim sistemindeki Chrome tarayıcı için geçerlidir. Bu politikayı Android dışındaki platformlarda uygulamak için SitePerProcess'i kullanın.
       </translation>
 <translation id="6922884955650325312"><ph name="FLASH_PLUGIN_NAME" /> eklentisini engelle</translation>
-<translation id="6923366716660828830">Varsayılan arama sağlayıcısının adını belirtir. Boş bırakılır veya ayarlanmazsa, arama URL'sinin belirttiği ana makine adı kullanılır.
-
-          Bu politika, yalnızca 'DefaultSearchProviderEnabled' politikası etkinleştirildiğinde dikkate alınır.</translation>
 <translation id="6923731550900440989">Giriş ekranında metin vurgu kutusunu etkinleştir</translation>
 <translation id="6924223708804692571">Yazım denetimi dillerini zorla devre dışı bırakır. Bu listedeki tanınmayan diller yoksayılır.
 
@@ -4222,11 +4112,6 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
 
       Bu politika ayarlanmadan bırakılırsa, varsayılan olarak kuruluş tarafından yönetilen kullanıcılara izin verilmezken, yönetilmeyen kullanıcılara izin verilir.</translation>
 <translation id="7295019613773647480">Denetlenen kullanıcıları etkinleştir</translation>
-<translation id="7301543427086558500">Arama motorundan arama terimlerini çıkartmak için kullanılabilecek alternatif URL'lerin bir listesini belirtir. URL'ler, arama terimlerinin çıkartılmasında kullanılacak <ph name="SEARCH_TERM_MARKER" /> dizesini içermelidir.
-
-          Bu politika isteğe bağlıdır. Ayarlanmazsa, arama terimlerini çıkartmak için herhangi bir alternatif URL kullanılmaz.
-
-          Bu politika yalnızca 'DefaultSearchProviderEnabled' politikası etkinleştirilirse uygulanır.</translation>
 <translation id="7302043767260300182">AC güçle çalışırken ekran kilidi gecikmesi</translation>
 <translation id="731208205557053914">VPD bilgilerini raporla</translation>
 <translation id="7323896582714668701"><ph name="PRODUCT_NAME" /> için ek komut satırı parametreleri</translation>
@@ -5129,11 +5014,6 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
        Varsayılan halde <ph name="PRODUCT_NAME" /> medyayı otomatik oynatmaz. Fakat, belirli URL kalıplarında bu ayarı değiştirmek için <ph name="AUTOPLAY_WHITELIST_POLICY_NAME" /> politikasını kullanabilirsiniz.
 
       <ph name="PRODUCT_NAME" /> çalışırken bu politika değiştirilirse sadece yeni açılan sekmelere uygulanır.</translation>
-<translation id="8711086062295757690">Bu sağlayıcıda aramayı tetiklemek üzere çok amaçlı adres çubuğunda anahtar kelime kısayolunu belirtir.
-
-          Bu politika isteğe bağlıdır. Ayarlanmazsa, hiçbir anahtar kelime arama sağlayıcıyı etkinleştirmez.
-
-          Bu politika yalnızca 'DefaultSearchProviderEnabled' politikası etkinleştirildiğinde uygulanır.</translation>
 <translation id="8733448613597049197"><ph name="PRODUCT_NAME" /> ürününün Güvenli Tarama Genişletilmiş Raporlamasını etkinleştirir ve kullanıcıların bu ayarı değiştirmelerini engeller.
 
       Genişletilmiş Raporlama, tehlikeli uygulama ve sitelerin algılanmasına yardımcı olmak için Google sunucularına bazı sistem bilgileri ve sayfa içeriği gönderir.
@@ -5246,11 +5126,6 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
 
       Ayarlanmazsa veya boş bir bir dize girerseniz cihaz o anda etkin olan saat dilimini kullanır ama kullanıcılar saat dilimini değiştirebilirler.</translation>
 <translation id="8876188741456358123">Varsayılan dupleks yazdırma modunu geçersiz kılar. Mod mevcut değilse bu politika yoksayılır.</translation>
-<translation id="8878850056189891727">Bu listedeki kalıpların, istek yapan URL'nin güvenlik kaynağı ile eşleşip eşleşmediğine bakılır.  Bir eşleşme bulunursa herhangi bir istemde bulunulmadan ses yakalama cihazlarına erişim izni verilir.
-
-      Geçerli URL kalıpları hakkında ayrıntılı bilgi için https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns adresine bakabilirsiniz.
-
-      NOT: Sürüm 45'e kadar bu politika sadece Kiosk modunda destekleniyordu.</translation>
 <translation id="8882006618241293596">Bu sitelerde <ph name="FLASH_PLUGIN_NAME" /> eklentisini engelle</translation>
 <translation id="8892286064305622118"><ph name="PLUGIN_VM_NAME" /> için gereken boş disk alanı</translation>
 <translation id="8906768759089290519">Misafir modunu etkinleştir</translation>

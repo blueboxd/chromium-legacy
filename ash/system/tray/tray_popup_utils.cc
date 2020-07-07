@@ -230,7 +230,7 @@ views::ToggleButton* TrayPopupUtils::CreateToggleButton(
   constexpr SkColor kTrackAlpha = 0x66;
   auto GetColor = [](bool is_on, SkAlpha alpha = SK_AlphaOPAQUE) {
     AshColorProvider::ContentLayerType type =
-        is_on ? AshColorProvider::ContentLayerType::kButtonIconColorProminent
+        is_on ? AshColorProvider::ContentLayerType::kIconColorProminent
               : AshColorProvider::ContentLayerType::kTextColorPrimary;
 
     return SkColorSetA(AshColorProvider::Get()->GetContentLayerColor(

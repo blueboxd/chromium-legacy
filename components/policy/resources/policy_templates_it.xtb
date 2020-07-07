@@ -99,9 +99,6 @@ Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.or
           Se questo criterio non viene impostato, i contenuti misti bloccabili verranno bloccati e quelli bloccabili facoltativi verranno aggiornati; inoltre, gli utenti potranno configurare eccezioni per consentire i contenuti misti per siti specifici.
 
           Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
-<translation id="1135264353752122851">Consente di configurare i layout da tastiera consentiti per le sessioni utente di <ph name="PRODUCT_OS_NAME" />.
-
-      Se questa norma viene impostata, l'utente potrà scegliere soltanto uno dei metodi di immissione specificati al suo interno. Se la norma non viene impostata o viene impostato un elenco vuoto, l'utente potrà selezionare tutti i metodi di immissione supportati. Se il metodo di immissione corrente non è consentito da questa norma, verrà sostituito dal layout della tastiera hardware (se consentito) o dalla prima voce valida di questo elenco. Tutti i metodi di immissione non validi o non supportati di questo elenco verranno ignorati.</translation>
 <translation id="1138294736309071213">Questa norma è attiva soltanto in modalità retail.
 
       Consente di stabilire il periodo di tempo che deve trascorrere prima della visualizzazione del salvaschermo nella schermata di accesso dei dispositivi in modalità retail.
@@ -184,11 +181,6 @@ Le richieste di coalescenza indirizzate a diversi host tra connessioni che utili
 
 Se questa norma non viene impostata, verrà applicato il comportamento predefinito che non consente la coalescenza di connessioni HTTP/2 per le connessioni che utilizzano certificati client.</translation>
 <translation id="1354424209129232709">Massimo:</translation>
-<translation id="1354452738176731363">Quando questa norma è impostata su false, l'uscita audio non sarà disponibile sul dispositivo dopo che l'utente ha eseguito l'accesso.
-
-      Questa norma si applica a tutti i tipi di uscite audio e non solo agli altoparlanti integrati. Anche le funzioni di accessibilità audio vengono bloccate da questa norma. Non attivare questa norma se l'utente deve utilizzare uno screen reader.
-
-      Se questa impostazione viene impostata su true o non viene configurata, gli utenti potranno utilizzare tutte le uscite audio supportate sul loro dispositivo.</translation>
 <translation id="1359553908012294236">Se questa norma viene impostata su true o non viene configurata, in <ph name="PRODUCT_NAME" /> verranno attivati gli accessi come ospite, che sono profili <ph name="PRODUCT_NAME" /> in cui tutte le finestre sono in modalità di navigazione in incognito.
 
       Se questa norma viene impostata su false, in <ph name="PRODUCT_NAME" /> non sarà possibile avviare profili ospite.</translation>
@@ -215,6 +207,11 @@ Se questa norma non viene impostata, verrà applicato il comportamento predefini
 <translation id="1426170570389588560">Imposta il periodo di tempo in giorni per memorizzare i metadati dei processi di stampa</translation>
 <translation id="1426410128494586442">Sì</translation>
 <translation id="1427655258943162134">Indirizzo o URL del server proxy</translation>
+<translation id="142825088795991909">Se il criterio viene configurato, puoi impostare un elenco di pattern URL che specificano i siti che possono mostrare notifiche.
+
+      Se il criterio non viene configurato, viene applicato il criterio <ph name="DEFAULT_JAVA_SCRIPT_SETTING_POLICY_NAME" /> per tutti i siti, se impostato. In caso contrario, viene applicata l'impostazione personale dell'utente.
+
+      Per informazioni dettagliate sui pattern <ph name="URL_LABEL" /> validi, visita la pagina https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="1435659902881071157">Configurazione di rete a livello di dispositivo</translation>
 <translation id="1438739959477268107">Impostazione generazione di chiavi predefinite</translation>
 <translation id="1449083855104537880">Se il criterio è impostato su True, le opzioni di accessibilità vengono mostrate nel menu della barra delle applicazioni. Se il criterio è impostato su False, le opzioni non appaiono nel menu.
@@ -303,6 +300,15 @@ Se disattivi questo criterio, lo scorrimento della pagina web ai frammenti di te
 <translation id="1575015449587326319">Criterio di configurazione per il connettore OnFileDownloaded di Chrome Enterprise</translation>
 <translation id="1583248206450240930">Utilizza <ph name="PRODUCT_FRAME_NAME" /> per impostazione predefinita</translation>
 <translation id="1588240398285670601">Impostazioni del browser</translation>
+<translation id="1588456836529393506">Se il criterio viene configurato, puoi impostare un elenco di pattern URL che specificano i siti a cui viene concessa automaticamente l'autorizzazione di accesso a un dispositivo USB con gli ID fornitore e prodotto indicati. Affinché il criterio sia valido, ogni elemento dell'elenco deve contenere sia dispositivi sia URL. Ogni elemento nei dispositivi può contenere un campo ID fornitore e un campo ID prodotto. Gli eventuali ID omessi verranno considerati caratteri jolly con l'eccezione che non è possibile specificare un ID prodotto senza specificare anche un ID fornitore. In caso contrario, il criterio non sarà valido.
+
+      Il modello di autorizzazione USB utilizza l'URL richiedente e l'URL di incorporamento (del sito frame di primo livello) per consentire all'URL richiedente di accedere al dispositivo USB. L'URL richiedente potrebbe essere diverso dall'URL di incorporamento quando il sito richiedente viene caricato in un iframe. Di conseguenza il campo "URL" può contenere fino a due stringhe delimitate da virgola per specificare questi URL. Se specifichi un solo URL, l'accesso ai dispositivi USB corrispondenti viene concesso quando l'URL del sito richiedente corrisponde all'URL indicato, a prescindere dallo stato di incorporamento. Gli URL indicati nel campo "URL" devono essere validi, altrimenti il criterio viene ignorato.
+
+      Se il criterio non viene configurato, viene applicato il criterio <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME" />, se impostato. In caso contrario, viene applicata l'impostazione personale dell'utente.
+
+      I pattern URL di questo criterio non devono essere in conflitto con quelli configurati tramite <ph name="WEB_USB_BLOCKED_FOR_URLS_POLICY_NAME" />. In caso di conflitto, questo criterio ha la precedenza sui criteri <ph name="WEB_USB_BLOCKED_FOR_URLS_POLICY_NAME" /> e <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME" />.
+
+      I valori di questo criterio e del criterio <ph name="DEVICE_WEB_USB_ALLOW_DEVICES_FOR_URLS_POLICY_NAME" /> vengono uniti.</translation>
 <translation id="1599424828227887013">Attiva isolamento dei siti per origini specificate su dispositivi Android</translation>
 <translation id="159946228300522107">Se il criterio è impostato su True, Chrome ingrandisce la prima finestra mostrata alla prima esecuzione.
 
@@ -717,20 +723,17 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 
       Questa norma non viene applicata alle app kiosk, di cui viene eseguita la migrazione automatica. Se questa norma non viene impostata, il dispositivo si comporterà come se fosse stata scelta l'opzione "DisallowArc".</translation>
 <translation id="2195032660890227692">Questa norma è stata rimossa in <ph name="PRODUCT_NAME" /> 68 e sostituita da <ph name="ARC_BR_POLICY_NAME" />.</translation>
-<translation id="219720814106081560">Se la norma è attivata o non configurata (impostazione predefinita), all'utente verrà richiesto
-      l'accesso all'acquisizione video ad accezione degli URL configurati
-      nell'elenco VideoCaptureAllowedUrls, per i quali verrà concesso l'accesso senza richiesta.
-
-      Quando questa norma è disattivata, all'utente non verrà mai richiesto nulla e l'accesso all'acquisizione
-      video sarà disponibile solo per gli URL configurati in VideoCaptureAllowedUrls.
-
-      Questa norma si applica a tutti i tipi di ingressi video e non solo alla fotocamera integrata.</translation>
 <translation id="2197625019569762163">Se questo criterio è impostato su True, per impostazione predefinita viene visualizzata la tastiera numerica per inserire la password nella schermata di accesso. Gli utenti possono comunque passare alla tastiera normale.
 
       Se imposti il criterio, gli utenti non possono modificarlo. Se non è impostato o è impostato su False, non sortisce alcun effetto.</translation>
 <translation id="2201555246697292490">Configura whitelist messaggi nativi</translation>
 <translation id="2204753382813641270">Controlla la visualizzazione automatica dello shelf</translation>
 <translation id="2208976000652006649">Parametri per l'URL di ricerca che utilizza POST</translation>
+<translation id="221019813387144689">Se il criterio viene configurato, puoi impostare un elenco di pattern URL che specificano i siti che non possono mostrare notifiche.
+
+      Se il criterio non viene configurato, viene applicato il criterio <ph name="DEFAULT_JAVA_SCRIPT_SETTING_POLICY_NAME" /> per tutti i siti, se impostato. In caso contrario, viene applicata l'impostazione personale dell'utente.
+
+      Per informazioni dettagliate sui pattern <ph name="URL_LABEL" /> validi, visita la pagina https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="2215238871726750562">Se il criterio è impostato su True, la finestra del browser non viene avviata all'inizio della sessione.
 
       Se il criterio è impostato su False o se non viene configurato, la finestra si avvia automaticamente.
@@ -749,6 +752,11 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2223598546285729819">Impostazione di notifica predefinita</translation>
 <translation id="2231817271680715693">Importa cronologia di navigazione dal browser predefinito alla prima esecuzione</translation>
 <translation id="2236488539271255289">Non consentire ai siti di impostare i dati locali</translation>
+<translation id="2240793533242059248">Se il criterio viene configurato, puoi impostare un elenco di pattern URL che specificano i siti che non possono aprire popup.
+
+      Se il criterio non viene configurato, viene applicato il criterio <ph name="DEFAULT_POPUPS_SETTING_POLICY_NAME" /> per tutti i siti, se impostato. In caso contrario, viene applicata l'impostazione personale dell'utente.
+
+      Per informazioni dettagliate sui pattern <ph name="URL_LABEL" /> validi, visita la pagina https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="2241498944622759244">Questa funzionalità non è mai stata lanciata, pertanto il criterio è obsoleto. Se è impostato su true o non è impostato, <ph name="PRODUCT_NAME" /> suggerisce pagine correlate alla pagina corrente.
       Questi suggerimenti vengono recuperati da remoto dai server di Google.
 
@@ -757,15 +765,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2267288258868218403">Blocca il caricamento di tipi di file non supportati</translation>
 <translation id="2269319728625047531">Abilita la visualizzazione del consenso alla sincronizzazione durante l'accesso</translation>
 <translation id="2270747976331889601">Attiva una funzionalità di sicurezza TLS 1.3 per i trust anchor locali</translation>
-<translation id="2274864612594831715">Questa norma consente di configurare l'attivazione della tastiera virtuale come dispositivo di immissione su Chrome OS. Gli utenti non possono sostituire questa norma.
-
-      Se la norma viene impostata su true, la tastiera virtuale sullo schermo sarà sempre attiva.
-
-      Se viene impostata su false, la tastiera virtuale sullo schermo sarà sempre disattivata.
-
-      Se imposti questa norma, gli utenti non possono cambiarla o sostituirla. Potranno, però, attivare/disattivare una tastiera sullo schermo di accessibilità che ha la precedenza sulla tastiera virtuale controllata da questa norma. Leggi la norma |VirtualKeyboardEnabled| per il controllo della tastiera sullo schermo di accessibilità.
-
-      Se questa norma non viene impostata, la tastiera sullo schermo viene inizialmente disattivata ma può essere attivata dall'utente in qualsiasi momento. Potrebbero anche essere utilizzate regole euristiche per stabilire quando visualizzare la tastiera.</translation>
 <translation id="2281496157391382819"> Consente di controllare gli avvisi sulla privacy della sessione Ospite gestita su <ph name="PRODUCT_OS_NAME" />.
 
       Se il criterio è impostato su false, gli avvisi sulla privacy sulla schermata di accesso e la notifica sull'avvio automatico all'interno della sessione Ospite verranno disattivati.
@@ -987,7 +986,6 @@ Se questo criterio non viene impostato, la Schermata sulla privacy verrà inizia
 
           Se questo criterio non viene impostato, inizialmente l'evidenziazione del cursore di testo è disattivata, ma l'utente può attivarla in qualsiasi momento.</translation>
 <translation id="2509919237512982967">Usa i controlli modulo legacy fino alla versione M84.</translation>
-<translation id="2514328368635166290">Consente di specificare l'URL dell'icona preferita del provider di ricerca predefinito. Questa norma è facoltativa. Se non viene impostata, per il provider di ricerca non verrà visualizzata alcuna icona. Questa norma viene rispettata soltanto se è attiva la norma "DefaultSearchProviderEnabled".</translation>
 <translation id="2516600974234263142">Consente di attivare la stampa in <ph name="PRODUCT_NAME" /> e impedisce agli utenti di modificare questa impostazione.
 
       Se l'impostazione è attivata o non è configurata, gli utenti possono stampare.
@@ -1033,13 +1031,6 @@ Se questo criterio non viene impostato, la Schermata sulla privacy verrà inizia
           L'URL per i risultati immediati di Google può essere specificato come segue: <ph name="GOOGLE_INSTANT_SEARCH_URL" />.
 
           Questa norma viene rispettata soltanto se è attiva la norma "DefaultSearchProviderEnabled".</translation>
-<translation id="2569647487017692047">Se questa norma viene impostata su false, il Bluetooth verrà disattivato in <ph name="PRODUCT_OS_NAME" /> e l'utente non potrà riattivarlo.
-
-      Se questa norma viene impostata su true o non viene impostata, l'utente potrà attivare o disattivare il Bluetooth come preferisce.
-
-      Se questa norma viene impostata, l'utente non potrà modificarla o eseguirne l'override.
-
-      Dopo avere attivato il Bluetooth, l'utente deve uscire e accedere di nuovo per applicare le modifiche (questa operazione non è necessaria se il Bluetooth viene disattivato).</translation>
 <translation id="2571066091915960923">Consente di attivare o disattivare il proxy di compressione dei dati e di impedire agli utenti di cambiare questa impostazione.
 
 Se attivi o disattivi questa impostazione, gli utenti non potranno cambiarla o ignorarla.
@@ -1083,15 +1074,17 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 
       Questa norma non influisce sulla capacità degli utenti di configurare le stampanti su singoli dispositivi. È supplementare alla configurazione di stampanti da parte dei singoli utenti.
       </translation>
+<translation id="2632538643061793322">Se il criterio viene configurato, puoi elencare i pattern URL che specificano i siti che possono chiedere agli utenti l'autorizzazione di accesso a un dispositivo USB.
+
+      Se il criterio non viene configurato, viene applicato il criterio <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME" /> per tutti i siti, se impostato. In caso contrario, vengono applicate le impostazioni personali degli utenti.
+
+      I pattern URL non devono essere in conflitto con quelli del criterio <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME" />. Nessun criterio ha la precedenza se un URL presenta corrispondenze con entrambi.
+
+      Per informazioni dettagliate sui pattern <ph name="URL_LABEL" /> validi, visita la pagina https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="2633084400146331575">Attiva la funzione di lettura vocale</translation>
 <translation id="2647069081229792812">Attiva o disattiva la funzione di modifica dei preferiti</translation>
 <translation id="2649896281375932517">Consenti agli utenti di decidere</translation>
 <translation id="2650049181907741121">Azione da compiere quando l'utente chiude il coperchio</translation>
-<translation id="2655233147335439767">Consente di specificare l'URL del motore di ricerca utilizzato per eseguire una ricerca per impostazione predefinita. L'URL deve contenere la stringa "<ph name="SEARCH_TERM_MARKER" />", che verrà sostituita in fase di query dai termini di ricerca inseriti dall'utente.
-
-          L'URL per la ricerca di Google può essere specificato come segue: <ph name="GOOGLE_SEARCH_URL" />.
-
-          Questa opzione deve essere impostata quando la norma "DefaultSearchProviderEnabled" è attiva e verrà rispettata soltanto in questo caso.</translation>
 <translation id="2658653824183107970">Usa l'implementazione <ph name="CORS" /> legacy anziché la nuova implementazione <ph name="CORS" /></translation>
 <translation id="2659019163577049044">Se questa impostazione viene attivata, gli utenti potranno configurare il proprio dispositivo in modo da sincronizzare i messaggi SMS tra i telefoni e i Chromebooks. Tieni presente che se questa norma viene consentita, gli utenti devono attivare in modo esplicito questa funzione tramite il completamento del flusso di configurazione. Una volta completato il flusso di configurazione, gli utenti potranno inviare e ricevere messaggi SMS sui loro Chromebook.
 
@@ -1106,7 +1099,6 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 
       Se il criterio viene impostato su False o non viene impostato, la notifica di avviso sulla privacy viene bloccata finché non viene ignorata dall'utente.</translation>
 <translation id="2672012807430078509">Controlla l'attivazione del protocollo di autenticazione NTLM per i montaggi SMB</translation>
-<translation id="267596348720209223">Consente di specificare le codifiche dei caratteri supportate dal provider di ricerca. Le codifiche sono nomi di pagine codificati come UTF-8, GB2312 e ISO-8859-1. Vengono provate nell'ordine indicato. Questa norma è facoltativa. Se non viene impostata viene utilizzato il valore predefinito UTF-8. Questa norma viene rispettata soltanto se è attiva la norma "DefaultSearchProviderEnabled".</translation>
 <translation id="2678503605767349615">Certificati client a livello di dispositivo richiesti</translation>
 <translation id="268577405881275241">Attiva la funzione proxy di compressione dei dati</translation>
 <translation id="2691668238491124549">Se questo criterio viene impostato (come consigliato), le lingue consigliate per una sessione gestita vengono spostate in cima all'elenco, nell'ordine di visualizzazione nel criterio. La prima lingua consigliata è preselezionata.
@@ -1360,7 +1352,7 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 
       Se questo criterio non viene impostato o viene impostato su "Disattivato", verranno applicati i controlli predefiniti di Navigazione sicura. I controlli predefiniti di Navigazione sicura possono comunque includere ricerche in tempo reale, a seconda del valore dell'impostazione "Migliora le ricerche e le attività di navigazione" e del valore del criterio UrlKeyedAnonymizedDataCollectionEnabled.
 
-      Se questo criterio viene impostato su "Attivo", gli URL verranno analizzati in tempo reale in base ai Termini di servizio aziendali. Chrome invierà gli URL a Google Cloud o alle terze parti scelte da te per controllarli in tempo reale. La versione consumer della ricerca in tempo reale di Navigazione sicura verrà disattivata.
+      Se questo criterio viene impostato su "Attivo", gli URL verranno inviati per l'analisi in tempo reale in base ai TdS di Chrome Enterprise. Chrome invierà gli URL a Google Cloud o alle terze parti scelte da te per controllarli in tempo reale. La versione consumer della ricerca in tempo reale di Navigazione sicura verrà disattivata.
 
       Questo criterio può essere impostato soltanto dalla Console di amministrazione Google.</translation>
 <translation id="3021562480854470924">Numero di obiettivi consentiti per il rollback</translation>
@@ -1618,11 +1610,6 @@ Se questo criterio viene impostato su False, <ph name="PRODUCT_NAME" /> non util
 <translation id="3435796032110614169">Consenti l'eliminazione della cronologia dei processi di stampa</translation>
 <translation id="3437924696598384725">Consente all'utente di gestire le connessioni VPN</translation>
 <translation id="3459509316159669723">Stampa</translation>
-<translation id="3460784402832014830">Consente di specificare l'URL utilizzato da un motore di ricerca per fornire una pagina Nuova scheda.
-
-Questa norma è facoltativa. Se non viene impostata non verrà fornita una pagina Nuova scheda.
-
-Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearchProviderEnabled".</translation>
 <translation id="3461279434465463233">Segnala lo stato dell'alimentazione</translation>
 <translation id="346731943813722404">Consente di specificare se i ritardi di gestione dell'alimentazione e il limite di durata delle sessioni devono iniziare soltanto dopo il rilevamento dell'attività del primo utente in una sessione.
 
@@ -1683,11 +1670,6 @@ Se questa norma viene impostata su False o non viene impostata, i ritardi di ges
       Se questa norma viene lasciata non impostata, il servizio di protezione tramite password proteggerà esclusivamente le password Google, ma l'utente sarà in grado di modificare questa impostazione.</translation>
 <translation id="3502555714327823858">Consenti tutte le modalità fronte/retro</translation>
 <translation id="350443680860256679">Configura ARC</translation>
-<translation id="3504791027627803580">Consente di specificare l'URL del motore di ricerca utilizzato per la ricerca di immagini. Le richieste di ricerca verranno inviate con il metodo GET. Se viene impostata la norma DefaultSearchProviderImageURLPostParams, per le richieste di ricerca di immagini viene utilizzato il metodo POST.
-
-Questa norma è facoltativa. Se non viene impostata, non verrà utilizzata la ricerca di immagini.
-
-Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearchProviderEnabled".</translation>
 <translation id="350797926066071931">Abilita traduzione</translation>
 <translation id="3508047333410537654">Attiva l'audio in formato mono sulla schermata di accesso</translation>
 <translation id="3513655665999652754">Quirks Server fornisce file di configurazione specifici per l'hardware, ad esempio
@@ -1874,13 +1856,6 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
 
       Se la norma non è specificata, l'URL di recupero del numero di inizializzazione delle varianti non verrà modificato.</translation>
 <translation id="3863409707075047163">Versione SSL minima attivata</translation>
-<translation id="3864020628639910082">Consente di specificare l'URL del motore di ricerca utilizzato per fornire suggerimenti di ricerca. L'URL deve contenere la stringa "<ph name="SEARCH_TERM_MARKER" />", che verrà sostituita in fase di query dal testo inserito fino a quel momento dall'utente.
-
-          Questa norma è facoltativa. Se non viene impostata, non verranno utilizzati URL di suggerimento.
-
-          L'URL per i suggerimenti di Google può essere specificato come segue: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
-
-          Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled" è attiva.</translation>
 <translation id="3864129983143201415">Configura le lingue consentite in una sessione utente</translation>
 <translation id="3866249974567520381">Descrizione</translation>
 <translation id="386723261607812952">Imposta il tipo di lente d'ingrandimento sulla schermata di accesso</translation>
@@ -2232,11 +2207,6 @@ Il valore della norma dovrebbe essere specificato in secondi. Il valore minimo d
 
       Se viene usata questa norma, solo le stampanti con ID corrispondenti ai valori della norma saranno disponibili per gli utenti. Gli ID devono corrispondere ai campi "id" o "guid" del file specificato nella norma <ph name="BULK_PRINTERS_POLICY" />.
       </translation>
-<translation id="427632463972968153">Consente di specificare i parametri utilizzati durante la ricerca di immagini con POST. Si tratta di coppie di nome/valore separate da virgole. Se un valore è il parametro di un modello, come {imageThumbnail} nell'esempio precedente, verrà sostituito con i dati delle miniature di immagini reali.
-
-Questa norma è facoltativa. Se non viene impostata, la richiesta di ricerca di immagini verrà inviata utilizzando il metodo GET.
-
-Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled" è attiva.</translation>
 <translation id="4285674129118156176">Consenti agli utenti non affiliati di usare ARC</translation>
 <translation id="4298509794364745131">Consente di specificare l'elenco di app che è possibile attivare come app per scrivere note nella schermata di blocco di <ph name="PRODUCT_OS_NAME" />.
 
@@ -2439,6 +2409,11 @@ Se questa norma non viene impostata, verranno utilizzate le dimensioni predefini
 
       Se questo criterio non viene impostato o viene attivato, i controlli dell'intercettazione DNS vengono eseguiti. Se viene disattivato, i controlli non vengono eseguiti.</translation>
 <translation id="4703402283970867140">Attiva il modello di oscuramento smart per ritardare l'oscuramento dello schermo</translation>
+<translation id="4715049077430924642">Se il criterio viene configurato, puoi impostare un elenco di pattern URL che specificano i siti che non possono eseguire JavaScript.
+
+      Se il criterio non viene configurato, viene applicato il criterio <ph name="DEFAULT_JAVA_SCRIPT_SETTING_POLICY_NAME" /> per tutti i siti, se impostato. In caso contrario, viene applicata l'impostazione personale dell'utente.
+
+      Per informazioni dettagliate sui pattern <ph name="URL_LABEL" /> validi, visita la pagina https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="4722122254122249791">Attiva isolamento sito per origini specificate</translation>
 <translation id="4722399051042571387">Se questa norma viene impostata su false, gli utenti non potranno impostare PIN non sicuri e facili da intuire.
 
@@ -2513,13 +2488,6 @@ Se questa norma non viene impostata, verranno utilizzate le dimensioni predefini
       segnalate. Se è impostato su true, le informazioni sull'aggiornamento del sistema operativo verranno segnalate.</translation>
 <translation id="4858735034935305895">Consenti modalità a schermo intero</translation>
 <translation id="4861767323695239729">Configura i metodi di immissione consentiti in una sessione utente</translation>
-<translation id="4869603341164509842">I pattern di questo elenco verranno confrontati con l'origine
-      di sicurezza dell'URL richiedente.  Se viene trovata una corrispondenza, l'accesso ai dispositivi
-      di acquisizione video verrà concesso senza richieste.
-
-      Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.
-
-      NOTA: fino alla versione 45, questo criterio era supportato soltanto in modalità kiosk.</translation>
 <translation id="487460824085252184">Esegui automaticamente la migrazione senza chiedere il consenso dell'utente</translation>
 <translation id="4874982543810021567">Blocca WebUSB su questi siti</translation>
 <translation id="4876805738539874299">Versione SSL massima abilitata</translation>
@@ -2528,11 +2496,6 @@ Se questa norma non viene impostata, verranno utilizzate le dimensioni predefini
 
       Se questo criterio viene disattivato o non viene impostato, <ph name="PRODUCT_NAME" /> non segnalerà alcun evento non sicuro.
       </translation>
-<translation id="4897928009230106190">Consente di specificare i parametri utilizzati durante la ricerca di suggerimenti con POST. Si tratta di coppie di nome/valore separate da virgole. Se un valore è il parametro di un modello, come {searchTerms} nell'esempio precedente, verrà sostituito con i dati dei termini di ricerca reali.
-
-Questa norma è facoltativa. Se non viene impostata, la richiesta di ricerca di suggerimenti verrà inviata utilizzando il metodo GET.
-
-Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled" è attiva.</translation>
 <translation id="489803897780524242">Parametro di controllo sostituzione termini di ricerca per fornitore ricerca predefinito</translation>
 <translation id="4899708173828500852">Consenti Navigazione sicura</translation>
 <translation id="4906194810004762807">Frequenza di aggiornamento per norma dispositivo</translation>
@@ -2915,14 +2878,13 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 <translation id="5405289061476885481">Consente di configurare i layout da tastiera consentiti nella schermata di accesso di <ph name="PRODUCT_OS_NAME" />.
 
       Se per questa norma viene impostato un elenco di identificatori di metodi di immissione, i metodi specificati saranno disponibili nella schermata di accesso. Verrà preselezionato il primo metodo di immissione specificato. Anche se il pod dell'utente è basato sulla schermata di accesso, oltre ai metodi di immissione specificati in questa norma sarà disponibile anche l'ultimo metodo usato dall'utente. Se questa norma non viene impostata, i metodi di immissione per la schermata di accesso saranno recuperati in base alla lingua in cui è visualizzata la schermata di accesso. I valori che non corrispondono a identificatori di metodi di immissione validi verranno ignorati.</translation>
-<translation id="5412057811596122582">Se la norma è attivata o non è configurata (impostazione predefinita), all'utente verrà richiesto
-      l'accesso all'acquisizione audio ad eccezione degli URL configurati
-      nell'elenco AudioCaptureAllowedUrls, per i quali verrà concesso l'accesso senza richiesta.
+<translation id="5416064504563346617">Se il criterio viene configurato, puoi elencare i pattern URL che specificano i siti che non possono chiedere agli utenti l'autorizzazione di accesso a un dispositivo USB.
 
-      Quando questa norma viene disattivata, all'utente non verrà mai richiesto nulla e l'accesso all'acquisizione
-      audio sarà disponibile solo per gli URL configurati in AudioCaptureAllowedUrls.
+      Se il criterio non viene configurato, viene applicato il criterio <ph name="DEFAULT_WEB_USB_GUARD_SETTING_POLICY_NAME" /> per tutti i siti, se impostato. In caso contrario, viene applicata l'impostazione personale dell'utente.
 
-      Questa norma si applica a tutti i tipi di ingressi audio e non solo al microfono integrato.</translation>
+      I pattern URL non possono essere in conflitto con quelli del criterio <ph name="WEB_USB_ASK_FOR_URLS_POLICY_NAME" />. Nessun criterio ha la precedenza se un URL presenta corrispondenze con entrambi.
+
+      Per informazioni dettagliate sui pattern <ph name="URL_LABEL" /> validi, visita la pagina https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="5417906792459853336">Consente di segnalare informazioni sull'inventario delle applicazioni di un dispositivo e sul relativo utilizzo.
 
       Se il criterio viene impostato su false o non viene impostato, le informazioni non vengono segnalate.
@@ -3042,6 +3004,11 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 <translation id="554903022911579950">Kerberos</translation>
 <translation id="555022085242359084">Attiva l'alto contrasto nella schermata di accesso</translation>
 <translation id="555077880566103058">Consenti l'esecuzione automatica del plug-in <ph name="FLASH_PLUGIN_NAME" /> in tutti i siti</translation>
+<translation id="5557502336096594554">Se il criterio viene configurato, puoi impostare un elenco di pattern URL che specificano i siti che possono aprire popup.
+
+      Se il criterio non viene configurato, viene applicato il criterio <ph name="DEFAULT_POPUPS_SETTING_POLICY_NAME" /> per tutti i siti, se impostato. In caso contrario, viene applicata l'impostazione personale dell'utente.
+
+      Per informazioni dettagliate sui pattern <ph name="URL_LABEL" /> validi, visita la pagina https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="5559079916187891399">Questa norma non influisce sulle app Android.</translation>
 <translation id="5560039246134246593">Aggiungi un parametro al recupero del numero di inizializzazione delle varianti in <ph name="PRODUCT_NAME" />.
 
@@ -3297,19 +3264,6 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 <translation id="5893553533827140852">Se questa impostazione è attivata, le richieste di autenticazione Gnubby verranno trasferite al proxy attraverso una connessione host remota.
 
           Se questa impostazione è disattivata o non configurata, le richieste di autenticazione Gnubby non verranno trasferite al proxy.</translation>
-<translation id="5893688850352887219">Consente di attivare l'utilizzo di un provider di ricerca predefinito.
-
-          Se attivi questa impostazione, verrà eseguita una ricerca predefinita ogni volta che l'utente digita nella omnibox un testo che non è un URL.
-
-          Puoi specificare il provider di ricerca predefinito da utilizzare impostando tutti gli altri criteri relativi alla ricerca predefinita. Se i criteri non sono specificati, l'utente potrà scegliere il provider predefinito.
-
-          Se disattivi questa impostazione, quando l'utente inserisce un testo che non è un URL nella omnibox non verrà eseguita nessuna ricerca.
-
-          Se attivi questa impostazione o la disattivi, gli utenti non potranno modificare o ignorare questa impostazione su <ph name="PRODUCT_NAME" />.
-
-          Se questo criterio non viene impostato, viene attivato il provider di ricerca predefinito e l'utente potrà impostare l'elenco di provider di ricerca.
-
-          Questo criterio è disponibile esclusivamente per le istanze di Windows che fanno parte di un dominio <ph name="MS_AD_NAME" /> così come per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi. Inoltre è disponibile per le istanze di macOS gestite tramite MDM o aggiunte a un dominio tramite MCX.</translation>
 <translation id="5897913798715600338">Carica la batteria con la tecnologia di ricarica veloce.</translation>
 <translation id="5898486742390981550">Quando più utenti eseguono l'accesso, solo l'utente principale può utilizzare le app Android.</translation>
 <translation id="5901427587865226597">Solo stampa fronte/retro</translation>
@@ -3388,9 +3342,6 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 <translation id="6070667616071269965">Layout da tastiera della schermata di accesso del dispositivo</translation>
 <translation id="6074963268421707432">Non consentire la visualizzazione di notifiche desktop da parte dei siti</translation>
 <translation id="6074964551275531965">Imposta il periodo di tempo per le notifiche relative agli aggiornamenti</translation>
-<translation id="6076099373507468537">Definisce l'elenco di dispositivi USB che possono essere scollegati dal driver del kernel per essere utilizzati tramite l'API chrome.usb direttamente all'interno di un'applicazione web. Le voci sono coppie costituite dall'ID fornitore USB e dall'ID prodotto per identificare un hardware specifico.
-
-      Se la norma non è configurata, l'elenco di dispositivi USB scollegabili è vuoto.</translation>
 <translation id="607726879389885889">Questo criterio consente di controllare il modo in cui <ph name="PRODUCT_NAME" /> si comporta quando un utente tenta di caricare o scaricare file troppo grandi per essere sottoposti all'analisi antimalware o della protezione dei dati sensibili (50 MB o più grandi).  Tale limitazione si applica esclusivamente ai file che dovrebbero essere analizzati secondo quanto stabilito da <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> e dai criteri che controllano l'elenco di domini per i quali sono attivati i controlli.
 
       Se questo criterio non viene impostato o se viene impostato su "Nessuno", <ph name="PRODUCT_NAME" /> consente all'utente di caricare o scaricare file di qualsiasi dimensione.
@@ -3574,11 +3525,9 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
       Se questa norma è impostata, verrà eseguito l'accesso automatico alla sessione specificata dopo che è trascorso un periodo di tempo senza interazioni dell'utente nella schermata di accesso. L'account locale del dispositivo deve essere già configurato (vedi |DeviceLocalAccounts|).
 
       Se questa norma non è impostata, non avverrà l'accesso automatico.</translation>
-<translation id="6353901068939575220">Consente di specificare i parametri utilizzati durante la ricerca di un URL con POST. Si tratta di coppie di nome/valore separate da virgole. Se un valore è il parametro di un modello, come {searchTerms} nell'esempio precedente, verrà sostituito con i dati dei termini di ricerca reali.
+<translation id="6366574325767783825">Se il criterio viene impostato su True o non viene impostato, <ph name="PRODUCT_NAME" /> accetterà i contenuti web pubblicati con la tecnologia Signed HTTP Exchange.
 
-Questa norma è facoltativa. Se non viene impostata, la richiesta di ricerca verrà inviata utilizzando il metodo GET.
-
-Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled" è attiva.</translation>
+      Se il criterio viene impostato su False, i contenuti pubblicati con la tecnologia Signed HTTP Exchange non vengono caricati.</translation>
 <translation id="6368011194414932347">Configura l'URL della pagina iniziale</translation>
 <translation id="6368403635025849609">Consenti JavaScript su questi siti</translation>
 <translation id="6372105930898423193">Consente di riattivare la funzionalità AppCache anche se è disattivata per impostazione predefinita.</translation>
@@ -3859,7 +3808,6 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
       NOTA: questa norma viene applicata solo a Chrome su dispositivi Android con più di 1 GB di RAM. Per applicare la norma su piattaforme non Android, utilizza SitePerProcess.
       </translation>
 <translation id="6922884955650325312">Blocca il plug-in <ph name="FLASH_PLUGIN_NAME" /></translation>
-<translation id="6923366716660828830">Consente di specificare il nome del provider di ricerca predefinito. Se il nome non viene impostato verrà utilizzato il nome host specificato nell'URL di ricerca. Questa norma viene considerata soltanto se è attiva la norma "DefaultSearchProviderEnabled".</translation>
 <translation id="6923731550900440989">Attiva l'evidenziazione del cursore del testo nella schermata di accesso</translation>
 <translation id="6924223708804692571">Forza la disattivazione delle lingue per correttore ortografico. Le lingue non riconosciute di quell'elenco verranno ignorate.
 
@@ -3922,7 +3870,7 @@ Se questa norma è impostata su True o non è impostata, il modello di oscuramen
       Se selezioni l'opzione "U2F", il funzionamento dell'autenticazione a due fattori integrata dipenderà dalla specifica FIDO U2F.
 
       Se selezioni l'opzione "U2F_EXTENDED", l'autenticazione a due fattori integrata fornirà le funzioni U2F più alcune estensioni per la singola attestazione.</translation>
-<translation id="7002040773317582266">Controllo in tempo reale degli URL del frame principale attivo.</translation>
+<translation id="7002040773317582266">Il controllo in tempo reale degli URL del frame principale è attivo.</translation>
 <translation id="7003334574344702284">Se è attiva, questa norma impone l'importazione delle password salvate dal browser predefinito precedente. Se la norma è attiva incide anche sulla finestra di dialogo di importazione. Se non è attiva, le password salvate non vengono importate. Se non viene impostata, all'utente potrebbe essere chiesto se desidera effettuare l'importazione, oppure l'importazione potrebbe avvenire automaticamente.</translation>
 <translation id="7003746348783715221">Preferenze di <ph name="PRODUCT_NAME" /></translation>
 <translation id="7008308728445338159">Controlli intercettazione DNS attivi</translation>
@@ -4093,6 +4041,11 @@ Se questa norma è impostata su True o non è impostata, il modello di oscuramen
 
       Se il criterio è impostato su False, gli utenti, le app e le estensioni non possono utilizzare la modalità a schermo intero.</translation>
 <translation id="718126088895133062">Questo criterio consente di specificare l'ID utente della licenza <ph name="PLUGIN_VM_NAME" /> di questo dispositivo.</translation>
+<translation id="7184811651721788735">Se il criterio viene configurato, puoi impostare un elenco di pattern URL che specificano i siti che non possono eseguire il plug-in <ph name="FLASH_PLUGIN_NAME" />.
+
+      Se il criterio non viene configurato, viene applicato il criterio <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> per tutti i siti, se impostato. In caso contrario, viene applicata l'impostazione personale dell'utente.
+
+      Per informazioni dettagliate sui pattern URL validi, visita la pagina https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns. Tuttavia, a partire dalla versione M85, i pattern con caratteri jolly "*" e "[*.]" nell'host non sono più supportati per questo criterio.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="7187447094921703950">Consente di attivare il criterio di gestione della variazione dei picchi energetici.
 
@@ -4172,11 +4125,6 @@ Se l'impostazione viene disattivata, questa funzione non sarà disponibile.</tra
 
       Se questa norma non è impostata, per impostazione predefinita la funzione non è consentita per gli utenti gestiti dall'azienda ed è consentita per gli utenti non gestiti.</translation>
 <translation id="7295019613773647480">Attiva utenti supervisionati</translation>
-<translation id="7301543427086558500">Specifica un elenco di URL alternativi che possono essere utilizzati per estrarre termini di ricerca dal motore di ricerca. Gli URL devono contenere la stringa <ph name="SEARCH_TERM_MARKER" />, che verrà utilizzata per estrarre i termini di ricerca.
-
-          Questa norma è facoltativa. Se non è impostata, non verrà utilizzato alcun URL alternativo per estrarre i termini di ricerca.
-
-          Questa norma viene rispettata solo se è attiva la norma "DefaultSearchProviderEnabled".</translation>
 <translation id="7302043767260300182">Ritardo blocco schermo in caso di utilizzo di CA</translation>
 <translation id="731208205557053914">Segnala informazioni sui VPD</translation>
 <translation id="7323896582714668701">Parametri aggiuntivi della riga di comando per <ph name="PRODUCT_NAME" /></translation>
@@ -4324,6 +4272,13 @@ Se l'impostazione viene disattivata, questa funzione non sarà disponibile.</tra
 <translation id="759957074386651883">Impostazioni di Navigazione sicura</translation>
 <translation id="7604169113182304895">Le app Android potrebbero decidere volontariamente se rispettare o meno questo elenco. Non è possibile imporre il rispetto dell'elenco.</translation>
 <translation id="7612157962821894603">Contrassegni a livello di sistema da applicare all'avvio di <ph name="PRODUCT_NAME" /></translation>
+<translation id="7614443356666150520">Se il criterio viene configurato, puoi impostare un elenco di pattern URL che specificano i siti che non possono mostrare immagini.
+
+      Se il criterio non viene configurato, viene applicato il criterio <ph name="DEFAULT_IMAGE_SETTING_ENABLED_POLICY_NAME" /> per tutti i siti, se impostato. In caso contrario, viene applicata l'impostazione personale dell'utente.
+
+       Per informazioni dettagliate sui pattern <ph name="URL_LABEL" /> validi, visita la pagina https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.
+
+       Tieni presente che in precedenza questo criterio è stato erroneamente abilitato su Android, ma questa funzionalità non è mai stata completamente supportata su Android.</translation>
 <translation id="7614663184588396421">Elenco degli schemi di protocollo disabilitati</translation>
 <translation id="7617319494457709698">Questa norma consente di specificare le estensioni autorizzate a usare la funzione <ph name="CHALLENGE_USER_KEY_FUNCTION" /> dell'<ph name="ENTERPRISE_PLATFORM_KEYS_API" /> per l'attestazione da remoto. Le estensioni devono essere aggiunte a questo elenco per utilizzare l'API.
 
@@ -4397,9 +4352,9 @@ Nota. Attualmente i riavvii automatici vengono attivati soltanto durante la visu
           Questa norma è per uso interno di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7710950688502974809">Elenco di impostazioni per i servizi di Chrome Enterprise Connectors da applicare al connettore di Enterprise <ph name="ON_BULK_DATA_ENTRY_ENTERPRISE_CONNECTOR" />, che si attiva quando vengono inseriti dati in Chrome dagli appunti o tramite trascinamento di contenuti web.
 
-      I campi <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> e <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> vengono utilizzati per stabilire se il connettore deve inviare dati per l'analisi quando vengono inseriti in una pagina specifica e quali tag includere nella richiesta di analisi di tali dati. Un tag che corrisponde a un pattern "enable" verrà incluso nella richiesta di analisi se l'URL della pagina corrisponde a un pattern associato a tale tag purché nessun pattern "disable" con lo stesso tag corrisponda all'URL della pagina. L'analisi viene eseguita se almeno un tag deve essere incluso nella richiesta.
+      I campi <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> e <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> vengono utilizzati per stabilire se il connettore deve inviare dati per l'analisi quando viene inserito in una pagina specifica e quali tag includere nella richiesta di analisi di tali dati. Un tag che corrisponde a un pattern "enable" verrà incluso nella richiesta di analisi se l'URL della pagina corrisponde a un pattern associato a tale tag purché nessun pattern "disable" con lo stesso tag corrisponda all'URL della pagina. L'analisi viene eseguita se almeno un tag deve essere incluso nella richiesta.
 
-      Il campo <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> identifica a quali fornitori di servizi di analisi corrispondono le impostazioni.
+      Il campo <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> identifica il fornitore di servizi di analisi cui corrispondono le impostazioni.
 
       Se il campo <ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" /> viene impostato su 1, Chrome attende di ricevere una risposta dal servizio di analisi prima di concedere alla pagina l'accesso ai dati. Con qualsiasi altro valore intero, Chrome concede immediatamente alla pagina l'accesso ai dati.
 
@@ -4739,6 +4694,11 @@ Se questo criterio non viene impostato, la Schermata sulla privacy viene inizial
 <translation id="8217516105848565518">Questa norma è obsoleta. Al suo posto utilizza RemoteAccessHostDomainList.</translation>
 <translation id="8244171102276095471">Attiva i pacchetti di crittografia RC4 in TLS</translation>
 <translation id="8244525275280476362">Ritardo di recupero massimo dopo l'invalidazione di una norma</translation>
+<translation id="8251411417369363637">Se il criterio viene impostato su True, vengono eseguiti tutti i contenuti <ph name="FLASH_PLUGIN_NAME" /> incorporati nei siti web che consentono <ph name="FLASH_PLUGIN_NAME" />, inclusi i contenuti di altre origini o contenuti ridotti.
+
+      Se il criterio viene impostato su False o non viene impostato, i contenuti <ph name="FLASH_PLUGIN_NAME" /> di altre origini o i contenuti ridotti potrebbero essere bloccati.
+
+      Nota: per stabilire quali siti web possono eseguire <ph name="FLASH_PLUGIN_NAME" />, controlla questi criteri: <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" />, <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> e <ph name="PLUGINS_BLOCKED_FOR_URLS_POLICY_NAME" />.</translation>
 <translation id="8256688113167012935">Controlla il nome account visualizzato da <ph name="PRODUCT_OS_NAME" /> nella schermata di accesso per il corrispondente account del dispositivo.
 
       Se il criterio è impostato, la schermata di accesso utilizzerà la stringa specificata nel selettore di accesso basato su immagine per il corrispondente account del dispositivo.
@@ -4971,6 +4931,11 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
           Se imposti questo criterio, gli utenti non potranno modificarlo o eseguirne l'override.
 
           Se questo criterio non viene impostato, le scorciatoie delle funzioni di accessibilità saranno attive per impostazione predefinita.</translation>
+<translation id="8520951634679398426">Se il criterio viene configurato, puoi impostare un elenco di pattern URL che specificano i siti che possono eseguire JavaScript.
+
+      Se il criterio non viene configurato, viene applicato il criterio <ph name="DEFAULT_JAVA_SCRIPT_SETTING_POLICY_NAME" /> per tutti i siti, se impostato. In caso contrario, viene applicata l'impostazione personale dell'utente.
+
+      Per informazioni dettagliate sui pattern <ph name="URL_LABEL" /> validi, visita la pagina https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="8525526490824335042">Container Linux</translation>
 <translation id="8537051350735478658">Se il criterio è impostato su True, la funzionalità Suggerimenti per le ricerche viene attivata nella barra degli indirizzi di <ph name="PRODUCT_NAME" />. Se il criterio è impostato su False, tale funzionalità viene disattivata.
 
@@ -5064,12 +5029,14 @@ Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazi
       Se è impostato su True, le informazioni sul Bluetooth del dispositivo vengono segnalate.</translation>
 <translation id="8703488928438047864">Segnala lo stato della scheda</translation>
 <translation id="8704831857353097849">Elenco dei plug-in disattivati</translation>
+<translation id="8705895771006864851">Se il criterio viene impostato su True, agli utenti viene fornita una funzionalità di traduzione, quando opportuno, tramite una barra degli strumenti di traduzione integrata in <ph name="PRODUCT_NAME" /> e un'opzione di traduzione nel menu contestuale visualizzabile facendo clic con il pulsante destro del mouse. Se il criterio viene impostato su False, tutte le funzionalità di traduzione integrate vengono disattivate.
+
+      Se imposti il criterio, gli utenti non possono modificare questa funzione. Se non viene impostato, gli utenti possono cambiare l'impostazione.</translation>
 <translation id="8708284670795912158">Se il criterio viene configurato su true, <ph name="PRODUCT_NAME" /> può utilizzare la riproduzione automatica per i contenuti multimediali. Se il criterio viene configurato su false, <ph name="PRODUCT_NAME" /> non può più utilizzare la riproduzione automatica per i contenuti multimediali.
 
        Per impostazione predefinita, <ph name="PRODUCT_NAME" /> non utilizza la riproduzione automatica per i contenuti multimediali. Tuttavia, per alcuni pattern URL, è possibile utilizzare il criterio<ph name="AUTOPLAY_WHITELIST_POLICY_NAME" /> per modificare questa impostazione.
 
       Se il criterio viene modificato mentre <ph name="PRODUCT_NAME" /> è in esecuzione, viene applicato solo alle nuove schede aperte.</translation>
-<translation id="8711086062295757690">Consente di specificare la parola chiave, che è la scorciatoia utilizzata nella omnibox per attivare la ricerca con il provider. Questa norma è facoltativa. Se non viene impostata, nessuna parola chiave attiverà il provider di ricerca. Questa norma viene considerata soltanto se è attiva la norma "DefaultSearchProviderEnabled".</translation>
 <translation id="8733448613597049197">Attiva i rapporti estesi su Navigazione sicura di <ph name="PRODUCT_NAME" /> e impedisce agli utenti di modificare questa impostazione.
 
       I rapporti estesi inviano ai server di Google alcune informazioni di sistema e i contenuti della pagina per contribuire a rilevare app e siti pericolosi.
@@ -5179,13 +5146,6 @@ Se la norma non viene impostata o viene impostata su false, la posizione non vie
 
       Se il criterio non viene impostato o se inserisci una stringa vuota, sul dispositivo viene usato il fuso orario attualmente attivo, che però potrà essere cambiato dagli utenti.</translation>
 <translation id="8876188741456358123">Consente di eseguire l'override della modalità di stampa fronte/retro predefinita. Se la modalità non è disponibile, questa norma viene ignorata.</translation>
-<translation id="8878850056189891727">I pattern di questo elenco verranno confrontati con l'origine
-      di sicurezza dell'URL richiedente.  Se viene trovata una corrispondenza, l'accesso ai dispositivi
-      di acquisizione audio verrà concesso senza richieste.
-
-      Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.
-
-      NOTA: fino alla versione 45, questo criterio era supportato soltanto in modalità kiosk.</translation>
 <translation id="8882006618241293596">Blocca il plug-in <ph name="FLASH_PLUGIN_NAME" /> su questi siti</translation>
 <translation id="8892286064305622118">Spazio libero su disco necessario per <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="8906768759089290519">Attiva modalità ospite</translation>
@@ -5292,6 +5252,9 @@ https://www.w3.org/TR/secure-contexts/
 
       Il valore della norma deve essere specificato in secondi.</translation>
 <translation id="9021334785554745279">Pattern URL per il controllo della presenza di violazioni delle regole relative alla protezione dei dati sensibili nei contenuti scaricati</translation>
+<translation id="9030094532108679680">Se il criterio viene configurato (come consigliato), puoi registrare un elenco di gestori di protocolli che vengono uniti a quelli registrati dall'utente e sarà quindi possibile usare entrambi i gruppi. Imposta lo schema della proprietà (protocollo), ad esempio mailto, e il pattern URL dell'applicazione che gestisce lo schema della proprietà (URL). Il pattern può includere %s, che viene sostituito dall'URL gestito.
+
+      Gli utenti non possono rimuovere un gestore di protocollo registrato tramite il criterio. Se però installano un nuovo gestore predefinito possono cambiare i gestori di protocolli installati in base al criterio.</translation>
 <translation id="9035086760683255833">Consente di attivare la funzione di accessibilità di evidenziazione dell'elemento attivo tramite tastiera.
 
           Questa funzione consente di evidenziare l'elemento attivo impostato tramite tastiera.
@@ -5335,6 +5298,11 @@ https://www.w3.org/TR/secure-contexts/
       Se imposti il criterio, <ph name="PRODUCT_NAME" /> utilizza la dimensione della cache da te fornita, indipendentemente dalla specificazione del flag --disk-cache-size da parte degli utenti. I valori inferiori ad alcuni megabyte vengono arrotondati.
 
       Se non viene impostato, <ph name="PRODUCT_NAME" /> utilizza la dimensione predefinita. Gli utenti possono modificare l'impostazione utilizzando il flag --disk-cache-size.</translation>
+<translation id="9062348747995618422">Se il criterio viene configurato, puoi impostare un elenco di pattern URL che specificano i siti che possono eseguire il plug-in <ph name="FLASH_PLUGIN_NAME" />.
+
+      Se il criterio non viene configurato, viene applicato il criterio <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> per tutti i siti, se impostato. In caso contrario, viene applicata l'impostazione personale dell'utente.
+
+      Per informazioni dettagliate sui pattern URL validi, visita la pagina https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns. Tuttavia, a partire dalla versione M85, i pattern con caratteri jolly "*" e "[*.]" nell'host non sono più supportati per questo criterio.</translation>
 <translation id="9077227880520270584">Timer accesso automatico all'account locale del dispositivo</translation>
 <translation id="9084985621503260744">Specifica se l'attività video incide sulla gestione dell'alimentazione</translation>
 <translation id="9088433379343318874">Abilita il provider di contenuti dell'utente supervisionato</translation>

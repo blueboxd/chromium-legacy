@@ -125,7 +125,7 @@ MultiResolutionImageResourceFetcher::MultiResolutionImageResourceFetcher(
     // ThumbnailDatabase is using the icon URL as a key of the "favicons" table.
     // So if we don't set the skip flag here, malicious service workers can
     // override the favicon image of any origins.
-    if (!frame->GetDocument()->GetSecurityOrigin()->CanAccess(
+    if (!frame->DomWindow()->GetSecurityOrigin()->CanAccess(
             SecurityOrigin::Create(image_url).get())) {
       SetSkipServiceWorker(true);
     }

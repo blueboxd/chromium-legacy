@@ -40,11 +40,7 @@
 
 namespace content {
 
-namespace {
-
-void CapturePixelsForPrinting(
-    blink::WebLocalFrame* web_frame,
-    base::OnceCallback<void(const SkBitmap&)> callback) {
+SkBitmap PrintFrameToBitmap(blink::WebLocalFrame* web_frame) {
   auto* frame_widget = web_frame->LocalRoot()->FrameWidget();
   frame_widget->UpdateAllLifecyclePhases(blink::DocumentUpdateReason::kTest);
 
@@ -61,8 +57,7 @@ void CapturePixelsForPrinting(
                                 is_opaque)) {
     LOG(ERROR) << "Failed to create bitmap width=" << page_size_in_pixels.width
                << " height=" << spool_size.height;
-    std::move(callback).Run(SkBitmap());
-    return;
+    return SkBitmap();
   }
 
   printing::MetafileSkia metafile(printing::mojom::SkiaDocumentType::kMSKP,
@@ -71,20 +66,7 @@ void CapturePixelsForPrinting(
   canvas.SetPrintingMetafile(&metafile);
   web_frame->PrintPagesForTesting(&canvas, page_size_in_pixels, spool_size);
   web_frame->PrintEnd();
-
-  std::move(callback).Run(bitmap);
-}
-
-}  // namespace
-
-void PrintFrameAsync(blink::WebLocalFrame* web_frame,
-                     base::OnceCallback<void(const SkBitmap&)> callback) {
-  DCHECK(web_frame);
-  DCHECK(callback);
-  web_frame->GetTaskRunner(blink::TaskType::kInternalTest)
-      ->PostTask(FROM_HERE, base::BindOnce(&CapturePixelsForPrinting,
-                                           base::Unretained(web_frame),
-                                           std::move(callback)));
+  return bitmap;
 }
 
 }  // namespace content

@@ -5,7 +5,7 @@
 #ifndef ASH_SYSTEM_UNIFIED_NOTIFICATION_COUNTER_VIEW_H_
 #define ASH_SYSTEM_UNIFIED_NOTIFICATION_COUNTER_VIEW_H_
 
-#include "ash/session/session_observer.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/system/tray/tray_item_view.h"
 #include "base/macros.h"
 

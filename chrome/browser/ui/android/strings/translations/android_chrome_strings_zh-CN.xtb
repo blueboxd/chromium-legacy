@@ -587,7 +587,7 @@
 <translation id="5732819098735351888">一旦有 Wi-Fi 可用即开始下载。</translation>
 <translation id="5748802427693696783">已切换到标准标签页</translation>
 <translation id="5749068826913805084">Chrome 需要具备存储空间使用权限，才能下载文件。</translation>
-<translation id="5754350196967618083">无法刷新“探索”专区</translation>
+<translation id="5754350196967618083">无法刷新“探索”</translation>
 <translation id="5763382633136178763">隐身标签页</translation>
 <translation id="5763514718066511291">点按即可复制该应用的网址</translation>
 <translation id="5765780083710877561">说明：</translation>
@@ -642,7 +642,6 @@
 <translation id="6154478581116148741">需在“设置”部分中开启屏幕锁定功能，才能从此设备中导出您的密码</translation>
 <translation id="6157392216611456285">选择 <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720">节省 <ph name="PERCENT" /> 的数据流量</translation>
-<translation id="6192333916571137726">下载文件</translation>
 <translation id="6201345951596836663">已复制链接</translation>
 <translation id="6206830853671714236">请选择下载时间</translation>
 <translation id="6210748933810148297">不是 <ph name="EMAIL" />？</translation>
@@ -715,7 +714,7 @@
 <translation id="6656545060687952787">Chrome 需要拥有位置信息权限才能扫描设备。<ph name="BEGIN_LINK" />更新权限<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">密码</translation>
 <translation id="6659594942844771486">标签页</translation>
-<translation id="666573598175432848">我们已推出新版 Chrome。点按此元素即可转到 Play 商店。</translation>
+<translation id="666573598175432848">已推出新版 Chrome。点按此元素即可转到 Play 商店。</translation>
 <translation id="666731172850799929">在 <ph name="APP_NAME" />中打开</translation>
 <translation id="666981079809192359">Chrome 隐私权声明</translation>
 <translation id="6671495933530132209">复制图片</translation>
@@ -811,7 +810,7 @@
 <translation id="7507207699631365376">请参阅此提供商的<ph name="BEGIN_LINK" />隐私权政策<ph name="END_LINK" /></translation>
 <translation id="7514365320538308">下载</translation>
 <translation id="751961395872307827">无法连接到该网站</translation>
-<translation id="753225086557513863">已安排为日后下载</translation>
+<translation id="753225086557513863">已安排为延后下载</translation>
 <translation id="7542481630195938534">无法获取建议</translation>
 <translation id="7559975015014302720">精简模式已关闭</translation>
 <translation id="7562080006725997899">正在清除浏览数据</translation>
@@ -846,7 +845,7 @@
 <translation id="7772032839648071052">确认密码</translation>
 <translation id="7772375229873196092">关闭<ph name="APP_NAME" /></translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026以及另外 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 种付款方式}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026以及另外 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 种付款方式}}</translation>
-<translation id="7778840695157240389">请过段时间再回来查看是否有新报道</translation>
+<translation id="7778840695157240389">请稍后再回来查看是否有新报道</translation>
 <translation id="7791543448312431591">添加</translation>
 <translation id="780301667611848630">不用了，谢谢</translation>
 <translation id="7810647596859435254">打开方式…</translation>

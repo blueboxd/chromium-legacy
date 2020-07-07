@@ -34,7 +34,7 @@ class ReaderModeInfoBarDelegate : public infobars::InfoBarDelegate {
 
 ReaderModeInfoBar::ReaderModeInfoBar(
     std::unique_ptr<ReaderModeInfoBarDelegate> delegate)
-    : InfoBarAndroid(
+    : infobars::InfoBarAndroid(
           std::move(delegate),
           base::BindRepeating(&ResourceMapper::MapToJavaDrawableId)) {}
 

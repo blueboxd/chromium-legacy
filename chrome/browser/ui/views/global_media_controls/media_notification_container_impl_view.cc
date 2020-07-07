@@ -8,23 +8,28 @@
 #include "chrome/browser/ui/global_media_controls/media_notification_container_observer.h"
 #include "chrome/browser/ui/global_media_controls/media_toolbar_button_controller.h"
 #include "chrome/browser/ui/views/global_media_controls/media_dialog_view.h"
+#include "chrome/browser/ui/views/global_media_controls/media_notification_audio_device_selector_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
 #include "media/base/media_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/canvas_painter.h"
+#include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/animation/slide_out_controller.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 
 namespace {
 
 // TODO(steimel): We need to decide on the correct values here.
 constexpr int kWidth = 400;
+// TODO(noahrose): Should these sizes include the height of the audio
+// device selector view?
 constexpr gfx::Size kNormalSize = gfx::Size(kWidth, 100);
 constexpr gfx::Size kExpandedSize = gfx::Size(kWidth, 150);
 constexpr gfx::Size kDismissButtonSize = gfx::Size(30, 30);
@@ -41,6 +46,9 @@ constexpr int kMinVisibleActionsForExpanding = 4;
 // Once the container is dragged this distance, we will not treat the mouse
 // press as a click.
 constexpr int kMinMovementSquaredToBeDragging = 10;
+
+// The height of the |MediaNotificationAudioDeviceSelectorView|.
+constexpr int kAudioDeviceSelectorViewHeight = 40;
 
 }  // anonymous namespace
 
@@ -70,7 +78,8 @@ MediaNotificationContainerImplView::MediaNotificationContainerImplView(
       id_(id),
       foreground_color_(kDefaultForegroundColor),
       background_color_(kDefaultBackgroundColor) {
-  SetLayoutManager(std::make_unique<views::FillLayout>());
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
   SetPreferredSize(kNormalSize);
   set_notify_enter_exit_on_child(true);
   SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
@@ -110,6 +119,16 @@ MediaNotificationContainerImplView::MediaNotificationContainerImplView(
       this, std::move(item), std::move(dismiss_button_placeholder),
       base::string16(), kWidth, /*should_show_icon=*/false);
   view_ = swipeable_container_->AddChildView(std::move(view));
+
+  if (base::FeatureList::IsEnabled(
+          media::kGlobalMediaControlsSeamlessTransfer)) {
+    auto audio_device_selector_view =
+        std::make_unique<MediaNotificationAudioDeviceSelectorView>(
+            this, gfx::Size(kWidth, kAudioDeviceSelectorViewHeight));
+    audio_device_selector_view_ =
+        AddChildView(std::move(audio_device_selector_view));
+    view_->UpdateCornerRadius(message_center::kNotificationCornerRadius, 0);
+  }
 
   ForceExpandedState();
 

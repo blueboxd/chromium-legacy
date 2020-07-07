@@ -132,7 +132,7 @@ class TabWebContentsDelegateAndroid
 #endif
 
 #if BUILDFLAG(ENABLE_PAINT_PREVIEW)
-  void CapturePaintPreviewOfCrossProcessSubframe(
+  void CapturePaintPreviewOfSubframe(
       content::WebContents* web_contents,
       const gfx::Rect& rect,
       const base::UnguessableToken& guid,

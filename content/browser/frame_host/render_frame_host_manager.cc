@@ -1282,7 +1282,8 @@ RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
                                 was_server_redirect, is_failure) &&
       !is_for_isolated_error_page &&
       IsBrowsingInstanceSwapAllowedForPageTransition(transition,
-                                                     destination_url)) {
+                                                     destination_url) &&
+      render_frame_host_->has_committed_any_navigation()) {
     return ShouldSwapBrowsingInstance::kYes_ForceSwap;
   }
 

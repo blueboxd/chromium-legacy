@@ -681,7 +681,7 @@ void ShelfWidget::OnTabletModeChanged() {
 
     // Disable login shelf gesture controller, if one is set when leacing tablet
     // mode.
-    login_shelf_gesture_controller_.reset();
+    ClearLoginShelfSwipeHandler();
   }
 }
 

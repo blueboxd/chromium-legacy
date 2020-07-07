@@ -1021,6 +1021,8 @@
         'UserNativePrintersAllowed',
         'ExternalPrintServers',
         'ExternalPrintServersWhitelist',
+        'DeviceExternalPrintServers',
+        'DeviceExternalPrintServersAllowlist',
         'PrinterTypeDenyList',
         'PrintRasterizationMode',
         'DeletePrintJobHistoryAllowed',
@@ -19452,9 +19454,58 @@
 
       When this policy is set to correct value, devices will try to query specified print servers for available printers using IPP protocol.
 
-      If this policy is unset or set to incorrect value, no server printers are visible to users.
+      If this policy is unset or set to incorrect value, none of the provided server printers are visible to users.
 
       Currently, the number of print servers is limited to 16. Only the first 16 print servers from the list will be queried.
+      ''',
+    },
+    {
+      'name': 'DeviceExternalPrintServers',
+      'owners': ['mattme@google.com', 'file://chromeos/printing/OWNERS'],
+      'type': 'external',
+      'schema': {
+        'type': 'object',
+        'properties': {
+          'url': {
+            'description': 'URL to a JSON file with a list of print servers.',
+            'type': 'string',
+          },
+          'hash': {
+            'description': 'The SHA-256 hash of the file.',
+            'type': 'string',
+          },
+        },
+      },
+      'id': 730,
+      'future_on': ['chrome_os'],
+      # TODO(https://crbug.com/1100777): Remove |future|.
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': {
+        "url": "https://example.com/printserverpolicy",
+        "hash": "deadbeefdeadbeefdeadbeefdeadbeefdeafdeadbeefdeadbeef"
+      },
+      'max_size': 1048576,
+      'caption': '''External print servers''',
+      'tags': [],
+      'desc': '''Provides configurations of available print servers.
+
+      This policy allows you to provide configuration of external print servers to <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices as JSON file.
+
+      The size of the file must not exceed 1MB and must contain an array of records (JSON objects). Each record must contain fields "id", "url" and "display_name" with strings as values. Values of "id" fields must be unique.
+
+      The file is downloaded and cached. The cryptographic hash is used to verify the integrity of the download. The file will be re-downloaded whenever the URL or the hash changes.
+
+      When this policy is set to correct value, devices will try to query specified print servers for available printers using IPP protocol.
+
+      If this policy is unset or set to incorrect value, none of the provided server printers are visible to users.
+
+      Currently, the number of print servers is limited to 16. Only the first 16 print servers from the list will be queried.
+
+      This policy is similar to <ph name="EXTERNAL_PRINT_SERVERS_POLICY">ExternalPrintServers</ph>, except this policy is applied by device.
       ''',
     },
     {
@@ -20548,6 +20599,33 @@
       The ids must correspond to the "id" field in the file specified in <ph name="EXTERNAL_PRINT_SERVERS_POLICY">ExternalPrintServers</ph>.
 
       If this policy is not set, filtering is omitted and all print servers are taken into account.'''
+    },
+    {
+      'name': 'DeviceExternalPrintServersAllowlist',
+      'owners': ['mattme@google.com', 'file://chromeos/printing/OWNERS'],
+      'future_on': ['chrome_os'],
+      # TODO(https://crbug.com/1100777): Remove |future|.
+      'id': 731,
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'example_value':  ["id1", "id2", "id3"],
+      'caption': '''Enabled external print servers''',
+      'tags': [],
+      'desc': '''Specifies the subset of print servers that will be queried for server printers. This applies only to the <ph name="DEVICE_EXTERNAL_PRINT_SERVERS_POLICY">DeviceExternalPrintServers</ph> policy.
+
+      If this policy is used, only the server printers with ids matching the values in this policy are available to the user through device policy.
+
+      The ids must correspond to the "id" field in the file specified in <ph name="DEVICE_EXTERNAL_PRINT_SERVERS_POLICY">DeviceExternalPrintServers</ph>.
+
+      If this policy is not set, filtering is omitted and all print servers provided by <ph name="DEVICE_EXTERNAL_PRINT_SERVERS_POLICY">DeviceExternalPrintServers</ph> are taken into account.'''
     },
     {
       'name': 'ExternalProtocolDialogShowAlwaysOpenCheckbox',
@@ -22065,6 +22143,8 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceDisplayResolution': 'device_display_resolution.device_display_resolution',
     'DeviceWallpaperImage': 'device_wallpaper_image.device_wallpaper_image',
     'DeviceNativePrinters': 'native_device_printers.external_policy',
+    'DeviceExternalPrintServers': 'external_print_servers.external_policy',
+    'DeviceExternalPrintServersAllowlist': 'external_print_servers_allowlist.allowlist',
     'DeviceAutoUpdateTimeRestrictions': 'auto_update_settings.disallowed_time_intervals',
     'DeviceUpdateStagingSchedule': 'auto_update_settings.staging_schedule',
     'DeviceLocalAccounts': 'device_local_accounts.account',
@@ -22581,6 +22661,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 729,
+  'highest_id_currently_used': 731,
   'highest_atomic_group_id_currently_used': 38
 }

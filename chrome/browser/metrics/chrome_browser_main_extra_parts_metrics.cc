@@ -13,7 +13,6 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/rand_util.h"
 #include "base/system/sys_info.h"
@@ -165,8 +164,8 @@ void RecordMicroArchitectureStats() {
 #if defined(ARCH_CPU_X86_FAMILY)
   base::CPU cpu;
   base::CPU::IntelMicroArchitecture arch = cpu.GetIntelMicroArchitecture();
-  UMA_HISTOGRAM_ENUMERATION("Platform.IntelMaxMicroArchitecture", arch,
-                            base::CPU::MAX_INTEL_MICRO_ARCHITECTURE);
+  base::UmaHistogramEnumeration("Platform.IntelMaxMicroArchitecture", arch,
+                                base::CPU::MAX_INTEL_MICRO_ARCHITECTURE);
 #endif  // defined(ARCH_CPU_X86_FAMILY)
   base::UmaHistogramSparse("Platform.LogicalCpuCount",
                            base::SysInfo::NumberOfProcessors());
@@ -181,11 +180,12 @@ bool IsApplockerRunning();
 void RecordStartupMetrics() {
 #if defined(OS_WIN)
   const base::win::OSInfo& os_info = *base::win::OSInfo::GetInstance();
-  UMA_HISTOGRAM_ENUMERATION("Windows.GetVersionExVersion", os_info.version(),
-                            base::win::Version::WIN_LAST);
-  UMA_HISTOGRAM_ENUMERATION("Windows.Kernel32Version",
-                            os_info.Kernel32Version(),
-                            base::win::Version::WIN_LAST);
+  base::UmaHistogramEnumeration("Windows.GetVersionExVersion",
+                                os_info.version(),
+                                base::win::Version::WIN_LAST);
+  base::UmaHistogramEnumeration("Windows.Kernel32Version",
+                                os_info.Kernel32Version(),
+                                base::win::Version::WIN_LAST);
   int patch = os_info.version_number().patch;
   int build = os_info.version_number().build;
   int patch_level = 0;
@@ -195,12 +195,12 @@ void RecordStartupMetrics() {
   DCHECK(patch_level) << "Windows version too high!";
   base::UmaHistogramSparse("Windows.PatchLevel", patch_level);
 
-  UMA_HISTOGRAM_BOOLEAN("Windows.HasHighResolutionTimeTicks",
-                        base::TimeTicks::IsHighResolution());
+  base::UmaHistogramBoolean("Windows.HasHighResolutionTimeTicks",
+                            base::TimeTicks::IsHighResolution());
 
   // Determine if Applocker is enabled and running. This does not check if
   // Applocker rules are being enforced.
-  UMA_HISTOGRAM_BOOLEAN("Windows.ApplockerRunning", IsApplockerRunning());
+  base::UmaHistogramBoolean("Windows.ApplockerRunning", IsApplockerRunning());
 #endif  // defined(OS_WIN)
 
   bluetooth_utility::ReportBluetoothAvailability();
@@ -208,8 +208,8 @@ void RecordStartupMetrics() {
   // Record whether Chrome is the default browser or not.
   shell_integration::DefaultWebClientState default_state =
       shell_integration::GetDefaultBrowser();
-  UMA_HISTOGRAM_ENUMERATION("DefaultBrowser.State", default_state,
-                            shell_integration::NUM_DEFAULT_STATES);
+  base::UmaHistogramEnumeration("DefaultBrowser.State", default_state,
+                                shell_integration::NUM_DEFAULT_STATES);
 }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -397,8 +397,8 @@ void RecordTouchEventState() {
     return;
   }
 
-  UMA_HISTOGRAM_ENUMERATION("Touchscreen.TouchEventsEnabled", state,
-                            UMA_TOUCH_EVENT_FEATURE_DETECTION_STATE_COUNT);
+  base::UmaHistogramEnumeration("Touchscreen.TouchEventsEnabled", state,
+                                UMA_TOUCH_EVENT_FEATURE_DETECTION_STATE_COUNT);
 }
 
 #if defined(USE_OZONE) || defined(USE_X11)
@@ -435,7 +435,7 @@ void AsynchronousTouchEventStateRecorder::OnDeviceListsComplete() {
 
 #if defined(OS_WIN)
 void RecordPinnedToTaskbarProcessError(bool error) {
-  UMA_HISTOGRAM_BOOLEAN("Windows.IsPinnedToTaskbar.ProcessError", error);
+  base::UmaHistogramBoolean("Windows.IsPinnedToTaskbar.ProcessError", error);
 }
 
 void OnShellHandlerConnectionError() {
@@ -443,16 +443,25 @@ void OnShellHandlerConnectionError() {
 }
 
 // Record the UMA histogram when a response is received.
-void OnIsPinnedToTaskbarResult(bool succeeded, bool is_pinned_to_taskbar) {
+void OnIsPinnedToTaskbarResult(bool succeeded,
+                               bool is_pinned_to_taskbar,
+                               bool is_pinned_to_taskbar_verb_check) {
   RecordPinnedToTaskbarProcessError(false);
 
   // Used for histograms; do not reorder.
   enum Result { NOT_PINNED = 0, PINNED = 1, FAILURE = 2, NUM_RESULTS };
 
-  Result result = FAILURE;
-  if (succeeded)
-    result = is_pinned_to_taskbar ? PINNED : NOT_PINNED;
-  UMA_HISTOGRAM_ENUMERATION("Windows.IsPinnedToTaskbar", result, NUM_RESULTS);
+  Result result_no_verb_check = FAILURE;
+  Result result_verb_check = FAILURE;
+  if (succeeded) {
+    result_no_verb_check = is_pinned_to_taskbar ? PINNED : NOT_PINNED;
+    result_verb_check = is_pinned_to_taskbar_verb_check ? PINNED : NOT_PINNED;
+  }
+
+  base::UmaHistogramEnumeration("Windows.IsPinnedToTaskbar", result_verb_check,
+                                NUM_RESULTS);
+  base::UmaHistogramEnumeration("Windows.IsPinnedToTaskbar2",
+                                result_no_verb_check, NUM_RESULTS);
 }
 
 // Records the pinned state of the current executable into a histogram. Should
@@ -548,8 +557,9 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
 #if defined(USE_X11)
   // TODO(https://crbug.com/1097007): capture window manager name on Linux.
   if (!features::IsUsingOzonePlatform()) {
-    UMA_HISTOGRAM_ENUMERATION("Linux.WindowManager", GetLinuxWindowManager(),
-                              UMA_LINUX_WINDOW_MANAGER_COUNT);
+    base::UmaHistogramEnumeration("Linux.WindowManager",
+                                  GetLinuxWindowManager(),
+                                  UMA_LINUX_WINDOW_MANAGER_COUNT);
   }
 #endif
 
@@ -602,7 +612,8 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
 #endif  // defined(OS_WIN)
 
   display_count_ = display::Screen::GetScreen()->GetNumDisplays();
-  UMA_HISTOGRAM_COUNTS_100("Hardware.Display.Count.OnStartup", display_count_);
+  base::UmaHistogramCounts100("Hardware.Display.Count.OnStartup",
+                              display_count_);
   display::Screen::GetScreen()->AddObserver(this);
   is_screen_observer_ = true;
 
@@ -624,10 +635,10 @@ void ChromeBrowserMainExtraPartsMetrics::PreMainMessageLoopRun() {
     // Enable I/O jank monitoring for the browser process.
     base::EnableIOJankMonitoringForProcess(base::BindRepeating(
         [](int janky_intervals_per_minute, int total_janks_per_minute) {
-          UMA_HISTOGRAM_COUNTS_100(
+          base::UmaHistogramCounts100(
               "Browser.Responsiveness.IOJankyIntervalsPerMinute",
               janky_intervals_per_minute);
-          UMA_HISTOGRAM_COUNTS_1000(
+          base::UmaHistogramCounts1000(
               "Browser.Responsiveness.IOJanksTotalPerMinute",
               total_janks_per_minute);
         }));
@@ -648,7 +659,8 @@ void ChromeBrowserMainExtraPartsMetrics::EmitDisplaysChangedMetric() {
   int display_count = display::Screen::GetScreen()->GetNumDisplays();
   if (display_count != display_count_) {
     display_count_ = display_count;
-    UMA_HISTOGRAM_COUNTS_100("Hardware.Display.Count.OnChange", display_count_);
+    base::UmaHistogramCounts100("Hardware.Display.Count.OnChange",
+                                display_count_);
   }
 }
 

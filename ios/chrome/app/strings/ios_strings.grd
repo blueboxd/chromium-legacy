@@ -1545,6 +1545,9 @@ While in incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_SAFE_MODE_UNKNOWN_CAUSE" desc="The message indicating that Chrome crashed for an unknown reason. [Length: 140em]">
         Something went really wrong. We'll work on that.
       </message>
+      <message name="IDS_IOS_SAVE_IMAGE_ERROR" desc="Message informing the user that the image could not be saved because there was an error.">
+        Error saving image.
+      </message>
       <message name="IDS_IOS_SAVE_IMAGE_NO_INTERNET_CONNECTION" desc="Message informing the user that the image could not be saved because the device has no internet connection.">
         No internet connection.
       </message>
@@ -1553,9 +1556,6 @@ While in incognito, sites can't use cookies to see your browsing activity across
       </message>
       <message name="IDS_IOS_SAVE_IMAGE_PRIVACY_ALERT_TITLE" desc="Title for message to inform user that Save Image failed due to insufficient privilege in Privacy Settings. This message is displayed as the title of an alert box. [Length: 20em] [iOS only]">
         Cannot Save Image
-      </message>
-      <message name="IDS_IOS_SAVE_IMAGE_RESTRICTED_PRIVACY_ALERT_MESSAGE" desc="Message to inform user that Save Image failed due to insufficient privilege in Privacy Settings and that the user cannot grant such privilege. This message is displayed as the message body in an alert box with a single OK button. [Length: 120em]">
-        A device policy blocked access to your photos
       </message>
       <message name="IDS_IOS_SAVE_PASSWORDS" desc="Title for the switch item in Settings that can be toggled to enable or disable saving passwords. [Length: 15em] [iOS only]">
         Save Passwords

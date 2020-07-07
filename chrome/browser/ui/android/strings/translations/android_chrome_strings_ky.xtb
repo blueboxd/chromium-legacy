@@ -642,7 +642,6 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="6154478581116148741">Жөндөөлөргө өтүп, экрандын кулпусун коюңуз да, ушул түзмөктөгү сырсөздөрүңүздү экспорттоңуз</translation>
 <translation id="6157392216611456285"><ph name="APP_NAME" /> колдонмосун тандоо</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> сакталган дайындар</translation>
-<translation id="6192333916571137726">Файлды жүктөп алуу</translation>
 <translation id="6201345951596836663">Шилтеме көчүрүлдү</translation>
 <translation id="6206830853671714236">Качан жүктөлүп алынышы керек экенин тандаңыз</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> эмеспи?</translation>
@@ -715,7 +714,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="6656545060687952787">Түзмөктөрдү сканирлөө үчүн Chrome жайгаштырууга мүмкүнчүлүк алышы зарыл. <ph name="BEGIN_LINK" />Жаңыртуу уруксаттамалары<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Сырсөз</translation>
 <translation id="6659594942844771486">Өтмөк</translation>
-<translation id="666573598175432848">Chrome'дун жаңы версиясы жеткиликтүү. Бул элеметтни басып, Play Store'го өтүңүз.</translation>
+<translation id="666573598175432848">Chrome'дун жаңы версиясы жеткиликтүү. Бул элементти басып, Play Store'го өтүңүз.</translation>
 <translation id="666731172850799929">Төмөнкүдө ачуу <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Chrome Купуялык эскертмеси</translation>
 <translation id="6671495933530132209">Сүрөттү көчүрүү</translation>

@@ -34,8 +34,6 @@ class ToolbarLayer : public Layer {
                     bool anonymize,
                     int toolbar_textbox_background_color,
                     int url_bar_background_resource_id,
-                    float url_bar_alpha,
-                    float window_height,
                     float y_offset,
                     bool show_debug,
                     bool clip_shadow);

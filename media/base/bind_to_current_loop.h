@@ -13,10 +13,10 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 
-// This is a helper utility for base::Bind()ing callbacks to a given
-// TaskRunner. The typical use is when |a| (of class |A|) wants to hand a
-// callback such as base::Bind(&A::AMethod, a) to |b|, but needs to ensure that
-// when |b| executes the callback, it does so on |a|'s task_runner's
+// This is a helper utility for binding a OnceCallback or RepeatingCallback to a
+// given TaskRunner. The typical use is when |a| (of class |A|) wants to hand a
+// callback such as base::BindOnce(&A::AMethod, a) to |b|, but needs to ensure
+// that when |b| executes the callback, it does so on |a|'s task_runner's
 // MessageLoop.
 //
 // Typical usage: request to be called back on the current thread:

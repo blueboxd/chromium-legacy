@@ -14,7 +14,7 @@
 class SurveyInfoBarDelegate;
 
 // An infobar that prompts the user to take a survey.
-class SurveyInfoBar : public InfoBarAndroid {
+class SurveyInfoBar : public infobars::InfoBarAndroid {
  public:
   explicit SurveyInfoBar(std::unique_ptr<SurveyInfoBarDelegate> delegate);
   ~SurveyInfoBar() override;
@@ -26,7 +26,7 @@ class SurveyInfoBar : public InfoBarAndroid {
  protected:
   infobars::InfoBarDelegate* GetDelegate();
 
-  // InfoBarAndroid overrides.
+  // infobars::InfoBarAndroid overrides.
   void ProcessButton(int action) override;
   base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
       JNIEnv* env) override;

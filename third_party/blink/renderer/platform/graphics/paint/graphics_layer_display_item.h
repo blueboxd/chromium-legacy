@@ -18,10 +18,6 @@ class GraphicsLayer;
 // Before CompositeAfterPaint, this is a placeholder for a GraphicsLayer
 // allocated before paint. With CompositeAfterPaint, this class will be
 // obsolete and should be removed.
-//
-// Before SquashAfterPaint, a cc::Layer will always be allocated to draw the
-// GraphicsLayer's contents. With SquashAfter Paint, that may not be true; the
-// GraphicsLayer may end up getting squashed by PaintArtifactCompositor.
 class PLATFORM_EXPORT GraphicsLayerDisplayItem final : public DisplayItem {
  public:
   GraphicsLayerDisplayItem(const GraphicsLayer&);

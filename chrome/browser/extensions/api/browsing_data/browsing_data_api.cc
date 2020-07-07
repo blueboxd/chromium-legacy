@@ -276,7 +276,8 @@ void BrowsingDataSettingsFunction::SetDetails(
 
 BrowsingDataRemoverFunction::BrowsingDataRemoverFunction() : observer_(this) {}
 
-void BrowsingDataRemoverFunction::OnBrowsingDataRemoverDone() {
+void BrowsingDataRemoverFunction::OnBrowsingDataRemoverDone(
+    uint64_t failed_data_types) {
   OnTaskFinished();
 }
 

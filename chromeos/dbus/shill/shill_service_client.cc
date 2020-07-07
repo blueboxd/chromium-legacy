@@ -181,19 +181,6 @@ class ShillServiceClientImpl : public ShillServiceClient {
                                           std::move(error_callback));
   }
 
-  void ActivateCellularModem(const dbus::ObjectPath& service_path,
-                             const std::string& carrier,
-                             base::OnceClosure callback,
-                             ErrorCallback error_callback) override {
-    dbus::MethodCall method_call(shill::kFlimflamServiceInterface,
-                                 shill::kActivateCellularModemFunction);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendString(carrier);
-    GetHelper(service_path)
-        ->CallVoidMethodWithErrorCallback(&method_call, std::move(callback),
-                                          std::move(error_callback));
-  }
-
   void CompleteCellularActivation(const dbus::ObjectPath& service_path,
                                   base::OnceClosure callback,
                                   ErrorCallback error_callback) override {

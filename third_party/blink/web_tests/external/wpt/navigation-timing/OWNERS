@@ -1,3 +1,5 @@
 # TEAM: loading-dev@chromium.org
 # COMPONENT: Blink>PerformanceAPIs>NavigationTiming
-tdresser@chromium.org
+# WPT-NOTIFY: true
+npm@chromium.org
+yoavweiss@chromium.org

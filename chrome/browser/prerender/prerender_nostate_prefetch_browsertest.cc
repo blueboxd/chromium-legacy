@@ -17,7 +17,9 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/platform_thread.h"
+#include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_test_utils.h"
 #include "chrome/browser/prerender/prerender_handle.h"
@@ -38,6 +40,7 @@
 #include "content/public/browser/appcache_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
@@ -45,6 +48,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/browsing_data_remover_test_util.h"
 #include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "content/public/test/url_loader_monitor.h"
@@ -186,6 +190,30 @@ class NoStatePrefetchBrowserTest
       FinalStatus expected_final_status) {
     return PrefetchFromURL(src_server()->GetURL(html_file),
                            expected_final_status);
+  }
+
+  // Returns length of |prerender_manager_|'s history, or SIZE_MAX on failure.
+  size_t GetHistoryLength() const {
+    std::unique_ptr<base::DictionaryValue> prerender_dict =
+        GetPrerenderManager()->CopyAsValue();
+    if (!prerender_dict)
+      return std::numeric_limits<size_t>::max();
+    base::ListValue* history_list;
+    if (!prerender_dict->GetList("history", &history_list))
+      return std::numeric_limits<size_t>::max();
+    return history_list->GetSize();
+  }
+
+  // Clears the specified data using BrowsingDataRemover.
+  void ClearBrowsingData(Browser* browser, uint64_t remove_mask) {
+    content::BrowsingDataRemover* remover =
+        content::BrowserContext::GetBrowsingDataRemover(browser->profile());
+    content::BrowsingDataRemoverCompletionObserver observer(remover);
+    remover->RemoveAndReply(
+        base::Time(), base::Time::Max(), remove_mask,
+        content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB, &observer);
+    observer.BlockUntilCompletion();
+    // BrowsingDataRemover deletes itself.
   }
 
   base::SimpleTestTickClock clock_;
@@ -1384,6 +1412,34 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchIncognitoBrowserTest,
   WaitForRequestCount(src_server()->GetURL(kPrefetchPage), 1);
   WaitForRequestCount(src_server()->GetURL(kPrefetchScript), 1);
   WaitForRequestCount(src_server()->GetURL(kPrefetchScript2), 0);
+}
+
+// Checks that when the history is cleared, NoStatePrefetch history is cleared.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, ClearHistory) {
+  std::unique_ptr<TestPrerender> test_prerender = PrefetchFromFile(
+      "/prerender/prerender_page.html", FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+
+  ClearBrowsingData(current_browser(),
+                    ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY);
+  test_prerender->WaitForStop();
+
+  // Make sure prerender history was cleared.
+  EXPECT_EQ(0U, GetHistoryLength());
+}
+
+// Checks that when the cache is cleared, NoStatePrefetch history is not
+// cleared.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, ClearCache) {
+  std::unique_ptr<TestPrerender> prerender = PrefetchFromFile(
+      "/prerender/prerender_page.html", FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+
+  ClearBrowsingData(current_browser(),
+                    content::BrowsingDataRemover::DATA_TYPE_CACHE);
+  prerender->WaitForStop();
+
+  // Make sure prerender history was not cleared.  Not a vital behavior, but
+  // used to compare with PrerenderClearHistory test.
+  EXPECT_EQ(1U, GetHistoryLength());
 }
 
 }  // namespace prerender

@@ -24,11 +24,11 @@
 #include "cc/base/switches.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/viz/common/switches.h"
+#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/ppapi_test_utils.h"
-#include "content/public/test/web_test_support_browser.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/web_test/test_info_extractor.h"
 #include "content/shell/browser/web_test/web_test_browser_main_platform_support.h"
@@ -52,6 +52,7 @@ namespace {
 bool RunOneTest(const content::TestInfo& test_info,
                 content::WebTestControlHost* web_test_control_host,
                 content::BrowserMainRunner* main_runner) {
+  TRACE_EVENT0("shell", "WebTestBrowserMainRunner::RunOneTest");
   DCHECK(web_test_control_host);
 
   if (!web_test_control_host->PrepareForWebTest(test_info))
@@ -63,6 +64,7 @@ bool RunOneTest(const content::TestInfo& test_info,
 }
 
 void RunTests(content::BrowserMainRunner* main_runner) {
+  TRACE_EVENT0("shell", "WebTestBrowserMainRunner::RunTests");
   content::WebTestControlHost test_controller;
   {
     // We're outside of the message loop here, and this is a test.
@@ -212,7 +214,7 @@ void WebTestBrowserMainRunner::Initialize() {
   content::WebTestBrowserPlatformInitialize();
 #endif
 
-  content::EnableBrowserWebTestMode();
+  RenderWidgetHostImpl::DisableResizeAckCheckForTesting();
 }
 
 void WebTestBrowserMainRunner::RunBrowserMain(

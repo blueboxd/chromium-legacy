@@ -52,6 +52,8 @@ component("ui") {
     "main_stage/animated_container_view.h",
     "main_stage/assistant_card_element_view.cc",
     "main_stage/assistant_card_element_view.h",
+    "main_stage/assistant_error_element_view.cc",
+    "main_stage/assistant_error_element_view.h",
     "main_stage/assistant_footer_view.cc",
     "main_stage/assistant_footer_view.h",
     "main_stage/assistant_onboarding_view.cc",

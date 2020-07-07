@@ -281,7 +281,6 @@
 <translation id="1340527397989195812">Napravite rezervnu kopiju medija sa uređaja pomoću aplikacije Datoteke.</translation>
 <translation id="1341988552785875222">Aktuelnu pozadinu podešava „<ph name="APP_NAME" />“'. Treba da deinstalirate „<ph name="APP_NAME" />“ da biste izabrali drugu pozadinu.</translation>
 <translation id="1343865611738742294">Dajte Linux aplikacijama dozvolu da pristupaju USB uređajima. Linux neće zapamtiti USB uređaj kada ga uklonite.</translation>
-<translation id="1344143111673240412">Promena podešavanja kamere zahteva ponovno pokretanje Parallels Desktop-a</translation>
 <translation id="1347256498747320987">Instalirajte ažuriranja i aplikacije. Ako nastavite, pristajete da ovaj uređaj može automatski da preuzima i instalira ažuriranja i aplikacije od Google-a, mobilnog operatera i proizvođača uređaja, uz mogućnost korišćenja mobilnih podataka. Neke od ovih aplikacija možda nude kupovine u aplikaciji. <ph name="BEGIN_LINK1" />Saznajte više<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">Ažuriranje će početi kada nivo napunjenosti baterije bude <ph name="BATTERY_LEVEL" />%.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -378,6 +377,7 @@
 <translation id="1468571364034902819">Ovaj profil ne može da se koristi</translation>
 <translation id="1470084204649225129">{NUM_TABS,plural, =1{Dodaj karticu u novu grupu}one{Dodaj kartice u novu grupu}few{Dodaj kartice u novu grupu}other{Dodaj kartice u novu grupu}}</translation>
 <translation id="1472675084647422956">Prikaži više</translation>
+<translation id="1474785664565228650">Promena podešavanja mikrofona zahteva ponovno pokretanje Parallels Desktop-a. Ponovo pokrenite Parallels Desktop da biste nastavili.</translation>
 <translation id="1475502736924165259">Na datoteci ima sertifikata koji se ne uklapaju ni u jednu drugu kategoriju</translation>
 <translation id="1476088332184200792">Kopirajte na svoj uređaj</translation>
 <translation id="1476607407192946488">&amp;Podešavanja jezika</translation>
@@ -1194,7 +1194,6 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="2470702053775288986">Nepodržani dodaci su onemogućeni</translation>
 <translation id="2471469610750100598">Crna (podrazumevano)</translation>
 <translation id="2473195200299095979">Prevedite ovu stranicu</translation>
-<translation id="2474848500897222119"><ph name="PRINTER_NAME" /> nema više mastila</translation>
 <translation id="2475982808118771221">Došlo je do greške</translation>
 <translation id="2476578072172137802">Podešavanja sajta</translation>
 <translation id="2478176599153288112">Dozvole za medijske datoteke za „<ph name="EXTENSION" />“</translation>
@@ -1500,7 +1499,6 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> koristi podešavanja proksija administratora</translation>
 <translation id="2825758591930162672">Javni ključ subjekta</translation>
 <translation id="2828650939514476812">Povezivanje sa Wi-Fi mrežom</translation>
-<translation id="28291580771888953">Red na štampaču <ph name="PRINTER_NAME" /> je pun</translation>
 <translation id="2835547721736623118">Usluga za prepoznavanje govora</translation>
 <translation id="2836269494620652131">Otkazivanje</translation>
 <translation id="2836635946302913370">Administrator je onemogućio prijavljivanje pomoću ovog korisničkog imena.</translation>
@@ -2316,7 +2314,7 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="3839516600093027468">Uvek blokiraj uvid u privremenu memoriju stranici <ph name="HOST" /></translation>
 <translation id="3841964634449506551">Lozinka je netačna</translation>
 <translation id="3842552989725514455">Font Serif</translation>
-<translation id="3843058644024807390">Promena podešavanja mikrofona zahteva ponovno pokretanje Parallels Desktop-a</translation>
+<translation id="3843464315703645664">Na internoj listi dozvoljenih</translation>
 <translation id="3846116211488856547">Pronađite alatke za programiranje veb-sajtova, Android aplikacija i drugo. Instaliranje Linux-a će preuzeti podatke (<ph name="DOWNLOAD_SIZE" />).</translation>
 <translation id="3847319713229060696">Poboljšajte bezbednost na vebu za svakoga</translation>
 <translation id="385051799172605136">Nazad</translation>
@@ -2775,7 +2773,6 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="4453946976636652378">Pretražite <ph name="SEARCH_ENGINE_NAME" /> ili unesite URL</translation>
 <translation id="4459169140545916303">Poslednja aktivnost: pre <ph name="DEVICE_LAST_ACTIVATED_TIME" /> dan/a</translation>
 <translation id="4460014764210899310">Razdvoji</translation>
-<translation id="4460343359907016103">Greška pri povezivanju sa štampačem <ph name="PRINTER_NAME" /></translation>
 <translation id="4462159676511157176">Prilagođeni serveri naziva</translation>
 <translation id="4465236939126352372">Vremensko ograničenje od <ph name="TIME" /> je podešeno za aplikaciju <ph name="APP_NAME" /></translation>
 <translation id="4465725236958772856"><ph name="NETWORK_INDEX" />. mreža od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, upravlja administrator, poveži</translation>
@@ -2930,6 +2927,7 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="4648499713050786492">Otključajte profil da biste dodali osobu.</translation>
 <translation id="4650591383426000695">Prekinite vezu između telefona i uređaja <ph name="DEVICE_TYPE" /></translation>
 <translation id="4651484272688821107">Učitavanje onlajn komponente sa resursima za režim demonstracije nije uspelo.</translation>
+<translation id="4652935475563630866">Promena podešavanja kamere zahteva ponovno pokretanje Parallels Desktop-a. Ponovo pokrenite Parallels Desktop da biste nastavili.</translation>
 <translation id="4653405415038586100">Greška pri konfigurisanju Linux-a</translation>
 <translation id="465878909996028221">Za preusmeravanja u pregledaču podržani su samo protokoli http, https i file.</translation>
 <translation id="4659077111144409915">Primarni nalog</translation>
@@ -3073,7 +3071,6 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="4864369630010738180">Prijavljivanje...</translation>
 <translation id="4864805589453749318">Izaberite roditelja koji dodeljuje dozvolu za dodavanje školskog naloga.</translation>
 <translation id="486635084936119914">Automatski otvarajte određene tipove datoteka posle preuzimanja</translation>
-<translation id="4869213010169296107"><ph name="PRINTER_NAME" /> nema fioku</translation>
 <translation id="48704129375571883">Dodajte još funkcija</translation>
 <translation id="4870758487381879312">Unesite lozinku koju ste dobili od administratora da biste dobili informacije o konfiguraciji</translation>
 <translation id="4870903493621965035">Nema uparenih uređaja</translation>
@@ -3324,6 +3321,7 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="5184662919967270437">Ažuriranje uređaja</translation>
 <translation id="5185359571430619712">Dodaci za recenzije</translation>
 <translation id="5185386675596372454">Najnovija verzija dodatka „<ph name="EXTENSION_NAME" />“ je onemogućena jer zahteva još dozvola.</translation>
+<translation id="5185500136143151980">Nema interneta</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5190926251776387065">Aktiviraj port</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> želi da preuzme više datoteka</translation>
@@ -3480,7 +3478,6 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="5390112241331447203">Uvrsti datoteku system_logs.txt koja se šalje u izveštajima sa povratnim informacijama.</translation>
 <translation id="5390677308841849479">Tamnocrvena i narandžasta</translation>
 <translation id="5390743329570580756">Pošalji za:</translation>
-<translation id="5395869306561378615">Štampač <ph name="PRINTER_NAME" /> je pauziran</translation>
 <translation id="5397794290049113714">Vi</translation>
 <translation id="5398572795982417028">Prevelika referenca za stranice, ograničenje je <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">Oglasi su blokirani</translation>
@@ -3495,7 +3492,6 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="5417312524372586921">Teme za pregledač</translation>
 <translation id="5419405654816502573">Voice Match</translation>
 <translation id="5420438158931847627">Određuje oštrinu teksta i slika</translation>
-<translation id="5421498071721257877"><ph name="PRINTER_NAME" /> sadrži grešku na uređaju</translation>
 <translation id="5422221874247253874">Pristupna tačka</translation>
 <translation id="5422781158178868512">Žao nam je, nije bilo moguće prepoznati spoljni memorijski uređaj.</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3845,7 +3841,6 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="5852137567692933493">Restartuj i obavi Powerwash</translation>
 <translation id="5854912040170951372">Parče</translation>
 <translation id="5855267860608268405">Poznate Wi-Fi mreže</translation>
-<translation id="5855310969323666289">Vrata štampača <ph name="PRINTER_NAME" /> su otvorena</translation>
 <translation id="5855643921295613558">0,6 sekundi</translation>
 <translation id="5856721540245522153">Omogućavanje funkcija za otklanjanje grešaka</translation>
 <translation id="5857090052475505287">Novi direktorijum</translation>
@@ -3876,7 +3871,6 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="5877064549588274448">Kanal je promenjen. Pokrenite ponovo uređaj da biste primenili promene.</translation>
 <translation id="5877584842898320529">Izabrani štampač nije dostupan ili nije pravilno instaliran. <ph name="BR" /> Proverite štampač ili izaberite neki drugi.</translation>
 <translation id="5882919346125742463">Poznate mreže</translation>
-<translation id="5883716097305842571">Oblast za odštampane dokumente na štampaču <ph name="PRINTER_NAME" /> je skoro puna</translation>
 <translation id="5884474295213649357">Ova kartica je povezana sa USB uređajem.</translation>
 <translation id="5886009770935151472">Prst 1</translation>
 <translation id="5889282057229379085">Najveći broj posredničkih CA: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4442,7 +4436,6 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="6611972847767394631">Pronađite kartice ovde</translation>
 <translation id="6612358246767739896">Zaštićeni sadržaj</translation>
 <translation id="6615455863669487791">Pokaži mi</translation>
-<translation id="6617034477946102682">Štampač <ph name="PRINTER_NAME" /> nije dostupan</translation>
 <translation id="6618097958368085618">Ipak zadrži</translation>
 <translation id="6618744767048954150">U toku je</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
@@ -4859,7 +4852,6 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="7128151990937044829">Prikazuj indikator na traci za adresu kada su obaveštenja blokirana</translation>
 <translation id="7131040479572660648">Čitanje vaših podataka na <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> i <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Dodaj stra&amp;nicu...</translation>
-<translation id="7131379856697962078">Oblast za odštampane dokumente na štampaču <ph name="PRINTER_NAME" /> je puna</translation>
 <translation id="7133578150266914903">Administrator vraća ovaj uređaj na raniju verziju (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">Umanji tekst</translation>
 <translation id="7135729336746831607">Želite li da uključite Bluetooth?</translation>
@@ -4878,7 +4870,6 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="7152478047064750137">Ovaj dodatak ne zahteva nikakve specijalne dozvole</translation>
 <translation id="7154130902455071009">Promenite početnu stranicu u: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">Postojeća fotografija iz kamere ili datoteke</translation>
-<translation id="715657691234357425"><ph name="PRINTER_NAME" /> nema dovoljno papira</translation>
 <translation id="7165320105431587207">Konfiguracija mreže nije uspela</translation>
 <translation id="716640248772308851">„<ph name="EXTENSION" />“ može da čita slike, video i audio datoteke na navedenim lokacijama.</translation>
 <translation id="7167486101654761064">&amp;Uvek otvori datoteke ovog tipa</translation>
@@ -4909,7 +4900,6 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="7197632491113152433">Na nalogu smo pronašli aplikacije (<ph name="NUMBER_OF_APPS" />) koje mogu da se koriste na ovom uređaju.</translation>
 <translation id="7199158086730159431">Potraži pomoć</translation>
 <translation id="7200083590239651963">Izaberite konfiguraciju</translation>
-<translation id="7201042526153088083">Instalirajte aplikacije i igre sa Google Play-a na uređaju <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;Saznajte više&lt;/a&gt;</translation>
 <translation id="720110658997053098">Trajno zadrži ovaj uređaj u režimu kioska</translation>
 <translation id="7201118060536064622">Stavka „<ph name="DELETED_ITEM_NAME" />“ je izbrisana</translation>
 <translation id="7201420661433230412">Prikaži datoteke</translation>
@@ -5215,7 +5205,6 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="7598466960084663009">Restartuj računar</translation>
 <translation id="7599527631045201165">Naziv uređaja je predugačak. Unesite kraći i probajte ponovo.</translation>
 <translation id="7600965453749440009">Nikad ne prevodi <ph name="LANGUAGE" /></translation>
-<translation id="7601297144931396972">Papir u štampaču <ph name="PRINTER_NAME" /> se zaglavio</translation>
 <translation id="760197030861754408">Idite na <ph name="LANDING_PAGE" /> da biste se povezali.</translation>
 <translation id="7602079150116086782">Nema kartica sa drugih uređaja</translation>
 <translation id="7602173054665172958">Upravljanje štampanjem</translation>
@@ -5226,6 +5215,7 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="7609148976235050828">Povežite se na internet i probajte ponovo.</translation>
 <translation id="7614260613810441905">Pitaj kada sajt želi da izmeni datoteke ili direktorijume na uređaju (preporučeno)</translation>
 <translation id="761530003705945209">Pravite rezervne kopije na Google disku. Lako vratite podatke ili pređite na drugi uređaj u bilo kom trenutku. Rezervna kopija obuhvata podatke aplikacija. Rezervne kopije se otpremaju na Google i šifruju pomoću lozinke za Google nalog.</translation>
+<translation id="7615365294369022248">Došlo je do greške pri dodavanju naloga</translation>
 <translation id="7616214729753637086">Uređaj se registruje...</translation>
 <translation id="7617263010641145920">Uključite Play prodavnicu</translation>
 <translation id="7617366389578322136">Povezuje se sa uređajem „<ph name="DEVICE_NAME" />“</translation>
@@ -5674,7 +5664,6 @@ Datoteka ključa: <ph name="KEY_FILE" />
           <ph name="TIME" />. To ne obuhvata načine plaćanja i adrese iz Google Pay-a.</translation>
 <translation id="81238879832906896">Žuti i beli cvet</translation>
 <translation id="8124313775439841391">Upravljani ONC</translation>
-<translation id="8127535217699822294"><ph name="PRINTER_NAME" /> nema više papira</translation>
 <translation id="813082847718468539">Pogledajte informacije o sajtu</translation>
 <translation id="8131740175452115882">Potvrdi</translation>
 <translation id="8133676275609324831">&amp;Prikaži u direktorijumu</translation>
@@ -5773,7 +5762,6 @@ Datoteka ključa: <ph name="KEY_FILE" />
 <translation id="8254954272268479918">Isključi Linux (beta)</translation>
 <translation id="8255451560461371599">Nema pozadine</translation>
 <translation id="8256319818471787266">Iskrica</translation>
-<translation id="8256417822772703842"><ph name="PRINTER_NAME" /> nema dovoljno mastila</translation>
 <translation id="8257950718085972371">Nastavi da blokiraš pristup kameri</translation>
 <translation id="8259239505248583312">Idemo</translation>
 <translation id="8260864402787962391">Miš</translation>
@@ -5954,7 +5942,6 @@ Datoteka ključa: <ph name="KEY_FILE" />
 <translation id="8487678622945914333">Uvećaj</translation>
 <translation id="8490896350101740396">Sledeće kiosk aplikacije „<ph name="UPDATED_APPS" />“ su ažurirane. Restartujte uređaj da biste završili proces ažuriranja.</translation>
 <translation id="8493236660459102203">Mikrofon:</translation>
-<translation id="8495940850609851342">Štampač <ph name="PRINTER_NAME" /> je zaustavljen</translation>
 <translation id="8496717697661868878">Pokreni ovaj dodatak</translation>
 <translation id="8497219075884839166">Windows uslužni programi</translation>
 <translation id="8498214519255567734">Omogućava da lakše pregledate sadržaj ekrana ili da čitate pri prigušenom svetlu</translation>
@@ -6496,6 +6483,12 @@ Datoteka ključa: <ph name="KEY_FILE" />
 <translation id="9157096865782046368">0,8 sekundi</translation>
 <translation id="9157697743260533322">Podešavanje automatskih ažuriranja za sve korisnike nije uspelo (greška pokretanja pri proveri: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Ups! Došlo je do problema sa komunikacijom na mreži tokom potvrde autentičnosti. Proverite mrežnu vezu i pokušajte ponovo.</translation>
+<translation id="9159643062839240276">Isprobajte:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />Proverite mrežne kablove, modem i ruter
+      <ph name="LIST_ITEM" />Ponovo se povežite na Wi-Fi
+      <ph name="LIST_ITEM" />Pokrenite Chrome dijagnostiku povezivosti
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">Slika u slici</translation>
 <translation id="9168436347345867845">Uradiću to kasnije</translation>
 <translation id="9169496697824289689">Prikaz tasterskih prečica</translation>

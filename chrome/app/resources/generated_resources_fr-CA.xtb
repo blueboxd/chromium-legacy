@@ -281,7 +281,6 @@
 <translation id="1340527397989195812">Sauvegarder les fichiers médiatiques de l’appareil en utilisant l’application Fichiers.</translation>
 <translation id="1341988552785875222">Le fond d'écran actuel est défini par « <ph name="APP_NAME" /> ». Il vous faudra peut-être désinstaller « <ph name="APP_NAME" /> » avant de sélectionner un autre fond d'écran.</translation>
 <translation id="1343865611738742294">Accordez aux applications Linux l'autorisation d'accéder à des appareils USB. Le système Linux ne se souviendra pas d'un appareil USB une fois celui-ci retiré.</translation>
-<translation id="1344143111673240412">Pour que la modification apportée à la caméra soit appliquée, Parallels Desktop doit être relancé</translation>
 <translation id="1347256498747320987">Installer des mises à jour et des applications. En continuant, vous acceptez que cet appareil puisse également télécharger et installer automatiquement des mises à jour et des applications de Google, de votre fournisseur de services sans fil et du fabricant de votre appareil, éventuellement en utilisant les réseaux de données cellulaires. Certaines de ces applications peuvent aussi offrir des achats au moyen de l'application. <ph name="BEGIN_LINK1" />En savoir plus<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">La mise à jour commencera lorsque la pile atteindra <ph name="BATTERY_LEVEL" /> %.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" /> : <ph name="NETWORK_NAME" /></translation>
@@ -1197,7 +1196,6 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2470702053775288986">Les extensions incompatibles ont été désactivées</translation>
 <translation id="2471469610750100598">Noir (par défaut)</translation>
 <translation id="2473195200299095979">Traduire cette page</translation>
-<translation id="2474848500897222119">La cartouche d'encre de l'imprimante <ph name="PRINTER_NAME" /> est vide</translation>
 <translation id="2475982808118771221">Une erreur s'est produite</translation>
 <translation id="2476578072172137802">Paramètres du site</translation>
 <translation id="2478176599153288112">Autorisations de fichier média pour « <ph name="EXTENSION" /> »</translation>
@@ -1504,7 +1502,6 @@ https://support.google.com/chrome/?p=applescript</translation>
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> utilise les paramètres mandataires de votre administrateur</translation>
 <translation id="2825758591930162672">Clé publique de l'objet</translation>
 <translation id="2828650939514476812">Connexion au réseau Wi-Fi</translation>
-<translation id="28291580771888953">La file d'attente de l'imprimante <ph name="PRINTER_NAME" /> est pleine</translation>
 <translation id="2835547721736623118">Service de reconnaissance vocale</translation>
 <translation id="2836269494620652131">Plantage</translation>
 <translation id="2836635946302913370">L'administrateur a désactivé la connexion avec ce nom d'utilisateur.</translation>
@@ -2320,7 +2317,7 @@ https://support.google.com/chrome/?p=applescript</translation>
 <translation id="3839516600093027468">Toujours empêcher <ph name="HOST" /> de voir le presse-papiers</translation>
 <translation id="3841964634449506551">Mot de passe incorrect</translation>
 <translation id="3842552989725514455">Police avec empattement</translation>
-<translation id="3843058644024807390">Pour que la modification apportée au microphone soit appliquée, Parallels Desktop doit être relancé</translation>
+<translation id="3843464315703645664">Placé sur la liste verte à l'interne</translation>
 <translation id="3846116211488856547">Obtenez des outils pour concevoir des sites Web, des applications Android et plus encore. L'installation de Linux téléchargera <ph name="DOWNLOAD_SIZE" /> de données.</translation>
 <translation id="3847319713229060696">Contribuer à l'amélioration de la sécurité sur le Web pour tout le monde</translation>
 <translation id="385051799172605136">Retour</translation>
@@ -2779,7 +2776,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4453946976636652378">Effectuer une recherche avec <ph name="SEARCH_ENGINE_NAME" /> ou entrer une URL</translation>
 <translation id="4459169140545916303">Actif il y a <ph name="DEVICE_LAST_ACTIVATED_TIME" /> jours</translation>
 <translation id="4460014764210899310">Dégrouper</translation>
-<translation id="4460343359907016103">Une erreur s'est produite lors de la connexion à l'imprimante <ph name="PRINTER_NAME" /></translation>
 <translation id="4462159676511157176">Serveurs de noms personnalisés</translation>
 <translation id="4465236939126352372">Une limite de temps de <ph name="TIME" /> a été définie pour <ph name="APP_NAME" /></translation>
 <translation id="4465725236958772856">Réseaux <ph name="NETWORK_INDEX" /> sur <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, géré par votre administrateur, connexion</translation>
@@ -3077,7 +3073,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4864369630010738180">Connexion en cours…</translation>
 <translation id="4864805589453749318">Sélectionne le parent qui t'accorde l'autorisation d'ajouter un compte scolaire.</translation>
 <translation id="486635084936119914">Ouvrir automatiquement certains types de fichiers après le téléchargement</translation>
-<translation id="4869213010169296107">Il manque un bac à l'imprimante <ph name="PRINTER_NAME" /></translation>
 <translation id="48704129375571883">Ajouter des fonctionnalités supplémentaires</translation>
 <translation id="4870758487381879312">Entrez le mot de passe fourni par l'administrateur pour obtenir les informations de configuration</translation>
 <translation id="4870903493621965035">Aucun appareil associé</translation>
@@ -3328,6 +3323,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5184662919967270437">Mise à jour de votre appareil en cours…</translation>
 <translation id="5185359571430619712">Examiner les extensions</translation>
 <translation id="5185386675596372454">La nouvelle version de « <ph name="EXTENSION_NAME" /> » a été désactivée, car elle nécessite davantage d'autorisations.</translation>
+<translation id="5185500136143151980">Aucune connexion Internet</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5190926251776387065">Activer le port</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> veut télécharger plusieurs fichiers</translation>
@@ -3484,7 +3480,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5390112241331447203">Inclure le fichier system_logs.txt envoyé dans les rapports de commentaires.</translation>
 <translation id="5390677308841849479">Rouge foncé et orange</translation>
 <translation id="5390743329570580756">Envoyer pour</translation>
-<translation id="5395869306561378615">L'imprimante <ph name="PRINTER_NAME" /> est interrompue</translation>
 <translation id="5397794290049113714">Vous</translation>
 <translation id="5398572795982417028">Référence de page hors limite, la limite est de <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">Annonces bloquées</translation>
@@ -3499,7 +3494,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5417312524372586921">Thèmes du navigateur</translation>
 <translation id="5419405654816502573">Fonction Voice Match</translation>
 <translation id="5420438158931847627">Détermine la netteté du texte et des images</translation>
-<translation id="5421498071721257877">Une erreur s'est produite sur l'imprimante<ph name="PRINTER_NAME" /></translation>
 <translation id="5422221874247253874">Point d'accès</translation>
 <translation id="5422781158178868512">Désolés, il est impossible de reconnaître votre périphérique de stockage externe.</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3848,7 +3842,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5852137567692933493">Redémarrer et lancer la réinitialisation « Powerwash »</translation>
 <translation id="5854912040170951372">Pizza</translation>
 <translation id="5855267860608268405">Réseaux Wi-Fi connus</translation>
-<translation id="5855310969323666289">Le panneau d'accès de l'imprimante <ph name="PRINTER_NAME" /> est ouvert</translation>
 <translation id="5855643921295613558">0,6 seconde</translation>
 <translation id="5856721540245522153">Activer les fonctionnalités de débogage</translation>
 <translation id="5857090052475505287">Nouveau dossier</translation>
@@ -3879,7 +3872,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5877064549588274448">La version a été changée. Redémarrez votre appareil pour appliquer les modifications.</translation>
 <translation id="5877584842898320529">L'imprimante sélectionnée n'est pas accessible ou n'est pas installée correctement. <ph name="BR" /> Veuillez vérifier votre imprimante ou essayez d'en sélectionner une autre.</translation>
 <translation id="5882919346125742463">Réseaux connus</translation>
-<translation id="5883716097305842571">La zone de sortie de l'imprimante <ph name="PRINTER_NAME" /> est presque pleine</translation>
 <translation id="5884474295213649357">Cet onglet est connecté à un appareil USB.</translation>
 <translation id="5886009770935151472">Doigt 1</translation>
 <translation id="5889282057229379085">Nombre maximal d'autorités de certification intermédiaires : <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4445,7 +4437,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6611972847767394631">Retrouvez vos onglets ici</translation>
 <translation id="6612358246767739896">Contenu protégé</translation>
 <translation id="6615455863669487791">Démonstration</translation>
-<translation id="6617034477946102682">Impossible de communiquer avec l'imprimante <ph name="PRINTER_NAME" /></translation>
 <translation id="6618097958368085618">Conserver quand même</translation>
 <translation id="6618744767048954150">En cours…</translation>
 <translation id="6619058681307408113">Protocole LPD (Line Printer Daemon)</translation>
@@ -4862,7 +4853,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7128151990937044829">Afficher un indicateur dans la barre d'adresse quand les notifications sont bloquées</translation>
 <translation id="7131040479572660648">Lire vos données sur <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> et <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Ajouter une pa&amp;ge...</translation>
-<translation id="7131379856697962078">La zone de sortie de l'imprimante <ph name="PRINTER_NAME" /> est pleine</translation>
 <translation id="7133578150266914903">Votre administrateur est en train de restaurer cet appareil (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">Réduire la taille du texte</translation>
 <translation id="7135729336746831607">Activer le Bluetooth?</translation>
@@ -4881,7 +4871,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7152478047064750137">Cette extension fonctionne sans autorisation spéciale</translation>
 <translation id="7154130902455071009">Utiliser l'adresse <ph name="START_PAGE" /> comme page de démarrage?</translation>
 <translation id="7155171745945906037">Photo existante de l'appareil photo ou du fichier</translation>
-<translation id="715657691234357425">L'imprimante <ph name="PRINTER_NAME" /> est presque à court de papier</translation>
 <translation id="7165320105431587207">Échec de la configuration du réseau</translation>
 <translation id="716640248772308851">« <ph name="EXTENSION" /> » dispose d'un droit d'accès en lecture aux images, aux vidéos et aux fichiers audio figurant dans les dossiers sélectionnés.</translation>
 <translation id="7167486101654761064">&amp;Toujours ouvrir les fichiers de ce type</translation>
@@ -4912,7 +4901,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7197632491113152433">Nous avons trouvé dans votre compte <ph name="NUMBER_OF_APPS" /> applications que vous pouvez utiliser sur cet appareil.</translation>
 <translation id="7199158086730159431">Obtenir de l'aide</translation>
 <translation id="7200083590239651963">Sélectionner la configuration</translation>
-<translation id="7201042526153088083">Installez des applications et des jeux de Google Play sur votre <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;En savoir plus&lt;/a&gt;</translation>
 <translation id="720110658997053098">Conserver cet appareil en mode kiosque de manière permanente</translation>
 <translation id="7201118060536064622">« <ph name="DELETED_ITEM_NAME" /> » supprimé</translation>
 <translation id="7201420661433230412">Afficher les fichiers</translation>
@@ -5218,7 +5206,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7598466960084663009">Redémarrer l'ordinateur</translation>
 <translation id="7599527631045201165">Le nom de l'appareil est trop long. Entrez un nom plus court et réessayez.</translation>
 <translation id="7600965453749440009">Ne jamais traduire les pages rédigées en <ph name="LANGUAGE" /></translation>
-<translation id="7601297144931396972">L'imprimante <ph name="PRINTER_NAME" /> a un bourrage de papier</translation>
 <translation id="760197030861754408">Allez à l'adresse <ph name="LANDING_PAGE" /> pour vous connecter.</translation>
 <translation id="7602079150116086782">Pas d'onglets d'autres appareils</translation>
 <translation id="7602173054665172958">Gestion de l'impression</translation>
@@ -5229,6 +5216,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7609148976235050828">Veuillez vous connecter à Internet et réessayer.</translation>
 <translation id="7614260613810441905">Demander lorsqu'un site souhaite modifier des fichiers ou des dossiers sur votre appareil (recommandé)</translation>
 <translation id="761530003705945209">Sauvegarder sur Google Disque. Restaurez facilement vos données ou changez d'appareil à tout moment. Votre sauvegarde inclut les données des applications. Vos sauvegardes sont téléversées vers les serveurs de Google et sont chiffrées en utilisant le mot de passe de votre compte Google.</translation>
+<translation id="7615365294369022248">Une erreur s'est produite lors de l’ajout d'un compte</translation>
 <translation id="7616214729753637086">Enregistrement de l'appareil en cours…</translation>
 <translation id="7617263010641145920">Activer le Play Store</translation>
 <translation id="7617366389578322136">Connexion à « <ph name="DEVICE_NAME" /> » en cours…</translation>
@@ -5676,7 +5664,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
           <ph name="TIME" />. Cette méthode ne couvre pas les modes de paiement ni les adresses de Google Pay.</translation>
 <translation id="81238879832906896">Fleur jaune et blanche</translation>
 <translation id="8124313775439841391">ONC géré</translation>
-<translation id="8127535217699822294">L'imprimante <ph name="PRINTER_NAME" /> n'a plus de papier</translation>
 <translation id="813082847718468539">Afficher l'information sur le site</translation>
 <translation id="8131740175452115882">Confirmer</translation>
 <translation id="8133676275609324831">&amp;Afficher dans le dossier</translation>
@@ -5775,7 +5762,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8254954272268479918">Arrêter Linux (bêta)</translation>
 <translation id="8255451560461371599">Pas d'arrière-plan</translation>
 <translation id="8256319818471787266">Fido</translation>
-<translation id="8256417822772703842">Le niveau d'encre de l'imprimante <ph name="PRINTER_NAME" /> est bas</translation>
 <translation id="8257950718085972371">Continuer de bloquer l'accès à la caméra</translation>
 <translation id="8259239505248583312">Allons-y</translation>
 <translation id="8260864402787962391">Souris</translation>
@@ -5956,7 +5942,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8487678622945914333">Zoom avant</translation>
 <translation id="8490896350101740396">Les applications de kiosque suivantes « <ph name="UPDATED_APPS" /> » ont été mises à jour. Veuillez redémarrer l'appareil pour terminer le processus de mise à jour.</translation>
 <translation id="8493236660459102203">Microphone :</translation>
-<translation id="8495940850609851342">L'imprimante <ph name="PRINTER_NAME" /> est arrêtée</translation>
 <translation id="8496717697661868878">Exécuter ce plugiciel</translation>
 <translation id="8497219075884839166">Utilitaires Windows</translation>
 <translation id="8498214519255567734">Permettre de regarder l'écran plus facilement lorsque l'éclairage est faible</translation>
@@ -6498,6 +6483,12 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="9157096865782046368">0,8 seconde</translation>
 <translation id="9157697743260533322">Impossible de configurer les mises à jour automatiques pour tous les utilisateurs (erreur de lancement des vérifications : <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Oups… Une erreur de communication réseau s'est produite lors de l'authentification. Veuillez vérifier votre connexion réseau, puis réessayer.</translation>
+<translation id="9159643062839240276">Essayez ces étapes :
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />Vérifiez les câbles réseau, le modem et le routeur
+      <ph name="LIST_ITEM" />Reconnectez-vous au Wi-Fi
+      <ph name="LIST_ITEM" />Exécutez l'utilitaire Chrome Connectivity Diagnostics
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">Incrustation d'image</translation>
 <translation id="9168436347345867845">Plus tard</translation>
 <translation id="9169496697824289689">Voir les raccourcis clavier</translation>

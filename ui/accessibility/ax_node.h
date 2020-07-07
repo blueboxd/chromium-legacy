@@ -140,7 +140,9 @@ class AX_EXPORT AXNode final {
   AXNode* GetPreviousSibling() const;
   AXNode* GetNextSibling() const;
 
-  // Returns true if the node has any of the text related roles.
+  // Returns true if the node has any of the text related roles, including
+  // kStaticText, kInlineTextBox and kListMarker (for Legacy Layout). Does not
+  // include any text field roles.
   bool IsText() const;
 
   // Returns true if the node has any line break related roles or is the child a

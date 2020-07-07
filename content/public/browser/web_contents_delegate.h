@@ -666,12 +666,12 @@ class CONTENT_EXPORT WebContentsDelegate {
                                          RenderFrameHost* subframe_host) const {
   }
 
-  // Requests to capture a paint preview of an out-of-process subframe for the
-  // specified WebContents. |rect| is the rectangular area where its content
-  // resides in its parent frame. |guid| is a globally unique identitier for an
-  // entire paint preview. |render_frame_host| is the render frame host of the
-  // subframe to be captured.
-  virtual void CapturePaintPreviewOfCrossProcessSubframe(
+  // Requests to capture a paint preview of a subframe for the specified
+  // WebContents. |rect| is the rectangular area where its content resides in
+  // its parent frame. |guid| is a globally unique identitier for an entire
+  // paint preview. |render_frame_host| is the render frame host of the subframe
+  // to be captured.
+  virtual void CapturePaintPreviewOfSubframe(
       WebContents* web_contents,
       const gfx::Rect& rect,
       const base::UnguessableToken& guid,

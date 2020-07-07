@@ -78,6 +78,7 @@ class WebViewTestProxy : public RenderViewImpl {
 
   BlinkTestRunner* blink_test_runner() { return &blink_test_runner_; }
   TestInterfaces* test_interfaces() { return test_interfaces_; }
+  TestRunner* GetTestRunner();
   AccessibilityController* accessibility_controller() {
     return &accessibility_controller_;
   }
@@ -88,8 +89,6 @@ class WebViewTestProxy : public RenderViewImpl {
  private:
   // RenderViewImpl has no public destructor.
   ~WebViewTestProxy() override;
-
-  TestRunner* GetTestRunner();
 
   BlinkTestRunner blink_test_runner_{this};
 

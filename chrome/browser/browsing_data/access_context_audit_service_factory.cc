@@ -38,6 +38,11 @@ KeyedService* AccessContextAuditServiceFactory::BuildServiceInstanceFor(
           features::kClientStorageAccessContextAuditing))
     return nullptr;
 
+  // The service implementation will persist session cookies until next startup.
+  // It is only used with regular profiles, which always persist session
+  // cookies.
+  DCHECK(static_cast<Profile*>(context)->ShouldPersistSessionCookies());
+
   std::unique_ptr<AccessContextAuditService> context_audit_service(
       new AccessContextAuditService(static_cast<Profile*>(context)));
   if (!context_audit_service->Init(

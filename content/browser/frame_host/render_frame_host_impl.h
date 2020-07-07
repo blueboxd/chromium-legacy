@@ -1610,6 +1610,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const base::Optional<base::UnguessableToken>& opener_frame) override;
   void DidChangeFramePolicy(const base::UnguessableToken& child_frame_token,
                             const blink::FramePolicy& frame_policy) override;
+  void CapturePaintPreviewOfSubframe(
+      const gfx::Rect& clip_rect,
+      const base::UnguessableToken& guid) override;
 
   // blink::LocalMainFrameHost overrides:
   void ScaleFactorChanged(float scale) override;

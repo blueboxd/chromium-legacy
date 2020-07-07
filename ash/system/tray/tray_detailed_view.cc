@@ -431,7 +431,7 @@ void TrayDetailedView::ShowProgress(double value, bool visible) {
     progress_bar_->SetVisible(false);
     progress_bar_->SetForegroundColor(
         AshColorProvider::Get()->GetContentLayerColor(
-            AshColorProvider::ContentLayerType::kButtonIconColorProminent,
+            AshColorProvider::ContentLayerType::kIconColorProminent,
             AshColorProvider::AshColorMode::kDark));
   }
 

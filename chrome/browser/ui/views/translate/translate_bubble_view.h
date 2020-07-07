@@ -117,8 +117,7 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
     BUTTON_ID_ALWAYS_TRANSLATE,
     BUTTON_ID_OPTIONS_MENU,
     BUTTON_ID_CLOSE,
-    BUTTON_ID_RESET,
-    BUTTON_ID_RETURN
+    BUTTON_ID_RESET
   };
 
   enum ComboboxID {
@@ -155,6 +154,8 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
                            TabSelectedAfterTranslation);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
                            AlwaysTranslateTriggerTranslation);
+  FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
+                           ShowOriginalUpdatesViewState);
 
   TranslateBubbleView(views::View* anchor_view,
                       std::unique_ptr<TranslateBubbleModel> model,
@@ -199,9 +200,6 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   // Creates source language label and combobox for Tab UI advanced view. Caller
   // takes ownership of the returned view.
   std::unique_ptr<views::View> CreateViewAdvancedTarget();
-
-  // Tab UI presents the same view for before/during/after translate state.
-  bool IsEquivalentState(TranslateBubbleModel::ViewState view_state);
 
   // Creates the 'advanced' view to show source/target language combobox. Caller
   // takes ownership of the returned view.

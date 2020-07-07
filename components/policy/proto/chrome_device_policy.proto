@@ -1290,6 +1290,20 @@ message DeviceNativePrintersWhitelistProto {
   repeated string whitelist = 1;
 }
 
+// The url and hash specified in JSON format that can be used to retrieve
+// the device-level external print servers configuration file.
+message DeviceExternalPrintServersProto {
+  // External policy blob encoded as JSON.
+  optional string external_policy = 1;
+}
+
+// A collection of ids defining the external print servers which are explicitly
+// allowed for the device.
+message DeviceExternalPrintServersAllowlistProto {
+  // A collection of ids for the list of print servers which are accessible.
+  repeated string allowlist = 1;
+}
+
 // Settings to control the behavior of the TPM firmware update functionality.
 message TPMFirmwareUpdateSettingsProto {
   // Whether the user is allowed to invoke the update via powerwash. This flow
@@ -1750,4 +1764,7 @@ message ChromeDeviceSettingsProto {
   optional StringPolicyProto minimum_chrome_version_eol_message = 103;
   optional ManagedGuestSessionPrivacyWarningsProto
       managed_guest_session_privacy_warnings = 104;
+  optional DeviceExternalPrintServersProto external_print_servers = 105;
+  optional DeviceExternalPrintServersAllowlistProto
+      external_print_servers_allowlist = 106;
 }

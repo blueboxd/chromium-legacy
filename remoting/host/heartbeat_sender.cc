@@ -10,11 +10,14 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/hash/md5.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringize_macros.h"
 #include "base/system/sys_info.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
+#include "net/base/network_interfaces.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/grpc_support/grpc_async_unary_request.h"
 #include "remoting/base/grpc_support/grpc_authenticated_executor.h"
@@ -22,6 +25,7 @@
 #include "remoting/base/grpc_support/grpc_util.h"
 #include "remoting/base/logging.h"
 #include "remoting/base/service_urls.h"
+#include "remoting/host/host_config.h"
 #include "remoting/host/host_details.h"
 #include "remoting/host/server_log_entry_host.h"
 #include "remoting/proto/remoting/v1/directory_service.grpc.pb.h"
@@ -129,7 +133,8 @@ void HeartbeatSender::HeartbeatClientImpl::CancelPendingRequests() {
 HeartbeatSender::HeartbeatSender(Delegate* delegate,
                                  const std::string& host_id,
                                  SignalStrategy* signal_strategy,
-                                 OAuthTokenGetter* oauth_token_getter)
+                                 OAuthTokenGetter* oauth_token_getter,
+                                 bool is_googler)
     : delegate_(delegate),
       host_id_(host_id),
       signal_strategy_(signal_strategy),
@@ -141,6 +146,7 @@ HeartbeatSender::HeartbeatSender(Delegate* delegate,
 
   signal_strategy_->AddListener(this);
   OnSignalStrategyStateChange(signal_strategy_->GetState());
+  is_googler_ = is_googler;
 }
 
 HeartbeatSender::~HeartbeatSender() {
@@ -350,7 +356,13 @@ apis::v1::HeartbeatRequest HeartbeatSender::CreateHeartbeatRequest() {
   heartbeat.set_host_os_version(GetHostOperatingSystemVersion());
   heartbeat.set_host_cpu_type(base::SysInfo::OperatingSystemArchitecture());
   heartbeat.set_is_initial_heartbeat(!initial_heartbeat_sent_);
-
+  // Only set the hostname if the user's email is @google.com and they are using
+  // a Linux OS.
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  if (is_googler_) {
+    heartbeat.set_hostname(base::MD5String(net::GetHostName()));
+  }
+#endif
   return heartbeat;
 }
 

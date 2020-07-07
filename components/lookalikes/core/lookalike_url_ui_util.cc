@@ -4,6 +4,7 @@
 
 #include "components/lookalikes/core/lookalike_url_ui_util.h"
 
+#include "build/build_config.h"
 #include "components/lookalikes/core/lookalike_url_util.h"
 #include "components/security_interstitials/core/common_string_util.h"
 #include "components/strings/grit/components_strings.h"
@@ -79,6 +80,17 @@ void PopulateLookalikeUrlBlockingPageStrings(
     load_time_data->SetString(
         "primaryButtonText",
         l10n_util::GetStringUTF16(IDS_LOOKALIKE_URL_BACK_TO_SAFETY));
+#if defined(OS_IOS)
+    // On iOS, offer to close the page instead of navigating to NTP when the
+    // safe URL is empty or invalid, and unable to go back.
+    bool show_close_page = false;
+    load_time_data->GetBoolean("cant_go_back", &show_close_page);
+    if (show_close_page) {
+      load_time_data->SetString(
+          "primaryButtonText",
+          l10n_util::GetStringUTF16(IDS_LOOKALIKE_URL_CLOSE_PAGE));
+    }
+#endif
   }
 }
 

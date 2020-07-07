@@ -10,7 +10,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/task/cancelable_task_tracker.h"
 #include "components/sessions/core/command_storage_backend.h"
 #include "components/sessions/core/sessions_export.h"
 #include "components/sessions/core/snapshotting_command_storage_manager.h"
@@ -43,10 +42,8 @@ class SESSIONS_EXPORT SnapshottingCommandStorageBackend
   SnapshottingCommandStorageBackend& operator=(
       const SnapshottingCommandStorageBackend&) = delete;
 
-  // Runs |callback| with commands from the last session file.
-  void ReadLastSessionCommands(
-      const base::CancelableTaskTracker::IsCanceledCallback& is_canceled,
-      GetCommandsCallback callback);
+  // Returns the commands from the last session file.
+  std::vector<std::unique_ptr<SessionCommand>> ReadLastSessionCommands();
 
   // Deletes the file containing the commands for the last session.
   void DeleteLastSession();

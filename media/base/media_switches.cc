@@ -489,6 +489,11 @@ const base::Feature kHardwareMediaKeyHandling {
 #endif
 };
 
+// Enables a platform-specific resolution cutoff for prioritizing platform
+// decoders over software decoders or vice-versa.
+const base::Feature kResolutionBasedDecoderPriority{
+    "ResolutionBasedDecoderPriority", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables low-delay video rendering in media pipeline on "live" stream.
 const base::Feature kLowDelayVideoRenderingOnLiveStream{
     "low-delay-video-rendering-on-live-stream",

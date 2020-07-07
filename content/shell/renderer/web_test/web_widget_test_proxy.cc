@@ -201,7 +201,7 @@ void WebWidgetTestProxy::SynchronouslyCompositeAfterTest() {
 }
 
 TestRunner* WebWidgetTestProxy::GetTestRunner() {
-  return GetWebViewTestProxy()->test_interfaces()->GetTestRunner();
+  return GetWebViewTestProxy()->GetTestRunner();
 }
 
 // static

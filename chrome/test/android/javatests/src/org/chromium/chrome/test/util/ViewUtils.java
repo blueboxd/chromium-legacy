@@ -4,6 +4,11 @@
 
 package org.chromium.chrome.test.util;
 
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 import android.view.View;
@@ -17,6 +22,7 @@ import androidx.test.espresso.ViewInteraction;
 import androidx.test.espresso.matcher.ViewMatchers;
 
 import org.hamcrest.Matcher;
+import org.junit.Assert;
 
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -37,7 +43,7 @@ public class ViewUtils {
     public static final int VIEW_GONE = 1 << 2;
     public static final int VIEW_NULL = 1 << 3;
 
-    private static class ExpectedViewCriteria extends Criteria {
+    private static class ExpectedViewCriteria implements Runnable {
         private final Matcher<View> mViewMatcher;
         private final @ExpectedViewState int mViewState;
         private final ViewGroup mRootView;
@@ -50,15 +56,11 @@ public class ViewUtils {
         }
 
         @Override
-        public boolean isSatisfied() {
+        public void run() {
             List<View> matchedViews = new ArrayList<>();
             findMatchingChildren(mRootView, matchedViews);
-            if (matchedViews.size() > 1) {
-                updateFailureReason("Multiple views matched: " + mViewMatcher.toString());
-                return false;
-            }
-            return matchedViews.size() == 0 ? hasViewExpectedState(null)
-                                            : hasViewExpectedState(matchedViews.get(0));
+            Assert.assertThat(matchedViews, not(hasSize(greaterThan(1))));
+            assertViewExpectedState(matchedViews.size() == 0 ? null : matchedViews.get(0));
         }
 
         private void findMatchingChildren(ViewGroup root, List<View> matchedViews) {
@@ -68,30 +70,33 @@ public class ViewUtils {
                 if (view instanceof ViewGroup) {
                     findMatchingChildren((ViewGroup) view, matchedViews);
                 }
-            };
+            }
         }
 
-        private boolean hasViewExpectedState(View view) {
+        private void assertViewExpectedState(View view) {
             if (view == null) {
-                updateFailureReason("No view found to match: " + mViewMatcher.toString());
-                return (mViewState & VIEW_NULL) != 0;
+                Criteria.checkThat("No view found to match: " + mViewMatcher.toString(),
+                        (mViewState & VIEW_NULL) != 0, is(true));
+                return;
             }
+
             switch (view.getVisibility()) {
                 case View.VISIBLE:
-                    updateFailureReason("View matching '" + mViewMatcher.toString()
-                            + "' is unexpectedly visible!");
-                    return (mViewState & VIEW_VISIBLE) != 0;
+                    Criteria.checkThat("View matching '" + mViewMatcher.toString()
+                                    + "' is unexpectedly visible!",
+                            (mViewState & VIEW_VISIBLE) != 0, is(true));
+                    break;
                 case View.INVISIBLE:
-                    updateFailureReason("View matching '" + mViewMatcher.toString()
-                            + "' is unexpectedly invisible!");
-                    return (mViewState & VIEW_INVISIBLE) != 0;
+                    Criteria.checkThat("View matching '" + mViewMatcher.toString()
+                                    + "' is unexpectedly invisible!",
+                            (mViewState & VIEW_INVISIBLE) != 0, is(true));
+                    break;
                 case View.GONE:
-                    updateFailureReason("View matching '" + mViewMatcher.toString()
-                            + "' is unexpectedly gone!");
-                    return (mViewState & VIEW_GONE) != 0;
+                    Criteria.checkThat(
+                            "View matching '" + mViewMatcher.toString() + "' is unexpectedly gone!",
+                            (mViewState & VIEW_GONE) != 0, is(true));
+                    break;
             }
-            assert false; // Not Reached.
-            return false;
         }
     }
 
@@ -176,21 +181,10 @@ public class ViewUtils {
      * @param view The specified view.
      */
     public static void waitForStableView(final View view) {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                if (view.isDirty()) {
-                    updateFailureReason("The view is dirty.");
-                    return false;
-                }
-
-                if (view.isLayoutRequested()) {
-                    updateFailureReason("The view has layout requested.");
-                    return false;
-                }
-
-                return true;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat("The view is dirty.", view.isDirty(), is(false));
+            Criteria.checkThat(
+                    "The view has layout requested.", view.isLayoutRequested(), is(false));
         });
     }
 }

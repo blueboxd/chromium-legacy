@@ -140,7 +140,7 @@ void TDLSSuccessCallback(const std::string& device_path,
     new_params.operation = shill::kTDLSStatusOperation;
   } else {
     NET_LOG(ERROR) << "Unexpected TDLS operation: " + params.operation;
-    NOTREACHED();
+    return;
   }
 
   new_params.ip_or_mac_address = params.ip_or_mac_address;

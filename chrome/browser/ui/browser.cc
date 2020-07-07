@@ -2166,7 +2166,7 @@ void Browser::PrintCrossProcessSubframe(
 #endif
 
 #if BUILDFLAG(ENABLE_PAINT_PREVIEW)
-void Browser::CapturePaintPreviewOfCrossProcessSubframe(
+void Browser::CapturePaintPreviewOfSubframe(
     content::WebContents* web_contents,
     const gfx::Rect& rect,
     const base::UnguessableToken& guid,

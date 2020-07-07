@@ -695,6 +695,7 @@
     },
 
     'chromium_gtests': {
+      'absl_hardening_tests': {},
       'angle_unittests': {},
       'base_unittests': {},
       'base_util_unittests': {},
@@ -1349,6 +1350,7 @@
     },
 
     'fuchsia_gtests': {
+      'absl_hardening_tests': {},
       'accessibility_unittests': {
         'mixins': ['fuchsia_runner_logs'],
       },
@@ -3126,6 +3128,7 @@
     },
 
     'ios_clang_tests': {
+      'absl_hardening_tests': {},
       'base_unittests': {},
       'boringssl_crypto_tests': {},
       'boringssl_ssl_tests': {},
@@ -3146,6 +3149,7 @@
     },
 
     'ios_common_tests': {
+      'absl_hardening_tests': {},
       'boringssl_crypto_tests': {},
       'boringssl_ssl_tests': {},
       'crypto_unittests': {},

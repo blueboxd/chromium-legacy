@@ -3248,7 +3248,7 @@ void GLRenderer::DidReceiveTextureInUseResponses(
 void GLRenderer::BindFramebufferToOutputSurface() {
   current_framebuffer_texture_ = nullptr;
   output_surface_->BindFramebuffer();
-  tint_gl_composited_content_ = settings_->tint_gl_composited_content;
+  tint_gl_composited_content_ = settings_->tint_composited_content;
   if (overdraw_feedback_) {
     // Output surfaces that require an external stencil test should not allow
     // overdraw feedback by setting |supports_stencil| to false.

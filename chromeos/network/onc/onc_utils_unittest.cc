@@ -9,6 +9,7 @@
 #include "base/check.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_reader.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
@@ -28,7 +29,7 @@ std::unique_ptr<base::Value> ReadTestJson(const std::string& filename) {
   base::FilePath path;
   std::unique_ptr<base::Value> result;
   if (!test_utils::GetTestDataPath("network", filename, &path)) {
-    NOTREACHED() << "Unable to get test file path for: " << filename;
+    LOG(FATAL) << "Unable to get test file path for: " << filename;
     return result;
   }
   JSONFileValueDeserializer deserializer(path,
@@ -129,8 +130,8 @@ TEST(ONCResolveServerCertRefs, ResolveServerCertRefs) {
   certs["cert_google"] = "pem_google";
   certs["cert_webkit"] = "pem_webkit";
 
-  for (base::DictionaryValue::Iterator it(*test_cases);
-       !it.IsAtEnd(); it.Advance()) {
+  for (base::DictionaryValue::Iterator it(*test_cases); !it.IsAtEnd();
+       it.Advance()) {
     SCOPED_TRACE("Test case: " + it.key());
 
     const base::DictionaryValue* test_case = NULL;
@@ -148,11 +149,11 @@ TEST(ONCResolveServerCertRefs, ResolveServerCertRefs) {
     std::unique_ptr<base::ListValue> actual_resolved_onc(
         networks_with_cert_refs->DeepCopy());
 
-    bool success = ResolveServerCertRefsInNetworks(certs,
-                                                   actual_resolved_onc.get());
+    bool success =
+        ResolveServerCertRefsInNetworks(certs, actual_resolved_onc.get());
     EXPECT_EQ(expected_success, success);
-    EXPECT_TRUE(test_utils::Equals(expected_resolved_onc,
-                                   actual_resolved_onc.get()));
+    EXPECT_TRUE(
+        test_utils::Equals(expected_resolved_onc, actual_resolved_onc.get()));
   }
 }
 

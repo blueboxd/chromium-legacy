@@ -409,6 +409,14 @@ interface LocalFrameHost {
   DidChangeFramePolicy(
       mojo_base.mojom.UnguessableToken child_frame_token,
       blink.mojom.FramePolicy frame_policy);
+
+  // Sent by the renderer to request a paint preview of a subframe. |clip_rect|
+  // is the size of the frame in it's parent. |guid| is an an identifier for
+  // all the capture work (regardless of the process captures are happening in)
+  // that allows the results to be grouped together, even if there are multiple
+  // requests in-flight.
+  CapturePaintPreviewOfSubframe(
+    gfx.mojom.Rect clip_rect, mojo_base.mojom.UnguessableToken guid);
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will

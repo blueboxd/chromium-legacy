@@ -281,7 +281,6 @@
 <translation id="1340527397989195812">Направете резервни копии на медиумите од уредот со користење на апликацијата Датотеки.</translation>
 <translation id="1341988552785875222">„<ph name="APP_NAME" />“ го постави тековниот тапет. Пред да изберете друг тапет, можеби ќе треба да ја деинсталирате „<ph name="APP_NAME" />“.</translation>
 <translation id="1343865611738742294">Дајте им дозвола на апликациите на Linux да пристапуваат до USB-уреди. Linux нема да го запомни USB-уредот откако ќе се отстрани.</translation>
-<translation id="1344143111673240412">Промената во поставката за камерата бара рестартирање на Parallels Desktop</translation>
 <translation id="1347256498747320987">Инсталирање ажурирања и апликации. Ако продолжите, се согласувате дека уредов може автоматски да презема и инсталира ажурирања и апликации од Google, од операторот и од производителот на уредот, веројатно со користење мобилен интернет. Некои од апликацииве може да нудат купувања во апликација. <ph name="BEGIN_LINK1" />Дознајте повеќе<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">Ажурирањето ќе започне кога батеријата ќе се наполни до <ph name="BATTERY_LEVEL" />%.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -1197,7 +1196,6 @@
 <translation id="2470702053775288986">Оневозможени неподдржани наставки</translation>
 <translation id="2471469610750100598">Црна (стандардно)</translation>
 <translation id="2473195200299095979">Преведи ја страницата</translation>
-<translation id="2474848500897222119"><ph name="PRINTER_NAME" /> нема мастило</translation>
 <translation id="2475982808118771221">Настана грешка</translation>
 <translation id="2476578072172137802">Поставки на локација</translation>
 <translation id="2478176599153288112">Дозволи на медиумски датотеки за „<ph name="EXTENSION" />“</translation>
@@ -1374,7 +1372,7 @@
 <translation id="2682498795777673382">Ажурирање од родителот</translation>
 <translation id="2683638487103917598">Папката е подредена</translation>
 <translation id="2684004000387153598">За да продолжите, кликнете „Во ред“, а потоа кликнете „Додај лице“ за да создадете нов профил за адресата на е-пошта.</translation>
-<translation id="2686222346846590368">Ова е последното автоматско софтверско и безбедносно ажурирање за овој <ph name="DEVICE_TYPE" />. За да добивате идни ажурирања, надградете на понов модел. &lt;a target="_blank" href="<ph name="URL" />"&gt;Дознајте повеќе<ph name="LINK_END" /></translation>
+<translation id="2686222346846590368">Ова е последното автоматско ажурирање на софтверот и безбедноста за овој <ph name="DEVICE_TYPE" />. За да добивате идни ажурирања, надградете на понов модел. &lt;a target="_blank" href="<ph name="URL" />"&gt;Дознајте повеќе<ph name="LINK_END" /></translation>
 <translation id="2687403674020088961">Блокирај ги сите колачиња (не се препорачува)</translation>
 <translation id="2687407218262674387">Услови за користење на Google</translation>
 <translation id="2688196195245426394">Грешка при регистрирање на уредот на серверот: <ph name="CLIENT_ERROR" />.</translation>
@@ -1503,7 +1501,6 @@
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> користи поставки за прокси од вашиот администратор</translation>
 <translation id="2825758591930162672">Јавен клуч на субјектот</translation>
 <translation id="2828650939514476812">Поврзете се на Wi-Fi мрежа</translation>
-<translation id="28291580771888953">Редицата на <ph name="PRINTER_NAME" /> е полна</translation>
 <translation id="2835547721736623118">Услуга за препознавање говор</translation>
 <translation id="2836269494620652131">Пад</translation>
 <translation id="2836635946302913370">Администраторот го оневозможи најавувањето со ова корисничко име.</translation>
@@ -2319,7 +2316,7 @@
 <translation id="3839516600093027468">Секогаш блокирај го пристапот на <ph name="HOST" /> за гледање на привремената меморија</translation>
 <translation id="3841964634449506551">Погрешна лозинка</translation>
 <translation id="3842552989725514455">Фонт Serif</translation>
-<translation id="3843058644024807390">Промената во поставката за микрофонот бара рестартирање на Parallels Desktop</translation>
+<translation id="3843464315703645664">Внатрешно ставена на списокот на дозволен пристап</translation>
 <translation id="3846116211488856547">Добијте алатки за програмирање веб-сајтови, апликации за Android и друго. Ако инсталирате Linux, ќе се преземат <ph name="DOWNLOAD_SIZE" /> податоци.</translation>
 <translation id="3847319713229060696">Помогнете да се подобри безбедноста на интернет за сите</translation>
 <translation id="385051799172605136">Назад</translation>
@@ -2778,7 +2775,6 @@
 <translation id="4453946976636652378">Пребарајте во <ph name="SEARCH_ENGINE_NAME" /> или напишете URL-адреса</translation>
 <translation id="4459169140545916303">Активен пред <ph name="DEVICE_LAST_ACTIVATED_TIME" /> дена</translation>
 <translation id="4460014764210899310">Одгрупирајте</translation>
-<translation id="4460343359907016103">Грешка при поврзувањето со <ph name="PRINTER_NAME" /></translation>
 <translation id="4462159676511157176">Сервери со приспособено име</translation>
 <translation id="4465236939126352372">Поставено е временско ограничување од <ph name="TIME" /> за <ph name="APP_NAME" /></translation>
 <translation id="4465725236958772856">Мрежа <ph name="NETWORK_INDEX" /> од <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, управувана од администраторот, поврзи</translation>
@@ -3076,7 +3072,6 @@
 <translation id="4864369630010738180">Се најавува…</translation>
 <translation id="4864805589453749318">Изберете го родителот што дава дозвола за да додадете училишна сметка.</translation>
 <translation id="486635084936119914">Отворај одредени типови датотеки автоматски по преземањето</translation>
-<translation id="4869213010169296107">Недостасува фиоката на <ph name="PRINTER_NAME" /></translation>
 <translation id="48704129375571883">Додајте дополнителни функции</translation>
 <translation id="4870758487381879312">Внесете лозинка што ви ја обезбедил администраторот за да добиете информации за конфигурацијата</translation>
 <translation id="4870903493621965035">Нема спарени уреди</translation>
@@ -3327,6 +3322,7 @@
 <translation id="5184662919967270437">Уредот се ажурира</translation>
 <translation id="5185359571430619712">Прегледајте ги екстензиите</translation>
 <translation id="5185386675596372454">Најновата верзија на „<ph name="EXTENSION_NAME" />“ е оневозможена бидејќи бара повеќе дозволи.</translation>
+<translation id="5185500136143151980">Нема интернет</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5190926251776387065">Активирај ја портата</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> сака да преземе повеќе датотеки</translation>
@@ -3483,7 +3479,6 @@
 <translation id="5390112241331447203">Вклучи ја датотеката system_logs.txt испратена во извештаите со повратни информации.</translation>
 <translation id="5390677308841849479">Темноцрвена и портокалова</translation>
 <translation id="5390743329570580756">Испрати за</translation>
-<translation id="5395869306561378615"><ph name="PRINTER_NAME" /> е паузиран</translation>
 <translation id="5397794290049113714">Вие</translation>
 <translation id="5398572795982417028">Претпочитани вредности за надворешни граници на страницата, ограничувањето е <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">Рекламите се блокирани</translation>
@@ -3498,7 +3493,6 @@
 <translation id="5417312524372586921">Теми на прелистувачот</translation>
 <translation id="5419405654816502573">Voice Match</translation>
 <translation id="5420438158931847627">Ја одредува острината на текстот и сликите</translation>
-<translation id="5421498071721257877"><ph name="PRINTER_NAME" /> покажува грешка на уредот</translation>
 <translation id="5422221874247253874">Пристапна точка</translation>
 <translation id="5422781158178868512">Извинете, надворешниот уред не можеше да се препознае.</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3847,7 +3841,6 @@
 <translation id="5852137567692933493">Рестартирање и фабричко ресетирање</translation>
 <translation id="5854912040170951372">Парче пица</translation>
 <translation id="5855267860608268405">Познати Wi-Fi мрежи</translation>
-<translation id="5855310969323666289">Капакот на <ph name="PRINTER_NAME" /> е отворен</translation>
 <translation id="5855643921295613558">0,6 секунди</translation>
 <translation id="5856721540245522153">Овозможете ги функциите за отстранување грешки</translation>
 <translation id="5857090052475505287">Нова папка</translation>
@@ -3878,7 +3871,6 @@
 <translation id="5877064549588274448">Каналот е сменет. Рестартирајте го вашиот уред за да ги примените измените.</translation>
 <translation id="5877584842898320529">Избраниот печатач не е достапен или не е правилно инсталиран. <ph name="BR" /> Проверете го или обидете се да изберете друг печатач.</translation>
 <translation id="5882919346125742463">Познати мрежи</translation>
-<translation id="5883716097305842571">Излезната фиока на <ph name="PRINTER_NAME" /> е речиси полна</translation>
 <translation id="5884474295213649357">Картичкава е поврзана со USB-уред.</translation>
 <translation id="5886009770935151472">Прст 1</translation>
 <translation id="5889282057229379085">Максимален број посредни ЦА: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4444,7 +4436,6 @@
 <translation id="6611972847767394631">Најдете ги вашите картички тука</translation>
 <translation id="6612358246767739896">Заштитена содржина</translation>
 <translation id="6615455863669487791">Покажи ми</translation>
-<translation id="6617034477946102682"><ph name="PRINTER_NAME" /> е недостапен</translation>
 <translation id="6618097958368085618">Сепак задржи</translation>
 <translation id="6618744767048954150">Се извршува</translation>
 <translation id="6619058681307408113">Линиски печатач Daemon (LPD)</translation>
@@ -4861,7 +4852,6 @@
 <translation id="7128151990937044829">Прикажувај индикатор во лентата за адреси кога известувањата се блокирани</translation>
 <translation id="7131040479572660648">Читајте ги вашите податоци на <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> и <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Додај стра&amp;ница...</translation>
-<translation id="7131379856697962078">Излезната фиока на <ph name="PRINTER_NAME" /> е полна</translation>
 <translation id="7133578150266914903">Администраторот го враќа уредов на фабричките поставки (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">Направи го текстот помал</translation>
 <translation id="7135729336746831607">Да се вклучи Bluetooth?</translation>
@@ -4880,7 +4870,6 @@
 <translation id="7152478047064750137">Екстензијава не бара специјални дозволи</translation>
 <translation id="7154130902455071009">Променете ја почетната страница во: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">Постојна фотографија од камера или датотека</translation>
-<translation id="715657691234357425"><ph name="PRINTER_NAME" /> нема доволно хартија</translation>
 <translation id="7165320105431587207">Не успеа да се конфигурира мрежата</translation>
 <translation id="716640248772308851">„<ph name="EXTENSION" />“ може да чита слики, видео и аудио датотеки на означените локации.</translation>
 <translation id="7167486101654761064">&amp;Секогаш отворај датотеки од овој тип</translation>
@@ -4911,7 +4900,6 @@
 <translation id="7197632491113152433">Најдовме <ph name="NUMBER_OF_APPS" /> аплкации од вашата сметка што може да се користат на уредов.</translation>
 <translation id="7199158086730159431">Побарај п&amp;омош</translation>
 <translation id="7200083590239651963">Избор на конфигурација</translation>
-<translation id="7201042526153088083">Инсталирајте апликации и игри од Google Play на вашиот <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;Дознајте повеќе&lt;/a&gt;</translation>
 <translation id="720110658997053098">Трајно задржи го уредов во режим на киоск</translation>
 <translation id="7201118060536064622">Ставката „<ph name="DELETED_ITEM_NAME" />“ е избришана</translation>
 <translation id="7201420661433230412">Прикажи ги датотеките</translation>
@@ -5217,7 +5205,6 @@
 <translation id="7598466960084663009">Рестартирај го компјутерот</translation>
 <translation id="7599527631045201165">Името на уредот е предолго. Внесете пократко име за да се обидете повторно.</translation>
 <translation id="7600965453749440009">Никогаш не преведувај <ph name="LANGUAGE" /></translation>
-<translation id="7601297144931396972">Заглавена е хартија во <ph name="PRINTER_NAME" /></translation>
 <translation id="760197030861754408">Одете на <ph name="LANDING_PAGE" /> за да поврзете.</translation>
 <translation id="7602079150116086782">Нема картички од други уреди</translation>
 <translation id="7602173054665172958">Управување со налозите за печатење</translation>
@@ -5228,6 +5215,7 @@
 <translation id="7609148976235050828">Поврзете се на интернет и обидете се повторно.</translation>
 <translation id="7614260613810441905">Прашувај кога некој сајт сака да изменува датотеки или папки на уредот (препорачано)</translation>
 <translation id="761530003705945209">Направете бекап на Google Drive. Лесно враќајте ги податоците или менувајте ги уредите во секое време. Бекапот опфаќа податоци од апликациите. Вашиот бекап се прикачува во Google и се шифрира со лозинката за вашата сметка на Google.</translation>
+<translation id="7615365294369022248">Грешка при додавањето сметка</translation>
 <translation id="7616214729753637086">Уредот се регистрира…</translation>
 <translation id="7617263010641145920">Вклучување на Play Store</translation>
 <translation id="7617366389578322136">Се поврзува на „<ph name="DEVICE_NAME" />“</translation>
@@ -5675,7 +5663,6 @@
           <ph name="TIME" />. Тоа не ги вклучува начините на плаќање и адресите од Google Pay.</translation>
 <translation id="81238879832906896">Жолт и бел цвет</translation>
 <translation id="8124313775439841391">Управуван ONC</translation>
-<translation id="8127535217699822294"><ph name="PRINTER_NAME" /> нема хартија</translation>
 <translation id="813082847718468539">Прикажи информации за локација</translation>
 <translation id="8131740175452115882">Потврди</translation>
 <translation id="8133676275609324831">&amp;Прикажи во папка</translation>
@@ -5774,7 +5761,6 @@
 <translation id="8254954272268479918">Исклучи Linux (Бета)</translation>
 <translation id="8255451560461371599">Без заднина</translation>
 <translation id="8256319818471787266">Џеки</translation>
-<translation id="8256417822772703842"><ph name="PRINTER_NAME" /> нема доволно мастило</translation>
 <translation id="8257950718085972371">Продолжи со блокирање пристап до фотоапарат</translation>
 <translation id="8259239505248583312">Да започнеме</translation>
 <translation id="8260864402787962391">Глувче</translation>
@@ -5958,7 +5944,6 @@
 <translation id="8487678622945914333">Зумирај</translation>
 <translation id="8490896350101740396">Следниве апликации на Киоск „<ph name="UPDATED_APPS" />“ се ажурирани. Рестартирајте го уредот за да го завршите процесот на ажурирање.</translation>
 <translation id="8493236660459102203">Микрофон:</translation>
-<translation id="8495940850609851342"><ph name="PRINTER_NAME" /> е запрен</translation>
 <translation id="8496717697661868878">Стартувај го приклучокот</translation>
 <translation id="8497219075884839166">Услуги на Windows</translation>
 <translation id="8498214519255567734">Го олеснува гледањето во екранот или читањето при слаба светлина</translation>
@@ -6500,6 +6485,12 @@
 <translation id="9157096865782046368">0,8 секунди</translation>
 <translation id="9157697743260533322">Не успеа поставувањето автоматски ажурирања за сите корисници (грешка при стартување preflight: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Ах! Настана проблем со комуникација со мрежа при автентикација. Проверете го мрежното поврзување и обидете се повторно.</translation>
+<translation id="9159643062839240276">Обидете се:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />да ги проверите мрежните кабли, модемот и рутерот;
+      <ph name="LIST_ITEM" />повторно да се поврзете со Wi-Fi-мрежата;
+      <ph name="LIST_ITEM" />да извршите проверка преку „Дијагностика за поврзливост на Chrome“.
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">Слика во слика</translation>
 <translation id="9168436347345867845">Остави за подоцна</translation>
 <translation id="9169496697824289689">Прикажи кратенки на тастатура</translation>

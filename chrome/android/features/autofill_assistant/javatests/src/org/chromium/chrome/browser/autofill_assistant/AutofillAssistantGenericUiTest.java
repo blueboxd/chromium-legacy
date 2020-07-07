@@ -3007,6 +3007,7 @@ public class AutofillAssistantGenericUiTest {
      */
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/1102828")
     public void testCreditCardUi() throws Exception {
         // When the toggle button becomes checked, we write the current card to
         // |selected_credit_card|.

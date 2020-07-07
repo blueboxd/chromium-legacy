@@ -5,6 +5,7 @@
 #include <utility>
 
 #include "third_party/blink/renderer/modules/peerconnection/fake_rtc_rtp_transceiver_impl.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_dtmf_sender_handler.h"
 
 namespace blink {
@@ -12,20 +13,18 @@ namespace blink {
 MediaStreamComponent* CreateMediaStreamComponent(
     const std::string& id,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  blink::WebMediaStreamSource web_source;
-  web_source.Initialize(blink::WebString::FromUTF8(id),
-                        blink::WebMediaStreamSource::kTypeAudio,
-                        blink::WebString::FromUTF8("audio_track"), false);
-  std::unique_ptr<blink::MediaStreamAudioSource> audio_source_ptr =
-      std::make_unique<blink::MediaStreamAudioSource>(
-          std::move(task_runner), true /* is_local_source */);
-  blink::MediaStreamAudioSource* audio_source = audio_source_ptr.get();
-  // Takes ownership of |audio_source_ptr|.
-  web_source.SetPlatformSource(std::move(audio_source_ptr));
+  auto* source = MakeGarbageCollected<MediaStreamSource>(
+      String::FromUTF8(id), MediaStreamSource::kTypeAudio,
+      String::FromUTF8("audio_track"), false);
+  auto audio_source = std::make_unique<blink::MediaStreamAudioSource>(
+      std::move(task_runner), true /* is_local_source */);
+  auto* audio_source_ptr = audio_source.get();
+  audio_source->SetOwner(source);
+  source->SetPlatformSource(std::move(audio_source));
 
-  MediaStreamComponent* component =
-      MakeGarbageCollected<MediaStreamComponent>(web_source.Id(), web_source);
-  audio_source->ConnectToTrack(component);
+  auto* component =
+      MakeGarbageCollected<MediaStreamComponent>(source->Id(), source);
+  audio_source_ptr->ConnectToTrack(component);
   return component;
 }
 

@@ -27,7 +27,6 @@
 #include "third_party/blink/renderer/modules/webdatabase/dom_window_web_database.h"
 
 #include "third_party/blink/renderer/bindings/modules/v8/v8_database_callback.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/modules/webdatabase/database.h"
@@ -64,9 +63,9 @@ Database* DOMWindowWebDatabase::openDatabase(
   DatabaseManager& db_manager = DatabaseManager::Manager();
   DatabaseError error = DatabaseError::kNone;
   if (RuntimeEnabledFeatures::DatabaseEnabled() &&
-      window.document()->GetSecurityOrigin()->CanAccessDatabase()) {
-    if (window.document()->GetSecurityOrigin()->IsLocal())
-      UseCounter::Count(window.document(), WebFeature::kFileAccessedDatabase);
+      window.GetSecurityOrigin()->CanAccessDatabase()) {
+    if (window.GetSecurityOrigin()->IsLocal())
+      UseCounter::Count(window, WebFeature::kFileAccessedDatabase);
 
     String error_message;
     database = db_manager.OpenDatabase(&window, name, version, display_name,

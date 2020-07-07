@@ -149,12 +149,20 @@ LayoutObject* LayoutObjectFactory::CreateListMarker(Node& node,
   bool is_inside =
       parent_style->ListStylePosition() == EListStylePosition::kInside ||
       (IsA<HTMLLIElement>(parent) && !parent_style->IsInsideListElement());
-  if (is_inside) {
-    return CreateObject<LayoutObject, LayoutNGInsideListMarker,
+  if (style.ContentBehavesAsNormal()) {
+    if (is_inside) {
+      return CreateObject<LayoutObject, LayoutNGInsideListMarker,
+                          LayoutListMarker>(node, style, legacy);
+    }
+    return CreateObject<LayoutObject, LayoutNGOutsideListMarker,
                         LayoutListMarker>(node, style, legacy);
   }
+  if (is_inside) {
+    return CreateObject<LayoutObject, LayoutNGInsideListMarker,
+                        LayoutInsideListMarker>(node, style, legacy);
+  }
   return CreateObject<LayoutObject, LayoutNGOutsideListMarker,
-                      LayoutListMarker>(node, style, legacy);
+                      LayoutOutsideListMarker>(node, style, legacy);
 }
 
 LayoutBlock* LayoutObjectFactory::CreateTable(Node& node,

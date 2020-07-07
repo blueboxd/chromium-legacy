@@ -17,6 +17,7 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/task/thread_pool.h"
@@ -361,7 +362,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     uint64_t remove_mask,
     BrowsingDataFilterBuilder* filter_builder,
     uint64_t origin_type_mask,
-    base::OnceClosure callback) {
+    base::OnceCallback<void(uint64_t)> callback) {
   DCHECK(((remove_mask &
            ~content::BrowsingDataRemover::DATA_TYPE_AVOID_CLOSING_CONNECTIONS &
            ~FILTERABLE_DATA_TYPES) == 0) ||
@@ -421,6 +422,8 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
 
   delete_begin_ = delete_begin;
   delete_end_ = delete_end;
+
+  failed_data_types_ = 0;
 
   base::RepeatingCallback<bool(const GURL& url)> filter =
       filter_builder->BuildUrlFilter();
@@ -872,12 +875,11 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
         profile_, ServiceAccessType::EXPLICIT_ACCESS);
 
     if (account_store) {
-      // TODO(crbug.com/1086433): Handle sync failure.
       account_store->RemoveLoginsByURLAndTime(
           filter, delete_begin_, delete_end_,
           CreateTaskCompletionClosure(TracingDataType::kAccountPasswords),
-          IgnoreArgument<bool>(CreateTaskCompletionClosure(
-              TracingDataType::kAccountPasswordsSynced)));
+          CreateTaskCompletionCallback(TracingDataType::kAccountPasswordsSynced,
+                                       DATA_TYPE_PASSWORDS));
     }
 
     BrowserContext::GetDefaultStoragePartition(profile_)
@@ -1267,7 +1269,9 @@ void ChromeBrowsingDataRemoverDelegate::OnTaskStarted(
 }
 
 void ChromeBrowsingDataRemoverDelegate::OnTaskComplete(
-    TracingDataType data_type) {
+    TracingDataType data_type,
+    uint64_t data_type_mask,
+    bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   size_t num_erased = pending_sub_tasks_.erase(data_type);
   DCHECK_EQ(num_erased, 1U);
@@ -1276,6 +1280,13 @@ void ChromeBrowsingDataRemoverDelegate::OnTaskComplete(
       TRACE_ID_WITH_SCOPE("ChromeBrowsingDataRemoverDelegate",
                           static_cast<int>(data_type)),
       "data_type", static_cast<int>(data_type));
+
+  if (!success) {
+    base::UmaHistogramEnumeration("History.ClearBrowsingData.FailedTasksChrome",
+                                  data_type);
+    failed_data_types_ |= data_type_mask;
+  }
+
   if (!pending_sub_tasks_.empty())
     return;
 
@@ -1295,15 +1306,25 @@ void ChromeBrowsingDataRemoverDelegate::OnTaskComplete(
   slow_pending_tasks_closure_.Cancel();
 
   DCHECK(!callback_.is_null());
-  std::move(callback_).Run();
+  std::move(callback_).Run(failed_data_types_);
 }
 
 base::OnceClosure
 ChromeBrowsingDataRemoverDelegate::CreateTaskCompletionClosure(
     TracingDataType data_type) {
+  return base::BindOnce(
+      CreateTaskCompletionCallback(data_type, /*data_type_mask=*/0),
+      /*success=*/true);
+}
+
+base::OnceCallback<void(bool)>
+ChromeBrowsingDataRemoverDelegate::CreateTaskCompletionCallback(
+    TracingDataType data_type,
+    uint64_t data_type_mask) {
   OnTaskStarted(data_type);
   return base::BindOnce(&ChromeBrowsingDataRemoverDelegate::OnTaskComplete,
-                        weak_ptr_factory_.GetWeakPtr(), data_type);
+                        weak_ptr_factory_.GetWeakPtr(), data_type,
+                        data_type_mask);
 }
 
 base::OnceClosure
@@ -1315,7 +1336,8 @@ ChromeBrowsingDataRemoverDelegate::CreateTaskCompletionClosureForMojo(
   return mojo::WrapCallbackWithDropHandler(
       CreateTaskCompletionClosure(data_type),
       base::BindOnce(&ChromeBrowsingDataRemoverDelegate::OnTaskComplete,
-                     weak_ptr_factory_.GetWeakPtr(), data_type));
+                     weak_ptr_factory_.GetWeakPtr(), data_type,
+                     /*data_type_mask=*/0, /*success=*/true));
 }
 
 void ChromeBrowsingDataRemoverDelegate::RecordUnfinishedSubTasks() {
@@ -1392,6 +1414,7 @@ void ChromeBrowsingDataRemoverDelegate::
     OnDeauthorizeFlashContentLicensesCompleted(uint32_t request_id,
                                                bool /* success */) {
   DCHECK_EQ(request_id, deauthorize_flash_content_licenses_request_id_);
-  OnTaskComplete(TracingDataType::kFlashDeauthorization);
+  OnTaskComplete(TracingDataType::kFlashDeauthorization,
+                 /*data_type_mask=*/0, /*success=*/true);
 }
 #endif

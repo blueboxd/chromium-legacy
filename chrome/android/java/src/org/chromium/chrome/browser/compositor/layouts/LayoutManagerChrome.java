@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelperMa
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
@@ -549,5 +550,22 @@ public class LayoutManagerChrome
     protected Tab getTabById(int id) {
         TabModelSelector selector = getTabModelSelector();
         return selector == null ? null : selector.getTabById(id);
+    }
+
+    @Override
+    protected void switchToTab(Tab tab, int lastTabId) {
+        if (tab == null || lastTabId == Tab.INVALID_TAB_ID) {
+            super.switchToTab(tab, lastTabId);
+            return;
+        }
+        startShowing(mToolbarSwipeLayout, false);
+        mToolbarSwipeLayout.switchToTab(tab.getId(), lastTabId);
+
+        // Close the previous tab if the previous tab is a NTP.
+        Tab lastTab = getTabById(lastTabId);
+        if (NewTabPage.isNTPUrl(lastTab.getUrl()) && !lastTab.canGoBack()
+                && !lastTab.canGoForward()) {
+            getTabModelSelector().getCurrentModel().closeTab(lastTab, tab, false, false, false);
+        }
     }
 }

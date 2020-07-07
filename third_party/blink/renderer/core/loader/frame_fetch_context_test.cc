@@ -1362,7 +1362,7 @@ TEST_F(FrameFetchContextTest, SetFirstPartyCookieWhenDetached) {
 TEST_F(FrameFetchContextTest, TopFrameOrigin) {
   const KURL document_url("https://www2.example.com/foo/bar");
   RecreateFetchContext(document_url);
-  const SecurityOrigin* origin = document->GetSecurityOrigin();
+  const SecurityOrigin* origin = document->domWindow()->GetSecurityOrigin();
 
   const KURL url("https://www.example.com/hoge/fuga");
   ResourceRequest request(url);
@@ -1373,7 +1373,7 @@ TEST_F(FrameFetchContextTest, TopFrameOrigin) {
 TEST_F(FrameFetchContextTest, TopFrameOriginDetached) {
   const KURL document_url("https://www2.example.com/foo/bar");
   RecreateFetchContext(document_url);
-  const SecurityOrigin* origin = document->GetSecurityOrigin();
+  const SecurityOrigin* origin = document->domWindow()->GetSecurityOrigin();
 
   const KURL url("https://www.example.com/hoge/fuga");
   ResourceRequest request(url);

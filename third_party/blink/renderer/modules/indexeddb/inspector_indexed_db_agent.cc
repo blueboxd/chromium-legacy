@@ -37,7 +37,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_idb_transaction_options.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_string_list.h"
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -99,8 +98,7 @@ namespace {
 const char kIndexedDBObjectGroup[] = "indexeddb";
 const char kNoDocumentError[] = "No document for given frame found";
 
-Response AssertIDBFactory(Document* document, IDBFactory*& result) {
-  LocalDOMWindow* dom_window = document->domWindow();
+Response AssertIDBFactory(LocalDOMWindow* dom_window, IDBFactory*& result) {
   if (!dom_window)
     return Response::ServerError("No IndexedDB factory for given frame found");
   IDBFactory* idb_factory = GlobalIndexedDB::indexedDB(*dom_window);
@@ -182,13 +180,12 @@ class ExecutableWithDatabase
   virtual void Execute(IDBDatabase*, ScriptState*) = 0;
   virtual RequestCallback* GetRequestCallback() = 0;
   void Start(LocalFrame* frame, const String& database_name) {
-    Document* document = frame ? frame->GetDocument() : nullptr;
-    if (!document) {
+    if (!frame) {
       SendFailure(Response::ServerError(kNoDocumentError));
       return;
     }
     IDBFactory* idb_factory = nullptr;
-    Response response = AssertIDBFactory(document, idb_factory);
+    Response response = AssertIDBFactory(frame->DomWindow(), idb_factory);
     if (!response.IsSuccess()) {
       SendFailure(response);
       return;
@@ -201,7 +198,7 @@ class ExecutableWithDatabase
     }
 
     ScriptState::Scope scope(script_state);
-    DoStart(idb_factory, script_state, document->GetSecurityOrigin(),
+    DoStart(idb_factory, script_state, frame->DomWindow()->GetSecurityOrigin(),
             database_name);
   }
 
@@ -747,13 +744,12 @@ void InspectorIndexedDBAgent::requestDatabaseNames(
     std::unique_ptr<RequestDatabaseNamesCallback> request_callback) {
   LocalFrame* frame =
       inspected_frames_->FrameWithSecurityOrigin(security_origin);
-  Document* document = frame ? frame->GetDocument() : nullptr;
-  if (!document) {
+  if (!frame) {
     request_callback->sendFailure(Response::ServerError(kNoDocumentError));
     return;
   }
   IDBFactory* idb_factory = nullptr;
-  Response response = AssertIDBFactory(document, idb_factory);
+  Response response = AssertIDBFactory(frame->DomWindow(), idb_factory);
   if (!response.IsSuccess()) {
     request_callback->sendFailure(response);
     return;
@@ -777,7 +773,7 @@ void InspectorIndexedDBAgent::requestDatabaseNames(
       event_type_names::kSuccess,
       MakeGarbageCollected<GetDatabaseNamesCallback>(
           std::move(request_callback),
-          document->GetSecurityOrigin()->ToRawString()),
+          frame->DomWindow()->GetSecurityOrigin()->ToRawString()),
       false);
 }
 
@@ -1153,13 +1149,12 @@ void InspectorIndexedDBAgent::deleteDatabase(
     std::unique_ptr<DeleteDatabaseCallback> request_callback) {
   LocalFrame* frame =
       inspected_frames_->FrameWithSecurityOrigin(security_origin);
-  Document* document = frame ? frame->GetDocument() : nullptr;
-  if (!document) {
+  if (!frame) {
     request_callback->sendFailure(Response::ServerError(kNoDocumentError));
     return;
   }
   IDBFactory* idb_factory = nullptr;
-  Response response = AssertIDBFactory(document, idb_factory);
+  Response response = AssertIDBFactory(frame->DomWindow(), idb_factory);
   if (!response.IsSuccess()) {
     request_callback->sendFailure(response);
     return;
@@ -1183,7 +1178,7 @@ void InspectorIndexedDBAgent::deleteDatabase(
       event_type_names::kSuccess,
       MakeGarbageCollected<DeleteCallback>(
           std::move(request_callback),
-          document->GetSecurityOrigin()->ToRawString()),
+          frame->DomWindow()->GetSecurityOrigin()->ToRawString()),
       false);
 }
 

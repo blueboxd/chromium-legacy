@@ -11,7 +11,7 @@
 
 #include "ash/login_status.h"
 #include "ash/public/cpp/ash_prefs.h"
-#include "ash/session/session_observer.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"

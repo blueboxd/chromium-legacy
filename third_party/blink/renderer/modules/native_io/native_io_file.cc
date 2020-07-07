@@ -318,7 +318,7 @@ void NativeIOFile::DidRead(
 
   if (read_bytes < 0) {
     resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
-        script_state->GetIsolate(), DOMExceptionCode::kInvalidStateError,
+        script_state->GetIsolate(), DOMExceptionCode::kOperationError,
         "read() failed"));
     return;
   }
@@ -350,7 +350,7 @@ void NativeIOFile::DoWrite(
 
   PostCrossThreadTask(
       *resolver_task_runner, FROM_HERE,
-      CrossThreadBindOnce(&NativeIOFile::DidRead, std::move(native_io_file),
+      CrossThreadBindOnce(&NativeIOFile::DidWrite, std::move(native_io_file),
                           std::move(resolver), written_bytes, write_error));
 }
 
@@ -370,7 +370,7 @@ void NativeIOFile::DidWrite(
 
   if (written_bytes < 0) {
     resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
-        script_state->GetIsolate(), DOMExceptionCode::kDataError,
+        script_state->GetIsolate(), DOMExceptionCode::kOperationError,
         "write() failed"));
     return;
   }

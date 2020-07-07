@@ -17,7 +17,7 @@ namespace chromeos {
 class MockWelcomeScreen : public WelcomeScreen {
  public:
   MockWelcomeScreen(WelcomeView* view,
-                    const base::RepeatingClosure& exit_callback);
+                    const WelcomeScreen::ScreenExitCallback& exit_callback);
   ~MockWelcomeScreen() override;
 
   MOCK_METHOD(void, ShowImpl, ());
@@ -42,7 +42,6 @@ class MockWelcomeView : public WelcomeView {
   MOCK_METHOD(void, MockUnbind, ());
   MOCK_METHOD(void, Show, ());
   MOCK_METHOD(void, Hide, ());
-  MOCK_METHOD(void, StopDemoModeDetection, ());
   MOCK_METHOD(void, ReloadLocalizedContent, ());
   MOCK_METHOD(void, SetInputMethodId, (const std::string& input_method_id));
   MOCK_METHOD(void, SetTimezoneId, (const std::string& timezone_id));

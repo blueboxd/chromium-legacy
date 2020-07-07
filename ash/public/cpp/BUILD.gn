@@ -219,6 +219,8 @@ component("cpp") {
     "session/session_controller.cc",
     "session/session_controller.h",
     "session/session_controller_client.h",
+    "session/session_observer.cc",
+    "session/session_observer.h",
     "session/session_types.cc",
     "session/session_types.h",
     "session/user_info.cc",

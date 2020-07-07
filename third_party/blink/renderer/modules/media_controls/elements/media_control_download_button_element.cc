@@ -77,7 +77,7 @@ void MediaControlDownloadButtonElement::DefaultEventHandler(Event& event) {
     ResourceRequest request(url);
     request.SetSuggestedFilename(MediaElement().title());
     request.SetRequestContext(mojom::RequestContextType::DOWNLOAD);
-    request.SetRequestorOrigin(GetDocument().GetSecurityOrigin());
+    request.SetRequestorOrigin(GetExecutionContext()->GetSecurityOrigin());
     GetDocument().GetFrame()->DownloadURL(
         request, network::mojom::blink::RedirectMode::kError);
   }

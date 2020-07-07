@@ -10,6 +10,7 @@
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_features.h"
+#include "chrome/browser/nearby_sharing/logging/logging.h"
 #include "chrome/browser/nearby_sharing/nearby_connections_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_connections_manager_impl.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_prefs.h"
@@ -47,7 +48,8 @@ NearbySharingServiceFactory::~NearbySharingServiceFactory() = default;
 KeyedService* NearbySharingServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   if (!base::FeatureList::IsEnabled(features::kNearbySharing)) {
-    VLOG(1) << __func__ << ": Nearby Sharing feature flag is not enabled.";
+    NS_LOG(VERBOSE) << __func__
+                    << ": Nearby Sharing feature flag is not enabled.";
     return nullptr;
   }
 
@@ -56,7 +58,7 @@ KeyedService* NearbySharingServiceFactory::BuildServiceInstanceFor(
   auto nearby_connections_manager =
       std::make_unique<NearbyConnectionsManagerImpl>();
 
-  VLOG(1) << __func__ << ": creating NearbySharingService.";
+  NS_LOG(VERBOSE) << __func__ << ": creating NearbySharingService.";
   return new NearbySharingServiceImpl(pref_service, profile,
                                       std::move(nearby_connections_manager));
 }

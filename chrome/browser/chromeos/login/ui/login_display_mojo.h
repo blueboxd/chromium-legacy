@@ -51,7 +51,6 @@ class LoginDisplayMojo : public LoginDisplay,
   void Login(const UserContext& user_context,
              const SigninSpecifics& specifics) override;
   bool IsSigninInProgress() const override;
-  void Signout() override;
   void OnSigninScreenReady() override;
   void ShowEnterpriseEnrollmentScreen() override;
   void ShowEnableDebuggingScreen() override;

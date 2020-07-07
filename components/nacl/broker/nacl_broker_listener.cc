@@ -142,7 +142,7 @@ void NaClBrokerListener::OnLaunchDebugExceptionHandler(
   NaClStartDebugExceptionHandlerThread(
       base::Process(process_handle), startup_info,
       base::ThreadTaskRunnerHandle::Get(),
-      base::Bind(SendReply, channel_.get(), pid));
+      base::BindRepeating(SendReply, channel_.get(), pid));
 }
 
 void NaClBrokerListener::OnStopBroker() {

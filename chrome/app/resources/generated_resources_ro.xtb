@@ -281,7 +281,6 @@
 <translation id="1340527397989195812">Fă backup conținutului media de pe dispozitiv folosind aplicația Fișiere.</translation>
 <translation id="1341988552785875222">Imaginea de fundal actuală este setată de „<ph name="APP_NAME" />”. Poate fi necesar să dezinstalezi „<ph name="APP_NAME" />” înainte să selectezi altă imagine de fundal.</translation>
 <translation id="1343865611738742294">Permite aplicațiilor Linux să acceseze dispozitivele USB. Linux nu va păstra un dispozitiv USB după ce este eliminat.</translation>
-<translation id="1344143111673240412">Modificarea setării pentru cameră necesită relansarea Parallels Desktop</translation>
 <translation id="1347256498747320987">Instalează actualizări și aplicații. Dacă alegi să continui, ești de acord că este posibil ca dispozitivul să descarce și să instaleze automat actualizări și aplicații de la Google, de la operatorul tău și de la producătorul dispozitivului, eventual folosind datele mobile. Unele dintre aceste aplicații pot oferi achiziții în aplicație. <ph name="BEGIN_LINK1" />Află mai multe<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">Actualizarea va începe când bateria va ajunge la <ph name="BATTERY_LEVEL" />%.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -1197,7 +1196,6 @@ Poți gestiona setările contului dacă instalezi aplicația Family Link pe disp
 <translation id="2470702053775288986">Extensiile necompatibile au fost dezactivate</translation>
 <translation id="2471469610750100598">Negru (prestabilit)</translation>
 <translation id="2473195200299095979">Traduceți această pagină</translation>
-<translation id="2474848500897222119">Cerneala din <ph name="PRINTER_NAME" /> este epuizată</translation>
 <translation id="2475982808118771221">A apărut o eroare</translation>
 <translation id="2476578072172137802">Setările site-ului</translation>
 <translation id="2478176599153288112">Permisiuni privind fișierele media pentru „<ph name="EXTENSION" />”</translation>
@@ -1503,7 +1501,6 @@ Poți gestiona setările contului dacă instalezi aplicația Family Link pe disp
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> folosește setările proxy ale administratorului</translation>
 <translation id="2825758591930162672">Cheia publică a subiectului</translation>
 <translation id="2828650939514476812">Conectează-te la o rețea Wi-Fi</translation>
-<translation id="28291580771888953">Coada pentru <ph name="PRINTER_NAME" /> a atins limita maximă</translation>
 <translation id="2835547721736623118">Serviciul de recunoaștere vocală</translation>
 <translation id="2836269494620652131">Blocare</translation>
 <translation id="2836635946302913370">Conectarea cu acest nume de utilizator a fost dezactivată de către administratorul dvs.</translation>
@@ -2319,7 +2316,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3839516600093027468">Blochează întotdeauna accesul <ph name="HOST" /> la clipboard</translation>
 <translation id="3841964634449506551">Parolă nevalidă</translation>
 <translation id="3842552989725514455">Font Serif</translation>
-<translation id="3843058644024807390">Modificarea setării pentru microfon necesită relansarea Parallels Desktop</translation>
+<translation id="3843464315703645664">Pe lista cu acces permis la nivel intern</translation>
 <translation id="3846116211488856547">Obține instrumente pentru dezvoltarea site-urilor, aplicații Android și multe altele. Instalarea Linux va descărca <ph name="DOWNLOAD_SIZE" /> de date.</translation>
 <translation id="3847319713229060696">Contribuie la îmbunătățirea securității pe web pentru toți utilizatorii</translation>
 <translation id="385051799172605136">Înapoi</translation>
@@ -2778,7 +2775,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4453946976636652378">Caută <ph name="SEARCH_ENGINE_NAME" /> sau introdu o adresă URL</translation>
 <translation id="4459169140545916303">Activ acum <ph name="DEVICE_LAST_ACTIVATED_TIME" /> zile</translation>
 <translation id="4460014764210899310">Anulați gruparea</translation>
-<translation id="4460343359907016103">Eroare la conectarea la <ph name="PRINTER_NAME" /></translation>
 <translation id="4462159676511157176">Servere de nume personalizate</translation>
 <translation id="4465236939126352372">A fost setată o limită de timp de <ph name="TIME" /> pentru <ph name="APP_NAME" /></translation>
 <translation id="4465725236958772856">Rețeaua <ph name="NETWORK_INDEX" /> din <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, gestionată de administratorul tău, conectează-te</translation>
@@ -3076,7 +3072,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4864369630010738180">Se conectează...</translation>
 <translation id="4864805589453749318">Selectează părintele care îți acordă permisiunea de a adăuga un cont de la școală.</translation>
 <translation id="486635084936119914">Deschide automat anumite tipuri de fișiere după descărcare</translation>
-<translation id="4869213010169296107">Lipsește o tavă din <ph name="PRINTER_NAME" /></translation>
 <translation id="48704129375571883">Adaugă funcții suplimentare</translation>
 <translation id="4870758487381879312">Introdu parola oferită de administrator pentru a primi informațiile despre configurare</translation>
 <translation id="4870903493621965035">Nu există dispozitive asociate</translation>
@@ -3327,6 +3322,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5184662919967270437">Se actualizează dispozitivul</translation>
 <translation id="5185359571430619712">Examinează extensiile</translation>
 <translation id="5185386675596372454">Cea mai nouă versiune a „<ph name="EXTENSION_NAME" />” a fost dezactivată, deoarece necesită permisiuni suplimentare.</translation>
+<translation id="5185500136143151980">Nu există conexiune la internet</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5190926251776387065">Activează portul</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> vrea să descarce mai multe fișiere</translation>
@@ -3483,7 +3479,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5390112241331447203">Include fișierul system_logs.txt trimis în rapoartele de feedback.</translation>
 <translation id="5390677308841849479">Roșu închis și portocaliu</translation>
 <translation id="5390743329570580756">Trimis pentru</translation>
-<translation id="5395869306561378615">Imprimanta <ph name="PRINTER_NAME" /> este întreruptă</translation>
 <translation id="5397794290049113714">Dvs.</translation>
 <translation id="5398572795982417028">Referința privind pagina este în afara limitelor (limita este <ph name="MAXIMUM_PAGE" />)</translation>
 <translation id="5398772614898833570">Anunțurile au fost blocate</translation>
@@ -3498,7 +3493,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5417312524372586921">Teme pentru browser</translation>
 <translation id="5419405654816502573">Voice Match</translation>
 <translation id="5420438158931847627">Stabilește claritatea textului și imaginilor</translation>
-<translation id="5421498071721257877"><ph name="PRINTER_NAME" /> are o eroare la dispozitiv</translation>
 <translation id="5422221874247253874">Punct de acces</translation>
 <translation id="5422781158178868512">Ne pare rău, dispozitivul dvs. de stocare externă nu a putut fi recunoscut.</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3847,7 +3841,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5852137567692933493">Reporniți și faceți Powerwash</translation>
 <translation id="5854912040170951372">Feliuță</translation>
 <translation id="5855267860608268405">Rețele Wi-Fi cunoscute</translation>
-<translation id="5855310969323666289">Ușa imprimantei <ph name="PRINTER_NAME" /> este deschisă</translation>
 <translation id="5855643921295613558">0,6 secunde</translation>
 <translation id="5856721540245522153">Activează funcțiile de remediere a erorilor</translation>
 <translation id="5857090052475505287">Dosar nou</translation>
@@ -3878,7 +3871,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5877064549588274448">Canalul a fost schimbat. Reporniți dispozitivul pentru a aplica modificările.</translation>
 <translation id="5877584842898320529">Imprimanta selectată nu este disponibilă sau nu este instalată corect. <ph name="BR" /> Verifică imprimanta sau încearcă să selectezi altă imprimantă.</translation>
 <translation id="5882919346125742463">Rețele cunoscute</translation>
-<translation id="5883716097305842571">Zona de ieșire a imprimantei <ph name="PRINTER_NAME" /> este aproape plină</translation>
 <translation id="5884474295213649357">Această filă este conectată la un dispozitiv USB.</translation>
 <translation id="5886009770935151472">Deget 1</translation>
 <translation id="5889282057229379085">Număr maxim de Autorități de certificare (CA) intermediare: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4444,7 +4436,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6611972847767394631">Regăsește filele aici</translation>
 <translation id="6612358246767739896">Conținut protejat</translation>
 <translation id="6615455863669487791">Afișați</translation>
-<translation id="6617034477946102682">Imprimanta <ph name="PRINTER_NAME" /> nu poate fi accesată</translation>
 <translation id="6618097958368085618">Păstrează oricum</translation>
 <translation id="6618744767048954150">Rulează</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
@@ -4861,7 +4852,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7128151990937044829">Afișează un indicator în bara de adrese când sunt blocate notificările</translation>
 <translation id="7131040479572660648">Citește datele de pe <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> și <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Adăugați pa&amp;gina...</translation>
-<translation id="7131379856697962078">Zona de ieșire a imprimantei <ph name="PRINTER_NAME" /> este plină</translation>
 <translation id="7133578150266914903">Administratorul restabilește o versiune anterioară a OS de pe acest dispozitiv (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">Micșorează textul</translation>
 <translation id="7135729336746831607">Activezi Bluetooth?</translation>
@@ -4880,7 +4870,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7152478047064750137">Această extensie nu necesită permisiuni speciale</translation>
 <translation id="7154130902455071009">Schimbați pagina de start la: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">Fotografie existentă din camera foto sau din fișier</translation>
-<translation id="715657691234357425">Hârtia din <ph name="PRINTER_NAME" /> este aproape epuizată</translation>
 <translation id="7165320105431587207">Rețeaua nu a putut fi configurată</translation>
 <translation id="716640248772308851">Extensia „<ph name="EXTENSION" />” poate citi imagini, videoclipuri și fișiere audio în locațiile indicate.</translation>
 <translation id="7167486101654761064">&amp;Deschide întotdeauna fișierele de acest tip</translation>
@@ -4911,7 +4900,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7197632491113152433">Am găsit <ph name="NUMBER_OF_APPS" /> aplicații din contul tău care pot fi folosite pe acest dispozitiv.</translation>
 <translation id="7199158086730159431">Obțineți a&amp;jutor</translation>
 <translation id="7200083590239651963">Selectează configurația</translation>
-<translation id="7201042526153088083">Instalează aplicații și jocuri din Google Play pe <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;Află mai multe&lt;/a&gt;</translation>
 <translation id="720110658997053098">Menține permanent acest dispozitiv în modul chioșc</translation>
 <translation id="7201118060536064622">„<ph name="DELETED_ITEM_NAME" />” a fost șters</translation>
 <translation id="7201420661433230412">Afișați fișierele</translation>
@@ -5217,7 +5205,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7598466960084663009">Repornește computerul</translation>
 <translation id="7599527631045201165">Numele dispozitivului este prea lung. Introdu un nume mai scurt pentru a încerca din nou.</translation>
 <translation id="7600965453749440009">Nu traduce niciodată din <ph name="LANGUAGE" /></translation>
-<translation id="7601297144931396972">Hârtia din <ph name="PRINTER_NAME" /> s-a blocat</translation>
 <translation id="760197030861754408">Accesează <ph name="LANDING_PAGE" /> pentru a te conecta.</translation>
 <translation id="7602079150116086782">Nu există file de pe alte dispozitive</translation>
 <translation id="7602173054665172958">Gestionarea printării</translation>
@@ -5228,6 +5215,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7609148976235050828">Conectează-te la internet și încearcă din nou.</translation>
 <translation id="7614260613810441905">Întreabă când un site vrea să modifice fișiere sau dosare de pe dispozitiv (recomandat)</translation>
 <translation id="761530003705945209">Fă backup în Google Drive. Restabilește datele sau schimbă dispozitivul cu ușurință, în orice moment. Backupul include datele aplicațiilor. Backupurile sunt încărcate pe serverele Google și sunt criptate folosind parola pentru Contul Google.</translation>
+<translation id="7615365294369022248">A apărut o eroare la adăugarea contului</translation>
 <translation id="7616214729753637086">Se înregistrează dispozitivul...</translation>
 <translation id="7617263010641145920">Activează Magazinul Play</translation>
 <translation id="7617366389578322136">Se conectează la „<ph name="DEVICE_NAME" />”</translation>
@@ -5676,7 +5664,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
           <ph name="TIME" />. Acest lucru nu este valabil pentru metodele de plată și adresele din Google Pay.</translation>
 <translation id="81238879832906896">Floare galbenă și albă</translation>
 <translation id="8124313775439841391">Proprietăți ONC gestionate</translation>
-<translation id="8127535217699822294">Hârtia din <ph name="PRINTER_NAME" /> este epuizată</translation>
 <translation id="813082847718468539">Afișează informațiile privind site-ul</translation>
 <translation id="8131740175452115882">Confirmați</translation>
 <translation id="8133676275609324831">&amp;Afișează în dosar</translation>
@@ -5775,7 +5762,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8254954272268479918">Închide Linux (Beta)</translation>
 <translation id="8255451560461371599">Nicio imagine de fundal</translation>
 <translation id="8256319818471787266">Lăbuș</translation>
-<translation id="8256417822772703842">Cerneala din <ph name="PRINTER_NAME" /> este aproape epuizată</translation>
 <translation id="8257950718085972371">Blocați în continuare accesul la cameră</translation>
 <translation id="8259239505248583312">Să începem</translation>
 <translation id="8260864402787962391">Mouse</translation>
@@ -5956,7 +5942,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8487678622945914333">Mărește</translation>
 <translation id="8490896350101740396">Următoarele aplicații de tip chioșc „<ph name="UPDATED_APPS" />” au fost actualizate. Repornește dispozitivul pentru a finaliza procesul de actualizare.</translation>
 <translation id="8493236660459102203">Microfon:</translation>
-<translation id="8495940850609851342"><ph name="PRINTER_NAME" /> s-a oprit</translation>
 <translation id="8496717697661868878">Rulează acest plugin</translation>
 <translation id="8497219075884839166">Utilitare Windows</translation>
 <translation id="8498214519255567734">Mai multă comoditate când privești ecranul sau citești într-o lumină slabă</translation>
@@ -6498,6 +6483,12 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="9157096865782046368">0,8 secunde</translation>
 <translation id="9157697743260533322">Actualizările automate nu au putut fi configurate pentru toți utilizatorii (eroare la lansarea testării pe dispozitiv: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Hopa! A apărut o problemă de comunicare în rețea în timpul autentificării. Verificați conexiunea la rețea și încercați din nou.</translation>
+<translation id="9159643062839240276">Încearcă următoarele acțiuni:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />să verifici cablurile de rețea, modemul și routerul;
+      <ph name="LIST_ITEM" />să te reconectezi la Wi-Fi;
+      <ph name="LIST_ITEM" />să rulezi Diagnostice conectivitate Chrome.
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">Picture-in-Picture</translation>
 <translation id="9168436347345867845">Mai târziu</translation>
 <translation id="9169496697824289689">Vedeți comenzile rapide de la tastatură</translation>

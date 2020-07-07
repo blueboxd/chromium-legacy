@@ -281,7 +281,6 @@
 <translation id="1340527397989195812">Sauvegardez du contenu multimédia en provenance de l'appareil à l'aide de l'application Fichiers.</translation>
 <translation id="1341988552785875222">Le fond d'écran actuel a été défini par <ph name="APP_NAME" />. Vous devrez peut-être désinstaller <ph name="APP_NAME" /> avant de choisir un fond d'écran différent.</translation>
 <translation id="1343865611738742294">Autoriser les applications Linux à accéder aux périphériques USB. Dès qu'un périphérique est déconnecté, il est effacé de la mémoire de Linux.</translation>
-<translation id="1344143111673240412">La modification des paramètres de l'appareil photo nécessite de redémarrer Parallels Desktop</translation>
 <translation id="1347256498747320987">Installer des mises à jour et des applications. En continuant, vous acceptez que cet appareil télécharge et installe automatiquement des mises à jour et des applications de Google, de votre opérateur et du fabricant de votre appareil, en utilisant si besoin des données mobiles. Certaines applications peuvent proposer des achats intégrés. <ph name="BEGIN_LINK1" />En savoir plus<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">La mise à jour débutera lorsque la batterie atteindra <ph name="BATTERY_LEVEL" /> %.</translation>
 <translation id="1353686479385938207">"<ph name="PROVIDER_NAME" />" : "<ph name="NETWORK_NAME" />"</translation>
@@ -1197,7 +1196,6 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2470702053775288986">Désactivation des extensions non compatibles</translation>
 <translation id="2471469610750100598">Noir (par défaut)</translation>
 <translation id="2473195200299095979">Traduire cette page</translation>
-<translation id="2474848500897222119"><ph name="PRINTER_NAME" /> : plus d'encre</translation>
 <translation id="2475982808118771221">Une erreur s'est produite.</translation>
 <translation id="2476578072172137802">Paramètres des sites</translation>
 <translation id="2478176599153288112">Autorisations de fichier média pour "<ph name="EXTENSION" />"</translation>
@@ -1503,7 +1501,6 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> utilise les paramètres de proxy définis par votre administrateur</translation>
 <translation id="2825758591930162672">Clé publique de l'objet</translation>
 <translation id="2828650939514476812">Se connecter au réseau Wi-Fi</translation>
-<translation id="28291580771888953"><ph name="PRINTER_NAME" /> : file d'attente pleine</translation>
 <translation id="2835547721736623118">Service de reconnaissance vocale</translation>
 <translation id="2836269494620652131">Blocage</translation>
 <translation id="2836635946302913370">Impossible de se connecter avec ce nom d'utilisateur, car il a été désactivé par votre administrateur.</translation>
@@ -2319,7 +2316,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="3839516600093027468">Toujours empêcher <ph name="HOST" /> de voir le contenu du presse-papiers</translation>
 <translation id="3841964634449506551">Mot de passe non valide</translation>
 <translation id="3842552989725514455">Police Serif</translation>
-<translation id="3843058644024807390">La modification des paramètres du micro nécessite de redémarrer Parallels Desktop</translation>
+<translation id="3843464315703645664">Ajouté à la liste d'autorisation interne</translation>
 <translation id="3846116211488856547">Accédez à des outils conçus pour développer des sites Web, des applications Android, etc. En installant Linux, vous téléchargerez <ph name="DOWNLOAD_SIZE" /> de données.</translation>
 <translation id="3847319713229060696">Contribuer à améliorer la sécurité sur le Web pour tous</translation>
 <translation id="385051799172605136">Retour</translation>
@@ -2778,7 +2775,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4453946976636652378">Effectuez une recherche sur <ph name="SEARCH_ENGINE_NAME" /> ou saisissez une URL</translation>
 <translation id="4459169140545916303">Actif il y a <ph name="DEVICE_LAST_ACTIVATED_TIME" /> jours</translation>
 <translation id="4460014764210899310">Dégrouper</translation>
-<translation id="4460343359907016103"><ph name="PRINTER_NAME" /> : erreur de connexion</translation>
 <translation id="4462159676511157176">Serveurs de noms personnalisés</translation>
 <translation id="4465236939126352372">Limite de temps de <ph name="TIME" /> définie pour <ph name="APP_NAME" /></translation>
 <translation id="4465725236958772856">Réseau <ph name="NETWORK_INDEX" /> sur <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, géré par votre administrateur, connexion</translation>
@@ -3076,7 +3072,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4864369630010738180">Connexion...</translation>
 <translation id="4864805589453749318">Sélectionne le parent qui t'autorise à ajouter un compte scolaire.</translation>
 <translation id="486635084936119914">Ouvrir automatiquement certains types de fichiers après leur téléchargement</translation>
-<translation id="4869213010169296107"><ph name="PRINTER_NAME" /> : bac manquant</translation>
 <translation id="48704129375571883">Ajouter des fonctionnalités</translation>
 <translation id="4870758487381879312">Saisissez le mot de passe fourni par l'administrateur pour accéder aux informations de configuration</translation>
 <translation id="4870903493621965035">Aucun appareil associé</translation>
@@ -3327,6 +3322,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="5184662919967270437">Mise à jour de l'appareil...</translation>
 <translation id="5185359571430619712">Examiner les extensions</translation>
 <translation id="5185386675596372454">La nouvelle version de "<ph name="EXTENSION_NAME" />" a été désactivée, car elle nécessite davantage d'autorisations.</translation>
+<translation id="5185500136143151980">Aucun accès à Internet</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5190926251776387065">Activer le port</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> souhaite télécharger plusieurs fichiers</translation>
@@ -3483,7 +3479,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="5390112241331447203">Ajouter le fichier system_logs.txt envoyé dans les rapports de commentaires.</translation>
 <translation id="5390677308841849479">Rouge foncé et orange</translation>
 <translation id="5390743329570580756">Envoyer pour</translation>
-<translation id="5395869306561378615"><ph name="PRINTER_NAME" /> : en veille</translation>
 <translation id="5397794290049113714">Vous</translation>
 <translation id="5398572795982417028">Plage de pages hors limites. Le nombre maximal de pages est <ph name="MAXIMUM_PAGE" />.</translation>
 <translation id="5398772614898833570">Annonces bloquées</translation>
@@ -3498,7 +3493,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="5417312524372586921">Thèmes du navigateur</translation>
 <translation id="5419405654816502573">Voice Match</translation>
 <translation id="5420438158931847627">Détermine la netteté des images et du texte</translation>
-<translation id="5421498071721257877"><ph name="PRINTER_NAME" /> : erreur de périphérique</translation>
 <translation id="5422221874247253874">Point d'accès</translation>
 <translation id="5422781158178868512">Désolé, impossible de reconnaître votre périphérique de stockage externe.</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3848,7 +3842,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="5852137567692933493">Redémarrer et lancer Powerwash</translation>
 <translation id="5854912040170951372">Pizza</translation>
 <translation id="5855267860608268405">Réseaux Wi-Fi connus</translation>
-<translation id="5855310969323666289"><ph name="PRINTER_NAME" /> : panneau ouvert</translation>
 <translation id="5855643921295613558">0,6 seconde</translation>
 <translation id="5856721540245522153">Activer les fonctionnalités de débogage</translation>
 <translation id="5857090052475505287">Nouveau dossier</translation>
@@ -3879,7 +3872,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="5877064549588274448">La version a été modifiée. Redémarrez votre appareil pour appliquer les modifications.</translation>
 <translation id="5877584842898320529">L'imprimante sélectionnée n'est pas disponible ou n'est pas installée correctement. <ph name="BR" /> Vérifiez votre imprimante ou sélectionnez-en une autre.</translation>
 <translation id="5882919346125742463">Réseaux connus</translation>
-<translation id="5883716097305842571"><ph name="PRINTER_NAME" /> : bac de sortie presque plein</translation>
 <translation id="5884474295213649357">Cet onglet est associé à un périphérique USB.</translation>
 <translation id="5886009770935151472">Doigt 1</translation>
 <translation id="5889282057229379085">Le nombre maximal d'autorités de certification intermédiaires a été dépassé : <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4445,7 +4437,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6611972847767394631">Retrouvez vos onglets ici</translation>
 <translation id="6612358246767739896">Contenu protégé</translation>
 <translation id="6615455863669487791">Démonstration</translation>
-<translation id="6617034477946102682"><ph name="PRINTER_NAME" /> : inaccessible</translation>
 <translation id="6618097958368085618">Conserver quand même</translation>
 <translation id="6618744767048954150">En cours</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
@@ -4862,7 +4853,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7128151990937044829">Afficher un symbole dans la barre d'adresse lorsqu'une notification est bloquée</translation>
 <translation id="7131040479572660648">Lire vos données sur <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> et <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Ajouter une pa&amp;ge...</translation>
-<translation id="7131379856697962078"><ph name="PRINTER_NAME" /> : bac de sortie plein</translation>
 <translation id="7133578150266914903">Votre administrateur rétablit une version antérieure du système d'exploitation sur cet appareil (<ph name="PROGRESS_PERCENT" />)…</translation>
 <translation id="7134098520442464001">Réduit la taille du texte</translation>
 <translation id="7135729336746831607">Activer le Bluetooth ?</translation>
@@ -4881,7 +4871,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7152478047064750137">Cette extension ne nécessite aucune autorisation spéciale</translation>
 <translation id="7154130902455071009">Utiliser l'adresse <ph name="START_PAGE" /> comme page de démarrage ?</translation>
 <translation id="7155171745945906037">Photo existante au niveau de l'appareil photo ou dans les fichiers</translation>
-<translation id="715657691234357425"><ph name="PRINTER_NAME" /> : plus de papier</translation>
 <translation id="7165320105431587207">Échec de la configuration du réseau.</translation>
 <translation id="716640248772308851">"<ph name="EXTENSION" />" dispose d'un droit d'accès en lecture sur les images, les vidéos et les fichiers audio figurant dans les lieux contrôlés.</translation>
 <translation id="7167486101654761064">&amp;Toujours ouvrir les fichiers de ce type</translation>
@@ -4912,7 +4901,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7197632491113152433">Vous avez la possibilité d'utiliser <ph name="NUMBER_OF_APPS" /> application(s) de votre compte sur cet appareil.</translation>
 <translation id="7199158086730159431">Obtenir de l'aid&amp;e</translation>
 <translation id="7200083590239651963">Sélectionner la configuration</translation>
-<translation id="7201042526153088083">Installez des applications et des jeux sur votre <ph name="DEVICE_TYPE" /> depuis Google Play. &lt;a target="_blank" href="<ph name="URL" />"&gt;En savoir plus&lt;/a&gt;</translation>
 <translation id="720110658997053098">Conserver cet appareil en mode Kiosque de manière permanente</translation>
 <translation id="7201118060536064622">"<ph name="DELETED_ITEM_NAME" />" supprimé</translation>
 <translation id="7201420661433230412">Afficher les fichiers</translation>
@@ -5218,7 +5206,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7598466960084663009">Redémarrer l'ordinateur</translation>
 <translation id="7599527631045201165">Le nom de l'appareil est trop long. Saisissez-en un plus court.</translation>
 <translation id="7600965453749440009">Ne jamais traduire les pages rédigées en <ph name="LANGUAGE" /> </translation>
-<translation id="7601297144931396972"><ph name="PRINTER_NAME" /> : bourrage papier</translation>
 <translation id="760197030861754408">Accédez à la page "<ph name="LANDING_PAGE" />" pour vous connecter.</translation>
 <translation id="7602079150116086782">Aucun onglet depuis d'autres appareils.</translation>
 <translation id="7602173054665172958">Gestion de l'impression</translation>
@@ -5229,6 +5216,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7609148976235050828">Veuillez vous connecter à Internet, puis réessayer.</translation>
 <translation id="7614260613810441905">Vous demander lorsqu'un site souhaite modifier des fichiers ou des dossiers sur votre appareil (recommandé)</translation>
 <translation id="761530003705945209">Sauvegarder dans Google Drive. Restaurez vos données ou changez d'appareil facilement et à tout moment. Les données des applications sont également sauvegardées. Vos sauvegardes sont importées dans Google et chiffrées à l'aide du mot de passe de votre compte Google.</translation>
+<translation id="7615365294369022248">Une erreur s'est produite lors de l'ajout d'un compte</translation>
 <translation id="7616214729753637086">Enregistrement de l'appareil...</translation>
 <translation id="7617263010641145920">Activer le Play Store</translation>
 <translation id="7617366389578322136">Connexion à "<ph name="DEVICE_NAME" />"…</translation>
@@ -5677,7 +5665,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
           <ph name="TIME" />. Ceci ne s'applique pas aux modes de paiement et adresses Google Pay.</translation>
 <translation id="81238879832906896">Fleur jaune et blanche</translation>
 <translation id="8124313775439841391">ONC géré</translation>
-<translation id="8127535217699822294"><ph name="PRINTER_NAME" /> : plus de papier</translation>
 <translation id="813082847718468539">Afficher des informations à propos du site</translation>
 <translation id="8131740175452115882">Confirmer</translation>
 <translation id="8133676275609324831">&amp;Afficher dans le dossier</translation>
@@ -5776,7 +5763,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8254954272268479918">Arrêter Linux (bêta)</translation>
 <translation id="8255451560461371599">Sans arrière-plan</translation>
 <translation id="8256319818471787266">Médor</translation>
-<translation id="8256417822772703842"><ph name="PRINTER_NAME" /> : niveau d'encre faible</translation>
 <translation id="8257950718085972371">Continuer à bloquer l'accès à la caméra</translation>
 <translation id="8259239505248583312">Continuer</translation>
 <translation id="8260864402787962391">Souris</translation>
@@ -5957,7 +5943,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8487678622945914333">Zoom avant</translation>
 <translation id="8490896350101740396">Les applications kiosque "<ph name="UPDATED_APPS" />" ont bien été mises à jour. Veuillez redémarrer l'appareil afin de terminer la procédure.</translation>
 <translation id="8493236660459102203">Micro :</translation>
-<translation id="8495940850609851342"><ph name="PRINTER_NAME" /> : à l'arrêt</translation>
 <translation id="8496717697661868878">Exécuter ce plug-in</translation>
 <translation id="8497219075884839166">Utilitaires Windows</translation>
 <translation id="8498214519255567734">Facilite la lecture à l'écran lorsque l'éclairage est faible</translation>
@@ -6499,6 +6484,12 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="9157096865782046368">0,8 seconde</translation>
 <translation id="9157697743260533322">Échec de la configuration des mises à jour automatiques pour tous les utilisateurs (erreur de lancement avant la période de diffusion : <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Petit problème… Une erreur de communication réseau s'est produite lors de l'authentification. Veuillez vérifier votre connexion réseau, puis réessayer.</translation>
+<translation id="9159643062839240276">Voici quelques conseils :
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />Vérifiez les câbles réseau, le modem et le routeur.
+      <ph name="LIST_ITEM" />Reconnectez-vous au réseau Wi-Fi.
+      <ph name="LIST_ITEM" />Exécutez Chrome Connectivity Diagnostics.
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">Picture-in-picture</translation>
 <translation id="9168436347345867845">Plus tard</translation>
 <translation id="9169496697824289689">Afficher les raccourcis clavier</translation>

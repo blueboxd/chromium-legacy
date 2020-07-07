@@ -281,7 +281,6 @@
 <translation id="1340527397989195812">Varnostno kopiranje predstavnosti v napravi z aplikacijo Datoteke.</translation>
 <translation id="1341988552785875222">Trenutno ozadje je nastavila aplikacija »<ph name="APP_NAME" />«. Pred izbiro drugega ozadja boste morda morali odstraniti »<ph name="APP_NAME" />«.</translation>
 <translation id="1343865611738742294">Omogočanje, da aplikacije za Linux dostopajo do naprav USB. Linux si ne zapomni naprave USB, ko jo odstranite.</translation>
-<translation id="1344143111673240412">Sprememba nastavitve kamere zahteva vnovičen zagon programa Parallels Desktop</translation>
 <translation id="1347256498747320987">Namestitev posodobitev in aplikacij. Če nadaljujete, se strinjate, da lahko ta naprava tudi samodejno prenese in namesti posodobitve ter aplikacije, ki jih zagotavljajo Google, vaš operater in proizvajalec vaše naprave – morda s prenosom podatkov v mobilnih omrežjih. Nekatere od teh aplikacij morda ponujajo nakupe v aplikaciji. <ph name="BEGIN_LINK1" />Več o tem<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">Posodobitev se bo začela, ko bo akumulator dosegel <ph name="BATTERY_LEVEL" /> % napolnjenosti.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -1197,7 +1196,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="2470702053775288986">Nepodprte razširitve onemogočene</translation>
 <translation id="2471469610750100598">Črna (privzeto)</translation>
 <translation id="2473195200299095979">Prevede to stran</translation>
-<translation id="2474848500897222119">Tiskalniku <ph name="PRINTER_NAME" /> je zmanjkalo črnila</translation>
 <translation id="2475982808118771221">Prišlo je do napake</translation>
 <translation id="2476578072172137802">Nastavitve mesta</translation>
 <translation id="2478176599153288112">Dovoljenja za predstavnostne datoteke za razširitev »<ph name="EXTENSION" />«</translation>
@@ -1374,7 +1372,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="2682498795777673382">Starš je izvedel posodobitev</translation>
 <translation id="2683638487103917598">Mapa je razvrščena</translation>
 <translation id="2684004000387153598">Če želite nadaljevati, kliknite »V redu«, nato »Dodajanje osebe«, če želite za e-poštni naslov ustvariti nov profil.</translation>
-<translation id="2686222346846590368">To je zadnja samodejna posodobitev programske opreme in varnostna posodobitev za to napravo <ph name="DEVICE_TYPE" />. Če želite v prihodnje prejemati posodobitve, nagradite na novejši model. &lt;a target="_blank" href="<ph name="URL" />"&gt;Več o tem<ph name="LINK_END" /></translation>
+<translation id="2686222346846590368">To je zadnja samodejna posodobitev programske opreme in varnostna posodobitev za to napravo <ph name="DEVICE_TYPE" />. Če želite v prihodnje prejemati posodobitve, nadgradite na novejši model. &lt;a target="_blank" href="<ph name="URL" />"&gt;Več o tem<ph name="LINK_END" /></translation>
 <translation id="2687403674020088961">Blokiranje vseh piškotkov (ni priporočljivo)</translation>
 <translation id="2687407218262674387">Googlovi pogoji storitve</translation>
 <translation id="2688196195245426394">Napaka pri registraciji naprave v strežniku: <ph name="CLIENT_ERROR" />.</translation>
@@ -1503,7 +1501,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> uporablja nastavitve strežnika proxy skrbnika</translation>
 <translation id="2825758591930162672">Javni ključ subjekta</translation>
 <translation id="2828650939514476812">Povezava z omrežjem Wi-Fi</translation>
-<translation id="28291580771888953">Čakalna vrsta tiskalnika <ph name="PRINTER_NAME" /> je polna</translation>
 <translation id="2835547721736623118">Storitev prepoznavanja govora</translation>
 <translation id="2836269494620652131">Zrušitev</translation>
 <translation id="2836635946302913370">Skrbnik je onemogočil prijavo s tem uporabniškim imenom.</translation>
@@ -2319,7 +2316,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="3839516600093027468">Vedno prepreči naslovu <ph name="HOST" /> ogled odložišča</translation>
 <translation id="3841964634449506551">Neveljavno geslo</translation>
 <translation id="3842552989725514455">Serifna pisava</translation>
-<translation id="3843058644024807390">Sprememba nastavitve mikrofona zahteva vnovičen zagon programa Parallels Desktop</translation>
+<translation id="3843464315703645664">Interno na seznamu dovoljenih</translation>
 <translation id="3846116211488856547">Prenesite orodja za razvoj spletnih mest, aplikacij za Android in drugega. Ob namestitvi Linuxa bo prenesenih <ph name="DOWNLOAD_SIZE" /> podatkov.</translation>
 <translation id="3847319713229060696">Pomagajte izboljšati varnost v spletu za vse</translation>
 <translation id="385051799172605136">Nazaj</translation>
@@ -2778,7 +2775,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="4453946976636652378">Uporabite <ph name="SEARCH_ENGINE_NAME" /> za iskanje ali vnesite URL</translation>
 <translation id="4459169140545916303">Aktivno pred toliko dnevi: <ph name="DEVICE_LAST_ACTIVATED_TIME" /></translation>
 <translation id="4460014764210899310">Razdruži</translation>
-<translation id="4460343359907016103">Napaka pri povezovanju s tiskalnikom <ph name="PRINTER_NAME" /></translation>
 <translation id="4462159676511157176">Imenski strežniki po meri</translation>
 <translation id="4465236939126352372">Za aplikacijo <ph name="APP_NAME" /> je nastavljena omejitev <ph name="TIME" /></translation>
 <translation id="4465725236958772856">Omrežje <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, upravlja ga vaš skrbnik, vzpostavitev povezave</translation>
@@ -3076,7 +3072,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="4864369630010738180">Prijavljanje ...</translation>
 <translation id="4864805589453749318">Izberite starša, ki odobrava dovoljenje za dodajanje šolskega računa.</translation>
 <translation id="486635084936119914">Samodejno odpiranje nekaterih vrst datotek po prenosu</translation>
-<translation id="4869213010169296107">Tiskalnik <ph name="PRINTER_NAME" /> nima pladnja</translation>
 <translation id="48704129375571883">Dodajanje dodatnih funkcij</translation>
 <translation id="4870758487381879312">Vnesite geslo, ki ga je priskrbel skrbnik, da pridobite podatke o konfiguraciji</translation>
 <translation id="4870903493621965035">Ni seznanjenih naprav</translation>
@@ -3327,6 +3322,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="5184662919967270437">Posodabljanje naprave</translation>
 <translation id="5185359571430619712">Pregled razširitev</translation>
 <translation id="5185386675596372454">Najnovejša različica razširitve »<ph name="EXTENSION_NAME" />« je bila onemogočena, ker zahteva več dovoljenj.</translation>
+<translation id="5185500136143151980">Ni internetne povezave</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5190926251776387065">Omogoči vrata</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> želi prenesti več datotek</translation>
@@ -3483,7 +3479,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="5390112241331447203">Vključi datoteko system_logs.txt, poslano v poročilih s povratnimi informacijami.</translation>
 <translation id="5390677308841849479">Temno rdeča in oranžna</translation>
 <translation id="5390743329570580756">Pošlji po</translation>
-<translation id="5395869306561378615">Tiskalnik <ph name="PRINTER_NAME" /> je začasno zaustavljen</translation>
 <translation id="5397794290049113714">Vi</translation>
 <translation id="5398572795982417028">Sklic na stran zunaj dovoljenega razpona, omejitev je <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">Oglasi blokirani</translation>
@@ -3498,7 +3493,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="5417312524372586921">Teme brskalnika</translation>
 <translation id="5419405654816502573">Voice Match</translation>
 <translation id="5420438158931847627">Določa ostrino besedila in slik</translation>
-<translation id="5421498071721257877">Tiskalnik <ph name="PRINTER_NAME" /> ima napako naprave</translation>
 <translation id="5422221874247253874">Dostopna točka</translation>
 <translation id="5422781158178868512">Zunanje naprave za shranjevanje ni bilo mogoče prepoznati.</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3849,7 +3843,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="5852137567692933493">Ponovni zagon in izvedba funkcije Powerwash</translation>
 <translation id="5854912040170951372">Kos</translation>
 <translation id="5855267860608268405">Znana omrežja Wi-Fi</translation>
-<translation id="5855310969323666289">Vrata tiskalnika <ph name="PRINTER_NAME" /> so odprta</translation>
 <translation id="5855643921295613558">0,6 sekunde</translation>
 <translation id="5856721540245522153">Omogočanje funkcij za odpravljanje napak</translation>
 <translation id="5857090052475505287">Nova mapa</translation>
@@ -3880,7 +3873,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="5877064549588274448">Kanal spremenjen. Znova zaženite napravo, da uveljavite spremembe.</translation>
 <translation id="5877584842898320529">Izbrani tiskalnik ni na voljo ali ni pravilno nameščen. <ph name="BR" /> Preverite tiskalnik ali izberite drugega.</translation>
 <translation id="5882919346125742463">Znana omrežja</translation>
-<translation id="5883716097305842571">Izhodno območje tiskalnika <ph name="PRINTER_NAME" /> je skoraj polno</translation>
 <translation id="5884474295213649357">Ta zavihek je povezan z napravo USB.</translation>
 <translation id="5886009770935151472">Prst 1</translation>
 <translation id="5889282057229379085">Največje število posrednih overiteljev potrdil: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4446,7 +4438,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6611972847767394631">Poiščite svoje zavihke tukaj</translation>
 <translation id="6612358246767739896">Zaščitena vsebina</translation>
 <translation id="6615455863669487791">Pokaži mi</translation>
-<translation id="6617034477946102682">Tiskalnik <ph name="PRINTER_NAME" /> je nedosegljiv.</translation>
 <translation id="6618097958368085618">Vseeno obdrži</translation>
 <translation id="6618744767048954150">Preverjanje poteka</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
@@ -4863,7 +4854,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7128151990937044829">Prikaži indikator v naslovni vrstici, ko so obvestila blokirana</translation>
 <translation id="7131040479572660648">Branje vaših podatkov na spletnih mestih <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> in <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Dodaj str&amp;an ...</translation>
-<translation id="7131379856697962078">Izhodno območje tiskalnika <ph name="PRINTER_NAME" /> je polno</translation>
 <translation id="7133578150266914903">Skrbnik vrača napravo na prejšnjo različico (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">Pomanjšaj besedilo</translation>
 <translation id="7135729336746831607">Želite vklopiti Bluetooth?</translation>
@@ -4882,7 +4872,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7152478047064750137">Za to razširitev niso potrebna posebna dovoljenja</translation>
 <translation id="7154130902455071009">Sprememba začetne strani na: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">Obstoječa fotografija iz fotoaparata ali datoteke</translation>
-<translation id="715657691234357425">Tiskalniku <ph name="PRINTER_NAME" /> bo kmalu zmanjkalo papirja</translation>
 <translation id="7165320105431587207">Omrežja ni bilo mogoče konfigurirati</translation>
 <translation id="716640248772308851">Razširitev »<ph name="EXTENSION" />« lahko prebere slike ter videodatoteke in zvočne datoteke na označenih lokacijah.</translation>
 <translation id="7167486101654761064">&amp;Vedno odpri to vrsto datotek</translation>
@@ -4913,7 +4902,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7197632491113152433">V računu smo našli toliko aplikacij, ki jih je mogoče uporabljati v tej napravi: <ph name="NUMBER_OF_APPS" />.</translation>
 <translation id="7199158086730159431">Pomoč</translation>
 <translation id="7200083590239651963">Izbira konfiguracije</translation>
-<translation id="7201042526153088083">Namestite aplikacije in igre iz Googla Play v napravi <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;Več o tem&lt;/a&gt;</translation>
 <translation id="720110658997053098">Ta naprava naj bo trajno v načinu kioska</translation>
 <translation id="7201118060536064622">Element »<ph name="DELETED_ITEM_NAME" />« je izbrisan</translation>
 <translation id="7201420661433230412">Prikaz datotek</translation>
@@ -5219,7 +5207,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7598466960084663009">Znova zaženi računalnik</translation>
 <translation id="7599527631045201165">Ime naprave je predolgo. Vnesite krajše ime, če želite poskusiti znova.</translation>
 <translation id="7600965453749440009">Nikoli ne prevedi iz jezika: <ph name="LANGUAGE" /></translation>
-<translation id="7601297144931396972">V tiskalniku <ph name="PRINTER_NAME" /> je prišlo do zastoja papirja</translation>
 <translation id="760197030861754408">Odprite <ph name="LANDING_PAGE" />, če želite vzpostaviti povezavo.</translation>
 <translation id="7602079150116086782">Ni zavihkov iz drugih naprav</translation>
 <translation id="7602173054665172958">Upravljanje tiskanja</translation>
@@ -5230,6 +5217,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7609148976235050828">Vzpostavite povezavo z internetom in poskusite znova.</translation>
 <translation id="7614260613810441905">Vprašaj, ko želi spletno mesto urediti datoteke ali mape v vaši napravi (priporočeno)</translation>
 <translation id="761530003705945209">Varnostno kopiranje v Google Drive. Kadar koli lahko preprosto obnovite podatke v napravi ali zamenjate napravo z drugo. Varnostne kopije vključujejo podatke aplikacij. Varnostne kopije so naložene v Google in šifrirane z geslom za račun Google.</translation>
+<translation id="7615365294369022248">Pri dodajanju računa je prišlo do napake</translation>
 <translation id="7616214729753637086">Včlanjevanje naprave ...</translation>
 <translation id="7617263010641145920">Vklop Trgovine Play</translation>
 <translation id="7617366389578322136">Povezovanje z napravo »<ph name="DEVICE_NAME" />«</translation>
@@ -5678,7 +5666,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
           <ph name="TIME" />. To ne vključuje plačilnih sredstev in naslovov iz Googla Pay.</translation>
 <translation id="81238879832906896">Rumena in bela roža</translation>
 <translation id="8124313775439841391">Upravljan ONC</translation>
-<translation id="8127535217699822294">Tiskalniku <ph name="PRINTER_NAME" /> je zmanjkalo papirja</translation>
 <translation id="813082847718468539">Ogled podatkov o mestu</translation>
 <translation id="8131740175452115882">Potrdi</translation>
 <translation id="8133676275609324831">&amp;Pokaži v mapi</translation>
@@ -5777,7 +5764,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8254954272268479918">Izklopi Linux (beta)</translation>
 <translation id="8255451560461371599">Brez ozadja</translation>
 <translation id="8256319818471787266">Piki</translation>
-<translation id="8256417822772703842">Tiskalniku <ph name="PRINTER_NAME" /> bo kmalu zmanjkalo črnila</translation>
 <translation id="8257950718085972371">Še naprej preprečuj dostop do kamere</translation>
 <translation id="8259239505248583312">Pa začnimo</translation>
 <translation id="8260864402787962391">Miška</translation>
@@ -5958,7 +5944,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8487678622945914333">Povečaj</translation>
 <translation id="8490896350101740396">Posodobljene so bile te aplikacije za kiosk: »<ph name="UPDATED_APPS" />«. Znova zaženite napravo, da dokončate postopek posodobitve.</translation>
 <translation id="8493236660459102203">Mikrofon:</translation>
-<translation id="8495940850609851342">Tiskalnik <ph name="PRINTER_NAME" /> je ustavljen</translation>
 <translation id="8496717697661868878">Zaženi ta vtičnik</translation>
 <translation id="8497219075884839166">Orodja sistema Windows</translation>
 <translation id="8498214519255567734">Olajšanje gledanja na zaslon ali branja pri šibki svetlobi</translation>
@@ -6500,6 +6485,12 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="9157096865782046368">0,8 sekunde</translation>
 <translation id="9157697743260533322">Nastavitev samodejnih posodobitev za vse uporabnike ni uspela (napaka preverjanj pred zagonom: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Ojej!  Težava z omrežno komunikacijo med preverjanjem pristnosti.  Preverite omrežno povezavo in poskusite znova.</translation>
+<translation id="9159643062839240276">Poskusite to:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />Preverite omrežne kable, modem in usmerjevalnik
+      <ph name="LIST_ITEM" />Znova vzpostavite povezavo z omrežjem Wi-Fi
+      <ph name="LIST_ITEM" />Zaženite Chromovo diagnostiko povezav
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">Slika v sliki</translation>
 <translation id="9168436347345867845">Pozneje</translation>
 <translation id="9169496697824289689">Ogled bližnjičnih tipk</translation>

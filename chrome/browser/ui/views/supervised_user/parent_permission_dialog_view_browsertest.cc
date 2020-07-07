@@ -11,6 +11,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
+#include "base/test/scoped_feature_list.h"
+#include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/supervised_user/logged_in_user_mixin.h"
@@ -21,17 +24,24 @@
 #include "chrome/browser/supervised_user/supervised_user_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/extensions/extension_enable_flow.h"
+#include "chrome/browser/ui/extensions/extension_enable_flow_test_delegate.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/supervised_user/parent_permission_dialog_view.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/disable_reason.h"
+#include "extensions/browser/extension_dialog_auto_confirm.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_builder.h"
 #include "google_apis/gaia/fake_gaia.h"
+#include "google_apis/gaia/gaia_auth_consumer.h"
 
 // End to end test of ParentPermissionDialog that exercises the dialog's
-// internal logic the orchestrates the parental permission process.
+// internal logic that orchestrates the parental permission process.
 class ParentPermissionDialogViewTest
     : public SupportsTestDialog<MixinBasedInProcessBrowserTest>,
       public TestParentPermissionDialogViewObserver {
@@ -43,7 +53,12 @@ class ParentPermissionDialogViewTest
   };
 
   ParentPermissionDialogViewTest()
-      : TestParentPermissionDialogViewObserver(this) {}
+      : TestParentPermissionDialogViewObserver(this) {
+    feature_list_.InitWithFeatures(
+        /*enabled_features=*/{supervised_users::
+                                  kSupervisedUserInitiatedExtensionInstall},
+        /*disabled_features=*/{});
+  }
 
   ParentPermissionDialogViewTest(const ParentPermissionDialogViewTest&) =
       delete;
@@ -75,16 +90,14 @@ class ParentPermissionDialogViewTest
     if (name == "default") {
       parent_permission_dialog_ =
           ParentPermissionDialog::CreateParentPermissionDialog(
-              browser()->profile(), contents,
-              contents->GetTopLevelNativeWindow(),
+              browser()->profile(), contents->GetTopLevelNativeWindow(),
               gfx::ImageSkia::CreateFrom1xBitmap(icon),
               base::UTF8ToUTF16("Test prompt message"), base::DoNothing());
     } else if (name == "extension") {
       parent_permission_dialog_ =
           ParentPermissionDialog::CreateParentPermissionDialogForExtension(
-              browser()->profile(), contents,
-              contents->GetTopLevelNativeWindow(),
-              gfx::ImageSkia::CreateFrom1xBitmap(icon), test_extension_.get(),
+              browser()->profile(), contents->GetTopLevelNativeWindow(),
+              gfx::ImageSkia::CreateFrom1xBitmap(icon), test_extension(),
               base::DoNothing());
     }
     parent_permission_dialog_->ShowDialog();
@@ -104,10 +117,10 @@ class ParentPermissionDialogViewTest
     if (next_dialog_action_) {
       switch (next_dialog_action_.value()) {
         case NextDialogAction::kCancel:
-          view->CancelDialog();
+          view_->CancelDialog();
           break;
         case NextDialogAction::kAccept:
-          view->AcceptDialog();
+          view_->AcceptDialog();
           break;
       }
     }
@@ -131,13 +144,18 @@ class ParentPermissionDialogViewTest
 
   void SetUpOnMainThread() override {
     MixinBasedInProcessBrowserTest::SetUpOnMainThread();
+    logged_in_user_mixin_.LogInUser(/*issue_any_scope_token=*/true);
+
+    SetSupervisedUserExtensionsMayRequestPermissionsPref(true);
+
+    if (browser()->profile()->IsChild())
+      InitializeFamilyData();
+
     test_extension_ = extensions::ExtensionBuilder("test extension").Build();
-    logged_in_user_mixin_.LogInUser(true /* issue_any_scope_token */);
-    InitializeFamilyData();
-    SupervisedUserService* service =
-        SupervisedUserServiceFactory::GetForProfile(browser()->profile());
-    service->SetSupervisedUserExtensionsMayRequestPermissionsPrefForTesting(
-        true);
+    extension_service()->AddExtension(test_extension_.get());
+    extension_service()->DisableExtension(
+        test_extension_->id(),
+        extensions::disable_reason::DISABLE_CUSTODIAN_APPROVAL_REQUIRED);
   }
 
   void set_next_reauth_status(
@@ -166,7 +184,7 @@ class ParentPermissionDialogViewTest
 
     parent_permission_dialog_ =
         ParentPermissionDialog::CreateParentPermissionDialog(
-            browser()->profile(), contents, contents->GetTopLevelNativeWindow(),
+            browser()->profile(), contents->GetTopLevelNativeWindow(),
             gfx::ImageSkia::CreateFrom1xBitmap(icon),
             base::UTF8ToUTF16("Test prompt message"), std::move(callback));
     parent_permission_dialog_->ShowDialog();
@@ -191,8 +209,8 @@ class ParentPermissionDialogViewTest
 
     parent_permission_dialog_ =
         ParentPermissionDialog::CreateParentPermissionDialogForExtension(
-            browser()->profile(), contents, contents->GetTopLevelNativeWindow(),
-            gfx::ImageSkia::CreateFrom1xBitmap(icon), test_extension_.get(),
+            browser()->profile(), contents->GetTopLevelNativeWindow(),
+            gfx::ImageSkia::CreateFrom1xBitmap(icon), test_extension(),
             std::move(callback));
     parent_permission_dialog_->ShowDialog();
     run_loop.Run();
@@ -204,6 +222,30 @@ class ParentPermissionDialogViewTest
 
   void CheckInvalidCredentialWasReceived() {
     EXPECT_TRUE(view_->invalid_credential_received());
+  }
+
+ protected:
+  SupervisedUserService* GetSupervisedUserService() {
+    return SupervisedUserServiceFactory::GetForProfile(browser()->profile());
+  }
+
+  void SetSupervisedUserExtensionsMayRequestPermissionsPref(bool enabled) {
+    GetSupervisedUserService()
+        ->SetSupervisedUserExtensionsMayRequestPermissionsPrefForTesting(
+            enabled);
+  }
+
+  const extensions::Extension* test_extension() {
+    return test_extension_.get();
+  }
+
+  extensions::ExtensionRegistry* extension_registry() {
+    return extensions::ExtensionRegistry::Get(browser()->profile());
+  }
+
+  extensions::ExtensionService* extension_service() {
+    return extensions::ExtensionSystem::Get(browser()->profile())
+        ->extension_service();
   }
 
  private:
@@ -226,6 +268,8 @@ class ParentPermissionDialogViewTest
 
   std::unique_ptr<signin::IdentityTestEnvironment> identity_test_env_;
   base::Optional<NextDialogAction> next_dialog_action_;
+
+  base::test::ScopedFeatureList feature_list_;
 };
 
 // Tests that a plain dialog widget is shown using the TestBrowserUi
@@ -374,4 +418,133 @@ IN_PROC_BROWSER_TEST_F(ParentPermissionDialogViewTest,
   EXPECT_EQ(1, user_action_tester.GetActionCount(
                    SupervisedUserExtensionsMetricsRecorder::
                        kParentPermissionDialogParentCanceledActionName));
+}
+
+using ExtensionEnableFlowTestSupervised = ParentPermissionDialogViewTest;
+
+// Tests launching an app that requires parent approval from the launcher.
+IN_PROC_BROWSER_TEST_F(ExtensionEnableFlowTestSupervised,
+                       ParentPermissionDialogAccept) {
+  base::HistogramTester histogram_tester;
+  ASSERT_TRUE(browser()->profile()->IsChild());
+
+  EXPECT_TRUE(extension_registry()->disabled_extensions().Contains(
+      test_extension()->id()));
+
+  set_next_reauth_status(GaiaAuthConsumer::ReAuthProofTokenStatus::kSuccess);
+  set_next_dialog_action(NextDialogAction::kAccept);
+
+  ExtensionEnableFlowTestDelegate delegate;
+  ExtensionEnableFlow enable_flow(browser()->profile(), test_extension()->id(),
+                                  &delegate);
+  enable_flow.Start();
+  delegate.Wait();
+
+  ASSERT_TRUE(delegate.result());
+  EXPECT_EQ(ExtensionEnableFlowTestDelegate::FINISHED, *delegate.result());
+
+  // The extension should be enabled now.
+  EXPECT_TRUE(extension_registry()->enabled_extensions().Contains(
+      test_extension()->id()));
+
+  // Proof that the parent Permission Dialog launched.
+  histogram_tester.ExpectBucketCount(SupervisedUserExtensionsMetricsRecorder::
+                                         kParentPermissionDialogHistogramName,
+                                     SupervisedUserExtensionsMetricsRecorder::
+                                         ParentPermissionDialogState::kOpened,
+                                     1);
+  histogram_tester.ExpectBucketCount(
+      SupervisedUserExtensionsMetricsRecorder::
+          kParentPermissionDialogHistogramName,
+      SupervisedUserExtensionsMetricsRecorder::ParentPermissionDialogState::
+          kParentApproved,
+      1);
+  histogram_tester.ExpectTotalCount(SupervisedUserExtensionsMetricsRecorder::
+                                        kParentPermissionDialogHistogramName,
+                                    2);
+}
+
+// Tests launching an app and canceling parent approval from the launcher.
+IN_PROC_BROWSER_TEST_F(ExtensionEnableFlowTestSupervised,
+                       ParentPermissionDialogCancel) {
+  base::HistogramTester histogram_tester;
+  ASSERT_TRUE(browser()->profile()->IsChild());
+
+  EXPECT_TRUE(extension_registry()->disabled_extensions().Contains(
+      test_extension()->id()));
+
+  set_next_dialog_action(NextDialogAction::kCancel);
+
+  ExtensionEnableFlowTestDelegate delegate;
+  ExtensionEnableFlow enable_flow(browser()->profile(), test_extension()->id(),
+                                  &delegate);
+  enable_flow.Start();
+  delegate.Wait();
+
+  ASSERT_TRUE(delegate.result());
+  EXPECT_EQ(ExtensionEnableFlowTestDelegate::ABORTED, *delegate.result());
+
+  // The extension should remain disabled.
+  EXPECT_TRUE(extension_registry()->disabled_extensions().Contains(
+      test_extension()->id()));
+
+  // Proof that the parent Permission Dialog launched.
+  histogram_tester.ExpectBucketCount(SupervisedUserExtensionsMetricsRecorder::
+                                         kParentPermissionDialogHistogramName,
+                                     SupervisedUserExtensionsMetricsRecorder::
+                                         ParentPermissionDialogState::kOpened,
+                                     1);
+  histogram_tester.ExpectBucketCount(
+      SupervisedUserExtensionsMetricsRecorder::
+          kParentPermissionDialogHistogramName,
+      SupervisedUserExtensionsMetricsRecorder::ParentPermissionDialogState::
+          kParentCanceled,
+      1);
+  histogram_tester.ExpectTotalCount(SupervisedUserExtensionsMetricsRecorder::
+                                        kParentPermissionDialogHistogramName,
+                                    2);
+}
+
+// Tests that the Parent Permission Dialog doesn't appear at all when the parent
+// has disabled the "Permissions for sites, apps and extensions" toggle, and the
+// supervised user sees the Extension Install Blocked By Parent error dialog
+// instead.
+IN_PROC_BROWSER_TEST_F(ExtensionEnableFlowTestSupervised,
+                       ParentBlockedExtensionEnable) {
+  base::HistogramTester histogram_tester;
+  ASSERT_TRUE(browser()->profile()->IsChild());
+
+  EXPECT_TRUE(extension_registry()->disabled_extensions().Contains(
+      test_extension()->id()));
+
+  // Simulate the parent disabling the "Permissions for sites, apps and
+  // extensions" toggle.
+  SetSupervisedUserExtensionsMayRequestPermissionsPref(false);
+
+  extensions::ScopedTestDialogAutoConfirm auto_confirm(
+      extensions::ScopedTestDialogAutoConfirm::ACCEPT);
+
+  ExtensionEnableFlowTestDelegate delegate;
+  ExtensionEnableFlow enable_flow(browser()->profile(), test_extension()->id(),
+                                  &delegate);
+  enable_flow.Start();
+  delegate.Wait();
+
+  ASSERT_TRUE(delegate.result());
+  EXPECT_EQ(ExtensionEnableFlowTestDelegate::ABORTED, *delegate.result());
+
+  // The extension should remain disabled.
+  EXPECT_TRUE(extension_registry()->disabled_extensions().Contains(
+      test_extension()->id()));
+
+  // Proof that the Parent Permission Dialog didn't launch.
+  histogram_tester.ExpectTotalCount(SupervisedUserExtensionsMetricsRecorder::
+                                        kParentPermissionDialogHistogramName,
+                                    0);
+
+  // Proof that the Extension Install Blocked By Parent Dialog launched.
+  histogram_tester.ExpectUniqueSample(
+      SupervisedUserExtensionsMetricsRecorder::kEnablementHistogramName,
+      SupervisedUserExtensionsMetricsRecorder::EnablementState::kFailedToEnable,
+      1);
 }

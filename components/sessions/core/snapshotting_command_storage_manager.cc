@@ -45,21 +45,14 @@ void SnapshottingCommandStorageManager::DeleteLastSession() {
                      GetSnapshottingBackend()));
 }
 
-base::CancelableTaskTracker::TaskId
-SnapshottingCommandStorageManager::ScheduleGetLastSessionCommands(
-    GetCommandsCallback callback,
-    base::CancelableTaskTracker* tracker) {
-  base::CancelableTaskTracker::IsCanceledCallback is_canceled;
-  GetCommandsCallback backend_callback;
-  const base::CancelableTaskTracker::TaskId id = CreateCallbackForGetCommands(
-      tracker, std::move(callback), &is_canceled, &backend_callback);
-
-  backend_task_runner()->PostNonNestableTask(
+void SnapshottingCommandStorageManager::GetLastSessionCommands(
+    GetCommandsCallback callback) {
+  backend_task_runner()->PostTaskAndReplyWithResult(
       FROM_HERE,
       base::BindOnce(
           &SnapshottingCommandStorageBackend::ReadLastSessionCommands,
-          GetSnapshottingBackend(), is_canceled, std::move(backend_callback)));
-  return id;
+          GetSnapshottingBackend()),
+      std::move(callback));
 }
 
 SnapshottingCommandStorageBackend*

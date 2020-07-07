@@ -13,6 +13,7 @@ import androidx.annotation.ColorRes;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.infobar.ActionType;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
@@ -23,6 +24,7 @@ import org.chromium.ui.modelutil.PropertyModel;
  * Note that infobars expire by default when a new navigation occurs.
  * Make sure to use setExpireOnNavigation(false) if you want an infobar to be sticky.
  */
+@JNINamespace("infobars")
 public abstract class InfoBar implements InfoBarInteractionHandler, InfoBarUiItem {
     private static final String TAG = "InfoBar";
 

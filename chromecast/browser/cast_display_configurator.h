@@ -45,6 +45,9 @@ class CastDisplayConfigurator : public display::NativeDisplayObserver {
   void OnConfigurationChanged() override;
   void OnDisplaySnapshotsInvalidated() override {}
 
+  void EnableDisplay();
+  void DisableDisplay();
+
   void ConfigureDisplayFromCommandLine();
   void SetColorMatrix(const std::vector<float>& color_matrix);
   void SetGammaCorrection(

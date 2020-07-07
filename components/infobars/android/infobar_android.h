@@ -13,10 +13,8 @@
 #include "components/infobars/core/infobar.h"
 
 namespace infobars {
-class InfoBarDelegate;
-}
 
-class InfoBarAndroid : public infobars::InfoBar {
+class InfoBarAndroid : public InfoBar {
  public:
   // A Java counterpart will be generated for this enum.
   // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.infobar
@@ -34,7 +32,7 @@ class InfoBarAndroid : public infobars::InfoBar {
   // A function that maps from Chromium IDs to Drawable IDs.
   using ResourceIdMapper = base::RepeatingCallback<int(int)>;
 
-  InfoBarAndroid(std::unique_ptr<infobars::InfoBarDelegate> delegate,
+  InfoBarAndroid(std::unique_ptr<InfoBarDelegate> delegate,
                  const ResourceIdMapper& resource_id_mapper);
   ~InfoBarAndroid() override;
 
@@ -84,5 +82,7 @@ class InfoBarAndroid : public infobars::InfoBar {
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarAndroid);
 };
+
+}  // namespace infobars
 
 #endif  // COMPONENTS_INFOBARS_ANDROID_INFOBAR_ANDROID_H_

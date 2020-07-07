@@ -16,8 +16,8 @@
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/view.h"
+#include "ui/views/window/dialog_delegate.h"
 
 class GaiaAuthFetcher;
 
@@ -41,7 +41,7 @@ class ParentPermissionInputSection;
 // asking them to enter their google account credentials.  This is created only
 // when the dialog is ready to be shown (after the state has been
 // asynchronously fetched).
-class ParentPermissionDialogView : public views::BubbleDialogDelegateView,
+class ParentPermissionDialogView : public views::DialogDelegateView,
                                    public GaiaAuthConsumer {
  public:
   class Observer {

@@ -74,7 +74,8 @@ class HeartbeatSender final : public SignalStrategy::Listener {
   HeartbeatSender(Delegate* delegate,
                   const std::string& host_id,
                   SignalStrategy* signal_strategy,
-                  OAuthTokenGetter* oauth_token_getter);
+                  OAuthTokenGetter* oauth_token_getter,
+                  bool is_googler);
   ~HeartbeatSender() override;
 
   // Sets host offline reason for future heartbeat, and initiates sending a
@@ -138,6 +139,8 @@ class HeartbeatSender final : public SignalStrategy::Listener {
   net::BackoffEntry backoff_;
 
   bool initial_heartbeat_sent_ = false;
+
+  bool is_googler_ = false;
 
   // Fields to send and indicate completion of sending host-offline-reason.
   std::string host_offline_reason_;

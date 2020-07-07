@@ -4,6 +4,8 @@
 
 #include "cc/paint/paint_image.h"
 
+#include <utility>
+
 #include "base/test/gtest_util.h"
 #include "cc/paint/paint_image_builder.h"
 #include "cc/test/fake_paint_image_generator.h"
@@ -12,36 +14,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
-
-TEST(PaintImageTest, Subsetting) {
-  PaintImage image = CreateDiscardablePaintImage(gfx::Size(100, 100));
-  EXPECT_EQ(image.width(), 100);
-  EXPECT_EQ(image.height(), 100);
-
-  PaintImage subset_rect_1 = PaintImageBuilder::WithCopy(image)
-                                 .make_subset(gfx::Rect(25, 25, 50, 50))
-                                 .TakePaintImage();
-  EXPECT_EQ(subset_rect_1.width(), 50);
-  EXPECT_EQ(subset_rect_1.height(), 50);
-  EXPECT_EQ(subset_rect_1.subset_rect_, gfx::Rect(25, 25, 50, 50));
-
-  PaintImage subset_rect_2 = PaintImageBuilder::WithCopy(subset_rect_1)
-                                 .make_subset(gfx::Rect(25, 25, 25, 25))
-                                 .TakePaintImage();
-  EXPECT_EQ(subset_rect_2.width(), 25);
-  EXPECT_EQ(subset_rect_2.height(), 25);
-  EXPECT_EQ(subset_rect_2.subset_rect_, gfx::Rect(50, 50, 25, 25));
-
-  EXPECT_EQ(image, PaintImageBuilder::WithCopy(image)
-                       .make_subset(gfx::Rect(100, 100))
-                       .TakePaintImage());
-  EXPECT_DCHECK_DEATH(PaintImageBuilder::WithCopy(subset_rect_2)
-                          .make_subset(gfx::Rect(10, 10, 25, 25))
-                          .TakePaintImage());
-  EXPECT_DCHECK_DEATH(PaintImageBuilder::WithCopy(image)
-                          .make_subset(gfx::Rect())
-                          .TakePaintImage());
-}
 
 TEST(PaintImageTest, DecodesCorrectFrames) {
   std::vector<FrameMetadata> frames = {
@@ -60,17 +32,6 @@ TEST(PaintImageTest, DecodesCorrectFrames) {
   std::vector<size_t> memory(info.computeMinByteSize());
   image.Decode(memory.data(), &info, nullptr, 1u,
                PaintImage::kDefaultGeneratorClientId);
-  ASSERT_EQ(generator->frames_decoded().size(), 1u);
-  EXPECT_EQ(generator->frames_decoded().count(1u), 1u);
-  generator->reset_frames_decoded();
-
-  // Subsetted.
-  PaintImage subset_image = PaintImageBuilder::WithCopy(image)
-                                .make_subset(gfx::Rect(0, 0, 5, 5))
-                                .TakePaintImage();
-  SkImageInfo subset_info = info.makeWH(5, 5);
-  subset_image.Decode(memory.data(), &subset_info, nullptr, 1u,
-                      PaintImage::kDefaultGeneratorClientId);
   ASSERT_EQ(generator->frames_decoded().size(), 1u);
   EXPECT_EQ(generator->frames_decoded().count(1u), 1u);
   generator->reset_frames_decoded();
@@ -99,12 +60,6 @@ TEST(PaintImageTest, SupportedDecodeSize) {
                          .TakePaintImage();
   EXPECT_EQ(image.GetSupportedDecodeSize(supported_sizes[0]),
             supported_sizes[0]);
-
-  PaintImage subset = PaintImageBuilder::WithCopy(image)
-                          .make_subset(gfx::Rect(8, 8))
-                          .TakePaintImage();
-  EXPECT_EQ(subset.GetSupportedDecodeSize(supported_sizes[0]),
-            SkISize::Make(8, 8));
 }
 
 TEST(PaintImageTest, GetSkImageForFrameNotGeneratorBacked) {

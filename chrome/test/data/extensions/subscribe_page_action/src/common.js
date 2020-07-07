@@ -11,8 +11,8 @@ var storageEnabled = window.localStorage != null;
 function defaultReaderList() {
   // This is the default list, unless replaced by what was saved previously.
   return [
-    { 'url': 'http://www.bloglines.com/login?r=/sub/%s',
-      'description': 'Bloglines'
+    { 'url': 'http://www.newsblur.com/?url=%s',
+      'description': 'Newsblur'
     },
     { 'url': 'http://add.my.yahoo.com/rss?url=%s',
       'description': 'My Yahoo'

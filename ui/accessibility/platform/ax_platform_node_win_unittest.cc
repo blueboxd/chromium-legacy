@@ -716,8 +716,7 @@ TEST_F(AXPlatformNodeWinTest,
   // Loop through the selections and  make sure we have the right ones.
   ComPtr<IEnumVARIANT> accessibles;
   ASSERT_HRESULT_SUCCEEDED(
-      V_UNKNOWN(selection.ptr())
-          ->QueryInterface(IID_PPV_ARGS(accessibles.GetAddressOf())));
+      V_UNKNOWN(selection.ptr())->QueryInterface(IID_PPV_ARGS(&accessibles)));
   ULONG retrieved_count;
 
   // Check out the first selected item.
@@ -728,8 +727,7 @@ TEST_F(AXPlatformNodeWinTest,
 
     ComPtr<IAccessible> accessible;
     ASSERT_HRESULT_SUCCEEDED(
-        V_DISPATCH(item.ptr())
-            ->QueryInterface(IID_PPV_ARGS(accessible.GetAddressOf())));
+        V_DISPATCH(item.ptr())->QueryInterface(IID_PPV_ARGS(&accessible)));
     ScopedBstr name;
     EXPECT_EQ(S_OK, accessible->get_accName(SELF, name.Receive()));
     EXPECT_STREQ(L"Name1", name.Get());
@@ -743,8 +741,7 @@ TEST_F(AXPlatformNodeWinTest,
 
     ComPtr<IAccessible> accessible;
     ASSERT_HRESULT_SUCCEEDED(
-        V_DISPATCH(item.ptr())
-            ->QueryInterface(IID_PPV_ARGS(accessible.GetAddressOf())));
+        V_DISPATCH(item.ptr())->QueryInterface(IID_PPV_ARGS(&accessible)));
     ScopedBstr name;
     EXPECT_EQ(S_OK, accessible->get_accName(SELF, name.Receive()));
     EXPECT_STREQ(L"Name2", name.Get());
@@ -787,8 +784,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleSelectionTableRowOneSelected) {
 
   ComPtr<IAccessible> row;
   ASSERT_HRESULT_SUCCEEDED(
-      V_DISPATCH(selection.ptr())
-          ->QueryInterface(IID_PPV_ARGS(row.GetAddressOf())));
+      V_DISPATCH(selection.ptr())->QueryInterface(IID_PPV_ARGS(&row)));
 
   ScopedVariant role;
   EXPECT_HRESULT_SUCCEEDED(row->get_accRole(SELF, role.Receive()));
@@ -816,8 +812,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleSelectionTableRowMultipleSelected) {
   // Loop through the selections and  make sure we have the right ones.
   ComPtr<IEnumVARIANT> accessibles;
   ASSERT_HRESULT_SUCCEEDED(
-      V_UNKNOWN(selection.ptr())
-          ->QueryInterface(IID_PPV_ARGS(accessibles.GetAddressOf())));
+      V_UNKNOWN(selection.ptr())->QueryInterface(IID_PPV_ARGS(&accessibles)));
   ULONG retrieved_count;
 
   // Check out the first selected row.
@@ -828,8 +823,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleSelectionTableRowMultipleSelected) {
 
     ComPtr<IAccessible> accessible;
     ASSERT_HRESULT_SUCCEEDED(
-        V_DISPATCH(item.ptr())
-            ->QueryInterface(IID_PPV_ARGS(accessible.GetAddressOf())));
+        V_DISPATCH(item.ptr())->QueryInterface(IID_PPV_ARGS(&accessible)));
     ScopedVariant role;
     EXPECT_HRESULT_SUCCEEDED(accessible->get_accRole(SELF, role.Receive()));
     EXPECT_EQ(ROLE_SYSTEM_ROW, V_I4(role.ptr()));
@@ -843,8 +837,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleSelectionTableRowMultipleSelected) {
 
     ComPtr<IAccessible> accessible;
     ASSERT_HRESULT_SUCCEEDED(
-        V_DISPATCH(item.ptr())
-            ->QueryInterface(IID_PPV_ARGS(accessible.GetAddressOf())));
+        V_DISPATCH(item.ptr())->QueryInterface(IID_PPV_ARGS(&accessible)));
     ScopedVariant role;
     EXPECT_HRESULT_SUCCEEDED(accessible->get_accRole(SELF, role.Receive()));
     EXPECT_EQ(ROLE_SYSTEM_ROW, V_I4(role.ptr()));
@@ -870,8 +863,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleSelectionTableCellOneSelected) {
   ASSERT_NE(nullptr, root_obj.Get());
 
   ComPtr<IDispatch> row2;
-  ASSERT_HRESULT_SUCCEEDED(
-      root_obj->get_accChild(ScopedVariant(2), row2.GetAddressOf()));
+  ASSERT_HRESULT_SUCCEEDED(root_obj->get_accChild(ScopedVariant(2), &row2));
   ComPtr<IAccessible> row2_accessible;
   ASSERT_HRESULT_SUCCEEDED(row2.As(&row2_accessible));
 
@@ -882,8 +874,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleSelectionTableCellOneSelected) {
 
   ComPtr<IAccessible> cell;
   ASSERT_HRESULT_SUCCEEDED(
-      V_DISPATCH(selection.ptr())
-          ->QueryInterface(IID_PPV_ARGS(cell.GetAddressOf())));
+      V_DISPATCH(selection.ptr())->QueryInterface(IID_PPV_ARGS(&cell)));
 
   ScopedVariant role;
   EXPECT_HRESULT_SUCCEEDED(cell->get_accRole(SELF, role.Receive()));
@@ -908,8 +899,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleSelectionTableCellMultipleSelected) {
   ASSERT_NE(nullptr, root_obj.Get());
 
   ComPtr<IDispatch> row3;
-  ASSERT_HRESULT_SUCCEEDED(
-      root_obj->get_accChild(ScopedVariant(3), row3.GetAddressOf()));
+  ASSERT_HRESULT_SUCCEEDED(root_obj->get_accChild(ScopedVariant(3), &row3));
   ComPtr<IAccessible> row3_accessible;
   ASSERT_HRESULT_SUCCEEDED(row3.As(&row3_accessible));
 
@@ -921,8 +911,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleSelectionTableCellMultipleSelected) {
   // Loop through the selections and  make sure we have the right ones.
   ComPtr<IEnumVARIANT> accessibles;
   ASSERT_HRESULT_SUCCEEDED(
-      V_UNKNOWN(selection.ptr())
-          ->QueryInterface(IID_PPV_ARGS(accessibles.GetAddressOf())));
+      V_UNKNOWN(selection.ptr())->QueryInterface(IID_PPV_ARGS(&accessibles)));
   ULONG retrieved_count;
 
   // Check out the first selected cell.
@@ -933,8 +922,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleSelectionTableCellMultipleSelected) {
 
     ComPtr<IAccessible> accessible;
     ASSERT_HRESULT_SUCCEEDED(
-        V_DISPATCH(item.ptr())
-            ->QueryInterface(IID_PPV_ARGS(accessible.GetAddressOf())));
+        V_DISPATCH(item.ptr())->QueryInterface(IID_PPV_ARGS(&accessible)));
     ScopedBstr name;
     EXPECT_EQ(S_OK, accessible->get_accName(SELF, name.Receive()));
     EXPECT_STREQ(L"3", name.Get());
@@ -948,8 +936,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleSelectionTableCellMultipleSelected) {
 
     ComPtr<IAccessible> accessible;
     ASSERT_HRESULT_SUCCEEDED(
-        V_DISPATCH(item.ptr())
-            ->QueryInterface(IID_PPV_ARGS(accessible.GetAddressOf())));
+        V_DISPATCH(item.ptr())->QueryInterface(IID_PPV_ARGS(&accessible)));
     ScopedBstr name;
     EXPECT_EQ(S_OK, accessible->get_accName(SELF, name.Receive()));
     EXPECT_STREQ(L"4", name.Get());
@@ -1061,24 +1048,21 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleChildAndParent) {
 
   {
     ComPtr<IDispatch> result;
-    EXPECT_EQ(S_OK,
-              root_iaccessible->get_accChild(SELF, result.GetAddressOf()));
+    EXPECT_EQ(S_OK, root_iaccessible->get_accChild(SELF, &result));
     EXPECT_EQ(result.Get(), root_iaccessible.Get());
   }
 
   {
     ComPtr<IDispatch> result;
     ScopedVariant child1(1);
-    EXPECT_EQ(S_OK,
-              root_iaccessible->get_accChild(child1, result.GetAddressOf()));
+    EXPECT_EQ(S_OK, root_iaccessible->get_accChild(child1, &result));
     EXPECT_EQ(result.Get(), button_iaccessible.Get());
   }
 
   {
     ComPtr<IDispatch> result;
     ScopedVariant child2(2);
-    EXPECT_EQ(S_OK,
-              root_iaccessible->get_accChild(child2, result.GetAddressOf()));
+    EXPECT_EQ(S_OK, root_iaccessible->get_accChild(child2, &result));
     EXPECT_EQ(result.Get(), checkbox_iaccessible.Get());
   }
 
@@ -1086,8 +1070,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleChildAndParent) {
     // Asking for child id 3 should fail.
     ComPtr<IDispatch> result;
     ScopedVariant child3(3);
-    EXPECT_EQ(E_INVALIDARG,
-              root_iaccessible->get_accChild(child3, result.GetAddressOf()));
+    EXPECT_EQ(E_INVALIDARG, root_iaccessible->get_accChild(child3, &result));
   }
 
   // We should be able to ask for the button by its unique id too.
@@ -1098,8 +1081,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleChildAndParent) {
   {
     ComPtr<IDispatch> result;
     ScopedVariant button_id_variant(button_unique_id);
-    EXPECT_EQ(S_OK, root_iaccessible->get_accChild(button_id_variant,
-                                                   result.GetAddressOf()));
+    EXPECT_EQ(S_OK, root_iaccessible->get_accChild(button_id_variant, &result));
     EXPECT_EQ(result.Get(), button_iaccessible.Get());
   }
 
@@ -1112,26 +1094,26 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleChildAndParent) {
   {
     ComPtr<IDispatch> result;
     ScopedVariant root_id_variant(root_unique_id);
-    EXPECT_EQ(E_INVALIDARG, button_iaccessible->get_accChild(
-                                root_id_variant, result.GetAddressOf()));
+    EXPECT_EQ(E_INVALIDARG,
+              button_iaccessible->get_accChild(root_id_variant, &result));
   }
 
   // Now check parents.
   {
     ComPtr<IDispatch> result;
-    EXPECT_EQ(S_OK, button_iaccessible->get_accParent(result.GetAddressOf()));
+    EXPECT_EQ(S_OK, button_iaccessible->get_accParent(&result));
     EXPECT_EQ(result.Get(), root_iaccessible.Get());
   }
 
   {
     ComPtr<IDispatch> result;
-    EXPECT_EQ(S_OK, checkbox_iaccessible->get_accParent(result.GetAddressOf()));
+    EXPECT_EQ(S_OK, checkbox_iaccessible->get_accParent(&result));
     EXPECT_EQ(result.Get(), root_iaccessible.Get());
   }
 
   {
     ComPtr<IDispatch> result;
-    EXPECT_EQ(S_FALSE, root_iaccessible->get_accParent(result.GetAddressOf()));
+    EXPECT_EQ(S_FALSE, root_iaccessible->get_accParent(&result));
   }
 }
 
@@ -1319,19 +1301,19 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleTableGetAccessibilityAt) {
   ASSERT_NE(nullptr, result.Get());
 
   ComPtr<IUnknown> cell_1;
-  EXPECT_EQ(S_OK, result->get_accessibleAt(1, 1, cell_1.GetAddressOf()));
+  EXPECT_EQ(S_OK, result->get_accessibleAt(1, 1, &cell_1));
   CheckIUnknownHasName(cell_1, L"1");
 
   ComPtr<IUnknown> cell_2;
-  EXPECT_EQ(S_OK, result->get_accessibleAt(1, 2, cell_2.GetAddressOf()));
+  EXPECT_EQ(S_OK, result->get_accessibleAt(1, 2, &cell_2));
   CheckIUnknownHasName(cell_2, L"2");
 
   ComPtr<IUnknown> cell_3;
-  EXPECT_EQ(S_OK, result->get_accessibleAt(2, 1, cell_3.GetAddressOf()));
+  EXPECT_EQ(S_OK, result->get_accessibleAt(2, 1, &cell_3));
   CheckIUnknownHasName(cell_3, L"3");
 
   ComPtr<IUnknown> cell_4;
-  EXPECT_EQ(S_OK, result->get_accessibleAt(2, 2, cell_4.GetAddressOf()));
+  EXPECT_EQ(S_OK, result->get_accessibleAt(2, 2, &cell_4));
   CheckIUnknownHasName(cell_4, L"4");
 }
 
@@ -1346,26 +1328,22 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleTableGetAccessibilityAtOutOfBounds) {
 
   {
     ComPtr<IUnknown> cell;
-    EXPECT_EQ(E_INVALIDARG,
-              result->get_accessibleAt(-1, -1, cell.GetAddressOf()));
+    EXPECT_EQ(E_INVALIDARG, result->get_accessibleAt(-1, -1, &cell));
   }
 
   {
     ComPtr<IUnknown> cell;
-    EXPECT_EQ(E_INVALIDARG,
-              result->get_accessibleAt(0, 5, cell.GetAddressOf()));
+    EXPECT_EQ(E_INVALIDARG, result->get_accessibleAt(0, 5, &cell));
   }
 
   {
     ComPtr<IUnknown> cell;
-    EXPECT_EQ(E_INVALIDARG,
-              result->get_accessibleAt(5, 0, cell.GetAddressOf()));
+    EXPECT_EQ(E_INVALIDARG, result->get_accessibleAt(5, 0, &cell));
   }
 
   {
     ComPtr<IUnknown> cell;
-    EXPECT_EQ(E_INVALIDARG,
-              result->get_accessibleAt(10, 10, cell.GetAddressOf()));
+    EXPECT_EQ(E_INVALIDARG, result->get_accessibleAt(10, 10, &cell));
   }
 }
 
@@ -1416,8 +1394,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessible2ScrollToPoint) {
 
   ComPtr<IAccessible> root_iaccessible(GetRootIAccessible());
   ComPtr<IDispatch> result;
-  EXPECT_EQ(S_OK, root_iaccessible->get_accChild(ScopedVariant(1),
-                                                 result.GetAddressOf()));
+  EXPECT_EQ(S_OK, root_iaccessible->get_accChild(ScopedVariant(1), &result));
   ComPtr<IAccessible2> ax_child1;
   EXPECT_EQ(S_OK, result.As(&ax_child1));
   result.Reset();
@@ -1468,8 +1445,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessible2ScrollTo) {
 
   ComPtr<IAccessible> root_iaccessible(GetRootIAccessible());
   ComPtr<IDispatch> result;
-  EXPECT_EQ(S_OK, root_iaccessible->get_accChild(ScopedVariant(1),
-                                                 result.GetAddressOf()));
+  EXPECT_EQ(S_OK, root_iaccessible->get_accChild(ScopedVariant(1), &result));
   ComPtr<IAccessible2> ax_child1;
   EXPECT_EQ(S_OK, result.As(&ax_child1));
   result.Reset();
@@ -1711,13 +1687,13 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleTableGetCellAt) {
 
   {
     ComPtr<IUnknown> cell;
-    EXPECT_EQ(S_OK, result->get_cellAt(1, 1, cell.GetAddressOf()));
+    EXPECT_EQ(S_OK, result->get_cellAt(1, 1, &cell));
     CheckIUnknownHasName(cell, L"1");
   }
 
   {
     ComPtr<IUnknown> cell;
-    EXPECT_EQ(E_INVALIDARG, result->get_cellAt(-1, -1, cell.GetAddressOf()));
+    EXPECT_EQ(E_INVALIDARG, result->get_cellAt(-1, -1, &cell));
   }
 }
 
@@ -1816,7 +1792,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleTableCellGetTable) {
   ASSERT_NE(nullptr, cell.Get());
 
   ComPtr<IUnknown> table;
-  EXPECT_EQ(S_OK, cell->get_table(table.GetAddressOf()));
+  EXPECT_EQ(S_OK, cell->get_table(&table));
 
   ComPtr<IAccessibleTable> result;
   table.As(&result);
@@ -1824,7 +1800,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleTableCellGetTable) {
 
   // Check to make sure that this is the right table by checking one cell.
   ComPtr<IUnknown> cell_1;
-  EXPECT_EQ(S_OK, result->get_accessibleAt(1, 1, cell_1.GetAddressOf()));
+  EXPECT_EQ(S_OK, result->get_accessibleAt(1, 1, &cell_1));
   CheckIUnknownHasName(cell_1, L"1");
 }
 
@@ -1857,14 +1833,12 @@ TEST_F(AXPlatformNodeWinTest, IAccessible2GetNRelations) {
   ComPtr<IAccessible2> root_iaccessible2 = ToIAccessible2(root_iaccessible);
 
   ComPtr<IDispatch> result;
-  EXPECT_EQ(S_OK, root_iaccessible2->get_accChild(ScopedVariant(1),
-                                                  result.GetAddressOf()));
+  EXPECT_EQ(S_OK, root_iaccessible2->get_accChild(ScopedVariant(1), &result));
   ComPtr<IAccessible2> ax_child1;
   EXPECT_EQ(S_OK, result.As(&ax_child1));
   result.Reset();
 
-  EXPECT_EQ(S_OK, root_iaccessible2->get_accChild(ScopedVariant(2),
-                                                  result.GetAddressOf()));
+  EXPECT_EQ(S_OK, root_iaccessible2->get_accChild(ScopedVariant(2), &result));
   ComPtr<IAccessible2> ax_child2;
   EXPECT_EQ(S_OK, result.As(&ax_child2));
   result.Reset();
@@ -1880,7 +1854,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessible2GetNRelations) {
   EXPECT_EQ(1, n_relations);
 
   EXPECT_HRESULT_SUCCEEDED(
-      root_iaccessible2->get_relation(0, describedby_relation.GetAddressOf()));
+      root_iaccessible2->get_relation(0, &describedby_relation));
 
   EXPECT_HRESULT_SUCCEEDED(
       describedby_relation->get_relationType(relation_type.Receive()));
@@ -1891,12 +1865,10 @@ TEST_F(AXPlatformNodeWinTest, IAccessible2GetNRelations) {
   EXPECT_HRESULT_SUCCEEDED(describedby_relation->get_nTargets(&n_targets));
   EXPECT_EQ(2, n_targets);
 
-  EXPECT_HRESULT_SUCCEEDED(
-      describedby_relation->get_target(0, target.GetAddressOf()));
+  EXPECT_HRESULT_SUCCEEDED(describedby_relation->get_target(0, &target));
   target.Reset();
 
-  EXPECT_HRESULT_SUCCEEDED(
-      describedby_relation->get_target(1, target.GetAddressOf()));
+  EXPECT_HRESULT_SUCCEEDED(describedby_relation->get_target(1, &target));
   target.Reset();
 
   describedby_relation.Reset();
@@ -1906,7 +1878,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessible2GetNRelations) {
   EXPECT_EQ(1, n_relations);
 
   EXPECT_HRESULT_SUCCEEDED(
-      ax_child1->get_relation(0, description_for_relation.GetAddressOf()));
+      ax_child1->get_relation(0, &description_for_relation));
   EXPECT_HRESULT_SUCCEEDED(
       description_for_relation->get_relationType(relation_type.Receive()));
   EXPECT_EQ(L"descriptionFor", base::string16(relation_type.Get()));
@@ -1915,8 +1887,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessible2GetNRelations) {
   EXPECT_HRESULT_SUCCEEDED(description_for_relation->get_nTargets(&n_targets));
   EXPECT_EQ(1, n_targets);
 
-  EXPECT_HRESULT_SUCCEEDED(
-      description_for_relation->get_target(0, target.GetAddressOf()));
+  EXPECT_HRESULT_SUCCEEDED(description_for_relation->get_target(0, &target));
   target.Reset();
   description_for_relation.Reset();
 
@@ -1924,7 +1895,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessible2GetNRelations) {
   EXPECT_EQ(1, n_relations);
 
   EXPECT_HRESULT_SUCCEEDED(
-      ax_child2->get_relation(0, description_for_relation.GetAddressOf()));
+      ax_child2->get_relation(0, &description_for_relation));
   EXPECT_HRESULT_SUCCEEDED(
       description_for_relation->get_relationType(relation_type.Receive()));
   EXPECT_EQ(L"descriptionFor", base::string16(relation_type.Get()));
@@ -1933,8 +1904,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessible2GetNRelations) {
   EXPECT_HRESULT_SUCCEEDED(description_for_relation->get_nTargets(&n_targets));
   EXPECT_EQ(1, n_targets);
 
-  EXPECT_HRESULT_SUCCEEDED(
-      description_for_relation->get_target(0, target.GetAddressOf()));
+  EXPECT_HRESULT_SUCCEEDED(description_for_relation->get_target(0, &target));
   target.Reset();
 
   // TODO(dougt): Try adding one more relation.
@@ -2070,20 +2040,17 @@ TEST_F(AXPlatformNodeWinTest, DISABLED_TestRelationTargetsOfType) {
   ComPtr<IAccessible2_2> root_iaccessible2 = ToIAccessible2_2(root_iaccessible);
 
   ComPtr<IDispatch> result;
-  EXPECT_EQ(S_OK, root_iaccessible2->get_accChild(ScopedVariant(1),
-                                                  result.GetAddressOf()));
+  EXPECT_EQ(S_OK, root_iaccessible2->get_accChild(ScopedVariant(1), &result));
   ComPtr<IAccessible2_2> ax_child1;
   EXPECT_EQ(S_OK, result.As(&ax_child1));
   result.Reset();
 
-  EXPECT_EQ(S_OK, root_iaccessible2->get_accChild(ScopedVariant(2),
-                                                  result.GetAddressOf()));
+  EXPECT_EQ(S_OK, root_iaccessible2->get_accChild(ScopedVariant(2), &result));
   ComPtr<IAccessible2_2> ax_child2;
   EXPECT_EQ(S_OK, result.As(&ax_child2));
   result.Reset();
 
-  EXPECT_EQ(S_OK, root_iaccessible2->get_accChild(ScopedVariant(3),
-                                                  result.GetAddressOf()));
+  EXPECT_EQ(S_OK, root_iaccessible2->get_accChild(ScopedVariant(3), &result));
   ComPtr<IAccessible2_2> ax_child3;
   EXPECT_EQ(S_OK, result.As(&ax_child3));
   result.Reset();
@@ -2131,7 +2098,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleTableGetNSelectedChildrenZero) {
   ASSERT_NE(nullptr, cell.Get());
 
   ComPtr<IUnknown> table;
-  EXPECT_EQ(S_OK, cell->get_table(table.GetAddressOf()));
+  EXPECT_EQ(S_OK, cell->get_table(&table));
 
   ComPtr<IAccessibleTable> result;
   table.As(&result);
@@ -2153,7 +2120,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleTableGetNSelectedChildrenOne) {
   ASSERT_NE(nullptr, cell.Get());
 
   ComPtr<IUnknown> table;
-  EXPECT_EQ(S_OK, cell->get_table(table.GetAddressOf()));
+  EXPECT_EQ(S_OK, cell->get_table(&table));
 
   ComPtr<IAccessibleTable> result;
   table.As(&result);
@@ -2182,7 +2149,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleTableGetNSelectedChildrenMany) {
   ASSERT_NE(nullptr, cell.Get());
 
   ComPtr<IUnknown> table;
-  EXPECT_EQ(S_OK, cell->get_table(table.GetAddressOf()));
+  EXPECT_EQ(S_OK, cell->get_table(&table));
 
   ComPtr<IAccessibleTable> result;
   table.As(&result);
@@ -2200,7 +2167,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleTableGetNSelectedColumnsZero) {
   ASSERT_NE(nullptr, cell.Get());
 
   ComPtr<IUnknown> table;
-  EXPECT_EQ(S_OK, cell->get_table(table.GetAddressOf()));
+  EXPECT_EQ(S_OK, cell->get_table(&table));
 
   ComPtr<IAccessibleTable> result;
   table.As(&result);
@@ -2227,7 +2194,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleTableGetNSelectedColumnsOne) {
   ASSERT_NE(nullptr, cell.Get());
 
   ComPtr<IUnknown> table;
-  EXPECT_EQ(S_OK, cell->get_table(table.GetAddressOf()));
+  EXPECT_EQ(S_OK, cell->get_table(&table));
 
   ComPtr<IAccessibleTable> result;
   table.As(&result);
@@ -2261,7 +2228,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleTableGetNSelectedColumnsMany) {
   ASSERT_NE(nullptr, cell.Get());
 
   ComPtr<IUnknown> table;
-  EXPECT_EQ(S_OK, cell->get_table(table.GetAddressOf()));
+  EXPECT_EQ(S_OK, cell->get_table(&table));
 
   ComPtr<IAccessibleTable> result;
   table.As(&result);
@@ -2279,7 +2246,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleTableGetNSelectedRowsZero) {
   ASSERT_NE(nullptr, cell.Get());
 
   ComPtr<IUnknown> table;
-  EXPECT_EQ(S_OK, cell->get_table(table.GetAddressOf()));
+  EXPECT_EQ(S_OK, cell->get_table(&table));
 
   ComPtr<IAccessibleTable> result;
   table.As(&result);
@@ -2306,7 +2273,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleTableGetNSelectedRowsOne) {
   ASSERT_NE(nullptr, cell.Get());
 
   ComPtr<IUnknown> table;
-  EXPECT_EQ(S_OK, cell->get_table(table.GetAddressOf()));
+  EXPECT_EQ(S_OK, cell->get_table(&table));
 
   ComPtr<IAccessibleTable> result;
   table.As(&result);
@@ -2340,7 +2307,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleTableGetNSelectedRowsMany) {
   ASSERT_NE(nullptr, cell.Get());
 
   ComPtr<IUnknown> table;
-  EXPECT_EQ(S_OK, cell->get_table(table.GetAddressOf()));
+  EXPECT_EQ(S_OK, cell->get_table(&table));
 
   ComPtr<IAccessibleTable> result;
   table.As(&result);
@@ -2365,7 +2332,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleTableGetSelectedChildren) {
   ASSERT_NE(nullptr, cell.Get());
 
   ComPtr<IUnknown> table;
-  EXPECT_EQ(S_OK, cell->get_table(table.GetAddressOf()));
+  EXPECT_EQ(S_OK, cell->get_table(&table));
 
   ComPtr<IAccessibleTable> result;
   table.As(&result);
@@ -2394,7 +2361,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleTableGetSelectedChildrenZeroMax) {
   ASSERT_NE(nullptr, cell.Get());
 
   ComPtr<IUnknown> table;
-  EXPECT_EQ(S_OK, cell->get_table(table.GetAddressOf()));
+  EXPECT_EQ(S_OK, cell->get_table(&table));
 
   ComPtr<IAccessibleTable> result;
   table.As(&result);
@@ -2419,7 +2386,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleTableGetSelectedColumnsZero) {
   ASSERT_NE(nullptr, cell.Get());
 
   ComPtr<IUnknown> table;
-  EXPECT_EQ(S_OK, cell->get_table(table.GetAddressOf()));
+  EXPECT_EQ(S_OK, cell->get_table(&table));
 
   ComPtr<IAccessibleTable> result;
   table.As(&result);
@@ -2449,7 +2416,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleTableGetSelectedColumnsOne) {
   ASSERT_NE(nullptr, cell.Get());
 
   ComPtr<IUnknown> table;
-  EXPECT_EQ(S_OK, cell->get_table(table.GetAddressOf()));
+  EXPECT_EQ(S_OK, cell->get_table(&table));
 
   ComPtr<IAccessibleTable> result;
   table.As(&result);
@@ -2487,7 +2454,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleTableGetSelectedColumnsMany) {
   ASSERT_NE(nullptr, cell.Get());
 
   ComPtr<IUnknown> table;
-  EXPECT_EQ(S_OK, cell->get_table(table.GetAddressOf()));
+  EXPECT_EQ(S_OK, cell->get_table(&table));
 
   ComPtr<IAccessibleTable> result;
   table.As(&result);
@@ -2510,7 +2477,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleTableGetSelectedRowsZero) {
   ASSERT_NE(nullptr, cell.Get());
 
   ComPtr<IUnknown> table;
-  EXPECT_EQ(S_OK, cell->get_table(table.GetAddressOf()));
+  EXPECT_EQ(S_OK, cell->get_table(&table));
 
   ComPtr<IAccessibleTable> result;
   table.As(&result);
@@ -2539,7 +2506,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleTableGetSelectedRowsOne) {
   ASSERT_NE(nullptr, cell.Get());
 
   ComPtr<IUnknown> table;
-  EXPECT_EQ(S_OK, cell->get_table(table.GetAddressOf()));
+  EXPECT_EQ(S_OK, cell->get_table(&table));
 
   ComPtr<IAccessibleTable> result;
   table.As(&result);
@@ -2576,7 +2543,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleTableGetSelectedRowsMany) {
   ASSERT_NE(nullptr, cell.Get());
 
   ComPtr<IUnknown> table;
-  EXPECT_EQ(S_OK, cell->get_table(table.GetAddressOf()));
+  EXPECT_EQ(S_OK, cell->get_table(&table));
 
   ComPtr<IAccessibleTable> result;
   table.As(&result);
@@ -2607,7 +2574,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleTableIsColumnSelected) {
   ASSERT_NE(nullptr, cell.Get());
 
   ComPtr<IUnknown> table;
-  EXPECT_EQ(S_OK, cell->get_table(table.GetAddressOf()));
+  EXPECT_EQ(S_OK, cell->get_table(&table));
 
   ComPtr<IAccessibleTable> result;
   table.As(&result);
@@ -2643,7 +2610,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleTableIsRowSelected) {
   ASSERT_NE(nullptr, cell.Get());
 
   ComPtr<IUnknown> table;
-  EXPECT_EQ(S_OK, cell->get_table(table.GetAddressOf()));
+  EXPECT_EQ(S_OK, cell->get_table(&table));
 
   ComPtr<IAccessibleTable> result;
   table.As(&result);
@@ -2679,7 +2646,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleTableIsSelected) {
   ASSERT_NE(nullptr, cell.Get());
 
   ComPtr<IUnknown> table;
-  EXPECT_EQ(S_OK, cell->get_table(table.GetAddressOf()));
+  EXPECT_EQ(S_OK, cell->get_table(&table));
 
   ComPtr<IAccessibleTable> result;
   table.As(&result);
@@ -2716,7 +2683,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleTable2GetSelectedChildrenZero) {
   ASSERT_NE(nullptr, cell.Get());
 
   ComPtr<IUnknown> table;
-  EXPECT_EQ(S_OK, cell->get_table(table.GetAddressOf()));
+  EXPECT_EQ(S_OK, cell->get_table(&table));
 
   ComPtr<IAccessibleTable2> result;
   table.As(&result);
@@ -2742,7 +2709,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleTable2GetSelectedChildren) {
   ASSERT_NE(nullptr, cell.Get());
 
   ComPtr<IUnknown> table;
-  EXPECT_EQ(S_OK, cell->get_table(table.GetAddressOf()));
+  EXPECT_EQ(S_OK, cell->get_table(&table));
 
   ComPtr<IAccessibleTable2> result;
   table.As(&result);
@@ -5437,8 +5404,9 @@ TEST_F(AXPlatformNodeWinTest, UIAErrorHandling) {
                 &expand_collapse_state));
 
   // IGridProvider
+  ComPtr<IRawElementProviderSimple> temp_simple_provider;
   EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
-            grid_provider->GetItem(0, 0, simple_provider.GetAddressOf()));
+            grid_provider->GetItem(0, 0, &temp_simple_provider));
   EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
             grid_provider->get_RowCount(&int_result));
   EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
@@ -5475,9 +5443,9 @@ TEST_F(AXPlatformNodeWinTest, UIAErrorHandling) {
             selection_item_provider->Select());
   EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
             selection_item_provider->get_IsSelected(&bool_result));
-  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
-            selection_item_provider->get_SelectionContainer(
-                simple_provider.GetAddressOf()));
+  EXPECT_EQ(
+      static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+      selection_item_provider->get_SelectionContainer(&temp_simple_provider));
 
   // ISelectionProvider
   base::win::ScopedSafearray array_result;
@@ -5509,8 +5477,7 @@ TEST_F(AXPlatformNodeWinTest, UIAErrorHandling) {
   ComPtr<IRawElementProviderSimple> host_provider;
   ProviderOptions options;
   EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
-            simple_provider->GetPatternProvider(UIA_WindowPatternId,
-                                                unknown.GetAddressOf()));
+            simple_provider->GetPatternProvider(UIA_WindowPatternId, &unknown));
   EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
             simple_provider->GetPropertyValue(UIA_FrameworkIdPropertyId,
                                               variant.Receive()));

@@ -247,10 +247,6 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // Returns true if this node can be scrolled in the vertical direction.
   bool IsVerticallyScrollable() const;
 
-  // Returns true if this node has a role of StaticText, LineBreak, or
-  // InlineTextBox
-  bool IsTextOnlyObject() const;
-
   // See AXNodeData::IsTextField().
   bool IsTextField() const;
 
@@ -259,6 +255,9 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
 
   // See AXNodeData::IsRichTextField().
   bool IsRichTextField() const;
+
+  // See AXNode::IsText().
+  bool IsText() const;
 
   bool HasFocus();
 
@@ -354,6 +353,7 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
 
  protected:
   bool IsDocument() const;
+
   bool IsSelectionItemSupported() const;
 
   // Get the range value text, which might come from aria-valuetext or

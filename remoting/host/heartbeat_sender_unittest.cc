@@ -17,6 +17,7 @@
 #include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "remoting/base/fake_oauth_token_getter.h"
 #include "remoting/proto/remoting/v1/directory_service.grpc.pb.h"
 #include "remoting/signaling/fake_signal_strategy.h"
@@ -56,7 +57,8 @@ constexpr base::TimeDelta kTestHeartbeatDelay =
 
 void ValidateHeartbeat(const apis::v1::HeartbeatRequest& request,
                        bool expected_is_initial_heartbeat = false,
-                       const std::string& expected_host_offline_reason = {}) {
+                       const std::string& expected_host_offline_reason = {},
+                       bool is_googler = false) {
   ASSERT_TRUE(request.has_host_version());
   if (expected_host_offline_reason.empty()) {
     ASSERT_FALSE(request.has_host_offline_reason());
@@ -70,15 +72,25 @@ void ValidateHeartbeat(const apis::v1::HeartbeatRequest& request,
   ASSERT_TRUE(request.has_host_os_name());
   ASSERT_TRUE(request.has_host_cpu_type());
   ASSERT_EQ(expected_is_initial_heartbeat, request.is_initial_heartbeat());
+  bool is_linux = false;
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  is_linux = true;
+#endif
+  if (is_googler && is_linux) {
+    ASSERT_TRUE(request.has_hostname());
+  } else {
+    ASSERT_FALSE(request.has_hostname());
+  }
 }
 
 decltype(auto) DoValidateHeartbeatAndRespondOk(
     bool expected_is_initial_heartbeat = false,
-    const std::string& expected_host_offline_reason = {}) {
+    const std::string& expected_host_offline_reason = {},
+    bool is_googler = false) {
   return [=](const apis::v1::HeartbeatRequest& request,
              HeartbeatResponseCallback callback) {
     ValidateHeartbeat(request, expected_is_initial_heartbeat,
-                      expected_host_offline_reason);
+                      expected_host_offline_reason, is_googler);
     apis::v1::HeartbeatResponse response;
     response.set_set_interval_seconds(kGoodIntervalSeconds);
     std::move(callback).Run(grpc::Status::OK, response);
@@ -112,7 +124,8 @@ class HeartbeatSenderTest : public testing::Test {
     signal_strategy_->Disconnect();
 
     heartbeat_sender_ = std::make_unique<HeartbeatSender>(
-        &mock_delegate_, kHostId, signal_strategy_.get(), &oauth_token_getter_);
+        &mock_delegate_, kHostId, signal_strategy_.get(), &oauth_token_getter_,
+        false);
     auto heartbeat_client = std::make_unique<MockHeartbeatClient>();
     mock_client_ = heartbeat_client.get();
     heartbeat_sender_->client_ = std::move(heartbeat_client);
@@ -137,6 +150,8 @@ class HeartbeatSenderTest : public testing::Test {
   };
 
   HeartbeatSender* heartbeat_sender() { return heartbeat_sender_.get(); }
+
+  void set_is_googler() { heartbeat_sender()->is_googler_ = true; }
 
   const net::BackoffEntry& GetBackoff() const {
     return heartbeat_sender_->backoff_;
@@ -305,6 +320,13 @@ TEST_F(HeartbeatSenderTest, RemoteCommand) {
       });
   EXPECT_CALL(mock_delegate_, OnFirstHeartbeatSuccessful()).Times(1);
   EXPECT_CALL(mock_delegate_, OnRemoteRestartHost()).Times(1);
+  signal_strategy_->Connect();
+}
+
+TEST_F(HeartbeatSenderTest, GooglerHostname) {
+  set_is_googler();
+  EXPECT_CALL(*mock_client_, Heartbeat(_, _))
+      .WillOnce(DoValidateHeartbeatAndRespondOk(true, "", true));
   signal_strategy_->Connect();
 }
 

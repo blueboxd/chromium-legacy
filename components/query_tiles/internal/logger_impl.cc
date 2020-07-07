@@ -76,9 +76,11 @@ base::Value LoggerImpl::GetTileData() {
   base::DictionaryValue result;
   if (!log_source_)
     return std::move(result);
-
-  result.SetString("groupInfo", log_source_->GetGroupInfo());
-  result.SetString("tileProto", log_source_->GetTilesProto());
+  auto* tile_group = log_source_->GetTileGroup();
+  // (crbug.com/1101557): Make the format pretty with every field in TileGroup
+  // explicitly appears in the DictValue.
+  if (tile_group)
+    result.SetString("groupInfo", tile_group->DebugString());
   return std::move(result);
 }
 

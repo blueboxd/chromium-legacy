@@ -1645,6 +1645,8 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(
       std::make_unique<ExternalDataPolicyHandler>(key::kExternalPrintServers));
   handlers->AddHandler(std::make_unique<ExternalDataPolicyHandler>(
+      key::kDeviceExternalPrintServers));
+  handlers->AddHandler(std::make_unique<ExternalDataPolicyHandler>(
       key::kDeviceWilcoDtcConfiguration));
   handlers->AddHandler(std::make_unique<ExternalDataPolicyHandler>(
       key::kCrostiniAnsiblePlaybook));

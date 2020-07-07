@@ -10,12 +10,11 @@
 #include "ash/ash_export.h"
 #include "ash/home_screen/drag_window_from_shelf_controller.h"
 #include "ash/public/cpp/app_list/app_list_controller_observer.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/public/cpp/wallpaper_controller.h"
 #include "ash/public/cpp/wallpaper_controller_observer.h"
-#include "ash/session/session_observer.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_metrics.h"
 #include "ash/shelf/shelf_widget.h"
@@ -83,8 +82,7 @@ class ASH_EXPORT ShelfLayoutManager
       public LocaleChangeObserver,
       public DesksController::Observer,
       public message_center::MessageCenterObserver,
-      public ShelfConfig::Observer,
-      public TabletModeObserver {
+      public ShelfConfig::Observer {
  public:
   // Suspend work area updates within its scope. Note that relevant
   // ShelfLayoutManager must outlive this class.
@@ -271,10 +269,6 @@ class ASH_EXPORT ShelfLayoutManager
 
   // ShelfConfig::Observer:
   void OnShelfConfigUpdated() override;
-
-  // TabletModeObserver:
-  void OnTabletModeStarted() override;
-  void OnTabletModeEnded() override;
 
   float GetOpacity() const;
 

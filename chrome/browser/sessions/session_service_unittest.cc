@@ -1264,13 +1264,11 @@ void SimulateWaitForTesting(const base::AtomicFlag* flag) {
 // SessionService was destroyed before SessionService could process the results.
 TEST_F(SessionServiceTest, GetSessionsAndDestroy) {
   base::AtomicFlag flag;
-  base::CancelableTaskTracker cancelable_task_tracker;
   base::RunLoop run_loop;
   helper_.RunTaskOnBackendThread(
       FROM_HERE,
       base::BindOnce(&SimulateWaitForTesting, base::Unretained(&flag)));
-  service()->GetLastSession(base::BindOnce(&OnGotPreviousSession),
-                            &cancelable_task_tracker);
+  service()->GetLastSession(base::BindOnce(&OnGotPreviousSession));
   helper_.RunTaskOnBackendThread(FROM_HERE, run_loop.QuitClosure());
   delete helper_.ReleaseService();
   flag.Set();

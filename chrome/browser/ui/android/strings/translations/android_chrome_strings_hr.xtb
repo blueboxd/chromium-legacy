@@ -642,7 +642,6 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="6154478581116148741">Uključite zaključavanje zaslona u postavkama da biste izvezli svoje zaporke s ovog uređaja</translation>
 <translation id="6157392216611456285">Odaberite <ph name="APP_NAME" />.</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> manji podatkovni promet</translation>
-<translation id="6192333916571137726">Preuzimanje datoteka datoteka</translation>
 <translation id="6201345951596836663">Veza je kopirana</translation>
 <translation id="6206830853671714236">Odaberite vrijeme preuzimanja</translation>
 <translation id="6210748933810148297">Niste <ph name="EMAIL" />?</translation>
@@ -877,6 +876,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="8013372441983637696">Izbriši podatke iz Chromea i s ovog uređaja</translation>
 <translation id="8015452622527143194">Vraćanje svega na stranici na zadanu veličinu</translation>
 <translation id="8026334261755873520">Brisanje podataka o pregledavanju</translation>
+<translation id="8027863900915310177">Odaberite mjesto preuzimanja</translation>
 <translation id="8035133914807600019">Nova mapa…</translation>
 <translation id="8037750541064988519">Preostalo dana: <ph name="DAYS" /></translation>
 <translation id="804335162455518893">SD kartica nije pronađena</translation>

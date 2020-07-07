@@ -242,9 +242,11 @@ class OmniboxViewViewsTest : public OmniboxViewViewsTestBase {
     return test_api_->GetRenderText()->cursor_enabled();
   }
 
-  ui::MouseEvent CreateMouseEvent(ui::EventType type, const gfx::Point& point) {
+  ui::MouseEvent CreateMouseEvent(ui::EventType type,
+                                  const gfx::Point& point,
+                                  int event_flags = ui::EF_LEFT_MOUSE_BUTTON) {
     return ui::MouseEvent(type, point, point, ui::EventTimeForNow(),
-                          ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+                          event_flags, event_flags);
   }
 
  protected:
@@ -832,8 +834,6 @@ class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
   OmniboxViewViewsSteadyStateElisionsTest()
       : OmniboxViewViewsTest(
             {
-                omnibox::kHideSteadyStateUrlScheme,
-                omnibox::kHideSteadyStateUrlTrivialSubdomains,
             },
             {}) {}
 
@@ -896,11 +896,15 @@ class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
 
   // Sends a mouse down and mouse up event at a point
   // beginning of the RenderText.
-  void SendMouseClickAtPoint(gfx::Point point, int click_count) {
-    auto mouse_pressed = CreateMouseEvent(ui::ET_MOUSE_PRESSED, point);
+  void SendMouseClickAtPoint(gfx::Point point,
+                             int click_count,
+                             int event_flags = ui::EF_LEFT_MOUSE_BUTTON) {
+    auto mouse_pressed =
+        CreateMouseEvent(ui::ET_MOUSE_PRESSED, point, event_flags);
     mouse_pressed.SetClickCount(click_count);
     omnibox_textfield()->OnMousePressed(mouse_pressed);
-    auto mouse_released = CreateMouseEvent(ui::ET_MOUSE_RELEASED, point);
+    auto mouse_released =
+        CreateMouseEvent(ui::ET_MOUSE_RELEASED, point, event_flags);
     mouse_released.SetClickCount(click_count);
     omnibox_textfield()->OnMouseReleased(mouse_released);
   }
@@ -1096,6 +1100,27 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, MouseSingleThenDoubleClick) {
   omnibox_view()->GetSelectionBounds(&start, &end);
   EXPECT_EQ(12U, start);
   EXPECT_EQ(19U, end);
+}
+
+TEST_F(OmniboxViewViewsSteadyStateElisionsTest, MouseSingleThenRightClick) {
+  EXPECT_TRUE(IsElidedUrlDisplayed());
+  auto point = GetPointInTextAtXOffset(4 * kCharacterWidth);
+  SendMouseClickAtPoint(point, 1);
+  EXPECT_TRUE(IsElidedUrlDisplayed());
+  EXPECT_EQ(base::ASCIIToUTF16("example.com"), omnibox_view()->GetText());
+
+  // Verify that the whole full URL is selected.
+  EXPECT_TRUE(omnibox_view()->IsSelectAll());
+
+  // Advance the clock 5 seconds so the next click is not interpreted as a
+  // double click.
+  clock()->Advance(base::TimeDelta::FromSeconds(5));
+
+  // Right click
+  SendMouseClickAtPoint(point, 1, ui::EF_RIGHT_MOUSE_BUTTON);
+  EXPECT_TRUE(IsElidedUrlDisplayed());
+  EXPECT_TRUE(omnibox_view()->IsSelectAll());
+  EXPECT_TRUE(omnibox_view()->HasFocus());
 }
 
 TEST_F(OmniboxViewViewsSteadyStateElisionsTest, MouseTripleClick) {
@@ -1343,6 +1368,31 @@ void ExpectUnelidedFromSimplifiedDomain(gfx::RenderText* render_text,
   EXPECT_EQ(0, render_text->GetUpdatedDisplayOffset().x());
 }
 
+// Returns true if |render_text|'s current display rect and offset display at
+// least part of |path_bounds|, but not the full |display_url|. This is useful
+// for checking the displayed text partway through an animation.
+bool IsPartlyThroughSimplifiedDomainElision(gfx::RenderText* render_text,
+                                            const base::string16& display_url,
+                                            const gfx::Range& path_bounds) {
+  // First check if all of |display_url| is showing; if it is, we aren't partly
+  // elided.
+  gfx::Rect unelided_rect;
+  for (const auto& rect :
+       render_text->GetSubstringBounds(gfx::Range(0, display_url.size()))) {
+    unelided_rect.Union(rect);
+  }
+  if (render_text->display_rect().Contains(unelided_rect) &&
+      render_text->GetUpdatedDisplayOffset().x() == 0) {
+    return false;
+  }
+  // Now check if at least some of |path| is visible.
+  gfx::Rect path_rect;
+  for (const auto& rect : render_text->GetSubstringBounds(path_bounds)) {
+    path_rect.Union(rect);
+  }
+  return render_text->display_rect().Intersects(path_rect);
+}
+
 class OmniboxViewViewsNoSimplifiedDomainTest : public OmniboxViewViewsTest {
  public:
   OmniboxViewViewsNoSimplifiedDomainTest()
@@ -1433,7 +1483,6 @@ TEST_P(OmniboxViewViewsRevealOnHoverTest, HoverAndExit) {
       base::TimeTicks() +
       base::TimeDelta::FromMilliseconds(
           OmniboxFieldTrial::UnelideURLOnHoverThresholdMs()));
-  EXPECT_TRUE(hover_animation->HasStarted());
   // After the extended hover threshold has elapsed, the display text shouldn't
   // have changed yet.
   ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
@@ -1803,6 +1852,9 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest, SameDocNavigations) {
     omnibox_view()->DidFinishNavigation(&navigation);
     ASSERT_NO_FATAL_FAILURE(
         ExpectUnelidedFromSimplifiedDomain(render_text, kDisplayUrl));
+    OmniboxViewViews::ElideAnimation* elide_animation =
+        omnibox_view()->GetElideAfterInteractionAnimationForTesting();
+    EXPECT_FALSE(elide_animation);
   }
 
   // Simulate a user interaction to elide to the simplified domain.
@@ -1823,8 +1875,7 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest, SameDocNavigations) {
         ExpectUnelidedFromSimplifiedDomain(render_text, kDisplayUrl));
     OmniboxViewViews::ElideAnimation* elide_animation =
         omnibox_view()->GetElideAfterInteractionAnimationForTesting();
-    ASSERT_TRUE(elide_animation);
-    EXPECT_FALSE(elide_animation->IsAnimating());
+    EXPECT_FALSE(elide_animation);
   }
 
   // Simulate another user interaction to elide to the simplified domain, and
@@ -1854,7 +1905,144 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest, SameDocNavigations) {
         render_text, base::ASCIIToUTF16("foo."),
         base::ASCIIToUTF16("foo.example.test"), base::ASCIIToUTF16("/bar"),
         ShouldElideToRegistrableDomain()));
+    OmniboxViewViews::ElideAnimation* elide_animation =
+        omnibox_view()->GetElideAfterInteractionAnimationForTesting();
+    ASSERT_TRUE(elide_animation);
+    EXPECT_FALSE(elide_animation->IsAnimating());
   }
+}
+
+// Tests that in the hide-on-interaction field trial, a same-document navigation
+// does not interfere with an animation that is currently running.
+TEST_P(OmniboxViewViewsHideOnInteractionTest,
+       SameDocNavigationDuringAnimation) {
+  const base::string16 kDisplayUrl = base::ASCIIToUTF16("foo.example.test/bar");
+  location_bar_model()->set_url(GURL("https://foo.example.test/bar"));
+  location_bar_model()->set_url_for_display(kDisplayUrl);
+  omnibox_view()->model()->ResetDisplayTexts();
+  omnibox_view()->RevertAll();
+  gfx::RenderText* render_text = omnibox_view()->GetRenderText();
+  gfx::Range path_bounds(kDisplayUrl.find(base::ASCIIToUTF16("/bar")),
+                         kDisplayUrl.size());
+
+  // Call OnThemeChanged() to create the animations.
+  omnibox_view()->OnThemeChanged();
+
+  content::MockNavigationHandle navigation;
+  navigation.set_is_same_document(false);
+  omnibox_view()->DidFinishNavigation(&navigation);
+  ASSERT_NO_FATAL_FAILURE(
+      ExpectUnelidedFromSimplifiedDomain(render_text, kDisplayUrl));
+
+  // Simulate a user interaction to begin animating to the simplified domain.
+  omnibox_view()->DidGetUserInteraction(
+      blink::WebInputEvent::Type::kGestureScrollBegin);
+  OmniboxViewViews::ElideAnimation* elide_animation =
+      omnibox_view()->GetElideAfterInteractionAnimationForTesting();
+  ASSERT_TRUE(elide_animation);
+  EXPECT_TRUE(elide_animation->IsAnimating());
+
+  // Advance the clock by 1ms until the full URL is no longer showing, but we
+  // haven't finished eliding to the simplified domain yet. After a
+  // same-document navigation, we check that the URL is still in the same state
+  // (midway through elision) and that the animation is still running
+  // undisturbed. In other words, a same-document navigation shouldn't change
+  // anything when an animation is in progress.
+  gfx::AnimationContainerElement* elide_as_element =
+      elide_animation->GetAnimationForTesting();
+  elide_as_element->SetStartTime(base::TimeTicks());
+  bool is_midway_through_elision = false;
+  uint32_t step = 1;
+  while (!is_midway_through_elision) {
+    elide_as_element->Step(base::TimeTicks() +
+                           base::TimeDelta::FromMilliseconds(++step));
+    is_midway_through_elision = IsPartlyThroughSimplifiedDomainElision(
+        render_text, kDisplayUrl, path_bounds);
+  }
+  double animation_value =
+      elide_animation->GetAnimationForTesting()->GetCurrentValue();
+
+  content::MockNavigationHandle same_doc_navigation;
+  same_doc_navigation.set_is_same_document(true);
+  omnibox_view()->DidFinishNavigation(&same_doc_navigation);
+  elide_animation =
+      omnibox_view()->GetElideAfterInteractionAnimationForTesting();
+  ASSERT_TRUE(elide_animation);
+  EXPECT_TRUE(elide_animation->IsAnimating());
+  EXPECT_EQ(animation_value,
+            elide_animation->GetAnimationForTesting()->GetCurrentValue());
+  // The current display text should reflect that the animation in progress: the
+  // full display URL shouldn't be still visible, but we haven't necessarily
+  // reached the end state (just the simplified domain visible) yet.
+  EXPECT_TRUE(IsPartlyThroughSimplifiedDomainElision(render_text, kDisplayUrl,
+                                                     path_bounds));
+}
+
+// Tests that in the hide-on-interaction field trial, a second user interaction
+// does not interfere with an animation that is currently running. This is
+// similar to SameDocNavigationDuringAnimation except that this test checks that
+// a second user interaction (rather than a same-doc navigation) lets the
+// animation proceed undisturbed.
+TEST_P(OmniboxViewViewsHideOnInteractionTest, UserInteractionDuringAnimation) {
+  const base::string16 kDisplayUrl = base::ASCIIToUTF16("foo.example.test/bar");
+  location_bar_model()->set_url(GURL("https://foo.example.test/bar"));
+  location_bar_model()->set_url_for_display(kDisplayUrl);
+  omnibox_view()->model()->ResetDisplayTexts();
+  omnibox_view()->RevertAll();
+  gfx::RenderText* render_text = omnibox_view()->GetRenderText();
+  gfx::Range path_bounds(kDisplayUrl.find(base::ASCIIToUTF16("/bar")),
+                         kDisplayUrl.size());
+
+  // Call OnThemeChanged() to create the animations.
+  omnibox_view()->OnThemeChanged();
+
+  content::MockNavigationHandle navigation;
+  navigation.set_is_same_document(false);
+  omnibox_view()->DidFinishNavigation(&navigation);
+  ASSERT_NO_FATAL_FAILURE(
+      ExpectUnelidedFromSimplifiedDomain(render_text, kDisplayUrl));
+
+  // Simulate a user interaction to begin animating to the simplified domain.
+  omnibox_view()->DidGetUserInteraction(
+      blink::WebInputEvent::Type::kGestureScrollBegin);
+  OmniboxViewViews::ElideAnimation* elide_animation =
+      omnibox_view()->GetElideAfterInteractionAnimationForTesting();
+  ASSERT_TRUE(elide_animation);
+  EXPECT_TRUE(elide_animation->IsAnimating());
+
+  // Advance the clock by 1ms until the full URL is no longer showing, but we
+  // haven't finished eliding to the simplified domain yet. After a subsequent
+  // user interaction, we check that the URL is still in the same state (midway
+  // through elision) and that the animation is still running undisturbed. In
+  // other words, a second user interaction shouldn't change anything when an
+  // animation is in progress.
+  gfx::AnimationContainerElement* elide_as_element =
+      elide_animation->GetAnimationForTesting();
+  elide_as_element->SetStartTime(base::TimeTicks());
+  bool is_midway_through_elision = false;
+  uint32_t step = 1;
+  while (!is_midway_through_elision) {
+    elide_as_element->Step(base::TimeTicks() +
+                           base::TimeDelta::FromMilliseconds(++step));
+    is_midway_through_elision = IsPartlyThroughSimplifiedDomainElision(
+        render_text, kDisplayUrl, path_bounds);
+  }
+  double animation_value =
+      elide_animation->GetAnimationForTesting()->GetCurrentValue();
+
+  omnibox_view()->DidGetUserInteraction(
+      blink::WebInputEvent::Type::kGestureScrollBegin);
+  elide_animation =
+      omnibox_view()->GetElideAfterInteractionAnimationForTesting();
+  ASSERT_TRUE(elide_animation);
+  EXPECT_TRUE(elide_animation->IsAnimating());
+  EXPECT_EQ(animation_value,
+            elide_animation->GetAnimationForTesting()->GetCurrentValue());
+  // The current display text should reflect that the animation in progress: the
+  // full display URL shouldn't be still visible, but we haven't necessarily
+  // reached the end state (just the simplified domain visible) yet.
+  EXPECT_TRUE(IsPartlyThroughSimplifiedDomainElision(render_text, kDisplayUrl,
+                                                     path_bounds));
 }
 
 // Tests that in the hide-on-interaction field trial, the path is not re-shown

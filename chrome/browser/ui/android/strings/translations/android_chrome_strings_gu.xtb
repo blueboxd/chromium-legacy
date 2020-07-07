@@ -168,6 +168,7 @@
 <translation id="2353636109065292463">તમારું ઇન્ટરનેટ કનેક્શન તપાસી રહ્યાં છીએ</translation>
 <translation id="2359808026110333948">આગળ વધો</translation>
 <translation id="2369533728426058518">ટૅબ્સ ખોલો</translation>
+<translation id="2377295302146152376">Chrome બધા અપડેટ ચેક કરી શક્યું નથી</translation>
 <translation id="2387895666653383613">ટેક્સ્ટ માપન</translation>
 <translation id="2394602618534698961">તમે ડાઉનલોડ કરો તે ફાઇલો અહીં દેખાશે</translation>
 <translation id="2407481962792080328">જ્યારે તમે તમારા Google એકાઉન્ટમાં સાઇન ઇન કરો છો, ત્યારે આ સુવિધા ચાલુ કરવામાં આવે છે</translation>
@@ -546,6 +547,7 @@
 <translation id="5441522332038954058">સરનામાં બાર પર જાઓ</translation>
 <translation id="5447201525962359567">કુકીઝ અને અન્ય સ્થાનિક રીતે સંગ્રહિત કરેલ ડેટા સહિત, બધું સાઇટ સ્ટોરેજ</translation>
 <translation id="545042621069398927">તમારા ડાઉનલોડની ગતિ વધારી રહ્યાં છીએ.</translation>
+<translation id="5454513945794364671">તમારા વ્યવસ્થાપક દ્વારા Safe Browsing બંધ કરવામાં આવ્યું છે</translation>
 <translation id="5456381639095306749">પૃષ્ઠ ડાઉનલોડ કરો</translation>
 <translation id="548278423535722844">નકશા અ‍ૅપ્લિકેશનમાં ખોલો</translation>
 <translation id="5487521232677179737">ડેટા સાફ કરો</translation>
@@ -585,6 +587,7 @@
 <translation id="5732819098735351888">ડાઉનલોડ વાઇ-ફાઇ પર ચાલુ થશે.</translation>
 <translation id="5748802427693696783">માનક ટૅબ્સ પર સ્વિચ કરેલ છે</translation>
 <translation id="5749068826913805084">ફાઇલો ડાઉનલોડ કરવા માટે Chrome ને સ્ટોરેજ ઍક્સેસની જરૂર છે.</translation>
+<translation id="5754350196967618083">Discover રિફ્રેશ કરી શકાતું નથી</translation>
 <translation id="5763382633136178763">છૂપા ટેબ્સ</translation>
 <translation id="5763514718066511291">આ ઍપ માટેની URL કૉપિ કરવા માટે ટૅપ કરો</translation>
 <translation id="5765780083710877561">વર્ણન:</translation>
@@ -639,7 +642,6 @@
 <translation id="6154478581116148741">આ ઉપકરણ પરથી તમારા બધા પાસવર્ડને નિકાસ કરવા માટે સેટિંગમાંથી સ્ક્રીન લૉક ચાલુ કરો</translation>
 <translation id="6157392216611456285"><ph name="APP_NAME" /> પસંદ કરો</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> ડેટા બચત</translation>
-<translation id="6192333916571137726">ફાઇલ ડાઉનલોડ કરો</translation>
 <translation id="6201345951596836663">લિંક કૉપિ કરી</translation>
 <translation id="6206830853671714236">ડાઉનલોડ કરવાનો સમય પસંદ કરો</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> નથી?</translation>
@@ -712,6 +714,7 @@
 <translation id="6656545060687952787">ઉપકરણો માટે સ્કેન કરવા માટે Chrome ને સ્થાન ઍક્સેસની જરૂર છે. <ph name="BEGIN_LINK" />પરવાનગીઓ અપડેટ કરો<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">પાસવર્ડ</translation>
 <translation id="6659594942844771486">ટૅબ</translation>
+<translation id="666573598175432848">Chromeનું એકદમ નવું વર્ઝન ઉપલબ્ધ છે. Play સ્ટોર પર જવા માટે, અહીં ટૅપ કરો.</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" /> માં ખોલો</translation>
 <translation id="666981079809192359">Chrome ગોપનીયતા સૂચના</translation>
 <translation id="6671495933530132209">છબી કૉપિ કરો</translation>
@@ -842,6 +845,7 @@
 <translation id="7772032839648071052">પાસફ્રેઝની પુષ્ટિ કરો</translation>
 <translation id="7772375229873196092"><ph name="APP_NAME" />ને બંધ કરો</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 અને વધુ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 અને વધુ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 અને વધુ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
+<translation id="7778840695157240389">નવી સ્ટોરી માટે થોડા સમય પછી ફરી ચેક કરો</translation>
 <translation id="7791543448312431591">ઉમેરો</translation>
 <translation id="780301667611848630">નહીં, આભાર</translation>
 <translation id="7810647596859435254">આની સાથે ખોલો…</translation>
@@ -917,12 +921,13 @@
 <translation id="8364299278605033898">લોકપ્રિય વેબસાઇટ જુઓ</translation>
 <translation id="8368027906805972958">અજાણ્યું અથવા અસમર્થિત ડિવાઇસ (<ph name="DEVICE_ID" />)</translation>
 <translation id="8393700583063109961">સંદેશ મોકલો</translation>
-<translation id="8407396331882458341">1. <ph name="APP_NAME" /> પસંદ કરો\n2. “હંમેશાં” પર ટૅપ કરો</translation>
+<translation id="8407396331882458341">1. <ph name="APP_NAME" /> પસંદ કરો\n2. “હંમેશા” પર ટૅપ કરો</translation>
 <translation id="8413126021676339697">પૂર્ણ ઇતિહાસ બતાવો</translation>
 <translation id="8425213833346101688">બદલો</translation>
 <translation id="8427875596167638501">પ્રીવ્યૂ ટૅબ અડધી ઊંચાઈએ ખુલી</translation>
 <translation id="8428213095426709021">સેટિંગ્સ</translation>
 <translation id="8438566539970814960">શોધ અને બ્રાઉઝિંગ વધુ સારું બનાવો</translation>
+<translation id="8442258441309440798">કોઈ સ્ટોરી ઉપલબ્ધ નથી</translation>
 <translation id="8443209985646068659">Chrome અપડેટ કરી શકતા નથી</translation>
 <translation id="8445448999790540984">બધા પાસવર્ડ નિકાસ કરી શકાતાં નથી</translation>
 <translation id="8461694314515752532">તમારા પોતાના સિંક પાસફ્રેઝ સાથે સિંક કરેલા ડેટાને એન્ક્રિપ્ટ કરો</translation>
@@ -974,6 +979,7 @@
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, ટેબ</translation>
 <translation id="8854223127042600341">તમારી ઑફલાઇન ફાઇલો જુઓ</translation>
 <translation id="889338405075704026">Chrome સેટિંગ પર જાઓ</translation>
+<translation id="8893398027601469503">તમે Chromeના એકદમ નવા વર્ઝનનો ઉપયોગ કરી રહ્યાં છો</translation>
 <translation id="8909135823018751308">શેર કરો…</translation>
 <translation id="8912362522468806198">Google એકાઉન્ટ</translation>
 <translation id="8920114477895755567">માતાપિતાની વિગતોની રાહ જોઈ રહ્યાં છે.</translation>

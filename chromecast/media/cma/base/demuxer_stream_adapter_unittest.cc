@@ -96,8 +96,8 @@ void DemuxerStreamAdapterTest::Start() {
                      base::Unretained(this)),
       base::TimeDelta::FromSeconds(5));
 
-  coded_frame_provider_->Read(base::Bind(&DemuxerStreamAdapterTest::OnNewFrame,
-                                         base::Unretained(this)));
+  coded_frame_provider_->Read(base::BindOnce(
+      &DemuxerStreamAdapterTest::OnNewFrame, base::Unretained(this)));
 }
 
 void DemuxerStreamAdapterTest::OnTestTimeout() {
@@ -122,26 +122,26 @@ void DemuxerStreamAdapterTest::OnNewFrame(
   frame_received_count_++;
 
   if (frame_received_count_ >= total_frames_) {
-    coded_frame_provider_->Flush(base::Bind(
+    coded_frame_provider_->Flush(base::BindOnce(
         &DemuxerStreamAdapterTest::OnFlushCompleted, base::Unretained(this)));
     return;
   }
 
-  coded_frame_provider_->Read(base::Bind(&DemuxerStreamAdapterTest::OnNewFrame,
-                                         base::Unretained(this)));
+  coded_frame_provider_->Read(base::BindOnce(
+      &DemuxerStreamAdapterTest::OnNewFrame, base::Unretained(this)));
 
   ASSERT_LE(frame_received_count_, early_flush_idx_);
   if (frame_received_count_ == early_flush_idx_) {
-    base::Closure flush_cb = base::Bind(
+    base::OnceClosure flush_cb = base::BindOnce(
         &DemuxerStreamAdapterTest::OnFlushCompleted, base::Unretained(this));
     if (use_post_task_for_flush_) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::BindOnce(&CodedFrameProvider::Flush,
                          base::Unretained(coded_frame_provider_.get()),
-                         flush_cb));
+                         std::move(flush_cb)));
     } else {
-      coded_frame_provider_->Flush(flush_cb);
+      coded_frame_provider_->Flush(std::move(flush_cb));
     }
     return;
   }

@@ -22,11 +22,12 @@
 
 FramebustBlockInfoBar::FramebustBlockInfoBar(
     std::unique_ptr<FramebustBlockMessageDelegate> message_delegate)
-    : InfoBarAndroid(std::make_unique<InterventionInfoBarDelegate>(
-                         infobars::InfoBarDelegate::InfoBarIdentifier::
-                             FRAMEBUST_BLOCK_INFOBAR_ANDROID,
-                         message_delegate.get()),
-                     base::BindRepeating(&ResourceMapper::MapToJavaDrawableId)),
+    : infobars::InfoBarAndroid(
+          std::make_unique<InterventionInfoBarDelegate>(
+              infobars::InfoBarDelegate::InfoBarIdentifier::
+                  FRAMEBUST_BLOCK_INFOBAR_ANDROID,
+              message_delegate.get()),
+          base::BindRepeating(&ResourceMapper::MapToJavaDrawableId)),
       delegate_(std::move(message_delegate)) {
   DCHECK(delegate_);
 }
@@ -39,7 +40,7 @@ void FramebustBlockInfoBar::ProcessButton(int action) {
 
   // Tapping the button means that the user wants to bypass the intervention in
   // a sticky way, e.g. via content settings.
-  DCHECK_EQ(action, InfoBarAndroid::ACTION_OK);
+  DCHECK_EQ(action, infobars::InfoBarAndroid::ACTION_OK);
   delegate_->DeclineInterventionSticky();
   RemoveSelf();
 }

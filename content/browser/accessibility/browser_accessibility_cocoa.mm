@@ -564,7 +564,7 @@ AccessibilityMatchPredicate PredicateForSearchKey(NSString* searchKey) {
     };
   } else if ([searchKey isEqualToString:@"AXStaticTextSearchKey"]) {
     return [](BrowserAccessibility* start, BrowserAccessibility* current) {
-      return current->IsTextOnlyObject();
+      return current->IsText();
     };
   } else if ([searchKey isEqualToString:@"AXStyleChangeSearchKey"]) {
     // TODO(dmazzoni): implement this.
@@ -2597,7 +2597,7 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
   NSMutableAttributedString* attributedInnerText =
       [[[NSMutableAttributedString alloc]
           initWithString:base::SysUTF16ToNSString(innerText)] autorelease];
-  if (!_owner->IsTextOnlyObject()) {
+  if (!_owner->IsText()) {
     AXPlatformRange ax_range(_owner->CreatePositionAt(0),
                              _owner->CreatePositionAt(int{innerText.length()}));
     AddMisspelledTextAttributes(ax_range, attributedInnerText);
@@ -3023,7 +3023,7 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
 
   if ([attribute isEqualToString:
                      NSAccessibilityBoundsForRangeParameterizedAttribute]) {
-    if ([self internalRole] != ax::mojom::Role::kStaticText)
+    if (!_owner->IsText())
       return nil;
     NSRange range = [(NSValue*)parameter rangeValue];
     gfx::Rect rect = _owner->GetUnclippedScreenInnerTextRangeBoundsRect(

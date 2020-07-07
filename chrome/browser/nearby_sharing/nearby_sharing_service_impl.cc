@@ -7,9 +7,9 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/nearby_sharing/fast_initiation_manager.h"
+#include "chrome/browser/nearby_sharing/logging/logging.h"
 #include "chrome/browser/nearby_sharing/nearby_connections_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_prefs.h"
 #include "chrome/services/sharing/public/cpp/advertisement.h"
@@ -291,7 +291,7 @@ void NearbySharingServiceImpl::OnNearbyProfileChanged(Profile* profile) {
 void NearbySharingServiceImpl::OnNearbyProcessStarted() {
   NearbyProcessManager& process_manager = NearbyProcessManager::GetInstance();
   if (process_manager.IsActiveProfile(profile_))
-    VLOG(1) << __func__ << ": Nearby process started!";
+    NS_LOG(VERBOSE) << __func__ << ": Nearby process started!";
 }
 
 void NearbySharingServiceImpl::OnNearbyProcessStopped() {
@@ -315,9 +315,9 @@ bool NearbySharingServiceImpl::IsEnabled() {
 
 void NearbySharingServiceImpl::OnEnabledPrefChanged() {
   if (IsEnabled()) {
-    VLOG(1) << __func__ << ": Nearby sharing enabled!";
+    NS_LOG(VERBOSE) << __func__ << ": Nearby sharing enabled!";
   } else {
-    VLOG(1) << __func__ << ": Nearby sharing disabled!";
+    NS_LOG(VERBOSE) << __func__ << ": Nearby sharing disabled!";
     StopAdvertising();
     // TODO(crbug/1085067): Stop discovery.
     nearby_connections_manager_->Shutdown();

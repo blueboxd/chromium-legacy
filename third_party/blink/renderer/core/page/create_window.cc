@@ -249,16 +249,16 @@ Frame* CreateNewWindow(LocalFrame& opener_frame,
 
     if (!opener_frame.DomWindow()
              ->GetContentSecurityPolicyForCurrentWorld()
-             ->AllowInline(
-                 ContentSecurityPolicy::InlineType::kNavigation,
-                 nullptr /* element */, script_source, String() /* nonce */,
-                 opener_frame.GetDocument()->Url(), OrdinalNumber())) {
+             ->AllowInline(ContentSecurityPolicy::InlineType::kNavigation,
+                           nullptr /* element */, script_source,
+                           String() /* nonce */,
+                           opener_frame.DomWindow()->Url(), OrdinalNumber())) {
       return nullptr;
     }
   }
 
-  if (!opener_frame.GetDocument()->GetSecurityOrigin()->CanDisplay(url)) {
-    opener_frame.GetDocument()->AddConsoleMessage(
+  if (!opener_frame.DomWindow()->GetSecurityOrigin()->CanDisplay(url)) {
+    opener_frame.DomWindow()->AddConsoleMessage(
         MakeGarbageCollected<ConsoleMessage>(
             mojom::ConsoleMessageSource::kSecurity,
             mojom::ConsoleMessageLevel::kError,

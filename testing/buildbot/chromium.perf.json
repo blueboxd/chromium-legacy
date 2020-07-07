@@ -385,6 +385,10 @@
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
+          "args": [
+            "--lightweight",
+            "--skip-perf"
+          ],
           "script": "//tools/perf/process_perf_results.py"
         },
         "name": "performance_test_suite",
@@ -419,6 +423,14 @@
         }
       }
     ]
+  },
+  "android-go-processor-perf": {
+    "merge": {
+      "args": [
+        "--lightweight"
+      ],
+      "script": "//tools/perf/process_perf_results.py"
+    }
   },
   "android-go_webview-perf": {
     "isolated_scripts": [

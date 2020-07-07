@@ -101,9 +101,13 @@ source_set("cdm") {
     sources += [
       "win/media_foundation_cdm.cc",
       "win/media_foundation_cdm.h",
+      "win/media_foundation_cdm_factory.cc",
+      "win/media_foundation_cdm_factory.h",
       "win/media_foundation_cdm_session.cc",
       "win/media_foundation_cdm_session.h",
     ]
+
+    libs = [ "Propsys.lib" ]
 
     deps += [ "//media/base/win:media_foundation_util" ]
   }
@@ -179,6 +183,7 @@ source_set("unit_tests") {
 
   if (is_win) {
     sources += [
+      "win/media_foundation_cdm_factory_unittest.cc",
       "win/media_foundation_cdm_session_unittest.cc",
       "win/media_foundation_cdm_unittest.cc",
     ]

@@ -101,6 +101,9 @@ class TabModel {
     // User-originated switch to existing tab or selection of main tab on app
     // startup.
     FROM_USER,
+    // User-originated switch to existing tab from Omnibox tab switch
+    // suggestions.
+    FROM_OMNIBOX,
     // Must be last.
     SIZE
   };

@@ -36,8 +36,10 @@ class IsPinnedToTaskbarHelper {
  public:
   IsPinnedToTaskbarHelper() = default;
 
-  // Returns true if the current executable is pinned to the taskbar.
-  bool GetResult();
+  // Returns true if the current executable is pinned to the taskbar. If
+  // [check_verbs] is true we check that the unpin from taskbar verb exists for
+  // the shortcut.
+  bool GetResult(bool check_verbs);
 
   bool error_occured() { return error_occured_; }
 
@@ -56,10 +58,12 @@ class IsPinnedToTaskbarHelper {
                             const InstallUtil::ProgramCompare& program_compare);
 
   // Returns true if one of the shortcut inside the given |directory| evaluates
-  // to |program_compare| and is pinned to the taskbar.
+  // to |program_compare| and is pinned to the taskbar. If [check_verbs] is
+  // true we check that the unpin from taskbar verb exists for the shortcut.
   bool DirectoryContainsPinnedShortcutForProgram(
       const base::FilePath& directory,
-      const InstallUtil::ProgramCompare& program_compare);
+      const InstallUtil::ProgramCompare& program_compare,
+      bool check_verbs);
 
   bool error_occured_ = false;
   base::win::ScopedCOMInitializer scoped_com_initializer_;
@@ -172,20 +176,26 @@ bool IsPinnedToTaskbarHelper::IsShortcutForProgram(
 
 bool IsPinnedToTaskbarHelper::DirectoryContainsPinnedShortcutForProgram(
     const base::FilePath& directory,
-    const InstallUtil::ProgramCompare& program_compare) {
+    const InstallUtil::ProgramCompare& program_compare,
+    bool check_verbs) {
   base::FileEnumerator shortcut_enum(directory, false,
                                      base::FileEnumerator::FILES);
   for (base::FilePath shortcut = shortcut_enum.Next(); !shortcut.empty();
        shortcut = shortcut_enum.Next()) {
-    if (IsShortcutForProgram(shortcut, program_compare) &&
-        ShortcutHasUnpinToTaskbarVerb(shortcut)) {
-      return true;
+    if (IsShortcutForProgram(shortcut, program_compare)) {
+      if (check_verbs) {
+        if (ShortcutHasUnpinToTaskbarVerb(shortcut)) {
+          return true;
+        }
+      } else {
+        return true;
+      }
     }
   }
   return false;
 }
 
-bool IsPinnedToTaskbarHelper::GetResult() {
+bool IsPinnedToTaskbarHelper::GetResult(bool check_verbs) {
   base::FilePath current_exe;
   if (!base::PathService::Get(base::FILE_EXE, &current_exe))
     return false;
@@ -194,8 +204,8 @@ bool IsPinnedToTaskbarHelper::GetResult() {
   // Look into the "Quick Launch\User Pinned\TaskBar" folder.
   base::FilePath taskbar_pins_dir;
   if (base::PathService::Get(base::DIR_TASKBAR_PINS, &taskbar_pins_dir) &&
-      DirectoryContainsPinnedShortcutForProgram(taskbar_pins_dir,
-                                                current_exe_compare)) {
+      DirectoryContainsPinnedShortcutForProgram(
+          taskbar_pins_dir, current_exe_compare, check_verbs)) {
     return true;
   }
 
@@ -210,8 +220,8 @@ bool IsPinnedToTaskbarHelper::GetResult() {
   for (base::FilePath directory = directory_enum.Next(); !directory.empty();
        directory = directory_enum.Next()) {
     current_exe.value();
-    if (DirectoryContainsPinnedShortcutForProgram(directory,
-                                                  current_exe_compare)) {
+    if (DirectoryContainsPinnedShortcutForProgram(
+            directory, current_exe_compare, check_verbs)) {
       return true;
     }
   }
@@ -227,8 +237,10 @@ UtilWinImpl::~UtilWinImpl() = default;
 
 void UtilWinImpl::IsPinnedToTaskbar(IsPinnedToTaskbarCallback callback) {
   IsPinnedToTaskbarHelper helper;
-  bool is_pinned_to_taskbar = helper.GetResult();
-  std::move(callback).Run(!helper.error_occured(), is_pinned_to_taskbar);
+  bool is_pinned_to_taskbar = helper.GetResult(false);
+  bool is_pinned_to_taskbar_verb_check = helper.GetResult(true);
+  std::move(callback).Run(!helper.error_occured(), is_pinned_to_taskbar,
+                          is_pinned_to_taskbar_verb_check);
 }
 
 void UtilWinImpl::CallExecuteSelectFile(

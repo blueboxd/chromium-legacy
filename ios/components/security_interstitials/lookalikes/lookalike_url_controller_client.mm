@@ -4,13 +4,9 @@
 
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_controller_client.h"
 
-#include "base/bind.h"
-#include "base/task/post_task.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "ios/components/security_interstitials/ios_blocking_page_metrics_helper.h"
 #include "ios/components/security_interstitials/lookalikes/lookalike_url_tab_allow_list.h"
-#include "ios/web/public/thread/web_task_traits.h"
-#include "ios/web/public/thread/web_thread.h"
 #import "ios/web/public/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -38,27 +34,27 @@ LookalikeUrlControllerClient::LookalikeUrlControllerClient(
           CreateMetricsHelper(web_state, request_url),
           app_locale),
       safe_url_(safe_url),
-      request_url_(request_url),
-      weak_factory_(this) {}
+      request_url_(request_url) {}
 
 LookalikeUrlControllerClient::~LookalikeUrlControllerClient() {}
 
 void LookalikeUrlControllerClient::GoBack() {
-  // Instead of a 'go back' option, redirect to the legitimate site.
-  OpenUrlInCurrentTab(safe_url_);
+  // If the interstitial doesn't have a suggested URL (e.g. punycode
+  // interstitial), either go back or close the tab. If there is a
+  // suggested URL, instead of a 'go back' option, redirect to the
+  // legitimate site.
+  if (!safe_url_.is_valid()) {
+    IOSBlockingPageControllerClient::GoBack();
+  } else {
+    // TODO(crbug.com/1058898): Replace the last committed navigation
+    // (the interstitial) with the safe URL navigation to prevent the
+    // back button from returning to the bad site.
+    OpenUrlInCurrentTab(safe_url_);
+  }
 }
 
 void LookalikeUrlControllerClient::Proceed() {
   LookalikeUrlTabAllowList::FromWebState(web_state())
       ->AllowDomain(request_url_.host());
   Reload();
-}
-
-void LookalikeUrlControllerClient::Close() {
-  // Closing the tab synchronously is problematic since web state is heavily
-  // involved in the operation and CloseWebState interrupts it, so call
-  // CloseWebState asynchronously.
-  base::PostTask(FROM_HERE, {web::WebThread::UI},
-                 base::BindOnce(&IOSBlockingPageControllerClient::Close,
-                                weak_factory_.GetWeakPtr()));
 }

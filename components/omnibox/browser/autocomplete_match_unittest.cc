@@ -550,27 +550,27 @@ TEST(AutocompleteMatchTest, TryRichAutocompletion) {
          "_mid_x_primary", "", "x_mid_x_secondary", true);
 
     // Otherwise, prefer secondary text prefix.
-    test(0, "x", false, "y_mid_x_primary", "x_mid_x_secondary", true,
+    test(1, "x", false, "y_mid_x_primary", "x_mid_x_secondary", true,
          "_mid_x_secondary", "", "y_mid_x_primary", true);
 
     // Otherwise, prefer primary text non-prefix
-    test(0, "x", false, "y_mid_x_primary", "y_mid_x_secondary", true,
+    test(2, "x", false, "y_mid_x_primary", "y_mid_x_secondary", true,
          "_primary", "y_mid_", "y_mid_x_secondary", true);
 
     // Otherwise, prefer secondary text non-prefix
-    test(0, "x", false, "y_mid_y_primary", "y_mid_x_secondary", true,
+    test(3, "x", false, "y_mid_y_primary", "y_mid_x_secondary", true,
          "_secondary", "y_mid_", "y_mid_y_primary", true);
 
-    // Otherwise, don't autocomplete
-    test(0, "x", false, "y_mid_y_primary", "y_mid_y_secondary", false, "", "",
-         "", false);
+    // Otherwise, don't autocomplete but still set |fill_into_edit_second_line|
+    test(4, "x", false, "y_mid_y_primary", "y_mid_y_secondary", false, "", "",
+         "y_mid_y_secondary", false);
 
     // Don't autocomplete if |prevent_inline_autocomplete| is true.
-    test(0, "x", true, "x_mid_x_primary", "x_mid_x_secondary", false, "", "",
-         "", false);
+    test(5, "x", true, "x_mid_x_primary", "x_mid_x_secondary", false, "", "",
+         "x_mid_x_secondary", false);
   }
 
   // Don't autocomplete if IsRichAutocompletionEnabled is disabled
-  test(0, "x", false, "x_mid_x_primary", "x_mid_x_secondary", false, "", "", "",
+  test(6, "x", false, "x_mid_x_primary", "x_mid_x_secondary", false, "", "", "",
        false);
 }

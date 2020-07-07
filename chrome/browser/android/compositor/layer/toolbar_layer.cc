@@ -30,8 +30,6 @@ void ToolbarLayer::PushResource(int toolbar_resource_id,
                                 bool anonymize,
                                 int toolbar_textbox_background_color,
                                 int url_bar_background_resource_id,
-                                float url_bar_alpha,
-                                float window_height,
                                 float content_offset,
                                 bool show_debug,
                                 bool clip_shadow) {
@@ -57,8 +55,7 @@ void ToolbarLayer::PushResource(int toolbar_resource_id,
       gfx::PointF(resource->toolbar_rect().origin()));
   toolbar_background_layer_->SetBackgroundColor(toolbar_background_color);
 
-  bool url_bar_visible =
-      (resource->location_bar_content_rect().width() != 0) && url_bar_alpha > 0;
+  bool url_bar_visible = resource->location_bar_content_rect().width() != 0;
   url_bar_background_layer_->SetHideLayerAndSubtree(!url_bar_visible);
   if (url_bar_visible) {
     ui::NinePatchResource* url_bar_background_resource;
@@ -79,7 +76,6 @@ void ToolbarLayer::PushResource(int toolbar_resource_id,
         url_bar_background_resource->aperture());
     url_bar_background_layer_->SetUIResourceId(
         url_bar_background_resource->ui_resource()->id());
-    url_bar_background_layer_->SetOpacity(url_bar_alpha);
   }
 
   bitmap_layer_->SetUIResourceId(resource->ui_resource()->id());

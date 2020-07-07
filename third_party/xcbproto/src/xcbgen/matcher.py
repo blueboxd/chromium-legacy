@@ -9,7 +9,7 @@ we do not create a new type object, we just record the existing one under a new 
 from os.path import join
 from sys import version_info
 
-if version_info[:2] >= (3, 9):
+if version_info[:2] >= (3, 3):
     from xml.etree.ElementTree import parse
 else:
     from xml.etree.cElementTree import parse

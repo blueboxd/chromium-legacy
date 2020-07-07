@@ -353,6 +353,8 @@ class PasswordStore : protected PasswordStoreSync,
   void SetUnsyncedCredentialsDeletionNotifier(
       std::unique_ptr<UnsyncedCredentialsDeletionNotifier> deletion_notifier);
 
+  void SetSyncTaskTimeoutForTest(base::TimeDelta timeout);
+
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   // Immediately called after |Init()| to retrieve password hash data for
   // reuse detection.
@@ -879,6 +881,9 @@ class PasswordStore : protected PasswordStoreSync,
   bool shutdown_called_ = false;
 
   InitStatus init_status_ = InitStatus::kUnknown;
+
+  // This is usually constant, only changed in tests.
+  base::TimeDelta sync_task_timeout_ = base::TimeDelta::FromSeconds(30);
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStore);
 };

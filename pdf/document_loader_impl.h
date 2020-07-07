@@ -5,13 +5,14 @@
 #ifndef PDF_DOCUMENT_LOADER_IMPL_H_
 #define PDF_DOCUMENT_LOADER_IMPL_H_
 
+#include <stdint.h>
+
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "pdf/chunk_stream.h"
 #include "pdf/document_loader.h"
-#include "ppapi/utility/completion_callback_factory.h"
 
 namespace chrome_pdf {
 
@@ -21,6 +22,8 @@ class DocumentLoaderImpl : public DocumentLoader {
   static constexpr uint32_t kDefaultRequestSize = 65536;
 
   explicit DocumentLoaderImpl(Client* client);
+  DocumentLoaderImpl(const DocumentLoaderImpl&) = delete;
+  DocumentLoaderImpl& operator=(const DocumentLoaderImpl&) = delete;
   ~DocumentLoaderImpl() override;
 
   // DocumentLoader:
@@ -75,8 +78,6 @@ class DocumentLoaderImpl : public DocumentLoader {
   std::string url_;
   std::unique_ptr<URLLoaderWrapper> loader_;
 
-  pp::CompletionCallbackFactory<DocumentLoaderImpl> loader_factory_;
-
   DataStream chunk_stream_;
   bool partial_loading_enabled_ = true;
   bool is_partial_loader_active_ = false;
@@ -92,7 +93,7 @@ class DocumentLoaderImpl : public DocumentLoader {
 
   uint32_t bytes_received_ = 0;
 
-  DISALLOW_COPY_AND_ASSIGN(DocumentLoaderImpl);
+  base::WeakPtrFactory<DocumentLoaderImpl> weak_factory_{this};
 };
 
 }  // namespace chrome_pdf

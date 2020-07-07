@@ -135,7 +135,7 @@ class VPNListProviderEntry : public views::ButtonListener, public views::View {
 
     // Add the VPN add button.
     const SkColor image_color = AshColorProvider::Get()->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kButtonIconColorProminent,
+        AshColorProvider::ContentLayerType::kIconColorProminent,
         AshColorProvider::AshColorMode::kDark);
 
     const gfx::ImageSkia enabled_icon =

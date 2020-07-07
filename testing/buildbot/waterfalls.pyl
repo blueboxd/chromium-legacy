@@ -87,6 +87,9 @@
         'additional_compile_targets': [
           'chromiumos_preflight',
         ],
+        'mixins': [
+          'cros_device_flash',
+        ],
         'test_suites': {
           'gtest_tests': 'chromeos_device_gtests',
           'isolated_scripts': 'chromeos_remote_device_isolated_tests',
@@ -105,6 +108,9 @@
       'chromeos-kevin-chrome': {
         'additional_compile_targets': [
           'chromiumos_preflight',
+        ],
+        'mixins': [
+          'cros_device_flash',
         ],
         'test_suites': {
           'gtest_tests': 'chromeos_device_gtests',

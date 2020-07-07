@@ -79,7 +79,7 @@ class LocaleItem : public ActionableView {
       checked_image->SetImage(gfx::CreateVectorIcon(
           kCheckCircleIcon, kMenuIconSize,
           AshColorProvider::Get()->DeprecatedGetContentLayerColor(
-              AshColorProvider::ContentLayerType::kButtonIconColorProminent,
+              AshColorProvider::ContentLayerType::kIconColorProminent,
               kProminentIconButtonColor)));
       tri_view->AddView(TriView::Container::END, checked_image);
     }

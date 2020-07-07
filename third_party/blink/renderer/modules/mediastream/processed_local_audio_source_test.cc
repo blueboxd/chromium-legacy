@@ -130,8 +130,7 @@ class ProcessedLocalAudioSourceTest : public testing::Test {
   }
 
   MediaStreamAudioSource* audio_source() const {
-    return MediaStreamAudioSource::From(
-        WebMediaStreamSource(audio_source_.Get()));
+    return MediaStreamAudioSource::From(audio_source_.Get());
   }
 
   MediaStreamComponent* audio_track() { return audio_component_; }

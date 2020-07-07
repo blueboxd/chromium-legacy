@@ -7,6 +7,7 @@ specific_include_rules = {
   ],
   "local_frame_view.cc": [
     "+cc/tiles/frame_viewer_instrumentation.h",
+    "+components/paint_preview/common/paint_preview_tracker.h",
   ],
   "remote_frame_view.cc": [
     "+components/paint_preview/common/paint_preview_tracker.h",

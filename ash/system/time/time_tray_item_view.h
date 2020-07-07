@@ -6,7 +6,7 @@
 #define ASH_SYSTEM_TIME_TIME_TRAY_ITEM_VIEW_H_
 
 #include "ash/ash_export.h"
-#include "ash/session/session_observer.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/system/tray/tray_item_view.h"
 #include "base/macros.h"
 

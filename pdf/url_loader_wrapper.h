@@ -5,10 +5,11 @@
 #ifndef PDF_URL_LOADER_WRAPPER_H_
 #define PDF_URL_LOADER_WRAPPER_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/macros.h"
-#include "ppapi/cpp/completion_callback.h"
+#include "pdf/ppapi_migration/callback.h"
 
 namespace chrome_pdf {
 
@@ -49,14 +50,15 @@ class URLLoaderWrapper {
                          const std::string& referrer_url,
                          uint32_t position,
                          uint32_t size,
-                         const pp::CompletionCallback& cc) = 0;
+                         ResultCallback callback) = 0;
 
   // Read the response body. The size of the buffer must be large enough to
   // hold the specified number of bytes to read.
   // This function might perform a partial read.
   virtual void ReadResponseBody(char* buffer,
                                 int buffer_size,
-                                const pp::CompletionCallback& cc) = 0;
+                                ResultCallback callback) = 0;
+
   // Returns the current download progress.
   // Progress only refers to the response body and does not include the headers.
   // If false, progress is unknown, bytes_received/total_bytes_to_be_received

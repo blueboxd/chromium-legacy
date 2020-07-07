@@ -29,7 +29,7 @@
 <translation id="1919345977826869612">Advertenties</translation>
 <translation id="1922076542920281912">Als je Chrome toegang wilt geven tot je locatie, moet je locatie ook inschakelen via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> van <ph name="FILE_SIZE_WITH_UNITS" /></translation>
-<translation id="194341124344773587">Geef Chrome toestemming via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
+<translation id="194341124344773587">Geef Chrome rechten via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
 <translation id="1984937141057606926">Toegestaan, behalve van derden</translation>
 <translation id="1994173015038366702">Site-URL</translation>
 <translation id="2025115093177348061">Augmented reality</translation>
@@ -231,7 +231,7 @@
 <translation id="8394832520002899662">Tik hier om terug te gaan naar de site</translation>
 <translation id="8425213833346101688">Wijzigen</translation>
 <translation id="8441146129660941386">Achteruit zoeken</translation>
-<translation id="8447861592752582886">Toegang tot apparaat intrekken</translation>
+<translation id="8447861592752582886">Rechten voor apparaat intrekken</translation>
 <translation id="8463851957836045671">Site is snel</translation>
 <translation id="851751545965956758">Voorkomen dat sites verbinding maken met apparaten</translation>
 <translation id="857943718398505171">Toegestaan (aanbevolen)</translation>

@@ -18,7 +18,6 @@
 #include "base/strings/string16.h"
 #include "content/public/common/page_state.h"
 #include "content/shell/common/web_test/web_test.mojom.h"
-#include "content/shell/common/web_test/web_test_bluetooth_fake_adapter_setter.mojom.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -42,11 +41,6 @@ class BlinkTestRunner {
 
   // Convert the provided relative path into an absolute path.
   blink::WebString GetAbsoluteWebStringFromUTF8Path(const std::string& path);
-
-  // Set the bluetooth adapter while running a web test, uses Mojo to
-  // communicate with the browser.
-  void SetBluetoothFakeAdapter(const std::string& adapter_name,
-                               base::OnceClosure callback);
 
   // Invoked when the test finished.
   void TestFinished();
@@ -89,10 +83,6 @@ class BlinkTestRunner {
   void CaptureLocalLayoutDump();
   void CaptureLocalPixelsDump();
 
-  mojom::WebTestBluetoothFakeAdapterSetter& GetBluetoothFakeAdapterSetter();
-  mojo::Remote<mojom::WebTestBluetoothFakeAdapterSetter>
-      bluetooth_fake_adapter_setter_;
-
   mojo::AssociatedRemote<mojom::WebTestControlHost>&
   GetWebTestControlHostRemote();
   mojo::AssociatedRemote<mojom::WebTestClient>& GetWebTestClientRemote();
@@ -107,7 +97,6 @@ class BlinkTestRunner {
   mojom::WebTestRenderFrame::CaptureDumpCallback dump_callback_;
   mojom::WebTestDumpPtr dump_result_;
   bool waiting_for_layout_dump_results_ = false;
-  bool waiting_for_pixels_dump_result_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(BlinkTestRunner);
 };

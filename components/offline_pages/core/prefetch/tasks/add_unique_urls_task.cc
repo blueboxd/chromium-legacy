@@ -112,6 +112,10 @@ Result AddUniqueUrlsSync(
   for (auto candidate_iter = candidate_prefetch_urls.rbegin();
        candidate_iter != candidate_prefetch_urls.rend(); ++candidate_iter) {
     const PrefetchURL& prefetch_url = *candidate_iter;
+
+    if (!prefetch_url.url.is_valid() || !prefetch_url.url.SchemeIsHTTPOrHTTPS())
+      continue;
+
     const std::string url_spec = prefetch_url.url.spec();
     // Don't add the same URL more than once.
     if (!added_urls.insert(url_spec).second)

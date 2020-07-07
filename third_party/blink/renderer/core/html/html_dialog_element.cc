@@ -81,8 +81,10 @@ static void SetFocusForDialog(HTMLDialogElement* dialog) {
   if (!doc.IsActive())
     return;
   if (!doc.IsInMainFrame() &&
-      !doc.TopFrameOrigin()->CanAccess(doc.GetSecurityOrigin()))
+      !doc.TopFrameOrigin()->CanAccess(
+          doc.GetExecutionContext()->GetSecurityOrigin())) {
     return;
+  }
 
   // 6. Empty topDocument's autofocus candidates.
   // 7. Set topDocument's autofocus processed flag to true.

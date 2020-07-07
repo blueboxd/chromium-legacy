@@ -39,8 +39,8 @@ LogoutButtonTray::LogoutButtonTray(Shelf* shelf) : TrayBackgroundView(shelf) {
   auto button = views::MdTextButton::Create(this, base::string16(),
                                             CONTEXT_LAUNCHER_BUTTON);
   button->SetProminent(true);
-  button->SetBgColorOverride(AshColorProvider::Get()->GetBaseLayerColor(
-      AshColorProvider::BaseLayerType::kRed,
+  button->SetBgColorOverride(AshColorProvider::Get()->GetControlsLayerColor(
+      AshColorProvider::ControlsLayerType::kControlBackgroundColorAlert,
       AshColorProvider::AshColorMode::kDark));
 
   button_ = tray_container()->AddChildView(std::move(button));

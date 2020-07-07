@@ -109,11 +109,35 @@ TEST_F(LookalikeUrlBlockingPageTest, HandleDontProceedCommand) {
   EXPECT_EQ(web_state_.GetVisibleURL(), safe_url);
 }
 
+// Tests that the blocking page handles the don't proceed command by going back
+// if there is no safe NavigationItem to navigate to.
+TEST_F(LookalikeUrlBlockingPageTest,
+       HandleDontProceedCommandWithoutSafeUrlGoBack) {
+  // Insert a safe navigation so that the page can navigate back to safety, then
+  // add a navigation for the committed interstitial page.
+  GURL safe_url("https://www.safe.test");
+  navigation_manager_->AddItem(safe_url, ui::PAGE_TRANSITION_TYPED);
+  navigation_manager_->AddItem(url_, ui::PAGE_TRANSITION_LINK);
+  ASSERT_EQ(1, navigation_manager_->GetLastCommittedItemIndex());
+  ASSERT_TRUE(navigation_manager_->CanGoBack());
+
+  page_ = CreateBlockingPage(&web_state_, GURL::EmptyGURL(), url_);
+
+  // Send the don't proceed command.
+  SendCommand(security_interstitials::CMD_DONT_PROCEED);
+
+  // Verify that the NavigationManager has navigated back.
+  EXPECT_EQ(0, navigation_manager_->GetLastCommittedItemIndex());
+  EXPECT_FALSE(navigation_manager_->CanGoBack());
+}
+
 // Tests that the blocking page handles the don't proceed command by closing the
-// WebState if there is no safe NavigationItem to navigate back to.
-TEST_F(LookalikeUrlBlockingPageTest, HandleDontProceedCommandWithoutSafeUrl) {
-  GURL empty_safe_url("");
-  page_ = CreateBlockingPage(&web_state_, empty_safe_url, url_);
+// WebState if there is no safe NavigationItem to navigate to and unable to go
+// back.
+TEST_F(LookalikeUrlBlockingPageTest,
+       HandleDontProceedCommandWithoutSafeUrlClose) {
+  page_ = CreateBlockingPage(&web_state_, GURL::EmptyGURL(), url_);
+  ASSERT_FALSE(navigation_manager_->CanGoBack());
 
   // Send the don't proceed command.
   SendCommand(security_interstitials::CMD_DONT_PROCEED);

@@ -71,4 +71,9 @@ public interface SiteSettingsClient {
      */
     // TODO(crbug.com/1069895): Remove this once WebLayer supports notifications.
     String getChannelIdForOrigin(String origin);
+
+    /**
+     * @return The name of the app the settings are associated with.
+     */
+    String getAppName();
 }

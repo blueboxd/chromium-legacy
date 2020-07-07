@@ -7,6 +7,7 @@ syntax = "proto3";
 package feedstore;
 
 import "components/feed/core/proto/v2/wire/content_id.proto";
+import "components/feed/core/proto/v2/wire/stream_structure.proto";
 import "components/feed/core/proto/v2/wire/feed_action.proto";
 
 option optimize_for = LITE_RUNTIME;
@@ -110,43 +111,18 @@ message DataOperation {
   Content content = 2;
 }
 
-message RepresentationData {
-  // URI (usually a URL) of what the content links to
-  string uri = 1;
-  // Unix timestamp (seconds) when content was published
-  int64 published_time_seconds = 2;
-}
-
 message ContentInfo {
   // Score given by server.
   float score = 1;
   // Unix timestamp (seconds) that content was received by Chrome.
   int64 availability_time_seconds = 2;
-  RepresentationData representation_data = 3;
-  OfflineMetadata offline_metadata = 4;
-}
-
-message OfflineMetadata {
-  // Title of the content.
-  string title = 1;
-
-  // Url for image for the content.
-  string image_url = 2;
-
-  // Publisher of the content.
-  string publisher = 3;
-
-  // Url for the favicon for the content.
-  string favicon_url = 4;
-
-  // Short string from the content, typically the start of an article.
-  string snippet = 5;
 }
 
 message Content {
   feedwire.ContentId content_id = 1;
   // Opaque content. The UI layer knows how to parse and render this as a slice.
   bytes frame = 2;
+  repeated feedwire.PrefetchMetadata prefetch_metadata = 3;
 }
 
 // This represents a shared state item.

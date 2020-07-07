@@ -564,7 +564,7 @@ LayoutEmbeddedObject* HTMLPlugInElement::GetLayoutEmbeddedObject() const {
 bool HTMLPlugInElement::AllowedToLoadFrameURL(const String& url) {
   KURL complete_url = GetDocument().CompleteURL(url);
   return !(ContentFrame() && complete_url.ProtocolIsJavaScript() &&
-           !GetDocument().GetSecurityOrigin()->CanAccess(
+           !GetExecutionContext()->GetSecurityOrigin()->CanAccess(
                ContentFrame()->GetSecurityContext()->GetSecurityOrigin()));
 }
 

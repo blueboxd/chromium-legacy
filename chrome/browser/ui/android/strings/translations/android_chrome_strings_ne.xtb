@@ -168,6 +168,7 @@
 <translation id="2353636109065292463">तपाईंको इन्टरनेट जडानको जाँच गर्दै</translation>
 <translation id="2359808026110333948">जारी राख्नुहोस्</translation>
 <translation id="2369533728426058518">ट्याबहरू खोल्नुहोस्</translation>
+<translation id="2377295302146152376">Chrome ले अपडेट उपलब्ध छ कि छैन भनी जाँच गर्न सकेन</translation>
 <translation id="2387895666653383613">पाठ स्केलिङ</translation>
 <translation id="2394602618534698961">तपाईंले डाउनलोड गर्ने फाइलहरू यहाँ देखिन्छन्</translation>
 <translation id="2407481962792080328">तपाईंले आफ्नो Google खातामा साइन इन गर्दा यो सुविधा सक्रिय हुन्छ</translation>
@@ -545,6 +546,7 @@
 <translation id="5441522332038954058">ठेगाना पट्टीमा जानुहोस्</translation>
 <translation id="5447201525962359567">कुकी र अन्य स्थानीय रूपमा भण्डारण गरिएको डेटा सहित साइटको सबै भण्डारण</translation>
 <translation id="545042621069398927">तपाईंको डाउनलोडको गति बढाउँदै।</translation>
+<translation id="5454513945794364671">तपाईंका एड्मिनले Safe Browsing अफ गर्नुभएको छ</translation>
 <translation id="5456381639095306749">पृष्ठ डाउनलोड गर्नुहोस्</translation>
 <translation id="548278423535722844">नक्सा अनुप्रयोगमा खोल्नुहोस्</translation>
 <translation id="5487521232677179737">डेटा खाली गर्नुहोस्</translation>
@@ -584,6 +586,7 @@
 <translation id="5732819098735351888">Wi-Fi मा कनेक्ट भएका बेला डाउनलोड सुरु हुने छ।</translation>
 <translation id="5748802427693696783">मानक ट्याबहरूमा स्विच गरियो</translation>
 <translation id="5749068826913805084">Chromeलाई फाइलहरु डाउनलोड गर्न भण्डारणको पहुँच आवश्यक छ ।</translation>
+<translation id="5754350196967618083">Discover पुनः ताजा गर्न सकिएन</translation>
 <translation id="5763382633136178763">इनकग्निटो ट्याबहरू</translation>
 <translation id="5763514718066511291">यस एपको URL प्रतिलिपि गर्न ट्याप गर्नुहोस्</translation>
 <translation id="5765780083710877561">विवरण:</translation>
@@ -638,7 +641,6 @@
 <translation id="6154478581116148741">यो यन्त्रबाट आफ्ना पासवर्डहरू निर्यात गर्न सेटिङहरूमा गई स्क्रिन लक सक्रिय गर्नुहोस्</translation>
 <translation id="6157392216611456285"><ph name="APP_NAME" /> छनौट गर्नुहोस्</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> डेटा बचत</translation>
-<translation id="6192333916571137726">फाइल डाउनलोड गर्नुहोस्</translation>
 <translation id="6201345951596836663">लिंक प्रतिलिपि गरियो</translation>
 <translation id="6206830853671714236">कहिले डाउनलोड गर्नु पर्ने हो छनौट गर्नुहोस्</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> होइन?</translation>
@@ -711,6 +713,7 @@
 <translation id="6656545060687952787">Chrome यन्त्रहरूको लागि स्क्यान गर्न स्थान पहुँच आवश्यक छ। <ph name="BEGIN_LINK" /> अनुमतिहरू अपडेट गर्नुहोस्<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">पासवर्ड</translation>
 <translation id="6659594942844771486">ट्याब</translation>
+<translation id="666573598175432848">Chrome को अझ नयाँ संस्करण उपलब्ध छ। Play स्टोरमा जान यो बटनमा ट्याप गर्नुहोस्।</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" /> मा खोल्नुहोस्</translation>
 <translation id="666981079809192359">Chrome गोपनीयता सूचना</translation>
 <translation id="6671495933530132209">छविको प्रतिलिपि गर्नुहोस्</translation>
@@ -841,6 +844,7 @@
 <translation id="7772032839648071052">पासफ्रेज पक्का</translation>
 <translation id="7772375229873196092"><ph name="APP_NAME" />बन्द गर्नुहोस्</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 र <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> थप}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 र <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> थप}}</translation>
+<translation id="7778840695157240389">नयाँ समाचार हेर्न पछि फर्केर आउनुहोस्</translation>
 <translation id="7791543448312431591">थप्नुहोस्</translation>
 <translation id="780301667611848630">भयो, धन्यवाद</translation>
 <translation id="7810647596859435254">निम्नमार्फत खोल्नुहोस्…</translation>
@@ -922,6 +926,7 @@
 <translation id="8427875596167638501">पूर्वावलोकन ट्याब आधा खुला छ</translation>
 <translation id="8428213095426709021">सेटिङहरू</translation>
 <translation id="8438566539970814960">खोज तथा ब्राउजिङलाई अझ राम्रो बनाउनुहोस्</translation>
+<translation id="8442258441309440798">कुनै पनि समाचार उपलब्ध छैन</translation>
 <translation id="8443209985646068659">Chrome अद्यावधिक गर्न सकिँदैन</translation>
 <translation id="8445448999790540984">पासवर्डहरू निर्यात गर्न सकिएन</translation>
 <translation id="8461694314515752532">सिंक गरिएको डेटालाई तपाईंको आफ्नै सिंक पासफ्रेजमार्फत इन्क्रिप्ट गर्नुहोस्</translation>
@@ -973,6 +978,7 @@
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, ट्याब</translation>
 <translation id="8854223127042600341">आफ्ना अफलाइन फाइलहरू हेर्नुहोस्</translation>
 <translation id="889338405075704026">Chrome को सेटिङमा जानुहोस्</translation>
+<translation id="8893398027601469503">तपाईं Chrome को नवीनतम संस्करण चलाउँदै हुनुहुन्छ</translation>
 <translation id="8909135823018751308">साझा गर्नुहोस्...</translation>
 <translation id="8912362522468806198">Google खाता</translation>
 <translation id="8920114477895755567">अभिभावकहरूको विवरणको लागि प्रतीक्षा गर्दै।</translation>

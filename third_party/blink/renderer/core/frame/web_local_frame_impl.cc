@@ -987,7 +987,7 @@ void WebLocalFrameImpl::StartReload(WebFrameLoadType frame_load_type) {
       GetFrame()->Loader().ResourceRequestForReload(frame_load_type);
   if (request.IsNull())
     return;
-  request.SetRequestorOrigin(GetFrame()->GetDocument()->GetSecurityOrigin());
+  request.SetRequestorOrigin(GetFrame()->DomWindow()->GetSecurityOrigin());
   if (GetTextFinder())
     GetTextFinder()->ClearActiveFindMatch();
 

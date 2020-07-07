@@ -1404,22 +1404,7 @@ void CalculateDrawProperties(
   // trying to update property trees whenever these values change, we
   // update property trees before using them.
 
-  // We should never be setting a non-unit page scale factor on an oopif
-  // subframe ... if we attempt this log it and fail.
-  // TODO(wjmaclean): Remove as part of conditions for closing the bug.
-  // https://crbug.com/845097
   PropertyTrees* property_trees = layer_tree_impl->property_trees();
-  if (layer_tree_impl->current_page_scale_factor() !=
-          property_trees->transform_tree.page_scale_factor() &&
-      !layer_tree_impl->PageScaleTransformNode()) {
-    LOG(ERROR) << "Setting PageScale on subframe: new psf = "
-               << layer_tree_impl->page_scale_factor() << ", old psf = "
-               << property_trees->transform_tree.page_scale_factor()
-               << ", in_oopif = "
-               << layer_tree_impl->settings().is_layer_tree_for_subframe;
-    NOTREACHED();
-  }
-
   UpdatePageScaleFactor(property_trees,
                         layer_tree_impl->PageScaleTransformNode(),
                         layer_tree_impl->current_page_scale_factor());

@@ -111,9 +111,6 @@ class ExistingUserController : public LoginDisplay::Delegate,
   void OnStartKioskEnableScreen() override;
   void OnStartKioskAutolaunchScreen() override;
   void ResetAutoLoginTimer() override;
-  void ShowWrongHWIDScreen() override;
-  void ShowUpdateRequiredScreen() override;
-  void Signout() override;
 
   void CompleteLogin(const UserContext& user_context);
   void OnGaiaScreenReady();

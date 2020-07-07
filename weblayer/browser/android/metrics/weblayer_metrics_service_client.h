@@ -39,6 +39,7 @@ class WebLayerMetricsServiceClient
 
   // metrics::MetricsServiceClient
   int32_t GetProduct() override;
+  std::string GetUploadSigningKey() override;
 
   // metrics::AndroidMetricsServiceClient:
   int GetSampleRatePerMille() override;

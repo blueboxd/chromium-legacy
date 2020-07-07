@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
+#include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/format_utils.h"
 #include "media/base/video_frame.h"
@@ -222,7 +223,9 @@ void VaapiVideoDecoder::HandleDecodeTask() {
     return;
   }
 
+  TRACE_EVENT_BEGIN0("media,gpu", "VaapiVideoDecoder::Decode");
   AcceleratedVideoDecoder::DecodeResult decode_result = decoder_->Decode();
+  TRACE_EVENT_END0("media,gpu", "VaapiVideoDecoder::Decode");
   switch (decode_result) {
     case AcceleratedVideoDecoder::kRanOutOfStreamData:
       // Decoding was successful, notify client and try to schedule the next

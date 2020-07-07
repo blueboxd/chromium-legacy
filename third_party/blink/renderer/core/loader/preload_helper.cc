@@ -323,8 +323,9 @@ Resource* PreloadHelper::PreloadIfNeeded(
   link_fetch_params.SetCharset(document.Encoding());
 
   if (params.cross_origin != kCrossOriginAttributeNotSet) {
-    link_fetch_params.SetCrossOriginAccessControl(document.GetSecurityOrigin(),
-                                                  params.cross_origin);
+    link_fetch_params.SetCrossOriginAccessControl(
+        document.GetExecutionContext()->GetSecurityOrigin(),
+        params.cross_origin);
   }
 
   const String& integrity_attr = params.integrity;
@@ -523,7 +524,7 @@ Resource* PreloadHelper::PrefetchIfNeeded(const LinkLoadParameters& params,
     // always cross-origin with every other origin, we must not request
     // cross-origin prefetches from opaque requestors.
     if (EqualIgnoringASCIICase(params.as, "document") &&
-        !document.GetSecurityOrigin()->IsOpaque()) {
+        !document.GetExecutionContext()->GetSecurityOrigin()->IsOpaque()) {
       resource_request.SetPrefetchMaybeForTopLevelNavigation(true);
     }
 
@@ -551,7 +552,8 @@ Resource* PreloadHelper::PrefetchIfNeeded(const LinkLoadParameters& params,
     FetchParameters link_fetch_params(std::move(resource_request), options);
     if (params.cross_origin != kCrossOriginAttributeNotSet) {
       link_fetch_params.SetCrossOriginAccessControl(
-          document.GetSecurityOrigin(), params.cross_origin);
+          document.GetExecutionContext()->GetSecurityOrigin(),
+          params.cross_origin);
     }
     link_fetch_params.SetSignedExchangePrefetchCacheEnabled(
         RuntimeEnabledFeatures::

@@ -12,10 +12,8 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task/cancelable_task_tracker.h"
 #include "components/sessions/core/sessions_export.h"
 
 namespace base {
@@ -45,6 +43,8 @@ class SESSIONS_EXPORT CommandStorageManager {
   CommandStorageManager(const base::FilePath& path,
                         CommandStorageManagerDelegate* delegate,
                         bool enable_crypto = false);
+  CommandStorageManager(const CommandStorageManager&) = delete;
+  CommandStorageManager& operator=(const CommandStorageManager&) = delete;
   virtual ~CommandStorageManager();
 
   // Helper to generate a new key.
@@ -99,10 +99,10 @@ class SESSIONS_EXPORT CommandStorageManager {
 
   // Requests the commands for the current session. If |decryption_key| is
   // non-empty it is used to decrypt the contents of the file.
-  base::CancelableTaskTracker::TaskId ScheduleGetCurrentSessionCommands(
-      GetCommandsCallback callback,
-      const std::vector<uint8_t>& decryption_key,
-      base::CancelableTaskTracker* tracker);
+  // WARNING: |callback| may be called after |this| is deleted. In other words,
+  // be sure to use a WeakPtr with |callback|.
+  void GetCurrentSessionCommands(GetCommandsCallback callback,
+                                 const std::vector<uint8_t>& decryption_key);
 
  protected:
   // Provided for subclasses.
@@ -118,14 +118,6 @@ class SESSIONS_EXPORT CommandStorageManager {
   }
 
   CommandStorageBackend* backend() { return backend_.get(); }
-
-  // Creates the necessary callbacks/taskid for using CancelableTaskTracker
-  // with a request for the backend to fetch session commands.
-  base::CancelableTaskTracker::TaskId CreateCallbackForGetCommands(
-      base::CancelableTaskTracker* tracker,
-      GetCommandsCallback callback,
-      base::CancelableTaskTracker::IsCanceledCallback* is_canceled,
-      GetCommandsCallback* backend_callback);
 
  private:
   friend class CommandStorageManagerTestHelper;
@@ -155,8 +147,6 @@ class SESSIONS_EXPORT CommandStorageManager {
   // Used solely for saving after a delay, and not to be used for any other
   // purposes.
   base::WeakPtrFactory<CommandStorageManager> weak_factory_for_timer_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(CommandStorageManager);
 };
 
 }  // namespace sessions

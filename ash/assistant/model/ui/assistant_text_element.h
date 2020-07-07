@@ -25,6 +25,9 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantTextElement
  private:
   const std::string text_;
 
+  // AssistantUiElement:
+  bool Compare(const AssistantUiElement& other) const override;
+
   DISALLOW_COPY_AND_ASSIGN(AssistantTextElement);
 };
 

@@ -11,7 +11,6 @@ import org.chromium.chrome.browser.compositor.layouts.components.CompositorButto
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelper;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelperManager;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutTab;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 /**
@@ -126,11 +125,6 @@ public class TabStripUtils {
      * @param tabStrip The tab strip to wait for.
      */
     public static void settleDownCompositor(final StripLayoutHelper tabStrip) {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return !tabStrip.isAnimating();
-            }
-        });
+        CriteriaHelper.pollUiThread(() -> !tabStrip.isAnimating());
     }
 }

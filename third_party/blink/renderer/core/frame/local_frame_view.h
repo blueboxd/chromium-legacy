@@ -736,6 +736,14 @@ class CORE_EXPORT LocalFrameView final
   };
 #endif
 
+  // A paint preview is a copy of the visual contents of a webpage recorded as
+  // a set of SkPictures. This sends an IPC to the browser to trigger a
+  // recording of this frame as a separate SkPicture. An ID is added to the
+  // canvas of |context| at |paint_offset| to track the correct position of
+  // this frame relative to its parent.
+  void CapturePaintPreview(GraphicsContext& context,
+                           const IntSize& paint_offset) const;
+
   // EmbeddedContentView implementation
   void Paint(GraphicsContext&,
              const GlobalPaintFlags,

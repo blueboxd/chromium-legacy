@@ -128,11 +128,14 @@ PolicyBase::~PolicyBase() {
 }
 
 void PolicyBase::AddRef() {
-  ::InterlockedIncrement(&ref_count);
+  // ref_count starts at 1 so cannot increase from 0 to 1.
+  CHECK(::InterlockedIncrement(&ref_count) > 1);
 }
 
 void PolicyBase::Release() {
-  if (0 == ::InterlockedDecrement(&ref_count))
+  LONG result = ::InterlockedDecrement(&ref_count);
+  CHECK(result >= 0);
+  if (result == 0)
     delete this;
 }
 

@@ -281,8 +281,6 @@ class BrowserThemePack : public CustomThemeSupplier {
   void GenerateRawImageForAllSupportedScales(PersistentID prs_id);
 
   // Data pack, if we have one.
-  // TODO(crbug.com/1057889): Destroy this on in the thread pool, make the rest
-  // of CustomThemeSupplier destruction synchronous.
   std::unique_ptr<ui::DataPack> data_pack_;
 
   // All structs written to disk need to be packed; no alignment tricks here,

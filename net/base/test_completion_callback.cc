@@ -41,10 +41,6 @@ TestCompletionCallbackBaseInternal::~TestCompletionCallbackBaseInternal() =
 
 }  // namespace internal
 
-TestClosure::TestClosure()
-    : closure_(base::Bind(&TestClosure::DidSetResult, base::Unretained(this))) {
-}
-
 TestClosure::~TestClosure() = default;
 
 TestCompletionCallback::~TestCompletionCallback() = default;

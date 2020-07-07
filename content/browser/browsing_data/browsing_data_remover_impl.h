@@ -161,6 +161,9 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
                   BrowsingDataFilterBuilder* filter_builder,
                   uint64_t origin_type_mask);
 
+  void OnDelegateDone(base::OnceClosure completion_closure,
+                      uint64_t failed_data_types);
+
   // Notifies observers and transitions to the idle state.
   void Notify();
 
@@ -222,6 +225,8 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
 
   // Records which tasks of a deletion are currently active.
   std::set<TracingDataType> pending_sub_tasks_;
+
+  uint64_t failed_data_types_ = 0;
 
   // Fires after some time to track slow tasks. Cancelled when all tasks
   // are finished.

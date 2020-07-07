@@ -19,7 +19,6 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/scheduler/web_widget_scheduler.h"
-#include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/platform/widget/frame_widget.h"
 #include "third_party/blink/renderer/platform/widget/input/main_thread_event_queue.h"
 #include "third_party/blink/renderer/platform/widget/input/widget_input_handler_impl.h"

@@ -44,8 +44,7 @@ base::Value ConvertVpnValueToString(const base::Value& value) {
   if (value.is_string())
     return value.Clone();
   std::string str;
-  if (!base::JSONWriter::Write(value, &str))
-    NOTREACHED();
+  CHECK(base::JSONWriter::Write(value, &str));
   return base::Value(str);
 }
 

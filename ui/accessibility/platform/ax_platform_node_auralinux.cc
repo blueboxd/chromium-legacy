@@ -1024,6 +1024,18 @@ gunichar GetCharacterAtOffset(AtkText* atk_text, int offset) {
   return code_point;
 }
 
+gint GetOffsetAtPoint(AtkText* text, gint x, gint y, AtkCoordType coords) {
+  g_return_val_if_fail(ATK_IS_TEXT(text), -1);
+
+  AtkObject* atk_object = ATK_OBJECT(text);
+  AXPlatformNodeAuraLinux* obj =
+      AXPlatformNodeAuraLinux::FromAtkObject(atk_object);
+  if (!obj)
+    return -1;
+
+  return obj->GetTextOffsetAtPoint(x, y, coords);
+}
+
 // This function returns a single character as a UTF-8 encoded C string because
 // the character may be encoded into more than one byte.
 char* GetCharacter(AtkText* atk_text,
@@ -1447,6 +1459,7 @@ void Init(AtkTextIface* iface) {
   iface->get_text = GetText;
   iface->get_character_count = GetCharacterCount;
   iface->get_character_at_offset = GetCharacterAtOffset;
+  iface->get_offset_at_point = GetOffsetAtPoint;
   iface->get_text_after_offset = GetTextAfterOffset;
   iface->get_text_before_offset = GetTextBeforeOffset;
   iface->get_text_at_offset = GetTextAtOffset;
@@ -4115,6 +4128,28 @@ size_t AXPlatformNodeAuraLinux::UnicodeToUTF16OffsetInText(int unicode_offset) {
   return utf16_offset;
 }
 
+int AXPlatformNodeAuraLinux::GetTextOffsetAtPoint(int x,
+                                                  int y,
+                                                  AtkCoordType atk_coord_type) {
+  if (!GetExtentsRelativeToAtkCoordinateType(atk_coord_type).Contains(x, y))
+    return -1;
+
+  AtkObject* atk_object = GetOrCreateAtkObject();
+  if (!atk_object)
+    return -1;
+
+  int count = atk_text::GetCharacterCount(ATK_TEXT(atk_object));
+  for (int i = 0; i < count; i++) {
+    int out_x, out_y, out_width, out_height;
+    atk_text::GetCharacterExtents(ATK_TEXT(atk_object), i, &out_x, &out_y,
+                                  &out_width, &out_height, atk_coord_type);
+    gfx::Rect rect(out_x, out_y, out_width, out_height);
+    if (rect.Contains(x, y))
+      return i;
+  }
+  return -1;
+}
+
 gfx::Vector2d AXPlatformNodeAuraLinux::GetParentOriginInScreenCoordinates()
     const {
   AtkObject* parent = GetParent();
@@ -4319,7 +4354,7 @@ bool AXPlatformNodeAuraLinux::
     if (!child)
       continue;
 
-    if (child->IsTextOnlyObject()) {
+    if (child->IsText()) {
       current_offset += child->GetName().size();
     } else {
       // Add an offset for the embedded character.
@@ -4844,7 +4879,7 @@ AXPlatformNodeAuraLinux::GetHypertextExtentsOfChild(
     // If this object is a text only object, it is included directly into this
     // node's hypertext, otherwise it is represented as an embedded object
     // character.
-    int size = child->IsTextOnlyObject() ? child->GetName().size() : 1;
+    int size = child->IsText() ? child->GetName().size() : 1;
     if (child == child_to_find)
       return std::make_pair(current_offset, current_offset + size);
     current_offset += size;
@@ -4864,7 +4899,7 @@ void AXPlatformNodeAuraLinux::ActivateFindInPageInParent(int start_offset,
   if (!extents_in_parent.has_value())
     return;
 
-  DCHECK(IsTextOnlyObject());
+  DCHECK(IsText());
   parent->ActivateFindInPageResult(extents_in_parent->first + start_offset,
                                    extents_in_parent->first + end_offset);
 }

@@ -25915,6 +25915,7 @@ should be able to be added at any place in this file.
   <suffix name="DataSaverMilestonePromo"
       label="For DataSaverMilestonePromo feature."/>
   <suffix name="DataSaverPreview" label="For DataSaverPreview feature."/>
+  <suffix name="DesktopTabGroupsNewGroup" label="For desktop Tab Groups."/>
   <suffix name="DownloadHome" label="For DownloadHome feature."/>
   <suffix name="DownloadPage" label="For DownloadPage feature."/>
   <suffix name="DownloadPageScreenshot"

@@ -43,7 +43,8 @@ function nextTest() {
   var color = test['clearColor'];
   try {
     draw(color[0], color[1], color[2], color[3]);
-    testRunner.capturePrintingPixelsThen(completionCallback);
+    testRunner.updateAllLifecyclePhasesAndCompositeThen(
+      ()=>testRunner.capturePrintingPixelsThen(completionCallback));
   } catch (e) {
     debug('error in nextTest');
     debug(e);

@@ -70,7 +70,8 @@ class QuotaInternalsProxy
   void DidDumpOriginInfoTable(const OriginInfoTableEntries& entries);
   void DidGetHostUsage(const std::string& host,
                        blink::mojom::StorageType type,
-                       int64_t usage);
+                       int64_t usage,
+                       blink::mojom::UsageBreakdownPtr usage_breakdown);
 
   // Helper. Called on IO Thread.
   void RequestPerOriginInfo(blink::mojom::StorageType type);

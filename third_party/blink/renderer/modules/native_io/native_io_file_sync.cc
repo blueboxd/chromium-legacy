@@ -61,7 +61,7 @@ int NativeIOFileSync::read(MaybeShared<DOMArrayBufferView> buffer,
   }
   int read_bytes = backing_file_.Read(file_offset, read_data, read_size);
   if (read_bytes < 0) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kOperationError,
                                       "read() failed");
   }
   return read_bytes;
@@ -80,7 +80,7 @@ int NativeIOFileSync::write(MaybeShared<DOMArrayBufferView> buffer,
   }
   int written_bytes = backing_file_.Write(file_offset, write_data, write_size);
   if (written_bytes < 0) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kOperationError,
                                       "write() failed");
   }
   return written_bytes;

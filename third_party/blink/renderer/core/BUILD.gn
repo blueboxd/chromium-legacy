@@ -1661,3 +1661,14 @@ fuzzer_test("document_policy_fuzzer") {
   seed_corpus =
       "//third_party/blink/renderer/core/feature_policy/document_policy_corpus"
 }
+
+fuzzer_test("permissions_policy_fuzzer") {
+  sources = [ "feature_policy/permissions_policy_fuzzer.cc" ]
+  deps = [
+    "//third_party/blink/renderer/platform:blink_fuzzer_test_support",
+    "//third_party/icu",
+  ]
+  dict =
+      "//third_party/blink/renderer/core/feature_policy/permissions_policy.dict"
+  seed_corpus = "//third_party/blink/renderer/core/feature_policy/permissions_policy_corpus"
+}

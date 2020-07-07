@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/session/session_observer.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/system/palette/palette_tool_manager.h"
 #include "ash/system/tray/tray_background_view.h"

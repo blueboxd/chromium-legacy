@@ -146,7 +146,10 @@ class BrowsingDataRemover {
    public:
     // Called when a removal task is finished. Note that every removal task can
     // only have one observer attached to it, and only that one is called.
-    virtual void OnBrowsingDataRemoverDone() = 0;
+    // |failed_data_types| is a bitmask of DataTypes (including those defined by
+    // embedders) for which the deletion did not successfully complete. It will
+    // always be a subset of the |remove_mask| passed into Remove*().
+    virtual void OnBrowsingDataRemoverDone(uint64_t failed_data_types) = 0;
 
    protected:
     virtual ~Observer() {}

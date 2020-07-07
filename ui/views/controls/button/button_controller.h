@@ -50,7 +50,6 @@ class VIEWS_EXPORT ButtonController {
   virtual void UpdateAccessibleNodeData(ui::AXNodeData* node_data);
 
   // Methods that parallel respective methods in Button:
-  virtual void OnStateChanged(Button::ButtonState old_state);
   virtual bool IsTriggerableEvent(const ui::Event& event);
 
  protected:

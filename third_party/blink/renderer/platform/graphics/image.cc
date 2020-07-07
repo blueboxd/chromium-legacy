@@ -187,22 +187,30 @@ sk_sp<PaintShader> CreatePatternShader(const PaintImage& image,
                                        bool should_antialias,
                                        const FloatSize& spacing,
                                        SkTileMode tmx,
-                                       SkTileMode tmy) {
-  if (spacing.IsZero()) {
+                                       SkTileMode tmy,
+                                       const IntRect& subset_rect) {
+  if (spacing.IsZero() &&
+      subset_rect == IntRect(0, 0, image.width(), image.height())) {
     return PaintShader::MakeImage(image, tmx, tmy, &shader_matrix);
   }
 
   // Arbitrary tiling is currently only supported for SkPictureShader, so we use
   // that instead of a plain bitmap shader to implement spacing.
-  const SkRect tile_rect = SkRect::MakeWH(image.width() + spacing.Width(),
-                                          image.height() + spacing.Height());
+  const SkRect tile_rect =
+      SkRect::MakeWH(subset_rect.Width() + spacing.Width(),
+                     subset_rect.Height() + spacing.Height());
 
   PaintRecorder recorder;
   cc::PaintCanvas* canvas = recorder.beginRecording(tile_rect);
   PaintFlags flags;
   flags.setAntiAlias(should_antialias);
   flags.setFilterQuality(quality_to_use);
-  canvas->drawImage(image, 0, 0, &flags);
+  canvas->drawImageRect(
+      image,
+      SkRect::MakeXYWH(subset_rect.X(), subset_rect.Y(), subset_rect.Width(),
+                       subset_rect.Height()),
+      SkRect::MakeWH(subset_rect.Width(), subset_rect.Height()), &flags,
+      SkCanvas::kStrict_SrcRectConstraint);
 
   return PaintShader::MakePaintRecord(recorder.finishRecordingAsPicture(),
                                       tile_rect, tmx, tmy, &shader_matrix);
@@ -256,15 +264,10 @@ void Image::DrawPattern(GraphicsContext& context,
   // Fetch this now as subsetting may swap the image.
   auto image_id = image.GetSkImage()->uniqueID();
 
-  image = PaintImageBuilder::WithCopy(std::move(image))
-              .make_subset(subset_rect)
-              .TakePaintImage();
-  if (!image)
-    return;
-
   const FloatSize tile_size(
-      image.width() * scale_src_to_dest.Width() + repeat_spacing.Width(),
-      image.height() * scale_src_to_dest.Height() + repeat_spacing.Height());
+      subset_rect.Width() * scale_src_to_dest.Width() + repeat_spacing.Width(),
+      subset_rect.Height() * scale_src_to_dest.Height() +
+          repeat_spacing.Height());
   const auto tmx = ComputeTileMode(dest_rect.X(), dest_rect.MaxX(), adjusted_x,
                                    adjusted_x + tile_size.Width());
   const auto tmy = ComputeTileMode(dest_rect.Y(), dest_rect.MaxY(), adjusted_y,
@@ -276,7 +279,7 @@ void Image::DrawPattern(GraphicsContext& context,
       image, local_matrix, quality_to_use, context.ShouldAntialias(),
       FloatSize(repeat_spacing.Width() / scale_src_to_dest.Width(),
                 repeat_spacing.Height() / scale_src_to_dest.Height()),
-      tmx, tmy);
+      tmx, tmy, subset_rect);
 
   PaintFlags flags = context.FillFlags();
   // If the shader could not be instantiated (e.g. non-invertible matrix),

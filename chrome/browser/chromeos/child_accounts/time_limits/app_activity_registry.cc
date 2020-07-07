@@ -205,6 +205,13 @@ void AppActivityRegistry::OnAppAvailable(const AppId& app_id) {
     OnAppReinstalled(app_id);
   }
 
+  if (IsWebAppOrExtension(app_id) && app_id != GetChromeAppId() &&
+      base::Contains(activity_registry_, GetChromeAppId()) &&
+      GetAppState(app_id) == AppState::kBlocked) {
+    SetAppState(app_id, GetAppState(GetChromeAppId()));
+    return;
+  }
+
   SetAppState(app_id, AppState::kAvailable);
 }
 
@@ -241,7 +248,8 @@ void AppActivityRegistry::OnAppActive(const AppId& app_id,
     return;
   }
 
-  DCHECK(IsAppAvailable(app_id));
+  if (!IsAppAvailable(app_id))
+    return;
 
   std::set<aura::Window*>& active_windows = app_details.active_windows;
 

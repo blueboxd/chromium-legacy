@@ -29,7 +29,7 @@ void GeneratedPasswordSavedInfoBarDelegateAndroid::Create(
 
 GeneratedPasswordSavedInfoBar::GeneratedPasswordSavedInfoBar(
     std::unique_ptr<GeneratedPasswordSavedInfoBarDelegateAndroid> delegate)
-    : InfoBarAndroid(
+    : infobars::InfoBarAndroid(
           std::move(delegate),
           base::BindRepeating(&ResourceMapper::MapToJavaDrawableId)) {}
 

@@ -3415,6 +3415,8 @@ static_library("ui") {
       "views/global_media_controls/media_dialog_view.cc",
       "views/global_media_controls/media_dialog_view.h",
       "views/global_media_controls/media_dialog_view_observer.h",
+      "views/global_media_controls/media_notification_audio_device_selector_view.cc",
+      "views/global_media_controls/media_notification_audio_device_selector_view.h",
       "views/global_media_controls/media_notification_container_impl_view.cc",
       "views/global_media_controls/media_notification_container_impl_view.h",
       "views/global_media_controls/media_notification_list_view.cc",

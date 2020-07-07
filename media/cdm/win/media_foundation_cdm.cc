@@ -4,6 +4,7 @@
 
 #include "media/cdm/win/media_foundation_cdm.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/cdm_promise.h"
@@ -176,10 +177,11 @@ void MediaFoundationCdm::CreateSessionAndGenerateRequest(
   int session_token = next_session_token_++;
 
   // Keep a raw pointer since the |promise| will be moved to the callback.
+  // Use base::Unretained() is safe because |session| is owned by |this|.
   auto* raw_promise = promise.get();
-  auto session_id_cb = base::BindOnce(&MediaFoundationCdm::OnSessionId,
-                                      weak_factory_.GetWeakPtr(), session_token,
-                                      std::move(promise));
+  auto session_id_cb =
+      base::BindOnce(&MediaFoundationCdm::OnSessionId, base::Unretained(this),
+                     session_token, std::move(promise));
 
   if (FAILED(session->GenerateRequest(init_data_type, init_data,
                                       std::move(session_id_cb)))) {
@@ -285,7 +287,7 @@ bool MediaFoundationCdm::GetMediaFoundationCdmProxy(
   return true;
 }
 
-void MediaFoundationCdm::OnSessionId(
+bool MediaFoundationCdm::OnSessionId(
     int session_token,
     std::unique_ptr<NewSessionCdmPromise> promise,
     const std::string& session_id) {
@@ -301,11 +303,12 @@ void MediaFoundationCdm::OnSessionId(
   if (session_id.empty() || sessions_.count(session_id)) {
     promise->reject(Exception::INVALID_STATE_ERROR, 0,
                     "Empty or duplicate session ID");
-    return;
+    return false;
   }
 
   sessions_.emplace(session_id, std::move(session));
   promise->resolve(session_id);
+  return true;
 }
 
 MediaFoundationCdmSession* MediaFoundationCdm::GetSession(

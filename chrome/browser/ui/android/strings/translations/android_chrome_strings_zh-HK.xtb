@@ -642,7 +642,6 @@
 <translation id="6154478581116148741">在「設定」中開啟螢幕鎖定功能，即可從此裝置匯出您的密碼</translation>
 <translation id="6157392216611456285">選擇 <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720">節省 <ph name="PERCENT" /> 的數據用量</translation>
-<translation id="6192333916571137726">下載檔案</translation>
 <translation id="6201345951596836663">已複製連結</translation>
 <translation id="6206830853671714236">請選擇下載時間</translation>
 <translation id="6210748933810148297">不是 <ph name="EMAIL" /> 嗎？</translation>
@@ -877,6 +876,7 @@
 <translation id="8013372441983637696">一併清除您在此裝置上的 Chrome 資料</translation>
 <translation id="8015452622527143194">將網頁中的所有內容回復到預設大小</translation>
 <translation id="8026334261755873520">清除瀏覽數據</translation>
+<translation id="8027863900915310177">請選擇下載位置</translation>
 <translation id="8035133914807600019">新增資料夾…</translation>
 <translation id="8037750541064988519">尚餘 <ph name="DAYS" /> 天</translation>
 <translation id="804335162455518893">找不到 SD 卡</translation>
@@ -922,7 +922,7 @@
 <translation id="8364299278605033898">查看熱門網站</translation>
 <translation id="8368027906805972958">不明或不支援的裝置 (<ph name="DEVICE_ID" />)</translation>
 <translation id="8393700583063109961">傳送訊息</translation>
-<translation id="8407396331882458341">1. 選擇 <ph name="APP_NAME" />\n2。輕按 [一律]</translation>
+<translation id="8407396331882458341">1. 選擇 <ph name="APP_NAME" />\n2。輕按 [一律採用]</translation>
 <translation id="8413126021676339697">顯示完整記錄</translation>
 <translation id="8425213833346101688">變更</translation>
 <translation id="8427875596167638501">預覽分頁喺畫面下半部分顯示</translation>

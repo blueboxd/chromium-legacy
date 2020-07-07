@@ -127,10 +127,12 @@ void RenderFrameMetadataProviderImpl::OnFrameSubmissionForTesting(
                                   weak_factory_.GetWeakPtr()));
 }
 
+#if defined(OS_ANDROID)
 void RenderFrameMetadataProviderImpl::OnRootScrollOffsetChanged(
     const gfx::Vector2dF& root_scroll_offset) {
   for (Observer& observer : observers_)
     observer.OnRootScrollOffsetChanged(root_scroll_offset);
 }
+#endif
 
 }  // namespace content

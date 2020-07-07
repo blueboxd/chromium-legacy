@@ -69,7 +69,6 @@ class AppLaunchSigninScreen : public SigninScreenHandlerDelegate,
   bool AllowNewUserChanged() const override;
   bool IsSigninInProgress() const override;
   bool IsUserSigninCompleted() const override;
-  void Signout() override;
   void HandleGetUsers() override;
   void CheckUserStatus(const AccountId& account_id) override;
 

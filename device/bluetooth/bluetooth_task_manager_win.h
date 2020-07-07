@@ -133,24 +133,22 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
 
   void PostSetPoweredBluetoothTask(
       bool powered,
-      const base::Closure& callback,
-      const BluetoothAdapter::ErrorCallback& error_callback);
+      base::OnceClosure callback,
+      BluetoothAdapter::ErrorOnceCallback error_callback);
   void PostStartDiscoveryTask();
   void PostStopDiscoveryTask();
 
   // Callbacks of asynchronous operations of GATT service.
-  typedef base::Callback<void(HRESULT)> HResultCallback;
-  typedef base::Callback<
-      void(std::unique_ptr<BTH_LE_GATT_CHARACTERISTIC>, uint16_t, HRESULT)>
-      GetGattIncludedCharacteristicsCallback;
-  typedef base::Callback<
-      void(std::unique_ptr<BTH_LE_GATT_DESCRIPTOR>, uint16_t, HRESULT)>
-      GetGattIncludedDescriptorsCallback;
-  typedef base::Callback<void(std::unique_ptr<BTH_LE_GATT_CHARACTERISTIC_VALUE>,
-                              HRESULT)>
-      ReadGattCharacteristicValueCallback;
-  typedef base::Callback<void(std::unique_ptr<std::vector<uint8_t>>)>
-      GattCharacteristicValueChangedCallback;
+  using HResultCallback = base::OnceCallback<void(HRESULT)>;
+  using GetGattIncludedCharacteristicsCallback = base::OnceCallback<
+      void(std::unique_ptr<BTH_LE_GATT_CHARACTERISTIC>, uint16_t, HRESULT)>;
+  using GetGattIncludedDescriptorsCallback = base::OnceCallback<
+      void(std::unique_ptr<BTH_LE_GATT_DESCRIPTOR>, uint16_t, HRESULT)>;
+  using ReadGattCharacteristicValueCallback =
+      base::OnceCallback<void(std::unique_ptr<BTH_LE_GATT_CHARACTERISTIC_VALUE>,
+                              HRESULT)>;
+  using GattCharacteristicValueChangedCallback =
+      base::RepeatingCallback<void(std::unique_ptr<std::vector<uint8_t>>)>;
   using GattEventRegistrationCallback =
       base::OnceCallback<void(PVOID, HRESULT)>;
 
@@ -162,7 +160,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
       const base::FilePath& service_path,
       const BluetoothUUID& uuid,
       uint16_t attribute_handle,
-      const GetGattIncludedCharacteristicsCallback& callback);
+      GetGattIncludedCharacteristicsCallback callback);
 
   // Get all included descriptors of a given |characterisitc| in service
   // with |service_path|. The result is returned asynchronously through
@@ -170,14 +168,14 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
   void PostGetGattIncludedDescriptors(
       const base::FilePath& service_path,
       const PBTH_LE_GATT_CHARACTERISTIC characteristic,
-      const GetGattIncludedDescriptorsCallback& callback);
+      GetGattIncludedDescriptorsCallback callback);
 
   // Post read the value of a given |characteristic| in service with
   // |service_path|. The result is returned asynchronously through |callback|.
   void PostReadGattCharacteristicValue(
       const base::FilePath& device_path,
       const PBTH_LE_GATT_CHARACTERISTIC characteristic,
-      const ReadGattCharacteristicValueCallback& callback);
+      ReadGattCharacteristicValueCallback callback);
 
   // Post write the value of a given |characteristic| in service with
   // |service_path| to |new_value|. The operation result is returned
@@ -187,7 +185,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
       const PBTH_LE_GATT_CHARACTERISTIC characteristic,
       const std::vector<uint8_t>& new_value,
       ULONG flags,
-      const HResultCallback& callback);
+      HResultCallback callback);
 
   // Post a task to register to receive value changed notifications from
   // |characteristic| in service with |service_path|. |ccc_descriptor| is the
@@ -233,8 +231,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
   void PollAdapter();
   void PostAdapterStateToUi();
   void SetPowered(bool powered,
-                  const base::Closure& callback,
-                  const BluetoothAdapter::ErrorCallback& error_callback);
+                  base::OnceClosure callback,
+                  BluetoothAdapter::ErrorOnceCallback error_callback);
 
   // Starts discovery. Once the discovery starts, it issues a discovery inquiry
   // with a short timeout, then issues more inquiries with greater timeout
@@ -308,20 +306,19 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
       base::FilePath device_path,
       BluetoothUUID uuid,
       uint16_t attribute_handle,
-      const GetGattIncludedCharacteristicsCallback& callback);
-  void GetGattIncludedDescriptors(
-      base::FilePath service_path,
-      BTH_LE_GATT_CHARACTERISTIC characteristic,
-      const GetGattIncludedDescriptorsCallback& callback);
+      GetGattIncludedCharacteristicsCallback callback);
+  void GetGattIncludedDescriptors(base::FilePath service_path,
+                                  BTH_LE_GATT_CHARACTERISTIC characteristic,
+                                  GetGattIncludedDescriptorsCallback callback);
   void ReadGattCharacteristicValue(
       base::FilePath device_path,
       BTH_LE_GATT_CHARACTERISTIC characteristic,
-      const ReadGattCharacteristicValueCallback& callback);
+      ReadGattCharacteristicValueCallback callback);
   void WriteGattCharacteristicValue(base::FilePath service_path,
                                     BTH_LE_GATT_CHARACTERISTIC characteristic,
                                     std::vector<uint8_t> new_value,
                                     ULONG flags,
-                                    const HResultCallback& callback);
+                                    HResultCallback callback);
   void RegisterGattCharacteristicValueChangedEvent(
       base::FilePath service_path,
       BTH_LE_GATT_CHARACTERISTIC characteristic,

@@ -218,24 +218,14 @@ void LinkLoader::LoadStylesheet(const LinkLoadParameters& params,
                                 FetchParameters::DeferOption defer_option,
                                 Document& document,
                                 ResourceClient* link_client) {
-  Document* document_for_origin = &document;
-  if (document.ImportsController()) {
-    // For stylesheets loaded from HTML imported Documents, we use
-    // context document for getting origin and ResourceFetcher to use the main
-    // Document's origin, while using element document for CompleteURL() to use
-    // imported Documents' base URLs.
-    document_for_origin =
-        To<LocalDOMWindow>(document.GetExecutionContext())->document();
-  }
-
-  ResourceRequest resource_request(document.CompleteURL(params.href));
+  ExecutionContext* context = document.GetExecutionContext();
+  ResourceRequest resource_request(context->CompleteURL(params.href));
   resource_request.SetReferrerPolicy(params.referrer_policy);
 
   mojom::FetchImportanceMode importance_mode =
       GetFetchImportanceAttributeValue(params.importance);
   DCHECK(importance_mode == mojom::FetchImportanceMode::kImportanceAuto ||
-         RuntimeEnabledFeatures::PriorityHintsEnabled(
-             document.GetExecutionContext()));
+         RuntimeEnabledFeatures::PriorityHintsEnabled(context));
   resource_request.SetFetchImportanceMode(importance_mode);
 
   ResourceLoaderOptions options;
@@ -249,24 +239,23 @@ void LinkLoader::LoadStylesheet(const LinkLoadParameters& params,
 
   CrossOriginAttributeValue cross_origin = params.cross_origin;
   if (cross_origin != kCrossOriginAttributeNotSet) {
-    link_fetch_params.SetCrossOriginAccessControl(
-        document_for_origin->GetSecurityOrigin(), cross_origin);
+    link_fetch_params.SetCrossOriginAccessControl(context->GetSecurityOrigin(),
+                                                  cross_origin);
   }
 
   String integrity_attr = params.integrity;
   if (!integrity_attr.IsEmpty()) {
     IntegrityMetadataSet metadata_set;
     SubresourceIntegrity::ParseIntegrityAttribute(
-        integrity_attr,
-        SubresourceIntegrityHelper::GetFeatures(document.GetExecutionContext()),
+        integrity_attr, SubresourceIntegrityHelper::GetFeatures(context),
         metadata_set);
     link_fetch_params.SetIntegrityMetadata(metadata_set);
     link_fetch_params.MutableResourceRequest().SetFetchIntegrity(
         integrity_attr);
   }
 
-  CSSStyleSheetResource::Fetch(link_fetch_params,
-                               document_for_origin->Fetcher(), link_client);
+  CSSStyleSheetResource::Fetch(link_fetch_params, context->Fetcher(),
+                               link_client);
 }
 
 void LinkLoader::Abort() {

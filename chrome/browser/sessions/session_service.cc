@@ -456,15 +456,12 @@ void SessionService::SetLastActiveTime(const SessionID& window_id,
       sessions::CreateLastActiveTimeCommand(tab_id, last_active_time));
 }
 
-base::CancelableTaskTracker::TaskId SessionService::GetLastSession(
-    sessions::GetLastSessionCallback callback,
-    base::CancelableTaskTracker* tracker) {
+void SessionService::GetLastSession(sessions::GetLastSessionCallback callback) {
   // OnGotSessionCommands maps the SessionCommands to browser state, then run
   // the callback.
-  return command_storage_manager_->ScheduleGetLastSessionCommands(
+  return command_storage_manager_->GetLastSessionCommands(
       base::BindOnce(&SessionService::OnGotSessionCommands,
-                     weak_factory_.GetWeakPtr(), std::move(callback)),
-      tracker);
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 bool SessionService::ShouldUseDelayedSave() {

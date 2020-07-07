@@ -8,6 +8,7 @@
 #include <cinttypes>
 #include <iterator>
 #include <limits>
+#include <memory>
 #include <type_traits>
 #include <vector>
 
@@ -28,13 +29,20 @@
 #include "chrome/common/privacy_budget/container_ops.h"
 #include "chrome/common/privacy_budget/field_trial_param_conversions.h"
 #include "chrome/common/privacy_budget/privacy_budget_features.h"
+#include "chrome/common/privacy_budget/privacy_budget_settings_provider.h"
 #include "components/prefs/pref_service.h"
+#include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
+#include "third_party/blink/public/common/privacy_budget/identifiability_study_settings_provider.h"
 #include "third_party/blink/public/common/privacy_budget/identifiable_surface.h"
 
 namespace {
 
 // Number of entries to keep in the MRU cache. Chosen from a hat.
 constexpr size_t kMruEntries = 1000;
+
+bool IsStudyActive() {
+  return blink::IdentifiabilityStudySettings::Get()->IsActive();
+}
 
 }  // namespace
 
@@ -58,7 +66,9 @@ IdentifiabilityStudyState::IdentifiabilityStudyState(PrefService* pref_service)
           features::kIdentifiabilityStudyMaxSurfaces.Get(),
           0,
           features::kMaxIdentifiabilityStudyMaxSurfaces)) {
-  InitFromPrefs();
+  InitializeGlobalStudySettings();
+  if (IsStudyActive())
+    InitFromPrefs();
 }
 
 IdentifiabilityStudyState::~IdentifiabilityStudyState() = default;
@@ -70,7 +80,7 @@ int IdentifiabilityStudyState::generation() const {
 bool IdentifiabilityStudyState::ShouldSampleSurface(
     blink::IdentifiableSurface surface) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (LIKELY(!IsActive()))
+  if (LIKELY(!IsStudyActive()))
     return false;
 
   if (base::Contains(active_surfaces_, surface))
@@ -89,7 +99,7 @@ bool IdentifiabilityStudyState::ShouldSampleSurface(
   // By construction, there's no intersection between blocked and
   // `active_surfaces_`. Hence we can check for blocked surfaces after checking
   // `active_surfaces_`.
-  if (IsSurfaceBlocked(surface)) {
+  if (!blink::IdentifiabilityStudySettings::Get()->IsSurfaceAllowed(surface)) {
     recent_surfaces_.Put(surface, false);
     return false;
   }
@@ -106,9 +116,10 @@ bool IdentifiabilityStudyState::ShouldSampleSurface(
   return should_record;
 }
 
-bool IdentifiabilityStudyState::IsSurfaceBlocked(
-    blink::IdentifiableSurface surface) const {
-  return !settings_.IsSurfaceAllowed(surface);
+// static
+void IdentifiabilityStudyState::InitializeGlobalStudySettings() {
+  blink::IdentifiabilityStudySettings::SetGlobalProvider(
+      std::make_unique<PrivacyBudgetSettingsProvider>());
 }
 
 bool IdentifiabilityStudyState::DecideSurfaceInclusion(
@@ -149,13 +160,13 @@ bool IdentifiabilityStudyState::DecideSurfaceInclusion(
 #if DCHECK_IS_ON()
 void IdentifiabilityStudyState::CheckInvariants() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!internal::Intersects(active_surfaces_, settings_.blocked_surfaces()));
   DCHECK(!internal::Intersects(active_surfaces_, retired_surfaces_));
   DCHECK(active_surfaces_.size() <= max_active_surfaces_);
-  DCHECK(std::all_of(active_surfaces_.begin(), active_surfaces_.end(),
-                     [&](const auto& value) {
-                       return settings_.IsTypeAllowed(value.GetType());
-                     }));
+  DCHECK(std::all_of(
+      active_surfaces_.begin(), active_surfaces_.end(), [](const auto& value) {
+        return blink::IdentifiabilityStudySettings::Get()->IsSurfaceAllowed(
+            value);
+      }));
 }
 #else   // DCHECK_IS_ON()
 void IdentifiabilityStudyState::CheckInvariants() const {}
@@ -167,7 +178,7 @@ void IdentifiabilityStudyState::InitFromPrefs() {
   DCHECK(retired_surfaces_.empty());
 
   // None of the parameters should be relied upon if the study is not enabled.
-  if (LIKELY(!IsActive()))
+  if (LIKELY(!IsStudyActive()))
     return;
 
   auto persisted_generation =
@@ -216,6 +227,7 @@ void IdentifiabilityStudyState::WriteToPrefs() {
 }
 
 void IdentifiabilityStudyState::ReconcileLoadedPrefs() {
+  const auto* settings = blink::IdentifiabilityStudySettings::Get();
   bool modified = false;
 
   // This will contain the intersection of active_surfaces_ and
@@ -229,9 +241,10 @@ void IdentifiabilityStudyState::ReconcileLoadedPrefs() {
   // Effectively:
   //   BlockedActive = (Active ∩ Blocked)
   //   Active -= BlockedActive
-  modified |= internal::ExtractIf(
-      &active_surfaces_, &blocked_active_surfaces,
-      [&](blink::IdentifiableSurface s) { return IsSurfaceBlocked(s); });
+  modified |= internal::ExtractIf(&active_surfaces_, &blocked_active_surfaces,
+                                  [settings](blink::IdentifiableSurface s) {
+                                    return !settings->IsSurfaceAllowed(s);
+                                  });
 
   // Step 2. Any remaining surface in both active and retired is removed from
   // retired.
@@ -270,8 +283,8 @@ void IdentifiabilityStudyState::ReconcileLoadedPrefs() {
     IdentifiableSurfaceSet retired_not_blocked;
     std::copy_if(retired_surfaces_.begin(), retired_surfaces_.end(),
                  std::inserter(retired_not_blocked, retired_not_blocked.end()),
-                 [&](const blink::IdentifiableSurface& candidate) {
-                   return !IsSurfaceBlocked(candidate);
+                 [settings](const blink::IdentifiableSurface& candidate) {
+                   return settings->IsSurfaceAllowed(candidate);
                  });
     modified |= internal::ExtractRandomSubset(
         &retired_not_blocked, &active_surfaces_,

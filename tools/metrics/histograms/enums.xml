@@ -6158,6 +6158,7 @@ Called by update_bad_message_reasons.py.-->
   <int value="227" label="RFH_INVALID_CALL_FROM_NOT_MAIN_FRAME"/>
   <int value="228" label="INPUT_ROUTER_INVALID_EVENT_SOURCE"/>
   <int value="229" label="RFH_INACTIVE_CHECK_FROM_SPECULATIVE_RFH"/>
+  <int value="230" label="RFH_SUBFRAME_CAPTURE_ON_MAIN_FRAME"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">
@@ -16501,6 +16502,26 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="4" label="Not rejected"/>
 </enum>
 
+<enum name="DlcService.InstallResult">
+  <int value="0" label="Unknown error"/>
+  <int value="1" label="Success - New install"/>
+  <int value="2" label="Success - Already installed"/>
+  <int value="3" label="Failed to create directory"/>
+  <int value="4" label="Failure reported by Update Engine"/>
+  <int value="5" label="Invalid DLC submitted"/>
+  <int value="6" label="Failed because a reboot is needed"/>
+  <int value="7" label="Failed because Update Engine is busy"/>
+  <int value="8" label="Failed to verify image"/>
+  <int value="9" label="Failed to mount image"/>
+</enum>
+
+<enum name="DlcService.UninstallResult">
+  <int value="0" label="Unknown error"/>
+  <int value="1" label="Success"/>
+  <int value="2" label="Invalid DLC submitted"/>
+  <int value="3" label="Failed because Update Engine is busy"/>
+</enum>
+
 <enum name="DllHash">
   <obsolete>
     The blacklist is deprecated in favor of third-party DLL blocking.
@@ -21020,6 +21041,8 @@ Called by update_document_policy_enum.py.-->
   <int value="727" label="ExtensionInstallEventLoggingEnabled"/>
   <int value="728" label="EnterpriseRealTimeUrlCheckMode"/>
   <int value="729" label="AssistantOnboardingMode"/>
+  <int value="730" label="DeviceExternalPrintServers"/>
+  <int value="731" label="DeviceExternalPrintServersAllowlist"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -39555,7 +39578,6 @@ from previous Chrome versions.
   <int value="-1962588488" label="SpeculativePreconnect:disabled"/>
   <int value="-1961931929" label="ContextualSuggestionsBottomSheet:enabled"/>
   <int value="-1961648833" label="show_summary"/>
-  <int value="-1961497025" label="tint-gl-composited-content"/>
   <int value="-1961062505" label="VrBrowsingInCustomTab:disabled"/>
   <int value="-1960567385" label="KeepPrefetchedContentSuggestions:enabled"/>
   <int value="-1959563554" label="ChromeOSAccountManager:enabled"/>
@@ -40711,6 +40733,7 @@ from previous Chrome versions.
   <int value="-763640405" label="WebXRARModule:enabled"/>
   <int value="-762738927" label="LogJsConsoleMessages:enabled"/>
   <int value="-762687134" label="ExperimentalCrostiniUI:enabled"/>
+  <int value="-762541013" label="enable-bluetooth-spp-in-serial-api"/>
   <int value="-759830869" label="enable-tab-discarding"/>
   <int value="-758999727" label="ContentIndexingNTP:disabled"/>
   <int value="-758917191" label="AccountIdMigration:enabled"/>
@@ -42468,6 +42491,7 @@ from previous Chrome versions.
   <int value="1214455758" label="VideoRotateToFullscreen:disabled"/>
   <int value="1215531732" label="OmniboxUIExperiments:disabled"/>
   <int value="1215768255" label="AutofillCreditCardLocalCardMigration:enabled"/>
+  <int value="1216286283" label="tint-composited-content"/>
   <int value="1216452475" label="SyncUSSAutofillProfile:disabled"/>
   <int value="1217907443" label="spurious-power-button-keyboard-accel"/>
   <int value="1219317631" label="ContextualSuggestionsAboveArticles:disabled"/>

@@ -115,24 +115,17 @@ class ManagementSetEnabledFunction : public ExtensionFunction {
  private:
   void OnInstallPromptDone(bool did_accept);
 
+  bool HasUnsupportedRequirements(const std::string& extension_id);
+
   void OnRequirementsChecked(const PreloadCheck::Errors& errors);
 
-  ExtensionFunction::ResponseAction RequestParentPermission(
-      const Extension* extension);
-
-  void OnParentPermissionDone(
+  // Called when the user dismisses the Parent Permission Dialog.
+  void OnParentPermissionDialogDone(
       SupervisedUserExtensionsDelegate::ParentPermissionDialogResult result);
 
-  // Shows the dialog that tells the user that the parent has blocked the
-  // installation of extensions, apps, etc.
-  void ShowBlockedByParentDialog(const Extension* extension);
-
-  // Called when the dialog shown by ShowBlockedByParentDialog() is dismissed.
+  // Called when the user dismisses the Extension Install Blocked By Parent
+  // Dialog.
   void OnBlockedByParentDialogDone();
-
-  std::unique_ptr<
-      SupervisedUserExtensionsDelegate::ParentPermissionDialogResult>
-      parental_permission_dialog_;
 
   std::string extension_id_;
 

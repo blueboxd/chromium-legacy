@@ -196,7 +196,8 @@ static DocumentFragment* DocumentFragmentFromDragData(
 
 bool DragController::DragIsMove(FrameSelection& selection,
                                 DragData* drag_data) {
-  return document_under_mouse_ == drag_initiator_ &&
+  return document_under_mouse_ ==
+             (drag_initiator_ ? drag_initiator_->document() : nullptr) &&
          selection.SelectionHasFocus() &&
          selection.ComputeVisibleSelectionInDOMTreeDeprecated()
              .IsContentEditable() &&
@@ -391,9 +392,12 @@ bool DragController::TryDocumentDrag(DragData* drag_data,
   if (!document_under_mouse_)
     return false;
 
-  if (drag_initiator_ && !document_under_mouse_->GetSecurityOrigin()->CanAccess(
-                             drag_initiator_->GetSecurityOrigin()))
+  auto* under_mouse_origin =
+      document_under_mouse_->GetExecutionContext()->GetSecurityOrigin();
+  if (drag_initiator_ &&
+      !under_mouse_origin->CanAccess(drag_initiator_->GetSecurityOrigin())) {
     return false;
+  }
 
   bool is_handling_drag = false;
   if (action_mask & kDragDestinationActionDHTML) {
@@ -733,7 +737,9 @@ bool DragController::CanProcessDrag(DragData* drag_data,
     return false;
   }
 
-  if (did_initiate_drag_ && document_under_mouse_ == drag_initiator_) {
+  if (did_initiate_drag_ &&
+      document_under_mouse_ ==
+          (drag_initiator_ ? drag_initiator_->document() : nullptr)) {
     const PhysicalOffset point_in_frame =
         result.InnerNode()
             ->GetDocument()
@@ -1314,7 +1320,7 @@ void DragController::DoSystemDrag(DragImage* image,
                                   LocalFrame* frame,
                                   bool for_link) {
   did_initiate_drag_ = true;
-  drag_initiator_ = frame->GetDocument();
+  drag_initiator_ = frame->DomWindow();
   SetExecutionContext(frame->DomWindow());
 
   // TODO(pdr): |drag_location| and |event_pos| should be passed in as

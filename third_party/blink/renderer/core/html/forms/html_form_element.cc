@@ -591,11 +591,12 @@ void HTMLFormElement::ParseAttribute(
     // If we're not upgrading insecure requests, and the new action attribute is
     // pointing to an insecure "action" location from a secure page it is marked
     // as "passive" mixed content.
-    if ((GetExecutionContext()
+    if (GetExecutionContext() &&
+        (GetExecutionContext()
              ->GetSecurityContext()
              .GetInsecureRequestPolicy() &
          mojom::blink::InsecureRequestPolicy::kUpgradeInsecureRequests) !=
-        mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone)
+            mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone)
       return;
     KURL action_url = GetDocument().CompleteURL(
         attributes_.Action().IsEmpty() ? GetDocument().Url().GetString()

@@ -75,6 +75,8 @@ void LoadMoreTask::QueryRequestComplete(
   if (!translated_response.model_update_request)
     return Done(LoadStreamStatus::kProtoTranslationFailed);
 
+  loaded_new_content_from_network_ =
+      !translated_response.model_update_request->stream_structures.empty();
   model->Update(std::move(translated_response.model_update_request));
 
   if (translated_response.request_schedule)
@@ -84,7 +86,10 @@ void LoadMoreTask::QueryRequestComplete(
 }
 
 void LoadMoreTask::Done(LoadStreamStatus status) {
-  std::move(done_callback_).Run(Result(status));
+  Result result;
+  result.final_status = status;
+  result.loaded_new_content_from_network = loaded_new_content_from_network_;
+  std::move(done_callback_).Run(result);
   TaskComplete();
 }
 

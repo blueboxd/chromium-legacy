@@ -327,14 +327,18 @@ SequenceId Scheduler::CreateSequence(SchedulingPriority priority) {
 }
 
 void Scheduler::DestroySequence(SequenceId sequence_id) {
-  base::AutoLock auto_lock(lock_);
+  base::circular_deque<Sequence::Task> tasks_to_be_destroyed;
+  {
+    base::AutoLock auto_lock(lock_);
 
-  Sequence* sequence = GetSequence(sequence_id);
-  DCHECK(sequence);
-  if (sequence->scheduled())
-    rebuild_scheduling_queue_ = true;
+    Sequence* sequence = GetSequence(sequence_id);
+    DCHECK(sequence);
+    if (sequence->scheduled())
+      rebuild_scheduling_queue_ = true;
 
-  sequences_.erase(sequence_id);
+    tasks_to_be_destroyed = std::move(sequence->tasks_);
+    sequences_.erase(sequence_id);
+  }
 }
 
 Scheduler::Sequence* Scheduler::GetSequence(SequenceId sequence_id) {

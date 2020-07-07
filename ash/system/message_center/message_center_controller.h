@@ -9,7 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/message_center/arc_notifications_host_initializer.h"
-#include "ash/session/session_observer.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"

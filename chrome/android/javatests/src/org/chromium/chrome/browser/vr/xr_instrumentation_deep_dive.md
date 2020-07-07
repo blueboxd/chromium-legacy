@@ -19,8 +19,6 @@ self-explanatory) naming convention:
   feature.
 * `AR`/`Ar` - A subset of `XR`. Used for things that are applicable to any AR
   feature.
-* `VR Browser`/`VrBrowser` - A subset of `VR`. Used for things that are only
-  applicable to the VR Browser feature of Chrome.
 * `WebXR`/`WebXr` - A subset of `XR`. Used for things that are applicable to any
   XR-related web APIs.
 * `WebXR for AR`/`WebXrAr` - A subset of `WebXR` and `AR`. Used for things that
@@ -36,7 +34,6 @@ Based on the above naming scheme, the various `TestFramework` classes are
 structured in the following hierarchy:
 
 * `XrTestFramework`
-  * `VrBrowserTestFramework`
   * `WebXrTestFramework`
     * `WebXrArTestFramework`
     * `WebXrVrTestFramework`

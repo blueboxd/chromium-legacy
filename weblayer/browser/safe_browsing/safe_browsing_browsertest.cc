@@ -14,10 +14,12 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "weblayer/browser/profile_impl.h"
 #include "weblayer/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "weblayer/browser/tab_impl.h"
 #include "weblayer/public/navigation.h"
 #include "weblayer/public/navigation_controller.h"
+#include "weblayer/public/profile.h"
 #include "weblayer/public/tab.h"
 #include "weblayer/shell/browser/shell.h"
 #include "weblayer/test/load_completion_observer.h"
@@ -84,6 +86,18 @@ class SafeBrowsingBrowserTest : public WebLayerBrowserTest {
     safe_browsing::SafeBrowsingApiHandler::SetInstance(fake_handler_.get());
     ASSERT_TRUE(embedded_test_server()->Start());
     url_ = embedded_test_server()->GetURL("/simple_page.html");
+    // Safe Browsing is enabled by default
+    ASSERT_TRUE(GetSafeBrowsingEnabled());
+  }
+
+  void SetSafeBrowsingEnabled(bool value) {
+    GetProfile()->SetBooleanSetting(SettingType::BASIC_SAFE_BROWSING_ENABLED,
+                                    value);
+  }
+
+  bool GetSafeBrowsingEnabled() {
+    return GetProfile()->GetBooleanSetting(
+        SettingType::BASIC_SAFE_BROWSING_ENABLED);
   }
 
   void NavigateWithThreatType(const safe_browsing::SBThreatType& threatType,
@@ -103,6 +117,16 @@ class SafeBrowsingBrowserTest : public WebLayerBrowserTest {
       EXPECT_TRUE(GetSecurityInterstitialPage()->GetHTMLContents().length() >
                   0);
     }
+  }
+
+  void NavigateWithSubResourceAndThreatType(
+      const safe_browsing::SBThreatType& threat_type,
+      bool expect_interstitial) {
+    GURL page_with_script_url =
+        embedded_test_server()->GetURL("/simple_page_with_script.html");
+    GURL script_url = embedded_test_server()->GetURL("/script.js");
+    fake_handler_->AddRestriction(script_url, threat_type);
+    Navigate(page_with_script_url, expect_interstitial);
   }
 
  protected:
@@ -159,12 +183,53 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBrowserTest, ShowsInterstitial_Billing) {
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBrowserTest,
                        ShowsInterstitial_Malware_Subresource) {
-  GURL page_with_script_url =
-      embedded_test_server()->GetURL("/simple_page_with_script.html");
-  GURL script_url = embedded_test_server()->GetURL("/script.js");
-  fake_handler_->AddRestriction(script_url,
-                                safe_browsing::SB_THREAT_TYPE_URL_MALWARE);
-  Navigate(page_with_script_url, true);
+  NavigateWithSubResourceAndThreatType(
+      safe_browsing::SB_THREAT_TYPE_URL_MALWARE, true);
+}
+
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBrowserTest,
+                       DoesNotShowInterstitial_NoRestriction_disableSB) {
+  SetSafeBrowsingEnabled(false);
+  EXPECT_FALSE(GetSafeBrowsingEnabled());
+  Navigate(url_, false);
+}
+
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBrowserTest,
+                       DoesNotShowInterstitial_Safe_disableSB) {
+  SetSafeBrowsingEnabled(false);
+  EXPECT_FALSE(GetSafeBrowsingEnabled());
+  NavigateWithThreatType(safe_browsing::SB_THREAT_TYPE_SAFE, false);
+}
+
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBrowserTest,
+                       DoesNotShowInterstitial_Malware_disableSB) {
+  SetSafeBrowsingEnabled(false);
+  NavigateWithThreatType(safe_browsing::SB_THREAT_TYPE_URL_MALWARE, false);
+}
+
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBrowserTest,
+                       DoesNotShowInterstitial_Phishing_disableSB) {
+  SetSafeBrowsingEnabled(false);
+  NavigateWithThreatType(safe_browsing::SB_THREAT_TYPE_URL_PHISHING, false);
+}
+
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBrowserTest,
+                       DoesNotShowInterstitial_Unwanted_disableSB) {
+  SetSafeBrowsingEnabled(false);
+  NavigateWithThreatType(safe_browsing::SB_THREAT_TYPE_URL_UNWANTED, false);
+}
+
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBrowserTest,
+                       DoesNotShowInterstitial_Billing_disableSB) {
+  SetSafeBrowsingEnabled(false);
+  NavigateWithThreatType(safe_browsing::SB_THREAT_TYPE_BILLING, false);
+}
+
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBrowserTest,
+                       DoesNotShowInterstitial_Malware_Subresource_disableSB) {
+  SetSafeBrowsingEnabled(false);
+  NavigateWithSubResourceAndThreatType(
+      safe_browsing::SB_THREAT_TYPE_URL_MALWARE, false);
 }
 
 }  // namespace weblayer

@@ -15,7 +15,9 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/user_board_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/wrong_hwid_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/account_id/account_id.h"
 #include "components/strings/grit/components_strings.h"
@@ -224,8 +226,7 @@ void LoginDisplayWebUI::ShowKioskAutolaunchScreen() {
 }
 
 void LoginDisplayWebUI::ShowWrongHWIDScreen() {
-  if (delegate_)
-    delegate_->ShowWrongHWIDScreen();
+  LoginDisplayHost::default_host()->StartWizard(WrongHWIDScreenView::kScreenId);
 }
 
 void LoginDisplayWebUI::SetWebUIHandler(
@@ -253,10 +254,6 @@ bool LoginDisplayWebUI::IsSigninInProgress() const {
 
 bool LoginDisplayWebUI::IsUserSigninCompleted() const {
   return is_signin_completed();
-}
-
-void LoginDisplayWebUI::Signout() {
-  delegate_->Signout();
 }
 
 void LoginDisplayWebUI::OnUserActivity(const ui::Event* event) {

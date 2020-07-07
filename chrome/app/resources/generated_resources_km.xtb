@@ -281,7 +281,6 @@
 <translation id="1340527397989195812">បម្រុងឯកសារកំសាន្តចេញពីឧបករណ៍របស់អ្នកដោយប្រើកម្មវិធីឯកសារ។</translation>
 <translation id="1341988552785875222">ផ្ទាំងរូបភាពបច្ចុប្បន្នត្រូវបានកំណត់ដោយ '<ph name="APP_NAME" />'។ អ្នកអាចនឹងត្រូវលុបការដំឡើង '<ph name="APP_NAME" />' មុនពេលជ្រើសរើសផ្ទាំងរូបភាពផ្សេងពីនេះ។</translation>
 <translation id="1343865611738742294">ផ្ដល់ការអនុញ្ញាតឱ្យ​កម្មវិធី Linux ចូលប្រើ​ឧបករណ៍ USB ។ កម្មវិធី Linux នឹងមិនចងចាំ​ឧបករណ៍ USB ទេ បន្ទាប់ពីដកឧបករណ៍ USB ចេញ។</translation>
-<translation id="1344143111673240412">ការផ្លាស់ប្ដូរ​នៅក្នុង​ការកំណត់​កាមេរ៉ា​តម្រូវឱ្យចាប់ផ្ដើម Parallels Desktop ឡើងវិញ</translation>
 <translation id="1347256498747320987">ដំឡើង​កំណែថ្មី និង​កម្មវិធី។ ប្រសិន​បើបន្ត នោះ​មានន័យថា​អ្នកយល់​ព្រមថា​ឧបករណ៍នេះ​ក៏អាច​ទាញយក និងដំឡើង​កំណែថ្មី ព្រមទាំង​កម្មវិធី​ដោយ​ស្វ័យប្រវត្តិ​ពី Google, ក្រុមហ៊ុន​សេវា​ទូរសព្ទ​របស់អ្នក និង​ក្រុមហ៊ុន​ផលិត​ឧបករណ៍​របស់អ្នក ហើយ​ប្រហែល​ជាប្រើ​ទិន្នន័យ​ទូរសព្ទ​ចល័ត​ផងដែរ។ កម្មវិធី​ទាំងនេះ​មួយចំនួន​អាច​ផ្តល់ជូន​ការទិញ​ក្នុងកម្មវិធី។ <ph name="BEGIN_LINK1" />ស្វែងយល់​បន្ថែម<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">ការដំឡើងកំណែនឹងចាប់ផ្តើម នៅពេលដែលថ្មឈានដល់ <ph name="BATTERY_LEVEL" />% ។</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />៖ <ph name="NETWORK_NAME" /></translation>
@@ -1197,7 +1196,6 @@
 <translation id="2470702053775288986">កម្មវិធីបន្ថែមដែលមិនគាំទ្រត្រូវបានបិទដំណើរការ</translation>
 <translation id="2471469610750100598">ខ្មៅ (លំនាំដើម)</translation>
 <translation id="2473195200299095979">បកប្រែទំព័រនេះ</translation>
-<translation id="2474848500897222119"><ph name="PRINTER_NAME" /> អស់ទឹកថ្នាំហើយ</translation>
 <translation id="2475982808118771221">កំហុសឆ្គងមួយបានកើតឡើង</translation>
 <translation id="2476578072172137802">ការកំណត់គេហទំព័រ</translation>
 <translation id="2478176599153288112">ការអនុញ្ញាតឯកសារកំសាន្តសម្រាប់ "<ph name="EXTENSION" />"</translation>
@@ -1503,7 +1501,6 @@
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> កំពុងប្រើ​ការកំណត់ប្រូកស៊ី​ពី​កម្មវិធី​គ្រប់គ្រង​របស់អ្នក</translation>
 <translation id="2825758591930162672">សោសាធារណៈរបស់ភាគីវិញ្ញាបនប័ត្រ</translation>
 <translation id="2828650939514476812">ភ្ជាប់បណ្តាញ Wi-Fi</translation>
-<translation id="28291580771888953">ជួររបស់ <ph name="PRINTER_NAME" /> ពេញហើយ</translation>
 <translation id="2835547721736623118">សេវាកម្ម​សម្គាល់ការនិយាយ</translation>
 <translation id="2836269494620652131">គាំង</translation>
 <translation id="2836635946302913370">ការចូលដោយជាមួយឈ្មោះអ្នកប្រើនេះត្រូវបាន</translation>
@@ -2319,7 +2316,7 @@
 <translation id="3839516600093027468">ទប់ស្កាត់មិន​ឱ្យ <ph name="HOST" /> មើល​​អង្គចងចាំ​ជានិច្ច</translation>
 <translation id="3841964634449506551">ពាក្យសម្ងាត់​មិនត្រឹមត្រូវ</translation>
 <translation id="3842552989725514455">ពុម្ពអក្សរ Serif</translation>
-<translation id="3843058644024807390">ការផ្លាស់ប្ដូរ​នៅក្នុង​ការកំណត់​មីក្រូហ្វូន​តម្រូវឱ្យចាប់ផ្ដើម Parallels Desktop ឡើងវិញ</translation>
+<translation id="3843464315703645664">ស្ថិត​ក្នុង​បញ្ជីអនុញ្ញាត​ផ្ទៃក្នុង</translation>
 <translation id="3846116211488856547">ទាញយក​ឧបករណ៍​សម្រាប់​ការអភិវឌ្ឍ​គេហទំព័រ កម្មវិធី Android និងអ្វី​ៗ​ជា​ច្រើនទៀត។ ការដំឡើង Linux នឹង​ទាញយក​ទិន្នន័យ <ph name="DOWNLOAD_SIZE" /> ។</translation>
 <translation id="3847319713229060696">ជួយ​ពង្រឹង​សុវត្ថិភាព​នៅលើ​អ៊ីនធឺណិត​សម្រាប់​អ្នករាល់គ្នា</translation>
 <translation id="385051799172605136">ថយក្រោយ</translation>
@@ -2778,7 +2775,6 @@
 <translation id="4453946976636652378">ស្វែងរក​តាមរយៈ <ph name="SEARCH_ENGINE_NAME" /> ឬវាយបញ្ចូល​ URL ណាមួយ</translation>
 <translation id="4459169140545916303">ដំណើរការ <ph name="DEVICE_LAST_ACTIVATED_TIME" /> ថ្ងៃ​មុន</translation>
 <translation id="4460014764210899310">បំបែក​ក្រុម</translation>
-<translation id="4460343359907016103">មានបញ្ហាក្នុងការភ្ជាប់ជាមួយ <ph name="PRINTER_NAME" /></translation>
 <translation id="4462159676511157176">ម៉ាស៊ីនមេឈ្មោះផ្ទាល់ខ្លូន</translation>
 <translation id="4465236939126352372">បានកំណត់រយៈពេលកំណត់ <ph name="TIME" /> សម្រាប់ <ph name="APP_NAME" /></translation>
 <translation id="4465725236958772856">បណ្ដាញ <ph name="NETWORK_INDEX" /> នៃ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, គ្រប់គ្រងដោយ​អ្នកគ្រប់គ្រង​របស់អ្នក, ភ្ជាប់</translation>
@@ -3076,7 +3072,6 @@
 <translation id="4864369630010738180">កំពុង​ចូល...</translation>
 <translation id="4864805589453749318">ជ្រើសរើស​មាតាបិតា​ដែលកំពុងផ្ដល់​ការអនុញ្ញាតឱ្យ​បញ្ចូល​គណនី​សាលារៀន។</translation>
 <translation id="486635084936119914">បើក​ប្រភេទឯកសារជាក់លាក់ដោយស្វ័យប្រវត្តិ បន្ទាប់ពីទាញយករួចហើយ</translation>
-<translation id="4869213010169296107"><ph name="PRINTER_NAME" /> បានបាត់ថាសដាក់ក្រដាស</translation>
 <translation id="48704129375571883">បន្ថែមលក្ខណៈពិសេសបន្ថែម</translation>
 <translation id="4870758487381879312">បញ្ចូល​ពាក្យសម្ងាត់ដែលផ្ដល់ដោយ​អ្នក​គ្រប់គ្រង ដើម្បី​ទទួលបានព័ត៌មាន​អំពីការ​កំណត់រចនាសម្ព័ន្ធ</translation>
 <translation id="4870903493621965035">គ្មាន​ឧបករណ៍​ដែល​បាន​ផ្គូផ្គង​ទេ</translation>
@@ -3327,6 +3322,7 @@
 <translation id="5184662919967270437">កំពុងអាប់ដេតឧបករណ៍របស់អ្នក</translation>
 <translation id="5185359571430619712">មើល​កម្មវិធីបន្ថែម​</translation>
 <translation id="5185386675596372454">កំណែថ្មីបំផុតនៃ "<ph name="EXTENSION_NAME" />" ត្រូវបានបិទដំណើរការ ដោយសារតែវាទាមទារ ការអនុញ្ញាតបន្ថែមទៀត។</translation>
+<translation id="5185500136143151980">គ្មាន​អ៊ីនធឺណិតទេ</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5190926251776387065">បើកដំណើរការ​ច្រក</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> ចង់ទាញយកឯកសារច្រើន</translation>
@@ -3483,7 +3479,6 @@
 <translation id="5390112241331447203">រួមបញ្ចូល​ឯកសារ system_logs.txt ដែលបានផ្ញើ​នៅក្នុង​របាយការណ៍អំពីមតិកែលម្អ។</translation>
 <translation id="5390677308841849479">ក្រហមចាស់ និងទឹកក្រូច</translation>
 <translation id="5390743329570580756">ផ្ញើសម្រាប់</translation>
-<translation id="5395869306561378615"><ph name="PRINTER_NAME" /> ត្រូវបានផ្អាក</translation>
 <translation id="5397794290049113714">អ្នក</translation>
 <translation id="5398572795982417028">លើសដែនកំណត់ទំព័រ ដែនកំណត់គឺ <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">បាន​ទប់ស្កាត់​ការផ្សាយពាណិជ្ជកម្ម</translation>
@@ -3498,7 +3493,6 @@
 <translation id="5417312524372586921">រចនាប័ទ្មកម្មវិធីរុករកតាមអ៊ីនធឺណិត</translation>
 <translation id="5419405654816502573">Voice Match</translation>
 <translation id="5420438158931847627">កំណត់​ភាពច្បាស់មុត​នៃអត្ថបទ និង​រូបភាព</translation>
-<translation id="5421498071721257877"><ph name="PRINTER_NAME" /> មានបញ្ហាឧបករណ៍</translation>
 <translation id="5422221874247253874">ចំណុចចូលប្រើ</translation>
 <translation id="5422781158178868512">សូមទោស ឧបករណ៍ផ្ទុកទិន្នន័យខាងក្រៅរបស់អ្នកមិនត្រូវបានសម្គាល់ទេ។</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3848,7 +3842,6 @@
 <translation id="5852137567692933493">ចាប់ផ្តើមឡើងវិញ និង Powerwash</translation>
 <translation id="5854912040170951372">ចំណិត</translation>
 <translation id="5855267860608268405">បណ្ដាញ Wi-Fi ដែលស្គាល់</translation>
-<translation id="5855310969323666289">ទ្វាររបស់ <ph name="PRINTER_NAME" /> ចំហ</translation>
 <translation id="5855643921295613558">0.6 វិនាទី</translation>
 <translation id="5856721540245522153">បើកដំណើរការលក្ខណៈពិសេសកម្ចាត់កំហុស</translation>
 <translation id="5857090052475505287">ថតឯកសារថ្មី</translation>
@@ -3879,7 +3872,6 @@
 <translation id="5877064549588274448">បានប្តូរបណ្តាញ។ ចាប់ផ្តើមឧបករណ៍របស់អ្នកឡើងវិញដើម្បីអនុវត្តការប្តូរ។</translation>
 <translation id="5877584842898320529">មិនមានម៉ាស៊ីនបោះពុម្ពដែលបានជ្រើសរើស ឬវាមិនត្រូវបានដំឡើងដោយត្រឹមត្រូវទេ។ <ph name="BR" />សូមពិនិត្យមើលម៉ាស៊ីនបោះពុម្ពរបស់អ្នក ឬសាកល្បងជ្រើសរើសម៉ាស៊ីនបោះពុម្ពផ្សេងទៀត។</translation>
 <translation id="5882919346125742463">បណ្តាញដែលស្គាល់</translation>
-<translation id="5883716097305842571">កន្លែងបញ្ចេញក្រដាសរបស់ <ph name="PRINTER_NAME" /> ជិតពេញហើយ</translation>
 <translation id="5884474295213649357">ផ្ទាំងនេះត្រូវបានភ្ជាប់ទៅឧបករណ៍ USB</translation>
 <translation id="5886009770935151472">ម្រាមដៃទី 1</translation>
 <translation id="5889282057229379085">ចំនួនអតិបរមានៃ CAs អន្តរការី៖ <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4445,7 +4437,6 @@
 <translation id="6611972847767394631">ស្វែងរកផ្ទាំងរបស់អ្នកនៅទីនេះ</translation>
 <translation id="6612358246767739896">មាតិកាដែលបានការពារ</translation>
 <translation id="6615455863669487791">បង្ហាញខ្ញុំ</translation>
-<translation id="6617034477946102682"><ph name="PRINTER_NAME" /> មិនអាចភ្ជាប់បានទេ</translation>
 <translation id="6618097958368085618">មិនអី​ទេ​រក្សាទុក​ចុះ</translation>
 <translation id="6618744767048954150">កំពុងដំណើរការ</translation>
 <translation id="6619058681307408113">ប្រូតូកូលបោះពុម្ពក្នុងបណ្តាញ (LPD)</translation>
@@ -4862,7 +4853,6 @@
 <translation id="7128151990937044829">បង្ហាញសូចនាករ​នៅក្នុងរបារ​អាសយដ្ឋាន នៅពេល​ទប់ស្កាត់​ការជូនដំណឹង</translation>
 <translation id="7131040479572660648">អានទិន្នន័យរបស់អ្នកនៅលើ <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, និង <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">បន្ថែមទំព័រ...</translation>
-<translation id="7131379856697962078">កន្លែងបញ្ចេញក្រដាសរបស់ <ph name="PRINTER_NAME" /> ពេញហើយ</translation>
 <translation id="7133578150266914903">អ្នកគ្រប់គ្រង​របស់អ្នកកំពុងស្ដារ​ឧបករណ៍​របស់អ្នក (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">ធ្វើឲ្យអត្ថបទតូចជាងមុន</translation>
 <translation id="7135729336746831607">បើកប៊្លូធូស?</translation>
@@ -4881,7 +4871,6 @@
 <translation id="7152478047064750137">កម្មវិធី​បន្ថែម​នេះ​មិន​តម្រូវ​ឱ្យ​មាន​ការអនុញ្ញាត​ពិសេសទេ</translation>
 <translation id="7154130902455071009">ប្តូរទំព័រចាប់ផ្តើមរបស់អ្នកទៅ៖ <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">រូបភាពពីកាមេរ៉ា និងឯកសារដែលមានស្រាប់</translation>
-<translation id="715657691234357425"><ph name="PRINTER_NAME" /> ជិតអស់ក្រដាសហើយ</translation>
 <translation id="7165320105431587207">បានបរាជ័យក្នុងការកំណត់បណ្តាាញ</translation>
 <translation id="716640248772308851">"<ph name="EXTENSION" />" មិនអាចអានឯកសាររូបភាព វីដេអូ និងសម្លេងនៅក្នុងទីតាំងដែលបានពិនិត្យទេ។</translation>
 <translation id="7167486101654761064">បើកឯកសារប្រភេទនេះជានិច្ច</translation>
@@ -4912,7 +4901,6 @@
 <translation id="7197632491113152433">យើង​បានរកឃើញ​កម្មវិធី <ph name="NUMBER_OF_APPS" /> ពីគណនីរបស់អ្នក​ដែល​អាចប្រើបាននៅលើ​ឧបករណ៍នេះ។</translation>
 <translation id="7199158086730159431">ទទួលជំនួយ</translation>
 <translation id="7200083590239651963">ជ្រើសរើស​ការកំណត់​រចនា​សម្ព័ន្ធ</translation>
-<translation id="7201042526153088083">ដំឡើង​កម្មវិធី និង​ហ្គេមពី Google Play នៅលើ <ph name="DEVICE_TYPE" /> របស់អ្នក។ &lt;a target="_blank" href="<ph name="URL" />"&gt;ស្វែងយល់បន្ថែម&lt;/a&gt;</translation>
 <translation id="720110658997053098">កំណត់ឧបករណ៍នេះឱ្យដំណើរការមុខងារបញ្ជរជាអចិន្ត្រៃយ៍</translation>
 <translation id="7201118060536064622">បានលុប '<ph name="DELETED_ITEM_NAME" />'</translation>
 <translation id="7201420661433230412">មើល​ឯកសារ</translation>
@@ -5218,7 +5206,6 @@
 <translation id="7598466960084663009">ចាប់ផ្តើមកុំព្យូទ័រឡើងវិញ</translation>
 <translation id="7599527631045201165">ឈ្មោះ​ឧបករណ៍​វែង​ពេកហើយ។ សូម​បញ្ចូល​ឈ្មោះខ្លីជាងនេះ ដើម្បីព្យាយាមម្ដងទៀត។</translation>
 <translation id="7600965453749440009">មិនបកប្រែភាសា <ph name="LANGUAGE" /> ទៀតឡើយ</translation>
-<translation id="7601297144931396972">ក្រដាសរបស់ <ph name="PRINTER_NAME" /> ជាប់គាំង</translation>
 <translation id="760197030861754408">ចូលទៅកាន់ <ph name="LANDING_PAGE" /> ដើម្បីភ្ជាប់</translation>
 <translation id="7602079150116086782">គ្មានផ្ទាំងពីឧបករណ៍ដ៏ទៃទេ</translation>
 <translation id="7602173054665172958">ការគ្រប់គ្រង​ការបោះពុម្ព</translation>
@@ -5229,6 +5216,7 @@
 <translation id="7609148976235050828">សូមភ្ជាប់​អ៊ីនធឺណិត រួច​ព្យាយាម​ម្តងទៀត។</translation>
 <translation id="7614260613810441905">សួរ​នៅពេល​គេហទំព័រចង់កែឯកសារ ឬថត​នៅលើឧបករណ៍​របស់អ្នក (បានណែនាំ)</translation>
 <translation id="761530003705945209">បម្រុង​ទុក​ទៅ​ក្នុង Google ថាស។ ងាយស្រួល​ក្នុងការ​ស្ដារ​ទិន្នន័យ​របស់​អ្នក ឬ​ប្ដូរ​ឧបករណ៍បានគ្រប់ពេល។ ការបម្រុង​ទុក​របស់អ្នក​រួមបញ្ចូល​ទាំង​ទិន្នន័យ​កម្មវិធី។ ការបម្រុងទុក​របស់អ្នក​ត្រូវបាន​បង្ហោះ​ទៅ Google និង​អ៊ីនគ្រីប​ដោយប្រើ​ពាក្យសម្ងាត់​គណនី Google របស់អ្នក។</translation>
+<translation id="7615365294369022248">មានបញ្ហា​ក្នុងការ​បញ្ចូលគណនី</translation>
 <translation id="7616214729753637086">កំពុង​ចុះឈ្មោះ​ឧបករណ៍...</translation>
 <translation id="7617263010641145920">បើក Play Store</translation>
 <translation id="7617366389578322136">កំពុង​ភ្ជាប់ទៅ "<ph name="DEVICE_NAME" />"</translation>
@@ -5676,7 +5664,6 @@
           <ph name="TIME" />។ ការ​អ៊ីនគ្រីបនេះមិន​រួមបញ្ចូល​អាសយដ្ឋាន និងវិធីបង់ប្រាក់​ពី Google Pay ទេ។</translation>
 <translation id="81238879832906896">ផ្កាពណ៌លឿង និងពណ៌ស</translation>
 <translation id="8124313775439841391">ONC គ្រប់គ្រង</translation>
-<translation id="8127535217699822294"><ph name="PRINTER_NAME" /> អស់ក្រដាសហើយ</translation>
 <translation id="813082847718468539">មើលព័ត៌មានគេហទំព័រ</translation>
 <translation id="8131740175452115882">អះអាង</translation>
 <translation id="8133676275609324831">បង្ហាញនៅក្នុងថតឯកសារ</translation>
@@ -5775,7 +5762,6 @@
 <translation id="8254954272268479918">បិទ Linux (បេតា)</translation>
 <translation id="8255451560461371599">គ្មាន​ផ្ទៃខាងក្រោយ</translation>
 <translation id="8256319818471787266">ស្ពាកគី</translation>
-<translation id="8256417822772703842"><ph name="PRINTER_NAME" /> ជិតអស់ទឹកថ្នាំហើយ</translation>
 <translation id="8257950718085972371">បន្តរារាំងការចូលប្រើកាមេរ៉ា</translation>
 <translation id="8259239505248583312">ចាប់ផ្ដើម</translation>
 <translation id="8260864402787962391">កណ្តុរ</translation>
@@ -5956,7 +5942,6 @@
 <translation id="8487678622945914333">ពង្រីក</translation>
 <translation id="8490896350101740396">កម្មវិធីបញ្ជរខាងក្រោម "<ph name="UPDATED_APPS" />" ត្រូវបានធ្វើបច្ចុប្បន្នភាព។ សូមចាប់ផ្តើមឧបករណ៍ឡើងវិញដើម្បីបញ្ចប់ដំណើរការធ្វើបច្ចុប្បន្នភាព។</translation>
 <translation id="8493236660459102203">ម៉ៃក្រូហ្វូន៖</translation>
-<translation id="8495940850609851342"><ph name="PRINTER_NAME" /> បានឈប់</translation>
 <translation id="8496717697661868878">ដំណើរការកម្មវិធីជំនួយនេះ</translation>
 <translation id="8497219075884839166">ការប្រើប្រាស់​វិនដូ</translation>
 <translation id="8498214519255567734">វាធ្វើ​ឲ្យមាន​ភាពងាយស្រួល​ជាងមុន​ក្នុងការ​មើលអេក្រង់​របស់អ្នក ឬ​អាននៅ​កន្លែងដែល​មាន​ពន្លឺតិច</translation>
@@ -6498,6 +6483,12 @@
 <translation id="9157096865782046368">0.8 វិនាទី</translation>
 <translation id="9157697743260533322">បានបរាជ័យក្នុងការកំណត់ការអាប់ដេតដោយស្វ័យប្រវត្តិសម្រាប់អ្នកប្រើទាំងអស់ (មានកំហុសក្នុងការចាប់ផ្តើម preflight៖ <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">អូយ! បញ្ហាទំនាក់ទំនងបណ្តាញបានកើតឡើងកំឡុងពេលសម្គាល់អត្តសញ្ញាណ។ សូមពិនិត្យការភ្ជាប់បណ្តាញរបស់អ្នក ហើយព្យាយាមម្តងទៀត។</translation>
+<translation id="9159643062839240276">សាកល្បង៖
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />ពិនិត្យមើល​ខ្សែបណ្ដាញ ម៉ូដឹម និងរូតទ័រ
+      <ph name="LIST_ITEM" />ភ្ជាប់ទៅ Wi-Fi ឡើងវិញ
+      <ph name="LIST_ITEM" />ដំណើរការ​ការធ្វើតេស្ត​ការតភ្ជាប់ Chrome
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">រូបក្នុងរូប</translation>
 <translation id="9168436347345867845">ធ្វើនៅ​ពេលក្រោយ</translation>
 <translation id="9169496697824289689">មើលផ្លូវកាត់ក្តារចុច</translation>

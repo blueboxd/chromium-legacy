@@ -129,13 +129,14 @@ BrowsingDataRemoverImpl::~BrowsingDataRemoverImpl() {
                              task_queue_.size(), 10);
 
   // If we are still removing data, notify observers that their task has been
-  // (albeit unsucessfuly) processed, so they can unregister themselves.
-  // TODO(bauerb): If it becomes a problem that browsing data might not actually
-  // be fully cleared when an observer is notified, add a success flag.
+  // (albeit unsuccessfully) processed, so they can unregister themselves.
   while (!task_queue_.empty()) {
-    for (Observer* observer : task_queue_.front().observers) {
-      if (observer_list_.HasObserver(observer))
-        observer->OnBrowsingDataRemoverDone();
+    const RemovalTask& task = task_queue_.front();
+    for (Observer* observer : task.observers) {
+      if (observer_list_.HasObserver(observer)) {
+        observer->OnBrowsingDataRemoverDone(
+            /*failed_data_types=*/task.remove_mask);
+      }
     }
     task_queue_.pop_front();
   }
@@ -285,6 +286,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(
   delete_end_ = delete_end;
   remove_mask_ = remove_mask;
   origin_type_mask_ = origin_type_mask;
+  failed_data_types_ = 0;
 
   // Record the combined deletion of cookies and cache.
   CookieOrCacheDeletionChoice choice = NEITHER_COOKIES_NOR_CACHE;
@@ -545,7 +547,9 @@ void BrowsingDataRemoverImpl::RemoveImpl(
     embedder_delegate_->RemoveEmbedderData(
         delete_begin_, delete_end_, remove_mask, filter_builder,
         origin_type_mask,
-        CreateTaskCompletionClosure(TracingDataType::kEmbedderData));
+        base::BindOnce(
+            &BrowsingDataRemoverImpl::OnDelegateDone, GetWeakPtr(),
+            CreateTaskCompletionClosure(TracingDataType::kEmbedderData)));
   }
 }
 
@@ -615,6 +619,13 @@ StoragePartition* BrowsingDataRemoverImpl::GetStoragePartition() {
              : BrowserContext::GetDefaultStoragePartition(browser_context_);
 }
 
+void BrowsingDataRemoverImpl::OnDelegateDone(
+    base::OnceClosure completion_closure,
+    uint64_t failed_data_types) {
+  failed_data_types_ |= failed_data_types;
+  std::move(completion_closure).Run();
+}
+
 void BrowsingDataRemoverImpl::Notify() {
   // Some tests call |RemoveImpl| directly, without using the task scheduler.
   // TODO(msramek): Improve those tests so we don't have to do this. Tests
@@ -633,7 +644,7 @@ void BrowsingDataRemoverImpl::Notify() {
   const RemovalTask& task = task_queue_.front();
   for (Observer* observer : task.observers) {
     if (observer_list_.HasObserver(observer)) {
-      observer->OnBrowsingDataRemoverDone();
+      observer->OnBrowsingDataRemoverDone(failed_data_types_);
     }
   }
 

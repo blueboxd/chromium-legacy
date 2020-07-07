@@ -177,16 +177,7 @@ class UsageTrackerTest : public testing::Test {
     EXPECT_TRUE(done);
   }
 
-  void GetHostUsage(const std::string& host, int64_t* usage) {
-    bool done = false;
-    usage_tracker_.GetHostUsage(host,
-                                base::BindOnce(&DidGetUsage, &done, usage));
-    base::RunLoop().RunUntilIdle();
-
-    EXPECT_TRUE(done);
-  }
-
-  std::pair<int64_t, blink::mojom::UsageBreakdownPtr> GetHostUsageBreakdown(
+  std::pair<int64_t, blink::mojom::UsageBreakdownPtr> GetHostUsageWithBreakdown(
       const std::string& host) {
     int64_t usage;
     blink::mojom::UsageBreakdownPtr usage_breakdown;
@@ -241,7 +232,6 @@ class UsageTrackerTest : public testing::Test {
 TEST_F(UsageTrackerTest, GrantAndRevokeUnlimitedStorage) {
   int64_t usage = 0;
   int64_t unlimited_usage = 0;
-  int64_t host_usage = 0;
   blink::mojom::UsageBreakdownPtr host_usage_breakdown_expected =
       blink::mojom::UsageBreakdown::New();
   GetGlobalUsage(&usage, &unlimited_usage);
@@ -254,38 +244,34 @@ TEST_F(UsageTrackerTest, GrantAndRevokeUnlimitedStorage) {
 
   UpdateUsage(origin, 100);
   GetGlobalUsage(&usage, &unlimited_usage);
-  GetHostUsage(host, &host_usage);
   EXPECT_EQ(100, usage);
   EXPECT_EQ(0, unlimited_usage);
-  EXPECT_EQ(100, host_usage);
   host_usage_breakdown_expected->fileSystem = 100;
   std::pair<int64_t, blink::mojom::UsageBreakdownPtr> host_usage_breakdown =
-      GetHostUsageBreakdown(host);
+      GetHostUsageWithBreakdown(host);
+  EXPECT_EQ(100, host_usage_breakdown.first);
   EXPECT_EQ(host_usage_breakdown_expected, host_usage_breakdown.second);
 
   GrantUnlimitedStoragePolicy(origin);
   GetGlobalUsage(&usage, &unlimited_usage);
-  GetHostUsage(host, &host_usage);
   EXPECT_EQ(100, usage);
   EXPECT_EQ(100, unlimited_usage);
-  EXPECT_EQ(100, host_usage);
-  host_usage_breakdown = GetHostUsageBreakdown(host);
+  host_usage_breakdown = GetHostUsageWithBreakdown(host);
+  EXPECT_EQ(100, host_usage_breakdown.first);
   EXPECT_EQ(host_usage_breakdown_expected, host_usage_breakdown.second);
 
   RevokeUnlimitedStoragePolicy(origin);
   GetGlobalUsage(&usage, &unlimited_usage);
-  GetHostUsage(host, &host_usage);
   EXPECT_EQ(100, usage);
   EXPECT_EQ(0, unlimited_usage);
-  EXPECT_EQ(100, host_usage);
-  GetHostUsageBreakdown(host);
+  GetHostUsageWithBreakdown(host);
+  EXPECT_EQ(100, host_usage_breakdown.first);
   EXPECT_EQ(host_usage_breakdown_expected, host_usage_breakdown.second);
 }
 
 TEST_F(UsageTrackerTest, CacheDisabledClientTest) {
   int64_t usage = 0;
   int64_t unlimited_usage = 0;
-  int64_t host_usage = 0;
   blink::mojom::UsageBreakdownPtr host_usage_breakdown_expected =
       blink::mojom::UsageBreakdown::New();
 
@@ -294,22 +280,20 @@ TEST_F(UsageTrackerTest, CacheDisabledClientTest) {
 
   UpdateUsage(origin, 100);
   GetGlobalUsage(&usage, &unlimited_usage);
-  GetHostUsage(host, &host_usage);
   EXPECT_EQ(100, usage);
   EXPECT_EQ(0, unlimited_usage);
-  EXPECT_EQ(100, host_usage);
   host_usage_breakdown_expected->fileSystem = 100;
   std::pair<int64_t, blink::mojom::UsageBreakdownPtr> host_usage_breakdown =
-      GetHostUsageBreakdown(host);
+      GetHostUsageWithBreakdown(host);
+  EXPECT_EQ(100, host_usage_breakdown.first);
   EXPECT_EQ(host_usage_breakdown_expected, host_usage_breakdown.second);
 
   UpdateUsageWithoutNotification(origin, 100);
   GetGlobalUsage(&usage, &unlimited_usage);
-  GetHostUsage(host, &host_usage);
   EXPECT_EQ(100, usage);
   EXPECT_EQ(0, unlimited_usage);
-  EXPECT_EQ(100, host_usage);
-  host_usage_breakdown = GetHostUsageBreakdown(host);
+  host_usage_breakdown = GetHostUsageWithBreakdown(host);
+  EXPECT_EQ(100, host_usage_breakdown.first);
   EXPECT_EQ(host_usage_breakdown_expected, host_usage_breakdown.second);
 
   GrantUnlimitedStoragePolicy(origin);
@@ -318,33 +302,30 @@ TEST_F(UsageTrackerTest, CacheDisabledClientTest) {
   UpdateUsageWithoutNotification(origin, 100);
 
   GetGlobalUsage(&usage, &unlimited_usage);
-  GetHostUsage(host, &host_usage);
   EXPECT_EQ(400, usage);
   EXPECT_EQ(400, unlimited_usage);
-  EXPECT_EQ(400, host_usage);
-  host_usage_breakdown = GetHostUsageBreakdown(host);
+  host_usage_breakdown = GetHostUsageWithBreakdown(host);
   host_usage_breakdown_expected->fileSystem = 400;
+  EXPECT_EQ(400, host_usage_breakdown.first);
   EXPECT_EQ(host_usage_breakdown_expected, host_usage_breakdown.second);
 
   RevokeUnlimitedStoragePolicy(origin);
   GetGlobalUsage(&usage, &unlimited_usage);
-  GetHostUsage(host, &host_usage);
   EXPECT_EQ(400, usage);
   EXPECT_EQ(0, unlimited_usage);
-  EXPECT_EQ(400, host_usage);
-  host_usage_breakdown = GetHostUsageBreakdown(host);
+  host_usage_breakdown = GetHostUsageWithBreakdown(host);
+  EXPECT_EQ(400, host_usage_breakdown.first);
   EXPECT_EQ(host_usage_breakdown_expected, host_usage_breakdown.second);
 
   SetUsageCacheEnabled(origin, true);
   UpdateUsage(origin, 100);
 
   GetGlobalUsage(&usage, &unlimited_usage);
-  GetHostUsage(host, &host_usage);
   EXPECT_EQ(500, usage);
   EXPECT_EQ(0, unlimited_usage);
-  EXPECT_EQ(500, host_usage);
-  host_usage_breakdown = GetHostUsageBreakdown(host);
+  host_usage_breakdown = GetHostUsageWithBreakdown(host);
   host_usage_breakdown_expected->fileSystem = 500;
+  EXPECT_EQ(500, host_usage_breakdown.first);
   EXPECT_EQ(host_usage_breakdown_expected, host_usage_breakdown.second);
 }
 

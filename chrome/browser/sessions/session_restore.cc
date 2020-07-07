@@ -20,6 +20,7 @@
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
@@ -143,10 +144,8 @@ class SessionRestoreImpl : public BrowserListObserver {
     SessionService* session_service =
         SessionServiceFactory::GetForProfile(profile_);
     DCHECK(session_service);
-    session_service->GetLastSession(
-        base::BindOnce(&SessionRestoreImpl::OnGotSession,
-                       base::Unretained(this)),
-        &cancelable_task_tracker_);
+    session_service->GetLastSession(base::BindOnce(
+        &SessionRestoreImpl::OnGotSession, weak_factory_.GetWeakPtr()));
 
     if (synchronous_) {
       {
@@ -731,9 +730,6 @@ class SessionRestoreImpl : public BrowserListObserver {
   // Set of URLs to open in addition to those restored from the session.
   std::vector<GURL> urls_to_open_;
 
-  // Used to get the session.
-  base::CancelableTaskTracker cancelable_task_tracker_;
-
   // Responsible for loading the tabs.
   scoped_refptr<TabLoader> tab_loader_;
 
@@ -754,6 +750,8 @@ class SessionRestoreImpl : public BrowserListObserver {
 
   // List of callbacks for session restore notification.
   SessionRestore::CallbackList* on_session_restored_callbacks_;
+
+  base::WeakPtrFactory<SessionRestoreImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SessionRestoreImpl);
 };

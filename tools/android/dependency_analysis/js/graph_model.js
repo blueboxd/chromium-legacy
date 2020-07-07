@@ -21,7 +21,10 @@ class NodeVisualizationState {
   }
 }
 
-/** A node in a directed graph. */
+/** A node in a directed graph.
+ *
+ * TODO(yjlong): Maybe rename to GraphNode to avoid confusion with window.Node?
+ */
 class Node {
   /**
    * @param {string} id The unique ID for the node.

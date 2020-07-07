@@ -41,8 +41,7 @@ TEST_F(StructTraitsTest, RendererSettings) {
             output.should_clear_root_render_pass);
   EXPECT_EQ(input.release_overlay_resources_after_gpu_query,
             output.release_overlay_resources_after_gpu_query);
-  EXPECT_EQ(input.tint_gl_composited_content,
-            output.tint_gl_composited_content);
+  EXPECT_EQ(input.tint_composited_content, output.tint_composited_content);
   EXPECT_EQ(input.show_overdraw_feedback, output.show_overdraw_feedback);
   EXPECT_EQ(input.highp_threshold_min, output.highp_threshold_min);
   EXPECT_EQ(input.use_skia_renderer, output.use_skia_renderer);

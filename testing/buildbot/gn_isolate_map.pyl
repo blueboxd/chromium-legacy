@@ -79,6 +79,10 @@
     "label": "//:All_syzygy",
     "type": "additional_compile_target",
   },
+  "absl_hardening_tests": {
+    "label": "//third_party/abseil-cpp:absl_hardening_tests",
+    "type": "console_test_launcher",
+  },
   "accessibility_unittests": {
     "label": "//ui/accessibility:accessibility_unittests",
     "type": "console_test_launcher",
@@ -152,7 +156,7 @@
       "--test-launcher-jobs=1",
       "--test-launcher-retry-limit=0",
     ],
-    "label": "//chrome/test:angle_perftests",
+    "label": "//third_party/angle/src/tests:angle_perftests",
     "script": "//testing/scripts/run_performance_tests.py",
     "type": "script",
   },
@@ -1534,9 +1538,9 @@
     "args": [
       "standalone_angle_unittests",
     ],
-    "label": "//chrome/test:standalone_angle_unittests",
+    "label": "//third_party/angle/src/tests:standalone_angle_unittests",
     "type": "script",
-    "script": "//testing/scripts/run_gtest_angle_test.py",
+    "script": "//third_party/angle/scripts/run_gtest_angle_test.py",
   },
   "storage_unittests": {
     "label": "//storage:storage_unittests",

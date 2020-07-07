@@ -537,7 +537,7 @@ void EnqueueAutofocus(Element& element) {
   // 6. If target's origin is not the same as the origin of topDocument,
   // then return.
   if (!doc.IsInMainFrame() &&
-      !doc.TopFrameOrigin()->CanAccess(doc.GetSecurityOrigin())) {
+      !doc.TopFrameOrigin()->CanAccess(window->GetSecurityOrigin())) {
     window->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kSecurity,
         mojom::ConsoleMessageLevel::kError,

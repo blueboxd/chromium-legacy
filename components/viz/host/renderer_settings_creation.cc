@@ -59,8 +59,8 @@ RendererSettings CreateRendererSettings() {
 #elif defined(OS_CHROMEOS)
   renderer_settings.auto_resize_output_surface = false;
 #endif
-  renderer_settings.tint_gl_composited_content =
-      command_line->HasSwitch(switches::kTintGlCompositedContent);
+  renderer_settings.tint_composited_content =
+      command_line->HasSwitch(switches::kTintCompositedContent);
   renderer_settings.show_overdraw_feedback =
       command_line->HasSwitch(switches::kShowOverdrawFeedback);
   renderer_settings.show_aggregated_damage =

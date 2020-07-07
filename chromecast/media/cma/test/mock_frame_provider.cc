@@ -41,7 +41,7 @@ void MockFrameProvider::SetDelayFlush(bool delay_flush) {
   delay_flush_ = delay_flush;
 }
 
-void MockFrameProvider::Read(const ReadCB& read_cb) {
+void MockFrameProvider::Read(ReadCB read_cb) {
   bool delayed = delayed_task_pattern_[pattern_idx_];
   pattern_idx_ = (pattern_idx_ + 1) % delayed_task_pattern_.size();
 
@@ -49,25 +49,25 @@ void MockFrameProvider::Read(const ReadCB& read_cb) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&MockFrameProvider::DoRead, base::Unretained(this),
-                       read_cb),
+                       std::move(read_cb)),
         base::TimeDelta::FromMilliseconds(1));
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&MockFrameProvider::DoRead,
-                                  base::Unretained(this), read_cb));
+                                  base::Unretained(this), std::move(read_cb)));
   }
 }
 
-void MockFrameProvider::Flush(const base::Closure& flush_cb) {
+void MockFrameProvider::Flush(base::OnceClosure flush_cb) {
   if (delay_flush_) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, flush_cb, base::TimeDelta::FromMilliseconds(10));
+        FROM_HERE, std::move(flush_cb), base::TimeDelta::FromMilliseconds(10));
   } else {
-    flush_cb.Run();
+    std::move(flush_cb).Run();
   }
 }
 
-void MockFrameProvider::DoRead(const ReadCB& read_cb) {
+void MockFrameProvider::DoRead(ReadCB read_cb) {
   bool has_config = frame_generator_->HasDecoderConfig();
 
   scoped_refptr<DecoderBufferBase> buffer(frame_generator_->Generate());
@@ -92,7 +92,7 @@ void MockFrameProvider::DoRead(const ReadCB& read_cb) {
         ::media::EncryptionScheme::kUnencrypted);
   }
 
-  read_cb.Run(buffer, audio_config, video_config);
+  std::move(read_cb).Run(buffer, audio_config, video_config);
 }
 
 }  // namespace media

@@ -16,8 +16,8 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_mode_detector.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
-#include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
@@ -34,18 +34,21 @@ class HIDDetectionView;
 class HIDDetectionScreen : public BaseScreen,
                            public device::BluetoothAdapter::Observer,
                            public device::BluetoothDevice::PairingDelegate,
-                           public device::mojom::InputDeviceManagerClient {
+                           public device::mojom::InputDeviceManagerClient,
+                           public DemoModeDetector::Observer {
  public:
   using InputDeviceInfoPtr = device::mojom::InputDeviceInfoPtr;
   using DeviceMap = std::map<std::string, InputDeviceInfoPtr>;
 
+  enum class Result { NEXT, START_DEMO };
+
+  using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
+
   HIDDetectionScreen(HIDDetectionView* view,
-                     CoreOobeView* core_oobe_view,
-                     const base::RepeatingClosure& exit_callback);
+                     const ScreenExitCallback& exit_callback);
   ~HIDDetectionScreen() override;
 
-  // Called when continue button was clicked.
-  void OnContinueButtonClicked();
+  static std::string GetResultString(Result result);
 
   // This method is called when the view is being destroyed.
   void OnViewDestroyed(HIDDetectionView* view);
@@ -64,12 +67,12 @@ class HIDDetectionScreen : public BaseScreen,
  private:
   friend class HIDDetectionScreenTest;
 
-  // BaseScreen implementation:
+  // BaseScreen:
   void ShowImpl() override;
   void HideImpl() override;
   void OnUserAction(const std::string& action_id) override;
 
-  // device::BluetoothDevice::PairingDelegate implementation:
+  // device::BluetoothDevice::PairingDelegate:
   void RequestPinCode(device::BluetoothDevice* device) override;
   void RequestPasskey(device::BluetoothDevice* device) override;
   void DisplayPinCode(device::BluetoothDevice* device,
@@ -81,7 +84,7 @@ class HIDDetectionScreen : public BaseScreen,
                       uint32_t passkey) override;
   void AuthorizePairing(device::BluetoothDevice* device) override;
 
-  // device::BluetoothAdapter::Observer implementation.
+  // device::BluetoothAdapter::Observer:
   void AdapterPresentChanged(device::BluetoothAdapter* adapter,
                              bool present) override;
   void DeviceAdded(device::BluetoothAdapter* adapter,
@@ -91,9 +94,17 @@ class HIDDetectionScreen : public BaseScreen,
   void DeviceRemoved(device::BluetoothAdapter* adapter,
                      device::BluetoothDevice* device) override;
 
-  // device::mojom::InputDeviceManagerClient implementation.
+  // device::mojom::InputDeviceManagerClient:
   void InputDeviceAdded(InputDeviceInfoPtr info) override;
   void InputDeviceRemoved(const std::string& id) override;
+
+  // DemoModeDetector::Observer:
+  void OnShouldStartDemoMode() override;
+
+  // Called when continue button was clicked.
+  void OnContinueButtonClicked();
+
+  void CleanupOnExit();
 
   // Types of dialog leaving scenarios for UMA metric.
   enum ContinueScenarioType {
@@ -205,10 +216,9 @@ class HIDDetectionScreen : public BaseScreen,
 
   HIDDetectionView* view_;
 
-  // CoreOobeView is necessary for starting/stopping the demo mode detection
-  CoreOobeView* core_oobe_view_ = nullptr;
+  const ScreenExitCallback exit_callback_;
 
-  base::RepeatingClosure exit_callback_;
+  std::unique_ptr<DemoModeDetector> demo_mode_detector_;
 
   // Default bluetooth adapter, used for all operations.
   scoped_refptr<device::BluetoothAdapter> adapter_;

@@ -10,9 +10,9 @@
 #include <vector>
 
 #include "base/bind_helpers.h"
-#include "base/logging.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/browser/nearby_sharing/logging/logging.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
 
@@ -177,7 +177,7 @@ void FastInitiationManager::OnRegisterAdvertisement(
 
 void FastInitiationManager::OnRegisterAdvertisementError(
     device::BluetoothAdvertisement::ErrorCode error_code) {
-  LOG(ERROR)
+  NS_LOG(ERROR)
       << "FastInitiationManager::StartAdvertising() failed with error code = "
       << error_code;
   std::move(start_error_callback_).Run();
@@ -210,7 +210,7 @@ void FastInitiationManager::OnUnregisterAdvertisement() {
 
 void FastInitiationManager::OnUnregisterAdvertisementError(
     device::BluetoothAdvertisement::ErrorCode error_code) {
-  LOG(WARNING)
+  NS_LOG(WARNING)
       << "FastInitiationManager::StopAdvertising() failed with error code = "
       << error_code;
   advertisement_.reset();

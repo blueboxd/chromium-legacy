@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/modules/mediastream/mock_media_stream_video_sink.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/web_rtc_cross_thread_copier.h"
 #include "third_party/blink/renderer/modules/peerconnection/mock_peer_connection_dependency_factory.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
 #include "third_party/blink/renderer/platform/webrtc/track_observer.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -76,9 +77,6 @@ class MediaStreamRemoteVideoSourceTest : public ::testing::Test {
             /*supports_encoded_output=*/true)),
         webrtc_video_track_(
             blink::MockWebRtcVideoTrack::Create("test", webrtc_video_source_)),
-        remote_source_(nullptr),
-        number_of_successful_track_starts_(0),
-        number_of_failed_track_starts_(0),
         time_diff_(base::TimeTicks::Now() - base::TimeTicks() -
                    base::TimeDelta::FromMicroseconds(rtc::TimeMicros())) {}
 
@@ -109,16 +107,16 @@ class MediaStreamRemoteVideoSourceTest : public ::testing::Test {
 
     remote_source_ =
         new MediaStreamRemoteVideoSourceUnderTest(std::move(track_observer));
-    web_source_.Initialize(blink::WebString::FromASCII("dummy_source_id"),
-                           blink::WebMediaStreamSource::kTypeVideo,
-                           blink::WebString::FromASCII("dummy_source_name"),
-                           true /* remote */);
-    web_source_.SetPlatformSource(base::WrapUnique(remote_source_));
+    source_ = MakeGarbageCollected<MediaStreamSource>(
+        "dummy_source_id", MediaStreamSource::kTypeVideo, "dummy_source_name",
+        true /* remote */);
+    remote_source_->SetOwner(source_);
+    source_->SetPlatformSource(base::WrapUnique(remote_source_));
   }
 
   void TearDown() override {
     remote_source_->OnSourceTerminated();
-    web_source_.Reset();
+    source_ = nullptr;
     blink::WebHeap::CollectAllGarbageForTesting();
   }
 
@@ -160,9 +158,7 @@ class MediaStreamRemoteVideoSourceTest : public ::testing::Test {
     waitable_event.Wait();
   }
 
-  const blink::WebMediaStreamSource& webkit_source() const {
-    return web_source_;
-  }
+  MediaStreamSource* Source() const { return source_.Get(); }
 
   const base::TimeDelta& time_diff() const { return time_diff_; }
 
@@ -181,11 +177,11 @@ class MediaStreamRemoteVideoSourceTest : public ::testing::Test {
   std::unique_ptr<blink::MockPeerConnectionDependencyFactory> mock_factory_;
   scoped_refptr<webrtc::VideoTrackSourceInterface> webrtc_video_source_;
   scoped_refptr<webrtc::VideoTrackInterface> webrtc_video_track_;
-  // |remote_source_| is owned by |web_source_|.
-  MediaStreamRemoteVideoSourceUnderTest* remote_source_;
-  blink::WebMediaStreamSource web_source_;
-  int number_of_successful_track_starts_;
-  int number_of_failed_track_starts_;
+  // |remote_source_| is owned by |source_|.
+  MediaStreamRemoteVideoSourceUnderTest* remote_source_ = nullptr;
+  Persistent<MediaStreamSource> source_;
+  int number_of_successful_track_starts_ = 0;
+  int number_of_failed_track_starts_ = 0;
   // WebRTC Chromium timestamp diff
   const base::TimeDelta time_diff_;
 };
@@ -247,12 +243,10 @@ TEST_F(MediaStreamRemoteVideoSourceTest, SurvivesSourceTermination) {
   blink::MockMediaStreamVideoSink sink;
   track->AddSink(&sink, sink.GetDeliverFrameCB(), false);
   EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateLive, sink.state());
-  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateLive,
-            webkit_source().GetReadyState());
+  EXPECT_EQ(MediaStreamSource::kReadyStateLive, Source()->GetReadyState());
   StopWebRtcTrack();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateEnded,
-            webkit_source().GetReadyState());
+  EXPECT_EQ(MediaStreamSource::kReadyStateEnded, Source()->GetReadyState());
   EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateEnded, sink.state());
 
   track->RemoveSink(&sink);

@@ -1,7 +1,6 @@
 // Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 #include "third_party/blink/renderer/modules/clipboard/clipboard_reader.h"
 
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom-blink.h"
@@ -9,7 +8,11 @@
 #include "third_party/blink/renderer/core/clipboard/system_clipboard.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
+#include "third_party/blink/renderer/modules/clipboard/clipboard_promise.h"
 #include "third_party/blink/renderer/platform/image-encoders/image_encoder.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/scheduler/public/worker_pool.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 
@@ -20,18 +23,40 @@ namespace {  // anonymous namespace for ClipboardReader's derived classes.
 // Reads an image from the System Clipboard as a blob with image/png content.
 class ClipboardImageReader final : public ClipboardReader {
  public:
-  explicit ClipboardImageReader(SystemClipboard* system_clipboard)
-      : ClipboardReader(system_clipboard) {}
+  explicit ClipboardImageReader(SystemClipboard* system_clipboard,
+                                ClipboardPromise* promise)
+      : ClipboardReader(system_clipboard, promise) {}
   ~ClipboardImageReader() override = default;
 
-  Blob* ReadFromSystem() override {
+  ClipboardImageReader(const ClipboardImageReader&) = delete;
+  ClipboardImageReader& operator=(const ClipboardImageReader&) = delete;
+
+  void Read() override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     SkBitmap bitmap =
         system_clipboard()->ReadImage(mojom::ClipboardBuffer::kStandard);
+    sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
+    if (!image) {
+      NextRead(Vector<uint8_t>());
+      return;
+    }
 
-    // TODO(huangdarwin): Move encoding off the main thread.
-    // Encode bitmap to Vector<uint8_t> on the main thread.
+    worker_pool::PostTask(
+        FROM_HERE, CrossThreadBindOnce(
+                       &ClipboardImageReader::EncodeImageOnBackgroundThread,
+                       std::move(image), WrapCrossThreadPersistent(this),
+                       std::move(clipboard_task_runner_)));
+  }
+
+ private:
+  static void EncodeImageOnBackgroundThread(
+      sk_sp<SkImage> image,
+      ClipboardImageReader* reader,
+      scoped_refptr<base::SingleThreadTaskRunner> clipboard_task_runner) {
+    DCHECK(!IsMainThread());
+
     SkPixmap pixmap;
-    bitmap.peekPixels(&pixmap);
+    image->peekPixels(&pixmap);
 
     // Set encoding options to favor speed over size.
     SkPngEncoder::Options options;
@@ -40,56 +65,112 @@ class ClipboardImageReader final : public ClipboardReader {
 
     Vector<uint8_t> png_data;
     if (!ImageEncoder::Encode(&png_data, pixmap, options))
-      return nullptr;
+      png_data.clear();
 
-    return Blob::Create(png_data.data(), png_data.size(), kMimeTypeImagePng);
+    // Now return to the kUserInteraction thread.
+    PostCrossThreadTask(*clipboard_task_runner, FROM_HERE,
+                        CrossThreadBindOnce(&ClipboardImageReader::NextRead,
+                                            WrapCrossThreadPersistent(reader),
+                                            std::move(png_data)));
+  }
+
+  // An empty vector indicates that the encoding step failed.
+  void NextRead(Vector<uint8_t> png_data) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    Blob* blob = nullptr;
+    if (png_data.size())
+      blob = Blob::Create(png_data.data(), png_data.size(), kMimeTypeImagePng);
+
+    promise_->OnRead(blob);
   }
 };
 
 // Reads an image from the System Clipboard as a blob with text/plain content.
 class ClipboardTextReader final : public ClipboardReader {
  public:
-  explicit ClipboardTextReader(SystemClipboard* system_clipboard)
-      : ClipboardReader(system_clipboard) {}
+  explicit ClipboardTextReader(SystemClipboard* system_clipboard,
+                               ClipboardPromise* promise)
+      : ClipboardReader(system_clipboard, promise) {}
   ~ClipboardTextReader() override = default;
 
-  Blob* ReadFromSystem() override {
+  ClipboardTextReader(const ClipboardTextReader&) = delete;
+  ClipboardTextReader& operator=(const ClipboardTextReader&) = delete;
+
+  void Read() override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     String plain_text =
         system_clipboard()->ReadPlainText(mojom::ClipboardBuffer::kStandard);
-    // |plain_text| is empty if the clipboard is empty.
-    if (plain_text.IsEmpty())
-      return nullptr;
+    if (plain_text.IsEmpty()) {
+      NextRead(Vector<uint8_t>());
+      return;
+    }
+
+    worker_pool::PostTask(
+        FROM_HERE, CrossThreadBindOnce(
+                       &ClipboardTextReader::EncodeTextOnBackgroundThread,
+                       std::move(plain_text), WrapCrossThreadPersistent(this),
+                       std::move(clipboard_task_runner_)));
+  }
+
+ private:
+  static void EncodeTextOnBackgroundThread(
+      String plain_text,
+      ClipboardTextReader* reader,
+      scoped_refptr<base::SingleThreadTaskRunner> clipboard_task_runner) {
+    DCHECK(!IsMainThread());
 
     // Encode WTF String to UTF-8, the standard text format for blobs.
-    StringUTF8Adaptor utf_text(plain_text);
-    return Blob::Create(reinterpret_cast<const uint8_t*>(utf_text.data()),
-                        utf_text.size(), kMimeTypeTextPlain);
+    StringUTF8Adaptor utf8_text(plain_text);
+    Vector<uint8_t> utf8_bytes;
+    utf8_bytes.ReserveInitialCapacity(utf8_text.size());
+    utf8_bytes.Append(utf8_text.data(), utf8_text.size());
+
+    PostCrossThreadTask(*clipboard_task_runner, FROM_HERE,
+                        CrossThreadBindOnce(&ClipboardTextReader::NextRead,
+                                            WrapCrossThreadPersistent(reader),
+                                            std::move(utf8_bytes)));
+  }
+
+  void NextRead(Vector<uint8_t> utf8_bytes) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    Blob* blob = nullptr;
+    if (utf8_bytes.size()) {
+      blob = Blob::Create(utf8_bytes.data(), utf8_bytes.size(),
+                          kMimeTypeTextPlain);
+    }
+    promise_->OnRead(blob);
   }
 };
 
 }  // anonymous namespace
-
 // ClipboardReader functions.
 
 // static
 ClipboardReader* ClipboardReader::Create(SystemClipboard* system_clipboard,
-                                         const String& mime_type) {
+                                         const String& mime_type,
+                                         ClipboardPromise* promise) {
   if (mime_type == kMimeTypeImagePng)
-    return MakeGarbageCollected<ClipboardImageReader>(system_clipboard);
+    return MakeGarbageCollected<ClipboardImageReader>(system_clipboard,
+                                                      promise);
   if (mime_type == kMimeTypeTextPlain)
-    return MakeGarbageCollected<ClipboardTextReader>(system_clipboard);
+    return MakeGarbageCollected<ClipboardTextReader>(system_clipboard, promise);
 
   // The MIME type is not supported.
   return nullptr;
 }
 
-ClipboardReader::ClipboardReader(SystemClipboard* system_clipboard)
-    : system_clipboard_(system_clipboard) {}
+ClipboardReader::ClipboardReader(SystemClipboard* system_clipboard,
+                                 ClipboardPromise* promise)
+    : clipboard_task_runner_(promise->GetExecutionContext()->GetTaskRunner(
+          TaskType::kUserInteraction)),
+      promise_(promise),
+      system_clipboard_(system_clipboard) {}
 
 ClipboardReader::~ClipboardReader() = default;
 
 void ClipboardReader::Trace(Visitor* visitor) const {
   visitor->Trace(system_clipboard_);
+  visitor->Trace(promise_);
 }
 
 }  // namespace blink

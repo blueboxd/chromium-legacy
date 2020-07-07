@@ -10,7 +10,7 @@
 #include <set>
 
 #include "ash/ash_export.h"
-#include "ash/session/session_observer.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/shell_observer.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"

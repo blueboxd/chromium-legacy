@@ -642,7 +642,6 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="6154478581116148741">Ota näytön lukitus käyttöön asetuksista viedäksesi salasanoja laitteelta.</translation>
 <translation id="6157392216611456285">Valitse <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> vähemmän tiedonsiirtoa</translation>
-<translation id="6192333916571137726">Lataaminen-tiedosto</translation>
 <translation id="6201345951596836663">Linkki kopioitu</translation>
 <translation id="6206830853671714236">Valitse latausajankohta</translation>
 <translation id="6210748933810148297">Etkö ole <ph name="EMAIL" />?</translation>
@@ -846,7 +845,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="7772032839648071052">Vahvista tunnuslause</translation>
 <translation id="7772375229873196092">Sulje <ph name="APP_NAME" /></translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ja <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> muu}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ja <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> muuta}}</translation>
-<translation id="7778840695157240389">Katso mahdolliset uudet jutut myöhemmin</translation>
+<translation id="7778840695157240389">Katso mahdolliset uudet tarinat myöhemmin</translation>
 <translation id="7791543448312431591">Lisää</translation>
 <translation id="780301667611848630">Ei kiitos</translation>
 <translation id="7810647596859435254">Avaa sovelluksessa…</translation>

@@ -585,20 +585,19 @@ static bool ShouldAllowExternalLoad(const KURL& url) {
   // content. If we had more context, we could potentially allow the parser to
   // load a DTD. As things stand, we take the conservative route and allow
   // same-origin requests only.
-  if (!XMLDocumentParserScope::current_document_->GetSecurityOrigin()
-           ->CanRequest(url)) {
+  auto* current_context =
+      XMLDocumentParserScope::current_document_->GetExecutionContext();
+  if (!current_context->GetSecurityOrigin()->CanRequest(url)) {
     // FIXME: This is copy/pasted. We should probably build console logging into
     // canRequest().
     if (!url.IsNull()) {
-      String message =
-          "Unsafe attempt to load URL " + url.ElidedString() +
-          " from frame with URL " +
-          XMLDocumentParserScope::current_document_->Url().ElidedString() +
-          ". Domains, protocols and ports must match.\n";
-      XMLDocumentParserScope::current_document_->AddConsoleMessage(
-          MakeGarbageCollected<ConsoleMessage>(
-              mojom::ConsoleMessageSource::kSecurity,
-              mojom::ConsoleMessageLevel::kError, message));
+      String message = "Unsafe attempt to load URL " + url.ElidedString() +
+                       " from frame with URL " +
+                       current_context->Url().ElidedString() +
+                       ". Domains, protocols and ports must match.\n";
+      current_context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+          mojom::blink::ConsoleMessageSource::kSecurity,
+          mojom::blink::ConsoleMessageLevel::kError, message));
     }
     return false;
   }

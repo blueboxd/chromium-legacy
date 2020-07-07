@@ -281,7 +281,6 @@
 <translation id="1340527397989195812">ගොනු යෙදුම භාවිතයෙන් උපාංගයේ මාධ්‍යය උපස්ථ කරන්න.</translation>
 <translation id="1341988552785875222">වත්මන් බිතුපත '<ph name="APP_NAME" />' විසින් සකසා ඇත. වෙනත් බිතුපතක් තේරීමට පෙර ඔබ '<ph name="APP_NAME" />' අස්ථාපනය කිරීම අවශ්‍ය විය හැකිය.</translation>
 <translation id="1343865611738742294">USB උපාංගවලට ප්‍රවේශ වීමට ලිනක්ස් යෙදුම්වලට අවසර දෙන්න. USB උපාංගයක් ඉවත් කළ පසු ලිනක්ස් එය මතක තබා ගන්නේ නැත.</translation>
-<translation id="1344143111673240412">කැමරා සැකසීම තුළ වෙනස් කිරීමට නැවත දියත් කිරීම සඳහා Parallels Desktop අවශ්‍ය වේ</translation>
 <translation id="1347256498747320987">යාවත්කාලීන සහ යෙදුම් ස්ථාපනය කරන්න. ඉදිරියට යාමෙන්, ඔබ මෙම උපාංගය Google, ඔබේ වාහකයා, සහ ඔබේ උපාංගයේ නිෂ්පාදකයා වෙතින්, සෙලියුලර් දත්ත භාවිතයෙන්, යාවත්කාලීන සහ යෙදුම් ස්වයංක්‍රීයව බාගෙන ස්ථාපනය කිරීමට හැකි බවට එකඟ වේ. මෙම යෙදුම්වලින් සමහරක් යෙදුම තුළ මිල දී ගැනීම් පිරිනැමිය හැක. <ph name="BEGIN_LINK1" />තව දැන ගන්න<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">බැටරි මට්ටම <ph name="BATTERY_LEVEL" />% වූ විට යාවත්කාලීන කිරීම ආරම්භ වනු ඇත.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -378,6 +377,7 @@
 <translation id="1468571364034902819">මෙම පැතිකඩ භාවිතා කළ නොහැක</translation>
 <translation id="1470084204649225129">{NUM_TABS,plural, =1{නව කණ්ඩායමට පටිත්ත එක් කරන්න}one{නව කණ්ඩායමට පටිති එක් කරන්න}other{නව කණ්ඩායමට පටිති එක් කරන්න}}</translation>
 <translation id="1472675084647422956">තවත් පෙන්වන්න</translation>
+<translation id="1474785664565228650">මයික්‍රෆෝන සැකසීම තුළ වෙනස් කිරීමට Parallels Desktop නැවත දියත් කිරීමට අවශ්‍ය වේ. ඉදිරියට යාමට Parallels Desktop නැවත දියත් කරන්න.</translation>
 <translation id="1475502736924165259">ඔබට වෙනත් ප්‍රවර්ග කිසිවකට නොගැළපෙන සහතික ගොනුවෙහි ඇත</translation>
 <translation id="1476088332184200792">ඔබේ උපාංගයට පිටපත් කරන්න</translation>
 <translation id="1476607407192946488">භාශා සැකසුම්</translation>
@@ -1194,7 +1194,6 @@
 <translation id="2470702053775288986">සහාය නොදක්වන දිගු අක්‍රීය කෙරිණි</translation>
 <translation id="2471469610750100598">කළු (පෙරනිමි)</translation>
 <translation id="2473195200299095979">මෙම පිටුව පරිවර්තනය කරන්න</translation>
-<translation id="2474848500897222119"><ph name="PRINTER_NAME" /> තුළ තීන්ත නැත</translation>
 <translation id="2475982808118771221">දෝෂයක් සිදු විණි</translation>
 <translation id="2476578072172137802">අඩවි සැකසුම්</translation>
 <translation id="2478176599153288112">"<ph name="EXTENSION" />" සඳහා මාධ්‍යය-ගොනු බලතල</translation>
@@ -1500,7 +1499,6 @@
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> ඔබේ පරිපාලක වෙතින් ප්‍රොක්සි සැකසීම් භාවිත කරයි</translation>
 <translation id="2825758591930162672">විෂයයේ පොදු යතුර</translation>
 <translation id="2828650939514476812">Wi-Fi ජාලයකට සම්බන්ධ වන්න</translation>
-<translation id="28291580771888953"><ph name="PRINTER_NAME" /> හි පෝලිම පිරී ඇත</translation>
 <translation id="2835547721736623118">කථන හඳුනා ගැනීමේ සේවය</translation>
 <translation id="2836269494620652131">බිඳවැටීම</translation>
 <translation id="2836635946302913370">මෙම භාවිතනම සමඟ එවීම ඔබේ පරිපාලක විසින් අක්‍රිය කරන ලදි.</translation>
@@ -2316,7 +2314,7 @@
 <translation id="3839516600093027468"><ph name="HOST" /> පසුරු පුවරුව දැකීමෙන් සැමවිටම අවහිර කරන්න</translation>
 <translation id="3841964634449506551">මුරපදය අවලංගුයි</translation>
 <translation id="3842552989725514455">සෙරිෆ් අකුර</translation>
-<translation id="3843058644024807390">මයික්‍රෆෝන සැකසීම තුළ වෙනස් කිරීමට Parallels Desktop නැවත දියත් කිරීමට අවශ්‍ය වේ</translation>
+<translation id="3843464315703645664">අභ්‍යන්තරව ඉඩ දෙන ලේඛනගත කෙරිණි</translation>
 <translation id="3846116211488856547">වෙබ් අඩවි, Android යෙදුම් සහ තවත් දේ සංවර්ධනයට මෙවලම් ලබා ගන්න.
 Linux ස්ථාපනය කිරීම දත්තවලින් <ph name="DOWNLOAD_SIZE" /> බාගනු ඇත.</translation>
 <translation id="3847319713229060696">සියලු දෙනා සඳහා වෙබය මත ආරක්‍ෂාව වැඩිදියුණු කිරීමට උදවු කරන්න</translation>
@@ -2776,7 +2774,6 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="4453946976636652378"><ph name="SEARCH_ENGINE_NAME" /> සොයන්න හෝ URL යතුරු ලියන්න</translation>
 <translation id="4459169140545916303">දින <ph name="DEVICE_LAST_ACTIVATED_TIME" /> කට පෙර ක්‍රියාත්මකයි</translation>
 <translation id="4460014764210899310">කණ්ඩායම් නොකරන්න</translation>
-<translation id="4460343359907016103"><ph name="PRINTER_NAME" /> වෙත සම්බන්ධ වීමේ දෝෂයයි.</translation>
 <translation id="4462159676511157176">රුචි නාම සේවාදායක</translation>
 <translation id="4465236939126352372"><ph name="APP_NAME" /> සඳහා සකසන ලද වේලා සීමාව <ph name="TIME" /></translation>
 <translation id="4465725236958772856"><ph name="NETWORK_COUNT" />න් <ph name="NETWORK_INDEX" /> වැනි ජාලය, <ph name="NETWORK_NAME" />, ඔබේ පරිපාලකයා විසින් කළමනාකරණය කරයි, සබඳින්න</translation>
@@ -2931,6 +2928,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="4648499713050786492">පුද්ගලයෙකු එක් කිරීමට පෙර ඔබගේ පැතිකඩ අගුළු හරින්න.</translation>
 <translation id="4650591383426000695">ඔබේ දුරකථනය ඔබේ <ph name="DEVICE_TYPE" /> වෙතින් විසන්ධි කරන්න</translation>
 <translation id="4651484272688821107">ආදර්ශන ප්‍රකාර සම්පත් සමඟ සබැඳි අංගය පූරණ කළ නොහැකි විය.</translation>
+<translation id="4652935475563630866">කැමරා සැකසීම තුළ වෙනස් කිරීමට නැවත දියත් කිරීම සඳහා Parallels Desktop අවශ්‍ය වේ ඉදිරියට යාමට Parallels Desktop නැවත දියත් කරන්න.</translation>
 <translation id="4653405415038586100">ලිනක්ස් වින්‍යාස කිරීමෝ දෝෂයයි</translation>
 <translation id="465878909996028221">බ්‍රවුසර ප්‍රතියොමු කිරීම් සඳහා http, https සහ ගොනු ප්‍රොටොකෝලවලට පමණක් සහය දැක්වේ.</translation>
 <translation id="4659077111144409915">ප්‍රාථමික ගිණුම</translation>
@@ -3074,7 +3072,6 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="4864369630010738180">පුරමින්...</translation>
 <translation id="4864805589453749318">පාසල් ගිණුමක් එක් කිරීමට අවසර දෙන මාපිය තෝරන්න.</translation>
 <translation id="486635084936119914">බාගැනීමෙන් පසුව ඇතැම් ගොනු වර්ග ස්වයංක්‍රීයව විවෘත කරන්න</translation>
-<translation id="4869213010169296107"><ph name="PRINTER_NAME" /> තැටිය තුළ මඟ හැරී ඇත</translation>
 <translation id="48704129375571883">අතිරේක විශේෂාංග එක් කරන්න</translation>
 <translation id="4870758487381879312">වින්‍යාස තොරතුරු ලබා ගැනීමට පරිපාලකයා ලබා දුන් මුරපදය ඇතුළත් කරන්න</translation>
 <translation id="4870903493621965035">යුගල කළ උපාංග නැත</translation>
@@ -3325,6 +3322,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="5184662919967270437">ඔබේ උපාංගය යාවත්කාලීන කරමින්</translation>
 <translation id="5185359571430619712">දිගු සමාලෝචන කරන්න</translation>
 <translation id="5185386675596372454">වැඩි අවශ්‍ය බැවින්  "<ph name="EXTENSION_NAME" />" හි නවතම සංස්කරණය අක්‍රීය කරන ලදී.</translation>
+<translation id="5185500136143151980">අන්තර්ජාලය නැත</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5190926251776387065">තොට ක්‍රියාත්මක කරන්න</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> හට බහුවිධ ගොනු බාගැනීමට අවශ්‍යයි</translation>
@@ -3481,7 +3479,6 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="5390112241331447203">ප්‍රතිපෝෂණ වාර්තාවල යවන system_logs.txt ගොනුව ඇතුළත් කරන්න</translation>
 <translation id="5390677308841849479">තද රතු සහ තැඹිලි</translation>
 <translation id="5390743329570580756">මෙය සඳහා යවන්න</translation>
-<translation id="5395869306561378615"><ph name="PRINTER_NAME" /> විරාම කෙරේ</translation>
 <translation id="5397794290049113714">ඔබ</translation>
 <translation id="5398572795982417028">පිටු සීමාවෙන් පිටත යොමුව, සීමාව වන්නේ <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">වෙළඳ දැන්වීම් අවහිරයි</translation>
@@ -3496,7 +3493,6 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="5417312524372586921">බ්‍රව්සර් තේමාවන්</translation>
 <translation id="5419405654816502573">හඬ ගැළපුම</translation>
 <translation id="5420438158931847627">පෙළ සහ රූපවල තියුණු බව තීරණය කරයි</translation>
-<translation id="5421498071721257877"><ph name="PRINTER_NAME" /> හට උපාංග දෝෂයක් ඇත</translation>
 <translation id="5422221874247253874">ප්‍රවේශ ලක්ෂ්‍යය</translation>
 <translation id="5422781158178868512">කනගාටුයි, ඔබගේ බාහිර ගබඩා උපාංගය හඳනාගත නොහැකියියි විය.</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3846,7 +3842,6 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="5852137567692933493">නැවත ආරම්භය සහ බල සේදුම</translation>
 <translation id="5854912040170951372">කොටස</translation>
 <translation id="5855267860608268405">දන්නා Wi-Fi ජාල</translation>
-<translation id="5855310969323666289"><ph name="PRINTER_NAME" /> හි දොර විවෘතයි.</translation>
 <translation id="5855643921295613558">තත්පර 0.6 ක්</translation>
 <translation id="5856721540245522153">දෝශ නිවාරණ විශේෂාංග සක්‍රීය කරන්න</translation>
 <translation id="5857090052475505287">නව ෆෝල්ඩරය</translation>
@@ -3877,7 +3872,6 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="5877064549588274448">නාලිකාව වෙනස් කරන ලදි. වෙනස්කම් යොදා ගැනීමට ඔබේ උපාංගය නැවත අරඹන්න.</translation>
 <translation id="5877584842898320529">තෝරන ලද මුද්‍රණ යන්ත්‍රය ලද නොහැක, නැති නම් නිවැරදිව ස්ථාපන කර නැත. <ph name="BR" /> ඔබේ මුද්‍රණ යන්ත්‍රය පරීක්‍ෂා කරන්න නැති නම් වෙනත් මුද්‍රණ යන්ත්‍රයක් තෝරා උත්සාහ කර බලන්න.</translation>
 <translation id="5882919346125742463">දන්නා ජාල</translation>
-<translation id="5883716097305842571"><ph name="PRINTER_NAME" /> හි ප්‍රතිදාන ප්‍රදේශය බොහෝ දුරට පිරී ඇත</translation>
 <translation id="5884474295213649357">මෙම ටැබය USB උපාංගයකට සම්බන්ධිතයි.</translation>
 <translation id="5886009770935151472">ඇඟිල්ල 1</translation>
 <translation id="5889282057229379085">අතරමැදි CAs හි උපරිම සංඛ්‍යාව: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4441,7 +4435,6 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="6611972847767394631">ඔබගේ පටිති මෙහි සොයන්න</translation>
 <translation id="6612358246767739896">ආරක්ෂිත අන්තර්ගතය</translation>
 <translation id="6615455863669487791">මට පෙන්වන්න</translation>
-<translation id="6617034477946102682"><ph name="PRINTER_NAME" /> වෙත ළඟා විය නොහැක</translation>
 <translation id="6618097958368085618">කෙසේ වුවත් තබා ගන්න</translation>
 <translation id="6618744767048954150">ධාවන වේ</translation>
 <translation id="6619058681307408113">පේළි මුද්‍රක විබුද්ධයා (LPD)</translation>
@@ -4858,7 +4851,6 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="7128151990937044829">දැනුම් දීම අවහිර වූ විට ලිපින තීරුව තුළ දර්ශකයක් පෙන්වන්න</translation>
 <translation id="7131040479572660648"><ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, සහ <ph name="WEBSITE_3" /> හි ඔබගේ දත්ත කියවන්න</translation>
 <translation id="713122686776214250">පිටු&amp;ව එක් කරන්න...</translation>
-<translation id="7131379856697962078"><ph name="PRINTER_NAME" /> හි ප්‍රතිදාන ප්‍රදේශය පිරී ඇත</translation>
 <translation id="7133578150266914903">ඔබගේ පරිපාලකයා මෙම උපාංගය ආපසු පෙරළමින් සිටියි (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">අකුරු කුඩා කරන්න</translation>
 <translation id="7135729336746831607">බ්ලූටූත් ක්‍රියාත්මක කරන්නද?</translation>
@@ -4877,7 +4869,6 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="7152478047064750137">මෙම දිගුවට විශේෂ අවසරයක් අවශ්‍ය නොවේ.</translation>
 <translation id="7154130902455071009">ඔබේ ආරම්භක පිටුව මේ ආකාරයට වෙනස් කරන්න: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">කැමරාව හෝ ගොනුව වෙතින් පවතින ඡායාරූප</translation>
-<translation id="715657691234357425"><ph name="PRINTER_NAME" /> තුළ කඩදාසි අඩුයි</translation>
 <translation id="7165320105431587207">ජාලය සැකසීම අසාර්ථකයි</translation>
 <translation id="716640248772308851">"<ph name="EXTENSION" />" ට ලකුණු කළ ස්ථාන තුළ ඇති රූප, වීඩියෝ සහ ශබ්ද ගොනු කියවීමට හැකිය</translation>
 <translation id="7167486101654761064">මෙම වර්ගය සඳහා සැමවිටම ගොනු විවෘත කරන්න (&amp;A)</translation>
@@ -4908,7 +4899,6 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="7197632491113152433">අපි මෙම උපාංගය මත භාවිතා කළ හැකි යෙදුම් <ph name="NUMBER_OF_APPS" /> ක් සොයා ගත්තා.</translation>
 <translation id="7199158086730159431">උපකාර ලබා ගන්න</translation>
 <translation id="7200083590239651963">වින්‍යාසකරණය තෝරන්න</translation>
-<translation id="7201042526153088083">Google Play වෙතින් යෙදුම් සහ ක්‍රීඩා ඔබේ <ph name="DEVICE_TYPE" /> මත ස්ථාපනය කරන්න. &lt;a target="_blank" href="<ph name="URL" />"&gt;තවත් දැන ගන්න&lt;/a&gt;</translation>
 <translation id="720110658997053098">මෙම උපාංගය ස්ථිරවම kiosk ප්‍රකාරයෙහි තබා ගන්න</translation>
 <translation id="7201118060536064622">'<ph name="DELETED_ITEM_NAME" />' මැකිණි</translation>
 <translation id="7201420661433230412">ගොනු බලන්න</translation>
@@ -5214,7 +5204,6 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="7598466960084663009">පරිගණකය යළි අරඹන්න</translation>
 <translation id="7599527631045201165">උපාංගයේ නම දිග වැඩිය. කෙටි නමක් ඇතුළු කර නැවත උත්සාහ කරන්න.</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> කිසිදා පරිවර්තනය නොකරන්න</translation>
-<translation id="7601297144931396972"><ph name="PRINTER_NAME" /> හි කඩදාසිය සිර විය</translation>
 <translation id="760197030861754408">සබැඳීමට <ph name="LANDING_PAGE" /> වෙත යන්න</translation>
 <translation id="7602079150116086782">වෙනත් උපාංග වෙතින් ටැබ නොමැත</translation>
 <translation id="7602173054665172958">මුද්‍රණ කළමනාකරණය</translation>
@@ -5225,6 +5214,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="7609148976235050828">කරුණාකර අන්තර්ජාලයට සබැඳී නැවත උත්සාහ කරන්න.</translation>
 <translation id="7614260613810441905">වෙබ් අඩවියකට ඔබේ උපාංගය තුළ ගොනු හෝ ෆෝල්ඩර සංස්කරණ කිරීමට අවශ්‍ය වූ විට අසන්න (නිර්දේශිතයි)</translation>
 <translation id="761530003705945209">Google Drive වෙත උපස්ථ කරන්න. ඕනෑම වේලාවක ඔබගේ දත්ත පහසුවෙන් ප්‍රතිසාධන කරන්න හෝ උපාංග අතර මාරු වන්න. ඔබගේ උපස්ථයට යෙදුම් දත්ත අන්තර්ගතයි. ඔබේ උපස්ථ Google වෙත උඩුගත කෙරෙන අතර ඔබේ Google ගිණුමේ මුරපදය භාවිත කර සංකේතන කෙරේ.</translation>
+<translation id="7615365294369022248">ගිණුමක් එක් කිරීමේ දෝෂයක් විය</translation>
 <translation id="7616214729753637086">උපාංගය ඇතුළත් කරමින්...</translation>
 <translation id="7617263010641145920">Play Store සක්‍රීය කරන්න</translation>
 <translation id="7617366389578322136"><ph name="DEVICE_NAME" />" වෙත සබැඳෙමින්</translation>
@@ -5671,7 +5661,6 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
           මෙයට Google Pay වෙතින් ගෙවීමේ ක්‍රම සහ ලිපින ඇතුළු නොවේ.</translation>
 <translation id="81238879832906896">කහ සහ සුදු මල</translation>
 <translation id="8124313775439841391">පාලිත ONC</translation>
-<translation id="8127535217699822294"><ph name="PRINTER_NAME" /> තුළ කඩදාසි නැත</translation>
 <translation id="813082847718468539">අඩවි තොරතුරු පෙන්වන්න</translation>
 <translation id="8131740175452115882">තහවුරු කරන්න</translation>
 <translation id="8133676275609324831">ෆෝල්ඩරය තුළ පෙන්වන්න (&amp;S)</translation>
@@ -5770,7 +5759,6 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="8254954272268479918">ලිනක්ස් වසා දමන්න (බීටා)</translation>
 <translation id="8255451560461371599">පසුබිමක් නැත</translation>
 <translation id="8256319818471787266">ප්‍රාණවත්බවින් යුත්</translation>
-<translation id="8256417822772703842"><ph name="PRINTER_NAME" /> හි තීන්ත අඩුයි</translation>
 <translation id="8257950718085972371">කැමරා පිවිසුම දිගටම අවහිර කරන්න</translation>
 <translation id="8259239505248583312">අරඹමු</translation>
 <translation id="8260864402787962391">මවුසය</translation>
@@ -5951,7 +5939,6 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="8487678622945914333">විශාලනය කරන්න</translation>
 <translation id="8490896350101740396">යාවත්කාලීන කළ kiosk යෙදුම් "<ph name="UPDATED_APPS" />" අනුගමනය කරන්න. කරුණාකර යාවත්කාලීන ක්‍රියාවලිය සම්පුර්ණ කිරීමට උපාංගය නැවත පනගන්වන්න.</translation>
 <translation id="8493236660459102203">මයික්‍රෆෝනය:</translation>
-<translation id="8495940850609851342"><ph name="PRINTER_NAME" /> නැවැත් විය</translation>
 <translation id="8496717697661868878">මෙම ප්ලගීනය ධාවනය කරන්න</translation>
 <translation id="8497219075884839166">Windows උපයෝගිතා</translation>
 <translation id="8498214519255567734">අඳුරු ආලෝකයේදී ඔබේ තිරය දෙස බැලීම සහ කියවීම වඩා පහසු කරන්න</translation>
@@ -6493,6 +6480,12 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="9157096865782046368">තත්පර 0.8 ක්</translation>
 <translation id="9157697743260533322">සියළු පරිශීලකයන් සඳහා ස්වයංක්‍රීය යාවත්කාලීන කිරීම අසාර්ථක වුණි (දියත් කිරීමට පෙර දෝෂය: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">අපොයි!  සත්‍යාපනය අතරතුර ජාල සන්නිවේදන ගැටළුවක් ඇති විය. කරුණාකර ඔබේ ජාල සම්බන්ධතාව පරීක්ෂා කර නැවත උත්සාහ කරන්න.</translation>
+<translation id="9159643062839240276">උත්සාහ කරන්න:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />ජාල කේබල, මොඩමය සහ රවුටරය පරීක්ෂා කිරීම
+      <ph name="LIST_ITEM" />Wi-Fi වෙත නැවත සම්බන්ධ කිරීම
+      <ph name="LIST_ITEM" />Chrome සම්බන්ධක විශ්ලේෂක ධාවනය කිරීම
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">පින්තූරය තුළ පින්තූරය</translation>
 <translation id="9168436347345867845">පසුව එය කරන්න</translation>
 <translation id="9169496697824289689">යතුරුපුවරු කෙටිමං බලන්න</translation>

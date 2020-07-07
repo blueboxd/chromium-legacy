@@ -56,7 +56,7 @@ public class TabStateExtractor {
     private static ByteBuffer getWebContentsStateAsByteBuffer(TabImpl tab) {
         LoadUrlParams pendingLoadParams = tab.getPendingLoadParams();
         if (pendingLoadParams == null) {
-            return WebContentsStateBridge.getContentsStateAsByteBuffer(tab);
+            return WebContentsStateBridge.getContentsStateAsByteBuffer(tab.getWebContents());
         } else {
             Referrer referrer = pendingLoadParams.getReferrer();
             return WebContentsStateBridge.createSingleNavigationStateAsByteBuffer(

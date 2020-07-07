@@ -135,5 +135,6 @@ interface RenderFrameMetadataObserverClient {
 
   // Only called if ReportAllRootScrolls(true) has been called. See
   // ReportAllRootScrolls() for details.
+  [EnableIf=is_android]
   OnRootScrollOffsetChanged(gfx.mojom.Vector2dF root_scroll_offset);
 };

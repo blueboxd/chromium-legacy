@@ -8,6 +8,8 @@ import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 
+import android.app.Activity;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.Rect;
@@ -24,8 +26,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mockito;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
+import org.robolectric.shadows.ShadowView;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
@@ -42,7 +46,7 @@ import java.util.List;
  * Tests for the {@link PlayerFrameMediator} class.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(shadows = {PaintPreviewCustomFlingingShadowScroller.class})
+@Config(shadows = {PaintPreviewCustomFlingingShadowScroller.class, ShadowView.class})
 public class PlayerFrameMediatorTest {
     private static final int CONTENT_WIDTH = 560;
     private static final int CONTENT_HEIGHT = 1150;
@@ -193,6 +197,14 @@ public class PlayerFrameMediatorTest {
         int left = col * tileWidth;
         int top = row * tileHeight;
         return new Rect(left, top, left + tileWidth, top + tileHeight);
+    }
+
+    private static List<Boolean> getVisibilities(List<View> views) {
+        List<Boolean> visibilities = new ArrayList<>();
+        for (View view : views) {
+            visibilities.add(view.getVisibility() == View.VISIBLE);
+        }
+        return visibilities;
     }
 
     /**
@@ -601,12 +613,14 @@ public class PlayerFrameMediatorTest {
      */
     @Test
     public void testSubFramesPosition() {
-        Pair<View, Rect> subFrame1 =
-                new Pair<>(Mockito.mock(View.class), new Rect(10, 20, 60, 120));
-        Pair<View, Rect> subFrame2 =
-                new Pair<>(Mockito.mock(View.class), new Rect(30, 130, 70, 160));
-        Pair<View, Rect> subFrame3 =
-                new Pair<>(Mockito.mock(View.class), new Rect(120, 35, 150, 65));
+        Context context = Robolectric.buildActivity(Activity.class).get();
+        View subFrame1View = new View(context);
+        View subFrame2View = new View(context);
+        View subFrame3View = new View(context);
+
+        Pair<View, Rect> subFrame1 = new Pair<>(subFrame1View, new Rect(10, 20, 60, 120));
+        Pair<View, Rect> subFrame2 = new Pair<>(subFrame2View, new Rect(30, 130, 70, 160));
+        Pair<View, Rect> subFrame3 = new Pair<>(subFrame3View, new Rect(120, 35, 150, 65));
 
         mMediator.addSubFrame(
                 subFrame1.first, subFrame1.second, Mockito.mock(PlayerFrameMediator.class));
@@ -617,40 +631,61 @@ public class PlayerFrameMediatorTest {
 
         // Initial view port setup.
         mMediator.updateViewportSize(100, 200, 1f);
-        List<View> expectedVisibleViews = new ArrayList<>();
-        List<Rect> expectedVisibleRects = new ArrayList<>();
-        expectedVisibleViews.add(subFrame1.first);
-        expectedVisibleViews.add(subFrame2.first);
-        expectedVisibleRects.add(subFrame1.second);
-        expectedVisibleRects.add(subFrame2.second);
-        Assert.assertEquals(expectedVisibleViews, mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS));
-        Assert.assertEquals(expectedVisibleRects, mModel.get(PlayerFrameProperties.SUBFRAME_RECTS));
+        List<View> expectedViews = new ArrayList<>();
+        List<Rect> expectedRects = new ArrayList<>();
+        List<Boolean> expectedVisibility = new ArrayList<>();
+        expectedViews.add(subFrame1.first);
+        expectedViews.add(subFrame2.first);
+        expectedViews.add(subFrame3.first);
+        expectedRects.add(subFrame1.second);
+        expectedRects.add(subFrame2.second);
+        expectedRects.add(subFrame3.second);
+        expectedVisibility.add(true);
+        expectedVisibility.add(true);
+        expectedVisibility.add(false);
+        Assert.assertEquals(expectedViews, mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS));
+        Assert.assertEquals(expectedRects, mModel.get(PlayerFrameProperties.SUBFRAME_RECTS));
+        Assert.assertEquals(expectedVisibility,
+                getVisibilities(mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS)));
 
         mMediator.scrollBy(100, 0);
-        expectedVisibleViews.clear();
-        expectedVisibleRects.clear();
-        expectedVisibleViews.add(subFrame3.first);
-        expectedVisibleRects.add(new Rect(20, 35, 50, 65));
-        Assert.assertEquals(expectedVisibleViews, mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS));
-        Assert.assertEquals(expectedVisibleRects, mModel.get(PlayerFrameProperties.SUBFRAME_RECTS));
+        expectedRects.set(2, new Rect(20, 35, 50, 65));
+        expectedVisibility.clear();
+        expectedVisibility.add(false);
+        expectedVisibility.add(false);
+        expectedVisibility.add(true);
+        Assert.assertEquals(expectedViews, mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS));
+        Assert.assertEquals(expectedRects, mModel.get(PlayerFrameProperties.SUBFRAME_RECTS));
+        Assert.assertEquals(expectedVisibility,
+                getVisibilities(mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS)));
 
         mMediator.scrollBy(-50, 0);
-        expectedVisibleViews.clear();
-        expectedVisibleRects.clear();
-        expectedVisibleViews.add(subFrame1.first);
-        expectedVisibleViews.add(subFrame2.first);
-        expectedVisibleViews.add(subFrame3.first);
-        expectedVisibleRects.add(new Rect(-40, 20, 10, 120));
-        expectedVisibleRects.add(new Rect(-20, 130, 20, 160));
-        expectedVisibleRects.add(new Rect(70, 35, 100, 65));
-        Assert.assertEquals(expectedVisibleViews, mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS));
-        Assert.assertEquals(expectedVisibleRects, mModel.get(PlayerFrameProperties.SUBFRAME_RECTS));
+        expectedRects.clear();
+        expectedRects.add(new Rect(-40, 20, 10, 120));
+        expectedRects.add(new Rect(-20, 130, 20, 160));
+        expectedRects.add(new Rect(70, 35, 100, 65));
+        expectedVisibility.clear();
+        expectedVisibility.add(true);
+        expectedVisibility.add(true);
+        expectedVisibility.add(true);
+        Assert.assertEquals(expectedViews, mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS));
+        Assert.assertEquals(expectedRects, mModel.get(PlayerFrameProperties.SUBFRAME_RECTS));
+        Assert.assertEquals(expectedVisibility,
+                getVisibilities(mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS)));
 
         mMediator.scrollBy(0, 200);
-        expectedVisibleViews.clear();
-        expectedVisibleRects.clear();
-        Assert.assertEquals(expectedVisibleViews, mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS));
-        Assert.assertEquals(expectedVisibleRects, mModel.get(PlayerFrameProperties.SUBFRAME_RECTS));
+        expectedRects.clear();
+        expectedRects.add(subFrame1.second);
+        expectedRects.add(subFrame2.second);
+        expectedRects.add(subFrame3.second);
+        expectedVisibility.clear();
+        expectedVisibility.add(false);
+        expectedVisibility.add(false);
+        expectedVisibility.add(false);
+        Assert.assertEquals(expectedViews, mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS));
+        Assert.assertEquals(expectedRects, mModel.get(PlayerFrameProperties.SUBFRAME_RECTS));
+        Assert.assertEquals(expectedVisibility,
+                getVisibilities(mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS)));
     }
 
     /**
@@ -1099,64 +1134,83 @@ public class PlayerFrameMediatorTest {
      */
     @Test
     public void testViewPortOnScaleByWithSubFrames() {
+        Context context = Robolectric.buildActivity(Activity.class).get();
+        View subFrame1View = new View(context);
+        View subFrame2View = new View(context);
+
         PlayerFrameMediator subFrame1Mediator = Mockito.mock(PlayerFrameMediator.class);
-        Pair<View, Rect> subFrame1 = new Pair<>(Mockito.mock(View.class), new Rect(10, 20, 60, 40));
+        Pair<View, Rect> subFrame1 = new Pair<>(subFrame1View, new Rect(10, 20, 60, 40));
         PlayerFrameMediator subFrame2Mediator = Mockito.mock(PlayerFrameMediator.class);
-        Pair<View, Rect> subFrame2 =
-                new Pair<>(Mockito.mock(View.class), new Rect(30, 50, 70, 160));
+        Pair<View, Rect> subFrame2 = new Pair<>(subFrame2View, new Rect(30, 50, 70, 160));
 
         mMediator.addSubFrame(subFrame1.first, subFrame1.second, subFrame1Mediator);
         mMediator.addSubFrame(subFrame2.first, subFrame2.second, subFrame2Mediator);
 
         // Both subframes should be visible.
         mMediator.updateViewportSize(50, 100, 1f);
-        List<View> expectedVisibleViews = new ArrayList<>();
-        List<Rect> expectedVisibleRects = new ArrayList<>();
-        expectedVisibleViews.add(subFrame1.first);
-        expectedVisibleViews.add(subFrame2.first);
-        expectedVisibleRects.add(subFrame1.second);
-        expectedVisibleRects.add(subFrame2.second);
-        Assert.assertEquals(expectedVisibleViews, mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS));
-        Assert.assertEquals(expectedVisibleRects, mModel.get(PlayerFrameProperties.SUBFRAME_RECTS));
+        List<View> expectedViews = new ArrayList<>();
+        List<Rect> expectedRects = new ArrayList<>();
+        List<Boolean> expectedVisibility = new ArrayList<>();
+        expectedViews.add(subFrame1.first);
+        expectedViews.add(subFrame2.first);
+        expectedRects.add(subFrame1.second);
+        expectedRects.add(subFrame2.second);
+        expectedVisibility.add(true);
+        expectedVisibility.add(true);
+        Assert.assertEquals(expectedViews, mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS));
+        Assert.assertEquals(expectedRects, mModel.get(PlayerFrameProperties.SUBFRAME_RECTS));
+        Assert.assertEquals(expectedVisibility,
+                getVisibilities(mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS)));
 
-        expectedVisibleViews.clear();
-        expectedVisibleRects.clear();
-        expectedVisibleViews.add(subFrame1.first);
-        expectedVisibleRects.add(new Rect(20, 40, 120, 80));
+        expectedRects.clear();
+        expectedRects.add(new Rect(20, 40, 120, 80));
+        expectedRects.add(new Rect(60, 100, 140, 320));
+        expectedVisibility.set(1, false);
 
         // During scaling the second subframe should disappear from the viewport.
         Assert.assertTrue(mMediator.scaleBy(2f, 0f, 0f));
-        Assert.assertEquals(expectedVisibleViews, mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS));
-        Assert.assertEquals(expectedVisibleRects, mModel.get(PlayerFrameProperties.SUBFRAME_RECTS));
+        Assert.assertEquals(expectedViews, mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS));
+        Assert.assertEquals(expectedRects, mModel.get(PlayerFrameProperties.SUBFRAME_RECTS));
+        Assert.assertEquals(expectedVisibility,
+                getVisibilities(mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS)));
         Matrix expectedMatrix = new Matrix();
         expectedMatrix.setScale(2f, 2f);
         verify(subFrame1Mediator)
                 .setBitmapScaleMatrix(argThat(new MatrixMatcher(expectedMatrix)), eq(2f));
 
         Assert.assertTrue(mMediator.scaleFinished(1f, 0f, 0f));
-        Assert.assertEquals(expectedVisibleViews, mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS));
-        Assert.assertEquals(expectedVisibleRects, mModel.get(PlayerFrameProperties.SUBFRAME_RECTS));
+        Assert.assertEquals(expectedViews, mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS));
+        Assert.assertEquals(expectedRects, mModel.get(PlayerFrameProperties.SUBFRAME_RECTS));
+        Assert.assertEquals(expectedVisibility,
+                getVisibilities(mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS)));
         expectedMatrix.reset();
         verify(subFrame1Mediator)
                 .setBitmapScaleMatrix(argThat(new MatrixMatcher(expectedMatrix)), eq(1f));
         verify(subFrame1Mediator).forceRedraw();
+        verify(subFrame1Mediator).resetScaleFactor();
 
         // Scroll so the second subframe is back in the viewport..
         mMediator.scrollBy(20, 40);
-        expectedVisibleViews.add(subFrame2.first);
-        expectedVisibleRects.clear();
-        expectedVisibleRects.add(new Rect(0, 0, 100, 40));
-        expectedVisibleRects.add(new Rect(40, 60, 120, 280));
-        Assert.assertEquals(expectedVisibleViews, mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS));
-        Assert.assertEquals(expectedVisibleRects, mModel.get(PlayerFrameProperties.SUBFRAME_RECTS));
+        expectedRects.clear();
+        expectedRects.add(new Rect(0, 0, 100, 40));
+        expectedRects.add(new Rect(40, 60, 120, 280));
+        expectedVisibility.clear();
+        expectedVisibility.add(true);
+        expectedVisibility.add(true);
+        Assert.assertEquals(expectedViews, mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS));
+        Assert.assertEquals(expectedRects, mModel.get(PlayerFrameProperties.SUBFRAME_RECTS));
+        Assert.assertEquals(expectedVisibility,
+                getVisibilities(mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS)));
 
         // Scale out keeping the subframes in the viewport..
         Assert.assertTrue(mMediator.scaleBy(0.75f, 25f, 50f));
-        expectedVisibleRects.clear();
-        expectedVisibleRects.add(new Rect(6, 13, 81, 43));
-        expectedVisibleRects.add(new Rect(36, 58, 96, 223));
-        Assert.assertEquals(expectedVisibleViews, mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS));
-        Assert.assertEquals(expectedVisibleRects, mModel.get(PlayerFrameProperties.SUBFRAME_RECTS));
+        expectedRects.clear();
+        expectedRects.add(new Rect(6, 13, 81, 43));
+        expectedRects.add(new Rect(36, 58, 96, 223));
+        Assert.assertEquals(expectedViews, mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS));
+        Assert.assertEquals(expectedRects, mModel.get(PlayerFrameProperties.SUBFRAME_RECTS));
+        Assert.assertEquals(expectedVisibility,
+                getVisibilities(mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS)));
         expectedMatrix.setScale(0.75f, 0.75f);
         verify(subFrame1Mediator)
                 .setBitmapScaleMatrix(argThat(new MatrixMatcher(expectedMatrix)), eq(1.5f));
@@ -1242,8 +1296,11 @@ public class PlayerFrameMediatorTest {
      */
     @Test
     public void testViewPortOnScaleByWithNestedSubFrames() {
+        Context context = Robolectric.buildActivity(Activity.class).get();
+        View subframeView = new View(context);
+
         PlayerFrameMediator subFrameMediator = Mockito.mock(PlayerFrameMediator.class);
-        Pair<View, Rect> subFrame = new Pair<>(Mockito.mock(View.class), new Rect(10, 20, 60, 40));
+        Pair<View, Rect> subFrame = new Pair<>(subframeView, new Rect(10, 20, 60, 40));
         mMediator.addSubFrame(subFrame.first, subFrame.second, subFrameMediator);
 
         // The subframe should be visible.
@@ -1282,7 +1339,9 @@ public class PlayerFrameMediatorTest {
         verify(subFrameMediator)
                 .setBitmapScaleMatrix(argThat(new MatrixMatcher(scaleMatrix)), eq(1.5f));
 
-        // Force a redraw and ensure it is recursive.
+        // Simulate scaleFinished() by force a scale factor clear and redraw.
+        mMediator.resetScaleFactor();
+        verify(subFrameMediator).resetScaleFactor();
         mMediator.forceRedraw();
         verify(subFrameMediator).forceRedraw();
     }

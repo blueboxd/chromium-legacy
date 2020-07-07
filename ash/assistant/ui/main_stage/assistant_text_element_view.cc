@@ -18,8 +18,11 @@ namespace ash {
 // AssistantTextElementView ----------------------------------------------------
 
 AssistantTextElementView::AssistantTextElementView(
-    const AssistantTextElement* text_element) {
-  InitLayout(text_element);
+    const AssistantTextElement* text_element)
+    : AssistantTextElementView(text_element->text()) {}
+
+AssistantTextElementView::AssistantTextElementView(const std::string& text) {
+  InitLayout(text);
 }
 
 AssistantTextElementView::~AssistantTextElementView() = default;
@@ -46,13 +49,12 @@ void AssistantTextElementView::ChildPreferredSizeChanged(views::View* child) {
   PreferredSizeChanged();
 }
 
-void AssistantTextElementView::InitLayout(
-    const AssistantTextElement* text_element) {
+void AssistantTextElementView::InitLayout(const std::string& text) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   // Label.
-  label_ = AddChildView(
-      std::make_unique<views::Label>(base::UTF8ToUTF16(text_element->text())));
+  label_ =
+      AddChildView(std::make_unique<views::Label>(base::UTF8ToUTF16(text)));
   label_->SetAutoColorReadabilityEnabled(false);
   label_->SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
   label_->SetEnabledColor(kTextColorPrimary);

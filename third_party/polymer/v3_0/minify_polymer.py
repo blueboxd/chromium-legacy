@@ -53,7 +53,7 @@ def main():
     node.RunNode([
         node_modules.PathToUglify(), bundled_js,
         # TODO(dpapad): Figure out a way to deduplicate LICENSE headers.
-        #'--comments', '"/Copyright|license|LICENSE/"',
+        #'--comments', '/Copyright|license|LICENSE/',
         '--output', minified_js])
 
     # Copy generated JS bundle back to the original location.

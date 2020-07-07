@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <memory>
 
+#include "base/base64.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/metrics/metrics_provider.h"
@@ -17,6 +18,7 @@
 #include "components/variations/variations_associated_data.h"
 #include "components/version_info/android/channel_getter.h"
 #include "content/public/browser/browser_context.h"
+#include "google_apis/google_api_keys.h"
 #include "weblayer/browser/android/metrics/weblayer_metrics_service_accessor.h"
 #include "weblayer/browser/java/jni/MetricsServiceClient_jni.h"
 #include "weblayer/browser/system_network_context_manager.h"
@@ -120,6 +122,12 @@ void WebLayerMetricsServiceClient::RegisterSyntheticMultiGroupFieldTrial(
 
 int32_t WebLayerMetricsServiceClient::GetProduct() {
   return metrics::ChromeUserMetricsExtension::ANDROID_WEBLAYER;
+}
+
+std::string WebLayerMetricsServiceClient::GetUploadSigningKey() {
+  std::string decoded_key;
+  base::Base64Decode(google_apis::GetMetricsKey(), &decoded_key);
+  return decoded_key;
 }
 
 int WebLayerMetricsServiceClient::GetSampleRatePerMille() {

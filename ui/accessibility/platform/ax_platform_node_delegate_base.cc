@@ -521,6 +521,10 @@ bool AXPlatformNodeDelegateBase::IsMinimized() const {
   return false;
 }
 
+bool AXPlatformNodeDelegateBase::IsText() const {
+  return ui::IsText(GetData().role);
+}
+
 bool AXPlatformNodeDelegateBase::IsWebContent() const {
   return false;
 }

@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/post_message_helper.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_portal_activate_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_window_post_message_options.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -442,6 +443,33 @@ void HTMLPortalElement::RemovedFrom(ContainerNode& node) {
 }
 
 void HTMLPortalElement::DefaultEventHandler(Event& event) {
+  // Support the new behavior whereby clicking (or equivalent operations via
+  // keyboard and other input modalities) a portal element causes it to activate
+  // unless prevented.
+  //
+  // TODO(jbroman): Ideally we wouldn't need to bring up a script state context
+  // to do it, but presently it's how errors are reported and also required for
+  // serialization of the (absent) activation data.
+  if (RuntimeEnabledFeatures::PortalsDefaultActivationEnabled() &&
+      event.type() == event_type_names::kDOMActivate) {
+    if (LocalFrame* frame = GetDocument().GetFrame()) {
+      ScriptState* script_state = ToScriptStateForMainWorld(frame);
+      ScriptState::Scope scope(script_state);
+      ExceptionState exception_state(script_state->GetIsolate(),
+                                     ExceptionState::kUnknownContext, nullptr,
+                                     nullptr);
+      activate(ToScriptStateForMainWorld(frame),
+               MakeGarbageCollected<PortalActivateOptions>(), exception_state);
+      if (exception_state.HadException()) {
+        // The exception will be reported as an unhandled promise. This is
+        // slightly weird, but gets the point across.
+        ScriptPromise::Reject(script_state, exception_state);
+        exception_state.ClearException();
+      }
+    }
+    event.SetDefaultHandled();
+  }
+
   if (HandleKeyboardActivation(event))
     return;
   HTMLFrameOwnerElement::DefaultEventHandler(event);

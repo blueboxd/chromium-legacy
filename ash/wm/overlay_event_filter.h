@@ -6,7 +6,7 @@
 #define ASH_WM_OVERLAY_EVENT_FILTER_H_
 
 #include "ash/ash_export.h"
-#include "ash/session/session_observer.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ui/aura/window.h"

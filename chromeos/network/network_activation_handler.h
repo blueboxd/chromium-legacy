@@ -19,18 +19,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkActivationHandler {
  public:
   virtual ~NetworkActivationHandler() = default;
 
-  // ActivateNetwork() will start an asynchronous activation attempt.
-  // |carrier| may be empty or may specify a carrier to activate.
-  // On success, |success_callback| will be called.
-  // On failure, |error_callback| will be called with |error_name| one of:
-  //  kErrorNotFound if no network matching |service_path| is found.
-  //  kErrorShillError if a DBus or Shill error occurred.
-  virtual void Activate(
-      const std::string& service_path,
-      const std::string& carrier,
-      const base::Closure& success_callback,
-      const network_handler::ErrorCallback& error_callback) = 0;
-
   // CompleteActivation() will start an asynchronous activation completion
   // attempt.
   // On success, |success_callback| will be called.

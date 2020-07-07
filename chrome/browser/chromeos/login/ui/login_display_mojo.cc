@@ -216,10 +216,6 @@ bool LoginDisplayMojo::IsSigninInProgress() const {
   return false;
 }
 
-void LoginDisplayMojo::Signout() {
-  NOTIMPLEMENTED();
-}
-
 void LoginDisplayMojo::OnSigninScreenReady() {
   if (delegate_)
     delegate_->OnSigninScreenReady();

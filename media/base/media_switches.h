@@ -173,6 +173,7 @@ MEDIA_EXPORT extern const base::Feature kVideoBlitColorAccuracy;
 MEDIA_EXPORT extern const base::Feature kWakeLockOptimisationHiddenMuted;
 MEDIA_EXPORT extern const base::Feature kWidevineAv1;
 MEDIA_EXPORT extern const base::Feature kWidevineAv1ForceSupportForTesting;
+MEDIA_EXPORT extern const base::Feature kResolutionBasedDecoderPriority;
 
 #if defined(ARCH_CPU_X86_FAMILY) && defined(OS_CHROMEOS)
 MEDIA_EXPORT extern const base::Feature kVp9kSVCHWDecoding;

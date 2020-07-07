@@ -46,7 +46,9 @@
 #include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
 #endif
 
+namespace infobars {
 class InfoBarAndroid;
+}
 
 constexpr char kTabUnderVisibleTime[] = "Tab.TabUnder.VisibleTime";
 constexpr char kTabUnderVisibleTimeBefore[] = "Tab.TabUnder.VisibleTimeBefore";
@@ -409,14 +411,14 @@ class BlockTabUnderTest : public PopupOpenerTabHelperTest {
         TabUnderNavigationThrottle::kBlockTabUnders);
   }
 
-  InfoBarAndroid* GetInfoBar() {
+  infobars::InfoBarAndroid* GetInfoBar() {
 #if defined(OS_ANDROID)
     auto* service = InfoBarService::FromWebContents(web_contents());
     if (!service->infobar_count())
       return nullptr;
     EXPECT_EQ(1u, service->infobar_count());
-    InfoBarAndroid* infobar =
-        static_cast<InfoBarAndroid*>(service->infobar_at(0));
+    infobars::InfoBarAndroid* infobar =
+        static_cast<infobars::InfoBarAndroid*>(service->infobar_at(0));
     EXPECT_TRUE(infobar);
     return infobar;
 #endif  // defined(OS_ANDROID)
@@ -607,7 +609,7 @@ TEST_F(BlockTabUnderTest, ClickThroughAction) {
   EXPECT_FALSE(NavigateAndCommitWithoutGesture(blocked_url));
   EXPECT_FALSE(NavigateAndCommitWithoutGesture(blocked_url));
 #if defined(OS_ANDROID)
-  InfoBarAndroid* infobar = GetInfoBar();
+  infobars::InfoBarAndroid* infobar = GetInfoBar();
   base::android::JavaParamRef<jobject> jobj(nullptr);
   infobar->OnLinkClicked(nullptr /* env */, jobj);
 #else

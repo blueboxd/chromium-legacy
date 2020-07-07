@@ -127,6 +127,28 @@ void CastDisplayConfigurator::OnConfigurationChanged() {
       false /* force_initial_configure */));
 }
 
+void CastDisplayConfigurator::EnableDisplay() {
+  if (!delegate_ || !display_)
+    return;
+
+  display::DisplayConfigurationParams display_config_params(
+      display_->display_id(), gfx::Point(), display_->native_mode());
+  delegate_->Configure(display_config_params, base::BindOnce([](bool status) {
+                         LOG_IF(FATAL, !status) << "Failed to enable display";
+                       }));
+}
+
+void CastDisplayConfigurator::DisableDisplay() {
+  if (!delegate_ || !display_)
+    return;
+
+  display::DisplayConfigurationParams display_config_params(
+      display_->display_id(), gfx::Point(), nullptr);
+  delegate_->Configure(display_config_params, base::BindOnce([](bool status) {
+                         LOG_IF(ERROR, !status) << "Failed to disable display";
+                       }));
+}
+
 void CastDisplayConfigurator::ConfigureDisplayFromCommandLine() {
   const gfx::Size size = GetScreenResolution();
   UpdateScreen(kStubDisplayId, gfx::Rect(size), GetDeviceScaleFactor(size),

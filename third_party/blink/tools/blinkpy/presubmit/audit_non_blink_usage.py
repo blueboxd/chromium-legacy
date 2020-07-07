@@ -336,6 +336,7 @@ _CONFIG = [
             'cc::SnapStrictness',
             'cc::TargetSnapAreaElementIds',
             'gfx::RectToSkRect',
+            'gfx::RectToSkIRect',
             'gfx::ScrollOffset',
             'ui::ScrollGranularity',
 

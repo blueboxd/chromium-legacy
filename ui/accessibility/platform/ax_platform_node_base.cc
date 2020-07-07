@@ -588,43 +588,6 @@ bool AXPlatformNodeBase::IsDocument() const {
   return ui::IsDocument(GetData().role);
 }
 
-bool AXPlatformNodeBase::IsTextOnlyObject() const {
-  return ui::IsText(GetData().role);
-}
-
-bool AXPlatformNodeBase::IsTextField() const {
-  return GetData().IsTextField();
-}
-
-bool AXPlatformNodeBase::IsPlainTextField() const {
-  return GetData().IsPlainTextField();
-}
-
-bool AXPlatformNodeBase::IsRichTextField() const {
-  return GetData().IsRichTextField();
-}
-
-base::string16 AXPlatformNodeBase::GetHypertext() const {
-  if (!delegate_)
-    return base::string16();
-
-  // Hypertext of platform leaves, which internally are composite objects, are
-  // represented with the inner text of the internal composite object. These
-  // don't exist on non-web content.
-  if (IsChildOfLeaf())
-    return GetInnerText();
-
-  if (hypertext_.needs_update)
-    UpdateComputedHypertext();
-  return hypertext_.hypertext;
-}
-
-base::string16 AXPlatformNodeBase::GetInnerText() const {
-  if (!delegate_)
-    return base::string16();
-  return delegate_->GetInnerText();
-}
-
 bool AXPlatformNodeBase::IsSelectionItemSupported() const {
   switch (GetData().role) {
     // An ARIA 1.1+ role of "cell", or a role of "row" inside
@@ -667,6 +630,43 @@ bool AXPlatformNodeBase::IsSelectionItemSupported() const {
     default:
       return false;
   }
+}
+
+bool AXPlatformNodeBase::IsTextField() const {
+  return GetData().IsTextField();
+}
+
+bool AXPlatformNodeBase::IsPlainTextField() const {
+  return GetData().IsPlainTextField();
+}
+
+bool AXPlatformNodeBase::IsRichTextField() const {
+  return GetData().IsRichTextField();
+}
+
+bool AXPlatformNodeBase::IsText() const {
+  return delegate_ && delegate_->IsText();
+}
+
+base::string16 AXPlatformNodeBase::GetHypertext() const {
+  if (!delegate_)
+    return base::string16();
+
+  // Hypertext of platform leaves, which internally are composite objects, are
+  // represented with the inner text of the internal composite object. These
+  // don't exist on non-web content.
+  if (IsChildOfLeaf())
+    return GetInnerText();
+
+  if (hypertext_.needs_update)
+    UpdateComputedHypertext();
+  return hypertext_.hypertext;
+}
+
+base::string16 AXPlatformNodeBase::GetInnerText() const {
+  if (!delegate_)
+    return base::string16();
+  return delegate_->GetInnerText();
 }
 
 base::string16 AXPlatformNodeBase::GetRangeValueText() const {
@@ -1356,7 +1356,7 @@ void AXPlatformNodeBase::UpdateComputedHypertext() const {
     // Similar to Firefox, we don't expose text-only objects in IA2 and ATK
     // hypertext with the embedded object character. We copy all of their text
     // instead.
-    if (child_iter->IsTextOnlyObject()) {
+    if (child_iter->IsText()) {
       hypertext_.hypertext += child_iter->GetNameAsString16();
     } else {
       int32_t char_offset = static_cast<int32_t>(hypertext_.hypertext.size());
@@ -1494,12 +1494,12 @@ int32_t AXPlatformNodeBase::GetHypertextOffsetFromChild(
   // Handle the case when we are dealing with a text-only child.
   // Text-only children should not be present at tree roots and so no
   // cross-tree traversal is necessary.
-  if (child->IsTextOnlyObject()) {
+  if (child->IsText()) {
     int32_t hypertext_offset = 0;
     for (auto child_iter = AXPlatformNodeChildrenBegin();
          child_iter != AXPlatformNodeChildrenEnd() && child_iter.get() != child;
          ++child_iter) {
-      if (child_iter->IsTextOnlyObject()) {
+      if (child_iter->IsText()) {
         hypertext_offset +=
             static_cast<int32_t>(child_iter->GetHypertext().size());
       } else {
@@ -1583,7 +1583,7 @@ int AXPlatformNodeBase::GetHypertextOffsetFromEndpoint(
   if (!common_parent)
     return -1;
 
-  DCHECK(!(common_parent->IsTextOnlyObject()));
+  DCHECK(!(common_parent->IsText()));
 
   // Case 2. Is the selection endpoint inside a descendant of this object?
   //
@@ -1595,7 +1595,7 @@ int AXPlatformNodeBase::GetHypertextOffsetFromEndpoint(
         GetHypertextOffsetFromDescendant(endpoint_object);
     auto* parent = static_cast<AXPlatformNodeBase*>(
         FromNativeViewAccessible(endpoint_object->GetParent()));
-    if (parent == this && endpoint_object->IsTextOnlyObject()) {
+    if (parent == this && endpoint_object->IsText()) {
       // Due to a historical design decision, the hypertext of the immediate
       // parents of text objects includes all their text. We therefore need to
       // adjust the hypertext offset in the parent by adding any text offset.
@@ -1794,10 +1794,10 @@ void AXPlatformNodeBase::ComputeHypertextRemovedAndInserted(
   *old_len = 0;
   *new_len = 0;
 
-  // Do not compute for static text objects, otherwise redundant text change
+  // Do not compute for text objects, otherwise redundant text change
   // announcements will occur in live regions, as the parent hypertext also
   // changes.
-  if (GetData().role == ax::mojom::Role::kStaticText)
+  if (IsText())
     return;
 
   const base::string16& old_text = old_hypertext.hypertext;
@@ -1955,7 +1955,7 @@ std::string AXPlatformNodeBase::GetInvalidValue() const {
   if (static_cast<ax::mojom::InvalidState>(
           target->GetIntAttribute(ax::mojom::IntAttribute::kInvalidState)) ==
           ax::mojom::InvalidState::kNone &&
-      target->IsTextOnlyObject() && target->GetParent()) {
+      target->IsText() && target->GetParent()) {
     // Text nodes need to reflect the invalid state of their parent object,
     // otherwise spelling and grammar errors communicated through aria-invalid
     // won't be reflected in text attributes.

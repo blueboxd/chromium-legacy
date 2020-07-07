@@ -643,7 +643,6 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="6154478581116148741">Ative o bloqueio da tela em Configurações para exportar suas senhas deste dispositivo</translation>
 <translation id="6157392216611456285">Selecionar <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720">Economia de dados de <ph name="PERCENT" /></translation>
-<translation id="6192333916571137726">Fazer o download do arquivo</translation>
 <translation id="6201345951596836663">Link copiado</translation>
 <translation id="6206830853671714236">Escolha quando fazer o download</translation>
 <translation id="6210748933810148297">Não é <ph name="EMAIL" />?</translation>
@@ -878,6 +877,7 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="8013372441983637696">Limpar também seus dados do Chrome deste dispositivo</translation>
 <translation id="8015452622527143194">Retornar tudo na página para o tamanho padrão</translation>
 <translation id="8026334261755873520">Limpar dados de navegação</translation>
+<translation id="8027863900915310177">Escolha um local para fazer o download</translation>
 <translation id="8035133914807600019">Nova pasta...</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> dias restantes</translation>
 <translation id="804335162455518893">Cartão SD não encontrado</translation>

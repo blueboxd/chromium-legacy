@@ -1049,6 +1049,7 @@ test("views_unittests") {
     "bubble/bubble_border_unittest.cc",
     "bubble/bubble_dialog_delegate_view_unittest.cc",
     "bubble/bubble_frame_view_unittest.cc",
+    "bubble/info_bubble_unittest.cc",
     "controls/button/button_unittest.cc",
     "controls/button/checkbox_unittest.cc",
     "controls/button/image_button_factory_unittest.cc",

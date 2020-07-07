@@ -5,9 +5,9 @@
 {%-   endfor -%}
 {%-   if method.response_parameters != None %}
 {%-     if method.response_parameters|length == 0 %}
-   * @return {Promise}
+   * @return {!Promise}
 {%-     else %}
-   * @return {Promise<{
+   * @return {!Promise<{
 {%-       for response_parameter in method.response_parameters %}
         {{response_parameter.name}}: {{response_parameter.kind|lite_closure_type_with_nullability}},
 {%-       endfor %}

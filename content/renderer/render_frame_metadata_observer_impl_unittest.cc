@@ -42,7 +42,9 @@ class MockRenderFrameMetadataObserverClient
                void(uint32_t frame_token,
                     const cc::RenderFrameMetadata& metadata));
   MOCK_METHOD1(OnFrameSubmissionForTesting, void(uint32_t frame_token));
+#if defined(OS_ANDROID)
   MOCK_METHOD1(OnRootScrollOffsetChanged, void(const gfx::Vector2dF& offset));
+#endif
 
  private:
   mojo::Receiver<mojom::RenderFrameMetadataObserverClient>

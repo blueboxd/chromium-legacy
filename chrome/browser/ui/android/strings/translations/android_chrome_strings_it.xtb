@@ -168,7 +168,7 @@ Tocca una parola per eseguire una ricerca. Per perfezionare la ricerca, tocca e 
 <translation id="2353636109065292463">Controllare la connessione a Internet</translation>
 <translation id="2359808026110333948">Continua</translation>
 <translation id="2369533728426058518">schede aperte</translation>
-<translation id="2377295302146152376">Impossibile controllare la disponibilità di aggiornamenti in Chrome</translation>
+<translation id="2377295302146152376">Chrome non può controllare la disponibilità di aggiornamenti</translation>
 <translation id="2387895666653383613">Ridimensionamento testo</translation>
 <translation id="2394602618534698961">I file scaricati vengono visualizzati qui</translation>
 <translation id="2407481962792080328">Questa funzionalità viene attivata quando accedi al tuo Account Google</translation>
@@ -642,7 +642,6 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="6154478581116148741">Attiva il blocco schermo in Impostazioni per esportare le tue password da questo dispositivo</translation>
 <translation id="6157392216611456285">Scegli <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720">Riduzioni dei dati: <ph name="PERCENT" /></translation>
-<translation id="6192333916571137726">Scarica file</translation>
 <translation id="6201345951596836663">Link copiato</translation>
 <translation id="6206830853671714236">Scegli quando effettuare il download</translation>
 <translation id="6210748933810148297">Non sei <ph name="EMAIL" />?</translation>
@@ -877,6 +876,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="8013372441983637696">Cancella i tuoi dati di Chrome anche da questo dispositivo</translation>
 <translation id="8015452622527143194">Ripristina le dimensioni predefinite della pagina</translation>
 <translation id="8026334261755873520">Cancella dati di navigazione</translation>
+<translation id="8027863900915310177">Scegli dove scaricare il file</translation>
 <translation id="8035133914807600019">Nuova cartella…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> giorni rimanenti</translation>
 <translation id="804335162455518893">Scheda SD non trovata</translation>

@@ -441,6 +441,8 @@ jumbo_static_library("test_support") {
     "mock_password_form_manager_for_ui.h",
     "mock_password_store.cc",
     "mock_password_store.h",
+    "mock_password_sync_metadata_store.cc",
+    "mock_password_sync_metadata_store.h",
     "password_manager_test_utils.cc",
     "password_manager_test_utils.h",
     "stub_credentials_filter.cc",

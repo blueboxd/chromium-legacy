@@ -2341,7 +2341,6 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image,
   // - The caller allows hardware decodes.
   // - We are using the transfer cache (OOP-R).
   // - The image does not require downscaling for uploading (see TODO below).
-  // - The image does not require subsetting.
   // - The image is supported according to the profiles advertised by the GPU
   //   service.
   //
@@ -2354,7 +2353,6 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image,
   bool do_hardware_accelerated_decode = false;
   if (allow_hardware_decode && mode == DecodedDataMode::kTransferCache &&
       upload_scale_mip_level == 0 &&
-      draw_image.paint_image().subset_rect().IsEmpty() &&
       context_->ContextSupport()->CanDecodeWithHardwareAcceleration(
           image_metadata)) {
     DCHECK(image_metadata);

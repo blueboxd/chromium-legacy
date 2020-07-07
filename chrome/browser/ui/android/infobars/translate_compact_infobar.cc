@@ -40,8 +40,9 @@ std::unique_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
 
 TranslateCompactInfoBar::TranslateCompactInfoBar(
     std::unique_ptr<translate::TranslateInfoBarDelegate> delegate)
-    : InfoBarAndroid(std::move(delegate),
-                     base::BindRepeating(&ResourceMapper::MapToJavaDrawableId)),
+    : infobars::InfoBarAndroid(
+          std::move(delegate),
+          base::BindRepeating(&ResourceMapper::MapToJavaDrawableId)),
       action_flags_(FLAG_NONE) {
   GetDelegate()->AddObserver(this);
 
@@ -90,7 +91,7 @@ void TranslateCompactInfoBar::ProcessButton(int action) {
     return;  // We're closing; don't call anything, it might access the owner.
 
   translate::TranslateInfoBarDelegate* delegate = GetDelegate();
-  if (action == InfoBarAndroid::ACTION_TRANSLATE) {
+  if (action == infobars::InfoBarAndroid::ACTION_TRANSLATE) {
     action_flags_ |= FLAG_TRANSLATE;
     delegate->Translate();
     if (delegate->ShouldAutoAlwaysTranslate()) {
@@ -98,17 +99,18 @@ void TranslateCompactInfoBar::ProcessButton(int action) {
       Java_TranslateCompactInfoBar_setAutoAlwaysTranslate(env,
                                                           GetJavaInfoBar());
     }
-  } else if (action == InfoBarAndroid::ACTION_TRANSLATE_SHOW_ORIGINAL) {
+  } else if (action ==
+             infobars::InfoBarAndroid::ACTION_TRANSLATE_SHOW_ORIGINAL) {
     action_flags_ |= FLAG_REVERT;
     delegate->RevertWithoutClosingInfobar();
   } else {
-    DCHECK_EQ(InfoBarAndroid::ACTION_NONE, action);
+    DCHECK_EQ(infobars::InfoBarAndroid::ACTION_NONE, action);
   }
 }
 
 void TranslateCompactInfoBar::SetJavaInfoBar(
     const base::android::JavaRef<jobject>& java_info_bar) {
-  InfoBarAndroid::SetJavaInfoBar(java_info_bar);
+  infobars::InfoBarAndroid::SetJavaInfoBar(java_info_bar);
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_TranslateCompactInfoBar_setNativePtr(env, java_info_bar,
                                             reinterpret_cast<intptr_t>(this));

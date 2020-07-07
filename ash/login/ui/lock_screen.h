@@ -7,7 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/login_types.h"
-#include "ash/session/session_observer.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/tray_action/tray_action.h"
 #include "ash/tray_action/tray_action_observer.h"
 #include "base/macros.h"

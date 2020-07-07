@@ -218,7 +218,11 @@ IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest,
 
   // 2) Start navigation to B, but don't commit yet.
   TestNavigationManager manager(shell()->web_contents(), url_b);
-  shell()->LoadURL(url_b);
+  // Using PAGE_TRANSITION_LINK will avoid trying to swap BrowsingInstances when
+  // we kick off the navigation. And, thus, the navigation should be committed
+  // into the speculative RenderFrameHost initially created.
+  shell()->LoadURLForFrame(url_b, std::string(),
+                           ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK));
   EXPECT_TRUE(manager.WaitForRequestStart());
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();

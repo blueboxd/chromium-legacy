@@ -7,6 +7,7 @@
 
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "ui/views/controls/button/menu_button_controller.h"
+#include "ui/views/widget/widget_observer.h"
 
 class Browser;
 class ExtensionsToolbarContainer;

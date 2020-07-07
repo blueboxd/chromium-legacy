@@ -64,10 +64,10 @@ BrowserPersister::BrowserPersister(const base::FilePath& path,
       rebuild_on_next_save_(false),
       crypto_key_(decryption_key) {
   browser_->AddObserver(this);
-  command_storage_manager_->ScheduleGetCurrentSessionCommands(
+  command_storage_manager_->GetCurrentSessionCommands(
       base::BindOnce(&BrowserPersister::OnGotCurrentSessionCommands,
-                     base::Unretained(this)),
-      decryption_key, &cancelable_task_tracker_);
+                     weak_factory_.GetWeakPtr()),
+      decryption_key);
 }
 
 BrowserPersister::~BrowserPersister() {

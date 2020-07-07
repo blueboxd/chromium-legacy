@@ -31,7 +31,6 @@
 
 #include "base/feature_list.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -220,19 +219,19 @@ Response InspectorDOMStorageAgent::FindStorageArea(
         "Frame not found for the given security origin");
   }
   if (is_local_storage) {
-    if (!frame->GetDocument()->GetSecurityOrigin()->CanAccessLocalStorage()) {
+    if (!frame->DomWindow()->GetSecurityOrigin()->CanAccessLocalStorage()) {
       return Response::ServerError(
           "Security origin cannot access local storage");
     }
     storage_area = StorageArea::CreateForInspectorAgent(
         frame,
         StorageController::GetInstance()->GetLocalStorageArea(
-            frame->GetDocument()->GetSecurityOrigin()),
+            frame->DomWindow()->GetSecurityOrigin()),
         StorageArea::StorageType::kLocalStorage);
     return Response::Success();
   }
 
-  if (!frame->GetDocument()->GetSecurityOrigin()->CanAccessSessionStorage()) {
+  if (!frame->DomWindow()->GetSecurityOrigin()->CanAccessSessionStorage()) {
     return Response::ServerError(
         "Security origin cannot access session storage");
   }
@@ -244,8 +243,7 @@ Response InspectorDOMStorageAgent::FindStorageArea(
 
   storage_area = StorageArea::CreateForInspectorAgent(
       frame,
-      session_namespace->GetCachedArea(
-          frame->GetDocument()->GetSecurityOrigin()),
+      session_namespace->GetCachedArea(frame->DomWindow()->GetSecurityOrigin()),
       StorageArea::StorageType::kSessionStorage);
   return Response::Success();
 }

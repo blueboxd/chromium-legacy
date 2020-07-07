@@ -9,9 +9,9 @@
 #include <string>
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/public/cpp/toast_data.h"
 #include "ash/public/cpp/toast_manager.h"
-#include "ash/session/session_observer.h"
 #include "ash/system/toast/toast_overlay.h"
 #include "base/containers/circular_deque.h"
 #include "base/memory/weak_ptr.h"

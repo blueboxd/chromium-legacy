@@ -93,6 +93,9 @@ content::WebUIDataSource* CreateUntrustedWebUIDataSource() {
   untrusted_source->AddResourcePath("content.js", IDR_KALEIDOSCOPE_CONTENT_JS);
   untrusted_source->AddResourcePath("messages.js",
                                     IDR_KALEIDOSCOPE_MESSAGES_JS);
+  untrusted_source->AddResourcePath("toolbar.js", IDR_KALEIDOSCOPE_TOOLBAR_JS);
+  untrusted_source->AddResourcePath("side_nav_container.js",
+                                    IDR_KALEIDOSCOPE_SIDE_NAV_CONTAINER_JS);
 
   untrusted_source->AddResourcePath("geometry.mojom-lite.js",
                                     IDR_GEOMETRY_MOJOM_LITE_JS);

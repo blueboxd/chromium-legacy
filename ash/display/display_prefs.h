@@ -9,7 +9,7 @@
 #include <array>
 
 #include "ash/ash_export.h"
-#include "ash/session/session_observer.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "base/optional.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/display/display.h"

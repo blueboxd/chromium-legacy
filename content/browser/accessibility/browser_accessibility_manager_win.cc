@@ -465,8 +465,7 @@ void BrowserAccessibilityManagerWin::FireUiaPropertyChangedEvent(
   // UIA_AriaPropertiesPropertyId-hidden event on non-text node marked as
   // ignored.
   if (node->IsIgnored() || base::Contains(ignored_changed_nodes_, node)) {
-    if (uia_property != UIA_AriaPropertiesPropertyId ||
-        node->IsTextOnlyObject())
+    if (uia_property != UIA_AriaPropertiesPropertyId || node->IsText())
       return;
   }
 

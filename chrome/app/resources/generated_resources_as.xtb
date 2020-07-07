@@ -933,6 +933,7 @@
 <translation id="2151576029659734873">অমান্য টেব ইণ্ডেক্স দিয়া হৈছে।</translation>
 <translation id="2152281589789213846">আপোনাৰ প্ৰ’ফাইলটোত প্ৰিণ্টাৰসমূহ যোগ কৰক</translation>
 <translation id="2154484045852737596">কাৰ্ড সম্পাদনা কৰক</translation>
+<translation id="2154697841132053118">কথন চিনাক্ত কৰি থকা হৈছে…</translation>
 <translation id="2154710561487035718">URL প্ৰতিলিপি কৰক</translation>
 <translation id="2155772377859296191"><ph name="WIDTH" /> x <ph name="HEIGHT" /> যেন লাগিছে</translation>
 <translation id="2156294658807918600">সেৱা কৰ্মী: <ph name="SCRIPT_URL" /></translation>
@@ -1192,7 +1193,6 @@
 <translation id="2470702053775288986">অসমর্থিত এক্সটেনশ্বন অক্ষম কৰা হ’ল</translation>
 <translation id="2471469610750100598">ক’লা (ডিফ’ল্ট)</translation>
 <translation id="2473195200299095979">এই পৃষ্ঠাটো অনুবাদ কৰক</translation>
-<translation id="2474848500897222119"><ph name="PRINTER_NAME" />ৰ চিয়াহী শেষ হৈছে</translation>
 <translation id="2475982808118771221">কোনো আসোঁৱাহ হৈছে</translation>
 <translation id="2476578072172137802">ছাইটৰ ছেটিংসমূহ</translation>
 <translation id="2478176599153288112">"<ph name="EXTENSION" />"ৰ মিডিয়া ফাইল অনুমতি</translation>
@@ -1369,6 +1369,7 @@
 <translation id="2682498795777673382">আপোনাৰ অভিভাৱকে কৰা আপডে'ট</translation>
 <translation id="2683638487103917598">ফ’ল্ডাৰ ক্ৰমবদ্ধ কৰা হ’ল</translation>
 <translation id="2684004000387153598">অব্যাহত ৰাখিবলৈ ঠিক আছে-ত ক্লিক কৰক আৰু তাৰপাছত আপোনাৰ ইমেইল ঠিকনাৰ বাবে এটা নতুন প্ৰ'ফাইল সৃষ্টি কৰিবলৈ 'কোনো লোকক যোগ কৰক'-ত ক্লিক কৰক।</translation>
+<translation id="2686222346846590368">এই <ph name="DEVICE_TYPE" />টোৰ বাবে এয়া অন্তিমটো স্বয়ংক্ৰিয় ছফ্টৱেৰ আৰু সুৰক্ষাৰ আপডে’ট। ভৱিষ্যতৰ আপডে’টসমূহ পাবলৈ এটা নতুন ম’ডেললৈ আপগ্ৰে’ড কৰক। &lt;a target="_blank" href="<ph name="URL" />"&gt;অধিক জানক<ph name="LINK_END" /></translation>
 <translation id="2687403674020088961">সকলো কুকি অৱৰোধ কৰক (চুপাৰিছ কৰা নহয়)</translation>
 <translation id="2687407218262674387">Googleৰ সেৱাৰ চৰ্তাৱলী</translation>
 <translation id="2688196195245426394">ডিভাইচটো ছার্ভাৰৰ সৈতে পঞ্জীয়ন কৰোঁতে আসোঁৱাহ হৈছে: <ph name="CLIENT_ERROR" />।</translation>
@@ -1391,6 +1392,7 @@
 <translation id="2712173769900027643">অনুমতি বিচাৰক</translation>
 <translation id="2713444072780614174">বগা</translation>
 <translation id="2714393097308983682">Google Play Store</translation>
+<translation id="2714997332747470971">ব্যক্তিগত তথ্য সম্পৰ্কীয় পৰামৰ্শসমূহে আপোনাৰ নাম, ঠিকনা অথবা ফ’নৰ নম্বৰ আদিৰ পৰামৰ্শ আগবঢ়াই আপোনাক খৰকৈ লিখাত সহায় কৰে। আপোনাৰ একাউণ্টৰ বাবে কেৱল আপুনি নিজৰ ব্যক্তিগত, ব্যক্তিগতকৃত পৰামৰ্শসমূহ দেখা পায়।</translation>
 <translation id="2715751256863167692">আপগ্ৰে’ড কৰা এই কাৰ্যটোৱে আপোনাৰ Chromebook ৰিছেট কৰে আৰু ব্যৱহাৰকাৰীৰ বৰ্তমানৰ ডেটা আঁতৰ কৰে।</translation>
 <translation id="2716986496990888774">এই ছেটিং কোনো এজন অভিভাৱকে পৰিচালনা কৰে।</translation>
 <translation id="2718395828230677721">ৰাতিৰ পোহৰ</translation>
@@ -1496,7 +1498,6 @@
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" />এ আপোনাৰ প্ৰশাসকৰ পৰা প্ৰক্সি ছেটিংসমূহ ব্যৱহাৰ কৰি আছে</translation>
 <translation id="2825758591930162672">প্ৰমাণপত্ৰ প্ৰাপকৰ ৰাজহুৱা চাবি</translation>
 <translation id="2828650939514476812">ৱাই-ফাই নেটৱৰ্কৰ সৈতে সংযোগ কৰক</translation>
-<translation id="28291580771888953"><ph name="PRINTER_NAME" />ৰ শাৰীটো সম্পূর্ণ হৈছে</translation>
 <translation id="2835547721736623118">কণ্ঠস্বৰ চিনাক্তকৰণ সেৱা</translation>
 <translation id="2836269494620652131">ক্ৰেশ্ব</translation>
 <translation id="2836635946302913370">আপোনাৰ প্ৰশাসকে এই ব্যৱহাৰকাৰীৰ নামটোৰে ছাইন ইন কৰাটো অক্ষম কৰি থৈছে।</translation>
@@ -2312,6 +2313,7 @@
 <translation id="3839516600093027468"><ph name="HOST" />এ ক্লিপব’ৰ্ড চোৱাটো সদায় অৱৰোধ কৰক</translation>
 <translation id="3841964634449506551">অমান্য পাছৱৰ্ড</translation>
 <translation id="3842552989725514455">চেৰিফ ফণ্ট</translation>
+<translation id="3843464315703645664">অভ্যন্তৰীণভাৱে এলাওলিষ্ট কৰা হৈছে</translation>
 <translation id="3846116211488856547">ৱেবছাইট, Android এপ্ আৰু বহুতো কাম কৰিবলৈ সঁজুলি লাভ কৰক। Linux ইনষ্টল কৰিলে <ph name="DOWNLOAD_SIZE" /> পৰিমাণৰ ডেটা ডাউনল‘ড হ‘ব।</translation>
 <translation id="3847319713229060696">প্ৰত্যেকজন বাবে ৱেবত সুৰক্ষা উন্নত কৰাত সহায় কৰক</translation>
 <translation id="385051799172605136">উভতি যাওক</translation>
@@ -2441,6 +2443,7 @@
 <translation id="3983769721878416534">ক্লিক কৰাৰ আগত বিলম্ব</translation>
 <translation id="3984159763196946143">ডেম' ম'ড আৰম্ভ কৰিব পৰা নগ'ল</translation>
 <translation id="3984431586879874039">এই ছাইটটোক আপোনাৰ সুৰক্ষা সম্পৰ্কীয় চাবিটো চাবলৈ অনুমতি দিবনে?</translation>
+<translation id="3986705137476756801">এতিয়াৰ বাবে লাইভ কেপশ্বন অফ কৰক</translation>
 <translation id="3987938432087324095">দুঃখিত, এইটো চিনাক্ত কৰিব নোৱাৰিলে।</translation>
 <translation id="3988996860813292272">সময় মণ্ডল বাছনি কৰক</translation>
 <translation id="399179161741278232">আমদানি কৰা</translation>
@@ -2766,7 +2769,6 @@
 <translation id="4453946976636652378"><ph name="SEARCH_ENGINE_NAME" />ৰ সন্ধান কৰক বা কোনো URL টাইপ কৰক</translation>
 <translation id="4459169140545916303"><ph name="DEVICE_LAST_ACTIVATED_TIME" /> দিনৰ পূৰ্বে সক্ৰিয় আছিল</translation>
 <translation id="4460014764210899310">গোট ভংগ কৰক</translation>
-<translation id="4460343359907016103"><ph name="PRINTER_NAME" />লৈ সংযোগ কৰাত কিবা আসোঁৱাহ হৈছে</translation>
 <translation id="4462159676511157176">কাষ্টম নাম ছার্ভাৰ</translation>
 <translation id="4465236939126352372"><ph name="APP_NAME" />ৰ বাবে <ph name="TIME" /> সময়সীমা ছেট কৰা হৈছে</translation>
 <translation id="4465725236958772856"><ph name="NETWORK_COUNT" />টা নেটৱৰ্কৰ <ph name="NETWORK_INDEX" />, <ph name="NETWORK_NAME" />, আপোনাৰ প্ৰশাসকে পৰিচালনা কৰে</translation>
@@ -2883,6 +2885,7 @@
 <translation id="4608520674724523647">সফল পঞ্জীয়নকৰণৰ সবিশেষ বৰ্ণনা</translation>
 <translation id="4608703838363792434"><ph name="FILE_NAME" />ত সংবেদনশীল সমল আছে</translation>
 <translation id="4610162781778310380"><ph name="PLUGIN_NAME" />এ কিবা আসোঁৱাহ পাইছে</translation>
+<translation id="4610178114344604329">ব্যক্তিগত তথ্য সম্পৰ্কীয় পৰামৰ্শসমূহ দেখুৱাওক</translation>
 <translation id="4610637590575890427">আপুনি <ph name="SITE" />লৈ যাব বিচাৰিছিল নেকি?</translation>
 <translation id="4611114513649582138">ডেটা সংযোগ নাই</translation>
 <translation id="4613144866899789710">Linuxৰ ইনষ্টলেশ্বন বাতিল কৰি থকা হৈছে...</translation>
@@ -3062,7 +3065,6 @@
 <translation id="4864369630010738180">ছাইন ইন কৰি থকা হৈছে…</translation>
 <translation id="4864805589453749318">এটা বিদ্যালয়ৰ একাউণ্ট যোগ দিয়াৰ অনুমতি দি থকা অভিভাৱকগৰাকীক বাছনি কৰক।</translation>
 <translation id="486635084936119914">ডাউনল’ড কৰাৰ পাছত নিৰ্দিষ্ট ফাইলৰ প্ৰকাৰসমূহ স্বয়ংক্ৰিয়ভাৱে খোলক</translation>
-<translation id="4869213010169296107"><ph name="PRINTER_NAME" />ত কোনো ট্ৰে' নাই</translation>
 <translation id="48704129375571883">অতিৰিক্ত সুবিধা যোগ কৰক</translation>
 <translation id="4870758487381879312">কনফিগাৰেশ্বনৰ তথ্য পাবলৈ প্ৰশাসকে দিয়া পাছৱর্ডটো দিয়ক</translation>
 <translation id="4870903493621965035">যোৰা লগোৱা কোনো ডিভাইচ নাই</translation>
@@ -3160,6 +3162,7 @@
 <translation id="4977942889532008999">এক্সেছ নিশ্চিত কৰক</translation>
 <translation id="4980805016576257426">এই এক্সটেনশ্বনটোত মালৱেৰ আছে</translation>
 <translation id="4981449534399733132">আপোনাৰ ছিংক হৈ থকা সকলো ডিভাইচ আৰু নিজৰ Google একাউণ্টৰ পৰা ব্ৰাউজিঙৰ ডেটা মচিবলৈ <ph name="BEGIN_LINK" />ছাইন ইন কৰক<ph name="END_LINK" />।</translation>
+<translation id="4982236238228587209">ডিভাইচৰ ছফ্টৱেৰ</translation>
 <translation id="4986728572522335985">এই কাৰ্যই সুৰক্ষা চাবিটোত ষ্ট’ৰ হৈ থকা ইয়াৰ পিনকে ধৰি সকলো ডেটা মচিব</translation>
 <translation id="4988526792673242964">পৃষ্ঠা</translation>
 <translation id="49896407730300355">ঘড়ীৰ কাঁটাৰ বি&amp;পৰীত দিশত ঘূৰাওক</translation>
@@ -3312,6 +3315,7 @@
 <translation id="5184662919967270437">আপোনাৰ ডিভাইচ আপডে’ট কৰি থকা হৈছে</translation>
 <translation id="5185359571430619712">এক্সটেনশ্বনসমূহ পৰ্যালোচনা কৰক</translation>
 <translation id="5185386675596372454">"<ph name="EXTENSION_NAME" />"ৰ নতুন সংস্কৰণটো অক্ষম কৰা হৈছে কাৰণ ইয়াক অধিক অনুমতিৰ প্ৰয়োজন।</translation>
+<translation id="5185500136143151980">ইণ্টাৰনেট নাই</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5190926251776387065">প’ৰ্টটো সক্রিয় কৰক</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" />এ একাধিক ফাইল ডাউনল'ড কৰিব খোজে</translation>
@@ -3468,7 +3472,6 @@
 <translation id="5390112241331447203">মতামতৰ ৰিপ’ৰ্টত পঠিওৱা system_logs.txt ফাইলটো অন্তৰ্ভুক্ত কৰক।</translation>
 <translation id="5390677308841849479">গাঢ় ৰঙা আৰু কমলা</translation>
 <translation id="5390743329570580756">ইয়াৰ বাবে পঠিয়াওক</translation>
-<translation id="5395869306561378615"><ph name="PRINTER_NAME" /> পজ হৈছে</translation>
 <translation id="5397794290049113714">আপুনি</translation>
 <translation id="5398572795982417028">পৃষ্ঠাৰ প্ৰসংগ সীমাৰ বাহিৰৰ, সীমা হৈছে <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">বিজ্ঞাপন অৱৰোধ কৰা হৈছে</translation>
@@ -3483,7 +3486,6 @@
 <translation id="5417312524372586921">ব্ৰাউজাৰৰ থীম</translation>
 <translation id="5419405654816502573">কণ্ঠস্বৰৰ মিল</translation>
 <translation id="5420438158931847627">পাঠ আৰু ছবিৰ তীক্ষ্নতা নিৰ্দিষ্ট কৰিব পাৰিব</translation>
-<translation id="5421498071721257877"><ph name="PRINTER_NAME" />ৰ এটা ডিভাইচ সম্পর্কীয় আসোঁৱাহ আছে</translation>
 <translation id="5422221874247253874">এক্সেছ পইণ্ট</translation>
 <translation id="5422781158178868512">দুঃখিত, আপোনাৰ ব্যহিক ষ্ট’ৰেজ ডিভাইচটো চিনাক্ত কৰিব পৰা নগ’ল।</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3831,7 +3833,6 @@
 <translation id="5852137567692933493">ৰিষ্টাৰ্ট কৰি পাৱাৰৱাশ্ব কৰক</translation>
 <translation id="5854912040170951372">পিজ্জাৰ টুকুৰা</translation>
 <translation id="5855267860608268405">পৰিচিত ৱাই-ফাই নেটৱৰ্কসমূহ</translation>
-<translation id="5855310969323666289"><ph name="PRINTER_NAME" />ৰ ঢাকনীখন খোলা আছে</translation>
 <translation id="5855643921295613558">০.৬ছেকেণ্ড</translation>
 <translation id="5856721540245522153">ডিবাগিং সুবিধা সক্ষম কৰক</translation>
 <translation id="5857090052475505287">নতুন ফ’ল্ডাৰ</translation>
@@ -3862,7 +3863,6 @@
 <translation id="5877064549588274448">চ্চেনেল সলনি কৰা হ'ল। সলনি কার্যসমূহ প্ৰয়োগ কৰিবলৈ আপোনাৰ ডিভাইচ ৰিষ্টার্ট কৰক।</translation>
 <translation id="5877584842898320529">বাছনি কৰা প্ৰিণ্টাৰটো উপলব্ধ নহয় বা ভালদৰে ইনষ্টল কৰা হোৱা নাই। <ph name="BR" /> আপোনাৰ প্ৰিণ্টাৰটো পৰীক্ষা কৰক বা অন্য এটা প্ৰিণ্টাৰ বাছনি কৰি চাওক।</translation>
 <translation id="5882919346125742463">জ্ঞাত নেটৱর্ক</translation>
-<translation id="5883716097305842571"><ph name="PRINTER_NAME" />ৰ আউটপুট ক্ষেত্ৰখন প্ৰায় ভৰি পৰিছে</translation>
 <translation id="5884474295213649357">এই টেবটো USB ডিভাইচৰ সৈতে সংযোগ কৰা হৈছে।</translation>
 <translation id="5886009770935151472">আঙুলি ১</translation>
 <translation id="5889282057229379085">মধ্যৱৰ্তী CAৰ সর্বাধিক সংখ্যা: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4425,7 +4425,6 @@
 <translation id="6611972847767394631">ইয়াত আপোনাৰ টেবসমূহ বিচাৰক</translation>
 <translation id="6612358246767739896">সুৰক্ষিত সমল</translation>
 <translation id="6615455863669487791">মোক দেখুৱাওক</translation>
-<translation id="6617034477946102682"><ph name="PRINTER_NAME" />ৰ সৈতে সংযোগ কৰিব নোৱাৰি</translation>
 <translation id="6618097958368085618">যি কি নহ’লেও ৰাখক</translation>
 <translation id="6618744767048954150">চলি আছে</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
@@ -4675,6 +4674,7 @@
 <translation id="6938381444925658529"><ph name="DOMAIN" />ৰ বাবে আপুনি নির্ধাৰিত সময়সীমা পাৰ হোৱাৰ পূর্বে এটা আপডে’ট ডাউনল'ড কৰাটো আৱশ্যক। আপুনি ইণ্টাৰনেটৰ সৈতে সংযোগ কৰিলে আপডে’টটো স্বয়ংক্ৰিয়ভাৱে ডাউনল’ড হ’ব।</translation>
 <translation id="6938386202199793006">আপোনাৰ ১ টা ছেভ কৰি থোৱা প্ৰিণ্টাৰ আছে।</translation>
 <translation id="6938789263968032501">লোকসকল</translation>
+<translation id="6939815295902433669">ডিভাইচৰ ছফ্টৱেৰৰ পৰ্যালোচনা কৰক</translation>
 <translation id="6941937518557314510">আপোনাৰ প্ৰমাণপত্ৰ জৰিয়তে <ph name="HOST_NAME" />ৰ বিশ্বাসযোগ্যতাৰ প্ৰমাণীকৰণ কৰিবলৈ <ph name="TOKEN_NAME" />ত ছাইন ইন কৰক।</translation>
 <translation id="6943060957016121200">তাৎক্ষণিক টেডাৰিং সক্ষম কৰক</translation>
 <translation id="6943176775188458830">প্রিণ্টিং বাতিল কৰক</translation>
@@ -4839,7 +4839,6 @@
 <translation id="7128151990937044829">জাননীসমূহ অৱৰোধ কৰিলে ঠিকনাৰ দণ্ডত এটা সূচক প্ৰদর্শন কৰক</translation>
 <translation id="7131040479572660648"><ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> আৰু <ph name="WEBSITE_3" />ত আপোনাৰ ডেটা পঢ়ক</translation>
 <translation id="713122686776214250">পৃ&amp;ষ্ঠা যোগ কৰক...</translation>
-<translation id="7131379856697962078"><ph name="PRINTER_NAME" />ৰ আউটপুট ক্ষেত্ৰখন ভৰি পৰিছে</translation>
 <translation id="7133578150266914903">আপোনাৰ প্ৰশাসকে এই ডিভাইচ ৰ'ল বেক কৰি আছে (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">পাঠৰ আকাৰ সৰু কৰক</translation>
 <translation id="7135729336746831607">ব্লুটুথ অন কৰিবনে?</translation>
@@ -4858,7 +4857,6 @@
 <translation id="7152478047064750137">এই এক্সটেনশ্বনটোৰ বাবে কোনো বিশেষ অনুমতি ল’ব নালাগে</translation>
 <translation id="7154130902455071009">আপোনাৰ আৰম্ভণিৰ পৃষ্ঠা ইয়ালৈ সলনি কৰক: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">কেমেৰা বা ফাইলৰ পৰা ইতিমধ্যে থকা ফট’</translation>
-<translation id="715657691234357425"><ph name="PRINTER_NAME" />ৰ কাগজ কম আছে</translation>
 <translation id="7165320105431587207">নেটৱৰ্ক কনফিগাৰ কৰাত বিফল হ'ল</translation>
 <translation id="716640248772308851">"<ph name="EXTENSION" />"এ পৰীক্ষা কৰা অৱস্থানসমূহত প্ৰতিচ্ছবি, ভিডিঅ’ আৰু ধ্বনিৰ ফাইলসমূহ পঢ়িব আৰু লিখিব পাৰে।</translation>
 <translation id="7167486101654761064">এই ধৰণৰ ফাইলসমূহ &amp;সদায় খোলক</translation>
@@ -4889,7 +4887,6 @@
 <translation id="7197632491113152433">আমি আপোনাৰ একাউণ্টত এই ডিভাইচটোত ব্যৱহাৰ কৰিব পৰা <ph name="NUMBER_OF_APPS" />টা এপ্ পাইছোঁ।</translation>
 <translation id="7199158086730159431">স&amp;হায় পাওক</translation>
 <translation id="7200083590239651963">কনফিগাৰেশ্বন বাছনি কৰক</translation>
-<translation id="7201042526153088083">আপোনাৰ <ph name="DEVICE_TYPE" />ত Google Playৰ পৰা এপ্‌ আৰু গে’মসমূহ ইনষ্টল কৰক। &lt;a target="_blank" href="<ph name="URL" />"&gt;অধিক জানক&lt;/a&gt;</translation>
 <translation id="720110658997053098">আপুনি এই ডিভাইচটো স্থায়ীভাৱে কিঅ’স্ক ম’ডত ৰাখক</translation>
 <translation id="7201118060536064622">'<ph name="DELETED_ITEM_NAME" />' মচা হ’ল</translation>
 <translation id="7201420661433230412">ফাইলবোৰ চাওক</translation>
@@ -5145,6 +5142,7 @@
 <translation id="7522255036471229694">"Ok Google" বুলি কওক</translation>
 <translation id="7525067979554623046">সৃষ্টি কৰক</translation>
 <translation id="7526658513669652747">{NUM_DOWNLOADS,plural, =1{আৰু ১ টা}one{আৰু {NUM_DOWNLOADS} টা}other{আৰু {NUM_DOWNLOADS} টা}}</translation>
+<translation id="7526989658317409655">প্লে’চহ’ল্ডাৰ</translation>
 <translation id="7529411698175791732">আপোনাৰ ইণ্টাৰনেট সংযোগ পৰীক্ষা কৰক। তথাপিও যদি সমস্যাটো থাকেই, ছাইন আউট কৰি পুনৰ ছাইন ইন কৰি চাওক।</translation>
 <translation id="7530016656428373557">চ্চাৰ্জ খৰচ হোৱাৰ হাৰ ৱাট এককত</translation>
 <translation id="7531779363494549572">ছেটিংসমূহ &gt; এপ্ আৰু জাননী &gt; জাননী-লৈ যাওক</translation>
@@ -5192,7 +5190,6 @@
 <translation id="7598466960084663009">কম্পিউটাৰ ৰিষ্টার্ট কৰক</translation>
 <translation id="7599527631045201165">ডিভাইচটোৰ নামটো অতি বেছি দীঘল। আকৌ চেষ্টা কৰিবলৈ এটা চুটি নাম দিয়ক।</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> কেতিয়াও অনুবাদ নকৰিব</translation>
-<translation id="7601297144931396972"><ph name="PRINTER_NAME" />ৰ কাগজখনত জাম লাগিছে</translation>
 <translation id="760197030861754408">সংযোগ কৰিবলৈ <ph name="LANDING_PAGE" />লৈ যাওক।</translation>
 <translation id="7602079150116086782">অন্য ডিভাইচৰ কোনো টেব নাই</translation>
 <translation id="7602173054665172958">প্ৰিণ্টিঙৰ পৰিচালনা</translation>
@@ -5203,6 +5200,7 @@
 <translation id="7609148976235050828">অনুগ্ৰহ কৰি ইন্টাৰনেটত সংযোগ কৰি পুনৰ চেষ্টা কৰক।</translation>
 <translation id="7614260613810441905">কোনো ছাইটে আপোনাৰ ডিভাইচত ফাইল অথবা ফ’ল্ডাৰসমূহ সম্পাদনা কৰিবলৈ বিচাৰিলে সোধক (চুপাৰিছ কৰা হয়)</translation>
 <translation id="761530003705945209">Google Driveত বেক আপ লওক। আপোনাৰ ডেটা সহজে পুনঃস্থাপন কৰক অথবা যিকোনো সময়তে ডিভাইচ সলনি কৰক। আপোনাৰ বেকআপত এপ্ ডেটাও আছে। আপোনাৰ বেকআপসমূহ Googleত আপল’ড কৰা হয় আৰু আপোনাৰ Google একাউণ্টৰ পাছৱৰ্ড ব্যৱহাৰ কৰি সেইবোৰ এনক্ৰিপ্ট কৰা হয়।</translation>
+<translation id="7615365294369022248">এটা একাউণ্ট যোগ দিওঁতে কিবা সমস্যা হৈছিল</translation>
 <translation id="7616214729753637086">ডিভাইচ পঞ্জীয়ন কৰি থকা হৈছে...</translation>
 <translation id="7617263010641145920">Play Store অন কৰক</translation>
 <translation id="7617366389578322136">"<ph name="DEVICE_NAME" />"লৈ সংযোগ কৰি থকা হৈছে</translation>
@@ -5650,7 +5648,6 @@
           <ph name="TIME" />ত ডেটা এনক্ৰিপ্ট কৰা হৈছে। ইয়াত Google Payৰ পৰিশোধ পদ্ধতি আৰু ঠিকনাবোৰ অন্তৰ্ভুক্ত নহয়।</translation>
 <translation id="81238879832906896">হালধীয়া আৰু বগা ফুল</translation>
 <translation id="8124313775439841391">পৰিচালিত ONC</translation>
-<translation id="8127535217699822294"><ph name="PRINTER_NAME" />ত কাগজ নাই</translation>
 <translation id="813082847718468539">ছাইটৰ তথ্য চাওক</translation>
 <translation id="8131740175452115882">নিশ্চিত কৰক</translation>
 <translation id="8133676275609324831">ফ'ল্ডাৰত &amp;দেখুৱাওক</translation>
@@ -5749,7 +5746,6 @@
 <translation id="8254954272268479918">Linux বন্ধ কৰক (বিটা)</translation>
 <translation id="8255451560461371599">নেপথ্যত একো নাই</translation>
 <translation id="8256319818471787266">স্পাৰ্কী</translation>
-<translation id="8256417822772703842"><ph name="PRINTER_NAME" />ত চিয়াহী কম আছে</translation>
 <translation id="8257950718085972371">কেমেৰাৰ এক্সেছ অৱৰোধ কৰা কার্য অব্যাহত ৰাখক</translation>
 <translation id="8259239505248583312">আৰম্ভ কৰক</translation>
 <translation id="8260864402787962391">মাউছ</translation>
@@ -5929,7 +5925,6 @@
 <translation id="8487678622945914333">জুম ইন কৰক</translation>
 <translation id="8490896350101740396">তলৰ কিঅ’স্ক এপসমূহ "<ph name="UPDATED_APPS" />" আপডে’ট কৰা হৈছে। আপডে’টৰ প্ৰক্ৰিয়া সম্পূর্ণ কৰিবলৈ ডিভাইচটো ৰিবুট কৰক।</translation>
 <translation id="8493236660459102203">মাইক্ৰ'ফ'ন:</translation>
-<translation id="8495940850609851342"><ph name="PRINTER_NAME" /> বন্ধ হৈছে</translation>
 <translation id="8496717697661868878">এই প্লেগইন চলাওক</translation>
 <translation id="8497219075884839166">Windows সুবিধা</translation>
 <translation id="8498214519255567734">আপোনাৰ স্ক্ৰীণৰ পোহৰ কমাই থোৱা অৱস্থাত স্ক্ৰীণ চাব বা পঢ়িবলৈ সহজসাধ্য কৰি তোলে</translation>
@@ -6182,6 +6177,7 @@
 <translation id="8798441408945964110">প্ৰদানকাৰীৰ নাম</translation>
 <translation id="8800004011501252845">ইয়াৰ লক্ষ্যস্থান দেখুৱাই থকা হৈছে</translation>
 <translation id="8800034312320686233">ছাইটটোৱে কাম কৰা নাই নেকি?</translation>
+<translation id="880069872639153240">আপুনি টাইপ কৰি থকা শব্দৰ ওপৰত আধাৰিত ইম’জিৰ পৰামৰ্শ লাভ কৰক</translation>
 <translation id="8803953437405899238">এবাৰ ক্লিক কৰিয়েই এটা নতুন টেব খোলক</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{টেবটো অন্য এখন ৱিণ্ড’লৈ স্থানান্তৰ কৰক}one{টেবসমূহ অন্য এখন ৱিণ্ড’লৈ স্থানান্তৰ কৰক}other{টেবসমূহ অন্য এখন ৱিণ্ড’লৈ স্থানান্তৰ কৰক}}</translation>
 <translation id="8805140816472474147">ছিংক আৰম্ভ কৰিবলৈ ছিংক ছেটিংসমূহ নিশ্চিত কৰক।</translation>
@@ -6470,6 +6466,12 @@
 <translation id="9157096865782046368">০.৮ছেকেণ্ড</translation>
 <translation id="9157697743260533322">সকলো ব্যৱহাৰকাৰীৰ কাৰণে স্বয়ংক্ৰিয় আপডে’ট ছেট আপ কৰিব পৰা নগ’ল (প্ৰিফ্লাইট লঞ্চ কৰোঁতে আসোঁৱাহ: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">আমি দুঃখিত!  বিশ্বাসযোগ্যতা প্ৰমাণীকৰণৰ সময়ত নেটৱর্ক সংযোগৰ কিবা সমস্যা হৈছিল।  আপোনাৰ নেটৱৰ্ক সংযোগ পৰীক্ষা কৰি পুনৰ চেষ্টা কৰক।</translation>
+<translation id="9159643062839240276">এয়া কৰি চাওক:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />নেটৱৰ্ক কে’বল, ম’ডেম আৰু ৰাউটাৰৰ পৰীক্ষা কৰক
+      <ph name="LIST_ITEM" />ৱাই-ফাইৰ সৈতে পুনৰ সংযোগ কৰক
+      <ph name="LIST_ITEM" />Chromeৰ সংযোগৰ সমস্যা নিৰূপণ কৰোঁতা চলাওক
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">চিত্ৰৰ ভিতৰত চিত্ৰ</translation>
 <translation id="9168436347345867845">এইটো পিছত কৰিব</translation>
 <translation id="9169496697824289689">কীব’ৰ্ডৰ শ্বৰ্টকাট চাওক</translation>

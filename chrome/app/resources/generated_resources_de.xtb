@@ -281,7 +281,6 @@
 <translation id="1340527397989195812">Sichern Sie Medien von diesem Gerät mit der App "Dateien".</translation>
 <translation id="1341988552785875222">Der aktuelle Hintergrund wurde von <ph name="APP_NAME" /> festgelegt. Sie müssen <ph name="APP_NAME" /> möglicherweise deinstallieren, bevor Sie einen anderen Hintergrund auswählen.</translation>
 <translation id="1343865611738742294">Linux-Apps erlauben, auf USB-Geräte zuzugreifen. Linux speichert keine USB-Geräte, nachdem diese entfernt wurden.</translation>
-<translation id="1344143111673240412">Nach dem Ändern der Kameraeinstellung muss Parallels Desktop neu gestartet werden</translation>
 <translation id="1347256498747320987">Updates und Apps installieren: Wenn du fortfährst, stimmst du zu, dass dieses Gerät automatisch Updates und Apps von Google, deinem Mobilfunkanbieter und dem Hersteller deines Geräts herunterladen und installieren darf, möglicherweise über eine mobile Datenverbindung. Einige dieser Apps bieten eventuell In-App-Käufe an. <ph name="BEGIN_LINK1" />Weitere Informationen<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">Das Update wird ausgeführt, sobald der Akkustand <ph name="BATTERY_LEVEL" /> % erreicht.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -1193,7 +1192,6 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="2470702053775288986">Nicht unterstützte Erweiterungen deaktiviert</translation>
 <translation id="2471469610750100598">Schwarz (Standard)</translation>
 <translation id="2473195200299095979">Diese Seite übersetzen</translation>
-<translation id="2474848500897222119">Die Tinte für <ph name="PRINTER_NAME" /> ist leer</translation>
 <translation id="2475982808118771221">Ein Fehler ist aufgetreten.</translation>
 <translation id="2476578072172137802">Website-Einstellungen</translation>
 <translation id="2478176599153288112">Mediendatei-Berechtigungen für "<ph name="EXTENSION" />"</translation>
@@ -1499,7 +1497,6 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> verwendet Proxy-Einstellungen von Ihrem Administrator</translation>
 <translation id="2825758591930162672">Öffentlicher Schlüssel des Antragstellers</translation>
 <translation id="2828650939514476812">Mit WLAN verbinden</translation>
-<translation id="28291580771888953">Die Druckerwarteschlange für <ph name="PRINTER_NAME" /> ist voll</translation>
 <translation id="2835547721736623118">Spracherkennungsservice</translation>
 <translation id="2836269494620652131">Absturz</translation>
 <translation id="2836635946302913370">Die Anmeldung mit diesem Nutzernamen wurde von Ihrem Administrator deaktiviert.</translation>
@@ -2315,7 +2312,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3839516600093027468">Immer verhindern, dass <ph name="HOST" /> die Zwischenablage abruft</translation>
 <translation id="3841964634449506551">Passwort ungültig</translation>
 <translation id="3842552989725514455">Schriftart Serif</translation>
-<translation id="3843058644024807390">Nach dem Ändern der Mikrofoneinstellung muss Parallels Desktop neu gestartet werden</translation>
+<translation id="3843464315703645664">Intern auf der Zulassungsliste</translation>
 <translation id="3846116211488856547">Tools für die Entwicklung erhalten, z. B. von Websites und Android-Apps. Für die Installation von Linux werden <ph name="DOWNLOAD_SIZE" /> an Daten heruntergeladen.</translation>
 <translation id="3847319713229060696">Dabei helfen, das Web für alle sicherer zu machen</translation>
 <translation id="385051799172605136">Zurück</translation>
@@ -2774,7 +2771,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4453946976636652378">Mit <ph name="SEARCH_ENGINE_NAME" /> suchen oder eine URL eingeben</translation>
 <translation id="4459169140545916303">Vor <ph name="DEVICE_LAST_ACTIVATED_TIME" /> Tagen aktiv</translation>
 <translation id="4460014764210899310">Gruppieren aufheben</translation>
-<translation id="4460343359907016103">Beim Herstellen der Verbindung mit <ph name="PRINTER_NAME" /> ist ein Fehler aufgetreten</translation>
 <translation id="4462159676511157176">Benutzerdefinierte Nameserver</translation>
 <translation id="4465236939126352372"><ph name="TIME" /> wurde als Zeitbeschränkung für <ph name="APP_NAME" /> festgelegt</translation>
 <translation id="4465725236958772856">Netzwerk <ph name="NETWORK_INDEX" /> von <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, von Ihrem Administrator verwaltet, Verbinden</translation>
@@ -3072,7 +3068,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4864369630010738180">Anmeldung erfolgt...</translation>
 <translation id="4864805589453749318">Es muss ein Elternteil ausgewählt werden, das seine Zustimmung gibt, damit das Konto einer Bildungseinrichtung hinzugefügt werden kann.</translation>
 <translation id="486635084936119914">Bestimmte Dateitypen nach dem Herunterladen automatisch öffnen</translation>
-<translation id="4869213010169296107">Ein Papierfach von <ph name="PRINTER_NAME" /> fehlt</translation>
 <translation id="48704129375571883">Zusätzliche Funktionen hinzufügen</translation>
 <translation id="4870758487381879312">Zum Abrufen von Konfigurationsinformationen das vom Administrator vergebene Passwort eingeben</translation>
 <translation id="4870903493621965035">Keine gekoppelten Geräte</translation>
@@ -3210,7 +3205,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5039804452771397117">Zulassen</translation>
 <translation id="5040823038948176460">Zusätzliche Inhaltseinstellungen</translation>
 <translation id="5042282098504489593">"Einstellungen" öffnen, um <ph name="USB_DEVICE_NAME" /> mit Linux zu verbinden</translation>
-<translation id="5043913660911154449">Oder Sie können die PPD für den Drucker auswählen <ph name="LINK_BEGIN" />Weitere Informationen<ph name="LINK_END" /></translation>
+<translation id="5043913660911154449">Oder wählen Sie die PPD für den Drucker <ph name="LINK_BEGIN" />Weitere Informationen<ph name="LINK_END" /></translation>
 <translation id="5045550434625856497">Falsches Passwort</translation>
 <translation id="504561833207953641">Wird in einer aktuellen Browsersitzung geöffnet.</translation>
 <translation id="5047421709274785093">Verwendung von Bewegungs- und Lichtsensoren für Websites blockieren</translation>
@@ -3323,6 +3318,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5184662919967270437">Ihr Gerät wird aktualisiert</translation>
 <translation id="5185359571430619712">Erweiterungen prüfen</translation>
 <translation id="5185386675596372454">Die aktuelle Version von "<ph name="EXTENSION_NAME" />" wurde deaktiviert, weil sie weitere Berechtigungen erfordert.</translation>
+<translation id="5185500136143151980">Kein Internet</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5190926251776387065">Port aktivieren</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> möchte mehrere Dateien herunterladen</translation>
@@ -3479,7 +3475,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5390112241331447203">Gesendete Datei system_logs.txt in Feedbackberichten einbeziehen.</translation>
 <translation id="5390677308841849479">Dunkelrot und Orange</translation>
 <translation id="5390743329570580756">Senden für</translation>
-<translation id="5395869306561378615"><ph name="PRINTER_NAME" /> pausiert</translation>
 <translation id="5397794290049113714">Ich</translation>
 <translation id="5398572795982417028">Der Seitenbereich ist zu groß. Die maximale Seitenanzahl liegt bei <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">Werbung blockiert</translation>
@@ -3494,7 +3489,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5417312524372586921">Browserdesigns</translation>
 <translation id="5419405654816502573">Voice Match</translation>
 <translation id="5420438158931847627">Bestimmt die Schärfe von Text und Bildern</translation>
-<translation id="5421498071721257877">Für <ph name="PRINTER_NAME" /> ist ein Gerätefehler aufgetreten</translation>
 <translation id="5422221874247253874">Zugangspunkt</translation>
 <translation id="5422781158178868512">Ihr externes Speichergerät wurde nicht erkannt.</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3843,7 +3837,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5852137567692933493">Neu starten und Powerwash durchführen</translation>
 <translation id="5854912040170951372">Pizza</translation>
 <translation id="5855267860608268405">Bekannte WLANs</translation>
-<translation id="5855310969323666289">Die Druckerklappe von <ph name="PRINTER_NAME" /> ist geöffnet</translation>
 <translation id="5855643921295613558">0,6 Sekunden</translation>
 <translation id="5856721540245522153">Debugging-Funktionen aktivieren</translation>
 <translation id="5857090052475505287">Neuer Ordner</translation>
@@ -3874,7 +3867,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5877064549588274448">Kanal wurde geändert. Starten Sie Ihr Gerät neu, um die Änderungen zu übernehmen.</translation>
 <translation id="5877584842898320529">Der ausgewählte Drucker ist entweder nicht verfügbar oder nicht ordnungsgemäß installiert. <ph name="BR" /> Überprüfen Sie den Drucker oder wählen Sie einen anderen Drucker aus.</translation>
 <translation id="5882919346125742463">Bekannte Netzwerke</translation>
-<translation id="5883716097305842571">Der Papierausgabebereich von <ph name="PRINTER_NAME" /> ist fast voll</translation>
 <translation id="5884474295213649357">Dieser Tab ist mit einem USB-Gerät verbunden.</translation>
 <translation id="5886009770935151472">Finger 1</translation>
 <translation id="5889282057229379085">Maximal zulässige Anzahl an Zwischenzertifizierungsstellen: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4440,7 +4432,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6611972847767394631">Hier finden Sie Ihre Tabs</translation>
 <translation id="6612358246767739896">Geschützte Inhalte</translation>
 <translation id="6615455863669487791">Zeigen</translation>
-<translation id="6617034477946102682"><ph name="PRINTER_NAME" /> ist nicht erreichbar</translation>
 <translation id="6618097958368085618">Trotzdem beibehalten</translation>
 <translation id="6618744767048954150">Läuft</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
@@ -4857,7 +4848,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7128151990937044829">In der Adressleiste anzeigen, wenn Benachrichtigungen blockiert sind</translation>
 <translation id="7131040479572660648">Ihre Daten auf <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> und <ph name="WEBSITE_3" /> lesen</translation>
 <translation id="713122686776214250">&amp;Seite hinzufügen...</translation>
-<translation id="7131379856697962078">Der Papierausgabebereich von <ph name="PRINTER_NAME" /> ist voll</translation>
 <translation id="7133578150266914903">Ihr Administrator setzt dieses Gerät zurück (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">Schrift verkleinern</translation>
 <translation id="7135729336746831607">Bluetooth aktivieren?</translation>
@@ -4876,7 +4866,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7152478047064750137">Diese Erweiterung erfordert keine speziellen Berechtigungen</translation>
 <translation id="7154130902455071009">Startseite in <ph name="START_PAGE" /> ändern</translation>
 <translation id="7155171745945906037">Vorhandenes Foto von der Kamera oder als Datei</translation>
-<translation id="715657691234357425"><ph name="PRINTER_NAME" /> hat fast kein Papier mehr</translation>
 <translation id="7165320105431587207">Fehler beim Konfigurieren des Netzwerks</translation>
 <translation id="716640248772308851">"<ph name="EXTENSION" />" kann Bilder, Video- und Sounddateien an den geprüften Orten lesen.</translation>
 <translation id="7167486101654761064">Dateien dieses Typs &amp;immer öffnen</translation>
@@ -4907,7 +4896,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7197632491113152433">Wir haben <ph name="NUMBER_OF_APPS" /> Apps in Ihrem Konto gefunden, die auf diesem Gerät verwendet werden können.</translation>
 <translation id="7199158086730159431">H&amp;ilfe erhalten</translation>
 <translation id="7200083590239651963">Konfiguration auswählen</translation>
-<translation id="7201042526153088083">Apps und Spiele von Google Play auf dem <ph name="DEVICE_TYPE" /> installieren. &lt;a target="_blank" href="<ph name="URL" />"&gt;Weitere Informationen&lt;/a&gt;</translation>
 <translation id="720110658997053098">Gerät dauerhaft im Kioskmodus betreiben</translation>
 <translation id="7201118060536064622">"<ph name="DELETED_ITEM_NAME" />" wurde gelöscht</translation>
 <translation id="7201420661433230412">Dateien ansehen</translation>
@@ -5213,7 +5201,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7598466960084663009">Computer neu starten</translation>
 <translation id="7599527631045201165">Der Gerätename ist zu lang. Geben Sie einen kürzeren Namen ein und versuchen Sie es noch einmal.</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> nie übersetzen</translation>
-<translation id="7601297144931396972"><ph name="PRINTER_NAME" /> hat einen Papierstau</translation>
 <translation id="760197030861754408">Zum Verbinden <ph name="LANDING_PAGE" /> aufrufen.</translation>
 <translation id="7602079150116086782">Keine Tabs von anderen Geräten</translation>
 <translation id="7602173054665172958">Druckverwaltung</translation>
@@ -5224,6 +5211,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7609148976235050828">Stellen Sie eine Internetverbindung her und versuchen Sie es dann noch einmal.</translation>
 <translation id="7614260613810441905">Nachfragen, wenn eine Website Dateien oder Ordner auf meinem Gerät bearbeiten möchte (empfohlen)</translation>
 <translation id="761530003705945209">In Google Drive sichern. Sie können Ihre Daten jederzeit wiederherstellen – auch auf einem anderen Gerät. In Ihrer Sicherung sind auch App-Daten enthalten. Ihre Sicherungen werden an Google gesendet und mit dem Passwort Ihres Google-Kontos verschlüsselt.</translation>
+<translation id="7615365294369022248">Fehler beim Hinzufügen eines Kontos</translation>
 <translation id="7616214729753637086">Gerät wird registriert…</translation>
 <translation id="7617263010641145920">Play Store aktivieren</translation>
 <translation id="7617366389578322136">Verbindung zu "<ph name="DEVICE_NAME" />" wird hergestellt</translation>
@@ -5671,7 +5659,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8123590694679414600">Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase verschlüsselt. Davon ausgenommen sind Zahlungsmethoden oder Adressen von Google Pay.</translation>
 <translation id="81238879832906896">Gelbe und weiße Blume</translation>
 <translation id="8124313775439841391">Verwaltete ONC-Eigenschaften</translation>
-<translation id="8127535217699822294"><ph name="PRINTER_NAME" /> hat kein Papier mehr</translation>
 <translation id="813082847718468539">Website-Informationen anzeigen</translation>
 <translation id="8131740175452115882">Bestätigen</translation>
 <translation id="8133676275609324831">&amp;In Ordner anzeigen</translation>
@@ -5770,7 +5757,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8254954272268479918">Linux (Beta) herunterfahren</translation>
 <translation id="8255451560461371599">Kein Hintergrund</translation>
 <translation id="8256319818471787266">Bello</translation>
-<translation id="8256417822772703842">Die Tinte für <ph name="PRINTER_NAME" /> ist fast leer</translation>
 <translation id="8257950718085972371">Zugriff auf die Kamera weiter blockieren</translation>
 <translation id="8259239505248583312">Los gehts!</translation>
 <translation id="8260864402787962391">Maus</translation>
@@ -5951,7 +5937,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8487678622945914333">Vergrößern</translation>
 <translation id="8490896350101740396">Die folgenden Kiosk-Apps wurden aktualisiert: <ph name="UPDATED_APPS" />. Starten Sie das Gerät neu, um die Aktualisierung abzuschließen.</translation>
 <translation id="8493236660459102203">Mikrofon:</translation>
-<translation id="8495940850609851342"><ph name="PRINTER_NAME" /> wurde angehalten</translation>
 <translation id="8496717697661868878">Dieses Plug-in ausführen</translation>
 <translation id="8497219075884839166">Windows-Dienstprogramme</translation>
 <translation id="8498214519255567734">Der Bildschirm ist bei schwachem Licht nicht störend hell und kann leichter gelesen werden</translation>
@@ -6493,6 +6478,12 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="9157096865782046368">0,8 Sekunden</translation>
 <translation id="9157697743260533322">Automatische Updates für alle Nutzer konnten nicht eingerichtet werden (Preflight-Startfehler: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Hoppla! Während der Authentifizierung ist ein Kommunikationsproblem mit dem Netzwerk aufgetreten. Überprüfen Sie bitte Ihre Netzwerkverbindung und versuchen Sie es erneut.</translation>
+<translation id="9159643062839240276">Probieren Sie Folgendes aus:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />Netzwerkkabel, Modem und Router prüfen
+      <ph name="LIST_ITEM" />WLAN-Verbindung trennen und wiederherstellen
+      <ph name="LIST_ITEM" />Verbindungsdiagnose für Chrome ausführen
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">Bild-in-Bild</translation>
 <translation id="9168436347345867845">Später</translation>
 <translation id="9169496697824289689">Tastenkombinationen ansehen</translation>

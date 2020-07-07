@@ -149,8 +149,9 @@ void ImageElementTiming::NotifyImagePaintedInternal(
   const AtomicString& id = element->GetIdAttribute();
 
   const KURL& url = cached_image.Url();
+  ExecutionContext* context = layout_object.GetDocument().GetExecutionContext();
   DCHECK(GetSupplementable()->document() == &layout_object.GetDocument());
-  DCHECK(layout_object.GetDocument().GetSecurityOrigin());
+  DCHECK(context->GetSecurityOrigin());
   // It's ok to expose rendering timestamp for data URIs so exclude those from
   // the Timing-Allow-Origin check.
   if (!url.ProtocolIsData()) {
@@ -166,9 +167,8 @@ void ImageElementTiming::NotifyImagePaintedInternal(
       bool tainted_origin_flag = false;
       timing_allow_check = Performance::PassesTimingAllowCheck(
           cached_image.GetResponse(), cached_image.GetResponse(),
-          *layout_object.GetDocument().GetSecurityOrigin(),
-          layout_object.GetDocument().GetExecutionContext(),
-          &response_tainting_not_basic, &tainted_origin_flag);
+          *context->GetSecurityOrigin(), context, &response_tainting_not_basic,
+          &tainted_origin_flag);
     }
     if (!timing_allow_check) {
       WindowPerformance* performance =

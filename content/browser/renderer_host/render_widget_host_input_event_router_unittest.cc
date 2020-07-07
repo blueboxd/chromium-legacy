@@ -179,6 +179,27 @@ class MockRootRenderWidgetHostView : public TestRenderWidgetHostView {
   uint32_t unique_id_for_last_touch_ack_ = 0;
 };
 
+class MockInputTargetClient : public viz::mojom::InputTargetClient {
+ public:
+  explicit MockInputTargetClient(
+      mojo::PendingReceiver<viz::mojom::InputTargetClient> pending_receiver)
+      : receiver_(this, std::move(pending_receiver)) {}
+  ~MockInputTargetClient() override = default;
+
+  // viz::mojom::InputTargetClient:
+  void FrameSinkIdAt(const gfx::PointF& point,
+                     const uint64_t trace_id,
+                     FrameSinkIdAtCallback callback) override {
+    if (forward_callback_)
+      std::move(forward_callback_).Run(std::move(callback));
+    else if (callback)
+      std::move(callback).Run(viz::FrameSinkId(), point);
+  }
+
+  base::OnceCallback<void(FrameSinkIdAtCallback)> forward_callback_;
+  mojo::Receiver<viz::mojom::InputTargetClient> receiver_;
+};
+
 }  // namespace
 
 class RenderWidgetHostInputEventRouterTest : public testing::Test {
@@ -233,7 +254,8 @@ class RenderWidgetHostInputEventRouterTest : public testing::Test {
     // connected on the other end, as we really don't want it to respond
     // anyways.
     mojo::Remote<viz::mojom::InputTargetClient> input_target_client;
-    ignore_result(input_target_client.BindNewPipeAndPassReceiver());
+    input_target_client_root_ = std::make_unique<MockInputTargetClient>(
+        input_target_client.BindNewPipeAndPassReceiver());
     widget_host_root_->SetInputTargetClient(std::move(input_target_client));
 
     EXPECT_EQ(view_root_.get(),
@@ -303,6 +325,7 @@ class RenderWidgetHostInputEventRouterTest : public testing::Test {
   std::unique_ptr<MockRenderProcessHost> process_host_root_;
   std::unique_ptr<RenderWidgetHostImpl> widget_host_root_;
   std::unique_ptr<MockRootRenderWidgetHostView> view_root_;
+  std::unique_ptr<MockInputTargetClient> input_target_client_root_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostInputEventRouterTest);
@@ -966,6 +989,37 @@ TEST_F(RenderWidgetHostInputEventRouterTest,
   rwhier()->OnRenderWidgetHostViewBaseDestroyed(child.view.get());
 
   EXPECT_FALSE(targeter->is_auto_scroll_in_progress());
+}
+
+TEST_F(RenderWidgetHostInputEventRouterTest, QueryResultAfterChildViewDead) {
+  ChildViewState child = MakeChildView(view_root_.get());
+
+  view_root_->SetHittestResult(child.view.get(), true);
+
+  input_target_client_root_->forward_callback_ = base::BindOnce(
+      [](viz::FrameSinkId ret,
+         base::WeakPtrFactory<RenderWidgetHostViewBase>* factory,
+         MockInputTargetClient::FrameSinkIdAtCallback callback) {
+        // Simulate destruction of the view.
+        factory->InvalidateWeakPtrs();
+
+        if (callback)
+          std::move(callback).Run(ret, gfx::PointF());
+      },
+      child.view->GetFrameSinkId(),
+      &view_root_->RenderWidgetHostViewBase::weak_factory_);
+
+  // Simulate mouse event.
+  blink::WebMouseEvent mouse_event(
+      blink::WebInputEvent::Type::kMouseDown,
+      blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  mouse_event.button = blink::WebPointerProperties::Button::kLeft;
+  rwhier()->RouteMouseEvent(view_root_.get(), &mouse_event,
+                            ui::LatencyInfo(ui::SourceEventType::MOUSE));
+
+  // Wait for the callback.
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace content

@@ -65,9 +65,8 @@ class SessionFileReader {
   // if the file is valid.
   bool HasValidHeader();
 
-  // Reads the contents of the file specified in the constructor, returning
-  // true on success, and filling up |commands| with commands.
-  bool Read(std::vector<std::unique_ptr<sessions::SessionCommand>>* commands);
+  // Reads the contents of the file specified in the constructor.
+  std::vector<std::unique_ptr<sessions::SessionCommand>> Read();
 
  private:
   // Reads a single command, returning it. A return value of null indicates
@@ -136,18 +135,18 @@ bool SessionFileReader::HasValidHeader() {
          (!encrypt && header.version == kFileCurrentVersion);
 }
 
-bool SessionFileReader::Read(
-    std::vector<std::unique_ptr<sessions::SessionCommand>>* commands) {
+std::vector<std::unique_ptr<sessions::SessionCommand>>
+SessionFileReader::Read() {
   if (!HasValidHeader())
-    return false;
+    return {};
 
   std::vector<std::unique_ptr<sessions::SessionCommand>> read_commands;
   for (std::unique_ptr<sessions::SessionCommand> command = ReadCommand();
        command && !errored_; command = ReadCommand())
     read_commands.push_back(std::move(command));
-  if (!errored_)
-    read_commands.swap(*commands);
-  return !errored_;
+  if (errored_)
+    return {};
+  return read_commands;
 }
 
 std::unique_ptr<sessions::SessionCommand> SessionFileReader::ReadCommand() {
@@ -322,18 +321,12 @@ void CommandStorageBackend::AppendCommands(
   }
 }
 
-void CommandStorageBackend::ReadCurrentSessionCommands(
-    const base::CancelableTaskTracker::IsCanceledCallback& is_canceled,
-    const std::vector<uint8_t>& crypto_key,
-    GetCommandsCallback callback) {
-  if (is_canceled.Run())
-    return;
-
+std::vector<std::unique_ptr<SessionCommand>>
+CommandStorageBackend::ReadCurrentSessionCommands(
+    const std::vector<uint8_t>& crypto_key) {
   InitIfNecessary();
 
-  std::vector<std::unique_ptr<sessions::SessionCommand>> commands;
-  ReadCommandsFromFile(path_, crypto_key, &commands);
-  std::move(callback).Run(std::move(commands));
+  return ReadCommandsFromFile(path_, crypto_key);
 }
 
 bool CommandStorageBackend::AppendCommandsToFile(
@@ -365,12 +358,12 @@ void CommandStorageBackend::InitIfNecessary() {
   DoInit();
 }
 
-bool CommandStorageBackend::ReadCommandsFromFile(
+std::vector<std::unique_ptr<sessions::SessionCommand>>
+CommandStorageBackend::ReadCommandsFromFile(
     const base::FilePath& path,
-    const std::vector<uint8_t>& crypto_key,
-    std::vector<std::unique_ptr<sessions::SessionCommand>>* commands) {
+    const std::vector<uint8_t>& crypto_key) {
   SessionFileReader file_reader(path, crypto_key);
-  return file_reader.Read(commands);
+  return file_reader.Read();
 }
 
 void CommandStorageBackend::CloseFile() {

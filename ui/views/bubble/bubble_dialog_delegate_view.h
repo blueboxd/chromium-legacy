@@ -311,7 +311,7 @@ class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate,
   void OnBubbleWidgetClosing();
   void OnBubbleWidgetVisibilityChanged(bool visible);
   void OnBubbleWidgetActivationChanged(bool active);
-  void OnBubbleWidgetPaintAsActiveChanged(bool as_active);
+  void OnBubbleWidgetPaintAsActiveChanged();
 
   void OnDeactivate();
 

@@ -223,8 +223,7 @@ TEST_F(OSExchangeDataWinTest, EnumerationViaCOM) {
   Microsoft::WRL::ComPtr<IDataObject> com_data(
       OSExchangeDataProviderWin::GetIDataObject(data));
   Microsoft::WRL::ComPtr<IEnumFORMATETC> enumerator;
-  EXPECT_EQ(S_OK, com_data.Get()->EnumFormatEtc(DATADIR_GET,
-                                                enumerator.GetAddressOf()));
+  EXPECT_EQ(S_OK, com_data.Get()->EnumFormatEtc(DATADIR_GET, &enumerator));
 
   // Test that we can get one item.
   {
@@ -277,7 +276,7 @@ TEST_F(OSExchangeDataWinTest, EnumerationViaCOM) {
     EXPECT_EQ(S_OK, enumerator->Reset());
     EXPECT_EQ(S_OK, enumerator->Skip(1));
     Microsoft::WRL::ComPtr<IEnumFORMATETC> cloned_enumerator;
-    EXPECT_EQ(S_OK, enumerator.Get()->Clone(cloned_enumerator.GetAddressOf()));
+    EXPECT_EQ(S_OK, enumerator.Get()->Clone(&cloned_enumerator));
     EXPECT_EQ(S_OK, enumerator.Get()->Reset());
 
     {

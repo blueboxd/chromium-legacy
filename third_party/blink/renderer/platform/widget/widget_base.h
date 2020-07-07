@@ -13,7 +13,7 @@
 #include "third_party/blink/public/mojom/input/input_handler.mojom-blink.h"
 #include "third_party/blink/public/mojom/page/widget.mojom-blink.h"
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
-#include "third_party/blink/public/web/web_widget.h"
+#include "third_party/blink/public/platform/web_text_input_info.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -42,6 +42,7 @@ class WidgetInputHandlerManager;
 
 namespace scheduler {
 class WebRenderWidgetSchedulingState;
+class WebThreadScheduler;
 }
 
 // This class is the foundational class for all widgets that blink creates.

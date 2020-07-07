@@ -18,7 +18,6 @@
 #include "base/logging.h"
 #include "base/pickle.h"
 #include "chrome/android/chrome_jni_headers/WebContentsStateBridge_jni.h"
-#include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/sessions/content/content_serialized_navigation_builder.h"
@@ -380,13 +379,11 @@ WebContents* RestoreContentsFromByteBuffer(void* data,
 
 ScopedJavaLocalRef<jobject> WebContentsState::GetContentsStateAsByteBuffer(
     JNIEnv* env,
-    TabAndroid* tab) {
-  Profile* profile = tab->GetProfile();
-  if (!profile)
+    content::WebContents* web_contents) {
+  if (!web_contents)
     return ScopedJavaLocalRef<jobject>();
 
-  content::NavigationController& controller =
-      tab->web_contents()->GetController();
+  content::NavigationController& controller = web_contents->GetController();
   const int entry_count = controller.GetEntryCount();
   if (entry_count == 0)
     return ScopedJavaLocalRef<jobject>();
@@ -396,9 +393,9 @@ ScopedJavaLocalRef<jobject> WebContentsState::GetContentsStateAsByteBuffer(
     navigations[i] = controller.GetEntryAtIndex(i);
   }
 
-  return WriteNavigationsAsByteBuffer(env, profile->IsOffTheRecord(),
-                                      navigations,
-                                      controller.GetLastCommittedEntryIndex());
+  return WriteNavigationsAsByteBuffer(
+      env, web_contents->GetBrowserContext()->IsOffTheRecord(), navigations,
+      controller.GetLastCommittedEntryIndex());
 }
 
 ScopedJavaLocalRef<jobject>
@@ -541,9 +538,10 @@ JNI_WebContentsStateBridge_RestoreContentsFromByteBuffer(
 static ScopedJavaLocalRef<jobject>
 JNI_WebContentsStateBridge_GetContentsStateAsByteBuffer(
     JNIEnv* env,
-    const JavaParamRef<jobject>& jtab) {
-  TabAndroid* tab_android = TabAndroid::GetNativeTab(env, jtab);
-  return WebContentsState::GetContentsStateAsByteBuffer(env, tab_android);
+    const JavaParamRef<jobject>& jweb_contents) {
+  WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(jweb_contents);
+  return WebContentsState::GetContentsStateAsByteBuffer(env, web_contents);
 }
 
 static base::android::ScopedJavaLocalRef<jobject>

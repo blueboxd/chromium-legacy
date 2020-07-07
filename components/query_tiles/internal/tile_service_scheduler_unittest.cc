@@ -56,9 +56,9 @@ class TileServiceSchedulerTest : public testing::Test {
     clock_.SetNow(fake_now);
     query_tiles::RegisterPrefs(prefs()->registry());
     auto policy = std::make_unique<net::BackoffEntry::Policy>(kTestPolicy);
-    tile_service_scheduler_ =
-        TileServiceScheduler::Create(&mocked_native_scheduler_, &prefs_,
-                                     &clock_, &tick_clock_, std::move(policy));
+    tile_service_scheduler_ = std::make_unique<TileServiceSchedulerImpl>(
+        &mocked_native_scheduler_, &prefs_, &clock_, &tick_clock_,
+        std::move(policy));
     EXPECT_CALL(
         *native_scheduler(),
         Cancel(static_cast<int>(background_task::TaskIds::QUERY_TILE_JOB_ID)));

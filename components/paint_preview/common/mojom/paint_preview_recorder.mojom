@@ -44,6 +44,9 @@ struct PaintPreviewCaptureParams {
   // unclipped and will default to the frame (document) size.
   gfx.mojom.Rect clip_rect;
 
+  // Set to true if the clip rect is only a hint as to size.
+  bool clip_rect_is_hint;
+
   // Used to identify if the capture request is for the main frame.
   bool is_main_frame;
 

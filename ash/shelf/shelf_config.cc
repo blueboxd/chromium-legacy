@@ -415,7 +415,7 @@ void ShelfConfig::UpdateConfig(bool new_is_app_list_visible,
           ? Shell::Get()->system_tray_model()->virtual_keyboard()->visible()
           : false;
 
-  if (is_dense_ == new_is_dense &&
+  if (!tablet_mode_changed && is_dense_ == new_is_dense &&
       shelf_controls_shown_ == new_shelf_controls_shown &&
       is_virtual_keyboard_shown_ == new_is_virtual_keyboard_shown &&
       is_app_list_visible_ == new_is_app_list_visible) {

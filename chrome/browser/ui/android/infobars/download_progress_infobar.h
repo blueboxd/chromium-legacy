@@ -13,7 +13,7 @@
 
 class DownloadProgressInfoBarDelegate;
 
-class DownloadProgressInfoBar : public InfoBarAndroid {
+class DownloadProgressInfoBar : public infobars::InfoBarAndroid {
  public:
   explicit DownloadProgressInfoBar(
       std::unique_ptr<DownloadProgressInfoBarDelegate> delegate);
@@ -26,7 +26,7 @@ class DownloadProgressInfoBar : public InfoBarAndroid {
  protected:
   infobars::InfoBarDelegate* GetDelegate();
 
-  // InfoBarAndroid overrides.
+  // infobars::InfoBarAndroid overrides.
   void ProcessButton(int action) override;
   base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
       JNIEnv* env) override;

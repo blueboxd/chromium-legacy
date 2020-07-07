@@ -73,8 +73,7 @@ class PlayerFrameView extends FrameLayout {
 
     void updateViewPort(int left, int top, int right, int bottom) {
         mBitmapPainter.updateViewPort(left, top, right, bottom);
-
-        layoutSubframes();
+        layoutSubFrames();
     }
 
     void updateBitmapMatrix(Bitmap[][] bitmapMatrix) {
@@ -90,7 +89,7 @@ class PlayerFrameView extends FrameLayout {
         if (mScaleMatrix.isIdentity()) return;
 
         postInvalidate();
-        layoutSubframes();
+        layoutSubFrames();
     }
 
     @Override
@@ -106,7 +105,7 @@ class PlayerFrameView extends FrameLayout {
         return mGestureDetector.onTouchEvent(event) || super.onTouchEvent(event);
     }
 
-    private void layoutSubframes() {
+    private void layoutSubFrames() {
         // Remove all views if there are no sub-frames.
         if (mSubFrameViews == null || mSubFrameRects == null) {
             removeAllViews();
@@ -115,21 +114,20 @@ class PlayerFrameView extends FrameLayout {
 
         // Layout the sub-frames.
         for (int i = 0; i < mSubFrameViews.size(); i++) {
-            if (mSubFrameViews.get(i).getParent() == null) {
+            View subFrameView = mSubFrameViews.get(i);
+            if (subFrameView.getVisibility() != View.VISIBLE) {
+                removeView(subFrameView);
+                continue;
+            }
+
+            if (subFrameView.getParent() == null) {
                 addView(mSubFrameViews.get(i));
-            } else if (mSubFrameViews.get(i).getParent() != this) {
+            } else if (subFrameView.getParent() != this) {
                 throw new IllegalStateException("Sub-frame view already has a parent.");
             }
             Rect layoutRect = mSubFrameRects.get(i);
-            mSubFrameViews.get(i).layout(
+            subFrameView.layout(
                     layoutRect.left, layoutRect.top, layoutRect.right, layoutRect.bottom);
-        }
-
-        for (int i = 0; i < getChildCount(); i++) {
-            if (!mSubFrameViews.contains(getChildAt(i))) {
-                removeViewAt(i);
-                --i;
-            }
         }
     }
 }

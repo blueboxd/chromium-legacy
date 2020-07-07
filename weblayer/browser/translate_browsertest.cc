@@ -464,7 +464,8 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, TranslateInfoBarPresentation) {
   run_loop.Run();
 
   EXPECT_EQ(1u, infobar_service->infobar_count());
-  auto* infobar = static_cast<InfoBarAndroid*>(infobar_service->infobar_at(0));
+  auto* infobar =
+      static_cast<infobars::InfoBarAndroid*>(infobar_service->infobar_at(0));
   EXPECT_TRUE(infobar->HasSetJavaInfoBar());
 
   base::RunLoop run_loop2;
@@ -519,7 +520,8 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, TranslationViaInfoBar) {
   // occurs.
   auto* infobar =
       static_cast<TranslateCompactInfoBar*>(infobar_service->infobar_at(0));
-  infobar->SelectButtonForTesting(InfoBarAndroid::ActionType::ACTION_TRANSLATE);
+  infobar->SelectButtonForTesting(
+      infobars::InfoBarAndroid::ActionType::ACTION_TRANSLATE);
 
   WaitUntilPageTranslated(shell());
 
@@ -538,7 +540,7 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, TranslationViaInfoBar) {
   // Revert to the source language via the Java infobar and ensure that the
   // translation is undone.
   infobar->SelectButtonForTesting(
-      InfoBarAndroid::ActionType::ACTION_TRANSLATE_SHOW_ORIGINAL);
+      infobars::InfoBarAndroid::ActionType::ACTION_TRANSLATE_SHOW_ORIGINAL);
 
   translate_reversion_waiter->Wait();
   EXPECT_EQ("fr", translate_client->GetLanguageState().current_language());

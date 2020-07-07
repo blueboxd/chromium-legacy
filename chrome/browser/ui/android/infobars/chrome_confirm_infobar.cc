@@ -25,7 +25,7 @@ std::unique_ptr<infobars::InfoBar> InfoBarService::CreateConfirmInfoBar(
 
 ChromeConfirmInfoBar::ChromeConfirmInfoBar(
     std::unique_ptr<ConfirmInfoBarDelegate> delegate)
-    : ConfirmInfoBar(
+    : infobars::ConfirmInfoBar(
           std::move(delegate),
           base::BindRepeating(&ResourceMapper::MapToJavaDrawableId)) {}
 

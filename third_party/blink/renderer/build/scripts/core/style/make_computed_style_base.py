@@ -69,6 +69,7 @@ ALIGNMENT_ORDER = [
     'cc::ScrollSnapAlign',
     'BorderValue',
     'StyleColor',
+    'StyleAutoColor',
     'Color',
     'CSSValueID',
     'LayoutUnit',

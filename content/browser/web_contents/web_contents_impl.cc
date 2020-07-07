@@ -1102,6 +1102,11 @@ void WebContentsImpl::SetDelegate(WebContentsDelegate* delegate) {
     return;
   if (delegate_)
     delegate_->Detach(this);
+
+  CancelActiveAndPendingDialogs();
+  // Since |dialog_manager_| was provided by |delegate_|, reset it.
+  dialog_manager_ = nullptr;
+
   delegate_ = delegate;
   if (delegate_) {
     delegate_->Attach(this);
@@ -1179,9 +1184,8 @@ RenderViewHostImpl* WebContentsImpl::GetRenderViewHost() {
 }
 
 void WebContentsImpl::CancelActiveAndPendingDialogs() {
-  if (dialog_manager_) {
+  if (dialog_manager_)
     dialog_manager_->CancelDialogs(this, /*reset_state=*/false);
-  }
   if (browser_plugin_embedder_)
     browser_plugin_embedder_->CancelGuestDialogs();
 }
@@ -4888,8 +4892,7 @@ void WebContentsImpl::CapturePaintPreviewOfCrossProcessSubframe(
     RenderFrameHost* render_frame_host) {
   if (!delegate_)
     return;
-  delegate_->CapturePaintPreviewOfCrossProcessSubframe(this, rect, guid,
-                                                       render_frame_host);
+  delegate_->CapturePaintPreviewOfSubframe(this, rect, guid, render_frame_host);
 }
 
 #if defined(OS_ANDROID)

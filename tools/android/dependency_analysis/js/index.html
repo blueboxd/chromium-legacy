@@ -6,51 +6,7 @@
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
   </head>
   <body>
-    <div id="page-container">
-      <div id="page-controls">
-        <div id="filter-input-group" class="user-input-group">
-          <label for="filter-input">Add node to filter (exact name):</label>
-          <input v-model="filterInputText" type="text" id="filter-input">
-          <button @click="submitFilter" type="button">Add</button>
-        </div>
-        <ul id="filter-items">
-          <li @click="removeFilter" v-for="node in nodeList">
-            {{node}}
-          </li>
-        </ul>
-        <div id="filter-inbound-group" class="user-input-group">
-          <label for="filter-inbound">Change inbound (blue) depth:</label>
-          <input v-model.number="inboundDepth" type="number" id="filter-inbound">
-          <button @click="submitInbound" type="button">Update Inbound</button>
-        </div>
-        <div id="filter-outbound-group" class="user-input-group">
-          <label for="filter-outbound">Change outbound (yellow) depth:</label>
-          <input v-model.number="outboundDepth" type="number" id="filter-outbound">
-          <button @click="submitOutbound" type="button">Update Outbound</button>
-        </div>
-      </div>
-      <div id="graph-and-node-details-container">
-        <div id="graph-container">
-          <svg id="graph-svg" width="960" height="600"></svg>
-        </div>
-        <div id="selected-node-details">
-          <template v-if="selectedNode !== null">
-            <ul>
-              <li>Name: {{selectedNode.id}}</li>
-              <li>Display Name: {{selectedNode.displayName}}</li>
-              <li v-for="(value, key) in selectedNode.visualizationState">{{key}}: {{value}}</li>
-            </ul>
-            <button @click="removeSelectedFromFilter" v-if="selectedNode.visualizationState.selectedByFilter">Remove from filter</button>
-            <button @click="addSelectedToFilter" v-else>Add to filter</button>
-          </template>
-          <div v-else>Click a node for more details.</div>
-        </div>
-      </div>
-      <div id="url-generator">
-        <button @click="generateUrl">Generate Current URL</button>
-        <input type="text" readonly ref="input">
-      </div>
-    </div>
+    <div id="package-graph-page"></div>
     <script type="module" src="./index.js"></script>
   </body>
 </html>

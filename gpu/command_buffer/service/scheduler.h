@@ -200,6 +200,8 @@ class GPU_EXPORT Scheduler {
     SchedulingPriority current_priority() const { return current_priority_; }
 
    private:
+    friend class Scheduler;
+
     enum RunningState { IDLE, SCHEDULED, RUNNING };
 
     struct WaitFence {

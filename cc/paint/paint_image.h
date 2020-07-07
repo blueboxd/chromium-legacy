@@ -5,6 +5,7 @@
 #ifndef CC_PAINT_PAINT_IMAGE_H_
 #define CC_PAINT_PAINT_IMAGE_H_
 
+#include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -120,7 +121,7 @@ class CC_PAINT_EXPORT PaintImage {
 
   class CC_PAINT_EXPORT FrameKey {
    public:
-    FrameKey(ContentId content_id, size_t frame_index, gfx::Rect subset_rect);
+    FrameKey(ContentId content_id, size_t frame_index);
     bool operator==(const FrameKey& other) const;
     bool operator!=(const FrameKey& other) const;
 
@@ -132,8 +133,6 @@ class CC_PAINT_EXPORT PaintImage {
    private:
     ContentId content_id_;
     size_t frame_index_;
-    // TODO(khushalsagar): Remove this when callers take care of subsetting.
-    gfx::Rect subset_rect_;
 
     size_t hash_;
   };
@@ -268,7 +267,6 @@ class CC_PAINT_EXPORT PaintImage {
     return paint_worklet_input_ ? nullptr : GetSkImage()->colorSpace();
   }
   bool isSRGB() const;
-  const gfx::Rect subset_rect() const { return subset_rect_; }
 
   // Returns whether this image will be decoded and rendered from YUV data
   // and fills out plane size info, plane index info, and the matrix for
@@ -319,8 +317,6 @@ class CC_PAINT_EXPORT PaintImage {
   friend class ScopedRasterFlags;
   friend class PaintOpReader;
 
-  bool CanDecodeFromGenerator() const;
-
   bool DecodeFromGenerator(void* memory,
                            SkImageInfo* info,
                            sk_sp<SkColorSpace> color_space,
@@ -332,7 +328,6 @@ class CC_PAINT_EXPORT PaintImage {
                          size_t frame_index,
                          GeneratorClientId client_id) const;
   void CreateSkImage();
-  PaintImage MakeSubset(const gfx::Rect& subset) const;
 
   sk_sp<SkImage> sk_image_;
   sk_sp<PaintRecord> paint_record_;
@@ -347,10 +342,6 @@ class CC_PAINT_EXPORT PaintImage {
   AnimationType animation_type_ = AnimationType::STATIC;
   CompletionState completion_state_ = CompletionState::DONE;
   int repetition_count_ = kAnimationNone;
-
-  // If non-empty, holds the subset of this image relative to the original image
-  // at the origin.
-  gfx::Rect subset_rect_;
 
   // Whether the data fetched for this image is a part of a multpart response.
   bool is_multipart_ = false;

@@ -299,21 +299,27 @@ class TestBrowsingDataRemoverDelegate
     return base::NullCallback();
   }
   bool MayRemoveDownloadHistory() override { return false; }
-  void RemoveEmbedderData(const base::Time& delete_begin,
-                          const base::Time& delete_end,
-                          uint64_t remove_mask,
-                          BrowsingDataFilterBuilder* filter_builder,
-                          uint64_t origin_type_mask,
-                          base::OnceClosure callback) override {
-    std::move(callback).Run();
+  void RemoveEmbedderData(
+      const base::Time& delete_begin,
+      const base::Time& delete_end,
+      uint64_t remove_mask,
+      BrowsingDataFilterBuilder* filter_builder,
+      uint64_t origin_type_mask,
+      base::OnceCallback<void(uint64_t)> callback) override {
+    std::move(callback).Run(failed_data_types_);
   }
 
   void set_deferred_domains(std::vector<std::string> deferred_domains) {
     deferred_domains_ = deferred_domains;
   }
 
+  void set_failed_data_types(uint64_t failed_data_types) {
+    failed_data_types_ = failed_data_types;
+  }
+
  private:
   std::vector<std::string> deferred_domains_;
+  uint64_t failed_data_types_ = 0;
 };
 
 }  // namespace
@@ -1215,8 +1221,9 @@ class InspectableCompletionObserver
   bool called() { return called_; }
 
  protected:
-  void OnBrowsingDataRemoverDone() override {
-    BrowsingDataRemoverCompletionObserver::OnBrowsingDataRemoverDone();
+  void OnBrowsingDataRemoverDone(uint64_t failed_data_types) override {
+    BrowsingDataRemoverCompletionObserver::OnBrowsingDataRemoverDone(
+        failed_data_types);
     called_ = true;
   }
 
@@ -1353,7 +1360,7 @@ class MultipleTasksObserver {
     }
     ~Target() override = default;
 
-    void OnBrowsingDataRemoverDone() override {
+    void OnBrowsingDataRemoverDone(uint64_t failed_data_types) override {
       parent_->last_called_targets_.push_back(this);
     }
 
@@ -1709,6 +1716,48 @@ TEST_F(BrowsingDataRemoverImplTest, DeferCookieDeletion) {
   // Reset delegate.
   BrowserContext::GetBrowsingDataRemover(GetBrowserContext())
       ->SetEmbedderDelegate(nullptr);
+}
+
+// Tests that the failed_data_types mask is correctly plumbed from the embedder
+// delegate to the observer's OnBrowsingDataRemoverDone() method.
+TEST_F(BrowsingDataRemoverImplTest, FailedDataTypes) {
+  const uint64_t kSomeEmbedderType = BrowsingDataRemover::DATA_TYPE_CONTENT_END
+                                     << 1;
+
+  BrowsingDataRemover* remover =
+      BrowserContext::GetBrowsingDataRemover(GetBrowserContext());
+
+  TestBrowsingDataRemoverDelegate delegate;
+  remover->SetEmbedderDelegate(&delegate);
+
+  {
+    delegate.set_failed_data_types(kSomeEmbedderType);
+
+    BrowsingDataRemoverCompletionObserver completion_observer(remover);
+    remover->RemoveAndReply(
+        base::Time(), base::Time::Max(),
+        BrowsingDataRemover::DATA_TYPE_COOKIES | kSomeEmbedderType,
+        BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB, &completion_observer);
+    completion_observer.BlockUntilCompletion();
+
+    EXPECT_EQ(completion_observer.failed_data_types(), kSomeEmbedderType);
+  }
+
+  {
+    delegate.set_failed_data_types(0);
+
+    BrowsingDataRemoverCompletionObserver completion_observer(remover);
+    remover->RemoveAndReply(
+        base::Time(), base::Time::Max(),
+        BrowsingDataRemover::DATA_TYPE_COOKIES | kSomeEmbedderType,
+        BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB, &completion_observer);
+    completion_observer.BlockUntilCompletion();
+
+    EXPECT_EQ(completion_observer.failed_data_types(), 0u);
+  }
+
+  // Reset delegate.
+  remover->SetEmbedderDelegate(nullptr);
 }
 
 }  // namespace content

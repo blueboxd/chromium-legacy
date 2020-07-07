@@ -474,6 +474,7 @@ interface TestObject {
 
     // [HighEntropy=Direct]
     [HighEntropy=Direct,MeasureAs=TestAttributeHighEntropyUnsignedLong] readonly attribute unsigned long highEntropyDirectUnsignedLong;
+    [HighEntropy=Direct,MeasureAs=TestAttributeHighEntropyDOMString] readonly attribute DOMString highEntropyDirectDomString;
 
     // with [CEReactions] for not overloaded method
     [CEReactions] void ceReactionsNotOverloadedMethod(boolean arg);

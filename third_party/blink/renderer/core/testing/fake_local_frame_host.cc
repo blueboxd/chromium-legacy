@@ -191,6 +191,10 @@ void FakeLocalFrameHost::DidChangeFramePolicy(
     const base::UnguessableToken& child_frame_token,
     const FramePolicy& frame_policy) {}
 
+void FakeLocalFrameHost::CapturePaintPreviewOfSubframe(
+    const gfx::Rect& clip_rect,
+    const base::UnguessableToken& guid) {}
+
 void FakeLocalFrameHost::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {
   receiver_.Bind(mojo::PendingAssociatedReceiver<mojom::blink::LocalFrameHost>(

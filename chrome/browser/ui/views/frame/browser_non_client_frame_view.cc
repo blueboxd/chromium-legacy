@@ -284,13 +284,13 @@ void BrowserNonClientFrameView::ChildPreferredSizeChanged(views::View* child) {
     Layout();
 }
 
-void BrowserNonClientFrameView::PaintAsActiveChanged(bool active) {
+void BrowserNonClientFrameView::PaintAsActiveChanged() {
   // The toolbar top separator color (used as the stroke around the tabs and
   // the new tab button) needs to be recalculated.
   browser_view_->tabstrip()->FrameColorsChanged();
 
   if (web_app_frame_toolbar_)
-    web_app_frame_toolbar_->SetPaintAsActive(active);
+    web_app_frame_toolbar_->SetPaintAsActive(ShouldPaintAsActive());
 
   // Changing the activation state may change the visible frame color.
   SchedulePaint();

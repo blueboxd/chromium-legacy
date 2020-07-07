@@ -20,6 +20,11 @@
 //      are not nullable in Mojo.
 //   2) Make all fields in BatteryInfo optional in case we want to filter them
 //      out later.
+//   3) NonRemovableBlockDeviceInfo:
+//      3.1) Make all fields in NonRemovableBlockDeviceInfo optional in case we
+//           want to filter them out later.
+//      3.2) Use uint32 to store manufacturer_id instead of uint8 in case we
+//           want to extend manufacturer range.
 
 module chromeos.health.mojom;
 
@@ -43,6 +48,8 @@ interface ProbeService {
 [Extensible]
 enum ProbeCategoryEnum {
   kBattery,
+  kNonRemovableBlockDevices,
+  kCachedVpdData,
 };
 
 // An enumeration of the different categories of errors that can occur when
@@ -78,6 +85,13 @@ struct DoubleValue {
 struct Int64Value {
   // The value of the int64.
   int64 value;
+};
+
+// Optional uint32 field. Since primitives numeric types cannot be optional,
+// wrap uint32 in a struct that can be nulled.
+struct UInt32Value {
+  // The value of the uint32.
+  uint32 value;
 };
 
 // Optional uint64 field. Since primitives numeric types cannot be optional,
@@ -132,6 +146,63 @@ union BatteryResult {
   ProbeError error;
 };
 
+// Information related to a specific non-removable block device.
+struct NonRemovableBlockDeviceInfo {
+  // The path of this storage on the system. It is useful if caller needs to
+  // correlate with other information.
+  string? path;
+  // Exact size of this storage, reported in bytes.
+  UInt64Value? size;
+  // Storage type, could be MMC / NVMe / ATA, based on udev subsystem.
+  string? type;
+  // Manufacturer ID, 8 bits.
+  UInt32Value? manufacturer_id;
+  // PNM: Product name, ASCII characters for 6 bytes.
+  string? name;
+  // PSN: Product serial number, 32 bits.
+  UInt32Value? serial;
+  // Bytes read since last boot.
+  UInt64Value? bytes_read_since_last_boot;
+  // Bytes written since last boot.
+  UInt64Value? bytes_written_since_last_boot;
+  // Time spent reading since last boot.
+  UInt64Value? read_time_seconds_since_last_boot;
+  // Time spent writing since last boot.
+  UInt64Value? write_time_seconds_since_last_boot;
+  // Time spent doing I/O since last boot. Counts the time the disk and queue
+  // were busy, so unlike the fields above, parallel requests are not counted
+  // multiple times.
+  UInt64Value? io_time_seconds_since_last_boot;
+  // Time spent discarding since last boot. Discarding is writing to clear
+  // blocks which are no longer in use. Supported on kernels 4.18+.
+  UInt64Value? discard_time_seconds_since_last_boot;
+};
+
+// Non-removable block device probe result. Can either be populated with the
+// NonRemovableBlockDeviceInfo or an error retrieving the information.
+union NonRemovableBlockDeviceResult {
+  // Valid NonRemovableBlockDeviceInfo.
+  array<NonRemovableBlockDeviceInfo> block_device_info;
+  // The error that occurred attempting to retrieve the
+  // NonRemovableBlockDeviceInfo.
+  ProbeError error;
+};
+
+// Cached VPD read from sysfs.
+struct CachedVpdInfo {
+  // Contents of /sys/firmware/vpd/ro/sku_number, if the device supports it.
+  string? sku_number;
+};
+
+// Cached VPD probe result. Can either be populated with the CachedVpdInfo or an
+// error retrieving the information.
+union CachedVpdResult {
+  // Valid CachedVpdInfo.
+  CachedVpdInfo vpd_info;
+  // The error that occurred attempting to retrieve the CachedVpdInfo.
+  ProbeError error;
+};
+
 // A collection of all the device's telemetry information that cros_healthd is
 // capable of reporting. Note that every field in TelemetryInfo is nullable, and
 // the response for a particular ProbeTelemetryInfo request will only contain
@@ -143,4 +214,11 @@ struct TelemetryInfo {
   // Information about the device's main battery. Only present when kBattery was
   // included in the categories input to ProbeTelemetryInfo.
   BatteryResult? battery_result;
+  // Information about all of the device's non-removable block devices. Only
+  // present when kNonRemovableBlockDevices was included in the categories input
+  // to ProbeTelemetryInfo.
+  NonRemovableBlockDeviceResult? block_device_result;
+  // Only present when kCachedVpdData was included in the categories input to
+  // ProbeTelemetryInfo.
+  CachedVpdResult? vpd_result;
 };

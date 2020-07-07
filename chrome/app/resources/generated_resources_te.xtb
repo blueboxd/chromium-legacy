@@ -281,7 +281,6 @@
 <translation id="1340527397989195812">'ఫైల్‌లు' యాప్‌ను ఉపయోగించి పరికరం నుండి మీడియాను బ్యాకప్ చేయండి.</translation>
 <translation id="1341988552785875222">ప్రస్తుత వాల్‌పేపర్‌ను '<ph name="APP_NAME" />' సెట్ చేసింది. మీరు వేరొక వాల్‌పేపర్‌ను ఎంచుకోవడానికి ముందు '<ph name="APP_NAME" />'ను అన్ఇన్‌స్టాల్ చేయాల్సి రావచ్చు.</translation>
 <translation id="1343865611738742294">USB పరికరాలను యాక్సెస్ చేయడానికి Linux యాప్‌లకు అనుమతి ఇవ్వండి. USB పరికరాన్ని తీసివేసిన తర్వాత, దానిని Linux గుర్తుంచుకోదు.</translation>
-<translation id="1344143111673240412">కెమెరా సెట్టింగ్‌లో మార్చడానికి పారలల్స్ డెస్క్‌టాప్‌ను మళ్లీ ప్రారంభించవలసి ఉంటుంది</translation>
 <translation id="1347256498747320987">అప్‌డేట్‌లు &amp; యాప్‌లను ఇన్‌స్టాల్ చేయండి. కొనసాగించడం ద్వారా, ఈ పరికరం Google, మీ క్యారియర్ మరియు మీ పరికర తయారీదారు నుండి అప్‌డేట్‌లు మరియు యాప్‌లను ఆటోమేటిక్‌గా కూడా డౌన్‌లోడ్ మరియు ఇన్‌స్టాల్ చేయవచ్చని మీరు అంగీకరిస్తున్నారు, బహుశా సెల్యులార్ డేటా ఉపయోగించబడవచ్చు. ఈ యాప్‌లలో కొన్ని యాప్‌లో కొనుగోళ్లను అందించవచ్చు. <ph name="BEGIN_LINK1" />మరింత తెలుసుకోండి<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">బ్యాటరీ <ph name="BATTERY_LEVEL" />% ఉన్నప్పుడు అప్‌డేట్ ప్రారంభమవుతుంది.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -378,6 +377,7 @@
 <translation id="1468571364034902819">ఈ ప్రొఫైల్‌ను ఉపయోగించలేరు</translation>
 <translation id="1470084204649225129">{NUM_TABS,plural, =1{ట్యాబ్‌ను కొత్త గ్రూప్‌నకు జోడించు}other{ట్యాబ్‌లను కొత్త గ్రూప్‌నకు జోడించు}}</translation>
 <translation id="1472675084647422956">మరిన్ని చూపించు</translation>
+<translation id="1474785664565228650">మైక్రోఫోన్ సెట్టింగ్‌లో మార్చడానికి పారలల్స్ డెస్క్‌టాప్‌ను మళ్లీ ప్రారంభించవలసి ఉంటుంది. కొనసాగించడానికి పారలల్స్ డెస్క్‌టాప్‌ను మళ్లీ ప్రారంభించండి.</translation>
 <translation id="1475502736924165259">మీకు ఫైల్‌లో మరే ఇతర వర్గంలోనూ సరిపోని ప్రమాణపత్రాలు ఉన్నాయి</translation>
 <translation id="1476088332184200792">మీ పరికరానికి కాపీ చేయండి</translation>
 <translation id="1476607407192946488">&amp;భాష సెట్టింగ్‌లు</translation>
@@ -1197,7 +1197,6 @@
 <translation id="2470702053775288986">మద్దతు లేని పొడిగింపులు నిలిపివేయబడ్డాయి</translation>
 <translation id="2471469610750100598">నలుపు (ఆటోమేటిక్ సెట్టింగ్)</translation>
 <translation id="2473195200299095979">ఈ పేజీని అనువదించండి</translation>
-<translation id="2474848500897222119"><ph name="PRINTER_NAME" />లో ఇంక్ అయిపోయింది</translation>
 <translation id="2475982808118771221">ఒక ఎర్రర్ ఏర్పడింది</translation>
 <translation id="2476578072172137802">సైట్ సెట్టింగ్‌లు</translation>
 <translation id="2478176599153288112">"<ph name="EXTENSION" />" కోసం మీడియా-ఫైల్ అనుమతులు</translation>
@@ -1503,7 +1502,6 @@
 <translation id="2824942875887026017">'<ph name="IDS_SHORT_PRODUCT_NAME" />' అన్నది, మీ నిర్వాహకుడి నుండి అందించబడిన ప్రాక్సీ సెట్టింగ్‌లను ఉపయోగిస్తోంది</translation>
 <translation id="2825758591930162672">విషయం యొక్క పబ్లిక్ కీ</translation>
 <translation id="2828650939514476812">Wi-Fi నెట్‌వర్క్‌కు కనెక్ట్ చేయండి</translation>
-<translation id="28291580771888953"><ph name="PRINTER_NAME" /> క్రమ వరుస నిండిపోయింది</translation>
 <translation id="2835547721736623118">ప్రసంగ గుర్తింపు సర్వీస్</translation>
 <translation id="2836269494620652131">క్రాష్</translation>
 <translation id="2836635946302913370">ఈ వినియోగదారు పేరుతో సైన్ ఇన్ చేయడం, మీ నిర్వాహకుడి ద్వారా నిలిపివేయబడింది.</translation>
@@ -2319,7 +2317,7 @@
 <translation id="3839516600093027468">క్లిప్‌బోర్డ్‌ను చూడనీయకుండా ఎల్లప్పుడూ <ph name="HOST" />ని బ్లాక్ చేయి</translation>
 <translation id="3841964634449506551">పాస్‌వర్డ్ చెల్లదు</translation>
 <translation id="3842552989725514455">Serif ఫాంట్</translation>
-<translation id="3843058644024807390">మైక్రోఫోన్ సెట్టింగ్‌లో మార్చడానికి పారలల్స్ డెస్క్‌టాప్‌ను మళ్లీ ప్రారంభించవలసి ఉంటుంది</translation>
+<translation id="3843464315703645664">ఇంటర్నల్‌గా వైట్‌లిస్ట్ చేయబడింది</translation>
 <translation id="3846116211488856547">వెబ్‌సైట్‌లు, Android యాప్‌లు మరియు మరిన్నింటిని అభివృద్ధి చేయడానికి సాధనాలను పొందండి. Linuxను ఇన్‌స్టాల్ చేయడం ద్వారా <ph name="DOWNLOAD_SIZE" /> డేటా డౌన్‌లోడ్ అవుతుంది.</translation>
 <translation id="3847319713229060696">వెబ్‌లో ప్రతిఒక్కరికీ భద్రతను మెరుగుపరచడంలో సహాయపడండి</translation>
 <translation id="385051799172605136">వెనుకకు</translation>
@@ -2778,7 +2776,6 @@
 <translation id="4453946976636652378"><ph name="SEARCH_ENGINE_NAME" />లో వెతకండి లేదా URLని టైప్ చేయండి</translation>
 <translation id="4459169140545916303"><ph name="DEVICE_LAST_ACTIVATED_TIME" /> రోజుల క్రితం యాక్టివ్‌గా ఉంది</translation>
 <translation id="4460014764210899310">విడివిడిగా ఉంచు</translation>
-<translation id="4460343359907016103"><ph name="PRINTER_NAME" />కు కనెక్ట్ చేయడంలో ఎర్రర్</translation>
 <translation id="4462159676511157176">అనుకూల పేరు సర్వర్‌లు</translation>
 <translation id="4465236939126352372"><ph name="APP_NAME" />కు <ph name="TIME" /> సమయ పరిమితి సెట్ చేయబడింది</translation>
 <translation id="4465725236958772856"><ph name="NETWORK_COUNT" />లో <ph name="NETWORK_INDEX" /> నెట్‌వర్క్, <ph name="NETWORK_NAME" />, మీ అడ్మినిస్ట్రేటర్ ద్వారా నిర్వహించబడుతోంది, కనెక్ట్ చేయండి</translation>
@@ -2933,6 +2930,7 @@
 <translation id="4648499713050786492">వ్యక్తిని జోడించే ముందు దయచేసి మీ ప్రొఫైల్‌ను అన్‌లాక్ చేయండి.</translation>
 <translation id="4650591383426000695">మీ <ph name="DEVICE_TYPE" /> నుండి మీ ఫోన్‌ను డిస్‌కనెక్ట్ చేయండి</translation>
 <translation id="4651484272688821107">డెమో మోడ్ వనరులతో ఆన్‌లైన్ అంతర్భాగాన్ని లోడ్ చేయడం సాధ్యపడలేదు.</translation>
+<translation id="4652935475563630866">కెమెరా సెట్టింగ్‌లో మార్చడానికి పారలల్స్ డెస్క్‌టాప్‌ను మళ్లీ ప్రారంభించవలసి ఉంటుంది. కొనసాగించడానికి పారలల్స్ డెస్క్‌టాప్‌ను మళ్లీ ప్రారంభించండి.</translation>
 <translation id="4653405415038586100">Linuxను కాన్ఫిగర్ చేయడంలో ఎర్రర్</translation>
 <translation id="465878909996028221">కేవలం http, https, ఫైల్ ప్రోటోకాల్‌లు మాత్రమే బ్రౌజర్ మళ్లింపులకు మద్దతిస్తాయి.</translation>
 <translation id="4659077111144409915">ప్రాథమిక ఖాతా</translation>
@@ -3076,7 +3074,6 @@
 <translation id="4864369630010738180">సైన్ ఇన్ అవుతోంది...</translation>
 <translation id="4864805589453749318">పాఠశాల ఖాతాను జోడించడానికి అనుమతిని ఇస్తున్న తల్లి/తండ్రిని ఎంచుకోండి.</translation>
 <translation id="486635084936119914">డౌన్‌లోడ్ చేసిన తర్వాత స్వయంచాలకంగా నిర్దిష్ట ఫైల్ రకాలను తెరువు</translation>
-<translation id="4869213010169296107"><ph name="PRINTER_NAME" />లో ట్రే లేదు</translation>
 <translation id="48704129375571883">అదనపు ఫీచర్‌లను జోడించండి</translation>
 <translation id="4870758487381879312">కాన్ఫిగరేషన్ సమాచారాన్ని పొందడం కోసం నిర్వాహకులు అందించిన పాస్‌వర్డ్‌ని నమోదు చేయండి</translation>
 <translation id="4870903493621965035">జత చేయబడిన పరికరాలు లేవు</translation>
@@ -3327,6 +3324,7 @@
 <translation id="5184662919967270437">మీ పరికరాన్ని అప్‌డేట్ చేస్తోంది</translation>
 <translation id="5185359571430619712">ఎక్స్‌టెన్షన్‌లను రివ్యూ చేయండి</translation>
 <translation id="5185386675596372454">"<ph name="EXTENSION_NAME" />" కొత్త వెర్షన్ నిలిపివేయబడింది ఎందుకంటే దానికి మరిన్ని అనుమతులు అవసరం.</translation>
+<translation id="5185500136143151980">ఇంటర్నెట్ లేదు</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5190926251776387065">పోర్ట్‌ను యాక్టివేట్ చేయండి</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> పలు ఫైల్‌లను డౌన్‌లోడ్ చేయాలనుకుంటోంది</translation>
@@ -3483,7 +3481,6 @@
 <translation id="5390112241331447203">ఫీడ్‌బ్యాక్ రిపోర్ట్‌లలో పంపించబడిన system_logs.txt fileను కూడా చేర్చండి.</translation>
 <translation id="5390677308841849479">ముదురు ఎరుపు మరియు నారింజ రంగు</translation>
 <translation id="5390743329570580756">దీని కోసం పంపు</translation>
-<translation id="5395869306561378615"><ph name="PRINTER_NAME" /> పాజ్ చేయబడింది</translation>
 <translation id="5397794290049113714">మీరు</translation>
 <translation id="5398572795982417028">పేజీ సూచన పరిమితిని దాటిపోయారు, పరిమితి <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">ప్రకటనలు బ్లాక్ చేయబడ్డాయి</translation>
@@ -3498,7 +3495,6 @@
 <translation id="5417312524372586921">బ్రౌజర్ థీమ్‌లు</translation>
 <translation id="5419405654816502573">Voice Match</translation>
 <translation id="5420438158931847627">వచన సందేశం మరియు చిత్రాల స్పష్టతను నిర్ణయిస్తుంది</translation>
-<translation id="5421498071721257877"><ph name="PRINTER_NAME" />లో పరికర ఎర్రర్ ఉంది</translation>
 <translation id="5422221874247253874">యాక్సెస్ స్థానం</translation>
 <translation id="5422781158178868512">క్షమించండి, మీ బాహ్య నిల్వ పరికరం గుర్తించబడలేదు.</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3847,7 +3843,6 @@
 <translation id="5852137567692933493">పునఃప్రారంభించి, పవర్‌వాష్ చేయి</translation>
 <translation id="5854912040170951372">స్లైస్</translation>
 <translation id="5855267860608268405">తెలిసిన Wi-Fi నెట్‌వర్క్‌లు</translation>
-<translation id="5855310969323666289"><ph name="PRINTER_NAME" /> డోర్ తెరిచి ఉంది</translation>
 <translation id="5855643921295613558">0.6 సెకన్లు</translation>
 <translation id="5856721540245522153">డీబగ్గింగ్ ఫీచ‌ర్‌లను ప్రారంభించండి</translation>
 <translation id="5857090052475505287">క్రొత్త ఫోల్డర్</translation>
@@ -3878,7 +3873,6 @@
 <translation id="5877064549588274448">ఛానెల్ మార్చబడింది. మార్పులను వర్తింపజేయడానికి మీ పరికరాన్ని పునఃప్రారంభించండి.</translation>
 <translation id="5877584842898320529">ఎంచుకున్న ప్రింటర్ అందుబాటులో లేదు లేదా సరిగ్గా ఇన్‌స్టాల్ చేయబడలేదు. <ph name="BR" /> మీ ప్రింటర్‌ను తనిఖీ చేయండి లేదా మరొక ప్రింటర్‌ను ఎంచుకోవడాన్ని ప్రయత్నించండి.</translation>
 <translation id="5882919346125742463">తెలిసిన నెట్‌వర్క్‌లు</translation>
-<translation id="5883716097305842571"><ph name="PRINTER_NAME" /> అవుట్‌పుట్ ఏరియా దాదాపు నిండిపోయింది</translation>
 <translation id="5884474295213649357">ఈ ట్యాబ్ USB పరికరానికి కనెక్ట్ చేయబడింది.</translation>
 <translation id="5886009770935151472">1వ వేలు</translation>
 <translation id="5889282057229379085">ఇంటర్మీడియట్ CAల అత్యధిక సంఖ్య: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4444,7 +4438,6 @@
 <translation id="6611972847767394631">మీ ట్యాబ్‌లను ఇక్కడ కనుగొనండి</translation>
 <translation id="6612358246767739896">రక్షిత కంటెంట్</translation>
 <translation id="6615455863669487791">నాకు చూపించు</translation>
-<translation id="6617034477946102682"><ph name="PRINTER_NAME" />ని చేరుకోలేకపోయాము</translation>
 <translation id="6618097958368085618">ఏదేమైనా ఉంచు</translation>
 <translation id="6618744767048954150">రన్ అవుతున్నాయి</translation>
 <translation id="6619058681307408113">లైన్ ప్రింటర్ డెమాన్ (LPD)</translation>
@@ -4861,7 +4854,6 @@
 <translation id="7128151990937044829">నోటిఫికేషన్‌లను బ్లాక్ చేసినప్పుడు చిరునామా బార్‌లో సూచికను చూపించు</translation>
 <translation id="7131040479572660648"><ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> మరియు <ph name="WEBSITE_3" />లోని మీ డేటాను చదవండి</translation>
 <translation id="713122686776214250">పే&amp;జీని జోడించండి...</translation>
-<translation id="7131379856697962078"><ph name="PRINTER_NAME" /> అవుట్‌పుట్ ఏరియా నిండిపోయింది</translation>
 <translation id="7133578150266914903">మీ నిర్వాహకుడు మీ పరికరాన్ని ఉపసంహరిస్తున్నారు (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">టెక్స్ట్‌ని చిన్నదిగా చెయ్యండి</translation>
 <translation id="7135729336746831607">బ్లూటూత్ ఆన్ చేయాలా?</translation>
@@ -4880,7 +4872,6 @@
 <translation id="7152478047064750137">ఈ పొడిగింపునకు ప్రత్యేక అనుమతులు అవసరం లేదు</translation>
 <translation id="7154130902455071009">మీ ప్రారంభ పేజీని దీనికి మార్చండి: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">కెమెరా లేదా ఫైల్‌లో ఉన్న ఫోటో</translation>
-<translation id="715657691234357425"><ph name="PRINTER_NAME" />లో పేపర్‌లు తక్కువగా ఉన్నాయి</translation>
 <translation id="7165320105431587207">నెట్‌వర్క్‌ను కాన్ఫిగర్ చేయడంలో విఫలమైంది</translation>
 <translation id="716640248772308851">తనిఖీ చేయబడిన స్థానాల్లో "<ph name="EXTENSION" />" చిత్రాలను, వీడియోను, సౌండ్ ఫైల్స్‌ను చదవగలదు.</translation>
 <translation id="7167486101654761064">&amp;ఎల్లప్పుడూ ఈ రకం ఫైళ్ళను తెరువు</translation>
@@ -4911,7 +4902,6 @@
 <translation id="7197632491113152433">మేము ఈ పరికరంలో ఉపయోగించగల <ph name="NUMBER_OF_APPS" /> యాప్‌లను మీ ఖాతాలో కనుగొన్నాము.</translation>
 <translation id="7199158086730159431">సహా&amp;యం పొందండి</translation>
 <translation id="7200083590239651963">కాన్ఫిగరేషన్‌‌ను ఎంచుకోండి</translation>
-<translation id="7201042526153088083">మీ <ph name="DEVICE_TYPE" />లో Google Play నుండి యాప్‌లను, గేమ్‌లను ఇన్‌స్టాల్ చేసుకోండి. &lt;a target="_blank" href="<ph name="URL" />"&gt;మరింత తెలుసుకోండి&lt;/a&gt;</translation>
 <translation id="720110658997053098">ఈ పరికరాన్ని శాశ్వతంగా కియోస్క్ మోడ్‌లో ఉంచు</translation>
 <translation id="7201118060536064622">'<ph name="DELETED_ITEM_NAME" />' తొలగించబడింది</translation>
 <translation id="7201420661433230412">ఫైల్‌లను వీక్షించండి</translation>
@@ -5217,7 +5207,6 @@
 <translation id="7598466960084663009">కంప్యూటర్‌ని పునఃప్రారంభించు</translation>
 <translation id="7599527631045201165">పరికరం పేరు చాలా పొడవుగా ఉంది. చిన్న పేరును నమోదు చేసి, ఆపై మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" />ను ఎప్పటికీ అనువదించవద్దు</translation>
-<translation id="7601297144931396972"><ph name="PRINTER_NAME" />లో పేపర్ జామ్ అయింది</translation>
 <translation id="760197030861754408">కనెక్ట్ చేయడానికి <ph name="LANDING_PAGE" />కి వెళ్లండి.</translation>
 <translation id="7602079150116086782">ఇతర పరికరాల నుండి ట్యాబ్‌లు లేవు</translation>
 <translation id="7602173054665172958">ప్రింట్ మేనేజ్‌మెంట్</translation>
@@ -5228,6 +5217,7 @@
 <translation id="7609148976235050828">దయచేసి ఇంటర్నెట్‌కి కనెక్ట్ చేసి, మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="7614260613810441905">సైట్ మీ పరికరంలో ఫైల్‌లు లేదా ఫోల్డర్‌లను సవరించాలనుకున్నప్పుడు అడగండి (సిఫార్సు చేయబడింది)</translation>
 <translation id="761530003705945209">Google డిస్క్‌లో బ్యాకప్ చేయండి. సులభంగా మీ డేటాను పునరుద్ధరించండి లేదా ఎప్పుడైనా పరికరాన్ని స్విచ్ చేయండి. మీ బ్యాకప్‌లో యాప్ డేటా కూడా ఉంటుంది. మీ బ్యాకప్‌లు Googleకు అప్‌లోడ్ చేయబడతాయి, మీ Google ఖాతా పాస్‌వర్డ్‌ను ఉపయోగించి ఎన్‌క్రిప్ట్ చేయబడతాయి.</translation>
+<translation id="7615365294369022248">ఖాతాను జోడించడంలో ఎర్రర్ ఏర్పడింది</translation>
 <translation id="7616214729753637086">పరికరాన్ని నమోదు చేస్తోంది...</translation>
 <translation id="7617263010641145920">Play స్టోర్‌ను ఆన్ చేయండి</translation>
 <translation id="7617366389578322136">"<ph name="DEVICE_NAME" />"కు కనెక్ట్ చేస్తోంది</translation>
@@ -5672,7 +5662,6 @@
           Google Payకి చెందిన చెల్లింపు పద్ధతులు మరియు చిరునామాలు ఇందులో ఉండవు.</translation>
 <translation id="81238879832906896">పసుపు మరియు తెలుపు రంగు పుష్పం</translation>
 <translation id="8124313775439841391">నిర్వహిత ONC</translation>
-<translation id="8127535217699822294"><ph name="PRINTER_NAME" />లో పేపర్ లేదు</translation>
 <translation id="813082847718468539">సైట్ సమాచారాన్ని చూడండి</translation>
 <translation id="8131740175452115882">నిర్ధారించు</translation>
 <translation id="8133676275609324831">&amp;ఫోల్డర్‌లో చూపించు</translation>
@@ -5771,7 +5760,6 @@
 <translation id="8254954272268479918">Linux (బీటా)ను షట్ డౌన్ చేయండి</translation>
 <translation id="8255451560461371599">నేపథ్య చిత్రం ఏదీ వద్దు</translation>
 <translation id="8256319818471787266">స్పార్కీ</translation>
-<translation id="8256417822772703842"><ph name="PRINTER_NAME" />లో ఇంక్ తక్కువగా ఉంది</translation>
 <translation id="8257950718085972371">కెమెరా యాక్సెస్‌ను బ్లాక్ చేయడాన్ని కొనసాగించు</translation>
 <translation id="8259239505248583312">ప్రారంభించు</translation>
 <translation id="8260864402787962391">మౌస్</translation>
@@ -5952,7 +5940,6 @@
 <translation id="8487678622945914333">దగ్గరికి జూమ్ చెయ్యి</translation>
 <translation id="8490896350101740396">కింది కియోస్క్ యాప్‌లు "<ph name="UPDATED_APPS" />" అప్‌డేట్ అయ్యాయి. దయచేసి అప్‌డేట్ ప్రాసెస్‌ను పూర్తి చేయడానికి పరికరాన్ని రీబూట్ చేయండి.</translation>
 <translation id="8493236660459102203">మైక్రోఫోన్:</translation>
-<translation id="8495940850609851342"><ph name="PRINTER_NAME" /> ఆగిపోయింది</translation>
 <translation id="8496717697661868878">ఈ ప్లగ్ఇన్‌ను అమలు చేయి</translation>
 <translation id="8497219075884839166">Windows వినియోగాలు</translation>
 <translation id="8498214519255567734">కాంతి తక్కువగా ఉన్నప్పుడు మీ స్క్రీన్‌ని చూడటం లేదా చదవడాన్ని సులభతరం చేస్తుంది</translation>
@@ -6494,6 +6481,12 @@
 <translation id="9157096865782046368">0.8 సెకన్లు</translation>
 <translation id="9157697743260533322">వినియోగదారులందరి కోసం ఆటోమేటిక్ అప్‌డేట్‌లను సెటప్ చేయడం విఫలమైంది (ప్రీఫ్లయిట్ ప్రారంభ ఎర్రర్: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">అయ్యో!  ప్రామాణీకరణ సమయంలో నెట్‌వర్క్ కమ్యూనికేషన్ సమస్య సంభవించింది.  దయచేసి మీ నెట్‌వర్క్ కనెక్షన్‌ను తనిఖీ చేసి, మళ్లీ ప్రయత్నించండి.</translation>
+<translation id="9159643062839240276">ఇలా ప్రయత్నించండి:
+    <ph name="BEGIN_LIST" />
+      <ph name="LIST_ITEM" />నెట్‌వర్క్ కేబుల్‌లు, మోడెమ్, రూటర్‌ను చెక్ చేయండి
+      <ph name="LIST_ITEM" />Wi-Fiకి మళ్లీ కనెక్ట్ చేయండి
+      <ph name="LIST_ITEM" />Chrome కనెక్టివిటీ సమస్య విశ్లేషణలు రన్ చేయండి
+    <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">చిత్రంలో చిత్రం</translation>
 <translation id="9168436347345867845">దీనిని తర్వాత చేయి</translation>
 <translation id="9169496697824289689">కీబోర్డ్ షార్ట్‌క‌ట్‌లను వీక్షించండి</translation>

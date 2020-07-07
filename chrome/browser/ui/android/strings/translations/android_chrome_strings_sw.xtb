@@ -642,7 +642,6 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="6154478581116148741">Washa kipengele cha kufunga skrini katika Mipangilio ili uhamishe manenosiri yako kutoka kwenye kifaa hiki</translation>
 <translation id="6157392216611456285">Chagua <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> ya data imeokolewa</translation>
-<translation id="6192333916571137726">Pakua faili</translation>
 <translation id="6201345951596836663">Kiungo Kimenakiliwa</translation>
 <translation id="6206830853671714236">Chagua wakati wa kupakua</translation>
 <translation id="6210748933810148297">Wewe si <ph name="EMAIL" />?</translation>
@@ -877,6 +876,7 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="8013372441983637696">Pia, futa data yako ya Chrome kwenye kifaa hiki</translation>
 <translation id="8015452622527143194">Rejesha kila kitu katika ukubwa wa kawaida</translation>
 <translation id="8026334261755873520">Futa data ya kuvinjari</translation>
+<translation id="8027863900915310177">Chagua ambako utahifadhi faili ya kupakuliwa</translation>
 <translation id="8035133914807600019">Folda mpya…</translation>
 <translation id="8037750541064988519">Zimesalia siku <ph name="DAYS" /></translation>
 <translation id="804335162455518893">Kadi ya SD haikupatikana</translation>
@@ -922,7 +922,7 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="8364299278605033898">Ona tovuti maarufu</translation>
 <translation id="8368027906805972958">Kifaa kisichojulikana au kisichotumika (<ph name="DEVICE_ID" />)</translation>
 <translation id="8393700583063109961">Tuma ujumbe</translation>
-<translation id="8407396331882458341">1. Chagua <ph name="APP_NAME" />\n2. Gusa “Kila Wakati”</translation>
+<translation id="8407396331882458341">1. Chagua <ph name="APP_NAME" />\n2. Gusa “Kila mara”</translation>
 <translation id="8413126021676339697">Onyesha historia kamili</translation>
 <translation id="8425213833346101688">Badilisha</translation>
 <translation id="8427875596167638501">Kichupo cha kukagua kwanza kimefunguliwa nusu</translation>

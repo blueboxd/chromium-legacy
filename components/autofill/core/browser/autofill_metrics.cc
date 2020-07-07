@@ -20,6 +20,7 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_tick_clock.h"
@@ -1427,6 +1428,18 @@ void AutofillMetrics::LogEditedAutofilledFieldAtSubmission(
   base::UmaHistogramSparse(type_specific_histogram,
                            GetFieldTypeUserEditStatusMetric(
                                field.Type().GetStorableType(), editing_metric));
+
+  // Record the UMA statistics spliced by the autocomplete attribute value.
+  FormType form_type =
+      FormTypes::FieldTypeGroupToFormType(field.Type().group());
+  if (form_type == ADDRESS_FORM || form_type == CREDIT_CARD_FORM) {
+    bool autocomplete_off = field.autocomplete_attribute == "off";
+    const std::string autocomplete_histogram = base::StrCat(
+        {"Autofill.Autocomplete.", autocomplete_off ? "Off" : "NotOff",
+         ".EditedAutofilledFieldAtSubmission.",
+         form_type == ADDRESS_FORM ? "Address" : "CreditCard"});
+    base::UmaHistogramEnumeration(autocomplete_histogram, editing_metric);
+  }
 
   // If the field was edited, record the event to UKM.
   if (editing_metric ==

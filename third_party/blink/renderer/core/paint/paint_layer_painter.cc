@@ -188,13 +188,16 @@ static bool ShouldUseInfiniteCullRect(const GraphicsContext& context,
   return false;
 }
 
-static bool IsMainFrameNotClippingContents(const PaintLayer& layer) {
+static bool IsUnclippedLayoutView(const PaintLayer& layer) {
   // If MainFrameClipsContent is false which means that WebPreferences::
   // record_whole_document is true, we should not cull the scrolling contents
   // of the main frame.
   if (IsA<LayoutView>(layer.GetLayoutObject())) {
     const auto* frame = layer.GetLayoutObject().GetFrame();
     if (frame && frame->IsMainFrame() && !frame->ClipsContent())
+      return true;
+    // True regardless whether this is the main frame when painting a preview.
+    if (frame && frame->GetDocument()->IsPaintingPreview())
       return true;
   }
   return false;
@@ -206,15 +209,14 @@ void PaintLayerPainter::AdjustForPaintProperties(
     PaintLayerFlags& paint_flags) {
   const auto& first_fragment = paint_layer_.GetLayoutObject().FirstFragment();
 
-  bool is_main_frame_not_clipping_contents =
-      IsMainFrameNotClippingContents(paint_layer_);
+  bool is_unclipped_layout_view = IsUnclippedLayoutView(paint_layer_);
   bool should_use_infinite_cull_rect =
-      is_main_frame_not_clipping_contents ||
+      is_unclipped_layout_view ||
       ShouldUseInfiniteCullRect(context, paint_layer_, painting_info);
   if (should_use_infinite_cull_rect) {
     painting_info.cull_rect = CullRect::Infinite();
     // Avoid clipping during CollectFragments.
-    if (is_main_frame_not_clipping_contents)
+    if (is_unclipped_layout_view)
       paint_flags |= kPaintLayerPaintingOverflowContents;
   }
 

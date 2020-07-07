@@ -50,6 +50,8 @@ class WebAuthnHandler : public DevToolsDomainHandler, public WebAuthn::Backend {
   Response ClearCredentials(const String& in_authenticator_id) override;
   Response SetUserVerified(const String& authenticator_id,
                            bool is_user_verified) override;
+  Response SetAutomaticPresenceSimulation(const String& authenticator_id,
+                                          bool enabled) override;
 
  private:
   // Finds the authenticator with the given |id|. Returns Response::OK() if

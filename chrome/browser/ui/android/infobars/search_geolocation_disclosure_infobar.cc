@@ -15,7 +15,7 @@ using base::android::ScopedJavaLocalRef;
 
 SearchGeolocationDisclosureInfoBar::SearchGeolocationDisclosureInfoBar(
     std::unique_ptr<SearchGeolocationDisclosureInfoBarDelegate> delegate)
-    : InfoBarAndroid(
+    : infobars::InfoBarAndroid(
           std::move(delegate),
           base::BindRepeating(&ResourceMapper::MapToJavaDrawableId)) {}
 

@@ -129,7 +129,7 @@ void PaintPieces(GraphicsContext& context,
         base::Optional<ScopedInterpolationQuality> interpolation_quality_scope;
         if (draw_info.tile_rule.horizontal == kRoundImageRule ||
             draw_info.tile_rule.vertical == kRoundImageRule)
-          interpolation_quality_scope.emplace(context, kInterpolationLow);
+          interpolation_quality_scope.emplace(context, kInterpolationMedium);
 
         context.DrawImageTiled(image, draw_info.destination, draw_info.source,
                                tile_scale_factor, tile_phase, tile_spacing);

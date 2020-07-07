@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_mode_detector.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
@@ -28,7 +29,8 @@ struct LanguageSwitchResult;
 }
 
 class WelcomeScreen : public BaseScreen,
-                      public input_method::InputMethodManager::Observer {
+                      public input_method::InputMethodManager::Observer,
+                      public DemoModeDetector::Observer {
  public:
   // This enum is tied directly to a UMA enum defined in
   // //tools/metrics/histograms/enums.xml, and should always reflect it (do not
@@ -60,10 +62,15 @@ class WelcomeScreen : public BaseScreen,
     virtual void OnLanguageListReloaded() = 0;
   };
 
-  WelcomeScreen(WelcomeView* view, const base::RepeatingClosure& exit_callback);
+  enum class Result { NEXT, START_DEMO };
+
+  using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
+
+  WelcomeScreen(WelcomeView* view, const ScreenExitCallback& exit_callback);
   ~WelcomeScreen() override;
 
   static WelcomeScreen* Get(ScreenManager* manager);
+  static std::string GetResultString(Result result);
 
   // Called when |view| has been destroyed. If this instance is destroyed before
   // the |view| it should call view->Unbind().
@@ -96,7 +103,7 @@ class WelcomeScreen : public BaseScreen,
 
  protected:
   // Exposes exit callback to test overrides.
-  base::RepeatingClosure* exit_callback() { return &exit_callback_; }
+  ScreenExitCallback* exit_callback() { return &exit_callback_; }
 
  private:
   // BaseScreen:
@@ -104,7 +111,10 @@ class WelcomeScreen : public BaseScreen,
   void HideImpl() override;
   void OnUserAction(const std::string& action_id) override;
 
-  // InputMethodManager::Observer implementation:
+  // DemoModeDetector::Observer:
+  void OnShouldStartDemoMode() override;
+
+  // InputMethodManager::Observer:
   void InputMethodChanged(input_method::InputMethodManager* manager,
                           Profile* profile,
                           bool show_message) override;
@@ -137,7 +147,9 @@ class WelcomeScreen : public BaseScreen,
   void OnLocaleChangeResult(ash::LocaleNotificationResult result);
 
   WelcomeView* view_ = nullptr;
-  base::RepeatingClosure exit_callback_;
+  ScreenExitCallback exit_callback_;
+
+  std::unique_ptr<DemoModeDetector> demo_mode_detector_;
 
   std::string input_method_;
   std::string timezone_;

@@ -6,8 +6,8 @@ package org.chromium.chrome.test;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
-import android.text.TextUtils;
 
+import org.hamcrest.Matchers;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -42,13 +42,9 @@ public class MultiActivityTestRule implements TestRule {
         final Tab tab = activity.getActivityTab();
         assert tab != null;
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                if (!ChromeTabUtils.isLoadingAndRenderingDone(tab)) return false;
-                if (!TextUtils.equals(expectedTitle, tab.getTitle())) return false;
-                return true;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(ChromeTabUtils.isLoadingAndRenderingDone(tab), Matchers.is(true));
+            Criteria.checkThat(tab.getTitle(), Matchers.is(expectedTitle));
         });
     }
 

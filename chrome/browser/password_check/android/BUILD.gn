@@ -30,6 +30,7 @@ android_library("public_java") {
     "//base:base_java",
     "//third_party/android_deps:androidx_fragment_fragment_java",
     "//third_party/android_deps:androidx_preference_preference_java",
+    "//third_party/android_deps:androidx_recyclerview_recyclerview_java",
   ]
   sources = [
     "java/src/org/chromium/chrome/browser/password_check/CompromisedCredential.java",
@@ -59,6 +60,31 @@ junit_binary("password_check_junit_tests") {
   ]
 }
 
+android_library("test_java") {
+  testonly = true
+
+  sources = [ "javatests/src/org/chromium/chrome/browser/password_check/PasswordCheckViewTest.java" ]
+
+  deps = [
+    ":public_java",
+    "//base:base_java",
+    "//base:base_java_test_support",
+    "//chrome/android:chrome_java",
+    "//chrome/android:chrome_test_java",
+    "//chrome/android:chrome_test_util_java",
+    "//chrome/browser/password_check/android/internal:internal_java",
+    "//chrome/browser/settings:test_support_java",
+    "//chrome/test/android:chrome_java_test_support",
+    "//components/embedder_support/android:util_java",
+    "//content/public/test/android:content_java_test_support",
+    "//third_party/android_deps:androidx_recyclerview_recyclerview_java",
+    "//third_party/hamcrest:hamcrest_java",
+    "//third_party/junit",
+    "//third_party/mockito:mockito_java",
+    "//ui/android:ui_full_java",
+    "//ui/android:ui_utils_java",
+  ]
+}
 android_resources("java_resources") {
   sources = []
   deps = [ "//chrome/browser/ui/android/strings:ui_strings_grd" ]

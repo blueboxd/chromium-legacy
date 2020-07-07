@@ -81,11 +81,10 @@ ChromeVoxE2ETest = class extends testing.Test {
    * {@code testDone()} will be called when all callbacks have been called.
    * @param {Function=} opt_callback Wrapped callback that will have its this
    *        reference bound to the test fixture.
-   * @param {boolean=} opt_isAsync True if the callback is async.
    * @return {Function}
    */
-  newCallback(opt_callback, opt_isAsync) {
-    return this.callbackHelper_.wrap(opt_callback, opt_isAsync);
+  newCallback(opt_callback) {
+    return this.callbackHelper_.wrap(opt_callback);
   }
 };
 

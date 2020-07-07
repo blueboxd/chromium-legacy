@@ -5,7 +5,6 @@
 #ifndef IOS_COMPONENTS_SECURITY_INTERSTITIALS_LOOKALIKES_LOOKALIKE_URL_CONTROLLER_CLIENT_H_
 #define IOS_COMPONENTS_SECURITY_INTERSTITIALS_LOOKALIKES_LOOKALIKE_URL_CONTROLLER_CLIENT_H_
 
-#include "base/memory/weak_ptr.h"
 #include "ios/components/security_interstitials/ios_blocking_page_controller_client.h"
 #include "url/gurl.h"
 
@@ -29,17 +28,12 @@ class LookalikeUrlControllerClient
   void Proceed() override;
   void GoBack() override;
 
-  // Closes the tab. Called in cases where there is no suggested URL.
-  void Close();
-
  private:
   // The URL suggested to the user as the safe URL. Can be empty, in which case
   // the default action on the interstitial closes the tab.
   const GURL safe_url_;
   // The URL of the page causing the insterstitial.
   const GURL request_url_;
-
-  base::WeakPtrFactory<LookalikeUrlControllerClient> weak_factory_;
 };
 
 #endif  // IOS_COMPONENTS_SECURITY_INTERSTITIALS_LOOKALIKES_LOOKALIKE_URL_CONTROLLER_CLIENT_H_

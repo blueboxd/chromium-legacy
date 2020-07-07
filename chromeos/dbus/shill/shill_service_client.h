@@ -186,13 +186,6 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillServiceClient {
                       base::OnceClosure callback,
                       ErrorCallback error_callback) = 0;
 
-  // Calls ActivateCellularModem method.
-  // |callback| is called after the method call succeeds.
-  virtual void ActivateCellularModem(const dbus::ObjectPath& service_path,
-                                     const std::string& carrier,
-                                     base::OnceClosure callback,
-                                     ErrorCallback error_callback) = 0;
-
   // Calls the CompleteCellularActivation method.
   // |callback| is called after the method call succeeds.
   virtual void CompleteCellularActivation(const dbus::ObjectPath& service_path,

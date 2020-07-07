@@ -65,9 +65,8 @@ void XDisplayManager::RemoveObserver(display::DisplayObserver* observer) {
 bool XDisplayManager::ProcessEvent(x11::Event* xev) {
   DCHECK(xev);
   if (xev->As<x11::RandR::ScreenChangeNotifyEvent>()) {
-    // TODO(https://crbug.com/1066670): Remove this when the Xlib dependency is
-    // removed.  We can't remove it now because it could cause the XDisplay
-    // state to become stale.
+    // TODO(https://crbug.com/1102059): Remove this since the Xlib even is
+    // nullptr since we don't initialize the extension, which causes a crash.
     XRRUpdateConfiguration(&xev->xlib_event());
     return true;
   }

@@ -168,7 +168,7 @@
 <translation id="2353636109065292463">तुमचे इंटरनेट कनेक्शन तपासत आहे</translation>
 <translation id="2359808026110333948">सुरू ठेवा</translation>
 <translation id="2369533728426058518">खुले टॅब</translation>
-<translation id="2377295302146152376">Chrome ला अपडेट तपासता आले नाहीत</translation>
+<translation id="2377295302146152376">Chrome ला अपडेट तपासता आली नाहीत</translation>
 <translation id="2387895666653383613">मजकूर स्केलिग</translation>
 <translation id="2394602618534698961">तुम्ही डाउनलोड केलेल्या फाइल येथे दिसतात</translation>
 <translation id="2407481962792080328">तुम्ही तुमच्या Google खात्यामध्ये साइन इन केल्यावर, हे वैशिष्ट्य सुरू केले जाते</translation>
@@ -642,7 +642,6 @@
 <translation id="6154478581116148741">तुमचे पासवर्ड या डिव्हाइसवरून एक्सपोर्ट करण्यासाठी सेटिंग्जमधील लॉक स्क्रीन सुरू करा</translation>
 <translation id="6157392216611456285"><ph name="APP_NAME" /> निवडा</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> डेटा बचत</translation>
-<translation id="6192333916571137726">फाइल डाउनलोड करा</translation>
 <translation id="6201345951596836663">लिंक कॉपी केली</translation>
 <translation id="6206830853671714236">कधी डाउनलोड करायचे ते निवडा</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> नाही?</translation>
@@ -877,6 +876,7 @@
 <translation id="8013372441983637696">तुमचा या डिव्हाइसवरील Chrome डेटा देखील साफ करा</translation>
 <translation id="8015452622527143194">पेजवरील प्रत्येक गोष्ट डीफॉल्ट आकारमानावर परत करा</translation>
 <translation id="8026334261755873520">ब्राउझिंग डेटा साफ करा</translation>
+<translation id="8027863900915310177">कुठे डाउनलोड करायची आहे ते निवडा</translation>
 <translation id="8035133914807600019">नवीन फोल्डर…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> दिवस शिल्लक</translation>
 <translation id="804335162455518893">SD कार्ड आढळले नाही</translation>
@@ -896,7 +896,7 @@
 <translation id="8115259494083109761">QR कोड स्कॅन करण्यासाठी, Chrome ला तुमचा कॅमेरा वापरू द्या</translation>
 <translation id="8127542551745560481">होमपेज संपादित करा</translation>
 <translation id="813082847718468539">साइटची माहिती पहा</translation>
-<translation id="8137558756159375272">शोधण्यासाठी स्पर्श करा हे Google शोध कडे संदर्भ म्हणून निवडलेला शब्द आणि वर्तमान पृष्ठ पाठविते. तुम्ही हे <ph name="BEGIN_LINK" />सेटिंग्ज<ph name="END_LINK" /> मध्ये बंद करू शकता.</translation>
+<translation id="8137558756159375272">शोधण्यासाठी स्पर्श करा हे Google Search कडे संदर्भ म्हणून निवडलेला शब्द आणि वर्तमान पृष्ठ पाठविते. तुम्ही हे <ph name="BEGIN_LINK" />सेटिंग्ज<ph name="END_LINK" /> मध्ये बंद करू शकता.</translation>
 <translation id="8156139159503939589">तुम्ही कोणत्या भाषा वाचू शकता?</translation>
 <translation id="8168435359814927499">आशय</translation>
 <translation id="8186512483418048923"><ph name="FILES" /> फाइल शिल्लक</translation>

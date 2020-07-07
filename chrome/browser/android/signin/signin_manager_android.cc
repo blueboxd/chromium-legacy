@@ -83,7 +83,7 @@ class ProfileDataRemover : public content::BrowsingDataRemover::Observer {
 
   ~ProfileDataRemover() override {}
 
-  void OnBrowsingDataRemoverDone() override {
+  void OnBrowsingDataRemoverDone(uint64_t failed_data_types) override {
     remover_->RemoveObserver(this);
 
     if (all_data_) {

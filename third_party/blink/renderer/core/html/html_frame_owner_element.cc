@@ -81,7 +81,7 @@ bool DoesParentAllowLazyLoadingChildren(Document& document) {
   return containing_frame_owner->ShouldLazyLoadChildren();
 }
 
-bool IsFrameLazyLoadable(const Document& document,
+bool IsFrameLazyLoadable(const ExecutionContext* context,
                          const KURL& url,
                          bool is_loading_attr_lazy,
                          bool should_lazy_load_children) {
@@ -104,7 +104,7 @@ bool IsFrameLazyLoadable(const Document& document,
       // document would be able to access the contents of the frame, since in
       // those cases deferring the frame could break the page. Note that this
       // check does not take any possible redirects of |url| into account.
-      document.GetSecurityOrigin()->CanAccess(
+      context->GetSecurityOrigin()->CanAccess(
           SecurityOrigin::Create(url).get())) {
     return false;
   }
@@ -537,7 +537,7 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
   bool loading_lazy_set = EqualIgnoringASCIICase(loading_attr, "lazy");
 
   if (!lazy_load_frame_observer_ &&
-      IsFrameLazyLoadable(GetDocument(), url, loading_lazy_set,
+      IsFrameLazyLoadable(GetExecutionContext(), url, loading_lazy_set,
                           should_lazy_load_children_)) {
     // Avoid automatically deferring subresources inside a lazily loaded frame.
     // This will make it possible for subresources in hidden frames to load that

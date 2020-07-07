@@ -8,16 +8,30 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_notification_tracker.h"
 #include "net/dns/mock_host_resolver.h"
+
+namespace {
+
+void ExpectIsWebUiNtp(content::WebContents* tab) {
+  EXPECT_EQ(GURL(chrome::kChromeUINewTabPageURL).spec(),
+            EvalJs(tab, "window.location.href",
+                   content::EXECUTE_SCRIPT_DEFAULT_OPTIONS, /*world_id=*/1));
+}
+
+}  // namespace
 
 class WebUiNtpBrowserTest : public InProcessBrowserTest {
  public:
   WebUiNtpBrowserTest() {
     feature_list_.InitAndEnableFeature(ntp_features::kWebUI);
   }
+
   ~WebUiNtpBrowserTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -35,7 +49,7 @@ class WebUiNtpBrowserTest : public InProcessBrowserTest {
 };
 
 // Verify that the WebUI NTP commits in a SiteInstance with the WebUI URL.
-IN_PROC_BROWSER_TEST_F(WebUiNtpBrowserTest, VerifyWebUiNtpSiteInstance) {
+IN_PROC_BROWSER_TEST_F(WebUiNtpBrowserTest, VerifySiteInstance) {
   GURL ntp_url(chrome::kChromeUINewTabURL);
   ui_test_utils::NavigateToURL(browser(), ntp_url);
 
@@ -63,10 +77,7 @@ IN_PROC_BROWSER_TEST_F(WebUiNtpBrowserTest, ProcessPerSite) {
 
     // Sanity check: the NTP should be a WebUI NTP (and not chrome://newtab/ or
     // some other NTP).
-    EXPECT_EQ(GURL(chrome::kChromeUINewTabPageURL).spec(),
-              EvalJs(tab, "window.location.href",
-                     content::EXECUTE_SCRIPT_DEFAULT_OPTIONS,
-                     /*world_id=*/1));
+    ExpectIsWebUiNtp(tab);
 
     tabs.push_back(tab);
   }
@@ -76,4 +87,32 @@ IN_PROC_BROWSER_TEST_F(WebUiNtpBrowserTest, ProcessPerSite) {
     EXPECT_EQ(tabs[0]->GetMainFrame()->GetProcess(),
               tabs[i]->GetMainFrame()->GetProcess());
   }
+}
+
+// Verify that the WebUI NTP uses an available spare process and does not
+// discard it as in https://crbug.com/1094088.
+IN_PROC_BROWSER_TEST_F(WebUiNtpBrowserTest, SpareRenderer) {
+  // Listen for notifications about renderer processes being terminated - this
+  // shouldn't happen during the test.
+  content::TestNotificationTracker process_termination_tracker;
+  process_termination_tracker.ListenFor(
+      content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+      content::NotificationService::AllBrowserContextsAndSources());
+
+  // Capture current spare renderer.
+  content::RenderProcessHost* spare =
+      content::RenderProcessHost::GetSpareRenderProcessHostForTesting();
+  ASSERT_TRUE(spare);
+
+  // Open an NTP.
+  chrome::NewTab(browser());
+  auto* ntp = browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(WaitForLoadStop(ntp));
+  ExpectIsWebUiNtp(ntp);
+
+  // Check spare was taken.
+  EXPECT_EQ(ntp->GetMainFrame()->GetProcess(), spare);
+
+  // No processes should be unnecessarily terminated.
+  EXPECT_EQ(0u, process_termination_tracker.size());
 }

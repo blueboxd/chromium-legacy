@@ -642,7 +642,6 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="6154478581116148741">Schakel schermvergrendeling in via Instellingen om je wachtwoorden te exporteren vanaf dit apparaat</translation>
 <translation id="6157392216611456285"><ph name="APP_NAME" /> kiezen</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> data bespaard</translation>
-<translation id="6192333916571137726">Bestand downloaden</translation>
 <translation id="6201345951596836663">Link gekopieerd</translation>
 <translation id="6206830853671714236">Kies wanneer je wilt downloaden</translation>
 <translation id="6210748933810148297">Niet <ph name="EMAIL" />?</translation>
@@ -777,7 +776,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7248069434667874558">Zorg dat synchronisatie in Chrome is ingeschakeld voor <ph name="TARGET_DEVICE_NAME" /></translation>
 <translation id="7274013316676448362">Geblokkeerde site</translation>
 <translation id="7290209999329137901">Naam wijzigen niet beschikbaar</translation>
-<translation id="7291387454912369099">Assistent voor automatisch invullen</translation>
+<translation id="7291387454912369099">Assistent voor automatisch betalen</translation>
 <translation id="7293171162284876153">Schakel 'Je Chrome-gegevens synchroniseren' in om de synchronisatie te starten.</translation>
 <translation id="729975465115245577">Je apparaat bevat geen app om het wachtwoordbestand in op te slaan.</translation>
 <translation id="7302081693174882195">Details: gesorteerd op de hoeveelheid bespaarde data</translation>
@@ -877,6 +876,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="8013372441983637696">Je Chrome-gegevens ook wissen op dit apparaat</translation>
 <translation id="8015452622527143194">Standaardgrootte van alles op de pagina herstellen</translation>
 <translation id="8026334261755873520">Browsegegevens wissen</translation>
+<translation id="8027863900915310177">Kies waar je wilt downloaden</translation>
 <translation id="8035133914807600019">Nieuwe map…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> dagen resterend</translation>
 <translation id="804335162455518893">SD-kaart niet gevonden</translation>

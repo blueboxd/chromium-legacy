@@ -34,14 +34,6 @@ namespace {
 
 const char kTestServicePath[] = "/a/service/path";
 
-const size_t kNumOTASPStates = 3;
-
-chromeos::MobileActivator::PlanActivationState kOTASPStates[kNumOTASPStates] = {
-  chromeos::MobileActivator::PLAN_ACTIVATION_TRYING_OTASP,
-  chromeos::MobileActivator::PLAN_ACTIVATION_INITIATING_ACTIVATION,
-  chromeos::MobileActivator::PLAN_ACTIVATION_OTASP,
-};
-
 }  // namespace
 namespace chromeos {
 
@@ -56,10 +48,6 @@ class TestMobileActivator : public MobileActivator {
   }
   virtual ~TestMobileActivator() {}
 
-  MOCK_METHOD3(RequestCellularActivation,
-               void(const NetworkState*,
-                    const base::Closure&,
-                    const network_handler::ErrorCallback&));
   MOCK_METHOD3(ChangeState,
                void(const NetworkState*,
                     MobileActivator::PlanActivationState,
@@ -263,55 +251,6 @@ TEST_F(MobileActivatorTest, OTASPBasicFlowForNewDevices) {
   set_network_activation_state(shill::kActivationStateActivated);
   EXPECT_EQ(MobileActivator::PLAN_ACTIVATION_DONE,
             mobile_activator_.InvokePickNextState(&cellular_network_));
-}
-
-// A fake for MobileActivator::RequestCellularActivation that always succeeds.
-void FakeRequestCellularActivationSuccess(
-    const NetworkState* network,
-    const base::Closure& success_callback,
-    const network_handler::ErrorCallback& error_callback) {
-  success_callback.Run();
-}
-
-// A fake for MobileActivator::RequestCellularActivation that always fails.
-void FakeRequestCellularActivationFailure(
-    const NetworkState* network,
-    const base::Closure& success_callback,
-    const network_handler::ErrorCallback& error_callback) {
-  std::unique_ptr<base::DictionaryValue> value;
-  error_callback.Run("", std::move(value));
-}
-
-TEST_F(MobileActivatorTest, OTASPScheduling) {
-  for (size_t i = 0; i < kNumOTASPStates; ++i) {
-    // When activation works, we start a timer to watch for success.
-    EXPECT_CALL(mobile_activator_, RequestCellularActivation(_, _, _))
-        .Times(1)
-        .WillOnce(Invoke(FakeRequestCellularActivationSuccess));
-    EXPECT_CALL(mobile_activator_, StartOTASPTimer())
-         .Times(1);
-    set_activator_state(MobileActivator::PLAN_ACTIVATION_START);
-    mobile_activator_.InvokeChangeState(&cellular_network_, kOTASPStates[i]);
-
-    // When activation fails, it's an error, unless we're trying for the final
-    // OTASP, in which case we try again via DELAY_OTASP.
-    EXPECT_CALL(mobile_activator_, RequestCellularActivation(_, _, _))
-        .Times(1)
-        .WillOnce(Invoke(FakeRequestCellularActivationFailure));
-    if (kOTASPStates[i] == MobileActivator::PLAN_ACTIVATION_OTASP) {
-      EXPECT_CALL(mobile_activator_, ChangeState(
-          Eq(&cellular_network_),
-          Eq(MobileActivator::PLAN_ACTIVATION_DELAY_OTASP),
-          _));
-    } else {
-      EXPECT_CALL(mobile_activator_, ChangeState(
-          Eq(&cellular_network_),
-          Eq(MobileActivator::PLAN_ACTIVATION_ERROR),
-          _));
-    }
-    set_activator_state(MobileActivator::PLAN_ACTIVATION_START);
-    mobile_activator_.InvokeChangeState(&cellular_network_, kOTASPStates[i]);
-  }
 }
 
 TEST_F(MobileActivatorTest, OTASPStartAtStart) {
